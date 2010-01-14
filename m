@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980Ab0ANW07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345Ab0ANW2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980Ab0ANW07 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027Ab0ANW06
+	id S1754345Ab0ANW2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:28:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065Ab0ANW2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:26:58 -0500
-Received: from cantor.suse.de ([195.135.220.2]:56903 "EHLO mx1.suse.de"
+	Thu, 14 Jan 2010 17:28:18 -0500
+Received: from kroah.org ([198.145.64.141]:60482 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753281Ab0ANW05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:26:57 -0500
-Date: Thu, 14 Jan 2010 14:25:51 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [00/52] 2.6.32.4-stable review
-Message-ID: <20100114222551.GA7839@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1751338Ab0ANW2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:16 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       "David S. Miller" <davem@davemloft.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 01/52] untangle the do_mremap() mess
+Date: Thu, 14 Jan 2010 14:26:40 -0800
+Message-Id: <1263508051-7868-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <20100114222551.GA7839@suse.de>
+References: <20100114222551.GA7839@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.32.4 release.
-There are 52 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+From: Al Viro <viro@zeniv.linux.org.uk>
 
-Responses should be made by Saturday, January 16, 22:00:00 UTC.
-Anything received after that time might be too late.
+This backports the following upstream commits all as one patch:
+	54f5de709984bae0d31d823ff03de755f9dcac54
+	ecc1a8993751de4e82eb18640d631dae1f626bd6
+	1a0ef85f84feb13f07b604fcf5b90ef7c2b5c82f
+	f106af4e90eadd76cfc0b5325f659619e08fb762
+	097eed103862f9c6a97f2e415e21d1134017b135
+	935874141df839c706cd6cdc438e85eb69d1525e
+	0ec62d290912bb4b989be7563851bc364ec73b56
+	c4caa778157dbbf04116f0ac2111e389b5cd7a29
+	2ea1d13f64efdf49319e86c87d9ba38c30902782
+	570dcf2c15463842e384eb597a87c1e39bead99b
+	564b3bffc619dcbdd160de597b0547a7017ea010
+	0067bd8a55862ac9dd212bd1c4f6f5bff1ca1301
+	f8b7256096a20436f6d0926747e3ac3d64c81d24
+	8c7b49b3ecd48923eb64ff57e07a1cdb74782970
+	9206de95b1ea68357996ec02be5db0638a0de2c1
+	2c6a10161d0b5fc047b5bd81b03693b9af99fab5
+	05d72faa6d13c9d857478a5d35c85db9adada685
+	bb52d6694002b9d632bb355f64daa045c6293a4e
+	e77414e0aad6a1b063ba5e5750c582c75327ea6a
+	aa65607373a4daf2010e8c3867b6317619f3c1a3
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.32.4-rc1.gz
-and the diffstat can be found below.
+Backport done by Greg Kroah-Hartman.  Only minor tweaks were needed.
 
-thanks,
-
-greg k-h
-
-
- Makefile                                  |    2 +-
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
  arch/alpha/kernel/osf_sys.c               |   19 +--
  arch/arm/include/asm/mman.h               |    3 +
  arch/arm/kernel/calls.S                   |    2 +-
@@ -73,9 +92,7 @@ greg k-h
  arch/mn10300/kernel/entry.S               |    2 +-
  arch/mn10300/kernel/sys_mn10300.c         |   36 +----
  arch/parisc/kernel/sys_parisc.c           |   30 +---
- arch/powerpc/include/asm/module.h         |    5 +
  arch/powerpc/kernel/syscalls.c            |   15 +--
- arch/powerpc/kernel/vmlinux.lds.S         |    3 +
  arch/s390/kernel/compat_linux.c           |   37 +----
  arch/s390/kernel/sys_s390.c               |   30 +----
  arch/score/kernel/sys_score.c             |   28 +---
@@ -88,7 +105,6 @@ greg k-h
  arch/sparc/kernel/systbls_64.S            |    4 +-
  arch/um/kernel/syscall.c                  |   28 +---
  arch/um/sys-i386/shared/sysdep/syscalls.h |    4 -
- arch/x86/Kconfig.cpu                      |    2 +-
  arch/x86/ia32/ia32entry.S                 |    2 +-
  arch/x86/ia32/sys_ia32.c                  |   43 +-----
  arch/x86/include/asm/sys_ia32.h           |    3 -
@@ -99,65 +115,2576 @@ greg k-h
  arch/xtensa/include/asm/syscall.h         |    2 -
  arch/xtensa/include/asm/unistd.h          |    2 +-
  arch/xtensa/kernel/syscall.c              |   25 ---
- drivers/cpuidle/governors/menu.c          |   12 +-
- drivers/gpu/drm/ati_pcigart.c             |   10 +-
- drivers/gpu/drm/drm_bufs.c                |    4 +-
- drivers/gpu/drm/drm_pci.c                 |    8 +-
- drivers/gpu/drm/i915/i915_dma.c           |    5 +-
- drivers/gpu/drm/i915/i915_drv.h           |    1 +
- drivers/gpu/drm/i915/i915_gem.c           |   12 +-
- drivers/gpu/drm/i915/i915_reg.h           |    4 +
- drivers/gpu/drm/i915/intel_display.c      |  180 ++++++---------------
- drivers/gpu/drm/i915/intel_lvds.c         |    9 +
- drivers/hwmon/Kconfig                     |    2 +-
- drivers/hwmon/adt7462.c                   |    2 +-
- drivers/hwmon/coretemp.c                  |   16 ++-
- drivers/mmc/card/block.c                  |    8 +
- drivers/mmc/card/queue.c                  |   18 +-
- drivers/net/wireless/ath/ath5k/eeprom.c   |   32 ++++-
- drivers/net/wireless/ath/ath5k/eeprom.h   |    8 +
- drivers/net/wireless/iwlwifi/iwl-4965.c   |    2 +-
- drivers/net/wireless/iwlwifi/iwl-dev.h    |    2 +-
- drivers/net/wireless/libertas/scan.c      |   22 +--
- drivers/rtc/rtc-cmos.c                    |    9 +-
- drivers/xen/manage.c                      |    8 +-
- fs/exofs/inode.c                          |   17 ++-
- fs/fcntl.c                                |  102 ++++++++-----
- fs/nfsd/vfs.c                             |    5 +-
- fs/quota/dquot.c                          |    3 +
- include/drm/drmP.h                        |    2 +-
  include/linux/syscalls.h                  |    4 +
  ipc/shm.c                                 |   31 ++--
- kernel/audit_tree.c                       |   13 +-
- kernel/cgroup.c                           |    1 -
- kernel/module.c                           |   45 ++++--
- kernel/signal.c                           |    3 +-
- kernel/sysctl.c                           |    2 +-
- lib/dma-debug.c                           |    7 +-
- lib/rational.c                            |    1 +
  mm/mmap.c                                 |   42 ++----
  mm/mremap.c                               |  241 +++++++++++++++++++----------
  mm/util.c                                 |   44 ++++++
- net/bridge/netfilter/ebtables.c           |    6 +
- net/ipv6/exthdrs.c                        |    7 +-
- net/mac80211/iface.c                      |   40 +++++-
- net/mac80211/mlme.c                       |    4 +-
- net/mac80211/rx.c                         |    8 +-
- net/mac80211/tx.c                         |    5 +-
- net/mac80211/util.c                       |   12 ++
- net/mac80211/wme.c                        |   89 ++++++++---
- net/mac80211/wme.h                        |    8 +-
- net/netfilter/nf_conntrack_ftp.c          |   18 +-
- net/sunrpc/auth_gss/auth_gss.c            |   17 ++-
- net/sunrpc/auth_gss/gss_krb5_mech.c       |    4 +-
- net/sunrpc/auth_gss/gss_mech_switch.c     |    2 +-
- net/sunrpc/svc_xprt.c                     |    3 +-
- net/wireless/reg.c                        |    2 +-
- sound/pci/ac97/ac97_patch.c               |    1 +
- sound/pci/atiixp.c                        |    1 +
- sound/pci/hda/patch_realtek.c             |    2 +-
- sound/soc/codecs/wm8350.c                 |    2 +-
- sound/soc/codecs/wm8510.c                 |   14 +-
- sound/soc/codecs/wm8940.c                 |   14 +-
- sound/soc/codecs/wm8974.c                 |   14 +-
- 118 files changed, 867 insertions(+), 1514 deletions(-)
+ 58 files changed, 342 insertions(+), 1179 deletions(-)
+
+diff --git a/arch/alpha/kernel/osf_sys.c b/arch/alpha/kernel/osf_sys.c
+index 9a3334a..62619f2 100644
+--- a/arch/alpha/kernel/osf_sys.c
++++ b/arch/alpha/kernel/osf_sys.c
+@@ -178,25 +178,18 @@ SYSCALL_DEFINE6(osf_mmap, unsigned long, addr, unsigned long, len,
+ 		unsigned long, prot, unsigned long, flags, unsigned long, fd,
+ 		unsigned long, off)
+ {
+-	struct file *file = NULL;
+-	unsigned long ret = -EBADF;
++	unsigned long ret = -EINVAL;
+ 
+ #if 0
+ 	if (flags & (_MAP_HASSEMAPHORE | _MAP_INHERIT | _MAP_UNALIGNED))
+ 		printk("%s: unimplemented OSF mmap flags %04lx\n", 
+ 			current->comm, flags);
+ #endif
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	down_write(&current->mm->mmap_sem);
+-	ret = do_mmap(file, addr, len, prot, flags, off);
+-	up_write(&current->mm->mmap_sem);
+-	if (file)
+-		fput(file);
++	if ((off + PAGE_ALIGN(len)) < off)
++		goto out;
++	if (off & ~PAGE_MASK)
++		goto out;
++	ret = sys_mmap_pgoff(addr, len, prot, flags, fd, off >> PAGE_SHIFT);
+  out:
+ 	return ret;
+ }
+diff --git a/arch/arm/include/asm/mman.h b/arch/arm/include/asm/mman.h
+index 8eebf89..41f99c5 100644
+--- a/arch/arm/include/asm/mman.h
++++ b/arch/arm/include/asm/mman.h
+@@ -1 +1,4 @@
+ #include <asm-generic/mman.h>
++
++#define arch_mmap_check(addr, len, flags) \
++	(((flags) & MAP_FIXED && (addr) < FIRST_USER_ADDRESS) ? -EINVAL : 0)
+diff --git a/arch/arm/kernel/calls.S b/arch/arm/kernel/calls.S
+index fafce1b..4f07168 100644
+--- a/arch/arm/kernel/calls.S
++++ b/arch/arm/kernel/calls.S
+@@ -172,7 +172,7 @@
+ /* 160 */	CALL(sys_sched_get_priority_min)
+ 		CALL(sys_sched_rr_get_interval)
+ 		CALL(sys_nanosleep)
+-		CALL(sys_arm_mremap)
++		CALL(sys_mremap)
+ 		CALL(sys_setresuid16)
+ /* 165 */	CALL(sys_getresuid16)
+ 		CALL(sys_ni_syscall)		/* vm86 */
+diff --git a/arch/arm/kernel/entry-common.S b/arch/arm/kernel/entry-common.S
+index f0fe95b..2c1db77 100644
+--- a/arch/arm/kernel/entry-common.S
++++ b/arch/arm/kernel/entry-common.S
+@@ -416,12 +416,12 @@ sys_mmap2:
+ 		tst	r5, #PGOFF_MASK
+ 		moveq	r5, r5, lsr #PAGE_SHIFT - 12
+ 		streq	r5, [sp, #4]
+-		beq	do_mmap2
++		beq	sys_mmap_pgoff
+ 		mov	r0, #-EINVAL
+ 		mov	pc, lr
+ #else
+ 		str	r5, [sp, #4]
+-		b	do_mmap2
++		b	sys_mmap_pgoff
+ #endif
+ ENDPROC(sys_mmap2)
+ 
+diff --git a/arch/arm/kernel/sys_arm.c b/arch/arm/kernel/sys_arm.c
+index 78ecaac..ae4027b 100644
+--- a/arch/arm/kernel/sys_arm.c
++++ b/arch/arm/kernel/sys_arm.c
+@@ -28,41 +28,6 @@
+ #include <linux/ipc.h>
+ #include <linux/uaccess.h>
+ 
+-extern unsigned long do_mremap(unsigned long addr, unsigned long old_len,
+-			       unsigned long new_len, unsigned long flags,
+-			       unsigned long new_addr);
+-
+-/* common code for old and new mmaps */
+-inline long do_mmap2(
+-	unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags,
+-	unsigned long fd, unsigned long pgoff)
+-{
+-	int error = -EINVAL;
+-	struct file * file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-
+-	if (flags & MAP_FIXED && addr < FIRST_USER_ADDRESS)
+-		goto out;
+-
+-	error = -EBADF;
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+ struct mmap_arg_struct {
+ 	unsigned long addr;
+ 	unsigned long len;
+@@ -84,29 +49,11 @@ asmlinkage int old_mmap(struct mmap_arg_struct __user *arg)
+ 	if (a.offset & ~PAGE_MASK)
+ 		goto out;
+ 
+-	error = do_mmap2(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
++	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
+ out:
+ 	return error;
+ }
+ 
+-asmlinkage unsigned long
+-sys_arm_mremap(unsigned long addr, unsigned long old_len,
+-	       unsigned long new_len, unsigned long flags,
+-	       unsigned long new_addr)
+-{
+-	unsigned long ret = -EINVAL;
+-
+-	if (flags & MREMAP_FIXED && new_addr < FIRST_USER_ADDRESS)
+-		goto out;
+-
+-	down_write(&current->mm->mmap_sem);
+-	ret = do_mremap(addr, old_len, new_len, flags, new_addr);
+-	up_write(&current->mm->mmap_sem);
+-
+-out:
+-	return ret;
+-}
+-
+ /*
+  * Perform the select(nd, in, out, ex, tv) and mmap() system
+  * calls.
+diff --git a/arch/arm/mm/mmap.c b/arch/arm/mm/mmap.c
+index 2b79964..f5abc51 100644
+--- a/arch/arm/mm/mmap.c
++++ b/arch/arm/mm/mmap.c
+@@ -54,7 +54,8 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 	 * We enforce the MAP_FIXED case.
+ 	 */
+ 	if (flags & MAP_FIXED) {
+-		if (aliasing && flags & MAP_SHARED && addr & (SHMLBA - 1))
++		if (aliasing && flags & MAP_SHARED &&
++		    (addr - (pgoff << PAGE_SHIFT)) & (SHMLBA - 1))
+ 			return -EINVAL;
+ 		return addr;
+ 	}
+diff --git a/arch/avr32/include/asm/syscalls.h b/arch/avr32/include/asm/syscalls.h
+index 483d666..66a1972 100644
+--- a/arch/avr32/include/asm/syscalls.h
++++ b/arch/avr32/include/asm/syscalls.h
+@@ -29,10 +29,6 @@ asmlinkage int sys_sigaltstack(const stack_t __user *, stack_t __user *,
+ 			       struct pt_regs *);
+ asmlinkage int sys_rt_sigreturn(struct pt_regs *);
+ 
+-/* kernel/sys_avr32.c */
+-asmlinkage long sys_mmap2(unsigned long, unsigned long, unsigned long,
+-			  unsigned long, unsigned long, off_t);
+-
+ /* mm/cache.c */
+ asmlinkage int sys_cacheflush(int, void __user *, size_t);
+ 
+diff --git a/arch/avr32/kernel/sys_avr32.c b/arch/avr32/kernel/sys_avr32.c
+index 5d2daea..459349b 100644
+--- a/arch/avr32/kernel/sys_avr32.c
++++ b/arch/avr32/kernel/sys_avr32.c
+@@ -5,39 +5,8 @@
+  * it under the terms of the GNU General Public License version 2 as
+  * published by the Free Software Foundation.
+  */
+-#include <linux/errno.h>
+-#include <linux/fs.h>
+-#include <linux/file.h>
+-#include <linux/mm.h>
+ #include <linux/unistd.h>
+ 
+-#include <asm/mman.h>
+-#include <asm/uaccess.h>
+-#include <asm/syscalls.h>
+-
+-asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+-			  unsigned long prot, unsigned long flags,
+-			  unsigned long fd, off_t offset)
+-{
+-	int error = -EBADF;
+-	struct file *file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			return error;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, offset);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-	return error;
+-}
+-
+ int kernel_execve(const char *file, char **argv, char **envp)
+ {
+ 	register long scno asm("r8") = __NR_execve;
+diff --git a/arch/avr32/kernel/syscall-stubs.S b/arch/avr32/kernel/syscall-stubs.S
+index f7244cd..0447a3e 100644
+--- a/arch/avr32/kernel/syscall-stubs.S
++++ b/arch/avr32/kernel/syscall-stubs.S
+@@ -61,7 +61,7 @@ __sys_execve:
+ __sys_mmap2:
+ 	pushm	lr
+ 	st.w	--sp, ARG6
+-	call	sys_mmap2
++	call	sys_mmap_pgoff
+ 	sub	sp, -4
+ 	popm	pc
+ 
+diff --git a/arch/blackfin/kernel/sys_bfin.c b/arch/blackfin/kernel/sys_bfin.c
+index afcef12..2e7f8e1 100644
+--- a/arch/blackfin/kernel/sys_bfin.c
++++ b/arch/blackfin/kernel/sys_bfin.c
+@@ -22,39 +22,6 @@
+ #include <asm/cacheflush.h>
+ #include <asm/dma.h>
+ 
+-/* common code for old and new mmaps */
+-static inline long
+-do_mmap2(unsigned long addr, unsigned long len,
+-	 unsigned long prot, unsigned long flags,
+-	 unsigned long fd, unsigned long pgoff)
+-{
+-	int error = -EBADF;
+-	struct file *file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+- out:
+-	return error;
+-}
+-
+-asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+-			  unsigned long prot, unsigned long flags,
+-			  unsigned long fd, unsigned long pgoff)
+-{
+-	return do_mmap2(addr, len, prot, flags, fd, pgoff);
+-}
+-
+ asmlinkage void *sys_sram_alloc(size_t size, unsigned long flags)
+ {
+ 	return sram_alloc_with_lsl(size, flags);
+diff --git a/arch/blackfin/mach-common/entry.S b/arch/blackfin/mach-common/entry.S
+index 94a0375..1d8f00a 100644
+--- a/arch/blackfin/mach-common/entry.S
++++ b/arch/blackfin/mach-common/entry.S
+@@ -1422,7 +1422,7 @@ ENTRY(_sys_call_table)
+ 	.long _sys_ni_syscall	/* streams2 */
+ 	.long _sys_vfork		/* 190 */
+ 	.long _sys_getrlimit
+-	.long _sys_mmap2
++	.long _sys_mmap_pgoff
+ 	.long _sys_truncate64
+ 	.long _sys_ftruncate64
+ 	.long _sys_stat64	/* 195 */
+diff --git a/arch/cris/kernel/sys_cris.c b/arch/cris/kernel/sys_cris.c
+index 2ad962c..c2bbb1a 100644
+--- a/arch/cris/kernel/sys_cris.c
++++ b/arch/cris/kernel/sys_cris.c
+@@ -26,31 +26,6 @@
+ #include <asm/uaccess.h>
+ #include <asm/segment.h>
+ 
+-/* common code for old and new mmaps */
+-static inline long
+-do_mmap2(unsigned long addr, unsigned long len, unsigned long prot,
+-        unsigned long flags, unsigned long fd, unsigned long pgoff)
+-{
+-        int error = -EBADF;
+-        struct file * file = NULL;
+-
+-        flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-        if (!(flags & MAP_ANONYMOUS)) {
+-                file = fget(fd);
+-                if (!file)
+-                        goto out;
+-        }
+-
+-        down_write(&current->mm->mmap_sem);
+-        error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-        up_write(&current->mm->mmap_sem);
+-
+-        if (file)
+-                fput(file);
+-out:
+-        return error;
+-}
+-
+ asmlinkage unsigned long old_mmap(unsigned long __user *args)
+ {        
+ 	unsigned long buffer[6];
+@@ -63,7 +38,7 @@ asmlinkage unsigned long old_mmap(unsigned long __user *args)
+ 	if (buffer[5] & ~PAGE_MASK) /* verify that offset is on page boundary */
+ 		goto out;
+ 
+-	err = do_mmap2(buffer[0], buffer[1], buffer[2], buffer[3],
++	err = sys_mmap_pgoff(buffer[0], buffer[1], buffer[2], buffer[3],
+                        buffer[4], buffer[5] >> PAGE_SHIFT);
+ out:
+ 	return err;
+@@ -73,7 +48,8 @@ asmlinkage long
+ sys_mmap2(unsigned long addr, unsigned long len, unsigned long prot,
+           unsigned long flags, unsigned long fd, unsigned long pgoff)
+ {
+-        return do_mmap2(addr, len, prot, flags, fd, pgoff);
++	/* bug(?): 8Kb pages here */
++        return sys_mmap_pgoff(addr, len, prot, flags, fd, pgoff);
+ }
+ 
+ /*
+diff --git a/arch/frv/kernel/sys_frv.c b/arch/frv/kernel/sys_frv.c
+index 2b6b528..1d3d4c9 100644
+--- a/arch/frv/kernel/sys_frv.c
++++ b/arch/frv/kernel/sys_frv.c
+@@ -31,9 +31,6 @@ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+ 			  unsigned long prot, unsigned long flags,
+ 			  unsigned long fd, unsigned long pgoff)
+ {
+-	int error = -EBADF;
+-	struct file * file = NULL;
+-
+ 	/* As with sparc32, make sure the shift for mmap2 is constant
+ 	   (12), no matter what PAGE_SIZE we have.... */
+ 
+@@ -41,69 +38,10 @@ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+ 	   trying to map something we can't */
+ 	if (pgoff & ((1 << (PAGE_SHIFT - 12)) - 1))
+ 		return -EINVAL;
+-	pgoff >>= PAGE_SHIFT - 12;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+-#if 0 /* DAVIDM - do we want this */
+-struct mmap_arg_struct64 {
+-	__u32 addr;
+-	__u32 len;
+-	__u32 prot;
+-	__u32 flags;
+-	__u64 offset; /* 64 bits */
+-	__u32 fd;
+-};
+-
+-asmlinkage long sys_mmap64(struct mmap_arg_struct64 *arg)
+-{
+-	int error = -EFAULT;
+-	struct file * file = NULL;
+-	struct mmap_arg_struct64 a;
+-	unsigned long pgoff;
+-
+-	if (copy_from_user(&a, arg, sizeof(a)))
+-		return -EFAULT;
+-
+-	if ((long)a.offset & ~PAGE_MASK)
+-		return -EINVAL;
+-
+-	pgoff = a.offset >> PAGE_SHIFT;
+-	if ((a.offset >> PAGE_SHIFT) != pgoff)
+-		return -EINVAL;
+-
+-	if (!(a.flags & MAP_ANONYMOUS)) {
+-		error = -EBADF;
+-		file = fget(a.fd);
+-		if (!file)
+-			goto out;
+-	}
+-	a.flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+ 
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, a.addr, a.len, a.prot, a.flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
++	return sys_mmap_pgoff(addr, len, prot, flags, fd,
++			      pgoff >> (PAGE_SHIFT - 12));
+ }
+-#endif
+ 
+ /*
+  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+diff --git a/arch/h8300/kernel/sys_h8300.c b/arch/h8300/kernel/sys_h8300.c
+index 8cb5d73..b5969db 100644
+--- a/arch/h8300/kernel/sys_h8300.c
++++ b/arch/h8300/kernel/sys_h8300.c
+@@ -26,39 +26,6 @@
+ #include <asm/traps.h>
+ #include <asm/unistd.h>
+ 
+-/* common code for old and new mmaps */
+-static inline long do_mmap2(
+-	unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags,
+-	unsigned long fd, unsigned long pgoff)
+-{
+-	int error = -EBADF;
+-	struct file * file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+-asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags,
+-	unsigned long fd, unsigned long pgoff)
+-{
+-	return do_mmap2(addr, len, prot, flags, fd, pgoff);
+-}
+-
+ /*
+  * Perform the select(nd, in, out, ex, tv) and mmap() system
+  * calls. Linux/m68k cloned Linux/i386, which didn't use to be able to
+@@ -87,57 +54,11 @@ asmlinkage int old_mmap(struct mmap_arg_struct *arg)
+ 	if (a.offset & ~PAGE_MASK)
+ 		goto out;
+ 
+-	a.flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-
+-	error = do_mmap2(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
+-out:
+-	return error;
+-}
+-
+-#if 0 /* DAVIDM - do we want this */
+-struct mmap_arg_struct64 {
+-	__u32 addr;
+-	__u32 len;
+-	__u32 prot;
+-	__u32 flags;
+-	__u64 offset; /* 64 bits */
+-	__u32 fd;
+-};
+-
+-asmlinkage long sys_mmap64(struct mmap_arg_struct64 *arg)
+-{
+-	int error = -EFAULT;
+-	struct file * file = NULL;
+-	struct mmap_arg_struct64 a;
+-	unsigned long pgoff;
+-
+-	if (copy_from_user(&a, arg, sizeof(a)))
+-		return -EFAULT;
+-
+-	if ((long)a.offset & ~PAGE_MASK)
+-		return -EINVAL;
+-
+-	pgoff = a.offset >> PAGE_SHIFT;
+-	if ((a.offset >> PAGE_SHIFT) != pgoff)
+-		return -EINVAL;
+-
+-	if (!(a.flags & MAP_ANONYMOUS)) {
+-		error = -EBADF;
+-		file = fget(a.fd);
+-		if (!file)
+-			goto out;
+-	}
+-	a.flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, a.addr, a.len, a.prot, a.flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-	if (file)
+-		fput(file);
++	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
++			       a.offset >> PAGE_SHIFT);
+ out:
+ 	return error;
+ }
+-#endif
+ 
+ struct sel_arg_struct {
+ 	unsigned long n;
+diff --git a/arch/h8300/kernel/syscalls.S b/arch/h8300/kernel/syscalls.S
+index 4eb67fa..2d69881 100644
+--- a/arch/h8300/kernel/syscalls.S
++++ b/arch/h8300/kernel/syscalls.S
+@@ -206,7 +206,7 @@ SYMBOL_NAME_LABEL(sys_call_table)
+ 	.long SYMBOL_NAME(sys_ni_syscall)	/* streams2 */
+ 	.long SYMBOL_NAME(sys_vfork)            /* 190 */
+ 	.long SYMBOL_NAME(sys_getrlimit)
+-	.long SYMBOL_NAME(sys_mmap2)
++	.long SYMBOL_NAME(sys_mmap_pgoff)
+ 	.long SYMBOL_NAME(sys_truncate64)
+ 	.long SYMBOL_NAME(sys_ftruncate64)
+ 	.long SYMBOL_NAME(sys_stat64)		/* 195 */
+diff --git a/arch/ia64/ia32/sys_ia32.c b/arch/ia64/ia32/sys_ia32.c
+index 625ed8f..e031ee8 100644
+--- a/arch/ia64/ia32/sys_ia32.c
++++ b/arch/ia64/ia32/sys_ia32.c
+@@ -858,6 +858,9 @@ ia32_do_mmap (struct file *file, unsigned long addr, unsigned long len, int prot
+ 
+ 	prot = get_prot32(prot);
+ 
++	if (flags & MAP_HUGETLB)
++		return -ENOMEM;
++
+ #if PAGE_SHIFT > IA32_PAGE_SHIFT
+ 	mutex_lock(&ia32_mmap_mutex);
+ 	{
+diff --git a/arch/ia64/kernel/sys_ia64.c b/arch/ia64/kernel/sys_ia64.c
+index 92ed83f..609d500 100644
+--- a/arch/ia64/kernel/sys_ia64.c
++++ b/arch/ia64/kernel/sys_ia64.c
+@@ -100,51 +100,7 @@ sys_getpagesize (void)
+ asmlinkage unsigned long
+ ia64_brk (unsigned long brk)
+ {
+-	unsigned long rlim, retval, newbrk, oldbrk;
+-	struct mm_struct *mm = current->mm;
+-
+-	/*
+-	 * Most of this replicates the code in sys_brk() except for an additional safety
+-	 * check and the clearing of r8.  However, we can't call sys_brk() because we need
+-	 * to acquire the mmap_sem before we can do the test...
+-	 */
+-	down_write(&mm->mmap_sem);
+-
+-	if (brk < mm->end_code)
+-		goto out;
+-	newbrk = PAGE_ALIGN(brk);
+-	oldbrk = PAGE_ALIGN(mm->brk);
+-	if (oldbrk == newbrk)
+-		goto set_brk;
+-
+-	/* Always allow shrinking brk. */
+-	if (brk <= mm->brk) {
+-		if (!do_munmap(mm, newbrk, oldbrk-newbrk))
+-			goto set_brk;
+-		goto out;
+-	}
+-
+-	/* Check against unimplemented/unmapped addresses: */
+-	if ((newbrk - oldbrk) > RGN_MAP_LIMIT || REGION_OFFSET(newbrk) > RGN_MAP_LIMIT)
+-		goto out;
+-
+-	/* Check against rlimit.. */
+-	rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
+-	if (rlim < RLIM_INFINITY && brk - mm->start_data > rlim)
+-		goto out;
+-
+-	/* Check against existing mmap mappings. */
+-	if (find_vma_intersection(mm, oldbrk, newbrk+PAGE_SIZE))
+-		goto out;
+-
+-	/* Ok, looks good - let it rip. */
+-	if (do_brk(oldbrk, newbrk-oldbrk) != oldbrk)
+-		goto out;
+-set_brk:
+-	mm->brk = brk;
+-out:
+-	retval = mm->brk;
+-	up_write(&mm->mmap_sem);
++	unsigned long retval = sys_brk(brk);
+ 	force_successful_syscall_return();
+ 	return retval;
+ }
+@@ -185,39 +141,6 @@ int ia64_mmap_check(unsigned long addr, unsigned long len,
+ 	return 0;
+ }
+ 
+-static inline unsigned long
+-do_mmap2 (unsigned long addr, unsigned long len, int prot, int flags, int fd, unsigned long pgoff)
+-{
+-	struct file *file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			return -EBADF;
+-
+-		if (!file->f_op || !file->f_op->mmap) {
+-			addr = -ENODEV;
+-			goto out;
+-		}
+-	}
+-
+-	/* Careful about overflows.. */
+-	len = PAGE_ALIGN(len);
+-	if (!len || len > TASK_SIZE) {
+-		addr = -EINVAL;
+-		goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	addr = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-out:	if (file)
+-		fput(file);
+-	return addr;
+-}
+-
+ /*
+  * mmap2() is like mmap() except that the offset is expressed in units
+  * of PAGE_SIZE (instead of bytes).  This allows to mmap2() (pieces
+@@ -226,7 +149,7 @@ out:	if (file)
+ asmlinkage unsigned long
+ sys_mmap2 (unsigned long addr, unsigned long len, int prot, int flags, int fd, long pgoff)
+ {
+-	addr = do_mmap2(addr, len, prot, flags, fd, pgoff);
++	addr = sys_mmap_pgoff(addr, len, prot, flags, fd, pgoff);
+ 	if (!IS_ERR((void *) addr))
+ 		force_successful_syscall_return();
+ 	return addr;
+@@ -238,7 +161,7 @@ sys_mmap (unsigned long addr, unsigned long len, int prot, int flags, int fd, lo
+ 	if (offset_in_page(off) != 0)
+ 		return -EINVAL;
+ 
+-	addr = do_mmap2(addr, len, prot, flags, fd, off >> PAGE_SHIFT);
++	addr = sys_mmap_pgoff(addr, len, prot, flags, fd, off >> PAGE_SHIFT);
+ 	if (!IS_ERR((void *) addr))
+ 		force_successful_syscall_return();
+ 	return addr;
+diff --git a/arch/m32r/kernel/sys_m32r.c b/arch/m32r/kernel/sys_m32r.c
+index 305ac85..d3c865c 100644
+--- a/arch/m32r/kernel/sys_m32r.c
++++ b/arch/m32r/kernel/sys_m32r.c
+@@ -76,30 +76,6 @@ asmlinkage int sys_tas(int __user *addr)
+ 	return oldval;
+ }
+ 
+-asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags,
+-	unsigned long fd, unsigned long pgoff)
+-{
+-	int error = -EBADF;
+-	struct file *file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+ /*
+  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+  *
+diff --git a/arch/m32r/kernel/syscall_table.S b/arch/m32r/kernel/syscall_table.S
+index aa3bf4c..60536e2 100644
+--- a/arch/m32r/kernel/syscall_table.S
++++ b/arch/m32r/kernel/syscall_table.S
+@@ -191,7 +191,7 @@ ENTRY(sys_call_table)
+ 	.long sys_ni_syscall		/* streams2 */
+ 	.long sys_vfork			/* 190 */
+ 	.long sys_getrlimit
+-	.long sys_mmap2
++	.long sys_mmap_pgoff
+ 	.long sys_truncate64
+ 	.long sys_ftruncate64
+ 	.long sys_stat64		/* 195 */
+diff --git a/arch/m68k/kernel/sys_m68k.c b/arch/m68k/kernel/sys_m68k.c
+index 7deb402..218f441 100644
+--- a/arch/m68k/kernel/sys_m68k.c
++++ b/arch/m68k/kernel/sys_m68k.c
+@@ -29,37 +29,16 @@
+ #include <asm/page.h>
+ #include <asm/unistd.h>
+ 
+-/* common code for old and new mmaps */
+-static inline long do_mmap2(
+-	unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags,
+-	unsigned long fd, unsigned long pgoff)
+-{
+-	int error = -EBADF;
+-	struct file * file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+ 	unsigned long prot, unsigned long flags,
+ 	unsigned long fd, unsigned long pgoff)
+ {
+-	return do_mmap2(addr, len, prot, flags, fd, pgoff);
++	/*
++	 * This is wrong for sun3 - there PAGE_SIZE is 8Kb,
++	 * so we need to shift the argument down by 1; m68k mmap64(3)
++	 * (in libc) expects the last argument of mmap2 in 4Kb units.
++	 */
++	return sys_mmap_pgoff(addr, len, prot, flags, fd, pgoff);
+ }
+ 
+ /*
+@@ -90,57 +69,11 @@ asmlinkage int old_mmap(struct mmap_arg_struct __user *arg)
+ 	if (a.offset & ~PAGE_MASK)
+ 		goto out;
+ 
+-	a.flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-
+-	error = do_mmap2(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
+-out:
+-	return error;
+-}
+-
+-#if 0
+-struct mmap_arg_struct64 {
+-	__u32 addr;
+-	__u32 len;
+-	__u32 prot;
+-	__u32 flags;
+-	__u64 offset; /* 64 bits */
+-	__u32 fd;
+-};
+-
+-asmlinkage long sys_mmap64(struct mmap_arg_struct64 *arg)
+-{
+-	int error = -EFAULT;
+-	struct file * file = NULL;
+-	struct mmap_arg_struct64 a;
+-	unsigned long pgoff;
+-
+-	if (copy_from_user(&a, arg, sizeof(a)))
+-		return -EFAULT;
+-
+-	if ((long)a.offset & ~PAGE_MASK)
+-		return -EINVAL;
+-
+-	pgoff = a.offset >> PAGE_SHIFT;
+-	if ((a.offset >> PAGE_SHIFT) != pgoff)
+-		return -EINVAL;
+-
+-	if (!(a.flags & MAP_ANONYMOUS)) {
+-		error = -EBADF;
+-		file = fget(a.fd);
+-		if (!file)
+-			goto out;
+-	}
+-	a.flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, a.addr, a.len, a.prot, a.flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-	if (file)
+-		fput(file);
++	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
++			       a.offset >> PAGE_SHIFT);
+ out:
+ 	return error;
+ }
+-#endif
+ 
+ struct sel_arg_struct {
+ 	unsigned long n;
+diff --git a/arch/m68knommu/kernel/sys_m68k.c b/arch/m68knommu/kernel/sys_m68k.c
+index efdd090..b67cbc7 100644
+--- a/arch/m68knommu/kernel/sys_m68k.c
++++ b/arch/m68knommu/kernel/sys_m68k.c
+@@ -27,39 +27,6 @@
+ #include <asm/cacheflush.h>
+ #include <asm/unistd.h>
+ 
+-/* common code for old and new mmaps */
+-static inline long do_mmap2(
+-	unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags,
+-	unsigned long fd, unsigned long pgoff)
+-{
+-	int error = -EBADF;
+-	struct file * file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+-asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags,
+-	unsigned long fd, unsigned long pgoff)
+-{
+-	return do_mmap2(addr, len, prot, flags, fd, pgoff);
+-}
+-
+ /*
+  * Perform the select(nd, in, out, ex, tv) and mmap() system
+  * calls. Linux/m68k cloned Linux/i386, which didn't use to be able to
+@@ -88,9 +55,8 @@ asmlinkage int old_mmap(struct mmap_arg_struct *arg)
+ 	if (a.offset & ~PAGE_MASK)
+ 		goto out;
+ 
+-	a.flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-
+-	error = do_mmap2(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
++	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
++				a.offset >> PAGE_SHIFT);
+ out:
+ 	return error;
+ }
+diff --git a/arch/m68knommu/kernel/syscalltable.S b/arch/m68knommu/kernel/syscalltable.S
+index 23535cc..486837e 100644
+--- a/arch/m68knommu/kernel/syscalltable.S
++++ b/arch/m68knommu/kernel/syscalltable.S
+@@ -210,7 +210,7 @@ ENTRY(sys_call_table)
+ 	.long sys_ni_syscall	/* streams2 */
+ 	.long sys_vfork		/* 190 */
+ 	.long sys_getrlimit
+-	.long sys_mmap2
++	.long sys_mmap_pgoff
+ 	.long sys_truncate64
+ 	.long sys_ftruncate64
+ 	.long sys_stat64	/* 195 */
+diff --git a/arch/microblaze/kernel/sys_microblaze.c b/arch/microblaze/kernel/sys_microblaze.c
+index 07cabed..9f3c205 100644
+--- a/arch/microblaze/kernel/sys_microblaze.c
++++ b/arch/microblaze/kernel/sys_microblaze.c
+@@ -62,46 +62,14 @@ out:
+ 	return error;
+ }
+ 
+-asmlinkage long
+-sys_mmap2(unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags,
+-	unsigned long fd, unsigned long pgoff)
+-{
+-	struct file *file = NULL;
+-	int ret = -EBADF;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file) {
+-			printk(KERN_INFO "no fd in mmap\r\n");
+-			goto out;
+-		}
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	ret = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-	if (file)
+-		fput(file);
+-out:
+-	return ret;
+-}
+-
+ asmlinkage long sys_mmap(unsigned long addr, unsigned long len,
+ 			unsigned long prot, unsigned long flags,
+ 			unsigned long fd, off_t pgoff)
+ {
+-	int err = -EINVAL;
+-
+-	if (pgoff & ~PAGE_MASK) {
+-		printk(KERN_INFO "no pagemask in mmap\r\n");
+-		goto out;
+-	}
++	if (pgoff & ~PAGE_MASK)
++		return -EINVAL;
+ 
+-	err = sys_mmap2(addr, len, prot, flags, fd, pgoff >> PAGE_SHIFT);
+-out:
+-	return err;
++	return sys_mmap_pgoff(addr, len, prot, flags, fd, pgoff >> PAGE_SHIFT);
+ }
+ 
+ /*
+diff --git a/arch/microblaze/kernel/syscall_table.S b/arch/microblaze/kernel/syscall_table.S
+index ecec191..eb50ce5 100644
+--- a/arch/microblaze/kernel/syscall_table.S
++++ b/arch/microblaze/kernel/syscall_table.S
+@@ -196,7 +196,7 @@ ENTRY(sys_call_table)
+ 	.long sys_ni_syscall		/* reserved for streams2 */
+ 	.long sys_vfork		/* 190 */
+ 	.long sys_getrlimit
+-	.long sys_mmap2			/* mmap2 */
++	.long sys_mmap_pgoff		/* mmap2 */
+ 	.long sys_truncate64
+ 	.long sys_ftruncate64
+ 	.long sys_stat64		/* 195 */
+diff --git a/arch/mips/kernel/linux32.c b/arch/mips/kernel/linux32.c
+index b77fefa..ea4a746 100644
+--- a/arch/mips/kernel/linux32.c
++++ b/arch/mips/kernel/linux32.c
+@@ -67,28 +67,13 @@ SYSCALL_DEFINE6(32_mmap2, unsigned long, addr, unsigned long, len,
+ 	unsigned long, prot, unsigned long, flags, unsigned long, fd,
+ 	unsigned long, pgoff)
+ {
+-	struct file * file = NULL;
+ 	unsigned long error;
+ 
+ 	error = -EINVAL;
+ 	if (pgoff & (~PAGE_MASK >> 12))
+ 		goto out;
+-	pgoff >>= PAGE_SHIFT-12;
+-
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		error = -EBADF;
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-	if (file)
+-		fput(file);
+-
++	error = sys_mmap_pgoff(addr, len, prot, flags, fd,
++			       pgoff >> (PAGE_SHIFT-12));
+ out:
+ 	return error;
+ }
+diff --git a/arch/mips/kernel/syscall.c b/arch/mips/kernel/syscall.c
+index fe0d798..3f7f466 100644
+--- a/arch/mips/kernel/syscall.c
++++ b/arch/mips/kernel/syscall.c
+@@ -93,7 +93,8 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 		 * We do not accept a shared mapping if it would violate
+ 		 * cache aliasing constraints.
+ 		 */
+-		if ((flags & MAP_SHARED) && (addr & shm_align_mask))
++		if ((flags & MAP_SHARED) &&
++		    ((addr - (pgoff << PAGE_SHIFT)) & shm_align_mask))
+ 			return -EINVAL;
+ 		return addr;
+ 	}
+@@ -129,31 +130,6 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 	}
+ }
+ 
+-/* common code for old and new mmaps */
+-static inline unsigned long
+-do_mmap2(unsigned long addr, unsigned long len, unsigned long prot,
+-        unsigned long flags, unsigned long fd, unsigned long pgoff)
+-{
+-	unsigned long error = -EBADF;
+-	struct file * file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+ SYSCALL_DEFINE6(mips_mmap, unsigned long, addr, unsigned long, len,
+ 	unsigned long, prot, unsigned long, flags, unsigned long,
+ 	fd, off_t, offset)
+@@ -164,7 +140,7 @@ SYSCALL_DEFINE6(mips_mmap, unsigned long, addr, unsigned long, len,
+ 	if (offset & ~PAGE_MASK)
+ 		goto out;
+ 
+-	result = do_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
++	result = sys_mmap_pgoff(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
+ 
+ out:
+ 	return result;
+@@ -177,7 +153,7 @@ SYSCALL_DEFINE6(mips_mmap2, unsigned long, addr, unsigned long, len,
+ 	if (pgoff & (~PAGE_MASK >> 12))
+ 		return -EINVAL;
+ 
+-	return do_mmap2(addr, len, prot, flags, fd, pgoff >> (PAGE_SHIFT-12));
++	return sys_mmap_pgoff(addr, len, prot, flags, fd, pgoff >> (PAGE_SHIFT-12));
+ }
+ 
+ save_static_function(sys_fork);
+diff --git a/arch/mn10300/include/asm/mman.h b/arch/mn10300/include/asm/mman.h
+index 8eebf89..db5c53d 100644
+--- a/arch/mn10300/include/asm/mman.h
++++ b/arch/mn10300/include/asm/mman.h
+@@ -1 +1,6 @@
+ #include <asm-generic/mman.h>
++
++#define MIN_MAP_ADDR	PAGE_SIZE	/* minimum fixed mmap address */
++
++#define arch_mmap_check(addr, len, flags) \
++	(((flags) & MAP_FIXED && (addr) < MIN_MAP_ADDR) ? -EINVAL : 0)
+diff --git a/arch/mn10300/kernel/entry.S b/arch/mn10300/kernel/entry.S
+index a94e7ea..c9ee6c0 100644
+--- a/arch/mn10300/kernel/entry.S
++++ b/arch/mn10300/kernel/entry.S
+@@ -578,7 +578,7 @@ ENTRY(sys_call_table)
+ 	.long sys_ni_syscall	/* reserved for streams2 */
+ 	.long sys_vfork		/* 190 */
+ 	.long sys_getrlimit
+-	.long sys_mmap2
++	.long sys_mmap_pgoff
+ 	.long sys_truncate64
+ 	.long sys_ftruncate64
+ 	.long sys_stat64	/* 195 */
+diff --git a/arch/mn10300/kernel/sys_mn10300.c b/arch/mn10300/kernel/sys_mn10300.c
+index 8ca5af0..17cc6ce 100644
+--- a/arch/mn10300/kernel/sys_mn10300.c
++++ b/arch/mn10300/kernel/sys_mn10300.c
+@@ -23,47 +23,13 @@
+ 
+ #include <asm/uaccess.h>
+ 
+-#define MIN_MAP_ADDR	PAGE_SIZE	/* minimum fixed mmap address */
+-
+-/*
+- * memory mapping syscall
+- */
+-asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+-			  unsigned long prot, unsigned long flags,
+-			  unsigned long fd, unsigned long pgoff)
+-{
+-	struct file *file = NULL;
+-	long error = -EINVAL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-
+-	if (flags & MAP_FIXED && addr < MIN_MAP_ADDR)
+-		goto out;
+-
+-	error = -EBADF;
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+ asmlinkage long old_mmap(unsigned long addr, unsigned long len,
+ 			 unsigned long prot, unsigned long flags,
+ 			 unsigned long fd, unsigned long offset)
+ {
+ 	if (offset & ~PAGE_MASK)
+ 		return -EINVAL;
+-	return sys_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
++	return sys_mmap_pgoff(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
+ }
+ 
+ struct sel_arg_struct {
+diff --git a/arch/parisc/kernel/sys_parisc.c b/arch/parisc/kernel/sys_parisc.c
+index 71b3195..9147391 100644
+--- a/arch/parisc/kernel/sys_parisc.c
++++ b/arch/parisc/kernel/sys_parisc.c
+@@ -110,37 +110,14 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 	return addr;
+ }
+ 
+-static unsigned long do_mmap2(unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags, unsigned long fd,
+-	unsigned long pgoff)
+-{
+-	struct file * file = NULL;
+-	unsigned long error = -EBADF;
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file != NULL)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+ asmlinkage unsigned long sys_mmap2(unsigned long addr, unsigned long len,
+ 	unsigned long prot, unsigned long flags, unsigned long fd,
+ 	unsigned long pgoff)
+ {
+ 	/* Make sure the shift for mmap2 is constant (12), no matter what PAGE_SIZE
+ 	   we have. */
+-	return do_mmap2(addr, len, prot, flags, fd, pgoff >> (PAGE_SHIFT - 12));
++	return sys_mmap_pgoff(addr, len, prot, flags, fd,
++			      pgoff >> (PAGE_SHIFT - 12));
+ }
+ 
+ asmlinkage unsigned long sys_mmap(unsigned long addr, unsigned long len,
+@@ -148,7 +125,8 @@ asmlinkage unsigned long sys_mmap(unsigned long addr, unsigned long len,
+ 		unsigned long offset)
+ {
+ 	if (!(offset & ~PAGE_MASK)) {
+-		return do_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
++		return sys_mmap_pgoff(addr, len, prot, flags, fd,
++					offset >> PAGE_SHIFT);
+ 	} else {
+ 		return -EINVAL;
+ 	}
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index c04832c..3370e62 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -140,7 +140,6 @@ static inline unsigned long do_mmap2(unsigned long addr, size_t len,
+ 			unsigned long prot, unsigned long flags,
+ 			unsigned long fd, unsigned long off, int shift)
+ {
+-	struct file * file = NULL;
+ 	unsigned long ret = -EINVAL;
+ 
+ 	if (!arch_validate_prot(prot))
+@@ -151,20 +150,8 @@ static inline unsigned long do_mmap2(unsigned long addr, size_t len,
+ 			goto out;
+ 		off >>= shift;
+ 	}
+-		
+-	ret = -EBADF;
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		if (!(file = fget(fd)))
+-			goto out;
+-	}
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+ 
+-	down_write(&current->mm->mmap_sem);
+-	ret = do_mmap_pgoff(file, addr, len, prot, flags, off);
+-	up_write(&current->mm->mmap_sem);
+-	if (file)
+-		fput(file);
++	ret = sys_mmap_pgoff(addr, len, prot, flags, fd, off);
+ out:
+ 	return ret;
+ }
+diff --git a/arch/s390/kernel/compat_linux.c b/arch/s390/kernel/compat_linux.c
+index 0debcec..9c746c0 100644
+--- a/arch/s390/kernel/compat_linux.c
++++ b/arch/s390/kernel/compat_linux.c
+@@ -683,38 +683,6 @@ struct mmap_arg_struct_emu31 {
+ 	u32	offset;
+ };
+ 
+-/* common code for old and new mmaps */
+-static inline long do_mmap2(
+-	unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags,
+-	unsigned long fd, unsigned long pgoff)
+-{
+-	struct file * file = NULL;
+-	unsigned long error = -EBADF;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	if (!IS_ERR((void *) error) && error + len >= 0x80000000ULL) {
+-		/* Result is out of bounds.  */
+-		do_munmap(current->mm, addr, len);
+-		error = -ENOMEM;
+-	}
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:    
+-	return error;
+-}
+-
+-
+ asmlinkage unsigned long
+ old32_mmap(struct mmap_arg_struct_emu31 __user *arg)
+ {
+@@ -728,7 +696,8 @@ old32_mmap(struct mmap_arg_struct_emu31 __user *arg)
+ 	if (a.offset & ~PAGE_MASK)
+ 		goto out;
+ 
+-	error = do_mmap2(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT); 
++	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
++			       a.offset >> PAGE_SHIFT);
+ out:
+ 	return error;
+ }
+@@ -741,7 +710,7 @@ sys32_mmap2(struct mmap_arg_struct_emu31 __user *arg)
+ 
+ 	if (copy_from_user(&a, arg, sizeof(a)))
+ 		goto out;
+-	error = do_mmap2(a.addr, a.len, a.prot, a.flags, a.fd, a.offset);
++	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd, a.offset);
+ out:
+ 	return error;
+ }
+diff --git a/arch/s390/kernel/sys_s390.c b/arch/s390/kernel/sys_s390.c
+index e9d94f6..86a74c9 100644
+--- a/arch/s390/kernel/sys_s390.c
++++ b/arch/s390/kernel/sys_s390.c
+@@ -32,32 +32,6 @@
+ #include <asm/uaccess.h>
+ #include "entry.h"
+ 
+-/* common code for old and new mmaps */
+-static inline long do_mmap2(
+-	unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags,
+-	unsigned long fd, unsigned long pgoff)
+-{
+-	long error = -EBADF;
+-	struct file * file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+ /*
+  * Perform the select(nd, in, out, ex, tv) and mmap() system
+  * calls. Linux for S/390 isn't able to handle more than 5
+@@ -81,7 +55,7 @@ SYSCALL_DEFINE1(mmap2, struct mmap_arg_struct __user *, arg)
+ 
+ 	if (copy_from_user(&a, arg, sizeof(a)))
+ 		goto out;
+-	error = do_mmap2(a.addr, a.len, a.prot, a.flags, a.fd, a.offset);
++	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd, a.offset);
+ out:
+ 	return error;
+ }
+@@ -98,7 +72,7 @@ SYSCALL_DEFINE1(s390_old_mmap, struct mmap_arg_struct __user *, arg)
+ 	if (a.offset & ~PAGE_MASK)
+ 		goto out;
+ 
+-	error = do_mmap2(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
++	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
+ out:
+ 	return error;
+ }
+diff --git a/arch/score/kernel/sys_score.c b/arch/score/kernel/sys_score.c
+index 0012494..856ed68 100644
+--- a/arch/score/kernel/sys_score.c
++++ b/arch/score/kernel/sys_score.c
+@@ -36,34 +36,16 @@ asmlinkage long
+ sys_mmap2(unsigned long addr, unsigned long len, unsigned long prot,
+ 	  unsigned long flags, unsigned long fd, unsigned long pgoff)
+ {
+-	int error = -EBADF;
+-	struct file *file = NULL;
+-
+-	if (pgoff & (~PAGE_MASK >> 12))
+-		return -EINVAL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			return error;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-
+-	return error;
++	return sys_mmap_pgoff(addr, len, prot, flags, fd, pgoff);
+ }
+ 
+ asmlinkage long
+ sys_mmap(unsigned long addr, unsigned long len, unsigned long prot,
+-	unsigned long flags, unsigned long fd, off_t pgoff)
++	unsigned long flags, unsigned long fd, off_t offset)
+ {
+-	return sys_mmap2(addr, len, prot, flags, fd, pgoff >> PAGE_SHIFT);
++	if (unlikely(offset & ~PAGE_MASK))
++		return -EINVAL;
++	return sys_mmap_pgoff(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
+ }
+ 
+ asmlinkage long
+diff --git a/arch/sh/kernel/sys_sh.c b/arch/sh/kernel/sys_sh.c
+index 8aa5d1c..71399cd 100644
+--- a/arch/sh/kernel/sys_sh.c
++++ b/arch/sh/kernel/sys_sh.c
+@@ -28,37 +28,13 @@
+ #include <asm/cacheflush.h>
+ #include <asm/cachectl.h>
+ 
+-static inline long
+-do_mmap2(unsigned long addr, unsigned long len, unsigned long prot,
+-	 unsigned long flags, int fd, unsigned long pgoff)
+-{
+-	int error = -EBADF;
+-	struct file *file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+ asmlinkage int old_mmap(unsigned long addr, unsigned long len,
+ 	unsigned long prot, unsigned long flags,
+ 	int fd, unsigned long off)
+ {
+ 	if (off & ~PAGE_MASK)
+ 		return -EINVAL;
+-	return do_mmap2(addr, len, prot, flags, fd, off>>PAGE_SHIFT);
++	return sys_mmap_pgoff(addr, len, prot, flags, fd, off>>PAGE_SHIFT);
+ }
+ 
+ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+@@ -74,7 +50,7 @@ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+ 
+ 	pgoff >>= PAGE_SHIFT - 12;
+ 
+-	return do_mmap2(addr, len, prot, flags, fd, pgoff);
++	return sys_mmap_pgoff(addr, len, prot, flags, fd, pgoff);
+ }
+ 
+ /*
+diff --git a/arch/sh/mm/mmap.c b/arch/sh/mm/mmap.c
+index d2984fa..afeb710 100644
+--- a/arch/sh/mm/mmap.c
++++ b/arch/sh/mm/mmap.c
+@@ -54,7 +54,8 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 		/* We do not accept a shared mapping if it would violate
+ 		 * cache aliasing constraints.
+ 		 */
+-		if ((flags & MAP_SHARED) && (addr & shm_align_mask))
++		if ((flags & MAP_SHARED) &&
++		    ((addr - (pgoff << PAGE_SHIFT)) & shm_align_mask))
+ 			return -EINVAL;
+ 		return addr;
+ 	}
+diff --git a/arch/sparc/kernel/sys_sparc_32.c b/arch/sparc/kernel/sys_sparc_32.c
+index 03035c8..3a82e65 100644
+--- a/arch/sparc/kernel/sys_sparc_32.c
++++ b/arch/sparc/kernel/sys_sparc_32.c
+@@ -45,7 +45,8 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr, unsi
+ 		/* We do not accept a shared mapping if it would violate
+ 		 * cache aliasing constraints.
+ 		 */
+-		if ((flags & MAP_SHARED) && (addr & (SHMLBA - 1)))
++		if ((flags & MAP_SHARED) &&
++		    ((addr - (pgoff << PAGE_SHIFT)) & (SHMLBA - 1)))
+ 			return -EINVAL;
+ 		return addr;
+ 	}
+@@ -79,15 +80,6 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr, unsi
+ 	}
+ }
+ 
+-asmlinkage unsigned long sparc_brk(unsigned long brk)
+-{
+-	if(ARCH_SUN4C) {
+-		if ((brk & 0xe0000000) != (current->mm->brk & 0xe0000000))
+-			return current->mm->brk;
+-	}
+-	return sys_brk(brk);
+-}
+-
+ /*
+  * sys_pipe() is the normal C calling standard for creating
+  * a pipe. It's not the way unix traditionally does this, though.
+@@ -234,31 +226,6 @@ int sparc_mmap_check(unsigned long addr, unsigned long len)
+ }
+ 
+ /* Linux version of mmap */
+-static unsigned long do_mmap2(unsigned long addr, unsigned long len,
+-	unsigned long prot, unsigned long flags, unsigned long fd,
+-	unsigned long pgoff)
+-{
+-	struct file * file = NULL;
+-	unsigned long retval = -EBADF;
+-
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	len = PAGE_ALIGN(len);
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-
+-	down_write(&current->mm->mmap_sem);
+-	retval = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return retval;
+-}
+ 
+ asmlinkage unsigned long sys_mmap2(unsigned long addr, unsigned long len,
+ 	unsigned long prot, unsigned long flags, unsigned long fd,
+@@ -266,14 +233,16 @@ asmlinkage unsigned long sys_mmap2(unsigned long addr, unsigned long len,
+ {
+ 	/* Make sure the shift for mmap2 is constant (12), no matter what PAGE_SIZE
+ 	   we have. */
+-	return do_mmap2(addr, len, prot, flags, fd, pgoff >> (PAGE_SHIFT - 12));
++	return sys_mmap_pgoff(addr, len, prot, flags, fd,
++			      pgoff >> (PAGE_SHIFT - 12));
+ }
+ 
+ asmlinkage unsigned long sys_mmap(unsigned long addr, unsigned long len,
+ 	unsigned long prot, unsigned long flags, unsigned long fd,
+ 	unsigned long off)
+ {
+-	return do_mmap2(addr, len, prot, flags, fd, off >> PAGE_SHIFT);
++	/* no alignment check? */
++	return sys_mmap_pgoff(addr, len, prot, flags, fd, off >> PAGE_SHIFT);
+ }
+ 
+ long sparc_remap_file_pages(unsigned long start, unsigned long size,
+@@ -287,27 +256,6 @@ long sparc_remap_file_pages(unsigned long start, unsigned long size,
+ 				    (pgoff >> (PAGE_SHIFT - 12)), flags);
+ }
+ 
+-extern unsigned long do_mremap(unsigned long addr,
+-	unsigned long old_len, unsigned long new_len,
+-	unsigned long flags, unsigned long new_addr);
+-                
+-asmlinkage unsigned long sparc_mremap(unsigned long addr,
+-	unsigned long old_len, unsigned long new_len,
+-	unsigned long flags, unsigned long new_addr)
+-{
+-	unsigned long ret = -EINVAL;
+-
+-	if (unlikely(sparc_mmap_check(addr, old_len)))
+-		goto out;
+-	if (unlikely(sparc_mmap_check(new_addr, new_len)))
+-		goto out;
+-	down_write(&current->mm->mmap_sem);
+-	ret = do_mremap(addr, old_len, new_len, flags, new_addr);
+-	up_write(&current->mm->mmap_sem);
+-out:
+-	return ret;       
+-}
+-
+ /* we come to here via sys_nis_syscall so it can setup the regs argument */
+ asmlinkage unsigned long
+ c_sys_nis_syscall (struct pt_regs *regs)
+diff --git a/arch/sparc/kernel/sys_sparc_64.c b/arch/sparc/kernel/sys_sparc_64.c
+index e2d1024..cfa0e19 100644
+--- a/arch/sparc/kernel/sys_sparc_64.c
++++ b/arch/sparc/kernel/sys_sparc_64.c
+@@ -317,10 +317,14 @@ bottomup:
+ unsigned long get_fb_unmapped_area(struct file *filp, unsigned long orig_addr, unsigned long len, unsigned long pgoff, unsigned long flags)
+ {
+ 	unsigned long align_goal, addr = -ENOMEM;
++	unsigned long (*get_area)(struct file *, unsigned long,
++				  unsigned long, unsigned long, unsigned long);
++
++	get_area = current->mm->get_unmapped_area;
+ 
+ 	if (flags & MAP_FIXED) {
+ 		/* Ok, don't mess with it. */
+-		return get_unmapped_area(NULL, orig_addr, len, pgoff, flags);
++		return get_area(NULL, orig_addr, len, pgoff, flags);
+ 	}
+ 	flags &= ~MAP_SHARED;
+ 
+@@ -333,7 +337,7 @@ unsigned long get_fb_unmapped_area(struct file *filp, unsigned long orig_addr, u
+ 		align_goal = (64UL * 1024);
+ 
+ 	do {
+-		addr = get_unmapped_area(NULL, orig_addr, len + (align_goal - PAGE_SIZE), pgoff, flags);
++		addr = get_area(NULL, orig_addr, len + (align_goal - PAGE_SIZE), pgoff, flags);
+ 		if (!(addr & ~PAGE_MASK)) {
+ 			addr = (addr + (align_goal - 1UL)) & ~(align_goal - 1UL);
+ 			break;
+@@ -351,7 +355,7 @@ unsigned long get_fb_unmapped_area(struct file *filp, unsigned long orig_addr, u
+ 	 * be obtained.
+ 	 */
+ 	if (addr & ~PAGE_MASK)
+-		addr = get_unmapped_area(NULL, orig_addr, len, pgoff, flags);
++		addr = get_area(NULL, orig_addr, len, pgoff, flags);
+ 
+ 	return addr;
+ }
+@@ -399,18 +403,6 @@ void arch_pick_mmap_layout(struct mm_struct *mm)
+ 	}
+ }
+ 
+-SYSCALL_DEFINE1(sparc_brk, unsigned long, brk)
+-{
+-	/* People could try to be nasty and use ta 0x6d in 32bit programs */
+-	if (test_thread_flag(TIF_32BIT) && brk >= STACK_TOP32)
+-		return current->mm->brk;
+-
+-	if (unlikely(straddles_64bit_va_hole(current->mm->brk, brk)))
+-		return current->mm->brk;
+-
+-	return sys_brk(brk);
+-}
+-                                                                
+ /*
+  * sys_pipe() is the normal C calling standard for creating
+  * a pipe. It's not the way unix traditionally does this, though.
+@@ -568,23 +560,13 @@ SYSCALL_DEFINE6(mmap, unsigned long, addr, unsigned long, len,
+ 		unsigned long, prot, unsigned long, flags, unsigned long, fd,
+ 		unsigned long, off)
+ {
+-	struct file * file = NULL;
+-	unsigned long retval = -EBADF;
+-
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	len = PAGE_ALIGN(len);
++	unsigned long retval = -EINVAL;
+ 
+-	down_write(&current->mm->mmap_sem);
+-	retval = do_mmap(file, addr, len, prot, flags, off);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
++	if ((off + PAGE_ALIGN(len)) < off)
++		goto out;
++	if (off & ~PAGE_MASK)
++		goto out;
++	retval = sys_mmap_pgoff(addr, len, prot, flags, fd, off >> PAGE_SHIFT);
+ out:
+ 	return retval;
+ }
+@@ -614,12 +596,6 @@ SYSCALL_DEFINE5(64_mremap, unsigned long, addr,	unsigned long, old_len,
+ 
+ 	if (test_thread_flag(TIF_32BIT))
+ 		goto out;
+-	if (unlikely(new_len >= VA_EXCLUDE_START))
+-		goto out;
+-	if (unlikely(sparc_mmap_check(addr, old_len)))
+-		goto out;
+-	if (unlikely(sparc_mmap_check(new_addr, new_len)))
+-		goto out;
+ 
+ 	down_write(&current->mm->mmap_sem);
+ 	ret = do_mremap(addr, old_len, new_len, flags, new_addr);
+diff --git a/arch/sparc/kernel/systbls.h b/arch/sparc/kernel/systbls.h
+index a63c5d2..d2f999a 100644
+--- a/arch/sparc/kernel/systbls.h
++++ b/arch/sparc/kernel/systbls.h
+@@ -9,7 +9,6 @@
+ struct new_utsname;
+ 
+ extern asmlinkage unsigned long sys_getpagesize(void);
+-extern asmlinkage unsigned long sparc_brk(unsigned long brk);
+ extern asmlinkage long sparc_pipe(struct pt_regs *regs);
+ extern asmlinkage long sys_ipc(unsigned int call, int first,
+ 			       unsigned long second,
+diff --git a/arch/sparc/kernel/systbls_32.S b/arch/sparc/kernel/systbls_32.S
+index 0f1658d..14f950a 100644
+--- a/arch/sparc/kernel/systbls_32.S
++++ b/arch/sparc/kernel/systbls_32.S
+@@ -19,7 +19,7 @@ sys_call_table:
+ /*0*/	.long sys_restart_syscall, sys_exit, sys_fork, sys_read, sys_write
+ /*5*/	.long sys_open, sys_close, sys_wait4, sys_creat, sys_link
+ /*10*/  .long sys_unlink, sunos_execv, sys_chdir, sys_chown16, sys_mknod
+-/*15*/	.long sys_chmod, sys_lchown16, sparc_brk, sys_nis_syscall, sys_lseek
++/*15*/	.long sys_chmod, sys_lchown16, sys_brk, sys_nis_syscall, sys_lseek
+ /*20*/	.long sys_getpid, sys_capget, sys_capset, sys_setuid16, sys_getuid16
+ /*25*/	.long sys_vmsplice, sys_ptrace, sys_alarm, sys_sigaltstack, sys_pause
+ /*30*/	.long sys_utime, sys_lchown, sys_fchown, sys_access, sys_nice
+@@ -67,7 +67,7 @@ sys_call_table:
+ /*235*/	.long sys_fstatfs64, sys_llseek, sys_mlock, sys_munlock, sys_mlockall
+ /*240*/	.long sys_munlockall, sys_sched_setparam, sys_sched_getparam, sys_sched_setscheduler, sys_sched_getscheduler
+ /*245*/	.long sys_sched_yield, sys_sched_get_priority_max, sys_sched_get_priority_min, sys_sched_rr_get_interval, sys_nanosleep
+-/*250*/	.long sparc_mremap, sys_sysctl, sys_getsid, sys_fdatasync, sys_nfsservctl
++/*250*/	.long sys_mremap, sys_sysctl, sys_getsid, sys_fdatasync, sys_nfsservctl
+ /*255*/	.long sys_sync_file_range, sys_clock_settime, sys_clock_gettime, sys_clock_getres, sys_clock_nanosleep
+ /*260*/	.long sys_sched_getaffinity, sys_sched_setaffinity, sys_timer_settime, sys_timer_gettime, sys_timer_getoverrun
+ /*265*/	.long sys_timer_delete, sys_timer_create, sys_nis_syscall, sys_io_setup, sys_io_destroy
+diff --git a/arch/sparc/kernel/systbls_64.S b/arch/sparc/kernel/systbls_64.S
+index 009825f..f63c871 100644
+--- a/arch/sparc/kernel/systbls_64.S
++++ b/arch/sparc/kernel/systbls_64.S
+@@ -21,7 +21,7 @@ sys_call_table32:
+ /*0*/	.word sys_restart_syscall, sys32_exit, sys_fork, sys_read, sys_write
+ /*5*/	.word sys32_open, sys_close, sys32_wait4, sys32_creat, sys_link
+ /*10*/  .word sys_unlink, sunos_execv, sys_chdir, sys_chown16, sys32_mknod
+-/*15*/	.word sys_chmod, sys_lchown16, sys_sparc_brk, sys32_perfctr, sys32_lseek
++/*15*/	.word sys_chmod, sys_lchown16, sys_brk, sys32_perfctr, sys32_lseek
+ /*20*/	.word sys_getpid, sys_capget, sys_capset, sys_setuid16, sys_getuid16
+ /*25*/	.word sys32_vmsplice, compat_sys_ptrace, sys_alarm, sys32_sigaltstack, sys_pause
+ /*30*/	.word compat_sys_utime, sys_lchown, sys_fchown, sys32_access, sys32_nice
+@@ -96,7 +96,7 @@ sys_call_table:
+ /*0*/	.word sys_restart_syscall, sparc_exit, sys_fork, sys_read, sys_write
+ /*5*/	.word sys_open, sys_close, sys_wait4, sys_creat, sys_link
+ /*10*/  .word sys_unlink, sys_nis_syscall, sys_chdir, sys_chown, sys_mknod
+-/*15*/	.word sys_chmod, sys_lchown, sys_sparc_brk, sys_perfctr, sys_lseek
++/*15*/	.word sys_chmod, sys_lchown, sys_brk, sys_perfctr, sys_lseek
+ /*20*/	.word sys_getpid, sys_capget, sys_capset, sys_setuid, sys_getuid
+ /*25*/	.word sys_vmsplice, sys_ptrace, sys_alarm, sys_sigaltstack, sys_nis_syscall
+ /*30*/	.word sys_utime, sys_nis_syscall, sys_nis_syscall, sys_access, sys_nice
+diff --git a/arch/um/kernel/syscall.c b/arch/um/kernel/syscall.c
+index a4625c7..cccab85 100644
+--- a/arch/um/kernel/syscall.c
++++ b/arch/um/kernel/syscall.c
+@@ -8,6 +8,7 @@
+ #include "linux/mm.h"
+ #include "linux/sched.h"
+ #include "linux/utsname.h"
++#include "linux/syscalls.h"
+ #include "asm/current.h"
+ #include "asm/mman.h"
+ #include "asm/uaccess.h"
+@@ -37,31 +38,6 @@ long sys_vfork(void)
+ 	return ret;
+ }
+ 
+-/* common code for old and new mmaps */
+-long sys_mmap2(unsigned long addr, unsigned long len,
+-	       unsigned long prot, unsigned long flags,
+-	       unsigned long fd, unsigned long pgoff)
+-{
+-	long error = -EBADF;
+-	struct file * file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+- out:
+-	return error;
+-}
+-
+ long old_mmap(unsigned long addr, unsigned long len,
+ 	      unsigned long prot, unsigned long flags,
+ 	      unsigned long fd, unsigned long offset)
+@@ -70,7 +46,7 @@ long old_mmap(unsigned long addr, unsigned long len,
+ 	if (offset & ~PAGE_MASK)
+ 		goto out;
+ 
+-	err = sys_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
++	err = sys_mmap_pgoff(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
+  out:
+ 	return err;
+ }
+diff --git a/arch/um/sys-i386/shared/sysdep/syscalls.h b/arch/um/sys-i386/shared/sysdep/syscalls.h
+index 9056981..e778767 100644
+--- a/arch/um/sys-i386/shared/sysdep/syscalls.h
++++ b/arch/um/sys-i386/shared/sysdep/syscalls.h
+@@ -20,7 +20,3 @@ extern syscall_handler_t *sys_call_table[];
+ #define EXECUTE_SYSCALL(syscall, regs) \
+ 	((long (*)(struct syscall_args)) \
+ 	 (*sys_call_table[syscall]))(SYSCALL_ARGS(&regs->regs))
+-
+-extern long sys_mmap2(unsigned long addr, unsigned long len,
+-		      unsigned long prot, unsigned long flags,
+-		      unsigned long fd, unsigned long pgoff);
+diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
+index 581b056..5294d84 100644
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -696,7 +696,7 @@ ia32_sys_call_table:
+ 	.quad quiet_ni_syscall		/* streams2 */
+ 	.quad stub32_vfork            /* 190 */
+ 	.quad compat_sys_getrlimit
+-	.quad sys32_mmap2
++	.quad sys_mmap_pgoff
+ 	.quad sys32_truncate64
+ 	.quad sys32_ftruncate64
+ 	.quad sys32_stat64		/* 195 */
+diff --git a/arch/x86/ia32/sys_ia32.c b/arch/x86/ia32/sys_ia32.c
+index 9f55271..016218c 100644
+--- a/arch/x86/ia32/sys_ia32.c
++++ b/arch/x86/ia32/sys_ia32.c
+@@ -155,9 +155,6 @@ struct mmap_arg_struct {
+ asmlinkage long sys32_mmap(struct mmap_arg_struct __user *arg)
+ {
+ 	struct mmap_arg_struct a;
+-	struct file *file = NULL;
+-	unsigned long retval;
+-	struct mm_struct *mm ;
+ 
+ 	if (copy_from_user(&a, arg, sizeof(a)))
+ 		return -EFAULT;
+@@ -165,22 +162,8 @@ asmlinkage long sys32_mmap(struct mmap_arg_struct __user *arg)
+ 	if (a.offset & ~PAGE_MASK)
+ 		return -EINVAL;
+ 
+-	if (!(a.flags & MAP_ANONYMOUS)) {
+-		file = fget(a.fd);
+-		if (!file)
+-			return -EBADF;
+-	}
+-
+-	mm = current->mm;
+-	down_write(&mm->mmap_sem);
+-	retval = do_mmap_pgoff(file, a.addr, a.len, a.prot, a.flags,
++	return sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
+ 			       a.offset>>PAGE_SHIFT);
+-	if (file)
+-		fput(file);
+-
+-	up_write(&mm->mmap_sem);
+-
+-	return retval;
+ }
+ 
+ asmlinkage long sys32_mprotect(unsigned long start, size_t len,
+@@ -539,30 +522,6 @@ asmlinkage long sys32_sendfile(int out_fd, int in_fd,
+ 	return ret;
+ }
+ 
+-asmlinkage long sys32_mmap2(unsigned long addr, unsigned long len,
+-			    unsigned long prot, unsigned long flags,
+-			    unsigned long fd, unsigned long pgoff)
+-{
+-	struct mm_struct *mm = current->mm;
+-	unsigned long error;
+-	struct file *file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			return -EBADF;
+-	}
+-
+-	down_write(&mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-	return error;
+-}
+-
+ asmlinkage long sys32_olduname(struct oldold_utsname __user *name)
+ {
+ 	char *arch = "x86_64";
+diff --git a/arch/x86/include/asm/sys_ia32.h b/arch/x86/include/asm/sys_ia32.h
+index 72a6dcd..77c1184 100644
+--- a/arch/x86/include/asm/sys_ia32.h
++++ b/arch/x86/include/asm/sys_ia32.h
+@@ -62,9 +62,6 @@ asmlinkage long sys32_pwrite(unsigned int, char __user *, u32, u32, u32);
+ asmlinkage long sys32_personality(unsigned long);
+ asmlinkage long sys32_sendfile(int, int, compat_off_t __user *, s32);
+ 
+-asmlinkage long sys32_mmap2(unsigned long, unsigned long, unsigned long,
+-			    unsigned long, unsigned long, unsigned long);
+-
+ struct oldold_utsname;
+ struct old_utsname;
+ asmlinkage long sys32_olduname(struct oldold_utsname __user *);
+diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
+index 372b76e..1bb6e39 100644
+--- a/arch/x86/include/asm/syscalls.h
++++ b/arch/x86/include/asm/syscalls.h
+@@ -55,8 +55,6 @@ struct sel_arg_struct;
+ struct oldold_utsname;
+ struct old_utsname;
+ 
+-asmlinkage long sys_mmap2(unsigned long, unsigned long, unsigned long,
+-			  unsigned long, unsigned long, unsigned long);
+ asmlinkage int old_mmap(struct mmap_arg_struct __user *);
+ asmlinkage int old_select(struct sel_arg_struct __user *);
+ asmlinkage int sys_ipc(uint, int, int, int, void __user *, long);
+diff --git a/arch/x86/kernel/sys_i386_32.c b/arch/x86/kernel/sys_i386_32.c
+index 1884a8d..dee1ff7 100644
+--- a/arch/x86/kernel/sys_i386_32.c
++++ b/arch/x86/kernel/sys_i386_32.c
+@@ -24,31 +24,6 @@
+ 
+ #include <asm/syscalls.h>
+ 
+-asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+-			  unsigned long prot, unsigned long flags,
+-			  unsigned long fd, unsigned long pgoff)
+-{
+-	int error = -EBADF;
+-	struct file *file = NULL;
+-	struct mm_struct *mm = current->mm;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+ /*
+  * Perform the select(nd, in, out, ex, tv) and mmap() system
+  * calls. Linux/i386 didn't use to be able to handle more than
+@@ -77,7 +52,7 @@ asmlinkage int old_mmap(struct mmap_arg_struct __user *arg)
+ 	if (a.offset & ~PAGE_MASK)
+ 		goto out;
+ 
+-	err = sys_mmap2(a.addr, a.len, a.prot, a.flags,
++	err = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags,
+ 			a.fd, a.offset >> PAGE_SHIFT);
+ out:
+ 	return err;
+diff --git a/arch/x86/kernel/sys_x86_64.c b/arch/x86/kernel/sys_x86_64.c
+index 45e00eb..8aa2057 100644
+--- a/arch/x86/kernel/sys_x86_64.c
++++ b/arch/x86/kernel/sys_x86_64.c
+@@ -23,26 +23,11 @@ SYSCALL_DEFINE6(mmap, unsigned long, addr, unsigned long, len,
+ 		unsigned long, fd, unsigned long, off)
+ {
+ 	long error;
+-	struct file *file;
+-
+ 	error = -EINVAL;
+ 	if (off & ~PAGE_MASK)
+ 		goto out;
+ 
+-	error = -EBADF;
+-	file = NULL;
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, off >> PAGE_SHIFT);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
++	error = sys_mmap_pgoff(addr, len, prot, flags, fd, off >> PAGE_SHIFT);
+ out:
+ 	return error;
+ }
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+index 0157cd2..76d70a4 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -191,7 +191,7 @@ ENTRY(sys_call_table)
+ 	.long sys_ni_syscall	/* reserved for streams2 */
+ 	.long ptregs_vfork	/* 190 */
+ 	.long sys_getrlimit
+-	.long sys_mmap2
++	.long sys_mmap_pgoff
+ 	.long sys_truncate64
+ 	.long sys_ftruncate64
+ 	.long sys_stat64	/* 195 */
+diff --git a/arch/xtensa/include/asm/syscall.h b/arch/xtensa/include/asm/syscall.h
+index 05cebf8..4352dbe 100644
+--- a/arch/xtensa/include/asm/syscall.h
++++ b/arch/xtensa/include/asm/syscall.h
+@@ -13,8 +13,6 @@ struct sigaction;
+ asmlinkage long xtensa_execve(char*, char**, char**, struct pt_regs*);
+ asmlinkage long xtensa_clone(unsigned long, unsigned long, struct pt_regs*);
+ asmlinkage long xtensa_pipe(int __user *);
+-asmlinkage long xtensa_mmap2(unsigned long, unsigned long, unsigned long,
+-    			     unsigned long, unsigned long, unsigned long);
+ asmlinkage long xtensa_ptrace(long, long, long, long);
+ asmlinkage long xtensa_sigreturn(struct pt_regs*);
+ asmlinkage long xtensa_rt_sigreturn(struct pt_regs*);
+diff --git a/arch/xtensa/include/asm/unistd.h b/arch/xtensa/include/asm/unistd.h
+index c092c8f..9a5c354 100644
+--- a/arch/xtensa/include/asm/unistd.h
++++ b/arch/xtensa/include/asm/unistd.h
+@@ -189,7 +189,7 @@ __SYSCALL( 79, sys_fremovexattr, 2)
+ /* File Map / Shared Memory Operations */
+ 
+ #define __NR_mmap2 				 80
+-__SYSCALL( 80, xtensa_mmap2, 6)
++__SYSCALL( 80, sys_mmap_pgoff, 6)
+ #define __NR_munmap 				 81
+ __SYSCALL( 81, sys_munmap, 2)
+ #define __NR_mprotect 				 82
+diff --git a/arch/xtensa/kernel/syscall.c b/arch/xtensa/kernel/syscall.c
+index ac15ecb..1e67bab 100644
+--- a/arch/xtensa/kernel/syscall.c
++++ b/arch/xtensa/kernel/syscall.c
+@@ -57,31 +57,6 @@ asmlinkage long xtensa_pipe(int __user *userfds)
+ 	return error;
+ }
+ 
+-
+-asmlinkage long xtensa_mmap2(unsigned long addr, unsigned long len,
+-   			     unsigned long prot, unsigned long flags,
+-			     unsigned long fd, unsigned long pgoff)
+-{
+-	int error = -EBADF;
+-	struct file * file = NULL;
+-
+-	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+-	if (!(flags & MAP_ANONYMOUS)) {
+-		file = fget(fd);
+-		if (!file)
+-			goto out;
+-	}
+-
+-	down_write(&current->mm->mmap_sem);
+-	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+-	up_write(&current->mm->mmap_sem);
+-
+-	if (file)
+-		fput(file);
+-out:
+-	return error;
+-}
+-
+ asmlinkage long xtensa_shmat(int shmid, char __user *shmaddr, int shmflg)
+ {
+ 	unsigned long ret;
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index a990ace..93515c6 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -879,4 +879,8 @@ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ asmlinkage long sys_perf_event_open(
+ 		struct perf_event_attr __user *attr_uptr,
+ 		pid_t pid, int cpu, int group_fd, unsigned long flags);
++
++asmlinkage long sys_mmap_pgoff(unsigned long addr, unsigned long len,
++			unsigned long prot, unsigned long flags,
++			unsigned long fd, unsigned long pgoff);
+ #endif
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 464694e..11bec62 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -290,28 +290,28 @@ static unsigned long shm_get_unmapped_area(struct file *file,
+ 	unsigned long flags)
+ {
+ 	struct shm_file_data *sfd = shm_file_data(file);
+-	return get_unmapped_area(sfd->file, addr, len, pgoff, flags);
+-}
+-
+-int is_file_shm_hugepages(struct file *file)
+-{
+-	int ret = 0;
+-
+-	if (file->f_op == &shm_file_operations) {
+-		struct shm_file_data *sfd;
+-		sfd = shm_file_data(file);
+-		ret = is_file_hugepages(sfd->file);
+-	}
+-	return ret;
++	return sfd->file->f_op->get_unmapped_area(sfd->file, addr, len,
++						pgoff, flags);
+ }
+ 
+ static const struct file_operations shm_file_operations = {
+ 	.mmap		= shm_mmap,
+ 	.fsync		= shm_fsync,
+ 	.release	= shm_release,
++};
++
++static const struct file_operations shm_file_operations_huge = {
++	.mmap		= shm_mmap,
++	.fsync		= shm_fsync,
++	.release	= shm_release,
+ 	.get_unmapped_area	= shm_get_unmapped_area,
+ };
+ 
++int is_file_shm_hugepages(struct file *file)
++{
++	return file->f_op == &shm_file_operations_huge;
++}
++
+ static const struct vm_operations_struct shm_vm_ops = {
+ 	.open	= shm_open,	/* callback for a new vm-area open */
+ 	.close	= shm_close,	/* callback for when the vm-area is released */
+@@ -889,7 +889,10 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
+ 	if (!sfd)
+ 		goto out_put_dentry;
+ 
+-	file = alloc_file(path.mnt, path.dentry, f_mode, &shm_file_operations);
++	file = alloc_file(path.mnt, path.dentry, f_mode,
++			is_file_hugepages(shp->shm_file) ?
++				&shm_file_operations_huge :
++				&shm_file_operations);
+ 	if (!file)
+ 		goto out_free;
+ 	ima_counts_get(file);
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 73f5e4b..ae19746 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -932,13 +932,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+ 	if (!(flags & MAP_FIXED))
+ 		addr = round_hint_to_min(addr);
+ 
+-	error = arch_mmap_check(addr, len, flags);
+-	if (error)
+-		return error;
+-
+ 	/* Careful about overflows.. */
+ 	len = PAGE_ALIGN(len);
+-	if (!len || len > TASK_SIZE)
++	if (!len)
+ 		return -ENOMEM;
+ 
+ 	/* offset overflow? */
+@@ -949,24 +945,6 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+ 	if (mm->map_count > sysctl_max_map_count)
+ 		return -ENOMEM;
+ 
+-	if (flags & MAP_HUGETLB) {
+-		struct user_struct *user = NULL;
+-		if (file)
+-			return -EINVAL;
+-
+-		/*
+-		 * VM_NORESERVE is used because the reservations will be
+-		 * taken when vm_ops->mmap() is called
+-		 * A dummy user value is used because we are not locking
+-		 * memory so no accounting is necessary
+-		 */
+-		len = ALIGN(len, huge_page_size(&default_hstate));
+-		file = hugetlb_file_setup(HUGETLB_ANON_FILE, len, VM_NORESERVE,
+-						&user, HUGETLB_ANONHUGE_INODE);
+-		if (IS_ERR(file))
+-			return PTR_ERR(file);
+-	}
+-
+ 	/* Obtain the address to map to. we verify (or select) it and ensure
+ 	 * that it represents a valid section of the address space.
+ 	 */
+@@ -1459,6 +1437,14 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
+ 	unsigned long (*get_area)(struct file *, unsigned long,
+ 				  unsigned long, unsigned long, unsigned long);
+ 
++	unsigned long error = arch_mmap_check(addr, len, flags);
++	if (error)
++		return error;
++
++	/* Careful about overflows.. */
++	if (len > TASK_SIZE)
++		return -ENOMEM;
++
+ 	get_area = current->mm->get_unmapped_area;
+ 	if (file && file->f_op && file->f_op->get_unmapped_area)
+ 		get_area = file->f_op->get_unmapped_area;
+@@ -2003,20 +1989,14 @@ unsigned long do_brk(unsigned long addr, unsigned long len)
+ 	if (!len)
+ 		return addr;
+ 
+-	if ((addr + len) > TASK_SIZE || (addr + len) < addr)
+-		return -EINVAL;
+-
+-	if (is_hugepage_only_range(mm, addr, len))
+-		return -EINVAL;
+-
+ 	error = security_file_mmap(NULL, 0, 0, 0, addr, 1);
+ 	if (error)
+ 		return error;
+ 
+ 	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
+ 
+-	error = arch_mmap_check(addr, len, flags);
+-	if (error)
++	error = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
++	if (error & ~PAGE_MASK)
+ 		return error;
+ 
+ 	/*
+diff --git a/mm/mremap.c b/mm/mremap.c
+index 97bff25..8451908 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -261,6 +261,137 @@ static unsigned long move_vma(struct vm_area_struct *vma,
+ 	return new_addr;
+ }
+ 
++static struct vm_area_struct *vma_to_resize(unsigned long addr,
++	unsigned long old_len, unsigned long new_len, unsigned long *p)
++{
++	struct mm_struct *mm = current->mm;
++	struct vm_area_struct *vma = find_vma(mm, addr);
++
++	if (!vma || vma->vm_start > addr)
++		goto Efault;
++
++	if (is_vm_hugetlb_page(vma))
++		goto Einval;
++
++	/* We can't remap across vm area boundaries */
++	if (old_len > vma->vm_end - addr)
++		goto Efault;
++
++	if (vma->vm_flags & (VM_DONTEXPAND | VM_PFNMAP)) {
++		if (new_len > old_len)
++			goto Efault;
++	}
++
++	if (vma->vm_flags & VM_LOCKED) {
++		unsigned long locked, lock_limit;
++		locked = mm->locked_vm << PAGE_SHIFT;
++		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
++		locked += new_len - old_len;
++		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
++			goto Eagain;
++	}
++
++	if (!may_expand_vm(mm, (new_len - old_len) >> PAGE_SHIFT))
++		goto Enomem;
++
++	if (vma->vm_flags & VM_ACCOUNT) {
++		unsigned long charged = (new_len - old_len) >> PAGE_SHIFT;
++		if (security_vm_enough_memory(charged))
++			goto Efault;
++		*p = charged;
++	}
++
++	return vma;
++
++Efault:	/* very odd choice for most of the cases, but... */
++	return ERR_PTR(-EFAULT);
++Einval:
++	return ERR_PTR(-EINVAL);
++Enomem:
++	return ERR_PTR(-ENOMEM);
++Eagain:
++	return ERR_PTR(-EAGAIN);
++}
++
++static unsigned long mremap_to(unsigned long addr,
++	unsigned long old_len, unsigned long new_addr,
++	unsigned long new_len)
++{
++	struct mm_struct *mm = current->mm;
++	struct vm_area_struct *vma;
++	unsigned long ret = -EINVAL;
++	unsigned long charged = 0;
++	unsigned long map_flags;
++
++	if (new_addr & ~PAGE_MASK)
++		goto out;
++
++	if (new_len > TASK_SIZE || new_addr > TASK_SIZE - new_len)
++		goto out;
++
++	/* Check if the location we're moving into overlaps the
++	 * old location at all, and fail if it does.
++	 */
++	if ((new_addr <= addr) && (new_addr+new_len) > addr)
++		goto out;
++
++	if ((addr <= new_addr) && (addr+old_len) > new_addr)
++		goto out;
++
++	ret = security_file_mmap(NULL, 0, 0, 0, new_addr, 1);
++	if (ret)
++		goto out;
++
++	ret = do_munmap(mm, new_addr, new_len);
++	if (ret)
++		goto out;
++
++	if (old_len >= new_len) {
++		ret = do_munmap(mm, addr+new_len, old_len - new_len);
++		if (ret && old_len != new_len)
++			goto out;
++		old_len = new_len;
++	}
++
++	vma = vma_to_resize(addr, old_len, new_len, &charged);
++	if (IS_ERR(vma)) {
++		ret = PTR_ERR(vma);
++		goto out;
++	}
++
++	map_flags = MAP_FIXED;
++	if (vma->vm_flags & VM_MAYSHARE)
++		map_flags |= MAP_SHARED;
++
++	ret = get_unmapped_area(vma->vm_file, new_addr, new_len, vma->vm_pgoff +
++				((addr - vma->vm_start) >> PAGE_SHIFT),
++				map_flags);
++	if (ret & ~PAGE_MASK)
++		goto out1;
++
++	ret = move_vma(vma, addr, old_len, new_len, new_addr);
++	if (!(ret & ~PAGE_MASK))
++		goto out;
++out1:
++	vm_unacct_memory(charged);
++
++out:
++	return ret;
++}
++
++static int vma_expandable(struct vm_area_struct *vma, unsigned long delta)
++{
++	unsigned long end = vma->vm_end + delta;
++	if (end < vma->vm_end) /* overflow */
++		return 0;
++	if (vma->vm_next && vma->vm_next->vm_start < end) /* intersection */
++		return 0;
++	if (get_unmapped_area(NULL, vma->vm_start, end - vma->vm_start,
++			      0, MAP_FIXED) & ~PAGE_MASK)
++		return 0;
++	return 1;
++}
++
+ /*
+  * Expand (or shrink) an existing mapping, potentially moving it at the
+  * same time (controlled by the MREMAP_MAYMOVE flag and available VM space)
+@@ -294,32 +425,10 @@ unsigned long do_mremap(unsigned long addr,
+ 	if (!new_len)
+ 		goto out;
+ 
+-	/* new_addr is only valid if MREMAP_FIXED is specified */
+ 	if (flags & MREMAP_FIXED) {
+-		if (new_addr & ~PAGE_MASK)
+-			goto out;
+-		if (!(flags & MREMAP_MAYMOVE))
+-			goto out;
+-
+-		if (new_len > TASK_SIZE || new_addr > TASK_SIZE - new_len)
+-			goto out;
+-
+-		/* Check if the location we're moving into overlaps the
+-		 * old location at all, and fail if it does.
+-		 */
+-		if ((new_addr <= addr) && (new_addr+new_len) > addr)
+-			goto out;
+-
+-		if ((addr <= new_addr) && (addr+old_len) > new_addr)
+-			goto out;
+-
+-		ret = security_file_mmap(NULL, 0, 0, 0, new_addr, 1);
+-		if (ret)
+-			goto out;
+-
+-		ret = do_munmap(mm, new_addr, new_len);
+-		if (ret)
+-			goto out;
++		if (flags & MREMAP_MAYMOVE)
++			ret = mremap_to(addr, old_len, new_addr, new_len);
++		goto out;
+ 	}
+ 
+ 	/*
+@@ -332,60 +441,23 @@ unsigned long do_mremap(unsigned long addr,
+ 		if (ret && old_len != new_len)
+ 			goto out;
+ 		ret = addr;
+-		if (!(flags & MREMAP_FIXED) || (new_addr == addr))
+-			goto out;
+-		old_len = new_len;
++		goto out;
+ 	}
+ 
+ 	/*
+-	 * Ok, we need to grow..  or relocate.
++	 * Ok, we need to grow..
+ 	 */
+-	ret = -EFAULT;
+-	vma = find_vma(mm, addr);
+-	if (!vma || vma->vm_start > addr)
+-		goto out;
+-	if (is_vm_hugetlb_page(vma)) {
+-		ret = -EINVAL;
+-		goto out;
+-	}
+-	/* We can't remap across vm area boundaries */
+-	if (old_len > vma->vm_end - addr)
+-		goto out;
+-	if (vma->vm_flags & (VM_DONTEXPAND | VM_PFNMAP)) {
+-		if (new_len > old_len)
+-			goto out;
+-	}
+-	if (vma->vm_flags & VM_LOCKED) {
+-		unsigned long locked, lock_limit;
+-		locked = mm->locked_vm << PAGE_SHIFT;
+-		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
+-		locked += new_len - old_len;
+-		ret = -EAGAIN;
+-		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+-			goto out;
+-	}
+-	if (!may_expand_vm(mm, (new_len - old_len) >> PAGE_SHIFT)) {
+-		ret = -ENOMEM;
++	vma = vma_to_resize(addr, old_len, new_len, &charged);
++	if (IS_ERR(vma)) {
++		ret = PTR_ERR(vma);
+ 		goto out;
+ 	}
+ 
+-	if (vma->vm_flags & VM_ACCOUNT) {
+-		charged = (new_len - old_len) >> PAGE_SHIFT;
+-		if (security_vm_enough_memory(charged))
+-			goto out_nc;
+-	}
+-
+ 	/* old_len exactly to the end of the area..
+-	 * And we're not relocating the area.
+ 	 */
+-	if (old_len == vma->vm_end - addr &&
+-	    !((flags & MREMAP_FIXED) && (addr != new_addr)) &&
+-	    (old_len != new_len || !(flags & MREMAP_MAYMOVE))) {
+-		unsigned long max_addr = TASK_SIZE;
+-		if (vma->vm_next)
+-			max_addr = vma->vm_next->vm_start;
++	if (old_len == vma->vm_end - addr) {
+ 		/* can we just expand the current mapping? */
+-		if (max_addr - addr >= new_len) {
++		if (vma_expandable(vma, new_len - old_len)) {
+ 			int pages = (new_len - old_len) >> PAGE_SHIFT;
+ 
+ 			vma_adjust(vma, vma->vm_start,
+@@ -409,28 +481,27 @@ unsigned long do_mremap(unsigned long addr,
+ 	 */
+ 	ret = -ENOMEM;
+ 	if (flags & MREMAP_MAYMOVE) {
+-		if (!(flags & MREMAP_FIXED)) {
+-			unsigned long map_flags = 0;
+-			if (vma->vm_flags & VM_MAYSHARE)
+-				map_flags |= MAP_SHARED;
+-
+-			new_addr = get_unmapped_area(vma->vm_file, 0, new_len,
+-						vma->vm_pgoff, map_flags);
+-			if (new_addr & ~PAGE_MASK) {
+-				ret = new_addr;
+-				goto out;
+-			}
+-
+-			ret = security_file_mmap(NULL, 0, 0, 0, new_addr, 1);
+-			if (ret)
+-				goto out;
++		unsigned long map_flags = 0;
++		if (vma->vm_flags & VM_MAYSHARE)
++			map_flags |= MAP_SHARED;
++
++		new_addr = get_unmapped_area(vma->vm_file, 0, new_len,
++					vma->vm_pgoff +
++					((addr - vma->vm_start) >> PAGE_SHIFT),
++					map_flags);
++		if (new_addr & ~PAGE_MASK) {
++			ret = new_addr;
++			goto out;
+ 		}
++
++		ret = security_file_mmap(NULL, 0, 0, 0, new_addr, 1);
++		if (ret)
++			goto out;
+ 		ret = move_vma(vma, addr, old_len, new_len, new_addr);
+ 	}
+ out:
+ 	if (ret & ~PAGE_MASK)
+ 		vm_unacct_memory(charged);
+-out_nc:
+ 	return ret;
+ }
+ 
+diff --git a/mm/util.c b/mm/util.c
+index 7c35ad9..b377ce4 100644
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -4,6 +4,10 @@
+ #include <linux/module.h>
+ #include <linux/err.h>
+ #include <linux/sched.h>
++#include <linux/hugetlb.h>
++#include <linux/syscalls.h>
++#include <linux/mman.h>
++#include <linux/file.h>
+ #include <asm/uaccess.h>
+ 
+ #define CREATE_TRACE_POINTS
+@@ -268,6 +272,46 @@ int __attribute__((weak)) get_user_pages_fast(unsigned long start,
+ }
+ EXPORT_SYMBOL_GPL(get_user_pages_fast);
+ 
++SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
++		unsigned long, prot, unsigned long, flags,
++		unsigned long, fd, unsigned long, pgoff)
++{
++	struct file * file = NULL;
++	unsigned long retval = -EBADF;
++
++	if (!(flags & MAP_ANONYMOUS)) {
++		if (unlikely(flags & MAP_HUGETLB))
++			return -EINVAL;
++		file = fget(fd);
++		if (!file)
++			goto out;
++	} else if (flags & MAP_HUGETLB) {
++		struct user_struct *user = NULL;
++		/*
++		 * VM_NORESERVE is used because the reservations will be
++		 * taken when vm_ops->mmap() is called
++		 * A dummy user value is used because we are not locking
++		 * memory so no accounting is necessary
++		 */
++		len = ALIGN(len, huge_page_size(&default_hstate));
++		file = hugetlb_file_setup(HUGETLB_ANON_FILE, len, VM_NORESERVE,
++						&user, HUGETLB_ANONHUGE_INODE);
++		if (IS_ERR(file))
++			return PTR_ERR(file);
++	}
++
++	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
++
++	down_write(&current->mm->mmap_sem);
++	retval = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
++	up_write(&current->mm->mmap_sem);
++
++	if (file)
++		fput(file);
++out:
++	return retval;
++}
++
+ /* Tracepoints definitions. */
+ EXPORT_TRACEPOINT_SYMBOL(kmalloc);
+ EXPORT_TRACEPOINT_SYMBOL(kmem_cache_alloc);
+-- 
+1.6.6
+
