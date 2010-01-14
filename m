@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803Ab0ANOAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822Ab0ANOBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803Ab0ANOAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 09:00:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798Ab0ANOAU
+	id S1756822Ab0ANOBV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 09:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756778Ab0ANOBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 09:00:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35454 "EHLO mx1.redhat.com"
+	Thu, 14 Jan 2010 09:01:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27592 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756795Ab0ANOAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 09:00:17 -0500
+	id S1756763Ab0ANOBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 09:01:18 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 6/6] NOMMU: Fix shared mmap after truncate shrinkage problems
+Subject: [PATCH 1/6] NOMMU: Fix SYSV SHM for NOMMU
 To: torvalds@osdl.org, akpm@linux-foundation.org
 Cc: viro@ZenIV.linux.org.uk, vapier@gentoo.org, lethal@linux-sh.org,
        dhowells@redhat.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Date: Thu, 14 Jan 2010 13:58:56 +0000
-Message-ID: <20100114135856.10482.54302.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20100114135830.10482.54124.stgit@warthog.procyon.org.uk>
-References: <20100114135830.10482.54124.stgit@warthog.procyon.org.uk>
+Date: Thu, 14 Jan 2010 13:58:30 +0000
+Message-ID: <20100114135830.10482.54124.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -30,184 +28,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a problem in NOMMU mmap with ramfs whereby a shared mmap can happen over
-the end of a truncation.  The problem is that ramfs_nommu_check_mappings()
-checks that the reduced file size against the VMA tree, but not the vm_region
-tree.
+Commit c4caa778157dbbf04116f0ac2111e389b5cd7a29 broke SYSV SHM for NOMMU by
+taking away the pointer to shm_get_unmapped_area() from shm_file_operations.
 
-The following sequence of events can cause the problem:
+Put it back conditionally on CONFIG_MMU=n.
 
-	fd = open("/tmp/x", O_RDWR|O_TRUNC|O_CREAT, 0600);
-	ftruncate(fd, 32 * 1024);
-	a = mmap(NULL, 32 * 1024, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-	b = mmap(NULL, 16 * 1024, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-	munmap(a, 32 * 1024);
-	ftruncate(fd, 16 * 1024);
-	c = mmap(NULL, 32 * 1024, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-
-Mapping 'a' creates a vm_region covering 32KB of the file.  Mapping 'b' sees
-that the vm_region from 'a' is covering the region it wants and so shares it,
-pinning it in memory.
-
-Mapping 'a' then goes away and the file is truncated to the end of VMA 'b'.
-However, the region allocated by 'a' is still in effect, and has _not_ been
-reduced.
-
-Mapping 'c' is then created, and because there's a vm_region covering the
-desired region, get_unmapped_area() is _not_ called to repeat the check, and
-the mapping is granted, even though the pages from the latter half of the
-mapping have been discarded.
-
-However:
-
-	d = mmap(NULL, 16 * 1024, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-
-Mapping 'd' should work, and should end up sharing the region allocated by
-'a'.
-
-To deal with this, we shrink the vm_region struct during the truncation, lest
-do_mmap_pgoff() take it as licence to share the full region automatically
-without calling the get_unmapped_area() file op again.
+file->f_ops->get_unmapped_area() is used to find out the base address for a
+mapping of a mappable chardev device or mappable memory-based file (such as a
+ramfs file).  It needs to be called prior to file->f_ops->mmap() being called.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 Acked-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
 
- fs/ramfs/file-nommu.c |   31 +------------------------
- include/linux/mm.h    |    1 +
- mm/nommu.c            |   62 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 64 insertions(+), 30 deletions(-)
+ ipc/shm.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 
-diff --git a/fs/ramfs/file-nommu.c b/fs/ramfs/file-nommu.c
-index 2665313..1739a4a 100644
---- a/fs/ramfs/file-nommu.c
-+++ b/fs/ramfs/file-nommu.c
-@@ -123,35 +123,6 @@ add_error:
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 92fe923..23256b8 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -298,6 +298,9 @@ static const struct file_operations shm_file_operations = {
+ 	.mmap		= shm_mmap,
+ 	.fsync		= shm_fsync,
+ 	.release	= shm_release,
++#ifndef CONFIG_MMU
++	.get_unmapped_area	= shm_get_unmapped_area,
++#endif
+ };
  
- /*****************************************************************************/
- /*
-- * check that file shrinkage doesn't leave any VMAs dangling in midair
-- */
--static int ramfs_nommu_check_mappings(struct inode *inode,
--				      size_t newsize, size_t size)
--{
--	struct vm_area_struct *vma;
--	struct prio_tree_iter iter;
--
--	down_write(&nommu_region_sem);
--
--	/* search for VMAs that fall within the dead zone */
--	vma_prio_tree_foreach(vma, &iter, &inode->i_mapping->i_mmap,
--			      newsize >> PAGE_SHIFT,
--			      (size + PAGE_SIZE - 1) >> PAGE_SHIFT
--			      ) {
--		/* found one - only interested if it's shared out of the page
--		 * cache */
--		if (vma->vm_flags & VM_SHARED) {
--			up_write(&nommu_region_sem);
--			return -ETXTBSY; /* not quite true, but near enough */
--		}
--	}
--
--	up_write(&nommu_region_sem);
--	return 0;
--}
--
--/*****************************************************************************/
--/*
-  *
-  */
- static int ramfs_nommu_resize(struct inode *inode, loff_t newsize, loff_t size)
-@@ -169,7 +140,7 @@ static int ramfs_nommu_resize(struct inode *inode, loff_t newsize, loff_t size)
- 
- 	/* check that a decrease in size doesn't cut off any shared mappings */
- 	if (newsize < size) {
--		ret = ramfs_nommu_check_mappings(inode, newsize, size);
-+		ret = nommu_shrink_inode_mappings(inode, size, newsize);
- 		if (ret < 0)
- 			return ret;
- 	}
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 2265f28..60c467b 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1089,6 +1089,7 @@ extern void zone_pcp_update(struct zone *zone);
- 
- /* nommu.c */
- extern atomic_long_t mmap_pages_allocated;
-+extern int nommu_shrink_inode_mappings(struct inode *, size_t, size_t);
- 
- /* prio_tree.c */
- void vma_prio_tree_add(struct vm_area_struct *, struct vm_area_struct *old);
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 32be0cf..5e09ab6 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -1914,3 +1914,65 @@ int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, in
- 	mmput(mm);
- 	return len;
- }
-+
-+/**
-+ * nommu_shrink_inode_mappings - Shrink the shared mappings on an inode
-+ * @inode: The inode to check
-+ * @size: The current filesize of the inode
-+ * @newsize: The proposed filesize of the inode
-+ *
-+ * Check the shared mappings on an inode on behalf of a shrinking truncate to
-+ * make sure that that any outstanding VMAs aren't broken and then shrink the
-+ * vm_regions that extend that beyond so that do_mmap_pgoff() doesn't
-+ * automatically grant mappings that are too large.
-+ */
-+int nommu_shrink_inode_mappings(struct inode *inode, size_t size,
-+				size_t newsize)
-+{
-+	struct vm_area_struct *vma;
-+	struct prio_tree_iter iter;
-+	struct vm_region *region;
-+	pgoff_t low, high;
-+	size_t r_size, r_top;
-+
-+	low = newsize >> PAGE_SHIFT;
-+	high = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+	
-+	down_write(&nommu_region_sem);
-+
-+	/* search for VMAs that fall within the dead zone */
-+	vma_prio_tree_foreach(vma, &iter, &inode->i_mapping->i_mmap,
-+			      low, high) {
-+		/* found one - only interested if it's shared out of the page
-+		 * cache */
-+		if (vma->vm_flags & VM_SHARED) {
-+			up_write(&nommu_region_sem);
-+			return -ETXTBSY; /* not quite true, but near enough */
-+		}
-+	}
-+
-+	/* reduce any regions that overlap the dead zone - if in existence,
-+	 * these will be pointed to by VMAs that don't overlap the dead zone
-+	 *
-+	 * we don't check for any regions that start beyond the EOF as there
-+	 * shouldn't be any
-+	 */
-+	vma_prio_tree_foreach(vma, &iter, &inode->i_mapping->i_mmap,
-+			      0, ULONG_MAX) {
-+		if (!(vma->vm_flags & VM_SHARED))
-+			continue;
-+
-+		region = vma->vm_region;
-+		r_size = region->vm_top - region->vm_start;
-+		r_top = (region->vm_pgoff << PAGE_SHIFT) + r_size;
-+
-+		if (r_top > newsize) {
-+			region->vm_top -= r_top - newsize;
-+			if (region->vm_end > region->vm_top)
-+				region->vm_end = region->vm_top;
-+		}
-+	}
-+
-+	up_write(&nommu_region_sem);
-+	return 0;
-+}
+ static const struct file_operations shm_file_operations_huge = {
 
