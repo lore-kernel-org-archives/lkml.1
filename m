@@ -1,72 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208Ab0ANXId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625Ab0ANXKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756208Ab0ANXId (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 18:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476Ab0ANXIc
+	id S1756625Ab0ANXKE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 18:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554Ab0ANXKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 18:08:32 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44263 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750695Ab0ANXIb (ORCPT
+	Thu, 14 Jan 2010 18:10:01 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:22413 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753314Ab0ANXKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 18:08:31 -0500
-Date: Thu, 14 Jan 2010 15:06:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, InKi Dae <inki.dae@samsung.com>,
-       Kyungmin Park <kmpark@infradead.org>,
-       Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH 2.6.33] s3c-fb: Fix divide by zero and broken output
-Message-Id: <20100114150658.643294f1.akpm@linux-foundation.org>
-In-Reply-To: <1263464783-14434-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <20100114102027.GC437@rakim.wolfsonmicro.main>
-	<1263464783-14434-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 14 Jan 2010 18:10:00 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] x86/pci: intel ioh need to subtract mmconf range
+Date: Thu, 14 Jan 2010 16:09:18 -0700
+User-Agent: KMail/1.9.10
+Cc: Jeff Garrett <jeff@jgarrett.org>, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
+       David Airlie <airlied@linux.ie>
+References: <20100113053736.GA6720@jgarrett.org> <201001141108.03129.bjorn.helgaas@hp.com> <4B4F9ECB.4060805@kernel.org>
+In-Reply-To: <4B4F9ECB.4060805@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001141609.19290.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jan 2010 10:26:23 +0000
-Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-
-> Commit 600ce1a0faafeed1ce6bcfd421bc040b941cbbc1.  ("fix clock setting
-> for Samsung SoC Framebuffer") introduced a mandatory refresh parameter
-> to the platform data for the S3C framebuffer but did not introduce any
-> validation code, causing existing platforms (none of which have refresh
-> set) to divide by zero whenever the framebuffer is configured,
-> generating warnings and unusable output.
+On Thursday 14 January 2010 03:46:35 pm Yinghai Lu wrote:
 > 
-> Ben Dooks noted several problems with the patch:
+> Bjorn pointed out we need to remove mmconf range
 > 
->  - The platform data supplies the pixclk directly and should already
->    have taken care of the refresh rate.
->  - The addition of a window ID parameter doesn't help since only the
->    root framebuffer can control the pixclk.
->  - pixclk is specified in picoseconds (rather than Hz) as the patch
->    assumed.
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 > 
-> and suggests reverting the commit so do that.  Without fixing this no
-> mainline user of the driver will produce output.
+> ---
+>  arch/x86/pci/intel_bus.c |   29 +++++++++++++++++++++++++++--
+>  1 file changed, 27 insertions(+), 2 deletions(-)
 > 
-
-Why on earth would you revert someone's patch and not tell them that
-you're doing it?
-
-This reversion will presumably break the Samsung SoC Framebuffer again.
-How about we not do that?
-
-> @@ -358,6 +359,8 @@ static int s3c_fb_set_par(struct fb_info *info)
+> Index: linux-2.6/arch/x86/pci/intel_bus.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/pci/intel_bus.c
+> +++ linux-2.6/arch/x86/pci/intel_bus.c
+> @@ -46,6 +46,20 @@ static inline void print_ioh_resources(s
 >  
->  	data = var->xres * var->yres;
+>  #define RANGE_NUM 16
 >  
-> +	u32 osdc_data = 0;
+> +static void __devinit subtract_mmconf(struct range *range, int nr)
+> +{
+> +#ifdef CONFIG_PCI_MMCONFIG
+> +	struct pci_mmcfg_region *cfg;
 > +
->  	osdc_data = VIDISD14C_ALPHA1_R(0xf) |
->  		VIDISD14C_ALPHA1_G(0xf) |
->  		VIDISD14C_ALPHA1_B(0xf);
+> +	if (list_empty(&pci_mmcfg_list))
+> +		return;
+> +
+> +        list_for_each_entry(cfg, &pci_mmcfg_list, list)
+> +		subtract_range(range, nr, cfg->res.start,
+> +			 cfg->res.end + 1);
+> +#endif
 
-The reversion restores this incorrect c99-style declaration.
+This can't be right, can it?  Let's say the kernel was built with
+CONFIG_PCI_MMCONFIG turned off, or the user used "pci=nommconf",
+or the kernel decides not to use MMCONFIG for some other reason.
+
+In that case, the hardware may still be configured to support
+MMCONFIG, but the pci_mmcfg_list will be empty, so your code will
+leave the window alone.  We might assign some of that MMCONFIG
+space to a device, but the hardware will route it to MMCONFIG,
+not to the device.
+
+Bjorn
+
+> +}
+> +
+>  static void __devinit pci_root_bus_res(struct pci_dev *dev)
+>  {
+>  	u16 word;
+> @@ -96,6 +110,7 @@ static void __devinit pci_root_bus_res(s
+>  
+>  		subtract_range(range, RANGE_NUM, vt_base, vt_end + 1);
+>  	}
+> +	subtract_mmconf(range, RANGE_NUM);
+>  	for (i = 0; i < RANGE_NUM; i++) {
+>  		if (!range[i].end)
+>  			continue;
+> @@ -112,8 +127,18 @@ static void __devinit pci_root_bus_res(s
+>  	mmioh_base |= ((u64)(dword & 0x7ffff)) << 32;
+>  	pci_read_config_dword(dev, IOH_LMMIOH_LIMITU, &dword);
+>  	mmioh_end |= ((u64)(dword & 0x7ffff)) << 32;
+> -	update_res(info, cap_resource(mmioh_base), cap_resource(mmioh_end),
+> -			 IORESOURCE_MEM, 0);
+> +	memset(range, 0, sizeof(range));
+> +	add_range(range, RANGE_NUM, 0, mmioh_base, mmioh_end + 1);
+> +	/* mmconf could be above 4g */
+> +	subtract_mmconf(range, RANGE_NUM);
+> +	for (i = 0; i < RANGE_NUM; i++) {
+> +		if (!range[i].end)
+> +			continue;
+> +
+> +		update_res(info, cap_resource(range[i].start),
+> +			   cap_resource(range[i].end - 1),
+> +			   IORESOURCE_MEM, 0);
+> +	}
+>  
+>  	print_ioh_resources(info);
+>  }
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+
