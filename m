@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784Ab0ANWuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757779Ab0ANWva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757784Ab0ANWuS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228Ab0ANWuQ
+	id S1757779Ab0ANWva (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945Ab0ANWv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:50:16 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42956 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757088Ab0ANWuN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:50:13 -0500
-Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1263467394.4244.291.camel@laptop>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
-	 <1263467394.4244.291.camel@laptop>
-Content-Type: text/plain
-Date: Thu, 14 Jan 2010 14:49:40 -0800
-Message-Id: <1263509380.4875.35.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jan 2010 17:51:29 -0500
+Received: from kroah.org ([198.145.64.141]:58158 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756870Ab0ANWv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:51:28 -0500
+Date: Thu, 14 Jan 2010 14:48:48 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [0/9] 2.6.31.12-stable review
+Message-ID: <20100114224848.GA532@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is the start of the stable review cycle for the 2.6.31.12 release.
+There are 9 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-On Thu, 2010-01-14 at 12:09 +0100, Peter Zijlstra wrote:
-> On Mon, 2010-01-11 at 17:55 +0530, Srikar Dronamraju wrote:
-> > 
-> > Uprobes Infrastructure enables user to dynamically establish
-> > probepoints in user applications and collect information by executing
-> > a handler functions when the probepoints are hit.
-> > Please refer Documentation/uprobes.txt for more details.
-> > 
-> > This patch provides the core implementation of uprobes.
-> > This patch builds on utrace infrastructure.
-> > 
-> > You need to follow this up with the uprobes patch for your
-> > architecture. 
-> 
-> So all this is basically some glue between what you call ubp (the real
-> userspace breakpoint stuff) and utrace? Or does it do more?
-> 
+This is going to be the last release of the .31-stable tree.
 
-My reply in
-http://lkml.indiana.edu/hypermail/linux/kernel/1001.1/02483.html
-addresses this.
+Responses should be made by Saturday, January 16, 22:00:00 UTC.
+Anything received after that time might be too late.
 
-Jim
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.31.12-rc1.gz
+and the diffstat can be found below.
 
+
+thanks,
+
+greg k-h
+
+
+ Makefile                         |    2 +-
+ drivers/hwmon/adt7462.c          |    2 +-
+ fs/fcntl.c                       |  102 ++++++++++++++++++++++++-------------
+ fs/quota/dquot.c                 |    3 +
+ kernel/audit_tree.c              |   13 +++--
+ kernel/signal.c                  |    3 +-
+ net/bridge/netfilter/ebtables.c  |    6 ++
+ net/ipv6/exthdrs.c               |    7 ++-
+ net/netfilter/nf_conntrack_ftp.c |   18 +++---
+ 9 files changed, 102 insertions(+), 54 deletions(-)
