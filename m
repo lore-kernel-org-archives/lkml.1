@@ -1,636 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932227Ab0ANPGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022Ab0ANPGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932227Ab0ANPGy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:06:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842Ab0ANPBH
+	id S1757022Ab0ANPGh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043Ab0ANPGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:01:07 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47643 "EHLO
+	Thu, 14 Jan 2010 10:06:23 -0500
+Received: from mail.windriver.com ([147.11.1.11]:49037 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756793Ab0ANPA6 (ORCPT
+	with ESMTP id S1757036Ab0ANPGU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:00:58 -0500
+	Thu, 14 Jan 2010 10:06:20 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
        Jason Wessel <jason.wessel@windriver.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [PATCH 16/40] kgdboc,keyboard: Keyboard driver for kdb with kgdb
-Date: Thu, 14 Jan 2010 08:59:12 -0600
-Message-Id: <1263481176-1897-17-git-send-email-jason.wessel@windriver.com>
+       Dongdong Deng <Dongdong.Deng@windriver.com>, peterz@infradead.org
+Subject: [PATCH 01/40] softlockup: add sched_clock_tick() to avoid kernel warning on kgdb resume
+Date: Thu, 14 Jan 2010 08:58:57 -0600
+Message-Id: <1263481176-1897-2-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b
 In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
 References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:00:35.0803 (UTC) FILETIME=[53A5F2B0:01CA952A]
+X-OriginalArrivalTime: 14 Jan 2010 14:59:45.0975 (UTC) FILETIME=[35F2CC70:01CA952A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds in the kdb PS/2 keyboard driver.  This was mostly a
-direct port from the original kdb where I cleaned up the code against
-checkpatch.pl and added the glue to stitch it into kgdb.
+When CONFIG_HAVE_UNSTABLE_SCHED_CLOCK is set sched_clock() gets the
+time from hardware, such as from TSC.  In this configuration kgdb will
+report a softlock warning messages on resuming or detaching from a
+debug session.
 
-This patch also enables early kdb debug via kgdbwait and the keyboard.
+Sequence of events in the problem case:
 
-All the access to configure kdb using either a serial console or the
-keyboard is done via kgdboc.
+1) "cpu sched clock" and "hardware time" are at 100 sec prior
+   to a call to kgdb_handle_exception()
 
-If you want to use only the keyboard and want to break in early you
-would add to your kernel command arguments:
+2) Debugger waits in kgdb_handle_exception() for 80 sec and on exit
+   the following is called ...  touch_softlockup_watchdog() -->
+   __raw_get_cpu_var(touch_timestamp) = 0;
 
-    kgdboc=kbd kgdbwait
+3) "cpu sched clock" = 100s (it was not updated, because the interrupt
+   was disabled in kgdb) but the "hardware time" = 180 sec
 
-If you wanted serial and or the keyboard access you could use:
+4) The first timer interrupt after resuming from kgdb_handle_exception
+   updates the watchdog from the "cpu sched clock"
 
-    kgdboc=kbd,ttyS0
+update_process_times() { ...  run_local_timers() --> softlockup_tick()
+--> check (touch_timestamp == 0) (it is "YES" here, we have set
+"touch_timestamp = 0" at kgdb) --> __touch_softlockup_watchdog()
+***(A)--> reset "touch_timestamp" to "get_timestamp()" (Here, the
+"touch_timestamp" will still be set to 100s.)  ...
 
-You can also configure kgdboc as a kernel module or at run time with
-the sysfs where you can activate and deactivate kgdb.
+    scheduler_tick() ***(B)--> sched_clock_tick() (update "cpu sched
+    clock" to "hardware time" = 180s) ...  }
 
-Turn it on:
-    echo kbd,ttyS0 > /sys/module/kgdboc/parameters/kgdboc
+5) The Second timer interrupt handler appears to have a large jump and
+   trips the softlockup warning.
 
-Turn it off:
-    echo "" > /sys/module/kgdboc/parameters/kgdboc
+update_process_times() { ...  run_local_timers() --> softlockup_tick()
+--> "cpu sched clock" - "touch_timestamp" = 180s-100s > 60s --> printk
+"soft lockup error messages" ...  }
 
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+note: ***(A) reset "touch_timestamp" to "get_timestamp(this_cpu)"
+
+Why "touch_timestamp" is 100 sec, instead of 180 sec?
+
+With the CONFIG_HAVE_UNSTABLE_SCHED_CLOCK" set the call trace of
+get_timestamp() is:
+
+get_timestamp(this_cpu) -->cpu_clock(this_cpu)
+-->sched_clock_cpu(this_cpu) -->__update_sched_clock(sched_clock_data,
+now)
+
+The __update_sched_clock() function uses the GTOD tick value to create
+a window to normalize the "now" values.  So if "now" values is too big
+for sched_clock_data, it will be ignored.
+
+The fix is to invoke sched_clock_tick() to update "cpu sched clock" in
+order to recover from this state.  This is done by introducing the
+function touch_softlockup_watchdog_sync(), which allows kgdb to
+request that the sched clock is updated when the watchdog thread runs
+the first time after a resume from kgdb.
+
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Signed-off-by: Dongdong Deng <Dongdong.Deng@windriver.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: peterz@infradead.org
 ---
- Documentation/kernel-parameters.txt |    8 +-
- drivers/char/Makefile               |    1 +
- drivers/char/kdb_keyboard.c         |  204 +++++++++++++++++++++++++++++++++++
- drivers/char/kdb_keyboard.h         |  143 ++++++++++++++++++++++++
- drivers/serial/kgdboc.c             |   67 ++++++++++--
- include/linux/kgdb.h                |    3 +
- kernel/debug/kdb/kdb_main.c         |    3 +
- lib/Kconfig.kgdb                    |    7 ++
- 8 files changed, 426 insertions(+), 10 deletions(-)
- create mode 100644 drivers/char/kdb_keyboard.c
- create mode 100644 drivers/char/kdb_keyboard.h
+ include/linux/sched.h |    4 ++++
+ kernel/kgdb.c         |    6 +++---
+ kernel/softlockup.c   |   16 ++++++++++++++++
+ 3 files changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 736d456..f3be1e6 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1103,9 +1103,11 @@ and is between 256 and 4096 characters. It is defined in the file
- 			zone if it does not.
- 
- 	kgdboc=		[HW] kgdb over consoles.
--			Requires a tty driver that supports console polling.
--			(only serial supported for now)
--			Format: <serial_device>[,baud]
-+			Requires a tty driver that supports console polling,
-+			or a supported polling keyboard driver (non-usb).
-+			Serial only format: <serial_device>[,baud]
-+			keyboard only format: kbd
-+			keyboard and serial format: kbd,<serial_device>[,baud]
- 
- 	kmac=		[MIPS] korina ethernet MAC address.
- 			Configure the RouterBoard 532 series on-chip
-diff --git a/drivers/char/Makefile b/drivers/char/Makefile
-index f957edf..dbc579e 100644
---- a/drivers/char/Makefile
-+++ b/drivers/char/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_LEGACY_PTYS)	+= pty.o
- obj-$(CONFIG_UNIX98_PTYS)	+= pty.o
- obj-y				+= misc.o
- obj-$(CONFIG_VT)		+= vt_ioctl.o vc_screen.o selection.o keyboard.o
-+obj-$(CONFIG_KDB_KEYBOARD)	+= kdb_keyboard.o
- obj-$(CONFIG_BFIN_JTAG_COMM)	+= bfin_jtag_comm.o
- obj-$(CONFIG_CONSOLE_TRANSLATIONS) += consolemap.o consolemap_deftbl.o
- obj-$(CONFIG_HW_CONSOLE)	+= vt.o defkeymap.o
-diff --git a/drivers/char/kdb_keyboard.c b/drivers/char/kdb_keyboard.c
-new file mode 100644
-index 0000000..95aa102
---- /dev/null
-+++ b/drivers/char/kdb_keyboard.c
-@@ -0,0 +1,204 @@
-+/*
-+ * Kernel Debugger Architecture Dependent Console I/O handler
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.
-+ *
-+ * Copyright (c) 1999-2006 Silicon Graphics, Inc.  All Rights Reserved.
-+ * Copyright (c) 2009 Wind River Systems, Inc.  All Rights Reserved.
-+ */
-+
-+#include <linux/kdb.h>
-+#include <linux/keyboard.h>
-+#include <linux/ctype.h>
-+#include <linux/module.h>
-+#include <linux/io.h>
-+#include "kdb_keyboard.h"
-+
-+
-+static int kbd_exists;
-+
-+/*
-+ * Check if the keyboard controller has a keypress for us.
-+ * Some parts (Enter Release, LED change) are still blocking polled here,
-+ * but hopefully they are all short.
-+ */
-+int kdb_get_kbd_char(void)
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 8d4991b..112c621 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -310,6 +310,7 @@ extern void sched_show_task(struct task_struct *p);
+ #ifdef CONFIG_DETECT_SOFTLOCKUP
+ extern void softlockup_tick(void);
+ extern void touch_softlockup_watchdog(void);
++extern void touch_softlockup_watchdog_sync(void);
+ extern void touch_all_softlockup_watchdogs(void);
+ extern int proc_dosoftlockup_thresh(struct ctl_table *table, int write,
+ 				    void __user *buffer,
+@@ -323,6 +324,9 @@ static inline void softlockup_tick(void)
+ static inline void touch_softlockup_watchdog(void)
+ {
+ }
++static inline void touch_softlockup_watchdog_sync(void)
 +{
-+	int scancode, scanstatus;
-+	static int shift_lock;	/* CAPS LOCK state (0-off, 1-on) */
-+	static int shift_key;	/* Shift next keypress */
-+	static int ctrl_key;
-+	u_short keychar;
++}
+ static inline void touch_all_softlockup_watchdogs(void)
+ {
+ }
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index 2eb517e..87f2cc5 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -596,7 +596,7 @@ static void kgdb_wait(struct pt_regs *regs)
+ 
+ 	/* Signal the primary CPU that we are done: */
+ 	atomic_set(&cpu_in_kgdb[cpu], 0);
+-	touch_softlockup_watchdog();
++	touch_softlockup_watchdog_sync();
+ 	clocksource_touch_watchdog();
+ 	local_irq_restore(flags);
+ }
+@@ -1450,7 +1450,7 @@ acquirelock:
+ 	    (kgdb_info[cpu].task &&
+ 	     kgdb_info[cpu].task->pid != kgdb_sstep_pid) && --sstep_tries) {
+ 		atomic_set(&kgdb_active, -1);
+-		touch_softlockup_watchdog();
++		touch_softlockup_watchdog_sync();
+ 		clocksource_touch_watchdog();
+ 		local_irq_restore(flags);
+ 
+@@ -1550,7 +1550,7 @@ kgdb_restore:
+ 	}
+ 	/* Free kgdb_active */
+ 	atomic_set(&kgdb_active, -1);
+-	touch_softlockup_watchdog();
++	touch_softlockup_watchdog_sync();
+ 	clocksource_touch_watchdog();
+ 	local_irq_restore(flags);
+ 
+diff --git a/kernel/softlockup.c b/kernel/softlockup.c
+index d225790..57f1295 100644
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@ -79,6 +79,14 @@ void touch_softlockup_watchdog(void)
+ }
+ EXPORT_SYMBOL(touch_softlockup_watchdog);
+ 
++static int softlock_touch_sync[NR_CPUS];
 +
-+	if (KDB_FLAG(NO_I8042) || KDB_FLAG(NO_VT_CONSOLE) ||
-+	    (inb(KBD_STATUS_REG) == 0xff && inb(KBD_DATA_REG) == 0xff)) {
-+		kbd_exists = 0;
-+		return -1;
-+	}
-+	kbd_exists = 1;
++void touch_softlockup_watchdog_sync(void)
++{
++	softlock_touch_sync[raw_smp_processor_id()] = 1;
++	__raw_get_cpu_var(softlockup_touch_ts) = 0;
++}
 +
-+	if ((inb(KBD_STATUS_REG) & KBD_STAT_OBF) == 0)
-+		return -1;
-+
-+	/*
-+	 * Fetch the scancode
-+	 */
-+	scancode = inb(KBD_DATA_REG);
-+	scanstatus = inb(KBD_STATUS_REG);
-+
-+	/*
-+	 * Ignore mouse events.
-+	 */
-+	if (scanstatus & KBD_STAT_MOUSE_OBF)
-+		return -1;
-+
-+	/*
-+	 * Ignore release, trigger on make
-+	 * (except for shift keys, where we want to
-+	 *  keep the shift state so long as the key is
-+	 *  held down).
-+	 */
-+
-+	if (((scancode&0x7f) == 0x2a) || ((scancode&0x7f) == 0x36)) {
-+		/*
-+		 * Next key may use shift table
-+		 */
-+		if ((scancode & 0x80) == 0)
-+			shift_key = 1;
-+		else
-+			shift_key = 0;
-+		return -1;
-+	}
-+
-+	if ((scancode&0x7f) == 0x1d) {
-+		/*
-+		 * Left ctrl key
-+		 */
-+		if ((scancode & 0x80) == 0)
-+			ctrl_key = 1;
-+		else
-+			ctrl_key = 0;
-+		return -1;
-+	}
-+
-+	if ((scancode & 0x80) != 0)
-+		return -1;
-+
-+	scancode &= 0x7f;
-+
-+	/*
-+	 * Translate scancode
-+	 */
-+
-+	if (scancode == 0x3a) {
-+		/*
-+		 * Toggle caps lock
-+		 */
-+		shift_lock ^= 1;
-+
-+#ifdef	KDB_BLINK_LED
-+		kdb_toggleled(0x4);
-+#endif
-+		return -1;
-+	}
-+
-+	if (scancode == 0x0e) {
-+		/*
-+		 * Backspace
-+		 */
-+		return 8;
-+	}
-+
-+	/* Special Key */
-+	switch (scancode) {
-+	case 0xF: /* Tab */
-+		return 9;
-+	case 0x53: /* Del */
-+		return 4;
-+	case 0x47: /* Home */
-+		return 1;
-+	case 0x4F: /* End */
-+		return 5;
-+	case 0x4B: /* Left */
-+		return 2;
-+	case 0x48: /* Up */
-+		return 16;
-+	case 0x50: /* Down */
-+		return 14;
-+	case 0x4D: /* Right */
-+		return 6;
-+	}
-+
-+	if (scancode == 0xe0)
-+		return -1;
-+
-+	/*
-+	 * For Japanese 86/106 keyboards
-+	 * 	See comment in drivers/char/pc_keyb.c.
-+	 * 	- Masahiro Adegawa
-+	 */
-+	if (scancode == 0x73)
-+		scancode = 0x59;
-+	else if (scancode == 0x7d)
-+		scancode = 0x7c;
-+
-+	if (!shift_lock && !shift_key && !ctrl_key) {
-+		keychar = plain_map[scancode];
-+	} else if ((shift_lock || shift_key) && key_maps[1]) {
-+		keychar = key_maps[1][scancode];
-+	} else if (ctrl_key && key_maps[4]) {
-+		keychar = key_maps[4][scancode];
-+	} else {
-+		keychar = 0x0020;
-+		kdb_printf("Unknown state/scancode (%d)\n", scancode);
-+	}
-+	keychar &= 0x0fff;
-+	if (keychar == '\t')
-+		keychar = ' ';
-+	switch (KTYP(keychar)) {
-+	case KT_LETTER:
-+	case KT_LATIN:
-+		if (isprint(keychar))
-+			break;		/* printable characters */
-+		/* drop through */
-+	case KT_SPEC:
-+		if (keychar == K_ENTER)
-+			break;
-+		/* drop through */
-+	default:
-+		return -1;	/* ignore unprintables */
-+	}
-+
-+	if ((scancode & 0x7f) == 0x1c) {
-+		/*
-+		 * enter key.  All done.  Absorb the release scancode.
-+		 */
-+		while ((inb(KBD_STATUS_REG) & KBD_STAT_OBF) == 0)
-+			;
-+
-+		/*
-+		 * Fetch the scancode
-+		 */
-+		scancode = inb(KBD_DATA_REG);
-+		scanstatus = inb(KBD_STATUS_REG);
-+
-+		while (scanstatus & KBD_STAT_MOUSE_OBF) {
-+			scancode = inb(KBD_DATA_REG);
-+			scanstatus = inb(KBD_STATUS_REG);
-+		}
-+
-+		if (scancode != 0x9c) {
+ void touch_all_softlockup_watchdogs(void)
+ {
+ 	int cpu;
+@@ -118,6 +126,14 @@ void softlockup_tick(void)
+ 	}
+ 
+ 	if (touch_ts == 0) {
++		if (unlikely(softlock_touch_sync[this_cpu])) {
 +			/*
-+			 * Wasn't an enter-release,  why not?
++			 * If the time stamp was touched atomically
++			 * make sure the scheduler tick is up to date.
 +			 */
-+			kdb_printf("kdb: expected enter got 0x%x status 0x%x\n",
-+			       scancode, scanstatus);
++			softlock_touch_sync[this_cpu] = 0;
++			sched_clock_tick();
 +		}
-+
-+		return 13;
-+	}
-+
-+	return keychar & 0xff;
-+}
-+EXPORT_SYMBOL_GPL(kdb_get_kbd_char);
-diff --git a/drivers/char/kdb_keyboard.h b/drivers/char/kdb_keyboard.h
-new file mode 100644
-index 0000000..5541668
---- /dev/null
-+++ b/drivers/char/kdb_keyboard.h
-@@ -0,0 +1,143 @@
-+/*
-+ *	include/linux/pc_keyb.h
-+ *
-+ *	PC Keyboard And Keyboard Controller
-+ *
-+ *	(c) 1997 Martin Mares <mj@atrey.karlin.mff.cuni.cz>
-+ */
-+
-+/*
-+ *	Configuration Switches
-+ */
-+
-+#undef	KBD_REPORT_ERR			/* Report keyboard errors */
-+#define	KBD_REPORT_UNKN			/* Report unknown scan codes */
-+#define	KBD_REPORT_TIMEOUTS		/* Report keyboard timeouts */
-+#undef	KBD_IS_FOCUS_9000		/* We have the brain-damaged
-+					 * FOCUS-9000 keyboard */
-+#undef	INITIALIZE_MOUSE		/* Define if your PS/2 mouse
-+					 * needs initialization. */
-+
-+#define KBD_INIT_TIMEOUT 1000		/* Timeout in ms for initializing the
-+					 * keyboard */
-+#define KBC_TIMEOUT 250			/* Timeout in ms for sending
-+					 * to keyboard controller */
-+#define KBD_TIMEOUT 1000		/* Timeout in ms for keyboard
-+					 * command acknowledge */
-+
-+/*
-+ *	Internal variables of the driver
-+ */
-+
-+extern unsigned char pckbd_read_mask;
-+extern unsigned char aux_device_present;
-+
-+/*
-+ *	Keyboard Controller Registers on normal PCs.
-+ */
-+
-+#define KBD_STATUS_REG		0x64	/* Status register (R) */
-+#define KBD_CNTL_REG		0x64	/* Controller command register (W) */
-+#define KBD_DATA_REG		0x60	/* Keyboard data register (R/W) */
-+
-+/*
-+ *	Keyboard Controller Commands
-+ */
-+
-+#define KBD_CCMD_READ_MODE	0x20	/* Read mode bits */
-+#define KBD_CCMD_WRITE_MODE	0x60	/* Write mode bits */
-+#define KBD_CCMD_GET_VERSION	0xA1	/* Get controller version */
-+#define KBD_CCMD_MOUSE_DISABLE	0xA7	/* Disable mouse interface */
-+#define KBD_CCMD_MOUSE_ENABLE	0xA8	/* Enable mouse interface */
-+#define KBD_CCMD_TEST_MOUSE	0xA9	/* Mouse interface test */
-+#define KBD_CCMD_SELF_TEST	0xAA	/* Controller self test */
-+#define KBD_CCMD_KBD_TEST	0xAB	/* Keyboard interface test */
-+#define KBD_CCMD_KBD_DISABLE	0xAD	/* Keyboard interface disable */
-+#define KBD_CCMD_KBD_ENABLE	0xAE	/* Keyboard interface enable */
-+#define KBD_CCMD_WRITE_AUX_OBUF	0xD3    /* Write to output buffer as if
-+					   initiated by the auxiliary device */
-+#define KBD_CCMD_WRITE_MOUSE	0xD4	/* Write the following byte to
-+					 * the mouse */
-+
-+/*
-+ *	Keyboard Commands
-+ */
-+
-+#define KBD_CMD_SET_LEDS	0xED	/* Set keyboard leds */
-+#define KBD_CMD_SET_RATE	0xF3	/* Set typematic rate */
-+#define KBD_CMD_ENABLE		0xF4	/* Enable scanning */
-+#define KBD_CMD_DISABLE		0xF5	/* Disable scanning */
-+#define KBD_CMD_RESET		0xFF	/* Reset */
-+
-+/*
-+ *	Keyboard Replies
-+ */
-+
-+#define KBD_REPLY_POR		0xAA	/* Power on reset */
-+#define KBD_REPLY_ACK		0xFA	/* Command ACK */
-+#define KBD_REPLY_RESEND	0xFE	/* Command NACK, send the cmd again */
-+
-+/*
-+ *	Status Register Bits
-+ */
-+
-+#define KBD_STAT_OBF 		0x01	/* Keyboard output buffer full */
-+#define KBD_STAT_IBF 		0x02	/* Keyboard input buffer full */
-+#define KBD_STAT_SELFTEST	0x04	/* Self test successful */
-+#define KBD_STAT_CMD		0x08	/* Last write was a command
-+					 * write (0=data) */
-+#define KBD_STAT_UNLOCKED	0x10	/* Zero if keyboard locked */
-+#define KBD_STAT_MOUSE_OBF	0x20	/* Mouse output buffer full */
-+#define KBD_STAT_GTO 		0x40	/* General receive/xmit timeout */
-+#define KBD_STAT_PERR 		0x80	/* Parity error */
-+
-+#define AUX_STAT_OBF (KBD_STAT_OBF | KBD_STAT_MOUSE_OBF)
-+
-+/*
-+ *	Controller Mode Register Bits
-+ */
-+
-+#define KBD_MODE_KBD_INT	0x01	/* Keyboard data generate IRQ1 */
-+#define KBD_MODE_MOUSE_INT	0x02	/* Mouse data generate IRQ12 */
-+#define KBD_MODE_SYS 		0x04	/* The system flag (?) */
-+#define KBD_MODE_NO_KEYLOCK	0x08	/* The keylock doesn't affect
-+					 * the keyboard if set */
-+#define KBD_MODE_DISABLE_KBD	0x10	/* Disable keyboard interface */
-+#define KBD_MODE_DISABLE_MOUSE	0x20	/* Disable mouse interface */
-+#define KBD_MODE_KCC 		0x40	/* Scan code conversion to PC format */
-+#define KBD_MODE_RFU		0x80
-+
-+/*
-+ *	Mouse Commands
-+ */
-+
-+#define AUX_SET_RES		0xE8	/* Set resolution */
-+#define AUX_SET_SCALE11		0xE6	/* Set 1:1 scaling */
-+#define AUX_SET_SCALE21		0xE7	/* Set 2:1 scaling */
-+#define AUX_GET_SCALE		0xE9	/* Get scaling factor */
-+#define AUX_SET_STREAM		0xEA	/* Set stream mode */
-+#define AUX_SET_SAMPLE		0xF3	/* Set sample rate */
-+#define AUX_ENABLE_DEV		0xF4	/* Enable aux device */
-+#define AUX_DISABLE_DEV		0xF5	/* Disable aux device */
-+#define AUX_RESET		0xFF	/* Reset aux device */
-+#define AUX_ACK			0xFA	/* Command byte ACK. */
-+
-+#define AUX_BUF_SIZE		2048	/* This might be better divisible by
-+					   three to make overruns stay in sync
-+					   but then the read function would need
-+					   a lock etc - ick */
-+
-+struct aux_queue {
-+	unsigned long head;
-+	unsigned long tail;
-+	wait_queue_head_t proc_list;
-+	struct fasync_struct *fasync;
-+	unsigned char buf[AUX_BUF_SIZE];
-+};
-+
-+
-+/* How to access the keyboard macros on this platform.  */
-+#define kbd_read_input() inb(KBD_DATA_REG)
-+#define kbd_read_status() inb(KBD_STATUS_REG)
-+#define kbd_write_output(val) outb(val, KBD_DATA_REG)
-+#define kbd_write_command(val) outb(val, KBD_CNTL_REG)
-diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
-index eadc1ab..f4066b3 100644
---- a/drivers/serial/kgdboc.c
-+++ b/drivers/serial/kgdboc.c
-@@ -14,6 +14,7 @@
- #include <linux/kernel.h>
- #include <linux/ctype.h>
- #include <linux/kgdb.h>
-+#include <linux/kdb.h>
- #include <linux/tty.h>
- 
- #define MAX_CONFIG_LEN		40
-@@ -45,11 +46,32 @@ static int kgdboc_option_setup(char *opt)
- 
- __setup("kgdboc=", kgdboc_option_setup);
- 
-+static void cleanup_kgdboc(void)
-+{
-+#ifdef CONFIG_KDB_KEYBOARD
-+	int i;
-+
-+	/* Unregister the keyboard poll hook, if registered */
-+	for (i = 0; i < kdb_poll_idx; i++) {
-+		if (kdb_poll_funcs[i] == kdb_get_kbd_char) {
-+			kdb_poll_idx--;
-+			kdb_poll_funcs[i] = kdb_poll_funcs[kdb_poll_idx];
-+			kdb_poll_funcs[kdb_poll_idx] = NULL;
-+			i--;
-+		}
-+	}
-+#endif /* CONFIG_KDB_KEYBOARD */
-+
-+	if (configured == 1)
-+		kgdb_unregister_io_module(&kgdboc_io_ops);
-+}
-+
- static int configure_kgdboc(void)
- {
- 	struct tty_driver *p;
- 	int tty_line = 0;
- 	int err;
-+	char *cptr = config;
- 
- 	err = kgdboc_option_setup(config);
- 	if (err || !strlen(config) || isspace(config[0]))
-@@ -57,13 +79,32 @@ static int configure_kgdboc(void)
- 
- 	err = -ENODEV;
- 
--	p = tty_find_polling_driver(config, &tty_line);
-+#ifdef CONFIG_KDB_KEYBOARD
-+	kgdb_tty_driver = NULL;
-+
-+	if (strncmp(cptr, "kbd", 3) == 0) {
-+		if (kdb_poll_idx < KDB_POLL_FUNC_MAX) {
-+			kdb_poll_funcs[kdb_poll_idx] = kdb_get_kbd_char;
-+			kdb_poll_idx++;
-+			if (cptr[3] == ',')
-+				cptr += 4;
-+			else
-+				goto do_register;
-+		}
-+	}
-+#endif /* CONFIG_KDB_KEYBOARD */
-+
-+	p = tty_find_polling_driver(cptr, &tty_line);
- 	if (!p)
- 		goto noconfig;
- 
- 	kgdb_tty_driver = p;
- 	kgdb_tty_line = tty_line;
- 
-+#ifdef CONFIG_KDB_KEYBOARD
-+do_register:
-+#endif /* CONFIG_KDB_KEYBOARD */
-+
- 	err = kgdb_register_io_module(&kgdboc_io_ops);
- 	if (err)
- 		goto noconfig;
-@@ -75,6 +116,7 @@ static int configure_kgdboc(void)
- noconfig:
- 	config[0] = 0;
- 	configured = 0;
-+	cleanup_kgdboc();
- 
- 	return err;
- }
-@@ -88,20 +130,18 @@ static int __init init_kgdboc(void)
- 	return configure_kgdboc();
- }
- 
--static void cleanup_kgdboc(void)
--{
--	if (configured == 1)
--		kgdb_unregister_io_module(&kgdboc_io_ops);
--}
--
- static int kgdboc_get_char(void)
- {
-+	if (!kgdb_tty_driver)
-+		return -1;
- 	return kgdb_tty_driver->ops->poll_get_char(kgdb_tty_driver,
- 						kgdb_tty_line);
- }
- 
- static void kgdboc_put_char(u8 chr)
- {
-+	if (!kgdb_tty_driver)
-+		return;
- 	kgdb_tty_driver->ops->poll_put_char(kgdb_tty_driver,
- 					kgdb_tty_line, chr);
- }
-@@ -162,6 +202,19 @@ static struct kgdb_io kgdboc_io_ops = {
- 	.post_exception		= kgdboc_post_exp_handler,
- };
- 
-+#ifdef CONFIG_KGDB_SERIAL_CONSOLE
-+/* This is only available if kgdboc is a built in for early debugging */
-+void __init early_kgdboc_init(void)
-+{
-+	/* save the first character of the config string because the
-+	 * init routine can destroy it.
-+	 */
-+	char save_ch = config[0];
-+	init_kgdboc();
-+	config[0] = save_ch;
-+}
-+#endif /* CONFIG_KGDB_SERIAL_CONSOLE */
-+
- module_init(init_kgdboc);
- module_exit(cleanup_kgdboc);
- module_param_call(kgdboc, param_set_kgdboc_var, param_get_string, &kps, 0644);
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 4316447..97068ba 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -281,5 +281,8 @@ extern int kgdb_nmicallback(int cpu, void *regs);
- 
- extern int			kgdb_single_step;
- extern atomic_t			kgdb_active;
-+#ifdef CONFIG_KGDB_SERIAL_CONSOLE
-+extern void __init early_kgdboc_init(void);
-+#endif /* CONFIG_KGDB_SERIAL_CONSOLE */
- #endif /* CONFIG_KGDB */
- #endif /* _KGDB_H_ */
-diff --git a/kernel/debug/kdb/kdb_main.c b/kernel/debug/kdb/kdb_main.c
-index 6c9826a..59bb68d 100644
---- a/kernel/debug/kdb/kdb_main.c
-+++ b/kernel/debug/kdb/kdb_main.c
-@@ -2847,4 +2847,7 @@ void __init kdb_init(void)
- 	kdb_initbptab();	/* Initialize Breakpoint Table */
- 	kdb_cmd_init();		/* Preset commands from kdb_cmds */
- 	kdb_initial_cpu = -1;	/* Avoid recursion problems */
-+#if defined(CONFIG_KDB_KEYBOARD) && defined(CONFIG_KGDB_SERIAL_CONSOLE)
-+	early_kgdboc_init();
-+#endif /* CONFIG_KDB_KEYBOARD && CONFIG_KGDB_SERIAL_CONSOLE */
- }
-diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-index 02b46de..0fb633c 100644
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -63,4 +63,11 @@ config KGDB_KDB
- 	help
- 	  KDB frontend for kernel
- 
-+config KDB_KEYBOARD
-+	bool "KGDB_KDB: keyboard as input device"
-+	depends on VT && KGDB_KDB
-+	default y
-+	help
-+	  KDB can use a PS/2 type keyboard for an input device
-+
- endif # KGDB
+ 		__touch_softlockup_watchdog();
+ 		return;
+ 	}
 -- 
 1.6.3.1.9.g95405b
 
