@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757634Ab0ANU0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757652Ab0ANU1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757634Ab0ANU0y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 15:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757610Ab0ANU0x
+	id S1757652Ab0ANU1o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 15:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757627Ab0ANU1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 15:26:53 -0500
-Received: from server109i.appriver.com ([72.32.253.93]:3541 "EHLO
-	server109.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756737Ab0ANU0w convert rfc822-to-8bit (ORCPT
+	Thu, 14 Jan 2010 15:27:43 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:60406 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757611Ab0ANU1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 15:26:52 -0500
-X-Policy: GLOBAL - intcomgrp.com
-X-Policy: GLOBAL - intcomgrp.com
-X-Primary: jkosin@intcomgrp.com
-X-Note: This Email was scanned by AppRiver SecureTide
-X-ALLOW: JKosin@intcomgrp.com ALLOWED
-X-Virus-Scan: V-
-X-Note: Spam Tests Failed: 
-X-Country-Path: UNITED STATES->UNITED STATES
-X-Note-Sending-IP: 216.54.13.100
-X-Note-Reverse-DNS: mail.intcomgrp.com
-X-Note-WHTLIST: JKosin@intcomgrp.com
-X-Note: User Rule Hits: 
-X-Note: Global Rule Hits: G113 G114 G115 G116 G120 G121 G132 G219 
-X-Note: Encrypt Rule Hits: 
-X-Note: Mail Class: ALLOWEDSENDER
-X-Note: Headers Injected
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 14 Jan 2010 15:27:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=luwOC2CZTHRS36KW90Mropu46RUEbqdtngUaUWC6E6qS5J1ZI3jdBmx/hesC/x2RL2
+         1faWNV0LZng9CozSTKG4vSI0sExiqsXb1/j8eZNEuQq2mpdCDuJwFIesr9rLXc68dbAc
+         uvVig83W/XX7ZfMVPr0yJi0UBi9zOJPtIQ69A=
+Message-ID: <4B4F7F4B.8000302@gmail.com>
+Date: Thu, 14 Jan 2010 21:32:11 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/2] net: at91_ether.c - Allow transmitter interrupt to be handled first in ISR
-Date: Thu, 14 Jan 2010 15:28:38 -0500
-Message-ID: <3DBBD805E3BA064A87F551C0E8BD367402897539@MAILSRV.intcomgrp.com>
-In-Reply-To: <20100113.173253.223656114.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/2] net: at91_ether.c - Allow transmitter interrupt to be handled first in ISR
-Thread-Index: AcqUubmOl/m1delnRjWCeXIaLhRbGgAm71GA
-References: <3DBBD805E3BA064A87F551C0E8BD36740289748A@MAILSRV.intcomgrp.com> <20100113.173253.223656114.davem@davemloft.net>
-From: "James Kosin" <JKosin@intcomgrp.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       <eric.dumazet@gmail.com>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] [NET]: da.s_net not copied but assigned to itself in aarp_rcv()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks David,
+da.s_net was not copied but assigned to itself.
 
-I'm checking out the latest git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
-With git now...
-
-A few items:
-	a)  Is it OK to use git-diff to build a patch file?  Or does everyone still prefer
-	    diff?
-
-	b)  I'm going to try and test also; since, I do have an active platform I
-	    can test on.  Are there any other developers using the ARM that may be able
-	    to provide some feedback?  Eric Dumazet had some interesting comments
-	    but, none of the original people in the file are around anymore I'm afraid.
-	    That or they really don't want to be contacted.
-
-Thanks Again,
-
-James Kosin
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/net/appletalk/aarp.c b/net/appletalk/aarp.c
+index 9d4adfd..f2b3b56 100644
+--- a/net/appletalk/aarp.c
++++ b/net/appletalk/aarp.c
+@@ -819,7 +819,7 @@ static int aarp_rcv(struct sk_buff *skb, struct net_device *dev,
+ 				ma = &ifa->address;
+ 			else { /* We need to make a copy of the entry. */
+ 				da.s_node = sa.s_node;
+-				da.s_net = da.s_net;
++				da.s_net = sa.s_net;
+ 				ma = &da;
+ 			}
+ 
