@@ -1,26 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208Ab0ANW2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485Ab0ANWfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756208Ab0ANW2m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892Ab0ANW2i
+	id S1757485Ab0ANWfG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:35:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167Ab0ANWfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:28:38 -0500
-Received: from kroah.org ([198.145.64.141]:60577 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:35:01 -0500
+Received: from kroah.org ([198.145.64.141]:60600 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752083Ab0ANW2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:37 -0500
+	id S1756430Ab0ANW2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:43 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Sascha Hauer <s.hauer@pengutronix.de>,
-       =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Oskar Schirmer <os@emlix.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 23/52] lib/rational.c needs module.h
-Date: Thu, 14 Jan 2010 14:27:02 -0800
-Message-Id: <1263508051-7868-23-git-send-email-gregkh@suse.de>
+       Takashi Iwai <tiwai@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 29/52] ALSA: hda - Fix ALC861-VD capture source mixer
+Date: Thu, 14 Jan 2010 14:27:08 -0800
+Message-Id: <1263508051-7868-29-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-22-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-28-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -44,44 +41,46 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-20-git-send-email-gregkh@suse.de>
  <1263508051-7868-21-git-send-email-gregkh@suse.de>
  <1263508051-7868-22-git-send-email-gregkh@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+ <1263508051-7868-23-git-send-email-gregkh@suse.de>
+ <1263508051-7868-24-git-send-email-gregkh@suse.de>
+ <1263508051-7868-25-git-send-email-gregkh@suse.de>
+ <1263508051-7868-26-git-send-email-gregkh@suse.de>
+ <1263508051-7868-27-git-send-email-gregkh@suse.de>
+ <1263508051-7868-28-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sascha Hauer <s.hauer@pengutronix.de>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 7ee3aebe31d2cb22c84e1c8f48182947b13a3607 upstream.
+commit 9c0afc861a7228f718cb6a79fa7f9d46bf9ff300 upstream.
 
-lib/rational.c:62: warning: data definition has no type or storage class
-lib/rational.c:62: warning: type defaults to 'int' in declaration of 'EXPORT_SYMBOL'
-lib/rational.c:62: warning: parameter names (without types) in function declaration
+The capture source or input source mixer element wasn't created properly
+for ALC861-VD codec due to the wrong NID passed to
+alc_auto_create_input_ctls().
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Oskar Schirmer <os@emlix.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+References: Novell bnc#568305
+	http://bugzilla.novell.com/show_bug.cgi?id=568305
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- lib/rational.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ sound/pci/hda/patch_realtek.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/lib/rational.c b/lib/rational.c
-index b3c099b..3ed247b 100644
---- a/lib/rational.c
-+++ b/lib/rational.c
-@@ -7,6 +7,7 @@
-  */
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index e40d31f..a4cb183 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -15323,7 +15323,7 @@ static struct alc_config_preset alc861vd_presets[] = {
+ static int alc861vd_auto_create_input_ctls(struct hda_codec *codec,
+ 						const struct auto_pin_cfg *cfg)
+ {
+-	return alc_auto_create_input_ctls(codec, cfg, 0x15, 0x09, 0);
++	return alc_auto_create_input_ctls(codec, cfg, 0x15, 0x22, 0);
+ }
  
- #include <linux/rational.h>
-+#include <linux/module.h>
  
- /*
-  * calculate best rational approximation for a given fraction
 -- 
 1.6.6
 
