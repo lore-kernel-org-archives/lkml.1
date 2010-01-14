@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052Ab0ANWd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443Ab0ANWeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757052Ab0ANWd4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346Ab0ANWdf
+	id S1757443Ab0ANWeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665Ab0ANW2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:33:35 -0500
-Received: from kroah.org ([198.145.64.141]:60624 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:28:44 -0500
+Received: from kroah.org ([198.145.64.141]:60599 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756743Ab0ANW2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:49 -0500
+	id S1756269Ab0ANW2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:42 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Yong Wang <yong.y.wang@linux.intel.com>,
-       Yong Wang <yong.y.wang@intel.com>, Jean Delvare <khali@linux-fr.org>,
+       Adrian Hunter <adrian.hunter@nokia.com>, <linux-mmc@vger.kernel.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 35/52] hwmon: (coretemp) Fix TjMax for Atom N450/D410/D510 CPUs
-Date: Thu, 14 Jan 2010 14:27:14 -0800
-Message-Id: <1263508051-7868-35-git-send-email-gregkh@suse.de>
+Subject: [PATCH 28/52] mmc_block: fix queue cleanup
+Date: Thu, 14 Jan 2010 14:27:07 -0800
+Message-Id: <1263508051-7868-28-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-34-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-27-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -48,92 +47,98 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-25-git-send-email-gregkh@suse.de>
  <1263508051-7868-26-git-send-email-gregkh@suse.de>
  <1263508051-7868-27-git-send-email-gregkh@suse.de>
- <1263508051-7868-28-git-send-email-gregkh@suse.de>
- <1263508051-7868-29-git-send-email-gregkh@suse.de>
- <1263508051-7868-30-git-send-email-gregkh@suse.de>
- <1263508051-7868-31-git-send-email-gregkh@suse.de>
- <1263508051-7868-32-git-send-email-gregkh@suse.de>
- <1263508051-7868-33-git-send-email-gregkh@suse.de>
- <1263508051-7868-34-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yong Wang <yong.y.wang@linux.intel.com>
+From: Adrian Hunter <adrian.hunter@nokia.com>
 
-commit 1fe63ab47a617ee95f562eaa7ddbbc59981ff8c6 upstream.
+commit 5fa83ce284a4b7cd9dcfadd01500b0ed4ab9b740 upstream.
 
-The max junction temperature of Atom N450/D410/D510 CPUs is 100 degrees
-Celsius. Since these CPUs are always coupled with Intel NM10 chipset in
-one package, the best way to verify whether an Atom CPU is N450/D410/D510
-is to check the host bridge device.
+The main bug was that 'blk_cleanup_queue()' was called while the block
+device could still be in use, for example, because the card was removed
+while files were still open.
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Acked-by: Huaxu Wan <huaxu.wan@intel.com>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+In addition, to be sure that 'mmc_request()' will get called for all new
+requests (so it can error them out), the queue is emptied during cleanup.
+This is done after the worker thread is stopped to avoid racing with it.
+
+Finally, it is not a device error for this to be happening, so quiet the
+(sometimes very many) error messages.
+
+Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: <linux-mmc@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/hwmon/Kconfig    |    2 +-
- drivers/hwmon/coretemp.c |   16 ++++++++++++++--
- 2 files changed, 15 insertions(+), 3 deletions(-)
+ drivers/mmc/card/block.c |    2 ++
+ drivers/mmc/card/queue.c |   18 +++++++++---------
+ 2 files changed, 11 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 700e93a..c1f7ea0 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -374,7 +374,7 @@ config SENSORS_GL520SM
+diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
+index ee87911..1f552c6 100644
+--- a/drivers/mmc/card/block.c
++++ b/drivers/mmc/card/block.c
+@@ -91,6 +91,8 @@ static void mmc_blk_put(struct mmc_blk_data *md)
+ 		if (!devmaj)
+ 			devidx = md->disk->first_minor >> MMC_SHIFT;
  
- config SENSORS_CORETEMP
- 	tristate "Intel Core/Core2/Atom temperature sensor"
--	depends on X86 && EXPERIMENTAL
-+	depends on X86 && PCI && EXPERIMENTAL
- 	help
- 	  If you say yes here you get support for the temperature
- 	  sensor inside your CPU. Most of the family 6 CPUs
-diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
-index caef39c..2d7bcee 100644
---- a/drivers/hwmon/coretemp.c
-+++ b/drivers/hwmon/coretemp.c
-@@ -33,6 +33,7 @@
- #include <linux/list.h>
- #include <linux/platform_device.h>
- #include <linux/cpu.h>
-+#include <linux/pci.h>
- #include <asm/msr.h>
- #include <asm/processor.h>
++		blk_cleanup_queue(md->queue.queue);
++
+ 		__clear_bit(devidx, dev_use);
  
-@@ -161,6 +162,7 @@ static int __devinit adjust_tjmax(struct cpuinfo_x86 *c, u32 id, struct device *
- 	int usemsr_ee = 1;
- 	int err;
- 	u32 eax, edx;
-+	struct pci_dev *host_bridge;
+ 		put_disk(md->disk);
+diff --git a/drivers/mmc/card/queue.c b/drivers/mmc/card/queue.c
+index 49e5823..c5a7a85 100644
+--- a/drivers/mmc/card/queue.c
++++ b/drivers/mmc/card/queue.c
+@@ -90,9 +90,10 @@ static void mmc_request(struct request_queue *q)
+ 	struct request *req;
  
- 	/* Early chips have no MSR for TjMax */
- 
-@@ -168,11 +170,21 @@ static int __devinit adjust_tjmax(struct cpuinfo_x86 *c, u32 id, struct device *
- 		usemsr_ee = 0;
+ 	if (!mq) {
+-		printk(KERN_ERR "MMC: killing requests for dead queue\n");
+-		while ((req = blk_fetch_request(q)) != NULL)
++		while ((req = blk_fetch_request(q)) != NULL) {
++			req->cmd_flags |= REQ_QUIET;
+ 			__blk_end_request_all(req, -EIO);
++		}
+ 		return;
  	}
  
--	/* Atoms seems to have TjMax at 90C */
-+	/* Atom CPUs */
+@@ -223,17 +224,18 @@ void mmc_cleanup_queue(struct mmc_queue *mq)
+ 	struct request_queue *q = mq->queue;
+ 	unsigned long flags;
  
- 	if (c->x86_model == 0x1c) {
- 		usemsr_ee = 0;
--		tjmax = 90000;
-+
-+		host_bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
-+
-+		if (host_bridge && host_bridge->vendor == PCI_VENDOR_ID_INTEL
-+		    && (host_bridge->device == 0xa000	/* NM10 based nettop */
-+		    || host_bridge->device == 0xa010))	/* NM10 based netbook */
-+			tjmax = 100000;
-+		else
-+			tjmax = 90000;
-+
-+		pci_dev_put(host_bridge);
- 	}
+-	/* Mark that we should start throwing out stragglers */
+-	spin_lock_irqsave(q->queue_lock, flags);
+-	q->queuedata = NULL;
+-	spin_unlock_irqrestore(q->queue_lock, flags);
+-
+ 	/* Make sure the queue isn't suspended, as that will deadlock */
+ 	mmc_queue_resume(mq);
  
- 	if ((c->x86_model > 0xe) && (usemsr_ee)) {
+ 	/* Then terminate our worker thread */
+ 	kthread_stop(mq->thread);
+ 
++	/* Empty the queue */
++	spin_lock_irqsave(q->queue_lock, flags);
++	q->queuedata = NULL;
++	blk_start_queue(q);
++	spin_unlock_irqrestore(q->queue_lock, flags);
++
+  	if (mq->bounce_sg)
+  		kfree(mq->bounce_sg);
+  	mq->bounce_sg = NULL;
+@@ -245,8 +247,6 @@ void mmc_cleanup_queue(struct mmc_queue *mq)
+ 		kfree(mq->bounce_buf);
+ 	mq->bounce_buf = NULL;
+ 
+-	blk_cleanup_queue(mq->queue);
+-
+ 	mq->card = NULL;
+ }
+ EXPORT_SYMBOL(mmc_cleanup_queue);
 -- 
 1.6.6
 
