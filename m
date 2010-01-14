@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762Ab0ANW2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488Ab0ANW2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755762Ab0ANW2f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:28:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569Ab0ANW2d
+	id S1756488Ab0ANW2o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:28:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888Ab0ANW2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:28:33 -0500
-Received: from kroah.org ([198.145.64.141]:60544 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:28:39 -0500
+Received: from kroah.org ([198.145.64.141]:60573 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754729Ab0ANW23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:29 -0500
+	id S1755814Ab0ANW2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:36 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Zhenyu Wang <zhenyu.z.wang@intel.com>,
-       Zhenyu Wang <zhenyuw@linux.intel.com>, Dave Airlie <airlied@redhat.com>,
+       Dave Anderson <anderson@redhat.com>, Paul Menage <menage@google.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 15/52] drm: remove address mask param for drm_pci_alloc()
-Date: Thu, 14 Jan 2010 14:26:54 -0800
-Message-Id: <1263508051-7868-15-git-send-email-gregkh@suse.de>
+Subject: [PATCH 22/52] cgroups: fix 2.6.32 regression causing BUG_ON() in cgroup_diput()
+Date: Thu, 14 Jan 2010 14:27:01 -0800
+Message-Id: <1263508051-7868-22-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-14-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-21-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -35,148 +34,75 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-12-git-send-email-gregkh@suse.de>
  <1263508051-7868-13-git-send-email-gregkh@suse.de>
  <1263508051-7868-14-git-send-email-gregkh@suse.de>
+ <1263508051-7868-15-git-send-email-gregkh@suse.de>
+ <1263508051-7868-16-git-send-email-gregkh@suse.de>
+ <1263508051-7868-17-git-send-email-gregkh@suse.de>
+ <1263508051-7868-18-git-send-email-gregkh@suse.de>
+ <1263508051-7868-19-git-send-email-gregkh@suse.de>
+ <1263508051-7868-20-git-send-email-gregkh@suse.de>
+ <1263508051-7868-21-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhenyu Wang <zhenyu.z.wang@intel.com>
+From: Dave Anderson <anderson@redhat.com>
 
-commit e6be8d9d17bd44061116f601fe2609b3ace7aa69 upstream.
+commit bd4f490a079730aadfaf9a728303ea0135c01945 upstream.
 
-drm_pci_alloc() has input of address mask for setting pci dma
-mask on the device, which should be properly setup by drm driver.
-And leave it as a param for drm_pci_alloc() would cause confusion
-or mistake would corrupt the correct dma mask setting, as seen on
-intel hw which set wrong dma mask for hw status page. So remove
-it from drm_pci_alloc() function.
+The LTP cgroup test suite generates a "kernel BUG at kernel/cgroup.c:790!"
+here in cgroup_diput():
 
-Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
-Signed-off-by: Dave Airlie <airlied@redhat.com>
+                 /*
+                  * if we're getting rid of the cgroup, refcount should ensure
+                  * that there are no pidlists left.
+                  */
+                 BUG_ON(!list_empty(&cgrp->pidlists));
+
+The cgroup pidlist rework in 2.6.32 generates the BUG_ON, which is caused
+when pidlist_array_load() calls cgroup_pidlist_find():
+
+(1) if a matching cgroup_pidlist is found, it down_write's the mutex of the
+     pre-existing cgroup_pidlist, and increments its use_count.
+(2) if no matching cgroup_pidlist is found, then a new one is allocated, it
+     down_write's its mutex, and the use_count is set to 0.
+(3) the matching, or new, cgroup_pidlist gets returned back to pidlist_array_load(),
+     which increments its use_count -- regardless whether new or pre-existing --
+     and up_write's the mutex.
+
+So if a matching list is ever encountered by cgroup_pidlist_find() during
+the life of a cgroup directory, it results in an inflated use_count value,
+preventing it from ever getting released by cgroup_release_pid_array().
+Then if the directory is subsequently removed, cgroup_diput() hits the
+BUG_ON() when it finds that the directory's cgroup is still populated with
+a pidlist.
+
+The patch simply removes the use_count increment when a matching pidlist
+is found by cgroup_pidlist_find(), because it gets bumped by the calling
+pidlist_array_load() function while still protected by the list's mutex.
+
+Signed-off-by: Dave Anderson <anderson@redhat.com>
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Ben Blum <bblum@andrew.cmu.edu>
+Cc: Paul Menage <menage@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/gpu/drm/ati_pcigart.c   |   10 ++++++++--
- drivers/gpu/drm/drm_bufs.c      |    4 ++--
- drivers/gpu/drm/drm_pci.c       |    8 +-------
- drivers/gpu/drm/i915/i915_dma.c |    2 +-
- drivers/gpu/drm/i915/i915_gem.c |    2 +-
- include/drm/drmP.h              |    2 +-
- 6 files changed, 14 insertions(+), 14 deletions(-)
+ kernel/cgroup.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/gpu/drm/ati_pcigart.c b/drivers/gpu/drm/ati_pcigart.c
-index 628eae3..a1fce68 100644
---- a/drivers/gpu/drm/ati_pcigart.c
-+++ b/drivers/gpu/drm/ati_pcigart.c
-@@ -39,8 +39,7 @@ static int drm_ati_alloc_pcigart_table(struct drm_device *dev,
- 				       struct drm_ati_pcigart_info *gart_info)
- {
- 	gart_info->table_handle = drm_pci_alloc(dev, gart_info->table_size,
--						PAGE_SIZE,
--						gart_info->table_mask);
-+						PAGE_SIZE);
- 	if (gart_info->table_handle == NULL)
- 		return -ENOMEM;
- 
-@@ -112,6 +111,13 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
- 	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN) {
- 		DRM_DEBUG("PCI: no table in VRAM: using normal RAM\n");
- 
-+		if (pci_set_dma_mask(dev->pdev, gart_info->table_mask)) {
-+			DRM_ERROR("fail to set dma mask to 0x%Lx\n",
-+				  gart_info->table_mask);
-+			ret = 1;
-+			goto done;
-+		}
-+
- 		ret = drm_ati_alloc_pcigart_table(dev, gart_info);
- 		if (ret) {
- 			DRM_ERROR("cannot allocate PCI GART page!\n");
-diff --git a/drivers/gpu/drm/drm_bufs.c b/drivers/gpu/drm/drm_bufs.c
-index 3d09e30..8417cc4 100644
---- a/drivers/gpu/drm/drm_bufs.c
-+++ b/drivers/gpu/drm/drm_bufs.c
-@@ -326,7 +326,7 @@ static int drm_addmap_core(struct drm_device * dev, resource_size_t offset,
- 		 * As we're limiting the address to 2^32-1 (or less),
- 		 * casting it down to 32 bits is no problem, but we
- 		 * need to point to a 64bit variable first. */
--		dmah = drm_pci_alloc(dev, map->size, map->size, 0xffffffffUL);
-+		dmah = drm_pci_alloc(dev, map->size, map->size);
- 		if (!dmah) {
- 			kfree(map);
- 			return -ENOMEM;
-@@ -885,7 +885,7 @@ int drm_addbufs_pci(struct drm_device * dev, struct drm_buf_desc * request)
- 
- 	while (entry->buf_count < count) {
- 
--		dmah = drm_pci_alloc(dev, PAGE_SIZE << page_order, 0x1000, 0xfffffffful);
-+		dmah = drm_pci_alloc(dev, PAGE_SIZE << page_order, 0x1000);
- 
- 		if (!dmah) {
- 			/* Set count correctly so we free the proper amount. */
-diff --git a/drivers/gpu/drm/drm_pci.c b/drivers/gpu/drm/drm_pci.c
-index 577094f..e68ebf9 100644
---- a/drivers/gpu/drm/drm_pci.c
-+++ b/drivers/gpu/drm/drm_pci.c
-@@ -47,8 +47,7 @@
- /**
-  * \brief Allocate a PCI consistent memory block, for DMA.
-  */
--drm_dma_handle_t *drm_pci_alloc(struct drm_device * dev, size_t size, size_t align,
--				dma_addr_t maxaddr)
-+drm_dma_handle_t *drm_pci_alloc(struct drm_device * dev, size_t size, size_t align)
- {
- 	drm_dma_handle_t *dmah;
- #if 1
-@@ -63,11 +62,6 @@ drm_dma_handle_t *drm_pci_alloc(struct drm_device * dev, size_t size, size_t ali
- 	if (align > size)
- 		return NULL;
- 
--	if (pci_set_dma_mask(dev->pdev, maxaddr) != 0) {
--		DRM_ERROR("Setting pci dma mask failed\n");
--		return NULL;
--	}
--
- 	dmah = kmalloc(sizeof(drm_dma_handle_t), GFP_KERNEL);
- 	if (!dmah)
- 		return NULL;
-diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-index e5b138b..4a553ad 100644
---- a/drivers/gpu/drm/i915/i915_dma.c
-+++ b/drivers/gpu/drm/i915/i915_dma.c
-@@ -123,7 +123,7 @@ static int i915_init_phys_hws(struct drm_device *dev)
- 	drm_i915_private_t *dev_priv = dev->dev_private;
- 	/* Program Hardware Status Page */
- 	dev_priv->status_page_dmah =
--		drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
-+		drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE);
- 
- 	if (!dev_priv->status_page_dmah) {
- 		DRM_ERROR("Can not allocate hardware status page\n");
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index 3d75c67..df2c625 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -4637,7 +4637,7 @@ int i915_gem_init_phys_object(struct drm_device *dev,
- 
- 	phys_obj->id = id;
- 
--	phys_obj->handle = drm_pci_alloc(dev, size, 0, 0xffffffff);
-+	phys_obj->handle = drm_pci_alloc(dev, size, 0);
- 	if (!phys_obj->handle) {
- 		ret = -ENOMEM;
- 		goto kfree_obj;
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 9d3d684..7ad3faa 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -1402,7 +1402,7 @@ extern int drm_ati_pcigart_cleanup(struct drm_device *dev,
- 				   struct drm_ati_pcigart_info * gart_info);
- 
- extern drm_dma_handle_t *drm_pci_alloc(struct drm_device *dev, size_t size,
--				       size_t align, dma_addr_t maxaddr);
-+				       size_t align);
- extern void __drm_pci_free(struct drm_device *dev, drm_dma_handle_t * dmah);
- extern void drm_pci_free(struct drm_device *dev, drm_dma_handle_t * dmah);
- 
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 0249f4b..1fbcc74 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2468,7 +2468,6 @@ static struct cgroup_pidlist *cgroup_pidlist_find(struct cgroup *cgrp,
+ 			/* make sure l doesn't vanish out from under us */
+ 			down_write(&l->mutex);
+ 			mutex_unlock(&cgrp->pidlist_mutex);
+-			l->use_count++;
+ 			return l;
+ 		}
+ 	}
 -- 
 1.6.6
 
