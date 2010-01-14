@@ -1,35 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752Ab0ANN7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784Ab0ANN7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756752Ab0ANN7O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 08:59:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932181Ab0ANN7L
+	id S1756784Ab0ANN7X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 08:59:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775Ab0ANN7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 08:59:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60877 "EHLO mx1.redhat.com"
+	Thu, 14 Jan 2010 08:59:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35606 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932180Ab0ANN7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 08:59:09 -0500
+	id S1756760Ab0ANN7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 08:59:19 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20100114053634.GA15972@ZenIV.linux.org.uk>
-References: <20100114053634.GA15972@ZenIV.linux.org.uk> <20100108220516.23489.11319.stgit@warthog.procyon.org.uk> <23917.1262988613@redhat.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: dhowells@redhat.com, vapier@gentoo.org, lethal@linux-sh.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] NOMMU: Fix SYSV SHM for NOMMU
-Date: Thu, 14 Jan 2010 13:57:25 +0000
-Message-ID: <10463.1263477445@redhat.com>
+Subject: [PATCH 3/6] NOMMU: Remove a superfluous check of vm_region::vm_usage
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: viro@ZenIV.linux.org.uk, vapier@gentoo.org, lethal@linux-sh.org,
+       dhowells@redhat.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Date: Thu, 14 Jan 2010 13:58:40 +0000
+Message-ID: <20100114135840.10482.44507.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20100114135830.10482.54124.stgit@warthog.procyon.org.uk>
+References: <20100114135830.10482.54124.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro <viro@ZenIV.linux.org.uk> wrote:
+In split_vma(), there's no need to check if the VMA being split has a region
+that's in use by more than one VMA because:
 
-> Series looks sane...  ACK on the entire bunch
+ (1) The preceding test prohibits splitting of non-anonymous VMAs and regions
+     (eg: file or chardev backed VMAs).
 
-Thanks!
+ (2) Anonymous regions can't be mapped multiple times because there's no handle
+     by which to refer to the already existing region.
 
-David
+ (3) If a VMA has previously been split, then the region backing it has also
+     been split into two regions, each of usage 1.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+
+ mm/nommu.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
+
+
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 5e39294..d6dd656 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1441,10 +1441,9 @@ int split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
+ 
+ 	kenter("");
+ 
+-	/* we're only permitted to split anonymous regions that have a single
+-	 * owner */
+-	if (vma->vm_file ||
+-	    vma->vm_region->vm_usage != 1)
++	/* we're only permitted to split anonymous regions (these should have
++	 * only a single usage on the region) */
++	if (vma->vm_file)
+ 		return -ENOMEM;
+ 
+ 	if (mm->map_count >= sysctl_max_map_count)
+
