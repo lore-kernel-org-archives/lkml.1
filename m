@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655Ab0ANFMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752136Ab0ANFNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751655Ab0ANFMc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 00:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431Ab0ANFMb
+	id S1752136Ab0ANFNM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 00:13:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056Ab0ANFNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 00:12:31 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:45029 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750854Ab0ANFM1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 00:12:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UuFBIwFt4G2vZMVYmvZ5x5xYN3IpbkHYHFYIuaQ8mXmJeTbTC6yUPk95SQd9xE3nB3
-         yqs8Y3ND9DXdZtFLcP0sAVEccHEVlhbLKWw7E4TzQoc95d60XLX8KReyYe/2LPJVNWrB
-         giEI+IbYEt26gTxLkeZREI2PWPehi8k/hUpcc=
-MIME-Version: 1.0
-In-Reply-To: <20100114084659.D713.A69D9226@jp.fujitsu.com>
-References: <20100113171953.B3E5.A69D9226@jp.fujitsu.com>
-	 <28c262361001130231k29b933der4022f4d1da80b084@mail.gmail.com>
-	 <20100114084659.D713.A69D9226@jp.fujitsu.com>
-Date: Thu, 14 Jan 2010 14:12:25 +0900
-Message-ID: <28c262361001132112i7f50fd66qcd24dc2ddb4d78d8@mail.gmail.com>
-Subject: Re: [PATCH 2/3][v2] vmstat: add anon_scan_ratio field to zoneinfo
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 14 Jan 2010 00:13:11 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42001 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750856Ab0ANFNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 00:13:10 -0500
+Date: Thu, 14 Jan 2010 16:13:02 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jason Wessel <jason.wessel@windriver.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: linux-next: manual merge of the tip tree with the kgdb tree
+Message-Id: <20100114161302.285ebe27.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 14, 2010 at 8:50 AM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
-> Hi
->
->> Hi, Kosaki.
->>
->> On Wed, Jan 13, 2010 at 5:21 PM, KOSAKI Motohiro
->> <kosaki.motohiro@jp.fujitsu.com> wrote:
->> > Changelog
->> >  from v1
->> >  - get_anon_scan_ratio don't tak zone->lru_lock anymore
->> >   because zoneinfo_show_print takes zone->lock.
->>
->> When I saw this changelog first, I got confused.
->> That's because there is no relation between lru_lock and lock in zone.
->> You mean zoneinfo is allowed to have a stale data?
->> Tend to agree with it.
->
-> Well. zone->lock and zone->lru_lock should be not taked at the same time.
+Hi all,
 
-I looked over the code since I am out of office.
-I can't find any locking problem zone->lock and zone->lru_lock.
-Do you know any locking order problem?
-Could you explain it with call graph if you don't mind?
+Today's linux-next merge of the tip tree got a conflict in
+kernel/trace/trace.c between commit
+d304af88a0105ff5b64cffc9108636ecad1fdd78 ("ftrace,kdb: Extend kdb to be
+able to dump the ftrace buffer") from the kgdb tree and commit
+7e53bd42d14c75192b99674c40fcc359392da59d ("tracing: Consolidate
+protection of reader access to the ring buffer") from the tip tree.
 
-I am out of office by tomorrow so I can't reply quickly.
-Sorry for late reponse.
-
-
+Just context changes (I think).  I fixed it up (see below) and can carry
+the fix as necessary.
 -- 
-Kind regards,
-Minchan Kim
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc kernel/trace/trace.c
+index b3c786a,5314c90..0000000
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@@ -100,11 -101,11 +101,8 @@@ static inline void ftrace_enable_cpu(vo
+  	preempt_enable();
+  }
+  
+ -static cpumask_var_t __read_mostly	tracing_buffer_mask;
+ -
+ -#define for_each_tracing_cpu(cpu)	\
+ -	for_each_cpu(cpu, tracing_buffer_mask)
+ +cpumask_var_t __read_mostly	tracing_buffer_mask;
+  
+- /* Define which cpu buffers are currently read in trace_pipe */
+- static cpumask_var_t			tracing_reader_cpumask;
+- 
+  /*
+   * ftrace_dump_on_oops - variable to dump ftrace buffer on oops
+   *
+@@@ -3066,7 -3131,8 +3123,8 @@@ waitagain
+  	iter->pos = -1;
+  
+  	trace_event_read_lock();
++ 	trace_access_lock(iter->cpu_file);
+ -	while (find_next_entry_inc(iter) != NULL) {
+ +	while (trace_find_next_entry_inc(iter) != NULL) {
+  		enum print_line_t ret;
+  		int len = iter->seq.len;
+  
