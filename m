@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393Ab0ANXLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932314Ab0ANXN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393Ab0ANXLl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 18:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756931Ab0ANXLN
+	id S932314Ab0ANXN3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 18:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903Ab0ANXN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 18:11:13 -0500
-Received: from kroah.org ([198.145.64.141]:41935 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756885Ab0ANXKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 18:10:13 -0500
-Date: Thu, 14 Jan 2010 15:06:40 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [0/6] 2.6.27.44-stable review
-Message-ID: <20100114230640.GA7259@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Thu, 14 Jan 2010 18:13:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33740 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755598Ab0ANXN1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 18:13:27 -0500
+Date: Thu, 14 Jan 2010 15:12:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Perches <joe@perches.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] scripts/get_maintainer.pl: Add --sections, print entire
+ matched subsystem
+Message-Id: <20100114151254.72b57501.akpm@linux-foundation.org>
+In-Reply-To: <1263408063.8011.116.camel@Joe-Laptop.home>
+References: <1263408063.8011.116.camel@Joe-Laptop.home>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.27.44 release.
-There are 6 patches in this series, all will be posted as a response
-to this one.  If anyone has any issues with these being applied, please
-let us know.  If anyone is a maintainer of the proper subsystem, and
-wants to add a Signed-off-by: line to the patch, please respond with it.
+On Wed, 13 Jan 2010 10:41:03 -0800
+Joe Perches <joe@perches.com> wrote:
 
-Responses should be made by Saturday, January 16, 22:00:00 UTC.
-Anything received after that time might be too late.
+> Print the complete contents of the matched subsystem in pattern
+> match depth order.
+> 
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.44-rc1.gz
-and the diffstat can be found below.
+It would be much easier for us to understand the proposed change if the
+changelog contained some example output, please.
 
-
-thanks,
-
-greg k-h
-
- Makefile                        |    2 +-
- arch/powerpc/kernel/align.c     |   63 ++++++++++++++++++++++++++++----------
- arch/powerpc/kernel/fpu.S       |    5 +++
- arch/powerpc/kernel/misc_64.S   |    8 +++++
- kernel/audit_tree.c             |   13 +++++---
- kernel/signal.c                 |    3 +-
- net/bridge/netfilter/ebtables.c |    6 ++++
- 7 files changed, 76 insertions(+), 24 deletions(-)
