@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756998Ab0ANQII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757073Ab0ANQK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756998Ab0ANQII (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 11:08:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756439Ab0ANQIH
+	id S1757073Ab0ANQK0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 11:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756985Ab0ANQKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 11:08:07 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:37277 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753938Ab0ANQIG (ORCPT
+	Thu, 14 Jan 2010 11:10:25 -0500
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:34317 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754242Ab0ANQKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 11:08:06 -0500
-Date: Thu, 14 Jan 2010 08:07:48 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: akpm@linux-foundation.org, Ben Blum <bblum@andrew.cmu.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2010-01-13-12-17 uploaded (cgroup)
-Message-Id: <20100114080748.4eaf91d6.randy.dunlap@oracle.com>
-In-Reply-To: <201001132042.o0DKgaSR027272@imap1.linux-foundation.org>
-References: <201001132042.o0DKgaSR027272@imap1.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 14 Jan 2010 11:10:25 -0500
+X-Greylist: delayed 539 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jan 2010 11:10:25 EST
+Date: Thu, 14 Jan 2010 09:01:26 -0700
+From: dougthompson@xmission.com
+To: tom@vincze.org, mchehab@redhat.com, gregkh@suse.de,
+       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH 1/1] edac: i5000_edac critical fix panic out of bounds 
+Message-ID: <4b4f3fd6.uRcykZhMm6srfB1R%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.2 01/07/07
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4B4F4158.00B7:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010 12:17:36 -0800 akpm@linux-foundation.org wrote:
+From: Tamas Vincze <tom@vincze.org>
 
-> The mm-of-the-moment snapshot 2010-01-13-12-17 has been uploaded to
-> 
->    http://userweb.kernel.org/~akpm/mmotm/
-> 
-> and will soon be available at
-> 
->    git://zen-kernel.org/kernel/mmotm.git
+Fix for BZ#14568
 
+EDAC MC0: INTERNAL ERROR: channel-b out of range (4 >= 4)
+Kernel panic - not syncing: EDAC MC0: Uncorrected Error  (XEN) Domain 0 crashed: 'noreboot' set - not rebooting.
 
-patch:  cgroups-subsystem-module-unloading.patch
+This happens because FERR_NF_FBD bit 28 is not updated on i5000. Due to that,
+both bits 28 and 29 may be equal to one, returning channel = 3. As this
+value is invalid, EDAC core generates the panic.
 
-When CONFIG_MODULE_UNLOAD is not enabled:
-
-kernel/cgroup.c:1013: error: implicit declaration of function 'module_refcount'
-
-
-
+Signed-off-by: Tamas Vincze <tom@vincze.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 ---
-~Randy
+ i5000_edac.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.33-rc4/drivers/edac/i5000_edac.c
+===================================================================
+--- linux-2.6.33-rc4.orig/drivers/edac/i5000_edac.c	2010-01-14 08:37:33.000000000 -0700
++++ linux-2.6.33-rc4/drivers/edac/i5000_edac.c	2010-01-14 08:41:23.000000000 -0700
+@@ -577,7 +577,13 @@ static void i5000_process_nonfatal_error
+ 		debugf0("\tUncorrected bits= 0x%x\n", ue_errors);
+ 
+ 		branch = EXTRACT_FBDCHAN_INDX(info->ferr_nf_fbd);
+-		channel = branch;
++
++		/*
++		 * According with i5000 datasheet, bit 28 has no significance
++		 * for errors M4Err-M12Err and M17Err-M21Err, on FERR_NF_FBD
++		 */
++		channel = branch & 2;
++
+ 		bank = NREC_BANK(info->nrecmema);
+ 		rank = NREC_RANK(info->nrecmema);
+ 		rdwr = NREC_RDWR(info->nrecmema);
