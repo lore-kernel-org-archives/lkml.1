@@ -1,87 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336Ab0ANRCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932276Ab0ANRC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757336Ab0ANRCR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 12:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757329Ab0ANRCP
+	id S932276Ab0ANRC1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 12:02:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932255Ab0ANRCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 12:02:15 -0500
-Received: from waste.org ([173.11.57.241]:54455 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757322Ab0ANRCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 12:02:14 -0500
-Subject: Re: [PATCH] pagemap: early return on unmapped areas
-From: Matt Mackall <mpm@selenic.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20100114085230.GA12078@localhost>
-References: <20100110020955.GB25323@basil.fritz.box>
-	 <20100113141648.42eff724.akpm@linux-foundation.org>
-	 <1263421562.29868.5000.camel@calx>
-	 <20100113143055.7bea30c5.akpm@linux-foundation.org>
-	 <1263423916.29868.5009.camel@calx>
-	 <20100113151502.fa425247.akpm@linux-foundation.org>
-	 <20100114055319.GA17671@localhost>
-	 <20100113221013.b1beecb4.akpm@linux-foundation.org>
-	 <20100114080600.GA4739@localhost> <20100114083048.GC12241@basil.fritz.box>
-	 <20100114085230.GA12078@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 11:02:11 -0600
-Message-ID: <1263488531.29868.5151.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 14 Jan 2010 12:02:24 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:56294 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932252Ab0ANRCW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 12:02:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=MJNVgep5uKDn8LEV8Lt0zYi7StYgxwaLA51I5xgxbEXOEYLr5Xtf0j3yMk6TdFIZ/F
+         bhhiFfbyh9ZtXkpCohKx42wACQ0l7uE4TwsAsXbs7RGtpZepzx5sSoVSb7qToBNK6lFN
+         V0dpfarbVDK03Bf+uWx9BF29vMe+Ip2dVhkuE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: SATA_SIL on IXP425 workaround
+Date: Thu, 14 Jan 2010 16:59:19 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+References: <m33a4nfvva.fsf@intrepid.localdomain>
+In-Reply-To: <m33a4nfvva.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Message-Id: <201001141659.19687.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 16:52 +0800, Wu Fengguang wrote:
-> On Thu, Jan 14, 2010 at 04:30:48PM +0800, Andi Kleen wrote:
-> > > ---
-> > > pagemap: early return on unmapped areas
-> > 
-> > Yes seems like a reasonable idea.
+On Monday 09 November 2009 06:31:21 pm Krzysztof Halasa wrote:
+> I'm trying to add a workaround for IXP4xx CPUs to SATA SIL driver. The
+> problem is that IXP4xx CPUs (Intel's XScale (ARM) network-oriented
+> processors) are unable to perform 8 and 16-bit read from PCI MMIO, they
+> can only do a full 32-bit readl(); SIL chips respond to that with PCI
+> abort. The workaround is to use 8 and 16-bit regular IO reads (inb/inw)
+> instead (MMIO write is not a problem).
 > 
-> Thanks!
+> For SIL3x12 the workaround is simple (attached) and it works on my 3512.
+> I'm not sure about 3114 (the 4-port chip) - the PIO BARs have TF, CTL
+> and BWDMA registers which are common to channels 0 and 2, and (the other
+> set) to channels 1 and 3. Channel selection is done with bit 4 of
+> device/head TF register, this is similar (same?) as PATA master/slave.
+> Does that mean that I can simply treat channel 0 as PRI master, ch#2 as
+> PRI slave, ch#1 as SEC master and ch#3 as SEC slave, and the SFF code
+> will select the right device correctly? Does it need additional code?
+> I don't have anything based on 3114.
 > 
-> I just changed the ">" to ">=", because it happen to make a difference
-> for cp/cat, which does 4k sized read:
-> 
->         4k read buffer = 4k/8 pages = 512 pages = NR_PMD_PAGES
-> 
-> So the change to ">=" makes cp exit immediately (4k buffer matches
-> exactly one PMD hole).
-> 
-> before
->         dd if=/proc/$$/pagemap of=/dev/null bs=4k
->         512+0 records in
->         512+0 records out
->         2097152 bytes (2.1 MB) copied, 0.0225796 s, 92.9 MB/s
-> 
-> after
->         dd if=/proc/$$/pagemap of=/dev/null bs=4k
->         0+0 records in
->         0+0 records out
->         0 bytes (0 B) copied, 2.8029e-05 s, 0.0 kB/s
+> Note: the large PRD is not a problem here, the transfer can be started
+> by MMIO write. Only reads are an issue.
 
-Have you guys lost your minds?
+FWIW your patch is now in my atang tree (I'm aware that Jeff is working
+on generic solution but in the meantime this non-intrusive patch allows
+sata_sil to work on IXP425).
 
-I regularly used the exact standard tool you just broke above to test
-pagemap when I was developing it. There's no doubt that this patch (or
-any similarly misguided ones) WILL regress existing naive or not
-intended to be portable 32-bit users. And if I was some poor future
-bastard trying to write a program against pagemap with your patch, odds
-of getting a concussion banging my head against the wall trying to
-figure out its highly non-file-like behavior would be quite high. 
+> --- a/drivers/ata/sata_sil.c
+> +++ b/drivers/ata/sata_sil.c
+> @@ -757,7 +757,12 @@ static int sil_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  	if (rc)
+>  		return rc;
+>  
+> +#ifdef CONFIG_ARCH_IXP4XX
+> +	/* We need all 6 regions on IXP4xx */
+> +	rc = pcim_iomap_regions(pdev, 0x3F, DRV_NAME);
+> +#else
+>  	rc = pcim_iomap_regions(pdev, 1 << SIL_MMIO_BAR, DRV_NAME);
+> +#endif
+>  	if (rc == -EBUSY)
+>  		pcim_pin_device(pdev);
+>  	if (rc)
+> @@ -777,10 +782,18 @@ static int sil_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  		struct ata_port *ap = host->ports[i];
+>  		struct ata_ioports *ioaddr = &ap->ioaddr;
+>  
+> +#ifdef CONFIG_ARCH_IXP4XX
+> +		/* IXP4xx CPUs can't perform 8 and 16-bit MMIO reads,
+> +		   use normal IO from/to regions 0-5 instead */
+> +		ioaddr->cmd_addr = host->iomap[i * 2];
+> +		ioaddr->altstatus_addr = host->iomap[1 + i * 2] + 2;
+> +		ioaddr->bmdma_addr = host->iomap[4] + sil_port[i].bmdma;
+> +#else
+>  		ioaddr->cmd_addr = mmio_base + sil_port[i].tf;
+> -		ioaddr->altstatus_addr =
+> -		ioaddr->ctl_addr = mmio_base + sil_port[i].ctl;
+> +		ioaddr->altstatus_addr = mmio_base + sil_port[i].ctl;
+>  		ioaddr->bmdma_addr = mmio_base + sil_port[i].bmdma;
+> +#endif
+> +		ioaddr->ctl_addr = mmio_base + sil_port[i].ctl;
+>  		ioaddr->scr_addr = mmio_base + sil_port[i].scr;
+>  		ata_sff_std_ports(ioaddr);
 
-Why are we even still on this. There's no regression. LTP + pagemap +
-64-bit has always behaved thus. Nor are large virtual files new. And
-LTP's n00b assumption that it can just read all of any file in /proc has
-always been wrong. LTP had the exact same problem on 64-bit /proc/kcore
-(how long has that existed?) and finally fixed it in 2005.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+--
+Bartlomiej Zolnierkiewicz
