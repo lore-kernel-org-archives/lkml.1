@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162Ab0ANBDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248Ab0ANBFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162Ab0ANBDO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 20:03:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914Ab0ANBDN
+	id S1755248Ab0ANBFx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 20:05:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088Ab0ANBFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 20:03:13 -0500
-Received: from mail.perches.com ([173.55.12.10]:1148 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754825Ab0ANBDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 20:03:12 -0500
-Subject: Re: [PATCH v4] tcp: harmonize tcp_vx_rcv header length assumptions
-From: Joe Perches <joe@perches.com>
-To: William Allen Simpson <william.allen.simpson@gmail.com>,
-       Patrick McHardy <kaber@trash.net>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-In-Reply-To: <4B4E378A.7040506@gmail.com>
-References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com>
-	 <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com>
-	 <20100113155323.GB24818@basil.fritz.box> <4B4E23E0.4000007@gmail.com>
-	 <4B4E378A.7040506@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Jan 2010 17:03:10 -0800
-Message-ID: <1263430990.1966.12.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jan 2010 20:05:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60395 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755074Ab0ANBFv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 20:05:51 -0500
+Date: Wed, 13 Jan 2010 17:05:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: George Spelvin <linux@horizon.com>, linux-kernel@vger.kernel.org,
+       schwab@linux-m68k.org
+Subject: Re: x86-32: clean up rwsem inline asm statements
+In-Reply-To: <4B4E3549.7060405@zytor.com>
+Message-ID: <alpine.LFD.2.00.1001131654580.13231@localhost.localdomain>
+References: <20100113195828.2611.qmail@science.horizon.com> <4B4E3549.7060405@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-13 at 16:13 -0500, William Allen Simpson wrote:
-> I did today's tests on tcp_ipv4, but part of this harmonization is to
-> make v4 and v6 match up better.  As I was examining line by line, one of
-> the things that leaps out is that ipv4 has nf_reset(skb):
+
+
+On Wed, 13 Jan 2010, H. Peter Anvin wrote:
 > 
-> tcp_ipv4:
-> 	if (!xfrm4_policy_check(sk, XFRM_POLICY_IN, skb))
-> 		goto discard_and_relse;
-> 	nf_reset(skb);
-> 
-> 	if (sk_filter(sk, skb))
-> 		goto discard_and_relse;
-> 
-> tcp_ipv6:
-> 	if (!xfrm6_policy_check(sk, XFRM_POLICY_IN, skb))
-> 		goto discard_and_relse;
-> 
-> 	if (sk_filter(sk, skb))
-> 		goto discard_and_relse;
-> 
-> Does anybody know why?  Should ipv6 have it?  Or at least a comment
-> explaining the reasoning for the omission?
+> There are a number of things that can be done better... for one thing,
+> "+m" (sem->count) and "a" (sem) is just bloody wrong.  The right thing
+> would be "a" (&sem->count) for proper robustness.
 
-You should ask the person that put the line in, but
-it might be because no IPv6 NAT support exists.
+Actually, no.
 
-$ git blame -L 1658,1658 net/ipv4/tcp_ipv4.c
-b59c2701 (Patrick McHardy 2006-01-06 23:06:10 -0800 1658)       nf_reset(skb);
+Strictly speaking, we should use "a" (sem), and then use '%0' (pointing to 
+the "+m" (sem->count)) for the actual memory access in the inline asm, 
+rather than '(%1)'.
 
-And
+We do need %eax to contain the pointer to the semaphore, because _that_ is 
+what we pass in as an argument (and return as a value!) to the rwsem slow 
+paths.
 
-$ git log -p -1 b59c2701
-commit b59c270104f03960069596722fea70340579244d
-Author: Patrick McHardy <kaber@trash.net>
-Date:   Fri Jan 6 23:06:10 2006 -0800
+So "a" (sem) is absolutely the right thing to do.
 
-    [NETFILTER]: Keep conntrack reference until IPsec policy checks are done
-    
-    Keep the conntrack reference until policy checks have been performed for
-    IPsec NAT support. The reference needs to be dropped before a packet is
-    queued to avoid having the conntrack module unloadable.
-    
-    Signed-off-by: Patrick McHardy <kaber@trash.net>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+The reason we use "(%1)" rather than "%0" is - if I recall correctly - 
+that back when we inlined it, gcc would often stupidly use the original 
+value of the semaphore address rather than %eax (which obviously also 
+contained it), and it generated larger code with big constants etc.
 
+Now, since we only inline it in one place anyway, and the semaphore is 
+always an argument to that inlining site anyway, I don't think it matters 
+(it's never going to be some global pointer), and we probably could/should 
+just do this right. So instead of
 
+	LOCK_PREFIX "  inc%z0      (%1)\n\t"
 
+we'd probably be better off with just
 
+	LOCK_PREFIX "  inc%z0 %0\n\t"
 
+instead, letting gcc generate the memory pointer to "sem->count" itself.
+
+		Linus
