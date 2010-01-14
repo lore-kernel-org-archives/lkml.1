@@ -1,186 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483Ab0ANCeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413Ab0ANCep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753483Ab0ANCeJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 21:34:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137Ab0ANCeI
+	id S1754413Ab0ANCep (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 21:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582Ab0ANCen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 21:34:08 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38699
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751560Ab0ANCeH (ORCPT
+	Wed, 13 Jan 2010 21:34:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60636 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612Ab0ANCem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 21:34:07 -0500
-Date: Wed, 13 Jan 2010 18:34:14 -0800 (PST)
-Message-Id: <20100113.183414.78087756.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	Wed, 13 Jan 2010 21:34:42 -0500
+X-Authority-Analysis: v=1.0 c=1 a=xXaQYpEdrzQA:10 a=7U3hwN5JcxgA:10 a=VwQbUJbxAAAA:8 a=a_U1oVfrAAAA:8 a=meVymXHHAAAA:8 a=6NxIIjQzh5j0TfXeUAgA:9 a=8Y2JkftJsh96DVxEa59ONvuMxzMA:4 a=k4qQewaewV0A:10 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: [PATCH][GIT PULL][v2.6.33] tracing/x86: Derive arch from bits
+ argument in recordmcount.pl
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jan Kiszka <jan.kiszka@siemens.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 13 Jan 2010 21:34:39 -0500
+Message-ID: <1263436479.28171.3832.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Wireless bug fixes via John Linville (killing the master device
-screwed up multiqueue and also allowed TX queue to backlog
-indefinitely if stopped, oops).
+Ingo,
 
-net/ip.h build fix from Octavian Purdila.
+Please pull the latest tip/tracing/urgent tree, which can be found at:
 
-Two SFC bug fixes from Ben Hutchings (schedule() vs.
-schedule_timeout_interruptible(), MDIO self-test check
-fix).
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/urgent
 
-E11000E/IXGBE bug fixes via the Intel folks (MDIO slow mode done
-on wrong chips, half duplex backoff bug, elide netpoll execution
-when the chip is down and resources have been freed).
 
-TG3 bug fixes from Matt Carlson, including a nasty fix for a regression
-that would cause RX to completely wedge due to mishandling of the
-producer ring.
+Jan Kiszka (1):
+      tracing/x86: Derive arch from bits argument in recordmcount.pl
 
-And, of course, the ipv6 skb_dst()==NULL fix.
+----
+ scripts/recordmcount.pl |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+---------------------------
+commit b82a4045f7962483a78a874343dc6e31b79c96c1
+Author: Jan Kiszka <jan.kiszka@siemens.com>
+Date:   Mon Jan 11 11:31:44 2010 +0100
 
-Please pull, thanks a lot!
+    tracing/x86: Derive arch from bits argument in recordmcount.pl
+    
+    Let the arch argument be overruled by bits. Otherwise, building of
+    external modules against a i386 target on a x86-64 host (and likely vice
+    versa as well) fails unless ARCH=i386 is explicitly passed to make.
+    
+    Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+    LKML-Reference: <4B4AFE10.8050109@siemens.com>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-The following changes since commit 7284ce6c9f6153d1777df5f310c959724d1bd446:
-  Linus Torvalds (1):
-        Linux 2.6.33-rc4
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 92f09fe..ea6f6e3 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -194,7 +194,7 @@ sub check_objcopy
+     }
+ }
+ 
+-if ($arch eq "x86") {
++if ($arch =~ /(x86(_64)?)|(i386)/) {
+     if ($bits == 64) {
+ 	$arch = "x86_64";
+     } else {
 
-are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Abhijeet Kolekar (1):
-      iwlwifi: disable tx on beacon update notification
-
-Alexander Duyck (1):
-      ixgbe: Do not attempt to perform interrupts in netpoll when down
-
-Ben Hutchings (2):
-      sfc: Fix polling for slow MCDI operations
-      sfc: Fix conditions for MDIO self-test
-
-Benoit Papillault (1):
-      zd1211rw: Fix multicast filtering.
-
-Bruce Allan (2):
-      e1000e: MDIO slow mode should always be done for 82577
-      e1000e: workaround link issues on busy hub in half duplex on 82577/82578
-
-Dan Carpenter (2):
-      iwl: off by one bug
-      iwlwifi: silence buffer overflow warning
-
-David S. Miller (2):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      ipv6: skb_dst() can be NULL in ipv6_hop_jumbo().
-
-Dominik Geyer (1):
-      ath9k: Fix Kconfig depends for ATH9K_DEBUGFS
-
-Felix Fietkau (2):
-      mac80211: add missing sanity checks for action frames
-      mac80211: fix queue selection for data frames on monitor interfaces
-
-Gertjan van Wingerde (2):
-      rt2x00: Fix LED configuration setting for rt2800.
-      rt2x00: Properly request tx headroom for alignment operations.
-
-Johannes Berg (3):
-      mac80211: fix skb buffering issue
-      mac80211: fix endian error
-      cfg80211: fix refcount imbalance when wext is disabled
-
-John W. Linville (2):
-      mac80211: fix-up build breakage in 2.6.33
-      Revert "mac80211: replace netif_tx_{start,stop,wake}_all_queues"
-
-Lennert Buytenhek (2):
-      mwl8k: fix configure_filter() memory leak on error
-      mac80211: fix queue selection for packets injected via monitor interface
-
-Luis R. Rodriguez (2):
-      ath5k: Fix eeprom checksum check for custom sized eeproms
-      cfg80211: fix syntax error on user regulatory hints
-
-Matt Carlson (5):
-      tg3: Fix std prod ring nicaddr for 5787 and 57765
-      tg3: Fix std rx prod ring handling
-      tg3: Add reliable serdes detection for 5717 A0
-      tg3: Disable 5717 serdes and B0 support
-      tg3: Update copyright and driver version
-
-Ming Lei (1):
-      ath9k: fix ito64
-
-Octavian Purdila (1):
-      net: fix build erros with CONFIG_BUG=n, CONFIG_GENERIC_BUG=n
-
-Pavel Roskin (1):
-      rt2x00: use correct headroom for transmission
-
-Shannon Nelson (1):
-      ixgbe: update copyright dates
-
-Zhu Yi (1):
-      iwlwifi: fix iwl_queue_used bug when read_ptr == write_ptr
-
- drivers/net/e1000e/e1000.h                |    1 -
- drivers/net/e1000e/ich8lan.c              |   76 +++++++++++++++++++++--
- drivers/net/e1000e/phy.c                  |   85 -------------------------
- drivers/net/ixgbe/Makefile                |    2 +-
- drivers/net/ixgbe/ixgbe.h                 |    2 +-
- drivers/net/ixgbe/ixgbe_82598.c           |    2 +-
- drivers/net/ixgbe/ixgbe_82599.c           |    2 +-
- drivers/net/ixgbe/ixgbe_common.c          |    2 +-
- drivers/net/ixgbe/ixgbe_common.h          |    2 +-
- drivers/net/ixgbe/ixgbe_dcb.c             |    2 +-
- drivers/net/ixgbe/ixgbe_dcb.h             |    2 +-
- drivers/net/ixgbe/ixgbe_dcb_82598.c       |    2 +-
- drivers/net/ixgbe/ixgbe_dcb_82598.h       |    2 +-
- drivers/net/ixgbe/ixgbe_dcb_82599.c       |    2 +-
- drivers/net/ixgbe/ixgbe_dcb_82599.h       |    2 +-
- drivers/net/ixgbe/ixgbe_dcb_nl.c          |    2 +-
- drivers/net/ixgbe/ixgbe_ethtool.c         |    2 +-
- drivers/net/ixgbe/ixgbe_fcoe.c            |    2 +-
- drivers/net/ixgbe/ixgbe_fcoe.h            |    2 +-
- drivers/net/ixgbe/ixgbe_main.c            |    8 ++-
- drivers/net/ixgbe/ixgbe_phy.c             |    2 +-
- drivers/net/ixgbe/ixgbe_phy.h             |    2 +-
- drivers/net/ixgbe/ixgbe_type.h            |    2 +-
- drivers/net/sfc/mcdi.c                    |    5 +-
- drivers/net/sfc/selftest.c                |    8 ++-
- drivers/net/tg3.c                         |   27 ++++++---
- drivers/net/tg3.h                         |    3 +
- drivers/net/wireless/ath/ath5k/eeprom.c   |   32 +++++++++-
- drivers/net/wireless/ath/ath5k/eeprom.h   |    8 +++
- drivers/net/wireless/ath/ath9k/Kconfig    |    2 +-
- drivers/net/wireless/ath/ath9k/ath9k.h    |    6 +-
- drivers/net/wireless/iwlwifi/iwl-4965.c   |    2 +-
- drivers/net/wireless/iwlwifi/iwl-core.c   |   45 ++++++++------
- drivers/net/wireless/iwlwifi/iwl-dev.h    |    2 +-
- drivers/net/wireless/mwl8k.c              |    4 +-
- drivers/net/wireless/rt2x00/rt2800lib.c   |    2 +-
- drivers/net/wireless/rt2x00/rt2x00.h      |    6 ++
- drivers/net/wireless/rt2x00/rt2x00dev.c   |   12 +++-
- drivers/net/wireless/rt2x00/rt2x00queue.c |    6 +-
- drivers/net/wireless/zd1211rw/zd_mac.c    |   13 ++--
- include/net/ip.h                          |    2 +-
- net/ipv6/exthdrs.c                        |    7 ++-
- net/mac80211/iface.c                      |   47 +++++++++++++-
- net/mac80211/mlme.c                       |    8 ++-
- net/mac80211/rx.c                         |    8 ++-
- net/mac80211/scan.c                       |   10 ++--
- net/mac80211/tx.c                         |    5 +-
- net/mac80211/util.c                       |   12 ++++
- net/mac80211/wme.c                        |   96 +++++++++++++++++++++--------
- net/mac80211/wme.h                        |    8 ++-
- net/wireless/core.c                       |    4 +-
- net/wireless/reg.c                        |    2 +-
- 52 files changed, 388 insertions(+), 212 deletions(-)
