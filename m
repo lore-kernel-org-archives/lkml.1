@@ -1,65 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147Ab0ANNiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460Ab0ANNrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147Ab0ANNiZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 08:38:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467Ab0ANNiY
+	id S1756460Ab0ANNrF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 08:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696Ab0ANNrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 08:38:24 -0500
-Received: from mail-iw0-f194.google.com ([209.85.223.194]:64463 "EHLO
-	mail-iw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049Ab0ANNiY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 08:38:24 -0500
+	Thu, 14 Jan 2010 08:47:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27491 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756693Ab0ANNrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 08:47:02 -0500
+Message-ID: <4B4F2039.8080605@redhat.com>
+Date: Thu, 14 Jan 2010 14:46:33 +0100
+From: Michal Novotny <minovotn@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <8b917b5a8d94af15190fad4bb1a448ffad5b5907.1263452909.git.joe@perches.com>
-References: <cover.1263452908.git.joe@perches.com> <8b917b5a8d94af15190fad4bb1a448ffad5b5907.1263452909.git.joe@perches.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 14 Jan 2010 06:38:03 -0700
-X-Google-Sender-Auth: 1badcc08155b3ad3
-Message-ID: <fa686aa41001140538i11aa11e0ue52041e0ee5fa838@mail.gmail.com>
-Subject: Re: [PATCH 22/24] MAINTAINERS: SPI SUBSYSTEM - Add "Q" patchwork 
-	entry
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Ric Wheeler <rwheeler@redhat.com>
+CC: Eric Sandeen <sandeen@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] extend e2fsprogs functionality to add EXT2_FLAG_DIRECT
+ option
+References: <4B46FCB2.1090308@redhat.com> <4B4B84E2.1050508@redhat.com> <4B4C54DC.4040006@redhat.com> <4B4C6429.6090803@redhat.com> <4B4C67F5.1020009@redhat.com> <20100112122319.GA20596@infradead.org> <4B4C6B70.1050205@redhat.com> <20100112124600.GA7151@infradead.org> <4B4C7297.5030905@redhat.com> <20100112163828.GA14633@infradead.org> <4B4CA6A9.3030401@redhat.com> <4B4CA868.2080204@redhat.com> <4B4CA916.7060405@redhat.com> <4B4CA9A6.1080608@redhat.com> <4B4CAA84.5060603@redhat.com> <4B4CAAB7.5030008@redhat.com>
+In-Reply-To: <4B4CAAB7.5030008@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 14, 2010 at 12:13 AM, Joe Perches <joe@perches.com> wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
-
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
-> ---
->  MAINTAINERS |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+On 01/12/2010 06:00 PM, Michal Novotny wrote:
+> On 01/12/2010 05:59 PM, Ric Wheeler wrote:
+>> On 01/12/2010 11:56 AM, Eric Sandeen wrote:
+>>> Michal Novotny wrote:
+>>>> On 01/12/2010 05:50 PM, Ric Wheeler wrote:
+>>>>> On 01/12/2010 11:43 AM, Michal Novotny wrote:
+>>>>>> On 01/12/2010 05:38 PM, Christoph Hellwig wrote:
+>>>>>>> Ok, I looked at the issue. The problem is that the Xen backend 
+>>>>>>> drivers
+>>>>>>> are (as expected) utterly braindead and submit bios directly 
+>>>>>>> from the
+>>>>>>> virtualization backed without using proper abstractions and thus
+>>>>>>> bypassing all the cache coherency features in the fileystems 
+>>>>>>> (the block
+>>>>>>> device nodes are just another mini-filesystem in that respect). So
+>>>>>>> when you first have buffered access in the host pages may stay 
+>>>>>>> in cache
+>>>>>>> and get overwritten directly on disk by a Xen guest, and once 
+>>>>>>> the guest
+>>>>>>> is down the host may still use the now stale cached data.
+>>>>>>>
+>>>>>>> I would recommend to migrate your cutomers to KVM which uses the 
+>>>>>>> proper
+>>>>>>> abtractions and thus doesn't have this problem. There's a reason 
+>>>>>>> after
+>>>>>>> all why all the Xen dom0 mess never got merged to mainline.
+>>>>>> So, do you think the problem is in the Xen backend drivers and to 
+>>>>>> make
+>>>>>> it working right in Xen the driver fix is needed?
+>>>>>
+>>>>> If XEN drivers by pass the normal IO and FS stack on the host, then I
+>>>>> can understand why the hack to e2fsprogs works but it does not seem
+>>>>> like a good fix.
+>>>>>
+>>>>> Specifically, the data will continue to be cached (and if dirty, 
+>>>>> might
+>>>>> be written back to the storage eventually).
+>>>>>
+>>>>> If we need a work around, you need to drop VM caches for that device
+>>>>> before you update the guest's files and possibly again afterwards 
+>>>>> (and
+>>>>> make sure that nothing pulls the data into cache during the 
+>>>>> operation).
+>>>>>
+>>>>> Basically, this sounds like the backend drivers are doing something
+>>>>> really, really dangerous....
+>>>>>
+>>>>> ric
+>>>>>
+>>>> Ok, so you think this is not good to do this patch for e2fsprogs for
+>>>> direct access support? The only things we could do now is to fix the
+>>>> backend drivers or create a workaround to drop caches? I need to 
+>>>> discuss
+>>>> this further with guys in my team...
+>>>
+>>> I do think that patching it up in e2fsprogs is unnecessarily invasive;
+>>> it's fixing it at the wrong spot.
+>>>
+>>> Any block dev IO from the host is dangerous; fixing it only in 
+>>> e2fsprogs
+>>> for this one case doesn't seem like the right course of action.
+>>>
+>>> -Eric
+>>
+>> It actually could produce some nastier issues where it would work a 
+>> bit, the bad data gets flushed back to the backing store and then 
+>> your O_DIRECT read would be broken.
+>>
+>> Also, for normal users of e2fsprogs, they should never bypass the 
+>> cache...
+>>
+>> ric
+> Ok, good to know the normal users should never bypass the cache. That 
+> way this seems to be some kind of kernel bug...
 >
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index f408dcf..c12f067 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -5103,6 +5103,7 @@ SPI SUBSYSTEM
->  M:     David Brownell <dbrownell@users.sourceforge.net>
->  M:     Grant Likely <grant.likely@secretlab.ca>
->  L:     spi-devel-general@lists.sourceforge.net
-> +Q:     http://patchwork.kernel.org/project/spi-devel-general/list/
->  S:     Maintained
->  F:     Documentation/spi/
->  F:     drivers/spi/
-> --
-> 1.6.6.rc0.57.gad7a
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Hi,
+finally, after discussing this with several people we decided it's 
+better to solve it in kernel path since Xen is using some weird IO path 
+like mentioned. Since this patch is about using O_DIRECT in e2fsprogs 
+which I've been told that normal e2fsprogs user should never do I'd like 
+to thanks you all for your help and tell you to ignore this patch since 
+we're going to solve it some other way, ie. fix this in the kernel itself.
 
+Thanks for your help!
 
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Michal
