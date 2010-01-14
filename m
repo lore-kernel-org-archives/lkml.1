@@ -1,135 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457Ab0ANShm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757470Ab0ANSiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757457Ab0ANShm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 13:37:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390Ab0ANShl
+	id S1757470Ab0ANSiB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 13:38:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390Ab0ANSiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 13:37:41 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:57280 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757369Ab0ANShl (ORCPT
+	Thu, 14 Jan 2010 13:38:00 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:57566 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757460Ab0ANSh7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 13:37:41 -0500
-Date: Thu, 14 Jan 2010 13:37:39 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v5)
-Message-ID: <20100114183739.GA18435@Krystal>
-References: <20100113013757.GA29314@Krystal> <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal> <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal> <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20100114175449.GA15387@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 13:11:37 up 29 days,  2:30,  5 users,  load average: 0.31, 0.15,
-	0.11
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 14 Jan 2010 13:37:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=m9ucQGTinvgNvFW5hkbdy0NY53r9khdz42YQg7DNqHmrSp1xzYuGbIhpbt0cn/Feuz
+         q8hDQeEbAXT51/OPKkvDfwRuc58Ct+BXY9/gjwf+UrW+ZsySCEthz8QNDwkiM5Hz5PRy
+         KhZGhN1mS4v78k6aLXSnYStqgm3gZVcKIlEyw=
+MIME-Version: 1.0
+Date: Thu, 14 Jan 2010 10:31:16 -0800
+Message-ID: <bd8e30a41001141031p3fd180d2ifab404437e8375eb@mail.gmail.com>
+Subject: USA-49WG Support
+From: "Paul G. Allen" <pgallen@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Thu, 2010-01-14 at 11:26 -0500, Mathieu Desnoyers wrote:
-> > 
-> > > It's this scenario that is causing problem. Let's consider this
-> > > execution:
-> > > 
-> 
-> (slightly augmented)
-> 
->        CPU 0 (membarrier)                  CPU 1 (another mm -> our mm)
->        <user-space>
->                                            <kernel-space>
->                                            switch_mm()
->                                              smp_mb()
->                                              clear_mm_cpumask()
->                                              set_mm_cpumask()
->                                              smp_mb() (by load_cr3() on x86)
->                                            switch_to()
->        memory access before membarrier
->        <call sys_membarrier()>
->        smp_mb()
->        mm_cpumask includes CPU 1
->        rcu_read_lock()
->        if (CPU 1 mm != our mm)
->          skip CPU 1.
->        rcu_read_unlock()
->        smp_mb()
->        <return to user-space>
->                                              current = next (1)
->                                            <switch back to user-space>
->                                            urcu read lock()
->                                              read gp
->                                              store local gp (2)
->                                              barrier()
->                                              access critical section data (3)
->        memory access after membarrier
-> 
-> So if we don't have any memory barrier between (1) and (3), the memory
-> operations can be reordered in such a way that CPU 0 will not send IPI
-> to a CPU that would need to have it's barrier() promoted into a
-> smp_mb().
-> 
-> > 
-> > I'm still not getting it, sure we don't send an IPI, but it will have
-> > done an mb() in switch_mm() to become our mm, so even without the IPI it
-> > will have executed that mb we were after.
-> 
-> The augmented race window above shows that it would be possible for (2)
-> and (3) to be reordered across the barrier(), and therefore the critical
-> section access could spill over a rcu-unlocked state.
+Just a quick question:
 
-To make this painfully clear, I'll reorder the accesses to match that of
-the CPU to memory:
-
-       CPU 0 (membarrier)                  CPU 1 (another mm -our mm)
-       <user-space>
-                                           <kernel-space>
-                                           switch_mm()
-                                             smp_mb()
-                                             clear_mm_cpumask()
-                                             set_mm_cpumask()
-                                             smp_mb() (by load_cr3() on x86)
-                                           switch_to()
-                                             <buffered current = next>
-                                           <switch back to user-space>
-                                           urcu read lock()
-                                             access critical section data (3)
-       memory access before membarrier
-       <call sys_membarrier()>
-       smp_mb()
-       mm_cpumask includes CPU 1
-       rcu_read_lock()
-       if (CPU 1 mm != our mm)
-         skip CPU 1.
-       rcu_read_unlock()
-       smp_mb()
-       <return to user-space>
-       memory access after membarrier
-                                             current = next (1) (buffer flush)
-                                             read gp
-                                             store local gp (2)
-
-This should make the problem a bit more evident. Access (3) is done
-outside of the read-side C.S. as far as the userspace synchronize_rcu()
-is concerned.
+is the Keyspan USA-49WG currently supported? We have some new
+computers coming in that do not have serial ports and we need serial
+for our embedded systems development.
 
 Thanks,
 
-Mathieu
-
-
+PGA
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Paul G. Allen
+Random Logic Consulting
+www.randomlogic.net
