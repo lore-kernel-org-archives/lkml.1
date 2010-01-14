@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932354Ab0ANUck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932357Ab0ANUfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932354Ab0ANUck (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 15:32:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932227Ab0ANUci
+	id S932357Ab0ANUfa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 15:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832Ab0ANUf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 15:32:38 -0500
-Received: from mail.windriver.com ([147.11.1.11]:44674 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754977Ab0ANUci (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 15:32:38 -0500
-Message-ID: <4B4F7EC2.6030000@windriver.com>
-Date: Thu, 14 Jan 2010 14:29:54 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 14 Jan 2010 15:35:29 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56380 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754423Ab0ANUf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 15:35:28 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michal Marek <mmarek@suse.cz>
+Subject: Re: [Bug #14907] Commit "kbuild: fix bzImage build for x86" breaks build
+Date: Thu, 14 Jan 2010 21:35:53 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Jonathan Nieder <jrnieder@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Michael Tokarev <mjt@tls.msk.ru>, Oliver Hartkopp <oliver@hartkopp.net>,
+       Sam Ravnborg <sam@ravnborg.org>
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <4B4DBD8B.6000002@suse.cz> <4B4EFA82.1090506@suse.cz>
+In-Reply-To: <4B4EFA82.1090506@suse.cz>
 MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu, linux-arm-kernel@lists.infradead.org
-Subject: Re: Re: [PATCH 20/40] arm,kgdb: Add hook to catch an oops with debugger
-References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com><1263481176-1897-21-git-send-email-jason.wessel@windriver.com> <20100114174821.GB21385@n2100.arm.linux.org.uk>
-In-Reply-To: <20100114174821.GB21385@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jan 2010 20:29:57.0400 (UTC) FILETIME=[567A5980:01CA9558]
+Message-Id: <201001142135.53096.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux wrote:
+On Thursday 14 January 2010, Michal Marek wrote:
+> On 13.1.2010 13:33, Michal Marek wrote:
+> > On 11.1.2010 02:36, Jonathan Nieder wrote:
+> >> Rafael J. Wysocki wrote:
+> >>
+> >>> The following bug entry is on the current list of known regressions
+> >>> from 2.6.32.  Please verify if it still should be listed and let me know
+> >>> (either way).
+> >>>
+> >>>
+> >>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14907
+> >>> Subject		: Commit "kbuild: fix bzImage build for x86" breaks build
+> >>> Submitter	: Oliver Hartkopp <oliver@hartkopp.net>
+> >>> Date		: 2009-12-19 19:21 (23 days old)
+> >>> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4a2ff67c88211026afcbdbc190c13f705dae1b59
+> >>> References	: http://marc.info/?l=linux-kernel&m=126125050622195&w=4
+> >>> 		  http://marc.info/?l=linux-kernel&m=126114565103300&w=4
+> >>> 		  http://marc.info/?l=linux-kbuild&m=126202819526623&w=2
+> >>> Handled-By	: Jonathan Nieder <jrnieder@gmail.com>
+> >>> Patch		: http://thread.gmane.org/gmane.linux.kbuild.devel/4313/focus=4319
+> >>> 		  http://patchwork.kernel.org/patch/71957/
+> >>
+> >> I am using the patch without problems, but it is not in the mainline
+> >> as of v2.6.33-rc3-git3.  So please do keep the bug listed.
+> > 
+> > I resent the pull request (http://lkml.org/lkml/2010/1/13/194), let's see.
 > 
-> I have a similar patch which implements the hook properly - but
-> with one caveat.  It needs a review to ensure that its safe to return
-> from die().  Until that's established, this patch can not be merged.
+> FYI:
+> commit 04e9e5c7659ee07f0387ddb663913fadcca88d5f
+> Merge: cedabed 0710520
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Wed Jan 13 16:09:59 2010 -0800
 > 
+>     Merge branch 'for-33' of git://repo.or.cz/linux-kbuild
+> 
+>     * 'for-33' of git://repo.or.cz/linux-kbuild:
+>       Makefile: do not override LC_CTYPE
+>       kbuild: really fix bzImage build with non-bash sh
 
-I completed the analysis on your patch and yes, it is safe to return
-from __die() and die() the way you currently structured it, but it
-doesn't work quite the same as on some other architectures.
+Thanks, closing.
 
-After changing kgdb.c to register with the die notifier, I stepped
-through your code with an ICE, as well as running my regression tests
-which panic, oops, bad access etc...
-
-While kernel execution does happen to continue to work, I don't know
-that you really want to continue execution.
-
-1) The kernel is marked tainted
-2) bust_spinlocks() was toggled for a while
-
-On x86 for example, the notifier is invoked prior to the
-bust_spinlocks() etc... and then it can pass the exception along to
-the rest of the system (which can result in something bad, but
-remember the human behind the kernel debugger controls did it for some
-reason or another).
-
-I made the following addition to your patch, and then it behaved as
-the other archs do with respect to passing along the result of the
-exception.  Given this information, would you be willing to merge your
-patch and possibly fold in the change below, or further comment?
-
-Thanks,
-Jason.
-
---- a/arch/arm/kernel/traps.c
-+++ b/arch/arm/kernel/traps.c
-@@ -273,6 +273,9 @@ void die(const char *str, struct pt_regs
- 	bust_spinlocks(1);
- 	ret = __die(str, err, thread, regs);
- 
-+	if (ret == NOTIFY_STOP)
-+		return;
-+
- 	if (regs && kexec_should_crash(thread->task))
- 		crash_kexec(regs);
- 
-@@ -285,8 +288,7 @@ void die(const char *str, struct pt_regs
- 		panic("Fatal exception in interrupt");
- 	if (panic_on_oops)
- 		panic("Fatal exception");
--	if (ret != NOTIFY_STOP)
--		do_exit(SIGSEGV);
-+	do_exit(SIGSEGV);
- }
- 
- void arm_notify_die(const char *str, struct pt_regs *regs,
+Rafael
