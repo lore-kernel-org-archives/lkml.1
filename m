@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932357Ab0ANUfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932368Ab0ANUiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932357Ab0ANUfa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 15:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832Ab0ANUf3
+	id S932368Ab0ANUiV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 15:38:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932306Ab0ANUiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 15:35:29 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56380 "EHLO ogre.sisk.pl"
+	Thu, 14 Jan 2010 15:38:19 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56401 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754423Ab0ANUf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 15:35:28 -0500
+	id S1754938Ab0ANUiS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 15:38:18 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michal Marek <mmarek@suse.cz>
-Subject: Re: [Bug #14907] Commit "kbuild: fix bzImage build for x86" breaks build
-Date: Thu, 14 Jan 2010 21:35:53 +0100
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: [Bug #15041] Pagemap endless read loop with LTP
+Date: Thu, 14 Jan 2010 21:38:51 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Jonathan Nieder <jrnieder@gmail.com>,
+Cc: Andi Kleen <andi@firstfloor.org>,
+       =?utf-8?q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, Oliver Hartkopp <oliver@hartkopp.net>,
-       Sam Ravnborg <sam@ravnborg.org>
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <4B4DBD8B.6000002@suse.cz> <4B4EFA82.1090506@suse.cz>
-In-Reply-To: <4B4EFA82.1090506@suse.cz>
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <20100113235010.GF24818@basil.fritz.box> <1263428136.29868.5058.camel@calx>
+In-Reply-To: <1263428136.29868.5058.camel@calx>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001142135.53096.rjw@sisk.pl>
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201001142138.51506.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 January 2010, Michal Marek wrote:
-> On 13.1.2010 13:33, Michal Marek wrote:
-> > On 11.1.2010 02:36, Jonathan Nieder wrote:
-> >> Rafael J. Wysocki wrote:
-> >>
-> >>> The following bug entry is on the current list of known regressions
-> >>> from 2.6.32.  Please verify if it still should be listed and let me know
-> >>> (either way).
-> >>>
-> >>>
-> >>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14907
-> >>> Subject		: Commit "kbuild: fix bzImage build for x86" breaks build
-> >>> Submitter	: Oliver Hartkopp <oliver@hartkopp.net>
-> >>> Date		: 2009-12-19 19:21 (23 days old)
-> >>> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4a2ff67c88211026afcbdbc190c13f705dae1b59
-> >>> References	: http://marc.info/?l=linux-kernel&m=126125050622195&w=4
-> >>> 		  http://marc.info/?l=linux-kernel&m=126114565103300&w=4
-> >>> 		  http://marc.info/?l=linux-kbuild&m=126202819526623&w=2
-> >>> Handled-By	: Jonathan Nieder <jrnieder@gmail.com>
-> >>> Patch		: http://thread.gmane.org/gmane.linux.kbuild.devel/4313/focus=4319
-> >>> 		  http://patchwork.kernel.org/patch/71957/
-> >>
-> >> I am using the patch without problems, but it is not in the mainline
-> >> as of v2.6.33-rc3-git3.  So please do keep the bug listed.
+On Thursday 14 January 2010, Matt Mackall wrote:
+> On Thu, 2010-01-14 at 00:50 +0100, Andi Kleen wrote:
+> > On Wed, Jan 13, 2010 at 10:57:34PM +0100, Rafael J. Wysocki wrote:
+> > > On Wednesday 13 January 2010, Américo Wang wrote:
+> > > > On Mon, Jan 11, 2010 at 6:32 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > > > This message has been generated automatically as a part of a report
+> > > > > of recent regressions.
+> > > > >
+> > > > > The following bug entry is on the current list of known regressions
+> > > > > from 2.6.32.  Please verify if it still should be listed and let me know
+> > > > > (either way).
+> > > > >
+> > > > >
+> > > > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15041
+> > > > > Subject         : Pagemap endless read loop with LTP
+> > > > > Submitter       : Andi Kleen <andi@firstfloor.org>
+> > > > > Date            : 2010-01-10 2:09 (1 days old)
+> > > > > References      : http://marc.info/?l=linux-kernel&m=126308941423848&w=4
+> > > > >
+> > > > 
+> > > > According to Andi's later reply, it shoud not be an endless loop,
+> > > > it just takes a rather long time.
+> > > 
+> > > Andi?
 > > 
-> > I resent the pull request (http://lkml.org/lkml/2010/1/13/194), let's see.
+> > It'll try to read 47 bits worth of 0s on 64bit x86-64. 
+> > 
+> > I haven't tried to wait until that finishes, but I estimate a few months of 
+> > CPU time at least.
+> > 
+> > The interface is just misdesigned, but I guess we cannot do
+> > anything about that for now.
 > 
-> FYI:
-> commit 04e9e5c7659ee07f0387ddb663913fadcca88d5f
-> Merge: cedabed 0710520
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Wed Jan 13 16:09:59 2010 -0800
+> It's perfectly sensible. What's not sensible is reading the entirety of
+> everything you find in /proc, something that just about every Linux
+> admin figures out moments after running their first recursive grep.
 > 
->     Merge branch 'for-33' of git://repo.or.cz/linux-kbuild
+> >  LTP will just need to do a workaround.
 > 
->     * 'for-33' of git://repo.or.cz/linux-kbuild:
->       Makefile: do not override LC_CTYPE
->       kbuild: really fix bzImage build with non-bash sh
+> Or they could actually, you know, add a test of pagemap. Not much chance
+> of that, though - CVS reports it took them until 2005 to figure out that
+> skipping /proc/kcore was a good idea.
 
-Thanks, closing.
+Closing as "documented".
 
 Rafael
