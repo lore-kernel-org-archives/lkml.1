@@ -1,131 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512Ab0ANT3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524Ab0ANTaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757512Ab0ANT3D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 14:29:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818Ab0ANT3B
+	id S1757524Ab0ANTaX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 14:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175Ab0ANTaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 14:29:01 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:60923 "EHLO
+	Thu, 14 Jan 2010 14:30:22 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:64177 "EHLO
 	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754848Ab0ANT3A (ORCPT
+	with ESMTP id S1756818Ab0ANTaV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 14:29:00 -0500
+	Thu, 14 Jan 2010 14:30:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=okGVWm0cFSNbGPkCZ3mPoTvlE+obicZnjuJsrq1RuSrlvg4XmxdkT2U/XZ9y/a59yS
-         a9kaZGzn/7/FySDwm0CMlZ12MA+G21KxXOSq6SVEQuiACDcQ/tQoWP1hJ41EqiIipEhL
-         WN/0U2huOoquYr0uXdzD/bl9ScvAbRmByEgIg=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=BRtu0N1077RS2ATfjGfm3938eDB3W7pFhL0P7+sUQyLCHdyBUbMYWZIvHaAZf5AK9X
+         4XW4Ks4eJjzW7x6mShPFJNLMyMrrHqp/ZzcuLeUmpEbEkhoi5m2hP/T1z69rsuqUfmeP
+         mVukbOZ++oGEdwqIfkYJ7+fAm/OiERKMlrDNI=
 MIME-Version: 1.0
-Date: Thu, 14 Jan 2010 22:28:18 +0300
-Message-ID: <925fecc31001141128m1aa701a5yc43388f8d124c649@mail.gmail.com>
-Subject: preteen nude, lolitas bbs, preteen bbs, child pornography, nude kids!
-From: Gabrielle Hemphill <diqebuahekuyjo22400@gmail.com>
-To: linux-kernel@vger.kernel.org
+In-Reply-To: <20100114170247.6747.A69D9226@jp.fujitsu.com>
+References: <20100114162327.673E.A69D9226@jp.fujitsu.com>
+	 <20100114080117.GL18808@redhat.com>
+	 <20100114170247.6747.A69D9226@jp.fujitsu.com>
+Date: Thu, 14 Jan 2010 14:30:17 -0500
+Message-ID: <6feea4871001141130j4184a24di363b7e6553d506e8@mail.gmail.com>
+Subject: Re: [PATCH v5] add MAP_UNLOCKED mmap flag
+From: "Andrew C. Morrow" <andrew.c.morrow@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Gleb Natapov <gleb@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+       akpm@linux-foundation.org
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check it! ===>> http://tryfreeporn.info
+On Thu, Jan 14, 2010 at 3:17 AM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+>> > Hmm..
+>> > Your answer didn't match I wanted.
+>> Then I don't get what you want.
+>
+> I want to know the benefit of the patch for patch reviewing.
+>
 
-preteen nude
-nude preteen
-preteen nudes
-preteen nude models
-nude preteen models
-nude preteen girls
-preteen nude art
-preteen girls nude
-preteen models nude
-nude preteen boys
-preteen nude girls
-non nude preteen
-preteen non nude
-non nude preteen models
-model nude preteen
-preteen nude pics
-preteen nude model
-preteen boys nude
-nude preteen art
-nude preteen model
-lolitas bbs
-underage bbs illegal lolitas
-bbs lolitas
-bbs preteen lolitas
-preteen lolitas bbs
-sun lolitas bbs
-young lolitas bbs
-little lolitas bbs
-great lolitas bbs
-free lolitas bbs
-world lolitas bbs
-freedom lolitas bbs
-dark lolitas bbs
-lolitas bbs list
-free preteen lolitas bbs
-preteen lolitas bbs galleries
-guestbook lolitas bbs
-russian lolitas bbs
-top lolitas bbs
-lolitas bbs ls rompl
-preteen bbs
-bbs preteen
-preteen lolita bbs
-preteen bbs links
-bbs lolita preteen
-bbs preteen lolitas
-preteen models bbs
-preteen nymphets bbs
-preteen model bbs
-real preteen bbs
-preteen lolitas bbs
-preteen dark bbs
-underground preteen bbs
-nude preteen bbs
-preteen nude bbs
-preteen sex bbs
-preteen bbs loli
-preteen bbs forums
-preteen bbs forum
-rompl preteen bbs
-child pornography
-child pornography videos
-free child pornography
-illegal child pornography
-child pornography pics
-child pornography law or protection act
-child pornography pictures
-photographs child pornography
-virtual child pornography
-child pornography sites
-pic of child pornography
-link child pornography and perpetration
-child pornography photos
-gay child pornography
-forensic expert child pornography
-child pornography pic
-legal child pornography
-female child pornography
-r kelly and child pornography video
-targeted child pornography sites
-nude kids
-kids nude
-hidden cams on nude kids
-little kids nude
-young kids nude
-nude little kids
-kids nude tgp
-nude russian kids
-young nude kids
-nude beach kids
-nude kids pictures
-non nude kids
-nearly nude kids
-russian kids nude
-little nude kids
-nude kids gallery
-nude kids sex
-kids nude pics
-kids playing nude
-nude black kids
+The benefit of the patch is that it makes it possible for an
+application which has previously called mlockall(MCL_FUTURE) to
+selectively exempt new memory mappings from memory locking, on a
+per-mmap-call basis. As was pointed out earlier, there is currently no
+thread-safe way for an application to do this. The earlier proposed
+workaround of toggling MCL_FUTURE around calls to mmap is racy in a
+multi-threaded context. Other threads may manipulate the address space
+during the window where MCL_FUTURE is off, subverting the programmers
+intended memory locking semantics.
+
+The ability to exempt specific memory mappings from memory locking is
+necessary when the region to be mapped is larger than physical memory.
+In such cases a call to mmap the region cannot succeed, unless
+MAP_UNLOCKED is available.
+
+
+>
+>> > few additional questions.
+>> >
+>> > - Why don't you change your application? It seems natural way than kernel change.
+>> There is no way to change my application and achieve what I've described
+>> in a multithreaded app.
+>
+> Then, we don't recommend to use mlockall(). I don't hope to hear your conclusion,
+> it is not objectivization. I hope to hear why you reached such conclusion.
+>
+
+I agree that mlockall is a big hammer and should be avoided in most
+cases, but there are situations where it is exactly what is needed. In
+Gleb's instance, it sounds like he is doing some finicky performance
+measurement and major page faults skew his results. In my case, I have
+a realtime process where the measured latency impact of major page
+faults is unacceptable. In both of these cases, mlockall is a
+reasonable approach to eliminating major faults.
+
+However, Gleb and I have independently found ourselves unable to use
+mlockall because we also need to create a very large memory mapping
+(for which we don't care about major faults). The proposed
+MAP_UNLOCKED flag would allow us to override MCL_FUTURE for that one
+mapping.
+
+>
+>> > - Why do you want your virtual machine have mlockall? AFAIK, current majority
+>> >   virtual machine doesn't.
+>> It is absolutely irrelevant for that patch, but just because you ask I
+>> want to measure the cost of swapping out of a guest memory.
+>
+> No. if you stop to use mlockall, the issue is vanished.
+>
+
+And other issues arise. Gleb described a situation where the use of
+mlockall is justified, identified an issue which prevents its use, and
+provided a patch which resolves that issue. Why are you focusing on
+the validity of using mlockall?
+
+>
+>> > - If this feature added, average distro user can get any benefit?
+>> >
+>> ?! Is this some kind of new measure? There are plenty of much more
+>> invasive features that don't bring benefits to an average distro user.
+>> This feature can bring benefit to embedded/RT developers.
+>
+> I mean who get benifit?
+>
+>
+>> > I mean, many application developrs want to add their specific feature
+>> > into kernel. but if we allow it unlimitedly, major syscall become
+>> > the trushbox of pretty toy feature soon.
+>> >
+>> And if application developer wants to extend kernel in a way that it
+>> will be possible to do something that was not possible before why is
+>> this a bad thing? I would agree with you if for my problem was userspace
+>> solution, but there is none. The mmap interface is asymmetric in regards
+>> to mlock currently. There is MAP_LOCKED, but no MAP_UNLOCKED. Why
+>> MAP_LOCKED is useful then?
+>
+> Why? Because this is formal LKML reviewing process. I'm reviewing your
+> patch for YOU.
+>
+> If there is no objective reason, I don't want to continue reviewing.
+>
+
+There is an objective reason: the current interaction between
+mlockall(MCL_FUTURE) and mmap has a deficiency. In 'normal' mode,
+without MCL_FUTURE in force, the default is that new memory mappings
+are not locked, but mmap provides MAP_LOCKED specifically to override
+that default. However, with MCL_FUTURE toggled to on, there is no
+analogous way to tell mmap to override the default. The proposed
+MAP_UNLOCKED flag would resolve this deficiency.
+
+Andrew
