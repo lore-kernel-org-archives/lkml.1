@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461Ab0ANS6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473Ab0ANS7C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757461Ab0ANS6U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 13:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445Ab0ANS6R
+	id S1757473Ab0ANS7C (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 13:59:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728Ab0ANS67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 13:58:17 -0500
-Received: from mail.windriver.com ([147.11.1.11]:60457 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756951Ab0ANS6Q (ORCPT
+	Thu, 14 Jan 2010 13:58:59 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:18026 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757229Ab0ANS66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 13:58:16 -0500
-Message-ID: <4B4F691F.3030500@windriver.com>
-Date: Thu, 14 Jan 2010 12:57:35 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu, linux-arm-kernel@lists.infradead.org
-Subject: Re: Re: [PATCH 20/40] arm,kgdb: Add hook to catch an oops with debugger
-References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com><1263481176-1897-21-git-send-email-jason.wessel@windriver.com> <20100114174821.GB21385@n2100.arm.linux.org.uk>
-In-Reply-To: <20100114174821.GB21385@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 14 Jan 2010 13:58:58 -0500
+Date: Thu, 14 Jan 2010 10:58:40 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for January 14 (vmwgfx)
+Message-Id: <20100114105840.98972cbc.randy.dunlap@oracle.com>
+In-Reply-To: <20100114172047.406ebda8.sfr@canb.auug.org.au>
+References: <20100114172047.406ebda8.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jan 2010 18:57:38.0110 (UTC) FILETIME=[70CDC5E0:01CA954B]
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B4F696B.01B9:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux wrote:
-> On Thu, Jan 14, 2010 at 08:59:16AM -0600, Jason Wessel wrote:
->   
->> Add in a low level hook to catch calls to die() in the debugger.
->>
->> After the debugger is done, the standard system rules will be in play
->> for the original exception.
->>
->> The kdb debugger wants a chance to catch these sorts of exceptions for
->> analysis.
->>     
->
-> NAK.  I have a similar patch which implements the hook properly - but
-> with one caveat.  It needs a review to ensure that its safe to return
-> from die().  Until that's established, this patch can not be merged.
->   
+On Thu, 14 Jan 2010 17:20:47 +1100 Stephen Rothwell wrote:
 
-I dropped the patch which you NAK'ed from the series.
-
-As for your included patch, I will try it out  against the various
-regression tests I have, which exercise the oops and exception paths.
-
-> Please also ensure that the linux-arm-kernel list is copied with ARM
-> patches.
->
->   
-
-Check.
+> Hi all,
+> 
+> Changes since 20100113:
 
 
-Thanks,
-Jason.
+When CONFIG_FB=m:
+
+drivers/built-in.o: In function `vmw_fb_close':
+(.text+0x9614a): undefined reference to `unregister_framebuffer'
+drivers/built-in.o: In function `vmw_fb_close':
+(.text+0x9616f): undefined reference to `framebuffer_release'
+drivers/built-in.o: In function `vmw_fb_init':
+(.text+0x965b6): undefined reference to `framebuffer_alloc'
+drivers/built-in.o: In function `vmw_fb_init':
+(.text+0x9692a): undefined reference to `register_framebuffer'
+drivers/built-in.o: In function `vmw_fb_init':
+(.text+0x9696a): undefined reference to `framebuffer_release'
+
+
+so this driver needs to depend on FB (or select FB -- ugh, although
+that's what nouveau does).
+
+And these selects don't do anything when FB is not enabled:
+	select FB_DEFERRED_IO
+	select FB_CFB_FILLRECT
+	select FB_CFB_COPYAREA
+	select FB_CFB_IMAGEBLIT
+
+
+---
+~Randy
