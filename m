@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937Ab0ANNhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147Ab0ANNiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937Ab0ANNhP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 08:37:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142Ab0ANNhO
+	id S1756147Ab0ANNiZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 08:38:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467Ab0ANNiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 08:37:14 -0500
-Received: from lider.pardus.org.tr ([193.140.100.216]:50117 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752558Ab0ANNhN (ORCPT
+	Thu, 14 Jan 2010 08:38:24 -0500
+Received: from mail-iw0-f194.google.com ([209.85.223.194]:64463 "EHLO
+	mail-iw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049Ab0ANNiY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 08:37:13 -0500
-Message-ID: <4B4F1DE7.307@pardus.org.tr>
-Date: Thu, 14 Jan 2010 15:36:39 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (X11/20071115)
+	Thu, 14 Jan 2010 08:38:24 -0500
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       hpa@zytor.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       jaswinder@kernel.org, stable@kernel.org
-Subject: Re: Boot hangs after "Freeing initrd memory" with 2.6.31.11
-References: <4B4E1633.8010700@pardus.org.tr> <4B4EC0A1.3090503@pardus.org.tr> <4B4ECB1C.6070000@kernel.org> <4B4EF35D.3040203@pardus.org.tr> <4B4F1764.2040406@pardus.org.tr>
-In-Reply-To: <4B4F1764.2040406@pardus.org.tr>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <8b917b5a8d94af15190fad4bb1a448ffad5b5907.1263452909.git.joe@perches.com>
+References: <cover.1263452908.git.joe@perches.com> <8b917b5a8d94af15190fad4bb1a448ffad5b5907.1263452909.git.joe@perches.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 14 Jan 2010 06:38:03 -0700
+X-Google-Sender-Auth: 1badcc08155b3ad3
+Message-ID: <fa686aa41001140538i11aa11e0ue52041e0ee5fa838@mail.gmail.com>
+Subject: Re: [PATCH 22/24] MAINTAINERS: SPI SUBSYSTEM - Add "Q" patchwork 
+	entry
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ozan Ã‡aÄŸlayan wrote On 14-01-2010 15:08:
+On Thu, Jan 14, 2010 at 12:13 AM, Joe Perches <joe@perches.com> wrote:
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-(CC'ing stable)
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
->>
->> From 5095f59bda6793a7b8f0856096d6893fe98e0e51 Mon Sep 17 00:00:00 2001
->> From: Jaswinder Singh Rajput <jaswinder@kernel.org>
->> Date: Fri, 5 Jun 2009 23:27:17 +0530
->> Subject: [PATCH] x86: cpu_debug: Remove model information to reduce encoding-decoding
-> 
-> Reverting this commit on top of 2.6.31.11 fixes the boot hangs with AMD Athlon XP processors.
-> I'll double check with other reporters in a day or two.
-
-OK we've verified on 2 separate systems with Athlon XP that reverting the commit fixes the issue.
-Here's proc/cpuinfo and relevant dmesg output for reference:
-
-processor    : 0
-vendor_id    : AuthenticAMD
-cpu family    : 6
-model        : 10
-model name    : AMD Athlon(tm) XP 2600+
-stepping    : 0
-cpu MHz        : 1920.500
-cache size    : 512 KB
-fdiv_bug    : no
-hlt_bug        : no
-f00f_bug    : no
-coma_bug    : no
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 1
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow up
-bogomips    : 3842.29
-clflush size    : 32
-power management: ts
+> ---
+>  MAINTAINERS |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index f408dcf..c12f067 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -5103,6 +5103,7 @@ SPI SUBSYSTEM
+>  M:     David Brownell <dbrownell@users.sourceforge.net>
+>  M:     Grant Likely <grant.likely@secretlab.ca>
+>  L:     spi-devel-general@lists.sourceforge.net
+> +Q:     http://patchwork.kernel.org/project/spi-devel-general/list/
+>  S:     Maintained
+>  F:     Documentation/spi/
+>  F:     drivers/spi/
+> --
+> 1.6.6.rc0.57.gad7a
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
 
 
-[    0.461404] Freeing initrd memory: 5191k freed
-[    0.467844] initcall populate_rootfs+0x0/0x62 returned 0 after 217975 usecs
-[    0.467947] calling  i8259A_init_sysfs+0x0/0x1d @ 1
-[    0.468093] initcall i8259A_init_sysfs+0x0/0x1d returned 0 after 41 usecs
-[    0.468190] calling  sbf_init+0x0/0xda @ 1
-[    0.468282] initcall sbf_init+0x0/0xda returned 0 after 0 usecs
-[    0.468378] calling  i8237A_init_sysfs+0x0/0x1d @ 1
-[    0.468484] initcall i8237A_init_sysfs+0x0/0x1d returned 0 after 12 usecs
-[    0.468582] calling  add_rtc_cmos+0x0/0x94 @ 1
-[    0.468679] initcall add_rtc_cmos+0x0/0x94 returned 0 after 4 usecs
-[    0.468780] calling  cache_sysfs_init+0x0/0x55 @ 1
-[    0.468940] initcall cache_sysfs_init+0x0/0x55 returned 0 after 64 usecs
-[    0.469041] calling  cpu_debug_init+0x0/0x1f @ 1
-[    0.469190] cpu0(1) debug files 5
-[    0.469282] initcall cpu_debug_init+0x0/0x1f returned 0 after 143 usecs <-- That call wasn't returning at all
-
-I think that the commit should be reverted or a fix should be released for linux-2.6 tree,
-as well as .31 and .32 stable trees.
-
-
-Thanks,
-Ozan Caglayan
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
