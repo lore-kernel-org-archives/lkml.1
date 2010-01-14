@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932233Ab0ANVHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932289Ab0ANVIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932233Ab0ANVHr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 16:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206Ab0ANVHr
+	id S932289Ab0ANVIO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 16:08:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932220Ab0ANVIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 16:07:47 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58402 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752688Ab0ANVHq (ORCPT
+	Thu, 14 Jan 2010 16:08:13 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:54805 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932145Ab0ANVIK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 16:07:46 -0500
-X-Sasl-enc: JuWzx+cH2kgDsDaulnHQ80JSgW7nMVJ/Mlh3FDd7h1hq 1263503264
-Date: Thu, 14 Jan 2010 19:07:43 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Driver-Core: devtmpfs - reset inode permissions before
- unlinking
-Message-ID: <20100114210743.GE3814@khazad-dum.debian.net>
-References: <1263388596.26006.1.camel@yio.site>
- <20100114205304.GC3814@khazad-dum.debian.net>
- <ac3eb2511001141259t751c6063p8919692a8164e2b@mail.gmail.com>
+	Thu, 14 Jan 2010 16:08:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=w65goeiiK28/lY4Lu2T6nn7YDFBSrMOLoiQIPieTKSRj6ZwPrSDiSfcUJ7W+mjywhj
+         xvSgXdeQ2efgFvy8JRBl1rMjPf6lJZaSWn88MvIUmCZG0ujt5Ya737BnsfauMwkVgIWt
+         PJfc94E5/lEawroqWp3RInRdHyd8gB6qxVmj8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2511001141259t751c6063p8919692a8164e2b@mail.gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <45a44e481001041614i35ceef84q5f12a068e2f0b97b@mail.gmail.com>
+References: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
+	 <20091216103423.GE1377@ucw.cz>
+	 <alpine.LNX.2.00.0912161504360.3755@pobox.suse.cz>
+	 <7f9100aac5f9b06ec78efff25c7a5a71.squirrel@intranet.cs.nmsu.edu>
+	 <20100104224817.GA21695@elf.ucw.cz>
+	 <45a44e481001041614i35ceef84q5f12a068e2f0b97b@mail.gmail.com>
+Date: Thu, 14 Jan 2010 22:08:07 +0100
+Message-ID: <ca2dc2821001141308s5a552447yb887f619231f449@mail.gmail.com>
+Subject: Re: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>,
+       Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       krzysztof.h1@wp.pl, Andrew Morton <akpm@linux-foundation.org>,
+       linux-usb@vger.kernel.org, Oliver Neukum <oliver@neukum.org>,
+       linux-input@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jan 2010, Kay Sievers wrote:
-> On Thu, Jan 14, 2010 at 21:53, Henrique de Moraes Holschuh
-> <hmh@hmh.eng.br> wrote:
-> > On Wed, 13 Jan 2010, Kay Sievers wrote:
-> >> across the device lifetime by creating hardlinks, in the unusual case
-> >> that there is a user-writable directory on the same filesystem.
-> >
-> > Does a tmpfs mounted in /dev/shm count as "user-writable directory on the
-> > same filesystem" ?
-> 
-> Not if it's a separate tmpfs mount, which is recommended. Only if it's
-> just a plain directory on the /dev filesystem.
+On Tue, Jan 5, 2010 at 1:14 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> On Tue, Jan 5, 2010 at 6:48 AM, Pavel Machek <pavel@ucw.cz> wrote:
+>>
+>> Ok, but I guess you should cc auxdisplay people in future.
+>
+> Hi Pavel,
+>
+> I just looked at the drivers/auxdisplay directory and got a bit
+> confused. The reason I got confused is because auxdisplay is actually
+> an fbdev driver but it is outside of the drivers/video directory. It
+> looks like there has only been 1 commit and that was for the Samsung
+> KS0108 controller. It also sort of uses platform support but the way
+> it is abstracted is odd to my thinking. The controller is ks0108, so
+> in my mind that would be the code that would be platform independent,
+> and then that would use a board specific IO driver to push data (eg:
+> parport or gpio or usb). I think in the long term it would probably
+> make sense to write a cleaner approach with a drivers/video/ks0108.c
+> which is cleanly platform independent (and back within fbdev proper)
+> and then a board specific driver in the appropriate location that
+> handles the IO.
 
-Yeah, I noticed the abusurdity of my question when I re-read it, thanks for
-being kind in the reply.
+I wrote long ago the driver(s) and people that reviewed it thought it
+was better to keep it outside. I think that if someone else is going
+to need ks0108, then I agree: we should write a independent driver.
 
-That said, this does fix a possible security problem when a misconfigured
-system is used, and the fix looks rather simple...  Can it go to -stable
-eventually, even if it is months in the future, after it gets some testing
-in .34 ?   Minor problems are still problems...
+It should not be hard, it is an easy controller to play with and the
+code is already there. I would try to do it; however, I am not sure if
+I would be the most appropriate person to code such generic driver, as
+I know almost nothing about all drivers/video/* stuff and the ways of
+making it truly generic for future video/ users. Still, I will help
+gladly.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+>
+> Thanks,
+> jaya
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
