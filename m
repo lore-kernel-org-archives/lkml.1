@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932078Ab0ANFRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751306Ab0ANFRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932078Ab0ANFRS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 00:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973Ab0ANFRR
+	id S1751306Ab0ANFRg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 00:17:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049Ab0ANFRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 00:17:17 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50386 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932071Ab0ANFRQ (ORCPT
+	Thu, 14 Jan 2010 00:17:34 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:57882 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743Ab0ANFRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 00:17:16 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [resend][PATCH 1/2] kprobetrace,doc: shell need single quote to use $ character
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4B4EA4F3.6090401@redhat.com>
-References: <20100114111032.D720.A69D9226@jp.fujitsu.com> <4B4EA4F3.6090401@redhat.com>
-Message-Id: <20100114141650.6728.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 14 Jan 2010 00:17:32 -0500
+Subject: Re: [PATCH] firmware_class: remove base.h header inclusion
+From: Marcel Holtmann <marcel@holtmann.org>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: greg@kroah.com, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mcgrof@gmail.com,
+       Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1263435495-10966-1-git-send-email-lrodriguez@atheros.com>
+References: <1263435495-10966-1-git-send-email-lrodriguez@atheros.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 13 Jan 2010 21:16:06 -0800
+Message-ID: <1263446166.922.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 14 Jan 2010 14:17:13 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> KOSAKI Motohiro wrote:
-> > shell interpret $val is as shell variable. thus we need quote if
-> > we use echo command.
-> > 
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-> 
-> Hi Ingo and KOSAKI-san,
-> 
-> Sorry, now this patch conflicts with my patch(commit 1464010) on the
-> latest -tip tree. The patch drops $argN support, so I updated the
-> 1st example command.
-> 
-> Thank you,
+Hi Luis,
 
-Oh, I'm sorry. I didn't notice that.
+> base.h is used by base drivers for sharing internal structures.
+> Turns out firmware_class does not depend on it at all so remove it.
+> 
+> Cc: Johannes Berg <johannes@sipsolutions.net>
+> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
+
+Regards
+
+Marcel
 
 
