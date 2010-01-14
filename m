@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215Ab0ANDDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381Ab0ANDJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753215Ab0ANDDs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 22:03:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700Ab0ANDDr
+	id S1753381Ab0ANDJY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 22:09:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145Ab0ANDJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 22:03:47 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60624 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752476Ab0ANDDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 22:03:46 -0500
-Message-ID: <4B4E8993.5080404@cn.fujitsu.com>
-Date: Thu, 14 Jan 2010 11:03:47 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Wed, 13 Jan 2010 22:09:23 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:49863 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751312Ab0ANDJW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 22:09:22 -0500
+To: Miles Lane <miles.lane@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+       Arjan van de Ven <arjan@infradead.org>, Tejun Heo <tj@kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: 2.6.33-rc3 -- INFO: possible recursive locking --  (s_active){++++.+}, at: [<c10d2941>] sysfs_hash_and_remove+0x3d/0x4f
+References: <a44ae5cd1001060454g22fb5a0ay8185bc680cd4fc67@mail.gmail.com>
+	<2375c9f91001100058w4bac1cf9s183fc37eafbfde75@mail.gmail.com>
+	<m13a2dho1o.fsf@fess.ebiederm.org> <201001101935.31882.rjw@sisk.pl>
+	<m1wrzpbcmi.fsf@fess.ebiederm.org>
+	<a44ae5cd1001131847l582ad373j9a5c944327a06a0a@mail.gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 13 Jan 2010 19:09:06 -0800
+In-Reply-To: <a44ae5cd1001131847l582ad373j9a5c944327a06a0a@mail.gmail.com> (Miles Lane's message of "Wed\, 13 Jan 2010 21\:47\:11 -0500")
+Message-ID: <m1k4vl9yct.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Masami Hiramatsu <mhiramat@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] perf probe: Fix build failure
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-builtin-probe.c:121: error: 'opt_show_lines' defined but not used
+Miles Lane <miles.lane@gmail.com> writes:
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- tools/perf/builtin-probe.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+> Hmm.  I tried your patch applied to a clean 2.6.33-rc4 tree, and used
+> the same .config file.  This time the INFO looks a lot like my
+> original bug report.  Weird.  Maybe I am doing something wrong!
 
-diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index 1d3a99e..9be8063 100644
---- a/tools/perf/builtin-probe.c
-+++ b/tools/perf/builtin-probe.c
-@@ -118,6 +118,7 @@ static int opt_del_probe_event(const struct option *opt __used,
- 	return 0;
- }
- 
-+#ifndef NO_LIBDWARF
- static int opt_show_lines(const struct option *opt __used,
- 			  const char *str, int unset __used)
- {
-@@ -127,6 +128,8 @@ static int opt_show_lines(const struct option *opt __used,
- 	session.show_lines = true;
- 	return 0;
- }
-+#endif
-+
- /* Currently just checking function name from symbol map */
- static void evaluate_probe_point(struct probe_point *pp)
- {
--- 
-1.6.3
+I agree weird.  Either you don't have my patch working correctly or I
+talk a good good game but I don't have a clue about lockdep
+subclasses.
+
+Grrr.
+
+Now to see if I can find some time to dig into this.  Thank you very
+much for testing.
+
+Eric
+
