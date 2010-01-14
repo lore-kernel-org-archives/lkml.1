@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007Ab0ANVHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932233Ab0ANVHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756007Ab0ANVHN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 16:07:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688Ab0ANVHK
+	id S932233Ab0ANVHr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 16:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206Ab0ANVHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 16:07:10 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:1043 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751241Ab0ANVHJ (ORCPT
+	Thu, 14 Jan 2010 16:07:47 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58402 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752688Ab0ANVHq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 16:07:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=rNqU5HQweDzS9SXAteyCTkkqz1iS+UrdtAbJK746DNEhDZv7sVP2NQCAeOsPzMRnXG
-         /z0GKcW2OijoL7RwqSfyxKB/V4e/Z1tvn5D0AXv80J2uJKce5E8NDwLtuTqpJckXMxrX
-         w0FBQHdUARjOR6FmYq2ASi/Yu/h+Y4yDKJCFY=
-Message-ID: <4B4F8877.6080105@gmail.com>
-Date: Thu, 14 Jan 2010 22:11:19 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Thu, 14 Jan 2010 16:07:46 -0500
+X-Sasl-enc: JuWzx+cH2kgDsDaulnHQ80JSgW7nMVJ/Mlh3FDd7h1hq 1263503264
+Date: Thu, 14 Jan 2010 19:07:43 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Driver-Core: devtmpfs - reset inode permissions before
+ unlinking
+Message-ID: <20100114210743.GE3814@khazad-dum.debian.net>
+References: <1263388596.26006.1.camel@yio.site>
+ <20100114205304.GC3814@khazad-dum.debian.net>
+ <ac3eb2511001141259t751c6063p8919692a8164e2b@mail.gmail.com>
 MIME-Version: 1.0
-To: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       linux-arm-kernel@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Gemini: wrong registers used to set reg_level in gpio_set_irq_type()?
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2511001141259t751c6063p8919692a8164e2b@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It appears the wrong GPIO registers were used
+On Thu, 14 Jan 2010, Kay Sievers wrote:
+> On Thu, Jan 14, 2010 at 21:53, Henrique de Moraes Holschuh
+> <hmh@hmh.eng.br> wrote:
+> > On Wed, 13 Jan 2010, Kay Sievers wrote:
+> >> across the device lifetime by creating hardlinks, in the unusual case
+> >> that there is a user-writable directory on the same filesystem.
+> >
+> > Does a tmpfs mounted in /dev/shm count as "user-writable directory on the
+> > same filesystem" ?
+> 
+> Not if it's a separate tmpfs mount, which is recommended. Only if it's
+> just a plain directory on the /dev filesystem.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-I am not sure whether this is right so please review.
+Yeah, I noticed the abusurdity of my question when I re-read it, thanks for
+being kind in the reply.
 
-diff --git a/arch/arm/mach-gemini/gpio.c b/arch/arm/mach-gemini/gpio.c
-index e726385..fe3bd5a 100644
---- a/arch/arm/mach-gemini/gpio.c
-+++ b/arch/arm/mach-gemini/gpio.c
-@@ -86,7 +86,7 @@ static int gpio_set_irq_type(unsigned int irq, unsigned int type)
- 	unsigned int reg_both, reg_level, reg_type;
- 
- 	reg_type = __raw_readl(base + GPIO_INT_TYPE);
--	reg_level = __raw_readl(base + GPIO_INT_BOTH_EDGE);
-+	reg_level = __raw_readl(base + GPIO_INT_LEVEL);
- 	reg_both = __raw_readl(base + GPIO_INT_BOTH_EDGE);
- 
- 	switch (type) {
-@@ -117,7 +117,7 @@ static int gpio_set_irq_type(unsigned int irq, unsigned int type)
- 	}
- 
- 	__raw_writel(reg_type, base + GPIO_INT_TYPE);
--	__raw_writel(reg_level, base + GPIO_INT_BOTH_EDGE);
-+	__raw_writel(reg_level, base + GPIO_INT_LEVEL);
- 	__raw_writel(reg_both, base + GPIO_INT_BOTH_EDGE);
- 
- 	gpio_ack_irq(irq);
+That said, this does fix a possible security problem when a misconfigured
+system is used, and the fix looks rather simple...  Can it go to -stable
+eventually, even if it is months in the future, after it gets some testing
+in .34 ?   Minor problems are still problems...
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
