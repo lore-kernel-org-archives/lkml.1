@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358Ab0ANFys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826Ab0ANGFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755358Ab0ANFys (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 00:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978Ab0ANFyr
+	id S1755826Ab0ANGFh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 01:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655Ab0ANGFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 00:54:47 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52233 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695Ab0ANFyr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 00:54:47 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: [PATCH] [mmotm 0113] memcg: fix compile error
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20100114145006.672D.A69D9226@jp.fujitsu.com>
+	Thu, 14 Jan 2010 01:05:37 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:46592 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751139Ab0ANGFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 01:05:36 -0500
+Date: Thu, 14 Jan 2010 07:05:32 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       David Vrabel <david.vrabel@csr.com>, linux-usb@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, cocci@diku.dk
+Subject: Re: Changelog quality
+In-Reply-To: <4B4EAA73.5060103@freemail.hu>
+Message-ID: <Pine.LNX.4.64.1001140704410.18724@ask.diku.dk>
+References: <20100113174446.GA20754@kroah.com>
+ <Pine.LNX.4.44L0.1001131301180.3518-100000@iolanthe.rowland.org>
+ <20100113195226.GD8438@kroah.com> <4B4EAA73.5060103@freemail.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 14 Jan 2010 14:54:44 +0900 (JST)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-511516320-20773290-1263449132=:18724"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-This issue was introduced by memcg-move-charges-of-anonymous-swap.patch.
+---511516320-20773290-1263449132=:18724
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-=================================
-Now, ia64 can't compile page_cgroup.c.
-because it include asm/cmpxhg.h but almost arch don't have arch specific
-cmpxhg.h. they use asm-generic/cmpxhg.h.
+On Thu, 14 Jan 2010, Németh Márton wrote:
 
-Then, following errror occur.
+> Greg KH wrote:
+> > On Wed, Jan 13, 2010 at 01:04:52PM -0500, Alan Stern wrote:
+> >> On Wed, 13 Jan 2010, Greg KH wrote:
+> >>
+> >>>> It would be nice if there was a way to link automatically a git commit
+> >>>> to an archived copy of the email message in which it was originally 
+> >>>> submitted.
+> >>> Ingo has been doing this on some patches by putting a message-id field
+> >>> in the signed-off-by area showing what lkml message a patch came from.
+> >>>
+> >>> See git commit id 6432e734c99ed685e3cad72f7dcae4c65008fcab in Linus's
+> >>> tree as an example of this.
+> >>>
+> >>> I have no objection if people want to do this for any patches going
+> >>> through my tree as well.
+> >> If it has to be included manually by the patch submitter then it isn't
+> >> automatic.  Not to mention that the submitter would need to know the
+> >> email's message-id before the email message was sent!
+> >>
+> >> Something like this should belong in a maintainer's script.
+> > 
+> > Yeah, that would get messy, as usually a patch happens in a different
+> > thread than the original problem occurs, so it would take a lot more
+> > work on my part to try to match things up.  If I notice it, I will try
+> > to in the future.
+> 
+> What about introducing a new tag like 'SmPL-Used:'? The used SmPL could
+> be placed somewhere in the web. This would require only one line in
+> the changelog: e.g.:
+> 
+> SmPL-Used: http://coccinelle.lip6.fr/sp.php#usb_submit_urb
 
-  CC      mm/page_cgroup.o
-  mm/page_cgroup.c:12:25: error: asm/cmpxchg.h: No such file or
-  directory
-  make[1]: *** [mm/page_cgroup.o] Error 1
-  make: *** [mm] Error 2
+There is no guarantee that this URL will be valid 5 or 10 years from now.
 
-Fortunately, memcg code don't use low layer cmpxchg directly. thus
-this patch remove this include line simply.
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/page_cgroup.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/mm/page_cgroup.c b/mm/page_cgroup.c
-index 213b0ee..3dd8853 100644
---- a/mm/page_cgroup.c
-+++ b/mm/page_cgroup.c
-@@ -9,7 +9,6 @@
- #include <linux/vmalloc.h>
- #include <linux/cgroup.h>
- #include <linux/swapops.h>
--#include <asm/cmpxchg.h>
- 
- static void __meminit
- __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
--- 
-1.6.5.2
-
-
-
+julia
+---511516320-20773290-1263449132=:18724--
