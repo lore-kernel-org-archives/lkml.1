@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441Ab0ANSDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431Ab0ANSFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441Ab0ANSDa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 13:03:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757372Ab0ANSD3
+	id S1757431Ab0ANSFJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 13:05:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937Ab0ANSFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 13:03:29 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:32792 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757045Ab0ANSD3 convert rfc822-to-8bit (ORCPT
+	Thu, 14 Jan 2010 13:05:07 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:36428 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757359Ab0ANSFG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 13:03:29 -0500
-X-Greylist: delayed 56522 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jan 2010 13:03:28 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CigM9ugws9U//N+i1Lyu2fupWk9atakaNh1R1SLKH8u/YlQohFkXrbjiSx3wm1TQTZ
-         wLPv+TqvxHTmKN/TKwBoU4Z3Px4dldqce9Ia6bnAP7Hoii1zqjuDB9zEWdMd18aQtLy0
-         TN5C5OkJS0kN7L7Y8bY+kFcUu3QEZPpodQfF0=
+	Thu, 14 Jan 2010 13:05:06 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B4F5CC8.7020107@s5r6.in-berlin.de>
+Date: Thu, 14 Jan 2010 19:04:56 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-In-Reply-To: <20100114092350.GF12241@basil.fritz.box>
-References: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com>
-	 <87ljg1fn3u.fsf@basil.nowhere.org>
-	 <bc915a051001131821x6cdd3470lf72e8c02a897ea3@mail.gmail.com>
-	 <20100114092350.GF12241@basil.fritz.box>
-Date: Thu, 14 Jan 2010 10:03:27 -0800
-Message-ID: <bc915a051001141003s766689beue73800a1308d957e@mail.gmail.com>
-Subject: Re: HW breakpoints perf_events request
-From: Joshua Pincus <joshua.pincus@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>, peterz@infradead.org,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Joe Perches <joe@perches.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/24] MAINTAINERS: Document new "Q:" patchwork queue
+ type
+References: <cover.1263452908.git.joe@perches.com>	 <dad0b9fe4d42d6523c16edfc5275a01de1272fd4.1263452908.git.joe@perches.com>	 <4B4F20B3.703@s5r6.in-berlin.de>  <4B4F2402.9040008@s5r6.in-berlin.de> <1263490722.1903.12.camel@Joe-Laptop.home>
+In-Reply-To: <1263490722.1903.12.camel@Joe-Laptop.home>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Joe Perches wrote:
+> On Thu, 2010-01-14 at 15:02 +0100, Stefan Richter wrote:
+>> Stefan Richter wrote:
+>>> The proposed entry type is somewhat redundant:
+>> PS:  Make sure that patchwork.kernel.org and patchwork.ozlabs.org are
+>> mentioned in our process-related documentation, and you are done.  No
+>> need for more MAINTAINERS churn just for that.
+> 
+> Many lists are not using patchwork.
 
-On Thu, Jan 14, 2010 at 1:23 AM, Andi Kleen <andi@firstfloor.org> wrote:
->> We would like to avoid using ptrace at all costs.
->> It requires us to have a parent thread running
->> which monitors all the others.  It's not clear that
->> the wait() call by the parent doesn't mask a barrage
->> of signals from various threads and the performance
->
-> mask? It'll report them. You expect to have so
-> many signals that this would be a problem?
+All lists which do use patchwork are listed on patchwork.kernel.org and
+patchwork.ozlabs.org.  So, add a paragraph on them in
+Documentation/HOWTO and you are done.
 
-Yes.  We expect to see a zillion of them.
+The listings at patchwork.kernel.org and patchwork.ozlabs.org are always
+current.  Your manual copy in the kernel source won't be.
 
-> -Andi
->
+See?  I just saved you and others quite some time.  You could spend it
+for example to helpgetting our regressions count down.
 
-Thanks,
-JP
+> Micropatches to MAINTAINERS are preferred because of rate of change.
+
+Useless micropatches do _not_ make one look productive.
+-- 
+Stefan Richter
+-=====-==-=- ---= -===-
+http://arcgraph.de/sr/
