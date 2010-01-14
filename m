@@ -1,151 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715Ab0ANPFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932273Ab0ANPHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756715Ab0ANPFb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932248Ab0ANPFU
+	id S932273Ab0ANPHN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:07:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932240Ab0ANPHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:05:20 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47715 "EHLO
+	Thu, 14 Jan 2010 10:07:09 -0500
+Received: from mail.windriver.com ([147.11.1.11]:49167 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756839Ab0ANPBI (ORCPT
+	with ESMTP id S932239Ab0ANPHG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:01:08 -0500
+	Thu, 14 Jan 2010 10:07:06 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 18/40] kgdb: remove post_primary_code references
-Date: Thu, 14 Jan 2010 08:59:14 -0600
-Message-Id: <1263481176-1897-19-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH 39/40] debug_core: Turn off tracing while in the debugger
+Date: Thu, 14 Jan 2010 08:59:35 -0600
+Message-Id: <1263481176-1897-40-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b
 In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
 References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:00:41.0444 (UTC) FILETIME=[5702B240:01CA952A]
+X-OriginalArrivalTime: 14 Jan 2010 15:01:27.0773 (UTC) FILETIME=[729FF0D0:01CA952A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove all the references to the kgdb_post_primary_code.  This
-function serves no useful purpose because you can obtain the same
-information from the "struct kgdb_state *ks" from with in the
-debugger, if for some reason you want the data.
+The kernel debugger should turn off kernel tracing any time the
+debugger is active and restore it on resume.
 
-Also remove the unintentional duplicate assignment for ks->ex_vector.
-
+CC: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- arch/x86/kernel/kgdb.c    |   29 -----------------------------
- include/linux/kgdb.h      |   14 --------------
- kernel/debug/debug_core.c |    8 --------
- 3 files changed, 0 insertions(+), 51 deletions(-)
+ kernel/debug/debug_core.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
-index 135c3ec..ce35f72 100644
---- a/arch/x86/kernel/kgdb.c
-+++ b/arch/x86/kernel/kgdb.c
-@@ -47,20 +47,8 @@
- #include <asm/debugreg.h>
- #include <asm/apicdef.h>
- #include <asm/system.h>
--
- #include <asm/apic.h>
- 
--/*
-- * Put the error code here just in case the user cares:
-- */
--static int gdb_x86errcode;
--
--/*
-- * Likewise, the vector number here (since GDB only gets the signal
-- * number through the usual means, and that's not very specific):
-- */
--static int gdb_x86vector = -1;
--
- /**
-  *	pt_regs_to_gdb_regs - Convert ptrace regs to GDB regs
-  *	@gdb_regs: A pointer to hold the registers in the order GDB wants.
-@@ -346,23 +334,6 @@ void kgdb_disable_hw_debug(struct pt_regs *regs)
- 	}
- }
- 
--/**
-- *	kgdb_post_primary_code - Save error vector/code numbers.
-- *	@regs: Original pt_regs.
-- *	@e_vector: Original error vector.
-- *	@err_code: Original error code.
-- *
-- *	This is needed on architectures which support SMP and KGDB.
-- *	This function is called after all the slave cpus have been put
-- *	to a know spin state and the primary CPU has control over KGDB.
-- */
--void kgdb_post_primary_code(struct pt_regs *regs, int e_vector, int err_code)
--{
--	/* primary processor is completely in the debugger */
--	gdb_x86vector = e_vector;
--	gdb_x86errcode = err_code;
--}
--
- #ifdef CONFIG_SMP
- /**
-  *	kgdb_roundup_cpus - Get other CPUs into a holding pattern
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 33b9f5e..a2cfd9f 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -36,20 +36,6 @@ struct pt_regs;
- extern int kgdb_skipexception(int exception, struct pt_regs *regs);
- 
- /**
-- *	kgdb_post_primary_code - (optional) Save error vector/code numbers.
-- *	@regs: Original pt_regs.
-- *	@e_vector: Original error vector.
-- *	@err_code: Original error code.
-- *
-- *	This is usually needed on architectures which support SMP and
-- *	KGDB.  This function is called after all the secondary cpus have
-- *	been put to a know spin state and the primary CPU has control over
-- *	KGDB.
-- */
--extern void kgdb_post_primary_code(struct pt_regs *regs, int e_vector,
--				  int err_code);
--
--/**
-  *	kgdb_disable_hw_debug - (optional) Disable hardware debugging hook
-  *	@regs: Current &struct pt_regs.
-  *
 diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index 1281d1d..aefd660 100644
+index 6ca3f7c..464aa65 100644
 --- a/kernel/debug/debug_core.c
 +++ b/kernel/debug/debug_core.c
-@@ -201,12 +201,6 @@ int __weak kgdb_skipexception(int exception, struct pt_regs *regs)
- 	return 0;
- }
- 
--void __weak
--kgdb_post_primary_code(struct pt_regs *regs, int e_vector, int err_code)
--{
--	return;
--}
--
- /**
-  *	kgdb_disable_hw_debug - Disable hardware debugging while we in kgdb.
-  *	@regs: Current &struct pt_regs.
-@@ -584,7 +578,6 @@ return_normal:
- 	 * At this point the primary processor is completely
- 	 * in the debugger and all secondary CPUs are quiescent
- 	 */
--	kgdb_post_primary_code(ks->linux_regs, ks->ex_vector, ks->err_code);
- 	dbg_deactivate_sw_breakpoints();
+@@ -474,6 +474,7 @@ static int kgdb_cpu_enter(struct kgdb_state *ks, struct pt_regs *regs)
+ 	int sstep_tries = 100;
+ 	int error;
+ 	int i, cpu;
++	int trace_on = 0;
+ acquirelock:
+ 	/*
+ 	 * Interrupts will be restored by the 'trap return' code, except when
+@@ -518,6 +519,8 @@ return_normal:
+ 			 */
+ 			if (arch_kgdb_ops.correct_hw_break)
+ 				arch_kgdb_ops.correct_hw_break();
++			if (trace_on)
++				tracing_on();
+ 			atomic_set(&cpu_in_kgdb[cpu], 0);
+ 			touch_softlockup_watchdog_sync();
+ 			clocksource_touch_watchdog();
+@@ -592,6 +595,9 @@ return_normal:
  	kgdb_single_step = 0;
  	kgdb_contthread = current;
-@@ -665,7 +658,6 @@ kgdb_handle_exception(int evector, int signo, int ecode, struct pt_regs *regs)
- 	ks->cpu			= raw_smp_processor_id();
- 	ks->ex_vector		= evector;
- 	ks->signo		= signo;
--	ks->ex_vector		= evector;
- 	ks->err_code		= ecode;
- 	ks->kgdb_usethreadid	= 0;
- 	ks->linux_regs		= regs;
+ 	exception_level = 0;
++	trace_on = tracing_is_on();
++	if (trace_on)
++		tracing_off();
+ 
+ 	while (1) {
+ cpu_master_loop:
+@@ -642,6 +648,8 @@ kgdb_restore:
+ 		else
+ 			kgdb_sstep_pid = 0;
+ 	}
++	if (trace_on)
++		tracing_on();
+ 	/* Free kgdb_active */
+ 	atomic_set(&kgdb_active, -1);
+ 	touch_softlockup_watchdog_sync();
 -- 
 1.6.3.1.9.g95405b
 
