@@ -1,88 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065Ab0AND0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378Ab0AND3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065Ab0AND0K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 22:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700Ab0AND0I
+	id S1754378Ab0AND3n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 22:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725Ab0AND3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 22:26:08 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:56560 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752145Ab0AND0F convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 22:26:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LRM91Qtz/dBXBaZLqLH4mzy7iZxtwIPQsFNeSq8plQFrDQWFY2x8lTECxcvSe0wa5N
-         gmptiZ6iccci2SYLghBzIEWfs9qbTVysWO6+WrXhXQiqETmwQoCswanhtPuJg2Ho8VTr
-         StfLsqccsFYygsdJ/hbR596mNGcfbFBACiN50=
+	Wed, 13 Jan 2010 22:29:42 -0500
+Received: from mga11.intel.com ([192.55.52.93]:13732 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751724Ab0AND3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 22:29:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,272,1262592000"; 
+   d="scan'208";a="764069671"
+Date: Thu, 14 Jan 2010 11:29:38 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Chen Liqin <liqin.chen@sunplusct.com>, Lennox Wu <lennox.wu@gmail.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [PATCH 4/8] resources: introduce generic page_is_ram()
+Message-ID: <20100114032938.GB11709@localhost>
+References: <20100113135305.013124116@intel.com> <20100113135957.680223335@intel.com> <20100113142923.GB4038@hack>
 MIME-Version: 1.0
-In-Reply-To: <1263403904.8011.83.camel@Joe-Laptop.home>
-References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com>
-	 <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com>
-	 <20100113155323.GB24818@basil.fritz.box>
-	 <1263400835.8011.73.camel@Joe-Laptop.home>
-	 <20100113171411.GC24818@basil.fritz.box>
-	 <1263403904.8011.83.camel@Joe-Laptop.home>
-Date: Thu, 14 Jan 2010 11:26:01 +0800
-Message-ID: <2375c9f91001131926o15a52e1cx936932c587dccdb5@mail.gmail.com>
-Subject: Re: [PATCH] Makefile: Document ability to make file.lst and file.S
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Michal Marek <mmarek@suse.cz>,
-       William Allen Simpson <william.allen.simpson@gmail.com>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Eric Dumazet <eric.dumazet@gmail.com>, linux-kbuild@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100113142923.GB4038@hack>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 14, 2010 at 1:31 AM, Joe Perches <joe@perches.com> wrote:
-> On Wed, 2010-01-13 at 18:14 +0100, Andi Kleen wrote:
->> On Wed, Jan 13, 2010 at 08:40:35AM -0800, Joe Perches wrote:
->> > On Wed, 2010-01-13 at 16:53 +0100, Andi Kleen wrote:
->> > > On Wed, Jan 13, 2010 at 10:36:39AM -0500, William Allen Simpson wrote:
->> > > > What make command would you suggest to get the interleaved asm?
->> > > make path/to/file.lst
->> > > (or .S -- you might need uptodate binutils if the lst listing is messed up)
->> > I didn't know that was possible.
->> The trap is that it doesn't work well on most systems with too
->> old binutils (unless the gcc is really ancient)
->
-> Then that might as well go into the help.
->
-> Signed-off-by: Joe Perches <joe@perches.com>
+On Wed, Jan 13, 2010 at 10:29:23PM +0800, Américo Wang wrote:
+> On Wed, Jan 13, 2010 at 09:53:09PM +0800, Wu Fengguang wrote:
+> >It's based on walk_system_ram_range(), for archs that don't have
+> >their own page_is_ram().
+> >
+> >The static verions in MIPS and SCORE are also made global.
+> >
+> >CC: Chen Liqin <liqin.chen@sunplusct.com>
+> >CC: Lennox Wu <lennox.wu@gmail.com>
+> >CC: Ralf Baechle <ralf@linux-mips.org>
+> >CC: linux-mips@linux-mips.org
+> >CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> 
+> >Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> >---
+> > arch/mips/mm/init.c    |    2 +-
+> > arch/score/mm/init.c   |    2 +-
+> > include/linux/ioport.h |    2 ++
+> > kernel/resource.c      |   10 ++++++++++
+> > 4 files changed, 14 insertions(+), 2 deletions(-)
+> >
+> >--- linux-mm.orig/kernel/resource.c	2010-01-10 10:11:53.000000000 +0800
+> >+++ linux-mm/kernel/resource.c	2010-01-10 10:15:33.000000000 +0800
+> >@@ -297,6 +297,16 @@ int walk_system_ram_range(unsigned long 
+> > 
+> > #endif
+> > 
+> >+static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
+> >+{
+> >+	return 24;
+> >+}
+> >+
+> >+int __attribute__((weak)) page_is_ram(unsigned long pfn)
+> >+{
+> >+	return 24 == walk_system_ram_range(pfn, 1, NULL, __is_ram);
+> >+}
+> 
+> 
+> Why do you choose 24 instead of using a macro expressing its meaning?
 
-Good patch,
+Hmm, I thought they are close enough to be obvious.
+Anyway this should look better:
 
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+resources: introduce generic page_is_ram()
 
-> ---
-> diff --git a/Makefile b/Makefile
-> index 9f64552..484cff4 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -1248,7 +1248,9 @@ help:
->        @echo  '  firmware_install- Install all firmware to INSTALL_FW_PATH'
->        @echo  '                    (default: $$(INSTALL_MOD_PATH)/lib/firmware)'
->        @echo  '  dir/            - Build all files in dir and below'
-> -       @echo  '  dir/file.[ois]  - Build specified target only'
-> +       @echo  '  dir/file.[oisS] - Build specified target only'
-> +       @echo  '  dir/file.lst    - Build specified mixed source/assembly target only'
-> +       @echo  '                    (requires a recent binutils and recent build (System.map))'
->        @echo  '  dir/file.ko     - Build module including final link'
->        @echo  '  modules_prepare - Set up for building external modules'
->        @echo  '  tags/TAGS       - Generate tags file for editors'
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+It's based on walk_system_ram_range(), for archs that don't have
+their own page_is_ram().
+
+The static verions in MIPS and SCORE are also made global.
+
+CC: Chen Liqin <liqin.chen@sunplusct.com>
+CC: Lennox Wu <lennox.wu@gmail.com>
+CC: Ralf Baechle <ralf@linux-mips.org>
+CC: Américo Wang <xiyou.wangcong@gmail.com>
+CC: linux-mips@linux-mips.org
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> 
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ arch/mips/mm/init.c    |    2 +-
+ arch/score/mm/init.c   |    2 +-
+ include/linux/ioport.h |    2 ++
+ kernel/resource.c      |   11 +++++++++++
+ 4 files changed, 15 insertions(+), 2 deletions(-)
+
+--- linux-mm.orig/kernel/resource.c	2010-01-13 21:27:28.000000000 +0800
++++ linux-mm/kernel/resource.c	2010-01-14 11:28:20.000000000 +0800
+@@ -297,6 +297,17 @@ int walk_system_ram_range(unsigned long 
+ 
+ #endif
+ 
++#define PAGE_IS_RAM	24
++static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
++{
++	return PAGE_IS_RAM;
++}
++int __attribute__((weak)) page_is_ram(unsigned long pfn)
++{
++	return PAGE_IS_RAM == walk_system_ram_range(pfn, 1, NULL, __is_ram);
++}
++#undef PAGE_IS_RAM
++
+ /*
+  * Find empty slot in the resource tree given range and alignment.
+  */
+--- linux-mm.orig/include/linux/ioport.h	2010-01-13 21:27:28.000000000 +0800
++++ linux-mm/include/linux/ioport.h	2010-01-13 21:44:50.000000000 +0800
+@@ -188,5 +188,7 @@ extern int
+ walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+ 		void *arg, int (*func)(unsigned long, unsigned long, void *));
+ 
++extern int page_is_ram(unsigned long pfn);
++
+ #endif /* __ASSEMBLY__ */
+ #endif	/* _LINUX_IOPORT_H */
+--- linux-mm.orig/arch/score/mm/init.c	2010-01-13 21:27:28.000000000 +0800
++++ linux-mm/arch/score/mm/init.c	2010-01-13 21:44:50.000000000 +0800
+@@ -59,7 +59,7 @@ static unsigned long setup_zero_page(voi
+ }
+ 
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+-static int __init page_is_ram(unsigned long pagenr)
++int page_is_ram(unsigned long pagenr)
+ {
+ 	if (pagenr >= min_low_pfn && pagenr < max_low_pfn)
+ 		return 1;
+--- linux-mm.orig/arch/mips/mm/init.c	2010-01-13 21:27:28.000000000 +0800
++++ linux-mm/arch/mips/mm/init.c	2010-01-13 21:44:50.000000000 +0800
+@@ -298,7 +298,7 @@ void __init fixrange_init(unsigned long 
+ }
+ 
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+-static int __init page_is_ram(unsigned long pagenr)
++int page_is_ram(unsigned long pagenr)
+ {
+ 	int i;
+ 
