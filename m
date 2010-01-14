@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971Ab0ANCvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283Ab0ANCwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754971Ab0ANCvs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 21:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823Ab0ANCvr
+	id S1755283Ab0ANCwS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 21:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615Ab0ANCwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 21:51:47 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60647 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753123Ab0ANCvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 21:51:46 -0500
-Message-ID: <4B4E8590.8060403@cn.fujitsu.com>
-Date: Thu, 14 Jan 2010 10:46:40 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 13 Jan 2010 21:52:17 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:43019 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753374Ab0ANCwR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 21:52:17 -0500
+Message-ID: <4B4E8594.4020707@oracle.com>
+Date: Thu, 14 Jan 2010 10:46:44 +0800
+From: Wenji Huang <wenji.huang@oracle.com>
+Reply-To: wenji.huang@oracle.com
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Shaohua Li <shaohua.li@intel.com>
-CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org, jmoyer@redhat.com,
-       vgoyal@redhat.com, yanmin_zhang@linux.intel.com
-Subject: Re: [PATCH]cfq-iosched: don't stop async queue with async requests
- pending
-References: <20100113074442.GA10492@sli10-desk.sh.intel.com>
-In-Reply-To: <20100113074442.GA10492@sli10-desk.sh.intel.com>
-Content-Type: text/plain; charset=UTF-8
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: tracing: Multi definition of TRACE_INCLUDE_FILE
+References: <4B443E78.7040704@oracle.com> <20100114024147.GB15301@goodmis.org>
+In-Reply-To: <20100114024147.GB15301@goodmis.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4B4E86D1.008E:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shaohua Li wrote:
-> My SSD speed of direct write is about 80m/s, while I test page writeback,
-> the speed can only go to 68m/s. Below patch fixes this.
-> It appears we missused cfq_should_idle in cfq_may_dispatch. cfq_should_idle
-> means a queue should idle because it's seekless sync queue or it's the last queue,
-> which is to maintain service tree time slice. So it doesn't mean the
-> last queue is always a sync queue. If the last queue is asyn queue,
-> we definitely shouldn't stop dispatch requests because of pending async
-> requests.
-> 
-> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> 
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index 918c7fd..8198079 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -2222,7 +2222,8 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->  	/*
->  	 * Drain async requests before we start sync IO
->  	 */
-> -	if (cfq_should_idle(cfqd, cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
-> +	if (cfq_cfqq_sync(cfqq) && cfq_should_idle(cfqd, cfqq)
-> +		&& cfqd->rq_in_driver[BLK_RW_ASYNC])
->  		return false;
+Hi Steven,
 
-It seems only sync queue could open the idle window, so i don't think we really need this.
+Steven Rostedt wrote:
+> On Wed, Jan 06, 2010 at 03:40:40PM +0800, Wenji Huang wrote:
+>> Hi,
+>>
+>> There are multi definition of TRACE_INCLUDE_FILE on
+>> include/trace/events/{syscalls, kvm}.h
+>> It will result in compilation error when some
+>> out-of-tree tools like Systemtap processes kernel
+>> tracepoints in a way to put header files into module.
+>>
+> 
+> Does the following patch fix your issues?
+> 
+
+Yes, that could be.
 
 Thanks,
-Gui
+wenji
+
+> -- Steve
+> 
+> 
+> diff --git a/include/trace/events/kvm.h b/include/trace/events/kvm.h
+> index dbe1084..532d658 100644
+> --- a/include/trace/events/kvm.h
+> +++ b/include/trace/events/kvm.h
+> @@ -4,6 +4,7 @@
+>  #include <linux/tracepoint.h>
+>  
+>  #undef TRACE_SYSTEM
+> +#undef TRACE_INCLUDE_FILE
+>  #define TRACE_SYSTEM kvm
+>  #define TRACE_INCLUDE_FILE kvm
+>  
+> diff --git a/include/trace/events/syscalls.h b/include/trace/events/syscalls.h
+> index fb726ac..52290bb 100644
+> --- a/include/trace/events/syscalls.h
+> +++ b/include/trace/events/syscalls.h
+> @@ -1,4 +1,5 @@
+>  #undef TRACE_SYSTEM
+> +#undef TRACE_INCLUDE_FILE
+>  #define TRACE_SYSTEM raw_syscalls
+>  #define TRACE_INCLUDE_FILE syscalls
+>  
 
