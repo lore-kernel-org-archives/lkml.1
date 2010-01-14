@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787Ab0ANW2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885Ab0ANWcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756787Ab0ANW2w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888Ab0ANW2r
+	id S1756885Ab0ANWcs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:32:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797Ab0ANW2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:28:47 -0500
-Received: from kroah.org ([198.145.64.141]:60604 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:28:53 -0500
+Received: from kroah.org ([198.145.64.141]:60629 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756269Ab0ANW2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:44 -0500
+	id S1756742Ab0ANW2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:50 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Daniel T Chen <crimsun@ubuntu.com>, Jaroslav Kysela <perex@perex.cz>,
+       Roger Blofeld <blofeldus@yahoo.com>, Jean Delvare <khali@linux-fr.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 30/52] ALSA: ac97: Add Dell Dimension 2400 to Headphone/Line Jack Sense blacklist
-Date: Thu, 14 Jan 2010 14:27:09 -0800
-Message-Id: <1263508051-7868-30-git-send-email-gregkh@suse.de>
+Subject: [PATCH 36/52] hwmon: (adt7462) Fix pin 28 monitoring
+Date: Thu, 14 Jan 2010 14:27:15 -0800
+Message-Id: <1263508051-7868-36-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-29-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-35-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -49,37 +49,43 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-27-git-send-email-gregkh@suse.de>
  <1263508051-7868-28-git-send-email-gregkh@suse.de>
  <1263508051-7868-29-git-send-email-gregkh@suse.de>
+ <1263508051-7868-30-git-send-email-gregkh@suse.de>
+ <1263508051-7868-31-git-send-email-gregkh@suse.de>
+ <1263508051-7868-32-git-send-email-gregkh@suse.de>
+ <1263508051-7868-33-git-send-email-gregkh@suse.de>
+ <1263508051-7868-34-git-send-email-gregkh@suse.de>
+ <1263508051-7868-35-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel T Chen <crimsun@ubuntu.com>
+From: Roger Blofeld <blofeldus@yahoo.com>
 
-commit af9a75dd1a1f8a9aa406466cc8bb16208120488a upstream.
+commit bb595c923bc51dff9cdd112de18deb57ac7945d2 upstream.
 
-This model needs both 'Headphone Jack Sense' and 'Line Jack Sense' muted
-for audible playback, so just add it to the ad1981 jack sense blacklist.
+The ADT7462_PIN28_VOLT value is a 4-bit field, so the corresponding
+shift must be 4.
 
-Tested-by: Pete <x41215201@gmail.com>
-Signed-off-by: Daniel T Chen <crimsun@ubuntu.com>
-Signed-off-by: Jaroslav Kysela <perex@perex.cz>
+Signed-off-by: Roger Blofeld <blofeldus@yahoo.com>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- sound/pci/ac97/ac97_patch.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/hwmon/adt7462.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/sound/pci/ac97/ac97_patch.c b/sound/pci/ac97/ac97_patch.c
-index 7337abd..67ca440 100644
---- a/sound/pci/ac97/ac97_patch.c
-+++ b/sound/pci/ac97/ac97_patch.c
-@@ -1870,6 +1870,7 @@ static unsigned int ad1981_jacks_blacklist[] = {
- 	0x10140554, /* Thinkpad T42p/R50p */
- 	0x10140567, /* Thinkpad T43p 2668-G7U */
- 	0x10140581, /* Thinkpad X41-2527 */
-+	0x10280160, /* Dell Dimension 2400 */
- 	0x104380b0, /* Asus A7V8X-MX */
- 	0x11790241, /* Toshiba Satellite A-15 S127 */
- 	0x144dc01a, /* Samsung NP-X20C004/SEG */
+diff --git a/drivers/hwmon/adt7462.c b/drivers/hwmon/adt7462.c
+index 1852f27..262c133 100644
+--- a/drivers/hwmon/adt7462.c
++++ b/drivers/hwmon/adt7462.c
+@@ -97,7 +97,7 @@ I2C_CLIENT_INSMOD_1(adt7462);
+ #define		ADT7462_PIN24_SHIFT		6
+ #define		ADT7462_PIN26_VOLT_INPUT	0x08
+ #define		ADT7462_PIN25_VOLT_INPUT	0x20
+-#define		ADT7462_PIN28_SHIFT		6	/* cfg3 */
++#define		ADT7462_PIN28_SHIFT		4	/* cfg3 */
+ #define		ADT7462_PIN28_VOLT		0x5
+ 
+ #define ADT7462_REG_ALARM1			0xB8
 -- 
 1.6.6
 
