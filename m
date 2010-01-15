@@ -1,70 +1,63 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602Ab0AOQyP (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 11:54:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165Ab0AOQyO
+	id S1756706Ab0AOQ4s (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 11:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165Ab0AOQ4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 11:54:14 -0500
-Received: from cantor.suse.de ([195.135.220.2]:58228 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751709Ab0AOQyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 11:54:14 -0500
-Date: Fri, 15 Jan 2010 17:54:09 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
-        Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
-        linux-kernel@vger.kernel.org,
-        Linus Walleij <linus.walleij@stericsson.com>, sameo@linux.intel.com,
+	Fri, 15 Jan 2010 11:56:47 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:33319 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752192Ab0AOQ4q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 11:56:46 -0500
+Date: Fri, 15 Jan 2010 08:55:58 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
         Reinhard.Tartler@informatik.uni-erlangen.de
-Subject: Re: [PATCH] typo in kernel source (DEBUGFS)
-In-Reply-To: <alpine.LRH.2.00.1001151500460.15694@twin.jikos.cz>
-Message-ID: <alpine.LRH.2.00.1001151752550.15694@twin.jikos.cz>
-References: <20100113115712.GA7398@faui49.informatik.uni-erlangen.de> <63386a3d1001140207p5e2546fq2d8201ee87edfd46@mail.gmail.com> <alpine.LRH.2.00.1001151500460.15694@twin.jikos.cz>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [PATCH] obsolete config in kernel source (FB_SOFT_CURSOR)
+Message-Id: <20100115085558.4d908605.randy.dunlap@oracle.com>
+In-Reply-To: <20100115122755.GC3321@faui49.informatik.uni-erlangen.de>
+References: <20100115122755.GC3321@faui49.informatik.uni-erlangen.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4B509E29.010F:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jan 2010, Jiri Kosina wrote:
+On Fri, 15 Jan 2010 13:27:56 +0100 Christoph Egger wrote:
 
-> > 2010/1/13 Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>:
-> > 
-> > >        While working on this we detected a spelling error in
-> > > drivers/mfd/ab3100-otp.c which can be corrected using the attached
-> > > patch.
-> > 
-> > Acked-by: Linus Walleij <linus.walleij@stericsson.com>
+> Hi all!
 > 
-> The original patch misses a Signed-off-by. Please resend it to 
-> trivial@kernel.org with this line, so that it could be applied.
+> 	As part of the VAMOS[0] research project at the University of
+> Erlangen we're checking referential integrity between kernel KConfig
+> options and in-code Conditional blocks.
+> 
+> 	While probably not strictly a integrity violation (as
+> FB_SOFT_CURSOR can still be set as it is once mentioned in a KConfig
+> select statement this looks like a left-over of
+> c465e05a03209651078b95686158648fd7ed84c5
+> 
+> 	Please keep me informed of this patch getting confirmed /
+> merged so we can keep track of it.
+> 
+> Regards
+> 
+> 	Christoph Egger
+> 
+> [0] http://vamos1.informatik.uni-erlangen.de/
 
-... and has this been tested at all?
+Hi,
 
-drivers/mfd/ab3100-otp.c: In function ¡show_otp¢:
-drivers/mfd/ab3100-otp.c:101: error: dereferencing pointer to incomplete type
-drivers/mfd/ab3100-otp.c:104: error: implicit declaration of function ¡seq_printf¢
-drivers/mfd/ab3100-otp.c:102: warning: unused variable ¡err¢
-drivers/mfd/ab3100-otp.c: In function ¡ab3100_otp_open¢:
-drivers/mfd/ab3100-otp.c:116: error: implicit declaration of function ¡single_open¢
-drivers/mfd/ab3100-otp.c:116: error: ¡ab3100_otp_show¢ undeclared (first use in this function)
-drivers/mfd/ab3100-otp.c:116: error: (Each undeclared identifier is reported only once
-drivers/mfd/ab3100-otp.c:116: error: for each function it appears in.)
-drivers/mfd/ab3100-otp.c: At top level:
-drivers/mfd/ab3100-otp.c:121: error: ¡seq_read¢ undeclared here (not in a function)
-drivers/mfd/ab3100-otp.c:122: error: ¡seq_lseek¢ undeclared here (not in a function)
-drivers/mfd/ab3100-otp.c:123: error: ¡single_release¢ undeclared here (not in a function)
-drivers/mfd/ab3100-otp.c: In function ¡ab3100_otp_init_debugfs¢:
-drivers/mfd/ab3100-otp.c:134: error: ¡err¢ undeclared (first use in this function)
-drivers/mfd/ab3100-otp.c: In function ¡ab3100_otp_exit_debugfs¢:
-drivers/mfd/ab3100-otp.c:140: error: implicit declaration of function ¡debugfs_remove_file¢
+This one should have gone to the linux-fbdev@vger.kernel.org mailing list
+instead of linux-media.
 
-So looks like the debugfs code might need some more surgery.
+http://vger.kernel.org/vger-lists.html#linux-fbdev
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
-
+---
+~Randy
