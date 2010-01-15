@@ -1,118 +1,87 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758105Ab0AOTcT (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 14:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080Ab0AOTcT
+	id S1758099Ab0AOTdV (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 14:33:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757711Ab0AOTdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 14:32:19 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:37181 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758016Ab0AOTcS convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jan 2010 14:33:20 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:50210 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757655Ab0AOTdT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 14:32:18 -0500
+	Fri, 15 Jan 2010 14:33:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=oJx6T184KeNqe0AQgx1l6KWZ/i2xm+Yf8HwUB+bx7VhpUfx9oxcvfmW3cAv/gYcuI/
-         wsN4Fbsuo2wiCmBwYTNBnSLnayG947WXds7bzlYWRsCMaG7T1fbMQpuwdXeZnNG/Tkt6
-         2CDFhn5WU8Rbube43A0t1NzHDdh27u1dpPI5M=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=VFSoszo94UFyF1qV353s4otZ53cfFut3hDv4LSnjfv7RomMXBj6fyEJuswQSapHYRf
+         eHLBIWi4cKPTyY7U3GfVFX+OCzRzWalsak2GxCMP7BmXtStO6bJe8TSReUrfptt/G7lt
+         FI6avkYp8gGYzHNdnzB68/Lhepgok1qNf913Y=
+Message-ID: <4B50C2FA.4020100@gmail.com>
+Date: Fri, 15 Jan 2010 20:33:14 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-17.1 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <1263264218.29897.41.camel@localhost>
-References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
-	 <20091228084659.GA31389@sli10-desk.sh.intel.com>
-	 <4e5e476b0912280111s6a977251m3416341b4bd2c272@mail.gmail.com>
-	 <20091228092844.GA9710@sli10-desk.sh.intel.com>
-	 <x493a2k8d7x.fsf@segfault.boston.devel.redhat.com>
-	 <4e5e476b1001070544w88a387dkfb48847f4f95a9b1@mail.gmail.com>
-	 <x49hbqy3s3m.fsf@segfault.boston.devel.redhat.com>
-	 <1263187209.29897.33.camel@localhost>
-	 <4e5e476b1001110705y6c3319ducf6a15c2a2be5670@mail.gmail.com>
-	 <1263264218.29897.41.camel@localhost>
-Date: Fri, 15 Jan 2010 20:32:10 +0100
-Message-ID: <4e5e476b1001151132l406054f6xcc47b94e817d3af0@mail.gmail.com>
-Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as 
-	close
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-        "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel@vger.kernel.org
+CC: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+        Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@suse.de>
+Subject: Re: mmotm 2010-01-13-12-17 uploaded
+References: <201001132042.o0DKgaSR027272@imap1.linux-foundation.org>
+In-Reply-To: <201001132042.o0DKgaSR027272@imap1.linux-foundation.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 3:43 AM, Zhang, Yanmin
-<yanmin_zhang@linux.intel.com> wrote:
-> On Mon, 2010-01-11 at 16:05 +0100, Corrado Zoccolo wrote:
-> > On Mon, Jan 11, 2010 at 6:20 AM, Zhang, Yanmin
-> > <yanmin_zhang@linux.intel.com> wrote:
-> > > On Thu, 2010-01-07 at 09:30 -0500, Jeff Moyer wrote:
-> > Hi Yanmin,
-> > are you testing Jeff's patch with your full fio script, instead of the
-> > simplified one?
-> Thanks for your reminder. I tested the patch with simplified one.
->
-> > Since they are fixing the merging part, that happens only with the
-> > full fio script.
-> Ok. I tested the full fio script a moment ago and didn't find improvement.
-> > >>
-> > >> Shaohua Li noticed that cfq currently can merge with seeky queues, which
-> > >> causes unwanted merge/unmerge activity.  We already know that the
-> > >> cur_cfqq is not seeky, so this patch just makes sure that the non-seeky
-> > >> queue is not merged with a seeky one.
-> > >>
-> > >> Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
-> > >>
-> > >> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> > >> index 8df4fe5..3db9050 100644
-> > >> --- a/block/cfq-iosched.c
-> > >> +++ b/block/cfq-iosched.c
-> > >> @@ -1677,6 +1677,10 @@ static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
-> > >>       return cfq_dist_from_last(cfqd, rq) <= sdist;
-> > >>  }
-> > >>
-> > >> +/*
-> > >> + * Search for a cfqq that is issuing non-seeky I/Os within the seek
-> > >> + * mean of the current cfqq.
-> > >> + */
-> > >>  static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
-> > >>                                   struct cfq_queue *cur_cfqq)
-> > >>  {
-> > >> @@ -1701,7 +1705,14 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
-> > >>        * will contain the closest sector.
-> > >>        */
-> > >>       __cfqq = rb_entry(parent, struct cfq_queue, p_node);
-> > >> -     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq))
-> > >> +     /*
-> > >> +      * If the cfqq does not have enough seek samples, assume it is
-> > >> +      * sequential until proven otherwise.  If it is assumed that the
-> > >> +      * queue is seeky first, then the close cooperator detection logic
-> > >> +      * may never trigger as one queue strays further from the other(s).
-> > >> +      */
-> > >> +     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq) &&
-> > >> +         (!sample_valid(__cfqq->seek_samples) || !CFQQ_SEEKY(__cfqq)))
-> > >>               return __cfqq;
-> > >>
-> > >>       if (blk_rq_pos(__cfqq->next_rq) < sector)
-> > >> @@ -1712,7 +1723,8 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
-> > >>               return NULL;
-> > >>
-> > >>       __cfqq = rb_entry(node, struct cfq_queue, p_node);
-> > >> -     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq))
-> > >> +     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq) &&
-> > >> +         (!sample_valid(__cfqq->seek_samples) || !CFQQ_SEEKY(__cfqq)))
-> > >>               return __cfqq;
-> > >>
-> > >>       return NULL;
-Hi Jeff,
-I think this patch has the same flaw as Shaohua's.
-The seekiness check that you introduce in cfq_rq_close is already
-present in its caller, cfq_close_cooperator, so it is not effective.
-Up to now, the only patch that improves this situation is the one that
-changes the unmerge policy to unmerge after a single time slice.
+On 01/13/2010 09:17 PM, akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2010-01-13-12-17 has been uploaded to
 
-Thanks,
-Corado
+Hi, it crashes on my machine while booting up. It is a regression
+against 2010-01-06-14-34. Doesn't it ring a bell by a chance?
+
+BUG: unable to handle kernel paging request at ffffffff816efe8e
+IP: [<ffffffff811acf60>] memcpy_c+0x10/0x20
+PGD 1807067 PUD 180b063 PMD 80000000016001e1
+Oops: 0003 [#1] SMP
+last sysfs file: /sys/kernel/uevent_helper
+CPU 0
+Pid: 957, comm: boot.udev Not tainted 2.6.33-rc4-mm1_64 #928 To be
+filled by O.E.M./To Be Filled By O.E.M.
+RIP: 0010:[<ffffffff811acf60>]  [<ffffffff811acf60>] memcpy_c+0x10/0x20
+RSP: 0018:ffff8801c3127e80  EFLAGS: 00010202
+RAX: ffffffff816efe8e RBX: 0000000000000001 RCX: 0000000000000001
+RDX: 0000000000000001 RSI: ffff8801c30b9000 RDI: ffffffff816efe8e
+RBP: ffff8801c3127e98 R08: ffffffff81058620 R09: 00000000000c2c7e
+R10: 0000000000000001 R11: 0000000000000246 R12: ffff8801c3127f48
+R13: ffff8801cbc26688 R14: ffffffff81829d10 R15: ffff8801cbc903b8
+FS:  00007fe572b106f0(0000) GS:ffff880028200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: ffffffff816efe8e CR3: 00000001c30f2000 CR4: 00000000000006f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process boot.udev (pid: 957, threadinfo ffff8801c3126000, task
+ffff8801cbcdbf90)
+Stack:
+ ffffffff8105865f ffff8801c3127ea8 ffff8801c4a3faa0 ffff8801c3127ea8
+<0> ffffffff811a51b7 ffff8801c3127ef8 ffffffff811224ec 0000000000000001
+<0> ffff8801c4a3fa80 ffff8801c3127ee8 0000000000000001 00007fe572b4c000
+Call Trace:
+ [<ffffffff8105865f>] ? uevent_helper_store+0x3f/0x80
+ [<ffffffff811a51b7>] kobj_attr_store+0x17/0x20
+ [<ffffffff811224ec>] sysfs_write_file+0x9c/0xf0
+ [<ffffffff810c9ba8>] vfs_write+0xc8/0x190
+ [<ffffffff810ca4ec>] sys_write+0x4c/0x80
+ [<ffffffff81002e6b>] system_call_fastpath+0x16/0x1b
+Code: 00 48 3b 42 20 73 07 48 8b 50 f9 31 c0 c3 31 d2 48 c7 c0 f2 ff ff
+ff c3 90 90 90 48 89 f8 89 d1 c1 e9 03 83 e2 07 f3 48 a5 89 d1 <f3> a4
+c3 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 eb de f8 89 d1
+RIP  [<ffffffff811acf60>] memcpy_c+0x10/0x20
+ RSP <ffff8801c3127e80>
+CR2: ffffffff816efe8e
+---[ end trace 309d1f0b04265911 ]---
+
+thanks,
+-- 
+js
