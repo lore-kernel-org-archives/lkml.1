@@ -1,53 +1,55 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754853Ab0AODeH (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 22:34:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122Ab0AODeF
+	id S1754902Ab0AODgX (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 22:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332Ab0AODgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 22:34:05 -0500
-Received: from gate.crashing.org ([63.228.1.57]:41330 "EHLO gate.crashing.org"
+	Thu, 14 Jan 2010 22:36:22 -0500
+Received: from gate.crashing.org ([63.228.1.57]:41346 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984Ab0AODeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 22:34:03 -0500
-Subject: Re: sys_recvmmsg: wire up or not?
+	id S1753116Ab0AODgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 22:36:22 -0500
+Subject: Re: drm/radeon/kms: fix up LVDS handling on macs (v2)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: David Miller <davem@davemloft.net>, arnd@arndb.de, geert@linux-m68k.org,
-        acme@redhat.com, linux-arch@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
-In-Reply-To: <20100114093322.GA3484@flint.arm.linux.org.uk>
-References: <10f740e80912260239n17bbbd08w6c3065c12bde9c95@mail.gmail.com>
-	 <200912261212.14264.arnd@arndb.de> <1263442833.724.325.camel@pasglop>
-	 <20100113.202807.233259060.davem@davemloft.net>
-	 <1263452379.724.348.camel@pasglop>
-	 <20100114093322.GA3484@flint.arm.linux.org.uk>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: Alex Deucher <alexdeucher@gmail.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Dave Airlie <airlied@redhat.com>
+In-Reply-To: <1263463781.3544.4714.camel@thor>
+References: <201001140059.o0E0x4wS006650@hera.kernel.org>
+	 <1263437142.724.320.camel@pasglop>  <1263463781.3544.4714.camel@thor>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jan 2010 14:32:49 +1100
-Message-ID: <1263526369.724.399.camel@pasglop>
+Date: Fri, 15 Jan 2010 14:35:56 +1100
+Message-ID: <1263526556.724.402.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 09:33 +0000, Russell King wrote:
-> On ARM, we used to use socketcall exclusively.  We've since added all
-> the direct socket and IPC calls to our syscall table as part of the
-> big EABI shakeup.  They certainly get used on EABI, whereas OABI has
-> a choice.
-> 
-> They were made available in two stages - first the numbers were
-> reserved
-> and the calls were added to the call table.  A few years later, we
-> exposed the syscall numbers in unistd.h.
-> 
-> It's now been almost 4 years since this was done, and there have been
-> no bug reports. 
+On Thu, 2010-01-14 at 11:09 +0100, Michel Dänzer wrote:
+> I have looked at radeonfb for a patch I posted a while ago to expose a
+> backlight class device with KMS, and I can only see what you describe
+> above affecting the LVDS_GEN_CNTL backlight level, not BLON or
+> BL_MOD_EN. Am I missing something?
 
-Agreed. It's definitely a switch we should do on powerpc. I'll look into
-it after LCA.
+No, you aren't, it's radeonfb who is :-) I never quite got that part
+right. I was somewhat hoping several times that Hui and then Alex would
+manage to dig some info from ATI about what the right method is to drive
+those panels I think :-)
+
+But my observation on those HW was definitely that when inverted,
+disabling the modulation was also turning the panel to full bright on,
+rather than turning it off.
+
+> Without my patch, KMS doesn't change the backlight level at all, so
+> assuming the firmware manages to enable the backlight, it should stay
+> like that.
+
+Your patch might make things better than they are today, I'm not arguing
+there :-) I'm just saying that now might be a good time to try to sort
+out exactly what should be done in there :-)
 
 Cheers,
 Ben.
-
 
