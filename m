@@ -1,58 +1,52 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752497Ab0AOIH6 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 03:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146Ab0AOIH5
+	id S1753622Ab0AOIIR (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 03:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961Ab0AOIIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 03:07:57 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:25268 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751138Ab0AOIH4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 03:07:56 -0500
-Message-ID: <4B5021F8.4010703@monstr.eu>
-Date: Fri, 15 Jan 2010 09:06:16 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Fri, 15 Jan 2010 03:08:13 -0500
+Received: from lists.laptop.org ([18.85.2.145]:44384 "EHLO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752712Ab0AOIII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 03:08:08 -0500
+Date: Fri, 15 Jan 2010 03:10:28 -0500
+From: Michael Stone <michael@laptop.org>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+        Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+        Oliver Hartkopp <socketcan@hartkopp.net>,
+        Alan Cox <alan@lxorguk.ukuu.org.uk>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+        Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+        "C. Scott Ananian" <cscott@cscott.net>,
+        James Morris <jmorris@namei.org>,
+        "Eric W. Biederman" <ebiederm@xmission.com>,
+        Bernie Innocenti <bernie@codewiz.org>,
+        Mark Seaborn <mrs@mythic-beasts.com>,
+        Randy Dunlap <randy.dunlap@oracle.com>,
+        =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Samir Bellabes <sam@synack.fr>,
+        Casey Schaufler <casey@schaufler-ca.com>,
+        "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+        Al Viro <viro@ZenIV.linux.org.uk>, Kyle Moffett <kyle@moffetthome.net>,
+        Andrew Morgan <morgan@kernel.org>, Michael Stone <michael@laptop.org>
+Subject: disablenetwork (v5) patches
+Message-ID: <20100115081028.GA14004@heat>
 MIME-Version: 1.0
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org,
-        microblaze-uclinux@itee.uq.edu.au, x86@kernel.org, mingo@redhat.com,
-        tglx@linutronix.de, lethal@linux-sh.org, hpa@zytor.com
-Subject: Re: [PATCH] cpuinfo_op: consolidate extern declaration
-References: <201001141158.09795.hartleys@visionengravers.com>
-In-Reply-To: <201001141158.09795.hartleys@visionengravers.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20100114173639.GA15587@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H Hartley Sweeten wrote:
-> cpuinfo_op: consolidate extern declaration
-> 
-> All the architectures supported by the kernel also support
-> /proc/cpuinfo. Only a couple actually declare the seq_operations
-> as extern. All the others will produce a sparse warning like:
-> 
-> warning: symbol 'cpuinfo_op' was not declared. Should it be static?
-> 
-> Fix all the warnings and consolidate the declaration by putting it
-> in <linux/seq_file.h>.
-> 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Michal Simek <monstr@monstr.eu>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> 
+As promised, here are patches implementing and documenting a CAP_SETPCAP-gated
+"enable" bit along with a couple of other tweaks discussed earlier in the
+thread. For ease of development and review, the following four patches extend
+the disablenetwork (v4) patch series rather than replacing it. 
 
-Tested-by: Michal Simek <monstr@monstr.eu>
+Enjoy,
 
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+Michael
