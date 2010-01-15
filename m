@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757877Ab0AOAVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834Ab0AOA0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757877Ab0AOAVn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 19:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292Ab0AOAVm
+	id S1757834Ab0AOA0L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 19:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757137Ab0AOA0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 19:21:42 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:15418 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750757Ab0AOAVm (ORCPT
+	Thu, 14 Jan 2010 19:26:10 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:37871 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756915Ab0AOA0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 19:21:42 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: [PATCH] net/core/sock.c: quiet sparse noise
-Date: Thu, 14 Jan 2010 17:21:45 -0700
-Cc: davem@davemloft.net
+	Thu, 14 Jan 2010 19:26:09 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH] vfs: Fix vmtruncate() regression
+References: <876378jxhx.fsf@devron.myhome.or.jp> <20100113060734.GC3901@nick>
+	<87r5pucin4.fsf@devron.myhome.or.jp>
+	<877hrmcicu.fsf@devron.myhome.or.jp>
+	<20100114143044.cc65be51.akpm@linux-foundation.org>
+Date: Fri, 15 Jan 2010 09:26:02 +0900
+In-Reply-To: <20100114143044.cc65be51.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Thu, 14 Jan 2010 14:30:44 -0800")
+Message-ID: <87ska86wo5.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001141721.45305.hartleys@visionengravers.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-net/core/sock.c: quiet sparse noise
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-In sock_getsockopt the symbol 'lv' is declared as an
-unsigned int type, probably due to sizeof returning a
-size_t which is really an unsigned int.
+> On Wed, 13 Jan 2010 21:14:09 +0900
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+>
+>> 
+>> If __block_prepare_write() was failed in block_write_begin(), the
+>> allocated blocks can be outside of ->i_size.
+>> 
+>> But new truncate_pagecache() in vmtuncate() does nothing if new < old.
+>> It means the above usage is not working anymore.
+>> 
+>> So, this patch fixes it by removing "new < old" check. It would need
+>> more cleanup/change. But, now -rc and truncate working is in progress,
+>> so, this tried to fix it minimum change.
+>> 
+>> Acked-by: Nick Piggin <npiggin@suse.de>
+>> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+>> ---
+>> 
+>>  mm/truncate.c |   28 +++++++++++++---------------
+>>  1 file changed, 13 insertions(+), 15 deletions(-)
+>> 
+>> diff -puN mm/truncate.c~truncate_pagecache-fix mm/truncate.c
+>> --- linux-2.6/mm/truncate.c~truncate_pagecache-fix	2010-01-12 05:43:06.000000000 +0900
+>> +++ linux-2.6-hirofumi/mm/truncate.c	2010-01-12 05:43:06.000000000 +0900
+>> @@ -522,22 +522,20 @@ EXPORT_SYMBOL_GPL(invalidate_inode_pages
+>>   */
+>>  void truncate_pagecache(struct inode *inode, loff_t old, loff_t new)
+>>  {
+>> -	if (new < old) {
+>> -		struct address_space *mapping = inode->i_mapping;
+>> +	struct address_space *mapping = inode->i_mapping;
+>>  
+>> -		/*
+>> -		 * unmap_mapping_range is called twice, first simply for
+>> -		 * efficiency so that truncate_inode_pages does fewer
+>> -		 * single-page unmaps.  However after this first call, and
+>> -		 * before truncate_inode_pages finishes, it is possible for
+>> -		 * private pages to be COWed, which remain after
+>> -		 * truncate_inode_pages finishes, hence the second
+>> -		 * unmap_mapping_range call must be made for correctness.
+>> -		 */
+>> -		unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+>> -		truncate_inode_pages(mapping, new);
+>> -		unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+>> -	}
+>> +	/*
+>> +	 * unmap_mapping_range is called twice, first simply for
+>> +	 * efficiency so that truncate_inode_pages does fewer
+>> +	 * single-page unmaps.  However after this first call, and
+>> +	 * before truncate_inode_pages finishes, it is possible for
+>> +	 * private pages to be COWed, which remain after
+>> +	 * truncate_inode_pages finishes, hence the second
+>> +	 * unmap_mapping_range call must be made for correctness.
+>> +	 */
+>> +	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+>> +	truncate_inode_pages(mapping, new);
+>> +	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+>>  }
+>>  EXPORT_SYMBOL(truncate_pagecache);
+>
+> The fix was applied to 2.6.33-rcX
+> (cedabed49b39b4319bccc059a63344b6232b619c), appears to be needed in
+> 2.6.32.x but no cc:stable's are present?
 
-This produces a sparse warning for SO_PEERNAME due to
-the sock->ops->getname() call:
-
-warning: incorrect type in argument 3 (different signedness)
-   expected int *sockaddr_len
-   got unsigned int *<noident>
-
-Quiet the warning my changing the type of 'lv' to an int.
-
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David S. Miller <davem@davemloft.net>
-
----
-
-diff --git a/net/core/sock.c b/net/core/sock.c
-index e1f6f22..10b1d32 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -741,7 +741,7 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
- 		struct timeval tm;
- 	} v;
- 
--	unsigned int lv = sizeof(int);
-+	int lv = sizeof(int);
- 	int len;
- 
- 	if (get_user(len, optlen))
+Ah, yes. I forgot to add "Cc: stable". Please apply this to 2.6.32.x.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
