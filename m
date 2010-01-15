@@ -1,117 +1,132 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755708Ab0AOElO (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 23:41:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984Ab0AOElN
+	id S1756094Ab0AOErW (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 23:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411Ab0AOErV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 23:41:13 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:51775 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695Ab0AOElL convert rfc822-to-8bit (ORCPT
+	Thu, 14 Jan 2010 23:47:21 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59567 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753332Ab0AOErU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 23:41:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Zb7b8/FhptlewgDPQym6hM4hTr8u++a3ogw++dw2QiYDerMuh+ZNna73bpCAURSYsc
-         iI5lmHRsN2o3NVV+CN1hyc+8Vx2BhTPW4IITVYJP/pcFXY4c0xpbfJSDiy+Eh/mgPd05
-         V0hNgXPFWcdKSPwf8QIcqaUmQSliDnYDYzfjw=
+	Thu, 14 Jan 2010 23:47:20 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [resend][PATCH] mm: Restore zone->all_unreclaimable to independence word
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+        Wu Fengguang <fengguang.wu@intel.com>,
+        David Rientjes <rientjes@google.com>,
+        LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+        Minchan Kim <minchan.kim@gmail.com>, Huang Shijie <shijie8@gmail.com>
+In-Reply-To: <20100115113035.0acbb3dc.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20100114151959.2c46ee79.akpm@linux-foundation.org> <20100115113035.0acbb3dc.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20100115134614.6ECF.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20091202141458.12819.96170.stgit@paris.rdu.redhat.com>
-References: <20091202141452.12819.93536.stgit@paris.rdu.redhat.com>
-	 <20091202141458.12819.96170.stgit@paris.rdu.redhat.com>
-Date: Thu, 14 Jan 2010 20:41:10 -0800
-Message-ID: <6a12d2f31001142041j7f917b07l1e1a728790175321@mail.gmail.com>
-Subject: Re: [PATCH 2/4] fanotify: Add pids to events
-From: Matthew Helsley <matt.helsley@gmail.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        viro@zeniv.linux.org.uk, hch@infradead.org, agruen@suse.de,
-        containers@lists.linux-foundation.org, matthltc@us.ibm.com,
-        Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-        Oleg Nesterov <oleg@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 15 Jan 2010 13:47:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 2, 2009 at 6:14 AM, Eric Paris <eparis@redhat.com> wrote:
-> From: Andreas Gruenbacher <agruen@suse.de>
->
-> Pass the process identifiers of the triggering processes to fanotify
-> listeners: this information is useful for event filtering and logging.
->
-> Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-> Signed-off-by: Eric Paris <eparis@redhat.com>
-> ---
->
->  fs/notify/fanotify/fanotify.c      |    5 +++--
->  fs/notify/fanotify/fanotify_user.c |    1 +
->  fs/notify/notification.c           |    3 +++
->  include/linux/fanotify.h           |    1 +
->  include/linux/fsnotify_backend.h   |    1 +
->  5 files changed, 9 insertions(+), 2 deletions(-)
->
-> diff --git a/fs/notify/fanotify/fanotify.c b/fs/notify/fanotify/fanotify.c
-> index 5b0b6b4..881067d 100644
-> --- a/fs/notify/fanotify/fanotify.c
-> +++ b/fs/notify/fanotify/fanotify.c
-> @@ -10,8 +10,9 @@ static bool should_merge(struct fsnotify_event *old, struct fsnotify_event *new)
->  {
->        pr_debug("%s: old=%p new=%p\n", __func__, old, new);
->
-> -       if ((old->to_tell == new->to_tell) &&
-> -           (old->data_type == new->data_type)) {
-> +       if (old->to_tell == new->to_tell &&
-> +           old->data_type == new->data_type &&
-> +           old->tgid == new->tgid) {
->                switch (old->data_type) {
->                case (FSNOTIFY_EVENT_PATH):
->                        if ((old->path.mnt == new->path.mnt) &&
-> diff --git a/fs/notify/fanotify/fanotify_user.c b/fs/notify/fanotify/fanotify_user.c
-> index 7646111..7cfb2f6 100644
-> --- a/fs/notify/fanotify/fanotify_user.c
-> +++ b/fs/notify/fanotify/fanotify_user.c
-> @@ -108,6 +108,7 @@ static ssize_t fill_event_metadata(struct fsnotify_group *group,
->        metadata->event_len = FAN_EVENT_METADATA_LEN;
->        metadata->vers = FANOTIFY_METADATA_VERSION;
->        metadata->mask = fanotify_outgoing_mask(event->mask);
-> +       metadata->pid = pid_vnr(event->tgid);
+> On Thu, 14 Jan 2010 15:19:59 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Thu, 14 Jan 2010 16:32:29 +0800
+> > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > 
+> > > On Thu, Jan 14, 2010 at 03:14:10PM +0800, KOSAKI Motohiro wrote:
+> > > > > On Thu, 14 Jan 2010, KOSAKI Motohiro wrote:
+> > > > > 
+> > > > > > commit e815af95 (change all_unreclaimable zone member to flags) chage
+> > > > > > all_unreclaimable member to bit flag. but It have undesireble side
+> > > > > > effect.
+> > > > > > free_one_page() is one of most hot path in linux kernel and increasing
+> > > > > > atomic ops in it can reduce kernel performance a bit.
+> > > > > > 
+> > > > > > Thus, this patch revert such commit partially. at least
+> > > > > > all_unreclaimable shouldn't share memory word with other zone flags.
+> > > > > > 
+> > > > > 
+> > > > > I still think you need to quantify this; saying you don't have a large 
+> > > > > enough of a machine that will benefit from it isn't really a rationale for 
+> > > > > the lack of any data supporting your claim.  We should be basing VM 
+> > > > > changes on data, not on speculation that there's a measurable impact 
+> > > > > here.
+> > > > > 
+> > > > > Perhaps you could ask a colleague or another hacker to run a benchmark for 
+> > > > > you so that the changelog is complete?
+> > > > 
+> > > > ok, fair. although I dislike current unnecessary atomic-ops.
+> > > > I'll pending this patch until get good data.
+> > > 
+> > > I think it's a reasonable expectation to help large boxes.
+> > > 
+> > > What we can do now, is to measure if it hurts mainline SMP
+> > > boxes. If not, we are set on doing the patch :)
+> > 
+> > yup, the effects of the change might be hard to measure.  Not that one
+> > shouldn't try!
+> > 
+> > But sometimes we just have to do a best-effort change based upon theory
+> > and past experience.
+> > 
+> > Speaking of which...
+> > 
+> > : --- a/include/linux/mmzone.h
+> > : +++ b/include/linux/mmzone.h
+> > : @@ -341,6 +341,7 @@ struct zone {
+> > :  
+> > :  	unsigned long		pages_scanned;	   /* since last reclaim */
+> > :  	unsigned long		flags;		   /* zone flags, see below */
+> > : +	int                     all_unreclaimable; /* All pages pinned */
+> > :  
+> > :  	/* Zone statistics */
+> > :  	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
+> > 
+> > Was that the best place to put the field?  It adds four bytes of
+> > padding to the zone, hence is suboptimal from a cache utilisation point
+> > of view.
+> > 
+> > It might also be that we can place this field closed in memory to other
+> > fields which are being manipulated at the same time as
+> > all_unreclaimable, hm?
+> > 
+> How about the same line where zone->lock is ?
 
-Eric, you never replied to my point about pid namespaces
-(http://lkml.org/lkml/2009/7/1/2). I'm still concerned that it's a
-problem for this patch. I've cc'd some pid namespace folks, listed the
-problems, and some alternative solutions (where I could think of any)
-below:
+Sure. page allocator obviously touch zone->lock at first.
+Incremental patch is here.
 
-1. Since fanotify doesn't hold a reference to the struct pid then the
-pid can become stale before the event is acted upon.
-    solution a: Just ignoring this problem, like other interfaces
-often do, is probably ok.
-    ... ?
-    solution z: Seems to require taking a reference to the pid and
-giving userspace a way to drop the reference after it's done using
-this value to refer to the process (yuck).
 
-2. If the event recipient does a clone and enters a new pidns the pid
-number will be incorrect without any indication.
-  solution a: The events could be flushed during clone(CLONE_NEWPID)
-but then userspace would miss
-      them.
-  solution b: Translating the pids wouldn't work because the tasks
-generaly won't exist in the new
-      namespace. So perhaps just write negative values in the pid
-fields during clone(CLONE_NEWPID).
+---
+ include/linux/mmzone.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-3. If the listening process is not in the same or an ancestor pid
-namespace of the triggering process then there is no correct pid
-corresponding to the event.  (Note: Always using the initial pid
-namespace isn't a good [interim] solution -- then programs relying on
-fanotify couldn't run in other pid namespaces).
-    solution a: Again, perhaps they should be set to negative values.
-    ... ?
-    solution z: Disable fanotify in non-initial pid namespaces (yuck).
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 4f0c6f1..0df3749 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -314,6 +314,7 @@ struct zone {
+ 	 * free areas of different sizes
+ 	 */
+ 	spinlock_t		lock;
++	int                     all_unreclaimable; /* All pages pinned */
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ 	/* see spanned/present_pages for more description */
+ 	seqlock_t		span_seqlock;
+@@ -341,7 +342,6 @@ struct zone {
+ 
+ 	unsigned long		pages_scanned;	   /* since last reclaim */
+ 	unsigned long		flags;		   /* zone flags, see below */
+-	int                     all_unreclaimable; /* All pages pinned */
+ 
+ 	/* Zone statistics */
+ 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
+-- 
+1.6.5.2
 
-Cheers,
-    -Matt Helsley
+
+
+
+
