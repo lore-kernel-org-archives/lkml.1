@@ -1,64 +1,199 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758239Ab0AOU0K (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 15:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758196Ab0AOU0J
+	id S1758254Ab0AOUhG (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 15:37:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758196Ab0AOUhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 15:26:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28661 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758184Ab0AOU0H convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jan 2010 15:37:04 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:56700 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755360Ab0AOUhC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 15:26:07 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "Zhang\, Yanmin" <yanmin_zhang@linux.intel.com>,
-        Shaohua Li <shaohua.li@intel.com>,
-        "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "jens.axboe\@oracle.com" <jens.axboe@oracle.com>,
-        "Zhang\, Yanmin" <yanmin.zhang@intel.com>
-Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as  close
-References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
-	<20091228092844.GA9710@sli10-desk.sh.intel.com>
-	<x493a2k8d7x.fsf@segfault.boston.devel.redhat.com>
-	<4e5e476b1001070544w88a387dkfb48847f4f95a9b1@mail.gmail.com>
-	<x49hbqy3s3m.fsf@segfault.boston.devel.redhat.com>
-	<1263187209.29897.33.camel@localhost>
-	<4e5e476b1001110705y6c3319ducf6a15c2a2be5670@mail.gmail.com>
-	<1263264218.29897.41.camel@localhost>
-	<4e5e476b1001151132l406054f6xcc47b94e817d3af0@mail.gmail.com>
-	<x494omnp2xd.fsf@segfault.boston.devel.redhat.com>
-	<4e5e476b1001151224x5c94382cnf2a6696f10c9800d@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Fri, 15 Jan 2010 15:26:00 -0500
-In-Reply-To: <4e5e476b1001151224x5c94382cnf2a6696f10c9800d@mail.gmail.com>
-	(Corrado Zoccolo's message of "Fri, 15 Jan 2010 21:24:23 +0100")
-Message-ID: <x49zl4fnmhz.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	Fri, 15 Jan 2010 15:37:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BhruAYSd0R+Y2DRwrOWfcH+2AXMPVo6KTCt8QMJALnMER3JxLD5Srg1FnNLFuLs7cC
+         SMZnxYIj+ZVOzsELtKJc/nCKvDsV0gBPQz0qFpn2qfBvYKf6deOPjfLkYJIXfkgRQsTv
+         KHwL7ydm+gEjVkPgz6WCRhj63N1tEsSMXOElc=
+Date: Fri, 15 Jan 2010 21:36:54 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Bernard Pidoux <bpidoux@free.fr>, Bernard Pidoux <bernard.pidoux@upmc.fr>,
+        linux-kernel@vger.kernel.org,
+        Linux Netdev List <netdev@vger.kernel.org>,
+        Ralf Baechle <ralf@linux-mips.org>, linux-hams@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH net-2.6] ax25: netrom: rose: Fix timer oopses
+Message-ID: <20100115203654.GA3084@del.dom.local>
+References: <4B2CD772.1030106@upmc.fr>
+ <4B2D1025.1020106@gmail.com>
+ <4B2E6729.1090102@free.fr>
+ <4B507FAA.8010007@free.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B507FAA.8010007@free.fr>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
+On Fri, Jan 15, 2010 at 03:46:02PM +0100, Bernard Pidoux wrote:
+> Hi Jarek,
+Hi Bernard,
 
-> On Fri, Jan 15, 2010 at 8:45 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
->> Corrado Zoccolo <czoccolo@gmail.com> writes:
->>
->>> Hi Jeff,
->>> I think this patch has the same flaw as Shaohua's.
->>> The seekiness check that you introduce in cfq_rq_close is already
->>> present in its caller, cfq_close_cooperator, so it is not effective.
->>
->> I don't think so.  There are two queues, here.  One queue is checked by
->> the caller, and that is the cur_cfqq.  The __cfqq needs to also be
->> checked.
-> The other one, i.e. the returned one, is also checked by the caller,
-> some lines below.
+> 
+> Congratulation. With your patch I did not see any more kernel panics
+> since my last post.
+> I think it should be commited.
+> Many thanks.
+> 
+> Wishing you a happy new year 2010.
+> 
+Happy new year to you as well.
 
-haha.  OK, I guess I wrote it right the first time?  ;-)
+Thanks,
+Jarek P.
+-------------------->
 
--Jeff
+Wrong ax25_cb refcounting in ax25_send_frame() and by its callers can
+cause timer oopses (first reported with 2.6.29.6 kernel).
+
+Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=14905
+
+Reported-by: Bernard Pidoux <bpidoux@free.fr>
+Tested-by: Bernard Pidoux <bpidoux@free.fr>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+---
+
+ include/net/netrom.h  |    2 ++
+ net/ax25/ax25_out.c   |    6 ++++++
+ net/netrom/nr_route.c |   11 ++++++-----
+ net/rose/rose_link.c  |    8 ++++++++
+ net/rose/rose_route.c |    5 +++++
+ 5 files changed, 27 insertions(+), 5 deletions(-)
+
+diff --git a/include/net/netrom.h b/include/net/netrom.h
+index 15696b1..ab170a6 100644
+--- a/include/net/netrom.h
++++ b/include/net/netrom.h
+@@ -132,6 +132,8 @@ static __inline__ void nr_node_put(struct nr_node *nr_node)
+ static __inline__ void nr_neigh_put(struct nr_neigh *nr_neigh)
+ {
+ 	if (atomic_dec_and_test(&nr_neigh->refcount)) {
++		if (nr_neigh->ax25)
++			ax25_cb_put(nr_neigh->ax25);
+ 		kfree(nr_neigh->digipeat);
+ 		kfree(nr_neigh);
+ 	}
+diff --git a/net/ax25/ax25_out.c b/net/ax25/ax25_out.c
+index bf706f8..1491260 100644
+--- a/net/ax25/ax25_out.c
++++ b/net/ax25/ax25_out.c
+@@ -92,6 +92,12 @@ ax25_cb *ax25_send_frame(struct sk_buff *skb, int paclen, ax25_address *src, ax2
+ #endif
+ 	}
+ 
++	/*
++	 * There is one ref for the state machine; a caller needs
++	 * one more to put it back, just like with the existing one.
++	 */
++	ax25_cb_hold(ax25);
++
+ 	ax25_cb_add(ax25);
+ 
+ 	ax25->state = AX25_STATE_1;
+diff --git a/net/netrom/nr_route.c b/net/netrom/nr_route.c
+index aacba76..e2e2d33 100644
+--- a/net/netrom/nr_route.c
++++ b/net/netrom/nr_route.c
+@@ -843,12 +843,13 @@ int nr_route_frame(struct sk_buff *skb, ax25_cb *ax25)
+ 	dptr  = skb_push(skb, 1);
+ 	*dptr = AX25_P_NETROM;
+ 
+-	ax25s = ax25_send_frame(skb, 256, (ax25_address *)dev->dev_addr, &nr_neigh->callsign, nr_neigh->digipeat, nr_neigh->dev);
+-	if (nr_neigh->ax25 && ax25s) {
+-		/* We were already holding this ax25_cb */
++	ax25s = nr_neigh->ax25;
++	nr_neigh->ax25 = ax25_send_frame(skb, 256,
++					 (ax25_address *)dev->dev_addr,
++					 &nr_neigh->callsign,
++					 nr_neigh->digipeat, nr_neigh->dev);
++	if (ax25s)
+ 		ax25_cb_put(ax25s);
+-	}
+-	nr_neigh->ax25 = ax25s;
+ 
+ 	dev_put(dev);
+ 	ret = (nr_neigh->ax25 != NULL);
+diff --git a/net/rose/rose_link.c b/net/rose/rose_link.c
+index bd86a63..5ef5f69 100644
+--- a/net/rose/rose_link.c
++++ b/net/rose/rose_link.c
+@@ -101,13 +101,17 @@ static void rose_t0timer_expiry(unsigned long param)
+ static int rose_send_frame(struct sk_buff *skb, struct rose_neigh *neigh)
+ {
+ 	ax25_address *rose_call;
++	ax25_cb *ax25s;
+ 
+ 	if (ax25cmp(&rose_callsign, &null_ax25_address) == 0)
+ 		rose_call = (ax25_address *)neigh->dev->dev_addr;
+ 	else
+ 		rose_call = &rose_callsign;
+ 
++	ax25s = neigh->ax25;
+ 	neigh->ax25 = ax25_send_frame(skb, 260, rose_call, &neigh->callsign, neigh->digipeat, neigh->dev);
++	if (ax25s)
++		ax25_cb_put(ax25s);
+ 
+ 	return (neigh->ax25 != NULL);
+ }
+@@ -120,13 +124,17 @@ static int rose_send_frame(struct sk_buff *skb, struct rose_neigh *neigh)
+ static int rose_link_up(struct rose_neigh *neigh)
+ {
+ 	ax25_address *rose_call;
++	ax25_cb *ax25s;
+ 
+ 	if (ax25cmp(&rose_callsign, &null_ax25_address) == 0)
+ 		rose_call = (ax25_address *)neigh->dev->dev_addr;
+ 	else
+ 		rose_call = &rose_callsign;
+ 
++	ax25s = neigh->ax25;
+ 	neigh->ax25 = ax25_find_cb(rose_call, &neigh->callsign, neigh->digipeat, neigh->dev);
++	if (ax25s)
++		ax25_cb_put(ax25s);
+ 
+ 	return (neigh->ax25 != NULL);
+ }
+diff --git a/net/rose/rose_route.c b/net/rose/rose_route.c
+index 795c4b0..70a0b3b 100644
+--- a/net/rose/rose_route.c
++++ b/net/rose/rose_route.c
+@@ -235,6 +235,8 @@ static void rose_remove_neigh(struct rose_neigh *rose_neigh)
+ 
+ 	if ((s = rose_neigh_list) == rose_neigh) {
+ 		rose_neigh_list = rose_neigh->next;
++		if (rose_neigh->ax25)
++			ax25_cb_put(rose_neigh->ax25);
+ 		kfree(rose_neigh->digipeat);
+ 		kfree(rose_neigh);
+ 		return;
+@@ -243,6 +245,8 @@ static void rose_remove_neigh(struct rose_neigh *rose_neigh)
+ 	while (s != NULL && s->next != NULL) {
+ 		if (s->next == rose_neigh) {
+ 			s->next = rose_neigh->next;
++			if (rose_neigh->ax25)
++				ax25_cb_put(rose_neigh->ax25);
+ 			kfree(rose_neigh->digipeat);
+ 			kfree(rose_neigh);
+ 			return;
+@@ -812,6 +816,7 @@ void rose_link_failed(ax25_cb *ax25, int reason)
+ 
+ 	if (rose_neigh != NULL) {
+ 		rose_neigh->ax25 = NULL;
++		ax25_cb_put(ax25);
+ 
+ 		rose_del_route_by_neigh(rose_neigh);
+ 		rose_kill_by_neigh(rose_neigh);
