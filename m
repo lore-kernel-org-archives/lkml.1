@@ -1,50 +1,71 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277Ab0AOVSO (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 16:18:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757641Ab0AOVSN
+	id S1758307Ab0AOVTl (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 16:19:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681Ab0AOVTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 16:18:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57611 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754951Ab0AOVSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 16:18:13 -0500
-Message-ID: <4B50DB3B.4080506@kernel.org>
-Date: Fri, 15 Jan 2010 13:16:43 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 7/7] x86/pci: don't check mmconf again if it is from MSR
- with amd faml0h
-References: <4B2BE063.4040704@kernel.org>	<4B2BE196.2000404@kernel.org> <20100115114205.247c5dd7@jbarnes-piketon>
-In-Reply-To: <20100115114205.247c5dd7@jbarnes-piketon>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 15 Jan 2010 16:19:40 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:51542 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754537Ab0AOVTk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 16:19:40 -0500
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+From: Jim Keniston <jkenisto@us.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: ananth@in.ibm.com, Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+        Ingo Molnar <mingo@elte.hu>,
+        Arnaldo Carvalho de Melo <acme@infradead.org>,
+        utrace-devel <utrace-devel@redhat.com>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        Masami Hiramatsu <mhiramat@redhat.com>,
+        Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+        LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263549014.4244.374.camel@laptop>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>
+	 <1263467289.4244.288.camel@laptop>
+	 <1263498366.4875.25.camel@localhost.localdomain>
+	 <1263546228.4244.343.camel@laptop>  <20100115093831.GC26396@in.ibm.com>
+	 <1263549014.4244.374.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 15 Jan 2010 13:19:31 -0800
+Message-Id: <1263590371.5007.44.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/15/2010 11:42 AM, Jesse Barnes wrote:
-> On Fri, 18 Dec 2009 12:09:58 -0800
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->>
->> for AMD Fam10h, it we read mmconf from MSR early, we should just
->> trust it because we check it and correct it already.
->>
->> so skip the reject check there.
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> My previous question wasn't answered.  Either reject_broken should be a
-> no-op on this platform, or it's getting things wrong and should be
-> fixed.  Adding a whitelist here seems like the wrong thing to do...
-> 
 
-let me find other way, may update e820 directly.
+On Fri, 2010-01-15 at 10:50 +0100, Peter Zijlstra wrote:
+> On Fri, 2010-01-15 at 15:08 +0530, Ananth N Mavinakayanahalli wrote:
+> > On Fri, Jan 15, 2010 at 10:03:48AM +0100, Peter Zijlstra wrote:
+> > > On Thu, 2010-01-14 at 11:46 -0800, Jim Keniston wrote:
+> > > > 
+> > > >  discussed elsewhere. 
+> > > 
+> > > Thanks for the pointer...
+> > 
+> > :-)
+> > 
+> > Peter,
+> > I think Jim was referring to
+> > http://sources.redhat.com/ml/systemtap/2007-q1/msg00571.html
+> 
+> That's a 2007 email from some obscure list... that's hardly something
+> that can be referenced to without link.
 
-YH
+Actually, I was referring to this
+http://lkml.indiana.edu/hypermail/linux/kernel/1001.1/01120.html
+from earlier (Monday) in this same discussion.  But I'll be sure to
+include pointers in the future.
+
+For more thoughts on this approach, see
+http://sourceware.org/bugzilla/show_bug.cgi?id=5509
+(And no, I don't expect you to have seen that before. :-))  Most of the
+troublesome issues mentioned in that enhancement request have since been
+resolved.
+
+Jim
+
