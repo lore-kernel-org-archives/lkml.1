@@ -1,80 +1,63 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757906Ab0AORXj (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 12:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757884Ab0AORXi
+	id S1757900Ab0AORZG (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 12:25:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757400Ab0AORZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 12:23:38 -0500
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:51814 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757859Ab0AORXh (ORCPT
+	Fri, 15 Jan 2010 12:25:05 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:21545 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756901Ab0AORZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 12:23:37 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtQEAHcwUEuuWOiG/2dsb2JhbACBRNg5hDEE
-Date: Fri, 15 Jan 2010 12:23:35 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Jon Bernard <jbernard@debian.org>, Jan Blunck <jblunck@suse.de>,
-        linux-kernel@vger.kernel.org, Pedro Alves <pedro@codesourcery.com>,
-        ltt-dev@lists.casi.polymtl.ca,
-        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-        pierre-marc.fournier@polymtl.ca
-Subject: Userspace RCU API (minor changes)
-Message-ID: <20100115172335.GC30678@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Jan 2010 12:25:04 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: [PATCH] ipv4/ip_sockglue.c: copy msg_control optval from user to kernel space
+Date: Fri, 15 Jan 2010 10:24:59 -0700
+Cc: davem@davemloft.net, kuznet@ms2.inr.ac.ru, pekkas@netcore.fi,
+        jmorris@namei.org, yoshfuji@linux-ipv6.org, kaber@trash.net
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 12:12:00 up 30 days,  1:30,  4 users,  load average: 0.16, 0.13,
-	0.09
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <201001151024.59482.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+ipv4/ip_sockglue.c: copy msg_control optval from user to kernel space
 
-I'd like to proceed to a minor API change in the next userspace RCU
-release: moving from SIGURCU to SIGRCU for the signal name. This is part
-of an effort to standardize the library prefix to "rcu_".  I plan to
-add support for backward compatibility, so when we see that SIGURCU is
-defined, then we use that value.
+In do_ip_getsockopt the char __user *optval is used directly in
+IP_PKTOPTIONS for the msg.msg_control and not copied from
+user to kernel address space. This produces a sparse warning:
 
-Also, I am planning to rename the urcu_init() constructor to rcu_init().
-It should only affect the libust tracer, which need to call it
-explicitly. Normal users don't have to bother with it, as it's a library
-constructor.
+warning: incorrect type in assignment (different address spaces)
+   expected void *msg_control
+   got char [noderef] <asn:1>*optval
 
-Also, the urcu/config.h options are renamed to:
+Fix this by using copy _from_user to set msg.msg_control.
 
-CONFIG_RCU_HAVE_FENCE
-CONFIG_RCU_HAVE_FUTEX
-CONFIG_RCU_SMP
-CONFIG_RCU_COMPAT_ARCH
-(moving from URCU -> RCU)
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+Cc: "Pekka Savola (ipv6)" <pekkas@netcore.fi>
+Cc: James Morris <jmorris@namei.org>
+Cc: Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>
+Cc: Patrick McHardy <kaber@trash.net>
 
-So an updated system installation will keep everything in sync.
+---
 
-I also plan to shuffle the library names a bit, but without breaking
-anything. Basically, liburcu will become the "default" version, using
-sys_membarrier() when available, and using liburcu-mb as a fallback.
-
-The signal-based liburcu will be renamed from liburcu to liburcu-signal.
-People previously using the signal-based "liburcu" will automatically be
-moved to the "default" liburcu version.
-
-You might want to have a look at the current git tree head to see if
-everything is fine before the release. Given that I change the API
-slightly, this will definitely be a 0.4.0.
-
-Feedback is welcome,
-
-Thanks,
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/net/ipv4/ip_sockglue.c b/net/ipv4/ip_sockglue.c
+index cafad9b..8065456 100644
+--- a/net/ipv4/ip_sockglue.c
++++ b/net/ipv4/ip_sockglue.c
+@@ -1173,7 +1173,8 @@ static int do_ip_getsockopt(struct sock *sk, int level, int optname,
+ 		if (sk->sk_type != SOCK_STREAM)
+ 			return -ENOPROTOOPT;
+ 
+-		msg.msg_control = optval;
++		if (copy_from_user(msg.msg_control, optval, len))
++			return -EFAULT;
+ 		msg.msg_controllen = len;
+ 		msg.msg_flags = 0;
+ 
