@@ -1,68 +1,71 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958Ab0AOKg2 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 05:36:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085Ab0AOKg1
+	id S1756285Ab0AOKiv (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 05:38:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394Ab0AOKiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 05:36:27 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44999 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297Ab0AOKg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 05:36:26 -0500
-Date: Fri, 15 Jan 2010 11:36:25 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: [PATCH] hid-debug.c: make local symbols static
-In-Reply-To: <201001141910.08225.hartleys@visionengravers.com>
-Message-ID: <alpine.LNX.2.00.1001151135540.30977@pobox.suse.cz>
-References: <201001141910.08225.hartleys@visionengravers.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 15 Jan 2010 05:38:50 -0500
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:48466 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001Ab0AOKit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 05:38:49 -0500
+X-AuditID: b753bd60-aa071ba000004725-60-4b5045b6ff24
+Message-ID: <4B5045AE.9080604@hitachi.com>
+Date: Fri, 15 Jan 2010 19:38:38 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
+        Nick Piggin <npiggin@suse.de>, dle-develop@lists.sourceforge.net,
+        Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH] ext3: prevent reread after write IO error v2
+References: <4B4EB5B9.4020809@hitachi.com> <4B4EDE5C.8040600@hitachi.com> <4B4EEE86.7080807@hitachi.com> <20100114141803.GB3146@quack.suse.cz>
+In-Reply-To: <20100114141803.GB3146@quack.suse.cz>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
+X-FMFTCR: RANGEC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jan 2010, H Hartley Sweeten wrote:
+Jan Kara wrote:
 
-> hid-debug.c: make local symbols static
+>>By the way, I think the right fix is to keep uptodate flag on write
+>>error, but it gives a big impact.  We have to confirm whether
+>>over 200 buffer_uptodate's are used for real uptodate check or write
+>>error check.  For now, I adopt the quick-fix solution.
 > 
-> The symbols hid_resolv_event and hid_dump_input_mapping
-> are only used locally in this file. Make them static to prevent
-> the following sparse warnings:
-> 
-> warning: symbol 'hid_resolv_event' was not declared. Should it be static?
-> warning: symbol 'hid_dump_input_mapping' was not declared. Should it be static?
-> 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Jiri Kosina <jkosina@suse.cz>
-> 
-> ---
-> 
-> diff --git a/drivers/hid/hid-debug.c b/drivers/hid/hid-debug.c
-> index 6abd036..cd4ece6 100644
-> --- a/drivers/hid/hid-debug.c
-> +++ b/drivers/hid/hid-debug.c
-> @@ -864,13 +864,13 @@ static const char **names[EV_MAX + 1] = {
->  	[EV_SND] = sounds,			[EV_REP] = repeats,
->  };
->  
-> -void hid_resolv_event(__u8 type, __u16 code, struct seq_file *f) {
-> -
-> +static void hid_resolv_event(__u8 type, __u16 code, struct seq_file *f)
-> +{
->  	seq_printf(f, "%s.%s", events[type] ? events[type] : "?",
->  		names[type] ? (names[type][code] ? names[type][code] : "?") : "?");
->  }
->  
-> -void hid_dump_input_mapping(struct hid_device *hid, struct seq_file *f)
-> +static void hid_dump_input_mapping(struct hid_device *hid, struct seq_file *f)
->  {
->  	int i, j, k;
->  	struct hid_report *report;
+>   Yes that needs to be solved. I also looked into it and it's too much work
+> to do it in a one big sweep. But I think we could do the conversion
+> filesystem by filesystem - see below.
+>   Admittedly, I don't like your solution very much. It looks strange to
+> check write_io_error when *reading* the buffer and I'm afraid we could
+> introduce bugs e.g. by clearing write_io_error bit so that ext3_bread would
+> then fail to detect the error condition or by some other code deciding to
+> read the buffer from disk via other function than just ext3_bread. So I
+> think it would be much better to set back uptodate flag shortly after the
+> failed write or not clear it at all.
+>   Now here's how I think we could achieve that without having to change all
+> other filesystems: We could create a new superblock flag which would mean
+> that "this filesystem handles write_io_error and doesn't want to clear
+> uptodate flag". Filesystems with this capability would set this flag when
+> calling get_sb_bdev. And if write IO fails we check this flag
+> (via bh->b_bdev->bd_super->s_flags) and clear / not clear uptodate flag
+> accordingly. What do you think?
 
-Applied, thanks.
+Thanks for your comment!
 
+Your suggestion is what I wanted to do ultimately, and it seems
+to go well.  I'll send a rivised patch later.
+
+Best regards,
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
+
