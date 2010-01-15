@@ -1,86 +1,176 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665Ab0AOPr2 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 10:47:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851Ab0AOPr1
+	id S1756884Ab0AOPzD (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 10:55:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159Ab0AOPzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 10:47:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38424 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297Ab0AOPr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 10:47:27 -0500
-Date: Fri, 15 Jan 2010 16:41:31 +0100 (CET)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Greg KH <gregkh@suse.de>
-cc: Greg KH <greg@kroah.com>, lkml <linux-kernel@vger.kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 00/15] Staging: Convert the semaphore mess
-In-Reply-To: <20100115151942.GA10117@suse.de>
-Message-ID: <alpine.LFD.2.00.1001151640030.5514@localhost.localdomain>
-References: <1263243114-3942-1-git-send-email-jkacur@redhat.com> <20100115012921.GE32278@kroah.com> <alpine.LFD.2.00.1001151607570.5514@localhost.localdomain> <20100115151942.GA10117@suse.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 15 Jan 2010 10:55:01 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:62089 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818Ab0AOPzA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 10:55:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=an36Ok05NLMAvxb9Ox5qGbIp8q0157nPox0/E+sDQxS+FaAG4gm1jzrq8wKdbptdae
+         SWjlAaEYICX6oXphNu6pqMvhohh0KOQpFatccGyWHwWUC8EsqYgo6BPzNaQ/dWsVAKrI
+         ZYi7CdH/7GyPAVZn2MEiQN2M1d31zex0scx9o=
+Date: Fri, 15 Jan 2010 16:54:47 +0100
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Anders =?UTF-8?B?Qm9zdHLDtm0=?= <anders@netinsight.net>
+Cc: xiong.huang@atheros.com, jie.yang@atheros.com,
+        linux-kernel@vger.kernel.org, ben@decadent.org.uk,
+        netdev@vger.kernel.org
+Subject: Re: atl1e: TSO is broken
+Message-ID: <20100115165447.2eb7d547@varda>
+In-Reply-To: <20100115.135613.1130385479658158300.anders@netinsight.net>
+References: <20100115.135613.1130385479658158300.anders@netinsight.net>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+El Fri, 15 Jan 2010 13:56:13 +0100 (CET)
+Anders Boström <anders@netinsight.net> escribió:
 
+CCing netdev
 
-On Fri, 15 Jan 2010, Greg KH wrote:
-
-> On Fri, Jan 15, 2010 at 04:11:23PM +0100, John Kacur wrote:
-> > 
-> > 
-> > On Thu, 14 Jan 2010, Greg KH wrote:
-> > 
-> > > On Mon, Jan 11, 2010 at 09:51:39PM +0100, John Kacur wrote:
-> > > > Thomas / Ingo / Greg
-> > > > 
-> > > > I started with the patch in -rt 041e3130496f31d0cb4887fc6183117e662f5141
-> > > > and tried to forward port it to 2.6.33-rc3
-> > > > 
-> > > > The patch no-longer applied, because some of the changes were already accepted
-> > > > upstream, some files had been moved or dropped and so on.
-> > > > 
-> > > > So, I broke the original patch into one patch per file, and fixed merge errors.
-> > > > Then I also went and changed similar problems in new code
-> > > > 
-> > > > This code should be queued-up for the 2.6.34 merge window, and should also
-> > > > be applied to the latests -rt branch.
-> > > 
-> > > I can't do that, as it breaks when applying to Linus's latest tree,
-> > > right?
-> > > 
-> > > If this needs to go through some other tree, no objection from me at
-> > > all, feel free to add:
-> > > 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > > 
-> > > to them.
-> > > 
-> > > thanks,
-> > > 
-> > > greg k-h
-> > > 
-> > 
-> > Hi Greg.
-> > 
-> > This shouldn't break - I tested against 2.6.33-rc3, and I just retested 
-> > against 2.6.33-rc4. The origin of the patch is in -rt but there is nothing
-> > -rt about it which is why I would like to push it upstream.
-> > 
-> > I don't have all that hardware, so my ability to test it is somewhat 
-> > limited - and since these are all staging drivers, I was hoping that you 
-> > would pick it up if Thomas doesn't have any objections.
+> Short desription
+> ----------------
 > 
-> Try applying your first patch against 2.6.33-rc3 and then just building
-> the code.  It dies a horrible death :)
+> TCP Segmentation Offload (TSO) result in broken IPv4-packets sent out
+> from Atheros AR8121/AR8113/AR8114 with the atl1e driver.
 > 
-
-Ugh! You're right Greg. These patches are pending Thomas's "Introduce 
-anon_semaphore" going upstream first.
-
-I'll wait for that before pushing these again.
-
-Thanks.
-
+> 
+> Work around
+> -----------
+> 
+> Turn off TSO. Requires 2.6.33-rc1 or later.
+> 
+> 
+> Long desription
+> ----------------
+> 
+> When I run NFS over TCP (default options) and read large files from a
+> server with Atheros AR8121/AR8113/AR8114 Ethernet chip, I only get
+> ~25Mbyte/s performance. I get ~5000 retransmitted packets per GByte
+> data, according to RetransSegs in /proc/net/snmp . wireshark in the
+> client show that the server send out a sequence of frames. All but the
+> last one are 1500 bytes IP-packets. The last one is shorter, but the
+> IP-header still say 1500 byte. The client then requests retransmit,
+> and the retransmitted frame arrives with correct IP-header.
+> 
+> If I mount NFS using UDP instead, performance is ~110Mbyte/s.
+> 
+> TCP Segmentation Offload (TSO) is default enabled in the atl1e
+> Ethernet-driver. When I run a patched 2.6.30.10, enabling ethtool to
+> turn off TSO (using ac936929092dc6a5409b627c4c67305ab9b626b3 by Ben
+> Hutchings), and turn off TSO, the problem disappears. Performance is
+> ~110Mbyte/s and no broken IP-packets arrive.
+> 
+> 
+> Capture of 146-byte Ethernet frame with bad IP-header:
+> 
+> No.     Time        Source                Destination           Protocol Info
+>   98329 11.034129   flash.netinsight.se   sid.netinsight.se     RPC      Continuation
+> 
+> Frame 98329 (146 bytes on wire, 146 bytes captured)
+>     Arrival Time: Jan 15, 2010 13:35:16.224491000
+>     [Time delta from previous captured frame: 0.000009000 seconds]
+>     [Time delta from previous displayed frame: 0.000009000 seconds]
+>     [Time since reference or first frame: 11.034129000 seconds]
+>     Frame Number: 98329
+>     Frame Length: 146 bytes
+>     Capture Length: 146 bytes
+>     [Frame is marked: False]
+>     [Protocols in frame: eth:ip:tcp:rpc]
+>     [Coloring Rule Name: TCP]
+>     [Coloring Rule String: tcp]
+> Ethernet II, Src: AsustekC_ae:69:6d (00:26:18:ae:69:6d), Dst: sid.netinsight.se (00:18:f3:52:22:3f)
+> Internet Protocol, Src: flash.netinsight.se (10.100.0.88), Dst: sid.netinsight.se (10.100.1.25)
+>     Version: 4
+>     Header length: 20 bytes
+>     Differentiated Services Field: 0x00 (DSCP 0x00: Default; ECN: 0x00)
+>     Total Length: 1500
+>     Identification: 0x331e (13086)
+>     Flags: 0x02 (Don't Fragment)
+>     Fragment offset: 0
+>     Time to live: 64
+>     Protocol: TCP (0x06)
+>     Header checksum: 0xebc5 [correct]
+>     Source: flash.netinsight.se (10.100.0.88)
+>     Destination: sid.netinsight.se (10.100.1.25)
+> Transmission Control Protocol, Src Port: nfs (2049), Dst Port: accessbuilder (888), Seq: 93989617, Ack: 516997, Len: 80
+> Remote Procedure Call
+> 
+> 0000  00 18 f3 52 22 3f 00 26 18 ae 69 6d 08 00 45 00   ...R"?.&..im..E.
+> 0010  05 dc 33 1e 40 00 40 06 eb c5 0a 64 00 58 0a 64   ..3.@.@....d.X.d
+> 0020  01 19 08 01 03 78 a4 07 57 23 e6 50 1f 1b 80 10   .....x..W#.P....
+> 0030  01 f5 dd 8d 00 00 01 01 08 0a 05 28 ca 7e 38 93   ...........(.~8.
+> 0040  67 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00   g...............
+> 0050  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+> 0060  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+> 0070  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+> 0080  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+> 0090  00 00                                             ..
+> 
+> 
+> 
+> Software info:
+> 
+> I've tested with Debian 2.6.26 (stable) and 2.6.30 (testing), as well
+> as 2.6.30.10 from kernel.org. Same result.
+> 
+> Hardware info:
+> 
+> lspci -vvv:
+> 
+> 03:00.0 Ethernet controller: Attansic Technology Corp. Atheros AR8121/AR8113/AR8114 PCI-E Ethernet Controller (rev b0)
+>         Subsystem: ASUSTeK Computer Inc. Device 831c
+>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
+>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR+ <PERR- INTx-
+>         Latency: 0, Cache Line Size: 64 bytes
+>         Interrupt: pin A routed to IRQ 27
+>         Region 0: Memory at fbfc0000 (64-bit, non-prefetchable) [size=256K]
+>         Region 2: I/O ports at ec00 [size=128]
+>         Capabilities: [40] Power Management version 2
+>                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
+>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>         Capabilities: [48] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
+>                 Address: 00000000fee0f00c  Data: 4189
+>         Capabilities: [58] Express (v1) Endpoint, MSI 00
+>                 DevCap: MaxPayload 4096 bytes, PhantFunc 0, Latency L0s <4us, L1 unlimited
+>                         ExtTag- AttnBtn+ AttnInd+ PwrInd+ RBE- FLReset-
+>                 DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+>                         RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+>                         MaxPayload 128 bytes, MaxReadReq 512 bytes
+>                 DevSta: CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+>                 LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s, Latency L0 unlimited, L1 unlimited
+>                         ClockPM- Suprise- LLActRep- BwNot-
+>                 LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+>                         ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+>                 LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+>         Capabilities: [100] Advanced Error Reporting <?>
+>         Capabilities: [180] Device Serial Number ff-18-26-00-6d-69-ae-ff
+>         Kernel driver in use: ATL1E
+>         Kernel modules: atl1e
+> 
+> ethtool -i eth0:
+> 
+> driver: ATL1E
+> version: 1.0.0.7-NAPI
+> firmware-version: L1e
+> bus-info: 0000:03:00.0
+> 
+> 
+> / Anders
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
