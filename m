@@ -1,69 +1,80 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891Ab0AORXS (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 12:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818Ab0AORXR
+	id S1757906Ab0AORXj (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 12:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757884Ab0AORXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 12:23:17 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:40853 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757655Ab0AORXR (ORCPT
+	Fri, 15 Jan 2010 12:23:38 -0500
+Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:51814 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757859Ab0AORXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 12:23:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Z/lP+YqfxfTQnlvcoSPaSpk48XStvLzWCnxEKFr8e7HCrPmOjPOJPiZXrqDKKNa0rP
-         7uMWjpsDRqhEzn0P2WKJT9o2KO+yyE20nCTX7B8Fp/ZeeAZv1/1IPjBd608rqAiDONt5
-         nHJIclJXMvVETRdhx3mNiXEpB174iVFc83zMg=
-MIME-Version: 1.0
-In-Reply-To: <20100114141735.672B.A69D9226@jp.fujitsu.com>
-References: <20100114084659.D713.A69D9226@jp.fujitsu.com>
-	 <28c262361001132112i7f50fd66qcd24dc2ddb4d78d8@mail.gmail.com>
-	 <20100114141735.672B.A69D9226@jp.fujitsu.com>
-Date: Sat, 16 Jan 2010 02:23:16 +0900
-Message-ID: <28c262361001150923l138f6805t22546887bf81b283@mail.gmail.com>
-Subject: Re: [PATCH 2/3][v2] vmstat: add anon_scan_ratio field to zoneinfo
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Balbir Singh <balbir@linux.vnet.ibm.com>,
-        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-        Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 15 Jan 2010 12:23:37 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtQEAHcwUEuuWOiG/2dsb2JhbACBRNg5hDEE
+Date: Fri, 15 Jan 2010 12:23:35 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Jon Bernard <jbernard@debian.org>, Jan Blunck <jblunck@suse.de>,
+        linux-kernel@vger.kernel.org, Pedro Alves <pedro@codesourcery.com>,
+        ltt-dev@lists.casi.polymtl.ca,
+        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+        pierre-marc.fournier@polymtl.ca
+Subject: Userspace RCU API (minor changes)
+Message-ID: <20100115172335.GC30678@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 12:12:00 up 30 days,  1:30,  4 users,  load average: 0.16, 0.13,
+	0.09
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, KOSAKI.
+Hi,
 
-On Thu, Jan 14, 2010 at 2:18 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->> > Well. zone->lock and zone->lru_lock should be not taked at the same time.
->>
->> I looked over the code since I am out of office.
->> I can't find any locking problem zone->lock and zone->lru_lock.
->> Do you know any locking order problem?
->> Could you explain it with call graph if you don't mind?
->>
->> I am out of office by tomorrow so I can't reply quickly.
->> Sorry for late reponse.
->
-> This is not lock order issue. both zone->lock and zone->lru_lock are
-> hotpath lock. then, same tame grabbing might cause performance impact.
+I'd like to proceed to a minor API change in the next userspace RCU
+release: moving from SIGURCU to SIGRCU for the signal name. This is part
+of an effort to standardize the library prefix to "rcu_".  I plan to
+add support for backward compatibility, so when we see that SIGURCU is
+defined, then we use that value.
 
-Sorry for late response.
+Also, I am planning to rename the urcu_init() constructor to rcu_init().
+It should only affect the libust tracer, which need to call it
+explicitly. Normal users don't have to bother with it, as it's a library
+constructor.
 
-Your patch makes get_anon_scan_ratio of zoneinfo stale.
-What you said about performance impact is effective when VM pressure high.
-I think stale data is all right normally.
-But when VM pressure is high and we want to see the information in zoneinfo(
-this case is what you said), stale data is not a good, I think.
+Also, the urcu/config.h options are renamed to:
 
-If it's not a strong argue, I want to use old get_scan_ratio
-in get_anon_scan_ratio.
+CONFIG_RCU_HAVE_FENCE
+CONFIG_RCU_HAVE_FUTEX
+CONFIG_RCU_SMP
+CONFIG_RCU_COMPAT_ARCH
+(moving from URCU -> RCU)
+
+So an updated system installation will keep everything in sync.
+
+I also plan to shuffle the library names a bit, but without breaking
+anything. Basically, liburcu will become the "default" version, using
+sys_membarrier() when available, and using liburcu-mb as a fallback.
+
+The signal-based liburcu will be renamed from liburcu to liburcu-signal.
+People previously using the signal-based "liburcu" will automatically be
+moved to the "default" liburcu version.
+
+You might want to have a look at the current git tree head to see if
+everything is fine before the release. Given that I change the API
+slightly, this will definitely be a 0.4.0.
+
+Feedback is welcome,
+
+Thanks,
+
+Mathieu
 
 -- 
-Kind regards,
-Minchan Kim
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
