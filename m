@@ -1,52 +1,78 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932168Ab0AONhM (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 08:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641Ab0AONhL
+	id S1756472Ab0AONiT (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 08:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136Ab0AONiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 08:37:11 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:46550 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752177Ab0AONhK (ORCPT
+	Fri, 15 Jan 2010 08:38:18 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36132 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753972Ab0AONiS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 08:37:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=TSerXE20qnV2hOOUz3YIWL6XL7Om+4h7X90hBs9Yfoc+GcenD/Gbaw41mDXGKYBOTC
-         QR+rHGr1xIv46Ow1vv4rPhr0xo/041IuZB08AcwBySXFi1MDs5lNwRM6Jxh6YA9oZsk2
-         KT+/Nc1BU4Ri8QvsJofKKbsYCvKRDqGjLnU/E=
-Message-ID: <4B507093.6050002@gmail.com>
-Date: Fri, 15 Jan 2010 14:41:39 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
-        Andrew Morton <akpm@linux-foundation.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: bau_msg_head points to a_queue_first in uv_table_bases_finish()
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 15 Jan 2010 08:38:18 -0500
+Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
+From: Peter Zijlstra <peterz@infradead.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+        Arnaldo Carvalho de Melo <acme@infradead.org>,
+        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+        utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        Masami Hiramatsu <mhiramat@redhat.com>,
+        Maneesh Soni <maneesh@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263561389.4244.410.camel@laptop>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
+	 <1263467394.4244.291.camel@laptop>
+	 <1263509380.4875.35.camel@localhost.localdomain>
+	 <1263546632.4244.352.camel@laptop>
+	 <20100115102645.GA22640@linux.vnet.ibm.com>
+	 <1263551607.4244.379.camel@laptop>
+	 <20100115130802.GC20658@linux.vnet.ibm.com>
+	 <1263561389.4244.410.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 14:38:04 +0100
+Message-ID: <1263562684.4244.419.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bau_msg_head should point to bau_msg_head
+On Fri, 2010-01-15 at 14:16 +0100, Peter Zijlstra wrote:
+> On Fri, 2010-01-15 at 18:38 +0530, Srikar Dronamraju wrote:
+> > * Peter Zijlstra <peterz@infradead.org> [2010-01-15 11:33:27]:
+> > 
+> > > 
+> > > > Uprobes layer would need to be notified of process life-time events
+> > > > like fork/clone/exec/exit. 
+> > > 
+> > > No so much the process lifetimes as the vma life times are interesting,
+> > > placing a hook in the vm code to track that isn't too hard, 
+> > > 
+> > > > It also needs to know
+> > > > 	-  when a breakpoint is hit
+> > > > 	-  stop and resume a thread.
+> > > 
+> > > A simple hook in the trap code is done quickly enough, and no reason to
+> > > stop the thread, its not going anywhere when it traps.
+> > > 
+> > > 
+> > 
+> > Some of the threads could be executing in the vicinity of the
+> > breakpoint when it is getting inserted or deleted. Wont we need to
+> > stop/quiesce those threads?
+> 
+> The easy answer it so use kstopmachine to patch the code, the slightly
+> more complex would be using something like:
+> 
+>   http://lkml.org/lkml/2010/1/12/300
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Is this correct?
+Also, since its userspace, can't you simply play games with the
+pagetables? CoW a new private copy of the page and flip the pagetables
+around to the new one, then flush the pagetables on all relevant cpus
+and bob's your uncle.
 
-diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
-index 364d015..3d66331 100644
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -691,7 +691,7 @@ uv_table_bases_finish(int blade,
- 			continue;
- 
- 		bcp = (struct bau_control *)&per_cpu(bau_control, cpu);
--		bcp->bau_msg_head	= bau_tablesp->va_queue_first;
-+		bcp->bau_msg_head	= bau_tablesp->bau_msg_head;
- 		bcp->va_queue_first	= bau_tablesp->va_queue_first;
- 		bcp->va_queue_last	= bau_tablesp->va_queue_last;
- 		bcp->msg_statuses	= bau_tablesp->msg_statuses;
+(You might have to play some games with making the page RO to trap
+intermediate accesses, but that should work I think)
+
