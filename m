@@ -1,65 +1,72 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751856Ab0AONT1 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 08:19:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815Ab0AONT0
+	id S1753099Ab0AONZh (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 08:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526Ab0AONZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 08:19:26 -0500
-Received: from mga03.intel.com ([143.182.124.21]:25900 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750772Ab0AONTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 08:19:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="233119926"
-From: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
-To: "avorontsov@ru.mvista.com" <avorontsov@ru.mvista.com>
-CC: "dwmw2@infradead.org" <dwmw2@infradead.org>, "cbou@mail.ru" <cbou@mail.ru>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 15 Jan 2010 18:49:15 +0530
-Subject: RE: [RFC] [PATCH] Adding Intel Moorestown PMIC Battery Driver
-Thread-Topic: [RFC] [PATCH] Adding Intel Moorestown PMIC Battery Driver
-Thread-Index: AcqV5GfLM2id1JTnR8eraaDuxr4cGgAAKQxA
-Message-ID: <175E0F9A9EFCEA46A65F5552BB0572980445DB321C@bgsmsx502.gar.corp.intel.com>
-References: <175E0F9A9EFCEA46A65F5552BB0572980445D2BE30@bgsmsx502.gar.corp.intel.com>
- <20100111213242.GA3985@oksana.dev.rtsoft.ru>
- <175E0F9A9EFCEA46A65F5552BB0572980445DB31FB@bgsmsx502.gar.corp.intel.com>
- <20100115131229.GA30213@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100115131229.GA30213@oksana.dev.rtsoft.ru>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+	Fri, 15 Jan 2010 08:25:36 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:39265 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748Ab0AONZg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 08:25:36 -0500
+Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>,
+        Arnaldo Carvalho de Melo <acme@infradead.org>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        LKML <linux-kernel@vger.kernel.org>, Mark Wielaard <mjw@redhat.com>,
+        utrace-devel <utrace-devel@redhat.com>
+In-Reply-To: <20100115131037.GP4822@redhat.com>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
+	 <1263467394.4244.291.camel@laptop>
+	 <1263509380.4875.35.camel@localhost.localdomain>
+	 <1263546632.4244.352.camel@laptop> <y0mvdf3en1y.fsf@fche.csb>
+	 <1263548124.4244.358.camel@laptop>  <20100115131037.GP4822@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 14:25:30 +0100
+Message-ID: <1263561930.4244.417.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by spinics.net id o0FDJZ50024527
 
->>>> +       unsigned int batt_charge_now;           /* in mAS */
->>>> +       unsigned int batt_prev_charge_full;     /* in mAS */
->>> +       unsigned int batt_charge_rate;          /* in units per second */
->>> 
->>> Per include/linux/power_supply.h and
->>> Documentation/power/power_supply_class.txt
->>> 
->>> * All voltages, currents, charges, energies, time and temperatures in uV,
->>> * uA, uAh, uWh, seconds and tenths of degree Celsius unless otherwise
->>> * stated. It's driver's job to convert its raw values to units in which
->>> * this class operates.
->> 
->> I just now checked the hardware spec and it is indeed mAh. I will correct 
->> the comment appropriately.
+On Fri, 2010-01-15 at 08:10 -0500, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> Note, if the hardware reports the values in mAh (milli), the driver
-> still have to convert them to uAh (micro) before reporting the values
-> to userspace.
+> > > > Then we can ditch the whole utrace muck as I see no reason to want to
+> > > > use that, whereas the ubp (given a sane name) looks interesting.
+> > > 
+> > > Assuming you meant what you write, perhaps you misunderstand the
+> > > layering relationship of these pieces.  utrace underlies uprobes and
+> > > other process manipulation functionality, present and future.
+> > 
+> > Why, utrace doesn't at all look to bring a fundamental contribution to
+> > all that. If there's a proper kernel interface to install probes on
+> > userspace code (ubp seems to be mostly that) then I can use perf/ftrace
+> > to do the rest of the state management, no need to use utrace there.
+> 
+> > You can hardly force me to use utrace there, can you?
+> 
+> utrace is not a form of punishment inflicted upon the undeserving.  It
+> is a service layer that uprobes et alii are built upon.  You as a
+> potential uprobes client need not also talk directly to it, if you
+> wish to reimplement task-finder-like services some other way.
 
-Yup will take care, sorry for not making it clear here.
+I said I wanted to, I think the whole task orientation of user-space
+probing is wrong, its about text mappings.
 
+But yes, I think that for most purposes utrace is a punishment, its way
+too heavy, I mean, trap, generate a signal, catch the signal, that's
+like an insane amount of code to jump through in order to get that trap.
 
-Regards,
-Nithish
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Furthermore it requires stopping and resuming tasks and nonsense like
+that, that's unwanted in many cases, just run stuff from the trap site
+and you're done.
+
+Yes you can do this with utrace, and I'm not going to stop people from
+using utrace for his, I'm just saying I'm not going to.
+
