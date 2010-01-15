@@ -1,146 +1,78 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757125Ab0AOLNW (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 06:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756958Ab0AOLNT
+	id S1757096Ab0AOLSc (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 06:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128Ab0AOLSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 06:13:19 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39145 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756711Ab0AOLNR (ORCPT
+	Fri, 15 Jan 2010 06:18:32 -0500
+Received: from casper.infradead.org ([85.118.1.10]:42833 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754828Ab0AOLSb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 06:13:17 -0500
-Date: Fri, 15 Jan 2010 11:16:27 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Matthias Urlichs <matthias@urlichs.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ldisc switching on a HUPped pty hangs the caller
-Message-ID: <20100115111627.1f7c52b3@lxorguk.ukuu.org.uk>
-In-Reply-To: <1263532072.22171.24.camel@kiste>
-References: <1263532072.22171.24.camel@kiste>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+	Fri, 15 Jan 2010 06:18:31 -0500
+Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
+From: Peter Zijlstra <peterz@infradead.org>
+To: maneesh@in.ibm.com
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+        Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+        Arnaldo Carvalho de Melo <acme@infradead.org>,
+        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+        utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        Masami Hiramatsu <mhiramat@redhat.com>,
+        LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263553955.4244.393.camel@laptop>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
+	 <1263467394.4244.291.camel@laptop>
+	 <1263509380.4875.35.camel@localhost.localdomain>
+	 <1263546632.4244.352.camel@laptop>
+	 <20100115102645.GA22640@linux.vnet.ibm.com>
+	 <1263551607.4244.379.camel@laptop>  <20100115110547.GB3660@in.ibm.com>
+	 <1263553955.4244.393.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 12:18:04 +0100
+Message-ID: <1263554284.4244.396.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Give this a spin
-tty: Fix the ldisc hangup race
+On Fri, 2010-01-15 at 12:12 +0100, Peter Zijlstra wrote:
+> On Fri, 2010-01-15 at 16:35 +0530, Maneesh Soni wrote:
+> > On Fri, Jan 15, 2010 at 11:33:27AM +0100, Peter Zijlstra wrote:
+> > > On Fri, 2010-01-15 at 15:56 +0530, Srikar Dronamraju wrote:
+> > > > Hi Peter, 
+> > > > 
+> > > > Or there could be two threads that could be racing to
+> > > > insert/delete a breakpoint. These synchronization issues are all handled
+> > > > by the Uprobes layer.
+> > > 
+> > > Shouldn't be hard to put that in the ubp layer, right?
+> > > 
+> > > > Uprobes layer would need to be notified of process life-time events
+> > > > like fork/clone/exec/exit. 
+> > > 
+> > > No so much the process lifetimes as the vma life times are interesting,
+> > > placing a hook in the vm code to track that isn't too hard, 
+> > > 
+> > 
+> > I think similar hooks were given thumbs down in the previous incarnation
+> > of uprobes (which was implemented without utrace).  
+> > 
+> > http://lkml.indiana.edu/hypermail/linux/kernel/0603.2/1254.html
+> 
+> I wasn't at all proposing to mess with a_ops, nor do you really need to,
+> I was more thinking of adding a callback like perf_event_mmap() and a
+> corresponding unmap(), that way you can track mapping life-times and
+> add/remove probes accordingly.
+> 
+> Adding the probe uses the fact that (most) executable mappings are
+> MAP_PRIVATE and CoWs a private copy of the page with the modified ins,
+> right?
 
-From: Alan Cox <alan@linux.intel.com>
+Does it clean up the CoW'ed page on removing the probe? Does that
+account for userspace having made other changes in between installing
+and removing the probe (for PROT_WRITE mappings obviously)?
 
-This was noticed by Matthias Urlichs and he proposed a fix. This patch
-does the fixing a different way to avoid introducing several new race
-conditions into the code.
-
-The problem case is TTY_DRIVER_RESET_TERMIOS = 0. In that case while we
-abort the ldisc change the hangup processing has not cleaned up and restarted
-the ldisc either.
-
-We can't restart the ldisc stuff in the set_ldisc as we don't know what
-the hangup did and may touch stuff we shouldn't as we are no longer
-supposed to influence the tty at that point in case it has been re-opened
-before we get rescheduled.
-
-Instead do it the simple way. Always re-init the ldisc on the hangup, but
-use TTY_DRIVER_RESET_TERMIOS to indicate that we should force N_TTY.
-
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
-
- drivers/char/tty_ldisc.c |   50 ++++++++++++++++++++++++++++------------------
- 1 files changed, 30 insertions(+), 20 deletions(-)
-
-
-diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
-index 3f653f7..500e740 100644
---- a/drivers/char/tty_ldisc.c
-+++ b/drivers/char/tty_ldisc.c
-@@ -706,12 +706,13 @@ static void tty_reset_termios(struct tty_struct *tty)
- /**
-  *	tty_ldisc_reinit	-	reinitialise the tty ldisc
-  *	@tty: tty to reinit
-+ *	@ldisc: line discipline to reinitialize
-  *
-- *	Switch the tty back to N_TTY line discipline and leave the
-- *	ldisc state closed
-+ *	Switch the tty to a line discipline and leave the ldisc
-+ *	state closed
-  */
- 
--static void tty_ldisc_reinit(struct tty_struct *tty)
-+static void tty_ldisc_reinit(struct tty_struct *tty, int ldisc)
- {
- 	struct tty_ldisc *ld;
- 
-@@ -721,10 +722,10 @@ static void tty_ldisc_reinit(struct tty_struct *tty)
- 	/*
- 	 *	Switch the line discipline back
- 	 */
--	ld = tty_ldisc_get(N_TTY);
-+	ld = tty_ldisc_get(ldisc);
- 	BUG_ON(IS_ERR(ld));
- 	tty_ldisc_assign(tty, ld);
--	tty_set_termios_ldisc(tty, N_TTY);
-+	tty_set_termios_ldisc(tty, ldisc);
- }
- 
- /**
-@@ -745,6 +746,8 @@ static void tty_ldisc_reinit(struct tty_struct *tty)
- void tty_ldisc_hangup(struct tty_struct *tty)
- {
- 	struct tty_ldisc *ld;
-+	int reset = tty->driver->flags & TTY_DRIVER_RESET_TERMIOS;
-+	int err = 0;
- 
- 	/*
- 	 * FIXME! What are the locking issues here? This may me overdoing
-@@ -772,25 +775,32 @@ void tty_ldisc_hangup(struct tty_struct *tty)
- 	wake_up_interruptible_poll(&tty->read_wait, POLLIN);
- 	/*
- 	 * Shutdown the current line discipline, and reset it to
--	 * N_TTY.
-+	 * N_TTY if need be.
-+	 *
-+	 * Avoid racing set_ldisc or tty_ldisc_release
- 	 */
--	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
--		/* Avoid racing set_ldisc or tty_ldisc_release */
--		mutex_lock(&tty->ldisc_mutex);
--		tty_ldisc_halt(tty);
--		if (tty->ldisc) {	/* Not yet closed */
--			/* Switch back to N_TTY */
--			tty_ldisc_reinit(tty);
--			/* At this point we have a closed ldisc and we want to
--			   reopen it. We could defer this to the next open but
--			   it means auditing a lot of other paths so this is
--			   a FIXME */
-+	mutex_lock(&tty->ldisc_mutex);
-+	tty_ldisc_halt(tty);
-+	/* At this point we have a closed ldisc and we want to
-+	   reopen it. We could defer this to the next open but
-+	   it means auditing a lot of other paths so this is
-+	   a FIXME */
-+	if (tty->ldisc) {	/* Not yet closed */
-+		if (reset == 0) {
-+			tty_ldisc_reinit(tty, tty->termios->c_line);
-+			err = tty_ldisc_open(tty, tty->ldisc);
-+		}
-+		/* If the re-open fails or we reset then go to N_TTY. The
-+		   N_TTY open cannot fail */
-+		if (reset || err) {
-+			tty_ldisc_reinit(tty, N_TTY);
- 			WARN_ON(tty_ldisc_open(tty, tty->ldisc));
--			tty_ldisc_enable(tty);
- 		}
--		mutex_unlock(&tty->ldisc_mutex);
--		tty_reset_termios(tty);
-+		tty_ldisc_enable(tty);
- 	}
-+	mutex_unlock(&tty->ldisc_mutex);
-+	if (reset)
-+		tty_reset_termios(tty);
- }
- 
- /**
