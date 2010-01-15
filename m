@@ -1,73 +1,68 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194Ab0AOPMk (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 10:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136Ab0AOPMk
+	id S1756698Ab0AOPPE (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 10:15:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230Ab0AOPPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 10:12:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3682 "EHLO mx1.redhat.com"
+	Fri, 15 Jan 2010 10:15:03 -0500
+Received: from cantor.suse.de ([195.135.220.2]:55070 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751069Ab0AOPMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 10:12:39 -0500
-Date: Fri, 15 Jan 2010 16:11:23 +0100 (CET)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Greg KH <greg@kroah.com>
-cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 00/15] Staging: Convert the semaphore mess
-In-Reply-To: <20100115012921.GE32278@kroah.com>
-Message-ID: <alpine.LFD.2.00.1001151607570.5514@localhost.localdomain>
-References: <1263243114-3942-1-git-send-email-jkacur@redhat.com> <20100115012921.GE32278@kroah.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753810Ab0AOPPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 10:15:01 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs
+To: Matthew Helsley <matt.helsley@gmail.com>
+Subject: Re: [PATCH 2/4] fanotify: Add pids to events
+Date: Fri, 15 Jan 2010 16:12:09 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; i686; ; )
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+        hch@infradead.org, containers@lists.linux-foundation.org,
+        matthltc@us.ibm.com, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+        Oleg Nesterov <oleg@redhat.com>
+References: <20091202141452.12819.93536.stgit@paris.rdu.redhat.com> <20091202141458.12819.96170.stgit@paris.rdu.redhat.com> <6a12d2f31001142041j7f917b07l1e1a728790175321@mail.gmail.com>
+In-Reply-To: <6a12d2f31001142041j7f917b07l1e1a728790175321@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001151612.10032.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 14 Jan 2010, Greg KH wrote:
-
-> On Mon, Jan 11, 2010 at 09:51:39PM +0100, John Kacur wrote:
-> > Thomas / Ingo / Greg
-> > 
-> > I started with the patch in -rt 041e3130496f31d0cb4887fc6183117e662f5141
-> > and tried to forward port it to 2.6.33-rc3
-> > 
-> > The patch no-longer applied, because some of the changes were already accepted
-> > upstream, some files had been moved or dropped and so on.
-> > 
-> > So, I broke the original patch into one patch per file, and fixed merge errors.
-> > Then I also went and changed similar problems in new code
-> > 
-> > This code should be queued-up for the 2.6.34 merge window, and should also
-> > be applied to the latests -rt branch.
+On Friday 15 January 2010 05:41:10 Matthew Helsley wrote:
+> Eric, you never replied to my point about pid namespaces
+> (http://lkml.org/lkml/2009/7/1/2). I'm still concerned that it's a
+> problem for this patch. I've cc'd some pid namespace folks, listed the
+> problems, and some alternative solutions (where I could think of any)
+> below:
 > 
-> I can't do that, as it breaks when applying to Linus's latest tree,
-> right?
-> 
-> If this needs to go through some other tree, no objection from me at
-> all, feel free to add:
-> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> to them.
-> 
-> thanks,
-> 
-> greg k-h
-> 
+> 1. Since fanotify doesn't hold a reference to the struct pid then the
+> pid can become stale before the event is acted upon.
+>     solution a: Just ignoring this problem, like other interfaces
+> often do, is probably ok.
+>     ... ?
+>     solution z: Seems to require taking a reference to the pid and
+> giving userspace a way to drop the reference after it's done using
+> this value to refer to the process (yuck).
 
-Hi Greg.
+struct fsnotify_event->tgid does hold a reference to the appropriate struct 
+pid.  The reference is released when that struct fsnotify_event is freed.
 
-This shouldn't break - I tested against 2.6.33-rc3, and I just retested 
-against 2.6.33-rc4. The origin of the patch is in -rt but there is nothing
--rt about it which is why I would like to push it upstream.
+> 2. If the event recipient does a clone and enters a new pidns the pid
+> number will be incorrect without any indication.
 
-I don't have all that hardware, so my ability to test it is somewhat 
-limited - and since these are all staging drivers, I was hoping that you 
-would pick it up if Thomas doesn't have any objections.
+No, if a process has a pid within the listener's namespace the listener will 
+see this pid; otherwise, the resulting pid value is 0.
 
-Thanks
+> 3. If the listening process is not in the same or an ancestor pid
+> namespace of the triggering process then there is no correct pid
+> corresponding to the event.
 
-John
+Indeed, if the listener is not in the same or an ancestor pid namespace, the 
+pid in the event will end up as 0.  The event still indicates that something 
+has happened to a file the listener is interested in though, it's just unclear 
+who triggered the event.  I don't see a problem with that though -- do you?
+
+Thanks,
+Andreas
