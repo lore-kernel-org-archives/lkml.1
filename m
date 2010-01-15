@@ -1,109 +1,81 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140Ab0AOHl6 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 02:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962Ab0AOHlz
+	id S1751959Ab0AOHmP (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 02:42:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899Ab0AOHmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 02:41:55 -0500
-Received: from mail.issp.bas.bg ([195.96.236.10]:55369 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751832Ab0AOHlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 02:41:50 -0500
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: ss@aao.gov.au
-Subject: Re: [RFC] Yet another dt3155 driver for drivers/staging
-Date: Thu, 14 Jan 2010 21:23:57 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.33-rc4; KDE/4.2.4; x86_64; ; )
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-References: <201001122242.22774.mitov@issp.bas.bg> <201001130816.43855.mitov@issp.bas.bg> <20100114010335.GB20569@aao.gov.au>
-In-Reply-To: <20100114010335.GB20569@aao.gov.au>
+	Fri, 15 Jan 2010 02:42:10 -0500
+Received: from mga10.intel.com ([192.55.52.92]:47425 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751962Ab0AOHmI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 02:42:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,281,1262592000"; 
+   d="scan'208";a="764453149"
+Message-ID: <4B501C4D.4080907@linux.intel.com>
+Date: Fri, 15 Jan 2010 15:42:05 +0800
+From: Haicheng Li <haicheng.li@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+        Thomas Gleixner <tglx@linutronix.de>
+CC: x86@kernel.org, Andi Kleen <andi@firstfloor.org>,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] x86/mm/srat_64.c: nodes_parsed should include all nodes detected
+ by ACPI.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001142123.57736.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Scot & Greg,
+This is to fix the bug discussed in email thread: http://patchwork.kernel.org/patch/69499/.
 
-> 
-> I'd be interested in Marin's opinion as he appears to have used both
-> drivers extensively.
+Currently node_possible_map won't include the offlined node that has neither CPU onlined nor MEM 
+onlined at booting time. As a result, nr_node_ids won't be equal to possible nodes.
 
-I have successfully used SourceForge(SF) driver since 2003 on 2.4.xx
-kernels till the time of 2.6.17 kernel when I switched to 2.6.17 as described in
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: H. Peter Anvin <hpa@zytor.com>
+CC: Andi Kleen <andi@firstfloor.org>
+Signed-off-by: Haicheng Li <haicheng.li@linux.intel.com>
+---
+  arch/x86/mm/srat_64.c |   10 ++--------
+  1 files changed, 2 insertions(+), 8 deletions(-)
 
-http://lfb.issp.bas.bg/~mitov/linux/dt3155pci/00README
+diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+index a271241..a5bc297 100644
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -238,7 +238,7 @@ update_nodes_add(int node, unsigned long start, unsigned long end)
+  void __init
+  acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+  {
+-	struct bootnode *nd, oldnode;
++	struct bootnode *nd;
+  	unsigned long start, end;
+  	int node, pxm;
+  	int i;
+@@ -277,7 +277,6 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+  		return;
+  	}
+  	nd = &nodes[node];
+-	oldnode = *nd;
+  	if (!node_test_and_set(node, nodes_parsed)) {
+  		nd->start = start;
+  		nd->end = end;
+@@ -291,13 +290,8 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+  	printk(KERN_INFO "SRAT: Node %u PXM %u %lx-%lx\n", node, pxm,
+  	       start, end);
 
-At this time I needed 1 fps, so the SF driver was OK for me.
+-	if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
++	if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE)
+  		update_nodes_add(node, start, end);
+-		/* restore nodes[node] */
+-		*nd = oldnode;
+-		if ((nd->start | nd->end) == 0)
+-			node_clear(node, nodes_parsed);
+-	}
 
-> 
-> I'd like a userspace program to actually try out Marin's driver
-
-I have one using KDE 3.5 libraries. If you use KDE 3.5 I could send it to you.
-
-> , but
-> I can still make some general comments:
-> 
-> Things I like about Marin's driver:
-> - It is only ~1/3rd the size. (by counting new lines)
-> - The code is much neater.
-> - It can acquire frames at 25 fps (real-time), according to Marin.
-
-Since today it could do 30 fps as well :-). Updated.
-
-> - At least 1 person with intimate knowledge of the code seems keen to
->   maintain it.
-> 
-> Things I like about the sourceforge (SF) driver:
-> - It works in CCIR mode (768x576) or 640x480 mode.
-
-Since today - here also.
-
-> - It is well tested.
-> - It works with most kernel versions. ie. 2.2, 2.4, & 2.6. (mostly)
-
-Production tested/used (every day use) on 2.6.27.43-i686.
-Compile tested on 2.6.33.-rc4-x86_64 :-)
-
-> - It works with multiple boards.
-
-Here in principal - also, but not tested.
-
-> - The code is moderately well commented.
-> - It includes simple (user space) example programs.
-> 
-> 
-> Clearly each driver has strengths over the other.
-> 
-> It would probably be easier to upgrade Marin's driver to match the
-> strengths of the SF driver than the other way around. The only
-> difficulty might be in making Marin's driver work with older kernel
-> versions. IMO, that's probably an acceptable sacrifice to make. (For
-> users of legacy systems, we could point them to the (unmaintained)
-> driver on SF.)
-> 
-> Marin, if you are considering upgrading your driver, I propose
-> we send an email to the DT3155 SF mailing list & ask for help
-> testing. 
-
-OK. I agree. Which kind of upgrade you mean?
-
-If CCIR/RS-170 - it is already done (but not tested on RS-170, 
-I have no such camera).
-
-I would ask your help for contacting  "the DT3155 SF mailing list & ask for help"
-
-> (I already know of 1 other person who is happy to help
-> test.) I recommend making userspace programs (like examples/acquire
-> & examples/Xview in the SF driver) available first. Ideally, these
-> example programs & user space libraries would become the major
-> component of the evolved DT3155 SF project.
-
-Here I could propose a KDE program, but it needs KDE, I am not familiar
-with GNOME programing.
-
-Marin Mitov
+  	node_memblk_range[num_node_memblks].start = start;
+  	node_memblk_range[num_node_memblks].end = end;
