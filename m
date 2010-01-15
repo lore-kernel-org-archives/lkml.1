@@ -1,12 +1,12 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758164Ab0AOUIj (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 15:08:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758125Ab0AOUIi
+	id S1758181Ab0AOUIu (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 15:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758136Ab0AOUIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 15:08:38 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60942 "EHLO
+	Fri, 15 Jan 2010 15:08:39 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60943 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758117Ab0AOUIh (ORCPT
+	with ESMTP id S1758120Ab0AOUIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Jan 2010 15:08:37 -0500
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
@@ -16,12 +16,10 @@ Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
         Mike Galbraith <efault@gmx.de>,
         Peter Zijlstra <a.p.zijlstra@chello.nl>,
         Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/2] perf symbols: Accept an alias when looking for "_text"
-Date: Fri, 15 Jan 2010 18:08:27 -0200
-Message-Id: <1263586107-1756-2-git-send-email-acme@infradead.org>
+Subject: [PATCH 1/2] perf record: Intercept all events
+Date: Fri, 15 Jan 2010 18:08:26 -0200
+Message-Id: <1263586107-1756-1-git-send-email-acme@infradead.org>
 X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1263586107-1756-1-git-send-email-acme@infradead.org>
-References: <1263586107-1756-1-git-send-email-acme@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -33,17 +31,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-As it is in PARISC64:
-
-parisc:~# uname -a
-Linux parisc 2.6.33-rc4-tip+ #1 SMP Thu Jan 14 13:33:34 BRST 2010 parisc64 GNU/Linux
-parisc:~# grep -w _text /proc/kallsyms
-0000000040100000 A _text
-parisc:~# grep 0000000040100000 /proc/kallsyms
-0000000040100000 T stext
-0000000040100000 T _stext
-0000000040100000 A _text
-parisc:~#
+The event interception we need to to din 'perf record' to create a list
+of all DSOs in PERF_RECORD_MMAP events wasn't seeing all events, make
+sure that happens by checking size agains event_t->header.size.
 
 Cc: Frédéric Weisbecker <fweisbec@gmail.com>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -51,27 +41,48 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/util/event.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+ tools/perf/builtin-record.c |   28 ++++++++++++++++++----------
+ 1 files changed, 18 insertions(+), 10 deletions(-)
 
-diff --git a/tools/perf/util/event.c b/tools/perf/util/event.c
-index 966d207..dc13cad 100644
---- a/tools/perf/util/event.c
-+++ b/tools/perf/util/event.c
-@@ -227,7 +227,12 @@ static int find_symbol_cb(void *arg, const char *name, char type, u64 start)
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 614fa9a..7bb9ca1 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -113,16 +113,24 @@ static void write_output(void *buf, size_t size)
+ 
+ static void write_event(event_t *buf, size_t size)
  {
- 	struct process_symbol_args *args = arg;
+-	/*
+-	* Add it to the list of DSOs, so that when we finish this
+-	 * record session we can pick the available build-ids.
+-	 */
+-	if (buf->header.type == PERF_RECORD_MMAP) {
+-		struct list_head *head = &dsos__user;
+-		if (buf->mmap.header.misc == 1)
+-			head = &dsos__kernel;
+-		__dsos__findnew(head, buf->mmap.filename);
+-	}
++	size_t processed_size = buf->header.size;
++	event_t *ev = buf;
++
++	do {
++		/*
++		* Add it to the list of DSOs, so that when we finish this
++		 * record session we can pick the available build-ids.
++		 */
++		if (ev->header.type == PERF_RECORD_MMAP) {
++			struct list_head *head = &dsos__user;
++			if (ev->header.misc == 1)
++				head = &dsos__kernel;
++			__dsos__findnew(head, ev->mmap.filename);
++		}
++
++		ev = ((void *)ev) + ev->header.size;
++		processed_size += ev->header.size;
++	} while (processed_size < size);
  
--	if (!symbol_type__is_a(type, MAP__FUNCTION) || strcmp(name, args->name))
-+	/*
-+	 * Must be a function or at least an alias, as in PARISC64, where "_text" is
-+	 * an 'A' to the same address as "_stext".
-+	 */
-+	if (!(symbol_type__is_a(type, MAP__FUNCTION) ||
-+	      type == 'A') || strcmp(name, args->name))
- 		return 0;
- 
- 	args->start = start;
+ 	write_output(buf, size);
+ }
 -- 
 1.6.2.5
 
