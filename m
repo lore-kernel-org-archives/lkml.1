@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330Ab0AOArd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617Ab0AOAwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330Ab0AOArd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 19:47:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730Ab0AOArc
+	id S1755617Ab0AOAwM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 19:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852Ab0AOAwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 19:47:32 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:15422 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751156Ab0AOArb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 19:47:31 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Subject: [PATCH] scsi_scan.c: quiet sparse noise
-Date: Thu, 14 Jan 2010 17:47:32 -0700
-Cc: James.Bottomley@suse.de
+	Thu, 14 Jan 2010 19:52:11 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:59589 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752957Ab0AOAwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 19:52:10 -0500
+Message-ID: <4B4FBC3C.5090507@cn.fujitsu.com>
+Date: Fri, 15 Jan 2010 08:52:12 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] prio_tree.c: quiet sparse noise
+References: <201001141516.27305.hartleys@visionengravers.com>
+In-Reply-To: <201001141516.27305.hartleys@visionengravers.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001141747.32906.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-scsi_scan.c: quiet sparse noise
+H Hartley Sweeten wrote:
+> prio_tree.c: quiet sparse noise
+> 
+> The function prio_tree_init is called during start_kernel. Since it
+> is an __init function it is not exposed as an exported symbol.
+> A sparse build produces the following warning because of this:
+> 
+> warning: symbol 'prio_tree_init' was not declared. Should it be static?
+> 
+> Quiet the warning by declaring the function as an extern before
+> it's definition.
+> 
 
-Include the <scsi/scsi_scan.h> header to pick up the extern
-prototype of scsi_complete_async_scans in order to quiet
-the following sparse warning:
+Why don't you add a declaration of prio_tree_init() to prio_tree.h,
+and let kernel/main.c include it?
 
-warning: symbol 'scsi_complete_async_scans' was not declared. Should it be static?
-
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: James E.J. Bottomley <James.Bottomley@suse.de>
-
----
-
-diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-index 012f73a..6e3ca0a 100644
---- a/drivers/scsi/scsi_scan.c
-+++ b/drivers/scsi/scsi_scan.c
-@@ -42,6 +42,7 @@
- #include <scsi/scsi_host.h>
- #include <scsi/scsi_transport.h>
- #include <scsi/scsi_eh.h>
-+#include <scsi/scsi_scan.h>
- 
- #include "scsi_priv.h"
- #include "scsi_logging.h"
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> 
+> ---
+> 
+> diff --git a/lib/prio_tree.c b/lib/prio_tree.c
+> index ccfd850..a677200 100644
+> --- a/lib/prio_tree.c
+> +++ b/lib/prio_tree.c
+> @@ -68,6 +68,9 @@ static void get_index(const struct prio_tree_root *root,
+>  
+>  static unsigned long index_bits_to_maxindex[BITS_PER_LONG];
+>  
+> +/* Keep sparse happy since this is not an EXPORT_SYMBOL */
+> +extern void prio_tree_init(void);
+> +
+>  void __init prio_tree_init(void)
+>  {
+>  	unsigned int i;
+> --
