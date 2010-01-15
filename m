@@ -1,54 +1,59 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932406Ab0AOXon (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 18:44:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932381Ab0AOXom
+	id S932417Ab0AOXoz (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 18:44:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932409Ab0AOXox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 18:44:42 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54675 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932198Ab0AOXom (ORCPT
+	Fri, 15 Jan 2010 18:44:53 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:60306 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932381Ab0AOXow (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 18:44:42 -0500
-Date: Fri, 15 Jan 2010 15:44:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allow linker to eliminate unused functions in lib/*
-Message-Id: <20100115154404.da44ba5a.akpm@linux-foundation.org>
-In-Reply-To: <20100109165155.GD20773@basil.fritz.box>
-References: <20100105145917.GA25570@basil.fritz.box>
-	<20100108162930.a011749a.akpm@linux-foundation.org>
-	<20100109165155.GD20773@basil.fritz.box>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Fri, 15 Jan 2010 18:44:52 -0500
+Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
+From: Jim Keniston <jkenisto@us.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: maneesh@in.ibm.com, Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+        Ingo Molnar <mingo@elte.hu>,
+        Arnaldo Carvalho de Melo <acme@infradead.org>,
+        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+        utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        Masami Hiramatsu <mhiramat@redhat.com>,
+        LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263553955.4244.393.camel@laptop>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
+	 <1263467394.4244.291.camel@laptop>
+	 <1263509380.4875.35.camel@localhost.localdomain>
+	 <1263546632.4244.352.camel@laptop>
+	 <20100115102645.GA22640@linux.vnet.ibm.com>
+	 <1263551607.4244.379.camel@laptop>  <20100115110547.GB3660@in.ibm.com>
+	 <1263553955.4244.393.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 15 Jan 2010 15:44:45 -0800
+Message-Id: <1263599085.5007.88.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jan 2010 17:51:56 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+On Fri, 2010-01-15 at 12:12 +0100, Peter Zijlstra wrote:
+...
+> 
+> Adding the probe uses the fact that (most) executable mappings are
+> MAP_PRIVATE and CoWs a private copy of the page with the modified ins,
+> right?
+> 
+> What does it do for MAP_SHARED|MAP_EXECUTABLE sections -- simply fail to
+> add the probe?
 
-> Allow linker to eliminate unused functions in lib/*
+If the vma containing the instruction to be probed has the VM_EXEC flag
+set (and it's not in the XOL area) we go ahead and try to probe it.  I'm
+not familar with the implications of MAP_SHARED|MAP_EXECUTABLE -- how
+you would get such a combo, or what access_process_vm() would do with
+it.
 
-i386 allmodconfig:
+Jim 
 
-lib/lib-syms.c:21: error: '__div64_32' undeclared here (not in a function)
-lib/lib-syms.c:21: warning: type defaults to 'int' in declaration of '__div64_32'
-
-I'll drop 
-
-lib-allow-linker-to-eliminate-unused-functions.patch
-lib-allow-linker-to-eliminate-unused-functions-fix.patch
-lib-allow-linker-to-eliminate-unused-functions-fix-2.patch
-
-for now and will return the patch for warranty repairs, please.
-
-lib-allow-linker-to-eliminate-unused-functions-fix.patch is a
-linux-next thing, so if you base the next version on mainline, please
-remind me to resurrect
-lib-allow-linker-to-eliminate-unused-functions-fix.patch.
-
-I have travel coming up and won't be very functional until late next
-week.
