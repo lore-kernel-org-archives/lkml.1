@@ -1,165 +1,62 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214Ab0AOBi6 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 20:38:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863Ab0AOBiv
+	id S1753917Ab0AOBju (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 20:39:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774Ab0AOBjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 20:38:51 -0500
-Received: from kroah.org ([198.145.64.141]:50992 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752897Ab0AOBiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 20:38:50 -0500
-Subject: patch staging-make-pci-device-id-constant.patch added to gregkh-2.6 tree
-To: nm127@freemail.hu, gregkh@suse.de, julia@diku.dk,
-        linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Thu, 14 Jan 2010 17:36:47 -0800
-In-Reply-To: <4B490EC2.7050703@freemail.hu>
-Message-ID: <1263519407130@kroah.org>
+	Thu, 14 Jan 2010 20:39:49 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:15476 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750743Ab0AOBjs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 20:39:48 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: [PATCH] scsi_sysfs.c: make local symbols static
+Date: Thu, 14 Jan 2010 18:39:52 -0700
+Cc: James.Bottomley@suse.de
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001141839.52462.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+scsi_sysfs.c: make local symbols static
 
-This is a note to let you know that I've just added the patch titled
+The symbols dev_attr_hstate and scsi_shost_attr_group
+are only used locally in this file. Make them static to prevent
+the following sparse warnings:
 
-    Subject: staging: make PCI device id constant
+warning: symbol 'dev_attr_hstate' was not declared. Should it be static?
+warning: symbol 'scsi_shost_attr_group' was not declared. Should it be static?
 
-to my gregkh-2.6 tree.  Its filename is
-
-    staging-make-pci-device-id-constant.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From nm127@freemail.hu  Thu Jan 14 17:08:52 2010
-From: Németh Márton <nm127@freemail.hu>
-Date: Sun, 10 Jan 2010 00:18:26 +0100
-Subject: staging: make PCI device id constant
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: devel@driverdev.osuosl.org, Julia Lawall <julia@diku.dk>, LKML <linux-kernel@vger.kernel.org>, cocci@diku.dk
-Message-ID: <4B490EC2.7050703@freemail.hu>
-
-
-From: Németh Márton <nm127@freemail.hu>
-
-The id_table field of the struct pci_driver is constant in <linux/pci.h>
-so it is worth to make the initialization data also constant.
-
-The semantic match that finds this kind of pattern is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@r@
-disable decl_init,const_decl_init;
-identifier I1, I2, x;
-@@
-	struct I1 {
-	  ...
-	  const struct I2 *x;
-	  ...
-	};
-@s@
-identifier r.I1, y;
-identifier r.x, E;
-@@
-	struct I1 y = {
-	  .x = E,
-	};
-@c@
-identifier r.I2;
-identifier s.E;
-@@
-	const struct I2 E[] = ... ;
-@depends on !c@
-identifier r.I2;
-identifier s.E;
-@@
-+	const
-	struct I2 E[] = ...;
-// </smpl>
-
-Signed-off-by: Németh Márton <nm127@freemail.hu>
-Cc: Julia Lawall <julia@diku.dk>
-Cc: cocci@diku.dk
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: James E.J. Bottomley <James.Bottomley@suse.de>
 
 ---
- drivers/staging/phison/phison.c            |    2 +-
- drivers/staging/rar/rar_driver.c           |    2 +-
- drivers/staging/sep/sep_driver.c           |    2 +-
- drivers/staging/sm7xx/smtcfb.c             |    2 +-
- drivers/staging/vme/bridges/vme_ca91cx42.c |    2 +-
- drivers/staging/vme/bridges/vme_tsi148.c   |    2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
 
---- a/drivers/staging/phison/phison.c
-+++ b/drivers/staging/phison/phison.c
-@@ -69,7 +69,7 @@ static int phison_init_one(struct pci_de
- 	return ret;
+diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+index 5a06505..5016ab6 100644
+--- a/drivers/scsi/scsi_sysfs.c
++++ b/drivers/scsi/scsi_sysfs.c
+@@ -195,7 +195,7 @@ show_shost_state(struct device *dev, struct device_attribute *attr, char *buf)
  }
  
--static struct pci_device_id phison_pci_tbl[] = {
-+static const struct pci_device_id phison_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_PHISON, PCI_DEVICE_ID_PS5000, PCI_ANY_ID, PCI_ANY_ID,
- 	  PCI_CLASS_STORAGE_IDE << 8, 0xffff00, 0 },
- 	{ 0, },
---- a/drivers/staging/rar/rar_driver.c
-+++ b/drivers/staging/rar/rar_driver.c
-@@ -71,7 +71,7 @@ static void __exit rar_exit_handler(void
- static int __devinit rar_probe(struct pci_dev *pdev,
- 			       const struct pci_device_id *ent);
+ /* DEVICE_ATTR(state) clashes with dev_attr_state for sdev */
+-struct device_attribute dev_attr_hstate =
++static struct device_attribute dev_attr_hstate =
+ 	__ATTR(state, S_IRUGO | S_IWUSR, show_shost_state, store_shost_state);
  
--static struct pci_device_id rar_pci_id_tbl[] = {
-+static const struct pci_device_id rar_pci_id_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4110) },
- 	{ 0 }
+ static ssize_t
+@@ -271,7 +271,7 @@ static struct attribute *scsi_sysfs_shost_attrs[] = {
+ 	NULL
  };
---- a/drivers/staging/sep/sep_driver.c
-+++ b/drivers/staging/sep/sep_driver.c
-@@ -2587,7 +2587,7 @@ end_function:
- 	return error;
- }
  
--static struct pci_device_id sep_pci_id_tbl[] = {
-+static const struct pci_device_id sep_pci_id_tbl[] = {
- 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x080c)},
- 	{0}
+-struct attribute_group scsi_shost_attr_group = {
++static struct attribute_group scsi_shost_attr_group = {
+ 	.attrs =	scsi_sysfs_shost_attrs,
  };
---- a/drivers/staging/sm7xx/smtcfb.c
-+++ b/drivers/staging/sm7xx/smtcfb.c
-@@ -1103,7 +1103,7 @@ static int __init smtcfb_pci_probe(struc
  
- 
- /* Jason (08/11/2009) PCI_DRV wrapper essential structs */
--static struct pci_device_id smtcfb_pci_table[] = {
-+static const struct pci_device_id smtcfb_pci_table[] = {
- 	{0x126f, 0x710, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{0x126f, 0x712, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{0x126f, 0x720, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
---- a/drivers/staging/vme/bridges/vme_ca91cx42.c
-+++ b/drivers/staging/vme/bridges/vme_ca91cx42.c
-@@ -61,7 +61,7 @@ static struct mutex vme_int;	/*
- 
- static char driver_name[] = "vme_ca91cx42";
- 
--static struct pci_device_id ca91cx42_ids[] = {
-+static const struct pci_device_id ca91cx42_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_TUNDRA, PCI_DEVICE_ID_TUNDRA_CA91C142) },
- 	{ },
- };
---- a/drivers/staging/vme/bridges/vme_tsi148.c
-+++ b/drivers/staging/vme/bridges/vme_tsi148.c
-@@ -81,7 +81,7 @@ static struct mutex vme_int;	/*
- 
- static char driver_name[] = "vme_tsi148";
- 
--static struct pci_device_id tsi148_ids[] = {
-+static const struct pci_device_id tsi148_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_TUNDRA, PCI_DEVICE_ID_TUNDRA_TSI148) },
- 	{ },
- };
-
