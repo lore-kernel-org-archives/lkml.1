@@ -1,64 +1,35 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848Ab0AOKHU (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 05:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476Ab0AOKHT
+	id S1754507Ab0AOKIN (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 05:08:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692Ab0AOKIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 05:07:19 -0500
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:15733 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751402Ab0AOKHR convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jan 2010 05:08:12 -0500
+Received: from stinky.trash.net ([213.144.137.162]:52782 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751279Ab0AOKIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 05:07:17 -0500
-X-SpamScore: -12
-X-BigFish: VPS-12(z21eWzzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KWA9FL-02-DTX-02
-X-M-MSG: 
-Date: Fri, 15 Jan 2010 11:06:58 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Roel Kluin <roel.kluin@gmail.com>
-Subject: [GIT PULL] AMD64 EDAC fix for 2.6.33-rc5
-Message-ID: <20100115100658.GA32758@aftab>
+	Fri, 15 Jan 2010 05:08:09 -0500
+Message-ID: <4B503E86.8010603@trash.net>
+Date: Fri, 15 Jan 2010 11:08:06 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 15 Jan 2010 10:06:59.0268 (UTC) FILETIME=[79C9C840:01CA95CA]
-X-Reverse-DNS: unknown
+To: Patrick Mullaney <pmullaney@novell.com>
+CC: alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+        arnd@arndb.de, netdev@vger.kernel.org
+Subject: Re: [PATCH 2/3] macvlan: add GRO bit to features mask
+References: <20100114215058.4958.87746.stgit@mimic.site> <20100114215310.4958.46657.stgit@mimic.site>
+In-Reply-To: <20100114215310.4958.46657.stgit@mimic.site>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Patrick Mullaney wrote:
+> Allow macvlan devices to support GRO.
 
-please pull the following small fix.
+Acked-by: Patrick McHardy <kaber@trash.net>
 
-The following changes since commit 7284ce6c9f6153d1777df5f310c959724d1bd446:
-  Linus Torvalds (1):
-        Linux 2.6.33-rc4
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-linus
-
-Roel Kluin (1):
-      amd64_edac: Ensure index stays within bounds in amd64_get_scrub_rate
-
- drivers/edac/amd64_edac.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-Thanks.
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
- Systems  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+Please send this patch to Dave, this can already go upstream.
