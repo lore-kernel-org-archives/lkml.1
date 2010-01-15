@@ -1,123 +1,58 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752864Ab0AOILK (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 03:11:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730Ab0AOILE
+	id S1755340Ab0AOIN4 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 03:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411Ab0AOINz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 03:11:04 -0500
-Received: from lists.laptop.org ([18.85.2.145]:37618 "EHLO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754122Ab0AOIK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 03:10:59 -0500
-Date: Fri, 15 Jan 2010 03:13:22 -0500
-From: Michael Stone <michael@laptop.org>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-        Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-        Oliver Hartkopp <socketcan@hartkopp.net>,
-        Alan Cox <alan@lxorguk.ukuu.org.uk>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-        Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-        "C. Scott Ananian" <cscott@cscott.net>,
-        James Morris <jmorris@namei.org>,
-        "Eric W. Biederman" <ebiederm@xmission.com>,
-        Bernie Innocenti <bernie@codewiz.org>,
-        Mark Seaborn <mrs@mythic-beasts.com>,
-        Randy Dunlap <randy.dunlap@oracle.com>,
-        =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Samir Bellabes <sam@synack.fr>,
-        Casey Schaufler <casey@schaufler-ca.com>,
-        "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Machek <pavel@ucw.cz>,
-        Al Viro <viro@ZenIV.linux.org.uk>, Kyle Moffett <kyle@moffetthome.net>,
-        Andrew Morgan <morgan@kernel.org>, Michael Stone <michael@laptop.org>
-Subject: disablenetwork (v5): Update documentation for PR_NETWORK_ENABLE_DN.
-Message-ID: <20100115081322.GA14460@heat>
-References: <20100115081028.GA14004@heat>
+	Fri, 15 Jan 2010 03:13:55 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:46459 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753914Ab0AOINz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 03:13:55 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B5023A6.5070100@s5r6.in-berlin.de>
+Date: Fri, 15 Jan 2010 09:13:26 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100115081028.GA14004@heat>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andy Isaacson <adi@hexapodia.org>
+CC: Julia Lawall <julia@diku.dk>, N??meth M??rton <nm127@freemail.hu>,
+        David Vrabel <david.vrabel@csr.com>, linux-usb@vger.kernel.org,
+        LKML <linux-kernel@vger.kernel.org>, cocci@diku.dk
+Subject: Re: Changelog quality (was Re: [PATCH] uwb: make USB device id constant)
+References: <4B4C297A.5090405@freemail.hu> <4B4C9ED9.60905@csr.com> <4B4CAA15.4030200@freemail.hu> <4B4DDFDB.2000408@s5r6.in-berlin.de> <Pine.LNX.4.64.1001131633490.26518@ask.diku.dk> <20100115010315.GA29093@hexapodia.org>
+In-Reply-To: <20100115010315.GA29093@hexapodia.org>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Michael Stone <michael@laptop.org>
----
-  Documentation/disablenetwork.txt |   43 ++++++++++++++++++++++++++++---------
-  1 files changed, 32 insertions(+), 11 deletions(-)
+Andy Isaacson wrote:
+> For example, look at 5d66fe92.  The semantic patch is blissfully,
+> incredibly clear.  It makes the sun shine down through the clouds, the
+> birds sing, and the kzalloc align.  It's 10 lines long and is quite
+> intuitive and explanatory.  In that case, I think it's clear that the
+> spatch is worth the changelog space it takes up, even though the
+> changelog is larger than the diff by quite a margin.
 
-diff --git a/Documentation/disablenetwork.txt b/Documentation/disablenetwork.txt
-index c885502..5d376e6 100644
---- a/Documentation/disablenetwork.txt
-+++ b/Documentation/disablenetwork.txt
-@@ -30,11 +30,19 @@ Implementation
-  
-  The initial userland interface for accessing the disablenetwork functionality
-  is provided through the prctl() framework via a new pair of options named
--PR_{GET,SET}_NETWORK and a new flag named PR_NETWORK_OFF.
-+PR_{GET,SET}_NETWORK and a pair of flags named PR_NETWORK_ENABLE_DN and
-+PR_NETWORK_OFF.
-  
-  The PR_{GET,SET}_NETWORK options access and modify a new (conditionally
-  compiled) task_struct flags field named "network".
-  
-+prctl(PR_SET_NETWORK) takes its argument by value rather than by address to
-+avoid a time-of-check-to-time-of-use race between security_prctl() and
-+prctl_set_network().
-+
-+However, prctl(PR_GET_NETWORK) returns the value of the "network" field via a
-+pointer argument so that its return code can represent errors like ENOSYS.
-+
-  Finally, the pre-existing
-  
-    security_socket_create(),
-@@ -58,22 +66,35 @@ Writes which attempt to clear bits in current->network return -EPERM.
-  The default value for current->network is named PR_NETWORK_ON and is defined
-  to be 0.
-  
--Presently, only one flag is defined: PR_NETWORK_OFF.
--
-+Presently, two flags are defined: PR_NETWORK_ENABLE_DN and PR_NETWORK_OFF.
-  More flags may be defined in the future if they become needed.
-  
-  Attempts to set undefined flags result in -EINVAL.
-  
--When PR_NETWORK_OFF is set, the disablenetwork security hooks for socket(),
--bind(), connect(), sendmsg(), and ptrace() will return -EPERM or 0.
-+CAP_SETPCAP is required in order to set PR_NETWORK_ENABLE_DN. We believe that
-+this restriction will protect privileged legacy system configurations from
-+unprivileged misuse of disablenetwork. (Thanks to Pavel Machek and Serge Hallyn
-+for analyzing the problem and for suggesting this compromise approach.)
-+
-+We say that "disablenetwork is active" when both PR_NETWORK_ENABLE_DN and
-+PR_NETWORK_OFF are set. Otherwise, we say that it is "inactive".
-+
-+When the disablenetwork is inactive, the disablenetwork_* security hooks for
-+socket(), bind(), connect(), sendmsg(), and ptrace() will return 0.
-+
-+When disablenetwork is active -EPERM or 0 as follows:
-+
-+The hooks will return 0 when disablenetwork is active for the current process
-+and when an exception applies: i.e. when the current process is
-  
--Exceptions are made for
-+  * manipulating an AF_UNIX socket or,
-+  * calling sendmsg() on a previously connected socket (i.e. one with
-+    msg.msg_name == NULL && msg.msg_namelen == 0) or
-+  * calling ptrace() on a target process in which disablenetwork is also
-+    active.
-  
--  * processes manipulating an AF_UNIX socket or,
--  * processes calling sendmsg() on a previously connected socket
--      (i.e. one with msg.msg_name == NULL && msg.msg_namelen == 0) or
--  * processes calling ptrace() on a target process which shares every
--    networking restriction flag set in current->network.
-+When disablenetwork is active in non-exceptional circumstances, the hooks will
-+return -EPERM.
-  
-  References
-  ----------
+5d66fe92 is another example of what I was talking about.  The changelog
+could have read:
+
+	drivers/net : Correct the size argument to kzalloc
+
+	lp->rx_skb is for an array of pointers, not of structs.
+	Found using coccinelle.
+
+	Signed-off-by: ...
+
+Tell me again in what way the script is of any importance or of any help
+in the permanent SCM changelog after commit.
+
+I agree with you that it is very good to have the script in the patch
+posting, but I disagree about the changelog.
 -- 
-1.6.6.rc2
+Stefan Richter
+-=====-==-=- ---= -====
+http://arcgraph.de/sr/
