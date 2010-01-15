@@ -1,45 +1,51 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757872Ab0AORMT (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 12:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757852Ab0AORMS
+	id S1757881Ab0AORQA (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 12:16:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757852Ab0AORP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 12:12:18 -0500
-Received: from gv-out-0910.google.com ([216.239.58.187]:61032 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754797Ab0AORMR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 12:12:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=WjyKRSl94L0FeF+5Wt3FdYJgZFH+NgBs8CXizTiS4LYIQJLOu5EDU8GF5yd5qLze6Z
-         17vvWNyZGeIggT9nVGwj9ZHOMAGGy9fFm02wnnUkL+WDLf5/Csnfc0qm/AGctIm1+Dze
-         +j2VXUnXY3hm6/oX0FfhTPkwQwAgVprUA+aYM=
-Message-ID: <4B50A1EB.2030903@lwfinger.net>
-Date: Fri, 15 Jan 2010 11:12:11 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-CC: linux-kernel@vger.kernel.org, Stefano Brivio <stefano.brivio@polimi.it>,
-        linux-wireless@vger.kernel.org,
-        Reinhard.Tartler@informatik.uni-erlangen.de
-Subject: Re: [PATCH] obsolete in kernel source (B43_LEGACY_RFKILL)
-References: <20100113135937.GA5588@stud.informatik.uni-erlangen.de>
-In-Reply-To: <20100113135937.GA5588@stud.informatik.uni-erlangen.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jan 2010 12:15:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:46867 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757672Ab0AORP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 12:15:58 -0500
+From: eparis@redhat.com
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, faure@kde.org,
+        bhutchings@solarflare.com, akpm@linux-foundation.org,
+        linux@horizon.com, Eric Paris <eparis@redhat.com>
+Subject: [PATCH 2/2] inotify: only warn once for inotify problems
+Date: Fri, 15 Jan 2010 12:12:25 -0500
+Message-Id: <1263575545-26703-2-git-send-email-eparis@redhat.com>
+In-Reply-To: <1263575545-26703-1-git-send-email-eparis@redhat.com>
+References: <1263575545-26703-1-git-send-email-eparis@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/13/2010 07:59 AM, Christoph Egger wrote:
-> 
-> 	Please keep me informed of this patch getting confirmed /
-> merged so we can keep track of it.
+From: Eric Paris <eparis@redhat.com>
 
-The patch is in wireless-testing as commit
-2f1f00fc9b477481ad5c63976385c345851fee3d. It will be in mainline kernel 2.6.34.
+inotify will WARN() if it finds that the idr and the fsnotify internals
+somehow got out of sync.  It was only supposed to do this once but due
+to this stupid bug it would warn every single time a problem was detected.
 
-Larry
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
+ fs/notify/inotify/inotify_fsnotify.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/notify/inotify/inotify_fsnotify.c b/fs/notify/inotify/inotify_fsnotify.c
+index c9ee67b..1afb0a1 100644
+--- a/fs/notify/inotify/inotify_fsnotify.c
++++ b/fs/notify/inotify/inotify_fsnotify.c
+@@ -121,7 +121,7 @@ static int idr_callback(int id, void *p, void *data)
+ 	if (warned)
+ 		return 0;
+ 
+-	warned = false;
++	warned = true;
+ 	entry = p;
+ 	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
+ 
+-- 
+1.6.5.3
+
