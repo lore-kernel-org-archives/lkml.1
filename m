@@ -1,56 +1,153 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758221Ab0AOVO6 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 16:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581Ab0AOVO5
+	id S1758256Ab0AOVPf (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 16:15:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681Ab0AOVPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 16:14:57 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45094 "EHLO hera.kernel.org"
+	Fri, 15 Jan 2010 16:15:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40051 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755173Ab0AOVOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 16:14:55 -0500
-Message-ID: <4B50DA78.6050909@kernel.org>
-Date: Fri, 15 Jan 2010 13:13:28 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-        Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-        Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 05/14] pci: add failed_list to record failed one for pci_bus_assign_resources
-References: <1261522954-12591-1-git-send-email-yinghai@kernel.org>	<1261522954-12591-6-git-send-email-yinghai@kernel.org> <20100115105645.085c5e91@jbarnes-piketon>
-In-Reply-To: <20100115105645.085c5e91@jbarnes-piketon>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1755581Ab0AOVPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 16:15:34 -0500
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, miltonm@austin.ibm.com, penberg@cs.helsinki.fi,
+        bharata@linux.vnet.ibm.com, jkosina@suse.cz,
+        Eric Paris <eparis@redhat.com>
+Subject: [PATCH] idr: fix idr corruption when id crosses a layer boundary
+Date: Fri, 15 Jan 2010 16:14:50 -0500
+Message-Id: <1263590090-24967-1-git-send-email-eparis@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/15/2010 10:56 AM, Jesse Barnes wrote:
-> On Tue, 22 Dec 2009 15:02:25 -0800
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> so later we can do sth with those failed one
->>
->> -v2: store start, end, flags aside. so could keep res cleared when
->> assign failed. and make following assignment of its children do not
->> go wild
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->> ---
->>  drivers/pci/setup-bus.c |   66
->> ++++++++++++++++++++++++++++++++++++++++++++--- 1 files changed, 62
->> insertions(+), 4 deletions(-)
-> 
-> Bjorn's comments still stand here, this patch doesn't make any sense by
-> itself.  Either the failed list functions and struct def should stand
-> alone, or the whole thing should be rolled into the patch that actually
-> makes use of these functions.
-> 
+inotify has for months been been having problems keeping the fsnotify view of
+its objects in sync with the idr view of its objects.  I discovered this was
+only ever the case with the 4096th object created.  What actually happened is
+that inotify would try to do the following operation:
 
-just want to make patch to be reviewed easyly.
+idr_get_new_above(idr, NULL, 4095, &id);
+and would get id=4095.
+idr_get_new_above(idr, NULL, 4095, &id);
+and would get id=4096.
 
-YH
+Notice I used 4095 both times.  Everything seems fine.  We would then do:
+
+idr_find(idr, 4095);
+and would get the entry for 4095.
+idr_find(idr, 4096);
+and would get NULL!!  WHOOPS!
+
+idr_remove(idr, 4096) strangely enough didn't blow up.
+
+What I discovered was that when adding an id >= 4096 the idr needed to grow
+another layer.  This was normally dealt with in idr_get_empty_slot() if we
+found that the id was larger than the idr could hold.  The problem was that I
+was passing 4095 which appeared to be small enough to fit, but in sub_alloc()
+we found that 4095 was taken and bumped it up to 4096.  I added a test in
+sub_alloc() which kicks back out if the id is changed to be larger than fits
+in the idr.  I readily admit that I don't understand the other part of that
+test or how we 'get back to the top layer.'  I wonder if that is not what was
+supposed to deal with this.  This certainly needs some review, but it fixes
+my problem and should finally silence the months and months old inotify
+complaints people's machines have been spewing...
+
+Signed-off-by: Eric Paris <eparis@redhat.com>
+
+---
+
+ #include <linux/idr.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+
+static DEFINE_IDR(test_idr);
+
+int init_module(void)
+{
+	int ret, forty95, forty96;
+	void *addr;
+
+	/* add 2 entries both with 4095 as the start address */
+again1:
+	if (!idr_pre_get(&test_idr, GFP_KERNEL))
+		return -ENOMEM;
+	ret = idr_get_new_above(&test_idr, (void *)4095, 4095, &forty95);
+	if (ret) {
+		if (ret == -EAGAIN)
+			goto again1;
+		return ret;
+	}
+	if (forty95 != 4095)
+		printk(KERN_ERR "hmmm, forty95=%d\n", forty95);
+
+again2:
+	if (!idr_pre_get(&test_idr, GFP_KERNEL))
+		return -ENOMEM;
+	ret = idr_get_new_above(&test_idr, (void *)4096, 4095, &forty96);
+	if (ret) {
+		if (ret == -EAGAIN)
+			goto again2;
+		return ret;
+	}
+	if (forty96 != 4096)
+		printk(KERN_ERR "hmmm, forty96=%d\n", forty96);
+
+	/* try to find the 2 entries, noticing that 4096 broke */
+	addr = idr_find(&test_idr, forty95);
+	if ((int)addr != forty95)
+		printk(KERN_ERR "hmmm, after find forty95=%d addr=%d\n", forty95, (int)addr);
+	addr = idr_find(&test_idr, forty96);
+	if ((int)addr != forty96)
+		printk(KERN_ERR "hmmm, after find forty96=%d addr=%d\n", forty96, (int)addr);
+	/* really weird, the entry which should be at 4096 is actually at 0!! */
+	addr = idr_find(&test_idr, 0);
+	if ((int)addr)
+		printk(KERN_ERR "found an entry at id=0 for addr=%d\n", (int)addr);
+
+	idr_remove(&test_idr, forty95);
+	idr_remove(&test_idr, forty96);
+
+	return 0;
+}
+
+void cleanup_module(void)
+{
+}
+
+MODULE_AUTHOR("Eric Paris <eparis@redhat.com>");
+MODULE_DESCRIPTION("Simple idr test");
+MODULE_LICENSE("GPL");
+---
+ lib/idr.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/lib/idr.c b/lib/idr.c
+index 1cac726..721f5aa 100644
+--- a/lib/idr.c
++++ b/lib/idr.c
+@@ -155,8 +155,12 @@ static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
+ 			oid = id;
+ 			id = (id | ((1 << (IDR_BITS * l)) - 1)) + 1;
+ 
+-			/* if already at the top layer, we need to grow */
+-			if (!(p = pa[l])) {
++			/*
++			 * if already at the top layer or if we just rounded id
++			 * to be so large the idp doesn't have enough layers,
++			 * we need to grow.
++			 */
++			if (!(p = pa[l]) || (id >= (1 << (idp->layers * IDR_BITS)))) {
+ 				*starting_id = id;
+ 				return IDR_NEED_TO_GROW;
+ 			}
+@@ -260,7 +264,7 @@ build_up:
+ 
+ static int idr_get_new_above_int(struct idr *idp, void *ptr, int starting_id)
+ {
+-	struct idr_layer *pa[MAX_LEVEL];
++	struct idr_layer *pa[MAX_LEVEL] = { NULL, };
+ 	int id;
+ 
+ 	id = idr_get_empty_slot(idp, starting_id, pa);
+-- 
+1.6.5.3
+
