@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757094Ab0AOBDa (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 20:03:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818Ab0AOBDU
+	id S1757288Ab0AOBEK (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 20:04:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559Ab0AOBDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 20:03:20 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:38650 "EHLO e3.ny.us.ibm.com"
+	Thu, 14 Jan 2010 20:03:09 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:51467 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755725Ab0AOBDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 20:03:11 -0500
+	id S1754713Ab0AOBDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 20:03:06 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -15,11 +15,10 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-        Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH tip/core/rcu 6/9] vfs: apply lockdep-based checking to rcu_dereference() uses
-Date: Thu, 14 Jan 2010 17:02:43 -0800
-Message-Id: <12635173662545-git-send-email->
+        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 3/9] rcu: disable lockdep checking in RCU list-traversal primitives
+Date: Thu, 14 Jan 2010 17:02:40 -0800
+Message-Id: <12635173661356-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20100115010157.GA28221@linux.vnet.ibm.com>
 References: <20100115010157.GA28221@linux.vnet.ibm.com>
@@ -29,89 +28,86 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Add lockdep-ified RCU primitives to alloc_fd(), files_fdtable() and
-fcheck_files().
+The theory is that use of bare rcu_dereference() is more prone to error
+than use of the RCU list-traversal primitives.  Therefore, disable lockdep
+RCU read-side critical-section checking in these primitives for the time
+being.  Once all of the rcu_dereference() uses have been dealt with, it
+may be time to re-enable lockdep checking for the RCU list-traversal
+primitives.
 
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- fs/file.c               |    2 +-
- fs/proc/array.c         |    2 ++
- fs/proc/base.c          |    6 +++++-
- include/linux/fdtable.h |    8 ++++++--
- 4 files changed, 14 insertions(+), 4 deletions(-)
+ include/linux/rculist.h       |   14 +++++++-------
+ include/linux/rculist_nulls.h |    4 ++--
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/fs/file.c b/fs/file.c
-index 87e1290..38039af 100644
---- a/fs/file.c
-+++ b/fs/file.c
-@@ -478,7 +478,7 @@ repeat:
- 	error = fd;
- #if 1
- 	/* Sanity check */
--	if (rcu_dereference(fdt->fd[fd]) != NULL) {
-+	if (rcu_dereference_raw(fdt->fd[fd]) != NULL) {
- 		printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd);
- 		rcu_assign_pointer(fdt->fd[fd], NULL);
- 	}
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 13b5d07..18e20fe 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -270,7 +270,9 @@ static inline void task_sig(struct seq_file *m, struct task_struct *p)
- 		blocked = p->blocked;
- 		collect_sigign_sigcatch(p, &ignored, &caught);
- 		num_threads = atomic_read(&p->signal->count);
-+		rcu_read_lock();  /* FIXME: is this correct? */
- 		qsize = atomic_read(&__task_cred(p)->user->sigpending);
-+		rcu_read_unlock();
- 		qlim = p->signal->rlim[RLIMIT_SIGPENDING].rlim_cur;
- 		unlock_task_sighand(p, &flags);
- 	}
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 18d5cc6..db19ca8 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1095,8 +1095,12 @@ static ssize_t proc_loginuid_write(struct file * file, const char __user * buf,
- 	if (!capable(CAP_AUDIT_CONTROL))
- 		return -EPERM;
+diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+index 1bf0f70..779d707 100644
+--- a/include/linux/rculist.h
++++ b/include/linux/rculist.h
+@@ -208,7 +208,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
+  * primitives such as list_add_rcu() as long as it's guarded by rcu_read_lock().
+  */
+ #define list_entry_rcu(ptr, type, member) \
+-	container_of(rcu_dereference(ptr), type, member)
++	container_of(rcu_dereference_raw(ptr), type, member)
  
--	if (current != pid_task(proc_pid(inode), PIDTYPE_PID))
-+	rcu_read_lock();
-+	if (current != pid_task(proc_pid(inode), PIDTYPE_PID)) {
-+		rcu_read_unlock();
- 		return -EPERM;
-+	}
-+	rcu_read_unlock();
+ /**
+  * list_first_entry_rcu - get the first element from a list
+@@ -225,9 +225,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+ 	list_entry_rcu((ptr)->next, type, member)
  
- 	if (count >= PAGE_SIZE)
- 		count = PAGE_SIZE - 1;
-diff --git a/include/linux/fdtable.h b/include/linux/fdtable.h
-index a2ec74b..144412f 100644
---- a/include/linux/fdtable.h
-+++ b/include/linux/fdtable.h
-@@ -57,7 +57,11 @@ struct files_struct {
- 	struct file * fd_array[NR_OPEN_DEFAULT];
- };
+ #define __list_for_each_rcu(pos, head) \
+-	for (pos = rcu_dereference((head)->next); \
++	for (pos = rcu_dereference_raw((head)->next); \
+ 		pos != (head); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
  
--#define files_fdtable(files) (rcu_dereference((files)->fdt))
-+#define files_fdtable(files) \
-+	(rcu_dereference_check((files)->fdt, \
-+			       rcu_read_lock_held() || \
-+			       lockdep_is_held(&(files)->file_lock) || \
-+			       atomic_read(&files->count) == 1))
+ /**
+  * list_for_each_entry_rcu	-	iterate over rcu list of given type
+@@ -257,9 +257,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+ #define list_for_each_continue_rcu(pos, head) \
+-	for ((pos) = rcu_dereference((pos)->next); \
++	for ((pos) = rcu_dereference_raw((pos)->next); \
+ 		prefetch((pos)->next), (pos) != (head); \
+-		(pos) = rcu_dereference((pos)->next))
++		(pos) = rcu_dereference_raw((pos)->next))
  
- struct file_operations;
- struct vfsmount;
-@@ -78,7 +82,7 @@ static inline struct file * fcheck_files(struct files_struct *files, unsigned in
- 	struct fdtable *fdt = files_fdtable(files);
+ /**
+  * list_for_each_entry_continue_rcu - continue iteration over list of given type
+@@ -418,10 +418,10 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+ #define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
+-	for (pos = rcu_dereference((head)->first);			 \
++	for (pos = rcu_dereference_raw((head)->first);			 \
+ 		pos && ({ prefetch(pos->next); 1; }) &&			 \
+ 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
  
- 	if (fd < fdt->max_fds)
--		file = rcu_dereference(fdt->fd[fd]);
-+		file = rcu_dereference_check(fdt->fd[fd], rcu_read_lock_held() || lockdep_is_held(&files->file_lock) || atomic_read(&files->count) == 1);
- 	return file;
- }
+ #endif	/* __KERNEL__ */
+ #endif
+diff --git a/include/linux/rculist_nulls.h b/include/linux/rculist_nulls.h
+index 589a409..b70ffe5 100644
+--- a/include/linux/rculist_nulls.h
++++ b/include/linux/rculist_nulls.h
+@@ -101,10 +101,10 @@ static inline void hlist_nulls_add_head_rcu(struct hlist_nulls_node *n,
+  *
+  */
+ #define hlist_nulls_for_each_entry_rcu(tpos, pos, head, member) \
+-	for (pos = rcu_dereference((head)->first);			 \
++	for (pos = rcu_dereference_raw((head)->first);			 \
+ 		(!is_a_nulls(pos)) &&			\
+ 		({ tpos = hlist_nulls_entry(pos, typeof(*tpos), member); 1; }); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
  
+ #endif
+ #endif
 -- 
 1.5.2.5
 
