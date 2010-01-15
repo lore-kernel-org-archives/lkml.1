@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932368Ab0ANXwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757664Ab0AOABT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932368Ab0ANXwn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 18:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757094Ab0ANXwm
+	id S1757664Ab0AOABT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 19:01:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757158Ab0AOABS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 18:52:42 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:14347 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756453Ab0ANXwm (ORCPT
+	Thu, 14 Jan 2010 19:01:18 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:45330 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757109Ab0AOABS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 18:52:42 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: [PATCH] net/ipv4/fib_semantics.c: quiet sparse "shadows" noise
-Date: Thu, 14 Jan 2010 16:52:41 -0700
-Cc: davem@davemloft.net, kuznet@ms2.inr.ac.ru, pekkas@netcore.fi,
-       jmorris@namei.org, yoshfuji@linux-ipv6.org, kaber@trash.net
+	Thu, 14 Jan 2010 19:01:18 -0500
+Date: Fri, 15 Jan 2010 00:01:16 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, InKi Dae <inki.dae@samsung.com>,
+       Kyungmin Park <kmpark@infradead.org>,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 2.6.33] s3c-fb: Fix divide by zero and broken output
+Message-ID: <20100115000115.GA27344@opensource.wolfsonmicro.com>
+References: <20100114102027.GC437@rakim.wolfsonmicro.main> <1263464783-14434-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20100114150658.643294f1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201001141652.42757.hartleys@visionengravers.com>
+In-Reply-To: <20100114150658.643294f1.akpm@linux-foundation.org>
+X-Cookie: You now have Asian Flu.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-net/ipv4/fib_semantics.c: quiet sparse "shadows" noise
+On Thu, Jan 14, 2010 at 03:06:58PM -0800, Andrew Morton wrote:
 
-If CONFIG_IP_ROUTE_MULTIPATH is defined the symbol 'nh' is
-declared twice in the function fib_sync_down_dev. First as the
-loop variable used to iterate the hlist. Then again due to the
-change_nexthops macro. This produces a sparse warning and
-makes the code harder to understand.
+> Why on earth would you revert someone's patch and not tell them that
+> you're doing it?
 
-Fix the issue by renaming the first symbol.
+Through oversight, sorry - the original patch was an incremental update
+to the driver rather than a reversion so I CCed the relevant maintainers
+then and maintained the same CC list for the followup.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: "Pekka Savola (ipv6)" <pekkas@netcore.fi>
-Cc: James Morris <jmorris@namei.org>
-Cc: Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>
-Cc: Patrick McHardy <kaber@trash.net>
+> This reversion will presumably break the Samsung SoC Framebuffer again.
+> How about we not do that?
 
----
+It's not entirely clear that there is any breakage to fix.  Certainly
+the SMDK6410 I have works perfectly fine with the reversion, and I've
+had a report that the hct board does too (which makes two out of the
+three mainline users AFAICT).  Since none of the boards in mainline
+supply a refresh parameter they'll all be failing with the current code.
 
-diff --git a/net/ipv4/fib_semantics.c b/net/ipv4/fib_semantics.c
-index ed19aa6..cec97f0 100644
---- a/net/ipv4/fib_semantics.c
-+++ b/net/ipv4/fib_semantics.c
-@@ -1065,17 +1065,17 @@ int fib_sync_down_dev(struct net_device *dev, int force)
- 	unsigned int hash = fib_devindex_hashfn(dev->ifindex);
- 	struct hlist_head *head = &fib_info_devhash[hash];
- 	struct hlist_node *node;
--	struct fib_nh *nh;
-+	struct fib_nh *this_nh;
- 
- 	if (force)
- 		scope = -1;
- 
--	hlist_for_each_entry(nh, node, head, nh_hash) {
--		struct fib_info *fi = nh->nh_parent;
-+	hlist_for_each_entry(this_nh, node, head, nh_hash) {
-+		struct fib_info *fi = this_nh->nh_parent;
- 		int dead;
- 
- 		BUG_ON(!fi->fib_nhs);
--		if (nh->nh_dev != dev || fi == prev_fi)
-+		if (this_nh->nh_dev != dev || fi == prev_fi)
- 			continue;
- 		prev_fi = fi;
- 		dead = 0;
+Ben's analysis, which seemed reasonable to me, was that the patch is
+based on a misunderstanding of the units in which the pixclk parameter
+is specified.  He wrote:
+
+| Thirdly he's changed the code to calculate the divider to assume pixclk
+| is a frequency, and not a time-period. It clearly stats in the docs
+| that pixclk is in picoseconds. Our clock rate is in Hz.
+
+My understanding is that the breakage that was believed to exist was
+based on the driver misbehaving if you supply the pixclk as a frequency,
+which isn't surprising since that's what it's looking for.  The effect
+of the patch is to change the interpretation of pixclk value so that a
+refresh rate must also be specified but either way it should be possible
+to specify a working configuration.
+
+There's possibly a case to be made for changing the platform data over
+to specify things differently, I'm not sufficiently familiar with the
+area to say one way or another, but given that the original method works 
+and existing machine are broken by the change it seems safer to revert
+at least for -rc.
