@@ -1,55 +1,86 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757193Ab0AOJRm (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 04:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757147Ab0AOJRh
+	id S1757268Ab0AOJS2 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 04:18:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757229Ab0AOJS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 04:17:37 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:46928 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754705Ab0AOJRf (ORCPT
+	Fri, 15 Jan 2010 04:18:26 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:45859 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757038Ab0AOJSY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 04:17:35 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Fri, 15 Jan 2010 10:17:08 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: Changelog quality
-To: David Miller <davem@davemloft.net>
-cc: adi@hexapodia.org, julia@diku.dk, nm127@freemail.hu, david.vrabel@csr.com,
-        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, cocci@diku.dk
-In-Reply-To: <20100115.005445.263291449.davem@davemloft.net>
-Message-ID: <tkrat.e88dd4dbf17f9bde@s5r6.in-berlin.de>
-References: <4B5023A6.5070100@s5r6.in-berlin.de>
- <20100115.002424.100105244.davem@davemloft.net>
- <4B502C6B.7000802@s5r6.in-berlin.de>
- <20100115.005445.263291449.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Fri, 15 Jan 2010 04:18:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ctFd9cf2GVjpPlMwDeuv/HW5N8elanEgXW+Z9VZySp4vuXzk9zfdNKOGdkzmtGjbfV
+         wIzwaXhLZ13s6jZCNfYEhkxjnJOmzbFHCHg/TZfMisoeS6MBmcv9jIizg1GxDlLVreZ9
+         KrgFbVjKJyyeAx3o1r6jI0hYSTywexIikmGwQ=
+Subject: Re: RFC: [PATCH V3 0/9 Integration of SmartMedia/xD into mtd
+ subsystem
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Alex Dubov <oakad@yahoo.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+        linux-mtd <linux-mtd@lists.infradead.org>, joern <joern@logfs.org>
+In-Reply-To: <507734.29595.qm@web37605.mail.mud.yahoo.com>
+References: <507734.29595.qm@web37605.mail.mud.yahoo.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 11:18:19 +0200
+Message-ID: <1263547099.3247.16.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15 Jan, David Miller wrote:
-> What button do I push in gitk when viewing a commit to find the
-> script?
+On Thu, 2010-01-14 at 18:01 -0800, Alex Dubov wrote: 
+> > > 
+> > > Still bear in mind that FTL can destroy data,
+> > especially if your flash
+> > > card is worn out.
 > 
-> If I have to go out of the tool, that's the beginning down the long
-> road of potential distractions.
+> I sort of worry about this particular issue.
+> 
+> When I was doing my FTL, handling of bad blocks was one
+> of the major (if not the primary) implementation problems.
 
-[There is a button in gitk which launches coccinelle and feeds the
-copy-an-paste buffer into it?]
+This is more or less an disclaimer.
+If I compare what windows driver does versus mine, I do much more
+checking.
 
-So somebody scripted a test which finds a certain type of problem, ran
-it on the tree, and submitted fixes.  Later on, somebody wants to re-run
-the test to check whether this problem was reintroduced in new code.  So
-you are arguing that this somebody should, among else, find one of the
-parts required for the test in the kernel source repository's changelog
-metadata when he is in the process to add that test to his toolkit.
+My FTL maybe is a bit erase happy, as it tries to erase blocks it found
+errors that likely not result of wear but a cut in the power.
 
-I on the other hold the opinion that the changelog has one purpose, to
-describe the code change.
--- 
-Stefan Richter
--=====-==-=- ---= -====
-http://arcgraph.de/sr/
+
+Here is a summary of algorithm that I do for scanning:
+
+
+1. Test is block is marked as bad.
+Here I don't cheat and read whole block, because data_status could be
+set for a specific sector.
+However this is a bit slow, because it causes oob of all sectors to be
+read.
+
+2. Read LBA of each sector. Due to mtd layering this makes me read oob
+of each sector again.
+If I find a sector with lba that can't be read or a sector that has a
+different lba that first, I erase the block. This I might revisit.
+
+
+3. Update the LBA->physical table. If I see that this LBA is taken, I
+check again both candidatures, and this time I also read the sector
+contents, which will fail if there are unrecoverable ECC errors.
+If one of sectors turns out bad this way I pick the other one, if not I
+just erase one of the sectors (this is likely a powerfalll situation
+too)
+
+
+Every time an erase is made, hardware will return errors if failed 
+When this happens I mark block as bad.
+
+
+Best regards,
+Maxim Levitsky
+
 
