@@ -1,75 +1,95 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932389Ab0AOX33 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 18:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932198Ab0AOX32
+	id S1758685Ab0AOXi3 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 18:38:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758674Ab0AOXiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 18:29:28 -0500
-Received: from kroah.org ([198.145.64.141]:40521 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932146Ab0AOX32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 18:29:28 -0500
-Date: Fri, 15 Jan 2010 14:48:15 -0800
-From: Greg KH <greg@kroah.com>
-To: Gernot Hillier <gernot@hillier.de>
-Cc: Matthias Urlichs <smurf@smurf.noris.de>,
-        Greg Kroah-Hartman <gregkh@suse.de>, Oliver Neukum <oliver@neukum.org>,
-        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] option.c: Add blacklisting infrastructure for
- special device handling
-Message-ID: <20100115224815.GA12101@kroah.com>
-References: <4B4AE188.5010004@hillier.de>
+	Fri, 15 Jan 2010 18:38:23 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:41022 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758614Ab0AOXiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 18:38:21 -0500
+Date: Fri, 15 Jan 2010 15:38:20 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+        Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+        Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] enhanced reimplemented of the kfifo API
+Message-ID: <20100115233820.GF10591@ovro.caltech.edu>
+References: <1263546418.9732.11.camel@wall-e>
+ <20100115192029.GC10591@ovro.caltech.edu>
+ <1263591001.7531.1.camel@wall-e>
+ <20100115220153.GE10591@ovro.caltech.edu>
+ <1263593107.8935.1.camel@wall-e>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B4AE188.5010004@hillier.de>
+In-Reply-To: <1263593107.8935.1.camel@wall-e>
 User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Fri, 15 Jan 2010 15:38:21 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 09:30:00AM +0100, Gernot Hillier wrote:
-> From: Gernot Hillier <gernot@hillier.de>
+On Fri, Jan 15, 2010 at 11:05:07PM +0100, Stefani Seibold wrote:
+> Am Freitag, den 15.01.2010, 14:01 -0800 schrieb Ira W. Snyder:
+> > On Fri, Jan 15, 2010 at 10:30:01PM +0100, Stefani Seibold wrote:
+> > > 
+> > > > I'm glad to see this example, it really illustrates how to use the new
+> > > > DMA functionality of the kfifo API.
+> > > > 
+> > > > Is there any reason why a very large scatterlist could not be used? I
+> > > > have a driver that uses a large scatterlist (~4000 entries, allocated as
+> > > > a struct sg_table). I implemented my own copy_from_user() functionality
+> > > > into this scatterlist, but I'd love to use the kfifo DMA API instead.
+> > > > After filling the scatterlist, I use the usual DMA API's to transfer it
+> > > > to my device.
+> > > > 
+> > > 
+> > > No, but the API will only return max. two entries.
+> > > 
+> > 
+> > Ah, I see. __kfifo_alloc() uses kmalloc() internally. The kfifo API will
+> > not work for my purposes then, since I want to allocate a 16MB chunk of
+> > memory, and I'm very uncomfortable doing that with kmalloc(). I'll stick
+> > with my custom scatterlist code, which uses alloc_page() to fill in the
+> > scatterlist with order-0 allocations.
+> > 
 > 
-> As suggested by Matthias Urlichs, this patch adds a somehow generic 
-> mechanism for special handling of devices which don't support all 
-> bits expected by this driver.
+> I think you can use vmalloc() instead and assign this buffer with
+> kfifo_init().
 > 
-> The blacklisting code is heavily stolen from sierra.c, but extended to
-> support different special cases.
-> 
-> For now, one case is implemented (OPTION_BLACKLIST_SENDSETUP),
-> targeted at the 4G W14 device: devices which don't understand the 
-> setting of RTS/DTR in option_send_setup() causing a USB timeout of
-> 5 s in any userspace open() which leads to errors in most userspace
-> applications.
-> 
-> In addition, I prepared another case for devices with interfaces which 
-> shall not be accessed by this driver (targeted at the D-Link DWM 652).
-> 
-> However, OPTION_BLACKLIST_RESERVED_IF is not fully implemented yet as 
-> I have no device to test this. Anyone volunteering to help here?
-> If not, I'll contact the guys who added D-Link DWM 652 support soon.
-> 
-> Signed-off-by: Gernot Hillier <gernot@hillier.de>
-> 
-> Index: linux-next/drivers/usb/serial/option.c
-> ===================================================================
-> --- linux-next.orig/drivers/usb/serial/option.c	2010-01-09 10:24:57.000000000 +0100
-> +++ linux-next/drivers/usb/serial/option.c	2010-01-09 10:25:00.000000000 +0100
-> @@ -344,6 +344,19 @@ static int  option_resume(struct usb_ser
->  #define HAIER_VENDOR_ID				0x201e
->  #define HAIER_PRODUCT_CE100			0x2009
->  
-> +/* some devices interfaces need special handling due to a number of reasons */
-> +typedef enum {
-> +		OPTION_BLACKLIST_NONE = 0,
-> +		OPTION_BLACKLIST_SENDSETUP = 1,
-> +		OPTION_BLACKLIST_RESERVED_IF = 2
-> +} option_blacklist_reason_t;
 
-I changed this to not use a typedef, you should not add new typedefs to
-the kernel.
+Yes, that might be an option. I presume I could still use dma_map_sg()
+on the resulting scatterlist.
 
-thanks,
+> > Another nitpick in the code: I've noticed that you use sgl++ in the
+> > setup_sgl() function. That should become "sgl = sg_next(sgl);" so that
+> > this code can work with an struct sg_table as well.
+> 
+> No, its by definition an array. You cannot pass as struct sg_table to
+> the kfifo_dma_* functions.
+> 
 
-greg k-h
+A struct sg_table is a container for an underlying chain of struct
+scatterlists, allowing for easier allocation. See the definition of
+struct sg_table and the sgl member (include/linux/scatterlist.h line
+11).
+
+IIRC, struct sg_table allocates arrays of struct scatterlist in
+PAGE_SIZE chunks, and chains them together.
+
+If you change from "sg++" to "sg_next()", you should be able to work
+with chained scatterlists. You can only have a single struct page * in
+one struct scatterlist. This would mean that if I tried to use
+kfifo_dma_out_prepare() to give me 16MB worth of data, I would need 4096
+seperate struct scatterlist entries. One for each struct page * in that
+16MB chunk.
+
+Jens, you added a lot of the scatterlist chaining code. Can you comment
+on this? I don't claim to be a scatterlist expert :)
+
+Ira
