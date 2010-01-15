@@ -1,70 +1,73 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758139Ab0AOWFS (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 17:05:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758085Ab0AOWFR
+	id S1758184Ab0AOWOL (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 17:14:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802Ab0AOWOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 17:05:17 -0500
-Received: from www84.your-server.de ([213.133.104.84]:55338 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150Ab0AOWFQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 17:05:16 -0500
-Subject: Re: [PATCH] enhanced reimplemented of the kfifo API
-From: Stefani Seibold <stefani@seibold.net>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-        Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>
-In-Reply-To: <20100115220153.GE10591@ovro.caltech.edu>
-References: <1263546418.9732.11.camel@wall-e>
-	 <20100115192029.GC10591@ovro.caltech.edu> <1263591001.7531.1.camel@wall-e>
-	 <20100115220153.GE10591@ovro.caltech.edu>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Fri, 15 Jan 2010 23:05:07 +0100
-Message-ID: <1263593107.8935.1.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	Fri, 15 Jan 2010 17:14:10 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37156 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754052Ab0AOWOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 17:14:09 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [suspend/resume] Re: userspace notification from module
+Date: Fri, 15 Jan 2010 23:14:30 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
+Cc: "Bart?omiej Zimo?" <uzi18@o2.pl>, Andy Walls <awalls@radix.net>,
+        Daniel Borkmann <danborkmann@googlemail.com>,
+        linux-kernel@vger.kernel.org, rpurdie@rpsys.net, lenz@cs.wisc.edu,
+        Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
+        thommycheck@gmail.com,
+        "linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>,
+        dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+        utx@penguin.cz, zaurus-devel@www.linuxtogo.org
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001091440.46434.rjw@sisk.pl> <20100115200310.GG1345@ucw.cz>
+In-Reply-To: <20100115200310.GG1345@ucw.cz>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Message-Id: <201001152314.30355.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, den 15.01.2010, 14:01 -0800 schrieb Ira W. Snyder:
-> On Fri, Jan 15, 2010 at 10:30:01PM +0100, Stefani Seibold wrote:
-> > 
-> > > I'm glad to see this example, it really illustrates how to use the new
-> > > DMA functionality of the kfifo API.
-> > > 
-> > > Is there any reason why a very large scatterlist could not be used? I
-> > > have a driver that uses a large scatterlist (~4000 entries, allocated as
-> > > a struct sg_table). I implemented my own copy_from_user() functionality
-> > > into this scatterlist, but I'd love to use the kfifo DMA API instead.
-> > > After filling the scatterlist, I use the usual DMA API's to transfer it
-> > > to my device.
-> > > 
-> > 
-> > No, but the API will only return max. two entries.
-> > 
+On Friday 15 January 2010, Pavel Machek wrote:
+> On Sat 2010-01-09 14:40:46, Rafael J. Wysocki wrote:
+> > On Saturday 09 January 2010, Pavel Machek wrote:
 > 
-> Ah, I see. __kfifo_alloc() uses kmalloc() internally. The kfifo API will
-> not work for my purposes then, since I want to allocate a 16MB chunk of
-> memory, and I'm very uncomfortable doing that with kmalloc(). I'll stick
-> with my custom scatterlist code, which uses alloc_page() to fill in the
-> scatterlist with order-0 allocations.
+> > > > Perhaps I don't understand correctly what you're trying to achieve, but at the
+> > > > moment suspend is always started from user space, this way or another, and on
+> > > 
+> > > At least zaurus (arm) suspends from kernel on battery critical.
+> > 
+> > I wasn't aware of this.
+> > 
+> > That may be a good reason for adding kernel-based suspend notification,
+> > although I'd prefer ARM to notify the user space about the critical battery
+> > status allowing it to decide what to do.
 > 
+> Hard to do, without breaking compatibility that goes down to 2.4.X.
 
-I think you can use vmalloc() instead and assign this buffer with
-kfifo_init().
+Sending a battery-critical notification to the user space is not equivalent to
+removing the existing kernel-based mechanism.  They can exist both at the
+same time if the notification is sent earlier than the kernel suspends
+everything. 
 
-> Another nitpick in the code: I've noticed that you use sgl++ in the
-> setup_sgl() function. That should become "sgl = sg_next(sgl);" so that
-> this code can work with an struct sg_table as well.
+> > IMhO automatic suspend without something like the Android's wakelocks hurts
+> > more than it helps.
+> 
+> It really makes sense on zaurus. Those machines are simple, no
+> smartbattery and no embedded controller subsystems. Battery will not
+> protect itself, and its kernel job. (Should work on init=/bin/bash).
+> 
+> As power-off consumption is same as suspend power consumption (I
+> beleive zaurus simply does not have true power off), suspend on
+> critical makes some sense. (Note that it is set lower than on pcs, and
+> that we declare battery critical sooner than that.)
 
-No, its by definition an array. You cannot pass as struct sg_table to
-the kfifo_dma_* functions.
+The problem with that is it catches at least some applications unprepared and
+notifying them that "we're suspending right now" doesn't really help, because
+they won't have any time to react anyway.
 
-Stefani
-
-
+Rafael
