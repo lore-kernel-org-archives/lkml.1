@@ -1,61 +1,126 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405Ab0AOMGK (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 07:06:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301Ab0AOMGJ
+	id S932246Ab0AOMIk (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 07:08:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151Ab0AOMIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 07:06:09 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:45279 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757273Ab0AOMGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 07:06:07 -0500
-Date: Fri, 15 Jan 2010 13:06:04 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Miller <davem@davemloft.net>,
-        stefanr@s5r6.in-berlin.de, adi@hexapodia.org, nm127@freemail.hu,
-        david.vrabel@csr.com, linux-usb@vger.kernel.org,
-        linux-kernel@vger.kernel.org, cocci@diku.dk,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Nicolas Palix <npalix@diku.dk>
-Subject: Re: Changelog quality
-In-Reply-To: <20100115110845.GB28625@sirena.org.uk>
-Message-ID: <Pine.LNX.4.64.1001151303580.23543@ask.diku.dk>
-References: <4B502C6B.7000802@s5r6.in-berlin.de> <20100115.005445.263291449.davem@davemloft.net>
- <tkrat.e88dd4dbf17f9bde@s5r6.in-berlin.de> <20100115.012233.202457727.davem@davemloft.net>
- <Pine.LNX.4.64.1001151039080.23543@ask.diku.dk>
- <84144f021001150149u3b784d26g1822be6c5c3ecbf@mail.gmail.com>
- <Pine.LNX.4.64.1001151101320.23543@ask.diku.dk> <20100115110845.GB28625@sirena.org.uk>
+	Fri, 15 Jan 2010 07:08:39 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:59163 "EHLO
+	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932141Ab0AOMIj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 07:08:39 -0500
+Date: Fri, 15 Jan 2010 13:08:57 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org
+Cc: siccegge@stud.informatik.uni-erlangen.de,
+        Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: [PATCH] obsolete config in kernel source (DVB_DIBCOM_DEBUG)
+Message-ID: <20100115120857.GA3321@faui49.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; boundary="M9NhX3UHpAaciwkO"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jan 2010, Mark Brown wrote:
 
-> On Fri, Jan 15, 2010 at 11:05:21AM +0100, Julia Lawall wrote:
-> > On Fri, 15 Jan 2010, Pekka Enberg wrote:
-> 
-> > > It seems to me that the scripts are kernel specific so why don't we
-> > > put those useful scripts _within_ the kernel source tree and introduce
-> > > a "make coccinelle-check" target?
-> 
-> > Indeed, perhaps a solution that would satisfy everyone would be to make a 
-> > place for scripts, perhaps with subdirectories for various tools, and then 
-> > when one submits a patch for tool X, one could then submit the script at 
-> > the same time (if it wasn't there already) and just refer to the script 
-> > that was used.  That way, if someone wants to know more about how the 
-> > change was made, they could look up the information, and if one does not, 
-> > then one would not be bother by having to scroll down to see the actual 
-> > patch.
-> 
-> This would also mean that other people could run and re-run the scripts
-> during development much more easily which would help improve the
-> coverage of new code.
+--M9NhX3UHpAaciwkO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On the other hand, one has to take into account the fact that at least in 
-my case, the patches that are submitted are the ones that I have carefully 
-checked for correctness.  Having a make target in the kernel might give 
-some suggestion of quality that is perhaps not appropriate?
+Hi all!
 
-julia
+	As part of the VAMOS[0] research project at the University of
+Erlangen we're checking referential integrity between kernel KConfig
+options and in-code Conditional blocks.
+
+	By this we discovered the config Option DVB_DIBCOM_DEBUG,
+which was dropped while removing the dibusb driver in favor of dvb-usb
+in 2005. However it remaind existant at some places of the kernel
+config.
+
+	Probably one should be a bit more agressive here as the dprintk
+macro now expands to a do{}while(0) unconditionally so all blocks
+using them can also be dropped to remove in-tree cruft but the patch
+does a first cleanup.
+
+	Please keep me informed of this patch getting confirmed /
+merged so we can keep track of it.
+
+Regards
+
+	Christoph Egger
+
+[0] http://vamos1.informatik.uni-erlangen.de/
+
+--M9NhX3UHpAaciwkO
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="0004-remove-obsolete-conditionalizing-on-DVB_DIBCOM_DEBUG.patch"
+
+>From 34bc227926b5554a881799fe69ce5323e2042352 Mon Sep 17 00:00:00 2001
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Fri, 15 Jan 2010 12:49:41 +0100
+Subject: [PATCH 4/4] remove obsolete conditionalizing on DVB_DIBCOM_DEBUG
+
+The dibusb driver was dropped in 2005 in favour of the generic dvb-usb
+system. However the DEBUG option wasn't removed from all parts of the
+code which is fixed by this patch
+
+Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+---
+ drivers/media/dvb/frontends/dib3000mb.c      |   11 -----------
+ drivers/media/dvb/frontends/dib3000mb_priv.h |    5 -----
+ 2 files changed, 0 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/media/dvb/frontends/dib3000mb.c b/drivers/media/dvb/frontends/dib3000mb.c
+index ad4c8cf..5fdb6de 100644
+--- a/drivers/media/dvb/frontends/dib3000mb.c
++++ b/drivers/media/dvb/frontends/dib3000mb.c
+@@ -38,11 +38,6 @@
+ #define DRIVER_DESC "DiBcom 3000M-B DVB-T demodulator"
+ #define DRIVER_AUTHOR "Patrick Boettcher, patrick.boettcher@desy.de"
+ 
+-#ifdef CONFIG_DVB_DIBCOM_DEBUG
+-static int debug;
+-module_param(debug, int, 0644);
+-MODULE_PARM_DESC(debug, "set debugging level (1=info,2=xfer,4=setfe,8=getfe (|-able)).");
+-#endif
+ #define deb_info(args...) dprintk(0x01,args)
+ #define deb_i2c(args...)  dprintk(0x02,args)
+ #define deb_srch(args...) dprintk(0x04,args)
+@@ -51,12 +46,6 @@ MODULE_PARM_DESC(debug, "set debugging level (1=info,2=xfer,4=setfe,8=getfe (|-a
+ #define deb_setf(args...) dprintk(0x04,args)
+ #define deb_getf(args...) dprintk(0x08,args)
+ 
+-#ifdef CONFIG_DVB_DIBCOM_DEBUG
+-static int debug;
+-module_param(debug, int, 0644);
+-MODULE_PARM_DESC(debug, "set debugging level (1=info,2=i2c,4=srch (|-able)).");
+-#endif
+-
+ static int dib3000_read_reg(struct dib3000_state *state, u16 reg)
+ {
+ 	u8 wb[] = { ((reg >> 8) | 0x80) & 0xff, reg & 0xff };
+diff --git a/drivers/media/dvb/frontends/dib3000mb_priv.h b/drivers/media/dvb/frontends/dib3000mb_priv.h
+index 1a12747..806f5b0 100644
+--- a/drivers/media/dvb/frontends/dib3000mb_priv.h
++++ b/drivers/media/dvb/frontends/dib3000mb_priv.h
+@@ -37,12 +37,7 @@
+ 
+ /* debug */
+ 
+-#ifdef CONFIG_DVB_DIBCOM_DEBUG
+-#define dprintk(level,args...) \
+-    do { if ((debug & level)) { printk(args); } } while (0)
+-#else
+ #define dprintk(args...) do { } while (0)
+-#endif
+ 
+ /* mask for enabling a specific pid for the pid_filter */
+ #define DIB3000_ACTIVATE_PID_FILTERING	(0x2000)
+-- 
+1.6.3.3
+
+
+--M9NhX3UHpAaciwkO--
