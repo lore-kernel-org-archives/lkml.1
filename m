@@ -1,52 +1,69 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756260Ab0AONK5 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 08:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665Ab0AONK4
+	id S1756321Ab0AONMd (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 08:12:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255Ab0AONMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 08:10:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:65259 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755640Ab0AONKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 08:10:55 -0500
-Date: Fri, 15 Jan 2010 08:10:37 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jim Keniston <jkenisto@us.ibm.com>,
-        Arnaldo Carvalho de Melo <acme@infradead.org>,
-        Frederic Weisbecker <fweisbec@gmail.com>,
-        LKML <linux-kernel@vger.kernel.org>, Mark Wielaard <mjw@redhat.com>,
-        utrace-devel <utrace-devel@redhat.com>
-Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
-Message-ID: <20100115131037.GP4822@redhat.com>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com> <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com> <1263467394.4244.291.camel@laptop> <1263509380.4875.35.camel@localhost.localdomain> <1263546632.4244.352.camel@laptop> <y0mvdf3en1y.fsf@fche.csb> <1263548124.4244.358.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Jan 2010 08:12:32 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:59313 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753979Ab0AONMc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 08:12:32 -0500
+Date: Fri, 15 Jan 2010 16:12:29 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
+Cc: "dwmw2@infradead.org" <dwmw2@infradead.org>, "cbou@mail.ru" <cbou@mail.ru>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH] Adding Intel Moorestown PMIC Battery Driver
+Message-ID: <20100115131229.GA30213@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <175E0F9A9EFCEA46A65F5552BB0572980445D2BE30@bgsmsx502.gar.corp.intel.com>
+ <20100111213242.GA3985@oksana.dev.rtsoft.ru>
+ <175E0F9A9EFCEA46A65F5552BB0572980445DB31FB@bgsmsx502.gar.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1263548124.4244.358.camel@laptop>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <175E0F9A9EFCEA46A65F5552BB0572980445DB31FB@bgsmsx502.gar.corp.intel.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
-
-> > > Then we can ditch the whole utrace muck as I see no reason to want to
-> > > use that, whereas the ubp (given a sane name) looks interesting.
+On Fri, Jan 15, 2010 at 05:31:55PM +0530, Mahalingam, Nithish wrote:
+[...]
+> >> +       unsigned int batt_charge_now;           /* in mAS */
+> >> +       unsigned int batt_prev_charge_full;     /* in mAS */
+> >> +       unsigned int batt_charge_rate;          /* in units per second */
 > > 
-> > Assuming you meant what you write, perhaps you misunderstand the
-> > layering relationship of these pieces.  utrace underlies uprobes and
-> > other process manipulation functionality, present and future.
+> > Per include/linux/power_supply.h and
+> > Documentation/power/power_supply_class.txt
+> > 
+> > * All voltages, currents, charges, energies, time and temperatures in uV,
+> > * uA, uAh, uWh, seconds and tenths of degree Celsius unless otherwise
+> > * stated. It's driver's job to convert its raw values to units in which
+> > * this class operates.
 > 
-> Why, utrace doesn't at all look to bring a fundamental contribution to
-> all that. If there's a proper kernel interface to install probes on
-> userspace code (ubp seems to be mostly that) then I can use perf/ftrace
-> to do the rest of the state management, no need to use utrace there.
+> I just now checked the hardware spec and it is indeed mAh. I will correct 
+> the comment appropriately.
 
-> You can hardly force me to use utrace there, can you?
+Note, if the hardware reports the values in mAh (milli), the driver
+still have to convert them to uAh (micro) before reporting the values
+to userspace.
 
-utrace is not a form of punishment inflicted upon the undeserving.  It
-is a service layer that uprobes et alii are built upon.  You as a
-potential uprobes client need not also talk directly to it, if you
-wish to reimplement task-finder-like services some other way.
+[...]
+> > I think you can use threaded irq for this.
+> > 
+> > See documentation for request_threaded_irq() in kernel/irq/manage.c.
+> > And as an example of usage see drivers/mfd/wm8350-irq.c.
+> 
+> Haa that is useful information... completely missed to read about this 
+> feature.
 
-- FChE
+No wonder, it's just a new feature, not many know about it. ;-)
+
+Once again, thanks for the driver!
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
