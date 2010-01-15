@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753607Ab0AOBit (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 20:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897Ab0AOBis
+	id S1753960Ab0AOBiv (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 20:38:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644Ab0AOBiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 20:38:48 -0500
-Received: from kroah.org ([198.145.64.141]:50983 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 20:38:50 -0500
+Received: from kroah.org ([198.145.64.141]:50988 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751160Ab0AOBis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 20:38:48 -0500
-Subject: patch staging-make-i2c-device-id-constant.patch added to gregkh-2.6 tree
+	id S1753418Ab0AOBit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 20:38:49 -0500
+Subject: patch staging-make-usb-device-id-constant.patch added to gregkh-2.6 tree
 To: nm127@freemail.hu, gregkh@suse.de, julia@diku.dk,
         linux-kernel@vger.kernel.org
 From: <gregkh@suse.de>
-Date: Thu, 14 Jan 2010 17:36:46 -0800
-In-Reply-To: <4B490ED1.6090705@freemail.hu>
-Message-ID: <12635194063606@kroah.org>
+Date: Thu, 14 Jan 2010 17:36:47 -0800
+In-Reply-To: <4B490ECA.6040108@freemail.hu>
+Message-ID: <12635194071111@kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
@@ -25,28 +25,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a note to let you know that I've just added the patch titled
 
-    Subject: staging: make i2c device id constant
+    Subject: staging: make USB device id constant
 
 to my gregkh-2.6 tree.  Its filename is
 
-    staging-make-i2c-device-id-constant.patch
+    staging-make-usb-device-id-constant.patch
 
 This tree can be found at 
     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
->From nm127@freemail.hu  Thu Jan 14 17:10:22 2010
+>From nm127@freemail.hu  Thu Jan 14 17:09:32 2010
 From: Németh Márton <nm127@freemail.hu>
-Date: Sun, 10 Jan 2010 00:18:41 +0100
-Subject: staging: make i2c device id constant
+Date: Sun, 10 Jan 2010 00:18:34 +0100
+Subject: staging: make USB device id constant
 To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: devel@driverdev.osuosl.org, Julia Lawall <julia@diku.dk>, LKML <linux-kernel@vger.kernel.org>, cocci@diku.dk
-Message-ID: <4B490ED1.6090705@freemail.hu>
+Cc: devel@driverdev.osuosl.org, LKML <linux-kernel@vger.kernel.org>, Julia Lawall <julia@diku.dk>, cocci@diku.dk
+Message-ID: <4B490ECA.6040108@freemail.hu>
 
 
 From: Németh Márton <nm127@freemail.hu>
 
-The id_table field of the struct i2c_driver is constant in <linux/i2c.h>
+The id_table field of the struct usb_device_id is constant in <linux/usb.h>
 so it is worth to make the initialization data also constant.
 
 The semantic match that finds this kind of pattern is as follows:
@@ -88,102 +88,198 @@ Cc: cocci@diku.dk
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/staging/go7007/s2250-board.c    |    2 +-
- drivers/staging/go7007/wis-ov7640.c     |    2 +-
- drivers/staging/go7007/wis-saa7113.c    |    2 +-
- drivers/staging/go7007/wis-saa7115.c    |    2 +-
- drivers/staging/go7007/wis-sony-tuner.c |    2 +-
- drivers/staging/go7007/wis-tw2804.c     |    2 +-
- drivers/staging/go7007/wis-tw9903.c     |    2 +-
- drivers/staging/go7007/wis-uda1342.c    |    2 +-
- 8 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/staging/asus_oled/asus_oled.c       |    2 +-
+ drivers/staging/comedi/drivers/dt9812.c     |    2 +-
+ drivers/staging/comedi/drivers/usbdux.c     |    2 +-
+ drivers/staging/comedi/drivers/usbduxfast.c |    2 +-
+ drivers/staging/comedi/drivers/vmk80xx.c    |    2 +-
+ drivers/staging/frontier/alphatrack.c       |    2 +-
+ drivers/staging/frontier/tranzport.c        |    2 +-
+ drivers/staging/go7007/go7007-usb.c         |    2 +-
+ drivers/staging/go7007/s2250-loader.c       |    2 +-
+ drivers/staging/line6/driver.c              |    2 +-
+ drivers/staging/otus/zdusb.c                |    2 +-
+ drivers/staging/quatech_usb2/quatech_usb2.c |    2 +-
+ drivers/staging/rtl8192su/r8192U_core.c     |    2 +-
+ drivers/staging/rtl8192u/r8192U_core.c      |    2 +-
+ drivers/staging/serqt_usb2/serqt_usb2.c     |    2 +-
+ drivers/staging/winbond/wbusb.c             |    2 +-
+ 16 files changed, 16 insertions(+), 16 deletions(-)
 
---- a/drivers/staging/go7007/s2250-board.c
-+++ b/drivers/staging/go7007/s2250-board.c
-@@ -667,7 +667,7 @@ static int s2250_remove(struct i2c_clien
- 	return 0;
+--- a/drivers/staging/asus_oled/asus_oled.c
++++ b/drivers/staging/asus_oled/asus_oled.c
+@@ -87,7 +87,7 @@ struct oled_dev_desc_str {
+ };
+ 
+ /* table of devices that work with this driver */
+-static struct usb_device_id id_table[] = {
++static const struct usb_device_id id_table[] = {
+ 	/* Asus G1/G2 (and variants)*/
+ 	{ USB_DEVICE(USB_VENDOR_ID_ASUS, USB_DEVICE_ID_ASUS_LCM) },
+ 	/* Asus G50V (and possibly others - G70? G71?)*/
+--- a/drivers/staging/comedi/drivers/dt9812.c
++++ b/drivers/staging/comedi/drivers/dt9812.c
+@@ -264,7 +264,7 @@ struct dt9812_usb_cmd {
+ 
+ static DECLARE_MUTEX(dt9812_mutex);
+ 
+-static struct usb_device_id dt9812_table[] = {
++static const struct usb_device_id dt9812_table[] = {
+ 	{USB_DEVICE(0x0867, 0x9812)},
+ 	{}			/* Terminating entry */
+ };
+--- a/drivers/staging/comedi/drivers/usbdux.c
++++ b/drivers/staging/comedi/drivers/usbdux.c
+@@ -2833,7 +2833,7 @@ static struct comedi_driver driver_usbdu
+ };
+ 
+ /* Table with the USB-devices: just now only testing IDs */
+-static struct usb_device_id usbduxsub_table[] = {
++static const struct usb_device_id usbduxsub_table[] = {
+ 	{USB_DEVICE(0x13d8, 0x0001)},
+ 	{USB_DEVICE(0x13d8, 0x0002)},
+ 	{}			/* Terminating entry */
+--- a/drivers/staging/comedi/drivers/usbduxfast.c
++++ b/drivers/staging/comedi/drivers/usbduxfast.c
+@@ -1769,7 +1769,7 @@ static struct comedi_driver driver_usbdu
+ /*
+  * Table with the USB-devices: just now only testing IDs
+  */
+-static struct usb_device_id usbduxfastsub_table[] = {
++static const struct usb_device_id usbduxfastsub_table[] = {
+ 	/* { USB_DEVICE(0x4b4, 0x8613) }, testing */
+ 	{USB_DEVICE(0x13d8, 0x0010)},	/* real ID */
+ 	{USB_DEVICE(0x13d8, 0x0011)},	/* real ID */
+--- a/drivers/staging/comedi/drivers/vmk80xx.c
++++ b/drivers/staging/comedi/drivers/vmk80xx.c
+@@ -75,7 +75,7 @@ enum {
+ 	DEVICE_VMK8061
+ };
+ 
+-static struct usb_device_id vmk80xx_id_table[] = {
++static const struct usb_device_id vmk80xx_id_table[] = {
+ 	{USB_DEVICE(0x10cf, 0x5500), .driver_info = DEVICE_VMK8055},
+ 	{USB_DEVICE(0x10cf, 0x5501), .driver_info = DEVICE_VMK8055},
+ 	{USB_DEVICE(0x10cf, 0x5502), .driver_info = DEVICE_VMK8055},
+--- a/drivers/staging/frontier/alphatrack.c
++++ b/drivers/staging/frontier/alphatrack.c
+@@ -58,7 +58,7 @@
+ #endif
+ 
+ /* table of devices that work with this driver */
+-static struct usb_device_id usb_alphatrack_table[] = {
++static const struct usb_device_id usb_alphatrack_table[] = {
+ 	{USB_DEVICE(VENDOR_ID, PRODUCT_ID)},
+ 	{}			/* Terminating entry */
+ };
+--- a/drivers/staging/frontier/tranzport.c
++++ b/drivers/staging/frontier/tranzport.c
+@@ -55,7 +55,7 @@
+ #endif
+ 
+ /* table of devices that work with this driver */
+-static struct usb_device_id usb_tranzport_table[] = {
++static const struct usb_device_id usb_tranzport_table[] = {
+ 	{USB_DEVICE(VENDOR_ID, PRODUCT_ID)},
+ 	{}			/* Terminating entry */
+ };
+--- a/drivers/staging/go7007/go7007-usb.c
++++ b/drivers/staging/go7007/go7007-usb.c
+@@ -444,7 +444,7 @@ static struct go7007_usb_board board_sen
+ 	},
+ };
+ 
+-static struct usb_device_id go7007_usb_id_table[] = {
++static const struct usb_device_id go7007_usb_id_table[] = {
+ 	{
+ 		.match_flags	= USB_DEVICE_ID_MATCH_DEVICE_AND_VERSION |
+ 					USB_DEVICE_ID_MATCH_INT_INFO,
+--- a/drivers/staging/go7007/s2250-loader.c
++++ b/drivers/staging/go7007/s2250-loader.c
+@@ -148,7 +148,7 @@ static void s2250loader_disconnect(struc
+ 	unlock_kernel();
  }
  
--static struct i2c_device_id s2250_id[] = {
-+static const struct i2c_device_id s2250_id[] = {
- 	{ "s2250", 0 },
- 	{ }
+-static struct usb_device_id s2250loader_ids[] = {
++static const struct usb_device_id s2250loader_ids[] = {
+ 	{USB_DEVICE(0x1943, 0xa250)},
+ 	{}                          /* Terminating entry */
  };
---- a/drivers/staging/go7007/wis-ov7640.c
-+++ b/drivers/staging/go7007/wis-ov7640.c
-@@ -77,7 +77,7 @@ static int wis_ov7640_remove(struct i2c_
- 	return 0;
- }
+--- a/drivers/staging/line6/driver.c
++++ b/drivers/staging/line6/driver.c
+@@ -33,7 +33,7 @@
  
--static struct i2c_device_id wis_ov7640_id[] = {
-+static const struct i2c_device_id wis_ov7640_id[] = {
- 	{ "wis_ov7640", 0 },
- 	{ }
- };
---- a/drivers/staging/go7007/wis-saa7113.c
-+++ b/drivers/staging/go7007/wis-saa7113.c
-@@ -304,7 +304,7 @@ static int wis_saa7113_remove(struct i2c
- 	return 0;
- }
  
--static struct i2c_device_id wis_saa7113_id[] = {
-+static const struct i2c_device_id wis_saa7113_id[] = {
- 	{ "wis_saa7113", 0 },
- 	{ }
- };
---- a/drivers/staging/go7007/wis-saa7115.c
-+++ b/drivers/staging/go7007/wis-saa7115.c
-@@ -437,7 +437,7 @@ static int wis_saa7115_remove(struct i2c
- 	return 0;
- }
+ /* table of devices that work with this driver */
+-static struct usb_device_id line6_id_table[] = {
++static const struct usb_device_id line6_id_table[] = {
+ 	{ USB_DEVICE(LINE6_VENDOR_ID, LINE6_DEVID_BASSPODXT) },
+ 	{ USB_DEVICE(LINE6_VENDOR_ID, LINE6_DEVID_BASSPODXTLIVE) },
+ 	{ USB_DEVICE(LINE6_VENDOR_ID, LINE6_DEVID_BASSPODXTPRO) },
+--- a/drivers/staging/otus/zdusb.c
++++ b/drivers/staging/otus/zdusb.c
+@@ -45,7 +45,7 @@ MODULE_LICENSE("Dual BSD/GPL");
+ static const char driver_name[] = "Otus";
  
--static struct i2c_device_id wis_saa7115_id[] = {
-+static const struct i2c_device_id wis_saa7115_id[] = {
- 	{ "wis_saa7115", 0 },
- 	{ }
- };
---- a/drivers/staging/go7007/wis-sony-tuner.c
-+++ b/drivers/staging/go7007/wis-sony-tuner.c
-@@ -688,7 +688,7 @@ static int wis_sony_tuner_remove(struct 
- 	return 0;
- }
+ /* table of devices that work with this driver */
+-static struct usb_device_id zd1221_ids [] = {
++static const struct usb_device_id zd1221_ids[] = {
+ 	{ USB_DEVICE(VENDOR_ATHR, PRODUCT_AR9170) },
+         { USB_DEVICE(VENDOR_DLINK, PRODUCT_DWA160A) },
+ 	{ USB_DEVICE(VENDOR_NETGEAR, PRODUCT_WNDA3100) },
+--- a/drivers/staging/quatech_usb2/quatech_usb2.c
++++ b/drivers/staging/quatech_usb2/quatech_usb2.c
+@@ -116,7 +116,7 @@ static int debug;
+ #define FOURTHCHAR	((unsigned char *)(urb->transfer_buffer))[i + 3]
+ #define FIFTHCHAR	((unsigned char *)(urb->transfer_buffer))[i + 4]
  
--static struct i2c_device_id wis_sony_tuner_id[] = {
-+static const struct i2c_device_id wis_sony_tuner_id[] = {
- 	{ "wis_sony_tuner", 0 },
- 	{ }
- };
---- a/drivers/staging/go7007/wis-tw2804.c
-+++ b/drivers/staging/go7007/wis-tw2804.c
-@@ -327,7 +327,7 @@ static int wis_tw2804_remove(struct i2c_
- 	return 0;
- }
+-static struct usb_device_id quausb2_id_table[] = {
++static const struct usb_device_id quausb2_id_table[] = {
+ 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_SSU2_100)},
+ 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_DSU2_100)},
+ 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_DSU2_400)},
+--- a/drivers/staging/rtl8192su/r8192U_core.c
++++ b/drivers/staging/rtl8192su/r8192U_core.c
+@@ -110,7 +110,7 @@ u32 rt_global_debug_component = \
+ #define TOTAL_CAM_ENTRY 32
+ #define CAM_CONTENT_COUNT 8
  
--static struct i2c_device_id wis_tw2804_id[] = {
-+static const struct i2c_device_id wis_tw2804_id[] = {
- 	{ "wis_tw2804", 0 },
- 	{ }
- };
---- a/drivers/staging/go7007/wis-tw9903.c
-+++ b/drivers/staging/go7007/wis-tw9903.c
-@@ -309,7 +309,7 @@ static int wis_tw9903_remove(struct i2c_
- 	return 0;
- }
+-static struct usb_device_id rtl8192_usb_id_tbl[] = {
++static const struct usb_device_id rtl8192_usb_id_tbl[] = {
+ 	/* Realtek */
+ 	{USB_DEVICE(0x0bda, 0x8192)},
+ 	{USB_DEVICE(0x0bda, 0x8709)},
+--- a/drivers/staging/rtl8192u/r8192U_core.c
++++ b/drivers/staging/rtl8192u/r8192U_core.c
+@@ -104,7 +104,7 @@ u32 rt_global_debug_component = \
+ #define TOTAL_CAM_ENTRY 32
+ #define CAM_CONTENT_COUNT 8
  
--static struct i2c_device_id wis_tw9903_id[] = {
-+static const struct i2c_device_id wis_tw9903_id[] = {
- 	{ "wis_tw9903", 0 },
- 	{ }
- };
---- a/drivers/staging/go7007/wis-uda1342.c
-+++ b/drivers/staging/go7007/wis-uda1342.c
-@@ -82,7 +82,7 @@ static int wis_uda1342_remove(struct i2c
- 	return 0;
- }
+-static struct usb_device_id rtl8192_usb_id_tbl[] = {
++static const struct usb_device_id rtl8192_usb_id_tbl[] = {
+ 	/* Realtek */
+ 	{USB_DEVICE(0x0bda, 0x8192)},
+ 	{USB_DEVICE(0x0bda, 0x8709)},
+--- a/drivers/staging/serqt_usb2/serqt_usb2.c
++++ b/drivers/staging/serqt_usb2/serqt_usb2.c
+@@ -126,7 +126,7 @@ static int debug;
+ #define MODEM_CTRL          0x40
+ #define RS232_MODE          0x00
  
--static struct i2c_device_id wis_uda1342_id[] = {
-+static const struct i2c_device_id wis_uda1342_id[] = {
- 	{ "wis_uda1342", 0 },
- 	{ }
- };
+-static struct usb_device_id serqt_id_table[] = {
++static const struct usb_device_id serqt_id_table[] = {
+ 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_SSU100)},
+ 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_SSU200)},
+ 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_DSU100)},
+--- a/drivers/staging/winbond/wbusb.c
++++ b/drivers/staging/winbond/wbusb.c
+@@ -23,7 +23,7 @@ MODULE_DESCRIPTION("IS89C35 802.11bg WLA
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION("0.1");
+ 
+-static struct usb_device_id wb35_table[] __devinitdata = {
++static const struct usb_device_id wb35_table[] __devinitconst = {
+ 	{ USB_DEVICE(0x0416, 0x0035) },
+ 	{ USB_DEVICE(0x18E8, 0x6201) },
+ 	{ USB_DEVICE(0x18E8, 0x6206) },
 
