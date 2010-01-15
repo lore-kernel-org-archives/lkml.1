@@ -1,62 +1,98 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758248Ab0AOUTM (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 15:19:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758196Ab0AOUTL
+	id S932347Ab0AOUY1 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 15:24:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932247Ab0AOUY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 15:19:11 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:38938 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476Ab0AOUTK (ORCPT
+	Fri, 15 Jan 2010 15:24:27 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:55798 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932227Ab0AOUY0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 15:19:10 -0500
-Subject: Re: [RFC] [PATCH 3/7] Execution out of line (XOL)
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-        Arnaldo Carvalho de Melo <acme@infradead.org>,
-        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-        utrace-devel <utrace-devel@redhat.com>,
-        Frederic Weisbecker <fweisbec@gmail.com>,
-        Masami Hiramatsu <mhiramat@redhat.com>,
-        Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1263546455.4244.348.camel@laptop>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122545.22050.64994.sendpatchset@srikar.in.ibm.com>
-	 <1263467318.4244.289.camel@laptop>
-	 <1263508997.4875.32.camel@localhost.localdomain>
-	 <1263546455.4244.348.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 15 Jan 2010 12:18:51 -0800
-Message-Id: <1263586731.5007.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jan 2010 15:24:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=EAOKA2O/wamTLOprFPgbK4Jurlc2kODC0A61KP+FV+zLO4jv4BJOxBJ5G/zS4LXcCN
+         y2kSyLnPh95uGcoUEg1hTiCfN7QhxTWJMIB9KhKBOMg04nlSGmvVuvRhp8vEgJJMpsKY
+         Y3xwG/luAxqeA3kjLDIDDbpP950rGOHUgomcI=
+MIME-Version: 1.0
+In-Reply-To: <x494omnp2xd.fsf@segfault.boston.devel.redhat.com>
+References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
+	 <20091228092844.GA9710@sli10-desk.sh.intel.com>
+	 <x493a2k8d7x.fsf@segfault.boston.devel.redhat.com>
+	 <4e5e476b1001070544w88a387dkfb48847f4f95a9b1@mail.gmail.com>
+	 <x49hbqy3s3m.fsf@segfault.boston.devel.redhat.com>
+	 <1263187209.29897.33.camel@localhost>
+	 <4e5e476b1001110705y6c3319ducf6a15c2a2be5670@mail.gmail.com>
+	 <1263264218.29897.41.camel@localhost>
+	 <4e5e476b1001151132l406054f6xcc47b94e817d3af0@mail.gmail.com>
+	 <x494omnp2xd.fsf@segfault.boston.devel.redhat.com>
+Date: Fri, 15 Jan 2010 21:24:23 +0100
+Message-ID: <4e5e476b1001151224x5c94382cnf2a6696f10c9800d@mail.gmail.com>
+Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as 
+	close
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+        Shaohua Li <shaohua.li@intel.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+        "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 15, 2010 at 8:45 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
+> Corrado Zoccolo <czoccolo@gmail.com> writes:
+>
+>> Hi Jeff,
+>> I think this patch has the same flaw as Shaohua's.
+>> The seekiness check that you introduce in cfq_rq_close is already
+>> present in its caller, cfq_close_cooperator, so it is not effective.
+>
+> I don't think so.  There are two queues, here.  One queue is checked by
+> the caller, and that is the cur_cfqq.  The __cfqq needs to also be
+> checked.
+The other one, i.e. the returned one, is also checked by the caller,
+some lines below.
+1756         cfqq = cfqq_close(cfqd, cur_cfqq);
+1757         if (!cfqq)
+1758                 return NULL;
+1759
+1760         /* If new queue belongs to different cfq_group, don't choose it */
+1761         if (cur_cfqq->cfqg != cfqq->cfqg)
+1762                 return NULL;
+1763
+1764         /*
+1765          * It only makes sense to merge sync queues.
+1766          */
+1767         if (!cfq_cfqq_sync(cfqq))
+1768                 return NULL;
+1769         if (CFQQ_SEEKY(cfqq))
+1770                 return NULL;
+>
+>> Up to now, the only patch that improves this situation is the one that
+>> changes the unmerge policy to unmerge after a single time slice.
+>
+> Yes, I definitely agree with that, and I think that patch should go in.
+>
+> Cheers,
+> Jeff
+>
 
-On Fri, 2010-01-15 at 10:07 +0100, Peter Zijlstra wrote:
-> On Thu, 2010-01-14 at 14:43 -0800, Jim Keniston wrote:
-> > 
-> > Yeah, there's not a lot of context there.  I hope it will make more
-> > sense if you read section 1.1 of Documentation/uprobes.txt (patch #6).
-> > Or look at get_insn_slot() in kprobes, and understand that we're trying
-> > to do something similar in uprobes, where the instruction copies have to
-> > reside in the user address space of the probed process.
-> 
-> That's not the point, changelogs shoulnd not be this cryptic. They
-> should be stand alone and descriptive of what, why and how.
 
-Point taken.
 
-> 
-> If you can't be bothered writing such for something you want reviewed
-> for inclusion then I might not be bothered looking at them at all.
-> 
+-- 
+__________________________________________________________________________
 
-We appreciate your persistence wrt this patch set. :-}
-
-Jim
-
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
+The self-confidence of a warrior is not the self-confidence of the average
+man. The average man seeks certainty in the eyes of the onlooker and calls
+that self-confidence. The warrior seeks impeccability in his own eyes and
+calls that humbleness.
+                               Tales of Power - C. Castaneda
