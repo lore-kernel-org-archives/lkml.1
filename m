@@ -1,132 +1,52 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858Ab0AOQBj (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 11:01:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774Ab0AOQBi
+	id S1756779Ab0AOQPe (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 11:15:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307Ab0AOQPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 11:01:38 -0500
-Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:46901 "EHLO
-	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752113Ab0AOQBi (ORCPT
+	Fri, 15 Jan 2010 11:15:33 -0500
+Received: from www17.your-server.de ([213.133.104.17]:52503 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753739Ab0AOQPc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 11:01:38 -0500
-Message-ID: <4B50915E.8000308@blueyonder.co.uk>
-Date: Fri, 15 Jan 2010 16:01:34 +0000
-From: Sid Boyce <sboyce@blueyonder.co.uk>
-Reply-To: sboyce@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: HDA Intel Audio hang on boot
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <omZ8aBZReyD.A.jbH.QNlSLB@chimera> <4B4A9D8F.9030300@blueyonder.co.uk> <4B4FC3B0.9070207@blueyonder.co.uk>
-In-Reply-To: <4B4FC3B0.9070207@blueyonder.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 15 Jan 2010 11:15:32 -0500
+Subject: Re: [PATCH] drm/i915: disable LVDS downclock by default
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Nick Bowler <nbowler@draconx.ca>, linux-kernel@vger.kernel.org,
+        Jesse Barnes <jbarnes@virtuousgeek.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <84144f021001150054m532cd1cdwbbdbab79b5924fb7@mail.gmail.com>
+References: <alpine.LFD.2.00.1001122139411.17145@localhost.localdomain>
+	 <20100113133357.67f9df6d@jbarnes-piketon> <4B4E403C.1050509@cs.helsinki.fi>
+	 <20100113165530.2a7e7645@jbarnes-piketon>  <4B4F6D5F.10008@cs.helsinki.fi>
+	 <20100114193118.GA1203@emergent.ellipti  <84144f021001150054m532cd1cdwbbdbab79b5924fb7@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 17:14:40 +0100
+Message-ID: <1263572080.2217.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the PCI Audigy card in, the box wouldn't even enter POST, either
-the Audigy is bad (unknown - from a box that couldn't see the drives) or
-there is something faulty on the motherboard. I am currently running
-2.6.33-rc4-git2 on the box with a Terratec Aureon 5.1 USB MK II sound card.
-Regards
-Sid.
+Am Freitag, den 15.01.2010, 10:54 +0200 schrieb Pekka Enberg:
 
-On 15/01/10 01:24, Sid Boyce wrote:
-> Renaming this bug as the "only 1 CPU" bug has been fixed, but the hang
-> at HDA remains.
-> I shall plug in a SB Audigy and see if it will boot with that.
-> By disabling the on-board HDA Intel audio in the BIOS, the system boots.
-> tindog:~ # uname -r
-> 2.6.33-rc4-smp
-> On 2.6.32-git1 which boots, hwinfo shows:-
->   oss.card_id = 'HDA NVidia'
->   oss.card_id = 'HDA NVidia'
->   oss.card_id = 'HDA NVidia'
->   alsa.card_id = 'HDA NVidia'
->   alsa.card_id = 'HDA NVidia'
->   alsa.card_id = 'HDA NVidia'
->   alsa.card_id = 'HDA NVidia'
->   info.product = 'HDA NVidia ALSA hardware specific Device'
->   alsa.card_id = 'HDA NVidia'
->   info.product = 'HDA NVidia ALSA Control Device'
->   alsa.card_id = 'HDA NVidia'
->   info.product = 'HDA NVidia Sound Card'
->   sound.card_id = 'HDA NVidia'
->   info.linux.driver = 'HDA Intel'
->     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
->        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->        HDA Intel: module = snd_hda_intel
-> irq:0 22 (   490413) "sata_nv" "HDA Intel"
->        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->        HDA Intel: module = snd_hda_intel
->        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->        HDA Intel: module = snd_hda_intel
->   E: DRIVER=HDA Intel
->   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
-> low) -> IRQ 22
->   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
->   Driver: "HDA Intel"
+> So, any suggestions how I should proceed with figuring out the
+> "flashing" problem I still see with Jesse's patch? I can do a full git
+> bisect if it comes to that but it's going to be bit difficult to
+> determine if a commit is good or bad as there seem to be _two_
+> different problems both of which cause screen flickering.
 > 
-> Regards
-> Sid.
-> 
-> On 11/01/10 03:39, Sid Boyce wrote:
->> On 10/01/10 22:32, Rafael J. Wysocki wrote:
->>> This message has been generated automatically as a part of a report
->>> of recent regressions.
->>>
->>> The following bug entry is on the current list of known regressions
->>> from 2.6.32.  Please verify if it still should be listed and let me know
->>> (either way).
->>>
->>>
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14946
->>> Subject		: All kernels after 2.6.32-git10  show only 1 CPU
->>> Submitter	: Sid Boyce <sboyce@blueyonder.co.uk>
->>> Date		: 2009-12-23 16:55 (19 days old)
->>> References	: http://marc.info/?l=linux-kernel&m=126158734326801&w=4
->>>
->>>
->>>
->>>
->>
->> With 2.6.33-rc3-git3 I now see 2 CPU's every on a normal boot, but its
->> locking up solid at this part of the boot process as usual.
->> ACPI: PCI Interrupt Link [AAZA] enabled at IRQ 22
->> HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level, low)
->> -> IRQ 22.
->> With acpi=noirq (2 CPU's)
->> ================
->> kvm: Nested Virtualization enabled.
->> IT8716 Super IO detected
->> Parport_PC 00:0a: reported by plug and Play ACPI
->> Parport 0: PC-Style at 0x378, irq 7 [PCSPP, TRISTATE,EPP]
->> parport: irq 7 in use, resorting to polled operation
->> HDA Intel 0000:00:0e.1: PCI -> APIC IRQ transform: INT B -> IRQ 11
->>
->> With acpi=ht (1 CPU)
->> =============
->> Hangs at:-
->> Loading drivees, configuring devices do_IRQ: 0.65 No irq handler for
->> vector (irq -1)
->>
->> With acpi=off (2 CPU's)
->> ========================
->> Hangs at same point as with acpi=noirq.
->>
->> Regards
->> Sid.
-> 
-> 
+> Heelp!
 
+Does it look like the video in this bug, see attached video in the bug
+report:
 
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+http://bugzilla.kernel.org/show_bug.cgi?id=14670
+
+greets
+thomas
+
 
