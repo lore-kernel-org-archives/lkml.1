@@ -1,66 +1,52 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756989Ab0AOJK6 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 04:10:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379Ab0AOJK4
+	id S1756954Ab0AOJRL (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 04:17:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684Ab0AOJRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 04:10:56 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44601 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752085Ab0AOJKy (ORCPT
+	Fri, 15 Jan 2010 04:17:10 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:47795 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755143Ab0AOJRI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 04:10:54 -0500
-Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-        Arnaldo Carvalho de Melo <acme@infradead.org>,
-        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-        utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
-        Frederic Weisbecker <fweisbec@gmail.com>,
-        Masami Hiramatsu <mhiramat@redhat.com>,
-        Maneesh Soni <maneesh@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1263509380.4875.35.camel@localhost.localdomain>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
-	 <1263467394.4244.291.camel@laptop>
-	 <1263509380.4875.35.camel@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jan 2010 10:10:32 +0100
-Message-ID: <1263546632.4244.352.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jan 2010 04:17:08 -0500
+X-Greylist: delayed 372 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jan 2010 04:17:08 EST
+Date: Fri, 15 Jan 2010 10:10:53 +0100
+From: Tino Keitel <tino.keitel@tikei.de>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Regression: Wake on LAN doesn't work in sky2 with 2.6.33-rc4-git2
+Message-ID: <20100115091053.GA5477@mac.home>
+Mail-Followup-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 14:49 -0800, Jim Keniston wrote:
-> On Thu, 2010-01-14 at 12:09 +0100, Peter Zijlstra wrote:
-> > On Mon, 2010-01-11 at 17:55 +0530, Srikar Dronamraju wrote:
-> > > 
-> > > Uprobes Infrastructure enables user to dynamically establish
-> > > probepoints in user applications and collect information by executing
-> > > a handler functions when the probepoints are hit.
-> > > Please refer Documentation/uprobes.txt for more details.
-> > > 
-> > > This patch provides the core implementation of uprobes.
-> > > This patch builds on utrace infrastructure.
-> > > 
-> > > You need to follow this up with the uprobes patch for your
-> > > architecture. 
-> > 
-> > So all this is basically some glue between what you call ubp (the real
-> > userspace breakpoint stuff) and utrace? Or does it do more?
-> > 
-> 
-> My reply in
-> http://lkml.indiana.edu/hypermail/linux/kernel/1001.1/02483.html
-> addresses this.
+Hi,
 
-Right, so all that need be done is add the multiple probe stuff to UBP
-and its a sane interface to use on its own, at which point I'd be
-inclined to call that uprobes (UBP really is an crap name).
+wake on LAN doesn't work with 2.6.33-rc4-git2 on the following
+hardware:
 
-Then we can ditch the whole utrace muck as I see no reason to want to
-use that, whereas the ubp (given a sane name) looks interesting.
+01:00.0 Ethernet controller [0200]: Marvell Technology Group Ltd.
+88E8053 PCI-E Gigabit Ethernet Controller [11ab:4362] (rev 22)
 
+It worked with 2.6.32. In my suspend script, I enable WoL using
+ethtool:
+
+ethtool -s eth0 wol g
+
+in dmesg, I get these messages at suspend:
+
+sky2 eth0: disabling interface
+sky2 0000:01:00.0: PME# enabled
+sky2 0000:01:00.0: wake-up capability enabled by ACPI
+
+and at resume:
+
+sky2 0000:01:00.0: wake-up capability disabled by ACPI
+sky2 0000:01:00.0: PME# disabled
+
+Regards,
+Tino
