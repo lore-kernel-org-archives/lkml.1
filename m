@@ -1,73 +1,57 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753853Ab0AOBrR (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 20:47:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937Ab0AOBrP
+	id S1754815Ab0AOBrW (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 20:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221Ab0AOBrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 20:47:15 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:58491 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056Ab0AOBrP convert rfc822-to-8bit (ORCPT
+	Thu, 14 Jan 2010 20:47:19 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:59433 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753084Ab0AOBrR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 20:47:15 -0500
+	Thu, 14 Jan 2010 20:47:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:content-type;
+        b=PMyFPP8l+znvOo7CEw9sgYWpx+eKDExBz1CRmoYBY0PghUnSRSK6+xWb/kY7Z6UUer
+         3E8XRfL6VQbeKXWGNyUr+AaZAk44dLeEXChlel1Ze8bD3VbNxUF2dENu/RXcBq1/0eQc
+         TJpXi6pvsvbn5IgdQ4N2+RCi+K1dL0R90Qksg=
 MIME-Version: 1.0
-In-Reply-To: <4B4FB766.1020805@gmail.com>
-References: <4B4FB766.1020805@gmail.com>
-Date: Fri, 15 Jan 2010 09:47:14 +0800
-Message-ID: <d3f22a1001141747p25b3406fv55364be65002546b@mail.gmail.com>
-Subject: Re: [PATCH] ACPICA: wrong acpi_parse_state assigned 
-	acpi_ps_init_scope() ?
-From: Lin Ming <lin@minggr.cn>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-        Andrew Morton <akpm@linux-foundation.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+From: Brian Waters <brianmwaters@gmail.com>
+Date: Thu, 14 Jan 2010 20:46:55 -0500
+Message-ID: <3b725c541001141746u534927eiae920cc3013d3067@mail.gmail.com>
+Subject: Compiling 2.6.32.3 on non-ELF systems
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 8:31 AM, Roel Kluin <roel.kluin@gmail.com> wrote:
-> Assign the package end, not the last AML byte.
->
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> Is this right?
->
-> diff --git a/drivers/acpi/acpica/psscope.c b/drivers/acpi/acpica/psscope.c
-> index 2feca5c..a8dfe16 100644
-> --- a/drivers/acpi/acpica/psscope.c
-> +++ b/drivers/acpi/acpica/psscope.c
-> @@ -118,7 +118,7 @@ acpi_ps_init_scope(struct acpi_parse_state * parser_state,
->        scope->parse_scope.op = root_op;
->        scope->parse_scope.arg_count = ACPI_VAR_ARGS;
->        scope->parse_scope.arg_end = parser_state->aml_end;
-> -       scope->parse_scope.pkg_end = parser_state->aml_end;
-> +       scope->parse_scope.pkg_end = parser_state->pkg_end;
+So I've been having trouble getting a decent linux distro installed on
+an old Mac box, and have decided to just cross-compile a system from
+scratch.
 
-->aml_end and ->pkg_end are same here.
+I built a nice cross compiler (gcc-4.4.2, binutils-2.20 on OS X
+10.4.11 w/ Xcode 2.5).
 
-acpi_ps_init_scope is only called in acpi_ds_init_aml_walk which set
-aml_end and pkg_end the same.
+When I run make ARCH=powerpc CROSS_COMPILE=powerpc-elf- in the
+linux-2.6.32.3 tree, it starts using the host compiler to build a
+bunch of stuff (mostly in the scripts subdir), until it gets to
+scripts/mod/mk_elfconfig.c, where it fails because it can't find
+elf.h.
 
-acpi_ds_init_aml_walk(...)
-{
-    ....
-    walk_state->parser_state.aml_end =
-            walk_state->parser_state.pkg_end = aml_start + aml_length;
-    .....
+I did some snooping, and there is no elf.h on OS X, because OS X does
+not use ELF binaries. elf.h is present in glibc and some other
+linux-based libc implementations, but I couldn't find one on
+NetBSD-current, which I believe uses ELF, or on AIX (not sure of the
+version or binary format on that one). So, as it stands, it seems that
+one must use a elf/glibc/linux based system as the host when compiling
+the kernel.
 
-    status = acpi_ps_init_scope(&walk_state->parser_state, op);
-    .....
-}
+Is this a limitation of the kernel build system, or am I missing
+something? Any workarounds for non-ELF hosts? I have heard that it is
+possible...
 
-Lin Ming
+- BW
 
->
->        parser_state->scope = scope;
->        parser_state->start_op = root_op;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+P.S. It might be worth mentioning that I'm compiling a kernel without
+loadable modules, so scripts/mod/* doesn't seem essential here...
