@@ -1,74 +1,98 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932299Ab0AOO1Q (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 09:27:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932204Ab0AOO1P
+	id S1757671Ab0AOO3p (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 09:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729Ab0AOO3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 09:27:15 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:4220 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932188Ab0AOO1O convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jan 2010 09:29:44 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:47594 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756290Ab0AOO3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 09:27:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=T3qkl2ANZBFgRp+g9LHG+w8tfY5/nFW6JrJa5xciPrlqH/igOzW1wqQk2yl5EQanVk
-         pvJpBHVOOhL9fy70TZlr2mGxzedvtz735pcO3q64gIRNTaK2ATnhZnzOrdPgJVGQorJW
-         vspyJJlgaiq4ckjlWWpffyEWblCdJAibGIKro=
+	Fri, 15 Jan 2010 09:29:44 -0500
+Message-ID: <4B507B73.6000404@s5r6.in-berlin.de>
+Date: Fri, 15 Jan 2010 15:28:03 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
 MIME-Version: 1.0
-In-Reply-To: <4B50778F.2010405@gmail.com>
-References: <4B50778F.2010405@gmail.com>
-Date: Fri, 15 Jan 2010 09:27:12 -0500
-Message-ID: <a728f9f91001150627t654e837fo3e5fbfcebb90929b@mail.gmail.com>
-Subject: Re: [PATCH] drm/radeon/kms: crtc_ omitted in display assignments in 
-	radeon_atom_mode_fixup()?
-From: Alex Deucher <alexdeucher@gmail.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: David Airlie <airlied@linux.ie>, dri-devel@lists.sourceforge.net,
-        Andrew Morton <akpm@linux-foundation.org>,
+To: Joe Perches <joe@perches.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
         LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [PATCH V2 (changelog update only)] scripts/get_maintainer.pl:
+ Add --sections, print entire matched subsystem
+References: <1263408063.8011.116.camel@Joe-Laptop.home>	 <20100114151254.72b57501.akpm@linux-foundation.org> <1263519770.1903.49.camel@Joe-Laptop.home>
+In-Reply-To: <1263519770.1903.49.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 9:11 AM, Roel Kluin <roel.kluin@gmail.com> wrote:
-> The crtc_ prefix was omitted in h/vdisplay assignments
->
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> Not sure, but maybe the change below is needed? please ack/nack.
+Joe Perches wrote:
+> Sample output:
+> 
+> $ ./scripts/get_maintainer.pl --sections -f drivers/net/usb/smsc95xx.c
+> USB SMSC95XX ETHERNET DRIVER
+> M:Steve Glendinning <steve.glendinning@smsc.com>
+> L:netdev@vger.kernel.org
+> S:Supported
+> F:drivers/net/usb/smsc95xx.*
+> USB SUBSYSTEM
+> M:Greg Kroah-Hartman <gregkh@suse.de>
+> L:linux-usb@vger.kernel.org
+> W:http://www.linux-usb.org
+> T:quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+[...]
 
-NAK.  the code is correct as is.
+Should it be machine-readable, or only human-readable?
+In the latter case, some whitespace could be nice, like:
 
->
-> diff --git a/drivers/gpu/drm/radeon/radeon_encoders.c b/drivers/gpu/drm/radeon/radeon_encoders.c
-> index 82eb551..a9dc073 100644
-> --- a/drivers/gpu/drm/radeon/radeon_encoders.c
-> +++ b/drivers/gpu/drm/radeon/radeon_encoders.c
-> @@ -233,8 +233,8 @@ static bool radeon_atom_mode_fixup(struct drm_encoder *encoder,
->                if (!ASIC_IS_AVIVO(rdev)) {
->                        adjusted_mode->hdisplay = mode->hdisplay;
->                        adjusted_mode->vdisplay = mode->vdisplay;
-> -                       adjusted_mode->crtc_hdisplay = mode->hdisplay;
-> -                       adjusted_mode->crtc_vdisplay = mode->vdisplay;
-> +                       adjusted_mode->crtc_hdisplay = mode->crtc_hdisplay;
-> +                       adjusted_mode->crtc_vdisplay = mode->crtc_vdisplay;
->                }
->                adjusted_mode->base.id = mode_id;
->        }
->
-> ------------------------------------------------------------------------------
-> Throughout its 18-year history, RSA Conference consistently attracts the
-> world's best and brightest in the field, creating opportunities for Conference
-> attendees to learn about information security's most important issues through
-> interactions with peers, luminaries and emerging and established companies.
-> http://p.sf.net/sfu/rsaconf-dev2dev
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
->
+$ ./scripts/get_maintainer.pl --sections -f drivers/net/usb/smsc95xx.c
+
+USB SMSC95XX ETHERNET DRIVER
+    M:Steve Glendinning <steve.glendinning@smsc.com>
+    L:netdev@vger.kernel.org
+    S:Supported
+    F:drivers/net/usb/smsc95xx.*
+
+USB SUBSYSTEM
+    M:Greg Kroah-Hartman <gregkh@suse.de>
+    L:linux-usb@vger.kernel.org
+    W:http://www.linux-usb.org
+    T:quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+[...]
+
+For example,
+
+> @@ -346,6 +358,21 @@ foreach my $file (@files) {
+>  	}
+>  	foreach my $line (sort {$hash{$b} <=> $hash{$a}} keys %hash) {
+>  	    add_categories($line);
+> +	    if ($sections) {
+> +		my $i;
+> +		my $start = find_starting_index($line);
+> +		my $end = find_ending_index($line);
+> +		for ($i = $start; $i < $end; $i++) {
+> +		    my $line = $typevalue[$i];
+> +		    if ($line =~ /^[FX]:/) {		##Restore file patterns
+> +			$line =~ s/([^\\])\.([^\*])/$1\?$2/g;
+> +			$line =~ s/([^\\])\.$/$1\?/g;	##Convert . back to ?
+> +			$line =~ s/\\\./\./g;       	##Convert \. to .
+> +			$line =~ s/\.\*/\*/g;       	##Convert .* to *
+> +		    }
+
+		    if ($line =~ /^.:/)
+			print("    ");
+		    else
+			print("\n");
+
+> +		    print("$line\n");
+> +		}
+> +	    }
+>  	}
+>      }
+>  
+
+-- 
+Stefan Richter
+-=====-==-=- ---= -====
+http://arcgraph.de/sr/
