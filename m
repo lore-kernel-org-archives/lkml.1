@@ -1,50 +1,61 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085Ab0AOCJH (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 21:09:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150Ab0AOCJG
+	id S1754032Ab0AOCKi (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 21:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791Ab0AOCKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 21:09:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38620 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932151Ab0AOCJF (ORCPT
+	Thu, 14 Jan 2010 21:10:37 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:15478 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932151Ab0AOCKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 21:09:05 -0500
-Message-ID: <4B4FCC33.2010100@zytor.com>
-Date: Thu, 14 Jan 2010 18:00:19 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Thu, 14 Jan 2010 21:10:36 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+Subject: [PATCH] hid-debug.c: make local symbols static
+Date: Thu, 14 Jan 2010 19:10:07 -0700
+Cc: jkosina@suse.cz
 MIME-Version: 1.0
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-        Len Brown <lenb@kernel.org>, Mark Hounschell <markh@compro.net>,
-        linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-        Alain Knaff <alain@knaff.lu>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        "Li, Shaohua" <shaohua.li@intel.com>
-Subject: Re: [patch 2/4] x86: Do not use hpet MSI as clockevent broadcast
- device
-References: <20100115013957.027452000@intel.com> <20100115014209.992004000@intel.com>
-In-Reply-To: <20100115014209.992004000@intel.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001141910.08225.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/14/2010 05:39 PM, Venkatesh Pallipadi wrote:
-> Current kernel uses hpet MSI interrupts as both percpu clockevent device
-> and also as clockevent broadcast device in place of IRQ0 timer.
-> There seems to be issues with HPET MSI usage on some platforms. So,
-> restrict it to be only used as a percpu clockevent device.
+hid-debug.c: make local symbols static
 
-Any ideas of which platforms?  It would help avoiding "cargo cult
-programming" in the future.
+The symbols hid_resolv_event and hid_dump_input_mapping
+are only used locally in this file. Make them static to prevent
+the following sparse warnings:
 
-Other than that, I presume this is a .33 patch?
+warning: symbol 'hid_resolv_event' was not declared. Should it be static?
+warning: symbol 'hid_dump_input_mapping' was not declared. Should it be static?
 
-	-hpa
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Jiri Kosina <jkosina@suse.cz>
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+---
 
+diff --git a/drivers/hid/hid-debug.c b/drivers/hid/hid-debug.c
+index 6abd036..cd4ece6 100644
+--- a/drivers/hid/hid-debug.c
++++ b/drivers/hid/hid-debug.c
+@@ -864,13 +864,13 @@ static const char **names[EV_MAX + 1] = {
+ 	[EV_SND] = sounds,			[EV_REP] = repeats,
+ };
+ 
+-void hid_resolv_event(__u8 type, __u16 code, struct seq_file *f) {
+-
++static void hid_resolv_event(__u8 type, __u16 code, struct seq_file *f)
++{
+ 	seq_printf(f, "%s.%s", events[type] ? events[type] : "?",
+ 		names[type] ? (names[type][code] ? names[type][code] : "?") : "?");
+ }
+ 
+-void hid_dump_input_mapping(struct hid_device *hid, struct seq_file *f)
++static void hid_dump_input_mapping(struct hid_device *hid, struct seq_file *f)
+ {
+ 	int i, j, k;
+ 	struct hid_report *report;
