@@ -1,59 +1,41 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910Ab0AOIYR (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 03:24:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206Ab0AOIYQ
+	id S1754627Ab0AOIgY (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 03:36:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407Ab0AOIgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 03:24:16 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43488
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754115Ab0AOIYQ (ORCPT
+	Fri, 15 Jan 2010 03:36:23 -0500
+Received: from mga07.intel.com ([143.182.124.22]:33790 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751257Ab0AOIgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 03:24:16 -0500
-Date: Fri, 15 Jan 2010 00:24:24 -0800 (PST)
-Message-Id: <20100115.002424.100105244.davem@davemloft.net>
-To: stefanr@s5r6.in-berlin.de
-Cc: adi@hexapodia.org, julia@diku.dk, nm127@freemail.hu, david.vrabel@csr.com,
-        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, cocci@diku.dk
-Subject: Re: Changelog quality
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B5023A6.5070100@s5r6.in-berlin.de>
-References: <Pine.LNX.4.64.1001131633490.26518@ask.diku.dk>
-	<20100115010315.GA29093@hexapodia.org>
-	<4B5023A6.5070100@s5r6.in-berlin.de>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jan 2010 03:36:22 -0500
+Message-Id: <89k83a$6u8c0e@azsmga001.ch.intel.com>
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="233058318"
+Date: Fri, 15 Jan 2010 08:36:13 +0000
+To: Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+        DRI for Linux <dri-devel@lists.sourceforge.net>,
+        David Airlie <airlied@linux.ie>, linux-fbdev@vger.kernel.org
+Subject: Re: 2.6.33-rc4-git1 -- [drm:i915_gem_execbuffer] *ERROR* i915_gem_do_execbuffer returns -512
+References: <a44ae5cd1001142018k1f6b741buf560edbda0ca6e33@mail.gmail.com>
+From: Chris Wilson <chris@chris-wilson.co.uk>
+In-Reply-To: <a44ae5cd1001142018k1f6b741buf560edbda0ca6e33@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date: Fri, 15 Jan 2010 09:13:26 +0100
+On Thu, 14 Jan 2010 23:18:14 -0500, Miles Lane <miles.lane@gmail.com> wrote:
+> I just hit this with 2.6.33-rc4-git1 and DRI modesetting enabled.  I
+> don't know what event triggered the error.  I had resumed from suspend
+> a long time before the error appeared in my dmesg output:
+> 
+> [ 8505.847430] [drm:i915_gem_execbuffer] *ERROR*
+> i915_gem_do_execbuffer returns -512
 
-> Tell me again in what way the script is of any importance or of any help
-> in the permanent SCM changelog after commit.
+Apologies, this is not an error. It is an interrupted system call with an
+overzealous DRM_ERROR() -- we will hopefully remove this printk promptly.
+-ickle
 
-I find them extremely useful when going through old as well
-as new changes.
-
-> I agree with you that it is very good to have the script in the patch
-> posting, but I disagree about the changelog.
-
-Thanks for making me go comb the mailing list archives instead of
-having the information readily available when looking at a change in
-the git history.
-
-I frankly think all of your objections to this kind of thing as well
-as putting patchwork URLs into the MAINTAINERS file quite rediculious.
-
-Putting something 100 times (or more) into the kernel tree
-documentation or commit messages is a good thing, because people are
-going to find the information they need faster.
-
-And likewise here, I want to see what the hell found the bug by
-reading the changelog message.
-
-I want more information in changelog messages, not less.  A commit
-log message is never too long and never gives too much information
-about the change, ever...
+-- 
+Chris Wilson, Intel Open Source Technology Centre
