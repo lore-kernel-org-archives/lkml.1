@@ -1,88 +1,209 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757461Ab0AOMRn (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 07:17:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757283Ab0AOMRn
+	id S1757458Ab0AOMYQ (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 07:24:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757176Ab0AOMYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 07:17:43 -0500
-Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:59505 "EHLO
-	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752368Ab0AOMRm (ORCPT
+	Fri, 15 Jan 2010 07:24:15 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48540 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752192Ab0AOMYN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 07:17:42 -0500
-Date: Fri, 15 Jan 2010 13:18:01 +0100
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-To: linux-kernel@vger.kernel.org, x86@kernel.org
-Cc: siccegge@stud.informatik.uni-erlangen.de,
-        Reinhard.Tartler@informatik.uni-erlangen.de
-Subject: [PATCH] obsolete config in kernel source (X86_MCE_P4THERMAL)
-Message-ID: <20100115121801.GB3321@faui49.informatik.uni-erlangen.de>
+	Fri, 15 Jan 2010 07:24:13 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 15 Jan 2010 13:23:51 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH update] HOWTO: Updates on subsystem trees, patchwork, -next
+ (vs.  -mm)
+To: Greg Kroah-Hartman <greg@kroah.com>
+cc: Randy Dunlap <rdunlap@xenotime.net>, Joe Perches <joe@perches.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Alan Cox <alan@lxorguk.ukuu.org.uk>,
+        =?iso-8859-1?Q?Lo=EFc_Greni=E9?= <loic.grenie@gmail.com>,
+        linux-kernel@vger.kernel.org
+In-Reply-To: <9b06e8d21001141641u31c62480q706ed4fe122c7c20@mail.gmail.com>
+Message-ID: <tkrat.b7e388635b69af34@s5r6.in-berlin.de>
+References: <4B4F7304.5050401@s5r6.in-berlin.de> 
+ <Pine.LNX.4.30.1001141303230.3979-100000@mail.perches.com> 
+ <tkrat.e8ba67441fb65247@s5r6.in-berlin.de>
+ <9b06e8d21001141641u31c62480q706ed4fe122c7c20@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="CdrF4e02JqNVZeln"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+One of the roles which -mm fulfilled some time ago (to offer an
+integration testing ground) has been taken over by -next.  This is still
+news to Documentation/HOWTO, so mention it there.
 
---CdrF4e02JqNVZeln
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Also add a word on how patchwork is used to track patches as they make
+their way into subsystem trees.  Remove some arbitrary links to
+subsystem repositories; they can all be found in the MAINTAINERS
+database.
 
-Hi all!
-
-	As part of the VAMOS[0] research project at the University of
-Erlangen we're checking referential integrity between kernel KConfig
-options and in-code Conditional blocks.
-
-	By this we noticed one occurenc of CONFIG_X86_MCE_P4THERMAL
-is still in the kernel source as alternative to
-CONFIG_X86_MCE_INTEL. The attached patch now only checks for the
-latter which is still present.
-
-	Please keep me informed of this patch getting confirmed /
-merged so we can keep track of it.
-
-Regards
-
-	Christoph Egger
-
-[0] http://vamos1.informatik.uni-erlangen.de/
-
---CdrF4e02JqNVZeln
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="0002-Drop-check-for-removed-config-variable-X86_MCE_P4THE.patch"
-
->From c312848eb2574c54a3effb39f3287b3d2c464518 Mon Sep 17 00:00:00 2001
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Date: Fri, 15 Jan 2010 12:13:42 +0100
-Subject: [PATCH 2/4] Drop check for removed config variable X86_MCE_P4THERMAL
-
-With the removal of the old MCE code in
-5bb38adcb54cf7192b154368ad62982caa11ca0b the config Item
-X86_MCE_P4THERMAL was dropped from the kernel tree. However it was
-left as a alternative in one block which is now also dropped hereby
-
-Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- arch/x86/kernel/apic/apic.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index e80f291..8566b97 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -2075,7 +2075,7 @@ static int lapic_resume(struct sys_device *dev)
- 	apic_write(APIC_SPIV, apic_pm_state.apic_spiv);
- 	apic_write(APIC_LVT0, apic_pm_state.apic_lvt0);
- 	apic_write(APIC_LVT1, apic_pm_state.apic_lvt1);
--#if defined(CONFIG_X86_MCE_P4THERMAL) || defined(CONFIG_X86_MCE_INTEL)
-+#if defined(CONFIG_X86_MCE_INTEL)
- 	if (maxlvt >= 5)
- 		apic_write(APIC_LVTTHMR, apic_pm_state.apic_thmr);
- #endif
+On 15 Jan, Loïc Grenié wrote:
+>> +Before a proposed patch is committed to such a subsystem tree, it is
+>> +subject to review which primarily happens on the on mailing lists (see
+> 
+>     There is a small typo "on the on".
+
+Thanks for the proofreading; fixed now.
+
+
+ Documentation/HOWTO |  113 ++++++++++++++++----------------------------------
+ 1 files changed, 36 insertions(+), 77 deletions(-)
+
+diff --git a/Documentation/HOWTO b/Documentation/HOWTO
+index 8495fc9..f5395af 100644
+--- a/Documentation/HOWTO
++++ b/Documentation/HOWTO
+@@ -221,8 +221,8 @@ branches.  These different branches are:
+   - main 2.6.x kernel tree
+   - 2.6.x.y -stable kernel tree
+   - 2.6.x -git kernel patches
+-  - 2.6.x -mm kernel patches
+   - subsystem specific kernel trees and patches
++  - the 2.6.x -next kernel tree for integration tests
+ 
+ 2.6.x kernel tree
+ -----------------
+@@ -232,7 +232,7 @@ process is as follows:
+   - As soon as a new kernel is released a two weeks window is open,
+     during this period of time maintainers can submit big diffs to
+     Linus, usually the patches that have already been included in the
+-    -mm kernel for a few weeks.  The preferred way to submit big changes
++    -next kernel for a few weeks.  The preferred way to submit big changes
+     is using git (the kernel's source management tool, more information
+     can be found at http://git.or.cz/) but plain patches are also just
+     fine.
+@@ -293,84 +293,43 @@ daily and represent the current state of Linus' tree.  They are more
+ experimental than -rc kernels since they are generated automatically
+ without even a cursory glance to see if they are sane.
+ 
+-2.6.x -mm kernel patches
+-------------------------
+-These are experimental kernel patches released by Andrew Morton.  Andrew
+-takes all of the different subsystem kernel trees and patches and mushes
+-them together, along with a lot of patches that have been plucked from
+-the linux-kernel mailing list.  This tree serves as a proving ground for
+-new features and patches.  Once a patch has proved its worth in -mm for
+-a while Andrew or the subsystem maintainer pushes it on to Linus for
+-inclusion in mainline.
+-
+-It is heavily encouraged that all new patches get tested in the -mm tree
+-before they are sent to Linus for inclusion in the main kernel tree.  Code
+-which does not make an appearance in -mm before the opening of the merge
+-window will prove hard to merge into the mainline.
+-
+-These kernels are not appropriate for use on systems that are supposed
+-to be stable and they are more risky to run than any of the other
+-branches.
+-
+-If you wish to help out with the kernel development process, please test
+-and use these kernel releases and provide feedback to the linux-kernel
+-mailing list if you have any problems, and if everything works properly.
+-
+-In addition to all the other experimental patches, these kernels usually
+-also contain any changes in the mainline -git kernels available at the
+-time of release.
+-
+-The -mm kernels are not released on a fixed schedule, but usually a few
+--mm kernels are released in between each -rc kernel (1 to 3 is common).
+-
+ Subsystem Specific kernel trees and patches
+ -------------------------------------------
+-A number of the different kernel subsystem developers expose their
+-development trees so that others can see what is happening in the
+-different areas of the kernel.  These trees are pulled into the -mm
+-kernel releases as described above.
+-
+-Here is a list of some of the different kernel trees available:
+-  git trees:
+-    - Kbuild development tree, Sam Ravnborg <sam@ravnborg.org>
+-	git.kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
+-
+-    - ACPI development tree, Len Brown <len.brown@intel.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
+-
+-    - Block development tree, Jens Axboe <jens.axboe@oracle.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git
+-
+-    - DRM development tree, Dave Airlie <airlied@linux.ie>
+-	git.kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+-
+-    - ia64 development tree, Tony Luck <tony.luck@intel.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+-
+-    - infiniband, Roland Dreier <rolandd@cisco.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
+-
+-    - libata, Jeff Garzik <jgarzik@pobox.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+-
+-    - network drivers, Jeff Garzik <jgarzik@pobox.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
+-
+-    - pcmcia, Dominik Brodowski <linux@dominikbrodowski.net>
+-	git.kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
+-
+-    - SCSI, James Bottomley <James.Bottomley@hansenpartnership.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+-
+-    - x86, Ingo Molnar <mingo@elte.hu>
+-	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+-
+-  quilt trees:
+-    - USB, Driver Core, and I2C, Greg Kroah-Hartman <gregkh@suse.de>
+-	kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
++The maintainers of the various kernel subsystems --- and also many
++kernel subsystem developers --- expose their current state of
++development in source repositories.  That way, others can see what is
++happening in the different areas of the kernel.  In areas where
++development is rapid, a developer may be asked to base his submissions
++onto such a subsystem kernel tree so that conflicts between the
++submission and other already ongoing work are avoided.
++
++Most of these repositories are git trees, but there are also other SCMs
++in use, or patch queues being published as quilt series.  Addresses of
++these subsystem repositories are listed in the MAINTAINERS file.  Many
++of them can be browsed at http://git.kernel.org/.
++
++Before a proposed patch is committed to such a subsystem tree, it is
++subject to review which primarily happens on mailing lists (see the
++respective section below).  For several kernel subsystems, this review
++process is tracked with the tool patchwork.  Patchwork offers a web
++interface which shows patch postings, any comments on a patch or
++revisions to it, and maintainers can mark patches as under review,
++accepted, or rejected.  Most of these patchwork sites are listed at
++http://patchwork.kernel.org/ or http://patchwork.ozlabs.org/.
++
++2.6.x -next kernel tree for integration tests
++---------------------------------------------
++Before updates from subsystem trees are merged into the mainline 2.6.x
++tree, they need to be integration-tested.  For this purpose, a special
++testing repository exists into which virtually all subsystem trees are
++pulled on an almost daily basis:
++	http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git
++	http://linux.f-seidel.de/linux-next/pmwiki/
++
++This way, the -next kernel gives a summary outlook onto what will be
++expected to go into the mainline kernel at the next merge period.
++Adventurous testers are very welcome to runtime-test the -next kernel.
+ 
+-  Other kernel trees can be found listed at http://git.kernel.org/ and in
+-  the MAINTAINERS file.
+ 
+ Bug Reporting
+ -------------
+
 -- 
-1.6.3.3
+Stefan Richter
+-=====-==-=- ---= -====
+http://arcgraph.de/sr/
 
-
---CdrF4e02JqNVZeln--
