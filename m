@@ -1,54 +1,51 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755138Ab0AOUuH (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 15:50:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116Ab0AOUuF
+	id S1755563Ab0AOUy5 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 15:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447Ab0AOUy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 15:50:05 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:14045 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319Ab0AOUuD (ORCPT
+	Fri, 15 Jan 2010 15:54:56 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46180 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753891Ab0AOUy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 15:50:03 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type:x-system-of-record;
-	b=EP7dJqnEAEK1FfQovjC8ZtZi+pOonuthqmNHIjKxFg6B5bnSdwNkDod6cwKJmDkm4
-	F8HRF+2QDjegEjhLJJtNA==
-Date: Fri, 15 Jan 2010 12:49:56 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [patch] slub: remove impossible condition
-Message-ID: <alpine.DEB.2.00.1001151249040.11990@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Fri, 15 Jan 2010 15:54:56 -0500
+Date: Fri, 15 Jan 2010 20:57:22 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Kay Sievers <kay.sievers@vrfy.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Driver-Core: devtmpfs - remove EXPERIMENTAL and enable it by
+ default
+Message-ID: <20100115205722.3580b6bf@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100115180341.GA12146@kroah.com>
+References: <1263505677.2074.2.camel@yio.site>
+	<20100115065638.005ac690@infradead.org>
+	<20100115180341.GA12146@kroah.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-`s' cannot be NULL if kmalloc_caches is not NULL.
+> Why?  All major distros need this at boot time, and as we have been
 
-This conditional would trigger a NULL pointer on `s', anyway, since it is
-immediately derefernced if true.
+No they don't.
 
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- mm/slub.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Centos doesn't (in fact I suspect it'll break)
+Fedora 11 doesn't
+Fedora 12 doesn't seem to (but seems to be willing to use it)
+Ditto all the older SuSE, Ubuntu etc releases that are *still*
+active/supported/maintained
 
-diff --git a/mm/slub.c b/mm/slub.c
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2641,7 +2641,7 @@ static noinline struct kmem_cache *dma_kmalloc_cache(int index, gfp_t flags)
- 	if (slab_state >= SYSFS)
- 		slabflags |= __SYSFS_ADD_DEFERRED;
- 
--	if (!s || !text || !kmem_cache_open(s, flags, text,
-+	if (!text || !kmem_cache_open(s, flags, text,
- 			realsize, ARCH_KMALLOC_MINALIGN, slabflags, NULL)) {
- 		s->size = 0;
- 		kfree(text);
+
+> through a release cycle with the config option, anyone who is
+> incrementally updating will continue with their existing value.  But new
+> people coming in, will get the option as it is most likely required to
+> boot properly.
+> 
+> Makes sense to me.
+
+That may well be true - in which case it needs to be very clearly
+documented when to enable it.
