@@ -1,73 +1,117 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755757Ab0AOESS (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 23:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206Ab0AOESR
+	id S1755708Ab0AOElO (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 23:41:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984Ab0AOElN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 23:18:17 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:6433 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752282Ab0AOESQ (ORCPT
+	Thu, 14 Jan 2010 23:41:13 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:51775 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695Ab0AOElL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 23:18:16 -0500
+	Thu, 14 Jan 2010 23:41:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=PpPTp0gOYAFF7qNiu7UP0N813jG+HIPnNKXtOTKOKArv2ixw9+tYPsYNWijJbYz0gL
-         yiVWkHKbjmrY3miWe+0BRY1H2nOOGfV7RIQ//Ng4S6gCTXF5fQCcD93qrnO0odkX1wWy
-         BQAp4P+Jp/sm5R6+xOO4YzpLye1FCFwvzFiXw=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Zb7b8/FhptlewgDPQym6hM4hTr8u++a3ogw++dw2QiYDerMuh+ZNna73bpCAURSYsc
+         iI5lmHRsN2o3NVV+CN1hyc+8Vx2BhTPW4IITVYJP/pcFXY4c0xpbfJSDiy+Eh/mgPd05
+         V0hNgXPFWcdKSPwf8QIcqaUmQSliDnYDYzfjw=
 MIME-Version: 1.0
-Date: Thu, 14 Jan 2010 23:18:14 -0500
-Message-ID: <a44ae5cd1001142018k1f6b741buf560edbda0ca6e33@mail.gmail.com>
-Subject: 2.6.33-rc4-git1 -- [drm:i915_gem_execbuffer] *ERROR* 
-	i915_gem_do_execbuffer returns -512
-From: Miles Lane <miles.lane@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-        DRI for Linux <dri-devel@lists.sourceforge.net>,
-        David Airlie <airlied@linux.ie>, linux-fbdev@vger.kernel.org
+In-Reply-To: <20091202141458.12819.96170.stgit@paris.rdu.redhat.com>
+References: <20091202141452.12819.93536.stgit@paris.rdu.redhat.com>
+	 <20091202141458.12819.96170.stgit@paris.rdu.redhat.com>
+Date: Thu, 14 Jan 2010 20:41:10 -0800
+Message-ID: <6a12d2f31001142041j7f917b07l1e1a728790175321@mail.gmail.com>
+Subject: Re: [PATCH 2/4] fanotify: Add pids to events
+From: Matthew Helsley <matt.helsley@gmail.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        viro@zeniv.linux.org.uk, hch@infradead.org, agruen@suse.de,
+        containers@lists.linux-foundation.org, matthltc@us.ibm.com,
+        Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+        Oleg Nesterov <oleg@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just hit this with 2.6.33-rc4-git1 and DRI modesetting enabled.  I
-don't know what event triggered the error.  I had resumed from suspend
-a long time before the error appeared in my dmesg output:
+On Wed, Dec 2, 2009 at 6:14 AM, Eric Paris <eparis@redhat.com> wrote:
+> From: Andreas Gruenbacher <agruen@suse.de>
+>
+> Pass the process identifiers of the triggering processes to fanotify
+> listeners: this information is useful for event filtering and logging.
+>
+> Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+> ---
+>
+>  fs/notify/fanotify/fanotify.c      |    5 +++--
+>  fs/notify/fanotify/fanotify_user.c |    1 +
+>  fs/notify/notification.c           |    3 +++
+>  include/linux/fanotify.h           |    1 +
+>  include/linux/fsnotify_backend.h   |    1 +
+>  5 files changed, 9 insertions(+), 2 deletions(-)
+>
+> diff --git a/fs/notify/fanotify/fanotify.c b/fs/notify/fanotify/fanotify.c
+> index 5b0b6b4..881067d 100644
+> --- a/fs/notify/fanotify/fanotify.c
+> +++ b/fs/notify/fanotify/fanotify.c
+> @@ -10,8 +10,9 @@ static bool should_merge(struct fsnotify_event *old, struct fsnotify_event *new)
+>  {
+>        pr_debug("%s: old=%p new=%p\n", __func__, old, new);
+>
+> -       if ((old->to_tell == new->to_tell) &&
+> -           (old->data_type == new->data_type)) {
+> +       if (old->to_tell == new->to_tell &&
+> +           old->data_type == new->data_type &&
+> +           old->tgid == new->tgid) {
+>                switch (old->data_type) {
+>                case (FSNOTIFY_EVENT_PATH):
+>                        if ((old->path.mnt == new->path.mnt) &&
+> diff --git a/fs/notify/fanotify/fanotify_user.c b/fs/notify/fanotify/fanotify_user.c
+> index 7646111..7cfb2f6 100644
+> --- a/fs/notify/fanotify/fanotify_user.c
+> +++ b/fs/notify/fanotify/fanotify_user.c
+> @@ -108,6 +108,7 @@ static ssize_t fill_event_metadata(struct fsnotify_group *group,
+>        metadata->event_len = FAN_EVENT_METADATA_LEN;
+>        metadata->vers = FANOTIFY_METADATA_VERSION;
+>        metadata->mask = fanotify_outgoing_mask(event->mask);
+> +       metadata->pid = pid_vnr(event->tgid);
 
-[ 8505.847430] [drm:i915_gem_execbuffer] *ERROR*
-i915_gem_do_execbuffer returns -512
+Eric, you never replied to my point about pid namespaces
+(http://lkml.org/lkml/2009/7/1/2). I'm still concerned that it's a
+problem for this patch. I've cc'd some pid namespace folks, listed the
+problems, and some alternative solutions (where I could think of any)
+below:
 
-00:02.0 VGA compatible controller: Intel Corporation Mobile 945GME
-Express Integrated Graphics Controller (rev 03)
-	Subsystem: ASUSTeK Computer Inc. Device 8340
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 16
-	Region 0: Memory at f7f00000 (32-bit, non-prefetchable) [size=512K]
-	Region 1: I/O ports at dc00 [size=8]
-	Region 2: Memory at d0000000 (32-bit, prefetchable) [size=256M]
-	Region 3: Memory at f7ec0000 (32-bit, non-prefetchable) [size=256K]
-	Capabilities: [90] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
-		Address: 00000000  Data: 0000
-	Capabilities: [d0] Power Management version 2
-		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel driver in use: i915
+1. Since fanotify doesn't hold a reference to the struct pid then the
+pid can become stale before the event is acted upon.
+    solution a: Just ignoring this problem, like other interfaces
+often do, is probably ok.
+    ... ?
+    solution z: Seems to require taking a reference to the pid and
+giving userspace a way to drop the reference after it's done using
+this value to refer to the process (yuck).
 
-CONFIG_AGP=y
-CONFIG_AGP_INTEL=y
-CONFIG_VGA_ARB=y
-CONFIG_DRM=y
-CONFIG_DRM_KMS_HELPER=y
-CONFIG_DRM_I915=y
-CONFIG_DRM_I915_KMS=y
-CONFIG_VIDEO_OUTPUT_CONTROL=y
-CONFIG_FB=y
-CONFIG_FIRMWARE_EDID=y
-CONFIG_FB_CFB_FILLRECT=y
-CONFIG_FB_CFB_COPYAREA=y
-CONFIG_FB_CFB_IMAGEBLIT=y
-CONFIG_FB_MODE_HELPERS=y
-CONFIG_FB_TILEBLITTING=y
+2. If the event recipient does a clone and enters a new pidns the pid
+number will be incorrect without any indication.
+  solution a: The events could be flushed during clone(CLONE_NEWPID)
+but then userspace would miss
+      them.
+  solution b: Translating the pids wouldn't work because the tasks
+generaly won't exist in the new
+      namespace. So perhaps just write negative values in the pid
+fields during clone(CLONE_NEWPID).
+
+3. If the listening process is not in the same or an ancestor pid
+namespace of the triggering process then there is no correct pid
+corresponding to the event.  (Note: Always using the initial pid
+namespace isn't a good [interim] solution -- then programs relying on
+fanotify couldn't run in other pid namespaces).
+    solution a: Again, perhaps they should be set to negative values.
+    ... ?
+    solution z: Disable fanotify in non-initial pid namespaces (yuck).
+
+Cheers,
+    -Matt Helsley
