@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756638Ab0AOBDJ (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 20:03:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725Ab0AOBDH
+	id S1756782Ab0AOBDM (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 20:03:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778Ab0AOBDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 20:03:07 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:50348 "EHLO e2.ny.us.ibm.com"
+	Thu, 14 Jan 2010 20:03:09 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:51192 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754632Ab0AOBDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 20:03:06 -0500
+	id S1754256Ab0AOBDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 20:03:05 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 2/9] rcu: add lockdep-enabled variants of rcu_dereference()
-Date: Thu, 14 Jan 2010 17:02:39 -0800
-Message-Id: <12635173661621-git-send-email->
+Subject: [PATCH tip/core/rcu 7/9] radix-tree: disable RCU lockdep checking in radix tree
+Date: Thu, 14 Jan 2010 17:02:44 -0800
+Message-Id: <12635173672972-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20100115010157.GA28221@linux.vnet.ibm.com>
 References: <20100115010157.GA28221@linux.vnet.ibm.com>
@@ -28,111 +28,128 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Make rcu_dereference() check for being in an RCU read-side critical
-section, and create rcu_dereference_bh(), rcu_dereference_sched(), and
-srcu_dereference() to check for the other flavors of RCU.  Also create
-rcu_dereference_raw() to avoid checking, and make rcu_dereference_check()
-use rcu_dereference_raw().
+Because the radix tree is used with many different locking designs, we
+cannot do any effective checking without changing the radix-tree APIs.
+It might make sense to do this later, but only if the RCU lockdep checking
+proves itself sufficiently valuable.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/rcupdate.h |   41 ++++++++++++++++++++++++++++++++++-------
- include/linux/srcu.h     |    8 ++++++++
- 2 files changed, 42 insertions(+), 7 deletions(-)
+ lib/radix-tree.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index e3d37ef..839d296 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -184,12 +184,12 @@ static inline int rcu_read_lock_sched_held(void)
- 	({ \
- 		if (debug_locks) \
- 			WARN_ON_ONCE(!(c)); \
--		rcu_dereference(p); \
-+		rcu_dereference_raw(p); \
- 	})
+diff --git a/lib/radix-tree.c b/lib/radix-tree.c
+index 92cdd99..6b9670d 100644
+--- a/lib/radix-tree.c
++++ b/lib/radix-tree.c
+@@ -364,7 +364,7 @@ static void *radix_tree_lookup_element(struct radix_tree_root *root,
+ 	unsigned int height, shift;
+ 	struct radix_tree_node *node, **slot;
  
- #else /* #ifdef CONFIG_PROVE_RCU */
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (node == NULL)
+ 		return NULL;
  
--#define rcu_dereference_check(p, c)	rcu_dereference(p)
-+#define rcu_dereference_check(p, c)	rcu_dereference_raw(p)
+@@ -384,7 +384,7 @@ static void *radix_tree_lookup_element(struct radix_tree_root *root,
+ 	do {
+ 		slot = (struct radix_tree_node **)
+ 			(node->slots + ((index>>shift) & RADIX_TREE_MAP_MASK));
+-		node = rcu_dereference(*slot);
++		node = rcu_dereference_raw(*slot);
+ 		if (node == NULL)
+ 			return NULL;
  
- #endif /* #else #ifdef CONFIG_PROVE_RCU */
+@@ -568,7 +568,7 @@ int radix_tree_tag_get(struct radix_tree_root *root,
+ 	if (!root_tag_get(root, tag))
+ 		return 0;
  
-@@ -325,22 +325,49 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (node == NULL)
+ 		return 0;
  
+@@ -602,7 +602,7 @@ int radix_tree_tag_get(struct radix_tree_root *root,
+ 			BUG_ON(ret && saw_unset_tag);
+ 			return !!ret;
+ 		}
+-		node = rcu_dereference(node->slots[offset]);
++		node = rcu_dereference_raw(node->slots[offset]);
+ 		shift -= RADIX_TREE_MAP_SHIFT;
+ 		height--;
+ 	}
+@@ -711,7 +711,7 @@ __lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
+ 		}
  
- /**
-- * rcu_dereference - fetch an RCU-protected pointer in an
-- * RCU read-side critical section.  This pointer may later
-- * be safely dereferenced.
-+ * rcu_dereference_raw - fetch an RCU-protected pointer
-+ *
-+ * The caller must be within some flavor of RCU read-side critical
-+ * section, or must be otherwise preventing the pointer from changing,
-+ * for example, by holding an appropriate lock.  This pointer may later
-+ * be safely dereferenced.  It is the caller's responsibility to have
-+ * done the right thing, as this primitive does no checking of any kind.
-  *
-  * Inserts memory barriers on architectures that require them
-  * (currently only the Alpha), and, more importantly, documents
-  * exactly which pointers are protected by RCU.
-  */
--
--#define rcu_dereference(p)     ({ \
-+#define rcu_dereference_raw(p)	({ \
- 				typeof(p) _________p1 = ACCESS_ONCE(p); \
- 				smp_read_barrier_depends(); \
- 				(_________p1); \
- 				})
+ 		shift -= RADIX_TREE_MAP_SHIFT;
+-		slot = rcu_dereference(slot->slots[i]);
++		slot = rcu_dereference_raw(slot->slots[i]);
+ 		if (slot == NULL)
+ 			goto out;
+ 	}
+@@ -758,7 +758,7 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
+ 	unsigned long cur_index = first_index;
+ 	unsigned int ret;
  
- /**
-+ * rcu_dereference - fetch an RCU-protected pointer, checking for RCU
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference(p) \
-+	rcu_dereference_check(p, rcu_read_lock_held())
-+
-+/**
-+ * rcu_dereference_bh - fetch an RCU-protected pointer, checking for RCU-bh
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference_bh(p) \
-+		rcu_dereference_check(p, rcu_read_lock_bh_held())
-+
-+/**
-+ * rcu_dereference_sched - fetch RCU-protected pointer, checking for RCU-sched
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference_sched(p) \
-+		rcu_dereference_check(p, rcu_read_lock_sched_held())
-+
-+/**
-  * rcu_assign_pointer - assign (publicize) a pointer to a newly
-  * initialized structure that will be dereferenced by RCU read-side
-  * critical sections.  Returns the value assigned.
-diff --git a/include/linux/srcu.h b/include/linux/srcu.h
-index adbe167..3084f80 100644
---- a/include/linux/srcu.h
-+++ b/include/linux/srcu.h
-@@ -106,6 +106,14 @@ static inline int srcu_read_lock_held(struct srcu_struct *sp)
- #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (!node)
+ 		return 0;
  
- /**
-+ * srcu_dereference - fetch SRCU-protected pointer with checking
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define srcu_dereference(p, sp) \
-+		rcu_dereference_check(p, srcu_read_lock_held(sp))
-+
-+/**
-  * srcu_read_lock - register a new reader for an SRCU-protected structure.
-  * @sp: srcu_struct in which to register the new reader.
-  *
+@@ -787,7 +787,7 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
+ 			slot = *(((void ***)results)[ret + i]);
+ 			if (!slot)
+ 				continue;
+-			results[ret + nr_found] = rcu_dereference(slot);
++			results[ret + nr_found] = rcu_dereference_raw(slot);
+ 			nr_found++;
+ 		}
+ 		ret += nr_found;
+@@ -826,7 +826,7 @@ radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
+ 	unsigned long cur_index = first_index;
+ 	unsigned int ret;
+ 
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (!node)
+ 		return 0;
+ 
+@@ -915,7 +915,7 @@ __lookup_tag(struct radix_tree_node *slot, void ***results, unsigned long index,
+ 			}
+ 		}
+ 		shift -= RADIX_TREE_MAP_SHIFT;
+-		slot = rcu_dereference(slot->slots[i]);
++		slot = rcu_dereference_raw(slot->slots[i]);
+ 		if (slot == NULL)
+ 			break;
+ 	}
+@@ -951,7 +951,7 @@ radix_tree_gang_lookup_tag(struct radix_tree_root *root, void **results,
+ 	if (!root_tag_get(root, tag))
+ 		return 0;
+ 
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (!node)
+ 		return 0;
+ 
+@@ -980,7 +980,7 @@ radix_tree_gang_lookup_tag(struct radix_tree_root *root, void **results,
+ 			slot = *(((void ***)results)[ret + i]);
+ 			if (!slot)
+ 				continue;
+-			results[ret + nr_found] = rcu_dereference(slot);
++			results[ret + nr_found] = rcu_dereference_raw(slot);
+ 			nr_found++;
+ 		}
+ 		ret += nr_found;
+@@ -1020,7 +1020,7 @@ radix_tree_gang_lookup_tag_slot(struct radix_tree_root *root, void ***results,
+ 	if (!root_tag_get(root, tag))
+ 		return 0;
+ 
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (!node)
+ 		return 0;
+ 
 -- 
 1.5.2.5
 
