@@ -1,202 +1,64 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115Ab0AODlW (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 22:41:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251Ab0AODlV
+	id S1755993Ab0AOD65 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 22:58:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892Ab0AOD64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 22:41:21 -0500
-Received: from mga02.intel.com ([134.134.136.20]:49635 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753047Ab0AODlU convert rfc822-to-8bit (ORCPT
+	Thu, 14 Jan 2010 22:58:56 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:36023 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753047Ab0AOD6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 22:41:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,279,1262592000"; 
-   d="scan'208";a="484162740"
-From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "ak@linux.intel.com" <ak@linux.intel.com>,
-        "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-        Dave Hansen <haveblue@us.ibm.com>,
-        "Wu, Fengguang" <fengguang.wu@intel.com>,
-        "x86@kernel.org" <x86@kernel.org>
-Date: Fri, 15 Jan 2010 11:41:14 +0800
-Subject: RE: [PATCH-RESEND v4] memory-hotplug: create /sys/firmware/memmap
- entry for new memory
-Thread-Topic: [PATCH-RESEND v4] memory-hotplug: create /sys/firmware/memmap
- entry for new memory
-Thread-Index: AcqUn8xoJAtaKJw1TPS3kXsbWbFA3wA8HhhA
-Message-ID: <DA586906BA1FFC4384FCFD6429ECE86034FF8354@shzsmsx502.ccr.corp.intel.com>
-References: <DA586906BA1FFC4384FCFD6429ECE86031560F92@shzsmsx502.ccr.corp.intel.com>
- <20100113142827.26b2269e.akpm@linux-foundation.org>
-In-Reply-To: <20100113142827.26b2269e.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Thu, 14 Jan 2010 22:58:54 -0500
+X-Authority-Analysis: v=1.0 c=1 a=NEDTl4KTtAgA:10 a=omOdbC7AAAAA:8 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=cHBqzMnZThuvjdwb_Q0A:9 a=G8aSA9XEQ7ZgVkQBonsUAY9MugUA:4 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Message-Id: <20100115035852.995805157@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 14 Jan 2010 22:57:30 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+        Li Zefan <lizf@cn.fujitsu.com>,
+        Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 4/8] tracing/filters: Fix MATCH_END_ONLY filter matching
+References: <20100115035726.462940848@goodmis.org>
+Content-Disposition: inline; filename=0004-tracing-filters-Fix-MATCH_END_ONLY-filter-matching.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Jan 2010 10:00:11 +0800
-"Zheng, Shaohui" <shaohui.zheng@intel.com> wrote:
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-> Resend the memmap patch v4 to mailing-list after follow up fengguang's review 
-> comments. 
-> 
-> memory-hotplug: create /sys/firmware/memmap entry for hot-added memory
-> 
-> Interface firmware_map_add was not called in explict, Remove it and add function
-> firmware_map_add_hotplug as hotplug interface of memmap.
-> 
-> When we hot-add new memory, sysfs does not export memmap entry for it. we add
->  a call in function add_memory to function firmware_map_add_hotplug.
-> 
-> Add a new function add_sysfs_fw_map_entry to create memmap entry, it can avoid 
-> duplicated codes.
-> 
-> Thanks for the careful review from Fengguang Wu and Dave Hansen.
-> 
+For '*foo' pattern, we should allow any string ending with
+'foo', but event filtering incorrectly disallows strings
+like bar_foo_foo:
 
-Please describe the format of the proposed sysfs file.  Example output
-would be suitable.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <4B4E8735.6070604@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace_events_filter.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-> @@ -123,20 +123,40 @@ static int firmware_map_add_entry(u64 start, u64 end,
->  }
->  
->  /**
-> - * firmware_map_add() - Adds a firmware mapping entry.
-> + * Add memmap entry on sysfs
-> + */
-> +static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry)
-> +{
-> +	static int map_entries_nr;
-> +	static struct kset *mmap_kset;
-> +
-> +	if (!mmap_kset) {
-> +		mmap_kset = kset_create_and_add("memmap", NULL, firmware_kobj);
-> +		if (!mmap_kset)
-> +			return -ENOMEM;
-> +	}
-
-This is a bit racy if two threads execute it at the same time.  I guess
-it doesn't matter.
-[Zheng, Shaohui] function add_sysfs_fw_map_entry will be called when OS boots up and we hot-add memory, it never has chance to be execute in two threads, it should be okay.
+diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+index 11c3973..49e44dd 100644
+--- a/kernel/trace/trace_events_filter.c
++++ b/kernel/trace/trace_events_filter.c
+@@ -275,9 +275,10 @@ static int regex_match_middle(char *str, struct regex *r, int len)
+ 
+ static int regex_match_end(char *str, struct regex *r, int len)
+ {
+-	char *ptr = strstr(str, r->pattern);
++	int strlen = len - 1;
+ 
+-	if (ptr && (ptr[r->len] == 0))
++	if (strlen >= r->len &&
++	    memcmp(str + strlen - r->len, r->pattern, r->len) == 0)
+ 		return 1;
+ 	return 0;
+ }
+-- 
+1.6.5
 
 
-> +	entry->kobj.kset = mmap_kset;
-> +	if (kobject_add(&entry->kobj, NULL, "%d", map_entries_nr++))
-> +		kobject_put(&entry->kobj);
-
-hm.  Is this refcounting correct?
-[Zheng, Shaohui] all objects of firmware_map_entry shares the same kset, I use a static pointer to store it. When create next entry, we can get the reference easier. I already test it, it works fine.
-
-> +
-> +	return 0;
-> +}
-
-One caller of add_sysfs_fw_map_entry() is __meminit and the other is
-__init.  So this function can be __meminit?
-[Zheng, Shaohui] function add_sysfs_fw_map_entry() should be still here after booting up, it will be called when we hot-add new memory, so it can not be _init. __meminit should be the correct since this function is related memory hot-plug.
-
-> +/**
-> + * firmware_map_add_early() - Adds a firmware mapping entry.
->   * @start: Start of the memory range.
->   * @end:   End of the memory range (inclusive).
->   * @type:  Type of the memory range.
->   *
-> - * This function uses kmalloc() for memory
-> - * allocation. Use firmware_map_add_early() if you want to use the bootmem
-> - * allocator.
-> + * Adds a firmware mapping entry. This function uses the bootmem allocator
-> + * for memory allocation.
->   *
->   * That function must be called before late_initcall.
->   *
->   * Returns 0 on success, or -ENOMEM if no memory could be allocated.
->   **/
-> -int firmware_map_add(u64 start, u64 end, const char *type)
-> +int __init firmware_map_add_early(u64 start, u64 end, const char *type)
->  {
->  	struct firmware_map_entry *entry;
->  
-> @@ -148,27 +168,31 @@ int firmware_map_add(u64 start, u64 end, const char *type)
->  }
->  
->  /**
-> - * firmware_map_add_early() - Adds a firmware mapping entry.
-> + * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
-> + * memory hotplug.
->   * @start: Start of the memory range.
->   * @end:   End of the memory range (inclusive).
->   * @type:  Type of the memory range.
->   *
-> - * Adds a firmware mapping entry. This function uses the bootmem allocator
-> - * for memory allocation. Use firmware_map_add() if you want to use kmalloc().
-> - *
-> - * That function must be called before late_initcall.
-> + * Adds a firmware mapping entry. This function is for memory hotplug, it is
-> + * simiar with function firmware_map_add_early. the only difference is that
-
-s/simiar/similar/
-s/with/to/
-s/the/The/
-s/function firmware_map_add_early/firmware_map_add_early()/
-[Zheng, Shaohui] sorry for my carelessness.
-	
-> + * it will create the syfs entry dynamically.
->   *
->   * Returns 0 on success, or -ENOMEM if no memory could be allocated.
->   **/
-> -int __init firmware_map_add_early(u64 start, u64 end, const char *type)
-> +int __meminit firmware_map_add_hotplug(u64 start, u64 end, const char *type)
->  {
->  	struct firmware_map_entry *entry;
->  
-> -	entry = alloc_bootmem(sizeof(struct firmware_map_entry));
-> -	if (WARN_ON(!entry))
-> +	entry = kzalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
-> +	if (!entry)
->  		return -ENOMEM;
->  
-> -	return firmware_map_add_entry(start, end, type, entry);
-> +	firmware_map_add_entry(start, end, type, entry);
-> +	/* create the memmap entry */
-> +	add_sysfs_fw_map_entry(entry);
-> +
-> +	return 0;
->  }
->  
->  /*
-> @@ -214,18 +238,10 @@ static ssize_t memmap_attr_show(struct kobject *kobj,
->   */
->  static int __init memmap_init(void)
->  {
-> -	int i = 0;
->  	struct firmware_map_entry *entry;
-> -	struct kset *memmap_kset;
-> -
-> -	memmap_kset = kset_create_and_add("memmap", NULL, firmware_kobj);
-> -	if (WARN_ON(!memmap_kset))
-> -		return -ENOMEM;
->  
->  	list_for_each_entry(entry, &map_entries, list) {
-> -		entry->kobj.kset = memmap_kset;
-> -		if (kobject_add(&entry->kobj, NULL, "%d", i++))
-> -			kobject_put(&entry->kobj);
-> +		add_sysfs_fw_map_entry(entry);
->  	}
-
-The braces are now unneeded.  checkpatch used to warn about this I
-think.  Either someone broke checkpatch or it doesn't understand
-list_for_each_entry().
-[Zheng, Shaohui] I will remove the unneeded braces.
-
->
-> ...
->
