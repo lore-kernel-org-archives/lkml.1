@@ -1,51 +1,55 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000Ab0AOSfI (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 13:35:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757741Ab0AOSfH
+	id S1757950Ab0AOShF (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 13:37:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173Ab0AOShD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 13:35:07 -0500
-Received: from kroah.org ([198.145.64.141]:38526 "EHLO coco.kroah.org"
+	Fri, 15 Jan 2010 13:37:03 -0500
+Received: from fom01.emnet.dk ([89.249.14.84]:53123 "EHLO fom01.emnet.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297Ab0AOSfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 13:35:04 -0500
-Date: Fri, 15 Jan 2010 10:06:37 -0800
-From: Greg KH <greg@kroah.com>
-To: Eugeni Dodonov <eugeni@mandriva.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: PATCH: asus_oled oops in 2.6.32.2
-Message-ID: <20100115180636.GB12146@kroah.com>
-References: <4B320CAA.1030708@mandriva.com>
- <20091223174941.GA20331@kroah.com>
- <4B32773F.8030508@mandriva.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B32773F.8030508@mandriva.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1753549Ab0AOShB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 13:37:01 -0500
+X-AuditID: 59f90e54-b7bd7ae000001243-d0-4b50b5cb38f6
+Subject: Re: option driver freezing entire system
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: smurf@smurf.noris.de, LKML Mailinglist <linux-kernel@vger.kernel.org>
+In-Reply-To: <201001151855.46217.oliver@neukum.org>
+References: <1263577116.27788.131.camel@localhost>
+	 <201001151855.46217.oliver@neukum.org>
+Content-Type: text/plain
+Date: Fri, 15 Jan 2010 19:36:55 +0100
+Message-Id: <1263580615.27788.134.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 06:02:07PM -0200, Eugeni Dodonov wrote:
-> On 12/23/2009 03:49 PM, Greg KH wrote:
-> > On Wed, Dec 23, 2009 at 10:27:22AM -0200, Eugeni Dodonov wrote:
-> >> Hi,
-> >>
-> >> After updating to 2.6.32 kernel, I started experiencing Oopses caused by
-> >> the asus_oled module. After quick investigation, I wrapped this simple
-> >> patch which fixes an Oops in by asus_oled module on 2.6.32.2 kernel,
-> >> caused by incorrect usage of strict_strtoul function call within
-> >> set_enabled and set_disabled functions. This can be triggered by simple
-> >> running the userspace client for asus_old (e.g., 'asusoled -e' or
-> >> 'asusoled -d').
+On Fri, 2010-01-15 at 18:55 +0100, Oliver Neukum wrote:
+> Am Freitag, 15. Januar 2010 18:38:36 schrieb Kasper Sandberg:
+> > Hello..
 > > 
-> > Looks good, can I get a 'Signed-off-by:' line so that I can apply the
-> > patch?
+> > Im having some issues with some huawei e1752 modems, the computer
+> > sometimes completely freezes, and i suspect its due to the option
+> > driver, as it doesnt happen if i dont modeswitch them to appear as
+> > option modem.
+> > 
+> > Do you have any idea what might cause this? i looked all over the system
+> > logs and theres nothing to help at all, but i have seen this spanning
+> > from .26 to .32, on multiple computers, and i just dont know what to do
+> > to fix it.
 > 
-> Sure:
-> Signed-off-by: Eugeni Dodonov <eugeni@mandriva.com>
+> Please recompile your kernel with lockdep. This should improve
+> debugging.
 
-Thanks, I've updated the patch and will send it to Linus later today.
+It is a debian unstable .32 kernel i run now, and grepping for lockdep
+reveals:
+CONFIG_LOCKDEP_SUPPORT=y
+only, is there anything more i should have? (never used lockdep before)
 
-greg k-h
+> 
+> 	Regards
+> 			Oliver
+
