@@ -1,48 +1,61 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857Ab0AOKbc (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 05:31:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767Ab0AOKba
+	id S1756663Ab0AOKdx (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 05:33:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910Ab0AOKdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 05:31:30 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44888 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755912Ab0AOKba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 05:31:30 -0500
-Date: Fri, 15 Jan 2010 11:31:27 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: selinux@tycho.nsa.gov, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix some typo's in avc.c
-In-Reply-To: <1263538998-20088-1-git-send-email-justinmattock@gmail.com>
-Message-ID: <alpine.LNX.2.00.1001151131180.30977@pobox.suse.cz>
-References: <1263538998-20088-1-git-send-email-justinmattock@gmail.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 15 Jan 2010 05:33:52 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43613 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899Ab0AOKdv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 05:33:51 -0500
+Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
+From: Peter Zijlstra <peterz@infradead.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+        Arnaldo Carvalho de Melo <acme@infradead.org>,
+        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+        utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        Masami Hiramatsu <mhiramat@redhat.com>,
+        Maneesh Soni <maneesh@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100115102645.GA22640@linux.vnet.ibm.com>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
+	 <1263467394.4244.291.camel@laptop>
+	 <1263509380.4875.35.camel@localhost.localdomain>
+	 <1263546632.4244.352.camel@laptop>
+	 <20100115102645.GA22640@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 11:33:27 +0100
+Message-ID: <1263551607.4244.379.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jan 2010, Justin P. Mattock wrote:
-
-> Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
-> ---
->  security/selinux/avc.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+On Fri, 2010-01-15 at 15:56 +0530, Srikar Dronamraju wrote:
+> Hi Peter, 
 > 
-> diff --git a/security/selinux/avc.c b/security/selinux/avc.c
-> index f2dde26..3328b1f 100644
-> --- a/security/selinux/avc.c
-> +++ b/security/selinux/avc.c
-> @@ -337,7 +337,7 @@ static inline struct avc_node *avc_search_node(u32 ssid, u32 tsid, u16 tclass)
->   * Look up an AVC entry that is valid for the
->   * (@ssid, @tsid), interpreting the permissions
->   * based on @tclass.  If a valid AVC entry exists,
-> - * then this function return the avc_node.
-> + * then this function returns the avc_node.
+> Or there could be two threads that could be racing to
+> insert/delete a breakpoint. These synchronization issues are all handled
+> by the Uprobes layer.
 
-Applied, thanks.
+Shouldn't be hard to put that in the ubp layer, right?
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+> Uprobes layer would need to be notified of process life-time events
+> like fork/clone/exec/exit. 
+
+No so much the process lifetimes as the vma life times are interesting,
+placing a hook in the vm code to track that isn't too hard, 
+
+> It also needs to know
+> 	-  when a breakpoint is hit
+> 	-  stop and resume a thread.
+
+A simple hook in the trap code is done quickly enough, and no reason to
+stop the thread, its not going anywhere when it traps.
+
+
