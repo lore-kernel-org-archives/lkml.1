@@ -1,155 +1,61 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757569Ab0AOM4Y (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 07:56:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407Ab0AOM4X
+	id S1754985Ab0AONIK (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 08:08:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810Ab0AONIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 07:56:23 -0500
-Received: from ernst.netinsight.se ([194.16.221.21]:8700 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757306Ab0AOM4W (ORCPT
+	Fri, 15 Jan 2010 08:08:09 -0500
+Received: from e28smtp01.in.ibm.com ([122.248.162.1]:56121 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260Ab0AONIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 07:56:22 -0500
-Date: Fri, 15 Jan 2010 13:56:13 +0100 (CET)
-Message-Id: <20100115.135613.1130385479658158300.anders@netinsight.net>
-To: xiong.huang@atheros.com, jie.yang@atheros.com,
-        linux-kernel@vger.kernel.org
-Cc: ben@decadent.org.uk
-Subject: atl1e: TSO is broken
-From: Anders =?iso-8859-1?Q?Bostr=F6m?= <anders@netinsight.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jan 2010 08:08:06 -0500
+Date: Fri, 15 Jan 2010 18:38:02 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+        Arnaldo Carvalho de Melo <acme@infradead.org>,
+        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+        utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        Masami Hiramatsu <mhiramat@redhat.com>,
+        Maneesh Soni <maneesh@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
+Message-ID: <20100115130802.GC20658@linux.vnet.ibm.com>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+ <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
+ <1263467394.4244.291.camel@laptop>
+ <1263509380.4875.35.camel@localhost.localdomain>
+ <1263546632.4244.352.camel@laptop>
+ <20100115102645.GA22640@linux.vnet.ibm.com>
+ <1263551607.4244.379.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1263551607.4244.379.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Short desription
-----------------
+* Peter Zijlstra <peterz@infradead.org> [2010-01-15 11:33:27]:
 
-TCP Segmentation Offload (TSO) result in broken IPv4-packets sent out
-from Atheros AR8121/AR8113/AR8114 with the atl1e driver.
+> 
+> > Uprobes layer would need to be notified of process life-time events
+> > like fork/clone/exec/exit. 
+> 
+> No so much the process lifetimes as the vma life times are interesting,
+> placing a hook in the vm code to track that isn't too hard, 
+> 
+> > It also needs to know
+> > 	-  when a breakpoint is hit
+> > 	-  stop and resume a thread.
+> 
+> A simple hook in the trap code is done quickly enough, and no reason to
+> stop the thread, its not going anywhere when it traps.
+> 
+> 
 
-
-Work around
------------
-
-Turn off TSO. Requires 2.6.33-rc1 or later.
-
-
-Long desription
-----------------
-
-When I run NFS over TCP (default options) and read large files from a
-server with Atheros AR8121/AR8113/AR8114 Ethernet chip, I only get
-~25Mbyte/s performance. I get ~5000 retransmitted packets per GByte
-data, according to RetransSegs in /proc/net/snmp . wireshark in the
-client show that the server send out a sequence of frames. All but the
-last one are 1500 bytes IP-packets. The last one is shorter, but the
-IP-header still say 1500 byte. The client then requests retransmit,
-and the retransmitted frame arrives with correct IP-header.
-
-If I mount NFS using UDP instead, performance is ~110Mbyte/s.
-
-TCP Segmentation Offload (TSO) is default enabled in the atl1e
-Ethernet-driver. When I run a patched 2.6.30.10, enabling ethtool to
-turn off TSO (using ac936929092dc6a5409b627c4c67305ab9b626b3 by Ben
-Hutchings), and turn off TSO, the problem disappears. Performance is
-~110Mbyte/s and no broken IP-packets arrive.
-
-
-Capture of 146-byte Ethernet frame with bad IP-header:
-
-No.     Time        Source                Destination           Protocol Info
-  98329 11.034129   flash.netinsight.se   sid.netinsight.se     RPC      Continuation
-
-Frame 98329 (146 bytes on wire, 146 bytes captured)
-    Arrival Time: Jan 15, 2010 13:35:16.224491000
-    [Time delta from previous captured frame: 0.000009000 seconds]
-    [Time delta from previous displayed frame: 0.000009000 seconds]
-    [Time since reference or first frame: 11.034129000 seconds]
-    Frame Number: 98329
-    Frame Length: 146 bytes
-    Capture Length: 146 bytes
-    [Frame is marked: False]
-    [Protocols in frame: eth:ip:tcp:rpc]
-    [Coloring Rule Name: TCP]
-    [Coloring Rule String: tcp]
-Ethernet II, Src: AsustekC_ae:69:6d (00:26:18:ae:69:6d), Dst: sid.netinsight.se (00:18:f3:52:22:3f)
-Internet Protocol, Src: flash.netinsight.se (10.100.0.88), Dst: sid.netinsight.se (10.100.1.25)
-    Version: 4
-    Header length: 20 bytes
-    Differentiated Services Field: 0x00 (DSCP 0x00: Default; ECN: 0x00)
-    Total Length: 1500
-    Identification: 0x331e (13086)
-    Flags: 0x02 (Don't Fragment)
-    Fragment offset: 0
-    Time to live: 64
-    Protocol: TCP (0x06)
-    Header checksum: 0xebc5 [correct]
-    Source: flash.netinsight.se (10.100.0.88)
-    Destination: sid.netinsight.se (10.100.1.25)
-Transmission Control Protocol, Src Port: nfs (2049), Dst Port: accessbuilder (888), Seq: 93989617, Ack: 516997, Len: 80
-Remote Procedure Call
-
-0000  00 18 f3 52 22 3f 00 26 18 ae 69 6d 08 00 45 00   ...R"?.&..im..E.
-0010  05 dc 33 1e 40 00 40 06 eb c5 0a 64 00 58 0a 64   ..3.@.@....d.X.d
-0020  01 19 08 01 03 78 a4 07 57 23 e6 50 1f 1b 80 10   .....x..W#.P....
-0030  01 f5 dd 8d 00 00 01 01 08 0a 05 28 ca 7e 38 93   ...........(.~8.
-0040  67 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00   g...............
-0050  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
-0060  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
-0070  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
-0080  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
-0090  00 00                                             ..
-
-
-
-Software info:
-
-I've tested with Debian 2.6.26 (stable) and 2.6.30 (testing), as well
-as 2.6.30.10 from kernel.org. Same result.
-
-Hardware info:
-
-lspci -vvv:
-
-03:00.0 Ethernet controller: Attansic Technology Corp. Atheros AR8121/AR8113/AR8114 PCI-E Ethernet Controller (rev b0)
-        Subsystem: ASUSTeK Computer Inc. Device 831c
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR+ <PERR- INTx-
-        Latency: 0, Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 27
-        Region 0: Memory at fbfc0000 (64-bit, non-prefetchable) [size=256K]
-        Region 2: I/O ports at ec00 [size=128]
-        Capabilities: [40] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [48] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
-                Address: 00000000fee0f00c  Data: 4189
-        Capabilities: [58] Express (v1) Endpoint, MSI 00
-                DevCap: MaxPayload 4096 bytes, PhantFunc 0, Latency L0s <4us, L1 unlimited
-                        ExtTag- AttnBtn+ AttnInd+ PwrInd+ RBE- FLReset-
-                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-                        RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
-                        MaxPayload 128 bytes, MaxReadReq 512 bytes
-                DevSta: CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+ TransPend-
-                LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s, Latency L0 unlimited, L1 unlimited
-                        ClockPM- Suprise- LLActRep- BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-        Capabilities: [100] Advanced Error Reporting <?>
-        Capabilities: [180] Device Serial Number ff-18-26-00-6d-69-ae-ff
-        Kernel driver in use: ATL1E
-        Kernel modules: atl1e
-
-ethtool -i eth0:
-
-driver: ATL1E
-version: 1.0.0.7-NAPI
-firmware-version: L1e
-bus-info: 0000:03:00.0
-
-
-/ Anders
+Some of the threads could be executing in the vicinity of the
+breakpoint when it is getting inserted or deleted. Wont we need to
+stop/quiesce those threads?
