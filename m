@@ -1,79 +1,52 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454Ab0AONeM (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 08:34:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363Ab0AONeL
+	id S932168Ab0AONhM (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 08:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641Ab0AONhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 08:34:11 -0500
-Received: from bld-mail14.adl6.internode.on.net ([150.101.137.99]:40119 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753951Ab0AONeL (ORCPT
+	Fri, 15 Jan 2010 08:37:11 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:46550 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752177Ab0AONhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 08:34:11 -0500
-Date: Sat, 16 Jan 2010 00:33:22 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com,
-        Christoph Hellwig <hch@infradead.org>,
-        Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: lockdep: inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R}
-	usage.
-Message-ID: <20100115133322.GA4172@discord.disaster>
-References: <20100115120253.GH28498@discord.disaster> <1263557473.4244.399.camel@laptop> <20100115124410.GI28498@discord.disaster> <1263559995.4244.403.camel@laptop>
+	Fri, 15 Jan 2010 08:37:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=TSerXE20qnV2hOOUz3YIWL6XL7Om+4h7X90hBs9Yfoc+GcenD/Gbaw41mDXGKYBOTC
+         QR+rHGr1xIv46Ow1vv4rPhr0xo/041IuZB08AcwBySXFi1MDs5lNwRM6Jxh6YA9oZsk2
+         KT+/Nc1BU4Ri8QvsJofKKbsYCvKRDqGjLnU/E=
+Message-ID: <4B507093.6050002@gmail.com>
+Date: Fri, 15 Jan 2010 14:41:39 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263559995.4244.403.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
+        Andrew Morton <akpm@linux-foundation.org>,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: bau_msg_head points to a_queue_first in uv_table_bases_finish()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 01:53:15PM +0100, Peter Zijlstra wrote:
-> On Fri, 2010-01-15 at 23:44 +1100, Dave Chinner wrote:
-> > 
-> > > > I can't work out what the <mumble>RECLAIM_FS<mumble> notations are
-> > > > supposed to mean from the code and they are not documented at
-> > > > all, so I need someone to explain what this means before I can
-> > > > determine if it is a valid warning or not....
-> > > 
-> > > The <mumble>RECLAIM_FS<mumble> bit means that lock (iprune_sem) was
-> > > taken from reclaim and is also taken over an allocation.
-> > 
-> > So there's an implicit, undocumented requirement that inode reclaim
-> > during unmount requires a filesystem to do GFP_NOFS allocation? 
-> 
-> Well, I don't know enough about xfs (of filesystems in generic) to say
-> that with any certainty, but I can imagine inode writeback from the sync
-> that goes with umount to cause issues.
-> 
-> If this inode reclaim is past all that and the filesystem is basically
-> RO, then I don't think so and this could be considered a false positive,
-> in which case we need an annotation for this.
+bau_msg_head should point to bau_msg_head
 
-The issue is that the iprune_sem is held write locked over
-dispose_list() even though the inodes have been removed from the
-unused list. While iprune_sem is held write locked, we can't enter
-shrink_icache_memory because that takes the iprune_sem in read mode.
-Hence allocation anywhere in the dispose_list path has to be
-GFP_NOFS to avoid this.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Is this correct?
 
-XFS relies on the PF_MEMALLOC flag to clear the __GFP_FS
-flag in allocations so that the same code paths work in both
-normal and reclaim situations (like _xfs_trans_alloc), but the
-unmount path sets no such flag. Setting this flag would
-avoid the problem, but is messy.
-
-FWIW, I'm not sure why we need to hold the iprune_sem after the
-inodes have been detached from the unused list in the unmount path.
-The iprune_sem is there to prevent against concurrent access by the
-shrink_icache_memory path, so once all the inodes are isolated it
-seems the iprune_sem is not needed anymore. Of course, this code is
-a maze of twisty passages, so there's likely to be something I've
-missed that means that this is the only way it can work....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
+index 364d015..3d66331 100644
+--- a/arch/x86/kernel/tlb_uv.c
++++ b/arch/x86/kernel/tlb_uv.c
+@@ -691,7 +691,7 @@ uv_table_bases_finish(int blade,
+ 			continue;
+ 
+ 		bcp = (struct bau_control *)&per_cpu(bau_control, cpu);
+-		bcp->bau_msg_head	= bau_tablesp->va_queue_first;
++		bcp->bau_msg_head	= bau_tablesp->bau_msg_head;
+ 		bcp->va_queue_first	= bau_tablesp->va_queue_first;
+ 		bcp->va_queue_last	= bau_tablesp->va_queue_last;
+ 		bcp->msg_statuses	= bau_tablesp->msg_statuses;
