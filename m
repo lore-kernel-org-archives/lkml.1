@@ -1,52 +1,47 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756242Ab0AOIyi (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 03:54:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684Ab0AOIyh
+	id S1755968Ab0AOJDo (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 04:03:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206Ab0AOJDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 03:54:37 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43482
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753722Ab0AOIyg (ORCPT
+	Fri, 15 Jan 2010 04:03:42 -0500
+Received: from casper.infradead.org ([85.118.1.10]:51324 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001Ab0AOJDl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 03:54:36 -0500
-Date: Fri, 15 Jan 2010 00:54:45 -0800 (PST)
-Message-Id: <20100115.005445.263291449.davem@davemloft.net>
-To: stefanr@s5r6.in-berlin.de
-Cc: adi@hexapodia.org, julia@diku.dk, nm127@freemail.hu, david.vrabel@csr.com,
-        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, cocci@diku.dk
-Subject: Re: Changelog quality
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B502C6B.7000802@s5r6.in-berlin.de>
-References: <4B5023A6.5070100@s5r6.in-berlin.de>
-	<20100115.002424.100105244.davem@davemloft.net>
-	<4B502C6B.7000802@s5r6.in-berlin.de>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	Fri, 15 Jan 2010 04:03:41 -0500
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+        Arnaldo Carvalho de Melo <acme@infradead.org>,
+        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+        utrace-devel <utrace-devel@redhat.com>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        Masami Hiramatsu <mhiramat@redhat.com>,
+        Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+        LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263498366.4875.25.camel@localhost.localdomain>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>
+	 <1263467289.4244.288.camel@laptop>
+	 <1263498366.4875.25.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 10:02:55 +0100
+Message-ID: <1263546175.4244.342.camel@laptop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date: Fri, 15 Jan 2010 09:50:51 +0100
-
-> David Miller wrote:
->> And likewise here, I want to see what the hell found the bug by
->> reading the changelog message.
+On Thu, 2010-01-14 at 11:46 -0800, Jim Keniston wrote:
 > 
-> Coccinelle found it.  In contrast to parsers like sparse, it had to be
-> programmed to do so.  If you want to repeat that process, you have to
-> get coccinelle and the script.  Both can be found quickly without having
-> them both in the SCM.
+> +Instruction copies to be single-stepped are stored in a per-process
+> +"single-step out of line (XOL) area," which is a little VM area
+> +created by Uprobes in each probed process's address space.
 
-I still don't see how this can argue for not putting the script into
-the commit message.
+I think tinkering with the probed process's address space is a no-no.
+Have you ran this by the linux mm folks? I'd be inclined to NAK this
+straight out.
 
-And you overstate how "easily" the script can be found.
-
-What button do I push in gitk when viewing a commit to find the
-script?
-
-If I have to go out of the tool, that's the beginning down the long
-road of potential distractions.
