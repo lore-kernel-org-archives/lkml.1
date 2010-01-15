@@ -1,63 +1,53 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945Ab0AOSJO (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 13:09:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757924Ab0AOSJN
+	id S1757966Ab0AOSJj (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 13:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757908Ab0AOSJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 13:09:13 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:60518 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757779Ab0AOSJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 13:09:12 -0500
-Date: Fri, 15 Jan 2010 12:09:09 -0600
-From: Russ Anderson <rja@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-        tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: [BUGFIX] x86, UV: ensure hub revision set for all ACPI modes.
-Message-ID: <20100115180908.GB7757@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Jan 2010 13:09:37 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:21672 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757641Ab0AOSJh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 13:09:37 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
+Subject: [PATCH] cfi.h: quiet sparse noise
+Date: Fri, 15 Jan 2010 11:09:32 -0700
+Cc: dwmw2@infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <201001151109.32890.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure that UV hub revision is set for all ACPI modes.
+cfi.h: quiet sparse noise
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
+In the inline function cfi_build_cmd_addr, the cast of cmd_ofs to an
+uint8_t produces a sparse warning of the type:
+
+warning: cast truncates bits from constant value (2aa becomes aa)
+
+Quiet the warning by masking cmd_ofs with 0xff and remove the cast.
+
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
 
 ---
-Patch requires "Add function retrieving node controller revision number" patch.
 
- arch/x86/kernel/apic/x2apic_uv_x.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Index: linux/arch/x86/kernel/apic/x2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/apic/x2apic_uv_x.c	2010-01-15 10:47:54.000000000 -0600
-+++ linux/arch/x86/kernel/apic/x2apic_uv_x.c	2010-01-15 10:48:44.000000000 -0600
-@@ -67,7 +67,10 @@ static int early_get_nodeid(void)
+diff --git a/include/linux/mtd/cfi.h b/include/linux/mtd/cfi.h
+index df89f42..a4eefc5 100644
+--- a/include/linux/mtd/cfi.h
++++ b/include/linux/mtd/cfi.h
+@@ -297,7 +297,7 @@ static inline uint32_t cfi_build_cmd_addr(uint32_t cmd_ofs,
+ 	 * and 32bit devices on 16 bit busses
+ 	 * set the low bit of the alternating bit sequence of the address.
+ 	 */
+-	if (((type * interleave) > bankwidth) && ((uint8_t)cmd_ofs == 0xaa))
++	if (((type * interleave) > bankwidth) && ((cmd_ofs & 0xff) == 0xaa))
+ 		addr |= (type >> 1)*interleave;
  
- static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
-+	int nodeid;
-+
- 	if (!strcmp(oem_id, "SGI")) {
-+		nodeid = early_get_nodeid();
- 		x86_platform.is_untracked_pat_range =  uv_is_untracked_pat_range;
- 		if (!strcmp(oem_table_id, "UVL"))
- 			uv_system_type = UV_LEGACY_APIC;
-@@ -75,7 +78,7 @@ static int __init uv_acpi_madt_oem_check
- 			uv_system_type = UV_X2APIC;
- 		else if (!strcmp(oem_table_id, "UVH")) {
- 			__get_cpu_var(x2apic_extra_bits) =
--				early_get_nodeid() << (UV_APIC_PNODE_SHIFT - 1);
-+				nodeid << (UV_APIC_PNODE_SHIFT - 1);
- 			uv_system_type = UV_NON_UNIQUE_APIC;
- 			return 1;
- 		}
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+ 	return  addr;
