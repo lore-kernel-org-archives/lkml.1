@@ -1,61 +1,51 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932141Ab0AOTp6 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 14:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758087Ab0AOTp6
+	id S1754828Ab0AOTtb (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 14:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114Ab0AOTt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 14:45:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:21554 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758080Ab0AOTp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 14:45:57 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "Zhang\, Yanmin" <yanmin_zhang@linux.intel.com>,
-        Shaohua Li <shaohua.li@intel.com>,
-        "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "jens.axboe\@oracle.com" <jens.axboe@oracle.com>,
-        "Zhang\, Yanmin" <yanmin.zhang@intel.com>
-Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as  close
-References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
-	<20091228084659.GA31389@sli10-desk.sh.intel.com>
-	<4e5e476b0912280111s6a977251m3416341b4bd2c272@mail.gmail.com>
-	<20091228092844.GA9710@sli10-desk.sh.intel.com>
-	<x493a2k8d7x.fsf@segfault.boston.devel.redhat.com>
-	<4e5e476b1001070544w88a387dkfb48847f4f95a9b1@mail.gmail.com>
-	<x49hbqy3s3m.fsf@segfault.boston.devel.redhat.com>
-	<1263187209.29897.33.camel@localhost>
-	<4e5e476b1001110705y6c3319ducf6a15c2a2be5670@mail.gmail.com>
-	<1263264218.29897.41.camel@localhost>
-	<4e5e476b1001151132l406054f6xcc47b94e817d3af0@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Fri, 15 Jan 2010 14:45:50 -0500
-In-Reply-To: <4e5e476b1001151132l406054f6xcc47b94e817d3af0@mail.gmail.com>
-	(Corrado Zoccolo's message of "Fri, 15 Jan 2010 20:32:10 +0100")
-Message-ID: <x494omnp2xd.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Jan 2010 14:49:29 -0500
+Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:51105 "HELO
+	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753481Ab0AOTt3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 14:49:29 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=EDutwNnIqkSX3/BcgsB4SegDmhJAFPficAoXjLKnAkFzUTXHpmHYhJBK9/+i4dsRM9zF5iLK/7ccl7pPGH21PXFgCHFFosNv4Djjg/kPyvf8NroYd/f4WI4XuR6YQ5h+;
+Date: Fri, 15 Jan 2010 11:49:28 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH 4/7] x86/pci: use u64 instead of size_t in amd_bus.c -v2
+Message-ID: <20100115114928.5e565e30@jbarnes-piketon>
+In-Reply-To: <4B2BE189.9060708@kernel.org>
+References: <4B2BE063.4040704@kernel.org>
+	<4B2BE189.9060708@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
+On Fri, 18 Dec 2009 12:09:45 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-> Hi Jeff,
-> I think this patch has the same flaw as Shaohua's.
-> The seekiness check that you introduce in cfq_rq_close is already
-> present in its caller, cfq_close_cooperator, so it is not effective.
+> 
+> prepare to enable it for 32bit
+> 
+> -v2: remove not needed cast
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
 
-I don't think so.  There are two queues, here.  One queue is checked by
-the caller, and that is the cur_cfqq.  The __cfqq needs to also be
-checked.
+4-6 have conflicts against my linux-next branch, can you refresh them?
 
-> Up to now, the only patch that improves this situation is the one that
-> changes the unmerge policy to unmerge after a single time slice.
-
-Yes, I definitely agree with that, and I think that patch should go in.
-
-Cheers,
-Jeff
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
