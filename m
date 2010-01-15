@@ -1,71 +1,45 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757800Ab0AOQ5r (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 11:57:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481Ab0AOQ5q
+	id S1757872Ab0AORMT (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 12:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757852Ab0AORMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 11:57:46 -0500
-Received: from exprod6og103.obsmtp.com ([64.18.1.185]:44588 "HELO
-	exprod6og103.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751111Ab0AOQ5p convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jan 2010 12:12:18 -0500
+Received: from gv-out-0910.google.com ([216.239.58.187]:61032 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754797Ab0AORMR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 11:57:45 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 15 Jan 2010 12:12:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=WjyKRSl94L0FeF+5Wt3FdYJgZFH+NgBs8CXizTiS4LYIQJLOu5EDU8GF5yd5qLze6Z
+         17vvWNyZGeIggT9nVGwj9ZHOMAGGy9fFm02wnnUkL+WDLf5/Csnfc0qm/AGctIm1+Dze
+         +j2VXUnXY3hm6/oX0FfhTPkwQwAgVprUA+aYM=
+Message-ID: <4B50A1EB.2030903@lwfinger.net>
+Date: Fri, 15 Jan 2010 11:12:11 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] net/ipv4/fib_semantics.c: quiet sparse "shadows" noise
-Date: Fri, 15 Jan 2010 11:57:41 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190902089F54@mi8nycmail19.Mi8.com>
-In-Reply-To: <20100115.011730.263631545.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] net/ipv4/fib_semantics.c: quiet sparse "shadows" noise
-Thread-Index: AcqVw4tsNlUwvCQVTc2QpgBG0/cF1QAP/4Ag
-References: <201001141652.42757.hartleys@visionengravers.com> <20100115.011730.263631545.davem@davemloft.net>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-        <kuznet@ms2.inr.ac.ru>, <pekkas@netcore.fi>, <jmorris@namei.org>,
-        <yoshfuji@linux-ipv6.org>, <kaber@trash.net>
-X-OriginalArrivalTime: 15 Jan 2010 16:57:43.0484 (UTC) FILETIME=[DAE2B7C0:01CA9603]
+To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+CC: linux-kernel@vger.kernel.org, Stefano Brivio <stefano.brivio@polimi.it>,
+        linux-wireless@vger.kernel.org,
+        Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: Re: [PATCH] obsolete in kernel source (B43_LEGACY_RFKILL)
+References: <20100113135937.GA5588@stud.informatik.uni-erlangen.de>
+In-Reply-To: <20100113135937.GA5588@stud.informatik.uni-erlangen.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, January 15, 2010 2:18 AM, David Miller wrote:
-> From: H Hartley Sweeten <hartleys@visionengravers.com>
-> Date: Thu, 14 Jan 2010 16:52:41 -0700
->
->> net/ipv4/fib_semantics.c: quiet sparse "shadows" noise
->> 
->> If CONFIG_IP_ROUTE_MULTIPATH is defined the symbol 'nh' is
->> declared twice in the function fib_sync_down_dev. First as the
->> loop variable used to iterate the hlist. Then again due to the
->> change_nexthops macro. This produces a sparse warning and
->> makes the code harder to understand.
->> 
->> Fix the issue by renaming the first symbol.
->> 
->> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
->
-> I think it's easier to fix this by using a less simple name
-> in change_nexthops(), so I'll deal with this using the following
-> patch.
+On 01/13/2010 07:59 AM, Christoph Egger wrote:
+> 
+> 	Please keep me informed of this patch getting confirmed /
+> merged so we can keep track of it.
 
-OK. The patch is larger but it's much clearer this way.
+The patch is in wireless-testing as commit
+2f1f00fc9b477481ad5c63976385c345851fee3d. It will be in mainline kernel 2.6.34.
 
-> Thanks for reporting this:
->
-> ipv4: Use less conflicting local var name in change_nexthops() loop macro.
->
-> As noticed by H Hartley Sweeten, since change_nexthops() uses 'nh'
-> as it's iterator variable, it can conflict with other existing
-> local vars.
->
-> Use "nexthop_nh" to avoid the conflict and make it easier to figure
-> out where this magic variable comes from.
->
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-
-Tested-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Larry
