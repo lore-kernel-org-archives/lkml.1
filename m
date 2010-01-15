@@ -1,49 +1,48 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753604Ab0AOCsb (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 21:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043Ab0AOCsb
+	id S1753653Ab0AOC4b (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 21:56:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043Ab0AOC4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 21:48:31 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:15479 "EHLO
+	Thu, 14 Jan 2010 21:56:30 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:15480 "EHLO
 	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751937Ab0AOCsa (ORCPT
+	by vger.kernel.org with ESMTP id S1751160Ab0AOC4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 21:48:30 -0500
+	Thu, 14 Jan 2010 21:56:30 -0500
 From: H Hartley Sweeten <hartleys@visionengravers.com>
 To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fs/partitions/check.c: make local symbol static
-Date: Thu, 14 Jan 2010 19:48:36 -0700
+Subject: [PATCH] fs/notify/notification.c: make subsys_initcall static
+Date: Thu, 14 Jan 2010 19:56:35 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <201001141948.36170.hartleys@visionengravers.com>
+Message-Id: <201001141956.36042.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/partitions/check.c: make local symbol static
+fs/notify/notification.c: make subsys_initcall static
 
-The symbol part_alignment_offset_show is only used locally
-in this file. Make it static to prevent the following sparse warning:
-
-warning: symbol 'part_alignment_offset_show' was not declared. Should it be static?
+The function fsnotify_notification_init is a subsys_initcall
+and does not need to be exported. Make the function
+static.
 
 Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
 ---
 
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 64bc899..9814e22 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -219,7 +219,7 @@ ssize_t part_size_show(struct device *dev,
- 	return sprintf(buf, "%llu\n",(unsigned long long)p->nr_sects);
+diff --git a/fs/notify/notification.c b/fs/notify/notification.c
+index b8bf53b..7f9a085 100644
+--- a/fs/notify/notification.c
++++ b/fs/notify/notification.c
+@@ -407,7 +407,7 @@ struct fsnotify_event *fsnotify_create_event(struct inode *to_tell, __u32 mask,
+ 	return event;
  }
  
--ssize_t part_alignment_offset_show(struct device *dev,
-+static ssize_t part_alignment_offset_show(struct device *dev,
- 				   struct device_attribute *attr, char *buf)
+-__init int fsnotify_notification_init(void)
++static __init int fsnotify_notification_init(void)
  {
- 	struct hd_struct *p = dev_to_part(dev);
+ 	fsnotify_event_cachep = KMEM_CACHE(fsnotify_event, SLAB_PANIC);
+ 	fsnotify_event_holder_cachep = KMEM_CACHE(fsnotify_event_holder, SLAB_PANIC);
