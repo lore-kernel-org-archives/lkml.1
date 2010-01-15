@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794Ab0AOA1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866Ab0AOAbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757794Ab0AOA1I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 19:27:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622Ab0AOA1G
+	id S1754866Ab0AOAbn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 19:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098Ab0AOAbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 19:27:06 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:42310 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754813Ab0AOA1E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 19:27:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=Bdotz8nS64adri/r2IQ4wTTEIocQkLhwYsPjIJxJKTKas1GmIY89sC2FhG5fAWUkRO
-         QVoj8wZIsQn2WBCzB2T3OmFd18abh+udgD4gWzKXxYCxaFLWff7ANL+uuCcVHnta3vmh
-         lr10qiJ+0uwz8bhbiTAAgRg4n0STQ2ccf/cFU=
-Message-ID: <4B4FB766.1020805@gmail.com>
-Date: Fri, 15 Jan 2010 01:31:34 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Thu, 14 Jan 2010 19:31:43 -0500
+Received: from kroah.org ([198.145.64.141]:46491 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752823Ab0AOAbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 19:31:42 -0500
+Date: Thu, 14 Jan 2010 16:24:19 -0800
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       Iliyan Malchev <malchev@google.com>
+Subject: Re: [PATCH] staging/dream: add missing include files/fix
+ compilation
+Message-ID: <20100115002419.GA25643@kroah.com>
+References: <20091225205917.GA25761@elf.ucw.cz>
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ACPICA: wrong acpi_parse_state assigned acpi_ps_init_scope()
- ?
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091225205917.GA25761@elf.ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Assign the package end, not the last AML byte.
+On Fri, Dec 25, 2009 at 09:59:18PM +0100, Pavel Machek wrote:
+> This adds missing include files, so it should now compile. ifdef
+> guards were added to Kconfig, so it should not cause problems on
+> non-arch-msm machines.
+> 
+> Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Is this right?
+Odd, this doesn't apply to the linux-next tree, some of the files are
+already there.
 
-diff --git a/drivers/acpi/acpica/psscope.c b/drivers/acpi/acpica/psscope.c
-index 2feca5c..a8dfe16 100644
---- a/drivers/acpi/acpica/psscope.c
-+++ b/drivers/acpi/acpica/psscope.c
-@@ -118,7 +118,7 @@ acpi_ps_init_scope(struct acpi_parse_state * parser_state,
- 	scope->parse_scope.op = root_op;
- 	scope->parse_scope.arg_count = ACPI_VAR_ARGS;
- 	scope->parse_scope.arg_end = parser_state->aml_end;
--	scope->parse_scope.pkg_end = parser_state->aml_end;
-+	scope->parse_scope.pkg_end = parser_state->pkg_end;
- 
- 	parser_state->scope = scope;
- 	parser_state->start_op = root_op;
+Care to refresh this?
+
+thanks,
+
+greg k-h
