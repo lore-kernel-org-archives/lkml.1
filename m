@@ -1,80 +1,63 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757867Ab0AOSC7 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 13:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307Ab0AOSC6
+	id S1757912Ab0AOSEs (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 13:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756901Ab0AOSEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 13:02:58 -0500
-Received: from mx2.compro.net ([12.186.155.4]:15867 "EHLO mx2.compro.net"
+	Fri, 15 Jan 2010 13:04:47 -0500
+Received: from kroah.org ([198.145.64.141]:36442 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753718Ab0AOSC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 13:02:58 -0500
-X-IronPort-AV: E=Sophos;i="4.49,282,1262581200"; 
-   d="scan'208";a="4877720"
-Message-ID: <4B50ADD0.20508@compro.net>
-Date: Fri, 15 Jan 2010 13:02:56 -0500
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1756510Ab0AOSEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 13:04:47 -0500
+Date: Fri, 15 Jan 2010 09:33:11 -0800
+From: Greg KH <greg@kroah.com>
+To: Marin Mitov <mitov@issp.bas.bg>
+Cc: Scott Smedley <ss@aao.gov.au>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Yet another dt3155 driver for drivers/staging
+Message-ID: <20100115173311.GA10695@kroah.com>
+References: <201001122242.22774.mitov@issp.bas.bg>
+ <20100114031345.GA22542@aao.gov.au>
+ <20100114034055.GA27311@kroah.com>
+ <201001142139.26837.mitov@issp.bas.bg>
 MIME-Version: 1.0
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-CC: "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>, Andi Kleen <andi@firstfloor.org>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Alain Knaff <alain@knaff.lu>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
-        "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
-References: <alpine.LFD.2.00.0912220922250.31313@localhost.localdomain>	 <4B310879.9050701@compro.net>	 <1261525076.16916.4.camel@localhost.localdomain>	 <4B3162BC.9000508@cfl.rr.com> <4B3214EC.6020308@compro.net>	 <6598A4E21F1DB24D80BF72956484F59802EFD1C6@orsmsx001.amr.corp.intel.com>	 <4B32386B.2060509@compro.net>	 <alpine.LFD.2.00.0912230828230.6879@localhost.localdomain>	 <87bphpd4rt.fsf@basil.nowhere.org> <4B32565E.6000501@compro.net>	 <20091223191806.GA3336@linux-os.sc.intel.com> <4B3270FE.5090607@compro.net>	 <1261600243.16916.56.camel@localhost.localdomain>	 <4B476E8D.1030308@compro.net>	 <1263255557.16916.132.camel@localhost.localdomain>	 <4B4C3B1A.50906@cfl.rr.com> <1263520917.16916.171.camel@localhost.localdomain>
-In-Reply-To: <1263520917.16916.171.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001142139.26837.mitov@issp.bas.bg>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/14/2010 09:01 PM, Pallipadi, Venkatesh wrote:
-> On Tue, 2010-01-12 at 01:04 -0800, Mark Hounschell wrote:
->> On 01/11/2010 07:19 PM, Pallipadi, Venkatesh wrote:
->>>
->>> Sorry for not following up on this. We have narrowed this down to HPET
->>> MSI and floppy DMA. I still don't know how HPET MSI interrupts are
->>> breaking floppy DMA.
->>>
->>> You are seeing the problem on two different systems. Correct? Do you
->>> have any system where this works with HPET MSI enabled?
->>>
->>
->> I see the problem on every system in which the HPET2 shows up in
->> /proc/interrupts. The machines that work with HPET enabled don't show HPET
->> at all in /proc/interrupts.  I have some of each. All the boxes that fail
->> here use the (AMD) 790x series chip sets.
->>
->>> Couple of options on how we can go about this one:
->>> 1) Change the HPET-MSI change to not get activated when there are no
->>> C-states with LAPIC stoppage involved. This will resolve the problem on
->>> the systems you reported as there are no deep C-states. But, I fear that
->>> with the actual problem unresolved, we may hit it in future with this or
->>> some other platform having same issue with CPUs that support deep
->>> C-state.
->>> 2) Try this testcase on few other platforms that support HPET-MSI and
->>> deep C-states and check how widespread the problem is and then add a
->>> whitelist-blacklist for HPET MSI usage.
->>>
->>> I think, for 2.6.33 option 1 is better. Will work on that and send in
->>> patches for you test.
->>>
->>
+On Thu, Jan 14, 2010 at 09:39:26PM +0200, Marin Mitov wrote:
+> Hi Greg,
+> > > 
+> > > No. They are both standalone drivers. If we want V4L2 compatibility
+> > > we would have to modify (either) driver significantly.
 > 
-> Mark,
+> Both are character drivers. My one uses open, read, mmap, ioctl, close.
+> Mainly tested on read. mmap works, but not yet extensively tested.
+> ioctl is used to start/stop acquisition, get info about buffer length,
+> and some error statistics collected during acquisitions.
 > 
-> I just sent out a patchset that should workaround the problem here. Can
-> you check and let me know whether thats the case.
+> see:
 > 
+> http://lfb.issp.bas.bg/~mitov/linux/dt3155pci/00README
+> 
+> for more detailed description.
 
-Yes, it does seem to fix the issue. The floppy formats and /proc/interrupts
-look normal with nothing going on with the hpet2 msi.
+Thanks, but the code needs to use the v4l interface, as it is a video
+device.
 
-Regards
-Mark
+> > Well, that will be the requirement to get it merged into the main
+> > portion of the kernel tree.  No special interfaces are allowed, sorry.
+> 
+> I do not quite understand V4L2 lib in particular how can I get a
+> contiguous buffer in physical memory which do not cross 4MB
+> boundary (hardware requirement).
 
+Try asking on the linux-media mailing list, I don't think this is a big
+deal, as you have already done it in the driver, so that would not have
+to be reworked.
+
+thanks,
+
+greg k-h
