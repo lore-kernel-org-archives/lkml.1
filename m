@@ -1,18 +1,18 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041Ab0AOSyp (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 13:54:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758030Ab0AOSyo
+	id S1758052Ab0AOSyx (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 13:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758030Ab0AOSyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 13:54:44 -0500
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:43707 "HELO
+	Fri, 15 Jan 2010 13:54:50 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:44195 "HELO
 	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758026Ab0AOSym (ORCPT
+	by vger.kernel.org with SMTP id S1758042Ab0AOSys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 13:54:42 -0500
+	Fri, 15 Jan 2010 13:54:48 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=hcEafVz4LbppCstDJ5S1xcAXyBQqgcCGhCdeb2+AAMkTXrfYF9V2OUXmv901eIcjP4qsMjQa6ICIwcALneMWWwNYLHsCItMQDwkeoGfvgZwluEVOQz2ErhbXO8c9rY+h;
-Date: Fri, 15 Jan 2010 10:54:41 -0800
+	b=lVfKitCm5hXia5wT/iHyml/KsWT/Ru0knwNHrKdKh462v8+/ydL3+8gr7HeVomxSHfnU3ev/gyUALDvU1okyWNm57H7jgQBEibI10ovepS+TRD0pUV6/4fLX7vZD8Vc6;
+Date: Fri, 15 Jan 2010 10:54:49 -0800
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Yinghai Lu <yinghai@kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -22,11 +22,12 @@ Cc: Ingo Molnar <mingo@elte.hu>,
         Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
         linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH 02/14] resource: add release_child_resources
-Message-ID: <20100115105441.37e32faf@jbarnes-piketon>
-In-Reply-To: <1261522954-12591-3-git-send-email-yinghai@kernel.org>
+Subject: Re: [PATCH 04/14] pci: don't dump it when bus resource flags is not
+ used
+Message-ID: <20100115105449.6f246f3a@jbarnes-piketon>
+In-Reply-To: <1261522954-12591-5-git-send-email-yinghai@kernel.org>
 References: <1261522954-12591-1-git-send-email-yinghai@kernel.org>
-	<1261522954-12591-3-git-send-email-yinghai@kernel.org>
+	<1261522954-12591-5-git-send-email-yinghai@kernel.org>
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -36,20 +37,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Dec 2009 15:02:22 -0800
+On Tue, 22 Dec 2009 15:02:24 -0800
 Yinghai Lu <yinghai@kernel.org> wrote:
 
-> -v2: change name to release_child_resources according to Jesse
-> -v3: according to Linus, move release_child_resources to resource.c
->      also need to put the lock around them all to avoid recursive
-> deep. (my test case only have one level that need to be released)
-> -v4: seperate to another patch
+> mean it is not used, so skip it.
 > 
 > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
 > ---
+>  drivers/pci/setup-bus.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+> index 7d6d393..e538fa1 100644
+> --- a/drivers/pci/setup-bus.c
+> +++ b/drivers/pci/setup-bus.c
+> @@ -703,7 +703,8 @@ static void pci_bus_dump_res(struct pci_bus *bus)
+>  
+>          for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+>                  struct resource *res = bus->resource[i];
+> -                if (!res || !res->end)
+> +
+> +		if (!res || !res->end || !res->flags)
+>                          continue;
+>  
+>  		dev_printk(KERN_DEBUG, &bus->dev, "resource %d
+> %pR\n", i, res);
 
-Applied to linux-next, thanks.
+Applied, thanks.
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
