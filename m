@@ -1,107 +1,81 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756575Ab0AOEAg (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 23:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460Ab0AOD7s
+	id S1756626Ab0AOEAw (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 23:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598Ab0AOEAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 22:59:48 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:36023 "EHLO
+	Thu, 14 Jan 2010 23:00:49 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59952 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754256Ab0AOD6z (ORCPT
+	with ESMTP id S1754206Ab0AOD6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Jan 2010 22:58:55 -0500
-X-Authority-Analysis: v=1.0 c=1 a=RRHqD-2QBUoA:10 a=omOdbC7AAAAA:8 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=FGfIGzqGBb_-eyKQmZ0A:9 a=eeM_ybOtwOf8Kz8GtlUA:7 a=aDmiRSmc8HuFVIdYLb9N9JOi_TwA:4 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10 a=rfSSAgpB8YlTvswe:21 a=EJ7AwCN74JD5_Yzt:21
+X-Authority-Analysis: v=1.0 c=1 a=MJMND8H6I6IA:10 a=omOdbC7AAAAA:8 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=06-mqBQmBueZ7_EYJnAA:9 a=phiTccZ7FZbGo1er8i3cow9-I-IA:4 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10 a=hqQdktL9eqh6mlTC:21 a=SBc-EebMsjHPKUmh:21
 X-Cloudmark-Score: 0
 X-Originating-IP: 74.67.89.75
-Message-Id: <20100115035853.256010100@goodmis.org>
+Message-Id: <20100115035853.910723642@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 Jan 2010 22:57:31 -0500
+Date: Thu, 14 Jan 2010 22:57:33 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
         Li Zefan <lizf@cn.fujitsu.com>,
         Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 5/8] lib: Introduce strnstr()
+Subject: [PATCH 7/8] tracing/filters: Fix MATCH_FULL filter matching for PTR_STRING
 References: <20100115035726.462940848@goodmis.org>
-Content-Disposition: inline; filename=0005-lib-Introduce-strnstr.patch
+Content-Disposition: inline; filename=0007-tracing-filters-Fix-MATCH_FULL-filter-matching-for-P.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Li Zefan <lizf@cn.fujitsu.com>
 
-It differs strstr() in that it limits the length to be searched
-in the first string.
+MATCH_FULL matching for PTR_STRING is not working correctly:
+
+  # echo 'func == vt' > events/bkl/lock_kernel/filter
+  # echo 1 > events/bkl/lock_kernel/enable
+  ...
+  # cat trace
+   Xorg-1484  [000]  1973.392586: lock_kernel: ... func=vt_ioctl()
+    gpm-1402  [001]  1974.027740: lock_kernel: ... func=vt_ioctl()
+
+We should pass to regex.match(..., len) the length (including '\0')
+of the source string instead of the length of the pattern string.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4B4E8743.6030805@cn.fujitsu.com>
+LKML-Reference: <4B4E8763.5070707@cn.fujitsu.com>
 Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/string.h |    5 ++++-
- lib/string.c           |   27 ++++++++++++++++++++++++++-
- 2 files changed, 30 insertions(+), 2 deletions(-)
+ kernel/trace/trace_events_filter.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/string.h b/include/linux/string.h
-index 651839a..a716ee2 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -72,7 +72,10 @@ static inline __must_check char *strstrip(char *str)
- }
- 
- #ifndef __HAVE_ARCH_STRSTR
--extern char * strstr(const char *,const char *);
-+extern char * strstr(const char *, const char *);
-+#endif
-+#ifndef __HAVE_ARCH_STRNSTR
-+extern char * strnstr(const char *, const char *, size_t);
- #endif
- #ifndef __HAVE_ARCH_STRLEN
- extern __kernel_size_t strlen(const char *);
-diff --git a/lib/string.c b/lib/string.c
-index 9f75b4e..a1cdcfc 100644
---- a/lib/string.c
-+++ b/lib/string.c
-@@ -667,7 +667,7 @@ EXPORT_SYMBOL(memscan);
-  */
- char *strstr(const char *s1, const char *s2)
+diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+index f364b08..60c2a4e 100644
+--- a/kernel/trace/trace_events_filter.c
++++ b/kernel/trace/trace_events_filter.c
+@@ -211,8 +211,9 @@ static int filter_pred_pchar(struct filter_pred *pred, void *event,
  {
--	int l1, l2;
-+	size_t l1, l2;
+ 	char **addr = (char **)(event + pred->offset);
+ 	int cmp, match;
++	int len = strlen(*addr) + 1;	/* including tailing '\0' */
  
- 	l2 = strlen(s2);
- 	if (!l2)
-@@ -684,6 +684,31 @@ char *strstr(const char *s1, const char *s2)
- EXPORT_SYMBOL(strstr);
- #endif
+-	cmp = pred->regex.match(*addr, &pred->regex, pred->regex.field_len);
++	cmp = pred->regex.match(*addr, &pred->regex, len);
  
-+#ifndef __HAVE_ARCH_STRNSTR
-+/**
-+ * strnstr - Find the first substring in a length-limited string
-+ * @s1: The string to be searched
-+ * @s2: The string to search for
-+ * @len: the maximum number of characters to search
-+ */
-+char *strnstr(const char *s1, const char *s2, size_t len)
-+{
-+	size_t l1 = len, l2;
-+
-+	l2 = strlen(s2);
-+	if (!l2)
-+		return (char *)s1;
-+	while (l1 >= l2) {
-+		l1--;
-+		if (!memcmp(s1, s2, l2))
-+			return (char *)s1;
-+		s1++;
-+	}
-+	return NULL;
-+}
-+EXPORT_SYMBOL(strnstr);
-+#endif
-+
- #ifndef __HAVE_ARCH_MEMCHR
- /**
-  * memchr - Find a character in an area of memory.
+ 	match = cmp ^ pred->not;
+ 
+@@ -782,10 +783,8 @@ static int filter_add_pred(struct filter_parse_state *ps,
+ 			pred->regex.field_len = field->size;
+ 		} else if (field->filter_type == FILTER_DYN_STRING)
+ 			fn = filter_pred_strloc;
+-		else {
++		else
+ 			fn = filter_pred_pchar;
+-			pred->regex.field_len = strlen(pred->regex.pattern);
+-		}
+ 	} else {
+ 		if (field->is_signed)
+ 			ret = strict_strtoll(pred->regex.pattern, 0, &val);
 -- 
 1.6.5
 
