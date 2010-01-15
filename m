@@ -1,75 +1,84 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757578Ab0AONtc (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 08:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407Ab0AONtZ
+	id S1757585Ab0AONz5 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 08:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755612Ab0AONz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 08:49:25 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:62980 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932215Ab0AONtY convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jan 2010 08:55:57 -0500
+Received: from wind.enjellic.com ([209.243.13.15]:37923 "EHLO
+	wind.enjellic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752396Ab0AONz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 08:49:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Wp1mSM9zlLog9T/cBfAZqgquoAGiQersz6tXFuIJ9Q9feyrmYBWBm6S+2vT3oR9niw
-         IzauYFCNBJcYG6UbAKxrryARFfkhVU+FvLykaGjYaXKN9YmWjzy/E2xaQgPYSIJcmULL
-         fNPGf1yflKXd0iC8O5oEI7vkx4P3BfhuXRov8=
-MIME-Version: 1.0
-In-Reply-To: <1263526556.724.402.camel@pasglop>
-References: <201001140059.o0E0x4wS006650@hera.kernel.org>
-	 <1263437142.724.320.camel@pasglop> <1263463781.3544.4714.camel@thor>
-	 <1263526556.724.402.camel@pasglop>
-Date: Fri, 15 Jan 2010 08:49:22 -0500
-Message-ID: <a728f9f91001150549g40be6507y6fa0415229378759@mail.gmail.com>
-Subject: Re: drm/radeon/kms: fix up LVDS handling on macs (v2)
-From: Alex Deucher <alexdeucher@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: =?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@daenzer.net>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Dave Airlie <airlied@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 15 Jan 2010 08:55:56 -0500
+Message-Id: <201001151355.o0FDtMKr014513@wind.enjellic.com>
+From: greg@enjellic.com
+Date: Fri, 15 Jan 2010 07:55:22 -0600
+In-Reply-To: Robert Hancock <hancockrwd@gmail.com>
+       "Re: Memory leak makes 'Blast the Bubbles' problematic." (Jan 13,  6:56pm)
+Reply-To: greg@enjellic.com
+X-Mailer: Mail User's Shell (7.2.5 10/14/92)
+To: Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: Memory leak makes 'Blast the Bubbles' problematic.
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/14 Benjamin Herrenschmidt <benh@kernel.crashing.org>:
-> On Thu, 2010-01-14 at 11:09 +0100, Michel Dänzer wrote:
->> I have looked at radeonfb for a patch I posted a while ago to expose a
->> backlight class device with KMS, and I can only see what you describe
->> above affecting the LVDS_GEN_CNTL backlight level, not BLON or
->> BL_MOD_EN. Am I missing something?
->
-> No, you aren't, it's radeonfb who is :-) I never quite got that part
-> right. I was somewhat hoping several times that Hui and then Alex would
-> manage to dig some info from ATI about what the right method is to drive
-> those panels I think :-)
->
+On Jan 13,  6:56pm, Robert Hancock wrote:
+} Subject: Re: Memory leak makes 'Blast the Bubbles' problematic.
 
-I've tried, but we are coming up on 10 years ago for some of these
-chips so they aren't exactly fresh in people's minds and most of the
-code is in long term storage at this point.  The problem is the
-sequence is oem specific, even on the PC side there are cases were we
-probably aren't doing it quite right.  The current non-mac code in kms
-is the generic code that the PC bios team gave me.
+Hi Robert, thanks for the note.  Good day to Andrew and everyone on
+the list.
 
-Alex
+> On 01/13/2010 09:48 AM, greg@enjellic.com wrote:
+> > Hi, hope the week is going well for everyone.
+> >
+> > Unless I miss my guess there is some type of leak or other memory
+> > anomaly starting in at least late model 2.6.31.x kernels.  I took a
+> > snapshot of the behavior on 2.6.32.3 as well since I knew that
+> > 2.6.31.11 would be considered long in the tooth by all the informed
+> > intelligentia who would be looking at this...... :-)
 
-> But my observation on those HW was definitely that when inverted,
-> disabling the modulation was also turning the panel to full bright on,
-> rather than turning it off.
->
->> Without my patch, KMS doesn't change the backlight level at all, so
->> assuming the firmware manages to enable the backlight, it should stay
->> like that.
->
-> Your patch might make things better than they are today, I'm not arguing
-> there :-) I'm just saying that now might be a good time to try to sort
-> out exactly what should be done in there :-)
->
-> Cheers,
-> Ben.
->
->
+> It looks like the system accumulated some more dcache entries, but
+> those should presumably get freed up if the system needs the
+> memory. The output of "vmstat 1" while the slowness is occurring
+> might be more interesting..
+
+That was my analysis as well.  I banged together a simple C program to
+malloc and dirty about 700 megabytes of memory.  I ran a continuous
+vmstat while I ran the program and verified that all the dcache
+entries were forcibly evicted.
+
+I'm going to have my wife play her games tonight to see if she senses
+a difference in performance on the machine.  If her perception of
+responsiveness improves then I need to dig a bit more and see if
+performance degrades after the next updatedb run.  If so the question
+becomes why her applications are not having the same effect
+
+35 years in this business has taught me to pay a lot of attention to
+what a user feels the system is doing.  After a fresh boot of the
+system she was perfectly content to play games all evening.  24 hours
+later I get the following.... :-)
+
+> My memory has leaked out---help!!!  thanks  Kiss Iggs
+
+Iggs is our Golden Retriever/her surrogate child BTW, who is sitting on my
+feet down here at the lake.... :-)
+
+I will update everyone after this next round of testing.
+
+Best wishes for a pleasant weekend to everyone.
+
+Greg
+
+}-- End of excerpt from Robert Hancock
+
+As always,
+Dr. G.W. Wettstein, Ph.D.   Enjellic Systems Development, LLC.
+4206 N. 19th Ave.           Specializing in information infra-structure
+Fargo, ND  58102            development.
+PH: 701-281-1686
+FAX: 701-281-3949           EMAIL: greg@enjellic.com
+------------------------------------------------------------------------------
+"I use emacs, which might be thought of as a thermonuclear word processor."
+                                -- Neal Stephenson
+                                   In the beginning... was the command line
