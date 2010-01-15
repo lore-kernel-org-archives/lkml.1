@@ -1,54 +1,76 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757793Ab0AOPWS (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 10:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364Ab0AOPWR
+	id S1755992Ab0AOPhT (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 10:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780Ab0AOPhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 10:22:17 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:47713 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754307Ab0AOPWQ (ORCPT
+	Fri, 15 Jan 2010 10:37:18 -0500
+Received: from elettra.colt-to.towertech.it ([213.215.222.70]:49999 "EHLO
+	elettra.colt-to.towertech.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751423Ab0AOPhR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 10:22:16 -0500
-Date: Fri, 15 Jan 2010 16:22:15 +0100
-To: ipw3945-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: hang on 2.6.33-rc4
-Message-ID: <20100115152215.GC2541@gamma.logic.tuwien.ac.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Norbert Preining <preining@logic.at>
+	Fri, 15 Jan 2010 10:37:17 -0500
+Date: Fri, 15 Jan 2010 16:37:12 +0100
+From: Alessandro Zummo <a.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: lethal@linux-sh.org, Dale Farnsworth <dale@farnsworth.org>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] [PATCH] rtc: rtc-max6900: SMBus support.
+Message-ID: <20100115163712.3e54861d@linux.lan.towertech.it>
+In-Reply-To: <20100114113235.GA20473@linux-sh.org>
+References: <20100114113235.GA20473@linux-sh.org>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all,
+On Thu, 14 Jan 2010 20:32:35 +0900
+Paul Mundt <lethal@linux-sh.org> wrote:
 
-kernel 2.6.33-rc4
+> The current rtc-max6900 driver only supports getting and setting the time
+> through bursting, which requires a controller capable of such. As
+> bursting is merely an optimization, we can also opt for the non-burst
+> fallback path that pokes at the date/time registers individually.
 
-I am having repeatable complete hard lockups on my laptop with 2.6.33-rc4.
-2.6.32.3 works fine.
+ almost ok, review below.
 
-I believe that it is related to the network, because sometimes I can
-actually log in (gnomes session) and as soon as I do some network
-related suddenly hard hang, not even Sysrq working anymore.
 
-Interestingly it only happens at a specific AP where the ESSID is
-hidden (at work). At home I can work without any problems (ESSID not
-hidden).
+> -static int max6900_i2c_read_regs(struct i2c_client *client, u8 *buf)
+> +static unsigned int smbus_mode;	/* disabled by default, prefer bursting */
 
-Unfortunately I cannot set up a serial console or similar.
+ that one should be per-device.
 
-Is there still anything else I can provide you for tracking that down.
+> +static int max6900_i2c_smbus_read(struct i2c_client *client, u8 *buf)
+> +{
+> +	int rc = 0, i;
 
-Best wishes
+ no need to init rc
 
-Norbert
-------------------------------------------------------------------------
-Norbert Preining            preining@{jaist.ac.jp, logic.at, debian.org}
-JAIST, Japan            TU Wien, Austria           Debian TeX Task Force
-DSA: 0x09C5B094   fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
-------------------------------------------------------------------------
-POGES (pl.n.)
-The lumps of dry powder that remain after cooking a packet soup.
-			--- Douglas Adams, The Meaning of Liff
+> +static int max6900_i2c_smbus_write(struct i2c_client *client, u8 const *buf)
+> +{
+> +	int rc = 0, i;
+> +
+> +	for (i = 0; i < MAX6900_REG_LEN; i++)
+> +		rc |= i2c_smbus_write_byte_data(client,
+> +				MAX6900_REG_WRITE(i), buf[i]);
+
+ please check rc at each write.
+
+ you might want to check if you'll have troubles if you read/write
+ when the minutes are changing.
+
+ you might also want to investigate block SMbus messages. 
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
