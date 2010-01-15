@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960Ab0AOBiv (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 20:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644Ab0AOBiu
+	id S1754214Ab0AOBi6 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 20:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863Ab0AOBiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 20:38:50 -0500
-Received: from kroah.org ([198.145.64.141]:50988 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 20:38:51 -0500
+Received: from kroah.org ([198.145.64.141]:50992 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753418Ab0AOBit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 20:38:49 -0500
-Subject: patch staging-make-usb-device-id-constant.patch added to gregkh-2.6 tree
+	id S1752897Ab0AOBiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 20:38:50 -0500
+Subject: patch staging-make-pci-device-id-constant.patch added to gregkh-2.6 tree
 To: nm127@freemail.hu, gregkh@suse.de, julia@diku.dk,
         linux-kernel@vger.kernel.org
 From: <gregkh@suse.de>
 Date: Thu, 14 Jan 2010 17:36:47 -0800
-In-Reply-To: <4B490ECA.6040108@freemail.hu>
-Message-ID: <12635194071111@kroah.org>
+In-Reply-To: <4B490EC2.7050703@freemail.hu>
+Message-ID: <1263519407130@kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
@@ -25,28 +25,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a note to let you know that I've just added the patch titled
 
-    Subject: staging: make USB device id constant
+    Subject: staging: make PCI device id constant
 
 to my gregkh-2.6 tree.  Its filename is
 
-    staging-make-usb-device-id-constant.patch
+    staging-make-pci-device-id-constant.patch
 
 This tree can be found at 
     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
->From nm127@freemail.hu  Thu Jan 14 17:09:32 2010
+>From nm127@freemail.hu  Thu Jan 14 17:08:52 2010
 From: Németh Márton <nm127@freemail.hu>
-Date: Sun, 10 Jan 2010 00:18:34 +0100
-Subject: staging: make USB device id constant
+Date: Sun, 10 Jan 2010 00:18:26 +0100
+Subject: staging: make PCI device id constant
 To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: devel@driverdev.osuosl.org, LKML <linux-kernel@vger.kernel.org>, Julia Lawall <julia@diku.dk>, cocci@diku.dk
-Message-ID: <4B490ECA.6040108@freemail.hu>
+Cc: devel@driverdev.osuosl.org, Julia Lawall <julia@diku.dk>, LKML <linux-kernel@vger.kernel.org>, cocci@diku.dk
+Message-ID: <4B490EC2.7050703@freemail.hu>
 
 
 From: Németh Márton <nm127@freemail.hu>
 
-The id_table field of the struct usb_device_id is constant in <linux/usb.h>
+The id_table field of the struct pci_driver is constant in <linux/pci.h>
 so it is worth to make the initialization data also constant.
 
 The semantic match that finds this kind of pattern is as follows:
@@ -88,198 +88,78 @@ Cc: cocci@diku.dk
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/staging/asus_oled/asus_oled.c       |    2 +-
- drivers/staging/comedi/drivers/dt9812.c     |    2 +-
- drivers/staging/comedi/drivers/usbdux.c     |    2 +-
- drivers/staging/comedi/drivers/usbduxfast.c |    2 +-
- drivers/staging/comedi/drivers/vmk80xx.c    |    2 +-
- drivers/staging/frontier/alphatrack.c       |    2 +-
- drivers/staging/frontier/tranzport.c        |    2 +-
- drivers/staging/go7007/go7007-usb.c         |    2 +-
- drivers/staging/go7007/s2250-loader.c       |    2 +-
- drivers/staging/line6/driver.c              |    2 +-
- drivers/staging/otus/zdusb.c                |    2 +-
- drivers/staging/quatech_usb2/quatech_usb2.c |    2 +-
- drivers/staging/rtl8192su/r8192U_core.c     |    2 +-
- drivers/staging/rtl8192u/r8192U_core.c      |    2 +-
- drivers/staging/serqt_usb2/serqt_usb2.c     |    2 +-
- drivers/staging/winbond/wbusb.c             |    2 +-
- 16 files changed, 16 insertions(+), 16 deletions(-)
+ drivers/staging/phison/phison.c            |    2 +-
+ drivers/staging/rar/rar_driver.c           |    2 +-
+ drivers/staging/sep/sep_driver.c           |    2 +-
+ drivers/staging/sm7xx/smtcfb.c             |    2 +-
+ drivers/staging/vme/bridges/vme_ca91cx42.c |    2 +-
+ drivers/staging/vme/bridges/vme_tsi148.c   |    2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
---- a/drivers/staging/asus_oled/asus_oled.c
-+++ b/drivers/staging/asus_oled/asus_oled.c
-@@ -87,7 +87,7 @@ struct oled_dev_desc_str {
- };
- 
- /* table of devices that work with this driver */
--static struct usb_device_id id_table[] = {
-+static const struct usb_device_id id_table[] = {
- 	/* Asus G1/G2 (and variants)*/
- 	{ USB_DEVICE(USB_VENDOR_ID_ASUS, USB_DEVICE_ID_ASUS_LCM) },
- 	/* Asus G50V (and possibly others - G70? G71?)*/
---- a/drivers/staging/comedi/drivers/dt9812.c
-+++ b/drivers/staging/comedi/drivers/dt9812.c
-@@ -264,7 +264,7 @@ struct dt9812_usb_cmd {
- 
- static DECLARE_MUTEX(dt9812_mutex);
- 
--static struct usb_device_id dt9812_table[] = {
-+static const struct usb_device_id dt9812_table[] = {
- 	{USB_DEVICE(0x0867, 0x9812)},
- 	{}			/* Terminating entry */
- };
---- a/drivers/staging/comedi/drivers/usbdux.c
-+++ b/drivers/staging/comedi/drivers/usbdux.c
-@@ -2833,7 +2833,7 @@ static struct comedi_driver driver_usbdu
- };
- 
- /* Table with the USB-devices: just now only testing IDs */
--static struct usb_device_id usbduxsub_table[] = {
-+static const struct usb_device_id usbduxsub_table[] = {
- 	{USB_DEVICE(0x13d8, 0x0001)},
- 	{USB_DEVICE(0x13d8, 0x0002)},
- 	{}			/* Terminating entry */
---- a/drivers/staging/comedi/drivers/usbduxfast.c
-+++ b/drivers/staging/comedi/drivers/usbduxfast.c
-@@ -1769,7 +1769,7 @@ static struct comedi_driver driver_usbdu
- /*
-  * Table with the USB-devices: just now only testing IDs
-  */
--static struct usb_device_id usbduxfastsub_table[] = {
-+static const struct usb_device_id usbduxfastsub_table[] = {
- 	/* { USB_DEVICE(0x4b4, 0x8613) }, testing */
- 	{USB_DEVICE(0x13d8, 0x0010)},	/* real ID */
- 	{USB_DEVICE(0x13d8, 0x0011)},	/* real ID */
---- a/drivers/staging/comedi/drivers/vmk80xx.c
-+++ b/drivers/staging/comedi/drivers/vmk80xx.c
-@@ -75,7 +75,7 @@ enum {
- 	DEVICE_VMK8061
- };
- 
--static struct usb_device_id vmk80xx_id_table[] = {
-+static const struct usb_device_id vmk80xx_id_table[] = {
- 	{USB_DEVICE(0x10cf, 0x5500), .driver_info = DEVICE_VMK8055},
- 	{USB_DEVICE(0x10cf, 0x5501), .driver_info = DEVICE_VMK8055},
- 	{USB_DEVICE(0x10cf, 0x5502), .driver_info = DEVICE_VMK8055},
---- a/drivers/staging/frontier/alphatrack.c
-+++ b/drivers/staging/frontier/alphatrack.c
-@@ -58,7 +58,7 @@
- #endif
- 
- /* table of devices that work with this driver */
--static struct usb_device_id usb_alphatrack_table[] = {
-+static const struct usb_device_id usb_alphatrack_table[] = {
- 	{USB_DEVICE(VENDOR_ID, PRODUCT_ID)},
- 	{}			/* Terminating entry */
- };
---- a/drivers/staging/frontier/tranzport.c
-+++ b/drivers/staging/frontier/tranzport.c
-@@ -55,7 +55,7 @@
- #endif
- 
- /* table of devices that work with this driver */
--static struct usb_device_id usb_tranzport_table[] = {
-+static const struct usb_device_id usb_tranzport_table[] = {
- 	{USB_DEVICE(VENDOR_ID, PRODUCT_ID)},
- 	{}			/* Terminating entry */
- };
---- a/drivers/staging/go7007/go7007-usb.c
-+++ b/drivers/staging/go7007/go7007-usb.c
-@@ -444,7 +444,7 @@ static struct go7007_usb_board board_sen
- 	},
- };
- 
--static struct usb_device_id go7007_usb_id_table[] = {
-+static const struct usb_device_id go7007_usb_id_table[] = {
- 	{
- 		.match_flags	= USB_DEVICE_ID_MATCH_DEVICE_AND_VERSION |
- 					USB_DEVICE_ID_MATCH_INT_INFO,
---- a/drivers/staging/go7007/s2250-loader.c
-+++ b/drivers/staging/go7007/s2250-loader.c
-@@ -148,7 +148,7 @@ static void s2250loader_disconnect(struc
- 	unlock_kernel();
+--- a/drivers/staging/phison/phison.c
++++ b/drivers/staging/phison/phison.c
+@@ -69,7 +69,7 @@ static int phison_init_one(struct pci_de
+ 	return ret;
  }
  
--static struct usb_device_id s2250loader_ids[] = {
-+static const struct usb_device_id s2250loader_ids[] = {
- 	{USB_DEVICE(0x1943, 0xa250)},
- 	{}                          /* Terminating entry */
+-static struct pci_device_id phison_pci_tbl[] = {
++static const struct pci_device_id phison_pci_tbl[] = {
+ 	{ PCI_VENDOR_ID_PHISON, PCI_DEVICE_ID_PS5000, PCI_ANY_ID, PCI_ANY_ID,
+ 	  PCI_CLASS_STORAGE_IDE << 8, 0xffff00, 0 },
+ 	{ 0, },
+--- a/drivers/staging/rar/rar_driver.c
++++ b/drivers/staging/rar/rar_driver.c
+@@ -71,7 +71,7 @@ static void __exit rar_exit_handler(void
+ static int __devinit rar_probe(struct pci_dev *pdev,
+ 			       const struct pci_device_id *ent);
+ 
+-static struct pci_device_id rar_pci_id_tbl[] = {
++static const struct pci_device_id rar_pci_id_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4110) },
+ 	{ 0 }
  };
---- a/drivers/staging/line6/driver.c
-+++ b/drivers/staging/line6/driver.c
-@@ -33,7 +33,7 @@
+--- a/drivers/staging/sep/sep_driver.c
++++ b/drivers/staging/sep/sep_driver.c
+@@ -2587,7 +2587,7 @@ end_function:
+ 	return error;
+ }
+ 
+-static struct pci_device_id sep_pci_id_tbl[] = {
++static const struct pci_device_id sep_pci_id_tbl[] = {
+ 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x080c)},
+ 	{0}
+ };
+--- a/drivers/staging/sm7xx/smtcfb.c
++++ b/drivers/staging/sm7xx/smtcfb.c
+@@ -1103,7 +1103,7 @@ static int __init smtcfb_pci_probe(struc
  
  
- /* table of devices that work with this driver */
--static struct usb_device_id line6_id_table[] = {
-+static const struct usb_device_id line6_id_table[] = {
- 	{ USB_DEVICE(LINE6_VENDOR_ID, LINE6_DEVID_BASSPODXT) },
- 	{ USB_DEVICE(LINE6_VENDOR_ID, LINE6_DEVID_BASSPODXTLIVE) },
- 	{ USB_DEVICE(LINE6_VENDOR_ID, LINE6_DEVID_BASSPODXTPRO) },
---- a/drivers/staging/otus/zdusb.c
-+++ b/drivers/staging/otus/zdusb.c
-@@ -45,7 +45,7 @@ MODULE_LICENSE("Dual BSD/GPL");
- static const char driver_name[] = "Otus";
+ /* Jason (08/11/2009) PCI_DRV wrapper essential structs */
+-static struct pci_device_id smtcfb_pci_table[] = {
++static const struct pci_device_id smtcfb_pci_table[] = {
+ 	{0x126f, 0x710, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ 	{0x126f, 0x712, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ 	{0x126f, 0x720, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+--- a/drivers/staging/vme/bridges/vme_ca91cx42.c
++++ b/drivers/staging/vme/bridges/vme_ca91cx42.c
+@@ -61,7 +61,7 @@ static struct mutex vme_int;	/*
  
- /* table of devices that work with this driver */
--static struct usb_device_id zd1221_ids [] = {
-+static const struct usb_device_id zd1221_ids[] = {
- 	{ USB_DEVICE(VENDOR_ATHR, PRODUCT_AR9170) },
-         { USB_DEVICE(VENDOR_DLINK, PRODUCT_DWA160A) },
- 	{ USB_DEVICE(VENDOR_NETGEAR, PRODUCT_WNDA3100) },
---- a/drivers/staging/quatech_usb2/quatech_usb2.c
-+++ b/drivers/staging/quatech_usb2/quatech_usb2.c
-@@ -116,7 +116,7 @@ static int debug;
- #define FOURTHCHAR	((unsigned char *)(urb->transfer_buffer))[i + 3]
- #define FIFTHCHAR	((unsigned char *)(urb->transfer_buffer))[i + 4]
+ static char driver_name[] = "vme_ca91cx42";
  
--static struct usb_device_id quausb2_id_table[] = {
-+static const struct usb_device_id quausb2_id_table[] = {
- 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_SSU2_100)},
- 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_DSU2_100)},
- 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_DSU2_400)},
---- a/drivers/staging/rtl8192su/r8192U_core.c
-+++ b/drivers/staging/rtl8192su/r8192U_core.c
-@@ -110,7 +110,7 @@ u32 rt_global_debug_component = \
- #define TOTAL_CAM_ENTRY 32
- #define CAM_CONTENT_COUNT 8
+-static struct pci_device_id ca91cx42_ids[] = {
++static const struct pci_device_id ca91cx42_ids[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_TUNDRA, PCI_DEVICE_ID_TUNDRA_CA91C142) },
+ 	{ },
+ };
+--- a/drivers/staging/vme/bridges/vme_tsi148.c
++++ b/drivers/staging/vme/bridges/vme_tsi148.c
+@@ -81,7 +81,7 @@ static struct mutex vme_int;	/*
  
--static struct usb_device_id rtl8192_usb_id_tbl[] = {
-+static const struct usb_device_id rtl8192_usb_id_tbl[] = {
- 	/* Realtek */
- 	{USB_DEVICE(0x0bda, 0x8192)},
- 	{USB_DEVICE(0x0bda, 0x8709)},
---- a/drivers/staging/rtl8192u/r8192U_core.c
-+++ b/drivers/staging/rtl8192u/r8192U_core.c
-@@ -104,7 +104,7 @@ u32 rt_global_debug_component = \
- #define TOTAL_CAM_ENTRY 32
- #define CAM_CONTENT_COUNT 8
+ static char driver_name[] = "vme_tsi148";
  
--static struct usb_device_id rtl8192_usb_id_tbl[] = {
-+static const struct usb_device_id rtl8192_usb_id_tbl[] = {
- 	/* Realtek */
- 	{USB_DEVICE(0x0bda, 0x8192)},
- 	{USB_DEVICE(0x0bda, 0x8709)},
---- a/drivers/staging/serqt_usb2/serqt_usb2.c
-+++ b/drivers/staging/serqt_usb2/serqt_usb2.c
-@@ -126,7 +126,7 @@ static int debug;
- #define MODEM_CTRL          0x40
- #define RS232_MODE          0x00
- 
--static struct usb_device_id serqt_id_table[] = {
-+static const struct usb_device_id serqt_id_table[] = {
- 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_SSU100)},
- 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_SSU200)},
- 	{USB_DEVICE(USB_VENDOR_ID_QUATECH, QUATECH_DSU100)},
---- a/drivers/staging/winbond/wbusb.c
-+++ b/drivers/staging/winbond/wbusb.c
-@@ -23,7 +23,7 @@ MODULE_DESCRIPTION("IS89C35 802.11bg WLA
- MODULE_LICENSE("GPL");
- MODULE_VERSION("0.1");
- 
--static struct usb_device_id wb35_table[] __devinitdata = {
-+static const struct usb_device_id wb35_table[] __devinitconst = {
- 	{ USB_DEVICE(0x0416, 0x0035) },
- 	{ USB_DEVICE(0x18E8, 0x6201) },
- 	{ USB_DEVICE(0x18E8, 0x6206) },
+-static struct pci_device_id tsi148_ids[] = {
++static const struct pci_device_id tsi148_ids[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_TUNDRA, PCI_DEVICE_ID_TUNDRA_TSI148) },
+ 	{ },
+ };
 
