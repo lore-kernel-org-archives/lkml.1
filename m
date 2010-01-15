@@ -1,71 +1,90 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756285Ab0AOKiv (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 05:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394Ab0AOKiu
+	id S1755684Ab0AOKp1 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 05:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950Ab0AOKp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 05:38:50 -0500
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:48466 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001Ab0AOKit (ORCPT
+	Fri, 15 Jan 2010 05:45:27 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52810 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751338Ab0AOKp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 05:38:49 -0500
-X-AuditID: b753bd60-aa071ba000004725-60-4b5045b6ff24
-Message-ID: <4B5045AE.9080604@hitachi.com>
-Date: Fri, 15 Jan 2010 19:38:38 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
-MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
-        Nick Piggin <npiggin@suse.de>, dle-develop@lists.sourceforge.net,
-        Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH] ext3: prevent reread after write IO error v2
-References: <4B4EB5B9.4020809@hitachi.com> <4B4EDE5C.8040600@hitachi.com> <4B4EEE86.7080807@hitachi.com> <20100114141803.GB3146@quack.suse.cz>
-In-Reply-To: <20100114141803.GB3146@quack.suse.cz>
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Jan 2010 05:45:26 -0500
+Date: Fri, 15 Jan 2010 10:48:34 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthias Urlichs <matthias@urlichs.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ldisc switching on a HUPped pty hangs the caller
+Message-ID: <20100115104834.4765b584@lxorguk.ukuu.org.uk>
+In-Reply-To: <1263532072.22171.24.camel@kiste>
+References: <1263532072.22171.24.camel@kiste>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
-X-FMFTCR: RANGEC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
-
->>By the way, I think the right fix is to keep uptodate flag on write
->>error, but it gives a big impact.  We have to confirm whether
->>over 200 buffer_uptodate's are used for real uptodate check or write
->>error check.  For now, I adopt the quick-fix solution.
+> I recently upgraded my gateway machine to 2.6.31. This caused
+> ppp-over-ssh to stop working. Indeed, the PPP process got wedged into
+> noninterruptible sleep, which this patch fixes.
 > 
->   Yes that needs to be solved. I also looked into it and it's too much work
-> to do it in a one big sweep. But I think we could do the conversion
-> filesystem by filesystem - see below.
->   Admittedly, I don't like your solution very much. It looks strange to
-> check write_io_error when *reading* the buffer and I'm afraid we could
-> introduce bugs e.g. by clearing write_io_error bit so that ext3_bread would
-> then fail to detect the error condition or by some other code deciding to
-> read the buffer from disk via other function than just ext3_bread. So I
-> think it would be much better to set back uptodate flag shortly after the
-> failed write or not clear it at all.
->   Now here's how I think we could achieve that without having to change all
-> other filesystems: We could create a new superblock flag which would mean
-> that "this filesystem handles write_io_error and doesn't want to clear
-> uptodate flag". Filesystems with this capability would set this flag when
-> calling get_sb_bdev. And if write IO fails we check this flag
-> (via bh->b_bdev->bd_super->s_flags) and clear / not clear uptodate flag
-> accordingly. What do you think?
+> (The comment, by the way, seems to be wrong. There was no race.) 
 
-Thanks for your comment!
+Really ?
 
-Your suggestion is what I wanted to do ultimately, and it seems
-to go well.  I'll send a rivised patch later.
+Think about
 
-Best regards,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
+					set_ldisc
+	hangup
+	close
+	open
+	set to N_TTY etc
+					Now what ???
+
+ 
+> The underlying problem, however, turns out to be the vhangup() syscall
+> which the SSH server emits before exec'ing pppd. This causes the tty's
+> HUPPED bit to get set, which in turn causes the above error.
+
+vhangup sets the huppet bit to make sure that anything touching the tty
+beyond that point goes away and dies.
+
+> diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
+> index aafdbae..bb92f5e 100644
+> --- a/drivers/char/tty_ldisc.c
+> +++ b/drivers/char/tty_ldisc.c
+> @@ -621,9 +621,8 @@ int tty_set_ldisc(struct tty_struct *tty, int ldisc)
+>  		/* We were raced by the hangup method. It will have stomped
+>  		   the ldisc data and closed the ldisc down */
+>  		clear_bit(TTY_LDISC_CHANGING, &tty->flags);
+> -		mutex_unlock(&tty->ldisc_mutex);
+> -		tty_ldisc_put(new_ldisc);
+> -		return -EIO;
+> +		retval = -EIO;
+> +		goto out;
+>  	}
+>  
+>  	/* Shutdown the current discipline. */
+> @@ -652,7 +651,7 @@ int tty_set_ldisc(struct tty_struct *tty, int ldisc)
+>  	/*
+>  	 *	Allow ldisc referencing to occur again
+>  	 */
+> -
+> +out:
+>  	tty_ldisc_enable(tty);
+>  	if (o_tty)
+>  		tty_ldisc_enable(o_tty);
+
+And falls through to restart work queues and stuff that may not be safe
+to do
+
+
+So: NAK
+
+I agree there is a bug but you've swapped one bug for sevral nastier bugs.
+
+As far as  I can see from a quick look the real problem in your case is
+that we don't do enough work in the case where tty->driver->flags doesn't
+contain TTY_DRIVER_RESET_TERMIOS. We need to reinit the ldisc either way.
 
