@@ -1,106 +1,75 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757516Ab0AOMog (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 07:44:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157Ab0AOMoe
+	id S1757513Ab0AOMqR (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 07:46:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171Ab0AOMqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 07:44:34 -0500
-Received: from bld-mail19.adl2.internode.on.net ([150.101.137.104]:49178 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757171Ab0AOMod (ORCPT
+	Fri, 15 Jan 2010 07:46:16 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48818 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260Ab0AOMqP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 07:44:33 -0500
-Date: Fri, 15 Jan 2010 23:44:10 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: lockdep: inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R}
-	usage.
-Message-ID: <20100115124410.GI28498@discord.disaster>
-References: <20100115120253.GH28498@discord.disaster> <1263557473.4244.399.camel@laptop>
+	Fri, 15 Jan 2010 07:46:15 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B506378.3090507@s5r6.in-berlin.de>
+Date: Fri, 15 Jan 2010 13:45:44 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263557473.4244.399.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Julia Lawall <julia@diku.dk>
+CC: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+        Pekka Enberg <penberg@cs.helsinki.fi>,
+        David Miller <davem@davemloft.net>, adi@hexapodia.org,
+        nm127@freemail.hu, david.vrabel@csr.com, linux-usb@vger.kernel.org,
+        linux-kernel@vger.kernel.org, cocci@diku.dk,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Nicolas Palix <npalix@diku.dk>
+Subject: Re: Changelog quality
+References: <4B502C6B.7000802@s5r6.in-berlin.de> <20100115.005445.263291449.davem@davemloft.net> <tkrat.e88dd4dbf17f9bde@s5r6.in-berlin.de> <20100115.012233.202457727.davem@davemloft.net> <Pine.LNX.4.64.1001151039080.23543@ask.diku.dk> <84144f021001150149u3b784d26g1822be6c5c3ecbf@mail.gmail.com> <Pine.LNX.4.64.1001151101320.23543@ask.diku.dk> <20100115110845.GB28625@sirena.org.uk> <Pine.LNX.4.64.1001151303580.23543@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.1001151303580.23543@ask.diku.dk>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 01:11:13PM +0100, Peter Zijlstra wrote:
-> On Fri, 2010-01-15 at 23:02 +1100, Dave Chinner wrote:
-> > Just got this on a 2.6.33-rc3 kernel during unmount:
-> > 
-> > [21819.329256] inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R} usage.
-> > [21819.349943] kswapd0/407 [HC0[0]:SC0[0]:HE1:SE1] takes:
-> > [21819.349943]  (iprune_sem){+++++-}, at: [<ffffffff81132a92>] shrink_icache_memory+0x82/0x2b0
-> > [21819.349943] {RECLAIM_FS-ON-W} state was registered at:
-> > [21819.349943]   [<ffffffff810824c3>] mark_held_locks+0x73/0x90
-> > [21819.349943]   [<ffffffff810825a5>] lockdep_trace_alloc+0xc5/0xd0
-> > [21819.349943]   [<ffffffff811145f1>] kmem_cache_alloc+0x41/0x150
-> > [21819.349943]   [<ffffffff813504f9>] kmem_zone_alloc+0x99/0xe0
-> > [21819.349943]   [<ffffffff8135055e>] kmem_zone_zalloc+0x1e/0x50
-> > [21819.349943]   [<ffffffff81346148>] _xfs_trans_alloc+0x38/0x80
-> > [21819.349943]   [<ffffffff8134634f>] xfs_trans_alloc+0x9f/0xb0
-> > [21819.349943]   [<ffffffff8134b3d0>] xfs_free_eofblocks+0x120/0x290
-> > [21819.349943]   [<ffffffff8134f353>] xfs_inactive+0x103/0x560
-> > [21819.349943]   [<ffffffff8135e6bf>] xfs_fs_clear_inode+0xdf/0x120
-> > [21819.349943]   [<ffffffff81132615>] clear_inode+0xb5/0x140
-> > [21819.349943]   [<ffffffff81132918>] dispose_list+0x38/0x130
-> > [21819.349943]   [<ffffffff81132de3>] invalidate_inodes+0x123/0x170
-> > [21819.349943]   [<ffffffff8111db4e>] generic_shutdown_super+0x4e/0x100
-> > [21819.349943]   [<ffffffff8111dc31>] kill_block_super+0x31/0x50
-> > [21819.349943]   [<ffffffff8111e455>] deactivate_super+0x85/0xa0
-> > [21819.349943]   [<ffffffff81136f8a>] mntput_no_expire+0xca/0x110
-> > [21819.349943]   [<ffffffff81137374>] sys_umount+0x64/0x370
-> > [21819.349943]   [<ffffffff81002fdb>] system_call_fastpath+0x16/0x1b
-> > [21819.349943] irq event stamp: 4151539
-> > [21819.349943] hardirqs last  enabled at (4151539): [<ffffffff81706e04>] _raw_spin_unlock_irqrestore+0x44/0x70
-> > [21819.349943] hardirqs last disabled at (4151538): [<ffffffff81706505>] _raw_spin_lock_irqsave+0x25/0x90
-> > [21819.349943] softirqs last  enabled at (4151312): [<ffffffff8105373b>] __do_softirq+0x18b/0x1e0
-> > [21819.349943] softirqs last disabled at (4150645): [<ffffffff81003e8c>] call_softirq+0x1c/0x50
-> > [21819.349943]
-> > [21819.349943] other info that might help us debug this:
-> > [21819.349943] 1 lock held by kswapd0/407:
-> > [21819.349943]  #0:  (shrinker_rwsem){++++..}, at: [<ffffffff810e5c5d>] shrink_slab+0x3d/0x180
-> > [21819.349943]
-> > [21819.349943] stack backtrace:
-> > [21819.349943] Pid: 407, comm: kswapd0 Not tainted 2.6.33-rc3-dgc #35
-> > [21819.349943] Call Trace:
-> > [21819.349943]  [<ffffffff81081353>] print_usage_bug+0x183/0x190
-> > [21819.349943]  [<ffffffff81082372>] mark_lock+0x342/0x420
-> > [21819.349943]  [<ffffffff810814c0>] ? check_usage_forwards+0x0/0x100
-> > [21819.349943]  [<ffffffff81083531>] __lock_acquire+0x4d1/0x17a0
-> > [21819.349943]  [<ffffffff8108327f>] ? __lock_acquire+0x21f/0x17a0
-> > [21819.349943]  [<ffffffff810848ce>] lock_acquire+0xce/0x100
-> > [21819.349943]  [<ffffffff81132a92>] ? shrink_icache_memory+0x82/0x2b0
-> > [21819.349943]  [<ffffffff81705592>] down_read+0x52/0x90
-> > [21819.349943]  [<ffffffff81132a92>] ? shrink_icache_memory+0x82/0x2b0
-> > [21819.349943]  [<ffffffff81132a92>] shrink_icache_memory+0x82/0x2b0
-> > [21819.349943]  [<ffffffff810e5d4a>] shrink_slab+0x12a/0x180
-> > [21819.349943]  [<ffffffff810e66d6>] kswapd+0x586/0x990
-> > [21819.349943]  [<ffffffff810e35c0>] ? isolate_pages_global+0x0/0x240
-> > [21819.349943]  [<ffffffff8106c7c0>] ? autoremove_wake_function+0x0/0x40
-> > [21819.349943]  [<ffffffff810e6150>] ? kswapd+0x0/0x990
-> > [21819.349943]  [<ffffffff8106c276>] kthread+0x96/0xa0
-> > [21819.349943]  [<ffffffff81003d94>] kernel_thread_helper+0x4/0x10
-> > [21819.349943]  [<ffffffff8170717c>] ? restore_args+0x0/0x30
-> > [21819.349943]  [<ffffffff8106c1e0>] ? kthread+0x0/0xa0
-> > [21819.349943]  [<ffffffff81003d90>] ? kernel_thread_helper+0x0/0x10
-> > 
-> > I can't work out what the <mumble>RECLAIM_FS<mumble> notations are
-> > supposed to mean from the code and they are not documented at
-> > all, so I need someone to explain what this means before I can
-> > determine if it is a valid warning or not....
+Julia Lawall wrote:
+> On Fri, 15 Jan 2010, Mark Brown wrote:
+>> On Fri, Jan 15, 2010 at 11:05:21AM +0100, Julia Lawall wrote:
+>>> On Fri, 15 Jan 2010, Pekka Enberg wrote:
+>>>> It seems to me that the scripts are kernel specific so why don't we
+>>>> put those useful scripts _within_ the kernel source tree and introduce
+>>>> a "make coccinelle-check" target?
+
+I guess many of these scripts are also applicable to other C programs.
+But having such tests bundled with the kernel source and ready to be run
+from make sounds good to me too.
+
+>>> Indeed, perhaps a solution that would satisfy everyone would be to make a 
+>>> place for scripts, perhaps with subdirectories for various tools, and then 
+>>> when one submits a patch for tool X, one could then submit the script at 
+>>> the same time (if it wasn't there already) and just refer to the script 
+>>> that was used.  That way, if someone wants to know more about how the 
+>>> change was made, they could look up the information, and if one does not, 
+>>> then one would not be bother by having to scroll down to see the actual 
+>>> patch.
+>> This would also mean that other people could run and re-run the scripts
+>> during development much more easily which would help improve the
+>> coverage of new code.
 > 
-> The <mumble>RECLAIM_FS<mumble> bit means that lock (iprune_sem) was
-> taken from reclaim and is also taken over an allocation.
+> On the other hand, one has to take into account the fact that at least in 
+> my case, the patches that are submitted are the ones that I have carefully 
+> checked for correctness.  Having a make target in the kernel might give 
+> some suggestion of quality that is perhaps not appropriate?
+> 
+> julia
 
-So there's an implicit, undocumented requirement that inode reclaim
-during unmount requires a filesystem to do GFP_NOFS allocation?
-
-Cheers,
-
-Dave.
+Surely some tests are more suitable for automation than others.  Those
+who use these tests are probably aware though that the resulting reports
+or patches require careful review.  This is similar as with reports from
+checkpatch, sparse, lockdep etc., except that coccinelle already creates
+a fix patch rather than just an error log.
 -- 
-Dave Chinner
-david@fromorbit.com
+Stefan Richter
+-=====-==-=- ---= -====
+http://arcgraph.de/sr/
