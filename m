@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757337Ab0AOBEs (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 20:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211Ab0AOBEn
+	id S1756760Ab0AOBFY (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 20:05:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879Ab0AOBDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 20:04:43 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:51473 "EHLO e4.ny.us.ibm.com"
+	Thu, 14 Jan 2010 20:03:03 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:51443 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754866Ab0AOBDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 20:03:07 -0500
+	id S1753288Ab0AOBDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 20:03:01 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 9/9] rcu: documentation update for CONFIG_PROVE_RCU
-Date: Thu, 14 Jan 2010 17:02:46 -0800
-Message-Id: <12635173672185-git-send-email->
+Subject: [PATCH tip/core/rcu 1/9] rcu: introduce lockdep-based checking to RCU read-side primitives
+Date: Thu, 14 Jan 2010 17:02:38 -0800
+Message-Id: <12635173662572-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20100115010157.GA28221@linux.vnet.ibm.com>
 References: <20100115010157.GA28221@linux.vnet.ibm.com>
@@ -26,232 +26,519 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Inspection is proving insufficient to catch all RCU misuses, which is
+understandable given that rcu_dereference() might be protected by any
+of four different flavors of RCU (RCU, RCU-bh, RCU-sched, and SRCU), and
+might also/instead be protected by any of a number of locking primitives.
+It is therefore time to enlist the aid of lockdep.
 
-Adds a lockdep.txt file and updates checklist.txt and whatisRCU.txt
-to reflect the new lockdep-enabled capabilities of RCU.
+This set of patches is inspired by earlier work by Peter Zijlstra and
+Thomas Gleixner, and takes the following approach:
+
+o	Set up separate lockdep classes for RCU, RCU-bh, and RCU-sched.
+
+o	Set up separate lockdep classes for each instance of SRCU.
+
+o	Create primitives that check for being in an RCU read-side
+	critical section.  These return exact answers if lockdep is
+	fully enabled, but if unsure, report being in an RCU read-side
+	critical section.  (We want to avoid false positives!)
+	The primitives are:
+
+	For RCU: rcu_read_lock_held(void)
+
+	For RCU-bh: rcu_read_lock_bh_held(void)
+
+	For RCU-sched: rcu_read_lock_sched_held(void)
+
+	For SRCU: srcu_read_lock_held(struct srcu_struct *sp)
+
+o	Add rcu_dereference_check(), which takes a second argument
+	in which one places a boolean expression based on the above
+	primitives and/or lockdep_is_held().
+
+o	A new kernel configuration parameter, CONFIG_PROVE_RCU, enables
+	rcu_dereference_check().  This depends on CONFIG_PROVE_LOCKING,
+	and should be quite helpful during the transition period while
+	CONFIG_PROVE_RCU-unaware patches are in flight.
+
+The existing rcu_dereference() primitive does no checking, but upcoming
+patches will change that.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- Documentation/RCU/00-INDEX      |    2 +
- Documentation/RCU/checklist.txt |   34 +++++++++++--------
- Documentation/RCU/lockdep.txt   |   67 +++++++++++++++++++++++++++++++++++++++
- Documentation/RCU/whatisRCU.txt |   13 +++++---
- 4 files changed, 97 insertions(+), 19 deletions(-)
- create mode 100644 Documentation/RCU/lockdep.txt
+ include/linux/rcupdate.h |  126 ++++++++++++++++++++++++++++++++++++++++++----
+ include/linux/srcu.h     |   87 +++++++++++++++++++++++++++++++-
+ kernel/rcupdate.c        |   10 ++++
+ kernel/rcutorture.c      |   12 ++++-
+ kernel/srcu.c            |   50 ++++++++++++------
+ lib/Kconfig.debug        |   12 ++++
+ lib/debug_locks.c        |    1 +
+ 7 files changed, 267 insertions(+), 31 deletions(-)
 
-diff --git a/Documentation/RCU/00-INDEX b/Documentation/RCU/00-INDEX
-index 0a27ea9..71b6f50 100644
---- a/Documentation/RCU/00-INDEX
-+++ b/Documentation/RCU/00-INDEX
-@@ -6,6 +6,8 @@ checklist.txt
- 	- Review Checklist for RCU Patches
- listRCU.txt
- 	- Using RCU to Protect Read-Mostly Linked Lists
-+lockdep.txt
-+	- RCU and lockdep checking
- NMI-RCU.txt
- 	- Using RCU to Protect Dynamic NMI Handlers
- rcubarrier.txt
-diff --git a/Documentation/RCU/checklist.txt b/Documentation/RCU/checklist.txt
-index 767cf06..cbc180f 100644
---- a/Documentation/RCU/checklist.txt
-+++ b/Documentation/RCU/checklist.txt
-@@ -127,10 +127,14 @@ over a rather long period of time, but improvements are always welcome!
- 		perfectly legal (if redundant) for update-side code to
- 		use rcu_dereference() and the "_rcu()" list-traversal
- 		primitives.  This is particularly useful in code that
--		is common to readers and updaters.  However, neither
--		rcu_dereference() nor the "_rcu()" list-traversal
--		primitives can substitute for a good concurrency design
--		coordinating among multiple updaters.
-+		is common to readers and updaters.  However, lockdep
-+		will complain if you access rcu_dereference() outside
-+		of an RCU read-side critical section.  See lockdep.txt
-+		to learn what to do about this.
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index 24440f4..e3d37ef 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -78,14 +78,120 @@ extern void rcu_init(void);
+ } while (0)
+ 
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
 +
-+		Of course, neither rcu_dereference() nor the "_rcu()"
-+		list-traversal primitives can substitute for a good
-+		concurrency design coordinating among multiple updaters.
- 
- 	b.	If the list macros are being used, the list_add_tail_rcu()
- 		and list_add_rcu() primitives must be used in order
-@@ -249,7 +253,9 @@ over a rather long period of time, but improvements are always welcome!
- 	must be protected by appropriate update-side locks.  RCU
- 	read-side critical sections are delimited by rcu_read_lock()
- 	and rcu_read_unlock(), or by similar primitives such as
--	rcu_read_lock_bh() and rcu_read_unlock_bh().
-+	rcu_read_lock_bh() and rcu_read_unlock_bh(), in which case
-+	the matching rcu_dereference() primitive must be used in order
-+	to keep lockdep happy, in this case, rcu_dereference_bh().
- 
- 	The reason that it is permissible to use RCU list-traversal
- 	primitives when the update-side lock is held is that doing so
-@@ -302,15 +308,15 @@ over a rather long period of time, but improvements are always welcome!
- 	not the case, a self-spawning RCU callback would prevent the
- 	victim CPU from ever going offline.)
- 
--14.	SRCU (srcu_read_lock(), srcu_read_unlock(), synchronize_srcu(),
--	and synchronize_srcu_expedited()) may only be invoked from
--	process context.  Unlike other forms of RCU, it -is- permissible
--	to block in an SRCU read-side critical section (demarked by
--	srcu_read_lock() and srcu_read_unlock()), hence the "SRCU":
--	"sleepable RCU".  Please note that if you don't need to sleep
--	in read-side critical sections, you should be using RCU rather
--	than SRCU, because RCU is almost always faster and easier to
--	use than is SRCU.
-+14.	SRCU (srcu_read_lock(), srcu_read_unlock(), srcu_dereference(),
-+	synchronize_srcu(), and synchronize_srcu_expedited()) may only
-+	be invoked from process context.  Unlike other forms of RCU, it
-+	-is- permissible to block in an SRCU read-side critical section
-+	(demarked by srcu_read_lock() and srcu_read_unlock()), hence the
-+	"SRCU": "sleepable RCU".  Please note that if you don't need
-+	to sleep in read-side critical sections, you should be using
-+	RCU rather than SRCU, because RCU is almost always faster and
-+	easier to use than is SRCU.
- 
- 	Also unlike other forms of RCU, explicit initialization
- 	and cleanup is required via init_srcu_struct() and
-diff --git a/Documentation/RCU/lockdep.txt b/Documentation/RCU/lockdep.txt
-new file mode 100644
-index 0000000..fe24b58
---- /dev/null
-+++ b/Documentation/RCU/lockdep.txt
-@@ -0,0 +1,67 @@
-+RCU and lockdep checking
+ extern struct lockdep_map rcu_lock_map;
+-# define rcu_read_acquire()	\
+-			lock_acquire(&rcu_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
++# define rcu_read_acquire() \
++		lock_acquire(&rcu_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
+ # define rcu_read_release()	lock_release(&rcu_lock_map, 1, _THIS_IP_)
+-#else
+-# define rcu_read_acquire()	do { } while (0)
+-# define rcu_read_release()	do { } while (0)
+-#endif
 +
-+All flavors of RCU have lockdep checking available, so that lockdep is
-+aware of when each task enters and leaves any flavor of RCU read-side
-+critical section.  Each flavor of RCU is tracked separately (but note
-+that this is not the case in 2.6.32 and earlier).  This allows lockdep's
-+tracking to include RCU state, which can sometimes help when debugging
-+deadlocks and the like.
++extern struct lockdep_map rcu_bh_lock_map;
++# define rcu_read_acquire_bh() \
++		lock_acquire(&rcu_bh_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
++# define rcu_read_release_bh()	lock_release(&rcu_bh_lock_map, 1, _THIS_IP_)
 +
-+In addition, RCU provides the following primitives that check lockdep's
-+state:
++extern struct lockdep_map rcu_sched_lock_map;
++# define rcu_read_acquire_sched() \
++		lock_acquire(&rcu_sched_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
++# define rcu_read_release_sched() \
++		lock_release(&rcu_sched_lock_map, 1, _THIS_IP_)
 +
-+	rcu_read_lock_held() for normal RCU.
-+	rcu_read_lock_bh_held() for RCU-bh.
-+	rcu_read_lock_sched_held() for RCU-sched.
-+	srcu_read_lock_held() for SRCU.
++/**
++ * rcu_read_lock_held - might we be in RCU read-side critical section?
++ *
++ * If CONFIG_PROVE_LOCKING is selected and enabled, returns nonzero iff in
++ * an RCU read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
++ * this assumes we are in an RCU read-side critical section unless it can
++ * prove otherwise.
++ */
++static inline int rcu_read_lock_held(void)
++{
++	if (debug_locks)
++		return lock_is_held(&rcu_lock_map);
++	return 1;
++}
 +
-+These functions are conservative, and will therefore return 1 if they
-+aren't certain (for example, if CONFIG_DEBUG_LOCK_ALLOC is not set).
-+This prevents things like WARN_ON(!rcu_read_lock_held()) from giving false
-+positives when lockdep is disabled.
++/**
++ * rcu_read_lock_bh_held - might we be in RCU-bh read-side critical section?
++ *
++ * If CONFIG_PROVE_LOCKING is selected and enabled, returns nonzero iff in
++ * an RCU-bh read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
++ * this assumes we are in an RCU-bh read-side critical section unless it can
++ * prove otherwise.
++ */
++static inline int rcu_read_lock_bh_held(void)
++{
++	if (debug_locks)
++		return lock_is_held(&rcu_bh_lock_map);
++	return 1;
++}
 +
-+In addition, a separate kernel config parameter CONFIG_PROVE_RCU enables
-+checking of rcu_dereference() primitives:
++/**
++ * rcu_read_lock_sched_held - might we be in RCU-sched read-side critical section?
++ *
++ * If CONFIG_PROVE_LOCKING is selected and enabled, returns nonzero iff in an
++ * RCU-sched read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
++ * this assumes we are in an RCU-sched read-side critical section unless it
++ * can prove otherwise.  Note that disabling of preemption (including
++ * disabling irqs) counts as an RCU-sched read-side critical section.
++ */
++static inline int rcu_read_lock_sched_held(void)
++{
++	int lockdep_opinion = 0;
 +
-+	rcu_dereference(p):
-+		Check for RCU read-side critical section.
-+	rcu_dereference_bh(p):
-+		Check for RCU-bh read-side critical section.
-+	rcu_dereference_sched(p):
-+		Check for RCU-sched read-side critical section.
-+	srcu_dereference(p, sp):
-+		Check for SRCU read-side critical section.
-+	rcu_dereference_check(p, c):
-+		Use explicit check expression "c".
-+	rcu_dereference_raw(p)
-+		Don't check.  (Use sparingly, if at all.)
++	if (debug_locks)
++		lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
++	return lockdep_opinion || preempt_count() != 0;
++}
 +
-+The rcu_dereference_check() check expression can be any boolean
-+expression, but would normally include one of the rcu_read_lock_held()
-+family of functions and a lockdep expression.  However, any boolean
-+expression can be used.  For a moderately ornate example, consider
-+the following:
++#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
 +
-+	file = rcu_dereference_check(fdt->fd[fd],
-+				     rcu_read_lock_held() ||
-+				     lockdep_is_held(&files->file_lock) ||
-+				     atomic_read(&files->count) == 1);
++# define rcu_read_acquire()		do { } while (0)
++# define rcu_read_release()		do { } while (0)
++# define rcu_read_acquire_bh()		do { } while (0)
++# define rcu_read_release_bh()		do { } while (0)
++# define rcu_read_acquire_sched()	do { } while (0)
++# define rcu_read_release_sched()	do { } while (0)
 +
-+This expression picks up the pointer "fdt->fd[fd]" in an RCU-safe manner,
-+and, if CONFIG_PROVE_RCU is configured, verifies that this expression
-+is used in:
++static inline int rcu_read_lock_held(void)
++{
++	return 1;
++}
 +
-+1.	An RCU read-side critical section, or
-+2.	with files->file_lock held, or
-+3.	on an unshared files_struct.
++static inline int rcu_read_lock_bh_held(void)
++{
++	return 1;
++}
 +
-+In case (1), the pointer is picked up in an RCU-safe manner for vanilla
-+RCU read-side critical sections, in case (2) the ->file_lock prevents
-+any change from taking place, and finally, in case (3) the current task
-+is the only task accessing the file_struct, again preventing any change
-+from taking place.
++static inline int rcu_read_lock_sched_held(void)
++{
++	return preempt_count() != 0;
++}
 +
-+There are currently only "universal" versions of the rcu_assign_pointer()
-+and RCU list-/tree-traversal primitives, which do not (yet) check for
-+being in an RCU read-side critical section.  In the future, separate
-+versions of these primitives might be created.
-diff --git a/Documentation/RCU/whatisRCU.txt b/Documentation/RCU/whatisRCU.txt
-index 469a58b..1dc00ee 100644
---- a/Documentation/RCU/whatisRCU.txt
-+++ b/Documentation/RCU/whatisRCU.txt
-@@ -323,15 +323,17 @@ used as follows:
- 	Defer			Protect
++#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
++#ifdef CONFIG_PROVE_RCU
++
++/**
++ * rcu_dereference_check - rcu_dereference with debug checking
++ *
++ * Do an rcu_dereference(), but check that the context is correct.
++ * For example, rcu_dereference_check(gp, rcu_read_lock_held()) to
++ * ensure that the rcu_dereference_check() executes within an RCU
++ * read-side critical section.  It is also possible to check for
++ * locks being held, for example, by using lockdep_is_held().
++ */
++#define rcu_dereference_check(p, c) \
++	({ \
++		if (debug_locks) \
++			WARN_ON_ONCE(!(c)); \
++		rcu_dereference(p); \
++	})
++
++#else /* #ifdef CONFIG_PROVE_RCU */
++
++#define rcu_dereference_check(p, c)	rcu_dereference(p)
++
++#endif /* #else #ifdef CONFIG_PROVE_RCU */
  
- a.	synchronize_rcu()	rcu_read_lock() / rcu_read_unlock()
--	call_rcu()
-+	call_rcu()		rcu_dereference()
+ /**
+  * rcu_read_lock - mark the beginning of an RCU read-side critical section.
+@@ -160,7 +266,7 @@ static inline void rcu_read_lock_bh(void)
+ {
+ 	__rcu_read_lock_bh();
+ 	__acquire(RCU_BH);
+-	rcu_read_acquire();
++	rcu_read_acquire_bh();
+ }
  
- b.	call_rcu_bh()		rcu_read_lock_bh() / rcu_read_unlock_bh()
-+				rcu_dereference_bh()
+ /*
+@@ -170,7 +276,7 @@ static inline void rcu_read_lock_bh(void)
+  */
+ static inline void rcu_read_unlock_bh(void)
+ {
+-	rcu_read_release();
++	rcu_read_release_bh();
+ 	__release(RCU_BH);
+ 	__rcu_read_unlock_bh();
+ }
+@@ -188,7 +294,7 @@ static inline void rcu_read_lock_sched(void)
+ {
+ 	preempt_disable();
+ 	__acquire(RCU_SCHED);
+-	rcu_read_acquire();
++	rcu_read_acquire_sched();
+ }
  
- c.	synchronize_sched()	rcu_read_lock_sched() / rcu_read_unlock_sched()
- 				preempt_disable() / preempt_enable()
- 				local_irq_save() / local_irq_restore()
- 				hardirq enter / hardirq exit
- 				NMI enter / NMI exit
-+				rcu_dereference_sched()
+ /* Used by lockdep and tracing: cannot be traced, cannot call lockdep. */
+@@ -205,7 +311,7 @@ static inline notrace void rcu_read_lock_sched_notrace(void)
+  */
+ static inline void rcu_read_unlock_sched(void)
+ {
+-	rcu_read_release();
++	rcu_read_release_sched();
+ 	__release(RCU_SCHED);
+ 	preempt_enable();
+ }
+diff --git a/include/linux/srcu.h b/include/linux/srcu.h
+index 4765d97..adbe167 100644
+--- a/include/linux/srcu.h
++++ b/include/linux/srcu.h
+@@ -35,6 +35,9 @@ struct srcu_struct {
+ 	int completed;
+ 	struct srcu_struct_array *per_cpu_ref;
+ 	struct mutex mutex;
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++	struct lockdep_map dep_map;
++#endif /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ };
  
- These three mechanisms are used as follows:
+ #ifndef CONFIG_PREEMPT
+@@ -43,12 +46,92 @@ struct srcu_struct {
+ #define srcu_barrier()
+ #endif /* #else #ifndef CONFIG_PREEMPT */
  
-@@ -781,9 +783,8 @@ Linux-kernel source code, but it helps to have a full list of the
- APIs, since there does not appear to be a way to categorize them
- in docbook.  Here is the list, by category.
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++
++int __init_srcu_struct(struct srcu_struct *sp, const char *name,
++		       struct lock_class_key *key);
++
++#define init_srcu_struct(sp) \
++({ \
++	static struct lock_class_key __srcu_key; \
++	\
++	__init_srcu_struct((sp), #sp, &__srcu_key); \
++})
++
++# define srcu_read_acquire(sp) \
++		lock_acquire(&(sp)->dep_map, 0, 0, 2, 1, NULL, _THIS_IP_)
++# define srcu_read_release(sp) \
++		lock_release(&(sp)->dep_map, 1, _THIS_IP_)
++
++#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
+ int init_srcu_struct(struct srcu_struct *sp);
++
++# define srcu_read_acquire(sp)  do { } while (0)
++# define srcu_read_release(sp)  do { } while (0)
++
++#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
+ void cleanup_srcu_struct(struct srcu_struct *sp);
+-int srcu_read_lock(struct srcu_struct *sp) __acquires(sp);
+-void srcu_read_unlock(struct srcu_struct *sp, int idx) __releases(sp);
++int __srcu_read_lock(struct srcu_struct *sp) __acquires(sp);
++void __srcu_read_unlock(struct srcu_struct *sp, int idx) __releases(sp);
+ void synchronize_srcu(struct srcu_struct *sp);
+ void synchronize_srcu_expedited(struct srcu_struct *sp);
+ long srcu_batches_completed(struct srcu_struct *sp);
  
--RCU pointer/list traversal:
-+RCU list traversal:
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++
++/**
++ * srcu_read_lock_held - might we be in SRCU read-side critical section?
++ *
++ * If CONFIG_PROVE_LOCKING is selected and enabled, returns nonzero iff in
++ * an SRCU read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
++ * this assumes we are in an SRCU read-side critical section unless it can
++ * prove otherwise.
++ */
++static inline int srcu_read_lock_held(struct srcu_struct *sp)
++{
++	if (debug_locks)
++		return lock_is_held(&sp->dep_map);
++	return 1;
++}
++
++#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
++static inline int srcu_read_lock_held(struct srcu_struct *sp)
++{
++	return 1;
++}
++
++#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
++/**
++ * srcu_read_lock - register a new reader for an SRCU-protected structure.
++ * @sp: srcu_struct in which to register the new reader.
++ *
++ * Enter an SRCU read-side critical section.  Note that SRCU read-side
++ * critical sections may be nested.
++ */
++static inline int srcu_read_lock(struct srcu_struct *sp) __acquires(sp)
++{
++	int retval = __srcu_read_lock(sp);
++
++	srcu_read_acquire(sp);
++	return retval;
++}
++
++/**
++ * srcu_read_unlock - unregister a old reader from an SRCU-protected structure.
++ * @sp: srcu_struct in which to unregister the old reader.
++ * @idx: return value from corresponding srcu_read_lock().
++ *
++ * Exit an SRCU read-side critical section.
++ */
++static inline void srcu_read_unlock(struct srcu_struct *sp, int idx)
++	__releases(sp)
++{
++	srcu_read_release(sp);
++	__srcu_read_unlock(sp, idx);
++}
++
+ #endif
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index 9b7fd47..033cb55 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -50,6 +50,16 @@ static struct lock_class_key rcu_lock_key;
+ struct lockdep_map rcu_lock_map =
+ 	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock", &rcu_lock_key);
+ EXPORT_SYMBOL_GPL(rcu_lock_map);
++
++static struct lock_class_key rcu_bh_lock_key;
++struct lockdep_map rcu_bh_lock_map =
++	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock_bh", &rcu_bh_lock_key);
++EXPORT_SYMBOL_GPL(rcu_bh_lock_map);
++
++static struct lock_class_key rcu_sched_lock_key;
++struct lockdep_map rcu_sched_lock_map =
++	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock_sched", &rcu_sched_lock_key);
++EXPORT_SYMBOL_GPL(rcu_sched_lock_map);
+ #endif
  
--	rcu_dereference
- 	list_for_each_entry_rcu
- 	hlist_for_each_entry_rcu
- 	hlist_nulls_for_each_entry_rcu
-@@ -809,7 +810,7 @@ RCU:	Critical sections	Grace period		Barrier
+ /*
+diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+index adda92b..5f43f30 100644
+--- a/kernel/rcutorture.c
++++ b/kernel/rcutorture.c
+@@ -796,7 +796,11 @@ static void rcu_torture_timer(unsigned long unused)
  
- 	rcu_read_lock		synchronize_net		rcu_barrier
- 	rcu_read_unlock		synchronize_rcu
--				synchronize_rcu_expedited
-+	rcu_dereference		synchronize_rcu_expedited
- 				call_rcu
+ 	idx = cur_ops->readlock();
+ 	completed = cur_ops->completed();
+-	p = rcu_dereference(rcu_torture_current);
++	p = rcu_dereference_check(rcu_torture_current,
++				  rcu_read_lock_held() ||
++				  rcu_read_lock_bh_held() ||
++				  rcu_read_lock_sched_held() ||
++				  srcu_read_lock_held(&srcu_ctl));
+ 	if (p == NULL) {
+ 		/* Leave because rcu_torture_writer is not yet underway */
+ 		cur_ops->readunlock(idx);
+@@ -853,7 +857,11 @@ rcu_torture_reader(void *arg)
+ 		}
+ 		idx = cur_ops->readlock();
+ 		completed = cur_ops->completed();
+-		p = rcu_dereference(rcu_torture_current);
++		p = rcu_dereference_check(rcu_torture_current,
++					  rcu_read_lock_held() ||
++					  rcu_read_lock_bh_held() ||
++					  rcu_read_lock_sched_held() ||
++					  srcu_read_lock_held(&srcu_ctl));
+ 		if (p == NULL) {
+ 			/* Wait for rcu_torture_writer to get underway */
+ 			cur_ops->readunlock(idx);
+diff --git a/kernel/srcu.c b/kernel/srcu.c
+index 31b275b..140b7ba 100644
+--- a/kernel/srcu.c
++++ b/kernel/srcu.c
+@@ -34,6 +34,30 @@
+ #include <linux/smp.h>
+ #include <linux/srcu.h>
  
++static int init_srcu_struct_fields(struct srcu_struct *sp)
++{
++	sp->completed = 0;
++	mutex_init(&sp->mutex);
++	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
++	return (sp->per_cpu_ref ? 0 : -ENOMEM);
++}
++
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++
++int __init_srcu_struct(struct srcu_struct *sp, const char *name,
++		       struct lock_class_key *key)
++{
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++	/* Don't re-initialize a lock while it is held. */
++	debug_check_no_locks_freed((void *)sp, sizeof(*sp));
++	lockdep_init_map(&sp->dep_map, name, key, 0);
++#endif /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++	return (init_srcu_struct_fields(sp));
++}
++EXPORT_SYMBOL_GPL(__init_srcu_struct);
++
++#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
+ /**
+  * init_srcu_struct - initialize a sleep-RCU structure
+  * @sp: structure to initialize.
+@@ -44,13 +68,12 @@
+  */
+ int init_srcu_struct(struct srcu_struct *sp)
+ {
+-	sp->completed = 0;
+-	mutex_init(&sp->mutex);
+-	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
+-	return (sp->per_cpu_ref ? 0 : -ENOMEM);
++	return (init_srcu_struct_fields(sp));
+ }
+ EXPORT_SYMBOL_GPL(init_srcu_struct);
  
-@@ -817,7 +818,7 @@ bh:	Critical sections	Grace period		Barrier
++#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
+ /*
+  * srcu_readers_active_idx -- returns approximate number of readers
+  *	active on the specified rank of per-CPU counters.
+@@ -100,15 +123,12 @@ void cleanup_srcu_struct(struct srcu_struct *sp)
+ }
+ EXPORT_SYMBOL_GPL(cleanup_srcu_struct);
  
- 	rcu_read_lock_bh	call_rcu_bh		rcu_barrier_bh
- 	rcu_read_unlock_bh	synchronize_rcu_bh
--				synchronize_rcu_bh_expedited
-+	rcu_dereference_bh	synchronize_rcu_bh_expedited
+-/**
+- * srcu_read_lock - register a new reader for an SRCU-protected structure.
+- * @sp: srcu_struct in which to register the new reader.
+- *
++/*
+  * Counts the new reader in the appropriate per-CPU element of the
+  * srcu_struct.  Must be called from process context.
+  * Returns an index that must be passed to the matching srcu_read_unlock().
+  */
+-int srcu_read_lock(struct srcu_struct *sp)
++int __srcu_read_lock(struct srcu_struct *sp)
+ {
+ 	int idx;
  
+@@ -120,26 +140,22 @@ int srcu_read_lock(struct srcu_struct *sp)
+ 	preempt_enable();
+ 	return idx;
+ }
+-EXPORT_SYMBOL_GPL(srcu_read_lock);
++EXPORT_SYMBOL_GPL(__srcu_read_lock);
  
- sched:	Critical sections	Grace period		Barrier
-@@ -826,12 +827,14 @@ sched:	Critical sections	Grace period		Barrier
- 	rcu_read_unlock_sched	call_rcu_sched
- 	[preempt_disable]	synchronize_sched_expedited
- 	[and friends]
-+	rcu_dereference_sched
+-/**
+- * srcu_read_unlock - unregister a old reader from an SRCU-protected structure.
+- * @sp: srcu_struct in which to unregister the old reader.
+- * @idx: return value from corresponding srcu_read_lock().
+- *
++/*
+  * Removes the count for the old reader from the appropriate per-CPU
+  * element of the srcu_struct.  Note that this may well be a different
+  * CPU than that which was incremented by the corresponding srcu_read_lock().
+  * Must be called from process context.
+  */
+-void srcu_read_unlock(struct srcu_struct *sp, int idx)
++void __srcu_read_unlock(struct srcu_struct *sp, int idx)
+ {
+ 	preempt_disable();
+ 	srcu_barrier();  /* ensure compiler won't misorder critical section. */
+ 	per_cpu_ptr(sp->per_cpu_ref, smp_processor_id())->c[idx]--;
+ 	preempt_enable();
+ }
+-EXPORT_SYMBOL_GPL(srcu_read_unlock);
++EXPORT_SYMBOL_GPL(__srcu_read_unlock);
  
+ /*
+  * Helper function for synchronize_srcu() and synchronize_srcu_expedited().
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 6bf97d1..6af20a8 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -499,6 +499,18 @@ config PROVE_LOCKING
  
- SRCU:	Critical sections	Grace period		Barrier
+ 	 For more details, see Documentation/lockdep-design.txt.
  
- 	srcu_read_lock		synchronize_srcu	N/A
- 	srcu_read_unlock	synchronize_srcu_expedited
-+	srcu_dereference
++config PROVE_RCU
++	bool "RCU debugging: prove RCU correctness"
++	depends on PROVE_LOCKING
++	default n
++	help
++	 This feature enables lockdep extensions that check for correct
++	 use of RCU APIs.  This is currently under development.  Say Y
++	 if you want to debug RCU usage or help work on the PROVE_RCU
++	 feature.
++
++	 Say N if you are unsure.
++
+ config LOCKDEP
+ 	bool
+ 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
+diff --git a/lib/debug_locks.c b/lib/debug_locks.c
+index bc3b117..5bf0020 100644
+--- a/lib/debug_locks.c
++++ b/lib/debug_locks.c
+@@ -23,6 +23,7 @@
+  * shut up after that.
+  */
+ int debug_locks = 1;
++EXPORT_SYMBOL_GPL(debug_locks);
  
- SRCU:	Initialization/cleanup
- 	init_srcu_struct
+ /*
+  * The locking-testsuite uses <debug_locks_silent> to get a
 -- 
 1.5.2.5
 
