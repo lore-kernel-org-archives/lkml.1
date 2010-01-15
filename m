@@ -1,176 +1,132 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756884Ab0AOPzD (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 10:55:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159Ab0AOPzB
+	id S1756858Ab0AOQBj (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 11:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774Ab0AOQBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 10:55:01 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:62089 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818Ab0AOPzA convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jan 2010 11:01:38 -0500
+Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:46901 "EHLO
+	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752113Ab0AOQBi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 10:55:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=an36Ok05NLMAvxb9Ox5qGbIp8q0157nPox0/E+sDQxS+FaAG4gm1jzrq8wKdbptdae
-         SWjlAaEYICX6oXphNu6pqMvhohh0KOQpFatccGyWHwWUC8EsqYgo6BPzNaQ/dWsVAKrI
-         ZYi7CdH/7GyPAVZn2MEiQN2M1d31zex0scx9o=
-Date: Fri, 15 Jan 2010 16:54:47 +0100
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: Anders =?UTF-8?B?Qm9zdHLDtm0=?= <anders@netinsight.net>
-Cc: xiong.huang@atheros.com, jie.yang@atheros.com,
-        linux-kernel@vger.kernel.org, ben@decadent.org.uk,
-        netdev@vger.kernel.org
-Subject: Re: atl1e: TSO is broken
-Message-ID: <20100115165447.2eb7d547@varda>
-In-Reply-To: <20100115.135613.1130385479658158300.anders@netinsight.net>
-References: <20100115.135613.1130385479658158300.anders@netinsight.net>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 15 Jan 2010 11:01:38 -0500
+Message-ID: <4B50915E.8000308@blueyonder.co.uk>
+Date: Fri, 15 Jan 2010 16:01:34 +0000
+From: Sid Boyce <sboyce@blueyonder.co.uk>
+Reply-To: sboyce@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: HDA Intel Audio hang on boot
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <omZ8aBZReyD.A.jbH.QNlSLB@chimera> <4B4A9D8F.9030300@blueyonder.co.uk> <4B4FC3B0.9070207@blueyonder.co.uk>
+In-Reply-To: <4B4FC3B0.9070207@blueyonder.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Fri, 15 Jan 2010 13:56:13 +0100 (CET)
-Anders Boström <anders@netinsight.net> escribió:
+With the PCI Audigy card in, the box wouldn't even enter POST, either
+the Audigy is bad (unknown - from a box that couldn't see the drives) or
+there is something faulty on the motherboard. I am currently running
+2.6.33-rc4-git2 on the box with a Terratec Aureon 5.1 USB MK II sound card.
+Regards
+Sid.
 
-CCing netdev
+On 15/01/10 01:24, Sid Boyce wrote:
+> Renaming this bug as the "only 1 CPU" bug has been fixed, but the hang
+> at HDA remains.
+> I shall plug in a SB Audigy and see if it will boot with that.
+> By disabling the on-board HDA Intel audio in the BIOS, the system boots.
+> tindog:~ # uname -r
+> 2.6.33-rc4-smp
+> On 2.6.32-git1 which boots, hwinfo shows:-
+>   oss.card_id = 'HDA NVidia'
+>   oss.card_id = 'HDA NVidia'
+>   oss.card_id = 'HDA NVidia'
+>   alsa.card_id = 'HDA NVidia'
+>   alsa.card_id = 'HDA NVidia'
+>   alsa.card_id = 'HDA NVidia'
+>   alsa.card_id = 'HDA NVidia'
+>   info.product = 'HDA NVidia ALSA hardware specific Device'
+>   alsa.card_id = 'HDA NVidia'
+>   info.product = 'HDA NVidia ALSA Control Device'
+>   alsa.card_id = 'HDA NVidia'
+>   info.product = 'HDA NVidia Sound Card'
+>   sound.card_id = 'HDA NVidia'
+>   info.linux.driver = 'HDA Intel'
+>     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
+>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>        HDA Intel: module = snd_hda_intel
+> irq:0 22 (   490413) "sata_nv" "HDA Intel"
+>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>        HDA Intel: module = snd_hda_intel
+>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>        HDA Intel: module = snd_hda_intel
+>   E: DRIVER=HDA Intel
+>   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
+> low) -> IRQ 22
+>   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
+>   Driver: "HDA Intel"
+> 
+> Regards
+> Sid.
+> 
+> On 11/01/10 03:39, Sid Boyce wrote:
+>> On 10/01/10 22:32, Rafael J. Wysocki wrote:
+>>> This message has been generated automatically as a part of a report
+>>> of recent regressions.
+>>>
+>>> The following bug entry is on the current list of known regressions
+>>> from 2.6.32.  Please verify if it still should be listed and let me know
+>>> (either way).
+>>>
+>>>
+>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14946
+>>> Subject		: All kernels after 2.6.32-git10  show only 1 CPU
+>>> Submitter	: Sid Boyce <sboyce@blueyonder.co.uk>
+>>> Date		: 2009-12-23 16:55 (19 days old)
+>>> References	: http://marc.info/?l=linux-kernel&m=126158734326801&w=4
+>>>
+>>>
+>>>
+>>>
+>>
+>> With 2.6.33-rc3-git3 I now see 2 CPU's every on a normal boot, but its
+>> locking up solid at this part of the boot process as usual.
+>> ACPI: PCI Interrupt Link [AAZA] enabled at IRQ 22
+>> HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level, low)
+>> -> IRQ 22.
+>> With acpi=noirq (2 CPU's)
+>> ================
+>> kvm: Nested Virtualization enabled.
+>> IT8716 Super IO detected
+>> Parport_PC 00:0a: reported by plug and Play ACPI
+>> Parport 0: PC-Style at 0x378, irq 7 [PCSPP, TRISTATE,EPP]
+>> parport: irq 7 in use, resorting to polled operation
+>> HDA Intel 0000:00:0e.1: PCI -> APIC IRQ transform: INT B -> IRQ 11
+>>
+>> With acpi=ht (1 CPU)
+>> =============
+>> Hangs at:-
+>> Loading drivees, configuring devices do_IRQ: 0.65 No irq handler for
+>> vector (irq -1)
+>>
+>> With acpi=off (2 CPU's)
+>> ========================
+>> Hangs at same point as with acpi=noirq.
+>>
+>> Regards
+>> Sid.
+> 
+> 
 
-> Short desription
-> ----------------
-> 
-> TCP Segmentation Offload (TSO) result in broken IPv4-packets sent out
-> from Atheros AR8121/AR8113/AR8114 with the atl1e driver.
-> 
-> 
-> Work around
-> -----------
-> 
-> Turn off TSO. Requires 2.6.33-rc1 or later.
-> 
-> 
-> Long desription
-> ----------------
-> 
-> When I run NFS over TCP (default options) and read large files from a
-> server with Atheros AR8121/AR8113/AR8114 Ethernet chip, I only get
-> ~25Mbyte/s performance. I get ~5000 retransmitted packets per GByte
-> data, according to RetransSegs in /proc/net/snmp . wireshark in the
-> client show that the server send out a sequence of frames. All but the
-> last one are 1500 bytes IP-packets. The last one is shorter, but the
-> IP-header still say 1500 byte. The client then requests retransmit,
-> and the retransmitted frame arrives with correct IP-header.
-> 
-> If I mount NFS using UDP instead, performance is ~110Mbyte/s.
-> 
-> TCP Segmentation Offload (TSO) is default enabled in the atl1e
-> Ethernet-driver. When I run a patched 2.6.30.10, enabling ethtool to
-> turn off TSO (using ac936929092dc6a5409b627c4c67305ab9b626b3 by Ben
-> Hutchings), and turn off TSO, the problem disappears. Performance is
-> ~110Mbyte/s and no broken IP-packets arrive.
-> 
-> 
-> Capture of 146-byte Ethernet frame with bad IP-header:
-> 
-> No.     Time        Source                Destination           Protocol Info
->   98329 11.034129   flash.netinsight.se   sid.netinsight.se     RPC      Continuation
-> 
-> Frame 98329 (146 bytes on wire, 146 bytes captured)
->     Arrival Time: Jan 15, 2010 13:35:16.224491000
->     [Time delta from previous captured frame: 0.000009000 seconds]
->     [Time delta from previous displayed frame: 0.000009000 seconds]
->     [Time since reference or first frame: 11.034129000 seconds]
->     Frame Number: 98329
->     Frame Length: 146 bytes
->     Capture Length: 146 bytes
->     [Frame is marked: False]
->     [Protocols in frame: eth:ip:tcp:rpc]
->     [Coloring Rule Name: TCP]
->     [Coloring Rule String: tcp]
-> Ethernet II, Src: AsustekC_ae:69:6d (00:26:18:ae:69:6d), Dst: sid.netinsight.se (00:18:f3:52:22:3f)
-> Internet Protocol, Src: flash.netinsight.se (10.100.0.88), Dst: sid.netinsight.se (10.100.1.25)
->     Version: 4
->     Header length: 20 bytes
->     Differentiated Services Field: 0x00 (DSCP 0x00: Default; ECN: 0x00)
->     Total Length: 1500
->     Identification: 0x331e (13086)
->     Flags: 0x02 (Don't Fragment)
->     Fragment offset: 0
->     Time to live: 64
->     Protocol: TCP (0x06)
->     Header checksum: 0xebc5 [correct]
->     Source: flash.netinsight.se (10.100.0.88)
->     Destination: sid.netinsight.se (10.100.1.25)
-> Transmission Control Protocol, Src Port: nfs (2049), Dst Port: accessbuilder (888), Seq: 93989617, Ack: 516997, Len: 80
-> Remote Procedure Call
-> 
-> 0000  00 18 f3 52 22 3f 00 26 18 ae 69 6d 08 00 45 00   ...R"?.&..im..E.
-> 0010  05 dc 33 1e 40 00 40 06 eb c5 0a 64 00 58 0a 64   ..3.@.@....d.X.d
-> 0020  01 19 08 01 03 78 a4 07 57 23 e6 50 1f 1b 80 10   .....x..W#.P....
-> 0030  01 f5 dd 8d 00 00 01 01 08 0a 05 28 ca 7e 38 93   ...........(.~8.
-> 0040  67 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00   g...............
-> 0050  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
-> 0060  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
-> 0070  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
-> 0080  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
-> 0090  00 00                                             ..
-> 
-> 
-> 
-> Software info:
-> 
-> I've tested with Debian 2.6.26 (stable) and 2.6.30 (testing), as well
-> as 2.6.30.10 from kernel.org. Same result.
-> 
-> Hardware info:
-> 
-> lspci -vvv:
-> 
-> 03:00.0 Ethernet controller: Attansic Technology Corp. Atheros AR8121/AR8113/AR8114 PCI-E Ethernet Controller (rev b0)
->         Subsystem: ASUSTeK Computer Inc. Device 831c
->         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
->         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR+ <PERR- INTx-
->         Latency: 0, Cache Line Size: 64 bytes
->         Interrupt: pin A routed to IRQ 27
->         Region 0: Memory at fbfc0000 (64-bit, non-prefetchable) [size=256K]
->         Region 2: I/O ports at ec00 [size=128]
->         Capabilities: [40] Power Management version 2
->                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
->                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
->         Capabilities: [48] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
->                 Address: 00000000fee0f00c  Data: 4189
->         Capabilities: [58] Express (v1) Endpoint, MSI 00
->                 DevCap: MaxPayload 4096 bytes, PhantFunc 0, Latency L0s <4us, L1 unlimited
->                         ExtTag- AttnBtn+ AttnInd+ PwrInd+ RBE- FLReset-
->                 DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
->                         RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->                         MaxPayload 128 bytes, MaxReadReq 512 bytes
->                 DevSta: CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+ TransPend-
->                 LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s, Latency L0 unlimited, L1 unlimited
->                         ClockPM- Suprise- LLActRep- BwNot-
->                 LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
->                         ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
->                 LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
->         Capabilities: [100] Advanced Error Reporting <?>
->         Capabilities: [180] Device Serial Number ff-18-26-00-6d-69-ae-ff
->         Kernel driver in use: ATL1E
->         Kernel modules: atl1e
-> 
-> ethtool -i eth0:
-> 
-> driver: ATL1E
-> version: 1.0.0.7-NAPI
-> firmware-version: L1e
-> bus-info: 0000:03:00.0
-> 
-> 
-> / Anders
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
+
