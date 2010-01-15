@@ -1,51 +1,48 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756787Ab0AOJIM (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 04:08:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756281Ab0AOJIL
+	id S1756973Ab0AOJJK (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 04:09:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824Ab0AOJJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 04:08:11 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37882 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754206Ab0AOJIJ (ORCPT
+	Fri, 15 Jan 2010 04:09:08 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58490
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756672Ab0AOJJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 04:08:09 -0500
-Subject: Re: [RFC] [PATCH 3/7] Execution out of line (XOL)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-        Arnaldo Carvalho de Melo <acme@infradead.org>,
-        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-        utrace-devel <utrace-devel@redhat.com>,
-        Frederic Weisbecker <fweisbec@gmail.com>,
-        Masami Hiramatsu <mhiramat@redhat.com>,
-        Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1263508997.4875.32.camel@localhost.localdomain>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122545.22050.64994.sendpatchset@srikar.in.ibm.com>
-	 <1263467318.4244.289.camel@laptop>
-	 <1263508997.4875.32.camel@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jan 2010 10:07:35 +0100
-Message-ID: <1263546455.4244.348.camel@laptop>
+	Fri, 15 Jan 2010 04:09:07 -0500
+Date: Fri, 15 Jan 2010 01:09:16 -0800 (PST)
+Message-Id: <20100115.010916.104760167.davem@davemloft.net>
+To: hartleys@visionengravers.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] net/core/sock.c: quiet sparse noise
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <201001141721.45305.hartleys@visionengravers.com>
+References: <201001141721.45305.hartleys@visionengravers.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 14:43 -0800, Jim Keniston wrote:
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+Date: Thu, 14 Jan 2010 17:21:45 -0700
+
+> net/core/sock.c: quiet sparse noise
 > 
-> Yeah, there's not a lot of context there.  I hope it will make more
-> sense if you read section 1.1 of Documentation/uprobes.txt (patch #6).
-> Or look at get_insn_slot() in kprobes, and understand that we're trying
-> to do something similar in uprobes, where the instruction copies have to
-> reside in the user address space of the probed process.
+> In sock_getsockopt the symbol 'lv' is declared as an
+> unsigned int type, probably due to sizeof returning a
+> size_t which is really an unsigned int.
+> 
+> This produces a sparse warning for SO_PEERNAME due to
+> the sock->ops->getname() call:
+> 
+> warning: incorrect type in argument 3 (different signedness)
+>    expected int *sockaddr_len
+>    got unsigned int *<noident>
+> 
+> Quiet the warning my changing the type of 'lv' to an int.
+> 
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-That's not the point, changelogs shoulnd not be this cryptic. They
-should be stand alone and descriptive of what, why and how.
-
-If you can't be bothered writing such for something you want reviewed
-for inclusion then I might not be bothered looking at them at all.
-
+Applied to net-next-2.6, thanks.
