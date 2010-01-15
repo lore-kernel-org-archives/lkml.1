@@ -1,158 +1,178 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090Ab0AOBmw (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 14 Jan 2010 20:42:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023Ab0AOBmv
+	id S1754215Ab0AOBpm (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 14 Jan 2010 20:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897Ab0AOBpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 20:42:51 -0500
-Received: from mail.perches.com ([173.55.12.10]:1223 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752282Ab0AOBmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 20:42:51 -0500
-Subject: [PATCH V2 (changelog update only)] scripts/get_maintainer.pl: Add
- --sections, print entire matched subsystem
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100114151254.72b57501.akpm@linux-foundation.org>
-References: <1263408063.8011.116.camel@Joe-Laptop.home>
-	 <20100114151254.72b57501.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 17:42:50 -0800
-Message-ID: <1263519770.1903.49.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jan 2010 20:45:41 -0500
+Received: from casper.infradead.org ([85.118.1.10]:49913 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695Ab0AOBpj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 20:45:39 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+        =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+        Mike Galbraith <efault@gmx.de>,
+        Peter Zijlstra <a.p.zijlstra@chello.nl>,
+        Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 4/4] perf buildid-list: Introduce --with-hits option
+Date: Thu, 14 Jan 2010 23:45:30 -0200
+Message-Id: <1263519930-22803-4-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1263519930-22803-1-git-send-email-acme@infradead.org>
+References: <1263519930-22803-1-git-send-email-acme@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 15:12 -0800, Andrew Morton wrote:
-> On Wed, 13 Jan 2010 10:41:03 -0800
-> Joe Perches <joe@perches.com> wrote:
-> > Print the complete contents of the matched subsystem in pattern
-> > match depth order.
-> It would be much easier for us to understand the proposed change if the
-> changelog contained some example output, please.
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Print the complete contents of the matched subsystems
-in pattern match depth order.
+Using this option 'perf buildid-list' will process all samples, marking
+the DSOs that had some hits to list just them.
 
-Sample output:
+This in turn will be used by a new porcelain, 'perf archive', that will
+be just a shell script to create a tarball from the 'perf buildid-list
+--with-hits' output and the files cached by 'perf record' in ~/.debug.
 
-$ ./scripts/get_maintainer.pl --sections -f drivers/net/usb/smsc95xx.c
-USB SMSC95XX ETHERNET DRIVER
-M:Steve Glendinning <steve.glendinning@smsc.com>
-L:netdev@vger.kernel.org
-S:Supported
-F:drivers/net/usb/smsc95xx.*
-USB SUBSYSTEM
-M:Greg Kroah-Hartman <gregkh@suse.de>
-L:linux-usb@vger.kernel.org
-W:http://www.linux-usb.org
-T:quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
-S:Supported
-F:Documentation/usb/
-F:drivers/net/usb/
-F:drivers/usb/
-F:include/linux/usb.h
-F:include/linux/usb/
-NETWORKING DRIVERS
-L:netdev@vger.kernel.org
-W:http://www.linuxfoundation.org/en/Net
-T:git git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
-S:Odd Fixes
-F:drivers/net/
-F:include/linux/if_*
-F:include/linux/*device.h
-THE REST
-M:Linus Torvalds <torvalds@linux-foundation.org>
-L:linux-kernel@vger.kernel.org
-Q:http://patchwork.kernel.org/project/LKML/list/
-T:git git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-S:Buried alive in reporters
-F:*
-F:*/
-
-Signed-off-by: Joe Perches <joe@perches.com>
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- scripts/get_maintainer.pl |   36 ++++++++++++++++++++++++++++++++----
- 1 files changed, 32 insertions(+), 4 deletions(-)
+ tools/perf/builtin-buildid-list.c |   35 ++++++++++++++++++++++++++++++++++-
+ tools/perf/util/symbol.c          |   11 +++++++----
+ tools/perf/util/symbol.h          |    3 ++-
+ 3 files changed, 43 insertions(+), 6 deletions(-)
 
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index 1762e6b..16846ce 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -41,6 +41,7 @@ my $web = 0;
- my $subsystem = 0;
- my $status = 0;
- my $keywords = 1;
-+my $sections = 0;
- my $file_emails = 0;
- my $from_filename = 0;
- my $pattern_depth = 0;
-@@ -121,6 +122,7 @@ if (!GetOptions(
- 		'web!' => \$web,
- 		'pattern-depth=i' => \$pattern_depth,
- 		'k|keywords!' => \$keywords,
-+		'sections!' => \$sections,
- 		'fe|file-emails!' => \$file_emails,
- 		'f|file' => \$from_filename,
- 		'v|version' => \$version,
-@@ -152,10 +154,20 @@ if ($output_rolestats) {
-     $output_roles = 1;
+diff --git a/tools/perf/builtin-buildid-list.c b/tools/perf/builtin-buildid-list.c
+index 4229c2c..431f204 100644
+--- a/tools/perf/builtin-buildid-list.c
++++ b/tools/perf/builtin-buildid-list.c
+@@ -16,6 +16,7 @@
+ 
+ static char const *input_name = "perf.data";
+ static int force;
++static bool with_hits;
+ 
+ static const char * const buildid_list_usage[] = {
+ 	"perf buildid-list [<options>]",
+@@ -23,6 +24,7 @@ static const char * const buildid_list_usage[] = {
+ };
+ 
+ static const struct option options[] = {
++	OPT_BOOLEAN('H', "with-hits", &with_hits, "Show only DSOs with hits"),
+ 	OPT_STRING('i', "input", &input_name, "file",
+ 		    "input file name"),
+ 	OPT_BOOLEAN('f', "force", &force, "don't complain, do it"),
+@@ -31,6 +33,34 @@ static const struct option options[] = {
+ 	OPT_END()
+ };
+ 
++static int build_id_list__process_event(event_t *event,
++					struct perf_session *session)
++{
++	struct addr_location al;
++	u8 cpumode = event->header.misc & PERF_RECORD_MISC_CPUMODE_MASK;
++	struct thread *thread = perf_session__findnew(session, event->ip.pid);
++
++	if (thread == NULL) {
++		pr_err("problem processing %d event, skipping it.\n",
++			event->header.type);
++		return -1;
++	}
++
++	thread__find_addr_map(thread, session, cpumode, MAP__FUNCTION,
++			      event->ip.ip, &al);
++
++	if (al.map != NULL)
++		al.map->dso->hit = 1;
++
++	return 0;
++}
++
++static struct perf_event_ops build_id_list__event_ops = {
++	.sample	= build_id_list__process_event,
++	.mmap	= event__process_mmap,
++	.fork	= event__process_task,
++};
++
+ static int __cmd_buildid_list(void)
+ {
+ 	int err = -1;
+@@ -40,7 +70,10 @@ static int __cmd_buildid_list(void)
+ 	if (session == NULL)
+ 		return -1;
+ 
+-	dsos__fprintf_buildid(stdout);
++	if (with_hits)
++		perf_session__process_events(session, &build_id_list__event_ops);
++
++	dsos__fprintf_buildid(stdout, with_hits);
+ 
+ 	perf_session__delete(session);
+ 	return err;
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 4267138..a4e7459 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -1716,22 +1716,25 @@ void dsos__fprintf(FILE *fp)
+ 	__dsos__fprintf(&dsos__user, fp);
  }
  
--my $selections = $email + $scm + $status + $subsystem + $web;
--if ($selections == 0) {
--    usage();
--    die "$P:  Missing required option: email, scm, status, subsystem or web\n";
-+if ($sections) {
-+    $email = 0;
-+    $email_list = 0;
-+    $scm = 0;
-+    $status = 0;
-+    $subsystem = 0;
-+    $web = 0;
-+    $keywords = 0;
-+} else {
-+    my $selections = $email + $scm + $status + $subsystem + $web;
-+    if ($selections == 0) {
-+	usage();
-+	die "$P:  Missing required option: email, scm, status, subsystem or web\n";
-+    }
+-static size_t __dsos__fprintf_buildid(struct list_head *head, FILE *fp)
++static size_t __dsos__fprintf_buildid(struct list_head *head, FILE *fp,
++				      bool with_hits)
+ {
+ 	struct dso *pos;
+ 	size_t ret = 0;
+ 
+ 	list_for_each_entry(pos, head, node) {
++		if (with_hits && !pos->hit)
++			continue;
+ 		ret += dso__fprintf_buildid(pos, fp);
+ 		ret += fprintf(fp, " %s\n", pos->long_name);
+ 	}
+ 	return ret;
  }
  
- if ($email &&
-@@ -346,6 +358,21 @@ foreach my $file (@files) {
- 	}
- 	foreach my $line (sort {$hash{$b} <=> $hash{$a}} keys %hash) {
- 	    add_categories($line);
-+	    if ($sections) {
-+		my $i;
-+		my $start = find_starting_index($line);
-+		my $end = find_ending_index($line);
-+		for ($i = $start; $i < $end; $i++) {
-+		    my $line = $typevalue[$i];
-+		    if ($line =~ /^[FX]:/) {		##Restore file patterns
-+			$line =~ s/([^\\])\.([^\*])/$1\?$2/g;
-+			$line =~ s/([^\\])\.$/$1\?/g;	##Convert . back to ?
-+			$line =~ s/\\\./\./g;       	##Convert \. to .
-+			$line =~ s/\.\*/\*/g;       	##Convert .* to *
-+		    }
-+		    print("$line\n");
-+		}
-+	    }
- 	}
-     }
+-size_t dsos__fprintf_buildid(FILE *fp)
++size_t dsos__fprintf_buildid(FILE *fp, bool with_hits)
+ {
+-	return (__dsos__fprintf_buildid(&dsos__kernel, fp) +
+-		__dsos__fprintf_buildid(&dsos__user, fp));
++	return (__dsos__fprintf_buildid(&dsos__kernel, fp, with_hits) +
++		__dsos__fprintf_buildid(&dsos__user, fp, with_hits));
+ }
  
-@@ -476,6 +503,7 @@ Output type options:
- Other options:
-   --pattern-depth => Number of pattern directory traversals (default: 0 (all))
-   --keywords => scan patch for keywords (default: 1 (on))
-+  --sections => print the entire subsystem sections with pattern matches
-   --version => show version
-   --help => show this help information
+ static struct dso *dsos__create_kernel(const char *vmlinux)
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index 36b7c71..525085f 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -97,6 +97,7 @@ struct dso {
+ 	u8		 slen_calculated:1;
+ 	u8		 has_build_id:1;
+ 	u8		 kernel:1;
++	u8		 hit:1;
+ 	unsigned char	 origin;
+ 	u8		 sorted_by_name;
+ 	u8		 loaded;
+@@ -129,7 +130,7 @@ struct perf_session;
+ int dso__load(struct dso *self, struct map *map, struct perf_session *session,
+ 	      symbol_filter_t filter);
+ void dsos__fprintf(FILE *fp);
+-size_t dsos__fprintf_buildid(FILE *fp);
++size_t dsos__fprintf_buildid(FILE *fp, bool with_hits);
  
-
-
+ size_t dso__fprintf_buildid(struct dso *self, FILE *fp);
+ size_t dso__fprintf(struct dso *self, enum map_type type, FILE *fp);
+-- 
+1.6.2.5
 
