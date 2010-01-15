@@ -1,67 +1,57 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687Ab0AONio (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 08:38:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756380Ab0AONin
+	id S1756640Ab0AONjh (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 08:39:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810Ab0AONjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 08:38:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:49293 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750748Ab0AONim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 08:38:42 -0500
-Date: Fri, 15 Jan 2010 08:38:25 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jim Keniston <jkenisto@us.ibm.com>,
-        Arnaldo Carvalho de Melo <acme@infradead.org>,
-        Frederic Weisbecker <fweisbec@gmail.com>,
-        LKML <linux-kernel@vger.kernel.org>, Mark Wielaard <mjw@redhat.com>,
-        utrace-devel <utrace-devel@redhat.com>
-Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
-Message-ID: <20100115133825.GQ4822@redhat.com>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com> <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com> <1263467394.4244.291.camel@laptop> <1263509380.4875.35.camel@localhost.localdomain> <1263546632.4244.352.camel@laptop> <y0mvdf3en1y.fsf@fche.csb> <1263548124.4244.358.camel@laptop> <20100115131037.GP4822@redhat.com> <1263561930.4244.417.camel@laptop>
-Mime-Version: 1.0
+	Fri, 15 Jan 2010 08:39:36 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:33764 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751069Ab0AONjg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 08:39:36 -0500
+Date: Fri, 15 Jan 2010 13:39:33 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Miller <davem@davemloft.net>,
+        stefanr@s5r6.in-berlin.de, adi@hexapodia.org, nm127@freemail.hu,
+        david.vrabel@csr.com, linux-usb@vger.kernel.org,
+        linux-kernel@vger.kernel.org, cocci@diku.dk,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Nicolas Palix <npalix@diku.dk>
+Subject: Re: Changelog quality
+Message-ID: <20100115133933.GB21188@rakim.wolfsonmicro.main>
+References: <4B502C6B.7000802@s5r6.in-berlin.de>
+ <20100115.005445.263291449.davem@davemloft.net>
+ <tkrat.e88dd4dbf17f9bde@s5r6.in-berlin.de>
+ <20100115.012233.202457727.davem@davemloft.net>
+ <Pine.LNX.4.64.1001151039080.23543@ask.diku.dk>
+ <84144f021001150149u3b784d26g1822be6c5c3ecbf@mail.gmail.com>
+ <Pine.LNX.4.64.1001151101320.23543@ask.diku.dk>
+ <20100115110845.GB28625@sirena.org.uk>
+ <Pine.LNX.4.64.1001151303580.23543@ask.diku.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1263561930.4244.417.camel@laptop>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <Pine.LNX.4.64.1001151303580.23543@ask.diku.dk>
+X-Cookie: Do unto others before they undo you.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+On Fri, Jan 15, 2010 at 01:06:04PM +0100, Julia Lawall wrote:
+> On Fri, 15 Jan 2010, Mark Brown wrote:
 
-On Fri, Jan 15, 2010 at 02:25:30PM +0100, Peter Zijlstra wrote:
-> [...]
-> > utrace is not a form of punishment inflicted upon the undeserving.  It
-> > is a service layer that uprobes et alii are built upon.  You as a
-> > potential uprobes client need not also talk directly to it, if you
-> > wish to reimplement task-finder-like services some other way.
-> 
-> [...]
-> But yes, I think that for most purposes utrace is a punishment, its way
-> too heavy, I mean, trap, generate a signal, catch the signal, that's
-> like an insane amount of code to jump through in order to get that trap.
+> > This would also mean that other people could run and re-run the scripts
+> > during development much more easily which would help improve the
+> > coverage of new code.
 
-At the bottom, there will be an int3 in the userspace text page.
-There will be a trap taken, no matter what.  Code must figure out
-whether this trap came from an in-kernel client such as uprobes, or
-whether it is to be passed through to a userspace debugger via ptrace
-(or the gdbstub).  This part is unavoidable if you wish to be
-compatible.
+> On the other hand, one has to take into account the fact that at least in 
+> my case, the patches that are submitted are the ones that I have carefully 
+> checked for correctness.  Having a make target in the kernel might give 
+> some suggestion of quality that is perhaps not appropriate?
 
-I'm not sure, but it sounds like the part you're complaining about is
-how utrace ultimately reports the trap to uprobes: i.e.,
-utrace_get_signal()?  Is that the "insane amount of code"?
-
-
-> Furthermore it requires stopping and resuming tasks and nonsense like
-> that, that's unwanted in many cases, just run stuff from the trap site
-> and you're done.
-
-I don't know what you mean exactly.  A trap already stopped task.
-utrace merely allows various clients to inspect/manipulate the state
-of the task at that moment.  It does not add any context switches or
-spurious stop/resumue operations.
-
-
-- FChE
+This is a general problem with any tool that generates warnings - we
+already have to educate people about how to use the GCC and sparse
+warnings appropriately, I can't see that these warnings would be any
+different.
