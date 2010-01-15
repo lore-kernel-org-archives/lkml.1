@@ -1,54 +1,51 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156Ab0AOUBt (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 15:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122Ab0AOUBs
+	id S932282Ab0AOUCz (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 15:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758137Ab0AOUCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 15:01:48 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53153 "EHLO
+	Fri, 15 Jan 2010 15:02:54 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58767 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758114Ab0AOUBr (ORCPT
+	with ESMTP id S1758123Ab0AOUCx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 15:01:47 -0500
-Date: Fri, 15 Jan 2010 21:01:36 +0100
+	Fri, 15 Jan 2010 15:02:53 -0500
+Date: Fri, 15 Jan 2010 21:02:41 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, david@fromorbit.com,
-        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [2.6.30 and later] file corruption on ext3 filesystem.
-Message-ID: <20100115200136.GD1345@ucw.cz>
-References: <201001080254.o082sOXB018423@www262.sakura.ne.jp> <20100108123641.GB8654@discord.disaster> <201001082215.EJH52647.JLtFSFFVQOHMOO@I-love.SAKURA.ne.jp> <20100108151915.GC8654@discord.disaster> <201001091153.FAC21374.OFOFMJQVOSFLtH@I-love.SAKURA.ne.jp> <4B4B8664.6000200@redhat.com>
+To: Anders Eriksson <aeriksson@fastmail.fm>
+Cc: Bart?omiej Zimo? <uzi18@o2.pl>, linux-kernel@vger.kernel.org,
+        awalls@radix.net, linux-pm@lists.linux-foundation.org,
+        danborkmann@googlemail.com
+Subject: Re: [linux-pm] [suspend/resume] Re: userspace notification from
+	module
+Message-ID: <20100115200241.GF1345@ucw.cz>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001052223.21964.rjw@sisk.pl> <16a1b165.2fdc37c6.4b43b943.c6733@o2.pl> <201001060003.23419.rjw@sisk.pl> <1ab86ec9.7bc73105.4b43cd45.c2747@o2.pl> <20100106143534.A7EEA33C5F5@tippex.mynet.homeunix.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B4B8664.6000200@redhat.com>
+In-Reply-To: <20100106143534.A7EEA33C5F5@tippex.mynet.homeunix.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed 2010-01-06 15:35:34, Anders Eriksson wrote:
+> 
+> uzi18@o2.pl said:
+> >  Ummm sorry, it's IM App, to be realible for such app it's needed to close
+> > conn before suspend, because after resume tcp connections will wait
+> > (especialy on linux) quiet a lot of time to broke and reconnect.
+> 
+> I don't know the details here, but shouldn't the kernel fix this internally?
+> 
+> If sufficient time have elapsed so the kernel _should_ have sent keep alives 
+> etc on an othervise idle connection, they shold be sent immediately on resume. 
+> If the other end has disappeared by then, the resulting port unreachable 
+> should trigger a local closure of the tcp state which the app will notice 
+> (EBADF, or similar). Or?
 
->>> http://lwn.net/Articles/328363/
->>>      
->> Thank you for the pointer.
->>
->> Indeed, most Linux boxes are used by single user.
->> But implicitly importing other deleted file's data is still annoying
->> even if the box is used by only one user.
->>
->> When I was trying to identify the steps to reproduce, I got ./a.out replaced
->> by the deleted .bash_history due to power failure. I executed ./a.out as root
->> without knowing that the file contains deleted .bash_history , and many
->> commands listed in deleted .bash_history are executed as root.
->> I thought my box was cracked and trojaned. :-(
->
-> Fedora and some other distributions changed the default back to data  
-> ordered mode in order to avoid exactly this kind of mess. Even if you  
-> are on a single user system, this behavior is certainly unexpected for  
-> most users :-)
+Patches welcome.
+									Pavel
 
-Also there's config option to get back the old behaviour.
-								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
