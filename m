@@ -1,58 +1,75 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932226Ab0AOLMg (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 06:12:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665Ab0AOLMe
+	id S1756915Ab0AOLNG (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 06:13:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711Ab0AOLNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 06:12:34 -0500
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:56898 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753847Ab0AOLMd (ORCPT
+	Fri, 15 Jan 2010 06:13:04 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54591 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754669Ab0AOLNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 06:12:33 -0500
-Date: Fri, 15 Jan 2010 16:42:27 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+	Fri, 15 Jan 2010 06:13:01 -0500
+Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
+From: Peter Zijlstra <peterz@infradead.org>
+To: maneesh@in.ibm.com
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+        Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
         Arnaldo Carvalho de Melo <acme@infradead.org>,
         Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-        utrace-devel <utrace-devel@redhat.com>,
+        utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
         Frederic Weisbecker <fweisbec@gmail.com>,
         Masami Hiramatsu <mhiramat@redhat.com>,
-        Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
         LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 3/7] Execution out of line (XOL)
-Message-ID: <20100115111227.GB20658@linux.vnet.ibm.com>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+In-Reply-To: <20100115110547.GB3660@in.ibm.com>
 References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
- <20100111122545.22050.64994.sendpatchset@srikar.in.ibm.com>
- <1263467318.4244.289.camel@laptop>
- <1263508997.4875.32.camel@localhost.localdomain>
- <1263546455.4244.348.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1263546455.4244.348.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	 <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
+	 <1263467394.4244.291.camel@laptop>
+	 <1263509380.4875.35.camel@localhost.localdomain>
+	 <1263546632.4244.352.camel@laptop>
+	 <20100115102645.GA22640@linux.vnet.ibm.com>
+	 <1263551607.4244.379.camel@laptop>  <20100115110547.GB3660@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 12:12:35 +0100
+Message-ID: <1263553955.4244.393.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <peterz@infradead.org> [2010-01-15 10:07:35]:
-
-> On Thu, 2010-01-14 at 14:43 -0800, Jim Keniston wrote:
+On Fri, 2010-01-15 at 16:35 +0530, Maneesh Soni wrote:
+> On Fri, Jan 15, 2010 at 11:33:27AM +0100, Peter Zijlstra wrote:
+> > On Fri, 2010-01-15 at 15:56 +0530, Srikar Dronamraju wrote:
+> > > Hi Peter, 
+> > > 
+> > > Or there could be two threads that could be racing to
+> > > insert/delete a breakpoint. These synchronization issues are all handled
+> > > by the Uprobes layer.
 > > 
-> > Yeah, there's not a lot of context there.  I hope it will make more
-> > sense if you read section 1.1 of Documentation/uprobes.txt (patch #6).
-> > Or look at get_insn_slot() in kprobes, and understand that we're trying
-> > to do something similar in uprobes, where the instruction copies have to
-> > reside in the user address space of the probed process.
+> > Shouldn't be hard to put that in the ubp layer, right?
+> > 
+> > > Uprobes layer would need to be notified of process life-time events
+> > > like fork/clone/exec/exit. 
+> > 
+> > No so much the process lifetimes as the vma life times are interesting,
+> > placing a hook in the vm code to track that isn't too hard, 
+> > 
 > 
-> That's not the point, changelogs shoulnd not be this cryptic. They
-> should be stand alone and descriptive of what, why and how.
+> I think similar hooks were given thumbs down in the previous incarnation
+> of uprobes (which was implemented without utrace).  
 > 
-> If you can't be bothered writing such for something you want reviewed
-> for inclusion then I might not be bothered looking at them at all.
-> 
+> http://lkml.indiana.edu/hypermail/linux/kernel/0603.2/1254.html
 
-Okay shall add to the Changelog with the information providing the
-context for this patch.
+I wasn't at all proposing to mess with a_ops, nor do you really need to,
+I was more thinking of adding a callback like perf_event_mmap() and a
+corresponding unmap(), that way you can track mapping life-times and
+add/remove probes accordingly.
+
+Adding the probe uses the fact that (most) executable mappings are
+MAP_PRIVATE and CoWs a private copy of the page with the modified ins,
+right?
+
+What does it do for MAP_SHARED|MAP_EXECUTABLE sections -- simply fail to
+add the probe?
+
