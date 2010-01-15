@@ -1,55 +1,70 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841Ab0AOQva (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 11:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756896Ab0AOQva
+	id S1757602Ab0AOQyP (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 11:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165Ab0AOQyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 11:51:30 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42016 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752638Ab0AOQv3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 11:51:29 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org,
-        Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] s3c-fb: Fix mixed code and variable declaration
-Date: Fri, 15 Jan 2010 16:51:26 +0000
-Message-Id: <1263574286-6382-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.6
+	Fri, 15 Jan 2010 11:54:14 -0500
+Received: from cantor.suse.de ([195.135.220.2]:58228 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751709Ab0AOQyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 11:54:14 -0500
+Date: Fri, 15 Jan 2010 17:54:09 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
+        Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
+        linux-kernel@vger.kernel.org,
+        Linus Walleij <linus.walleij@stericsson.com>, sameo@linux.intel.com,
+        Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: Re: [PATCH] typo in kernel source (DEBUGFS)
+In-Reply-To: <alpine.LRH.2.00.1001151500460.15694@twin.jikos.cz>
+Message-ID: <alpine.LRH.2.00.1001151752550.15694@twin.jikos.cz>
+References: <20100113115712.GA7398@faui49.informatik.uni-erlangen.de> <63386a3d1001140207p5e2546fq2d8201ee87edfd46@mail.gmail.com> <alpine.LRH.2.00.1001151500460.15694@twin.jikos.cz>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hoist osdc_data up into the variable declaration section.
+On Fri, 15 Jan 2010, Jiri Kosina wrote:
 
-Reported-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/video/s3c-fb.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+> > 2010/1/13 Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>:
+> > 
+> > >        While working on this we detected a spelling error in
+> > > drivers/mfd/ab3100-otp.c which can be corrected using the attached
+> > > patch.
+> > 
+> > Acked-by: Linus Walleij <linus.walleij@stericsson.com>
+> 
+> The original patch misses a Signed-off-by. Please resend it to 
+> trivial@kernel.org with this line, so that it could be applied.
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index e2e7afd..58e2fed 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -269,6 +269,7 @@ static int s3c_fb_set_par(struct fb_info *info)
- 	int win_no = win->index;
- 	u32 data;
- 	u32 pagewidth;
-+	u32 osdc_data;
- 	int clkdiv;
- 
- 	dev_dbg(sfb->dev, "setting framebuffer parameters\n");
-@@ -359,8 +360,6 @@ static int s3c_fb_set_par(struct fb_info *info)
- 
- 	data = var->xres * var->yres;
- 
--	u32 osdc_data = 0;
--
- 	osdc_data = VIDISD14C_ALPHA1_R(0xf) |
- 		VIDISD14C_ALPHA1_G(0xf) |
- 		VIDISD14C_ALPHA1_B(0xf);
+... and has this been tested at all?
+
+drivers/mfd/ab3100-otp.c: In function ¡show_otp¢:
+drivers/mfd/ab3100-otp.c:101: error: dereferencing pointer to incomplete type
+drivers/mfd/ab3100-otp.c:104: error: implicit declaration of function ¡seq_printf¢
+drivers/mfd/ab3100-otp.c:102: warning: unused variable ¡err¢
+drivers/mfd/ab3100-otp.c: In function ¡ab3100_otp_open¢:
+drivers/mfd/ab3100-otp.c:116: error: implicit declaration of function ¡single_open¢
+drivers/mfd/ab3100-otp.c:116: error: ¡ab3100_otp_show¢ undeclared (first use in this function)
+drivers/mfd/ab3100-otp.c:116: error: (Each undeclared identifier is reported only once
+drivers/mfd/ab3100-otp.c:116: error: for each function it appears in.)
+drivers/mfd/ab3100-otp.c: At top level:
+drivers/mfd/ab3100-otp.c:121: error: ¡seq_read¢ undeclared here (not in a function)
+drivers/mfd/ab3100-otp.c:122: error: ¡seq_lseek¢ undeclared here (not in a function)
+drivers/mfd/ab3100-otp.c:123: error: ¡single_release¢ undeclared here (not in a function)
+drivers/mfd/ab3100-otp.c: In function ¡ab3100_otp_init_debugfs¢:
+drivers/mfd/ab3100-otp.c:134: error: ¡err¢ undeclared (first use in this function)
+drivers/mfd/ab3100-otp.c: In function ¡ab3100_otp_exit_debugfs¢:
+drivers/mfd/ab3100-otp.c:140: error: implicit declaration of function ¡debugfs_remove_file¢
+
+So looks like the debugfs code might need some more surgery.
+
 -- 
-1.6.6
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
