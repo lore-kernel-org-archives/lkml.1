@@ -1,60 +1,54 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758147Ab0AOUBQ (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 15:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758139Ab0AOUBN
+	id S1758156Ab0AOUBt (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 15:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122Ab0AOUBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 15:01:13 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53121 "EHLO
+	Fri, 15 Jan 2010 15:01:48 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53153 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758131Ab0AOUBK (ORCPT
+	with ESMTP id S1758114Ab0AOUBr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 15:01:10 -0500
-Date: Fri, 15 Jan 2010 21:01:00 +0100
+	Fri, 15 Jan 2010 15:01:47 -0500
+Date: Fri, 15 Jan 2010 21:01:36 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, gregkh@suse.de,
-        KMoorman@transy.edu, w.sang@pengutronix.de,
-        ken_kawasaki@spring.nifty.jp, davem@davemloft.net,
-        Andrew Morton <akpm@osdl.org>, alan@lxorguk.ukuu.org.uk
-Subject: Re: serial_cs: oxsemi quirk breaks resume
-Message-ID: <20100115200100.GC1345@ucw.cz>
-References: <20091110075410.GA6157@ucw.cz>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, david@fromorbit.com,
+        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [2.6.30 and later] file corruption on ext3 filesystem.
+Message-ID: <20100115200136.GD1345@ucw.cz>
+References: <201001080254.o082sOXB018423@www262.sakura.ne.jp> <20100108123641.GB8654@discord.disaster> <201001082215.EJH52647.JLtFSFFVQOHMOO@I-love.SAKURA.ne.jp> <20100108151915.GC8654@discord.disaster> <201001091153.FAC21374.OFOFMJQVOSFLtH@I-love.SAKURA.ne.jp> <4B4B8664.6000200@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091110075410.GA6157@ucw.cz>
+In-Reply-To: <4B4B8664.6000200@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-11-10 08:54:10, Pavel Machek wrote:
-> 
-> Quirk is applied on all cards with given manfid (is it that
-> correct?). Unfortunately, that quirk breaks resume on zaurus with
-> billionton bluetooth card inserted: c950ctrl is 0 and outb() faults.
-> 
-> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+Hi!
 
-I believe this patch got enough acks and is waiting in the tree
-somewhere (greg?) (possibly with slightly different changelog), but I
-don't see it in 33-rc4. Could it get pushed? It is quite simple
-bugfix, and is important for my zaurus...  Pavel
+>>> http://lwn.net/Articles/328363/
+>>>      
+>> Thank you for the pointer.
+>>
+>> Indeed, most Linux boxes are used by single user.
+>> But implicitly importing other deleted file's data is still annoying
+>> even if the box is used by only one user.
+>>
+>> When I was trying to identify the steps to reproduce, I got ./a.out replaced
+>> by the deleted .bash_history due to power failure. I executed ./a.out as root
+>> without knowing that the file contains deleted .bash_history , and many
+>> commands listed in deleted .bash_history are executed as root.
+>> I thought my box was cracked and trojaned. :-(
+>
+> Fedora and some other distributions changed the default back to data  
+> ordered mode in order to avoid exactly this kind of mess. Even if you  
+> are on a single user system, this behavior is certainly unexpected for  
+> most users :-)
 
-> --- a/drivers/serial/serial_cs.c	2009-10-06 13:51:46.000000000 +0200
-> +++ b/drivers/serial/serial_cs.c	2009-11-09 14:43:25.000000000 +0100
-> @@ -158,7 +158,8 @@
->  {
->  	struct serial_info *info = link->priv;
->  
-> -	outb(12, info->c950ctrl + 1);
-> +	if (info->c950ctrl)
-> +		outb(12, info->c950ctrl + 1);
->  }
->  
->  /* request_region? oxsemi branch does no request_region too... */
-> 
-> 
-
+Also there's config option to get back the old behaviour.
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
