@@ -1,99 +1,88 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757444Ab0AOMLc (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 07:11:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757400Ab0AOMLc
+	id S1757461Ab0AOMRn (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 07:17:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757283Ab0AOMRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 07:11:32 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44287 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757115Ab0AOMLb (ORCPT
+	Fri, 15 Jan 2010 07:17:43 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:59505 "EHLO
+	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752368Ab0AOMRm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 07:11:31 -0500
-Subject: Re: lockdep: inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R}
- usage.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Dave Chinner <david@fromorbit.com>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
-In-Reply-To: <20100115120253.GH28498@discord.disaster>
-References: <20100115120253.GH28498@discord.disaster>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jan 2010 13:11:13 +0100
-Message-ID: <1263557473.4244.399.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jan 2010 07:17:42 -0500
+Date: Fri, 15 Jan 2010 13:18:01 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: linux-kernel@vger.kernel.org, x86@kernel.org
+Cc: siccegge@stud.informatik.uni-erlangen.de,
+        Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: [PATCH] obsolete config in kernel source (X86_MCE_P4THERMAL)
+Message-ID: <20100115121801.GB3321@faui49.informatik.uni-erlangen.de>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="CdrF4e02JqNVZeln"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-15 at 23:02 +1100, Dave Chinner wrote:
-> Just got this on a 2.6.33-rc3 kernel during unmount:
-> 
-> [21819.329256] inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R} usage.
-> [21819.349943] kswapd0/407 [HC0[0]:SC0[0]:HE1:SE1] takes:
-> [21819.349943]  (iprune_sem){+++++-}, at: [<ffffffff81132a92>] shrink_icache_memory+0x82/0x2b0
-> [21819.349943] {RECLAIM_FS-ON-W} state was registered at:
-> [21819.349943]   [<ffffffff810824c3>] mark_held_locks+0x73/0x90
-> [21819.349943]   [<ffffffff810825a5>] lockdep_trace_alloc+0xc5/0xd0
-> [21819.349943]   [<ffffffff811145f1>] kmem_cache_alloc+0x41/0x150
-> [21819.349943]   [<ffffffff813504f9>] kmem_zone_alloc+0x99/0xe0
-> [21819.349943]   [<ffffffff8135055e>] kmem_zone_zalloc+0x1e/0x50
-> [21819.349943]   [<ffffffff81346148>] _xfs_trans_alloc+0x38/0x80
-> [21819.349943]   [<ffffffff8134634f>] xfs_trans_alloc+0x9f/0xb0
-> [21819.349943]   [<ffffffff8134b3d0>] xfs_free_eofblocks+0x120/0x290
-> [21819.349943]   [<ffffffff8134f353>] xfs_inactive+0x103/0x560
-> [21819.349943]   [<ffffffff8135e6bf>] xfs_fs_clear_inode+0xdf/0x120
-> [21819.349943]   [<ffffffff81132615>] clear_inode+0xb5/0x140
-> [21819.349943]   [<ffffffff81132918>] dispose_list+0x38/0x130
-> [21819.349943]   [<ffffffff81132de3>] invalidate_inodes+0x123/0x170
-> [21819.349943]   [<ffffffff8111db4e>] generic_shutdown_super+0x4e/0x100
-> [21819.349943]   [<ffffffff8111dc31>] kill_block_super+0x31/0x50
-> [21819.349943]   [<ffffffff8111e455>] deactivate_super+0x85/0xa0
-> [21819.349943]   [<ffffffff81136f8a>] mntput_no_expire+0xca/0x110
-> [21819.349943]   [<ffffffff81137374>] sys_umount+0x64/0x370
-> [21819.349943]   [<ffffffff81002fdb>] system_call_fastpath+0x16/0x1b
-> [21819.349943] irq event stamp: 4151539
-> [21819.349943] hardirqs last  enabled at (4151539): [<ffffffff81706e04>] _raw_spin_unlock_irqrestore+0x44/0x70
-> [21819.349943] hardirqs last disabled at (4151538): [<ffffffff81706505>] _raw_spin_lock_irqsave+0x25/0x90
-> [21819.349943] softirqs last  enabled at (4151312): [<ffffffff8105373b>] __do_softirq+0x18b/0x1e0
-> [21819.349943] softirqs last disabled at (4150645): [<ffffffff81003e8c>] call_softirq+0x1c/0x50
-> [21819.349943]
-> [21819.349943] other info that might help us debug this:
-> [21819.349943] 1 lock held by kswapd0/407:
-> [21819.349943]  #0:  (shrinker_rwsem){++++..}, at: [<ffffffff810e5c5d>] shrink_slab+0x3d/0x180
-> [21819.349943]
-> [21819.349943] stack backtrace:
-> [21819.349943] Pid: 407, comm: kswapd0 Not tainted 2.6.33-rc3-dgc #35
-> [21819.349943] Call Trace:
-> [21819.349943]  [<ffffffff81081353>] print_usage_bug+0x183/0x190
-> [21819.349943]  [<ffffffff81082372>] mark_lock+0x342/0x420
-> [21819.349943]  [<ffffffff810814c0>] ? check_usage_forwards+0x0/0x100
-> [21819.349943]  [<ffffffff81083531>] __lock_acquire+0x4d1/0x17a0
-> [21819.349943]  [<ffffffff8108327f>] ? __lock_acquire+0x21f/0x17a0
-> [21819.349943]  [<ffffffff810848ce>] lock_acquire+0xce/0x100
-> [21819.349943]  [<ffffffff81132a92>] ? shrink_icache_memory+0x82/0x2b0
-> [21819.349943]  [<ffffffff81705592>] down_read+0x52/0x90
-> [21819.349943]  [<ffffffff81132a92>] ? shrink_icache_memory+0x82/0x2b0
-> [21819.349943]  [<ffffffff81132a92>] shrink_icache_memory+0x82/0x2b0
-> [21819.349943]  [<ffffffff810e5d4a>] shrink_slab+0x12a/0x180
-> [21819.349943]  [<ffffffff810e66d6>] kswapd+0x586/0x990
-> [21819.349943]  [<ffffffff810e35c0>] ? isolate_pages_global+0x0/0x240
-> [21819.349943]  [<ffffffff8106c7c0>] ? autoremove_wake_function+0x0/0x40
-> [21819.349943]  [<ffffffff810e6150>] ? kswapd+0x0/0x990
-> [21819.349943]  [<ffffffff8106c276>] kthread+0x96/0xa0
-> [21819.349943]  [<ffffffff81003d94>] kernel_thread_helper+0x4/0x10
-> [21819.349943]  [<ffffffff8170717c>] ? restore_args+0x0/0x30
-> [21819.349943]  [<ffffffff8106c1e0>] ? kthread+0x0/0xa0
-> [21819.349943]  [<ffffffff81003d90>] ? kernel_thread_helper+0x0/0x10
-> 
-> I can't work out what the <mumble>RECLAIM_FS<mumble> notations are
-> supposed to mean from the code and they are not documented at
-> all, so I need someone to explain what this means before I can
-> determine if it is a valid warning or not....
 
-The <mumble>RECLAIM_FS<mumble> bit means that lock (iprune_sem) was
-taken from reclaim and is also taken over an allocation.
+--CdrF4e02JqNVZeln
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-It warns that it might deadlock if that allocation ends up trying to
-reclaim memory.
+Hi all!
 
+	As part of the VAMOS[0] research project at the University of
+Erlangen we're checking referential integrity between kernel KConfig
+options and in-code Conditional blocks.
+
+	By this we noticed one occurenc of CONFIG_X86_MCE_P4THERMAL
+is still in the kernel source as alternative to
+CONFIG_X86_MCE_INTEL. The attached patch now only checks for the
+latter which is still present.
+
+	Please keep me informed of this patch getting confirmed /
+merged so we can keep track of it.
+
+Regards
+
+	Christoph Egger
+
+[0] http://vamos1.informatik.uni-erlangen.de/
+
+--CdrF4e02JqNVZeln
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="0002-Drop-check-for-removed-config-variable-X86_MCE_P4THE.patch"
+
+>From c312848eb2574c54a3effb39f3287b3d2c464518 Mon Sep 17 00:00:00 2001
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Fri, 15 Jan 2010 12:13:42 +0100
+Subject: [PATCH 2/4] Drop check for removed config variable X86_MCE_P4THERMAL
+
+With the removal of the old MCE code in
+5bb38adcb54cf7192b154368ad62982caa11ca0b the config Item
+X86_MCE_P4THERMAL was dropped from the kernel tree. However it was
+left as a alternative in one block which is now also dropped hereby
+
+Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+---
+ arch/x86/kernel/apic/apic.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index e80f291..8566b97 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -2075,7 +2075,7 @@ static int lapic_resume(struct sys_device *dev)
+ 	apic_write(APIC_SPIV, apic_pm_state.apic_spiv);
+ 	apic_write(APIC_LVT0, apic_pm_state.apic_lvt0);
+ 	apic_write(APIC_LVT1, apic_pm_state.apic_lvt1);
+-#if defined(CONFIG_X86_MCE_P4THERMAL) || defined(CONFIG_X86_MCE_INTEL)
++#if defined(CONFIG_X86_MCE_INTEL)
+ 	if (maxlvt >= 5)
+ 		apic_write(APIC_LVTTHMR, apic_pm_state.apic_thmr);
+ #endif
+-- 
+1.6.3.3
+
+
+--CdrF4e02JqNVZeln--
