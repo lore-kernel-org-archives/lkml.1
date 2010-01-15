@@ -1,73 +1,118 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932188Ab0AOTZ3 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 14:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080Ab0AOTZZ
+	id S1758105Ab0AOTcT (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 14:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080Ab0AOTcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 14:25:25 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37623 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758056Ab0AOTZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 14:25:20 -0500
-Date: Fri, 15 Jan 2010 19:24:58 GMT
-From: tip-bot for Russ Anderson <rja@sgi.com>
-Cc: linux-kernel@vger.kernel.org, rja@sgi.com, hpa@zytor.com, mingo@redhat.com,
-        tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, rja@sgi.com,
-        linux-kernel@vger.kernel.org, tglx@linutronix.de
-In-Reply-To: <20100115180908.GB7757@sgi.com>
-References: <20100115180908.GB7757@sgi.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86, uv: Ensure hub revision set for all ACPI modes.
-Message-ID: <tip-1d2c867c941d635e53e8ad7bf37d060bb5b25ec5@git.kernel.org>
-Git-Commit-ID: 1d2c867c941d635e53e8ad7bf37d060bb5b25ec5
-X-Mailer: tip-git-log-daemon
+	Fri, 15 Jan 2010 14:32:19 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:37181 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758016Ab0AOTcS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 14:32:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=oJx6T184KeNqe0AQgx1l6KWZ/i2xm+Yf8HwUB+bx7VhpUfx9oxcvfmW3cAv/gYcuI/
+         wsN4Fbsuo2wiCmBwYTNBnSLnayG947WXds7bzlYWRsCMaG7T1fbMQpuwdXeZnNG/Tkt6
+         2CDFhn5WU8Rbube43A0t1NzHDdh27u1dpPI5M=
 MIME-Version: 1.0
+In-Reply-To: <1263264218.29897.41.camel@localhost>
+References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
+	 <20091228084659.GA31389@sli10-desk.sh.intel.com>
+	 <4e5e476b0912280111s6a977251m3416341b4bd2c272@mail.gmail.com>
+	 <20091228092844.GA9710@sli10-desk.sh.intel.com>
+	 <x493a2k8d7x.fsf@segfault.boston.devel.redhat.com>
+	 <4e5e476b1001070544w88a387dkfb48847f4f95a9b1@mail.gmail.com>
+	 <x49hbqy3s3m.fsf@segfault.boston.devel.redhat.com>
+	 <1263187209.29897.33.camel@localhost>
+	 <4e5e476b1001110705y6c3319ducf6a15c2a2be5670@mail.gmail.com>
+	 <1263264218.29897.41.camel@localhost>
+Date: Fri, 15 Jan 2010 20:32:10 +0100
+Message-ID: <4e5e476b1001151132l406054f6xcc47b94e817d3af0@mail.gmail.com>
+Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as 
+	close
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+        "Zhang, Yanmin" <yanmin.zhang@intel.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 15 Jan 2010 19:24:58 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1d2c867c941d635e53e8ad7bf37d060bb5b25ec5
-Gitweb:     http://git.kernel.org/tip/1d2c867c941d635e53e8ad7bf37d060bb5b25ec5
-Author:     Russ Anderson <rja@sgi.com>
-AuthorDate: Fri, 15 Jan 2010 12:09:09 -0600
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Fri, 15 Jan 2010 11:09:04 -0800
+On Tue, Jan 12, 2010 at 3:43 AM, Zhang, Yanmin
+<yanmin_zhang@linux.intel.com> wrote:
+> On Mon, 2010-01-11 at 16:05 +0100, Corrado Zoccolo wrote:
+> > On Mon, Jan 11, 2010 at 6:20 AM, Zhang, Yanmin
+> > <yanmin_zhang@linux.intel.com> wrote:
+> > > On Thu, 2010-01-07 at 09:30 -0500, Jeff Moyer wrote:
+> > Hi Yanmin,
+> > are you testing Jeff's patch with your full fio script, instead of the
+> > simplified one?
+> Thanks for your reminder. I tested the patch with simplified one.
+>
+> > Since they are fixing the merging part, that happens only with the
+> > full fio script.
+> Ok. I tested the full fio script a moment ago and didn't find improvement.
+> > >>
+> > >> Shaohua Li noticed that cfq currently can merge with seeky queues, which
+> > >> causes unwanted merge/unmerge activity.  We already know that the
+> > >> cur_cfqq is not seeky, so this patch just makes sure that the non-seeky
+> > >> queue is not merged with a seeky one.
+> > >>
+> > >> Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+> > >>
+> > >> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> > >> index 8df4fe5..3db9050 100644
+> > >> --- a/block/cfq-iosched.c
+> > >> +++ b/block/cfq-iosched.c
+> > >> @@ -1677,6 +1677,10 @@ static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+> > >>       return cfq_dist_from_last(cfqd, rq) <= sdist;
+> > >>  }
+> > >>
+> > >> +/*
+> > >> + * Search for a cfqq that is issuing non-seeky I/Os within the seek
+> > >> + * mean of the current cfqq.
+> > >> + */
+> > >>  static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+> > >>                                   struct cfq_queue *cur_cfqq)
+> > >>  {
+> > >> @@ -1701,7 +1705,14 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+> > >>        * will contain the closest sector.
+> > >>        */
+> > >>       __cfqq = rb_entry(parent, struct cfq_queue, p_node);
+> > >> -     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq))
+> > >> +     /*
+> > >> +      * If the cfqq does not have enough seek samples, assume it is
+> > >> +      * sequential until proven otherwise.  If it is assumed that the
+> > >> +      * queue is seeky first, then the close cooperator detection logic
+> > >> +      * may never trigger as one queue strays further from the other(s).
+> > >> +      */
+> > >> +     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq) &&
+> > >> +         (!sample_valid(__cfqq->seek_samples) || !CFQQ_SEEKY(__cfqq)))
+> > >>               return __cfqq;
+> > >>
+> > >>       if (blk_rq_pos(__cfqq->next_rq) < sector)
+> > >> @@ -1712,7 +1723,8 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+> > >>               return NULL;
+> > >>
+> > >>       __cfqq = rb_entry(node, struct cfq_queue, p_node);
+> > >> -     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq))
+> > >> +     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq) &&
+> > >> +         (!sample_valid(__cfqq->seek_samples) || !CFQQ_SEEKY(__cfqq)))
+> > >>               return __cfqq;
+> > >>
+> > >>       return NULL;
+Hi Jeff,
+I think this patch has the same flaw as Shaohua's.
+The seekiness check that you introduce in cfq_rq_close is already
+present in its caller, cfq_close_cooperator, so it is not effective.
+Up to now, the only patch that improves this situation is the one that
+changes the unmerge policy to unmerge after a single time slice.
 
-x86, uv: Ensure hub revision set for all ACPI modes.
-
-Ensure that UV hub revision is set for all ACPI modes.
-
-Signed-off-by: Russ Anderson <rja@sgi.com>
-LKML-Reference: <20100115180908.GB7757@sgi.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/apic/x2apic_uv_x.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
-index 0e48de9..21db3cb 100644
---- a/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -66,7 +66,10 @@ static int early_get_nodeid(void)
- 
- static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
-+	int nodeid;
-+
- 	if (!strcmp(oem_id, "SGI")) {
-+		nodeid = early_get_nodeid();
- 		x86_platform.is_untracked_pat_range =  uv_is_untracked_pat_range;
- 		if (!strcmp(oem_table_id, "UVL"))
- 			uv_system_type = UV_LEGACY_APIC;
-@@ -74,7 +77,7 @@ static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- 			uv_system_type = UV_X2APIC;
- 		else if (!strcmp(oem_table_id, "UVH")) {
- 			__get_cpu_var(x2apic_extra_bits) =
--				early_get_nodeid() << (UV_APIC_PNODE_SHIFT - 1);
-+				nodeid << (UV_APIC_PNODE_SHIFT - 1);
- 			uv_system_type = UV_NON_UNIQUE_APIC;
- 			return 1;
- 		}
+Thanks,
+Corado
