@@ -1,53 +1,86 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757519Ab0APEcr (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 23:32:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756921Ab0APEcq
+	id S1758766Ab0APEiw (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 23:38:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134Ab0APEiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 23:32:46 -0500
-Received: from snt0-omc3-s2.snt0.hotmail.com ([65.55.90.141]:12063 "EHLO
-	snt0-omc3-s2.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754008Ab0APEcp (ORCPT
+	Fri, 15 Jan 2010 23:38:50 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:42866 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962Ab0APEit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 23:32:45 -0500
-X-Originating-IP: [96.253.143.208]
-X-Originating-Email: [yuhongbao_386@hotmail.com]
-Message-ID: <SNT125-DS159A43E33091193EE3624DC3680@phx.gbl>
-From: <yuhongbao_386@hotmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Cc: <hpa@zytor.com>, <mingo@redhat.com>, <linux-kernel@vger.kernel.org>
-References: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl>,<4B511B12.6010208@zytor.com> <SNT125-W39A63687E4BE4F52FAA517C3680@phx.gbl> <alpine.LFD.2.00.1001151946460.13231@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1001151946460.13231@localhost.localdomain>
-Subject: Re: Ubuntu 32-bit, 32-bit PAE, 64-bit Kernel Benchmarks
-Date: Fri, 15 Jan 2010 20:32:40 -0800
+	Fri, 15 Jan 2010 23:38:49 -0500
+Date: Fri, 15 Jan 2010 21:38:47 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+        Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+        Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
+        linux-pci@vger.kernel.org
+Subject: Re: [PATCH 05/11] pci: update bridge res to get more big range in
+	pci assign unssign
+Message-ID: <20100116043847.GE22215@ldl.fc.hp.com>
+References: <1263609721-3921-1-git-send-email-yinghai@kernel.org> <1263609721-3921-6-git-send-email-yinghai@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-Importance: Normal
-X-Mailer: Microsoft Windows Live Mail 14.0.8089.726
-X-MimeOLE: Produced By Microsoft MimeOLE V14.0.8089.726
-X-OriginalArrivalTime: 16 Jan 2010 04:32:45.0489 (UTC) FILETIME=[F337B210:01CA9664]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263609721-3921-6-git-send-email-yinghai@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Unfortunately most desktop/laptop systems nowadays ship with more than
->> 1GB.Luckily, in the case of Atom netbooks that Linus mentioned, most
->> Atom netbooks ship with only 1GB of RAM
->
-> Not the ones I have. If they had only 1GB of RAM when I got them, they got
-> upgraded.
+* Yinghai Lu <yinghai@kernel.org>:
+> BIOS separate IO range between several IOHs, and on some slots,
+> BIOS assign the resource to the bridge, but stop assigning
+> resource to the device under that bridge, because the device
+> need big resource.
+> 
+> 1. pci assign unassign and record the failed device resource.
+> 2. clear the BIOS assigned resource of the parent bridge of fail device
+> 3. go back and call pci assign unsigned
+> 4. if it still fail, will go up more bridges. and clear and try again.
 
-That is why I said "ship with", I know that most netbooks can be upgraded to 
-2GB of RAM.
-For most netbooks, that is the limit due to for one thing chipset limits, 
-even the new Atom N400 series has a 2GB limit in it's on-die memory 
-controller. At least it support 64-bit unlike the older N200 series without 
-the on-die northbridge.
+I agree with Jesse and Bjorn. I really hate introducing a new
+command line param.
 
-Yuhong Bao 
+The goal here should be to do the right thing, all the time,
+without requiring command line parameters.
 
+I understand that you are avoiding a change to existing behavior
+by defaulting to try=1.
+
+What I don't understand is how you expect your change to benefit
+any actual users. The usage model you propose is:
+
+	- user encounters failure
+
+	- user emails lkml/linux-pci and says "why doesn't my
+	  device get resources?"
+
+	- we tell user, "please reboot with try=N for increasing
+	  values of N until it works"
+
+Why shouldn't we be aggressive all the time?
+
+If this patch series is going to be accepted, we should turn it
+on all the time. Everyone will get the benefits.
+
+If it breaks machines, depending on the bug reports, it will end
+up either:
+
+	a) we missed an implementation detail (easily fixed)
+
+	or 
+
+	b) the design/strategy is wrong, in which case we need to
+	take a step back and think about a different approach to
+	solve the problem you're trying to solve
+
+For this patch, I don't mind the changes to
+pci_assign_unassigned_resources(), but I really do not agree with
+the configurability introduced in pci_setup().
+
+thanks,
+/ac
