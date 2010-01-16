@@ -1,52 +1,54 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752074Ab0APMde (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 07:33:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572Ab0APMdd
+	id S1752288Ab0APMpg (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 07:45:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251Ab0APMpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 07:33:33 -0500
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:51582 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750985Ab0APMdc (ORCPT
+	Sat, 16 Jan 2010 07:45:35 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:37177 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049Ab0APMpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 07:33:32 -0500
-Date: Sat, 16 Jan 2010 12:33:13 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Yuhong Bao <yuhongbao_386@hotmail.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-        linux-kernel@vger.kernel.org
-Subject: Re: Ubuntu 32-bit, 32-bit PAE, 64-bit Kernel Benchmarks
-Message-ID: <20100116123313.GA20059@sucs.org>
-References: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl> <4B511B12.6010208@zytor.com>
+	Sat, 16 Jan 2010 07:45:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wV92oOzMTX0Vyu1tpMXp1GnaGayqh5OIXF5/PggBUY+CjqDSA2v94yQVidQFIHq1nV
+         BqxPqqW2BREsO3LgnMix3DgLr8l6GHOez7JadPjUAkx/Pnw1gttQf3itW2IEuOvsKs6l
+         lNS6uC83yAQnq4qKFkSuyaz+OjJdsh8OfrGuI=
+Date: Sat, 16 Jan 2010 13:45:31 +0100
+From: Johan Hovold <jhovold@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: Johan Hovold <jhovold@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/13][v2] USB: serial: fix DMA buffers on stack and
+ endianess bugs
+Message-ID: <20100116124531.GA17276@localhost>
+References: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
+ <1262274489-12447-1-git-send-email-jhovold@gmail.com>
+ <20100115185034.GF12146@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B511B12.6010208@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100115185034.GF12146@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 05:49:06PM -0800, H. Peter Anvin wrote:
-> On 12/30/2009 05:29 PM, Yuhong Bao wrote:
+On Fri, Jan 15, 2010 at 10:50:34AM -0800, Greg KH wrote:
+> On Thu, Dec 31, 2009 at 04:47:56PM +0100, Johan Hovold wrote:
+> > Hi, 
 > > 
-> > Given that Linus was once talking about the performance penalties of
-> > PAE and HIGHMEM64G, perhaps you'd find these benchmarks done by
-> > Phoronix of interest:
-> > http://www.phoronix.com/scan.php?page=article&item=ubuntu_32_pae
-> > 
+> > Here's an updated series rebased against rc2 with all patches from Greg's tree
+> > applied. The mct_u232 patch has been dropped as it had already been fixed. I
+> > also updated the ch341 and cypress_m8 patches to use the unaligned macros. 
 > 
-> The big difference isn't between HIGHMEM4G (no PAE) and HIGHMEM64G
-> (PAE), it's between HIGHMEM and !HIGHMEM.  That cutoff is ~892 MB for a
-> stock 32-bit kernel.
+> Ok, I took your original series (sorry, didn't read ahead) and then
+> added 2 new ones for the ch341 and cypress_m8 unaligned stuff.  Please
+> verify that I got all of this correct.
 
-Thanks for the clarification - I had been wondering about why those
-settings had been benchmarked against each other...
+Looks good.
 
-I took a mild interest because I have an EeePC 900 with 1G of RAM. The
-machine can do PAE but my understanding is that this would lead to a
-performance drop (I currently have VMSPLIT_3G so I can use all 1G of
-memory) so I run it without HIGHMEM.
+/Johan
 
--- 
-Sitsofe | http://sucs.org/~sits/
