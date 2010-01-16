@@ -1,276 +1,74 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754854Ab0APQ10 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 11:27:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321Ab0APQ1Z
+	id S1754659Ab0APQcU (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 11:32:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900Ab0APQcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 11:27:25 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:55315 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753316Ab0APQ1X convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 11:27:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=g+1R9jSr9aj8VHMm96DYlFUbLnA5aGi5kdnPu2iiicc/tAZjNW/VbUJc6VUjGDOJKM
-         e6P1Q3HwQslM39C1/JhK75Tye6pxOyRAORqjzkpavEtNFr2LAnMzW7hVNM4blVQuVZT+
-         4VpBpjqYElsBEH8vaW9/7+8KURxVEFTIv47qc=
+	Sat, 16 Jan 2010 11:32:19 -0500
+Received: from nbd.name ([88.198.39.176]:53726 "EHLO ds10.nbd.name"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752124Ab0APQcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 11:32:18 -0500
+X-Greylist: delayed 949 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Jan 2010 11:32:17 EST
+Message-ID: <4B51E64B.6010706@openwrt.org>
+Date: Sat, 16 Jan 2010 17:16:11 +0100
+From: Felix Fietkau <nbd@openwrt.org>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <4e5e476b1001041028v1f204834r1fa97e732a094210@mail.gmail.com>
-References: <1262250960.1819.68.camel@localhost>
-	 <4e5e476b0912310234mf9ccaadm771c637a3d107d18@mail.gmail.com>
-	 <1262340730.19773.47.camel@localhost>
-	 <4e5e476b1001010832o24f6a0efudbfc36598bfc7c5e@mail.gmail.com>
-	 <1262435612.19773.80.camel@localhost>
-	 <4e5e476b1001021052u51a90a91qb2fbb4089498a3ca@mail.gmail.com>
-	 <1262593090.29897.14.camel@localhost>
-	 <4e5e476b1001041028v1f204834r1fa97e732a094210@mail.gmail.com>
-Date: Sat, 16 Jan 2010 17:27:21 +0100
-Message-ID: <4e5e476b1001160827n6dc73b35vee8b46e541134c2@mail.gmail.com>
-Subject: Re: fio mmap randread 64k more than 40% regression with 2.6.33-rc1
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-        "jmoyer@redhat.com" <jmoyer@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Shaohua Li <shaohua.li@intel.com>,
-        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirqus@gmail.com>
+CC: "Ha, Tristram" <Tristram.Ha@micrel.com>, Dave Miller <davem@davemloft.net>,
+        netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Michael Buesch <mb@bu3sch.de>
+Subject: Re: [PATCH 2.6.33 1/3] net: Micrel KSZ8841/2 PCI Ethernet driver
+References: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com> <e2d7436a1001160800u11206f54iaf07bb92331a256a@mail.gmail.com>
+In-Reply-To: <e2d7436a1001160800u11206f54iaf07bb92331a256a@mail.gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Yanmin
-On Mon, Jan 4, 2010 at 7:28 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> Hi Yanmin,
-> On Mon, Jan 4, 2010 at 9:18 AM, Zhang, Yanmin
-> <yanmin_zhang@linux.intel.com> wrote:
->> On Sat, 2010-01-02 at 19:52 +0100, Corrado Zoccolo wrote:
->>> Hi
->>> On Sat, Jan 2, 2010 at 1:33 PM, Zhang, Yanmin
->>> <yanmin_zhang@linux.intel.com> wrote:
->>> > On Fri, 2010-01-01 at 17:32 +0100, Corrado Zoccolo wrote:
->>> >> Hi Yanmin,
->>> >> On Fri, Jan 1, 2010 at 11:12 AM, Zhang, Yanmin
->>> >> <yanmin_zhang@linux.intel.com> wrote:
->>> >> > On Thu, 2009-12-31 at 11:34 +0100, Corrado Zoccolo wrote:
->>> >> >> Hi Yanmin,
->>> >> >> On Thu, Dec 31, 2009 at 10:16 AM, Zhang, Yanmin
->>> >> >> <yanmin_zhang@linux.intel.com> wrote:
->>> >> >> > Comparing with kernel 2.6.32, fio mmap randread 64k has more than 40% regression with
->>> >> >> > 2.6.33-rc1.
->>> >> >>
->>> >> > Thanks for your timely reply. Some comments inlined below.
->>> >> >
->>> >> >> Can you compare the performance also with 2.6.31?
->>> >> > We did. We run Linux kernel Performance Tracking project and run many benchmarks when a RC kernel
->>> >> > is released.
->>> >> >
->>> >> > The result of 2.6.31 is quite similar to the one of 2.6.32. But the one of 2.6.30 is about
->>> >> > 8% better than the one of 2.6.31.
->>> >> >
->>> >> >> I think I understand what causes your problem.
->>> >> >> 2.6.32, with default settings, handled even random readers as
->>> >> >> sequential ones to provide fairness. This has benefits on single disks
->>> >> >> and JBODs, but causes harm on raids.
->>> >> > I didn't test RAID as that machine with hardware RAID HBA is crashed now. But if we turn on
->>> >> > hardware RAID in HBA, mostly we use noop io scheduler.
->>> >> I think you should start testing cfq with them, too. From 2.6.33, we
->>> >> have some big improvements in this area.
->>> > Great! I once compared cfq and noop against non-raid and raid0. One interesting finding
->>> > about sequential read testing is when there are fewer processes to read files on the raid0
->>> > JBOD, noop on raid0 is pretty good, but when there are lots of processes to do so on a non-raid
->>> > JBOD, cfq is pretty better. I planed to investigate it, but too busy in other issues.
->>> >
->>> >> >
->>> >> >> For 2.6.33, we changed the way in which this is handled, restoring the
->>> >> >> enable_idle = 0 for seeky queues as it was in 2.6.31:
->>> >> >> @@ -2218,13 +2352,10 @@ cfq_update_idle_window(struct cfq_data *cfqd,
->>> >> >> struct cfq_queue *cfqq,
->>> >> >>        enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
->>> >> >>
->>> >> >>        if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
->>> >> >> -           (!cfqd->cfq_latency && cfqd->hw_tag && CFQQ_SEEKY(cfqq)))
->>> >> >> +           (sample_valid(cfqq->seek_samples) && CFQQ_SEEKY(cfqq)))
->>> >> >>                enable_idle = 0;
->>> >> >> (compare with 2.6.31:
->>> >> >>         if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
->>> >> >>             (cfqd->hw_tag && CIC_SEEKY(cic)))
->>> >> >>                 enable_idle = 0;
->>> >> >> excluding the sample_valid check, it should be equivalent for you (I
->>> >> >> assume you have NCQ disks))
->>> >> >> and we provide fairness for them by servicing all seeky queues
->>> >> >> together, and then idling before switching to other ones.
->>> >> > As for function cfq_update_idle_window, you is right. But since
->>> >> > 2.6.32, CFQ merges many patches and the patches have impact on each other.
->>> >> >
->>> >> >>
->>> >> >> The mmap 64k randreader will have a large seek_mean, resulting in
->>> >> >> being marked seeky, but will send 16 * 4k sequential requests one
->>> >> >> after the other, so alternating between those seeky queues will cause
->>> >> >> harm.
->>> >> >>
->>> >> >> I'm working on a new way to compute seekiness of queues, that should
->>> >> >> fix your issue, correctly identifying those queues as non-seeky (for
->>> >> >> me, a queue should be considered seeky only if it submits more than 1
->>> >> >> seeky requests for 8 sequential ones).
->>> >> >>
->>> >> >> >
->>> >> >> > The test scenario: 1 JBOD has 12 disks and every disk has 2 partitions. Create
->>> >> >> > 8 1-GB files per partition and start 8 processes to do rand read on the 8 files
->>> >> >> > per partitions. There are 8*24 processes totally. randread block size is 64K.
->>> >> >> >
->>> >> >> > We found the regression on 2 machines. One machine has 8GB memory and the other has
->>> >> >> > 6GB.
->>> >> >> >
->>> >> >> > Bisect is very unstable. The related patches are many instead of just one.
->>> >> >> >
->>> >> >> >
->>> >> >> > 1) commit 8e550632cccae34e265cb066691945515eaa7fb5
->>> >> >> > Author: Corrado Zoccolo <czoccolo@gmail.com>
->>> >> >> > Date:   Thu Nov 26 10:02:58 2009 +0100
->>> >> >> >
->>> >> >> >    cfq-iosched: fix corner cases in idling logic
->>> >> >> >
->>> >> >> >
->>> >> >> > This patch introduces about less than 20% regression. I just reverted below section
->>> >> >> > and this part regression disappear. It shows this regression is stable and not impacted
->>> >> >> > by other patches.
->>> >> >> >
->>> >> >> > @@ -1253,9 +1254,9 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
->>> >> >> >                return;
->>> >> >> >
->>> >> >> >        /*
->>> >> >> > -        * still requests with the driver, don't idle
->>> >> >> > +        * still active requests from this queue, don't idle
->>> >> >> >         */
->>> >> >> > -       if (rq_in_driver(cfqd))
->>> >> >> > +       if (cfqq->dispatched)
->>> >> >> >                return;
->>> >> > Although 5 patches are related to the regression, above line is quite
->>> >> > independent. Reverting above line could always improve the result for about
->>> >> > 20%.
->>> >> I've looked at your fio script, and it is quite complex,
->>> > As we have about 40 fio sub cases, we have a script to create fio job file from
->>> > a specific parameter list. So there are some superfluous parameters.
->>> >
->>> My point is that there are so many things going on, that is more
->>> difficult to analyse the issues.
->>> I prefer looking at one problem at a time, so (initially) removing the
->>> possibility of queue merging, that Shaohua already investigated, can
->>> help in spotting the still not-well-understood problem.
->> Sounds reasonable.
+On 2010-01-16 5:00 PM, Micha� Miros�aw wrote:
+> Hello,
+> 
+> 2010/1/16 Ha, Tristram <Tristram.Ha@micrel.com>:
+>> This is a new network driver for Micrel KSZ8841/KSZ8842 PCI Ethernet chips.  The same driver can run both chips at the same time.  It supports IPv4 TCP hardware checksumming and so can use scatter/gather transmission.
 >>
->>> Could you generate the same script, but with each process accessing
->>> only one of the files, instead of chosing it at random?
->> Ok. New testing starts 8 processes per partition and every process just works
->> on one file.
-> Great, thanks.
+>> The KSZ8842 has a switch with lots of hardware configurations.  The driver uses the proc system to allow users to configure the switch.  If this is not desired the whole thing can be removed by not calling the init_proc() function.
 >>
->>>
->>> > Another point is we need stable result.
->>> >
->>> >> with lot of
->>> >> things going on.
->>> >> Let's keep this for last.
->>> > Ok. But the change like what you do mostly reduces regresion.
->>> >
->>> >> I've created a smaller test, that already shows some regression:
->>> >> [global]
->>> >> direct=0
->>> >> ioengine=mmap
->>> >> size=8G
->>> >> bs=64k
->>> >> numjobs=1
->>> >> loops=5
->>> >> runtime=60
->>> >> #group_reporting
->>> >> invalidate=0
->>> >> directory=/media/hd/cfq-tests
->>> >>
->>> >> [job0]
->>> >> startdelay=0
->>> >> rw=randread
->>> >> filename=testfile1
->>> >>
->>> >> [job1]
->>> >> startdelay=0
->>> >> rw=randread
->>> >> filename=testfile2
->>> >>
->>> >> [job2]
->>> >> startdelay=0
->>> >> rw=randread
->>> >> filename=testfile3
->>> >>
->>> >> [job3]
->>> >> startdelay=0
->>> >> rw=randread
->>> >> filename=testfile4
->>> >>
->>> >> The attached patches, in particular 0005 (that apply on top of
->>> >> for-linus branch of Jen's tree
->>> >> git://git.kernel.dk/linux-2.6-block.git) fix the regression on this
->>> >> simplified workload.
->>> > I didn't download the tree. I tested the 3 attached patches against 2.6.33-rc1. The
->>> > result isn't resolved.
->>> Can you quantify if there is an improvement, though?
->>
->> Ok. Because of company policy, I could only post percent instead of real number
-> Sure, it is fine.
->>
->>> Please, also include Shahoua's patches.
->>> I'd like to see the comparison between (always with low_latency set to 0):
->>> plain 2.6.33
->>> plain 2.6.33 + shahoua's
->>> plain 2.6.33 + shahoua's + my patch
->>> plain 2.6.33 + shahoua's + my patch + rq_in_driver vs dispatched patch.
->>
->> 1) low_latency=0
->> 2.6.32 kernel                                   0
->> 2.6.33-rc1                                      -0.33
->> 2.6.33-rc1_shaohua                              -0.33
->> 2.6.33-rc1+corrado                              0.03
->> 2.6.33-rc1_corrado+shaohua                      0.02
->> 2.6.33-rc1_corrado+shaohua+rq_in_driver         0.01
->>
-> So my patch fixes the situation for low_latency = 0, as I expected.
-> I'll send it to Jens with a proper changelog.
->
->> 2) low_latency=1
->> 2.6.32 kernel                                   0
->> 2.6.33-rc1                                      -0.45
->> 2.6.33-rc1+corrado                              -0.24
->> 2.6.33-rc1_corrado+shaohua                      -0.23
->> 2.6.33-rc1_corrado+shaohua+rq_in_driver         -0.23
-> The results are as expected. With each process working on a separate
-> file, Shahoua's patches do not influence the result sensibly.
-> Interestingly, even rq_in_driver doesn't improve in this case, so
-> maybe its effect is somewhat connected to queue merging.
-> The remaining -23% is due to timeslice shrinking, that is done to
-> reduce max latency when there are too many processes doing I/O, at the
-> expense of throughput. It is a documented change, and the suggested
-> way if you favor throughput over latency is to set low_latency = 0.
->
->>
->>
->> When low_latency=1, we get the biggest number with kernel 2.6.32.
->> Comparing with low_latency=0's result, the prior one is about 4% better.
-> Ok, so 2.6.33 + corrado (with low_latency =0) is comparable with
-> fastest 2.6.32, so we can consider the first part of the problem
-> solved.
->
-I think we can return now to your full script with queue merging.
-I'm wondering if (in arm_slice_timer):
--       if (cfqq->dispatched)
-+      if (cfqq->dispatched || (cfqq->new_cfqq && rq_in_driver(cfqd)))
-               return;
-gives the same improvement you were experiencing just reverting to rq_in_driver.
+>> The KSZ8842 switch has 2 ports.  Some users like to take direct control of those ports.  So KSZ8842 has a multiple devices mode in which the driver creates another network device so that users can specify which port to send packets.  This mode is enabled by passing the "multi_dev=1" parameter to the driver during loading.
+> [...]
+> 
+> I briefly looked over the datasheet for your device and it looks like
+> it has the same basic design idea as a "ROBO" switch from Broadcom
+> that is used in bcm53xx SoCs. This can be seen as a 3-port switch with
+> one port fixed to be link to CPU (a special kind of PHY).
+> 
+> If my assumptions are correct, then I thing it would be better to have
+> a driver that presents this device as two: one - an ethernet device,
+> and second - a switch management interface like the one used in
+> OpenWRT.
+> 
+> Here are some links for reference:
+> http://downloads.openwrt.org/kamikaze/8.09.2/kamikaze_8.09.2_source.tar.bz2;
+> subdir: package/switch/src/
+>   -> switch management driver for ADMTEK Adm6996 and Broadcom BCM5325E/536x
+Don't look at that ;)
+The code you're referring to is just a simple hack of mine that is a
+few years old now. It's going to be removed as soon as the drivers have
+been ported to a proper API.
 
-We saw that cfqq->dispatched worked fine when there was no queue
-merging happening, so it must be something concerning merging,
-probably dispatched is not accurate when we set up for a merging, but
-the merging was not yet done.
+I've been working on a switch configuration API based on netlink, which 
+is being used on some of the other platforms in OpenWrt.
 
-Thanks,
-Corrado
+You can find the sources here:
+https://dev.openwrt.org/export/19173/trunk/target/linux/generic-2.6/files/drivers/net/phy/swconfig.c
+https://dev.openwrt.org/export/19173/trunk/target/linux/generic-2.6/files/include/linux/switch.h
+
+It's meant to be used with drivers that hook into the PHY abstraction layer.
+You can find an example of such a driver here:
+https://dev.openwrt.org/export/19173/trunk/target/linux/generic-2.6/files/drivers/net/phy/rtl8306.c
+
+I'll do the final cleanups and submit it for review once I have time to do so.
+
+- Felix
