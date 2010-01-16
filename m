@@ -1,44 +1,67 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337Ab0APTQO (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 14:16:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272Ab0APTQN
+	id S1752582Ab0APTaA (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 14:30:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809Ab0APT36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 14:16:13 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51583 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756271Ab0APTQM (ORCPT
+	Sat, 16 Jan 2010 14:29:58 -0500
+Received: from smtp102.sbc.mail.gq1.yahoo.com ([67.195.15.61]:31303 "HELO
+	smtp102.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751589Ab0APT35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 14:16:12 -0500
-Message-ID: <4B520E6D.5050505@zytor.com>
-Date: Sat, 16 Jan 2010 11:07:25 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Sat, 16 Jan 2010 14:29:57 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=aRGycOaB/WQJsFoZAJv27oVlk8i3MxeGtZjt2GxN8J2T2Ojm9JmGxqTKi2dlVvdc3tfv3yHQJ0lKzuC2+kA/C/Ajh+nQrxtu1WzooZkHxobdK4Ckn3qmnM+13Xg5mOC7ZekQe1IwRsAUs1hTPh2V48ToUJcETgXusBRPE8zbPtk=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: alt09IEVM1m3z_kZfqYG_QzaovNjySaj8J2yDvzTbXYnGek8sWaJLf62ae3dhCsrtPPtrvOAq7Mnmrj.XX8TKTo0MhcLP2lsB_1mageOQP8FiYB62N_N_3x3cMMUkfLTWaGvo46KjypJP_qIBRyQaJHequ_h51Qywm_S4KBTbVmHbZxybnW7w7VysAR6_2WJ1K9HdARCLVGaazuJdSyiWRWwLpiuycpYz5b2xullC_beJaun7xB35phBsBvfgTHVRTOjNVGb6W_tcUvNAtxJlYUlabso7LI3lNi2
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: flash_platform_data namespace collision
+Date: Sat, 16 Jan 2010 11:23:15 -0800
+User-Agent: KMail/1.9.10
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+        David Woodhouse <dwmw2@infradead.org>,
+        Linux Mailing List <linux-kernel@vger.kernel.org>,
+        "linux-embedded" <linux-embedded@vger.kernel.org>
+References: <1263620475.29868.6280.camel@calx> <20100116110420.GB31282@flint.arm.linux.org.uk> <1263664079.29868.6289.camel@calx>
+In-Reply-To: <1263664079.29868.6289.camel@calx>
 MIME-Version: 1.0
-To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-        stable-review@kernel.org, torvalds@linux-foundation.org,
-        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [0/9] 2.6.31.12-stable review
-References: <20100114224848.GA532@kroah.com> <4B520D98.7030202@pardus.org.tr>
-In-Reply-To: <4B520D98.7030202@pardus.org.tr>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001161123.15502.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/16/2010 11:03 AM, Ozan Çağlayan wrote:
+On Saturday 16 January 2010, Matt Mackall wrote:
+> On Sat, 2010-01-16 at 11:04 +0000, Russell King wrote:
+> > On Fri, Jan 15, 2010 at 11:41:15PM -0600, Matt Mackall wrote:
+> > > I've got a board here with SPI, NOR, and NAND flash devices and I've
+> > > just run into a namespace collision on flash_platform_data from
+> > 
+> > The one in arch/arm/include/asm/mach/flash.h is designed to have great
+> > appeal and flexibility across different platforms, and indeed we have
+> > at least 70 users across six different MTD NOR flash drivers and two
+> > MTD NAND drivers.
+
+Yet it doesn't do what's needed for SPI flash (identify the chip type,
+when it can't probed); and for that application none of those methods
+are useful (and their slots are just wasted/confusing space).
+
+
+> > If anything, I believe that this header should move into linux/mtd/
+> > and become a standard structure for platforms to communicate their
+> > requirements to flash drivers.
 > 
-> 2. Boot hangs on old AMD Athlon XP Processors (not 64, not X2) with CONFIG_X86_CPU_DEBUG enabled kernels:
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/34ca6dd8aeab02b3/0c0acb9d6437756f?lnk=raot&fwc=1
-> 
+> Yeah, I think this is probably the way to go. Davids, any objections?
 
-CONFIG_X86_CPU_DEBUG really turned out to be a bad idea.  We should kill
-it off completely...
+I had similar thoughts when I first happened across that structure.
 
-	-hpa
+But such a move wouldn't resolve $SUBJECT ... which is IMO best addressed
+by the obvious rename of the one to spi_flash_platform_data.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+- dave
