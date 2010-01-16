@@ -1,76 +1,59 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758606Ab0APBIt (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 20:08:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369Ab0APBIt
+	id S1758647Ab0APBaj (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 20:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758376Ab0APBai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 20:08:49 -0500
-Received: from mga02.intel.com ([134.134.136.20]:49469 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758113Ab0APBIs convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jan 2010 20:30:38 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46871
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932392Ab0APBah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 20:08:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,285,1262592000"; 
-   d="scan'208";a="587591004"
-From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "ak@linux.intel.com" <ak@linux.intel.com>,
-        "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-        Dave Hansen <haveblue@us.ibm.com>,
-        "Wu, Fengguang" <fengguang.wu@intel.com>,
-        "x86@kernel.org" <x86@kernel.org>
-Date: Sat, 16 Jan 2010 09:08:41 +0800
-Subject: RE: [PATCH-RESEND v4] memory-hotplug: create /sys/firmware/memmap
- entry for new memory
-Thread-Topic: [PATCH-RESEND v4] memory-hotplug: create /sys/firmware/memmap
- entry for new memory
-Thread-Index: AcqWM277R2FxHEDuQJCxcXuKExCYjQAE7vyA
-Message-ID: <DA586906BA1FFC4384FCFD6429ECE86034FF85EB@shzsmsx502.ccr.corp.intel.com>
-References: <DA586906BA1FFC4384FCFD6429ECE86031560F92@shzsmsx502.ccr.corp.intel.com>
- <20100115143812.b70161d2.akpm@linux-foundation.org>
-In-Reply-To: <20100115143812.b70161d2.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Fri, 15 Jan 2010 20:30:37 -0500
+Date: Fri, 15 Jan 2010 17:30:44 -0800 (PST)
+Message-Id: <20100115.173044.102257749.davem@davemloft.net>
+To: hartleys@visionengravers.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru,
+        pekkas@netcore.fi, jmorris@namei.org, yoshfuji@linux-ipv6.org,
+        kaber@trash.net
+Subject: Re: [PATCH] ipv4/ip_sockglue.c: copy msg_control optval from user
+ to kernel space
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <201001151024.59482.hartleys@visionengravers.com>
+References: <201001151024.59482.hartleys@visionengravers.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is very strange issue since I already test it before sending it out, I will retry it in local.
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+Date: Fri, 15 Jan 2010 10:24:59 -0700
 
-Thanks & Regards,
-Shaohui
-
-
------Original Message-----
-From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-Sent: Saturday, January 16, 2010 6:38 AM
-To: Zheng, Shaohui
-Cc: linux-mm@kvack.org; linux-kernel@vger.kernel.org; ak@linux.intel.com; y-goto@jp.fujitsu.com; Dave Hansen; Wu, Fengguang; x86@kernel.org
-Subject: Re: [PATCH-RESEND v4] memory-hotplug: create /sys/firmware/memmap entry for new memory
-
-On Mon, 11 Jan 2010 10:00:11 +0800
-"Zheng, Shaohui" <shaohui.zheng@intel.com> wrote:
-
-> memory-hotplug: create /sys/firmware/memmap entry for hot-added memory
+> ipv4/ip_sockglue.c: copy msg_control optval from user to kernel space
 > 
-> Interface firmware_map_add was not called in explict, Remove it and add function
-> firmware_map_add_hotplug as hotplug interface of memmap.
+> In do_ip_getsockopt the char __user *optval is used directly in
+> IP_PKTOPTIONS for the msg.msg_control and not copied from
+> user to kernel address space. This produces a sparse warning:
 > 
-> When we hot-add new memory, sysfs does not export memmap entry for it. we add
->  a call in function add_memory to function firmware_map_add_hotplug.
+> warning: incorrect type in assignment (different address spaces)
+>    expected void *msg_control
+>    got char [noderef] <asn:1>*optval
 > 
-> Add a new function add_sysfs_fw_map_entry to create memmap entry, it can avoid 
-> duplicated codes.
+> Fix this by using copy _from_user to set msg.msg_control.
+> 
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-The patch causes an early exception in kmem_cache_alloc_notrace() -
-probably due to a null cache pointer.
+This isn't right.
 
-config: http://master.kernel.org/~akpm/config-akpm2.txt
+We want the 'optval' pointer itself, not the data it points to, stored
+in msg.msg_control
+
+And 'msg_control' is, in this case a user pointer.
+
+It just isn't annotated (along with the rest of struct msghdr) with
+"__user" because we mix the usage of this object with kernel and user
+pointers.
+
+How did you test your change?
