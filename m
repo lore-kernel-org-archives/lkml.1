@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758754Ab0APCn3 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 21:43:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758397Ab0APCn0
+	id S1758775Ab0APCoO (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 21:44:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758758Ab0APCna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 21:43:26 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:57727 "EHLO
+	Fri, 15 Jan 2010 21:43:30 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:57731 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758195Ab0APCnZ (ORCPT
+	with ESMTP id S1758220Ab0APCnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Jan 2010 21:43:25 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 18:41:53 -0800
+Date: Fri, 15 Jan 2010 18:41:57 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 03/11] pci: reject mmio range start from 0 on pci_bridge read
+Subject: [PATCH 07/11] pci: pciehp clean flow in pciehp_configure_device
 In-reply-to: <1263609721-3921-1-git-send-email-yinghai@kernel.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
         Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,82 +23,74 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
         Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263609721-3921-4-git-send-email-yinghai@kernel.org>
+Message-id: <1263609721-3921-8-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263609721-3921-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-that is wrong.
-
-exposed by that patch that doesn's shrink pci bridge res.
-
--v2: change to "bar reading" to "reg reading"
+move out bus_size_bridges and assign resources out of pciehp_add_bridge()
+and at last do them all together one time including slot bridge, to avoid to
+call assign resources several times, when there are several bridges under the
+slot bridge.
+use pci_assign_nassigned_bridge_resources
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- drivers/pci/probe.c |   18 +++++++++++++++---
- 1 files changed, 15 insertions(+), 3 deletions(-)
+ drivers/pci/hotplug/pciehp_pci.c |   23 +++++++++++++++++------
+ 1 files changed, 17 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 11824d7..70b1f74 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -316,13 +316,17 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 		limit |= (io_limit_hi << 16);
- 	}
+diff --git a/drivers/pci/hotplug/pciehp_pci.c b/drivers/pci/hotplug/pciehp_pci.c
+index 2173310..0a16444 100644
+--- a/drivers/pci/hotplug/pciehp_pci.c
++++ b/drivers/pci/hotplug/pciehp_pci.c
+@@ -53,17 +53,15 @@ static int __ref pciehp_add_bridge(struct pci_dev *dev)
+ 		busnr = pci_scan_bridge(parent, dev, busnr, pass);
+ 	if (!dev->subordinate)
+ 		return -1;
+-	pci_bus_size_bridges(dev->subordinate);
+-	pci_bus_assign_resources(parent);
+-	pci_enable_bridges(parent);
+-	pci_bus_add_devices(parent);
++
+ 	return 0;
+ }
  
--	if (base <= limit) {
-+	if (base <= limit && base) {
- 		res->flags = (io_base_lo & PCI_IO_RANGE_TYPE_MASK) | IORESOURCE_IO;
- 		if (!res->start)
- 			res->start = base;
- 		if (!res->end)
- 			res->end = limit + 0xfff;
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
-+	} else {
-+		dev_printk(KERN_DEBUG, &dev->dev,
-+			 "  bridge window [io  %04lx - %04lx] reg reading\n",
-+				 base, limit);
- 	}
+ int pciehp_configure_device(struct slot *p_slot)
+ {
+ 	struct pci_dev *dev;
+-	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
++	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
++	struct pci_bus *parent = bridge->subordinate;
+ 	int num, fn;
+ 	struct controller *ctrl = p_slot->ctrl;
  
- 	res = child->resource[1];
-@@ -330,11 +334,15 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 	pci_read_config_word(dev, PCI_MEMORY_LIMIT, &mem_limit_lo);
- 	base = (mem_base_lo & PCI_MEMORY_RANGE_MASK) << 16;
- 	limit = (mem_limit_lo & PCI_MEMORY_RANGE_MASK) << 16;
--	if (base <= limit) {
-+	if (base <= limit && base) {
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
-+	} else {
-+		dev_printk(KERN_DEBUG, &dev->dev,
-+		        "  bridge window [mem 0x%08lx - 0x%08lx] reg reading\n",
-+					 base, limit + 0xfffff);
- 	}
- 
- 	res = child->resource[2];
-@@ -366,7 +374,7 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- #endif
+@@ -96,12 +94,25 @@ int pciehp_configure_device(struct slot *p_slot)
+ 				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
+ 			pciehp_add_bridge(dev);
  		}
++		pci_dev_put(dev);
++	}
++
++	pci_assign_unassigned_bridge_resources(bridge);
++
++	for (fn = 0; fn < 8; fn++) {
++		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
++		if (!dev)
++			continue;
++		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
++			pci_dev_put(dev);
++			continue;
++		}
+ 		pci_configure_slot(dev);
+ 		pci_dev_put(dev);
  	}
--	if (base <= limit) {
-+	if (base <= limit && base) {
- 		res->flags = (mem_base_lo & PCI_PREF_RANGE_TYPE_MASK) |
- 					 IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 		if (res->flags & PCI_PREF_RANGE_TYPE_64)
-@@ -374,6 +382,10 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 		res->start = base;
- 		res->end = limit + 0xfffff;
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
-+	} else {
-+		dev_printk(KERN_DEBUG, &dev->dev,
-+		     "  bridge window [mem 0x%08lx - %08lx pref] reg reading\n",
-+					 base, limit + 0xfffff);
- 	}
+ 
+-	pci_bus_assign_resources(parent);
+ 	pci_bus_add_devices(parent);
++
+ 	return 0;
  }
  
 -- 
