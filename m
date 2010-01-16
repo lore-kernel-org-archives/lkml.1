@@ -1,75 +1,67 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753399Ab0APPLd (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 10:11:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260Ab0APPLc
+	id S1753482Ab0APPNL (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 10:13:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972Ab0APPNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 10:11:32 -0500
-Received: from gateway12.websitewelcome.com ([69.56.195.22]:45074 "HELO
-	gateway12.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751698Ab0APPLc (ORCPT
+	Sat, 16 Jan 2010 10:13:09 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:62553 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118Ab0APPNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 10:11:32 -0500
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Jan 2010 10:11:31 EST
-To: linux-kernel@vger.kernel.org
-Subject: Free Escort Websites! What a Joke Get a REAL WEBSITE $100
-X-PHP-Script: escort-webz.com/list/admin/index.php for 24.93.215.97
-Recieved: 
-Date: Sat, 16 Jan 2010 09:04:51 -0600
-From: admin <webmaster@escort-webz.com>
-Message-ID: <003b6c09433e22c9a5f36abbe751bd6b@escort-webz.com>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.73]
-X-Mailer: phplist v2.10.10
-X-MessageID: 7
-X-ListMember: linux-kernel@vger.kernel.org
+	Sat, 16 Jan 2010 10:13:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=B6BLRtbE5uekv4BSdY5ivzscFPwFdDAAcLijbPLZvLj9Mie++uUX+/++tQYExdhwyY
+         PSLSbAJPHGkjWyi9fqcEvtc5f2irVgrYCsBvIY+jTPxAtOhFXsb3NoRTqxYPH8r5QkSO
+         CuHl8tHC8LXpH879TsGsHyD/JIC6V6/JUEXR4=
+Message-ID: <4B51D787.9040409@googlemail.com>
+Date: Sat, 16 Jan 2010 16:13:11 +0100
+From: =?UTF-8?B?UmVuw6kgQm9sbGRvcmY=?= <xsecute@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][CORRECTED] section mismatch: pcibios_scan_specific_bus()
+References: <4B4E3E20.1@googlemail.com> <20100115154020.6823ea3e@jbarnes-piketon>
+In-Reply-To: <20100115154020.6823ea3e@jbarnes-piketon>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - stealth.websitewelcome.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [33290 33293] / [47 12]
-X-AntiAbuse: Sender Address Domain - stealth.websitewelcome.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Escort Websites & Marketing! Photo & Graphics work too!
+On 01/16/10 00:40, Jesse Barnes wrote:
+> On Wed, 13 Jan 2010 22:41:52 +0100
+> René Bolldorf<xsecute@googlemail.com>  wrote:
+>
+>> Hi all,
+>> pcibios_scan_specific_bus() is only invoked from
+>> __devinit pcibios_fixup_peer_bridges(void).
+>>
+>> Mark it as __devinit.
+>> Sry for the first mail, I hadn't sleep enough...
+>>
+>> diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
+>> --- a/arch/x86/pci/legacy.c
+>> +++ b/arch/x86/pci/legacy.c
+>> @@ -39,7 +39,7 @@ static int __init pci_legacy_init(void)
+>>           return 0;
+>>    }
+>>
+>> -void pcibios_scan_specific_bus(int busn)
+>> +void __devinit pcibios_scan_specific_bus(int busn)
+>>    {
+>>           int devfn;
+>>           long node;
+>
+> Doesn't apply to my for-linus branch, also missing a Signed-off-by.  I
+> guess you need more sleep. :)  Care to refresh if it's still necessary?
+>
+> Thanks,
 
-100% all American Company from $100.00 complete!
-EDIT YOUR OWN SITE RIGHT FROM YOUR BROWSER!
-
-Includes domain name, hosting, and custom design.
-Includes free photo ads for craigslist and backpage
-For your privacy and security We Prefer Paypal Payments!
-CHECK OUT OUR UPDATED WEBSITE!!! http://www.escort-webz.com
-<http://www.escort-webz.com/>
-
-NOTE: If you have a website with any of these companies it is a SCAM
-ask us and we'll explain
-escortsite.com
-model24h.com
-rare-playmate.com
-escortdiva.com
-massage4body.com
-escortwww.com
-professionalescort.com
-rare-companion.com
- <http://www.escort-webz.com>
-
-
-
---
-If you do not want to receive any more newsletters, 
-http://escort-webz.com/list/?p=unsubscribe&uid=a54cf79a8f9659885940db7549850adc
-
-To update your preferences and to unsubscribe visit
-http://escort-webz.com/list/?p=preferences&uid=a54cf79a8f9659885940db7549850adc
-Forward a Message to Someone
-http://escort-webz.com/list/?p=forward&uid=a54cf79a8f9659885940db7549850adc&mid=7
-
-
---
-Powered by PHPlist, www.phplist.com --
-
-
+I pulled today 
+git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 
+linux-next. pci legacy was deleted.
+Now patch can be ignored.
