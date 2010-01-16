@@ -1,66 +1,65 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528Ab0APQAh (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 11:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390Ab0APQAc
+	id S1755623Ab0APQAz (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 11:00:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567Ab0APQAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 11:00:32 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:44216 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753403Ab0APQA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 11:00:28 -0500
-Date: Sat, 16 Jan 2010 17:00:26 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
-        Dustin Kirkland <kirkland@canonical.com>,
-        ecryptfs-devel@lists.launchpad.net, linux-kernel@vger.kernel.org,
-        kernel-janitors@vger.kernel.org
-Subject: [PATCH 9/9] fs/ecryptfs: Eliminate useless code
-Message-ID: <Pine.LNX.4.64.1001161700100.28745@ask.diku.dk>
+	Sat, 16 Jan 2010 11:00:48 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:57855 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755173Ab0APQAd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 11:00:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LEEU69dUkXRz2omDp8EALQIoid0V0X5DDdf1GVQ4KcAzIAxR7aBWNbgXarhdHUYf2g
+         Gm/WOb7FlwRFlVpMaOKHhd2YKyHMcXDXV8BvADt3XpYV3Gj2+RpjtBhWciaG5sUO+s45
+         x7jFkW7F1UiOI6tPxwDwz4VtoPIFzMq10dbzk=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com>
+References: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com>
+Date: Sat, 16 Jan 2010 17:00:30 +0100
+Message-ID: <e2d7436a1001160800u11206f54iaf07bb92331a256a@mail.gmail.com>
+Subject: Re: [PATCH 2.6.33 1/3] net: Micrel KSZ8841/2 PCI Ethernet driver
+From: =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirqus@gmail.com>
+To: "Ha, Tristram" <Tristram.Ha@micrel.com>
+Cc: Dave Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
+        Felix Fietkau <openwrt@nbd.name>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Hello,
 
-The variable lower_dentry is initialized twice to the same (side effect-free)
-expression.  Drop one initialization.
+2010/1/16 Ha, Tristram <Tristram.Ha@micrel.com>:
+> This is a new network driver for Micrel KSZ8841/KSZ8842 PCI Ethernet chips.  The same driver can run both chips at the same time.  It supports IPv4 TCP hardware checksumming and so can use scatter/gather transmission.
+>
+> The KSZ8842 has a switch with lots of hardware configurations.  The driver uses the proc system to allow users to configure the switch.  If this is not desired the whole thing can be removed by not calling the init_proc() function.
+>
+> The KSZ8842 switch has 2 ports.  Some users like to take direct control of those ports.  So KSZ8842 has a multiple devices mode in which the driver creates another network device so that users can specify which port to send packets.  This mode is enabled by passing the "multi_dev=1" parameter to the driver during loading.
+[...]
 
-A simplified version of the semantic match that finds this problem is:
-(http://coccinelle.lip6.fr/)
+I briefly looked over the datasheet for your device and it looks like
+it has the same basic design idea as a "ROBO" switch from Broadcom
+that is used in bcm53xx SoCs. This can be seen as a 3-port switch with
+one port fixed to be link to CPU (a special kind of PHY).
 
-// <smpl>
-@forall@
-idexpression *x;
-identifier f!=ERR_PTR;
-@@
+If my assumptions are correct, then I thing it would be better to have
+a driver that presents this device as two: one - an ethernet device,
+and second - a switch management interface like the one used in
+OpenWRT.
 
-x = f(...)
-... when != x
-(
-x = f(...,<+...x...+>,...)
-|
-* x = f(...)
-)
-// </smpl>
+Here are some links for reference:
+http://downloads.openwrt.org/kamikaze/8.09.2/kamikaze_8.09.2_source.tar.bz2;
+subdir: package/switch/src/
+  -> switch management driver for ADMTEK Adm6996 and Broadcom BCM5325E/536x
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+(I'm adding switch driver's authors to CC list. I hope I picket the
+correct address for Felix from 3 in the sources. :-)
 
----
- fs/ecryptfs/file.c                  |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/ecryptfs/file.c b/fs/ecryptfs/file.c
-index 1744f17..7bf1031 100644
---- a/fs/ecryptfs/file.c
-+++ b/fs/ecryptfs/file.c
-@@ -158,9 +158,9 @@ static int ecryptfs_open(struct inode *inode, struct file *file)
- 	struct dentry *ecryptfs_dentry = file->f_path.dentry;
- 	/* Private value of ecryptfs_dentry allocated in
- 	 * ecryptfs_lookup() */
--	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(ecryptfs_dentry);
-+	struct dentry *lower_dentry;
- 	struct ecryptfs_file_info *file_info;
- 
- 	mount_crypt_stat = &ecryptfs_superblock_to_private(
+Best Regards,
+Micha³ Miros³aw
