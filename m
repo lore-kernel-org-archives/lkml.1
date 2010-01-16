@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758994Ab0APDNH (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869Ab0APDM6
+	id S1759010Ab0APDNL (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:13:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758926Ab0APDNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:12:58 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58138 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758840Ab0APDIW (ORCPT
+	Fri, 15 Jan 2010 22:13:00 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33943 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758833Ab0APDIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Jan 2010 22:08:22 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 19:06:54 -0800
+Date: Fri, 15 Jan 2010 19:06:53 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 23/37] x86: add find_fw_memmap_area
+Subject: [PATCH 22/37] move round_up/down to kernel.h
 In-reply-to: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,110 +23,61 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263611228-6751-24-git-send-email-yinghai@kernel.org>
+Message-id: <1263611228-6751-23-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so could move early_res up
+prepare to early_res moving up
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/include/asm/early_res.h |    1 +
- arch/x86/kernel/e820.c           |    4 ++++
- arch/x86/kernel/early_res.c      |   17 +++++++++++------
- 3 files changed, 16 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/proto.h |   10 ----------
+ include/linux/kernel.h       |   10 ++++++++++
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/include/asm/early_res.h b/arch/x86/include/asm/early_res.h
-index 5a4d2eb..9758f3d 100644
---- a/arch/x86/include/asm/early_res.h
-+++ b/arch/x86/include/asm/early_res.h
-@@ -12,6 +12,7 @@ u64 find_early_area(u64 ei_start, u64 ei_last, u64 start, u64 end,
- 			 u64 size, u64 align);
- u64 find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
- 			 u64 *sizep, u64 align);
-+u64 find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align);
- #include <linux/range.h>
- int get_free_all_memory_range(struct range **rangep, int nodeid);
+diff --git a/arch/x86/include/asm/proto.h b/arch/x86/include/asm/proto.h
+index 4009f65..6f414ed 100644
+--- a/arch/x86/include/asm/proto.h
++++ b/arch/x86/include/asm/proto.h
+@@ -23,14 +23,4 @@ extern int reboot_force;
  
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index acd7be6..5c80050 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -742,6 +742,10 @@ u64 __init find_e820_area(u64 start, u64 end, u64 size, u64 align)
- 	return -1ULL;
- }
+ long do_arch_prctl(struct task_struct *task, int code, unsigned long addr);
  
-+u64 __init find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align)
-+{
-+	return find_e820_area(start, end, size, align);
-+}
- /*
-  * Find next free range after *start
-  */
-diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
-index 38a0c61..e209fc4 100644
---- a/arch/x86/kernel/early_res.c
-+++ b/arch/x86/kernel/early_res.c
-@@ -7,16 +7,14 @@
- #include <linux/bootmem.h>
- #include <linux/mm.h>
+-/*
+- * This looks more complex than it should be. But we need to
+- * get the type for the ~ right in round_down (it needs to be
+- * as wide as the result!), and we want to evaluate the macro
+- * arguments just once each.
+- */
+-#define __round_mask(x,y) ((__typeof__(x))((y)-1))
+-#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
+-#define round_down(x,y) ((x) & ~__round_mask(x,y))
+-
+ #endif /* _ASM_X86_PROTO_H */
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 785d7d1..9e1e9ef 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -44,6 +44,16 @@ extern const char linux_proc_banner[];
  
--#include <asm/e820.h>
- #include <asm/early_res.h>
--#include <asm/proto.h>
+ #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
  
- /*
-  * Early reserved memory areas.
-  */
- /*
-  * need to make sure this one is bigger enough before
-- * find_e820_area could be used
-+ * find_fw_memmap_area could be used
-  */
- #define MAX_EARLY_RES_X 32
- 
-@@ -180,6 +178,13 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
- 	__reserve_early(start, end, name, 1);
- }
- 
-+u64 __init __weak find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align)
-+{
-+	panic("should have find_fw_memmap_area defined with arch");
++/*
++ * This looks more complex than it should be. But we need to
++ * get the type for the ~ right in round_down (it needs to be
++ * as wide as the result!), and we want to evaluate the macro
++ * arguments just once each.
++ */
++#define __round_mask(x,y) ((__typeof__(x))((y)-1))
++#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
++#define round_down(x,y) ((x) & ~__round_mask(x,y))
 +
-+	return -1ULL;
-+}
-+
- static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
- {
- 	u64 start, end, size, mem;
-@@ -198,13 +203,13 @@ static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
- 		start = early_res[0].end;
- 	end = ex_start;
- 	if (start + size < end)
--		mem = find_e820_area(start, end, size,
-+		mem = find_fw_memmap_area(start, end, size,
- 					 sizeof(struct early_res));
- 	if (mem == -1ULL) {
- 		start = ex_end;
- 		end = max_pfn_mapped << PAGE_SHIFT;
- 		if (start + size < end)
--			mem = find_e820_area(start, end, size,
-+			mem = find_fw_memmap_area(start, end, size,
- 						 sizeof(struct early_res));
- 	}
- 	if (mem == -1ULL)
-@@ -343,7 +348,7 @@ int __init get_free_all_memory_range(struct range **rangep, int nodeid)
- 		start = MAX_DMA32_PFN << PAGE_SHIFT;
- #endif
- 	end = max_pfn_mapped << PAGE_SHIFT;
--	mem = find_e820_area(start, end, size, sizeof(struct range));
-+	mem = find_fw_memmap_area(start, end, size, sizeof(struct range));
- 	if (mem == -1ULL)
- 		panic("can not find more space for range free");
- 
+ #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+ #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+ #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
 -- 
 1.6.4.2
 
