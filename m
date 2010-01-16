@@ -1,61 +1,74 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505Ab0APPvL (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 10:51:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246Ab0APPvK
+	id S1753804Ab0APPvn (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 10:51:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403Ab0APPvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 10:51:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53593 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753168Ab0APPvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 10:51:06 -0500
-To: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Arnaldo Carvalho de Melo <acme@infradead.org>,
-        Frederic Weisbecker <fweisbec@gmail.com>,
-        LKML <linux-kernel@vger.kernel.org>, Mark Wielaard <mjw@redhat.com>,
-        utrace-devel <utrace-devel@redhat.com>
-Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
-References: <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
-	<1263467394.4244.291.camel@laptop>
-	<1263509380.4875.35.camel@localhost.localdomain>
-	<1263546632.4244.352.camel@laptop> <y0mvdf3en1y.fsf@fche.csb>
-	<1263548124.4244.358.camel@laptop> <20100115131037.GP4822@redhat.com>
-	<1263561930.4244.417.camel@laptop> <20100115133825.GQ4822@redhat.com>
-	<1263563276.4244.426.camel@laptop>
-	<20100115142007.GA1628@linux.vnet.ibm.com>
-	<1263597085.5007.82.camel@localhost.localdomain>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Sat, 16 Jan 2010 10:50:48 -0500
-In-Reply-To: <1263597085.5007.82.camel@localhost.localdomain> (Jim Keniston's message of "Fri, 15 Jan 2010 15:11:25 -0800")
-Message-ID: <y0m63722gmf.fsf@fche.csb>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Sat, 16 Jan 2010 10:51:42 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:48226 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750978Ab0APPvl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 10:51:41 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100115205722.3580b6bf@lxorguk.ukuu.org.uk>
+References: <1263505677.2074.2.camel@yio.site> <20100115065638.005ac690@infradead.org> 
+	<20100115180341.GA12146@kroah.com> <20100115205722.3580b6bf@lxorguk.ukuu.org.uk>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 16 Jan 2010 16:51:23 +0100
+Message-ID: <ac3eb2511001160751g2357bf2en2bfacaabe5c2f7e@mail.gmail.com>
+Subject: Re: Driver-Core: devtmpfs - remove EXPERIMENTAL and enable it by 
+	default
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Greg KH <greg@kroah.com>, Arjan van de Ven <arjan@infradead.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 15, 2010 at 21:57, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> Why?  All major distros need this at boot time, and as we have been
+>
+> No they don't.
+>
+> Centos doesn't (in fact I suspect it'll break)
+> Fedora 11 doesn't
+> Fedora 12 doesn't seem to (but seems to be willing to use it)
+> Ditto all the older SuSE, Ubuntu etc releases that are *still*
+> active/supported/maintained
 
-Jim Keniston <jkenisto@us.ibm.com> writes:
+Fedora, SUSE, Ubuntu, ... All releases currently in development enable
+and use it.
 
-> [...]
-> Years ago, we had pre-utrace versions of uprobes where the uprobes
-> breakpoint-handler code was dispatched from the die_notifier, before the
-> int3 turned into a SIGTRAP.  I believe that's what Peter is
-> recommending.  On my old Pentium M...
-> - a pre-utrace uprobe hit cost about 1 usec;
-> - a utrace-based uprobe hit cost about 3 usec;
-> [...]
-> So yeah, learning about the int3 via utrace after the SIGTRAP gets
-> created adds some overhead to uprobes.  [...]
+>> through a release cycle with the config option, anyone who is
+>> incrementally updating will continue with their existing value.  But new
+>> people coming in, will get the option as it is most likely required to
+>> boot properly.
+>>
+>> Makes sense to me.
+>
+> That may well be true - in which case it needs to be very clearly
+> documented when to enable it.
 
-Was this test comparing likewise fruit?  For example, did it account
-for factors where other processes were gdb-int3-instrumented or with
-lots of kprobes active?  Differently multithreaded?  Demultiplexing
-probes amongst multiple processes?
+For now, the systems will bootup fine without it, but I expect over
+time, it will get a requirement. Udev does not care about it, but the
+boot scripts/initramfs tools will probably get trimmed down, because
+there is much less to do with the kernel provided nodes, than what is
+needed today to bootstrap /dev.
 
-(It's counterintuitive that the utrace/kernel int3->sigtrap
-dispatching code alone should cause thousands of extra instructions.)
+And it should not harm any old system if it is enabled. If initramfs
+is used it's completely invisible, if a custom kernel with
+kernel-mounted rootfs is used, the udev boot script usually
+over-mounts the devtmpfs at /dev with an empty tmpfs, like it has
+always done it before.
 
-- FChE
+The only thing it should change is that we now should be able to
+bootup a box without an initramfs, without manually filling /dev with
+static nodes beforehand. Current distro installations do not put a
+single file in /dev on the rootfs, and trying to boot a kernel without
+an initramfs usually just fails without putting some nodes there in
+preparation.
+
+Thanks,
+Kay
