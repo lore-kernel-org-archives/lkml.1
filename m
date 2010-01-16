@@ -1,50 +1,66 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752008Ab0APIq0 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 03:46:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304Ab0APIqZ
+	id S1752103Ab0APIuS (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 03:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650Ab0APIuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 03:46:25 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:65196 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751198Ab0APIqY (ORCPT
+	Sat, 16 Jan 2010 03:50:17 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42227
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750985Ab0APIuQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 03:46:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=SVaYEc95uRjH/lCIdRNOx0SYJHs21Dv0s7BnuJFQEQ+QMlN2tQWEJIW8S12nbDU5Rr
-         X+yCquuKGV1sa2lZCdcNokDjzl2tj5wbUbSPIjuUQnB+X5eULWiKoXaP7zuuTew2dVVu
-         8dk+tYMtouU7T3hAKQHQX6hJxIqMztiEIm8U0=
-MIME-Version: 1.0
-In-Reply-To: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl>
-References: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl>
-Date: Sat, 16 Jan 2010 09:46:23 +0100
-X-Google-Sender-Auth: c131d5ea19eb5623
-Message-ID: <10f740e81001160046j401371caye170124439ff7b79@mail.gmail.com>
-Subject: Re: Ubuntu 32-bit, 32-bit PAE, 64-bit Kernel Benchmarks
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Yuhong Bao <yuhongbao_386@hotmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Sat, 16 Jan 2010 03:50:16 -0500
+Date: Sat, 16 Jan 2010 00:50:23 -0800 (PST)
+Message-Id: <20100116.005023.137878764.davem@davemloft.net>
+To: hartleys@visionengravers.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru,
+        pekkas@netcore.fi, jmorris@namei.org, yoshfuji@linux-ipv6.org,
+        kaber@trash.net
+Subject: Re: [PATCH] ipv4/ip_sockglue.c: copy msg_control optval from user
+ to kernel space
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19091E790C@mi8nycmail19.Mi8.com>
+References: <201001151024.59482.hartleys@visionengravers.com>
+	<20100115.173044.102257749.davem@davemloft.net>
+	<BD79186B4FD85F4B8E60E381CAEE19091E790C@mi8nycmail19.Mi8.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 31, 2009 at 02:29, Yuhong Bao <yuhongbao_386@hotmail.com> wrote:
-> Given that Linus was once talking about the performance penalties of PAE and HIGHMEM64G, perhaps you'd find these benchmarks done by Phoronix of interest:
-> http://www.phoronix.com/scan.php?page=article&item=ubuntu_32_pae
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+Date: Sat, 16 Jan 2010 01:22:21 -0500
 
-Does anyone have (links to) compile benchmarks? Thx!
+> On Fri 1/15/2010 8:30 PM, David Miller wrote:
+>> How did you test your change?
+> 
+> Hmm... I saw the sparse warning and tried this to fix it. The code compiled
+> fine and the warning was gone. When I booted the resulting kernel I didn't
+> see any issues. I must not have went down this code path in my testing.
 
-Gr{oetje,eeting}s,
+I'm going to ask you a second time.
 
-						Geert
+What was your test case?  How did you test the change?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I don't think you tested your change at all besides seeing that gcc
+would accept the code and sparse stopped spitting out a warning.  And
+you're vagueness about your testing methodology will only work to
+confirm my suspicions.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I find it unlikely, at best, for you to have tested that code path, as
+'msg' is an uninitilized stack variable at this point in the code, so
+'msg->msg_control' is going to be a garbage pointer, and therefore
+copying to it would result in a crash.
+
+I don't even think you read and understood the code you are editing.
+
+I suspect you just wanted to kill the sparse warning somehow, you
+found a way that made the compiler and sparse eat it, and you simply
+ran with it.
+
+And that really upsets me.
+
+Fixing sparse warnings should not be a mindless exercise.  You should
+understand the code you are changing.
