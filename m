@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758775Ab0APCoO (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 21:44:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758758Ab0APCna
+	id S1758786Ab0APCob (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 21:44:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758750Ab0APCn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 21:43:30 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:57731 "EHLO
+	Fri, 15 Jan 2010 21:43:29 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:57728 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758220Ab0APCnZ (ORCPT
+	with ESMTP id S1758199Ab0APCnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Jan 2010 21:43:25 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 18:41:57 -0800
+Date: Fri, 15 Jan 2010 18:41:54 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 07/11] pci: pciehp clean flow in pciehp_configure_device
+Subject: [PATCH 04/11] pci: don't shrink bridge resources
 In-reply-to: <1263609721-3921-1-git-send-email-yinghai@kernel.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
         Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,76 +23,77 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
         Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263609721-3921-8-git-send-email-yinghai@kernel.org>
+Message-id: <1263609721-3921-5-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263609721-3921-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-move out bus_size_bridges and assign resources out of pciehp_add_bridge()
-and at last do them all together one time including slot bridge, to avoid to
-call assign resources several times, when there are several bridges under the
-slot bridge.
-use pci_assign_nassigned_bridge_resources
+when we are clearing leaf bridge resource and try to get big one, we could
+shrink the bridge if there is no resource under it.
+
+let check with old resource size and make sure we are trying to get big one.
+
+-v2: keep disable window print out, still could happen on non pci hotplug system
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- drivers/pci/hotplug/pciehp_pci.c |   23 +++++++++++++++++------
- 1 files changed, 17 insertions(+), 6 deletions(-)
+ drivers/pci/setup-bus.c |   14 ++++++++++++--
+ 1 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/hotplug/pciehp_pci.c b/drivers/pci/hotplug/pciehp_pci.c
-index 2173310..0a16444 100644
---- a/drivers/pci/hotplug/pciehp_pci.c
-+++ b/drivers/pci/hotplug/pciehp_pci.c
-@@ -53,17 +53,15 @@ static int __ref pciehp_add_bridge(struct pci_dev *dev)
- 		busnr = pci_scan_bridge(parent, dev, busnr, pass);
- 	if (!dev->subordinate)
- 		return -1;
--	pci_bus_size_bridges(dev->subordinate);
--	pci_bus_assign_resources(parent);
--	pci_enable_bridges(parent);
--	pci_bus_add_devices(parent);
-+
- 	return 0;
- }
- 
- int pciehp_configure_device(struct slot *p_slot)
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index c704e5c..5eebec8 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -387,7 +387,7 @@ static void pbus_size_io(struct pci_bus *bus, resource_size_t min_size)
  {
  	struct pci_dev *dev;
--	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
-+	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
-+	struct pci_bus *parent = bridge->subordinate;
- 	int num, fn;
- 	struct controller *ctrl = p_slot->ctrl;
+ 	struct resource *b_res = find_free_bus_resource(bus, IORESOURCE_IO);
+-	unsigned long size = 0, size1 = 0;
++	unsigned long size = 0, size1 = 0, old_size;
  
-@@ -96,12 +94,25 @@ int pciehp_configure_device(struct slot *p_slot)
- 				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
- 			pciehp_add_bridge(dev);
- 		}
-+		pci_dev_put(dev);
-+	}
-+
-+	pci_assign_unassigned_bridge_resources(bridge);
-+
-+	for (fn = 0; fn < 8; fn++) {
-+		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
-+		if (!dev)
-+			continue;
-+		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
-+			pci_dev_put(dev);
-+			continue;
-+		}
- 		pci_configure_slot(dev);
- 		pci_dev_put(dev);
+ 	if (!b_res)
+  		return;
+@@ -412,12 +412,17 @@ static void pbus_size_io(struct pci_bus *bus, resource_size_t min_size)
  	}
+ 	if (size < min_size)
+ 		size = min_size;
++	old_size = resource_size(b_res);
++	if (old_size == 1)
++		old_size = 0;
+ /* To be fixed in 2.5: we should have sort of HAVE_ISA
+    flag in the struct pci_bus. */
+ #if defined(CONFIG_ISA) || defined(CONFIG_EISA)
+ 	size = (size & 0xff) + ((size & ~0xffUL) << 2);
+ #endif
+ 	size = ALIGN(size + size1, 4096);
++	if (size < old_size)
++		size = old_size;
+ 	if (!size) {
+ 		if (b_res->start || b_res->end)
+ 			dev_info(&bus->self->dev, "disabling bridge window "
+@@ -438,7 +443,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 			 unsigned long type, resource_size_t min_size)
+ {
+ 	struct pci_dev *dev;
+-	resource_size_t min_align, align, size;
++	resource_size_t min_align, align, size, old_size;
+ 	resource_size_t aligns[12];	/* Alignments from 1Mb to 2Gb */
+ 	int order, max_order;
+ 	struct resource *b_res = find_free_bus_resource(bus, type);
+@@ -488,6 +493,11 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 	}
+ 	if (size < min_size)
+ 		size = min_size;
++	old_size = resource_size(b_res);
++	if (old_size == 1)
++		old_size = 0;
++	if (size < old_size)
++		size = old_size;
  
--	pci_bus_assign_resources(parent);
- 	pci_bus_add_devices(parent);
-+
- 	return 0;
- }
- 
+ 	align = 0;
+ 	min_align = 0;
 -- 
 1.6.4.2
 
