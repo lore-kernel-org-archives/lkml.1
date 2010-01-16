@@ -1,21 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759156Ab0APDQa (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759133Ab0APDQY
+	id S1759170Ab0APDQj (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:16:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759140Ab0APDQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:16:24 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33892 "EHLO
+	Fri, 15 Jan 2010 22:16:27 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33877 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758826Ab0APDIT (ORCPT
+	with ESMTP id S1758818Ab0APDIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Jan 2010 22:08:19 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 19:06:40 -0800
+Date: Fri, 15 Jan 2010 19:06:38 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 09/37] x86: print bootmem free before pci_iommu_alloc and
- free_all_bootmem -v2
+Subject: [PATCH 07/37] x86: introduce max_early_res and early_res_count
 In-reply-to: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
@@ -24,153 +23,162 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263611228-6751-10-git-send-email-yinghai@kernel.org>
+Message-id: <1263611228-6751-8-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so we could double check if we have enough low pages later
-
--v2: fix errors checkpatch.pl reported
+to prepare allocate early res array from fine_e820_area
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/mm/init_64.c   |    2 +
- include/linux/bootmem.h |    2 +
- mm/bootmem.c            |   92 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 96 insertions(+), 0 deletions(-)
+ arch/x86/kernel/e820.c |   47 ++++++++++++++++++++++++++++++++---------------
+ 1 files changed, 32 insertions(+), 15 deletions(-)
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 1ea79ad..f9530eb 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -654,6 +654,8 @@ void __init mem_init(void)
- 	long codesize, reservedpages, datasize, initsize;
- 	unsigned long absent_pages;
- 
-+	print_bootmem_free();
-+
- 	pci_iommu_alloc();
- 
- 	/* clear_bss() already clear the empty_zero_page */
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index b10ec49..3446bed 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -55,6 +55,8 @@ extern void free_bootmem_node(pg_data_t *pgdat,
- extern void free_bootmem(unsigned long addr, unsigned long size);
- extern void free_bootmem_late(unsigned long addr, unsigned long size);
- 
-+void print_bootmem_free(void);
-+
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index a1a7876..291f6d2 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -724,14 +724,18 @@ core_initcall(e820_mark_nvs_memory);
  /*
-  * Flags for reserve_bootmem (also if CONFIG_HAVE_ARCH_BOOTMEM_NODE,
-  * the architecture-specific code should honor this).
-diff --git a/mm/bootmem.c b/mm/bootmem.c
-index 7d14868..eec89ed 100644
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -267,6 +267,98 @@ static void __init __free(bootmem_data_t *bdata,
- 			BUG();
+  * Early reserved memory areas.
+  */
+-#define MAX_EARLY_RES 32
++/*
++ * need to make sure this one is bigger enough before
++ * find_e820_area could be used
++ */
++#define MAX_EARLY_RES_X 32
+ 
+ struct early_res {
+ 	u64 start, end;
+-	char name[16];
++	char name[15];
+ 	char overlap_ok;
+ };
+-static struct early_res early_res[MAX_EARLY_RES] __initdata = {
++static struct early_res early_res_x[MAX_EARLY_RES_X] __initdata = {
+ 	{ 0, PAGE_SIZE, "BIOS data page", 1 },	/* BIOS data page */
+ #if defined(CONFIG_X86_32) && defined(CONFIG_X86_TRAMPOLINE)
+ 	/*
+@@ -745,12 +749,22 @@ static struct early_res early_res[MAX_EARLY_RES] __initdata = {
+ 	{}
+ };
+ 
++static int max_early_res __initdata = MAX_EARLY_RES_X;
++static struct early_res *early_res __initdata = &early_res_x[0];
++static int early_res_count __initdata =
++#ifdef CONFIG_X86_32
++	2
++#else
++	1
++#endif
++	;
++
+ static int __init find_overlapped_early(u64 start, u64 end)
+ {
+ 	int i;
+ 	struct early_res *r;
+ 
+-	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
++	for (i = 0; i < max_early_res && early_res[i].end; i++) {
+ 		r = &early_res[i];
+ 		if (end > r->start && start < r->end)
+ 			break;
+@@ -768,13 +782,14 @@ static void __init drop_range(int i)
+ {
+ 	int j;
+ 
+-	for (j = i + 1; j < MAX_EARLY_RES && early_res[j].end; j++)
++	for (j = i + 1; j < max_early_res && early_res[j].end; j++)
+ 		;
+ 
+ 	memmove(&early_res[i], &early_res[i + 1],
+ 	       (j - 1 - i) * sizeof(struct early_res));
+ 
+ 	early_res[j - 1].end = 0;
++	early_res_count--;
  }
  
-+static void __init print_all_bootmem_free_core(bootmem_data_t *bdata)
-+{
-+	int aligned;
-+	unsigned long *map;
-+	unsigned long start, end, count = 0;
-+	unsigned long free_start = -1UL, free_end = 0;
-+
-+	if (!bdata->node_bootmem_map)
-+		return;
-+
-+	start = bdata->node_min_pfn;
-+	end = bdata->node_low_pfn;
-+
-+	/*
-+	 * If the start is aligned to the machines wordsize, we might
-+	 * be able to count it in bulks of that order.
-+	 */
-+	aligned = !(start & (BITS_PER_LONG - 1));
-+
-+	printk(KERN_DEBUG "nid=%td start=0x%010lx end=0x%010lx aligned=%d\n",
-+		bdata - bootmem_node_data, start, end, aligned);
-+	map = bdata->node_bootmem_map;
-+
-+	while (start < end) {
-+		unsigned long idx, vec;
-+
-+		idx = start - bdata->node_min_pfn;
-+		vec = ~map[idx / BITS_PER_LONG];
-+
-+		if (aligned && vec == ~0UL && start + BITS_PER_LONG < end) {
-+			if (free_start == -1UL) {
-+				free_start = idx;
-+				free_end = free_start + BITS_PER_LONG;
-+			} else {
-+				if (free_end == idx) {
-+					free_end += BITS_PER_LONG;
-+				} else {
-+					/* there is gap, print old */
-+					printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
-+							free_start + bdata->node_min_pfn,
-+							free_end + bdata->node_min_pfn);
-+					free_start = idx;
-+					free_end = idx + BITS_PER_LONG;
-+				}
-+			}
-+			count += BITS_PER_LONG;
-+		} else {
-+			unsigned long off = 0;
-+
-+			while (vec && off < BITS_PER_LONG) {
-+				if (vec & 1) {
-+					if (free_start == -1UL) {
-+						free_start = idx + off;
-+						free_end = free_start + 1;
-+					} else {
-+						if (free_end == (idx + off)) {
-+							free_end++;
-+						} else {
-+							/* there is gap, print old */
-+							printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
-+								free_start + bdata->node_min_pfn,
-+								free_end + bdata->node_min_pfn);
-+							free_start = idx + off;
-+							free_end = free_start + 1;
-+						}
-+					}
-+					count++;
-+				}
-+				vec >>= 1;
-+				off++;
-+			}
-+		}
-+		start += BITS_PER_LONG;
-+	}
-+
-+	/* last one */
-+	if (free_start != -1UL)
-+		printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
-+			free_start + bdata->node_min_pfn,
-+			free_end + bdata->node_min_pfn);
-+	printk(KERN_DEBUG "  total free 0x%010lx\n", count);
-+}
-+
-+void __init print_bootmem_free(void)
-+{
-+	bootmem_data_t *bdata;
-+
-+	list_for_each_entry(bdata, &bdata_list, list) {
-+		print_all_bootmem_free_core(bdata);
-+	}
-+}
-+
- static int __init __reserve(bootmem_data_t *bdata, unsigned long sidx,
- 			unsigned long eidx, int flags)
+ /*
+@@ -793,9 +808,9 @@ static void __init drop_overlaps_that_are_ok(u64 start, u64 end)
+ 	struct early_res *r;
+ 	u64 lower_start, lower_end;
+ 	u64 upper_start, upper_end;
+-	char name[16];
++	char name[15];
+ 
+-	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
++	for (i = 0; i < max_early_res && early_res[i].end; i++) {
+ 		r = &early_res[i];
+ 
+ 		/* Continue past non-overlapping ranges */
+@@ -851,7 +866,7 @@ static void __init __reserve_early(u64 start, u64 end, char *name,
+ 	struct early_res *r;
+ 
+ 	i = find_overlapped_early(start, end);
+-	if (i >= MAX_EARLY_RES)
++	if (i >= max_early_res)
+ 		panic("Too many early reservations");
+ 	r = &early_res[i];
+ 	if (r->end)
+@@ -864,6 +879,7 @@ static void __init __reserve_early(u64 start, u64 end, char *name,
+ 	r->overlap_ok = overlap_ok;
+ 	if (name)
+ 		strncpy(r->name, name, sizeof(r->name) - 1);
++	early_res_count++;
+ }
+ 
+ /*
+@@ -916,7 +932,7 @@ void __init free_early(u64 start, u64 end)
+ 
+ 	i = find_overlapped_early(start, end);
+ 	r = &early_res[i];
+-	if (i >= MAX_EARLY_RES || r->end != end || r->start != start)
++	if (i >= max_early_res || r->end != end || r->start != start)
+ 		panic("free_early on not reserved area: %llx-%llx!",
+ 			 start, end - 1);
+ 
+@@ -927,14 +943,15 @@ void __init early_res_to_bootmem(u64 start, u64 end)
  {
+ 	int i, count;
+ 	u64 final_start, final_end;
++	int idx = 0;
+ 
+ 	count  = 0;
+-	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++)
++	for (i = 0; i < max_early_res && early_res[i].end; i++)
+ 		count++;
+ 
+-	printk(KERN_INFO "(%d early reservations) ==> bootmem [%010llx - %010llx]\n",
+-			 count, start, end);
+-	for (i = 0; i < count; i++) {
++	printk(KERN_INFO "(%d/%d early reservations) ==> bootmem [%010llx - %010llx]\n",
++			 count - idx, max_early_res, start, end);
++	for (i = idx; i < count; i++) {
+ 		struct early_res *r = &early_res[i];
+ 		printk(KERN_INFO "  #%d [%010llx - %010llx] %16s", i,
+ 			r->start, r->end, r->name);
+@@ -961,7 +978,7 @@ static inline int __init bad_addr(u64 *addrp, u64 size, u64 align)
+ again:
+ 	i = find_overlapped_early(addr, addr + size);
+ 	r = &early_res[i];
+-	if (i < MAX_EARLY_RES && r->end) {
++	if (i < max_early_res && r->end) {
+ 		*addrp = addr = round_up(r->end, align);
+ 		changed = 1;
+ 		goto again;
+@@ -978,7 +995,7 @@ static inline int __init bad_addr_size(u64 *addrp, u64 *sizep, u64 align)
+ 	int changed = 0;
+ again:
+ 	last = addr + size;
+-	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
++	for (i = 0; i < max_early_res && early_res[i].end; i++) {
+ 		struct early_res *r = &early_res[i];
+ 		if (last > r->start && addr < r->start) {
+ 			size = r->start - addr;
 -- 
 1.6.4.2
 
