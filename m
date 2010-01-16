@@ -1,64 +1,94 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048Ab0APSNL (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 13:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846Ab0APSNI
+	id S1755911Ab0APSVX (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 13:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353Ab0APSVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 13:13:08 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34709 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755854Ab0APSNC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 13:13:02 -0500
-Date: Sat, 16 Jan 2010 19:12:53 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-        Bart?omiej Zimo? <uzi18@o2.pl>, Andy Walls <awalls@radix.net>,
-        Daniel Borkmann <danborkmann@googlemail.com>,
-        linux-kernel@vger.kernel.org, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-        Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-        thommycheck@gmail.com,
-        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-        dbaryshkov@gmail.com, omegamoon@gmail.com,
-        zaurus-devel@www.linuxtogo.org
-Subject: Re: [suspend/resume] Re: userspace notification from module
-Message-ID: <20100116181253.GC1603@ucw.cz>
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001091440.46434.rjw@sisk.pl> <20100115200310.GG1345@ucw.cz> <201001152314.30355.rjw@sisk.pl> <f17812d71001151900x35959e88jc5f275573ee02177@mail.gmail.com> <1263661258.6596.10.camel@utx.utx.cz>
+	Sat, 16 Jan 2010 13:21:22 -0500
+Received: from mail.tmr.com ([64.65.253.246]:34602 "EHLO partygirl.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753255Ab0APSVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 13:21:21 -0500
+Message-ID: <4B52038F.8010703@tmr.com>
+Date: Sat, 16 Jan 2010 13:21:03 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 pango-text SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263661258.6596.10.camel@utx.utx.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Neil Schemenauer <nas@arctrix.com>
+CC: linux-kernel@vger.kernel.org, Alan Cox <alan@linux.intel.com>
+Subject: Re: ATA error with Asus A7VX board
+References: <20100114232037.GA17411@arctrix.com>
+In-Reply-To: <20100114232037.GA17411@arctrix.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2010-01-16 18:00:58, Stanislav Brabec wrote:
-> Eric Miao wrote:
+Neil Schemenauer wrote:
+> Hi,
 > 
-> > And the other way we may need to look into what API the current userland
-> > apps on zaurus is depending on this 2.4 compatibility and make changes
-> > slowly to those apps.
+> I have what seems to be a poorly designed board (based on the number
+> of problems that a Google search turns up). However, since I guess
+> there are still people that have it and I have some capability to do
+> some debugging I thought I should try to fix it rather than throwing
+> it out.
 > 
-> I guess that 2.4 compatibility is not an issue. Most modern Zaurus
-> distributions are even unable to run Sharp ROM compatible binaries.
+> It is possible that my problem is caused by a bad cable, bad memory,
+> or a bad drive, but I suspect the board is just temperamental
+> (specifically, the way interrupts are handled). The drive had a lot
+> of bad sectors a while ago but writing over them seemed to have
+> fixed it. The drive was working without errors with another board
+> for a while now.
 > 
-> Distributions either stay on 2.4 kernel or use modern systems based on
-> modern kernel 2.6 API.
-> 
-> Distributions that decided to migrate to kernel 2.6 are far from
-> finished state. Any change that allows to use modern applications using
-> standard kernel API is welcome.
+I would reseat the cables (replace if you can), after that either the drive or 
+the power supply are suspects. since changing P/S is a PITA for test, if you 
+have some monster video card you might pull it and put in something low power.
 
-There is no API involved. It is just ... if you leave zaurus in
- init=/bin/bash mode, it must not kill the battery. Smart and
- currently implemented way to do that is to suspend.
+Sure, it could be the board, but other things are more likely.
 
-That's counterexample to rjw, but it does not matter -- reasonable
-userland should never ever hit that, in a same way PCs should not hit
-emergency power cut...
-									Pavel
+> I've tried booting with and without the "noapic" command line option
+> and with the old ide driver and the pata_via driver. Each
+> configuration seems to have its own problems. Certain configurations
+> generated errors like "IRQ nobody cared" and "spurious interrupt".
+> The noapic and ide driver combination results in the following error:
+> 
+> [  366.463909] spurious 8259A interrupt: IRQ7.
+> [ 5432.078546] hda: task_no_data_intr: status=0x30 { DeviceFault SeekComplete }
+> [ 5432.078555] hda: possibly failed opcode: 0xb0
+> [ 5462.224012] hda: lost interrupt
+> 
+> The "noapic" and pata_via is what I'm running now. It works for a
+> while and then I get an error like the following:
+> 
+> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+> ata4.00: BMDMA stat 0x65
+> ata4.00: failed command: READ DMA
+> ata4.00: cmd c8/00:18:4f:27:1b/00:00:00:00:00/e0 tag 0 dma 12288 in
+>          res 51/10:18:4f:27:1b/00:00:00:00:00/a0 Emask 0x81 (invalid argument)
+> ata4.00: status: { DRDY ERR }
+> ata4.00: error: { IDNF }
+> ata4.00: configured for UDMA/100
+> ata4.01: configured for UDMA/100
+> sd 3:0:0:0: [sda] Result: hostbyte=0x00 driverbyte=0x08
+> sd 3:0:0:0: [sda] Sense Key : 0xb [current] [descriptor]
+> Descriptor sense data with sense descriptors (in hex):
+>         72 0b 14 00 00 00 00 0c 00 0a 80 00 00 00 00 00 
+>         00 1b 27 4f 
+> sd 3:0:0:0: [sda] ASC=0x14 ASCQ=0x0
+> sd 3:0:0:0: [sda] CDB: cdb[0]=0x28: 28 00 00 1b 27 4f 00 00 18 00
+> end_request: I/O error, dev sda, sector 1779535
+> ata4: EH complete
+> 
+> I'm attaching the kernel log for the pata_via and ide setups and the
+> output from lspci.
+> 
+> Best regards,
+> 
+>   Neil
+> 
+
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
