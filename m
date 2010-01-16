@@ -1,67 +1,60 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482Ab0APPNL (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 10:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972Ab0APPNJ
+	id S1753169Ab0APPgB (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 10:36:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998Ab0APPf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 10:13:09 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:62553 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751118Ab0APPNI (ORCPT
+	Sat, 16 Jan 2010 10:35:59 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57403 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856Ab0APPf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 10:13:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=B6BLRtbE5uekv4BSdY5ivzscFPwFdDAAcLijbPLZvLj9Mie++uUX+/++tQYExdhwyY
-         PSLSbAJPHGkjWyi9fqcEvtc5f2irVgrYCsBvIY+jTPxAtOhFXsb3NoRTqxYPH8r5QkSO
-         CuHl8tHC8LXpH879TsGsHyD/JIC6V6/JUEXR4=
-Message-ID: <4B51D787.9040409@googlemail.com>
-Date: Sat, 16 Jan 2010 16:13:11 +0100
-From: =?UTF-8?B?UmVuw6kgQm9sbGRvcmY=?= <xsecute@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Sat, 16 Jan 2010 10:35:59 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B51DCBF.9090902@s5r6.in-berlin.de>
+Date: Sat, 16 Jan 2010 16:35:27 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][CORRECTED] section mismatch: pcibios_scan_specific_bus()
-References: <4B4E3E20.1@googlemail.com> <20100115154020.6823ea3e@jbarnes-piketon>
-In-Reply-To: <20100115154020.6823ea3e@jbarnes-piketon>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Thiago Farina <tfransosi@gmail.com>
+CC: linux-kernel@vger.kernel.org, Willem Riede <osst@riede.org>,
+        "James E.J. Bottomley" <James.Bottomley@suse.de>,
+        James Bottomley <James.Bottomley@HansenPartnership.com>,
+        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+        osst-users@lists.sourceforge.net, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] scsi/osst.c: remove unncessary casting of kmalloc.
+References: <503939f4cfd0b8c362a2f5a103285f8dc330b99a.1263651173.git.tfransosi@gmail.com>
+In-Reply-To: <503939f4cfd0b8c362a2f5a103285f8dc330b99a.1263651173.git.tfransosi@gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/16/10 00:40, Jesse Barnes wrote:
-> On Wed, 13 Jan 2010 22:41:52 +0100
-> René Bolldorf<xsecute@googlemail.com>  wrote:
->
->> Hi all,
->> pcibios_scan_specific_bus() is only invoked from
->> __devinit pcibios_fixup_peer_bridges(void).
->>
->> Mark it as __devinit.
->> Sry for the first mail, I hadn't sleep enough...
->>
->> diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
->> --- a/arch/x86/pci/legacy.c
->> +++ b/arch/x86/pci/legacy.c
->> @@ -39,7 +39,7 @@ static int __init pci_legacy_init(void)
->>           return 0;
->>    }
->>
->> -void pcibios_scan_specific_bus(int busn)
->> +void __devinit pcibios_scan_specific_bus(int busn)
->>    {
->>           int devfn;
->>           long node;
->
-> Doesn't apply to my for-linus branch, also missing a Signed-off-by.  I
-> guess you need more sleep. :)  Care to refresh if it's still necessary?
->
-> Thanks,
+Thiago Farina wrote:
+> --- a/drivers/scsi/osst.c
+> +++ b/drivers/scsi/osst.c
+> @@ -5842,9 +5842,8 @@ static int osst_probe(struct device *dev)
+>  	/* if this is the first attach, build the infrastructure */
+>  	write_lock(&os_scsi_tapes_lock);
+>  	if (os_scsi_tapes == NULL) {
+> -		os_scsi_tapes =
+> -			(struct osst_tape **)kmalloc(osst_max_dev * sizeof(struct osst_tape *),
+> -				   GFP_ATOMIC);
+> +		os_scsi_tapes = kmalloc(osst_max_dev * sizeof(struct osst_tape *),
+> +					GFP_ATOMIC);
+>  		if (os_scsi_tapes == NULL) {
+>  			write_unlock(&os_scsi_tapes_lock);
+>  			printk(KERN_ERR "osst :E: Unable to allocate array for OnStream SCSI tapes.\n");
 
-I pulled today 
-git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 
-linux-next. pci legacy was deleted.
-Now patch can be ignored.
+Since you update the style of this kmalloc usage, you could at the same
+time change the sizeof expression to sizeof(* os_scsi_tapes).
+
+There is a lot more that could be renovated around os_scsi_tapes, and
+osst in general (GFP_ATOMIC allocations in a device probe?  Fixed
+maximum number of devices?  BKL usage?), but whether it'd be worth the
+effort I don't know.
+-- 
+Stefan Richter
+-=====-==-=- ---= =----
+http://arcgraph.de/sr/
