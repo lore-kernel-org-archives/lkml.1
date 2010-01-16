@@ -1,52 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226Ab0APULk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254Ab0APU3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226Ab0APULk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jan 2010 15:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098Ab0APULk
+	id S1754254Ab0APU3p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jan 2010 15:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016Ab0APU3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 15:11:40 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46566 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753434Ab0APULj (ORCPT
+	Sat, 16 Jan 2010 15:29:44 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:48514 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751149Ab0APU3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 15:11:39 -0500
-Date: Sat, 16 Jan 2010 12:11:41 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Driver-Core: devtmpfs - remove EXPERIMENTAL and enable it by 
- default
-Message-ID: <20100116121141.67231bb2@infradead.org>
-In-Reply-To: <ac3eb2511001160751g2357bf2en2bfacaabe5c2f7e@mail.gmail.com>
-References: <1263505677.2074.2.camel@yio.site>
-	<20100115065638.005ac690@infradead.org>
-	<20100115180341.GA12146@kroah.com>
-	<20100115205722.3580b6bf@lxorguk.ukuu.org.uk>
-	<ac3eb2511001160751g2357bf2en2bfacaabe5c2f7e@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 16 Jan 2010 15:29:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=tvwodcXxv76RetLmjzBZgpT2U0l/OKzV7zQwFkovAakJfC7kxwZydkb7ogFnZ/Wbrv
+         diKEl8uNddGRrsdiwmLot8nz+x7yqAYFeqU/82NoNpYmf/Cn6I+qYqlwS3Zd8gqdqh7I
+         kHygMsyAPbdQ98tYQK71j7g949ZVS0A+BnPWM=
+MIME-Version: 1.0
+In-Reply-To: <20100116195822.GB31079@in.ibm.com>
+References: <1263634770-14578-1-git-send-email-luca@luca-barbieri.com>
+	 <20100116195822.GB31079@in.ibm.com>
+Date: Sat, 16 Jan 2010 21:29:42 +0100
+X-Google-Sender-Auth: 17c34a4142a72c90
+Message-ID: <ff13bc9a1001161229t3a4348b5gabbb593d2a962148@mail.gmail.com>
+Subject: Re: [PATCH] Fix broken mmiotrace due to dr6 by reference change
+From: Luca Barbieri <luca@luca-barbieri.com>
+To: prasad@linux.vnet.ibm.com
+Cc: Ingo Molnar <mingo@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Jan 2010 16:51:23 +0100
-Kay Sievers <kay.sievers@vrfy.org> wrote:
-
->  Current distro installations do not put a
-> single file in /dev on the rootfs,
-
-any distro that does that is terminally broken; the minimum needed
-is /dev/console.
-I guess this can be counted as a bugreport against your distro ;-)
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+It seems kgdb needs to be fixed too.
