@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758866Ab0APDKz (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758857Ab0APDKJ
+	id S1758947Ab0APDLO (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:11:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758809Ab0APDKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:10:09 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33972 "EHLO
+	Fri, 15 Jan 2010 22:10:07 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33975 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758856Ab0APDIY (ORCPT
+	with ESMTP id S1758857Ab0APDIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Jan 2010 22:08:24 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 19:07:01 -0800
+Date: Fri, 15 Jan 2010 19:07:02 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 30/37] sparseirq: use radix_tree instead of ptrs array
+Subject: [PATCH 31/37] x86: remove arch_probe_nr_irqs
 In-reply-to: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,129 +23,53 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263611228-6751-31-git-send-email-yinghai@kernel.org>
+Message-id: <1263611228-6751-32-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use radix_tree irq_desc_tree instead of irq_desc_ptrs.
-
--v2: according to Eric and cyrill to use radix_tree_lookup_slot and radix_tree_replace_slot
+so keep nr_irqs == NR_IRQS
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- kernel/irq/handle.c |   50 +++++++++++++++++++++++++-------------------------
- 1 files changed, 25 insertions(+), 25 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |   22 ----------------------
+ 1 files changed, 0 insertions(+), 22 deletions(-)
 
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index c833c09..76d5a67 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -19,6 +19,7 @@
- #include <linux/kernel_stat.h>
- #include <linux/rculist.h>
- #include <linux/hash.h>
-+#include <linux/radix-tree.h>
- #include <trace/events/irq.h>
- 
- #include "internals.h"
-@@ -127,7 +128,26 @@ static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
-  */
- DEFINE_RAW_SPINLOCK(sparse_irq_lock);
- 
--static struct irq_desc **irq_desc_ptrs __read_mostly;
-+static RADIX_TREE(irq_desc_tree, GFP_ATOMIC);
-+
-+static void set_irq_desc(unsigned int irq, struct irq_desc *desc)
-+{
-+	radix_tree_insert(&irq_desc_tree, irq, desc);
-+}
-+
-+struct irq_desc *irq_to_desc(unsigned int irq)
-+{
-+	return radix_tree_lookup(&irq_desc_tree, irq);
-+}
-+
-+void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
-+{
-+	void **ptr;
-+
-+	ptr = radix_tree_lookup_slot(&irq_desc_tree, irq);
-+	if (ptr)
-+		radix_tree_replace_slot(ptr, desc);
-+}
- 
- static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
- 	[0 ... NR_IRQS_LEGACY-1] = {
-@@ -159,9 +179,6 @@ int __init early_irq_init(void)
- 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
- 	node = first_online_node;
- 
--	/* allocate irq_desc_ptrs array based on nr_irqs */
--	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
--
- 	/* allocate based on nr_cpu_ids */
- 	kstat_irqs_legacy = kzalloc_node(NR_IRQS_LEGACY * nr_cpu_ids *
- 					  sizeof(int), GFP_NOWAIT, node);
-@@ -175,29 +192,12 @@ int __init early_irq_init(void)
- 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
- 		alloc_desc_masks(&desc[i], node, true);
- 		init_desc_masks(&desc[i]);
--		irq_desc_ptrs[i] = desc + i;
-+		set_irq_desc(i, &desc[i]);
- 	}
- 
--	for (i = legacy_count; i < nr_irqs; i++)
--		irq_desc_ptrs[i] = NULL;
--
- 	return arch_early_irq_init();
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index d5bfa29..3beaf80 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3835,28 +3835,6 @@ void __init probe_nr_irqs_gsi(void)
+ 	printk(KERN_DEBUG "nr_irqs_gsi: %d\n", nr_irqs_gsi);
  }
  
--struct irq_desc *irq_to_desc(unsigned int irq)
+-#ifdef CONFIG_SPARSE_IRQ
+-int __init arch_probe_nr_irqs(void)
 -{
--	if (irq_desc_ptrs && irq < nr_irqs)
--		return irq_desc_ptrs[irq];
+-	int nr;
 -
--	return NULL;
+-	if (nr_irqs > (NR_VECTORS * nr_cpu_ids))
+-		nr_irqs = NR_VECTORS * nr_cpu_ids;
+-
+-	nr = nr_irqs_gsi + 8 * nr_cpu_ids;
+-#if defined(CONFIG_PCI_MSI) || defined(CONFIG_HT_IRQ)
+-	/*
+-	 * for MSI and HT dyn irq
+-	 */
+-	nr += nr_irqs_gsi * 64;
+-#endif
+-	if (nr < nr_irqs)
+-		nr_irqs = nr;
+-
+-	return 0;
 -}
+-#endif
 -
--void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
--{
--	if (irq_desc_ptrs && irq < nr_irqs)
--		irq_desc_ptrs[irq] = desc;
--}
--
- struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ static int __io_apic_set_pci_routing(struct device *dev, int irq,
+ 				struct io_apic_irq_attr *irq_attr)
  {
- 	struct irq_desc *desc;
-@@ -209,14 +209,14 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
- 		return NULL;
- 	}
- 
--	desc = irq_desc_ptrs[irq];
-+	desc = irq_to_desc(irq);
- 	if (desc)
- 		return desc;
- 
- 	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
- 
- 	/* We have to check it to avoid races with another CPU */
--	desc = irq_desc_ptrs[irq];
-+	desc = irq_to_desc(irq);
- 	if (desc)
- 		goto out_unlock;
- 
-@@ -229,7 +229,7 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
- 	}
- 	init_one_irq_desc(irq, desc, node);
- 
--	irq_desc_ptrs[irq] = desc;
-+	set_irq_desc(irq, desc);
- 
- out_unlock:
- 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
 -- 
 1.6.4.2
 
