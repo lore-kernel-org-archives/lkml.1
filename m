@@ -1,20 +1,21 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759097Ab0APDP5 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:15:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759088Ab0APDO6
+	id S1759156Ab0APDQa (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759133Ab0APDQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:14:58 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33914 "EHLO
+	Fri, 15 Jan 2010 22:16:24 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33892 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758831Ab0APDIU (ORCPT
+	with ESMTP id S1758826Ab0APDIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 22:08:20 -0500
+	Fri, 15 Jan 2010 22:08:19 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 19:06:45 -0800
+Date: Fri, 15 Jan 2010 19:06:40 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 14/37] sparsemem: put mem map for one node together.
+Subject: [PATCH 09/37] x86: print bootmem free before pci_iommu_alloc and
+ free_all_bootmem -v2
 In-reply-to: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,384 +24,153 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263611228-6751-15-git-send-email-yinghai@kernel.org>
+Message-id: <1263611228-6751-10-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add vmemmap_alloc_block_buf for mem map only.
+so we could double check if we have enough low pages later
 
-it will fallback old wayif can not get that big.
-
-before this patch, when node have 128g ram installed, memmap are split into
- two parts or more.
-[    0.000000]  [ffffea0000000000-ffffea003fffffff] PMD -> [ffff880100600000-ffff88013e9fffff] on node 1
-[    0.000000]  [ffffea0040000000-ffffea006fffffff] PMD -> [ffff88013ec00000-ffff88016ebfffff] on node 1
-[    0.000000]  [ffffea0070000000-ffffea007fffffff] PMD -> [ffff882000600000-ffff8820105fffff] on node 0
-[    0.000000]  [ffffea0080000000-ffffea00bfffffff] PMD -> [ffff882010800000-ffff8820507fffff] on node 0
-[    0.000000]  [ffffea00c0000000-ffffea00dfffffff] PMD -> [ffff882050a00000-ffff8820709fffff] on node 0
-[    0.000000]  [ffffea00e0000000-ffffea00ffffffff] PMD -> [ffff884000600000-ffff8840205fffff] on node 2
-[    0.000000]  [ffffea0100000000-ffffea013fffffff] PMD -> [ffff884020800000-ffff8840607fffff] on node 2
-[    0.000000]  [ffffea0140000000-ffffea014fffffff] PMD -> [ffff884060a00000-ffff8840709fffff] on node 2
-[    0.000000]  [ffffea0150000000-ffffea017fffffff] PMD -> [ffff886000600000-ffff8860305fffff] on node 3
-[    0.000000]  [ffffea0180000000-ffffea01bfffffff] PMD -> [ffff886030800000-ffff8860707fffff] on node 3
-[    0.000000]  [ffffea01c0000000-ffffea01ffffffff] PMD -> [ffff888000600000-ffff8880405fffff] on node 4
-[    0.000000]  [ffffea0200000000-ffffea022fffffff] PMD -> [ffff888040800000-ffff8880707fffff] on node 4
-[    0.000000]  [ffffea0230000000-ffffea023fffffff] PMD -> [ffff88a000600000-ffff88a0105fffff] on node 5
-[    0.000000]  [ffffea0240000000-ffffea027fffffff] PMD -> [ffff88a010800000-ffff88a0507fffff] on node 5
-[    0.000000]  [ffffea0280000000-ffffea029fffffff] PMD -> [ffff88a050a00000-ffff88a0709fffff] on node 5
-[    0.000000]  [ffffea02a0000000-ffffea02bfffffff] PMD -> [ffff88c000600000-ffff88c0205fffff] on node 6
-[    0.000000]  [ffffea02c0000000-ffffea02ffffffff] PMD -> [ffff88c020800000-ffff88c0607fffff] on node 6
-[    0.000000]  [ffffea0300000000-ffffea030fffffff] PMD -> [ffff88c060a00000-ffff88c0709fffff] on node 6
-[    0.000000]  [ffffea0310000000-ffffea033fffffff] PMD -> [ffff88e000600000-ffff88e0305fffff] on node 7
-[    0.000000]  [ffffea0340000000-ffffea037fffffff] PMD -> [ffff88e030800000-ffff88e0707fffff] on node 7
-
-after patch will get
-[    0.000000]  [ffffea0000000000-ffffea006fffffff] PMD -> [ffff880100200000-ffff88016e5fffff] on node 0
-[    0.000000]  [ffffea0070000000-ffffea00dfffffff] PMD -> [ffff882000200000-ffff8820701fffff] on node 1
-[    0.000000]  [ffffea00e0000000-ffffea014fffffff] PMD -> [ffff884000200000-ffff8840701fffff] on node 2
-[    0.000000]  [ffffea0150000000-ffffea01bfffffff] PMD -> [ffff886000200000-ffff8860701fffff] on node 3
-[    0.000000]  [ffffea01c0000000-ffffea022fffffff] PMD -> [ffff888000200000-ffff8880701fffff] on node 4
-[    0.000000]  [ffffea0230000000-ffffea029fffffff] PMD -> [ffff88a000200000-ffff88a0701fffff] on node 5
-[    0.000000]  [ffffea02a0000000-ffffea030fffffff] PMD -> [ffff88c000200000-ffff88c0701fffff] on node 6
-[    0.000000]  [ffffea0310000000-ffffea037fffffff] PMD -> [ffff88e000200000-ffff88e0701fffff] on node 7
-
-
--v2: change buf to vmemmap_buf instead according to Ingo
-     also add CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER according to Ingo
+-v2: fix errors checkpatch.pl reported
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/mm/init_64.c |    2 +-
- include/linux/mm.h    |    7 +++
- mm/Kconfig            |    4 ++
- mm/sparse-vmemmap.c   |   75 ++++++++++++++++++++++++++++++++-
- mm/sparse.c           |  111 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 5 files changed, 196 insertions(+), 3 deletions(-)
+ arch/x86/mm/init_64.c   |    2 +
+ include/linux/bootmem.h |    2 +
+ mm/bootmem.c            |   92 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 96 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index f13e5bd..21090d8 100644
+index 1ea79ad..f9530eb 100644
 --- a/arch/x86/mm/init_64.c
 +++ b/arch/x86/mm/init_64.c
-@@ -961,7 +961,7 @@ vmemmap_populate(struct page *start_page, unsigned long size, int node)
- 			if (pmd_none(*pmd)) {
- 				pte_t entry;
+@@ -654,6 +654,8 @@ void __init mem_init(void)
+ 	long codesize, reservedpages, datasize, initsize;
+ 	unsigned long absent_pages;
  
--				p = vmemmap_alloc_block(PMD_SIZE, node);
-+				p = vmemmap_alloc_block_buf(PMD_SIZE, node);
- 				if (!p)
- 					return -ENOMEM;
- 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index c94ce6c..814cb8f 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1323,12 +1323,19 @@ extern int randomize_va_space;
- const char * arch_vma_name(struct vm_area_struct *vma);
- void print_vma_addr(char *prefix, unsigned long rip);
- 
-+void sparse_mem_maps_populate_node(struct page **map_map,
-+				   unsigned long pnum_begin,
-+				   unsigned long pnum_end,
-+				   unsigned long map_count,
-+				   int nodeid);
++	print_bootmem_free();
 +
- struct page *sparse_mem_map_populate(unsigned long pnum, int nid);
- pgd_t *vmemmap_pgd_populate(unsigned long addr, int node);
- pud_t *vmemmap_pud_populate(pgd_t *pgd, unsigned long addr, int node);
- pmd_t *vmemmap_pmd_populate(pud_t *pud, unsigned long addr, int node);
- pte_t *vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, int node);
- void *vmemmap_alloc_block(unsigned long size, int node);
-+void *vmemmap_alloc_block_buf(unsigned long size, int node);
- void vmemmap_verify(pte_t *, int, unsigned long, unsigned long);
- int vmemmap_populate_basepages(struct page *start_page,
- 						unsigned long pages, int node);
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 28212b8..d84cdab 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -115,6 +115,10 @@ config SPARSEMEM_EXTREME
- config SPARSEMEM_VMEMMAP_ENABLE
- 	bool
+ 	pci_iommu_alloc();
  
-+config SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
-+	def_bool y
-+	depends on SPARSEMEM && X86_64
+ 	/* clear_bss() already clear the empty_zero_page */
+diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+index b10ec49..3446bed 100644
+--- a/include/linux/bootmem.h
++++ b/include/linux/bootmem.h
+@@ -55,6 +55,8 @@ extern void free_bootmem_node(pg_data_t *pgdat,
+ extern void free_bootmem(unsigned long addr, unsigned long size);
+ extern void free_bootmem_late(unsigned long addr, unsigned long size);
+ 
++void print_bootmem_free(void);
 +
- config SPARSEMEM_VMEMMAP
- 	bool "Sparse Memory virtual memmap"
- 	depends on SPARSEMEM && SPARSEMEM_VMEMMAP_ENABLE
-diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index 9506c39..6b4be75 100644
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -43,6 +43,8 @@ static void * __init_refok __earlyonly_bootmem_alloc(int node,
- 	return __alloc_bootmem_node_high(NODE_DATA(node), size, align, goal);
+ /*
+  * Flags for reserve_bootmem (also if CONFIG_HAVE_ARCH_BOOTMEM_NODE,
+  * the architecture-specific code should honor this).
+diff --git a/mm/bootmem.c b/mm/bootmem.c
+index 7d14868..eec89ed 100644
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -267,6 +267,98 @@ static void __init __free(bootmem_data_t *bdata,
+ 			BUG();
  }
  
-+static void *vmemmap_buf;
-+static void *vmemmap_buf_end;
- 
- void * __meminit vmemmap_alloc_block(unsigned long size, int node)
- {
-@@ -64,6 +66,24 @@ void * __meminit vmemmap_alloc_block(unsigned long size, int node)
- 				__pa(MAX_DMA_ADDRESS));
- }
- 
-+/* need to make sure size is all the same during early stage */
-+void * __meminit vmemmap_alloc_block_buf(unsigned long size, int node)
++static void __init print_all_bootmem_free_core(bootmem_data_t *bdata)
 +{
-+	void *ptr;
++	int aligned;
++	unsigned long *map;
++	unsigned long start, end, count = 0;
++	unsigned long free_start = -1UL, free_end = 0;
 +
-+	if (!vmemmap_buf)
-+		return vmemmap_alloc_block(size, node);
-+
-+	/* take the from buf */
-+	ptr = (void *)ALIGN((unsigned long)vmemmap_buf, size);
-+	if (ptr + size > vmemmap_buf_end)
-+		return vmemmap_alloc_block(size, node);
-+
-+	vmemmap_buf = ptr + size;
-+
-+	return ptr;
-+}
-+
- void __meminit vmemmap_verify(pte_t *pte, int node,
- 				unsigned long start, unsigned long end)
- {
-@@ -80,7 +100,7 @@ pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, int node)
- 	pte_t *pte = pte_offset_kernel(pmd, addr);
- 	if (pte_none(*pte)) {
- 		pte_t entry;
--		void *p = vmemmap_alloc_block(PAGE_SIZE, node);
-+		void *p = vmemmap_alloc_block_buf(PAGE_SIZE, node);
- 		if (!p)
- 			return NULL;
- 		entry = pfn_pte(__pa(p) >> PAGE_SHIFT, PAGE_KERNEL);
-@@ -163,3 +183,56 @@ struct page * __meminit sparse_mem_map_populate(unsigned long pnum, int nid)
- 
- 	return map;
- }
-+
-+void __init sparse_mem_maps_populate_node(struct page **map_map,
-+					  unsigned long pnum_begin,
-+					  unsigned long pnum_end,
-+					  unsigned long map_count, int nodeid)
-+{
-+	unsigned long pnum;
-+	unsigned long size = sizeof(struct page) * PAGES_PER_SECTION;
-+	void *vmemmap_buf_start;
-+
-+	size = ALIGN(size, PMD_SIZE);
-+	vmemmap_buf_start = __earlyonly_bootmem_alloc(nodeid, size * map_count,
-+			 PMD_SIZE, __pa(MAX_DMA_ADDRESS));
-+
-+	if (vmemmap_buf_start) {
-+		vmemmap_buf = vmemmap_buf_start;
-+		vmemmap_buf_end = vmemmap_buf_start + size * map_count;
-+	}
-+
-+	for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
-+		struct mem_section *ms;
-+
-+		if (!present_section_nr(pnum))
-+			continue;
-+
-+		map_map[pnum] = sparse_mem_map_populate(pnum, nodeid);
-+		if (map_map[pnum])
-+			continue;
-+		ms = __nr_to_section(pnum);
-+		printk(KERN_ERR "%s: sparsemem memory map backing failed "
-+			"some memory will not be available.\n", __func__);
-+		ms->section_mem_map = 0;
-+	}
-+
-+	if (vmemmap_buf_start) {
-+		/* need to free left buf */
-+#ifdef CONFIG_NO_BOOTMEM
-+		free_early(__pa(vmemmap_buf_start), __pa(vmemmap_buf_end));
-+		if (vmemmap_buf_start < vmemmap_buf) {
-+			char name[15];
-+
-+			memset(name, 0, sizeof(name));
-+			snprintf(name, 15, "MEMMAP %d", nodeid);
-+			reserve_early_without_check(__pa(vmemmap_buf_start),
-+						    __pa(vmemmap_buf), name);
-+		}
-+#else
-+		free_bootmem(__pa(vmemmap_buf), vmemmap_buf_end - vmemmap_buf);
-+#endif
-+		vmemmap_buf = NULL;
-+		vmemmap_buf_end = NULL;
-+	}
-+}
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 0cdaf0b..9b6b93a 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -390,8 +390,65 @@ struct page __init *sparse_mem_map_populate(unsigned long pnum, int nid)
- 		       PAGE_ALIGN(sizeof(struct page) * PAGES_PER_SECTION));
- 	return map;
- }
-+void __init sparse_mem_maps_populate_node(struct page **map_map,
-+					  unsigned long pnum_begin,
-+					  unsigned long pnum_end,
-+					  unsigned long map_count, int nodeid)
-+{
-+	void *map;
-+	unsigned long pnum;
-+	unsigned long size = sizeof(struct page) * PAGES_PER_SECTION;
-+
-+	map = alloc_remap(nodeid, size * map_count);
-+	if (map) {
-+		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
-+			if (!present_section_nr(pnum))
-+				continue;
-+			map_map[pnum] = map;
-+			map += size;
-+		}
++	if (!bdata->node_bootmem_map)
 +		return;
-+	}
 +
-+	size = PAGE_ALIGN(size);
-+	map = alloc_bootmem_pages_node(NODE_DATA(nodeid), size * map_count);
-+	if (map) {
-+		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
-+			if (!present_section_nr(pnum))
-+				continue;
-+			map_map[pnum] = map;
-+			map += size;
++	start = bdata->node_min_pfn;
++	end = bdata->node_low_pfn;
++
++	/*
++	 * If the start is aligned to the machines wordsize, we might
++	 * be able to count it in bulks of that order.
++	 */
++	aligned = !(start & (BITS_PER_LONG - 1));
++
++	printk(KERN_DEBUG "nid=%td start=0x%010lx end=0x%010lx aligned=%d\n",
++		bdata - bootmem_node_data, start, end, aligned);
++	map = bdata->node_bootmem_map;
++
++	while (start < end) {
++		unsigned long idx, vec;
++
++		idx = start - bdata->node_min_pfn;
++		vec = ~map[idx / BITS_PER_LONG];
++
++		if (aligned && vec == ~0UL && start + BITS_PER_LONG < end) {
++			if (free_start == -1UL) {
++				free_start = idx;
++				free_end = free_start + BITS_PER_LONG;
++			} else {
++				if (free_end == idx) {
++					free_end += BITS_PER_LONG;
++				} else {
++					/* there is gap, print old */
++					printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
++							free_start + bdata->node_min_pfn,
++							free_end + bdata->node_min_pfn);
++					free_start = idx;
++					free_end = idx + BITS_PER_LONG;
++				}
++			}
++			count += BITS_PER_LONG;
++		} else {
++			unsigned long off = 0;
++
++			while (vec && off < BITS_PER_LONG) {
++				if (vec & 1) {
++					if (free_start == -1UL) {
++						free_start = idx + off;
++						free_end = free_start + 1;
++					} else {
++						if (free_end == (idx + off)) {
++							free_end++;
++						} else {
++							/* there is gap, print old */
++							printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
++								free_start + bdata->node_min_pfn,
++								free_end + bdata->node_min_pfn);
++							free_start = idx + off;
++							free_end = free_start + 1;
++						}
++					}
++					count++;
++				}
++				vec >>= 1;
++				off++;
++			}
 +		}
-+		return;
++		start += BITS_PER_LONG;
 +	}
 +
-+	/* fallback */
-+	for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
-+		struct mem_section *ms;
-+
-+		if (!present_section_nr(pnum))
-+			continue;
-+		map_map[pnum] = sparse_mem_map_populate(pnum, nodeid);
-+		if (map_map[pnum])
-+			continue;
-+		ms = __nr_to_section(pnum);
-+		printk(KERN_ERR "%s: sparsemem memory map backing failed "
-+			"some memory will not be available.\n", __func__);
-+		ms->section_mem_map = 0;
-+	}
++	/* last one */
++	if (free_start != -1UL)
++		printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
++			free_start + bdata->node_min_pfn,
++			free_end + bdata->node_min_pfn);
++	printk(KERN_DEBUG "  total free 0x%010lx\n", count);
 +}
- #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
- 
-+static void __init sparse_early_mem_maps_alloc_node(struct page **map_map,
-+				 unsigned long pnum_begin,
-+				 unsigned long pnum_end,
-+				 unsigned long map_count, int nodeid)
++
++void __init print_bootmem_free(void)
 +{
-+	sparse_mem_maps_populate_node(map_map, pnum_begin, pnum_end,
-+					 map_count, nodeid);
++	bootmem_data_t *bdata;
++
++	list_for_each_entry(bdata, &bdata_list, list) {
++		print_all_bootmem_free_core(bdata);
++	}
 +}
 +
-+#ifndef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
- static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
+ static int __init __reserve(bootmem_data_t *bdata, unsigned long sidx,
+ 			unsigned long eidx, int flags)
  {
- 	struct page *map;
-@@ -407,6 +464,7 @@ static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
- 	ms->section_mem_map = 0;
- 	return NULL;
- }
-+#endif
- 
- void __attribute__((weak)) __meminit vmemmap_populate_print_last(void)
- {
-@@ -420,12 +478,14 @@ void __init sparse_init(void)
- {
- 	unsigned long pnum;
- 	struct page *map;
-+	struct page **map_map;
- 	unsigned long *usemap;
- 	unsigned long **usemap_map;
--	int size;
-+	int size, size2;
- 	int nodeid_begin = 0;
- 	unsigned long pnum_begin = 0;
- 	unsigned long usemap_count;
-+	unsigned long map_count;
- 
- 	/*
- 	 * map is using big page (aka 2M in x86 64 bit)
-@@ -478,6 +538,48 @@ void __init sparse_init(void)
- 	sparse_early_usemaps_alloc_node(usemap_map, pnum_begin, NR_MEM_SECTIONS,
- 					 usemap_count, nodeid_begin);
- 
-+#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
-+	size2 = sizeof(struct page *) * NR_MEM_SECTIONS;
-+	map_map = alloc_bootmem(size2);
-+	if (!map_map)
-+		panic("can not allocate map_map\n");
-+
-+	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
-+		struct mem_section *ms;
-+
-+		if (!present_section_nr(pnum))
-+			continue;
-+		ms = __nr_to_section(pnum);
-+		nodeid_begin = sparse_early_nid(ms);
-+		pnum_begin = pnum;
-+		break;
-+	}
-+	map_count = 1;
-+	for (pnum = pnum_begin + 1; pnum < NR_MEM_SECTIONS; pnum++) {
-+		struct mem_section *ms;
-+		int nodeid;
-+
-+		if (!present_section_nr(pnum))
-+			continue;
-+		ms = __nr_to_section(pnum);
-+		nodeid = sparse_early_nid(ms);
-+		if (nodeid == nodeid_begin) {
-+			map_count++;
-+			continue;
-+		}
-+		/* ok, we need to take cake of from pnum_begin to pnum - 1*/
-+		sparse_early_mem_maps_alloc_node(map_map, pnum_begin, pnum,
-+						 map_count, nodeid_begin);
-+		/* new start, update count etc*/
-+		nodeid_begin = nodeid;
-+		pnum_begin = pnum;
-+		map_count = 1;
-+	}
-+	/* ok, last chunk */
-+	sparse_early_mem_maps_alloc_node(map_map, pnum_begin, NR_MEM_SECTIONS,
-+					 map_count, nodeid_begin);
-+#endif
-+
- 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
- 		if (!present_section_nr(pnum))
- 			continue;
-@@ -486,7 +588,11 @@ void __init sparse_init(void)
- 		if (!usemap)
- 			continue;
- 
-+#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
-+		map = map_map[pnum];
-+#else
- 		map = sparse_early_mem_map_alloc(pnum);
-+#endif
- 		if (!map)
- 			continue;
- 
-@@ -496,6 +602,9 @@ void __init sparse_init(void)
- 
- 	vmemmap_populate_print_last();
- 
-+#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
-+	free_bootmem(__pa(map_map), size2);
-+#endif
- 	free_bootmem(__pa(usemap_map), size);
- }
- 
 -- 
 1.6.4.2
 
