@@ -1,92 +1,67 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751999Ab0APKMR (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 05:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455Ab0APKMQ
+	id S1753024Ab0APK22 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 05:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420Ab0APK22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 05:12:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34333 "EHLO hera.kernel.org"
+	Sat, 16 Jan 2010 05:28:28 -0500
+Received: from smtp.witbe.net ([81.88.96.48]:47413 "EHLO smtp.witbe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932118Ab0APKMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 05:12:14 -0500
-Message-ID: <4B5190AC.8080204@kernel.org>
-Date: Sat, 16 Jan 2010 02:10:52 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-        Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-        Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
-        linux-pci@vger.kernel.org
-Subject: Re: [PATCH 01/11] pci: add pci_bridge_release_unused_res and	pci_bus_release_unused_bridge_res
-References: <1263609721-3921-1-git-send-email-yinghai@kernel.org> <1263609721-3921-2-git-send-email-yinghai@kernel.org> <20100116035750.GB22215@ldl.fc.hp.com>
-In-Reply-To: <20100116035750.GB22215@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751001Ab0APK20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 05:28:26 -0500
+Date: Sat, 16 Jan 2010 11:28:24 +0100
+From: Paul Rolland (=?UTF-8?B?44Od44O844Or44O744Ot44Op44Oz?=) 
+	<rol@witbe.net>
+To: linux-kernel@vger.kernel.org
+Cc: rol@witbe.net
+Subject: 2.6.33-rc4: i915/drm : error in execbuffer
+Message-ID: <20100116112824.432f261b@tux.DEF.witbe.net>
+Organization: Witbe.net
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
+X-Ncc-RegId: fr.witbe
+X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/15/2010 07:57 PM, Alex Chiang wrote:
-> Hi Yinghai,
-> 
-> First, thank you very much for writing the summary in patch 0/11.
-> I feel like I finally understand what you are trying to do with
-> this series.
-> 
->> +/*
->> + * try to release pci bridge resources that is from leaf bridge,
->> + * so we can allocate big new one later
->> + */
->> +static void __ref pci_bus_release_bridge_resources(struct pci_bus *bus,
->> +						   unsigned long type,
->> +						   enum release_type rel_type)
->> +{
->> +	struct pci_dev *dev;
->> +	bool is_leaf_bridge = true;
->> +
->> +	list_for_each_entry(dev, &bus->devices, bus_list) {
->> +		struct pci_bus *b = dev->subordinate;
->> +		if (!b)
->> +			continue;
->> +
-> 
-> How about settting
-> 
-> 		is_leaf_bridge = false;
-> 
-> here, and then you don't need the repeated assignments below?
-> 
+Hello,
 
-no
-that is AND
+Since I've upgraded from -rc3 to -rc4, I'm getting these errors :
 
->> +		switch (dev->class >> 8) {
->> +		case PCI_CLASS_BRIDGE_CARDBUS:
->> +			is_leaf_bridge = false;
->> +			break;
->> +
->> +		case PCI_CLASS_BRIDGE_PCI:
->> +		default:
->> +			is_leaf_bridge = false;
->> +			if (rel_type == whole_subtree)
->> +				pci_bus_release_bridge_resources(b, type,
->> +							 whole_subtree);
->> +			break;
->> +		}
->> +	}
->> +
->> +	/* The root bus? */
->> +	if (!bus->self)
->> +		return;
-> 
-> Won't work correctly on a non-materialized root bridge.
-> 
-> Use pci_is_root_bus() instead.
+[drm:i915_gem_execbuffer] *ERROR* i915_gem_do_execbuffer returns -512
+
+They are appearing from time to time in my log messages, and I can't
+relate them to any activity I may have with the machine.
+
+My machine is a Dell Vostro1520, running a 64bit system.
+[root@tux linux]# lspci -n
+00:00.0 0600: 8086:2a40 (rev 07)
+00:02.0 0300: 8086:2a42 (rev 07)
+00:02.1 0380: 8086:2a43 (rev 07)
+...
+
+.config available on request if needed.
+
+Regards,
+Paul
+
+-- 
+Paul Rolland                                E-Mail : rol(at)witbe.net
+CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
+Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
+F-92057 Paris La Defense                    RIPE : PR12-RIPE
+LinkedIn : http://www.linkedin.com/in/paulrolland
+
+This is dedicated to all the ones who want to control Internet, its
+content or its usage :
+
+"I worry about my child and the Internet all the time, even though she's
+too young to have logged on yet. Here's what I worry about. I worry that 10
+or 15 years from now, she will come to me and say 'Daddy, where were you
+when they took freedom of the press away from the Internet?'"
+--Mike Godwin, Electronic Frontier Foundation 
 
 
-OK
-
-YH
