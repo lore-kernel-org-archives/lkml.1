@@ -1,59 +1,43 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932432Ab0APBwP (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 20:52:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932328Ab0APBwN
+	id S1758728Ab0APCCR (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 21:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758668Ab0APCCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 20:52:13 -0500
-Received: from mail.perches.com ([173.55.12.10]:1236 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932418Ab0APBwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 20:52:12 -0500
-Subject: [PATCH] scripts/get_maintainer.pl: Change --sections to print in
- the same style as MAINTAINERS
-From: Joe Perches <joe@perches.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B510EFE.50201@s5r6.in-berlin.de>
-References: <1263408063.8011.116.camel@Joe-Laptop.home>
-	 <20100114151254.72b57501.akpm@linux-foundation.org>
-	 <1263519770.1903.49.camel@Joe-Laptop.home>
-	 <4B507B73.6000404@s5r6.in-berlin.de>
-	 <1263602598.15135.30.camel@Joe-Laptop.home>
-	 <4B510EFE.50201@s5r6.in-berlin.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jan 2010 17:52:10 -0800
-Message-ID: <1263606730.15135.46.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jan 2010 21:02:16 -0500
+Received: from smtp2.su.se ([130.237.164.53]:56505 "EHLO smtp.su.se"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758664Ab0APCCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jan 2010 21:02:16 -0500
+X-Greylist: delayed 462 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jan 2010 21:02:16 EST
+X-Spam-Flag: NO
+X-Spam-Score: 0.667
+Message-ID: <e78346e47c7dd29f756a8125a9f6c8ab.squirrel@jackd.fos.su.se>
+Date: Sat, 16 Jan 2010 02:54:31 +0100 (CET)
+Subject: Re:
+From: "Capt Chris P. Mark" <unanti-terrorist@unitednationsdept.org>
+To: chrispmarkss@unitedbagroups.com
+Reply-To: captchris@admin.in.th
+User-Agent: SquirrelMail/1.4.15
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-01-16 at 01:57 +0100, Stefan Richter wrote:
-> > The MAINTAINERS file uses tab or space after "^[A-Z]:"
-> > Perhaps that format should be kept.
-> Right, the original format is actually better (if you want to tweak your
-> output at all).
+Hello, my name is Capt. Chris P. Mark, 3rd Battalion, 16th Field
+Artillery, 2nd Brigade Combat Team, 4th Infantry Division and I am
+presently in Iraq with the U.S. Marines for peace keeping mission. i
+desperately need your Urgent assistance. I await your response for more
+details.Capt. Chris P. Mark
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index 4cd2b4c..8461452 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -381,8 +381,10 @@ foreach my $file (@files) {
- 		    $line =~ s/\\\./\./g;       	##Convert \. to .
- 		    $line =~ s/\.\*/\*/g;       	##Convert .* to *
- 		}
-+		$line =~ s/^([A-Z]):/$1:\t/g;
- 		print("$line\n");
- 	    }
-+	    print("\n");
- 	}
-     }
- 
+
+
+
+
+
 
 
 
