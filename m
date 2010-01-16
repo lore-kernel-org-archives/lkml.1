@@ -1,66 +1,90 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932436Ab0APE5k (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 23:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758983Ab0APE5j
+	id S1759012Ab0APE6d (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 23:58:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634Ab0APE6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 23:57:39 -0500
-Received: from mail-iw0-f197.google.com ([209.85.223.197]:54796 "EHLO
-	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757378Ab0APE5i convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jan 2010 23:58:31 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:6359 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750710Ab0APE6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 23:57:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=D016+yr3Ut2Nq6lag7PFACsq4SD/aPt7EAzIN8umWZgMXnSCMgvb02KMO9lp8KAhmx
-         7yo8QveBj93X7WiBtySkYKOdR0TwiCEb+pXZI/KFr4K4MP+AhQSysv+LlGKW5Ohf8SEP
-         jZFS8OcLAza5sq+Oy1w69bV3e2edhAiUh+19w=
+	Fri, 15 Jan 2010 23:58:30 -0500
+Date: Fri, 15 Jan 2010 21:57:58 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+        Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+        Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
+        linux-pci@vger.kernel.org
+Subject: Re: [PATCH 09/11] pci: pci_bridge_release_res
+Message-ID: <20100116045758.GH22215@ldl.fc.hp.com>
+References: <1263609721-3921-1-git-send-email-yinghai@kernel.org> <1263609721-3921-10-git-send-email-yinghai@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20100116030257.GG3814@khazad-dum.debian.net>
-References: <201001121700.18234.seth.heasley@intel.com>
-	 <4B4D4EAA.2010109@gmail.com> <4B4DAA68.60608@pobox.com>
-	 <51f3faa71001131611y343ad225n1acc73900fd49894@mail.gmail.com>
-	 <51f3faa71001131642u2cc9de80n8e73be7a8707afb2@mail.gmail.com>
-	 <20100114201136.GA3814@khazad-dum.debian.net>
-	 <51f3faa71001141615k3223a02fhb0b882b6cbe680cf@mail.gmail.com>
-	 <20100116030257.GG3814@khazad-dum.debian.net>
-Date: Fri, 15 Jan 2010 22:57:37 -0600
-Message-ID: <51f3faa71001152057n66524711x316ac055d3043625@mail.gmail.com>
-Subject: Re: [PATCH 2.6.32.3] ahci: AHCI and RAID mode SATA patch for Intel 
-	Cougar Point DeviceIDs
-From: Robert Hancock <hancockrwd@gmail.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Seth Heasley <seth.heasley@intel.com>,
-        linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263609721-3921-10-git-send-email-yinghai@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 9:02 PM, Henrique de Moraes Holschuh
-<hmh@hmh.eng.br> wrote:
-> On Thu, 14 Jan 2010, Robert Hancock wrote:
->> > Maybe it is the silicon AHCI in ICH6R that is immature, and one is much
->> > better of using it in IDE mode?
->>
->> That seems unlikely, since the Intel-provided Matrix Storage drivers
->> for that controller on Windows will be using AHCI mode..
->
-> That doesn't say much.
->
-> If the change doesn't risk switching unaware users from IDE mode to AHCI, it
-> is not a problem.  But if it does, why risk it?  It is not like anyone that
-> wants hotplug and has an ICH6-R/M system won't have figured it out by now
-> how to get it to use AHCI, these are NOT new systems.
->
-> AHCI in ICH6R or ICH6M is not always an advantage.  You don't want it on
-> ICH6-M in a laptop if it is not going to use the hotplug, for example.  In
-> AHCI mode, the chip draws more power.
+> +void pci_bridge_release_res(struct pci_bus *bus)
+> +{
+> +	int idx;
+> +	bool changed = false;
+> +	struct pci_dev *dev;
+> +	struct resource *r;
+> +
+> +	/* The root bus? */
+> +	if (!bus->self)
+> +		return;
+> +
+> +	/* for pci bridges res only */
+> +	dev = bus->self;
+> +	if ((dev->class >> 8) != PCI_CLASS_BRIDGE_PCI)
+> +		return;
+> +
+> +	for (idx = PCI_BRIDGE_RESOURCES; idx < PCI_BRIDGE_RESOURCES + 3;
+> +	     idx++) {
+> +		r = &dev->resource[idx];
+> +		if (!r->parent)
+> +			continue;
+> +
+> +		/* if there are children under that, we should not release it */
+> +		if (r->child)
+> +			continue;
+> +
+> +		if (!release_resource(r)) {
+> +			dev_printk(KERN_DEBUG, &dev->dev,
+> +				 "resource %d %pR released\n", idx, r);
+> +			/* old size is not kept */
+> +			r->start = 0;
+> +			r->end   = 0;
+> +			r->flags = 0;
+> +			changed = true;
+> +		}
+> +	}
+> +
+> +	if (changed)
+> +		pci_setup_bridge(bus);
+> +}
+> +EXPORT_SYMBOL_GPL(pci_bridge_release_res);
+> +
+>  static void pci_bridge_release_resources(struct pci_bus *bus,
+>  					  unsigned long type)
 
-Well, the ICH6M seems to be stuck in whatever mode the user and/or
-BIOS designer has stuck it in,so nothing would change with it, only
-with the ICH6R which is not a mobile chipset. I'm not sure about using
-more power in the controller in AHCI mode, but in IDE mode, you can't
-use SATA link power saving, which is likely just as significant.
+My brain is melting.
+
+Why do we have pci_bridge_release_res and pci_bridge_release_resources?
+
+The code is similar, but not the same. The names are similar but
+not the same.
+
+Any chance you could factor similarities, and then write a
+comment that explains the differences to a developer?
+
+thanks,
+/ac
+
