@@ -1,20 +1,21 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896Ab0APLLV (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 06:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756036Ab0APLLH
+	id S1756071Ab0APLLb (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 06:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550Ab0APLLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 06:11:07 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:63393 "EHLO
+	Sat, 16 Jan 2010 06:11:11 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:63389 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754968Ab0APLIw (ORCPT
+	with ESMTP id S1754158Ab0APLIv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 06:08:52 -0500
+	Sat, 16 Jan 2010 06:08:51 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Sat, 16 Jan 2010 03:07:12 -0800
+Date: Sat, 16 Jan 2010 03:07:11 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 06/11] pci: introduce pci_assign_unassigned_bridge_resources
+Subject: [PATCH 05/11] pci: update bridge res to get more big range in pci
+ assign unssign
 In-reply-to: <1263640037-24134-1-git-send-email-yinghai@kernel.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
         Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,215 +24,172 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
         Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263640037-24134-7-git-send-email-yinghai@kernel.org>
+Message-id: <1263640037-24134-6-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263640037-24134-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-for pciehp to use it later
+BIOS separate IO range between several IOHs, and on some slots, BIOS assign the
+resource to the bridge, but stop assigning resource to the device under that
+bridge, because the device need big resource.
 
-pci_setup_bridge() will not check enabled for the slot bridge, otherwise
-update res is not updated to bridge BAR. that is bridge is enabled already for
-port service.
+1. pci assign unassign and record the failed device resource.
+2. clear the BIOS assigned resource of the parent bridge of fail device
+3. go back and call pci assign unsigned
+4. if it still fail, will go up more bridges. and clear and try again.
+
+use pci_try_num to control back track bridge levels.
 
 -v2: update it with resource_list_x
--v3: remove the clear busmaster. according to Kenji
--v4: make pdev_assign_resources_sorted and pbus_assign_resources_sorted share two small functions
-     according to Alex.
+-v3: make pci_try_num default to 1. and when pci_try_num is set to more than 1
+     will check it with max_depth, and adjust that to make sure it is bigger
+     enough
+-v4: update to enum release_type and _used_calling
+-v5: seems all doesn't like pci=try=N at this point, let remove it at first
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- drivers/pci/setup-bus.c |  118 +++++++++++++++++++++++++++++++++++-----------
- include/linux/pci.h     |    1 +
- 2 files changed, 91 insertions(+), 28 deletions(-)
+ drivers/pci/setup-bus.c |  113 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 112 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index ed13de6..e56b198 100644
+index 900ba6f..ed13de6 100644
 --- a/drivers/pci/setup-bus.c
 +++ b/drivers/pci/setup-bus.c
-@@ -71,42 +71,41 @@ static void free_failed_list(struct resource_list_x *head)
- 	head->next = NULL;
- }
- 
--static void pbus_assign_resources_sorted(const struct pci_bus *bus,
--					 struct resource_list_x *fail_head)
-+static void __dev_sort_resources(struct pci_dev *dev,
-+				 struct resource_list *head)
- {
--	struct pci_dev *dev;
--	struct resource *res;
--	struct resource_list head, *list, *tmp;
--	int idx;
-+	u16 class = dev->class >> 8;
- 
--	head.next = NULL;
--	list_for_each_entry(dev, &bus->devices, bus_list) {
--		u16 class = dev->class >> 8;
-+	/* Don't touch classless devices or host bridges or ioapics.  */
-+	if (class == PCI_CLASS_NOT_DEFINED || class == PCI_CLASS_BRIDGE_HOST)
-+		return;
- 
--		/* Don't touch classless devices or host bridges or ioapics.  */
--		if (class == PCI_CLASS_NOT_DEFINED ||
--		    class == PCI_CLASS_BRIDGE_HOST)
--			continue;
-+	/* Don't touch ioapic devices already enabled by firmware */
-+	if (class == PCI_CLASS_SYSTEM_PIC) {
-+		u16 command;
-+		pci_read_config_word(dev, PCI_COMMAND, &command);
-+		if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
-+			return;
-+	}
- 
--		/* Don't touch ioapic devices already enabled by firmware */
--		if (class == PCI_CLASS_SYSTEM_PIC) {
--			u16 command;
--			pci_read_config_word(dev, PCI_COMMAND, &command);
--			if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
--				continue;
--		}
-+	pdev_sort_resources(dev, head);
-+}
- 
--		pdev_sort_resources(dev, &head);
--	}
-+static void __assign_resources_sorted(struct resource_list *head,
-+				 struct resource_list_x *fail_head)
-+{
-+	struct resource *res;
-+	struct resource_list *list, *tmp;
-+	int idx;
- 
--	for (list = head.next; list;) {
-+	for (list = head->next; list;) {
- 		res = list->res;
- 		idx = res - &list->dev->resource[0];
- 		if (pci_assign_resource(list->dev, idx)) {
- 			if (fail_head && !pci_is_root_bus(list->dev->bus)) {
- 				/*
- 				 * device need to keep flags and size
--				 * for next try
-+				 * for second try
- 				 */
- 				add_to_failed_list(fail_head, list->dev, res);
- 			}
-@@ -120,6 +119,30 @@ static void pbus_assign_resources_sorted(const struct pci_bus *bus,
+@@ -798,11 +798,65 @@ static void pci_bus_dump_resources(struct pci_bus *bus)
  	}
  }
  
-+static void pdev_assign_resources_sorted(struct pci_dev *dev,
-+				 struct resource_list_x *fail_head)
++static int __init pci_bus_get_depth(struct pci_bus *bus)
 +{
-+	struct resource_list head;
-+
-+	head.next = NULL;
-+	__dev_sort_resources(dev, &head);
-+	__assign_resources_sorted(&head, fail_head);
-+
-+}
-+
-+static void pbus_assign_resources_sorted(const struct pci_bus *bus,
-+					 struct resource_list_x *fail_head)
-+{
++	int depth = 0;
 +	struct pci_dev *dev;
-+	struct resource_list head;
++
++	list_for_each_entry(dev, &bus->devices, bus_list) {
++		int ret;
++		struct pci_bus *b = dev->subordinate;
++		if (!b)
++			continue;
++
++		ret = pci_bus_get_depth(b);
++		if (ret + 1 > depth)
++			depth = ret + 1;
++	}
++
++	return depth;
++}
++static int __init pci_get_max_depth(void)
++{
++	int depth = 0;
++	struct pci_bus *bus;
++
++	list_for_each_entry(bus, &pci_root_buses, node) {
++		int ret;
++
++		ret = pci_bus_get_depth(bus);
++		if (ret > depth)
++			depth = ret;
++	}
++
++	return depth;
++}
++
++/*
++ * first try will not touch pci bridge res
++ * second  and later try will clear small leaf bridge res
++ * will stop till to the max  deepth if can not find good one
++ */
+ void __init
+ pci_assign_unassigned_resources(void)
+ {
+ 	struct pci_bus *bus;
++	int tried_times = 0;
++	enum release_type rel_type = leaf_only;
++	struct resource_list_x head, *list;
++	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
++	unsigned long failed_type;
++	int max_depth = pci_get_max_depth();
++	int pci_try_num;
 +
 +	head.next = NULL;
-+	list_for_each_entry(dev, &bus->devices, bus_list)
-+		__dev_sort_resources(dev, &head);
-+
-+	__assign_resources_sorted(&head, fail_head);
-+}
-+
- void pci_setup_cardbus(struct pci_bus *bus)
- {
- 	struct pci_dev *bridge = bus->self;
-@@ -278,9 +301,6 @@ static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
- {
- 	struct pci_dev *bridge = bus->self;
  
--	if (pci_is_enabled(bridge))
--		return;
--
- 	dev_info(&bridge->dev, "PCI bridge to [bus %02x-%02x]\n",
- 		 bus->secondary, bus->subordinate);
- 
-@@ -651,7 +671,8 @@ static void __ref __pci_bus_assign_resources(const struct pci_bus *bus,
- 
- 		switch (dev->class >> 8) {
- 		case PCI_CLASS_BRIDGE_PCI:
--			pci_setup_bridge(b);
-+			if (!pci_is_enabled(dev))
-+				pci_setup_bridge(b);
- 			break;
- 
- 		case PCI_CLASS_BRIDGE_CARDBUS:
-@@ -672,6 +693,34 @@ void __ref pci_bus_assign_resources(const struct pci_bus *bus)
- }
- EXPORT_SYMBOL(pci_bus_assign_resources);
- 
-+static void __ref __pci_bridge_assign_resources(const struct pci_dev *bridge,
-+					 struct resource_list_x *fail_head)
-+{
-+	struct pci_bus *b;
++	pci_try_num = max_depth + 1;
++	printk(KERN_DEBUG "PCI: max bus depth: %d pci_try_num: %d\n",
++		 max_depth, pci_try_num);
 +
-+	pdev_assign_resources_sorted((struct pci_dev *)bridge, fail_head);
-+
-+	b = bridge->subordinate;
-+	if (!b)
-+		return;
-+
-+	__pci_bus_assign_resources(b, fail_head);
-+
-+	switch (bridge->class >> 8) {
-+	case PCI_CLASS_BRIDGE_PCI:
-+		pci_setup_bridge(b);
-+		break;
-+
-+	case PCI_CLASS_BRIDGE_CARDBUS:
-+		pci_setup_cardbus(b);
-+		break;
-+
-+	default:
-+		dev_info(&bridge->dev, "not setting up bridge for bus "
-+			 "%04x:%02x\n", pci_domain_nr(b), b->number);
-+		break;
-+	}
-+}
- static void pci_bridge_release_resources(struct pci_bus *bus,
- 					  unsigned long type)
- {
-@@ -930,3 +979,16 @@ enable_and_dump:
- 		pci_bus_dump_resources(bus);
++again:
+ 	/* Depth first, calculate sizes and alignments of all
+ 	   subordinate buses. */
+ 	list_for_each_entry(bus, &pci_root_buses, node) {
+@@ -810,7 +864,64 @@ pci_assign_unassigned_resources(void)
  	}
- }
+ 	/* Depth last, allocate resources and update the hardware. */
+ 	list_for_each_entry(bus, &pci_root_buses, node) {
+-		pci_bus_assign_resources(bus);
++		__pci_bus_assign_resources(bus, &head);
++	}
++	tried_times++;
 +
-+void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge)
-+{
-+	struct pci_bus *parent = bridge->subordinate;
-+	int retval;
++	/* any device complain? */
++	if (!head.next)
++		goto enable_and_dump;
++	failed_type = 0;
++	for (list = head.next; list;) {
++		failed_type |= list->flags;
++		list = list->next;
++	}
++	/*
++	 * io port are tight, don't try extra
++	 * or if reach the limit, don't want to try more
++	 */
++	failed_type &= type_mask;
++	if ((failed_type == IORESOURCE_IO) || (tried_times >= pci_try_num)) {
++		free_failed_list(&head);
++		goto enable_and_dump;
++	}
 +
-+	pci_bus_size_bridges(parent);
-+	__pci_bridge_assign_resources(bridge, NULL);
-+	retval = pci_reenable_device(bridge);
-+	pci_set_master(bridge);
-+	pci_enable_bridges(parent);
-+}
-+EXPORT_SYMBOL_GPL(pci_assign_unassigned_bridge_resources);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 6b2949c..0e240ed 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -806,6 +806,7 @@ void pci_bus_assign_resources(const struct pci_bus *bus);
- void pci_bus_size_bridges(struct pci_bus *bus);
- int pci_claim_resource(struct pci_dev *, int);
- void pci_assign_unassigned_resources(void);
-+void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge);
- void pdev_enable_device(struct pci_dev *);
- void pdev_sort_resources(struct pci_dev *, struct resource_list *);
- int pci_enable_resources(struct pci_dev *, int mask);
++	printk(KERN_DEBUG "PCI: No. %d try to assign unassigned res\n",
++			 tried_times + 1);
++
++	/* third times and later will not check if it is leaf */
++	if ((tried_times + 1) > 2)
++		rel_type = whole_subtree;
++
++	/*
++	 * Try to release leaf bridge's resources that doesn't fit resource of
++	 * child device under that bridge
++	 */
++	for (list = head.next; list;) {
++		bus = list->dev->bus;
++		pci_bus_release_bridge_resources(bus, list->flags & type_mask,
++						  rel_type);
++		list = list->next;
++	}
++	/* retore size and flags */
++	for (list = head.next; list;) {
++		struct resource *res = list->res;
++
++		res->start = list->start;
++		res->end = list->end;
++		res->flags = list->flags;
++		if (list->dev->subordinate)
++			res->flags = 0;
++
++		list = list->next;
++	}
++	free_failed_list(&head);
++
++	goto again;
++
++enable_and_dump:
++	/* Depth last, update the hardware. */
++	list_for_each_entry(bus, &pci_root_buses, node) {
+ 		pci_enable_bridges(bus);
+ 	}
+ 
 -- 
 1.6.4.2
 
