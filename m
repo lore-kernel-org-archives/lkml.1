@@ -1,73 +1,92 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752706Ab0APMyw (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 07:54:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198Ab0APMyv
+	id S1752870Ab0APMzj (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 07:55:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167Ab0APMzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 07:54:51 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:48967 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936Ab0APMyv (ORCPT
+	Sat, 16 Jan 2010 07:55:35 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:53513 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692Ab0APMzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 07:54:51 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-        Al Viro <viro@zeniv.linux.org.uk>,
-        Heiko Carstens <heiko.carstens@de.ibm.com>,
-        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-        Christoph Hellwig <hch@infradead.org>,
-        LKML <linux-kernel@vger.kernel.org>, Eric Paris <eparis@redhat.com>,
-        Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
-        David Howells <dhowells@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
-        <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 6/6] vfs: introduce FMODE_NEG_OFFSET for allowing negative f_pos
-References: <20100115013954.311049665@intel.com>
-	<20100115014422.959401729@intel.com>
-Date: Sat, 16 Jan 2010 21:54:39 +0900
-In-Reply-To: <20100115014422.959401729@intel.com> (Wu Fengguang's message of
-	"Fri, 15 Jan 2010 09:40:00 +0800")
-Message-ID: <87bpgurz00.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.91 (gnu/linux)
+	Sat, 16 Jan 2010 07:55:35 -0500
+Message-ID: <4B51B748.8070004@dcl.info.waseda.ac.jp>
+Date: Sat, 16 Jan 2010 21:55:36 +0900
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091211 Shredder/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Greg KH <gregkh@suse.de>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+        Peter Zijlstra <a.p.zijlstra@chello.nl>,
+        Paul Mackerras <paulus@samba.org>,
+        Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 5/5] lockdep: Fix the way to initialize class_mutex for
+ information of file and line
+References: <4B45B9C1.2040900@dcl.info.waseda.ac.jp> <1262860795-5745-6-git-send-email-mitake@dcl.info.waseda.ac.jp> <20100113100022.GA11386@elte.hu> <20100113231755.GA12325@suse.de> <20100113231923.GB12325@suse.de>
+In-Reply-To: <20100113231923.GB12325@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang <fengguang.wu@intel.com> writes:
+On 2010年01月14日 08:19, Greg KH wrote:
+> On Wed, Jan 13, 2010 at 03:17:55PM -0800, Greg KH wrote:
+>> On Wed, Jan 13, 2010 at 11:00:22AM +0100, Ingo Molnar wrote:
+>>>
+>>> * Hitoshi Mitake<mitake@dcl.info.waseda.ac.jp>  wrote:
+>>>
+>>>> This patch adds __FILE__ and __LINE__ to arguments passed for
+>>>> __mutex_init() called in __class_register().
+>>>> This affects to lockdep_map of class_mutex of struct class_private,
+>>>> and these will be used to make trace lock events more human friendly.
+>>>>
+>>>> Signed-off-by: Hitoshi Mitake<mitake@dcl.info.waseda.ac.jp>
+>>>> Cc: Peter Zijlstra<a.p.zijlstra@chello.nl>
+>>>> Cc: Paul Mackerras<paulus@samba.org>
+>>>> Cc: Frederic Weisbecker<fweisbec@gmail.com>
+>>>> Cc: Greg Kroah-Hartman<gregkh@suse.de>
+>>>> ---
+>>>>   drivers/base/class.c |    3 ++-
+>>>>   1 files changed, 2 insertions(+), 1 deletions(-)
+>>>>
+>>>> diff --git a/drivers/base/class.c b/drivers/base/class.c
+>>>> index 161746d..cc0630f 100644
+>>>> --- a/drivers/base/class.c
+>>>> +++ b/drivers/base/class.c
+>>>> @@ -162,7 +162,8 @@ int __class_register(struct class *cls, struct lock_class_key *key)
+>>>>   	klist_init(&cp->class_devices, klist_class_dev_get, klist_class_dev_put);
+>>>>   	INIT_LIST_HEAD(&cp->class_interfaces);
+>>>>   	kset_init(&cp->class_dirs);
+>>>> -	__mutex_init(&cp->class_mutex, "struct class mutex", key);
+>>>> +	__mutex_init(&cp->class_mutex, "struct class mutex", key,
+>>>> +		     __FILE__, __LINE__);
+>>>>   	error = kobject_set_name(&cp->class_subsys.kobj, "%s", cls->name);
+>>>>   	if (error) {
+>>>>   		kfree(cp);
+>>>
+>>> Greg, any objection to this type of embellishment of lock data that comes from
+>>> the driver core?
+>>
+>> No, I'll queue it up in my tree.
+>
+> Er, oops, sorry, that would go through your tree, not mine :)
+>
+> Feel free to add:
+> 	Acked-by: Greg Kroah-Hartman<gregkh@suse.de>
+>
+> In looking at it, this might solve the lockdep issue with the device
+> tree as well, I'll have to play with it once this makes it into Linus's
+> tree.
+>
+> thanks,
+>
+> greg k-h
+>
 
-> +static int
-> +__negative_fpos_check(struct file *file, loff_t pos, size_t count)
-> +{
-> +	/*
-> +	 * pos or pos+count is negative here, check overflow.
-> +	 * too big "count" will be caught in rw_verify_area().
-> +	 */
-> +	if ((pos < 0) && (pos + count < pos))
-> +		return -EOVERFLOW;
-> +	if (file->f_mode & FMODE_NEG_OFFSET)
-> +		return 0;
-> +	return -EINVAL;
-> +}
-> +
->  /*
->   * rw_verify_area doesn't like huge counts. We limit
->   * them to something that fits in "int" so that others
-> @@ -222,8 +236,11 @@ int rw_verify_area(int read_write, struc
->  	if (unlikely((ssize_t) count < 0))
->  		return retval;
->  	pos = *ppos;
-> -	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
-> -		return retval;
-> +	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
-> +		retval = __negative_fpos_check(file, pos, count);
-> +		if (retval)
-> +			return retval;
-> +	}
->  
->  	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
->  		retval = locks_mandatory_area(
 
-Um... How do lseek() work? It sounds like to violate error code range.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Greg,
+
+I'll add your ack in future version of this patch, thanks!
+(perf lock has some build errors)
+
+	Hitoshi
