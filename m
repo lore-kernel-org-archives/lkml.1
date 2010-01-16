@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847Ab0APWMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817Ab0APWPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847Ab0APWMS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jan 2010 17:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520Ab0APWMQ
+	id S1752817Ab0APWPL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jan 2010 17:15:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489Ab0APWPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 17:12:16 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:33518 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752762Ab0APWMP (ORCPT
+	Sat, 16 Jan 2010 17:15:09 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54540 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752550Ab0APWPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 17:12:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mPhgAYdG2oPmekZ6kRDP7czknngobQYXs/JNKBS2TIR0ejtz9DjQNzAnNYk14oKtE8
-         iUa1/se2wstaTDRSetMy94+ioUCjWWdV5M1DIzpHvI5V1eDjDRpF89rQkSqwMyPhSNbP
-         svqYtBTlC67cbA8KRu7fDYdW3MXKlmOuCOhTY=
-Date: Sun, 17 Jan 2010 01:12:11 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] x86 fixes
-Message-ID: <20100116221211.GC5725@lenovo>
-References: <20100116170338.GA17175@elte.hu> <alpine.LFD.2.00.1001161233300.13231@localhost.localdomain> <20100116205342.GA5725@lenovo> <1263676617.14137.679.camel@localhost.localdomain>
+	Sat, 16 Jan 2010 17:15:08 -0500
+Date: Sat, 16 Jan 2010 23:14:54 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Bart?omiej Zimo? <uzi18@o2.pl>, Andy Walls <awalls@radix.net>,
+       Daniel Borkmann <danborkmann@googlemail.com>,
+       linux-kernel@vger.kernel.org, rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
+       thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz, zaurus-devel@www.linuxtogo.org
+Subject: Re: [suspend/resume] Re: userspace notification from module
+Message-ID: <20100116221454.GA8425@elf.ucw.cz>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+ <201001152314.30355.rjw@sisk.pl>
+ <20100116181211.GA1603@ucw.cz>
+ <201001162307.48085.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1263676617.14137.679.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <201001162307.48085.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 16, 2010 at 09:16:56PM +0000, Ian Campbell wrote:
-...
-> > |
-> > | > Yeah, I didn't found any explicit %ss reloading for this _particular_
-> > | > case (as I marked in patch changelog). So the only suspicious is Xen
-> > | > itself. So as only Christian get ability to test -- we will see the
-> > | > results.
-> > |
-> > | The difference with Xen is that it must squash the RPL of SS (to 3 for
-> > | 64 bit and 1 for 32 bit, 32 bit doesn't matter here though). Perhaps a
-> > | NULL selector can only have RPL==0? (I'm away from my architecture docs
-> > | so I can't check). In any case specifying a non-NULL SS selector allows
-> > | the squashing to occur correctly.
-> > |
-> >
-> > In turn reported said that only _this_ patch alone doesn't help him and
-> > Ian replied we need both patches.
-> >
-> > Ian CC'ed if details needed.
->
-> Thanks, I think you've covered or quoted everything.
->
-> Although I think Linus' basic point is still valid -- why isn't a valid
-> SS needed for 32 bit? The selectors have real meaning there even for
-> native, don't they?
->
+Hi!
 
-Well, the point was (I suppose) why we've started to set SS selector here
-at all. It's due to Xen. Old code was doing so, and that happened Xen is
-relating on it (as you actually said).
+> > Agreed, but so what? On PC, machine would power off at that
+> > point. That would surprise the apps, too.
+> > 
+> > Basically new enough userland should not make battery run low enough
+> > for either emergency power off or emergency suspend.
+> 
+> I wonder how it is supposed to achieve that without knowing the current battery
+> status.  Do you mean it should poll the battery driver?
 
-Also this is kernel thread which is supposed to execute in kernel space.
-And kernel itself already set SS selector when it needs. So to eliminate
-redunant operations we don't set SS here. And if there was not such
-issue on a Xen side -- we would not set SS here as well.
+That's besides point, is it?
 
-Again, to be fair I just don't have rights to blame Xen here -- I rely on your
-and Christian reports only.
-
-> (I'm travelling all tomorrow and unlikely to be getting mail).
->
-> Ian.
->
-
-	-- Cyrill
+Usual kernel<->user interfaces should apply here. Zaurus provides
+/proc/apm emulation, and I'm writing drivers/power/ driver. Not sure
+it has event interface...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
