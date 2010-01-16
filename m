@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758897Ab0APDIl (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758874Ab0APDI0
+	id S1758906Ab0APDIx (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:08:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758898Ab0APDIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:08:26 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33871 "EHLO
+	Fri, 15 Jan 2010 22:08:50 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33991 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758815Ab0APDIT (ORCPT
+	with ESMTP id S1758870Ab0APDIZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 22:08:19 -0500
+	Fri, 15 Jan 2010 22:08:25 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 19:06:36 -0800
+Date: Fri, 15 Jan 2010 19:07:08 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 05/37] x86/pci: enable pci root res read out for 32bit too
+Subject: [PATCH 37/37] x86: use num_processors for possible cpus
 In-reply-to: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,126 +23,50 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263611228-6751-6-git-send-email-yinghai@kernel.org>
+Message-id: <1263611228-6751-38-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-should be good for 32bit too.
+some systems that have disable cpus entries because same
+  BIOS will support 2 sockets and 4 sockets and more at
+  same time, BIOS just leave some disable entries, but
+  those system do not support cpu hotplug. we don't need
+  treat disabled_cpus as hotplug cpus.
+so we can make nr_cpu_ids smaller and save more space
+  (pcpu data allocations), and could make some systems run
+  with logical flat instead of physical flat apic mode
 
--v3: cast res->start
+-v2: change to black list instead
+-v3: just remove that, and the one use possible_cpus= directly.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 ---
- arch/x86/pci/Makefile    |    3 +--
- arch/x86/pci/amd_bus.c   |   14 +-------------
- arch/x86/pci/bus_numa.h  |    4 ++--
- arch/x86/pci/i386.c      |    4 ----
- arch/x86/pci/intel_bus.c |    2 +-
- 5 files changed, 5 insertions(+), 22 deletions(-)
+ arch/x86/kernel/smpboot.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/pci/Makefile b/arch/x86/pci/Makefile
-index 564b008..30e55d7 100644
---- a/arch/x86/pci/Makefile
-+++ b/arch/x86/pci/Makefile
-@@ -14,8 +14,7 @@ obj-$(CONFIG_X86_VISWS)		+= visws.o
- obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index f741c33..642440c 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1190,7 +1190,6 @@ early_param("possible_cpus", _setup_possible_cpus);
+  * - Ashok Raj
+  *
+  * Three ways to find out the number of additional hotplug CPUs:
+- * - If the BIOS specified disabled CPUs in ACPI/mptables use that.
+  * - The user can overwrite it with possible_cpus=NUM
+  * - Otherwise don't reserve additional CPUs.
+  * We do this because additional CPUs waste a lot of memory.
+@@ -1205,7 +1204,7 @@ __init void prefill_possible_map(void)
+ 		num_processors = 1;
  
- obj-y				+= common.o early.o
--obj-y				+= amd_bus.o
--obj-$(CONFIG_X86_64)		+= bus_numa.o intel_bus.o
-+obj-y				+= amd_bus.o bus_numa.o intel_bus.o
- 
- ifeq ($(CONFIG_PCI_DEBUG),y)
- EXTRA_CFLAGS += -DDEBUG
-diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index 66a5d5a..6221720 100644
---- a/arch/x86/pci/amd_bus.c
-+++ b/arch/x86/pci/amd_bus.c
-@@ -6,9 +6,7 @@
- 
- #include <asm/pci_x86.h>
- 
--#ifdef CONFIG_X86_64
- #include <asm/pci-direct.h>
--#endif
- 
- #include "bus_numa.h"
- 
-@@ -17,8 +15,6 @@
-  * also get peer root bus resource for io,mmio
-  */
- 
--#ifdef CONFIG_X86_64
--
- struct pci_hostbridge_probe {
- 	u32 bus;
- 	u32 slot;
-@@ -341,21 +337,13 @@ static int __init early_fill_mp_bus_info(void)
- 			printk(KERN_DEBUG "bus: %02x index %x %s: [%llx, %llx]\n",
- 			       busnum, j,
- 			       (res->flags & IORESOURCE_IO)?"io port":"mmio",
--			       res->start, res->end);
-+			       (u64)res->start, (u64)res->end);
- 		}
- 	}
- 
- 	return 0;
- }
- 
--#else  /* !CONFIG_X86_64 */
--
--static int __init early_fill_mp_bus_info(void) { return 0; }
--
--#endif /* !CONFIG_X86_64 */
--
--/* common 32/64 bit code */
--
- #define ENABLE_CF8_EXT_CFG      (1ULL << 46)
- 
- static void enable_pci_io_ecs(void *unused)
-diff --git a/arch/x86/pci/bus_numa.h b/arch/x86/pci/bus_numa.h
-index adbc23f..66d4ea0 100644
---- a/arch/x86/pci/bus_numa.h
-+++ b/arch/x86/pci/bus_numa.h
-@@ -1,5 +1,5 @@
--#ifdef CONFIG_X86_64
--
-+#ifndef __BUS_NUMA_H
-+#define __BUS_NUMA_H
- /*
-  * sub bus (transparent) will use entres from 3 to store extra from
-  * root, so need to make sure we have enough slot there, Should we
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 5dc9e8c..f4e8481 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -257,10 +257,6 @@ void __init pcibios_resource_survey(void)
-  */
- fs_initcall(pcibios_assign_resources);
- 
--void __weak x86_pci_root_bus_res_quirks(struct pci_bus *b)
--{
--}
--
- /*
-  *  If we set up a device for bus mastering, we need to check the latency
-  *  timer as certain crappy BIOSes forget to set it properly.
-diff --git a/arch/x86/pci/intel_bus.c b/arch/x86/pci/intel_bus.c
-index 145e0dd..603b9ab 100644
---- a/arch/x86/pci/intel_bus.c
-+++ b/arch/x86/pci/intel_bus.c
-@@ -30,7 +30,7 @@ static inline void print_ioh_resources(struct pci_root_info *info)
- 			busnum, i,
- 			(res->flags & IORESOURCE_IO) ? "io port" :
- 							"mmio",
--			res->start, res->end);
-+			(u64)res->start, (u64)res->end);
- 	}
- }
+ 	if (setup_possible_cpus == -1)
+-		possible = num_processors + disabled_cpus;
++		possible = num_processors;
+ 	else
+ 		possible = setup_possible_cpus;
  
 -- 
 1.6.4.2
