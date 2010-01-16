@@ -1,56 +1,55 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751473Ab0APGRr (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 01:17:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240Ab0APGRq
+	id S1751349Ab0APGiQ (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 01:38:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240Ab0APGiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 01:17:46 -0500
-Received: from snt0-omc2-s6.snt0.hotmail.com ([65.55.90.81]:38284 "EHLO
-	snt0-omc2-s6.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751210Ab0APGRq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 01:17:46 -0500
-X-Originating-IP: [96.253.143.208]
-X-Originating-Email: [yuhongbao_386@hotmail.com]
-Message-ID: <SNT125-DS19339D7DE9CFA33C1D54AC3680@phx.gbl>
-From: <yuhongbao_386@hotmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>, <mingo@redhat.com>,
-        <linux-kernel@vger.kernel.org>, <kernel-team@lists.ubuntu.com>
-References: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl>,<4B511B12.6010208@zytor.com> <SNT125-W39A63687E4BE4F52FAA517C3680@phx.gbl> <4B514656.5080805@zytor.com>
-In-Reply-To: <4B514656.5080805@zytor.com>
-Subject: Re: Ubuntu 32-bit, 32-bit PAE, 64-bit Kernel Benchmarks
-Date: Fri, 15 Jan 2010 22:17:41 -0800
+	Sat, 16 Jan 2010 01:38:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46205 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751229Ab0APGiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 01:38:15 -0500
+Date: Sat, 16 Jan 2010 07:37:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Rientjes <rientjes@google.com>,
+        Andrew Morton <akpm@linux-foundation.org>
+Cc: Michal Marek <mmarek@suse.cz>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] kbuild: improve version string logic
+Message-ID: <20100116063754.GC20342@elte.hu>
+References: <alpine.DEB.2.00.1001041330230.26148@chino.kir.corp.google.com>
+ <4B4345AF.9040600@suse.cz>
+ <alpine.DEB.2.00.1001131300360.26527@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="UTF-8";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-Importance: Normal
-X-Mailer: Microsoft Windows Live Mail 14.0.8089.726
-X-MimeOLE: Produced By Microsoft MimeOLE V14.0.8089.726
-X-OriginalArrivalTime: 16 Jan 2010 06:17:45.0923 (UTC) FILETIME=[9E91A130:01CA9673]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1001131300360.26527@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Since 32 bits means that any machine with 1 GB more means HIGHMEM, the
-> number of non-embedded machines that should run 32-bit kernels today is
-> functionally the null set.
-You mean machines made today?
-> Unfortunately Linux distros have not
-> properly promoted 64-bit kernels for 32-bit distros; although pure 64
-> bits is better, it would be a *helluva* lot better if people stuck on 32
-> bits for compatibility reasons had a saner alternative.
-Yep, I remember having to use --force-architecture to install the Linux 
-kernel from the 64-bit version of Ubuntu into the 32-bit version.
-As I remember, the package name was the same as the 32-bit version, causing 
-confusion.
-What led me to uninstall it, though, was that suspend/resume did not work 
-properly.
-I am adding a CC to the Ubuntu kernel team mailing list.
 
-Yuhong Bao 
+* David Rientjes <rientjes@google.com> wrote:
 
+> The LOCALVERSION= string passed to "make" will now always be appended to the 
+> kernel version after CONFIG_LOCALVERSION, if it exists, regardless of 
+> whether CONFIG_LOCALVERSION_AUTO is set or not.  This allows users to 
+> uniquely identify their kernel builds with a string.
+
+I've been using Linus's earlier patch for 3 months meanwhile in -tip and the 
+'+' version string differentiator is very useful in practice. Your version of 
+the patch should address some of the observations offered in the original 
+discussion as well. Would be nice to have your patch upstream (in the next 
+merge window or so).
+
+Given that Sam doesnt maintain the kbuild tree anymore, would this patch be a 
+good fit for -mm perhaps?
+
+	Ingo
