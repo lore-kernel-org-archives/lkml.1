@@ -1,74 +1,142 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659Ab0APQcU (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 11:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900Ab0APQcT
+	id S1754917Ab0APQoh (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 11:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698Ab0APQof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 11:32:19 -0500
-Received: from nbd.name ([88.198.39.176]:53726 "EHLO ds10.nbd.name"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752124Ab0APQcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 11:32:18 -0500
-X-Greylist: delayed 949 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Jan 2010 11:32:17 EST
-Message-ID: <4B51E64B.6010706@openwrt.org>
-Date: Sat, 16 Jan 2010 17:16:11 +0100
-From: Felix Fietkau <nbd@openwrt.org>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Sat, 16 Jan 2010 11:44:35 -0500
+Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:33288 "EHLO
+	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751451Ab0APQoe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 11:44:34 -0500
+Message-ID: <4B51ECEE.9080404@blueyonder.co.uk>
+Date: Sat, 16 Jan 2010 16:44:30 +0000
+From: Sid Boyce <sboyce@blueyonder.co.uk>
+Reply-To: sboyce@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
 MIME-Version: 1.0
-To: =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirqus@gmail.com>
-CC: "Ha, Tristram" <Tristram.Ha@micrel.com>, Dave Miller <davem@davemloft.net>,
-        netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH 2.6.33 1/3] net: Micrel KSZ8841/2 PCI Ethernet driver
-References: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com> <e2d7436a1001160800u11206f54iaf07bb92331a256a@mail.gmail.com>
-In-Reply-To: <e2d7436a1001160800u11206f54iaf07bb92331a256a@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: HDA Intel Audio hang on boot
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <omZ8aBZReyD.A.jbH.QNlSLB@chimera> <4B4A9D8F.9030300@blueyonder.co.uk> <4B4FC3B0.9070207@blueyonder.co.uk> <4B50915E.8000308@blueyonder.co.uk>
+In-Reply-To: <4B50915E.8000308@blueyonder.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010-01-16 5:00 PM, Micha³ Miros³aw wrote:
-> Hello,
+On 15/01/10 16:01, Sid Boyce wrote:
+> With the PCI Audigy card in, the box wouldn't even enter POST, either
+> the Audigy is bad (unknown - from a box that couldn't see the drives) or
+> there is something faulty on the motherboard. I am currently running
+> 2.6.33-rc4-git2 on the box with a Terratec Aureon 5.1 USB MK II sound card.
+> Regards
+> Sid.
 > 
-> 2010/1/16 Ha, Tristram <Tristram.Ha@micrel.com>:
->> This is a new network driver for Micrel KSZ8841/KSZ8842 PCI Ethernet chips.  The same driver can run both chips at the same time.  It supports IPv4 TCP hardware checksumming and so can use scatter/gather transmission.
+The Audigy card is definitely bad as the original box now works fine
+without it.
+Something has definitely changed in the HDA Intel code or handling of it
+that causes that card to cause a solid lock-up on kernels >2.6.32-git1.
+Regards
+Sid.
+
+> On 15/01/10 01:24, Sid Boyce wrote:
+>> Renaming this bug as the "only 1 CPU" bug has been fixed, but the hang
+>> at HDA remains.
+>> I shall plug in a SB Audigy and see if it will boot with that.
+>> By disabling the on-board HDA Intel audio in the BIOS, the system boots.
+>> tindog:~ # uname -r
+>> 2.6.33-rc4-smp
+>> On 2.6.32-git1 which boots, hwinfo shows:-
+>>   oss.card_id = 'HDA NVidia'
+>>   oss.card_id = 'HDA NVidia'
+>>   oss.card_id = 'HDA NVidia'
+>>   alsa.card_id = 'HDA NVidia'
+>>   alsa.card_id = 'HDA NVidia'
+>>   alsa.card_id = 'HDA NVidia'
+>>   alsa.card_id = 'HDA NVidia'
+>>   info.product = 'HDA NVidia ALSA hardware specific Device'
+>>   alsa.card_id = 'HDA NVidia'
+>>   info.product = 'HDA NVidia ALSA Control Device'
+>>   alsa.card_id = 'HDA NVidia'
+>>   info.product = 'HDA NVidia Sound Card'
+>>   sound.card_id = 'HDA NVidia'
+>>   info.linux.driver = 'HDA Intel'
+>>     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
+>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>>        HDA Intel: module = snd_hda_intel
+>> irq:0 22 (   490413) "sata_nv" "HDA Intel"
+>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>>        HDA Intel: module = snd_hda_intel
+>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>>        HDA Intel: module = snd_hda_intel
+>>   E: DRIVER=HDA Intel
+>>   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
+>> low) -> IRQ 22
+>>   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
+>>   Driver: "HDA Intel"
 >>
->> The KSZ8842 has a switch with lots of hardware configurations.  The driver uses the proc system to allow users to configure the switch.  If this is not desired the whole thing can be removed by not calling the init_proc() function.
+>> Regards
+>> Sid.
 >>
->> The KSZ8842 switch has 2 ports.  Some users like to take direct control of those ports.  So KSZ8842 has a multiple devices mode in which the driver creates another network device so that users can specify which port to send packets.  This mode is enabled by passing the "multi_dev=1" parameter to the driver during loading.
-> [...]
+>> On 11/01/10 03:39, Sid Boyce wrote:
+>>> On 10/01/10 22:32, Rafael J. Wysocki wrote:
+>>>> This message has been generated automatically as a part of a report
+>>>> of recent regressions.
+>>>>
+>>>> The following bug entry is on the current list of known regressions
+>>>> from 2.6.32.  Please verify if it still should be listed and let me know
+>>>> (either way).
+>>>>
+>>>>
+>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14946
+>>>> Subject		: All kernels after 2.6.32-git10  show only 1 CPU
+>>>> Submitter	: Sid Boyce <sboyce@blueyonder.co.uk>
+>>>> Date		: 2009-12-23 16:55 (19 days old)
+>>>> References	: http://marc.info/?l=linux-kernel&m=126158734326801&w=4
+>>>>
+>>>>
+>>>>
+>>>>
+>>>
+>>> With 2.6.33-rc3-git3 I now see 2 CPU's every on a normal boot, but its
+>>> locking up solid at this part of the boot process as usual.
+>>> ACPI: PCI Interrupt Link [AAZA] enabled at IRQ 22
+>>> HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level, low)
+>>> -> IRQ 22.
+>>> With acpi=noirq (2 CPU's)
+>>> ================
+>>> kvm: Nested Virtualization enabled.
+>>> IT8716 Super IO detected
+>>> Parport_PC 00:0a: reported by plug and Play ACPI
+>>> Parport 0: PC-Style at 0x378, irq 7 [PCSPP, TRISTATE,EPP]
+>>> parport: irq 7 in use, resorting to polled operation
+>>> HDA Intel 0000:00:0e.1: PCI -> APIC IRQ transform: INT B -> IRQ 11
+>>>
+>>> With acpi=ht (1 CPU)
+>>> =============
+>>> Hangs at:-
+>>> Loading drivees, configuring devices do_IRQ: 0.65 No irq handler for
+>>> vector (irq -1)
+>>>
+>>> With acpi=off (2 CPU's)
+>>> ========================
+>>> Hangs at same point as with acpi=noirq.
+>>>
+>>> Regards
+>>> Sid.
+>>
+>>
 > 
-> I briefly looked over the datasheet for your device and it looks like
-> it has the same basic design idea as a "ROBO" switch from Broadcom
-> that is used in bcm53xx SoCs. This can be seen as a 3-port switch with
-> one port fixed to be link to CPU (a special kind of PHY).
 > 
-> If my assumptions are correct, then I thing it would be better to have
-> a driver that presents this device as two: one - an ethernet device,
-> and second - a switch management interface like the one used in
-> OpenWRT.
-> 
-> Here are some links for reference:
-> http://downloads.openwrt.org/kamikaze/8.09.2/kamikaze_8.09.2_source.tar.bz2;
-> subdir: package/switch/src/
->   -> switch management driver for ADMTEK Adm6996 and Broadcom BCM5325E/536x
-Don't look at that ;)
-The code you're referring to is just a simple hack of mine that is a
-few years old now. It's going to be removed as soon as the drivers have
-been ported to a proper API.
 
-I've been working on a switch configuration API based on netlink, which 
-is being used on some of the other platforms in OpenWrt.
 
-You can find the sources here:
-https://dev.openwrt.org/export/19173/trunk/target/linux/generic-2.6/files/drivers/net/phy/swconfig.c
-https://dev.openwrt.org/export/19173/trunk/target/linux/generic-2.6/files/include/linux/switch.h
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
-It's meant to be used with drivers that hook into the PHY abstraction layer.
-You can find an example of such a driver here:
-https://dev.openwrt.org/export/19173/trunk/target/linux/generic-2.6/files/drivers/net/phy/rtl8306.c
-
-I'll do the final cleanups and submit it for review once I have time to do so.
-
-- Felix
