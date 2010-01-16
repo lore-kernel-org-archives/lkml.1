@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901Ab0APWwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999Ab0APWyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752901Ab0APWwa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jan 2010 17:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770Ab0APWwa
+	id S1752999Ab0APWyA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jan 2010 17:54:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839Ab0APWx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 17:52:30 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:56445 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751895Ab0APWw3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 17:52:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=GfUEyWxt+CnfHaRG+sYxYp83GtNILkOo5s3nNHM+xikfZ+iJMxhGxmHoV+sCaN+qa+
-         BC6WoG+bOhaevAjkJPKxBildTwblGDEjwY/lKMnR0rsPZ/Esdk1CecvfoiuX8CIHUwrZ
-         rqZ9hlGsHqwDRJpfzcK/gBlE8ZGNrPYyoybjE=
-From: Thiago Farina <tfransosi@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Garrett <mjg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Uwe Geuder <ubuntuLp-ugeuder@sneakemail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH] console/vgacon.c: mark file-local symbol static.
-Date: Sat, 16 Jan 2010 17:52:13 -0500
-Message-Id: <1c1713c0724e7a7283fce34b0d23a2eaa929df10.1263682176.git.tfransosi@gmail.com>
-X-Mailer: git-send-email 1.6.6.103.g699d2
+	Sat, 16 Jan 2010 17:53:59 -0500
+Received: from cantor.suse.de ([195.135.220.2]:39626 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752697Ab0APWx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 17:53:58 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs
+To: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [PATCH 2/4] fanotify: Add pids to events
+Date: Sat, 16 Jan 2010 23:53:45 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Matthew Helsley <matt.helsley@gmail.com>, Eric Paris <eparis@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, hch@infradead.org,
+       containers@lists.linux-foundation.org,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>
+References: <20091202141452.12819.93536.stgit@paris.rdu.redhat.com> <201001151612.10032.agruen@suse.de> <20100115212146.GA3714@count0.beaverton.ibm.com>
+In-Reply-To: <20100115212146.GA3714@count0.beaverton.ibm.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001162353.45800.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-warning: symbol 'vgacon_text_mode_force' was not declared. Should it be static?
+On Friday 15 January 2010 10:21:46 pm Matt Helsley wrote:
+> On Fri, Jan 15, 2010 at 04:12:09PM +0100, Andreas Gruenbacher wrote:
+> > > 2. If the event recipient does a clone and enters a new pidns the pid
+> > > number will be incorrect without any indication.
+> >
+> > No, if a process has a pid within the listener's namespace the listener
+> > will see this pid; otherwise, the resulting pid value is 0.
+> 
+> So the pid reference is resolved at read(), correct? If so then that's
+>  fine. (Otherwise I'd think the values could still become stale).
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
----
- drivers/video/console/vgacon.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Yes.  Note that for non-blocking events, there is no guarantee that the 
+triggering process still runs when the event is consumed though.
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index cc4bbbe..19e474d 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -112,7 +112,7 @@ static int 		vga_video_font_height;
- static int 		vga_scan_lines		__read_mostly;
- static unsigned int 	vga_rolled_over;
- 
--int vgacon_text_mode_force = 0;
-+static int vgacon_text_mode_force = 0;
- 
- bool vgacon_text_force(void)
- {
--- 
-1.6.6.103.g699d2
-
+Andreas
