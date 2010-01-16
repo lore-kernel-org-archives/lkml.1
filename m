@@ -1,115 +1,66 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751820Ab0APH0L (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 02:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580Ab0APH0H
+	id S1752013Ab0APHey (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 02:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898Ab0APHex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 02:26:07 -0500
-Received: from www84.your-server.de ([213.133.104.84]:38969 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493Ab0APH0G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 02:26:06 -0500
-Subject: Re: [PATCH] enhanced reimplemented of the kfifo API
-From: Stefani Seibold <stefani@seibold.net>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+	Sat, 16 Jan 2010 02:34:53 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:34046 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751909Ab0APHew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 02:34:52 -0500
+Date: Sat, 16 Jan 2010 18:34:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Rientjes <rientjes@google.com>,
         Andrew Morton <akpm@linux-foundation.org>,
-        Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-        Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-        Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <20100115233820.GF10591@ovro.caltech.edu>
-References: <1263546418.9732.11.camel@wall-e>
-	 <20100115192029.GC10591@ovro.caltech.edu> <1263591001.7531.1.camel@wall-e>
-	 <20100115220153.GE10591@ovro.caltech.edu> <1263593107.8935.1.camel@wall-e>
-	 <20100115233820.GF10591@ovro.caltech.edu>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sat, 16 Jan 2010 08:25:50 +0100
-Message-ID: <1263626750.13343.6.camel@wall-e>
+        Michal Marek <mmarek@suse.cz>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [patch] kbuild: improve version string logic
+Message-Id: <20100116183445.29fc5d50.sfr@canb.auug.org.au>
+In-Reply-To: <20100116063754.GC20342@elte.hu>
+References: <alpine.DEB.2.00.1001041330230.26148@chino.kir.corp.google.com>
+	<4B4345AF.9040600@suse.cz>
+	<alpine.DEB.2.00.1001131300360.26527@chino.kir.corp.google.com>
+	<20100116063754.GC20342@elte.hu>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__16_Jan_2010_18_34_45_+1100_fgFhiyl91z43a5u/"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, den 15.01.2010, 15:38 -0800 schrieb Ira W. Snyder:
-> On Fri, Jan 15, 2010 at 11:05:07PM +0100, Stefani Seibold wrote:
-> > Am Freitag, den 15.01.2010, 14:01 -0800 schrieb Ira W. Snyder:
-> > > On Fri, Jan 15, 2010 at 10:30:01PM +0100, Stefani Seibold wrote:
-> > > > 
-> > > > > I'm glad to see this example, it really illustrates how to use the new
-> > > > > DMA functionality of the kfifo API.
-> > > > > 
-> > > > > Is there any reason why a very large scatterlist could not be used? I
-> > > > > have a driver that uses a large scatterlist (~4000 entries, allocated as
-> > > > > a struct sg_table). I implemented my own copy_from_user() functionality
-> > > > > into this scatterlist, but I'd love to use the kfifo DMA API instead.
-> > > > > After filling the scatterlist, I use the usual DMA API's to transfer it
-> > > > > to my device.
-> > > > > 
-> > > > 
-> > > > No, but the API will only return max. two entries.
-> > > > 
-> > > 
-> > > Ah, I see. __kfifo_alloc() uses kmalloc() internally. The kfifo API will
-> > > not work for my purposes then, since I want to allocate a 16MB chunk of
-> > > memory, and I'm very uncomfortable doing that with kmalloc(). I'll stick
-> > > with my custom scatterlist code, which uses alloc_page() to fill in the
-> > > scatterlist with order-0 allocations.
-> > > 
-> > 
-> > I think you can use vmalloc() instead and assign this buffer with
-> > kfifo_init().
-> > 
-> 
-> Yes, that might be an option. I presume I could still use dma_map_sg()
-> on the resulting scatterlist.
-> 
-> > > Another nitpick in the code: I've noticed that you use sgl++ in the
-> > > setup_sgl() function. That should become "sgl = sg_next(sgl);" so that
-> > > this code can work with an struct sg_table as well.
-> > 
-> > No, its by definition an array. You cannot pass as struct sg_table to
-> > the kfifo_dma_* functions.
-> > 
-> 
-> A struct sg_table is a container for an underlying chain of struct
-> scatterlists, allowing for easier allocation. See the definition of
-> struct sg_table and the sgl member (include/linux/scatterlist.h line
-> 11).
-> On Fri, Jan 15, 2010 at 11:05:07PM +0100, Stefani Seibold wrote:
-> > > Am Freitag, den 15.01.2010, 14:01 -0800 schrieb Ira W. Snyder:
-> > > 
-> > > > Ah, I see. __kfifo_alloc() uses kmalloc() internally. The kfifo API will
-> > > > not work for my purposes then, since I want to allocate a 16MB chunk of
-> > > > memory, and I'm very uncomfortable doing that with kmalloc(). I'll stick
-> > > > with my custom scatterlist code, which uses alloc_page() to fill in the
-> > > > scatterlist with order-0 allocations.
-> > > > 
-> > > 
-> > > I think you can use vmalloc() instead and assign this buffer with
-> > > kfifo_init().
-> > > 
-> > 
-> > Yes, that might be an option. I presume I could still use dma_map_sg()
-> > 
-> IIRC, struct sg_table allocates arrays of struct scatterlist in
-> PAGE_SIZE chunks, and chains them together.
-> 
-> If you change from "sg++" to "sg_next()", you should be able to work
-> with chained scatterlists. You can only have a single struct page * in
-> one struct scatterlist. This would mean that if I tried to use
-> kfifo_dma_out_prepare() to give me 16MB worth of data, I would need 4096
-> seperate struct scatterlist entries. One for each struct page * in that
-> 16MB chunk.
-> 
+--Signature=_Sat__16_Jan_2010_18_34_45_+1100_fgFhiyl91z43a5u/
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No, this would require an initialized scatterlist array and the
-kfifo_dma_* function does not expect this. And i am not sure why you
-need 4096 seperate struct scatterlist entries for a continues memory, i
-need only one. The scatterlist structure contains the page, the offset
-and the length. The length can be more the a page size.
+Hi Ingo,
 
-Stefani
+On Sat, 16 Jan 2010 07:37:54 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> Given that Sam doesnt maintain the kbuild tree anymore, would this patch =
+be a=20
+> good fit for -mm perhaps?
 
+There is a new kbuild tree maintainer: Michal Marek <mmarek@suse.cz>
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__16_Jan_2010_18_34_45_+1100_fgFhiyl91z43a5u/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktRbBUACgkQjjKRsyhoI8wBKACZAQfb55hlh5UmsE+CRYCkC8Rr
+aGQAn12Rr+2j0BkR2gU+qkHYHFQ6dP0Q
+=4+47
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__16_Jan_2010_18_34_45_+1100_fgFhiyl91z43a5u/--
