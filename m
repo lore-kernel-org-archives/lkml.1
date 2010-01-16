@@ -1,73 +1,61 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339Ab0APPqV (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 10:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594Ab0APPqU
+	id S1753505Ab0APPvL (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 10:51:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246Ab0APPvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 10:46:20 -0500
-Received: from cantor.suse.de ([195.135.220.2]:59123 "EHLO mx1.suse.de"
+	Sat, 16 Jan 2010 10:51:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53593 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750864Ab0APPqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 10:46:19 -0500
-Subject: Re: [PATCH] scsi/osst.c: remove unncessary casting of kmalloc.
-From: James Bottomley <James.Bottomley@suse.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Thiago Farina <tfransosi@gmail.com>, linux-kernel@vger.kernel.org,
-        Willem Riede <osst@riede.org>,
-        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-        osst-users@lists.sourceforge.net, linux-scsi@vger.kernel.org
-In-Reply-To: <4B51DCBF.9090902@s5r6.in-berlin.de>
-References: <503939f4cfd0b8c362a2f5a103285f8dc330b99a.1263651173.git.tfransosi@gmail.com>
-	 <4B51DCBF.9090902@s5r6.in-berlin.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 16 Jan 2010 09:46:08 -0600
-Message-Id: <1263656768.2851.93.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	id S1753168Ab0APPvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 10:51:06 -0500
+To: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Arnaldo Carvalho de Melo <acme@infradead.org>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        LKML <linux-kernel@vger.kernel.org>, Mark Wielaard <mjw@redhat.com>,
+        utrace-devel <utrace-devel@redhat.com>
+Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
+References: <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
+	<1263467394.4244.291.camel@laptop>
+	<1263509380.4875.35.camel@localhost.localdomain>
+	<1263546632.4244.352.camel@laptop> <y0mvdf3en1y.fsf@fche.csb>
+	<1263548124.4244.358.camel@laptop> <20100115131037.GP4822@redhat.com>
+	<1263561930.4244.417.camel@laptop> <20100115133825.GQ4822@redhat.com>
+	<1263563276.4244.426.camel@laptop>
+	<20100115142007.GA1628@linux.vnet.ibm.com>
+	<1263597085.5007.82.camel@localhost.localdomain>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Sat, 16 Jan 2010 10:50:48 -0500
+In-Reply-To: <1263597085.5007.82.camel@localhost.localdomain> (Jim Keniston's message of "Fri, 15 Jan 2010 15:11:25 -0800")
+Message-ID: <y0m63722gmf.fsf@fche.csb>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-01-16 at 16:35 +0100, Stefan Richter wrote:
-> Thiago Farina wrote:
-> > --- a/drivers/scsi/osst.c
-> > +++ b/drivers/scsi/osst.c
-> > @@ -5842,9 +5842,8 @@ static int osst_probe(struct device *dev)
-> >  	/* if this is the first attach, build the infrastructure */
-> >  	write_lock(&os_scsi_tapes_lock);
-> >  	if (os_scsi_tapes == NULL) {
-> > -		os_scsi_tapes =
-> > -			(struct osst_tape **)kmalloc(osst_max_dev * sizeof(struct osst_tape *),
-> > -				   GFP_ATOMIC);
-> > +		os_scsi_tapes = kmalloc(osst_max_dev * sizeof(struct osst_tape *),
-> > +					GFP_ATOMIC);
-> >  		if (os_scsi_tapes == NULL) {
-> >  			write_unlock(&os_scsi_tapes_lock);
-> >  			printk(KERN_ERR "osst :E: Unable to allocate array for OnStream SCSI tapes.\n");
-> 
-> Since you update the style of this kmalloc usage, you could at the same
-> time change the sizeof expression to sizeof(* os_scsi_tapes).
 
-Actually, no, please don't do any of this without explicitly checking
-with the maintainer (Willem).  We allow fairly loose rein in style for
-individual drivers so random minor style changes aren't accepted without
-explicit maintainer ack.  For unmaintained files, I also tend to err on
-the side of trying not to alter the file unless necessary, so again it
-has to be more than just a minor style problem.
+Jim Keniston <jkenisto@us.ibm.com> writes:
 
-For major and reasonable stye changes in unmaintained drivers, an md5sum
-of the output code is necessary (verifying it to be the same as the
-previous code) unless you can do some testing.
+> [...]
+> Years ago, we had pre-utrace versions of uprobes where the uprobes
+> breakpoint-handler code was dispatched from the die_notifier, before the
+> int3 turned into a SIGTRAP.  I believe that's what Peter is
+> recommending.  On my old Pentium M...
+> - a pre-utrace uprobe hit cost about 1 usec;
+> - a utrace-based uprobe hit cost about 3 usec;
+> [...]
+> So yeah, learning about the int3 via utrace after the SIGTRAP gets
+> created adds some overhead to uprobes.  [...]
 
-> There is a lot more that could be renovated around os_scsi_tapes, and
-> osst in general (GFP_ATOMIC allocations in a device probe?  Fixed
-> maximum number of devices?  BKL usage?), but whether it'd be worth the
-> effort I don't know.
+Was this test comparing likewise fruit?  For example, did it account
+for factors where other processes were gdb-int3-instrumented or with
+lots of kprobes active?  Differently multithreaded?  Demultiplexing
+probes amongst multiple processes?
 
-So this would be a more worthwhile update.  *however* changes along
-these lines would actually need to be tested, so someone needs to verify
-they work somehow.
+(It's counterintuitive that the utrace/kernel int3->sigtrap
+dispatching code alone should cause thousands of extra instructions.)
 
-James
-
-
+- FChE
