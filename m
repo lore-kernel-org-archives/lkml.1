@@ -1,64 +1,83 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752933Ab0APJnL (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 04:43:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305Ab0APJnJ
+	id S932198Ab0APJnX (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 04:43:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077Ab0APJnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 04:43:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54151 "EHLO hera.kernel.org"
+	Sat, 16 Jan 2010 04:43:20 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54154 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752199Ab0APJnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 04:43:08 -0500
-Date: Sat, 16 Jan 2010 09:42:38 GMT
-From: tip-bot for Jan Kiszka <jan.kiszka@siemens.com>
+	id S1752653Ab0APJnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 04:43:10 -0500
+Date: Sat, 16 Jan 2010 09:42:54 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-        rostedt@goodmis.org, jan.kiszka@siemens.com, tglx@linutronix.de
+        fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
+        tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-        rostedt@goodmis.org, tglx@linutronix.de, jan.kiszka@siemens.com
-In-Reply-To: <4B4AFE10.8050109@siemens.com>
-References: <4B4AFE10.8050109@siemens.com>
+        fweisbec@gmail.com, lizf@cn.fujitsu.com, rostedt@goodmis.org,
+        tglx@linutronix.de
+In-Reply-To: <4B4E870E.6060607@cn.fujitsu.com>
+References: <4B4E870E.6060607@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/urgent] tracing/x86: Derive arch from bits argument in recordmcount.pl
-Message-ID: <tip-b82a4045f7962483a78a874343dc6e31b79c96c1@git.kernel.org>
-Git-Commit-ID: b82a4045f7962483a78a874343dc6e31b79c96c1
+Subject: [tip:tracing/urgent] ftrace: Fix MATCH_END_ONLY function filter
+Message-ID: <tip-751e9983ee276cb150e8812b1d995f6035a63878@git.kernel.org>
+Git-Commit-ID: 751e9983ee276cb150e8812b1d995f6035a63878
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 16 Jan 2010 09:42:39 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 16 Jan 2010 09:42:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b82a4045f7962483a78a874343dc6e31b79c96c1
-Gitweb:     http://git.kernel.org/tip/b82a4045f7962483a78a874343dc6e31b79c96c1
-Author:     Jan Kiszka <jan.kiszka@siemens.com>
-AuthorDate: Mon, 11 Jan 2010 11:31:44 +0100
+Commit-ID:  751e9983ee276cb150e8812b1d995f6035a63878
+Gitweb:     http://git.kernel.org/tip/751e9983ee276cb150e8812b1d995f6035a63878
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Thu, 14 Jan 2010 10:53:02 +0800
 Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Mon, 11 Jan 2010 23:49:35 -0500
+CommitDate: Thu, 14 Jan 2010 22:38:03 -0500
 
-tracing/x86: Derive arch from bits argument in recordmcount.pl
+ftrace: Fix MATCH_END_ONLY function filter
 
-Let the arch argument be overruled by bits. Otherwise, building of
-external modules against a i386 target on a x86-64 host (and likely vice
-versa as well) fails unless ARCH=i386 is explicitly passed to make.
+For '*foo' pattern, we should allow any string ending with
+'foo', but ftrace filter incorrectly disallows strings
+like bar_foo_foo:
 
-Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
-LKML-Reference: <4B4AFE10.8050109@siemens.com>
+  # echo '*io' > set_ftrace_filter
+  # cat set_ftrace_filter | grep 'req_bio_endio'
+  # cat available_filter_functions | grep 'req_bio_endio'
+  req_bio_endio
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <4B4E870E.6060607@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- scripts/recordmcount.pl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/trace/ftrace.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 92f09fe..ea6f6e3 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -194,7 +194,7 @@ sub check_objcopy
-     }
- }
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 7968762..1e6640f 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -1690,7 +1690,7 @@ ftrace_regex_lseek(struct file *file, loff_t offset, int origin)
+ static int ftrace_match(char *str, char *regex, int len, int type)
+ {
+ 	int matched = 0;
+-	char *ptr;
++	int slen;
  
--if ($arch eq "x86") {
-+if ($arch =~ /(x86(_64)?)|(i386)/) {
-     if ($bits == 64) {
- 	$arch = "x86_64";
-     } else {
+ 	switch (type) {
+ 	case MATCH_FULL:
+@@ -1706,8 +1706,8 @@ static int ftrace_match(char *str, char *regex, int len, int type)
+ 			matched = 1;
+ 		break;
+ 	case MATCH_END_ONLY:
+-		ptr = strstr(str, regex);
+-		if (ptr && (ptr[len] == 0))
++		slen = strlen(str);
++		if (slen >= len && memcmp(str + slen - len, regex, len) == 0)
+ 			matched = 1;
+ 		break;
+ 	}
