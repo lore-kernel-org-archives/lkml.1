@@ -1,127 +1,75 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598Ab0APOr0 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 09:47:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310Ab0APOrY
+	id S1753399Ab0APPLd (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 10:11:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260Ab0APPLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 09:47:24 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38043 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751890Ab0APOrY (ORCPT
+	Sat, 16 Jan 2010 10:11:32 -0500
+Received: from gateway12.websitewelcome.com ([69.56.195.22]:45074 "HELO
+	gateway12.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751698Ab0APPLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 09:47:24 -0500
-Date: Sat, 16 Jan 2010 14:50:14 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
-Cc: "Dave Miller" <davem@davemloft.net>, <netdev@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.33 1/3] net: Micrel KSZ8841/2 PCI Ethernet driver
-Message-ID: <20100116145014.172ad340@lxorguk.ukuu.org.uk>
-In-Reply-To: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com>
-References: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Jan 2010 10:11:32 -0500
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Jan 2010 10:11:31 EST
+To: linux-kernel@vger.kernel.org
+Subject: Free Escort Websites! What a Joke Get a REAL WEBSITE $100
+X-PHP-Script: escort-webz.com/list/admin/index.php for 24.93.215.97
+Recieved: 
+Date: Sat, 16 Jan 2010 09:04:51 -0600
+From: admin <webmaster@escort-webz.com>
+Message-ID: <003b6c09433e22c9a5f36abbe751bd6b@escort-webz.com>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.73]
+X-Mailer: phplist v2.10.10
+X-MessageID: 7
+X-ListMember: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - stealth.websitewelcome.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [33290 33293] / [47 12]
+X-AntiAbuse: Sender Address Domain - stealth.websitewelcome.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +/*
-> + * PCI Configuration Space Registers
-> + */
+Escort Websites & Marketing! Photo & Graphics work too!
 
-We have existing standard defines for most of these that should be used
-instead where relevant. The code appears not use most of these defines
-for generic PCI stuff anyway.
+100% all American Company from $100.00 complete!
+EDIT YOUR OWN SITE RIGHT FROM YOUR BROWSER!
 
+Includes domain name, hosting, and custom design.
+Includes free photo ads for craigslist and backpage
+For your privacy and security We Prefer Paypal Payments!
+CHECK OUT OUR UPDATED WEBSITE!!! http://www.escort-webz.com
+<http://www.escort-webz.com/>
 
-> +#define PORT_CTRL_ADDR(port, addr)		\
-> +	(addr = KS8842_PORT_1_CTRL_1 + port *	\
-> +		(KS8842_PORT_2_CTRL_1 - KS8842_PORT_1_CTRL_1))
-
-Brackets around port so that things like PORT_CTRL_ADDR(x + 1) work
-as expected
-
-
-> +/*
-> + * Hardware register access macros
-> + */
-> +
-> +#define hw_dis_intr_sync(hw)	hw_dis_intr(hw)
-> +
-> +#define HW_R8(hw, addr, data)	(*(data) = readb((hw)->ioaddr + (addr)))
-> +#define HW_W8(hw, addr, data)	writeb((data), (hw)->ioaddr + (addr))
-> +
-> +#define HW_R16(hw, addr, data)	(*(data) = readw((hw)->ioaddr + (addr)))
-> +#define HW_W16(hw, addr, data)	writew((data), (hw)->ioaddr + (addr))
-> +
-> +#define HW_R32(hw, addr, data)	(*(data) = readl((hw)->ioaddr + (addr)))
-> +#define HW_W32(hw, addr, data)	writel((data), (hw)->ioaddr + (addr))
-> +
-> +#define HW_PCI_READ_BYTE(hw, addr, data)				\
-> +	pci_read_config_byte((struct pci_dev *) (hw)->pdev, addr, data)
-> +
-> +#define HW_PCI_READ_WORD(hw, addr, data)				\
-> +	pci_read_config_word((struct pci_dev *) (hw)->pdev, addr, data)
-> +
-> +#define HW_PCI_READ_DWORD(hw, addr, data)				\
-> +	pci_read_config_dword((struct pci_dev *) (hw)->pdev, addr, data)
-> +
-> +#define HW_PCI_WRITE_BYTE(hw, addr, data)				\
-> +	pci_write_config_byte((struct pci_dev *) (hw)->pdev, addr, data)
-> +
-> +#define HW_PCI_WRITE_WORD(hw, addr, data)				\
-> +	pci_write_config_word((struct pci_dev *) (hw)->pdev, addr, data)
-> +
-> +#define HW_PCI_WRITE_DWORD(hw, addr, data)				\
-> +	pci_write_config_dword((struct pci_dev *) (hw)->pdev, addr, data)
-
-This sort of stuff just obfuscates things so the defines ought to get
-removed so the code is more readable to all (remember the Linux kernel
-code needs to be generally readable not just readable by Micrel people)
-
-
-> + * delay_milli - delay in millisecond
-> + * @millisec:	Number of milliseconds to delay.
-> + *
-> + * This routine delays in milliseconds.
-> + */
-> +static void delay_milli(uint millisec)
-> +{
-> +	unsigned long ticks = millisec * HZ / 1000;
-> +
-> +	if (!ticks || in_interrupt())
-> +		mdelay(millisec);
-> +	else {
-> +		set_current_state(TASK_INTERRUPTIBLE);
-> +		schedule_timeout(ticks);
-
-msleep() is probably what you want for this part ? Note that you really
-don't want to be spinning for milliseconds in the IRQ paths if at all
-possible.
-
-The DEBUG ioctl is a bit odd - you define it and it does nothing - just a
-left over ?
+NOTE: If you have a website with any of these companies it is a SCAM
+ask us and we'll explain
+escortsite.com
+model24h.com
+rare-playmate.com
+escortdiva.com
+massage4body.com
+escortwww.com
+professionalescort.com
+rare-companion.com
+ <http://www.escort-webz.com>
 
 
 
-> +
-> +#define PCI_VENDOR_ID_KS884X		0x16C6
-> +#define PCI_DEVICE_ID_KS8841		0x8841
-> +#define PCI_DEVICE_ID_KS8842		0x8842
+--
+If you do not want to receive any more newsletters, 
+http://escort-webz.com/list/?p=unsubscribe&uid=a54cf79a8f9659885940db7549850adc
 
-Those belong in the pci device id header.
-
-
-In your pci init function you do the following
-
-> +	hw->pdev = pdev;
+To update your preferences and to unsubscribe visit
+http://escort-webz.com/list/?p=preferences&uid=a54cf79a8f9659885940db7549850adc
+Forward a Message to Someone
+http://escort-webz.com/list/?p=forward&uid=a54cf79a8f9659885940db7549850adc&mid=7
 
 
-If you make a private copy of pdev in your struct you should refcount it
-and use pci_dev_get/pci_dev_put when you take and release the reference.
-
-
-The proc stuff probably belongs in sysfs nowdays
+--
+Powered by PHPlist, www.phplist.com --
 
 
