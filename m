@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662Ab0APWFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729Ab0APWGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752662Ab0APWFo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jan 2010 17:05:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541Ab0APWFn
+	id S1752729Ab0APWGi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jan 2010 17:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398Ab0APWGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 17:05:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39119 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752443Ab0APWFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 17:05:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [suspend/resume] Re: userspace notification from module
-Date: Sat, 16 Jan 2010 23:05:56 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Stanislav Brabec <utx@penguin.cz>, Eric Miao <eric.y.miao@gmail.com>,
-       "Bart?omiej Zimo?" <uzi18@o2.pl>, Andy Walls <awalls@radix.net>,
-       Daniel Borkmann <danborkmann@googlemail.com>,
-       linux-kernel@vger.kernel.org, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       "linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com,
-       zaurus-devel@www.linuxtogo.org
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <1263661258.6596.10.camel@utx.utx.cz> <20100116181253.GC1603@ucw.cz>
-In-Reply-To: <20100116181253.GC1603@ucw.cz>
+	Sat, 16 Jan 2010 17:06:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37206 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751001Ab0APWGg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 17:06:36 -0500
+Date: Sat, 16 Jan 2010 14:04:07 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: m.s.tsirkin@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.ker>
+Subject: Re: 2.6.33-rc2: Reported regressions from 2.6.32
+In-Reply-To: <201001162257.16277.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.1001161402400.13231@localhost.localdomain>
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <20100116174821.GA18306@redhat.com> <201001162257.16277.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001162305.56972.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 January 2010, Pavel Machek wrote:
-> On Sat 2010-01-16 18:00:58, Stanislav Brabec wrote:
-> > Eric Miao wrote:
-> > 
-> > > And the other way we may need to look into what API the current userland
-> > > apps on zaurus is depending on this 2.4 compatibility and make changes
-> > > slowly to those apps.
-> > 
-> > I guess that 2.4 compatibility is not an issue. Most modern Zaurus
-> > distributions are even unable to run Sharp ROM compatible binaries.
-> > 
-> > Distributions either stay on 2.4 kernel or use modern systems based on
-> > modern kernel 2.6 API.
-> > 
-> > Distributions that decided to migrate to kernel 2.6 are far from
-> > finished state. Any change that allows to use modern applications using
-> > standard kernel API is welcome.
+
+
+On Sat, 16 Jan 2010, Rafael J. Wysocki wrote:
+>
+> > Immediately upon startup, screen is flickering (becomes
+> > lighter and darker again). The problem occurs with kernels
+> > 2.6.33-rc1 to 2.6.33-rc4, but not with kernel 2.6.32 and below.
 > 
-> There is no API involved. It is just ... if you leave zaurus in
->  init=/bin/bash mode, it must not kill the battery. Smart and
->  currently implemented way to do that is to suspend.
+> We've already had several reports like this already.
+> 
+> Care to review the bugs linked to http://bugzilla.kernel.org/show_bug.cgi?id=14885
+> and check if none of them matches the problem you describe?
 
-IMHO it should just plain shutdown in that case.  Suspending doesn't really
-solve the problem, because the battery is going to drain still.  Unless you
-mean suspend=hibernate, but I guess you don't.
+I suspect that should be fixed by commit 33814341f22 ("drm/i915: disable 
+LVDS downclock by default") that got merged today.
 
-> That's counterexample to rjw, but it does not matter -- reasonable
-> userland should never ever hit that, in a same way PCs should not hit
-> emergency power cut...
+So try current -git. 
 
-I don't really understand what you mean.  The user space doesn't know the
-battery state if the kernel doesn't tell it, AFAICS, so how exactly can it
-predict the critical battery condition without the kernel notifying it?
-
-Rafael
+		Linus
