@@ -1,20 +1,21 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758879Ab0APDI4 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758865Ab0APDIy
+	id S1758901Ab0APDJU (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758903Ab0APDIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:08:54 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33984 "EHLO
+	Fri, 15 Jan 2010 22:08:52 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33987 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758863Ab0APDIZ (ORCPT
+	with ESMTP id S1758865Ab0APDIZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Jan 2010 22:08:25 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 19:07:05 -0800
+Date: Fri, 15 Jan 2010 19:07:06 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 34/37] x86: using logical flat for amd cpu too.
+Subject: [PATCH 35/37] x86: according to nr_cpu_ids to decide if need to leave
+ logical flat
 In-reply-to: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,72 +24,117 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263611228-6751-35-git-send-email-yinghai@kernel.org>
+Message-id: <1263611228-6751-36-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-not sure it works again, could be bios fix the irq routing dest ?
+should use nr_cpu_ids instead of num_processor, in case we have hotplug cpus.
 
-tested that amd support logical flat too when cpus num <= 8 and even
-bsp apic id > 8
+if current only have 8 cpus is up, but if we will have more cpus that
+will be hot added later, we should use physical flat at first.
 
-so could remove vendor check...
+nr_cpu_ids is the total cpus that could be supported.
+
+-v2: per linus, chenage default_setup_apic_routing to _init, and call it for uni_processor
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/kernel/apic/apic.c     |   11 ++---------
- arch/x86/kernel/apic/probe_64.c |   13 ++-----------
- 2 files changed, 4 insertions(+), 20 deletions(-)
+ arch/x86/kernel/apic/apic.c     |    2 --
+ arch/x86/kernel/apic/probe_32.c |   20 ++++++++++++++++++--
+ arch/x86/kernel/apic/probe_64.c |    3 ++-
+ arch/x86/kernel/smpboot.c       |    2 --
+ 4 files changed, 20 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index aa57c07..c5f4906 100644
+index c5f4906..b4f47c5 100644
 --- a/arch/x86/kernel/apic/apic.c
 +++ b/arch/x86/kernel/apic/apic.c
-@@ -1898,15 +1898,8 @@ void __cpuinit generic_processor_info(int apicid, int version)
- 		max_physical_apicid = apicid;
- 
- #ifdef CONFIG_X86_32
--	switch (boot_cpu_data.x86_vendor) {
--	case X86_VENDOR_INTEL:
--		if (num_processors > 8)
--			def_to_bigsmp = 1;
--		break;
--	case X86_VENDOR_AMD:
--		if (max_physical_apicid >= 8)
--			def_to_bigsmp = 1;
--	}
-+	if (num_processors > 8)
-+		def_to_bigsmp = 1;
+@@ -1647,9 +1647,7 @@ int __init APIC_init_uniprocessor(void)
  #endif
  
- #if defined(CONFIG_SMP) || defined(CONFIG_X86_64)
+ 	enable_IR_x2apic();
+-#ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+-#endif
+ 
+ 	verify_local_APIC();
+ 	connect_bsp_APIC();
+diff --git a/arch/x86/kernel/apic/probe_32.c b/arch/x86/kernel/apic/probe_32.c
+index 1a6559f..d657558 100644
+--- a/arch/x86/kernel/apic/probe_32.c
++++ b/arch/x86/kernel/apic/probe_32.c
+@@ -52,7 +52,7 @@ static int __init print_ipi_mode(void)
+ }
+ late_initcall(print_ipi_mode);
+ 
+-void default_setup_apic_routing(void)
++static void local_default_setup_apic_routing(void)
+ {
+ #ifdef CONFIG_X86_IO_APIC
+ 	printk(KERN_INFO
+@@ -103,7 +103,7 @@ struct apic apic_default = {
+ 	.init_apic_ldr			= default_init_apic_ldr,
+ 
+ 	.ioapic_phys_id_map		= default_ioapic_phys_id_map,
+-	.setup_apic_routing		= default_setup_apic_routing,
++	.setup_apic_routing		= local_default_setup_apic_routing,
+ 	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= default_apicid_to_node,
+ 	.cpu_to_logical_apicid		= default_cpu_to_logical_apicid,
+@@ -212,6 +212,22 @@ void __init generic_bigsmp_probe(void)
+ #endif
+ }
+ 
++void __init default_setup_apic_routing(void)
++{
++#ifdef CONFIG_X86_BIGSMP
++	/*
++	 * make sure we go to bigsmp according to real nr_cpu_ids
++	 */
++	if (!cmdline_apic && apic == &apic_default) {
++		if (nr_cpu_ids > 8) {
++			apic = &apic_bigsmp;
++			printk(KERN_INFO "Overriding APIC driver with %s\n",
++			       apic->name);
++		}
++	}
++#endif
++}
++
+ void __init generic_apic_probe(void)
+ {
+ 	if (!cmdline_apic) {
 diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
-index c4cbd30..0a428dd 100644
+index 0a428dd..7163cf8 100644
 --- a/arch/x86/kernel/apic/probe_64.c
 +++ b/arch/x86/kernel/apic/probe_64.c
-@@ -67,17 +67,8 @@ void __init default_setup_apic_routing(void)
+@@ -67,7 +67,8 @@ void __init default_setup_apic_routing(void)
  	}
  #endif
  
--	if (apic == &apic_flat) {
--		switch (boot_cpu_data.x86_vendor) {
--		case X86_VENDOR_INTEL:
--			if (num_processors > 8)
--				apic = &apic_physflat;
--			break;
--		case X86_VENDOR_AMD:
--			if (max_physical_apicid >= 8)
--				apic = &apic_physflat;
--		}
--	}
-+	if (apic == &apic_flat && num_processors > 8)
-+		apic = &apic_physflat;
+-	if (apic == &apic_flat && num_processors > 8)
++	/* not just num_processors, we could have hotplug cpus */
++	if (apic == &apic_flat && nr_cpu_ids > 8)
+ 		apic = &apic_physflat;
  
  	printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index eff2fe1..96f5f40 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1083,9 +1083,7 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 	set_cpu_sibling_map(0);
  
+ 	enable_IR_x2apic();
+-#ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+-#endif
+ 
+ 	if (smp_sanity_check(max_cpus) < 0) {
+ 		printk(KERN_INFO "SMP disabled\n");
 -- 
 1.6.4.2
 
