@@ -1,77 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778Ab0AOBDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842Ab0APT6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754778Ab0AOBDt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 20:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839Ab0AOBDX
+	id S1754842Ab0APT6j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jan 2010 14:58:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931Ab0APT6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 20:03:23 -0500
-Received: from straum.hexapodia.org ([64.81.70.185]:23753 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753288Ab0AOBDV (ORCPT
+	Sat, 16 Jan 2010 14:58:38 -0500
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:49207 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751809Ab0APT6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 20:03:21 -0500
-Date: Thu, 14 Jan 2010 17:03:15 -0800
-From: Andy Isaacson <adi@hexapodia.org>
-To: Julia Lawall <julia@diku.dk>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       N??meth M??rton <nm127@freemail.hu>,
-       David Vrabel <david.vrabel@csr.com>, linux-usb@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, cocci@diku.dk
-Subject: Re: Changelog quality (was Re: [PATCH] uwb: make USB device id constant)
-Message-ID: <20100115010315.GA29093@hexapodia.org>
-References: <4B4C297A.5090405@freemail.hu> <4B4C9ED9.60905@csr.com> <4B4CAA15.4030200@freemail.hu> <4B4DDFDB.2000408@s5r6.in-berlin.de> <Pine.LNX.4.64.1001131633490.26518@ask.diku.dk>
-Mime-Version: 1.0
+	Sat, 16 Jan 2010 14:58:38 -0500
+Date: Sun, 17 Jan 2010 01:28:22 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Luca Barbieri <luca@luca-barbieri.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix broken mmiotrace due to dr6 by reference change
+Message-ID: <20100116195822.GB31079@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <1263634770-14578-1-git-send-email-luca@luca-barbieri.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.1001131633490.26518@ask.diku.dk>
-User-Agent: Mutt/1.4.2.3i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+In-Reply-To: <1263634770-14578-1-git-send-email-luca@luca-barbieri.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 04:38:22PM +0100, Julia Lawall wrote:
-> > When you write a changelog, keep your audience in mind:
-> > 
-> >   - Developers, distributors, advanced users want to learn what a new
-> >     release brings.  (OK, this audience stops reading after the initial
-> >     headline of a "make XYZ table constant" commit.  Which just means
-> >     that all the rest of the changelog is fluff that can be omitted.)
-> > 
-> >   - Developers, maintainers etc. want to understand years later why the
-> >     code is how it is.  (For them, a commit like that is sufficiently
-> >     described by the headline as well.)
+On Sat, Jan 16, 2010 at 10:39:30AM +0100, Luca Barbieri wrote:
+> Commit 62edab9056a6cf0c9207339c8892c923a5217e45 (from June 2009 but merged
+> in 2.6.33) changes notify_die to pass dr6 by reference.
 > 
-> Not surprisingly, I don't agree about this one.  I recall a series of 
-> patches that said something like "used a script to change down/up to 
-> mutexes".  The script wasn't included, not all down/ups were changed to 
-> mutexes, and in short there was no understandable trace of why the change 
-> was made where it was.  Perhaps that is a pathological example, but it is 
-> not necessarily obvious in advance what needs precise documentation and 
-> what does not.
+> However, it forgets to fix the check for DR_STEP in kmmio.c, breaking
+> mmiotrace. It also passes a wrong value to the post handler.
+> 
 
-I agree with Julia, at least in some cases.  Having the semantic patch
-present when it's 5 or 10 lines long and clearly explains the intended
-change is incredibly valuable for review.  Sometimes, the script is the
-clearest way to indicate your intent -- I'd much rather see a changelog
-that says "s/FOO/BAR/g" than "Change FOO to BAR everywhere".
+Yes, looks like I missed it...must have hunted down all those registered
+to the die notifier...to propagate the fix.
 
-For example, look at 5d66fe92.  The semantic patch is blissfully,
-incredibly clear.  It makes the sun shine down through the clouds, the
-birds sing, and the kzalloc align.  It's 10 lines long and is quite
-intuitive and explanatory.  In that case, I think it's clear that the
-spatch is worth the changelog space it takes up, even though the
-changelog is larger than the diff by quite a margin.
+> This simple fix makes mmiotrace work again.
+> 
+> Please send to Linus for inclusion in 2.6.33
+> 
+> Signed-off-by: Luca Barbieri <luca@luca-barbieri.com>
+Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
 
-On the other hand, the patch that started this thread is a
-counterexample, to me.  The correctness of the constification is only
-tenuously attested, for me at least, by the semantic patch.  The spatch
-is really long compared to the diff, and complicated to read.
+Thanks,
+K.Prasad
 
-So, I think it's a balancing act.  I've been very happy to see spatches
-in some of Julia's posts, and I've also found some of the more
-voluminous spatches in changelogs to be more noise than signal.
-
--andy
+> ---
+>  arch/x86/mm/kmmio.c |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
+> index c0f6198..536fb68 100644
+> --- a/arch/x86/mm/kmmio.c
+> +++ b/arch/x86/mm/kmmio.c
+> @@ -538,14 +538,15 @@ static int
+>  kmmio_die_notifier(struct notifier_block *nb, unsigned long val, void *args)
+>  {
+>  	struct die_args *arg = args;
+> +	unsigned long* dr6_p = (unsigned long *)ERR_PTR(arg->err);
+> 
+> -	if (val == DIE_DEBUG && (arg->err & DR_STEP))
+> -		if (post_kmmio_handler(arg->err, arg->regs) == 1) {
+> +	if (val == DIE_DEBUG && (*dr6_p & DR_STEP))
+> +		if (post_kmmio_handler(*dr6_p, arg->regs) == 1) {
+>  			/*
+>  			 * Reset the BS bit in dr6 (pointed by args->err) to
+>  			 * denote completion of processing
+>  			 */
+> -			(*(unsigned long *)ERR_PTR(arg->err)) &= ~DR_STEP;
+> +			*dr6_p &= ~DR_STEP;
+>  			return NOTIFY_STOP;
+>  		}
+> 
+> -- 
+> 1.6.3.3
+> 
