@@ -1,66 +1,92 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753503Ab0APKET (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 05:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212Ab0APKET
+	id S1751999Ab0APKMR (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 05:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455Ab0APKMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 05:04:19 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52040 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822Ab0APKES (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 05:04:18 -0500
-Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jim Keniston <jkenisto@us.ibm.com>
-Cc: maneesh@in.ibm.com, Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-        Ingo Molnar <mingo@elte.hu>,
-        Arnaldo Carvalho de Melo <acme@infradead.org>,
-        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-        utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
-        Frederic Weisbecker <fweisbec@gmail.com>,
-        Masami Hiramatsu <mhiramat@redhat.com>,
-        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1263599085.5007.88.camel@localhost.localdomain>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
-	 <1263467394.4244.291.camel@laptop>
-	 <1263509380.4875.35.camel@localhost.localdomain>
-	 <1263546632.4244.352.camel@laptop>
-	 <20100115102645.GA22640@linux.vnet.ibm.com>
-	 <1263551607.4244.379.camel@laptop>  <20100115110547.GB3660@in.ibm.com>
-	 <1263553955.4244.393.camel@laptop>
-	 <1263599085.5007.88.camel@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 16 Jan 2010 11:04:09 +0100
-Message-ID: <1263636249.4244.525.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Sat, 16 Jan 2010 05:12:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34333 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932118Ab0APKMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 05:12:14 -0500
+Message-ID: <4B5190AC.8080204@kernel.org>
+Date: Sat, 16 Jan 2010 02:10:52 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+        Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+        Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
+        linux-pci@vger.kernel.org
+Subject: Re: [PATCH 01/11] pci: add pci_bridge_release_unused_res and	pci_bus_release_unused_bridge_res
+References: <1263609721-3921-1-git-send-email-yinghai@kernel.org> <1263609721-3921-2-git-send-email-yinghai@kernel.org> <20100116035750.GB22215@ldl.fc.hp.com>
+In-Reply-To: <20100116035750.GB22215@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-15 at 15:44 -0800, Jim Keniston wrote:
-> On Fri, 2010-01-15 at 12:12 +0100, Peter Zijlstra wrote:
-> ....
-> > 
-> > Adding the probe uses the fact that (most) executable mappings are
-> > MAP_PRIVATE and CoWs a private copy of the page with the modified ins,
-> > right?
-> > 
-> > What does it do for MAP_SHARED|MAP_EXECUTABLE sections -- simply fail to
-> > add the probe?
+On 01/15/2010 07:57 PM, Alex Chiang wrote:
+> Hi Yinghai,
 > 
-> If the vma containing the instruction to be probed has the VM_EXEC flag
-> set (and it's not in the XOL area) we go ahead and try to probe it.  I'm
-> not familar with the implications of MAP_SHARED|MAP_EXECUTABLE -- how
-> you would get such a combo, or what access_process_vm() would do with
-> it.
+> First, thank you very much for writing the summary in patch 0/11.
+> I feel like I finally understand what you are trying to do with
+> this series.
+> 
+>> +/*
+>> + * try to release pci bridge resources that is from leaf bridge,
+>> + * so we can allocate big new one later
+>> + */
+>> +static void __ref pci_bus_release_bridge_resources(struct pci_bus *bus,
+>> +						   unsigned long type,
+>> +						   enum release_type rel_type)
+>> +{
+>> +	struct pci_dev *dev;
+>> +	bool is_leaf_bridge = true;
+>> +
+>> +	list_for_each_entry(dev, &bus->devices, bus_list) {
+>> +		struct pci_bus *b = dev->subordinate;
+>> +		if (!b)
+>> +			continue;
+>> +
+> 
+> How about settting
+> 
+> 		is_leaf_bridge = false;
+> 
+> here, and then you don't need the repeated assignments below?
+> 
 
-I'm not sure how you'd get one, the user has to explicitly create one I
-think, regular loaders don't create such things, but maybe JITs do.
+no
+that is AND
 
-The problem is that for MAP_SHARED you cannot CoW the page, you have to
-modify the original page, which might get written back into a file if
-its file based, not something you'd want to have happen I guess.
+>> +		switch (dev->class >> 8) {
+>> +		case PCI_CLASS_BRIDGE_CARDBUS:
+>> +			is_leaf_bridge = false;
+>> +			break;
+>> +
+>> +		case PCI_CLASS_BRIDGE_PCI:
+>> +		default:
+>> +			is_leaf_bridge = false;
+>> +			if (rel_type == whole_subtree)
+>> +				pci_bus_release_bridge_resources(b, type,
+>> +							 whole_subtree);
+>> +			break;
+>> +		}
+>> +	}
+>> +
+>> +	/* The root bus? */
+>> +	if (!bus->self)
+>> +		return;
+> 
+> Won't work correctly on a non-materialized root bridge.
+> 
+> Use pci_is_root_bus() instead.
 
+
+OK
+
+YH
