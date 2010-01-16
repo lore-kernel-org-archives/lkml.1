@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759035Ab0APDNk (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:13:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758935Ab0APDNH
+	id S1759043Ab0APDNz (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:13:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758990Ab0APDNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:13:07 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33936 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932408Ab0APDIW (ORCPT
+	Fri, 15 Jan 2010 22:13:05 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58120 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932328Ab0APDIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Jan 2010 22:08:22 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 19:06:51 -0800
+Date: Fri, 15 Jan 2010 19:06:49 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 20/37] early_res: enhance check_and_double_early_res
+Subject: [PATCH 18/37] x86: add find_early_area_size
 In-reply-to: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,83 +23,87 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263611228-6751-21-git-send-email-yinghai@kernel.org>
+Message-id: <1263611228-6751-19-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-to make it always try to start from low at first.
-
-so make it more safe for early_memtest to reserve bad range.
-aka put new early_res to range that is already tested.
+prepare to move bck find_e820_area_size back to e820.c
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/kernel/early_res.c |   27 ++++++++++++++++++++-------
- 1 files changed, 20 insertions(+), 7 deletions(-)
+ arch/x86/kernel/early_res.c |   45 ++++++++++++++++++++++++++++++------------
+ 1 files changed, 32 insertions(+), 13 deletions(-)
 
 diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
-index d0a70cc..52804e9 100644
+index 3ae0051..aba02f2 100644
 --- a/arch/x86/kernel/early_res.c
 +++ b/arch/x86/kernel/early_res.c
-@@ -180,9 +180,9 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
- 	__reserve_early(start, end, name, 1);
+@@ -476,6 +476,29 @@ out:
+ 	return -1ULL;
  }
  
--static void __init __check_and_double_early_res(u64 start)
-+static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
- {
--	u64 end, size, mem;
-+	u64 start, end, size, mem;
- 	struct early_res *new;
++u64 __init find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
++			 u64 *sizep, u64 align)
++{
++	u64 addr, last;
++
++	addr = round_up(ei_start, align);
++	if (addr < start)
++		addr = round_up(start, align);
++	if (addr >= ei_last)
++		goto out;
++	*sizep = ei_last - addr;
++	while (bad_addr_size(&addr, sizep, align) && addr + *sizep <= ei_last)
++		;
++	last = addr + *sizep;
++	if (last > ei_last)
++		goto out;
++
++	return addr;
++
++out:
++	return -1ULL;
++}
++
+ /*
+  * Find a free area with specified alignment in a specific range.
+  */
+@@ -513,24 +536,20 @@ u64 __init find_e820_area_size(u64 start, u64 *sizep, u64 align)
  
- 	/* do we have enough slots left ? */
-@@ -190,10 +190,23 @@ static void __init __check_and_double_early_res(u64 start)
- 		return;
+ 	for (i = 0; i < e820.nr_map; i++) {
+ 		struct e820entry *ei = &e820.map[i];
+-		u64 addr, last;
+-		u64 ei_last;
++		u64 addr;
++		u64 ei_start, ei_last;
  
- 	/* double it */
--	end = max_pfn_mapped << PAGE_SHIFT;
-+	mem = -1ULL;
- 	size = sizeof(struct early_res) * max_early_res * 2;
--	mem = find_e820_area(start, end, size, sizeof(struct early_res));
--
-+	if (early_res == early_res_x)
-+		start = 0;
-+	else
-+		start = early_res[0].end;
-+	end = ex_start;
-+	if (start + size < end)
-+		mem = find_e820_area(start, end, size,
-+					 sizeof(struct early_res));
-+	if (mem == -1ULL) {
-+		start = ex_end;
-+		end = max_pfn_mapped << PAGE_SHIFT;
-+		if (start + size < end)
-+			mem = find_e820_area(start, end, size,
-+						 sizeof(struct early_res));
-+	}
- 	if (mem == -1ULL)
- 		panic("can not find more space for early_res array");
- 
-@@ -235,7 +248,7 @@ void __init reserve_early(u64 start, u64 end, char *name)
- 	if (start >= end)
- 		return;
- 
--	__check_and_double_early_res(end);
-+	__check_and_double_early_res(start, end);
- 
- 	drop_overlaps_that_are_ok(start, end);
- 	__reserve_early(start, end, name, 0);
-@@ -248,7 +261,7 @@ void __init reserve_early_without_check(u64 start, u64 end, char *name)
- 	if (start >= end)
- 		return;
- 
--	__check_and_double_early_res(end);
-+	__check_and_double_early_res(start, end);
- 
- 	r = &early_res[early_res_count];
+ 		if (ei->type != E820_RAM)
+ 			continue;
+-		addr = round_up(ei->addr, align);
++
+ 		ei_last = ei->addr + ei->size;
+-		if (addr < start)
+-			addr = round_up(start, align);
+-		if (addr >= ei_last)
+-			continue;
+-		*sizep = ei_last - addr;
+-		while (bad_addr_size(&addr, sizep, align) &&
+-			addr + *sizep <= ei_last)
+-			;
+-		last = addr + *sizep;
+-		if (last > ei_last)
++		ei_start = ei->addr;
++		addr = find_early_area_size(ei_start, ei_last, start,
++					 sizep, align);
++
++		if (addr == -1ULL)
+ 			continue;
++
+ 		return addr;
+ 	}
  
 -- 
 1.6.4.2
