@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759025Ab0APDN0 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759000Ab0APDNJ
+	id S1759035Ab0APDNk (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:13:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758935Ab0APDNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:13:09 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33855 "EHLO
+	Fri, 15 Jan 2010 22:13:07 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33936 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932380Ab0APDIW (ORCPT
+	with ESMTP id S932408Ab0APDIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Jan 2010 22:08:22 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 19:06:33 -0800
+Date: Fri, 15 Jan 2010 19:06:51 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 02/37] x86: check range in update range
+Subject: [PATCH 20/37] early_res: enhance check_and_double_early_res
 In-reply-to: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,54 +23,84 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263611228-6751-3-git-send-email-yinghai@kernel.org>
+Message-id: <1263611228-6751-21-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fend off wrong range
+to make it always try to start from low at first.
+
+so make it more safe for early_memtest to reserve bad range.
+aka put new early_res to range that is already tested.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- kernel/range.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ arch/x86/kernel/early_res.c |   27 ++++++++++++++++++++-------
+ 1 files changed, 20 insertions(+), 7 deletions(-)
 
-diff --git a/kernel/range.c b/kernel/range.c
-index 46a10c8..71e0021 100644
---- a/kernel/range.c
-+++ b/kernel/range.c
-@@ -13,6 +13,9 @@
+diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
+index d0a70cc..52804e9 100644
+--- a/arch/x86/kernel/early_res.c
++++ b/arch/x86/kernel/early_res.c
+@@ -180,9 +180,9 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
+ 	__reserve_early(start, end, name, 1);
+ }
  
- int add_range(struct range *range, int az, int nr_range, u64 start, u64 end)
+-static void __init __check_and_double_early_res(u64 start)
++static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
  {
-+	if (start > end)
-+		return nr_range;
-+
- 	/* Out of slots: */
- 	if (nr_range >= az)
- 		return nr_range;
-@@ -30,6 +33,9 @@ int add_range_with_merge(struct range *range, int az, int nr_range,
- {
- 	int i;
+-	u64 end, size, mem;
++	u64 start, end, size, mem;
+ 	struct early_res *new;
  
-+	if (start > end)
-+		return nr_range;
-+
- 	/* Try to merge it with old one: */
- 	for (i = 0; i < nr_range; i++) {
- 		u64 final_start, final_end;
-@@ -59,6 +65,9 @@ void subtract_range(struct range *range, int az, u64 start, u64 end)
- {
- 	int i, j;
+ 	/* do we have enough slots left ? */
+@@ -190,10 +190,23 @@ static void __init __check_and_double_early_res(u64 start)
+ 		return;
  
-+	if (start > end)
-+		return;
-+
- 	for (j = 0; j < az; j++) {
- 		if (!range[j].end)
- 			continue;
+ 	/* double it */
+-	end = max_pfn_mapped << PAGE_SHIFT;
++	mem = -1ULL;
+ 	size = sizeof(struct early_res) * max_early_res * 2;
+-	mem = find_e820_area(start, end, size, sizeof(struct early_res));
+-
++	if (early_res == early_res_x)
++		start = 0;
++	else
++		start = early_res[0].end;
++	end = ex_start;
++	if (start + size < end)
++		mem = find_e820_area(start, end, size,
++					 sizeof(struct early_res));
++	if (mem == -1ULL) {
++		start = ex_end;
++		end = max_pfn_mapped << PAGE_SHIFT;
++		if (start + size < end)
++			mem = find_e820_area(start, end, size,
++						 sizeof(struct early_res));
++	}
+ 	if (mem == -1ULL)
+ 		panic("can not find more space for early_res array");
+ 
+@@ -235,7 +248,7 @@ void __init reserve_early(u64 start, u64 end, char *name)
+ 	if (start >= end)
+ 		return;
+ 
+-	__check_and_double_early_res(end);
++	__check_and_double_early_res(start, end);
+ 
+ 	drop_overlaps_that_are_ok(start, end);
+ 	__reserve_early(start, end, name, 0);
+@@ -248,7 +261,7 @@ void __init reserve_early_without_check(u64 start, u64 end, char *name)
+ 	if (start >= end)
+ 		return;
+ 
+-	__check_and_double_early_res(end);
++	__check_and_double_early_res(start, end);
+ 
+ 	r = &early_res[early_res_count];
+ 
 -- 
 1.6.4.2
 
