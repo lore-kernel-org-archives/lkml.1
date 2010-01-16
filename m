@@ -1,154 +1,55 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794Ab0APCop (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 21:44:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745Ab0APCn2
+	id S1758658Ab0APCow (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 21:44:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745Ab0APCos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 21:43:28 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:57726 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758198Ab0APCnZ (ORCPT
+	Fri, 15 Jan 2010 21:44:48 -0500
+Received: from tango.0pointer.de ([85.214.72.216]:41138 "EHLO
+	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758793Ab0APCop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 21:43:25 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 18:41:52 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 02/11] pci: add failed_list to record failed one for
- pci_bus_assign_resources
-In-reply-to: <1263609721-3921-1-git-send-email-yinghai@kernel.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-        Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-        Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263609721-3921-3-git-send-email-yinghai@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-References: <1263609721-3921-1-git-send-email-yinghai@kernel.org>
+	Fri, 15 Jan 2010 21:44:45 -0500
+X-Greylist: delayed 629 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jan 2010 21:44:45 EST
+Date: Sat, 16 Jan 2010 03:33:49 +0100
+From: Lennart Poettering <mzxreary@0pointer.de>
+To: Greg KH <greg@kroah.com>
+Cc: Chun-Yi <jlee@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [00/02] msi-laptop patches for N034 laptop
+Message-ID: <20100116023349.GA9895@tango.0pointer.de>
+References: <20100115234710.GA22890@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100115234710.GA22890@kroah.com>
+Organization: Red Hat, Inc.
+X-Campaign-1: ()  ASCII Ribbon Campaign
+X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
+User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so later we can do sth with those failed one
+On Fri, 15.01.10 15:47, Greg KH (greg@kroah.com) wrote:
 
--v2: store start, end, flags aside. so could keep res cleared when assign
-     failed. and make following assignment of its children do not go wild
+Heya,
+ 
+> Here are 2 patches from Joey Lee for the msi-laptop driver that add
+> support for the 3G button and other stuff for the new N034 laptop.
+> 
+> If you don't have any objections, do you want me to take them through my
+> driver tree to go to Linus for the .34 kernel merge, or do you have a
+> tree that they can go through?
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
----
- drivers/pci/setup-bus.c |   66 ++++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 62 insertions(+), 4 deletions(-)
+Patches make sense to me.
 
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 3dcbb65..c704e5c 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -27,7 +27,52 @@
- #include <linux/slab.h>
- #include "pci.h"
- 
--static void pbus_assign_resources_sorted(const struct pci_bus *bus)
-+struct resource_list_x {
-+	struct resource_list_x *next;
-+	struct resource *res;
-+	struct pci_dev *dev;
-+	resource_size_t start;
-+	resource_size_t end;
-+	unsigned long flags;
-+};
-+
-+static void add_to_failed_list(struct resource_list_x *head,
-+				 struct pci_dev *dev, struct resource *res)
-+{
-+	struct resource_list_x *list = head;
-+	struct resource_list_x *ln = list->next;
-+	struct resource_list_x *tmp;
-+
-+	tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
-+	if (!tmp) {
-+		pr_warning("add_to_failed_list: kmalloc() failed!\n");
-+		return;
-+	}
-+
-+	tmp->next = ln;
-+	tmp->res = res;
-+	tmp->dev = dev;
-+	tmp->start = res->start;
-+	tmp->end = res->end;
-+	tmp->flags = res->flags;
-+	list->next = tmp;
-+}
-+
-+static void free_failed_list(struct resource_list_x *head)
-+{
-+	struct resource_list_x *list, *tmp;
-+
-+	for (list = head->next; list;) {
-+		tmp = list;
-+		list = list->next;
-+		kfree(tmp);
-+	}
-+
-+	head->next = NULL;
-+}
-+
-+static void pbus_assign_resources_sorted(const struct pci_bus *bus,
-+					 struct resource_list_x *fail_head)
- {
- 	struct pci_dev *dev;
- 	struct resource *res;
-@@ -58,6 +103,13 @@ static void pbus_assign_resources_sorted(const struct pci_bus *bus)
- 		res = list->res;
- 		idx = res - &list->dev->resource[0];
- 		if (pci_assign_resource(list->dev, idx)) {
-+			if (fail_head && !pci_is_root_bus(list->dev->bus)) {
-+				/*
-+				 * device need to keep flags and size
-+				 * for next try
-+				 */
-+				add_to_failed_list(fail_head, list->dev, res);
-+			}
- 			res->start = 0;
- 			res->end = 0;
- 			res->flags = 0;
-@@ -572,19 +624,20 @@ void __ref pci_bus_size_bridges(struct pci_bus *bus)
- }
- EXPORT_SYMBOL(pci_bus_size_bridges);
- 
--void __ref pci_bus_assign_resources(const struct pci_bus *bus)
-+static void __ref __pci_bus_assign_resources(const struct pci_bus *bus,
-+					 struct resource_list_x *fail_head)
- {
- 	struct pci_bus *b;
- 	struct pci_dev *dev;
- 
--	pbus_assign_resources_sorted(bus);
-+	pbus_assign_resources_sorted(bus, fail_head);
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		b = dev->subordinate;
- 		if (!b)
- 			continue;
- 
--		pci_bus_assign_resources(b);
-+		__pci_bus_assign_resources(b, fail_head);
- 
- 		switch (dev->class >> 8) {
- 		case PCI_CLASS_BRIDGE_PCI:
-@@ -602,6 +655,11 @@ void __ref pci_bus_assign_resources(const struct pci_bus *bus)
- 		}
- 	}
- }
-+
-+void __ref pci_bus_assign_resources(const struct pci_bus *bus)
-+{
-+	__pci_bus_assign_resources(bus, NULL);
-+}
- EXPORT_SYMBOL(pci_bus_assign_resources);
- 
- static void pci_bridge_release_resources(struct pci_bus *bus,
+Nope, I don't really maintain a tree. Please add them to your driver
+tree!
+
+Thanks,
+
+Lennart
+
 -- 
-1.6.4.2
-
+Lennart Poettering                        Red Hat, Inc.
+lennart [at] poettering [dot] net
+http://0pointer.net/lennart/           GnuPG 0x1A015CC4
