@@ -1,45 +1,37 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955Ab0APRNR (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 12:13:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793Ab0APRNQ
+	id S1754617Ab0APRea (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 12:34:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168Ab0APRea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 12:13:16 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41820 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752282Ab0APRNP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 12:13:15 -0500
-Message-ID: <4B51F352.4040803@zytor.com>
-Date: Sat, 16 Jan 2010 09:11:46 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Sat, 16 Jan 2010 12:34:30 -0500
+Received: from web82002.mail.mud.yahoo.com ([66.163.178.246]:23853 "HELO
+	web82002.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751655Ab0APRe3 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 12:34:29 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=MxceO9hk+lPZIIPTyt+eKn+ukAS7tzqMWWAiGgsvAWzZjcCq1qbS2/DHox/hJuliqZ27aWdvjqCsxmQ3ZZ6l1+FTBgSuNoCdjpqWiid1Kna2peMUwCdgvEiW2HY9JFi0DKzWp3410xzHOZ8b+jJ4ZdG9sXv/3l4NfiT0o0II+Hg=;
+Message-ID: <131168.51580.qm@web82002.mail.mud.yahoo.com>
+X-YMail-OSG: gGVcghgVM1ndCJqrGFPVIY5HuPAdmf811GBnukI_cP4XpTiZ4WghJ1zlQ2gxch.xZYjRBm_8mvfX2yMToCzJO7aGz1l4Fcl_.y6uQhPFUJmH2ZGi6.oX0FU.JZn3QklsPUyA.Zx6Kb5jkx9nmUVT3ezTT6V99mIew0naNFyZti.fRhPFyX9DfNpiaynBI8lz49.tq7motraCtIQvzW4V3acVNeqip.azmquXQqd_nQNpaNKiTaFZhZrF2Gr1TmE7RVCf5_Zjbgm5xxoqoruE5794kmuwbdPhIlI_AX_4G9E2Uv5zyChAZW3McfqnKKWgSlbZLLTiDQc_C6q.AxFsgaFZvymsIgAykkdDP4_nAIH3rsK3AfDvcrJm0OeDkwERSSx8XEEbd4N1OrFlbUw5XTw9t_JtUSPoqt2XLyHche_KYRAgqw9T18vUge5_sJpy6zH8nzz1OSzT15zS0jqXmJ5SW6ujnyL3AgRTjUuln4mnH_vKSUTw5_wX275b5FvRyyeRyKvrjZHklS8L_C5_eih0_EzKFuabvgtxa1ovSPSWPpvdav3xTczNz02g0ZBxYsTYiW0oabPHDrxJz4G9.lBnng4BYVo.ONeWCVKFzh92WpLink.PrkVN4MwE31CpZ5gevSpNWGS6PcL.8Pnmp7FueyplM.fz53eaS__xd5.rQedp9xagQfGfFSVKV.i20hcFK7_H4BgKK4IsN3AxohkFaSYKp1MSGGHTdyYmxHNkD5brSkZuvv9EwsAbXtsDiweXNGkPqf2MzhoiR7XfcCGJ.rrdmQwKEMlIxy1lQnyO2NFJDCrRg3ITO1uHh4E1GaUirez3YGqGfOj2AuF.kMjYlfrvecnQ4ISKaCJM0QEXGi40
+X-Mailer: YahooMailClassic/9.0.20 YahooMailWebService/0.8.100.260964
+Date: Sat, 16 Jan 2010 09:34:29 -0800 (PST)
+From: =?utf-8?B?RklGQSBXb3JsZCBDdXDihKIyMDEw?= 
+	<charlott-carter@sbcglobal.net>
+Reply-To: mr.paul.adams@9.cn
+Subject: Your email ID has been given 1,000,000,00 GBP in our FIFA quiz promo
+To: undisclosed recipients:;
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-CC: Sitsofe Wheeler <sitsofe@yahoo.com>,
-        Yuhong Bao <yuhongbao_386@hotmail.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-        linux-kernel@vger.kernel.org
-Subject: Re: Ubuntu 32-bit, 32-bit PAE, 64-bit Kernel Benchmarks
-References: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl> <4B511B12.6010208@zytor.com> <20100116123313.GA20059@sucs.org> <alpine.LFD.2.00.1001160753390.5650@localhost>
-In-Reply-To: <alpine.LFD.2.00.1001160753390.5650@localhost>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/16/2010 04:57 AM, Robert P. J. Day wrote:
-> 
->   actually, it's 896M, not 892M, and i believe it's defined in
-> arch/x86/mm/init_32.c:
-> 
 
-You also lose an additional small chunk for the fixmap, in addition to
-the vmalloc area.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Names....
+Address.....
+Tel......
+Country......
+Occupation......
