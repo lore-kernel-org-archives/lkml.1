@@ -1,66 +1,64 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752013Ab0APHey (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 02:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898Ab0APHex
+	id S1752061Ab0APHin (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 02:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954Ab0APHim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 02:34:53 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:34046 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751909Ab0APHew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 02:34:52 -0500
-Date: Sat, 16 Jan 2010 18:34:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Rientjes <rientjes@google.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Michal Marek <mmarek@suse.cz>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [patch] kbuild: improve version string logic
-Message-Id: <20100116183445.29fc5d50.sfr@canb.auug.org.au>
-In-Reply-To: <20100116063754.GC20342@elte.hu>
-References: <alpine.DEB.2.00.1001041330230.26148@chino.kir.corp.google.com>
-	<4B4345AF.9040600@suse.cz>
-	<alpine.DEB.2.00.1001131300360.26527@chino.kir.corp.google.com>
-	<20100116063754.GC20342@elte.hu>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__16_Jan_2010_18_34_45_+1100_fgFhiyl91z43a5u/"
+	Sat, 16 Jan 2010 02:38:42 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40157 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751898Ab0APHim (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 02:38:42 -0500
+Date: Sat, 16 Jan 2010 08:38:34 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Greg KH <gregkh@suse.de>
+Cc: kernel list <linux-kernel@vger.kernel.org>, KMoorman@transy.edu,
+        w.sang@pengutronix.de, ken_kawasaki@spring.nifty.jp,
+        davem@davemloft.net, Andrew Morton <akpm@osdl.org>,
+        alan@lxorguk.ukuu.org.uk
+Subject: Re: serial_cs: oxsemi quirk breaks resume
+Message-ID: <20100116073833.GA15822@elf.ucw.cz>
+References: <20091110075410.GA6157@ucw.cz>
+ <20100115200100.GC1345@ucw.cz>
+ <20100115235333.GA20493@suse.de>
+ <20100115235425.GB20493@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100115235425.GB20493@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__16_Jan_2010_18_34_45_+1100_fgFhiyl91z43a5u/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri 2010-01-15 15:54:25, Greg KH wrote:
+> On Fri, Jan 15, 2010 at 03:53:33PM -0800, Greg KH wrote:
+> > On Fri, Jan 15, 2010 at 09:01:00PM +0100, Pavel Machek wrote:
+> > > On Tue 2009-11-10 08:54:10, Pavel Machek wrote:
+> > > > 
+> > > > Quirk is applied on all cards with given manfid (is it that
+> > > > correct?). Unfortunately, that quirk breaks resume on zaurus with
+> > > > billionton bluetooth card inserted: c950ctrl is 0 and outb() faults.
+> > > > 
+> > > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > > 
+> > > I believe this patch got enough acks and is waiting in the tree
+> > > somewhere (greg?) (possibly with slightly different changelog), but I
+> > > don't see it in 33-rc4. Could it get pushed? It is quite simple
+> > > bugfix, and is important for my zaurus...  Pavel
+> > 
+> > I thought others complained about it.
+> > 
+> > If not, care to resend it to me, with the acks added to it, so that I
+> > can forward it on?
+> 
+> Oh nevermind, it's in my tree already, I'll include it in the next round
+> of patches to go to Linus (looking like Monday now, too late for
+> today...)
 
-Hi Ingo,
+Thanks!
 
-On Sat, 16 Jan 2010 07:37:54 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->
-> Given that Sam doesnt maintain the kbuild tree anymore, would this patch =
-be a=20
-> good fit for -mm perhaps?
-
-There is a new kbuild tree maintainer: Michal Marek <mmarek@suse.cz>
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__16_Jan_2010_18_34_45_+1100_fgFhiyl91z43a5u/
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktRbBUACgkQjjKRsyhoI8wBKACZAQfb55hlh5UmsE+CRYCkC8Rr
-aGQAn12Rr+2j0BkR2gU+qkHYHFQ6dP0Q
-=4+47
------END PGP SIGNATURE-----
-
---Signature=_Sat__16_Jan_2010_18_34_45_+1100_fgFhiyl91z43a5u/--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
