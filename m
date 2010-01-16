@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759086Ab0APDOk (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759067Ab0APDO3
+	id S1759108Ab0APDPH (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759074Ab0APDO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:14:29 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58124 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932365Ab0APDIW (ORCPT
+	Fri, 15 Jan 2010 22:14:59 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33909 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758752Ab0APDIU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 22:08:22 -0500
+	Fri, 15 Jan 2010 22:08:20 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 19:06:50 -0800
+Date: Fri, 15 Jan 2010 19:06:44 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 19/37] x86: move back find_e820_area to e820.c
+Subject: [PATCH 13/37] sparsemem: put usemap for one node together
 In-reply-to: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,191 +23,170 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263611228-6751-20-git-send-email-yinghai@kernel.org>
+Message-id: <1263611228-6751-14-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-make early_res.c more clean, so later could move it to /kernel
+could save some buf instead of applying one by one
 
-Signed-off: Yinghai Lu <yinghai@kernel.org>
+could help that system that is going to use early_res instead of bootmem
+less entries in early_res make search more faster on system with more memory.
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/include/asm/e820.h      |    2 +
- arch/x86/include/asm/early_res.h |    4 +-
- arch/x86/kernel/e820.c           |   57 ++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/early_res.c      |   56 -------------------------------------
- 4 files changed, 61 insertions(+), 58 deletions(-)
+ mm/sparse.c |   84 ++++++++++++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 66 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/include/asm/e820.h b/arch/x86/include/asm/e820.h
-index efad699..a8299e1 100644
---- a/arch/x86/include/asm/e820.h
-+++ b/arch/x86/include/asm/e820.h
-@@ -109,6 +109,8 @@ static inline void early_memtest(unsigned long start, unsigned long end)
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 6ce4aab..0cdaf0b 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -271,7 +271,8 @@ static unsigned long *__kmalloc_section_usemap(void)
  
- extern unsigned long end_user_pfn;
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+ static unsigned long * __init
+-sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
++sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
++					 unsigned long count)
+ {
+ 	unsigned long section_nr;
  
-+extern u64 find_e820_area(u64 start, u64 end, u64 size, u64 align);
-+extern u64 find_e820_area_size(u64 start, u64 *sizep, u64 align);
- extern u64 early_reserve_e820(u64 startt, u64 sizet, u64 align);
- #include <asm/early_res.h>
- 
-diff --git a/arch/x86/include/asm/early_res.h b/arch/x86/include/asm/early_res.h
-index 2d43b16..5a4d2eb 100644
---- a/arch/x86/include/asm/early_res.h
-+++ b/arch/x86/include/asm/early_res.h
-@@ -2,8 +2,6 @@
- #define _ASM_X86_EARLY_RES_H
- #ifdef __KERNEL__
- 
--extern u64 find_e820_area(u64 start, u64 end, u64 size, u64 align);
--extern u64 find_e820_area_size(u64 start, u64 *sizep, u64 align);
- extern void reserve_early(u64 start, u64 end, char *name);
- extern void reserve_early_overlap_ok(u64 start, u64 end, char *name);
- extern void free_early(u64 start, u64 end);
-@@ -12,6 +10,8 @@ extern void early_res_to_bootmem(u64 start, u64 end);
- void reserve_early_without_check(u64 start, u64 end, char *name);
- u64 find_early_area(u64 ei_start, u64 ei_last, u64 start, u64 end,
- 			 u64 size, u64 align);
-+u64 find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
-+			 u64 *sizep, u64 align);
- #include <linux/range.h>
- int get_free_all_memory_range(struct range **rangep, int nodeid);
- 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 27a756e..acd7be6 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -715,6 +715,63 @@ core_initcall(e820_mark_nvs_memory);
- #endif
- 
- /*
-+ * Find a free area with specified alignment in a specific range.
-+ */
-+u64 __init find_e820_area(u64 start, u64 end, u64 size, u64 align)
-+{
-+	int i;
-+
-+	for (i = 0; i < e820.nr_map; i++) {
-+		struct e820entry *ei = &e820.map[i];
-+		u64 addr;
-+		u64 ei_start, ei_last;
-+
-+		if (ei->type != E820_RAM)
-+			continue;
-+
-+		ei_last = ei->addr + ei->size;
-+		ei_start = ei->addr;
-+		addr = find_early_area(ei_start, ei_last, start, end,
-+					 size, align);
-+
-+		if (addr == -1ULL)
-+			continue;
-+
-+		return addr;
-+	}
-+	return -1ULL;
-+}
-+
-+/*
-+ * Find next free range after *start
-+ */
-+u64 __init find_e820_area_size(u64 start, u64 *sizep, u64 align)
-+{
-+	int i;
-+
-+	for (i = 0; i < e820.nr_map; i++) {
-+		struct e820entry *ei = &e820.map[i];
-+		u64 addr;
-+		u64 ei_start, ei_last;
-+
-+		if (ei->type != E820_RAM)
-+			continue;
-+
-+		ei_last = ei->addr + ei->size;
-+		ei_start = ei->addr;
-+		addr = find_early_area_size(ei_start, ei_last, start,
-+					 sizep, align);
-+
-+		if (addr == -1ULL)
-+			continue;
-+
-+		return addr;
-+	}
-+
-+	return -1ULL;
-+}
-+
-+/*
-  * pre allocated 4k and reserved it in e820
-  */
- u64 __init early_reserve_e820(u64 startt, u64 sizet, u64 align)
-diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
-index aba02f2..d0a70cc 100644
---- a/arch/x86/kernel/early_res.c
-+++ b/arch/x86/kernel/early_res.c
-@@ -499,60 +499,4 @@ out:
- 	return -1ULL;
+@@ -286,7 +287,7 @@ sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
+ 	 * this problem.
+ 	 */
+ 	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
+-	return alloc_bootmem_section(usemap_size(), section_nr);
++	return alloc_bootmem_section(usemap_size() * count, section_nr);
  }
  
--/*
-- * Find a free area with specified alignment in a specific range.
-- */
--u64 __init find_e820_area(u64 start, u64 end, u64 size, u64 align)
--{
--	int i;
--
--	for (i = 0; i < e820.nr_map; i++) {
--		struct e820entry *ei = &e820.map[i];
--		u64 addr;
--		u64 ei_start, ei_last;
--
--		if (ei->type != E820_RAM)
--			continue;
--
--		ei_last = ei->addr + ei->size;
--		ei_start = ei->addr;
--		addr = find_early_area(ei_start, ei_last, start, end,
--					 size, align);
--
--		if (addr == -1ULL)
--			continue;
--
--		return addr;
--	}
--	return -1ULL;
--}
--
--/*
-- * Find next free range after *start
-- */
--u64 __init find_e820_area_size(u64 start, u64 *sizep, u64 align)
--{
--	int i;
--
--	for (i = 0; i < e820.nr_map; i++) {
--		struct e820entry *ei = &e820.map[i];
--		u64 addr;
--		u64 ei_start, ei_last;
--
--		if (ei->type != E820_RAM)
--			continue;
--
--		ei_last = ei->addr + ei->size;
--		ei_start = ei->addr;
--		addr = find_early_area_size(ei_start, ei_last, start,
--					 sizep, align);
--
--		if (addr == -1ULL)
--			continue;
--
--		return addr;
--	}
--
--	return -1ULL;
--}
+ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+@@ -329,7 +330,8 @@ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+ }
+ #else
+ static unsigned long * __init
+-sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
++sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
++					 unsigned long count)
+ {
+ 	return NULL;
+ }
+@@ -339,27 +341,40 @@ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+ }
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
  
+-static unsigned long *__init sparse_early_usemap_alloc(unsigned long pnum)
++static void __init sparse_early_usemaps_alloc_node(unsigned long**usemap_map,
++				 unsigned long pnum_begin,
++				 unsigned long pnum_end,
++				 unsigned long usemap_count, int nodeid)
+ {
+-	unsigned long *usemap;
+-	struct mem_section *ms = __nr_to_section(pnum);
+-	int nid = sparse_early_nid(ms);
+-
+-	usemap = sparse_early_usemap_alloc_pgdat_section(NODE_DATA(nid));
+-	if (usemap)
+-		return usemap;
++	void *usemap;
++	unsigned long pnum;
++	int size = usemap_size();
+ 
+-	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
++	usemap = sparse_early_usemaps_alloc_pgdat_section(NODE_DATA(nodeid),
++								 usemap_count);
+ 	if (usemap) {
+-		check_usemap_section_nr(nid, usemap);
+-		return usemap;
++		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
++			if (!present_section_nr(pnum))
++				continue;
++			usemap_map[pnum] = usemap;
++			usemap += size;
++		}
++		return;
+ 	}
+ 
+-	/* Stupid: suppress gcc warning for SPARSEMEM && !NUMA */
+-	nid = 0;
++	usemap = alloc_bootmem_node(NODE_DATA(nodeid), size * usemap_count);
++	if (usemap) {
++		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
++			if (!present_section_nr(pnum))
++				continue;
++			usemap_map[pnum] = usemap;
++			usemap += size;
++			check_usemap_section_nr(nodeid, usemap_map[pnum]);
++		}
++		return;
++	}
+ 
+ 	printk(KERN_WARNING "%s: allocation failed\n", __func__);
+-	return NULL;
+ }
+ 
+ #ifndef CONFIG_SPARSEMEM_VMEMMAP
+@@ -396,6 +411,7 @@ static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
+ void __attribute__((weak)) __meminit vmemmap_populate_print_last(void)
+ {
+ }
++
+ /*
+  * Allocate the accumulated non-linear sections, allocate a mem_map
+  * for each and record the physical to section mapping.
+@@ -407,6 +423,9 @@ void __init sparse_init(void)
+ 	unsigned long *usemap;
+ 	unsigned long **usemap_map;
+ 	int size;
++	int nodeid_begin = 0;
++	unsigned long pnum_begin = 0;
++	unsigned long usemap_count;
+ 
+ 	/*
+ 	 * map is using big page (aka 2M in x86 64 bit)
+@@ -425,10 +444,39 @@ void __init sparse_init(void)
+ 		panic("can not allocate usemap_map\n");
+ 
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
++		struct mem_section *ms;
++
+ 		if (!present_section_nr(pnum))
+ 			continue;
+-		usemap_map[pnum] = sparse_early_usemap_alloc(pnum);
++		ms = __nr_to_section(pnum);
++		nodeid_begin = sparse_early_nid(ms);
++		pnum_begin = pnum;
++		break;
++	}
++	usemap_count = 1;
++	for (pnum = pnum_begin + 1; pnum < NR_MEM_SECTIONS; pnum++) {
++		struct mem_section *ms;
++		int nodeid;
++
++		if (!present_section_nr(pnum))
++			continue;
++		ms = __nr_to_section(pnum);
++		nodeid = sparse_early_nid(ms);
++		if (nodeid == nodeid_begin) {
++			usemap_count++;
++			continue;
++		}
++		/* ok, we need to take cake of from pnum_begin to pnum - 1*/
++		sparse_early_usemaps_alloc_node(usemap_map, pnum_begin, pnum,
++						 usemap_count, nodeid_begin);
++		/* new start, update count etc*/
++		nodeid_begin = nodeid;
++		pnum_begin = pnum;
++		usemap_count = 1;
+ 	}
++	/* ok, last chunk */
++	sparse_early_usemaps_alloc_node(usemap_map, pnum_begin, NR_MEM_SECTIONS,
++					 usemap_count, nodeid_begin);
+ 
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+ 		if (!present_section_nr(pnum))
 -- 
 1.6.4.2
 
