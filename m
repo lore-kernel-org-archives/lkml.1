@@ -1,67 +1,94 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024Ab0APK22 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 05:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420Ab0APK22
+	id S1752694Ab0APKdx (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 05:33:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729Ab0APKdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 05:28:28 -0500
-Received: from smtp.witbe.net ([81.88.96.48]:47413 "EHLO smtp.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001Ab0APK20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 05:28:26 -0500
-Date: Sat, 16 Jan 2010 11:28:24 +0100
-From: Paul Rolland (=?UTF-8?B?44Od44O844Or44O744Ot44Op44Oz?=) 
-	<rol@witbe.net>
-To: linux-kernel@vger.kernel.org
-Cc: rol@witbe.net
-Subject: 2.6.33-rc4: i915/drm : error in execbuffer
-Message-ID: <20100116112824.432f261b@tux.DEF.witbe.net>
-Organization: Witbe.net
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
-X-Ncc-RegId: fr.witbe
-X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+	Sat, 16 Jan 2010 05:33:52 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38753 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751436Ab0APKdv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 05:33:51 -0500
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+        Arnaldo Carvalho de Melo <acme@infradead.org>,
+        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+        utrace-devel <utrace-devel@redhat.com>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        Masami Hiramatsu <mhiramat@redhat.com>,
+        Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+        LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263603503.5007.134.camel@localhost.localdomain>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>
+	 <1263467289.4244.288.camel@laptop>
+	 <1263498366.4875.25.camel@localhost.localdomain>
+	 <1263546175.4244.342.camel@laptop>
+	 <1263589634.5007.34.camel@localhost.localdomain>
+	 <1263592192.4244.488.camel@laptop>
+	 <1263603503.5007.134.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 16 Jan 2010 11:33:17 +0100
+Message-ID: <1263637997.4244.555.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, 2010-01-15 at 16:58 -0800, Jim Keniston wrote:
+> But here are some things to keep in mind about the
+> various approaches:
+> 
+> 1. Single-stepping inline is easiest: you need to know very little about
+> the instruction set you're probing.  But it's inadequate for
+> multithreaded apps.
+> 2. Single-stepping out of line solves the multithreading issue (as do #3
+> and #4), but requires more knowledge of the instruction set.  (In
+> particular, calls, jumps, and returns need special care; as do
+> rip-relative instructions in x86_64.)  I count 9 architectures that
+> support kprobes.  I think most of these do SSOL.
+> 3. "Boosted" probes (where an appended jump instruction removes the need
+> for the single-step trap on many instructions) require even more
+> knowledge of the instruction set, and like SSOL, require XOL slots.
+> Right now, as far as I know, x86 is the only architecture with boosted
+> kprobes.
+> 4. Emulation removes the need for the XOL area, but requires pretty much
+> total knowledge of the instruction set.  It's also a performance win for
+> architectures that can't do #3.  I see kvm implemented on 4
+> architectures (ia64, powerpc, s390, x86).  Coincidentally, those are the
+> architectures to which uprobes (old uprobes, with ubp and xol bundled
+> in) has already been ported (though Intel hasn't been maintaining their
+> ia64 port). 
 
-Since I've upgraded from -rc3 to -rc4, I'm getting these errors :
+Right, so I was thinking a combination of 4 and execute from kernel
+space would be feasible. I would think most regular instructions are
+runnable from kernel space given that we provide the proper pt_regs
+environment.
 
-[drm:i915_gem_execbuffer] *ERROR* i915_gem_do_execbuffer returns -512
+Although I just realize we need to fully emulate the address computation
+step for all memory writes, otherwise a wild userspace pointer might end
+up writing in your kernel image.
 
-They are appearing from time to time in my log messages, and I can't
-relate them to any activity I may have with the machine.
+Also, don't we already need full knowledge of the instruction set in
+order to decode the instruction stream and find instruction boundaries.
 
-My machine is a Dell Vostro1520, running a 64bit system.
-[root@tux linux]# lspci -n
-00:00.0 0600: 8086:2a40 (rev 07)
-00:02.0 0300: 8086:2a42 (rev 07)
-00:02.1 0380: 8086:2a43 (rev 07)
-...
+> So it sort of comes down to how objectionable the XOL vma (or page)
+> really is.
 
-.config available on request if needed.
+Well, I really hate touching the address space, and the fact that it
+permutates the probed application in very obvious ways.
 
-Regards,
-Paul
+FWIW, I think the VDSO is ugly too and would have objected to it were it
+proposed now -- there's much better solutions for that
+(/sys/lib/libkernel.so comes to mind).
 
--- 
-Paul Rolland                                E-Mail : rol(at)witbe.net
-CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
-Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
-F-92057 Paris La Defense                    RIPE : PR12-RIPE
-LinkedIn : http://www.linkedin.com/in/paulrolland
+> Regarding your suggestion about executing the probed instruction in the
+> kernel, how widely do you think that can be applied: which
+> architectures?  how much of the instruction set?
 
-This is dedicated to all the ones who want to control Internet, its
-content or its usage :
-
-"I worry about my child and the Internet all the time, even though she's
-too young to have logged on yet. Here's what I worry about. I worry that 10
-or 15 years from now, she will come to me and say 'Daddy, where were you
-when they took freedom of the press away from the Internet?'"
---Mike Godwin, Electronic Frontier Foundation 
-
+I only know some of x86, I really couldn't tell for any other arch.
 
