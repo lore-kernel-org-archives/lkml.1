@@ -1,61 +1,78 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758725Ab0APDDF (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:03:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758199Ab0APDDD
+	id S1758602Ab0APDEo (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:04:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757767Ab0APDEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:03:03 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:55659 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752938Ab0APDDB (ORCPT
+	Fri, 15 Jan 2010 22:04:42 -0500
+Received: from p01c11o148.mxlogic.net ([208.65.144.71]:51553 "EHLO
+	p01c11o148.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755173Ab0APDEm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 22:03:01 -0500
-X-Sasl-enc: IKtD3W9LSxEo9kmfMz2KL+LPp0pyxFzT016DXdPKbNpD 1263610980
-Date: Sat, 16 Jan 2010 01:02:57 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Seth Heasley <seth.heasley@intel.com>,
-        linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.32.3] ahci: AHCI and RAID mode SATA patch for Intel
- Cougar Point DeviceIDs
-Message-ID: <20100116030257.GG3814@khazad-dum.debian.net>
-References: <201001121700.18234.seth.heasley@intel.com>
- <4B4D4EAA.2010109@gmail.com>
- <4B4DAA68.60608@pobox.com>
- <51f3faa71001131611y343ad225n1acc73900fd49894@mail.gmail.com>
- <51f3faa71001131642u2cc9de80n8e73be7a8707afb2@mail.gmail.com>
- <20100114201136.GA3814@khazad-dum.debian.net>
- <51f3faa71001141615k3223a02fhb0b882b6cbe680cf@mail.gmail.com>
+	Fri, 15 Jan 2010 22:04:42 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jan 2010 22:04:41 EST
+X-MXL-Hash: 4b512cc92d4a2375-313ff8aae82992b2d05ebc329ae6b43ca8bf8727
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <51f3faa71001141615k3223a02fhb0b882b6cbe680cf@mail.gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATH 2.6.33 2/3] net: Kconfig change for Micrel KSZ884X driver
+Date: Fri, 15 Jan 2010 19:04:39 -0800
+Message-ID: <14385191E87B904DBD836449AA30269D021A4B@MORGANITE.micrel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATH 2.6.33 2/3] net: Kconfig change for Micrel KSZ884X driver
+Thread-Index: AcqWWKRJWQUbHQsPS7a8P8Ine+MHag==
+From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+To: "Dave Miller" <davem@davemloft.net>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 16 Jan 2010 03:04:39.0098 (UTC) FILETIME=[A44871A0:01CA9658]
+X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2010011101)]
+X-MAIL-FROM: <tristram.ha@micrel.com>
+X-SOURCE-IP: [65.218.208.2]
+X-AnalysisOut: [v=1.0 c=1 a=6vXHp6nfoPEA:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
+X-AnalysisOut: [a=Q4n7fi2PAAAA:8 a=VYfMdWa_kRON_9sugdgA:9 a=WEsdoGNZL8SV2C]
+X-AnalysisOut: [WqW8SDFDjU5lkA:4 a=yJsD6ztlz_8A:10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jan 2010, Robert Hancock wrote:
-> > Maybe it is the silicon AHCI in ICH6R that is immature, and one is much
-> > better of using it in IDE mode?
-> 
-> That seems unlikely, since the Intel-provided Matrix Storage drivers
-> for that controller on Windows will be using AHCI mode..
+From: Tristram Ha <Tristram.Ha@micrel.com>
 
-That doesn't say much.
+Add Micrel KSZ8841/KSZ8842 PCI Ethernet chip support.
 
-If the change doesn't risk switching unaware users from IDE mode to AHCI, it
-is not a problem.  But if it does, why risk it?  It is not like anyone that
-wants hotplug and has an ICH6-R/M system won't have figured it out by now
-how to get it to use AHCI, these are NOT new systems.
+Some users like to use KSZ8842 switch to run Spanning Tree Protocol.  As a result a hardware STP support was implemented so that the host does not waste CPU time forwarding each and every packet.
 
-AHCI in ICH6R or ICH6M is not always an advantage.  You don't want it on
-ICH6-M in a laptop if it is not going to use the hotplug, for example.  In
-AHCI mode, the chip draws more power.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Signed-off-by: Tristram Ha <Tristram.Ha@micrel.com>
+---
+diff -uprN linux-2.6.33-rc3.old/drivers/net/Kconfig linux-2.6.33-rc3.new/drivers/net/Kconfig
+--- linux-2.6.33-rc3.old/drivers/net/Kconfig	2010-01-05 16:02:46.000000000 -0800
++++ linux-2.6.33-rc3.new/drivers/net/Kconfig	2010-01-13 12:17:42.000000000 -0800
+@@ -1368,6 +1368,27 @@ config AC3200
+ 	  To compile this driver as a module, choose M here. The module
+ 	  will be called ac3200.
+ 
++config KSZ884X_PCI
++	tristate "Micrel KSZ8841/2 PCI"
++	depends on NET_PCI && PCI
++	select MII
++	select CRC32
++	help
++	  This PCI driver is for Micrel KSZ8841/KSZ8842 PCI Ethernet chip.
++
++	  To compile this driver as a module, choose M here. The module
++	  will be called ksz884x.
++
++config KSZ8842_STP
++	bool "STP support"
++	depends on KSZ884X_PCI && EXPERIMENTAL
++	help
++	  This enables a feature to aid KSZ8842 running Spanning Tree Protocol.
++	  To actually use it pass the stp=1 parameter to the driver.
++
++	  This feature is experimental and may not work correctly compared to
++	  the Linux bridge using STP.
++
+ config APRICOT
+ 	tristate "Apricot Xen-II on board Ethernet"
+ 	depends on NET_PCI && ISA
