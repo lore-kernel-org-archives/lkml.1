@@ -1,26 +1,23 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752177Ab0APJEd (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 04:04:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151Ab0APJEa
+	id S1752404Ab0APJT5 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 04:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198Ab0APJT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 04:04:30 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48134
+	Sat, 16 Jan 2010 04:19:56 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51782
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751210Ab0APJE0 (ORCPT
+	by vger.kernel.org with ESMTP id S1751049Ab0APJTz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 04:04:26 -0500
-Date: Sat, 16 Jan 2010 01:04:35 -0800 (PST)
-Message-Id: <20100116.010435.55169828.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: bpidoux@free.fr, bernard.pidoux@upmc.fr, linux-kernel@vger.kernel.org,
-        netdev@vger.kernel.org, ralf@linux-mips.org,
-        linux-hams@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [PATCH net-2.6] ax25: netrom: rose: Fix timer oopses
+	Sat, 16 Jan 2010 04:19:55 -0500
+Date: Sat, 16 Jan 2010 01:20:04 -0800 (PST)
+Message-Id: <20100116.012004.166836523.davem@davemloft.net>
+To: Tristram.Ha@Micrel.Com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        shemminger@vyatta.com
+Subject: Re: [PATCH 2.6.33 1/3] net: Micrel KSZ8841/2 PCI Ethernet driver
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100115203654.GA3084@del.dom.local>
-References: <4B2E6729.1090102@free.fr>
-	<4B507FAA.8010007@free.fr>
-	<20100115203654.GA3084@del.dom.local>
+In-Reply-To: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com>
+References: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com>
 X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,16 +26,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Fri, 15 Jan 2010 21:36:54 +0100
+From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+Date: Fri, 15 Jan 2010 18:57:59 -0800
 
-> Wrong ax25_cb refcounting in ax25_send_frame() and by its callers can
-> cause timer oopses (first reported with 2.6.29.6 kernel).
-> 
-> Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=14905
-> 
-> Reported-by: Bernard Pidoux <bpidoux@free.fr>
-> Tested-by: Bernard Pidoux <bpidoux@free.fr>
-> Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+> The KSZ8842 has a switch with lots of hardware configurations.  The =
+> driver uses the proc system to allow users to configure the switch.  If =
+> this is not desired the whole thing can be removed by not calling the =
+> init_proc() function.
 
-Applied, thanks everyone.
+I think there needs to be a serious discussion about how
+this driver uses bridge layer internals by doing things like:
+
++/* Needed for STP support. */
++#ifdef CONFIG_KSZ8842_STP
++#include <../net/bridge/br_private.h>
++#endif
+
+and uses procfs to configure the ports.
+
+Stephen please look this over and make suggestions for better
+ways to support and configure these kinds of devices.
+
+Thanks.
