@@ -1,67 +1,131 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752582Ab0APTaA (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 14:30:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809Ab0APT36
+	id S1754365Ab0APTlv (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 14:41:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904Ab0APTlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 14:29:58 -0500
-Received: from smtp102.sbc.mail.gq1.yahoo.com ([67.195.15.61]:31303 "HELO
-	smtp102.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751589Ab0APT35 (ORCPT
+	Sat, 16 Jan 2010 14:41:50 -0500
+Received: from e28smtp04.in.ibm.com ([122.248.162.4]:47755 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753497Ab0APTlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 14:29:57 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=aRGycOaB/WQJsFoZAJv27oVlk8i3MxeGtZjt2GxN8J2T2Ojm9JmGxqTKi2dlVvdc3tfv3yHQJ0lKzuC2+kA/C/Ajh+nQrxtu1WzooZkHxobdK4Ckn3qmnM+13Xg5mOC7ZekQe1IwRsAUs1hTPh2V48ToUJcETgXusBRPE8zbPtk=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: alt09IEVM1m3z_kZfqYG_QzaovNjySaj8J2yDvzTbXYnGek8sWaJLf62ae3dhCsrtPPtrvOAq7Mnmrj.XX8TKTo0MhcLP2lsB_1mageOQP8FiYB62N_N_3x3cMMUkfLTWaGvo46KjypJP_qIBRyQaJHequ_h51Qywm_S4KBTbVmHbZxybnW7w7VysAR6_2WJ1K9HdARCLVGaazuJdSyiWRWwLpiuycpYz5b2xullC_beJaun7xB35phBsBvfgTHVRTOjNVGb6W_tcUvNAtxJlYUlabso7LI3lNi2
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: flash_platform_data namespace collision
-Date: Sat, 16 Jan 2010 11:23:15 -0800
-User-Agent: KMail/1.9.10
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-        David Woodhouse <dwmw2@infradead.org>,
-        Linux Mailing List <linux-kernel@vger.kernel.org>,
-        "linux-embedded" <linux-embedded@vger.kernel.org>
-References: <1263620475.29868.6280.camel@calx> <20100116110420.GB31282@flint.arm.linux.org.uk> <1263664079.29868.6289.camel@calx>
-In-Reply-To: <1263664079.29868.6289.camel@calx>
+	Sat, 16 Jan 2010 14:41:49 -0500
+Date: Sun, 17 Jan 2010 01:11:37 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Jan Kiszka <jan.kiszka@siemens.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+        LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+        Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC Patch 2/2][Bugfix][x86][hw-breakpoint] Fix return-code to
+	notifier chain in hw_breakpoint_handler
+Message-ID: <20100116194058.GA31079@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20091226175533.149765731@linux.vnet.ibm.com> <20091226182833.GC9494@in.ibm.com> <20091231003808.GC23808@nowhere> <20091231190217.GC3676@in.ibm.com> <20100110031857.GB15195@nowhere> <4B4B78D1.2080606@siemens.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201001161123.15502.david-b@pacbell.net>
+In-Reply-To: <4B4B78D1.2080606@siemens.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 January 2010, Matt Mackall wrote:
-> On Sat, 2010-01-16 at 11:04 +0000, Russell King wrote:
-> > On Fri, Jan 15, 2010 at 11:41:15PM -0600, Matt Mackall wrote:
-> > > I've got a board here with SPI, NOR, and NAND flash devices and I've
-> > > just run into a namespace collision on flash_platform_data from
+On Mon, Jan 11, 2010 at 08:15:29PM +0100, Jan Kiszka wrote:
+> Frederic Weisbecker wrote:
+> > On Fri, Jan 01, 2010 at 12:32:17AM +0530, K.Prasad wrote:
+> >> On Thu, Dec 31, 2009 at 01:38:09AM +0100, Frederic Weisbecker wrote:
+> >>> On Sat, Dec 26, 2009 at 11:58:33PM +0530, K.Prasad wrote:
+> >>>> The hw-breakpoint handler will return NOTIFY_DONE for user-space breakpoints
+> >>>> to generate SIGTRAP signal (and not for kernel-space addresses). 
+> >>>>
+> >>>> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> >>>> ---
+> >>>>  arch/x86/kernel/hw_breakpoint.c |    9 +++++++--
+> >>>>  1 file changed, 7 insertions(+), 2 deletions(-)
+> >>>>
+> >>>> Index: linux-2.6-tip/arch/x86/kernel/hw_breakpoint.c
+> >>>> ===================================================================
+> >>>> --- linux-2.6-tip.orig/arch/x86/kernel/hw_breakpoint.c
+> >>>> +++ linux-2.6-tip/arch/x86/kernel/hw_breakpoint.c
+> >>>> @@ -502,8 +502,6 @@ static int __kprobes hw_breakpoint_handl
+> >>>>  		rcu_read_lock();
+> >>>>  
+> >>>>  		bp = per_cpu(bp_per_reg[i], cpu);
+> >>>> -		if (bp)
+> >>>> -			rc = NOTIFY_DONE;
+> >>>>  		/*
+> >>>>  		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
+> >>>>  		 * exception handling
+> >>>> @@ -517,6 +515,13 @@ static int __kprobes hw_breakpoint_handl
+> >>>>  			rcu_read_unlock();
+> >>>>  			break;
+> >>>>  		}
+> >>>> +		/*
+> >>>> +		 * Further processing in do_debug() is needed for a) user-space
+> >>>> +		 * breakpoints (to generate signals) and b) when the system has
+> >>>> +		 * taken exception due to multiple causes
+> >>>> +		 */
+> >>>> +		if (bp->attr.bp_addr < TASK_SIZE)
+> >>>> +			rc = NOTIFY_DONE;
+> >>>>  
+> >>>>  		perf_bp_event(bp, args->regs);
+> >>>>  
+> >>>>
+> >>>
+> >>> Oh and now that I see this patch, the previous one indeed makes sense
+> >>> with this check:
+> >>>
+> >>> if (dr6 & (~DR_TRAP_BITS))
+> >>> 	rc = NOTIFY_DONE;
+> >>>
+> >>> That said, it means thread.debugreg6 won't get the reserved bits anymore.
+> >>> I see some use of them from kvm (it restores the reserved bits on guest<->host
+> >>> switch). Not sure if this inconsistency could affect kvm...
+> >>>
+> >> Can you point me to the relevant code?
 > > 
-> > The one in arch/arm/include/asm/mach/flash.h is designed to have great
-> > appeal and flexibility across different platforms, and indeed we have
-> > at least 70 users across six different MTD NOR flash drivers and two
-> > MTD NAND drivers.
-
-Yet it doesn't do what's needed for SPI flash (identify the chip type,
-when it can't probed); and for that application none of those methods
-are useful (and their slots are just wasted/confusing space).
-
-
-> > If anything, I believe that this header should move into linux/mtd/
-> > and become a standard structure for platforms to communicate their
-> > requirements to flash drivers.
+> > 
+> > I see various uses of DR6_VOLATILE and DR6_FIXED_1 in arch/x86/kvm/,
+> > DR6_FIXED_1 being the fixed unused bits in dr6. Not sure how
+> > this patch would affect what's set there.
+> > 
+> > I'll wait for Jan's answer.
+> > 
 > 
-> Yeah, I think this is probably the way to go. Davids, any objections?
+> You may need to synchronize me: What does the patch change, the shadow
+> register KVM will restore into DR6 on return to the host? Or the
+> register content KVM finds on guest entry?
+> 
 
-I had similar thoughts when I first happened across that structure.
+Sorry, this mail got buried deeply in my mailbox (hence the delay).
 
-But such a move wouldn't resolve $SUBJECT ... which is IMO best addressed
-by the obvious rename of the one to spi_flash_platform_data.
+Basically, this patch tries to remove DR6 from its reserved bits to help
+easy checks for certain status bits (such as DR_STEP). For instance, in
+order to verify if DR_STEP (Bit 14) is set we must now do
+if ((DR6 & ~DR6_RESERVED) & DR_STEP) {}
+or
+if (DR6 & (DR_STEP | DR6_RESERVED)) {}
+which is redundant.
 
-- dave
+Instead this patch would expunge all reserved bits in DR6 before checks
+for various status bits (to detect the cause of exception) are made in
+do_debug().
+
+At the outset, I don't think changes in the way the value of DR6 is used
+for comparison in do_debug() would affect exception handling for either
+KVM's guest or host OS (given that there are no hooks for the same in
+do_debug()).
+
+> The rules are simple: On entry, KVM assumes nothing about the register
+> state, just overwrites it (on demand) with the guest state. On exit, it
+> calls into hw_breakpoint_restore to ensure the host sees a proper state
+> (if required). But there is at no time an architecturally invalid state
+> loaded into the real register (that's basically what DR6_VOLATILE and
+> DR6_FIXED_1 are used for while in guest mode).
+> 
+
+Such a behaviour shouldn't be affected by the above change...your
+confirmation would help!
+
+Thanks,
+K.Prasad
+
