@@ -1,83 +1,53 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625Ab0APQPj (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 11:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900Ab0APQPh
+	id S1754218Ab0APQY3 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 11:24:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099Ab0APQY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 11:15:37 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:63613 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752124Ab0APQPg (ORCPT
+	Sat, 16 Jan 2010 11:24:28 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56015 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750998Ab0APQY1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 11:15:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=bb+46FLy2dVspn0rPL26ywGWcQRuT8AqReJ1Gu231RefKNQ6xGy4Ap8E9/i7mOsqmK
-         eayjqITaCYhKCXi3HBf9pCKHwGdhnnFxTYxkG0DJoRHoD/9WnY2ajq//FuI/NdvONiuh
-         xMPxFrd7fFdZQ1m2sF57cOR9Bo9hOw6XKVVYU=
-Subject: [PATCH -mmotm-2010-01-15-15-34] Fix wrong offset for vma merge in
- mbind
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-        Christoph Lameter <cl@linux-foundation.org>,
-        Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-        LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 17 Jan 2010 01:15:28 +0900
-Message-ID: <1263658528.2162.6.camel@barrios-desktop>
+	Sat, 16 Jan 2010 11:24:27 -0500
+Date: Sat, 16 Jan 2010 16:27:08 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, Arjan van de Ven <arjan@infradead.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Driver-Core: devtmpfs - remove EXPERIMENTAL and enable it by 
+ default
+Message-ID: <20100116162708.2cdf996e@lxorguk.ukuu.org.uk>
+In-Reply-To: <ac3eb2511001160751g2357bf2en2bfacaabe5c2f7e@mail.gmail.com>
+References: <1263505677.2074.2.camel@yio.site>
+	<20100115065638.005ac690@infradead.org>
+	<20100115180341.GA12146@kroah.com>
+	<20100115205722.3580b6bf@lxorguk.ukuu.org.uk>
+	<ac3eb2511001160751g2357bf2en2bfacaabe5c2f7e@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mm-fix-mbind-vma-merge-problem.patch added vma_merge in mbind
-to merge mergeable vmas.
-But it passed wrong offset of vm_file.
+On Sat, 16 Jan 2010 16:51:23 +0100
+Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-This patch fixes it.
+> On Fri, Jan 15, 2010 at 21:57, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> >> Why?  All major distros need this at boot time, and as we have been
+> >
+> > No they don't.
+> >
+> > Centos doesn't (in fact I suspect it'll break)
+> > Fedora 11 doesn't
+> > Fedora 12 doesn't seem to (but seems to be willing to use it)
+> > Ditto all the older SuSE, Ubuntu etc releases that are *still*
+> > active/supported/maintained
+> 
+> Fedora, SUSE, Ubuntu, ... All releases currently in development enable
+> and use it.
 
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
- mm/mempolicy.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index 9751f3f..7e529d0 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -570,6 +570,7 @@ static int mbind_range(struct mm_struct *mm, unsigned long start,
- 	struct vm_area_struct *prev;
- 	struct vm_area_struct *vma;
- 	int err = 0;
-+	pgoff_t pgoff;
- 	unsigned long vmstart;
- 	unsigned long vmend;
- 
-@@ -582,9 +583,9 @@ static int mbind_range(struct mm_struct *mm, unsigned long start,
- 		vmstart = max(start, vma->vm_start);
- 		vmend   = min(end, vma->vm_end);
- 
-+		pgoff = vma->vm_pgoff + ((start - vma->vm_start) >> PAGE_SHIFT);
- 		prev = vma_merge(mm, prev, vmstart, vmend, vma->vm_flags,
--				  vma->anon_vma, vma->vm_file, vma->vm_pgoff,
--				  new_pol);
-+				  vma->anon_vma, vma->vm_file, pgoff, new_pol);
- 		if (prev) {
- 			vma = prev;
- 			next = vma->vm_next;
--- 
-1.6.3.3
-
-
-
--- 
-Kind regards,
-Minchan Kim
-
+Yes - in future your statement may become true (or devtmpfs get obsoleted
+by the next best thing.  Thats why it needs to be documented if it is set
+that way - I've no problem with it being set that way at all.
