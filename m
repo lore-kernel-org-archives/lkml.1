@@ -1,58 +1,56 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751368Ab0APGDs (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 01:03:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936Ab0APGDr
+	id S1751473Ab0APGRr (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 01:17:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240Ab0APGRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 01:03:47 -0500
-Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:21188 "HELO
-	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750873Ab0APGDq (ORCPT
+	Sat, 16 Jan 2010 01:17:46 -0500
+Received: from snt0-omc2-s6.snt0.hotmail.com ([65.55.90.81]:38284 "EHLO
+	snt0-omc2-s6.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751210Ab0APGRq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 01:03:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=i2yghXExxQ0ICCOUUa+rhl/Td+PgtZTncqVFOzsTtlkaor88Rq0Bi+kUcprGvbSiu+EW4WgmJytWW9C3hD+xs4nlxCsMugUkK7V9GtNyQTliWeH5BS3MmezALZpBS8Z+bUFoHEwbbA90eeVIerdzViOJMANffebGY9Ozato2Grk=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: bHtgGhYVM1museP4Tj9Zicm4dQ7K_uht1iyUIhEftbf6aFtrV7d9lwcTodefsYcHLCEA9BD47wZeEUFTDtipj8fOvAr56Cx5sTJITBeN_iF4NrG12aAnbWqyuXwWEhS5bxb7hN6Q1o9dmPPIvzugekeuuRgFsvrG4A3_b4qqrvOJcsQdm_k38V8gFgq8ZfEaaJ6jYv67EL.KxQ7A1yWUk463kE53AbcXngQDnI95evToL2xz161cwh0wUUVk_1k6
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: flash_platform_data namespace collision
-Date: Fri, 15 Jan 2010 22:03:45 -0800
-User-Agent: KMail/1.9.10
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>,
-        David Woodhouse <dwmw2@infradead.org>,
-        Linux Mailing List <linux-kernel@vger.kernel.org>,
-        "linux-embedded" <linux-embedded@vger.kernel.org>
-References: <1263620475.29868.6280.camel@calx>
-In-Reply-To: <1263620475.29868.6280.camel@calx>
+	Sat, 16 Jan 2010 01:17:46 -0500
+X-Originating-IP: [96.253.143.208]
+X-Originating-Email: [yuhongbao_386@hotmail.com]
+Message-ID: <SNT125-DS19339D7DE9CFA33C1D54AC3680@phx.gbl>
+From: <yuhongbao_386@hotmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>, <mingo@redhat.com>,
+        <linux-kernel@vger.kernel.org>, <kernel-team@lists.ubuntu.com>
+References: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl>,<4B511B12.6010208@zytor.com> <SNT125-W39A63687E4BE4F52FAA517C3680@phx.gbl> <4B514656.5080805@zytor.com>
+In-Reply-To: <4B514656.5080805@zytor.com>
+Subject: Re: Ubuntu 32-bit, 32-bit PAE, 64-bit Kernel Benchmarks
+Date: Fri, 15 Jan 2010 22:17:41 -0800
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+	format=flowed;
+	charset="UTF-8";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001152203.45438.david-b@pacbell.net>
+X-Priority: 3
+X-MSMail-Priority: Normal
+Importance: Normal
+X-Mailer: Microsoft Windows Live Mail 14.0.8089.726
+X-MimeOLE: Produced By Microsoft MimeOLE V14.0.8089.726
+X-OriginalArrivalTime: 16 Jan 2010 06:17:45.0923 (UTC) FILETIME=[9E91A130:01CA9673]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 January 2010, Matt Mackall wrote:
-> I've got a board here with SPI, NOR, and NAND flash devices and I've
-> just run into a namespace collision on flash_platform_data from
-> 
->  include/spi/flash.h
-> 
-> and
-> 
->  arch/arm/include/asm/mach/flash.h
-> 
-> And each appears to have a bunch of users.
+> Since 32 bits means that any machine with 1 GB more means HIGHMEM, the
+> number of non-embedded machines that should run 32-bit kernels today is
+> functionally the null set.
+You mean machines made today?
+> Unfortunately Linux distros have not
+> properly promoted 64-bit kernels for 32-bit distros; although pure 64
+> bits is better, it would be a *helluva* lot better if people stuck on 32
+> bits for compatibility reasons had a saner alternative.
+Yep, I remember having to use --force-architecture to install the Linux 
+kernel from the 64-bit version of Ubuntu into the 32-bit version.
+As I remember, the package name was the same as the 32-bit version, causing 
+confusion.
+What led me to uninstall it, though, was that suspend/resume did not work 
+properly.
+I am adding a CC to the Ubuntu kernel team mailing list.
 
-ISTR someone noting that before but omitting a patch.
+Yuhong Bao 
 
-You can do that one better.  :)
-
-I think changing the SPI flash name will affect fewer platforms.
-
-- Dave
