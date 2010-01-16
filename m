@@ -1,55 +1,47 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758451Ab0APCa1 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 21:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384Ab0APCa1
+	id S1758695Ab0APCbF (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 21:31:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758390Ab0APCbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 21:30:27 -0500
-Received: from mail-iw0-f197.google.com ([209.85.223.197]:62794 "EHLO
-	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758360Ab0APCa0 (ORCPT
+	Fri, 15 Jan 2010 21:31:04 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:49051 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758299Ab0APCbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 21:30:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Q/UA+tBbJjO3xaNE/MtMMn/pS+hf3YnIQJYN5JEDUELa4ei5Se9QL3pZyr2zVOlCaS
-         0CTbzFUMjHhZE0v8v/FjrC0tlqDdeG+89Fm5mUjt/ERy6MPKZtMB3DJ9FvZXbf7GhfOF
-         u1OmAG/7Krpn+yiXQkUYZrZsq2gFA/RrQfQlQ=
-Subject: Re: [staging/hv] why it not follow kernel codingstyle?
-From: "Figo.zhang" <figo1802@gmail.com>
-To: bn@niasdigital.com, hjanssen@microsoft.com, haiyangz@microsoft.com
-Cc: gregkh@suse.de, Linus Torvalds <torvalds@linux-foundation.org>,
-        lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <4650630.501001263607923679.JavaMail.coremail@bj126app13.126.com>
-References: <4650630.501001263607923679.JavaMail.coremail@bj126app13.126.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 16 Jan 2010 10:32:39 +0800
-Message-ID: <1263609159.2562.16.camel@myhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jan 2010 21:31:01 -0500
+Date: Sat, 16 Jan 2010 03:30:56 +0100
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [ipw3945-devel] hang on 2.6.33-rc4
+Message-ID: <20100116023056.GT12367@gamma.logic.tuwien.ac.at>
+References: <20100115152215.GC2541@gamma.logic.tuwien.ac.at> <1263576588.2751.455.camel@rc-desk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263576588.2751.455.camel@rc-desk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fr, 15 Jan 2010, reinette chatre wrote:
+> Can you try to boot without X and attempt a command line association
+> (using iw, iwconfig or wpa_supplicant) to reproduce?
 
+I try on Monday back at work.
 
+Best wishes
 
-> > i am not familiar with the Hyper-V. But happy to see Greg Kroah-Hartman to push
-> > the author to motify it follow the Kernel Codingstyle, or apply to merge to main tree
-> > until it follow it.
-> > Now it  has made the Codingstyle rule, anyone should follow it , right?
-
-
-local variable and function use like "ThisVariableIsATemporaryCounter"
-is very very ugly and brain damaged (only Microsoft use it).
-
-Best,
-Figo.zhang
-Henan University of Science and Technology
-
-
-
-
-
+Norbert
+------------------------------------------------------------------------
+Norbert Preining            preining@{jaist.ac.jp, logic.at, debian.org}
+JAIST, Japan            TU Wien, Austria           Debian TeX Task Force
+DSA: 0x09C5B094   fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+------------------------------------------------------------------------
+PIDDLETRENTHIDE (n.)
+A trouser stain caused by a wimbledon (q.v.). Not to be confused with
+a botley (q.v.)
+			--- Douglas Adams, The Meaning of Liff
