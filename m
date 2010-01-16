@@ -1,20 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759096Ab0APDQ0 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 Jan 2010 22:16:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893Ab0APDQW
+	id S1759192Ab0APDQx (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 Jan 2010 22:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759142Ab0APDQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jan 2010 22:16:22 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33903 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932073Ab0APDIU (ORCPT
+	Fri, 15 Jan 2010 22:16:26 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58088 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758820Ab0APDIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jan 2010 22:08:20 -0500
+	Fri, 15 Jan 2010 22:08:19 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 15 Jan 2010 19:06:42 -0800
+Date: Fri, 15 Jan 2010 19:06:39 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 11/37] x86: only call dma32_reserve_bootmem 64bit !CONFIG_NUMA
+Subject: [PATCH 08/37] x86: dynamic increase early_res array size
 In-reply-to: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,105 +23,110 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263611228-6751-12-git-send-email-yinghai@kernel.org>
+Message-id: <1263611228-6751-9-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-64bit NUMA already make enough space under 4G with new early_node_mem
+use early_res_count to track the num, and use find_e820 to get new buffer.
+and copy from old to new one.
+
+also clear early_res to prevent later invalid using
+
+-v2 _check_and_double_early_res should take new start
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/include/asm/pci.h    |    2 ++
- arch/x86/include/asm/pci_64.h |    2 --
- arch/x86/kernel/pci-dma.c     |   13 ++++++++++---
- arch/x86/kernel/setup.c       |    7 -------
- 4 files changed, 12 insertions(+), 12 deletions(-)
+ arch/x86/kernel/e820.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 53 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
-index ada8c20..b4a00dd 100644
---- a/arch/x86/include/asm/pci.h
-+++ b/arch/x86/include/asm/pci.h
-@@ -124,6 +124,8 @@ extern void pci_iommu_alloc(void);
- #include "pci_64.h"
- #endif
- 
-+void dma32_reserve_bootmem(void);
-+
- /* implement the pci_ DMA API in terms of the generic device dma_ one */
- #include <asm-generic/pci-dma-compat.h>
- 
-diff --git a/arch/x86/include/asm/pci_64.h b/arch/x86/include/asm/pci_64.h
-index ae5e40f..fe15cfb 100644
---- a/arch/x86/include/asm/pci_64.h
-+++ b/arch/x86/include/asm/pci_64.h
-@@ -22,8 +22,6 @@ extern int (*pci_config_read)(int seg, int bus, int dev, int fn,
- extern int (*pci_config_write)(int seg, int bus, int dev, int fn,
- 			       int reg, int len, u32 value);
- 
--extern void dma32_reserve_bootmem(void);
--
- #endif /* __KERNEL__ */
- 
- #endif /* _ASM_X86_PCI_64_H */
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 75e14e2..1aa966c 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -65,7 +65,7 @@ int dma_set_mask(struct device *dev, u64 mask)
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 291f6d2..949d688 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -908,6 +908,48 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
+ 	__reserve_early(start, end, name, 1);
  }
- EXPORT_SYMBOL(dma_set_mask);
  
--#ifdef CONFIG_X86_64
-+#if defined(CONFIG_X86_64) && !defined(CONFIG_NUMA)
- static __initdata void *dma32_bootmem_ptr;
- static unsigned long dma32_bootmem_size __initdata = (128ULL<<20);
++static void __init __check_and_double_early_res(u64 start)
++{
++	u64 end, size, mem;
++	struct early_res *new;
++
++	/* do we have enough slots left ? */
++	if ((max_early_res - early_res_count) > max(max_early_res/8, 2))
++		return;
++
++	/* double it */
++	end = max_pfn_mapped << PAGE_SHIFT;
++	size = sizeof(struct early_res) * max_early_res * 2;
++	mem = find_e820_area(start, end, size, sizeof(struct early_res));
++
++	if (mem == -1ULL)
++		panic("can not find more space for early_res array");
++
++	new = __va(mem);
++	/* save the first one for own */
++	new[0].start = mem;
++	new[0].end = mem + size;
++	new[0].overlap_ok = 0;
++	/* copy old to new */
++	if (early_res == early_res_x) {
++		memcpy(&new[1], &early_res[0],
++			 sizeof(struct early_res) * max_early_res);
++		memset(&new[max_early_res+1], 0,
++			 sizeof(struct early_res) * (max_early_res - 1));
++		early_res_count++;
++	} else {
++		memcpy(&new[1], &early_res[1],
++			 sizeof(struct early_res) * (max_early_res - 1));
++		memset(&new[max_early_res], 0,
++			 sizeof(struct early_res) * max_early_res);
++	}
++	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
++	early_res = new;
++	max_early_res *= 2;
++	printk(KERN_DEBUG "early_res array is doubled to %d at [%llx - %llx]\n",
++		max_early_res, mem, mem + size - 1);
++}
++
+ /*
+  * Most early reservations come here.
+  *
+@@ -921,6 +963,8 @@ void __init reserve_early(u64 start, u64 end, char *name)
+ 	if (start >= end)
+ 		return;
  
-@@ -116,14 +116,21 @@ static void __init dma32_free_bootmem(void)
- 	dma32_bootmem_ptr = NULL;
- 	dma32_bootmem_size = 0;
++	__check_and_double_early_res(end);
++
+ 	drop_overlaps_that_are_ok(start, end);
+ 	__reserve_early(start, end, name, 0);
  }
-+#else
-+void __init dma32_reserve_bootmem(void)
-+{
-+}
-+static void __init dma32_free_bootmem(void)
-+{
-+}
+@@ -949,6 +993,10 @@ void __init early_res_to_bootmem(u64 start, u64 end)
+ 	for (i = 0; i < max_early_res && early_res[i].end; i++)
+ 		count++;
+ 
++	/* need to skip first one ?*/
++	if (early_res != early_res_x)
++		idx = 1;
 +
- #endif
+ 	printk(KERN_INFO "(%d/%d early reservations) ==> bootmem [%010llx - %010llx]\n",
+ 			 count - idx, max_early_res, start, end);
+ 	for (i = idx; i < count; i++) {
+@@ -966,6 +1014,11 @@ void __init early_res_to_bootmem(u64 start, u64 end)
+ 		reserve_bootmem_generic(final_start, final_end - final_start,
+ 				BOOTMEM_DEFAULT);
+ 	}
++	/* clear them */
++	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
++	early_res = NULL;
++	max_early_res = 0;
++	early_res_count = 0;
+ }
  
- void __init pci_iommu_alloc(void)
- {
--#ifdef CONFIG_X86_64
- 	/* free the range so iommu could get some range less than 4G */
- 	dma32_free_bootmem();
--#endif
-+
- 	if (pci_swiotlb_detect())
- 		goto out;
- 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 3ab0bf4..2c67cab 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -944,14 +944,7 @@ void __init setup_arch(char **cmdline_p)
- 	initmem_init(0, max_pfn, acpi, k8);
- 	early_res_to_bootmem(0, max_low_pfn<<PAGE_SHIFT);
- 
--#ifdef CONFIG_X86_64
--	/*
--	 * dma32_reserve_bootmem() allocates bootmem which may conflict
--	 * with the crashkernel command line, so do that after
--	 * reserve_crashkernel()
--	 */
- 	dma32_reserve_bootmem();
--#endif
- 
- 	reserve_ibft_region();
- 
+ /* Check for already reserved areas */
 -- 
 1.6.4.2
 
