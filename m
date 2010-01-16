@@ -1,43 +1,70 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304Ab0APLQ4 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 16 Jan 2010 06:16:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204Ab0APLQy
+	id S1755523Ab0APLSF (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 Jan 2010 06:18:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180Ab0APLSC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 06:16:54 -0500
-Received: from smtprelay01.ispgateway.de ([80.67.31.39]:52098 "EHLO
-	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752288Ab0APLQx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 06:16:53 -0500
-X-Greylist: delayed 350 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Jan 2010 06:16:53 EST
-Message-ID: <cone.1263640262.140101.28399.1000@deskpiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Rudolf Marek <r.marek@assembler.cz>, Huaxu Wan <huaxu.wan@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Coretemp Atom 330, strange temperatures
-Date: Sat, 16 Jan 2010 12:11:02 +0100
+	Sat, 16 Jan 2010 06:18:02 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:49040 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752006Ab0APLSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 06:18:00 -0500
+Date: Sat, 16 Jan 2010 22:17:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Tilman Schmidt <tilman@imap.cc>, David Miller <davem@davemloft.net>,
+        Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+        netdev@vger.kernel.org, Karsten Keil <isdn@linux-pingi.de>,
+        isdn4linux@listserv.isdn4linux.de
+Subject: Re: [PATCH/REPOST] pci: push deprecated pci_find_device() function
+ to last user
+Message-Id: <20100116221749.94c6ac32.sfr@canb.auug.org.au>
+In-Reply-To: <20100115100830.152bd145@jbarnes-piketon>
+References: <20100113142328.5DE2F40107@xenon.ts.pxnet.com>
+	<20100113.203338.52448956.davem@davemloft.net>
+	<20100114044331.GA29008@suse.de>
+	<20100114.001204.203918209.davem@davemloft.net>
+	<20100114082823.63379b3d@jbarnes-piketon>
+	<20100114221841.D282640108@xenon.ts.pxnet.com>
+	<20100115100830.152bd145@jbarnes-piketon>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__16_Jan_2010_22_17_49_+1100_MTK6.JsDpK35YUru"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rudolf, Hi Huaxu,
+--Signature=_Sat__16_Jan_2010_22_17_49_+1100_MTK6.JsDpK35YUru
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I've got an Asrock Ion 330 machine with Atom 330 processor, running 
-2.6.32.3 kernel. When loading coretemp it shows strange temperatures, like 
-this:
-Core0: 0.0 degree C
-Core1: 16.0 degree C
-Core2: 0.0 degree C
-Core3: 15.0 degree C
+Hi all,
 
-Is there an offset missing? When touching the cooler it feels like 40 degree ore something.
-Is this a known problem? Is there already a fix?
+On Fri, 15 Jan 2010 10:08:30 -0800 Jesse Barnes <jbarnes@virtuousgeek.org> =
+wrote:
+>
+> Applied to my linux-next branch, thanks Tilman.
 
-thanks for your time and kind regards,
---peter
+Thanks all, this will reduce the x86_64 allmodconfig build warnings by
+between 1/3 and 1/2.  (Cheering can be heard all over the IBM Canberra
+office :-))
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__16_Jan_2010_22_17_49_+1100_MTK6.JsDpK35YUru
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktRoF4ACgkQjjKRsyhoI8zQhACeJLRn9kx0llzhgtiy9pvyUnQD
+FhEAniyQyCeUuOrpcv4ipAErs6iQQF9C
+=aUAY
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__16_Jan_2010_22_17_49_+1100_MTK6.JsDpK35YUru--
