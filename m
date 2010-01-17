@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073Ab0AQPDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070Ab0AQPFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073Ab0AQPDY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 10:03:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047Ab0AQPDX
+	id S1754070Ab0AQPFX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 10:05:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918Ab0AQPFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 10:03:23 -0500
-Received: from casper.infradead.org ([85.118.1.10]:51719 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752847Ab0AQPDX convert rfc822-to-8bit (ORCPT
+	Sun, 17 Jan 2010 10:05:22 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:59752 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753836Ab0AQPFV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 10:03:23 -0500
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B5325CF.5000001@redhat.com>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>
-	 <1263467289.4244.288.camel@laptop>
-	 <1263498366.4875.25.camel@localhost.localdomain>
-	 <1263546228.4244.343.camel@laptop>  <20100115093831.GC26396@in.ibm.com>
-	 <1263549014.4244.374.camel@laptop>  <4B53213C.9050303@redhat.com>
-	 <1263739939.557.20938.camel@twins>  <4B5325CF.5000001@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Sun, 17 Jan 2010 16:03:13 +0100
-Message-ID: <1263740593.557.20967.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Sun, 17 Jan 2010 10:05:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=qQdJ07AvugWaKT1L7yxIkq27QoZCJWarE3pSyIYsHJAWTKCCgDqBXVoLVQWJfz+Va/
+         Xe4PesVzlai370RtbKlphUjyEZF24zDiG0QdCtATA+J1uIkgJSSqMfs3xYDcgIHdDfuX
+         MRxrLdCFhmaHIinF/jyT3D1AK1P1mphLsVDc8=
+Message-ID: <4B53284C.1090405@gmail.com>
+Date: Sun, 17 Jan 2010 16:10:04 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] S2io: two branches the same in wait_for_cmd_complete()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-17 at 16:59 +0200, Avi Kivity wrote:
-> On 01/17/2010 04:52 PM, Peter Zijlstra wrote:
-> > On Sun, 2010-01-17 at 16:39 +0200, Avi Kivity wrote:
-> >    
-> >> On 01/15/2010 11:50 AM, Peter Zijlstra wrote:
-> >>      
-> >>> As previously stated, I think poking at a process's address space is an
-> >>> utter no-go.
-> >>>
-> >>>        
-> >> Why not reserve an address space range for this, somewhere near the top
-> >> of memory?  It doesn't have to be populated if it isn't used.
-> >>      
-> > Because I think poking at a process's address space like that is gross.
-> > Also, if its fixed size you're imposing artificial limits on the number
-> > of possible probes.
-> >    
-> 
-> btw, an alternative is to require the caller to provide the address 
-> space for this.  If the caller is in another process, we need to allow 
-> it to play with the target's address space (i.e. mmap_process()).  I 
-> don't think uprobes justifies this by itself, but mmap_process() can be 
-> very useful for sandboxing with seccomp.
+Regardless of the bit_state, the branches execute the same code.
 
-mmap_process() sounds utterly gross, one process playing with another
-process's address space.. yuck!
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/net/s2io.c |   13 +++----------
+ 1 files changed, 3 insertions(+), 10 deletions(-)
+
+Maybe something else was intended?
+this was introduced in commit 9fc93a41a1ad11
+
+diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
+index cc42186..0e353d6 100644
+--- a/drivers/net/s2io.c
++++ b/drivers/net/s2io.c
+@@ -3415,16 +3415,9 @@ static int wait_for_cmd_complete(void __iomem *addr, u64 busy_bit,
+ 
+ 	do {
+ 		val64 = readq(addr);
+-		if (bit_state == S2IO_BIT_RESET) {
+-			if (!(val64 & busy_bit)) {
+-				ret = SUCCESS;
+-				break;
+-			}
+-		} else {
+-			if (!(val64 & busy_bit)) {
+-				ret = SUCCESS;
+-				break;
+-			}
++		if (!(val64 & busy_bit)) {
++			ret = SUCCESS;
++			break;
+ 		}
+ 
+ 		if (in_interrupt())
