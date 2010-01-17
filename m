@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597Ab0AQXQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592Ab0AQXSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597Ab0AQXQa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 18:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353Ab0AQXQ3
+	id S1754592Ab0AQXSE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 18:18:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336Ab0AQXSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 18:16:29 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:63063 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754280Ab0AQXQ2 (ORCPT
+	Sun, 17 Jan 2010 18:18:00 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:37550 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754121Ab0AQXR7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 18:16:28 -0500
-Date: Sun, 17 Jan 2010 18:15:22 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <20100117230531.GC3161@del.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B539A0A.2000504@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B47A81B.5040601@majjas.com> <4B4809EF.1070609@majjas.com>
- <20100109122830.GA4386@del.dom.local> <4B48CC2C.2090403@majjas.com>
- <4B4E2F89.2050606@majjas.com> <20100113210908.GA3065@del.dom.local>
- <4B4E3834.3000609@majjas.com> <4B533A46.9050600@majjas.com>
- <20100117221746.GA3161@del.dom.local> <4B53906B.2020608@majjas.com>
- <20100117230531.GC3161@del.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Sun, 17 Jan 2010 18:17:59 -0500
+Date: Sun, 17 Jan 2010 15:17:18 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for January 14 (drm header files)
+Message-Id: <20100117151718.f88c5f21.randy.dunlap@oracle.com>
+In-Reply-To: <20100114172047.406ebda8.sfr@canb.auug.org.au>
+References: <20100114172047.406ebda8.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B539AA2.004B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/17/2010 6:05 PM, Jarek Poplawski wrote:
-> On Sun, Jan 17, 2010 at 05:34:19PM -0500, Michael Breuer wrote:
->    
->> On 1/17/2010 5:17 PM, Jarek Poplawski wrote:
->>      
->>> On Sun, Jan 17, 2010 at 11:26:46AM -0500, Michael Breuer wrote:
->>>        
->>>> On 01/13/2010 04:16 PM, Michael Breuer wrote:
->>>>          
->>>>> On 1/13/2010 4:09 PM, Jarek Poplawski wrote:
->>>>>            
->>>>>> On Wed, Jan 13, 2010 at 03:39:37PM -0500, Michael Breuer wrote:
->>>>>>
->>>>>>              
->>>> Update: after leaving the system up for a few days, I hit the DMAR
->>>> error again.
->>>>          
->>> My proposal is to send some summary as a new thread, with dmar in the
->>> subject, and cc-ed dmar maintainers.
->>>
->>>        
->> Not sure I agree. The symptoms are identical to those I hit without
->> DMAR earlier on. Also, as this issue only happens when there is high
->> receive load, I'm thinking there's some sort of race between TX and
->> RX within the sky2 driver, or hardware. I think that DMAR is
->> correctly catching the error.
->>      
-> Hmm... OK, then let's wait with this report and go back to testing
-> it "really really long" ;-) without DMAR, and maybe without the
-> last Stephen's patch either? (So only the two things in the current
-> linux-2.6.)
->
-> Jarek P.
->    
-Ok - but absent the last patch, I think I still need the pskb_may_pull 
-patch... so it'd be pskb_may_pull and afpacket v3 and no DMAR.
+On Thu, 14 Jan 2010 17:20:47 +1100 Stephen Rothwell wrote:
 
-Also - not sure if related, but there's still the odd tx side behavior 
-when RX is under load. That I CAN reproduce at will (yesterday's report 
-- no crash, but I confirmed that DHCPOFFER packets are being dropped 
-somewhere after wireshark sees them and before hitting the wire.
+> Hi all,
+> 
+> Changes since 20100113:
 
-I am also wondering whether or not that testing I did yesterday set up 
-today's hang - perhaps those lost TX packets are corrupting something 
-that manifests worse later.
+
+Is anything being done about these?
+or does anything need to be done?
+
+
+usr/include/drm/drm_mode.h:84: found __[us]{8,16,32,64} type without #include <linux/types.h>
+usr/include/drm/i915_drm.h:119: found __[us]{8,16,32,64} type without #include <linux/types.h>
+usr/include/drm/mga_drm.h:260: found __[us]{8,16,32,64} type without #include <linux/types.h>
+usr/include/drm/radeon_drm.h:758: found __[us]{8,16,32,64} type without #include <linux/types.h>
+usr/include/drm/via_drm.h:117: found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+
+Thanks,
+---
+~Randy
