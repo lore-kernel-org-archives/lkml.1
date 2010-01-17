@@ -1,308 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881Ab0AQVRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894Ab0AQVRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881Ab0AQVRQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 16:17:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870Ab0AQVRM
+	id S1754894Ab0AQVRq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 16:17:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200Ab0AQVRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 16:17:12 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:54896 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753834Ab0AQVRH convert rfc822-to-8bit (ORCPT
+	Sun, 17 Jan 2010 16:17:42 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:38513 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752857Ab0AQVRj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 16:17:07 -0500
-X-Greylist: delayed 335 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Jan 2010 16:17:06 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=HQTQ2yohPOdzLLWn4W0q9Z9KpbUvyKJllrEHC+Hz4/mYTKZplVtSsmZaR1diLncevp
-         nKOP2WFq2CRgtIof1S2iWQsrQdow7NGgF8I32r17XbSrWFgLBdGJLTCUY6TGADhjPc1s
-         wPneMMoFiuiE2RrWyNUlNPC0i4aTF8IRV60ck=
+	Sun, 17 Jan 2010 16:17:39 -0500
 MIME-Version: 1.0
-In-Reply-To: <53cc795f1001050716j47f4ec56q5c719a884f413ad@mail.gmail.com>
-References: <53cc795f1001050716j47f4ec56q5c719a884f413ad@mail.gmail.com>
-Date: Mon, 18 Jan 2010 00:11:29 +0300
-Message-ID: <53cc795f1001171311p55916770vfbe728bd950b3ce2@mail.gmail.com>
-Subject: Re: Panic is at tcp_xmit_retransmit_queue
-From: sbs <gexlie@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20100117180728.GA2848@heat>
+References: <f73f7ab81001162201v1956351boa9241ce440e62a09@mail.gmail.com> 
+	<20100117180728.GA2848@heat>
+From: Kyle Moffett <kyle@moffetthome.net>
+Date: Sun, 17 Jan 2010 16:17:17 -0500
+Message-ID: <f73f7ab81001171317y39aec7b2s3f8bce4c689fa82@mail.gmail.com>
+Subject: Re: disablenetwork (v5) patches
+To: Michael Stone <michael@laptop.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>, Andrew Morgan <morgan@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2.6.32.3 the bug is still persist!
+On Sun, Jan 17, 2010 at 13:07, Michael Stone <michael@laptop.org> wrote:
+> Kyle Moffett wrote:
+>> I have some time this week to split out my SELinux policy build
+>> machinery; I will pull out a standalone set of files to build the
+>> policy and do some extra testing on one of my bog-standard Debian
+>> boxes and then send it all out again.
+>
+> Questions:
+>
+> Â 1) Your patch seems to rely on a chunk of custom policy. Can this chunk of
+> Â  Â  policy coexist without modification with pre-existing policies like the
+> Â  Â  ones Fedora ships?
+>
+> Â  Â  If I understand correctly, the answer is "not as it is written today", for
+> Â  Â  a couple of reasons:
 
-we have stable kernel panics once a day on bunch of servers with
-static contents+nginx and 10GB ethernet channel.
+Essentially, yes, the policy that I gave is an extremely limited
+system.  If you wanted to constrain your application as installed on a
+standard Fedora system, that would involve getting a much more
+detailed policy merged in the selinux-refpolicy project.  The plusses
+are that such a policy would protect against far more complex attacks
+than simple network data exposure, however the policy to protect
+against such attacks is far more complex as well.
 
-what can it be? whats wrong with tcp_xmit_retransmit_queue() function ?
-can anyone explain or fix?
+Basically, I wrote that sample policy as a completely standalone
+example of how to use the SELinux machinery to enforce a limited
+arbitrary set of restrictions based on your stated requirements.
 
-On Tue, Jan 5, 2010 at 6:16 PM, sbs <gexlie@gmail.com> wrote:
-> We are hiting kernel panics on servers with nVidia MCP55 NICs;
-> it appears usualy under a high network trafic ( around 1000Mbit/s) but
-> it is not a rule it
-> has happened even on low trafic.
+There has been some partially-stalled work to create a "userspace
+policy server" and "hierarchical policy", essentially a mechanism by
+which a program (running under a specific type) could sub-divide
+itself into additional types bounded by the constraints on the
+original type.  Unfortunately I haven't had a chance to look into it
+in quite a while, so things may have changed significantly.
+
+
+> Â 2) How can an application author test whether or not the contexts defined by
+> Â  Â  this policy are defined in the currently loaded policy?
+
+The standard method for adding SELinux support to an application is
+pretty much the same method that you use to enhance security in the
+absence of SELinux:  Divide your program into multiple executables
+with discrete DAC-enforced privileges (a la postfix).
+
+Then the SELinux policy simply places a different label on each
+executable (and via a type_transition rule on the process which is
+*started* from that executable).  Each label is then neatly bound by
+least-privilege type-based allow rules.
+
+
+> Â 3) Your policy relies on defining new roles for objects, regular processes,
+> Â  Â  and network disabled processes. This is definitely a nice reuse of SELinux
+> Â  Â  machinery. Unfortunately, I'm not sure how, as an app author, I'm supposed
+> Â  Â  to use it.
 >
-> Servers are used as nginx http proxy.
-> On 2 equal servers this panic happens aprox 2 times a day depending on
-> network load. Machine completly freezes till the netconsole reboots.
+> [...code for using dyntransition...]
+
+You can do it that way, although I would certainly suggest an
+appropriate config file somewhere to specify what label the software
+should attempt to transition to.  The SELinux libraries have some code
+for performing dynamic transitions, although as I indicated most
+processes don't use them.
+
+Really the preferred way to take advantage of SELinux is simply to
+divide the program tasks securely across multiple executables and then
+use the SELinux policy to lock them down individually.
+
+
+> Â 4) If I understand correctly, the policy you specified actually restricts
+> Â  Â  network access by blacklisting various socket calls by protocol stack.
+> Â  Â  Thus, AF_UNIX socket calls are unrestricted while TCP bind() and connect()
+> Â  Â  and UDP bind(), connect(), and sendto() are restricted.
 >
-> Kernel: 2.6.31.6 #2 SMP Sun Nov 29 04:30:07 JST 2009
+> Â  Â  I'm uncomfortable with a design based on protocol blacklisting because I
+> Â  Â  think that it is likely to break silently whenever someone adds a new
+> Â  Â  protocol (e.g. SCTP) to the kernel.
 >
-> Panic output:
->
->
->
-> Dec 29 22:33:51 linuxtest [1188725.037019] BUG: unable to handle kernel
-> Dec 29 22:33:51 linuxtest NULL pointer dereference
-> Dec 29 22:33:51 linuxtest at (null)
-> Dec 29 22:33:51 linuxtest [1188725.037042] IP:
-> Dec 29 22:33:51 linuxtest [<c060164a>] tcp_xmit_retransmit_queue+0x1b2/0x1dc
-> Dec 29 22:33:51 linuxtest [1188725.037064] *pdpt = 00000000229c2001
-> Dec 29 22:33:51 linuxtest *pde = 0000000000000000
-> Dec 29 22:33:51 linuxtest
-> Dec 29 22:33:51 linuxtest [1188725.037080] Thread overran stack, or
-> stack corrupted
-> Dec 29 22:33:51 linuxtest [1188725.037091] Oops: 0000 [#1]
-> Dec 29 22:33:51 linuxtest SMP
-> Dec 29 22:33:51 linuxtest
-> Dec 29 22:33:51 linuxtest [1188725.037104] last sysfs file:
-> /sys/devices/pci0000:00/0000:00:0f.0/0000:07:00.0/0000:08:01.0/0000:09:00.0/class
-> Dec 29 22:33:51 linuxtest [1188725.037124]
-> Dec 29 22:33:51 linuxtest [1188725.037131] Pid: 0, comm: swapper Not
-> tainted (2.6.31.6-v03 #2) H8DMU
-> Dec 29 22:33:51 linuxtest [1188725.037145] EIP: 0060:[<c060164a>]
-> EFLAGS: 00010246 CPU: 0
-> Dec 29 22:33:51 linuxtest [1188725.037158] EIP is at
-> tcp_xmit_retransmit_queue+0x1b2/0x1dc
-> Dec 29 22:33:51 linuxtest [1188725.037170] EAX: c540513c EBX: c54050c0
-> ECX: 0e377f15 EDX: c540513c
-> Dec 29 22:33:51 linuxtest [1188725.037183] ESI: 00000000 EDI: 00000000
-> EBP: c0805d28 ESP: c0805d0c
-> Dec 29 22:33:51 linuxtest [1188725.037196]  DS: 007b ES: 007b FS: 00d8
-> GS: 0000 SS: 0068
-> Dec 29 22:33:51 linuxtest [1188725.037208] Process swapper (pid: 0,
-> ti=c0804000 task=c080b5a0 task.ti=c0804000)
-> Dec 29 22:33:51 linuxtest [1188725.037285] Stack:
-> Dec 29 22:33:51 linuxtest [1188725.037368]  00000202
-> Dec 29 22:33:51 linuxtest 00000000
-> Dec 29 22:33:51 linuxtest c540513c
-> Dec 29 22:33:51 linuxtest 0e377f14
-> Dec 29 22:33:51 linuxtest 00000000
-> Dec 29 22:33:51 linuxtest c54050c0
-> Dec 29 22:33:51 linuxtest 0000050e
-> Dec 29 22:33:51 linuxtest c0805da8
-> Dec 29 22:33:51 linuxtest
-> Dec 29 22:33:51 linuxtest [1188725.037472] <0>
-> Dec 29 22:33:51 linuxtest c05fe931
-> Dec 29 22:33:51 linuxtest 00000001
-> Dec 29 22:33:51 linuxtest 00000001
-> Dec 29 22:33:51 linuxtest 00000006
-> Dec 29 22:33:51 linuxtest 00000005
-> Dec 29 22:33:51 linuxtest 00000001
-> Dec 29 22:33:51 linuxtest 00000001
-> Dec 29 22:33:51 linuxtest 00000006
-> Dec 29 22:33:51 linuxtest
-> Dec 29 22:33:51 linuxtest [1188725.037629] <0>
-> Dec 29 22:33:51 linuxtest 01000246
-> Dec 29 22:33:51 linuxtest 00000005
-> Dec 29 22:33:51 linuxtest 11b57b53
-> Dec 29 22:33:51 linuxtest c5405168
-> Dec 29 22:33:51 linuxtest c061df41
-> Dec 29 22:33:51 linuxtest 00000006
-> Dec 29 22:33:51 linuxtest 00000000
-> Dec 29 22:33:51 linuxtest 00000000
-> Dec 29 22:33:51 linuxtest
-> Dec 29 22:33:51 linuxtest [1188725.037887] Call Trace:
-> Dec 29 22:33:51 linuxtest [1188725.037975]  [<c05fe931>] ? tcp_ack+0x1591/0x1778
-> Dec 29 22:33:51 linuxtest [1188725.038073]  [<c061df41>] ?
-> ipt_do_table+0x2f8/0x310
-> Dec 29 22:33:51 linuxtest [1188725.038148]  [<c05ff493>] ?
-> tcp_rcv_state_process+0x4db/0x7fc
-> Dec 29 22:33:51 linuxtest [1188725.038246]  [<c0604e3d>] ?
-> tcp_v4_do_rcv+0x263/0x29d
-> Dec 29 22:33:51 linuxtest [1188725.038321]  [<c023381a>] ?
-> local_bh_enable+0xb/0xd
-> Dec 29 22:33:51 linuxtest [1188725.038419]  [<c05d4571>] ? sk_filter+0x5e/0x69
-> Dec 29 22:33:51 linuxtest [1188725.038510]  [<c06059b4>] ?
-> tcp_v4_rcv+0x371/0x502
-> Dec 29 22:33:51 linuxtest [1188725.038607]  [<c05ee78c>] ?
-> ip_local_deliver_finish+0x0/0x171
-> Dec 29 22:33:51 linuxtest [1188725.038684]  [<c05ee88a>] ?
-> ip_local_deliver_finish+0xfe/0x171
-> Dec 29 22:33:51 linuxtest [1188725.038784]  [<c05ee95e>] ?
-> ip_local_deliver+0x61/0x66
-> Dec 29 22:33:51 linuxtest [1188725.038876]  [<c05ee531>] ?
-> ip_rcv_finish+0x289/0x2b1
-> Dec 29 22:33:51 linuxtest [1188725.038961]  [<c05ee75c>] ? ip_rcv+0x203/0x233
-> Dec 29 22:33:51 linuxtest [1188725.039052]  [<c05ca149>] ?
-> netif_receive_skb+0x335/0x350
-> Dec 29 22:33:51 linuxtest [1188725.039151]  [<c05ca1c6>] ?
-> process_backlog+0x62/0x88
-> Dec 29 22:33:51 linuxtest [1188725.039242]  [<c05ca6c5>] ?
-> net_rx_action+0x8e/0x16b
-> Dec 29 22:33:51 linuxtest [1188725.039333]  [<c02335bb>] ?
-> __do_softirq+0xa7/0x148
-> Dec 29 22:33:51 linuxtest [1188725.039423]  [<c0233682>] ? do_softirq+0x26/0x2b
-> Dec 29 22:33:51 linuxtest [1188725.039520]  [<c0233764>] ? irq_exit+0x29/0x5c
-> Dec 29 22:33:51 linuxtest [1188725.039610]  [<c0204365>] ? do_IRQ+0x81/0x95
-> Dec 29 22:33:51 linuxtest [1188725.039706]  [<c0202ec9>] ?
-> common_interrupt+0x29/0x30
-> Dec 29 22:33:51 linuxtest [1188725.039797]  [<c0208b74>] ?
-> default_idle+0x3e/0x5b
-> Dec 29 22:33:51 linuxtest [1188725.039895]  [<c02479c9>] ?
-> clockevents_notify+0x60/0x65
-> Dec 29 22:33:51 linuxtest [1188725.039986]  [<c0208c49>] ? c1e_idle+0xb8/0xd2
-> Dec 29 22:33:51 linuxtest [1188725.040058]  [<c0201bba>] ? cpu_idle+0x45/0x5f
-> Dec 29 22:33:51 linuxtest [1188725.040131]  [<c0643560>] ? rest_init+0x58/0x5a
-> Dec 29 22:33:51 linuxtest [1188725.040212]  [<c084f7f9>] ?
-> start_kernel+0x2f0/0x2f5
-> Dec 29 22:33:51 linuxtest [1188725.040285]  [<c084f070>] ?
-> i386_start_kernel+0x70/0x77
-> Dec 29 22:33:51 linuxtest [1188725.040381] Code:
-> Dec 29 22:33:51 linuxtest ec
-> Dec 29 22:33:51 linuxtest bd
-> Dec 29 22:33:51 linuxtest 84
-> Dec 29 22:33:51 linuxtest c0
-> Dec 29 22:33:51 linuxtest ff
-> Dec 29 22:33:51 linuxtest 04
-> Dec 29 22:33:51 linuxtest 88
-> Dec 29 22:33:51 linuxtest 8b
-> Dec 29 22:33:51 linuxtest 55
-> Dec 29 22:33:51 linuxtest ec
-> Dec 29 22:33:51 linuxtest 8b
-> Dec 29 22:33:51 linuxtest 02
-> Dec 29 22:33:51 linuxtest 39
-> Dec 29 22:33:51 linuxtest d0
-> Dec 29 22:33:51 linuxtest ba
-> Dec 29 22:33:51 linuxtest 00
-> Dec 29 22:33:51 linuxtest 00
-> Dec 29 22:33:51 linuxtest 00
-> Dec 29 22:33:51 linuxtest 00
-> Dec 29 22:33:51 linuxtest 0f
-> Dec 29 22:33:51 linuxtest 44
-> Dec 29 22:33:51 linuxtest c2
-> Dec 29 22:33:51 linuxtest 39
-> Dec 29 22:33:51 linuxtest c6
-> Dec 29 22:33:51 linuxtest 75
-> Dec 29 22:33:51 linuxtest 0f
-> Dec 29 22:33:51 linuxtest 8b
-> Dec 29 22:33:51 linuxtest 8b
-> Dec 29 22:33:51 linuxtest 18
-> Dec 29 22:33:51 linuxtest 02
-> Dec 29 22:33:51 linuxtest 00
-> Dec 29 22:33:51 linuxtest 00
-> Dec 29 22:33:51 linuxtest b2
-> Dec 29 22:33:51 linuxtest 01
-> Dec 29 22:33:51 linuxtest 89
-> Dec 29 22:33:51 linuxtest d8
-> Dec 29 22:33:51 linuxtest e8
-> Dec 29 22:33:51 linuxtest ee
-> Dec 29 22:33:51 linuxtest fd
-> Dec 29 22:33:51 linuxtest ff
-> Dec 29 22:33:51 linuxtest ff
-> Dec 29 22:33:51 linuxtest 8b
-> Dec 29 22:33:51 linuxtest 36
-> Dec 29 13:33:50 linuxtest unparseable log message: "<8b> "
-> Dec 29 22:33:51 linuxtest 06
-> Dec 29 22:33:51 linuxtest 0f
-> Dec 29 22:33:51 linuxtest 18
-> Dec 29 22:33:51 linuxtest 00
-> Dec 29 22:33:51 linuxtest 90
-> Dec 29 22:33:51 linuxtest 3b
-> Dec 29 22:33:51 linuxtest 75
-> Dec 29 22:33:51 linuxtest ec
-> Dec 29 22:33:51 linuxtest 0f
-> Dec 29 22:33:51 linuxtest 85
-> Dec 29 22:33:51 linuxtest a9
-> Dec 29 22:33:51 linuxtest fe
-> Dec 29 22:33:51 linuxtest ff
-> Dec 29 22:33:51 linuxtest ff
-> Dec 29 22:33:51 linuxtest eb
-> Dec 29 22:33:51 linuxtest 11
-> Dec 29 22:33:51 linuxtest 85
-> Dec 29 22:33:51 linuxtest ff
-> Dec 29 22:33:51 linuxtest 0f
-> Dec 29 22:33:51 linuxtest 84
-> Dec 29 22:33:51 linuxtest
-> Dec 29 22:33:51 linuxtest [1188725.040771] EIP: [<c060164a>]
-> Dec 29 22:33:51 linuxtest tcp_xmit_retransmit_queue+0x1b2/0x1dc
-> Dec 29 22:33:51 linuxtest SS:ESP 0068:c0805d0c
-> Dec 29 22:33:51 linuxtest [1188725.040929] CR2: 0000000000000000
-> Dec 29 22:33:51 linuxtest [1188725.041346] ---[ end trace 1b9e8ae01c5d5485 ]---
-> Dec 29 22:33:51 linuxtest [1188725.042940] Kernel panic - not syncing:
-> Fatal exception in interrupt
-> Dec 29 22:33:51 linuxtest [1188725.043076] Pid: 0, comm: swapper
-> Tainted: G      D    2.6.31.6-v03 #2
-> Dec 29 22:33:51 linuxtest [1188725.043188] Call Trace:
-> Dec 29 22:33:51 linuxtest [1188725.043318]  [<c066812b>] ? printk+0xf/0x11
-> Dec 29 22:33:51 linuxtest [1188725.043441]  [<c066807f>] panic+0x39/0xd6
-> Dec 29 22:33:51 linuxtest [1188725.043558]  [<c0205811>] oops_end+0x8b/0x9a
-> Dec 29 22:33:51 linuxtest [1188725.043683]  [<c021c974>] no_context+0x13c/0x146
-> Dec 29 22:33:51 linuxtest [1188725.043814]  [<c021ca91>]
-> __bad_area_nosemaphore+0x113/0x11b
-> Dec 29 22:33:51 linuxtest [1188725.043943]  [<c0553967>] ?
-> nv_start_xmit_optimized+0x3d4/0x401
-> Dec 29 22:33:51 linuxtest [1188725.044073]  [<c02253b2>] ?
-> __enqueue_entity+0x8d/0x95
-> Dec 29 22:33:51 linuxtest [1188725.044182]  [<c021caa6>]
-> bad_area_nosemaphore+0xd/0x10
-> Dec 29 22:33:51 linuxtest [1188725.044319]  [<c021cce3>]
-> do_page_fault+0x108/0x265
-> Dec 29 22:33:51 linuxtest [1188725.044444]  [<c0223993>] ?
-> enqueue_task+0x72/0x7f
-> Dec 29 22:33:51 linuxtest [1188725.044562]  [<c021cbdb>] ?
-> do_page_fault+0x0/0x265
-> Dec 29 22:33:51 linuxtest [1188725.044686]  [<c0669b86>] error_code+0x66/0x6c
-> Dec 29 22:33:51 linuxtest [1188725.044817]  [<c021cbdb>] ?
-> do_page_fault+0x0/0x265
-> Dec 29 22:33:51 linuxtest [1188725.044944]  [<c060164a>] ?
-> tcp_xmit_retransmit_queue+0x1b2/0x1dc
-> Dec 29 22:33:51 linuxtest [1188725.045077]  [<c05fe931>] tcp_ack+0x1591/0x1778
-> Dec 29 22:33:51 linuxtest [1188725.045201]  [<c061df41>] ?
-> ipt_do_table+0x2f8/0x310
-> Dec 29 22:33:51 linuxtest [1188725.045332]  [<c05ff493>]
-> tcp_rcv_state_process+0x4db/0x7fc
-> Dec 29 22:33:51 linuxtest [1188725.045442]  [<c0604e3d>]
-> tcp_v4_do_rcv+0x263/0x29d
-> Dec 29 22:33:51 linuxtest [1188725.045567]  [<c023381a>] ?
-> local_bh_enable+0xb/0xd
-> Dec 29 22:33:51 linuxtest [1188725.045694]  [<c05d4571>] ? sk_filter+0x5e/0x69
-> Dec 29 22:33:51 linuxtest [1188725.045802]  [<c06059b4>] tcp_v4_rcv+0x371/0x502
-> Dec 29 22:33:51 linuxtest [1188725.045911]  [<c05ee78c>] ?
-> ip_local_deliver_finish+0x0/0x171
-> Dec 29 22:33:51 linuxtest [1188725.046045]  [<c05ee88a>]
-> ip_local_deliver_finish+0xfe/0x171
-> Dec 29 22:33:51 linuxtest [1188725.046155]  [<c05ee95e>]
-> ip_local_deliver+0x61/0x66
-> Dec 29 22:33:51 linuxtest [1188725.046301]  [<c05ee531>]
-> ip_rcv_finish+0x289/0x2b1
-> Dec 29 22:33:51 linuxtest [1188725.046429]  [<c05ee75c>] ip_rcv+0x203/0x233
-> Dec 29 22:33:51 linuxtest [1188725.046555]  [<c05ca149>]
-> netif_receive_skb+0x335/0x350
-> Dec 29 22:33:51 linuxtest [1188725.046664]  [<c05ca1c6>]
-> process_backlog+0x62/0x88
-> Dec 29 22:33:51 linuxtest [1188725.046809]  [<c05ca6c5>]
-> net_rx_action+0x8e/0x16b
-> Dec 29 22:33:51 linuxtest [1188725.046917]  [<c02335bb>] __do_softirq+0xa7/0x148
-> Dec 29 22:33:51 linuxtest [1188725.047041]  [<c0233682>] do_softirq+0x26/0x2b
-> Dec 29 22:33:51 linuxtest [1188725.047162]  [<c0233764>] irq_exit+0x29/0x5c
-> Dec 29 22:33:51 linuxtest [1188725.047285]  [<c0204365>] do_IRQ+0x81/0x95
-> Dec 29 22:33:51 linuxtest [1188725.047409]  [<c0202ec9>]
-> common_interrupt+0x29/0x30
-> Dec 29 22:33:51 linuxtest [1188725.047536]  [<c0208b74>] ?
-> default_idle+0x3e/0x5b
-> Dec 29 22:33:51 linuxtest [1188725.047664]  [<c02479c9>] ?
-> clockevents_notify+0x60/0x65
-> Dec 29 22:33:51 linuxtest [1188725.047790]  [<c0208c49>] c1e_idle+0xb8/0xd2
-> Dec 29 22:33:51 linuxtest [1188725.047913]  [<c0201bba>] cpu_idle+0x45/0x5f
-> Dec 29 22:33:51 linuxtest [1188725.048030]  [<c0643560>] rest_init+0x58/0x5a
-> Dec 29 22:33:51 linuxtest [1188725.048153]  [<c084f7f9>]
-> start_kernel+0x2f0/0x2f5
-> Dec 29 22:33:51 linuxtest [1188725.048271]  [<c084f070>]
-> i386_start_kernel+0x70/0x77
-> Dec 29 22:33:51 linuxtest [1188725.048404] Rebooting in 10 seconds..
->
+> Â  Â  Presumably, though, this is fairly straightforward to fix?
+
+Yes, it's pretty easy to change specifically which access-vectors you
+restrict.  If localhost-based accesses are OK, then you could use the
+netif and peer-based access controls (possibly with a couple of
+optional iptables rules).  That would simply restrict your ability to
+send packets out of the computer, regardless of what protocol they
+use.
+
+Alternatively there are SELinux mechanisms in recent kernels to
+influence whether or not "unknown" access-vectors are allowed (IE:
+Those which the kernel understands but the policy does not).
+
+> Â 5) If I understand correctly, your policy restricts all uses of sendto()
+> Â  Â  including sendto() on previously connected UDP sockets. Unfortunately,
+> Â  Â  this restriction is too strong: the ability to sendto() on previously
+> Â  Â  connected sockets UDP is a design goal.
+> Â  Â  How might we address this problem?
+
+See above, simply restrict with network peer controls.
+
+
+> Â 6) Can SELinux be turned on at all on kernels which do not support POSIX
+> Â  Â  extended attributes?
+
+My understanding is that the kernel always supported extended
+attributes, but that some filesystems may have support turned off.
+You can certainly turn on SELinux on such a system, but you would be
+unable to label things on a per-file basis.
+
+
+> Â 7) Can you point me toward any measurements on what it costs (specifically in
+> Â  Â  terms of memory and disk usage) to add basic SELinux support plus this
+> Â  Â  policy to an embedded kernel and OS distro which doesn't presently ship
+> Â  Â  any SELinux-related material like, e.g., the distros for the Linksys
+> Â  Â  WRT54G and for the XO?
+
+I don't have such measurements offhand.  If you are shipping a
+pre-built policy and do not include any of the tools needed to reload
+or modify it then all you really need is an /sbin/init which can mount
+/selinux and copy a binary policy file to a virtual file therein.  The
+actual dev tools are rather unfortunately large and slow right now,
+especially with the full reference policy.
+
+Cheers,
+Kyle Moffett
