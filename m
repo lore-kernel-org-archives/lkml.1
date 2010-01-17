@@ -1,174 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636Ab0AQNiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711Ab0AQNmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753636Ab0AQNiu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 08:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555Ab0AQNit
+	id S1753711Ab0AQNmu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 08:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258Ab0AQNmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 08:38:49 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:49292 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242Ab0AQNis convert rfc822-to-8bit (ORCPT
+	Sun, 17 Jan 2010 08:42:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40241 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751985Ab0AQNmt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 08:38:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:content-type
-         :content-transfer-encoding;
-        b=pO9qkaOW7bxigYtrf59dsMeG6YqwueihwviYcMOY7rtAG+XK86ne1/eiy6I3y/weYE
-         sgpYkC5dJu2SYHXpA0tE7g2ih9Jcs8k3utpg5Rb/HJaQTWkpKX0eYqWGOkJdj+sY8g6H
-         tvxHGkO4YK834KeOlbVk3i8yBHrePqGByccXU=
+	Sun, 17 Jan 2010 08:42:49 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>
+Subject: Re: Boot hangs after "Freeing initrd memory" with 2.6.31.11
+Date: Sun, 17 Jan 2010 14:43:16 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       hpa@zytor.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       jaswinder@kernel.org, stable@kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <4B4E1633.8010700@pardus.org.tr> <201001162312.34189.rjw@sisk.pl> <4B52CDA0.7050909@pardus.org.tr>
+In-Reply-To: <4B52CDA0.7050909@pardus.org.tr>
 MIME-Version: 1.0
-From: Hui Zhu <teawater@gmail.com>
-Date: Sun, 17 Jan 2010 21:38:28 +0800
-Message-ID: <daef60381001170538o5b3b0b17l72923261b76d521@mail.gmail.com>
-Subject: [PATCH] Add options to markup_oops.pl to make it support 
-	cross-compiler environment better
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       =?ISO-8859-1?Q?Ozan_=C7aglayan?= <ozan@pardus.org.tr>,
-       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
+Message-Id: <201001171443.16214.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sunday 17 January 2010, Ozan Çağlayan wrote:
+> Rafael J. Wysocki wrote:
+> > On Saturday 16 January 2010, Ozan Çağlayan wrote:
+> 
+> >>>
+> >>> I think that the commit should be reverted or a fix should be released for linux-2.6 tree,
+> >>> as well as .31 and .32 stable trees.
+> >>
+> >> Linux 2.6.31 is released on Sep 9th. So people having an Athlon XP processor + a kernel newer than 4 months
+> >> which enables CONFIG_X86_CPU_DEBUG can't even boot into a linux kernel. I was *at least* expecting a comment from the relevant
+> >> people but nope for 2 days.
+> >>
+> >> It seems to be a serious regression which doesn't get caught. I'm also CC'ing Rafael, maybe he can inject this
+> >> in one of his regression threads.
+> > 
+> > Well, the problem is I'm not listing regressions from 2.6.31 any more.
 
-The markup_oops.pl have 2 troubles to support cross-compiler environment:
-1.  It use objdump directly.
-2.  It use modinfo to get the message of module.
+I should have said "from 2.6.30" actually. 
 
-This patch add 2 options to markup_oops.pl:
-1. -c CROSS_COMPILE	Specify the prefix used for toolchain.
-2. -m MODULE_DIRNAME	Specify the module directory name.
-
-After this patch, parse the x8664 oops in x86, we can:
-cat amd64m | perl ~/kernel/tmp/m.pl -c
-/home/teawater/kernel/bin/x8664- -m ./e.ko vmlinux
-
-Thanks,
-Hui
-
-Signed-off-by: Hui Zhu <teawater@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ozan �aglayan <ozan@pardus.org.tr>
-Cc: Matthew Wilcox <willy@linux.intel.com>
-
----
- scripts/markup_oops.pl |   67 +++++++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 59 insertions(+), 8 deletions(-)
-
---- a/scripts/markup_oops.pl
-+++ b/scripts/markup_oops.pl
-@@ -15,8 +15,46 @@ use Math::BigInt;
- # 	Arjan van de Ven <arjan@linux.intel.com>
-
-
--my $vmlinux_name = $ARGV[0];
--if (!defined($vmlinux_name)) {
-+my $cross_compile = "";
-+my $vmlinux_name = "";
-+my $modulefile = "";
-+
-+# Get options
-+my $option = 0;
-+for (my $i = 0; $i <= $#ARGV; $i++) {
-+	if ($option == 0) {
-+		if ($ARGV[$i] eq "-c") {
-+			$option = 1;
-+		}
-+		elsif ($ARGV[$i] eq "-m") {
-+			$option = 2;
-+		}
-+		elsif ($ARGV[$i] eq "-h") {
-+			usage();
-+			exit;
-+		}
-+		elsif ($i == $#ARGV) {
-+			$vmlinux_name = $ARGV[$i];
-+		}
-+		else {
-+			usage();
-+			exit;
-+		}
-+	}
-+	elsif ($option == 1) {
-+		$cross_compile = $ARGV[$i];
-+		$option = 0;
-+	}
-+	elsif ($option == 2) {
-+		$modulefile = $ARGV[$i];
-+		$option = 0;
-+	}
-+}
-+
-+if ($vmlinux_name ne "") {
-+	$vmlinux_name = $ARGV[$#ARGV];
-+}
-+else {
- 	my $kerver = `uname -r`;
- 	chomp($kerver);
- 	$vmlinux_name = "/lib/modules/$kerver/build/vmlinux";
-@@ -177,22 +215,23 @@ my $decodestart = Math::BigInt->from_hex
- my $decodestop = Math::BigInt->from_hex("0x$target") + 8192;
- if ($target eq "0") {
- 	print "No oops found!\n";
--	print "Usage: \n";
--	print "    dmesg | perl scripts/markup_oops.pl vmlinux\n";
-+	usage();
- 	exit;
- }
-
- # if it's a module, we need to find the .ko file and calculate a load offset
- if ($module ne "") {
--	my $modulefile = `modinfo $module | grep '^filename:' | awk '{ print \$2 }'`;
--	chomp($modulefile);
-+	if ($modulefile eq "") {
-+		my $modulefile = `modinfo $module | grep '^filename:' | awk '{ print \$2 }'`;
-+		chomp($modulefile);
-+	}
- 	$filename = $modulefile;
- 	if ($filename eq "") {
- 		print "Module .ko file for $module not found. Aborting\n";
- 		exit;
- 	}
- 	# ok so we found the module, now we need to calculate the vma offset
--	open(FILE, "objdump -dS $filename |") || die "Cannot start objdump";
-+	open(FILE, $cross_compile."objdump -dS $filename |") || die "Cannot
-start objdump";
- 	while (<FILE>) {
- 		if ($_ =~ /^([0-9a-f]+) \<$function\>\:/) {
- 			my $fu = $1;
-@@ -225,7 +264,7 @@ sub InRange {
- # first, parse the input into the lines array, but to keep size down,
- # we only do this for 4Kb around the sweet spot
-
--open(FILE, "objdump -dS --adjust-vma=$vmaoffset
---start-address=$decodestart --stop-address=$decodestop $filename |")
-|| die "Cannot start objdump";
-+open(FILE, $cross_compile."objdump -dS --adjust-vma=$vmaoffset
---start-address=$decodestart --stop-address=$decodestop $filename |")
-|| die "Cannot start objdump";
-
- while (<FILE>) {
- 	my $line = $_;
-@@ -345,3 +384,15 @@ while ($i < $finish) {
- 	$i = $i +1;
- }
-
-+sub usage {
-+    print <<EOT;
-+Usage:
-+  dmesg | perl $0 [OPTION] [VMLINUX]
-+
-+OPTION:
-+  -c CROSS_COMPILE	Specify the prefix used for toolchain.
-+  -m MODULE_DIRNAME	Specify the module directory name.
-+  -h			Help
-+EOT
-+}
-+
+Rafael
