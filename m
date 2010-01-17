@@ -1,40 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023Ab0AQOyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031Ab0AQO4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023Ab0AQOyH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 09:54:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963Ab0AQOyG
+	id S1754031Ab0AQO4j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 09:56:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995Ab0AQO4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 09:54:06 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:47973 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797Ab0AQOyD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 09:54:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=voPv0dtW/dqXl/AHmTNpEfSzm4EXa6v0ahRRiPGblY99QEnBaV2RpCn5jXmhR71QZa
-         4RufU5r7tQ5f8g7Vyagqp8og18MMJpqozNQ5AkSBD2guYw/BiYRuXytDUvLRaAZQky1C
-         CmbDzpzlDah8ikD3xS4BBrooQ8dw3dQtc7fIM=
-Message-ID: <4B5325A6.9000608@gmail.com>
-Date: Sun, 17 Jan 2010 15:58:46 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
+	Sun, 17 Jan 2010 09:56:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:59430 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753711Ab0AQO4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 09:56:38 -0500
+Message-ID: <4B532508.4000806@redhat.com>
+Date: Sun, 17 Jan 2010 16:56:08 +0200
+From: Avi Kivity <avi@redhat.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: Samuel Ortiz <samuel@sortiz.org>, irda-users@lists.sourceforge.net,
+To: Peter Zijlstra <peterz@infradead.org>
+CC: ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: irda: two branches in via_ircc_change_dongle_speed() are the same
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>	 <1263467289.4244.288.camel@laptop>	 <1263498366.4875.25.camel@localhost.localdomain>	 <1263546228.4244.343.camel@laptop>  <20100115093831.GC26396@in.ibm.com>	 <1263549014.4244.374.camel@laptop>  <4B53213C.9050303@redhat.com> <1263739939.557.20938.camel@twins>
+In-Reply-To: <1263739939.557.20938.camel@twins>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-in drivers/net/irda/via-ircc.c via_ircc_change_dongle_speed()
+On 01/17/2010 04:52 PM, Peter Zijlstra wrote:
+> On Sun, 2010-01-17 at 16:39 +0200, Avi Kivity wrote:
+>    
+>> On 01/15/2010 11:50 AM, Peter Zijlstra wrote:
+>>      
+>>> As previously stated, I think poking at a process's address space is an
+>>> utter no-go.
+>>>
+>>>        
+>> Why not reserve an address space range for this, somewhere near the top
+>> of memory?  It doesn't have to be populated if it isn't used.
+>>      
+> Because I think poking at a process's address space like that is gross.
+>    
 
-dongle_id case 0x0d:
-two branches are the same whether `if (IsSIROn(iobase))' is true
-or not. how should this be fixed?
+If it's reserved, it's no longer the process' address space.
 
-Roel
+> Also, if its fixed size you're imposing artificial limits on the number
+> of possible probes.
+>    
+
+Obviously we'll need a limit, a uprobe will also take kernel memory, we 
+can't allow people to exhaust it.
+
+-- 
+error compiling committee.c: too many arguments to function
+
