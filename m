@@ -1,90 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234Ab0AQSD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312Ab0AQSHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754234Ab0AQSD4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 13:03:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812Ab0AQSDz
+	id S1754312Ab0AQSHP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 13:07:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287Ab0AQSHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 13:03:55 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:51504 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750743Ab0AQSDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 13:03:54 -0500
-Date: Sun, 17 Jan 2010 19:03:51 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Ming Lei <tom.leiming@gmail.com>, Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       David Airlie <airlied@linux.ie>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Tejun Heo <tj@kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       linux-pcmcia@lists.infradead.org
-Subject: Re: [PATCH] sysfs: Add lockdep annotations for the sysfs active reference
-Message-ID: <20100117180351.GA17688@isilmar.linta.de>
-Mail-Followup-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-	Ming Lei <tom.leiming@gmail.com>, Greg KH <greg@kroah.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Borislav Petkov <petkovbb@googlemail.com>,
-	David Airlie <airlied@linux.ie>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Al Viro <viro@ZenIV.linux.org.uk>, Tejun Heo <tj@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Ingo Molnar <mingo@redhat.com>, linux-pcmcia@lists.infradead.org
-References: <alpine.LFD.2.00.0912301259220.11961@localhost.localdomain> <m11victac1.fsf@fess.ebiederm.org> <alpine.LFD.2.00.0912301348320.11961@localhost.localdomain> <m1fx6rtu31.fsf@fess.ebiederm.org> <alpine.LFD.2.00.0912311043330.11961@localhost.localdomain> <m11vi9c0td.fsf@fess.ebiederm.org> <4B3EB687.7000005@kernel.org> <m11vi8yyrb.fsf_-_@fess.ebiederm.org> <20100118002647.35035e77@tom-lei> <m1eilo7iqd.fsf@fess.ebiederm.org>
+	Sun, 17 Jan 2010 13:07:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:59811 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751669Ab0AQSHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 13:07:12 -0500
+Date: Sun, 17 Jan 2010 20:04:06 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Michael Stone <michael@laptop.org>
+Cc: Anthony Liguori <anthony@codemonkey.ws>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: disablenetwork (v5): Simplify the disablenetwork sendmsg hook.
+Message-ID: <20100117180405.GA32339@redhat.com>
+References: <20100117161053.GG3420@redhat.com> <20100117170431.GA2949@heat>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1eilo7iqd.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20100117170431.GA2949@heat>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+On Sun, Jan 17, 2010 at 12:04:32PM -0500, Michael Stone wrote:
+> Michael Tsirkin wrote:
+>> On Fri, Jan 15, 2010 at 03:12:46AM -0500, Michael Stone wrote:
+>>> The idea is that calls like
+>>>
+>>>    sendto(fd, buffer, len, 0, NULL, 0);
+>>>    send(fd, buffer, len, 0)
+>>>    write(fd, buffer, len)
+>>>
+>>> are all to be permitted but that calls like
+>>>
+>>>    sendto(fd, buffer, len, 0, (struct sockadr *) &addr, sizeof(addr));
+>>>
+>>> are to be rejected when the current task's network is disabled on the grounds
+>>> that the former calls must use previously connected sockets but that the latter
+>>> socket need not have been previously connected.
+>>>
+>>> Signed-off-by: Michael Stone <michael@laptop.org>
+>>
+>> Michael, if I understand correctly, with this patch one could use
+>> disablenetwork to pass an af_packet socket bound to a device to a
+>> task, and make sure that the task does not use it to inject packets into
+>> another device?
+>
+> Michael,
+>
+> Thanks for writing. If I understand you correctly, you're asking:
+>
+>   May a network-disabled process use recvmsg() with SCM_RIGHTS control messages
+>   to receive a file descriptor pointing to previously connected or bound
+>   AF_PACKET socket and, having received such an fd, may the network-disabled
+>   process use the socket normally?
+>
+> If I've understood correctly, then the answer is "yes, to the extent that you
+> can't do stupid things with sendmsg(), fnctl(), ioctl(), and friends."
+>
+> I intend to look more carefully at the ability to use those calls to do stupid
+> things in coming weeks.
+>
+> Does this help?
+>
+> Regards,
+>
+> Michael
+>
+> P.S. - Incidentally, what is the nature of your interest?
 
-On Sun, Jan 17, 2010 at 09:18:34AM -0800, Eric W. Biederman wrote:
-> Ming Lei <tom.leiming@gmail.com> writes:
-> 
-> > On Sat, 02 Jan 2010 13:37:12 -0800
-> > ebiederm@xmission.com (Eric W. Biederman) wrote:
-> >
-> >> 
-> >> Holding locks over device_del -> kobject_del -> sysfs_deactivate can
-> >> cause deadlocks if those same locks are grabbed in sysfs show or store
-> >> methods.
-> >> 
-> >> The I model s_active count + completion as a sleeping read/write lock.
-> >> I describe to lockdep sysfs_get_active as a read_trylock,
-> >> sysfs_put_active as a read_unlock, and sysfs_deactivate as a
-> >> write_lock and write_unlock pair.  This seems to capture the essence
-> >> for purposes of finding deadlocks, and in my testing gives finds real
-> >> issues and ignores non-issues.
-> >> 
-> >> This brings us back to holding locks over kobject_del is a problem
-> >> that ideally we should find a way of addressing, but at least lockdep
-> >> can tell us about the problems instead of requiring developers to
-> >> debug rare strange system deadlocks, that happen when sysfs files are
-> >> removed while being written to.
-> >
-> > The model has hit a possible deadlock in pcmcia, and the lockdep warning
-> > comes when I unplug my wlan card from pcmcia slot.
-> >
-> > Looks like socket->skt_mutex is held in remove path, and it is also
-> > grabbed in .stor method.
-> 
-> 
-> Looking a little closer this is simultaneously a legitimate problem
-> and also a false positive.
-> 
-> This is only legitimate if you add/remove a cardbus bridge, plugged into
-> another cardbus bridge, which I think is unlikely but physically possible.
+We discussed using af_packet sockets for networking in qemu.  qemu is a
+large project so it might not be a great idea to run it as root all the
+time: a better idea is to e.g. get fd from a priveledged server.
+However, we'd like to limit qemu even more, so that it can only use the
+fd for send/receive.
 
-Unfortunately, it is not a false positive, as removing a PCMCIA device
-racing with "pccardctl eject" seems to trigger this path as well. Patch is
-being prepared...
+> (And was your question intentionally or accidentally off-list?)
 
-Best,
-	Dominik
+Oops. Adding it back.
+
+-- 
+MST
