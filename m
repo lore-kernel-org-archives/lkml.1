@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004Ab0AQVaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995Ab0AQVmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004Ab0AQVaP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 16:30:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965Ab0AQVaN
+	id S1754995Ab0AQVmV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 16:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815Ab0AQVmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 16:30:13 -0500
-Received: from liberdade.minaslivre.org ([72.232.254.139]:36253 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754887Ab0AQVaF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 16:30:05 -0500
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: trivial@kernel.org
-Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
-       linux-doc@vger.kernel.org
-Subject: [PATCH] trivial: fix typo s/Defaultd/Defaults/ in EISA documentation
-Date: Sun, 17 Jan 2010 19:27:32 -0200
-Message-Id: <1263763653-9774-1-git-send-email-cascardo@holoscopio.com>
-X-Mailer: git-send-email 1.6.6
+	Sun, 17 Jan 2010 16:42:20 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53358 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753999Ab0AQVmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 16:42:19 -0500
+Date: Sun, 17 Jan 2010 22:42:18 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+       linux-pm@vger.kernel.org
+Subject: Re: [PATCH] trivial: fix typo s/leve/level/ in pm-runtime doc
+In-Reply-To: <1263763348-9531-1-git-send-email-cascardo@holoscopio.com>
+Message-ID: <alpine.LNX.2.00.1001172242050.30977@pobox.suse.cz>
+References: <1263763348-9531-1-git-send-email-cascardo@holoscopio.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
----
- Documentation/eisa.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Sun, 17 Jan 2010, Thadeu Lima de Souza Cascardo wrote:
 
-diff --git a/Documentation/eisa.txt b/Documentation/eisa.txt
-index 60e361b..f297fc1 100644
---- a/Documentation/eisa.txt
-+++ b/Documentation/eisa.txt
-@@ -171,7 +171,7 @@ device.
- virtual_root.force_probe :
- 
- Force the probing code to probe EISA slots even when it cannot find an
--EISA compliant mainboard (nothing appears on slot 0). Defaultd to 0
-+EISA compliant mainboard (nothing appears on slot 0). Defaults to 0
- (don't force), and set to 1 (force probing) when either
- CONFIG_ALPHA_JENSEN or CONFIG_EISA_VLB_PRIMING are set.
- 
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> ---
+>  Documentation/power/runtime_pm.txt |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 356fd86..8602e15 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -250,7 +250,7 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
+>        to suspend the device again in future
+>  
+>    int pm_runtime_resume(struct device *dev);
+> -    - execute the subsystem-leve resume callback for the device; returns 0 on
+> +    - execute the subsystem-level resume callback for the device; returns 0 on
+>        success, 1 if the device's run-time PM status was already 'active' or
+>        error code on failure, where -EAGAIN means it may be safe to attempt to
+>        resume the device again in future, but 'power.runtime_error' should be
+
+Queued.
+
 -- 
-1.6.6
-
+Jiri Kosina
+SUSE Labs, Novell Inc.
