@@ -1,194 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141Ab0AQQ1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153Ab0AQQ1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141Ab0AQQ1l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 11:27:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927Ab0AQQ1j
+	id S1754153Ab0AQQ1X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 11:27:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308Ab0AQQ1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 11:27:39 -0500
-Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:36639 "EHLO
-	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753711Ab0AQQ1h (ORCPT
+	Sun, 17 Jan 2010 11:27:21 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:51060 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753986Ab0AQQ1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 11:27:37 -0500
-Date: Sun, 17 Jan 2010 11:26:46 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <4B4E3834.3000609@majjas.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B533A46.9050600@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100107185040.GB3208@del.dom.local> <4B466A26.5070506@majjas.com>
- <20100108074539.GA6205@ff.dom.local> <4B475FF9.7000702@majjas.com>
- <20100108212923.GA3078@del.dom.local> <4B47A81B.5040601@majjas.com>
- <4B4809EF.1070609@majjas.com> <20100109122830.GA4386@del.dom.local>
- <4B48CC2C.2090403@majjas.com> <4B4E2F89.2050606@majjas.com>
- <20100113210908.GA3065@del.dom.local> <4B4E3834.3000609@majjas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5)
- Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Sun, 17 Jan 2010 11:27:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :organization:x-mailer:mime-version:content-type
+         :content-transfer-encoding;
+        b=h8o0CSOOTSyt7o1Kd9vqLtiGW2fHLkbFlkeZBRYstuAyKPjHutXoykLQ1l0rVXqhC4
+         7XSXmaAIPUuxHxWabfFokTYWIP4etNt5i8OYyMKVl71oS1r7fBvG/Yvc1PpMcGYw4sjt
+         6FRL9G4B51pkCz1sovTgyn89U1WUEJzxWzroo=
+Date: Mon, 18 Jan 2010 00:26:47 +0800
+From: Ming Lei <tom.leiming@gmail.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       David Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Tejun Heo <tj@kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+       linux-pcmcia@lists.infradead.org,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH] sysfs: Add lockdep annotations for the sysfs active
+ reference
+Message-ID: <20100118002647.35035e77@tom-lei>
+In-Reply-To: <m11vi8yyrb.fsf_-_@fess.ebiederm.org>
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
+	<20091226094504.GA6214@liondog.tnic>
+	<20091228092712.AA8C.A69D9226@jp.fujitsu.com>
+	<alpine.LFD.2.00.0912301259220.11961@localhost.localdomain>
+	<m11victac1.fsf@fess.ebiederm.org>
+	<alpine.LFD.2.00.0912301348320.11961@localhost.localdomain>
+	<m1fx6rtu31.fsf@fess.ebiederm.org>
+	<alpine.LFD.2.00.0912311043330.11961@localhost.localdomain>
+	<m11vi9c0td.fsf@fess.ebiederm.org>
+	<4B3EB687.7000005@kernel.org>
+	<m11vi8yyrb.fsf_-_@fess.ebiederm.org>
+Organization: private
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/13/2010 04:16 PM, Michael Breuer wrote:
-> On 1/13/2010 4:09 PM, Jarek Poplawski wrote:
->> On Wed, Jan 13, 2010 at 03:39:37PM -0500, Michael Breuer wrote:
->>> Just an FYI - 2.6.32.3 with alt 3 af_packet patch&  sky2
->>> pskb_may_pull runs OK with DMAR (re)enabled and msi enabled.
->> Hmm... What a pity! It was such a useful debugging tool for
->> networking ;-) BTW, I'm not sure if "runs OK" means with or without
->> those DHCP drops&  large packets you described.
->>
->> Thanks,
->> Jarek P.
-> As of now, no errors even when blasting traffic & forcing dhcp packets 
-> as before. I haven't tried putting mtu back to 9k yet. OK means that 
-> there are no obvious differences in behavior with or without DMAR all 
-> else being equal.
->
-> There were some updates made to stable that could have fixed this - 
-> I'd guess intel_iommu fixes helped.
->
-> If it helps, I'm still getting one error without DMAR enabled - at 
-> startup, there's a DMA sync oops - mismatch of 72 bytes coming from 
-> sky2. That oops was posted previously - with DMAR (re) enabled, 
-> there's no related oops.
-Update: after leaving the system up for a few days, I hit the DMAR error 
-again. This happened during a scheduled backup from my win7 box. A 
-reboot was required to re-enable eth0. After the error, eth0 was 
-receiving, but was unable to transmit. For example, the log reported arp 
-bogons; DHCPINFORM/ACK sequences (where the ACK that was logged was not 
-transmitted), etc. The log was filled with sky2 eth0: tx timeout 
-messages; as well as disable/enable of eth0.
+On Sat, 02 Jan 2010 13:37:12 -0800
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-I attempted to get things up again without a reboot, but failed. Even 
-rmmod & insmod did not fix whatever was broken on the TX side.
+> 
+> Holding locks over device_del -> kobject_del -> sysfs_deactivate can
+> cause deadlocks if those same locks are grabbed in sysfs show or store
+> methods.
+> 
+> The I model s_active count + completion as a sleeping read/write lock.
+> I describe to lockdep sysfs_get_active as a read_trylock,
+> sysfs_put_active as a read_unlock, and sysfs_deactivate as a
+> write_lock and write_unlock pair.  This seems to capture the essence
+> for purposes of finding deadlocks, and in my testing gives finds real
+> issues and ignores non-issues.
+> 
+> This brings us back to holding locks over kobject_del is a problem
+> that ideally we should find a way of addressing, but at least lockdep
+> can tell us about the problems instead of requiring developers to
+> debug rare strange system deadlocks, that happen when sysfs files are
+> removed while being written to.
 
-Note that this is similar to the earlier sky2 errors I had under load 
-with the variety of patches, and with or without DMAR enabled. Just took 
-way longer this time. Note that eth1 remained functional.
+The model has hit a possible deadlock in pcmcia, and the lockdep warning
+comes when I unplug my wlan card from pcmcia slot.
 
-Unfortunately, with the latest set of patches installed, this is no 
-longer reproducible at will. I'd guess therefore that the patches 
-narrowed some hole, but didn't close it.
+Looks like socket->skt_mutex is held in remove path, and it is also
+grabbed in .stor method.
 
-Relevant log portions:
 
-Jan 17 05:29:49 mail dhcpd: DHCPREQUEST for 10.0.0.32 from 
-00:26:bb:aa:15:10 (mbitouch) via eth0
-Jan 17 05:29:49 mail dhcpd: DHCPACK on 10.0.0.32 to 00:26:bb:aa:15:10 
-(mbitouch) via eth0
-Jan 17 05:36:49 mail kernel: DRHD: handling fault status reg 2
-Jan 17 05:36:49 mail kernel: DMAR:[DMA Read] Request device [06:00.0] 
-fault addr ffe7957fe000
-Jan 17 05:36:49 mail kernel: DMAR:[fault reason 06] PTE Read access is 
-not set
-Jan 17 05:36:49 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0xc0000000
-Jan 17 05:36:49 mail kernel: sky2 0000:06:00.0: PCI hardware error (0x2010)
-Jan 17 05:36:49 mail smbd[14840]: [2010/01/17 05:36:49,  0] 
-lib/util_sock.c:539(read_fd_with_timeout)
-Jan 17 05:36:49 mail smbd[14840]: [2010/01/17 05:36:49,  0] 
-lib/util_sock.c:1491(get_peer_addr_internal)
-Jan 17 05:36:49 mail smbd[14840]:   getpeername failed. Error was 
-Transport endpoint is not connected
-Jan 17 05:36:49 mail smbd[14840]:   read_fd_with_timeout: client 0.0.0.0 
-read error = Connection timed out.
-Jan 17 05:37:51 mail kernel: ------------[ cut here ]------------
-Jan 17 05:37:51 mail kernel: WARNING: at net/sched/sch_generic.c:261 
-dev_watchdog+0xf3/0x164()
-Jan 17 05:37:51 mail kernel: Hardware name: System Product Name
-Jan 17 05:37:51 mail kernel: NETDEV WATCHDOG: eth0 (sky2): transmit 
-queue 0 timed out
-Jan 17 05:37:51 mail kernel: Modules linked in: nls_utf8 cifs 
-cpufreq_stats ip6table_mangle ip6table_filter ip6_tables iptable_raw 
-iptable_mangle ipt_MASQUERADE iptable_nat nf_nat appletalk psnap llc 
-nfsd lockd nfs_acl auth_rpcgss exportfs hwmon_vid coretemp sunrpc 
-acpi_cpufreq sit tunnel4 ipt_LOG nf_conntrack_netbios_ns 
-nf_conntrack_ftp nf_conntrack_ipv6 xt_multiport xt_DSCP xt_dscp xt_MARK 
-ipv6 dm_multipath kvm_intel kvm snd_hda_codec_analog snd_hda_intel 
-snd_hda_codec snd_ens1371 gameport snd_rawmidi snd_ac97_codec snd_hwdep 
-ac97_bus firewire_ohci snd_seq firewire_core snd_seq_device 
-gspca_spca505 gspca_main videodev i2c_i801 snd_pcm crc_itu_t v4l1_compat 
-pcspkr v4l2_compat_ioctl32 asus_atk0110 hwmon iTCO_wdt 
-iTCO_vendor_support snd_timer snd soundcore sky2 snd_page_alloc wmi 
-fbcon tileblit font bitblit softcursor raid456 async_raid6_recov 
-async_pq raid6_pq async_xor xor async_memcpy async_tx raid1 ata_generic 
-pata_acpi pata_marvell nouveau ttm drm_kms_helper drm agpgart fb 
-i2c_algo_bit cfbcopyarea i2c_core
-Jan 17 05:37:51 mail kernel: cfbimgblt cfbfillrect [last unloaded: 
-microcode]
-Jan 17 05:37:51 mail kernel: Pid: 0, comm: swapper Tainted: G        W  
-2.6.32WITHMMAPNODMARAF3SKY2TXRGCLNV4TX-00893-gb5d5baa-dirty #2
-Jan 17 05:37:51 mail kernel: Call Trace:
-Jan 17 05:37:51 mail kernel: <IRQ>  [<ffffffff8105365a>] 
-warn_slowpath_common+0x7c/0x94
-Jan 17 05:37:51 mail kernel: [<ffffffff810536c9>] 
-warn_slowpath_fmt+0x41/0x43
-Jan 17 05:37:51 mail kernel: [<ffffffff813e2e57>] ? netif_tx_lock+0x44/0x6c
-Jan 17 05:37:51 mail kernel: [<ffffffff813e2fbf>] dev_watchdog+0xf3/0x164
-Jan 17 05:37:51 mail kernel: [<ffffffff8106e8a4>] ? __queue_work+0x3a/0x42
-Jan 17 05:37:51 mail kernel: [<ffffffff8106316b>] 
-run_timer_softirq+0x1c8/0x270
-Jan 17 05:37:51 mail kernel: [<ffffffff8105ae3b>] __do_softirq+0xf8/0x1cd
-Jan 17 05:37:51 mail kernel: [<ffffffff8107ef33>] ? 
-tick_program_event+0x2a/0x2c
-Jan 17 05:37:51 mail kernel: [<ffffffff81012e1c>] call_softirq+0x1c/0x30
-Jan 17 05:37:51 mail kernel: [<ffffffff810143a3>] do_softirq+0x4b/0xa6
-Jan 17 05:37:51 mail kernel: [<ffffffff8105aa1b>] irq_exit+0x4a/0x8c
-Jan 17 05:37:51 mail kernel: [<ffffffff8146f8f2>] 
-smp_apic_timer_interrupt+0x86/0x94
-Jan 17 05:37:51 mail kernel: [<ffffffff810127e3>] 
-apic_timer_interrupt+0x13/0x20
-Jan 17 05:37:51 mail kernel: <EOI>  [<ffffffff812c678a>] ? 
-acpi_idle_enter_bm+0x256/0x28a
-Jan 17 05:37:51 mail kernel: [<ffffffff812c6783>] ? 
-acpi_idle_enter_bm+0x24f/0x28a
-Jan 17 05:37:51 mail kernel: [<ffffffff813a5f50>] ? 
-cpuidle_idle_call+0x9e/0xfa
-Jan 17 05:37:51 mail kernel: [<ffffffff81010c90>] ? cpu_idle+0xb4/0xf6
-Jan 17 05:37:51 mail kernel: [<ffffffff81464ed2>] ? 
-start_secondary+0x201/0x242
-Jan 17 05:37:51 mail kernel: ---[ end trace 57f7151f6a5def07 ]---
-Jan 17 05:37:51 mail kernel: sky2 eth0: tx timeout
-Jan 17 05:37:51 mail kernel: sky2 eth0: transmit ring 85 .. 45 report=85 
-done=85
-Jan 17 05:37:51 mail kernel: sky2 eth0: disabling interface
-Jan 17 05:37:51 mail kernel: sky2 eth0: enabling interface
-<unrelated stuff>
-Jan 17 05:39:14 mail kernel: sky2 eth0: tx timeout
-Jan 17 05:39:14 mail kernel: sky2 eth0: transmit ring 2 .. 89 report=2 
-done=2
-Jan 17 05:39:14 mail kernel: sky2 eth0: disabling interface
-Jan 17 05:39:14 mail kernel: sky2 eth0: enabling interface
-<time passes>
-Jan 17 05:40:22 mail kernel: sky2 eth0: tx timeout
-Jan 17 05:40:22 mail kernel: sky2 eth0: transmit ring 2 .. 89 report=2 
-done=2
-Jan 17 05:40:22 mail kernel: sky2 eth0: disabling interface
-Jan 17 05:40:22 mail kernel: sky2 eth0: enabling interface
-Jan 17 05:40:22 mail NetworkManager: <info>  (eth0): carrier now OFF 
-(device state 1)
-Jan 17 05:40:25 mail kernel: sky2 eth0: Link is up at 1000 Mbps, full 
-duplex, flow control both
-<time passes>
-Jan 17 05:42:05 mail kernel: sky2 eth0: tx timeout
-Jan 17 05:42:05 mail kernel: sky2 eth0: transmit ring 2 .. 89 report=2 
-done=2
-Jan 17 05:42:05 mail kernel: sky2 eth0: disabling interface
-Jan 17 05:42:05 mail kernel: sky2 eth0: enabling interface
-Jan 17 05:42:08 mail kernel: sky2 eth0: Link is up at 1000 Mbps, full 
-duplex, flow control both
-<time passes>
-Jan 17 05:44:13 mail kernel: sky2 eth0: tx timeout
-Jan 17 05:44:13 mail kernel: sky2 eth0: transmit ring 3 .. 90 report=3 
-done=3
-Jan 17 05:44:13 mail kernel: sky2 eth0: disabling interface
-Jan 17 05:44:13 mail kernel: sky2 eth0: enabling interface
-Jan 17 05:44:16 mail kernel: sky2 eth0: Link is up at 1000 Mbps, full 
-duplex, flow control both
-<much of the same until I rebooted>
+[ 9207.755883] pcmcia_socket pcmcia_socket0: pccard: card ejected from slot 0
+[ 9207.786583] 
+[ 9207.786586] =======================================================
+[ 9207.786595] [ INFO: possible circular locking dependency detected ]
+[ 9207.786602] 2.6.33-rc4-wl #8
+[ 9207.786607] -------------------------------------------------------
+[ 9207.786614] pccardd/841 is trying to acquire lock:
+[ 9207.786620]  (s_active){++++.+}, at: [<ffffffff811637f1>] sysfs_addrm_finish+0x36/0x55
+[ 9207.786643] 
+[ 9207.786645] but task is already holding lock:
+[ 9207.786651]  (&socket->skt_mutex){+.+.+.}, at: [<ffffffff812ed04c>] pccardd+0x15d/0x25f
+[ 9207.786669] 
+[ 9207.786671] which lock already depends on the new lock.
+[ 9207.786674] 
+[ 9207.786679] 
+[ 9207.786680] the existing dependency chain (in reverse order) is:
+[ 9207.786687] 
+[ 9207.786688] -> #1 (&socket->skt_mutex){+.+.+.}:
+[ 9207.786702]        [<ffffffff810796c0>] __lock_acquire+0xb73/0xd2b
+[ 9207.786716]        [<ffffffff8107a36b>] lock_acquire+0xe1/0x105
+[ 9207.786726]        [<ffffffff813b5ac5>] __mutex_lock_common+0x59/0x49d
+[ 9207.786741]        [<ffffffff813b5fbe>] mutex_lock_nested+0x39/0x3e
+[ 9207.786752]        [<ffffffff812ef3ed>] pccard_store_resource+0x6b/0xc5
+[ 9207.786763]        [<ffffffff812a55da>] dev_attr_store+0x20/0x22
+[ 9207.786775]        [<ffffffff8116259a>] sysfs_write_file+0x108/0x144
+[ 9207.786787]        [<ffffffff8110cf48>] vfs_write+0xae/0x10b
+[ 9207.786798]        [<ffffffff8110d065>] sys_write+0x4a/0x6e
+[ 9207.786808]        [<ffffffff81009bc2>] system_call_fastpath+0x16/0x1b
+[ 9207.786822] 
+[ 9207.786824] -> #0 (s_active){++++.+}:
+[ 9207.786835]        [<ffffffff8107956a>] __lock_acquire+0xa1d/0xd2b
+[ 9207.786847]        [<ffffffff8107a36b>] lock_acquire+0xe1/0x105
+[ 9207.786857]        [<ffffffff81163230>] sysfs_deactivate+0x8b/0xe0
+[ 9207.786868]        [<ffffffff811637f1>] sysfs_addrm_finish+0x36/0x55
+[ 9207.786879]        [<ffffffff81161c26>] sysfs_hash_and_remove+0x53/0x6a
+[ 9207.786890]        [<ffffffff811629fd>] sysfs_remove_file+0x15/0x17
+[ 9207.786900]        [<ffffffff812a650e>] device_remove_file+0x17/0x19
+[ 9207.786911]        [<ffffffff81213ef7>] pci_remove_sysfs_dev_files+0x6b/0x10c
+[ 9207.786924]        [<ffffffff8120dce1>] pci_stop_bus_device+0x55/0x83
+[ 9207.786936]        [<ffffffff8120dd99>] pci_remove_bus_device+0x1a/0xba
+[ 9207.786947]        [<ffffffff8120de5f>] pci_remove_behind_bridge+0x26/0x3f
+[ 9207.786958]        [<ffffffff812efb96>] cb_free+0x4a/0x4f
+[ 9207.786969]        [<ffffffff812ec682>] socket_shutdown+0x91/0xfd
+[ 9207.786979]        [<ffffffff812ec88a>] socket_remove+0x4e/0x57
+[ 9207.786989]        [<ffffffff812ed08b>] pccardd+0x19c/0x25f
+[ 9207.787000]        [<ffffffff810674dd>] kthread+0x7f/0x87
+[ 9207.787011]        [<ffffffff8100aa64>] kernel_thread_helper+0x4/0x10
+[ 9207.787023] 
+[ 9207.787025] other info that might help us debug this:
+[ 9207.787027] 
+[ 9207.787034] 1 lock held by pccardd/841:
+[ 9207.787039]  #0:  (&socket->skt_mutex){+.+.+.}, at: [<ffffffff812ed04c>] pccardd+0x15d/0x25f
+[ 9207.787058] 
+[ 9207.787060] stack backtrace:
+[ 9207.787068] Pid: 841, comm: pccardd Not tainted 2.6.33-rc4-wl #8
+[ 9207.787069] Call Trace:
+[ 9207.787069]  [<ffffffff8107871d>] print_circular_bug+0xa8/0xb6
+[ 9207.787069]  [<ffffffff8107956a>] __lock_acquire+0xa1d/0xd2b
+[ 9207.787069]  [<ffffffff811637f1>] ? sysfs_addrm_finish+0x36/0x55
+[ 9207.787069]  [<ffffffff8107a36b>] lock_acquire+0xe1/0x105
+[ 9207.787069]  [<ffffffff811637f1>] ? sysfs_addrm_finish+0x36/0x55
+[ 9207.787069]  [<ffffffff81163230>] sysfs_deactivate+0x8b/0xe0
+[ 9207.787069]  [<ffffffff811637f1>] ? sysfs_addrm_finish+0x36/0x55
+[ 9207.787069]  [<ffffffff8107760e>] ? trace_hardirqs_off+0xd/0xf
+[ 9207.787069]  [<ffffffff813b5897>] ? __mutex_unlock_slowpath+0x119/0x14e
+[ 9207.787069]  [<ffffffff811637f1>] sysfs_addrm_finish+0x36/0x55
+[ 9207.787069]  [<ffffffff81161c26>] sysfs_hash_and_remove+0x53/0x6a
+[ 9207.787069]  [<ffffffff811629fd>] sysfs_remove_file+0x15/0x17
+[ 9207.787069]  [<ffffffff812a650e>] device_remove_file+0x17/0x19
+[ 9207.787069]  [<ffffffff81213ef7>] pci_remove_sysfs_dev_files+0x6b/0x10c
+[ 9207.787069]  [<ffffffff8120dce1>] pci_stop_bus_device+0x55/0x83
+[ 9207.787069]  [<ffffffff8120dd99>] pci_remove_bus_device+0x1a/0xba
+[ 9207.787069]  [<ffffffff8120de5f>] pci_remove_behind_bridge+0x26/0x3f
+[ 9207.787069]  [<ffffffff812efb96>] cb_free+0x4a/0x4f
+[ 9207.787069]  [<ffffffff812ec682>] socket_shutdown+0x91/0xfd
+[ 9207.787069]  [<ffffffff812ec88a>] socket_remove+0x4e/0x57
+[ 9207.787069]  [<ffffffff812ed08b>] pccardd+0x19c/0x25f
+[ 9207.787069]  [<ffffffff812eceef>] ? pccardd+0x0/0x25f
+[ 9207.787069]  [<ffffffff810674dd>] kthread+0x7f/0x87
+[ 9207.787069]  [<ffffffff8100aa64>] kernel_thread_helper+0x4/0x10
+[ 9207.787069]  [<ffffffff813b8014>] ? restore_args+0x0/0x30
+[ 9207.787069]  [<ffffffff8106745e>] ? kthread+0x0/0x87
+[ 9207.787069]  [<ffffffff8100aa60>] ? kernel_thread_helper+0x0/0x10
+[ 9207.788150] device: '0000:16:00.0': device_unregister
+[ 9207.788166] PM: Removing info for pci:0000:16:00.0
+[ 9207.788405] bus: 'pci': remove device 0000:16:00.0
+
+
+
