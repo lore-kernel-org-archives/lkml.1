@@ -1,98 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471Ab0AQSbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451Ab0AQSbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754471Ab0AQSbv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 13:31:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214Ab0AQSbt
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1754451Ab0AQSbt (ORCPT <rfc822;w@1wt.eu>);
 	Sun, 17 Jan 2010 13:31:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34339 "EHLO hera.kernel.org"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214Ab0AQSbr
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 17 Jan 2010 13:31:47 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34337 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753844Ab0AQSbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 13:31:48 -0500
-Date: Sun, 17 Jan 2010 18:31:04 GMT
-From: tip-bot for H Hartley Sweeten <hartleys@visionengravers.com>
+	id S1752020Ab0AQSbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 13:31:47 -0500
+Date: Sun, 17 Jan 2010 18:30:32 GMT
+From: tip-bot for Luca Barbieri <luca@luca-barbieri.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, hartleys@visionengravers.com, tglx@linutronix.de,
-       hsweeten@visionengravers.com, mingo@elte.hu
+       fweisbec@gmail.com, luca@luca-barbieri.com, tglx@linutronix.de,
+       prasad@linux.vnet.ibm.com, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       peterz@infradead.org, tglx@linutronix.de, hartleys@visionengravers.com,
-       hsweeten@visionengravers.com, mingo@elte.hu
-In-Reply-To: <201001132021.53253.hartleys@visionengravers.com>
-References: <201001132021.53253.hartleys@visionengravers.com>
+       fweisbec@gmail.com, luca@luca-barbieri.com, tglx@linutronix.de,
+       prasad@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <1263634770-14578-1-git-send-email-luca@luca-barbieri.com>
+References: <1263634770-14578-1-git-send-email-luca@luca-barbieri.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Don't expose local functions
-Message-ID: <tip-6d686f4564f3fc7c6e678852919e48ad331d276b@git.kernel.org>
-Git-Commit-ID: 6d686f4564f3fc7c6e678852919e48ad331d276b
+Subject: [tip:perf/urgent] hw-breakpoints, perf: Fix broken mmiotrace due to dr6 by reference change
+Message-ID: <tip-0bb7a95f5455cd87e6a69e5818bc1f509a98d187@git.kernel.org>
+Git-Commit-ID: 0bb7a95f5455cd87e6a69e5818bc1f509a98d187
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 17 Jan 2010 18:31:04 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 17 Jan 2010 18:30:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6d686f4564f3fc7c6e678852919e48ad331d276b
-Gitweb:     http://git.kernel.org/tip/6d686f4564f3fc7c6e678852919e48ad331d276b
-Author:     H Hartley Sweeten <hartleys@visionengravers.com>
-AuthorDate: Wed, 13 Jan 2010 20:21:52 -0700
+Commit-ID:  0bb7a95f5455cd87e6a69e5818bc1f509a98d187
+Gitweb:     http://git.kernel.org/tip/0bb7a95f5455cd87e6a69e5818bc1f509a98d187
+Author:     Luca Barbieri <luca@luca-barbieri.com>
+AuthorDate: Sat, 16 Jan 2010 10:39:30 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 17 Jan 2010 08:09:45 +0100
+CommitDate: Sun, 17 Jan 2010 08:01:44 +0100
 
-sched: Don't expose local functions
+hw-breakpoints, perf: Fix broken mmiotrace due to dr6 by reference change
 
-kernel/sched: don't expose local functions
+Commit 62edab9056a6cf0c9207339c8892c923a5217e45 (from June 2009
+but merged in 2.6.33) changes notify_die to pass dr6 by
+reference.
 
-The get_rr_interval_* functions are all class methods of
-struct sched_class. They are not exported so make them
-static.
+However, it forgets to fix the check for DR_STEP in kmmio.c,
+breaking mmiotrace. It also passes a wrong value to the post
+handler.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <201001132021.53253.hartleys@visionengravers.com>
+This simple fix makes mmiotrace work again.
+
+Signed-off-by: Luca Barbieri <luca@luca-barbieri.com>
+Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <1263634770-14578-1-git-send-email-luca@luca-barbieri.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/sched_fair.c     |    2 +-
- kernel/sched_idletask.c |    2 +-
- kernel/sched_rt.c       |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/mm/kmmio.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 42ac3c9..7177860 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -2076,7 +2076,7 @@ static void moved_group_fair(struct task_struct *p, int on_rq)
- }
- #endif
- 
--unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
-+static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
+diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
+index c0f6198..536fb68 100644
+--- a/arch/x86/mm/kmmio.c
++++ b/arch/x86/mm/kmmio.c
+@@ -538,14 +538,15 @@ static int
+ kmmio_die_notifier(struct notifier_block *nb, unsigned long val, void *args)
  {
- 	struct sched_entity *se = &task->se;
- 	unsigned int rr_interval = 0;
-diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
-index 5f93b57..01332bf 100644
---- a/kernel/sched_idletask.c
-+++ b/kernel/sched_idletask.c
-@@ -97,7 +97,7 @@ static void prio_changed_idle(struct rq *rq, struct task_struct *p,
- 		check_preempt_curr(rq, p, 0);
- }
+ 	struct die_args *arg = args;
++	unsigned long* dr6_p = (unsigned long *)ERR_PTR(arg->err);
  
--unsigned int get_rr_interval_idle(struct rq *rq, struct task_struct *task)
-+static unsigned int get_rr_interval_idle(struct rq *rq, struct task_struct *task)
- {
- 	return 0;
- }
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index f48328a..072b3fc 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1721,7 +1721,7 @@ static void set_curr_task_rt(struct rq *rq)
- 	dequeue_pushable_task(rq, p);
- }
+-	if (val == DIE_DEBUG && (arg->err & DR_STEP))
+-		if (post_kmmio_handler(arg->err, arg->regs) == 1) {
++	if (val == DIE_DEBUG && (*dr6_p & DR_STEP))
++		if (post_kmmio_handler(*dr6_p, arg->regs) == 1) {
+ 			/*
+ 			 * Reset the BS bit in dr6 (pointed by args->err) to
+ 			 * denote completion of processing
+ 			 */
+-			(*(unsigned long *)ERR_PTR(arg->err)) &= ~DR_STEP;
++			*dr6_p &= ~DR_STEP;
+ 			return NOTIFY_STOP;
+ 		}
  
--unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
-+static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
- {
- 	/*
- 	 * Time slice is 0 for SCHED_FIFO tasks
