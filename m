@@ -1,97 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161Ab0AQQlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183Ab0AQQno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161Ab0AQQlx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 11:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073Ab0AQQlw
+	id S1754183Ab0AQQno (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 11:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073Ab0AQQnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 11:41:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58218 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751504Ab0AQQlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 11:41:51 -0500
-Message-ID: <4B533E3E.9000304@gmail.com>
-Date: Sun, 17 Jan 2010 17:43:42 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Sun, 17 Jan 2010 11:43:42 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:48321 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753747Ab0AQQnm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 11:43:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=fd1o1rtj5Xr1LljcicjJ8IQFLNoZpDgPFlpzELQeC/FAiIMRbT2WF5BzJCjJWBOC1V
+         hMAmNTYblUg4uVzfjLXILl0IB5VXVGOQksVz01JTarfGx8dOIbNu2zaUIQgsFSaoY1JY
+         wrmQorT7pwoq2MGYnk68Hj2gP7eTCtCuMftFY=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, apw@canonical.com, akpm@linux-foundation.org,
-       dwalker@fifo99.com, Arjan van de Ven <arjan@infradead.org>,
-       Pavel Machek <pavel@ucw.cz>, torvalds@linux-foundation.org
-Subject: [PATCH] checkpatch.pl: Extend list of expected-to-be-const structures
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20100117161726.5752b181@schatten.dmk.lab>
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
+	 <20100116174821.GA18306@redhat.com> <201001162257.16277.rjw@sisk.pl>
+	 <alpine.LFD.2.00.1001161402400.13231@localhost.localdomain>
+	 <20100117123218.GA3182@redhat.com>
+	 <84144f021001170618g708a7c14ob1b222ab1cbdaa20@mail.gmail.com>
+	 <20100117161726.5752b181@schatten.dmk.lab>
+Date: Sun, 17 Jan 2010 18:43:40 +0200
+X-Google-Sender-Auth: fe053a0ee2590573
+Message-ID: <84144f021001170843s67afae24oaabf09e9b13af8db@mail.gmail.com>
+Subject: Re: 2.6.33-rc2: Reported regressions from 2.6.32
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Florian Mickler <florian@mickler.org>
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Emese Revfy <re.emese@gmail.com>
+Hi Florian,
 
-Based on Arjan's suggestion, extend the list of ops structures that should be const.
+(Please don't trim the cc list.)
 
-Signed-off-by: Emese Revfy <re.emese@gmail.com>
---
+On Sun, Jan 17, 2010 at 5:17 PM, Florian Mickler <florian@mickler.org> wrote:
+> on which side of the merge? linus or drm?
+> i.e. it is to be expected to be before the merge, (but on the drm side)
+> so don't get confused... or did i misunderstood the situation?
 
- scripts/checkpatch.pl |   43 ++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 40 insertions(+), 3 deletions(-)
+Like I said, don't read too much into the results but the current
+situation looks like the regression happened _after_ 2.6.32 but before
+any of the DRM code was merged to 2.6.33-rc1. I don't think that makes
+much sense which is why I'm back to testing 2.6.32 more to see if the
+bug is there already but just harder to trigger for whatever reason.
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 3257d3d..9494433 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -2634,9 +2634,46 @@ sub process {
- 		if ($line =~ /^.\s*__initcall\s*\(/) {
- 			WARN("please use device_initcall() instead of __initcall()\n" . $herecurr);
- 		}
--# check for struct file_operations, ensure they are const.
-+# check for various ops structs, ensure they are const.
-+		my $struct_ops = qr{acpi_dock_ops|
-+				address_space_operations|
-+				backlight_ops|
-+				block_device_operations|
-+				dentry_operations|
-+				dev_pm_ops|
-+				dma_map_ops|
-+				extent_io_ops|
-+				file_lock_operations|
-+				file_operations|
-+				hv_ops|
-+				ide_dma_ops|
-+				intel_dvo_dev_ops|
-+				item_operations|
-+				iwl_ops|
-+				kgdb_arch|
-+				kgdb_io|
-+				kset_uevent_ops|
-+				lock_manager_operations|
-+				microcode_ops|
-+				mtrr_ops|
-+				neigh_ops|
-+				nlmsvc_binding|
-+				pci_raw_ops|
-+				pipe_buf_operations|
-+				platform_hibernation_ops|
-+				platform_suspend_ops|
-+				proto_ops|
-+				rpc_pipe_ops|
-+				seq_operations|
-+				snd_ac97_build_ops|
-+				soc_pcmcia_socket_ops|
-+				stacktrace_ops|
-+				sysfs_ops|
-+				tty_operations|
-+				usb_mon_operations|
-+				wd_ops}x;
- 		if ($line !~ /\bconst\b/ &&
--		    $line =~ /\bstruct\s+(file_operations|seq_operations)\b/) {
-+		    $line =~ /\bstruct\s+($struct_ops)\b/) {
- 			WARN("struct $1 should normally be const\n" .
- 				$herecurr);
- 		}
-
-
+                        Pekka
