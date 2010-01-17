@@ -1,57 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170Ab0AQASS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138Ab0AQAiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170Ab0AQASS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jan 2010 19:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100Ab0AQASP
+	id S1753138Ab0AQAiV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jan 2010 19:38:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093Ab0AQAiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 19:18:15 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:48560 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753088Ab0AQASO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 19:18:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=l6pg1do1D9MxTg3AcKVjVd0g4qalZO3S2YN0R7hR6nc3f7SgoJOAhX8L0SrivSfpyc
-         W1xpiiM9qu5+VsVSk9ortPbDfsDyv0JouFenmZ3CCgIF6U1W1HKACOa7atflJJVoqogL
-         mAv/xNviTkPQ/F78D5043NbFyHvMS4Xm2AOfU=
+	Sat, 16 Jan 2010 19:38:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39379 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750823Ab0AQAiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jan 2010 19:38:20 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was: Re: [linux-pm] Memory allocations in .suspend became very unreliable)
+Date: Sun, 17 Jan 2010 01:38:37 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1263549544.3112.10.camel@maxim-laptop> <1263678289.4276.4.camel@maxim-laptop> <201001162317.39940.rjw@sisk.pl>
+In-Reply-To: <201001162317.39940.rjw@sisk.pl>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1001161233300.13231@localhost.localdomain>
-References: <20100116170338.GA17175@elte.hu>
-	 <alpine.LFD.2.00.1001161233300.13231@localhost.localdomain>
-Date: Sat, 16 Jan 2010 19:18:12 -0500
-Message-ID: <73c1f2161001161618l7b471f48ldb4c33c88eafb7b6@mail.gmail.com>
-Subject: Re: [GIT PULL] x86 fixes
-From: Brian Gerst <brgerst@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001170138.37283.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 16, 2010 at 3:34 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Sat, 16 Jan 2010, Ingo Molnar wrote:
->>
->> Cyrill Gorcunov (1):
->>       x86: kernel_thread() -- initialize SS to a known state
->
-> This looks bogus. Why does it do it only on x86-64?
->
-> Either people care about SS or they don't (the answer, I suspect, is "they
-> don't"). But if they care, we should do it on both 32-bit _and_ 64-bit,
-> no?
+Hi,
 
-32-bit doesn't care about ss or esp since it won't pop them from the
-stack when returning to the same privilege level.
+I thing the snippet below is a good summary of what this is about.
 
---
-Brian Gerst
+On Saturday 16 January 2010, Rafael J. Wysocki wrote:
+> On Saturday 16 January 2010, Maxim Levitsky wrote:
+> > On Sat, 2010-01-16 at 01:57 +0100, Rafael J. Wysocki wrote: 
+> > > On Saturday 16 January 2010, Maxim Levitsky wrote:
+> > > > On Fri, 2010-01-15 at 23:03 +0100, Rafael J. Wysocki wrote: 
+> > > > > On Friday 15 January 2010, Maxim Levitsky wrote:
+> > > > > > Hi,
+> > > > > 
+> > > > > Hi,
+> > > > > 
+> > > > > > I know that this is very controversial, because here I want to describe
+> > > > > > a problem in a proprietary driver that happens now in 2.6.33-rc3
+> > > > > > I am taking about nvidia driver.
+> > > > > > 
+> > > > > > Some time ago I did very long hibernate test and found no errors after
+> > > > > > more that 200 cycles.
+> > > > > > 
+> > > > > > Now I update to 2.6.33 and notice that system will hand when nvidia
+> > > > > > driver allocates memory is their .suspend functions. 
+> > > > > 
+> > > > > They shouldn't do that, there's no guarantee that's going to work at all.
+> > > > > 
+> > > > > > This could fail in 2.6.32 if I would run many memory hungry
+> > > > > > applications, but now this happens with most of memory free.
+> > > > > 
+> > > > > This sounds a little strange.  What's the requested size of the image?
+> > > > Don't know, but system has to be very tight on memory.
+> > > 
+> > > Can you send full dmesg, please?
+> > 
+> > I deleted it, but for this case I think that hang was somewhere else.
+> > This task was hand on doing forking, which probably happened even before
+> > the freezer.
+> > 
+> > Anyway, the problem is clear. Now __get_free_pages blocks more often,
+> > and can block in .suspend even if there is plenty of memory free.
+
+This is suspicious, but I leave it to the MM people for consideration.
+
+> > I now patched nvidia to use GFP_ATOMIC _always_, and problem disappear.
+> > It isn't such great solution when memory is tight though....
+> > 
+> > This is going to hit hard all nvidia users...
+> 
+> Well, generally speaking, no driver should ever allocate memory using
+> GFP_KERNEL in its .suspend() routine, because that's not going to work, as you
+> can readily see.  So this is a NVidia bug, hands down.
+> 
+> Now having said that, we've been considering a change that will turn all
+> GFP_KERNEL allocations into GFP_NOIO during suspend/resume, so perhaps I'll
+> prepare a patch to do that and let's see what people think.
+
+If I didn't confuse anything (which is likely, because it's a bit late here
+now), the patch below should do the trick.  I have only checked that it doesn't
+break compilation, so please take it with a grain of salt.
+
+Comments welcome.
+
+Rafael
+
+---
+ include/linux/gfp.h      |    5 +++++
+ kernel/power/hibernate.c |    6 ++++++
+ kernel/power/main.c      |   30 ++++++++++++++++++++++++++++++
+ kernel/power/power.h     |    2 ++
+ kernel/power/suspend.c   |    2 ++
+ 5 files changed, 45 insertions(+)
+
+Index: linux-2.6/include/linux/gfp.h
+===================================================================
+--- linux-2.6.orig/include/linux/gfp.h
++++ linux-2.6/include/linux/gfp.h
+@@ -342,4 +342,9 @@ static inline void set_gfp_allowed_mask(
+ 	gfp_allowed_mask = mask;
+ }
+ 
++static inline gfp_t get_gfp_allowed_mask(void)
++{
++	return gfp_allowed_mask;
++}
++
+ #endif /* __LINUX_GFP_H */
+Index: linux-2.6/kernel/power/hibernate.c
+===================================================================
+--- linux-2.6.orig/kernel/power/hibernate.c
++++ linux-2.6/kernel/power/hibernate.c
+@@ -334,6 +334,7 @@ int hibernation_snapshot(int platform_mo
+ 		goto Close;
+ 
+ 	suspend_console();
++	pm_force_noio_allocations();
+ 	error = dpm_suspend_start(PMSG_FREEZE);
+ 	if (error)
+ 		goto Recover_platform;
+@@ -351,6 +352,7 @@ int hibernation_snapshot(int platform_mo
+ 
+ 	dpm_resume_end(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
++	pm_allow_io_allocations();
+ 	resume_console();
+  Close:
+ 	platform_end(platform_mode);
+@@ -448,11 +450,13 @@ int hibernation_restore(int platform_mod
+ 
+ 	pm_prepare_console();
+ 	suspend_console();
++	pm_force_noio_allocations();
+ 	error = dpm_suspend_start(PMSG_QUIESCE);
+ 	if (!error) {
+ 		error = resume_target_kernel(platform_mode);
+ 		dpm_resume_end(PMSG_RECOVER);
+ 	}
++	pm_allow_io_allocations();
+ 	resume_console();
+ 	pm_restore_console();
+ 	return error;
+@@ -481,6 +485,7 @@ int hibernation_platform_enter(void)
+ 
+ 	entering_platform_hibernation = true;
+ 	suspend_console();
++	pm_force_noio_allocations();
+ 	error = dpm_suspend_start(PMSG_HIBERNATE);
+ 	if (error) {
+ 		if (hibernation_ops->recover)
+@@ -518,6 +523,7 @@ int hibernation_platform_enter(void)
+  Resume_devices:
+ 	entering_platform_hibernation = false;
+ 	dpm_resume_end(PMSG_RESTORE);
++	pm_allow_io_allocations();
+ 	resume_console();
+ 
+  Close:
+Index: linux-2.6/kernel/power/power.h
+===================================================================
+--- linux-2.6.orig/kernel/power/power.h
++++ linux-2.6/kernel/power/power.h
+@@ -187,6 +187,8 @@ static inline void suspend_test_finish(c
+ #ifdef CONFIG_PM_SLEEP
+ /* kernel/power/main.c */
+ extern int pm_notifier_call_chain(unsigned long val);
++extern void pm_force_noio_allocations(void);
++extern void pm_allow_io_allocations(void);
+ #endif
+ 
+ #ifdef CONFIG_HIGHMEM
+Index: linux-2.6/kernel/power/suspend.c
+===================================================================
+--- linux-2.6.orig/kernel/power/suspend.c
++++ linux-2.6/kernel/power/suspend.c
+@@ -208,6 +208,7 @@ int suspend_devices_and_enter(suspend_st
+ 			goto Close;
+ 	}
+ 	suspend_console();
++	pm_force_noio_allocations();
+ 	suspend_test_start();
+ 	error = dpm_suspend_start(PMSG_SUSPEND);
+ 	if (error) {
+@@ -224,6 +225,7 @@ int suspend_devices_and_enter(suspend_st
+ 	suspend_test_start();
+ 	dpm_resume_end(PMSG_RESUME);
+ 	suspend_test_finish("resume devices");
++	pm_allow_io_allocations();
+ 	resume_console();
+  Close:
+ 	if (suspend_ops->end)
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -12,6 +12,7 @@
+ #include <linux/string.h>
+ #include <linux/resume-trace.h>
+ #include <linux/workqueue.h>
++#include <linux/gfp.h>
+ 
+ #include "power.h"
+ 
+@@ -22,6 +23,35 @@ EXPORT_SYMBOL(pm_flags);
+ 
+ #ifdef CONFIG_PM_SLEEP
+ 
++static gfp_t saved_gfp_allowed_mask;
++
++/**
++ * pm_force_noio_allocations - Modify gfp_allowed_mask to disable IO allocations
++ *
++ * Change gfp_allowed_mask by unsetting __GFP_IO and __GFP_FS in it and save the
++ * old value.
++ */
++void pm_force_noio_allocations(void)
++{
++	saved_gfp_allowed_mask = get_gfp_allowed_mask();
++	set_gfp_allowed_mask(saved_gfp_allowed_mask & ~(__GFP_IO | __GFP_FS));
++}
++
++/**
++ * pm_allow_io_allocations - Modify gfp_allowed_mask to allow IO allocations
++ *
++ * If the saved value of gfp_allowed_mask has __GFP_IO set, modify the current
++ * gfp_allowed_mask by setting this bit and anlogously for __GFP_FS.
++ */
++void pm_allow_io_allocations(void)
++{
++	gfp_t gfp_mask;
++
++	gfp_mask = get_gfp_allowed_mask();
++	gfp_mask |= saved_gfp_allowed_mask & (__GFP_IO | __GFP_FS);
++	set_gfp_allowed_mask(gfp_mask);
++}
++
+ /* Routines for PM-transition notifications */
+ 
+ static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
