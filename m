@@ -1,123 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045Ab0AQVxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625Ab0AQWR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045Ab0AQVxx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 16:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934Ab0AQVxu
+	id S1754625Ab0AQWR6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 17:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231Ab0AQWR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 16:53:50 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:2603 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754099Ab0AQVxt convert rfc822-to-8bit (ORCPT
+	Sun, 17 Jan 2010 17:17:57 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:40566 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751754Ab0AQWR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 16:53:49 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=jFdawXBkVvjdIuxxGHs21AHJaDvBrj+vdPPwDXMkiY7DMRKGvX/pEFwlZCHqaLJWs
-	sWAnAPwCxNmtuaPAqit1A==
+	Sun, 17 Jan 2010 17:17:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GcpWxLzivcANq3ci5iAfs3FGHAoOv6SpOI0yXPFKvpUcMYfI140eQumdWetEW+JXOz
+         J6BefWhW4w9AUW9fqHugdXXo6ohAJYTqOPEJvQbGnkAKBsB5pcSqTSsphB5pj1irZB5A
+         BSe290NeLGfWYKVJPgpErtdvR5sKjv4kuhKmM=
+Date: Sun, 17 Jan 2010 23:17:46 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+Message-ID: <20100117221746.GA3161@del.dom.local>
+References: <4B475FF9.7000702@majjas.com>
+ <20100108212923.GA3078@del.dom.local>
+ <4B47A81B.5040601@majjas.com>
+ <4B4809EF.1070609@majjas.com>
+ <20100109122830.GA4386@del.dom.local>
+ <4B48CC2C.2090403@majjas.com>
+ <4B4E2F89.2050606@majjas.com>
+ <20100113210908.GA3065@del.dom.local>
+ <4B4E3834.3000609@majjas.com>
+ <4B533A46.9050600@majjas.com>
 MIME-Version: 1.0
-In-Reply-To: <20100117161859.GG5035@nowhere>
-References: <4b4c761b.0338560a.1eaa.ffff824d@mx.google.com>
-	 <1263312616.4244.153.camel@laptop>
-	 <bd4cb8901001130154p732672b6x56e758c1ab33a8e8@mail.gmail.com>
-	 <1263400193.4244.238.camel@laptop>
-	 <bd4cb8901001130852y1de007cbqe66d77605c1ec372@mail.gmail.com>
-	 <bd4cb8901001130922s7ad85af6w6c631d90de177ef9@mail.gmail.com>
-	 <20100117141233.GF5035@nowhere>
-	 <bd4cb8901001170642w5d0b79b6jdbb5190a297f45b6@mail.gmail.com>
-	 <20100117161859.GG5035@nowhere>
-Date: Sun, 17 Jan 2010 22:53:43 +0100
-Message-ID: <bd4cb8901001171353v6984e89blf78b1a11788552a@mail.gmail.com>
-Subject: Re: [PATCH] perf_events: improve x86 event scheduling
-From: Stephane Eranian <eranian@google.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
-       perfmon2-devel@lists.sf.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B533A46.9050600@majjas.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+On Sun, Jan 17, 2010 at 11:26:46AM -0500, Michael Breuer wrote:
+> On 01/13/2010 04:16 PM, Michael Breuer wrote:
+> >On 1/13/2010 4:09 PM, Jarek Poplawski wrote:
+> >>On Wed, Jan 13, 2010 at 03:39:37PM -0500, Michael Breuer wrote:
+> >>>Just an FYI - 2.6.32.3 with alt 3 af_packet patch&  sky2
+> >>>pskb_may_pull runs OK with DMAR (re)enabled and msi enabled.
+> >>Hmm... What a pity! It was such a useful debugging tool for
+> >>networking ;-) BTW, I'm not sure if "runs OK" means with or without
+> >>those DHCP drops&  large packets you described.
+> >>
+> >>Thanks,
+> >>Jarek P.
+> >As of now, no errors even when blasting traffic & forcing dhcp
+> >packets as before. I haven't tried putting mtu back to 9k yet. OK
+> >means that there are no obvious differences in behavior with or
+> >without DMAR all else being equal.
+> >
+> >There were some updates made to stable that could have fixed this
+> >- I'd guess intel_iommu fixes helped.
+> >
+> >If it helps, I'm still getting one error without DMAR enabled - at
+> >startup, there's a DMA sync oops - mismatch of 72 bytes coming
+> >from sky2. That oops was posted previously - with DMAR (re)
+> >enabled, there's no related oops.
+> Update: after leaving the system up for a few days, I hit the DMAR
+> error again.
 
-Will repost a new version of the patch with these changes.
+My proposal is to send some summary as a new thread, with dmar in the
+subject, and cc-ed dmar maintainers.
 
-On Sun, Jan 17, 2010 at 5:19 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> On Sun, Jan 17, 2010 at 03:42:16PM +0100, Stephane Eranian wrote:
->> Frederic,
->>
->>
->> Here is what I have now in the x86 code.
->>
->> As for your comment on disabling the x86 event, we don't
->> need to do this because it is not actually activated yet when
->> we return from hw_perf_group_sched_in(). Activation occurs
->> really in hw_perf_enable().
->
->
-> Ah, indeed.
->
->
->>
->>
->> static int x86_event_sched_in(struct perf_event *event,
->>                           struct perf_cpu_context *cpuctx, int cpu)
->> {
->>         int ret = 0;
->>
->>         event->state = PERF_EVENT_STATE_ACTIVE;
->>         event->oncpu = cpu;
->>         event->tstamp_running += event->ctx->time - event->tstamp_stopped;
->>
->>         if (is_software_event(event))
->>                 ret = event->pmu->enable(event);
->>
->>         if (!ret && !is_software_event(event))
->>                 cpuctx->active_oncpu++;
->>
->>         if (!ret && event->attr.exclusive)
->>                 cpuctx->exclusive = 1;
->>
->>         return ret;
->> }
->>
->> static void x86_event_sched_out(struct perf_event *event,
->>                             struct perf_cpu_context *cpuctx, int cpu)
->> {
->>         event->state = PERF_EVENT_STATE_INACTIVE;
->>         event->oncpu = -1;
->>
->>         event->tstamp_running -= event->ctx->time - event->tstamp_stopped;
->>
->>         if (is_software_event(event))
->>                 event->pmu->disable(event);
->>
->>         if (!is_software_event(event))
->>                 cpuctx->active_oncpu--;
->>
->>         if (event->attr.exclusive || !cpuctx->active_oncpu)
->>                 cpuctx->exclusive = 0;
->> }
->
->
->
-> Yeah looks good.
->
-> Thanks.
->
->
+> This happened during a scheduled backup from my win7
+> box. A reboot was required to re-enable eth0. After the error, eth0
+> was receiving, but was unable to transmit. For example, the log
+> reported arp bogons; DHCPINFORM/ACK sequences (where the ACK that
+> was logged was not transmitted), etc. The log was filled with sky2
+> eth0: tx timeout messages; as well as disable/enable of eth0.
+> 
+> I attempted to get things up again without a reboot, but failed.
+> Even rmmod & insmod did not fix whatever was broken on the TX side.
+> 
+> Note that this is similar to the earlier sky2 errors I had under
+> load with the variety of patches, and with or without DMAR enabled.
+> Just took way longer this time. Note that eth1 remained functional.
+> 
+> Unfortunately, with the latest set of patches installed, this is no
+> longer reproducible at will. I'd guess therefore that the patches
+> narrowed some hole, but didn't close it.
 
+It would be nice to name those patches each time. Anyway, try this
+again without DMAR.
 
+Thanks,
+Jarek P.
 
--- 
-Stephane Eranian  | EMEA Software Engineering
-Google France | 38 avenue de l'Opéra | 75002 Paris
-Tel : +33 (0) 1 42 68 53 00
-This email may be confidential or privileged. If you received this
-communication by mistake, please
-don't forward it to anyone else, please erase all copies and
-attachments, and please let me know that
-it went to the wrong person. Thanks
+> 
+> Relevant log portions:
+> 
+> Jan 17 05:29:49 mail dhcpd: DHCPREQUEST for 10.0.0.32 from
+> 00:26:bb:aa:15:10 (mbitouch) via eth0
+> Jan 17 05:29:49 mail dhcpd: DHCPACK on 10.0.0.32 to
+> 00:26:bb:aa:15:10 (mbitouch) via eth0
+> Jan 17 05:36:49 mail kernel: DRHD: handling fault status reg 2
+> Jan 17 05:36:49 mail kernel: DMAR:[DMA Read] Request device
+> [06:00.0] fault addr ffe7957fe000
+> Jan 17 05:36:49 mail kernel: DMAR:[fault reason 06] PTE Read access
+> is not set
+> Jan 17 05:36:49 mail kernel: sky2 0000:06:00.0: error interrupt
+> status=0xc0000000
+> Jan 17 05:36:49 mail kernel: sky2 0000:06:00.0: PCI hardware error (0x2010)
+...
