@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441Ab0AQXP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597Ab0AQXQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754441Ab0AQXP7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 18:15:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246Ab0AQXP6
+	id S1754597Ab0AQXQa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 18:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353Ab0AQXQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 18:15:58 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:27125 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753515Ab0AQXP5 (ORCPT
+	Sun, 17 Jan 2010 18:16:29 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:63063 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754280Ab0AQXQ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 18:15:57 -0500
-Date: Sun, 17 Jan 2010 15:15:40 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, David Airlie <airlied@linux.ie>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] ati_pcigart: fix printk format warning
-Message-Id: <20100117151540.43d03395.randy.dunlap@oracle.com>
-In-Reply-To: <20100114172047.406ebda8.sfr@canb.auug.org.au>
-References: <20100114172047.406ebda8.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4B539A27.0056:SCFMA4539814,ss=1,fgs=0
+	Sun, 17 Jan 2010 18:16:28 -0500
+Date: Sun, 17 Jan 2010 18:15:22 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100117230531.GC3161@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B539A0A.2000504@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B47A81B.5040601@majjas.com> <4B4809EF.1070609@majjas.com>
+ <20100109122830.GA4386@del.dom.local> <4B48CC2C.2090403@majjas.com>
+ <4B4E2F89.2050606@majjas.com> <20100113210908.GA3065@del.dom.local>
+ <4B4E3834.3000609@majjas.com> <4B533A46.9050600@majjas.com>
+ <20100117221746.GA3161@del.dom.local> <4B53906B.2020608@majjas.com>
+ <20100117230531.GC3161@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On 1/17/2010 6:05 PM, Jarek Poplawski wrote:
+> On Sun, Jan 17, 2010 at 05:34:19PM -0500, Michael Breuer wrote:
+>    
+>> On 1/17/2010 5:17 PM, Jarek Poplawski wrote:
+>>      
+>>> On Sun, Jan 17, 2010 at 11:26:46AM -0500, Michael Breuer wrote:
+>>>        
+>>>> On 01/13/2010 04:16 PM, Michael Breuer wrote:
+>>>>          
+>>>>> On 1/13/2010 4:09 PM, Jarek Poplawski wrote:
+>>>>>            
+>>>>>> On Wed, Jan 13, 2010 at 03:39:37PM -0500, Michael Breuer wrote:
+>>>>>>
+>>>>>>              
+>>>> Update: after leaving the system up for a few days, I hit the DMAR
+>>>> error again.
+>>>>          
+>>> My proposal is to send some summary as a new thread, with dmar in the
+>>> subject, and cc-ed dmar maintainers.
+>>>
+>>>        
+>> Not sure I agree. The symptoms are identical to those I hit without
+>> DMAR earlier on. Also, as this issue only happens when there is high
+>> receive load, I'm thinking there's some sort of race between TX and
+>> RX within the sky2 driver, or hardware. I think that DMAR is
+>> correctly catching the error.
+>>      
+> Hmm... OK, then let's wait with this report and go back to testing
+> it "really really long" ;-) without DMAR, and maybe without the
+> last Stephen's patch either? (So only the two things in the current
+> linux-2.6.)
+>
+> Jarek P.
+>    
+Ok - but absent the last patch, I think I still need the pskb_may_pull 
+patch... so it'd be pskb_may_pull and afpacket v3 and no DMAR.
 
-Fix ati_pcigart printk format warning:
+Also - not sure if related, but there's still the odd tx side behavior 
+when RX is under load. That I CAN reproduce at will (yesterday's report 
+- no crash, but I confirmed that DHCPOFFER packets are being dropped 
+somewhere after wireshark sees them and before hitting the wire.
 
-drivers/gpu/drm/ati_pcigart.c:115: warning: format '%Lx' expects type 'long long unsigned int', but argument 3 has type 'dma_addr_t'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/gpu/drm/ati_pcigart.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-next-20100111.orig/drivers/gpu/drm/ati_pcigart.c
-+++ linux-next-20100111/drivers/gpu/drm/ati_pcigart.c
-@@ -113,7 +113,7 @@ int drm_ati_pcigart_init(struct drm_devi
- 
- 		if (pci_set_dma_mask(dev->pdev, gart_info->table_mask)) {
- 			DRM_ERROR("fail to set dma mask to 0x%Lx\n",
--				  gart_info->table_mask);
-+				  (unsigned long long)gart_info->table_mask);
- 			ret = 1;
- 			goto done;
- 		}
+I am also wondering whether or not that testing I did yesterday set up 
+today's hang - perhaps those lost TX packets are corrupting something 
+that manifests worse later.
