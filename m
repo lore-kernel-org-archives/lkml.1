@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183Ab0AQQno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116Ab0AQQrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754183Ab0AQQno (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 11:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073Ab0AQQnm
+	id S1754116Ab0AQQrN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 11:47:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839Ab0AQQrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 11:43:42 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:48321 "EHLO
+	Sun, 17 Jan 2010 11:47:12 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:48915 "EHLO
 	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753747Ab0AQQnm (ORCPT
+	with ESMTP id S1752911Ab0AQQrL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 11:43:42 -0500
+	Sun, 17 Jan 2010 11:47:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=fd1o1rtj5Xr1LljcicjJ8IQFLNoZpDgPFlpzELQeC/FAiIMRbT2WF5BzJCjJWBOC1V
-         hMAmNTYblUg4uVzfjLXILl0IB5VXVGOQksVz01JTarfGx8dOIbNu2zaUIQgsFSaoY1JY
-         wrmQorT7pwoq2MGYnk68Hj2gP7eTCtCuMftFY=
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=Y+5yjcFGffxufJF+2E6vonizsS69QUO5DwqkD5JKqyx6LnIHVIfKlMyl/NXOeFlZ9o
+         FwcILoDuPrLgHKo0aC3666KwVZXNe1CJVz0ZjNUVDgDtaD5hFP99weVMCUZc86q7g0Gy
+         A3FjQn3oI2jZelXSQDhtdwNa07ABHxsqnZtAk=
 MIME-Version: 1.0
-In-Reply-To: <20100117161726.5752b181@schatten.dmk.lab>
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
-	 <20100116174821.GA18306@redhat.com> <201001162257.16277.rjw@sisk.pl>
-	 <alpine.LFD.2.00.1001161402400.13231@localhost.localdomain>
-	 <20100117123218.GA3182@redhat.com>
-	 <84144f021001170618g708a7c14ob1b222ab1cbdaa20@mail.gmail.com>
-	 <20100117161726.5752b181@schatten.dmk.lab>
-Date: Sun, 17 Jan 2010 18:43:40 +0200
-X-Google-Sender-Auth: fe053a0ee2590573
-Message-ID: <84144f021001170843s67afae24oaabf09e9b13af8db@mail.gmail.com>
-Subject: Re: 2.6.33-rc2: Reported regressions from 2.6.32
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Florian Mickler <florian@mickler.org>
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Date: Sun, 17 Jan 2010 18:47:10 +0200
+Message-ID: <af0693f01001170847r49083075hc538a42b6bcd65ab@mail.gmail.com>
+Subject: /dev/mem implementation
+From: Felix Rubinstein <felixru@gmail.com>
+To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Florian,
+The recent kernels use CONFIG_STRICT_DEVMEM and CONFIG_X86_PAT
+concerning the /dev/mem (/dev/kmem) so interchangeably one cannot
+figure out what exactly does it mean to access the /dev/mem if both
+CONFIG_STRICT_DEVMEM and CONFIG_X86_PAT are disabled.
 
-(Please don't trim the cc list.)
+It would be more logically to remove pat_enabled variable in
+arch/x86/mm/pat.c and to make everything under CONFIG_X86_PAT define.
+The same goes for phys_mem_access_prot_allowed function (from
+arch/x86/mm/pat.c) even though CONFIG_X86_PAT is disabled.
+To make the story worse there are four implementations of
+range_is_allowed depending on how CONFIG_STRICT_DEVMEM and
+CONFIG_X86_PAT are defined.
 
-On Sun, Jan 17, 2010 at 5:17 PM, Florian Mickler <florian@mickler.org> wrote:
-> on which side of the merge? linus or drm?
-> i.e. it is to be expected to be before the merge, (but on the drm side)
-> so don't get confused... or did i misunderstood the situation?
 
-Like I said, don't read too much into the results but the current
-situation looks like the regression happened _after_ 2.6.32 but before
-any of the DRM code was merged to 2.6.33-rc1. I don't think that makes
-much sense which is why I'm back to testing 2.6.32 more to see if the
-bug is there already but just harder to trigger for whatever reason.
+I see the motivation to limit the access to DRAM from root account
+CONFIG_STRICT_DEVMEM by mmap'ing /dev/[k]mem but it's easily overruled
+by simple char driver and implementing mmap of it's own totally
+bypassing all limitations.
 
-                        Pekka
+What do you think about it guy?
+Appreciate it.
+
+Thanks,
+Felix R.
