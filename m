@@ -1,46 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910Ab0AQOkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926Ab0AQOlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910Ab0AQOkq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 09:40:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952Ab0AQOki
+	id S1753926Ab0AQOlR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 09:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576Ab0AQOlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 09:40:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2199 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752443Ab0AQOkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 09:40:37 -0500
-Message-ID: <4B53213C.9050303@redhat.com>
-Date: Sun, 17 Jan 2010 16:39:56 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>	 <1263467289.4244.288.camel@laptop>	 <1263498366.4875.25.camel@localhost.localdomain>	 <1263546228.4244.343.camel@laptop>  <20100115093831.GC26396@in.ibm.com> <1263549014.4244.374.camel@laptop>
-In-Reply-To: <1263549014.4244.374.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Jan 2010 09:41:17 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:34147 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752952Ab0AQOlP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 09:41:15 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263738961.8876.28.camel@localhost>
+References: <1263738961.8876.28.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Sun, 17 Jan 2010 14:41:07 +0000
+Message-ID: <1263739267.8876.29.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: [PATCH firmware 1/5] Correct various filenames
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/15/2010 11:50 AM, Peter Zijlstra wrote:
-> As previously stated, I think poking at a process's address space is an
-> utter no-go.
->    
+Filenames should be the names of the installed binary files, without
+the base directory 'firmware'.
 
-Why not reserve an address space range for this, somewhere near the top 
-of memory?  It doesn't have to be populated if it isn't used.
+Remove mention of absent file 'whiteheat_loader_debug.fw'.
 
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+ WHENCE |   61 ++++++++++++++++++++++++++++++-------------------------------
+ 1 files changed, 30 insertions(+), 31 deletions(-)
+
+diff --git a/WHENCE b/WHENCE
+index 0b99cb1..728b71d 100644
+--- a/WHENCE
++++ b/WHENCE
+@@ -10,7 +10,7 @@ kernel.
+ 
+ Driver: ambassador -- Madge Ambassador (Collage PCI 155 Server) ATM NIC.
+ 
+-File: firmware/atmsar11.fw
++File: atmsar11.fw
+ 
+ Licence: Allegedly GPLv2+, but no source visible. Marked:
+ 
+@@ -271,7 +271,6 @@ File: whiteheat.fw
+ Version: 4.06
+ 
+ File: whiteheat_loader.fw
+-File: whiteheat_loader_debug.fw
+ 
+ Licence: Allegedly GPLv2, but no source visible. Marked:
+ 	 Copyright (C) 2000-2002  ConnectTech Inc
+@@ -507,9 +506,9 @@ Licence: GPLv2 or OpenIB.org BSD license, no source visible
+ 
+ Driver: cxgb3 - Chelsio Terminator 3 1G/10G Ethernet adapter
+ 
+-File: cxgb3/ael2005_opt_edc.bin.ihex
+-File: cxgb3/ael2005_twx_edc.bin.ihex
+-File: cxgb3/ael2020_twx_edc.bin.ihex
++File: cxgb3/ael2005_opt_edc.bin
++File: cxgb3/ael2005_twx_edc.bin
++File: cxgb3/ael2020_twx_edc.bin
+ 
+ Licence:
+  *	Copyright (c) 2007-2009 NetLogic Microsystems, Inc.
+@@ -597,27 +596,27 @@ Also available from http://linuxwimax.org/Download
+ 
+ Driver: libertas - Marvell Libertas fullmac-type 802.11b/g cards
+ 
+-File: cf8385.bin
+-File: cf8385_helper.bin
+-File: gspi8682.bin
+-File: gspi8682_helper.bin
+-File: gspi8686_v9.bin
+-File: gspi8686_v9_helper.bin
+-File: gspi8688.bin
+-File: gspi8688_helper.bin
+-File: sd8385.bin
+-File: sd8385_helper.bin
+-File: sd8682.bin
+-File: sd8682_helper.bin
+-File: sd8686_v8.bin
+-File: sd8686_v8_helper.bin
+-File: sd8686_v9.bin
+-File: sd8686_v9_helper.bin
+-File: sd8688.bin
+-File: sd8688_helper.bin
+-File: usb8388_v5.bin
+-File: usb8388_v9.bin
+-File: usb8682.bin
++File: libertas/cf8385.bin
++File: libertas/cf8385_helper.bin
++File: libertas/gspi8682.bin
++File: libertas/gspi8682_helper.bin
++File: libertas/gspi8686_v9.bin
++File: libertas/gspi8686_v9_helper.bin
++File: libertas/gspi8688.bin
++File: libertas/gspi8688_helper.bin
++File: libertas/sd8385.bin
++File: libertas/sd8385_helper.bin
++File: libertas/sd8682.bin
++File: libertas/sd8682_helper.bin
++File: libertas/sd8686_v8.bin
++File: libertas/sd8686_v8_helper.bin
++File: libertas/sd8686_v9.bin
++File: libertas/sd8686_v9_helper.bin
++File: libertas/sd8688.bin
++File: libertas/sd8688_helper.bin
++File: libertas/usb8388_v5.bin
++File: libertas/usb8388_v9.bin
++File: libertas/usb8682.bin
+ 
+ Licence: Redistributable. See LICENCE.libertas for details.  Extracted from
+ Linux driver tarballs downloaded from Marvell's "Extranet" with permission.
+@@ -626,8 +625,8 @@ Linux driver tarballs downloaded from Marvell's "Extranet" with permission.
+ 
+ Driver: mwl8k - Marvell Libertas softmac-type 802.11b/g cards
+ 
+-File: fmimage_8687.fw
+-File: helper_8687.fw
++File: mwl8k/fmimage_8687.fw
++File: mwl8k/helper_8687.fw
+ 
+ Licence: Redistributable. See LICENCE.mwl8k for details.  Downloaded from
+ Marvell's "Extranet" with permission.
+@@ -907,8 +906,8 @@ Driver: bnx2x: Broadcom Everest
+ 
+ File: bnx2x-e1-4.8.53.0.fw
+ File: bnx2x-e1h-4.8.53.0.fw
+-File: bnx2x-e1-5.2.7.0.fw.ihex
+-File: bnx2x-e1h-5.2.7.0.fw.ihex
++File: bnx2x-e1-5.2.7.0.fw
++File: bnx2x-e1h-5.2.7.0.fw
+ 
+ Licence:
+   Copyright (c) 2007-2009 Broadcom Corporation
+@@ -1014,7 +1013,7 @@ Downloaded from http://www.ralinktech.com/ralink/Home/Support/Linux.html
+ Driver: usbdux/usbduxfast - usbdux data acquisition cards
+ 
+ File: usbdux_firmware.bin
+-File: usbdixfast_firmware.bin
++File: usbduxfast_firmware.bin
+ Source: usbdux/fx2-include.asm
+ Source: usbdux/usbduxfast_firmware.asm
+ Source: usbdux/usbdux_firmware.asm
 -- 
-error compiling committee.c: too many arguments to function
+1.6.6
+
+
 
