@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592Ab0AQXSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770Ab0AQXTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592Ab0AQXSE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 18:18:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336Ab0AQXSA
+	id S1754770Ab0AQXTo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 18:19:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318Ab0AQXTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 18:18:00 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:37550 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754121Ab0AQXR7 (ORCPT
+	Sun, 17 Jan 2010 18:19:43 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:58171 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754139Ab0AQXTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 18:17:59 -0500
-Date: Sun, 17 Jan 2010 15:17:18 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for January 14 (drm header files)
-Message-Id: <20100117151718.f88c5f21.randy.dunlap@oracle.com>
-In-Reply-To: <20100114172047.406ebda8.sfr@canb.auug.org.au>
-References: <20100114172047.406ebda8.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B539AA2.004B:SCFMA4539814,ss=1,fgs=0
+	Sun, 17 Jan 2010 18:19:42 -0500
+Date: Mon, 18 Jan 2010 00:19:32 +0100
+From: Tino Keitel <tino.keitel@tikei.de>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: Regression: Wake on LAN doesn't work in sky2 with
+ 2.6.33-rc4-git2
+Message-ID: <20100117231932.GA5504@mac.home>
+Mail-Followup-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Stephen Hemminger <shemminger@vyatta.com>
+References: <20100115091053.GA5477@mac.home>
+ <20100115105059.251a3717@nehalam>
+ <201001152323.37718.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001152323.37718.rjw@sisk.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jan 2010 17:20:47 +1100 Stephen Rothwell wrote:
+On Fri, Jan 15, 2010 at 23:23:37 +0100, Rafael J. Wysocki wrote:
+> On Friday 15 January 2010, Stephen Hemminger wrote:
 
-> Hi all,
+[...]
+
+> > This has already been reported.
+> > 
+> > Rafael has been doing the generic PM stuff.
+> > Look for thread,
+> >  [Bug 14730] sky2 won't work after suspend/resume cycle
 > 
-> Changes since 20100113:
+> This has been fixed already and the bug appears to be different.
 
+Yes, sounds different. The interface works after a resume. My issue is
+that the computer just won't resume at all using wake on LAN.
 
-Is anything being done about these?
-or does anything need to be done?
+> 
+> No idea what it is at the moment.
+> 
+> Tino, please check if reverting commit
+> dc1a94ae1749d14c55f8b54e9d92bd89df82d51a helps, although the messages
+> indicate that the generic PCI-side does its job.
 
+No luck with the commit reverted, WoL still doesn't work.
 
-usr/include/drm/drm_mode.h:84: found __[us]{8,16,32,64} type without #include <linux/types.h>
-usr/include/drm/i915_drm.h:119: found __[us]{8,16,32,64} type without #include <linux/types.h>
-usr/include/drm/mga_drm.h:260: found __[us]{8,16,32,64} type without #include <linux/types.h>
-usr/include/drm/radeon_drm.h:758: found __[us]{8,16,32,64} type without #include <linux/types.h>
-usr/include/drm/via_drm.h:117: found __[us]{8,16,32,64} type without #include <linux/types.h>
-
-
-Thanks,
----
-~Randy
+Regards,
+Tino
