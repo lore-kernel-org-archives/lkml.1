@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571Ab0AQJWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753595Ab0AQJ0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571Ab0AQJWn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 04:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090Ab0AQJWm
+	id S1753595Ab0AQJ0u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 04:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812Ab0AQJ0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 04:22:42 -0500
-Received: from lider.pardus.org.tr ([193.140.100.216]:35273 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752560Ab0AQJWj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 04:22:39 -0500
-Message-ID: <4B52D6E2.8000904@pardus.org.tr>
-Date: Sun, 17 Jan 2010 11:22:42 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       hpa@zytor.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       jaswinder@kernel.org, stable@kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Boot hangs after "Freeing initrd memory" with 2.6.31.11
-References: <4B4E1633.8010700@pardus.org.tr> <4B4F1DE7.307@pardus.org.tr> <4B51B0E8.1010302@pardus.org.tr> <201001162312.34189.rjw@sisk.pl>
-In-Reply-To: <201001162312.34189.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 17 Jan 2010 04:26:49 -0500
+Received: from lo.gmane.org ([80.91.229.12]:33592 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753507Ab0AQJ0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 04:26:48 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: matthieu castet <castet.matthieu@free.fr>
+Subject: Re: Ubuntu 32-bit, 32-bit PAE, 64-bit Kernel Benchmarks
+Date: Sun, 17 Jan 2010 09:26:22 +0000 (UTC)
+Message-ID: <loom.20100117T102152-191@post.gmane.org>
+References: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl>,<4B511B12.6010208@zytor.com> <SNT125-W39A63687E4BE4F52FAA517C3680@phx.gbl> <4B514656.5080805@zytor.com> <hisupj$hdn$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: sea.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 81.57.151.96 (Mozilla/5.0 (X11; U; Linux i686; fr; rv:1.9.1.6) Gecko/20091215 Ubuntu/9.10 (karmic) Firefox/3.5.6)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
+Hi,
 
+> > Unfortunately Linux distros have not
+> > properly promoted 64-bit kernels for 32-bit distros; although pure 64
+> > bits is better, it would be a *helluva* lot better if people stuck on 32
+> > bits for compatibility reasons had a saner alternative.
+> > 
+> IIRC Fedora actually planned to offer that and dropped it. There seem to be 
+> display issues, I would assume the X stuff would have to match the kernel, 
+> although I'm basing that on reports. The only split I ever tried was text only.
 > 
-> Well, the problem is I'm not listing regressions from 2.6.31 any more.
-> 
-> Also, I don't have hardware to reproduce the problem on.
-> 
-> Is there a bug entry for this in the kernel Bugzilla?
+Debian got a 64 bits kernel on the 32-bit distros. 2 years ago there where
+display issue, but today it seems to works fine.
+It is not the default kernel, but it is possible to use it.
 
+But there is lot's of older cpu that doesn't support 64 bits, with more 1G of
+RAM or that want NX support.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=15075
+Matthieu
+
+PS : there is even basic 64 bits library so you can run 64 bit application if
+you want.
+
