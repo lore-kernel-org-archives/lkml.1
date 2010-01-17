@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926Ab0AQOlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945Ab0AQOld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926Ab0AQOlR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 09:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576Ab0AQOlR
+	id S1753945Ab0AQOld (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 09:41:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711Ab0AQOlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 09:41:17 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:34147 "EHLO
+	Sun, 17 Jan 2010 09:41:32 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:34150 "EHLO
 	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752952Ab0AQOlP convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1752952Ab0AQOlb convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 09:41:15 -0500
+	Sun, 17 Jan 2010 09:41:31 -0500
 From: Ben Hutchings <ben@decadent.org.uk>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
@@ -17,143 +17,76 @@ In-Reply-To: <1263738961.8876.28.camel@localhost>
 References: <1263738961.8876.28.camel@localhost>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
-Date: Sun, 17 Jan 2010 14:41:07 +0000
-Message-ID: <1263739267.8876.29.camel@localhost>
+Date: Sun, 17 Jan 2010 14:41:29 +0000
+Message-ID: <1263739289.8876.30.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 X-SA-Exim-Connect-IP: 192.168.4.185
 X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: [PATCH firmware 1/5] Correct various filenames
+Subject: [PATCH firmware 2/5] Use 'File:' field name in front of each
+ filename
 X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
 X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Filenames should be the names of the installed binary files, without
-the base directory 'firmware'.
-
-Remove mention of absent file 'whiteheat_loader_debug.fw'.
+This will aid automatic parsing of this file.
 
 Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
- WHENCE |   61 ++++++++++++++++++++++++++++++-------------------------------
- 1 files changed, 30 insertions(+), 31 deletions(-)
+ WHENCE |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/WHENCE b/WHENCE
-index 0b99cb1..728b71d 100644
+index 728b71d..c291289 100644
 --- a/WHENCE
 +++ b/WHENCE
-@@ -10,7 +10,7 @@ kernel.
+@@ -498,7 +498,7 @@ File: cxgb3/t3b_psram-1.1.0.bin
+ File: cxgb3/t3c_psram-1.1.0.bin
+ File: cxgb3/t3fw-7.0.0.bin
+ File: cxgb3/t3fw-7.1.0.bin
+-file: cxgb3/t3fw-7.4.0.bin
++File: cxgb3/t3fw-7.4.0.bin
  
- Driver: ambassador -- Madge Ambassador (Collage PCI 155 Server) ATM NIC.
+ Licence: GPLv2 or OpenIB.org BSD license, no source visible
  
--File: firmware/atmsar11.fw
-+File: atmsar11.fw
+@@ -774,11 +774,11 @@ Found in hex form in kernel source.
+ Driver: PCMCIA_PCNET - NE2000 compatible PCMCIA adapter
  
- Licence: Allegedly GPLv2+, but no source visible. Marked:
+ File: cis/LA-PCM.cis
+-      cis/PCMLM28.cis
+-      cis/DP83903.cis
+-      cis/NE2K.cis
+-      cis/tamarack.cis
+-      cis/PE-200.cis
++File: cis/PCMLM28.cis
++File: cis/DP83903.cis
++File: cis/NE2K.cis
++File: cis/tamarack.cis
++File: cis/PE-200.cis
  
-@@ -271,7 +271,6 @@ File: whiteheat.fw
- Version: 4.06
+ Licence: GPL
  
- File: whiteheat_loader.fw
--File: whiteheat_loader_debug.fw
+@@ -809,12 +809,12 @@ Originally developed by the pcmcia-cs project
+ Driver: SERIAL_8250_CS - Serial PCMCIA adapter
  
- Licence: Allegedly GPLv2, but no source visible. Marked:
- 	 Copyright (C) 2000-2002  ConnectTech Inc
-@@ -507,9 +506,9 @@ Licence: GPLv2 or OpenIB.org BSD license, no source visible
+ File: cis/MT5634ZLX.cis
+-      cis/RS-COM-2P.cis
+-      cis/COMpad2.cis
+-      cis/COMpad4.cis
+-      cis/SW_555_SER.cis
+-      cis/SW_7xx_SER.cis
+-      cis/SW_8xx_SER.cis
++File: cis/RS-COM-2P.cis
++File: cis/COMpad2.cis
++File: cis/COMpad4.cis
++File: cis/SW_555_SER.cis
++File: cis/SW_7xx_SER.cis
++File: cis/SW_8xx_SER.cis
  
- Driver: cxgb3 - Chelsio Terminator 3 1G/10G Ethernet adapter
+ Licence: GPL
  
--File: cxgb3/ael2005_opt_edc.bin.ihex
--File: cxgb3/ael2005_twx_edc.bin.ihex
--File: cxgb3/ael2020_twx_edc.bin.ihex
-+File: cxgb3/ael2005_opt_edc.bin
-+File: cxgb3/ael2005_twx_edc.bin
-+File: cxgb3/ael2020_twx_edc.bin
- 
- Licence:
-  *	Copyright (c) 2007-2009 NetLogic Microsystems, Inc.
-@@ -597,27 +596,27 @@ Also available from http://linuxwimax.org/Download
- 
- Driver: libertas - Marvell Libertas fullmac-type 802.11b/g cards
- 
--File: cf8385.bin
--File: cf8385_helper.bin
--File: gspi8682.bin
--File: gspi8682_helper.bin
--File: gspi8686_v9.bin
--File: gspi8686_v9_helper.bin
--File: gspi8688.bin
--File: gspi8688_helper.bin
--File: sd8385.bin
--File: sd8385_helper.bin
--File: sd8682.bin
--File: sd8682_helper.bin
--File: sd8686_v8.bin
--File: sd8686_v8_helper.bin
--File: sd8686_v9.bin
--File: sd8686_v9_helper.bin
--File: sd8688.bin
--File: sd8688_helper.bin
--File: usb8388_v5.bin
--File: usb8388_v9.bin
--File: usb8682.bin
-+File: libertas/cf8385.bin
-+File: libertas/cf8385_helper.bin
-+File: libertas/gspi8682.bin
-+File: libertas/gspi8682_helper.bin
-+File: libertas/gspi8686_v9.bin
-+File: libertas/gspi8686_v9_helper.bin
-+File: libertas/gspi8688.bin
-+File: libertas/gspi8688_helper.bin
-+File: libertas/sd8385.bin
-+File: libertas/sd8385_helper.bin
-+File: libertas/sd8682.bin
-+File: libertas/sd8682_helper.bin
-+File: libertas/sd8686_v8.bin
-+File: libertas/sd8686_v8_helper.bin
-+File: libertas/sd8686_v9.bin
-+File: libertas/sd8686_v9_helper.bin
-+File: libertas/sd8688.bin
-+File: libertas/sd8688_helper.bin
-+File: libertas/usb8388_v5.bin
-+File: libertas/usb8388_v9.bin
-+File: libertas/usb8682.bin
- 
- Licence: Redistributable. See LICENCE.libertas for details.  Extracted from
- Linux driver tarballs downloaded from Marvell's "Extranet" with permission.
-@@ -626,8 +625,8 @@ Linux driver tarballs downloaded from Marvell's "Extranet" with permission.
- 
- Driver: mwl8k - Marvell Libertas softmac-type 802.11b/g cards
- 
--File: fmimage_8687.fw
--File: helper_8687.fw
-+File: mwl8k/fmimage_8687.fw
-+File: mwl8k/helper_8687.fw
- 
- Licence: Redistributable. See LICENCE.mwl8k for details.  Downloaded from
- Marvell's "Extranet" with permission.
-@@ -907,8 +906,8 @@ Driver: bnx2x: Broadcom Everest
- 
- File: bnx2x-e1-4.8.53.0.fw
- File: bnx2x-e1h-4.8.53.0.fw
--File: bnx2x-e1-5.2.7.0.fw.ihex
--File: bnx2x-e1h-5.2.7.0.fw.ihex
-+File: bnx2x-e1-5.2.7.0.fw
-+File: bnx2x-e1h-5.2.7.0.fw
- 
- Licence:
-   Copyright (c) 2007-2009 Broadcom Corporation
-@@ -1014,7 +1013,7 @@ Downloaded from http://www.ralinktech.com/ralink/Home/Support/Linux.html
- Driver: usbdux/usbduxfast - usbdux data acquisition cards
- 
- File: usbdux_firmware.bin
--File: usbdixfast_firmware.bin
-+File: usbduxfast_firmware.bin
- Source: usbdux/fx2-include.asm
- Source: usbdux/usbduxfast_firmware.asm
- Source: usbdux/usbdux_firmware.asm
 -- 
 1.6.6
 
