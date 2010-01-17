@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299Ab0AQR7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839Ab0AQSCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299Ab0AQR7g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 12:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191Ab0AQR7f
+	id S1753839Ab0AQSCz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 13:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743Ab0AQSCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 12:59:35 -0500
-Received: from symlink.to.noone.org ([85.10.207.172]:57089 "EHLO sym.noone.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754264Ab0AQR7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 12:59:34 -0500
-X-Greylist: delayed 385 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Jan 2010 12:59:34 EST
-Date: Sun, 17 Jan 2010 18:53:07 +0100
-From: Tobias Klauser <tklauser@distanz.ch>
+	Sun, 17 Jan 2010 13:02:55 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:36700 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751990Ab0AQSCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 13:02:54 -0500
+X-Sasl-enc: XqCGMcDKvjQsntfpX1gtr0Sqgtb2kXpJIXHD6C2XpmZG 1263751373
+Date: Sun, 17 Jan 2010 16:02:50 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 To: Greg KH <greg@kroah.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] staging: iio: Fix locking in __iio_push_event
-Message-ID: <20100117175307.GH31478@distanz.ch>
-References: <1263547801-8640-1-git-send-email-tklauser@distanz.ch> <20100115175940.GA10981@kroah.com>
+Cc: Ozan ??a??layan <ozan@pardus.org.tr>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable-review@kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [0/9] 2.6.31.12-stable review
+Message-ID: <20100117180250.GB13056@khazad-dum.debian.net>
+References: <20100114224848.GA532@kroah.com>
+ <4B520D98.7030202@pardus.org.tr>
+ <20100117032319.GA27413@kroah.com>
+ <4B5335CA.7080309@pardus.org.tr>
+ <20100117161853.GA31781@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100115175940.GA10981@kroah.com>
-X-Editor: Vi IMproved 7.1
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100117161853.GA31781@kroah.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010-01-15 at 18:59:41 +0100, Greg KH <greg@kroah.com> wrote:
-> On Fri, Jan 15, 2010 at 10:30:01AM +0100, Tobias Klauser wrote:
-> > Correctly unlock the mutex when leaving the function. This was
-> > discovered by the stanse tool at
-> > http://decibel.fi.muni.cz/~xslaby/stanse/error.cgi?db=33-rc&id=138
-> > 
-> > Cc: Jiri Slaby <jirislaby@gmail.com>
-> > Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
-> 
-> Sorry, but this is already fixed in my tree, someone beat you to it :)
+On Sun, 17 Jan 2010, Greg KH wrote:
+> Yes, I will be maintaining the .32 kernel in a "long-term" manner.  I
+> have mentioned it before to a number of people, but don't know if I've
+> done any "official" announcement.  Things get lost in the lkml volume at
+> times.
 
-Oh, I seem to have missed that one in linux-next (or I should have a
-closer look at your staging repository the next time :-). Never mind...
+Greg, could you do an "official announcement"?  Something that LWN can pick
+up, etc?
 
-Cheers, Tobias
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
