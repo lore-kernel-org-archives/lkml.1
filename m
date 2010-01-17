@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899Ab0AQVSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919Ab0AQVTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899Ab0AQVSz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 16:18:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200Ab0AQVSx
+	id S1754919Ab0AQVTx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 16:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768Ab0AQVTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 16:18:53 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52968 "EHLO mx2.suse.de"
+	Sun, 17 Jan 2010 16:19:52 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52983 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753834Ab0AQVSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 16:18:53 -0500
-Date: Sun, 17 Jan 2010 22:18:46 +0100 (CET)
+	id S1753463Ab0AQVTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 16:19:51 -0500
+Date: Sun, 17 Jan 2010 22:19:50 +0100 (CET)
 From: Jiri Kosina <jkosina@suse.cz>
 To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] trivial: fix ext3/ext4 comment typo
- s/compain/complain/
-In-Reply-To: <1263762607-8996-1-git-send-email-cascardo@holoscopio.com>
-Message-ID: <alpine.LNX.2.00.1001172218360.30977@pobox.suse.cz>
-References: <1263762607-8996-1-git-send-email-cascardo@holoscopio.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       WANG Cong <amwang@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] trivial: typo at ksysfs.c s/boo/boot/
+In-Reply-To: <1263762867-9090-1-git-send-email-cascardo@holoscopio.com>
+Message-ID: <alpine.LNX.2.00.1001172219430.30977@pobox.suse.cz>
+References: <1263762867-9090-1-git-send-email-cascardo@holoscopio.com>
 User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,35 +30,22 @@ On Sun, 17 Jan 2010, Thadeu Lima de Souza Cascardo wrote:
 
 > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 > ---
->  fs/ext3/super.c |    2 +-
->  fs/ext4/super.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+>  kernel/ksysfs.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-> index afa2b56..7761c68 100644
-> --- a/fs/ext3/super.c
-> +++ b/fs/ext3/super.c
-> @@ -164,7 +164,7 @@ void ext3_msg(struct super_block *sb, const char *prefix,
->   * write out the superblock safely.
->   *
->   * We'll just use the journal_abort() error code to record an error in
-> - * the journal instead.  On recovery, the journal will compain about
-> + * the journal instead.  On recovery, the journal will complain about
->   * that error until we've noted it down and cleared it.
->   */
+> diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
+> index 3feaf5a..ac08efc 100644
+> --- a/kernel/ksysfs.c
+> +++ b/kernel/ksysfs.c
+> @@ -33,7 +33,7 @@ static ssize_t uevent_seqnum_show(struct kobject *kobj,
+>  }
+>  KERNEL_ATTR_RO(uevent_seqnum);
 >  
-> diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-> index 735c20d..adcb713 100644
-> --- a/fs/ext4/super.c
-> +++ b/fs/ext4/super.c
-> @@ -302,7 +302,7 @@ void ext4_journal_abort_handle(const char *caller, const char *err_fn,
->   * write out the superblock safely.
->   *
->   * We'll just use the jbd2_journal_abort() error code to record an error in
-> - * the journal instead.  On recovery, the journal will compain about
-> + * the journal instead.  On recovery, the journal will complain about
->   * that error until we've noted it down and cleared it.
->   */
+> -/* uevent helper program, used during early boo */
+> +/* uevent helper program, used during early boot */
+>  static ssize_t uevent_helper_show(struct kobject *kobj,
+>  				  struct kobj_attribute *attr, char *buf)
+>  {
 
 Applied, thanks.
 
