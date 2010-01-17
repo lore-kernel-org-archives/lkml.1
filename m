@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918Ab0AQPnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958Ab0AQPp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918Ab0AQPnu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 10:43:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239Ab0AQPnu
+	id S1753958Ab0AQPp2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 10:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174Ab0AQPp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 10:43:50 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60033 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753230Ab0AQPnt (ORCPT
+	Sun, 17 Jan 2010 10:45:27 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:41694 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751812Ab0AQPp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 10:43:49 -0500
-Date: Sun, 17 Jan 2010 10:43:43 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Gleb Natapov <gleb@redhat.com>
-Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       avi@redhat.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, hpa@zytor.com, riel@redhat.com,
-       cl@linux-foundation.org
-Subject: Re: [PATCH v3 06/12] Add get_user_pages() variant that fails if
-	major fault is required.
-Message-ID: <20100117154343.GA27123@infradead.org>
-References: <1262700774-1808-1-git-send-email-gleb@redhat.com> <1262700774-1808-7-git-send-email-gleb@redhat.com>
+	Sun, 17 Jan 2010 10:45:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Z3etRTxA7xThzq/7XJ0eEZ9DmLvirmtnKx34wTRXHR4a1WujZqujXakM0+dTdTosoS
+         GLUyAOCmpMvqnJMmoRnY09WbklZE+th3Hcprd+TaTVqtZjgFc9t8nIkIDJkJVbmeofpZ
+         3MS+smD5AxU/Ki/MVeZCEA1v99S+dVtjsgBW8=
+Message-ID: <4B5331B2.8010604@gmail.com>
+Date: Sun, 17 Jan 2010 16:50:10 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262700774-1808-7-git-send-email-gleb@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Bill Pemberton <wfp5p@virginia.edu>
+Subject: [PATCH] serqt_usb2: Two branches the same in qt_set_termios()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 04:12:48PM +0200, Gleb Natapov wrote:
-> This patch add get_user_pages() variant that only succeeds if getting
-> a reference to a page doesn't require major fault.
+Regardless of the condition, the branches executed the same code
 
->  
-> +int get_user_pages_noio(struct task_struct *tsk, struct mm_struct *mm,
-> +		unsigned long start, int nr_pages, int write, int force,
-> +		struct page **pages, struct vm_area_struct **vmas)
-> +{
-> +	int flags = FOLL_TOUCH | FOLL_MINOR;
-> +
-> +	if (pages)
-> +		flags |= FOLL_GET;
-> +	if (write)
-> +		flags |= FOLL_WRITE;
-> +	if (force)
-> +		flags |= FOLL_FORCE;
-> +
-> +	return __get_user_pages(tsk, mm, start, nr_pages, flags, pages, vmas);
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Is this right?
 
-Wouldn't it be better to just export __get_user_pages as a proper user
-interface, maybe replacing get_user_pages by it entirely?
-
+diff --git a/drivers/staging/serqt_usb2/serqt_usb2.c b/drivers/staging/serqt_usb2/serqt_usb2.c
+index 060e9de..5401169 100644
+--- a/drivers/staging/serqt_usb2/serqt_usb2.c
++++ b/drivers/staging/serqt_usb2/serqt_usb2.c
+@@ -1277,7 +1277,7 @@ static void qt_set_termios(struct tty_struct *tty,
+ 	if (cflag & CSTOPB)
+ 		new_LCR |= SERIAL_TWO_STOPB;
+ 	else
+-		new_LCR |= SERIAL_TWO_STOPB;
++		new_LCR |= SERIAL_ONE_STOPB;
+ 
+ 	dbg("%s - 4\n", __func__);
+ 
