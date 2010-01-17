@@ -1,59 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540Ab0AQT3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556Ab0AQTar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540Ab0AQT3N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 14:29:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519Ab0AQT3M
+	id S1754556Ab0AQTar (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 14:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520Ab0AQTaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 14:29:12 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:34128 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754384Ab0AQT3L (ORCPT
+	Sun, 17 Jan 2010 14:30:46 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:41822 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751755Ab0AQTap convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 14:29:11 -0500
+	Sun, 17 Jan 2010 14:30:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Zs/0HTo2ln3hp7tdsMP5Sj0eFZdnIKzr3sjjxbT/3ihJ/MVJT9aZno1Jh194K9xJHU
-         k8Vlug4l0UfAuLn9KzESN7hwmFAd1P4+BEX1imZHwK++p4uYze93E5rqgHn7qE8mPwK+
-         bcdA/EUXx9gx+HqB2DR+q8Y9P3Csm9G0Dyn9c=
-Message-ID: <4B536502.20102@gmail.com>
-Date: Sun, 17 Jan 2010 13:29:06 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=xi9nsCnP1a1MO1NhG7sOsHi52k39xK1r9VBtM3vCbL7TuukCXjivq/rHyTsUhDEb3u
+         jYIaZdnPkvjmYS/+fFMxenfmZiOlxC4Vtos7jaC5YBzBBzoCdH6tHT/2zIl0en/gOMo/
+         FVHbqO2rrrj54FK4jn5C+eDZoMPJjnXpmGNP8=
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Yuhong Bao <yuhongbao_386@hotmail.com>, yong.y.wang@linux.intel.com,
-       linux-kernel@vger.kernel.org, huaxu.wan@intel.com,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [PATCH] hwmon: (coretemp) Fix TjMax for Atom   
- N450/D410/D510 CPUs
-References: <20091224073102.GA23058@ywang-moblin2.bj.intel.com>	<20100106160817.72313551@hyperion.delvare>	<20100110200621.564a6682@hyperion.delvare>	<20100111062024.GA20804@ywang-moblin2.bj.intel.com>	<SNT125-W147C55AB6EB65D41CAAFFFC3680@phx.gbl> <20100117161518.4912be7c@hyperion.delvare>
-In-Reply-To: <20100117161518.4912be7c@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100108084727.429c40fc.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20100106070150.GL3059@balbir.in.ibm.com>
+	 <20100106161211.5a7b600f.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20100107071554.GO3059@balbir.in.ibm.com>
+	 <20100107163610.aaf831e6.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20100107083440.GS3059@balbir.in.ibm.com>
+	 <20100107174814.ad6820db.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20100107180800.7b85ed10.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20100107092736.GW3059@balbir.in.ibm.com>
+	 <20100108084727.429c40fc.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 18 Jan 2010 01:00:44 +0530
+X-Google-Sender-Auth: f2c363dc0e96988b
+Message-ID: <661de9471001171130p2b0ac061he6f3dab9ef46fd06@mail.gmail.com>
+Subject: Re: [RFC] Shared page accounting for memory cgroup
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/17/2010 09:15 AM, Jean Delvare wrote:
-> On Fri, 15 Jan 2010 18:02:27 -0800, Yuhong Bao wrote:
+On Fri, Jan 8, 2010 at 5:17 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Thu, 7 Jan 2010 14:57:36 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+>> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-07 18:08:00]:
 >>
->>> No matter what chipset or gfx you use with the new Atom chip, the
->>> integrated memory controller (IMC) will always be used. This patch
->>> checks the presence of that IMC. Hope this clarifies.
->> To be more precise, Pine Trail Atoms integrate the entire northbridge, including the integrated graphics and the memory controller into the CPU, and there is a DMI connection to the southbridge, which is the Intel NM10, that is NOT integrated.
+>> > On Thu, 7 Jan 2010 17:48:14 +0900
+>> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> > > > > "How pages are shared" doesn't show good hints. I don't hear such parameter
+>> > > > > is used in production's resource monitoring software.
+>> > > > >
+>> > > >
+>> > > > You mean "How many pages are shared" are not good hints, please see my
+>> > > > justification above. With Virtualization (look at KSM for example),
+>> > > > shared pages are going to be increasingly important part of the
+>> > > > accounting.
+>> > > >
+>> > >
+>> > > Considering KSM, your cuounting style is tooo bad.
+>> > >
+>> > > You should add
+>> > >
+>> > >  - MEM_CGROUP_STAT_SHARED_BY_KSM
+>> > >  - MEM_CGROUP_STAT_FOR_TMPFS/SYSV_IPC_SHMEM
+>> > >
+>>
+>> No.. I am just talking about shared memory being important and shared
+>> accounting being useful, no counters for KSM in particular (in the
+>> memcg context).
+>>
+> Think so ? The number of memcg-private pages is in interest in my point of view.
 >
-> What prevents another vendor from selling a compatible south bridge
-> then?
-
-Nothing (other than licensing for the DMI bus, see NVIDIA and the 
-problems this creates for their ION chipset). I'm assuming this patch is 
-checking for the host bridge device though, that is integrated into the 
-CPU and would always be present.
-
+> Anyway, I don't change my opinion as "sum of rss" is not necessary to be calculated
+> in the kernel.
+> If you want to provide that in memcg, please add it to global VM as /proc/meminfo.
 >
-> I start believing that we'd rather identify these Atom models using
-> CPUID rather than a PCI device.
+> IIUC, KSM/SHMEM has some official method in global VM.
 >
 
+Kamezawa-San,
+
+I implemented the same in user space and I get really bad results, here is why
+
+1. I need to hold and walk the tasks list in cgroups and extract RSS
+through /proc (results in worse hold times for the fork() scenario you
+menioned)
+2. The data is highly inconsistent due to the higher margin of error
+in accumulating data which is changing as we run. By the time we total
+and look at the memcg data, the data is stale
+
+Would you be OK with the patch, if I renamed "shared_usage_in_bytes"
+to "non_private_usage_in_bytes"?
+
+Given that the stat is user initiated, I don't see your concern w.r.t.
+overhead. Many subsystems like KSM do pay the overhead cost if the
+user really wants the feature or the data. I would be really
+interested in other opinions as well (if people do feel strongly
+against or for the feature)
+
+Balbir Singh
