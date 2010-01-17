@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083Ab0AQVpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092Ab0AQVr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755083Ab0AQVpj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 16:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813Ab0AQVpi
+	id S1755092Ab0AQVr2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 16:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957Ab0AQVr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 16:45:38 -0500
-Received: from cantor.suse.de ([195.135.220.2]:35741 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020Ab0AQVph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 16:45:37 -0500
-Date: Sun, 17 Jan 2010 22:45:36 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
-       linux-doc@vger.kernel.org
-Subject: Re: [PATCH] trivial: fix typo s/Defaultd/Defaults/ in EISA
- documentation
-In-Reply-To: <1263763653-9774-1-git-send-email-cascardo@holoscopio.com>
-Message-ID: <alpine.LNX.2.00.1001172245310.30977@pobox.suse.cz>
-References: <1263763653-9774-1-git-send-email-cascardo@holoscopio.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 17 Jan 2010 16:47:27 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:60375 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754703Ab0AQVr1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 16:47:27 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: trivial@kernel.org
+Cc: marcelo@kvack.org, dilinger@collabora.co.uk,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] trivial: fix grammo in tsc comment about Geode TSC reliability
+Date: Sun, 17 Jan 2010 19:44:44 -0200
+Message-Id: <1263764685-9871-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Jan 2010, Thadeu Lima de Souza Cascardo wrote:
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ arch/x86/kernel/tsc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> ---
->  Documentation/eisa.txt |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/eisa.txt b/Documentation/eisa.txt
-> index 60e361b..f297fc1 100644
-> --- a/Documentation/eisa.txt
-> +++ b/Documentation/eisa.txt
-> @@ -171,7 +171,7 @@ device.
->  virtual_root.force_probe :
->  
->  Force the probing code to probe EISA slots even when it cannot find an
-> -EISA compliant mainboard (nothing appears on slot 0). Defaultd to 0
-> +EISA compliant mainboard (nothing appears on slot 0). Defaults to 0
->  (don't force), and set to 1 (force probing) when either
->  CONFIG_ALPHA_JENSEN or CONFIG_EISA_VLB_PRIMING are set.
-
-Applied.
-
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 597683a..23066ec 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -806,7 +806,7 @@ static void __init check_system_tsc_reliable(void)
+ 	unsigned long res_low, res_high;
+ 
+ 	rdmsr_safe(MSR_GEODE_BUSCONT_CONF0, &res_low, &res_high);
+-	/* Geode_LX - the OLPC CPU has a possibly a very reliable TSC */
++	/* Geode_LX - the OLPC CPU has a very reliable TSC */
+ 	if (res_low & RTSC_SUSP)
+ 		tsc_clocksource_reliable = 1;
+ #endif
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+1.6.6
+
