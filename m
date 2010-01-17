@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986Ab0AQPiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265Ab0AQPjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986Ab0AQPiA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 10:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887Ab0AQPh7
+	id S1753265Ab0AQPjz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 10:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422Ab0AQPjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 10:37:59 -0500
-Received: from kroah.org ([198.145.64.141]:50533 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751985Ab0AQPh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 10:37:58 -0500
-Date: Sat, 16 Jan 2010 19:23:19 -0800
-From: Greg KH <greg@kroah.com>
-To: Ozan ??a??layan <ozan@pardus.org.tr>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [0/9] 2.6.31.12-stable review
-Message-ID: <20100117032319.GA27413@kroah.com>
-References: <20100114224848.GA532@kroah.com> <4B520D98.7030202@pardus.org.tr>
+	Sun, 17 Jan 2010 10:39:54 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43563 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751242Ab0AQPjy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 10:39:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Db9tTUyFVxGjW/Plpcp17nJSdt/rvodQ4IpUkHveJJ2V/FGrHHX5Y7QKPpPT4kls6g
+         DtETzZasfhhd1LIom7ihdF9QWvUR0wgndLyzG1z80N+xOoWOXVwD+iNnqf0IB0aO+3qa
+         oUTp6o2IKvcsPn7y8lslqjjV6SKzqZPxVbCmg=
+Message-ID: <4B533065.7070107@gmail.com>
+Date: Sun, 17 Jan 2010 16:44:37 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B520D98.7030202@pardus.org.tr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] rt2860/sta_ioctl.c: Two branches the same in rt_ioctl_giwscan()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 16, 2010 at 09:03:52PM +0200, Ozan ??a??layan wrote:
-> Greg KH wrote:
-> > This is the start of the stable review cycle for the 2.6.31.12 release.
-> > There are 9 patches in this series, all will be posted as a response to
-> > this one.  If anyone has any issues with these being applied, please let
-> > us know.  If anyone is a maintainer of the proper subsystem, and wants
-> > to add a Signed-off-by: line to the patch, please respond with it.
-> > 
-> 
-> Hi Greg,
-> 
-> 1. There's this "mce: native_apic_write_dummy()" WARNING which causes governor failures on
-> some of systems.
-> http://bugzilla.kernel.org/show_bug.cgi?id=14521
-> 
-> Here's what I wrote in the last comment of the bug:
-> 
-> The following 2 commits from linux-2.6 fixes the issue on 2.6.31.11 on my
-> system. I think they should at least be sent to stable@kernel.org for 2.6.32.y
-> inclusion if they are the correct/complete fixes:
-> 
-> >From 485a2e1973fd9f98c2c6776e66ac4721882b69e0 Mon Sep 17 00:00:00 2001
-> From: Cyrill Gorcunov <gorcunov@openvz.org>
-> Date: Mon, 14 Dec 2009 17:56:34 +0900
-> Subject: [PATCH] x86, mce: Thermal monitoring depends on APIC being enabled
-> 
-> >From 70fe440718d9f42bf963c2cffe12008eb5556165 Mon Sep 17 00:00:00 2001
-> From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> Date: Mon, 14 Dec 2009 17:57:00 +0900
-> Subject: [PATCH] x86, mce: Clean up thermal init by introducing
-> intel_thermal_supported()
+Regardless of the condition, the branches execute the same code
 
-I'll review them for the next round of .32 patches.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Maybe this needs a different fix?
 
-> 2. Boot hangs on old AMD Athlon XP Processors (not 64, not X2) with CONFIG_X86_CPU_DEBUG enabled kernels:
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/34ca6dd8aeab02b3/0c0acb9d6437756f?lnk=raot&fwc=1
-> 
-> Reverting the following commit fixes the problem:
-> 
-> >From 5095f59bda6793a7b8f0856096d6893fe98e0e51 Mon Sep 17 00:00:00 2001
-> From: Jaswinder Singh Rajput <jaswin...@kernel.org>
-> Date: Fri, 5 Jun 2009 23:27:17 +0530
-> Subject: [PATCH] x86: cpu_debug: Remove model information to reduce encoding-decoding
-> 
-> Remove model information, encoding/decoding and reduce bookkeeping.
-> 
-> This, besides removing a lot of code and cleaning up the code, also
-> enables these features on many more CPUs that were enumerated before. 
-
-As this is going to be the last .31 release, and all users should really
-be moving to .32, I'm not going to worry about this one.  Is that ok
-with you?
-
-thanks,
-
-greg k-h
+diff --git a/drivers/staging/rt2860/sta_ioctl.c b/drivers/staging/rt2860/sta_ioctl.c
+index d8fbe6c..de4b627 100644
+--- a/drivers/staging/rt2860/sta_ioctl.c
++++ b/drivers/staging/rt2860/sta_ioctl.c
+@@ -975,10 +975,7 @@ int rt_ioctl_giwscan(struct net_device *dev,
+ 		/*================================ */
+ 		memset(&iwe, 0, sizeof(iwe));
+ 		iwe.cmd = SIOCGIWFREQ;
+-		if (INFRA_ON(pAdapter) || ADHOC_ON(pAdapter))
+-			iwe.u.freq.m = pAdapter->ScanTab.BssEntry[i].Channel;
+-		else
+-			iwe.u.freq.m = pAdapter->ScanTab.BssEntry[i].Channel;
++		iwe.u.freq.m = pAdapter->ScanTab.BssEntry[i].Channel;
+ 		iwe.u.freq.e = 0;
+ 		iwe.u.freq.i = 0;
+ 
