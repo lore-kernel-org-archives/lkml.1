@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751768Ab0AQKy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751852Ab0AQLIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751768Ab0AQKy1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 05:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611Ab0AQKyZ
+	id S1751852Ab0AQLIz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 06:08:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313Ab0AQLIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 05:54:25 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:33262 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750953Ab0AQKyY (ORCPT
+	Sun, 17 Jan 2010 06:08:54 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34061 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932080Ab0AQLIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 05:54:24 -0500
-Date: Sun, 17 Jan 2010 21:54:19 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Cc: "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Julia Lawall <julia@diku.dk>,
-       cocci@diku.dk
-Subject: Re: [PATCH] crypto: make Open Firmware device id constant
-Message-ID: <20100117105419.GB32270@gondor.apana.org.au>
-References: <4B4C2C69.9000804@freemail.hu>
+	Sun, 17 Jan 2010 06:08:53 -0500
+Date: Sun, 17 Jan 2010 06:08:47 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, davem@davemloft.net
+Subject: Re: [PATCH] register MADV_HUGEPAGE
+Message-ID: <20100117110847.GA32212@infradead.org>
+References: <20100116184642.GA5687@random.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4B4C2C69.9000804@freemail.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100116184642.GA5687@random.random>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 09:01:45AM +0100, Németh Márton wrote:
-> From: Márton Németh <nm127@freemail.hu>
+On Sat, Jan 16, 2010 at 07:46:42PM +0100, Andrea Arcangeli wrote:
+> From: Andrea Arcangeli <aarcange@redhat.com>
 > 
-> The match_table field of the struct of_device_id is constant in <linux/of_platform.h>
-> so it is worth to make the initialization data also constant.
+> In order to allow early shipping transparent hugepage feature enabled
+> only inside MADV_HUGEPAGE and not globally to diminish the risk of
+> unexpected performance regressions on non-hypervisor related usages
+> I'd need this little define registered. This is also to avoid things
+> like this:
 
-Applied to cryptodev.  Thanks.
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+NACK, usespace ABIs only go in when features are added.  There's a more
+than large enough chance that it will change for one reason or another.
+
+And while transparent hugepages are a good feature to add, it's still in
+a far to early stage to go on with it.
+
