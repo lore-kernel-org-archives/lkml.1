@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555Ab0AQNHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676Ab0AQN1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555Ab0AQNHw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 08:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930Ab0AQNHv
+	id S1752676Ab0AQN1O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 08:27:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930Ab0AQN1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 08:07:51 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60863 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751812Ab0AQNHu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 08:07:50 -0500
-Date: Sun, 17 Jan 2010 14:07:39 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stanislav Brabec <utx@penguin.cz>, Eric Miao <eric.y.miao@gmail.com>,
-       Bart?omiej Zimo? <uzi18@o2.pl>, Andy Walls <awalls@radix.net>,
-       Daniel Borkmann <danborkmann@googlemail.com>,
-       linux-kernel@vger.kernel.org, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com,
-       zaurus-devel@www.linuxtogo.org
-Subject: Re: [suspend/resume] Re: userspace notification from module
-Message-ID: <20100117130739.GA2035@ucw.cz>
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001162305.56972.rjw@sisk.pl> <20100116221929.GB8425@elf.ucw.cz> <201001162326.09092.rjw@sisk.pl>
+	Sun, 17 Jan 2010 08:27:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40194 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751432Ab0AQN1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 08:27:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was: Re: [linux-pm] Memory allocations in .suspend became very unreliable)
+Date: Sun, 17 Jan 2010 14:27:27 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1263549544.3112.10.camel@maxim-laptop> <201001170138.37283.rjw@sisk.pl> <201001170224.36267.oliver@neukum.org>
+In-Reply-To: <201001170224.36267.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001162326.09092.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001171427.27954.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > That was not the point I was trying to discuss. Yes, we need
-> > kernel<->user notification of battery critical. 
+On Sunday 17 January 2010, Oliver Neukum wrote:
+> Am Sonntag, 17. Januar 2010 01:38:37 schrieb Rafael J. Wysocki:
+> > > Now having said that, we've been considering a change that will turn all
+> > > GFP_KERNEL allocations into GFP_NOIO during suspend/resume, so perhaps I'll
+> > > prepare a patch to do that and let's see what people think.
 > > 
-> > But on zaurus, correct action is to suspend (not hibernate and not
-> > poweroff) when battery is no longer able to supply enough power to
-> > keep system alive.
+> > If I didn't confuse anything (which is likely, because it's a bit late here
+> > now), the patch below should do the trick.  I have only checked that it doesn't
+> > break compilation, so please take it with a grain of salt.
+> > 
+> > Comments welcome.
 > 
-> Why not to poweroff (just asking, I don't know that hardware)?
+> I think this is a bad idea as it makes the mm subsystem behave differently
+> in the runtime and in the whole system cases.
 
-Those machines basically have no poweroff.
+s/runtime/suspend/ ?
 
-> I guess we should at least do our best to keep filesystems in a consistent
-> state and suspend doesn't really guarantee this if the system remains on
-> battery power afterwards.
+Yes it will, but why exactly shouldn't it?  System suspend/resume _is_ a
+special situation anyway.
 
-I'm not sure if I ever had battery run so low that it could not keep
-RAM running. Collie has even separate (small) battery just for
-RAM. (And it also has all the filesystems in ramdisk -- you really do
-not want to power it off, even if it could.)
+> What's so hard about telling people that they need to use GFP_NOIO in
+> suspend() and resume()?
 
-AFAICT following message would be nice.
+Memory allocations are made for other purposes during suspend/resume too.  For
+example, new kernel threads may be created (for async suspend/resume among
+other things).
 
-1) battery is critical, userspace please do something
+Besides, the fact that you tell people to do something doesn't necessary imply
+that they will listen. :-)
 
-On zaurus and similar, you could add
+I have discussed that with Ben for a couple of times and we have generally
+agreed that memory allocation problems during suspend/resume are not avoidable
+in general unless we disable __GFP_FS and __GFP_IO at the high level.
 
-2) oh and btw we had power failure so we suspended (or maybe -- so
-hardware suspended itself -- rmk's examples and old apm systems); we
-are now back and running
-
-notification... but... ideally those power failures should never
-happen anyway, so... having this notification is in no way neccessary.
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Rafael
