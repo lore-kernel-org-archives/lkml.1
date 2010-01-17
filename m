@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255Ab0AQNfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270Ab0AQNgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753255Ab0AQNfx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 08:35:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001Ab0AQNfs
+	id S1753270Ab0AQNgq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 08:36:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985Ab0AQNgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 08:35:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40218 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752363Ab0AQNfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 08:35:46 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was: Re: [linux-pm] Memory allocations in .suspend became very unreliable)
-Date: Sun, 17 Jan 2010 14:36:29 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <1263549544.3112.10.camel@maxim-laptop> <201001170224.36267.oliver@neukum.org> <201001171427.27954.rjw@sisk.pl>
-In-Reply-To: <201001171427.27954.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001171436.29307.rjw@sisk.pl>
+	Sun, 17 Jan 2010 08:36:45 -0500
+Received: from mail-qy0-f202.google.com ([209.85.221.202]:49691 "EHLO
+	mail-qy0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743Ab0AQNgo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 08:36:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=lTm3iEEyStMb5keuFXV6HoE/FHkUPnF5oWKlmoSCCuJqkbnnhSTinsDbApQ+6i3VBQ
+         Uuoy6Ou3enhWN5SutQsYz/Otqm5Fi8+lTR4uZlNaP6P3LXjeU+uMggASmv7KjJ8DKJov
+         z6V2DCcUKIY5GLBofkm9curphm8/oBCMY07aU=
+From: Thiago Farina <tfransosi@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Garrett <mjg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Uwe Geuder <ubuntuLp-ugeuder@sneakemail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: [PATCH] console/vgacon.c: mark file-local symbol static.
+Date: Sun, 17 Jan 2010 08:36:36 -0500
+Message-Id: <b860e7b14e77736d612a679b7a8fdd36ae76d24b.1263734945.git.tfransosi@gmail.com>
+X-Mailer: git-send-email 1.6.6.103.g699d2
+In-Reply-To: <20100117011822.GA6272@srcf.ucam.org>
+References: <20100117011822.GA6272@srcf.ucam.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 January 2010, Rafael J. Wysocki wrote:
-> On Sunday 17 January 2010, Oliver Neukum wrote:
-> > Am Sonntag, 17. Januar 2010 01:38:37 schrieb Rafael J. Wysocki:
-> > > > Now having said that, we've been considering a change that will turn all
-> > > > GFP_KERNEL allocations into GFP_NOIO during suspend/resume, so perhaps I'll
-> > > > prepare a patch to do that and let's see what people think.
-> > > 
-> > > If I didn't confuse anything (which is likely, because it's a bit late here
-> > > now), the patch below should do the trick.  I have only checked that it doesn't
-> > > break compilation, so please take it with a grain of salt.
-> > > 
-> > > Comments welcome.
-> > 
-> > I think this is a bad idea as it makes the mm subsystem behave differently
-> > in the runtime and in the whole system cases.
-> 
-> s/runtime/suspend/ ?
-> 
-> Yes it will, but why exactly shouldn't it?  System suspend/resume _is_ a
-> special situation anyway.
+warning: symbol 'vgacon_text_mode_force' was not declared. Should it be static?
 
-Moreover, as the Maxim's report indicates, the mm subsystem already behaves
-differently during suspend/resume and this behavior is erroneous, because it
-causes the system to hang.
+Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+---
+ drivers/video/console/vgacon.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Rafael
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index cc4bbbe..182dd6f 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -112,7 +112,7 @@ static int 		vga_video_font_height;
+ static int 		vga_scan_lines		__read_mostly;
+ static unsigned int 	vga_rolled_over;
+ 
+-int vgacon_text_mode_force = 0;
++static int vgacon_text_mode_force;
+ 
+ bool vgacon_text_force(void)
+ {
+-- 
+1.6.6.103.g699d2
+
