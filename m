@@ -1,174 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362Ab0AQC6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355Ab0AQDUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753362Ab0AQC6t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jan 2010 21:58:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250Ab0AQC6s
+	id S1753355Ab0AQDUK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jan 2010 22:20:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250Ab0AQDUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jan 2010 21:58:48 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:41583 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753229Ab0AQC6q convert rfc822-to-8bit (ORCPT
+	Sat, 16 Jan 2010 22:20:08 -0500
+Received: from mga09.intel.com ([134.134.136.24]:58936 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751743Ab0AQDUF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jan 2010 21:58:46 -0500
-MIME-Version: 1.0
-In-Reply-To: <20100115081308.GA14443@heat>
-References: <20100115081028.GA14004@heat> <20100115081308.GA14443@heat>
-Date: Sat, 16 Jan 2010 18:58:41 -0800
-X-Google-Sender-Auth: a20fa5b47c2cc449
-Message-ID: <551280e51001161858q740bf246n2ed389920de689e7@mail.gmail.com>
-Subject: Re: disablenetwork (v5): Require CAP_SETPCAP to enable 
-	disablenetwork.
-From: "Andrew G. Morgan" <morgan@kernel.org>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@zeniv.linux.org.uk>, Kyle Moffett <kyle@moffetthome.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 16 Jan 2010 22:20:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,289,1262592000"; 
+   d="scan'208";a="484578084"
+From: "Zhang, Xiantao" <xiantao.zhang@intel.com>
+To: Bill Davidsen <davidsen@tmr.com>, Roel Kluin <roel.kluin@gmail.com>
+CC: "kvm-ia64@vger.kernel.org" <kvm-ia64@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Avi Kivity <avi@redhat.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Date: Sun, 17 Jan 2010 11:19:57 +0800
+Subject: RE: [PATCH] KVM: remove redundant NULL tests
+Thread-Topic: [PATCH] KVM: remove redundant NULL tests
+Thread-Index: AcqW2c8kBFmENs7KQNW/h7U5taDglQASda2g
+Message-ID: <EB8593BCECAB3D40A8248BE0B6400A38355E3BEC@shzsmsx502.ccr.corp.intel.com>
+References: <4B4F4EF6.2050202@gmail.com> <4B520571.7050502@tmr.com>
+In-Reply-To: <4B520571.7050502@tmr.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 12:13 AM, Michael Stone <michael@laptop.org> wrote:
-> We implement this check by allocating a new flag bit in task_struct->network
-> and by propagating its semantics throughout the disablenetwork facility.
->
-> Signed-off-by: Michael Stone <michael@laptop.org>
-> ---
->  include/linux/prctl.h     |    8 +++++---
->  kernel/sys.c              |   14 +++++++++++++-
->  security/disablenetwork.c |   15 ++++++++-------
->  3 files changed, 26 insertions(+), 11 deletions(-)
->
-> diff --git a/include/linux/prctl.h b/include/linux/prctl.h
-> index 4eb4110..4fdb417 100644
-> --- a/include/linux/prctl.h
-> +++ b/include/linux/prctl.h
-> @@ -105,8 +105,10 @@
->  /* Get/set process disable-network flags */
->  #define PR_SET_NETWORK        35
->  #define PR_GET_NETWORK        36
-> -# define PR_NETWORK_ON        0
-> -# define PR_NETWORK_OFF       1
-> -# define PR_NETWORK_ALL_FLAGS 1
-> +# define PR_NETWORK_ON         0
-> +# define PR_NETWORK_ENABLE_DN  1
-> +# define PR_NETWORK_OFF        2
-> +# define PR_NETWORK_ALL_FLAGS  3
-> +# define PR_NETWORK_DN_FLAGS   3
->
->  #endif /* _LINUX_PRCTL_H */
-> diff --git a/kernel/sys.c b/kernel/sys.c
-> index 1fadf10..4c7ef83 100644
-> --- a/kernel/sys.c
-> +++ b/kernel/sys.c
-> @@ -1608,7 +1608,19 @@ long prctl_set_network(unsigned long network_flags)
->        if (current->network & ~network_flags)
->                return -EPERM;
->
-> -       current->network = network_flags;
-> +       /* Only the superuser may permit a process to enable disablenetwork. */
-> +       if (!(current->network & PR_NETWORK_ENABLE_DN) &&
-> +               network_flags & PR_NETWORK_ENABLE_DN &&
-> +               !capable(CAP_SETPCAP))
+Bill Davidsen wrote:
+> Roel Kluin wrote:
+>> kvm_get_exit_data() cannot return a NULL pointer.
+>> 
+>> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>> ---
+>>  arch/ia64/kvm/kvm_fw.c |   28 +++++++++++++---------------
+>>  1 files changed, 13 insertions(+), 15 deletions(-)
+>> 
+>> diff --git a/arch/ia64/kvm/kvm_fw.c b/arch/ia64/kvm/kvm_fw.c
+>> index e4b8231..cb548ee 100644
+>> --- a/arch/ia64/kvm/kvm_fw.c
+>> +++ b/arch/ia64/kvm/kvm_fw.c
+>> @@ -75,7 +75,7 @@ static void set_pal_result(struct kvm_vcpu *vcpu, 
+>> struct exit_ctl_data *p; 
+>> 
+>>  	p = kvm_get_exit_data(vcpu);
+>> -	if (p && p->exit_reason == EXIT_REASON_PAL_CALL) {
+>> +	if (p->exit_reason == EXIT_REASON_PAL_CALL) {
+>>  		p->u.pal_data.ret = result;
+>>  		return ;
+>>  	}
+> 	[___etc___]
+> 
+> Clearly the original author thought that there was a path where
+> kvm_exit_data could return a NULL pointer, was that ever possible?
 
-Please use CAP_NET_ADMIN for this feature (and add the corresponding
-comment in include/linux/capabilities.h).
-
-Thanks
-
-Andrew
-
-> +               return -EPERM;
-> +
-> +       /* Only dn-enabled processes may activate disablenetwork. */
-> +       if (!(current->network & PR_NETWORK_OFF) &&
-> +               network_flags & PR_NETWORK_OFF &&
-> +               !(current->network & PR_NETWORK_ENABLE_DN))
-> +               return -EPERM;
-> +
-> +       current->network |= network_flags;
->        return 0;
->  }
->
-> diff --git a/security/disablenetwork.c b/security/disablenetwork.c
-> index 27b88d7..02c0150 100644
-> --- a/security/disablenetwork.c
-> +++ b/security/disablenetwork.c
-> @@ -19,10 +19,11 @@
->  #include <net/sock.h>
->  #include <linux/socket.h>
->  #include <linux/disablenetwork.h>
-> +#include <linux/prctl.h>
->
-> -static inline int maybe_allow(void)
-> +static inline int maybe_allow(unsigned long network_flags)
->  {
-> -       if (current->network)
-> +       if ((network_flags & PR_NETWORK_DN_FLAGS) == PR_NETWORK_DN_FLAGS)
->                return -EPERM;
->        return 0;
->  }
-> @@ -32,7 +33,7 @@ int disablenetwork_security_socket_create(int family, int type,
->  {
->        if (family == AF_UNIX)
->                return 0;
-> -       return maybe_allow();
-> +       return maybe_allow(current->network);
->  }
->
->  int disablenetwork_security_socket_bind(struct socket * sock,
-> @@ -41,7 +42,7 @@ int disablenetwork_security_socket_bind(struct socket * sock,
->  {
->        if (address->sa_family == AF_UNIX)
->                return 0;
-> -       return maybe_allow();
-> +       return maybe_allow(current->network);
->  }
->
->  int disablenetwork_security_socket_connect(struct socket * sock,
-> @@ -50,7 +51,7 @@ int disablenetwork_security_socket_connect(struct socket * sock,
->  {
->        if (address->sa_family == AF_UNIX)
->                return 0;
-> -       return maybe_allow();
-> +       return maybe_allow(current->network);
->  }
->
->  int disablenetwork_security_socket_sendmsg(struct socket * sock,
-> @@ -59,14 +60,14 @@ int disablenetwork_security_socket_sendmsg(struct socket * sock,
->        /* permit sockets which are PF_UNIX or connected; check others. */
->        if (sock->sk->sk_family == PF_UNIX || msg->msg_name == NULL)
->                return 0;
-> -       return maybe_allow();
-> +       return maybe_allow(current->network);
->  }
->
->  int disablenetwork_security_ptrace_access_check(struct task_struct *child,
->                                                  unsigned int mode)
->  {
->        /* does current have networking restrictions not shared by child? */
-> -       if (current->network & ~child->network)
-> +       if (maybe_allow(current->network) && !maybe_allow(child->network))
->                return -EPERM;
->        return 0;
->  }
-> --
-> 1.6.6.rc2
->
+Originally, we planed to allocate the exit_data dynamically, but considering some constrains, the exit_data is allocated statically, so the check for NULL is useless now. 
+Xiantao
