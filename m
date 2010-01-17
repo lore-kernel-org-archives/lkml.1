@@ -1,68 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784Ab0AQXCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794Ab0AQXEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754784Ab0AQXCs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 18:02:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139Ab0AQXCs
+	id S1754794Ab0AQXEy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 18:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351Ab0AQXEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 18:02:48 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52255 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754093Ab0AQXCr (ORCPT
+	Sun, 17 Jan 2010 18:04:53 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:50633 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753033Ab0AQXEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 18:02:47 -0500
-X-User-Agent: K-9 Mail for Android
-Content-Type: multipart/mixed; boundary="----FW2V7M14IEQQX5392OC4VRVSL3B6LI"
+	Sun, 17 Jan 2010 18:04:52 -0500
+Date: Sun, 17 Jan 2010 21:02:18 -0200
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: trivial@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH] trivial: fix typo s/programme/program/ in mtrr
+ documentation
+Message-ID: <20100117230217.GA1520@holoscopio.com>
+References: <1263763552-9656-1-git-send-email-cascardo@holoscopio.com>
+ <20100117135358.7db2e7f5.rdunlap@xenotime.net>
 MIME-Version: 1.0
-Subject: =?US-ASCII?Q?Re=3A_=5BRFC_PATCH_2/8=5D_jump_label_v4_-_x86=3A_Intr?= =?US-ASCII?Q?oduce_generic_jump=09patching_without_stop=5Fmachine?=
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Sun, 17 Jan 2010 14:56:38 -0800
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: rostedt@goodmis.org, Jason Baron <jbaron@redhat.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       andi@firstfloor.org, roland@redhat.com, rth@redhat.com,
-       mhiramat@redhat.com, Arjan van de Ven <arjan@infradead.org>
-Message-ID: <a108a3ca-c8db-48be-8adb-3733257323d6@email.android.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="3V7upXqbjpZ4EhLz"
+Content-Disposition: inline
+In-Reply-To: <20100117135358.7db2e7f5.rdunlap@xenotime.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------FW2V7M14IEQQX5392OC4VRVSL3B6LI
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: base64
 
-SWYgc2luZ2xlLWJ5dGUgdXBkYXRlcyB3ZXJlbid0IGF0b21pYywgdGhlbiB0aGUgaW50MyBzY2hl
-bWUgd291bGQgbm90IGJlIHBvc3NpYmxlIGluIHRoZSBmaXJzdCBwbGFjZS4gIE9mIGNvdXJzZSwg
-aWYgeW91IHdhbnQgdGhlcmUgdG8gYmUgYSBzeW5jaHJvbml6YXRpb24gcG9pbnQgYmV5b25kIHdo
-aWNoIHRoZSBtb2RpZmljYXRpb24gaXMgZ3VhcmFudGVlZCB0byBoYXZlIGFmZmVjdGVkIGFsbCBD
-UFVzLCB5b3UgbmVlZCBhbiBJUEktSVJFVCBvbiBhbGwgQ1BVcy4KClRoZSBvdGhlciB0aGluZyB0
-byB3YXRjaCBvdXQgZm9yIGlzIHRoYXQgdGhlIENQVSBpdHNlbGYgaXMgc3ViamVjdCB0byB0ZXh0
-IG1vZGlmaWNhdGlvbiB0aHJvdWdoIGEgZGlmZmVyZW50IGFsaWFzLCB3aGljaCBtZWFucyBzb21l
-IG9mIHRoZSBoYXJkd2FyZSBTTUMgcHJvdGVjdGlvbnMgYXJlIGluZWZmZWN0aXZlLgoKIk1hdGhp
-ZXUgRGVzbm95ZXJzIiA8bWF0aGlldS5kZXNub3llcnNAcG9seW10bC5jYT4gd3JvdGU6Cgo+KiBI
-LiBQZXRlciBBbnZpbiAoaHBhQHp5dG9yLmNvbSkgd3JvdGU6DQo+PiBPbiAwMS8xNC8yMDEwIDA3
-OjMyIEFNLCBTdGV2ZW4gUm9zdGVkdCB3cm90ZToNCj4+ID4+ICsNCj4+ID4+ICsJLyogUmVwbGFj
-aW5nIDEgYnl0ZSBjYW4gYmUgZG9uZSBhdG9taWNhbGx5LiAqLw0KPj4gPj4gKwlpZiAodW5saWtl
-bHkobGVuIDw9IDEpKQ0KPj4gPj4gKwkJcmV0dXJuIHRleHRfcG9rZShhZGRyLCBvcGNvZGUsIGxl
-bik7DQo+PiA+IA0KPj4gPiBUaGlzIHBhcnQgYm90aGVycyBtZS4gVGhlIHRleHRfcG9rZSBqdXN0
-IHdyaXRlcyBvdmVyIHRoZSB0ZXh0IGRpcmVjdGx5DQo+PiA+ICh1c2luZyBhIHNlcGFyYXRlIG1h
-cHBpbmcpLiBCdXQgaWYgdGhhdCBtZW1vcnkgaXMgaW4gdGhlIHBpcGVsaW5lIG9mDQo+PiA+IGFu
-b3RoZXIgQ1BVLCBJIHRoaW5rIHRoaXMgY291bGQgY2F1c2UgYSBHUEYuDQo+PiA+IA0KPj4gDQo+
-PiBDb3VsZCB5b3UgY2xhcmlmeSB3aHkgeW91IHRoaW5rIHRoYXQ/DQo+DQo+QmFzaWNhbGx5LCB3
-aGF0IFN0ZXZlbiBhbmQgSSB3ZXJlIGNvbmNlcm5lZCBhYm91dCBpbiB0aGlzIHBhcnRpY3VsYXIN
-Cj5wYXRjaCB2ZXJzaW9uIGlzIHRoZSBmYWN0IHRoYXQgdGhpcyBjb2RlIHRvb2sgYSAic2hvcnRj
-dXQiIGZvcg0KPnNpbmdsZS1ieXRlIHRleHQgbW9kaWZpY2F0aW9uLCB0aHVzIGJ5cGFzc2luZyB0
-aGUgaW50My1ieXBhc3Mgc2NoZW1lDQo+YWx0b2dldGhlci4NCj4NCj5BcyBtZXJlIGF0b21pY2l0
-eSBvZiB0aGUgbW9kaWZpY2F0aW9uIGlzIG5vdCB0aGUgb25seSBjb25jZXJuIGhlcmUNCj4oYmVj
-YXVzZSB3ZSBhbHNvIGhhdmUgdG8gZGVhbCB3aXRoIGluc3RydWN0aW9uIHRyYWNlIGNhY2hlIGNv
-aGVyZW5jeSBhbmQNCj5zbyBmb3J0aCksIHRoZW4gdGhlIGludDMgYnJlYWtwb2ludCBzY2hlbWUg
-aXMsIEkgdGhpbmssIGFsc28gbmVlZGVkIGZvcg0KPnNpbmdsZS1ieXRlIHVwZGF0ZXMuDQo+DQo+
-VGhhbmtzLA0KPg0KPk1hdGhpZXUNCj4NCj4+IA0KPj4gCS1ocGENCj4+IA0KPj4gLS0gDQo+PiBI
-LiBQZXRlciBBbnZpbiwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXINCj4+IEkg
-d29yayBmb3IgSW50ZWwuICBJIGRvbid0IHNwZWFrIG9uIHRoZWlyIGJlaGFsZi4NCj4+IA0KPg0K
-Pi0tIA0KPk1hdGhpZXUgRGVzbm95ZXJzDQo+T3BlblBHUCBrZXkgZmluZ2VycHJpbnQ6IDhDRDUg
-NTJDMyA4RTNDIDQxNDAgNzE1RiAgQkEwNiAzRjI1IEE4RkUgM0JBRSA5QTY4DQoKLS0KU2VudCBm
-cm9tIG15IG1vYmlsZSBwaG9uZSwgcGFyZG9uIGFueSBsYWNrIG9mIGZvcm1hdHRpbmcu
+--3V7upXqbjpZ4EhLz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-------FW2V7M14IEQQX5392OC4VRVSL3B6LI--
+On Sun, Jan 17, 2010 at 01:53:58PM -0800, Randy Dunlap wrote:
+> On Sun, 17 Jan 2010 19:25:51 -0200 Thadeu Lima de Souza Cascardo wrote:
+>=20
+> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> > ---
+> >  Documentation/x86/mtrr.txt |    6 +++---
+> >  1 files changed, 3 insertions(+), 3 deletions(-)
+> >=20
+> > diff --git a/Documentation/x86/mtrr.txt b/Documentation/x86/mtrr.txt
+> > index cc071dc..3ffcbea 100644
+> > --- a/Documentation/x86/mtrr.txt
+> > +++ b/Documentation/x86/mtrr.txt
+> > @@ -195,11 +195,11 @@ int main ()
+> >      exit (3);
+> >  }   /*  End Function main  */
+> >  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D
+> > -Creating MTRRs from a C programme using ioctl()'s:
+> > +Creating MTRRs from a C program using ioctl()'s:
+> > =20
+> >  /*  mtrr-add.c
+> > =20
+> > -    Source file for mtrr-add (example programme to add an MTRRs using =
+ioctl())
+> > +    Source file for mtrr-add (example program to add MTRRs using ioctl=
+())
+> > =20
+> >      Copyright (C) 1997-1998  Richard Gooch
+> > =20
+> > @@ -223,7 +223,7 @@ Creating MTRRs from a C programme using ioctl()'s:
+> >  */
+> > =20
+> >  /*
+> > -    This programme will use an ioctl() on /proc/mtrr to add an entry. =
+The first
+> > +    This program will use an ioctl() on /proc/mtrr to add an entry. Th=
+e first
+> >      available mtrr is used. This is an alternative to writing /proc/mt=
+rr.
+> > =20
+> > =20
+> > --=20
+>=20
+> We accept UK/British English spellings as is.
+>=20
 
+Sorry. I should've checked this was a good spell, which I was not familiar =
+with.
+
+Regards,
+Cascardo.
+
+> ---
+> ~Randy
+
+--3V7upXqbjpZ4EhLz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktTlvkACgkQyTpryRcqtS1ByACfQxdbyBT3dx6vdobQ/BraUZag
+dbsAnAx2LUvZ6/KkBYhnDBIevP4O1Zfc
+=vd7o
+-----END PGP SIGNATURE-----
+
+--3V7upXqbjpZ4EhLz--
