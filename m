@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439Ab0AQTTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391Ab0AQTUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754439Ab0AQTTB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 14:19:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834Ab0AQTTA
+	id S1754391Ab0AQTUx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 14:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291Ab0AQTUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 14:19:00 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:40956 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753033Ab0AQTS7 (ORCPT
+	Sun, 17 Jan 2010 14:20:52 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:43266 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752214Ab0AQTUw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 14:18:59 -0500
+	Sun, 17 Jan 2010 14:20:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=oCxt8RHk07Ot8yhPKh35zWi+pJKcpQMOcUXF3G/zgEWcSt7AwXPiy4F/HgqdPolsmU
-         tELhcynlkdNBZpDYDJkSi00MzvmtAJwNOqCDK+w27zNcoaUwjTMjYTSU/bQjHJj02iQ7
-         1rS1NrJpL+UCH9ge3LIwFOgk5GDePcx3Cue+U=
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=iCnWBShjPc7pbT7v7YyOAvvMFWoKfHcBh0+iqw91HdntaWIJftESc7iPiu9pzJW9po
+         g3OOUmLv/wMGDOI6D8P4zgrYhiesdyCBbCFXyAT4kxMcZRO23j7YdRIlhqgVBCLPmAi0
+         bnbOPuxFWxHt2BclBiOyZe5PMgsuO+fbKMWg0=
+Message-ID: <4B536430.6000704@gmail.com>
+Date: Sun, 17 Jan 2010 20:25:36 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <1263250075.29868.4750.camel@calx>
-References: <1262997509-5680-1-git-send-email-linus.walleij@stericsson.com>
-	 <1263250075.29868.4750.camel@calx>
-Date: Sun, 17 Jan 2010 20:18:58 +0100
-Message-ID: <63386a3d1001171118n6ac88fccx12b7fdfeda204f50@mail.gmail.com>
-Subject: Re: [PATCH] Use AB3100 MFD core IRQ for interrupt randomness
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Linus Walleij <linus.walleij@stericsson.com>, linux-kernel@vger.kernel.org,
-       Robin Getz <rgetz@blackfin.uclinux.org>, Matt Mackall <mpm@selenic.com>
+To: David Brown <davidb@codeaurora.org>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       Bryan Huntsman <bryanh@codeaurora.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] msm_sdcc.c: missing brackets in msmsdcc_resume()
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/11 Matt Mackall <mpm@selenic.com>:
+Since the curly brackets were missing the test and enable_irq(),
+if true, occurred twice.
 
-> Acked-by: Matt Mackall <mpm@selenic.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/mmc/host/msm_sdcc.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-Sam will you take this patch then?
-
-Yours,
-Linus Walleij
+diff --git a/drivers/mmc/host/msm_sdcc.c b/drivers/mmc/host/msm_sdcc.c
+index b31946e..4c068e5 100644
+--- a/drivers/mmc/host/msm_sdcc.c
++++ b/drivers/mmc/host/msm_sdcc.c
+@@ -1250,9 +1250,7 @@ msmsdcc_resume(struct platform_device *dev)
+ 
+ 		if (mmc->card && mmc->card->type != MMC_TYPE_SDIO)
+ 			mmc_resume_host(mmc);
+-			if (host->stat_irq)
+-				enable_irq(host->stat_irq);
+-		else if (host->stat_irq)
++		if (host->stat_irq)
+ 			enable_irq(host->stat_irq);
+ 	}
+ 	return 0;
