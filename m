@@ -1,93 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918Ab0AQOgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898Ab0AQOho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918Ab0AQOgX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 09:36:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844Ab0AQOgI
+	id S1753898Ab0AQOho (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 09:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853Ab0AQOhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 09:36:08 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:51244 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753853Ab0AQOgG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 09:36:06 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-p5tfOD2Mh1kG7tNpCNJa"
-Date: Sun, 17 Jan 2010 14:36:01 +0000
-Message-ID: <1263738961.8876.28.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: Please pull 'upstream' branch of
- http://git.decadent.org.uk/git/linux-firmware.git
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	Sun, 17 Jan 2010 09:37:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50525 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751149Ab0AQOhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 09:37:42 -0500
+Message-ID: <4B532093.5080600@redhat.com>
+Date: Sun, 17 Jan 2010 16:37:07 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Jim Keniston <jkenisto@us.ibm.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>	 <1263467289.4244.288.camel@laptop>	 <1263498366.4875.25.camel@localhost.localdomain>	 <1263546175.4244.342.camel@laptop>	 <1263589634.5007.34.camel@localhost.localdomain>	 <1263592192.4244.488.camel@laptop> <1263603503.5007.134.camel@localhost.localdomain>
+In-Reply-To: <1263603503.5007.134.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/16/2010 02:58 AM, Jim Keniston wrote:
+>
+> I hear (er, read) you.  Emulation may turn out to be the answer for some
+> architectures.  But here are some things to keep in mind about the
+> various approaches:
+>
+> 1. Single-stepping inline is easiest: you need to know very little about
+> the instruction set you're probing.  But it's inadequate for
+> multithreaded apps.
+> 2. Single-stepping out of line solves the multithreading issue (as do #3
+> and #4), but requires more knowledge of the instruction set.  (In
+> particular, calls, jumps, and returns need special care; as do
+> rip-relative instructions in x86_64.)  I count 9 architectures that
+> support kprobes.  I think most of these do SSOL.
+> 3. "Boosted" probes (where an appended jump instruction removes the need
+> for the single-step trap on many instructions) require even more
+> knowledge of the instruction set, and like SSOL, require XOL slots.
+> Right now, as far as I know, x86 is the only architecture with boosted
+> kprobes.
+> 4. Emulation removes the need for the XOL area, but requires pretty much
+> total knowledge of the instruction set.  It's also a performance win for
+> architectures that can't do #3.  I see kvm implemented on 4
+> architectures (ia64, powerpc, s390, x86).  Coincidentally, those are the
+> architectures to which uprobes (old uprobes, with ubp and xol bundled
+> in) has already been ported (though Intel hasn't been maintaining their
+> ia64 port).  So it sort of comes down to how objectionable the XOL vma
+> (or page) really is.
+>    
 
---=-p5tfOD2Mh1kG7tNpCNJa
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+The kvm emulator emulates only a subset of the x86 instruction set 
+(basically mmio instructions and commonly-used page-table manipulation 
+instructions, as well as some privileged instructions).  It would take a 
+lot of work to expand it to be completely generic; and even then it will 
+fail if userspace uses an instruction set extension the kernel is not 
+aware of.
 
-The following changes since commit c024a251e1dd1a39de610bbdc2af65b36e42637d=
-:
-  David Woodhouse (1):
-        Merge from fixed from-kernel tree to fix Matrox firmware binaries
+To me, boosted probes with a fallback to single-stepping seems to be the 
+better option by far.
 
-are available in the git repository at:
+-- 
+error compiling committee.c: too many arguments to function
 
-  http://git.decadent.org.uk/git/linux-firmware.git upstream
-
-I will send patches (missing the binary changes) in reply to this message.
-
-Ben.
-
-Ben Hutchings (5):
-      Correct various filenames
-      Use 'File:' field name in front of each filename
-      Specify drivers using firmware by module/object name
-      Update firmware from rt2870sta
-      Add RT3090 firmware from rt2860sta
-
- WHENCE     |  173 ++++++++++++++++++++++++++++++++------------------------=
-----
- rt2870.bin |  Bin 4096 -> 4096 bytes
- rt3070.bin |  Bin 0 -> 4096 bytes
- rt3071.bin |  Bin 0 -> 4096 bytes
- rt3090.bin |  Bin 0 -> 8192 bytes
- 5 files changed, 92 insertions(+), 81 deletions(-)
- create mode 100644 rt3070.bin
- create mode 100644 rt3071.bin
- create mode 100644 rt3090.bin
-
---=20
-Ben Hutchings
-I'm not a reverse psychological virus.  Please don't copy me into your sig.
-
---=-p5tfOD2Mh1kG7tNpCNJa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIVAwUAS1MgTOe/yOyVhhEJAQLaQQ/8DJsD2oII/gxmb68kb4BtntONkw2IKTnc
-dNXnWMC912J34j4GskKz7vmqPFgnX9ej/9JcAqnC4uXS3p9HXd/B80PJYWte+xe7
-l3g0eWaqRXgUtG6BPEzaUP5U0obANGCKyhqN0r/29ZeRIAzpWa94FP8KBUgbjZtB
-6VyvXbd0azTcx4RqZa2IIYuAcGTmuDm8oOFQf7NWlYy6C3LjmdBvVU3lx2oSpoC6
-nHpyc5JS8zYaRkJqaS4aNJyor+6PgGoX45gn76HSdo7StLclJWcnAR56nZHet+Yx
-+0Zx/w8ahYwdtAOFW42pkbrS5cbq6Xkx55CVHNmTYunT0Hu5vXOKG+bWtuBcqdaS
-Shl784d0LwC0YrL3CMAg9S5y9o8q1HdCTcZNwVtrrbs5sWG/ZpatKQtUmCKkjyJT
-YB/TD7twVkqUTUMBysJ1j5MexBmggptMBtJdVJRibxNlSBvoH3igij34XGx5ANJH
-XYQ9I8K0/vWoDK0t0/7J+855PiXQJp/lZivue2NpspRuxM4anXt6+jGJXFtotgF2
-4YeUL/5s/5f2EYKP9rmgpgvODxHqBDJ2KfUAabb0vFMx/Nw4jdlgBs28aLuVR7W3
-3LmfzzTAucYmpD2yWhagm94lSNreaY9QpIqP6cCLpz1U4GiDfFSw9fmUTumZWgZS
-XZn1fRgonoc=
-=HFeJ
------END PGP SIGNATURE-----
-
---=-p5tfOD2Mh1kG7tNpCNJa--
