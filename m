@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676Ab0AQH4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978Ab0AQH5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752676Ab0AQH4n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 02:56:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124Ab0AQH4m
+	id S1752978Ab0AQH5g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 02:57:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124Ab0AQH5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 02:56:42 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51447 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752165Ab0AQH4l (ORCPT
+	Sun, 17 Jan 2010 02:57:35 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60341 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348Ab0AQH5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 02:56:41 -0500
-Date: Sun, 17 Jan 2010 08:56:33 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <greg@kroah.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Driver-Core: devtmpfs - remove EXPERIMENTAL and enable it by
-	default
-Message-ID: <20100117075633.GA1339@ucw.cz>
-References: <1263505677.2074.2.camel@yio.site> <20100115065638.005ac690@infradead.org> <20100115180341.GA12146@kroah.com>
+	Sun, 17 Jan 2010 02:57:34 -0500
+Date: Sun, 17 Jan 2010 07:57:29 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] vfs fixes
+Message-ID: <20100117075728.GO19799@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100115180341.GA12146@kroah.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2010-01-15 10:03:41, Greg KH wrote:
-> On Fri, Jan 15, 2010 at 06:56:38AM -0800, Arjan van de Ven wrote:
-> > On Thu, 14 Jan 2010 22:47:57 +0100
-> > Kay Sievers <kay.sievers@vrfy.org> wrote:
-> > 
-> > > From: Kay Sievers <kay.sievers@vrfy.org>
-> > > Subject: Driver-Core: devtmpfs - remove EXPERIMENTAL and enable it by
-> > > default
-> > > 
-> > > All major distros enable devtmpfs on recent systems, so remove
-> > > the EXPERIMENTAL flag, and enable it by default to reflect how it
-> > > is used today.
-> > 
-> > removing experimental is fine... but setting it by default is a bit
-> > over the top and very inconsistent with how the 'default' option is
-> > used.
-> 
-> Why?  All major distros need this at boot time, and as we have been
-> through a release cycle with the config option, anyone who is
-> incrementally updating will continue with their existing value.  But new
-> people coming in, will get the option as it is most likely required to
-> boot properly.
+Assorted fixes (plus an obvious fs/9p cleanup).  Please, pull from
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
 
-Defaults should be back-compatible. This is not... people should be
-still able to skip releases when upgrading.
+Shortlog:
+Al Viro (12):
+      fix autofs/afs/etc. magic mountpoint breakage
+      Kill 9p readlink()
+      hppfs: handle ->put_link()
+      Unrot uml mconsole a bit
+      Fix ACC_MODE() for real
+      Fix the -ESTALE handling in do_filp_open()
+      Fix configfs leak
+      may_umount() needs namespace_sem
+      attach_recursive_mnt() needs to hold vfsmount_lock over set_mnt_shared()
+      mnt_flags fixes in do_remount()
+      CIFS shouldn't make mountpoints shrinkable
+      do_add_mount() should sanitize mnt_flags
 
+OGAWA Hirofumi (1):
+      ecryptfs: Fix refcnt leak on ecryptfs_follow_link() error path
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Diffstat:
+ arch/um/drivers/mconsole_kern.c |   49 ++++++++++++++------------------------
+ fs/9p/vfs_inode.c               |   41 +-------------------------------
+ fs/cifs/cifs_dfs_ref.c          |    3 +-
+ fs/configfs/symlink.c           |    4 ++-
+ fs/ecryptfs/inode.c             |   24 +++++++++---------
+ fs/hppfs/hppfs.c                |   18 +++++++++----
+ fs/namei.c                      |   23 ++++++++---------
+ fs/namespace.c                  |   14 ++++++++--
+ fs/proc/base.c                  |    1 -
+ include/linux/fs.h              |    2 +-
+ security/tomoyo/tomoyo.c        |    7 +----
+ 11 files changed, 71 insertions(+), 115 deletions(-)
