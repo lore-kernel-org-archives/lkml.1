@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818Ab0AQXfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068Ab0AQXxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818Ab0AQXfp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 18:35:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518Ab0AQXfo
+	id S1755068Ab0AQXxr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 18:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388Ab0AQXxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 18:35:44 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:46495 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754261Ab0AQXfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 18:35:43 -0500
-Date: Mon, 18 Jan 2010 10:35:34 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kukjin Kim <kgene.kim@samsung.com>, Ben Dooks <ben-linux@fluff.org>
-Subject: linux-next: manual merge of the arm tree with the arm-current tree
-Message-Id: <20100118103534.a5dc3c66.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Jan 2010 18:53:46 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:34871 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754518Ab0AQXxq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 18:53:46 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Jan 2010 18:53:45 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=O7XIuJBwHYAIUPqJRbvxbb+GttqddE/1xOzAuBRJb6/9zp7haI14g+p3sszFlCn8+K
+         cr7bn514cPZ7F3Li0m3s7/sNj0MtktqlbHrV3gTJxdqsgeReGKOU5HCPM6qyy4hyjQR2
+         iEM1XURTINPUpm9buoR3BcIk7ZJpWXs8rHtn0=
+MIME-Version: 1.0
+In-Reply-To: <30e5fd087ee6fbe992cde8f09d945ed160b0c117.1263675077.git.andre.goddard@gmail.com>
+References: <cover.1263675077.git.andre.goddard@gmail.com>
+	 <30e5fd087ee6fbe992cde8f09d945ed160b0c117.1263675077.git.andre.goddard@gmail.com>
+Date: Mon, 18 Jan 2010 00:47:04 +0100
+Message-ID: <81b0412b1001171547s57190f69p489278d1fdf78251@mail.gmail.com>
+Subject: Re: [PATCH 2/2] string: teach strnstr() to not search past 
+	NUL-terminator
+From: Alex Riesen <raa.lkml@gmail.com>
+To: =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell,
+On Sat, Jan 16, 2010 at 21:57, André Goddard Rosa
+<andre.goddard@gmail.com> wrote:
+> diff --git a/lib/string.c b/lib/string.c
+> index 0f86245..94bad34 100644
+> --- a/lib/string.c
+> +++ b/lib/string.c
+> @@ -689,11 +689,13 @@ EXPORT_SYMBOL(strstr);
+>  */
+>  char *strnstr(const char *s1, const char *s2, size_t len)
+>  {
+> -       size_t l1 = len, l2;
+> +       size_t l1, l2;
+>
+>        l2 = strlen(s2);
+>        if (!l2)
+>                return (char *)s1;
+> +       l1 = strlen(s1);
+> +       l1 = (l1 <= len) ? l1 : len;
 
-Today's linux-next merge of the arm tree got a conflict in
-arch/arm/Makefile between commit 95b8f20fd6a2694a16b8addb190b942bfb670c88
-(ARM: fix badly placed mach/plat entries in Kconfig & Makefile"") from
-the arm-current tree and commit c4ffccddd54b669cc9683f2c69e31035e916a1a0
-("ARM: S5P6440: Add new Kconfig and Makefiles") from the arm tree.
+if (l1 > len)
+       l1 = len;
 
-I fixed it up (see below) and can carry the fix for a while.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-(Sorry, cut and paste diff)
-diff --cc arch/arm/Makefile
-index 9e75825,bbcd512..0000000
---- a/arch/arm/Makefile
-+++ b/arch/arm/Makefile
-@@@ -184,7 -184,9 +185,8 @@@ plat-$(CONFIG_PLAT_ORION)  := orio
-  plat-$(CONFIG_PLAT_PXA)               := pxa
-  plat-$(CONFIG_PLAT_S3C24XX)   := s3c24xx s3c samsung
-  plat-$(CONFIG_PLAT_S3C64XX)   := s3c64xx s3c samsung
- -plat-$(CONFIG_PLAT_S5PC1XX)   := s5pc1xx s3c samsung
-+ plat-$(CONFIG_PLAT_S5P)               := s5p samsung s3c
- -plat-$(CONFIG_ARCH_STMP3XXX)  := stmp3xxx
- +plat-$(CONFIG_PLAT_S5PC1XX)   := s5pc1xx s3c samsung
-  
-  ifeq ($(CONFIG_ARCH_EBSA110),y)
-  # This is what happens if you forget the IOCS16 line.
+Less code and easier to read.
