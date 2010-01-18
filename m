@@ -1,81 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994Ab0AROWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938Ab0AROYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752994Ab0AROWI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 09:22:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594Ab0AROWH
+	id S1752938Ab0AROYK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 09:24:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505Ab0AROYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 09:22:07 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:33372 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058Ab0AROWA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 09:22:00 -0500
-Message-ID: <4B546E7B.2080900@in.ibm.com>
-Date: Mon, 18 Jan 2010 19:51:47 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Mon, 18 Jan 2010 09:24:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47266 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752305Ab0AROYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 09:24:05 -0500
+Date: Tue, 19 Jan 2010 01:23:59 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [PATCH 5/8] vmalloc: simplify vread()/vwrite()
+Message-ID: <20100118142359.GA14472@laptop>
+References: <20100113135305.013124116@intel.com>
+ <20100113135957.833222772@intel.com>
+ <20100114124526.GB7518@laptop>
+ <20100118133512.GC721@localhost>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org
-Subject: [-next Jan 18] Boot failure on s390 with DEVTMPFS=y
-References: <20100118195743.b45f119e.sfr@canb.auug.org.au>
-In-Reply-To: <20100118195743.b45f119e.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100118133512.GC721@localhost>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today next (next-20100118) failed to boot on a s390 box
-with the following Oops :
+On Mon, Jan 18, 2010 at 09:35:12PM +0800, Wu Fengguang wrote:
+> On Thu, Jan 14, 2010 at 05:45:26AM -0700, Nick Piggin wrote:
+> > On Wed, Jan 13, 2010 at 09:53:10PM +0800, Wu Fengguang wrote:
+> > > vread()/vwrite() is only called from kcore/kmem to access one page at a time.
+> > > So the logic can be vastly simplified.
+> > > 
+> > > The changes are:
+> > > - remove the vmlist walk and rely solely on vmalloc_to_page()
+> > > - replace the VM_IOREMAP check with (page && page_is_ram(pfn))
+> > > - rename to vread_page()/vwrite_page()
+> > > 
+> > > The page_is_ram() check is necessary because kmap_atomic() is not
+> > > designed to work with non-RAM pages.
+> > 
+> > I don't know if you can really do this. Previously vmlist_lock would be
+> > taken, which will prevent these vm areas from being freed.
+> >  
+> > > Note that even for a RAM page, we don't own the page, and cannot assume
+> > > it's a _PAGE_CACHE_WB page.
+> > 
+> > So why is this not a problem for your patch? I don't see how you handle
+> > it.
+> 
+> Sorry I didn't handle it. Just hope to catch attentions from someone
+> (ie. you :).
+> 
+> It's not a problem for x86_64 at all. For others I wonder if any
+> driver will vmalloc HIGHMEM pages with !_PAGE_CACHE_WB attribute..
+> 
+> So I noted the possible problem and leave it alone.
 
-Brought up 4 CPUs
-Unable to handle kernel pointer dereference at virtual kernel address 0000000000543000
-Oops: 0004 #1 SMP
-Modules linked in:
-CPU: 0 Not tainted 2.6.33-rc4-autotest-next-20100118-5-default #1
-Process swapper (pid: 1, task: 00000000fd792038, ksp: 00000000fd797a30)
-Krnl PSW : 0704200180000000 00000000001eb0b8 (shmem_parse_options+0xc0/0x328)
-          R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:2 PM:0 EA:3
-Krnl GPRS: 000000000054388a 000000000000003d 0000000000543836 000000000000003d
-          0000000000000000 0000000000483f28 0000000000536112 00000000fd797d00
-          00000000fd4ba100 0000000000000100 0000000000483978 0000000000543832
-          0000000000000000 0000000000465958 00000000001eb0b0 00000000fd797c58
-Krnl Code: 00000000001eb0aa: c0e5000994f1       brasl   %r14,31da8c
-          00000000001eb0b0: b9020022           ltgr    %r2,%r2
-          00000000001eb0b4: a784010b           brc     8,1eb2ca
-         >00000000001eb0b8: 92002000           mvi     0(%r2),0
-          00000000001eb0bc: a7080000           lhi     %r0,0
-          00000000001eb0c0: 41902001           la      %r9,1(%r2)
-          00000000001eb0c4: b9040016           lgr     %r1,%r6
-          00000000001eb0c8: b904002b           lgr     %r2,%r11
-Call Trace:
-(<00000000fd797c50> 0xfd797c50)
-<00000000001eb5da> shmem_fill_super+0x13a/0x25c
-<0000000000228cfa> get_sb_single+0xbe/0xdc
-<000000000034ffc0> dev_get_sb+0x2c/0x38
-<000000000066c602> devtmpfs_init+0x46/0xc0
-<000000000066c53e> driver_init+0x22/0x60
-<000000000064d40a> kernel_init+0x24e/0x3d0
-<000000000010a7ea> kernel_thread_starter+0x6/0xc
-<000000000010a7e4> kernel_thread_starter+0x0/0xc
-
-Previous next builds worked fine on the same box. The only difference
-between configs of the two builds was CONFIG_DEVTMPFS. This option was
-enabled while compiling 20100118. 
-
-Thanks
--Sachin
+Well it doesn't need to be vmalloc. Any kind of vmap like ioremap. And
+these can be accompanied by changing the caching attribute. Like agp
+code, for an example. But I don't know if that ever becomes a problem
+in practice.
 
 
--- 
+> > What's the problem with the current code, exactly? I would prefer that
+> 
+> - unnecessary complexity to handle multi-page case, since it's always
+>   called to access one single page;
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+Fair point there. It just wasn't clear what exactly is your rationale
+because this was in a set of other patches.
+ 
+> - the kmap_atomic() cache consistency problem, which I expressed some
+>   concern (without further action)
+
+Which kmap_atomic problem? Can you explain again? Virtual cache aliasing
+problem you mean? Or caching attribute conflicts?
+
+The whole thing looks stupid though, apparently kmap is used to avoid "the
+lock". But the lock is already held. We should just use the vmap
+address.
+
+
+> > you continue using the same vmlist locking and checking for validating
+> > addresses.
+> 
+> It's a reasonable suggestion. Kame, would you agree on killing the
+> kmap_atomic() and revert to the vmlist walk?
+
+Yes, vmlist locking is always required to have a pin on the pages, and
+IMO it should be quite easy to check for IOREMAP, so we should leave
+that check there to avoid the possibility of regressions.
+
+Thanks,
+Nick
 
