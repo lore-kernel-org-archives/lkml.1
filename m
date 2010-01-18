@@ -1,96 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424Ab0ARMzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528Ab0ARMzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424Ab0ARMzB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 07:55:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242Ab0ARMy6
+	id S1751528Ab0ARMzy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 07:55:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796Ab0ARMzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 07:54:58 -0500
-Received: from mga10.intel.com ([192.55.52.92]:61142 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754509Ab0ARMy5 (ORCPT
+	Mon, 18 Jan 2010 07:55:52 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:42254 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733Ab0ARMzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 07:54:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,292,1262592000"; 
-   d="scan'208";a="765119922"
-Date: Mon, 18 Jan 2010 13:56:30 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus Walleij <linus.ml.walleij@gmail.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
-       Linus Walleij <linus.walleij@stericsson.com>
-Subject: Re: linux-next: trivial tree build failure
-Message-ID: <20100118125630.GE8036@sortiz.org>
-References: <20100118162412.9944c571.sfr@canb.auug.org.au>
- <63386a3d1001180036h2bad24cas8c407edde729678e@mail.gmail.com>
- <20100118200126.0176773d.sfr@canb.auug.org.au>
- <alpine.LNX.2.00.1001181115540.30977@pobox.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.1001181115540.30977@pobox.suse.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 18 Jan 2010 07:55:50 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Michael Stone <michael@laptop.org>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Am?rico Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
+In-Reply-To: Your message of "Thu, 14 Jan 2010 10:22:51 +0100."
+             <20100114092250.GA11500@atrey.karlin.mff.cuni.cz>
+From: Valdis.Kletnieks@vt.edu
+References: <alpine.LRH.2.00.1001110811350.25601@tundra.namei.org> <20100110215409.GA3705@heat> <20100110215848.GA26609@elf.ucw.cz> <5768.1263264853@localhost> <20100112075927.GA24256@atrey.karlin.mff.cuni.cz> <32558.1263306523@localhost>
+            <20100114092250.GA11500@atrey.karlin.mff.cuni.cz>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1263819244_6729P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 18 Jan 2010 07:54:04 -0500
+Message-ID: <17852.1263819244@localhost>
+X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=steiner.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020208.4B5459F0.023F,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
+--==_Exmh_1263819244_6729P
+Content-Type: text/plain; charset=us-ascii
 
-On Mon, Jan 18, 2010 at 11:17:19AM +0100, Jiri Kosina wrote:
-> On Mon, 18 Jan 2010, Stephen Rothwell wrote:
-> 
-> > Hi Jiri,
+On Thu, 14 Jan 2010 10:22:51 +0100, Pavel Machek said:
+> > On Tue, 12 Jan 2010 08:59:27 +0100, Pavel Machek said:
 > > 
-> > Today's linux-next build (x86_64_allmodconfig) failed like this:
+> > > Well, maybe, but mailer system where first user starts is as a daemon
+> > > makes sense...
 > > 
-> > drivers/mfd/ab3100-otp.c: In function 'show_otp':
-> > drivers/mfd/ab3100-otp.c:101: error: dereferencing pointer to incomplete type
-> > drivers/mfd/ab3100-otp.c:104: error: implicit declaration of function 'seq_printf'
-> > drivers/mfd/ab3100-otp.c:102: warning: unused variable 'err'
-> > drivers/mfd/ab3100-otp.c: In function 'ab3100_otp_open':
-> > drivers/mfd/ab3100-otp.c:116: error: implicit declaration of function 'single_open'
-> > drivers/mfd/ab3100-otp.c:116: error: 'ab3100_otp_show' undeclared (first use in this function)
-> > drivers/mfd/ab3100-otp.c: At top level:
-> > drivers/mfd/ab3100-otp.c:121: error: 'seq_read' undeclared here (not in a function)
-> > drivers/mfd/ab3100-otp.c:122: error: 'seq_lseek' undeclared here (not in a function)
-> > drivers/mfd/ab3100-otp.c:123: error: 'single_release' undeclared here (not in a function)
-> > drivers/mfd/ab3100-otp.c: In function 'ab3100_otp_init_debugfs':
-> > drivers/mfd/ab3100-otp.c:134: error: 'err' undeclared (first use in this function)
-> > drivers/mfd/ab3100-otp.c: In function 'ab3100_otp_exit_debugfs':
-> > drivers/mfd/ab3100-otp.c:140: error: implicit declaration of function 'debugfs_remove_file'
-> > 
-> > Exposed by commit 8dcafdf0475eb4633401d1f0bf0e0d35e4ebb9d5
-> > "CONFIG_DEBUG_FS wrongly written as CONFIG_DEBUGFS".
+> > Does it?  How do you get port 25 open for listening if the first user isn't
+> > root?  Most *actual* schemes to "launch at first use" that require privs fo
+r
+> > something have used inetd or similar - that program exists for a
+> > *reason*.
 > 
-> Hmm, mea culpa. I have noticed the build failure myself and notified patch 
-> author about that, but forgot to drop the patch from my tree afterwards. 
-> Sorry.
-> 
-> On Mon, 18 Jan 2010, Linus Walleij wrote:
-> 
-> > 2010/1/18 Stephen Rothwell <sfr@canb.auug.org.au>:
-> > 
-> > > Exposed by commit 8dcafdf0475eb4633401d1f0bf0e0d35e4ebb9d5
-> > > "CONFIG_DEBUG_FS wrongly written as CONFIG_DEBUGFS".
-> > > I have reverted that commit for today.
-> > 
-> > I have sent a proper patch to Sam last night, that fix the #ifdef and
-> > makes the code work.
-> 
-> I have dropped the patch from my tree now, and I am not carrying any 
-> replacement as of now.
-I'm carrying Linus patch for it, thanks.
+> Remember sendmail is setuid root... so it already has the permissions.
 
-Cheers,
-Samuel.
+Actually, the sendmail setuid bit was removed quite some time ago:
+
+8.12.0/8.12.0   2001/09/08
+        *NOTICE*: The default installation of sendmail does not use
+                set-user-ID root anymore.  You need to create a new user and
+                a new group before installing sendmail (both called smmsp by
+                default).  The installation process tries to install
+                /etc/mail/submit.cf and creates /var/spool/clientmqueue by
+                default.  Please see sendmail/SECURITY for details.
+
+Wow.  2001. And people *still* think it's setuid. ;)
+
+(Interestingly enough, the capabilities bug came *later*:
+
+8.12.1/8.12.1   2001/10/01
+        SECURITY: Check whether dropping group privileges actually succeeded
+                to avoid possible compromises of the mail system by
+                supplying bogus data.  Add configuration options for
+                different set*gid() calls to reset saved gid.  Problem
+                found by Michal Zalewski.
+
+and was mostly an issue because the same problem existed in pre-8.12 sendmails
+that were still setuid and hadn't upgraded yet...
 
 
-> -- 
-> Jiri Kosina
-> SUSE Labs, Novell Inc.
+--==_Exmh_1263819244_6729P
+Content-Type: application/pgp-signature
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLVFnscC3lWbTT17ARArPiAJ9gsFOaXOoPI0PtsT+jBlxoTh9CwQCfaEBQ
+AhZmttLo9rYq+6PtWIOHrRg=
+=taue
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1263819244_6729P--
+
