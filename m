@@ -1,319 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453Ab0ARAy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358Ab0ARAx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453Ab0ARAy1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 19:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344Ab0ARAyL
+	id S1755358Ab0ARAx5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 19:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218Ab0ARAxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 19:54:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54487 "EHLO hera.kernel.org"
+	Sun, 17 Jan 2010 19:53:51 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54465 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754298Ab0ARAyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 19:54:00 -0500
+	id S1755281Ab0ARAxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 19:53:49 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
        akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 19/40] workqueue: reimplement work flushing using linked works
-Date: Mon, 18 Jan 2010 09:57:31 +0900
-Message-Id: <1263776272-382-20-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@pobox.com>
+Subject: [PATCH 31/40] libata: take advantage of cmwq and remove concurrency limitations
+Date: Mon, 18 Jan 2010 09:57:43 +0900
+Message-Id: <1263776272-382-32-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1263776272-382-1-git-send-email-tj@kernel.org>
 References: <1263776272-382-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 00:52:14 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 00:52:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A work is linked to the next one by having WORK_STRUCT_LINKED bit set
-and these links can be chained.  When a linked work is dispatched to a
-worker, all linked works are dispatched to the worker's newly added
-->scheduled queue and processed back-to-back.
+libata has two concurrency related limitations.
 
-Currently, as there's only single worker per cwq, having linked works
-doesn't make any visible behavior difference.  This change is to
-prepare for multiple shared workers per cpu.
+a. ata_wq which is used for polling PIO has single thread per CPU.  If
+   there are multiple devices doing polling PIO on the same CPU, they
+   can't be executed simultaneously.
+
+b. ata_aux_wq which is used for SCSI probing has single thread.  In
+   cases where SCSI probing is stalled for extended period of time
+   which is possible for ATAPI devices, this will stall all probing.
+
+#a is solved by increasing maximum concurrency of ata_wq.  Please note
+that polling PIO might be used under allocation path and thus needs to
+be served by a separate wq with a rescuer.
+
+#b is solved by using the default wq instead and achieving exclusion
+via per-port mutex.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>
 ---
- include/linux/workqueue.h |    2 +
- kernel/workqueue.c        |  152 ++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 133 insertions(+), 21 deletions(-)
+ drivers/ata/libata-core.c |   19 ++-----------------
+ drivers/ata/libata-eh.c   |    4 ++--
+ drivers/ata/libata-scsi.c |   11 ++++++-----
+ drivers/ata/libata.h      |    1 -
+ include/linux/libata.h    |    2 ++
+ 5 files changed, 12 insertions(+), 25 deletions(-)
 
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 316cc48..a6650f1 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -25,9 +25,11 @@ typedef void (*work_func_t)(struct work_struct *work);
- enum {
- 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
- 	WORK_STRUCT_STATIC_BIT	= 1,	/* static initializer (debugobjects) */
-+	WORK_STRUCT_LINKED_BIT	= 2,	/* next work is linked to this one */
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 22ff51b..de91814 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -97,8 +97,6 @@ static unsigned long ata_dev_blacklisted(const struct ata_device *dev);
+ unsigned int ata_print_id = 1;
+ static struct workqueue_struct *ata_wq;
  
- 	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
- 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
-+	WORK_STRUCT_LINKED	= 1 << WORK_STRUCT_LINKED_BIT,
- 
- 	WORK_STRUCT_COLOR_SHIFT	= 3,	/* color for workqueue flushing */
- 	WORK_STRUCT_COLOR_BITS	= 4,
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 17d270b..2ac1624 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -51,6 +51,7 @@ struct cpu_workqueue_struct;
- 
- struct worker {
- 	struct work_struct	*current_work;	/* L: work being processed */
-+	struct list_head	scheduled;	/* L: scheduled works */
- 	struct task_struct	*task;		/* I: worker task */
- 	struct cpu_workqueue_struct *cwq;	/* I: the associated cwq */
- 	int			id;		/* I: worker id */
-@@ -438,6 +439,8 @@ static struct worker *alloc_worker(void)
- 	struct worker *worker;
- 
- 	worker = kzalloc(sizeof(*worker), GFP_KERNEL);
-+	if (worker)
-+		INIT_LIST_HEAD(&worker->scheduled);
- 	return worker;
- }
- 
-@@ -523,6 +526,7 @@ static void destroy_worker(struct worker *worker)
- 
- 	/* sanity check frenzy */
- 	BUG_ON(worker->current_work);
-+	BUG_ON(!list_empty(&worker->scheduled));
- 
- 	kthread_stop(worker->task);
- 	kfree(worker);
-@@ -533,6 +537,48 @@ static void destroy_worker(struct worker *worker)
- }
- 
- /**
-+ * move_linked_works - move linked works to a list
-+ * @work: start of series of works to be scheduled
-+ * @head: target list to append @work to
-+ * @nextp: out paramter for nested worklist walking
-+ *
-+ * Schedule linked works starting from @work to @head.  Work series to
-+ * be scheduled starts at @work and includes any consecutive work with
-+ * WORK_STRUCT_LINKED set in its predecessor.
-+ *
-+ * If @nextp is not NULL, it's updated to point to the next work of
-+ * the last scheduled work.  This allows move_linked_works() to be
-+ * nested inside outer list_for_each_entry_safe().
-+ *
-+ * CONTEXT:
-+ * spin_lock_irq(cwq->lock).
-+ */
-+static void move_linked_works(struct work_struct *work, struct list_head *head,
-+			      struct work_struct **nextp)
-+{
-+	struct work_struct *n;
-+
-+	/*
-+	 * Linked worklist will always end before the end of the list,
-+	 * use NULL for list head.
-+	 */
-+	work = list_entry(work->entry.prev, struct work_struct, entry);
-+	list_for_each_entry_safe_continue(work, n, NULL, entry) {
-+		list_move_tail(&work->entry, head);
-+		if (!(*work_data_bits(work) & WORK_STRUCT_LINKED))
-+			break;
-+	}
-+
-+	/*
-+	 * If we're already inside safe list traversal and have moved
-+	 * multiple works to the scheduled queue, the next position
-+	 * needs to be updated.
-+	 */
-+	if (nextp)
-+		*nextp = n;
-+}
-+
-+/**
-  * cwq_dec_nr_in_flight - decrement cwq's nr_in_flight
-  * @cwq: cwq of interest
-  * @color: color of work which left the queue
-@@ -632,17 +678,25 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
- 	cwq_dec_nr_in_flight(cwq, work_color);
- }
- 
--static void run_workqueue(struct worker *worker)
-+/**
-+ * process_scheduled_works - process scheduled works
-+ * @worker: self
-+ *
-+ * Process all scheduled works.  Please note that the scheduled list
-+ * may change while processing a work, so this function repeatedly
-+ * fetches a work from the top and executes it.
-+ *
-+ * CONTEXT:
-+ * spin_lock_irq(cwq->lock) which may be released and regrabbed
-+ * multiple times.
-+ */
-+static void process_scheduled_works(struct worker *worker)
- {
--	struct cpu_workqueue_struct *cwq = worker->cwq;
+-struct workqueue_struct *ata_aux_wq;
 -
--	spin_lock_irq(&cwq->lock);
--	while (!list_empty(&cwq->worklist)) {
--		struct work_struct *work = list_entry(cwq->worklist.next,
-+	while (!list_empty(&worker->scheduled)) {
-+		struct work_struct *work = list_first_entry(&worker->scheduled,
- 						struct work_struct, entry);
- 		process_one_work(worker, work);
- 	}
--	spin_unlock_irq(&cwq->lock);
- }
+ struct ata_force_param {
+ 	const char	*name;
+ 	unsigned int	cbl;
+@@ -5681,6 +5679,7 @@ struct ata_port *ata_port_alloc(struct ata_host *host)
+ #else
+ 	INIT_DELAYED_WORK(&ap->port_task, NULL);
+ #endif
++	mutex_init(&ap->scsi_scan_mutex);
+ 	INIT_DELAYED_WORK(&ap->hotplug_task, ata_scsi_hotplug);
+ 	INIT_WORK(&ap->scsi_rescan_task, ata_scsi_dev_rescan);
+ 	INIT_LIST_HEAD(&ap->eh_done_q);
+@@ -6616,26 +6615,13 @@ static int __init ata_init(void)
+ {
+ 	ata_parse_force_param();
  
- /**
-@@ -673,7 +727,27 @@ static int worker_thread(void *__worker)
- 		if (kthread_should_stop())
- 			break;
+-	/*
+-	 * FIXME: In UP case, there is only one workqueue thread and if you
+-	 * have more than one PIO device, latency is bloody awful, with
+-	 * occasional multi-second "hiccups" as one PIO device waits for
+-	 * another.  It's an ugly wart that users DO occasionally complain
+-	 * about; luckily most users have at most one PIO polled device.
+-	 */
+-	ata_wq = create_workqueue("ata");
++	ata_wq = __create_workqueue("ata", WQ_RESCUER, WQ_MAX_ACTIVE);
+ 	if (!ata_wq)
+ 		goto free_force_tbl;
  
--		run_workqueue(worker);
-+		spin_lock_irq(&cwq->lock);
-+
-+		while (!list_empty(&cwq->worklist)) {
-+			struct work_struct *work =
-+				list_first_entry(&cwq->worklist,
-+						 struct work_struct, entry);
-+
-+			if (likely(!(*work_data_bits(work) &
-+				     WORK_STRUCT_LINKED))) {
-+				/* optimization path, not strictly necessary */
-+				process_one_work(worker, work);
-+				if (unlikely(!list_empty(&worker->scheduled)))
-+					process_scheduled_works(worker);
-+			} else {
-+				move_linked_works(work, &worker->scheduled,
-+						  NULL);
-+				process_scheduled_works(worker);
-+			}
-+		}
-+
-+		spin_unlock_irq(&cwq->lock);
- 	}
- 
+-	ata_aux_wq = create_singlethread_workqueue("ata_aux");
+-	if (!ata_aux_wq)
+-		goto free_wq;
+-
+ 	printk(KERN_DEBUG "libata version " DRV_VERSION " loaded.\n");
  	return 0;
-@@ -694,16 +768,33 @@ static void wq_barrier_func(struct work_struct *work)
-  * insert_wq_barrier - insert a barrier work
-  * @cwq: cwq to insert barrier into
-  * @barr: wq_barrier to insert
-- * @head: insertion point
-+ * @target: target work to attach @barr to
-+ * @worker: worker currently executing @target, NULL if @target is not executing
-  *
-- * Insert barrier @barr into @cwq before @head.
-+ * @barr is linked to @target such that @barr is completed only after
-+ * @target finishes execution.  Please note that the ordering
-+ * guarantee is observed only with respect to @target and on the local
-+ * cpu.
-+ *
-+ * Currently, a queued barrier can't be canceled.  This is because
-+ * try_to_grab_pending() can't determine whether the work to be
-+ * grabbed is at the head of the queue and thus can't clear LINKED
-+ * flag of the previous work while there must be a valid next work
-+ * after a work with LINKED flag set.
-+ *
-+ * Note that when @worker is non-NULL, @target may be modified
-+ * underneath us, so we can't reliably determine cwq from @target.
-  *
-  * CONTEXT:
-  * spin_lock_irq(cwq->lock).
-  */
- static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
--			struct wq_barrier *barr, struct list_head *head)
-+			      struct wq_barrier *barr,
-+			      struct work_struct *target, struct worker *worker)
- {
-+	struct list_head *head;
-+	unsigned int linked = 0;
-+
- 	/*
- 	 * debugobject calls are safe here even with cwq->lock locked
- 	 * as we know for sure that this will not trigger any of the
-@@ -714,8 +805,24 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
- 	__set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(&barr->work));
- 	init_completion(&barr->done);
  
-+	/*
-+	 * If @target is currently being executed, schedule the
-+	 * barrier to the worker; otherwise, put it after @target.
-+	 */
-+	if (worker)
-+		head = worker->scheduled.next;
-+	else {
-+		unsigned long *bits = work_data_bits(target);
-+
-+		head = target->entry.next;
-+		/* there can already be other linked works, inherit and set */
-+		linked = *bits & WORK_STRUCT_LINKED;
-+		*bits |= WORK_STRUCT_LINKED;
-+	}
-+
- 	debug_work_activate(&barr->work);
--	insert_work(cwq, &barr->work, head, work_color_to_flags(WORK_NO_COLOR));
-+	insert_work(cwq, &barr->work, head,
-+		    work_color_to_flags(WORK_NO_COLOR) | linked);
+-free_wq:
+-	destroy_workqueue(ata_wq);
+ free_force_tbl:
+ 	kfree(ata_force_tbl);
+ 	return -ENOMEM;
+@@ -6645,7 +6631,6 @@ static void __exit ata_exit(void)
+ {
+ 	kfree(ata_force_tbl);
+ 	destroy_workqueue(ata_wq);
+-	destroy_workqueue(ata_aux_wq);
+ }
+ 
+ subsys_initcall(ata_init);
+diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
+index 0ea97c9..73735ab 100644
+--- a/drivers/ata/libata-eh.c
++++ b/drivers/ata/libata-eh.c
+@@ -727,7 +727,7 @@ void ata_scsi_error(struct Scsi_Host *host)
+ 	if (ap->pflags & ATA_PFLAG_LOADING)
+ 		ap->pflags &= ~ATA_PFLAG_LOADING;
+ 	else if (ap->pflags & ATA_PFLAG_SCSI_HOTPLUG)
+-		queue_delayed_work(ata_aux_wq, &ap->hotplug_task, 0);
++		schedule_delayed_work(&ap->hotplug_task, 0);
+ 
+ 	if (ap->pflags & ATA_PFLAG_RECOVERED)
+ 		ata_port_printk(ap, KERN_INFO, "EH complete\n");
+@@ -2938,7 +2938,7 @@ static int ata_eh_revalidate_and_attach(struct ata_link *link,
+ 			ehc->i.flags |= ATA_EHI_SETMODE;
+ 
+ 			/* schedule the scsi_rescan_device() here */
+-			queue_work(ata_aux_wq, &(ap->scsi_rescan_task));
++			schedule_work(&(ap->scsi_rescan_task));
+ 		} else if (dev->class == ATA_DEV_UNKNOWN &&
+ 			   ehc->tries[dev->devno] &&
+ 			   ata_class_enabled(ehc->classes[dev->devno])) {
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index f4ea5a8..08e2ef8 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -3408,8 +3408,7 @@ void ata_scsi_scan_host(struct ata_port *ap, int sync)
+ 				"                  switching to async\n");
+ 	}
+ 
+-	queue_delayed_work(ata_aux_wq, &ap->hotplug_task,
+-			   round_jiffies_relative(HZ));
++	schedule_delayed_work(&ap->hotplug_task, round_jiffies_relative(HZ));
  }
  
  /**
-@@ -948,8 +1055,8 @@ EXPORT_SYMBOL_GPL(flush_workqueue);
-  */
- int flush_work(struct work_struct *work)
- {
-+	struct worker *worker = NULL;
- 	struct cpu_workqueue_struct *cwq;
--	struct list_head *prev;
- 	struct wq_barrier barr;
- 
- 	might_sleep();
-@@ -969,14 +1076,14 @@ int flush_work(struct work_struct *work)
- 		smp_rmb();
- 		if (unlikely(cwq != get_wq_data(work)))
- 			goto already_gone;
--		prev = &work->entry;
- 	} else {
--		if (!cwq->worker || cwq->worker->current_work != work)
-+		if (cwq->worker && cwq->worker->current_work == work)
-+			worker = cwq->worker;
-+		if (!worker)
- 			goto already_gone;
--		prev = &cwq->worklist;
+@@ -3555,6 +3554,7 @@ void ata_scsi_hotplug(struct work_struct *work)
  	}
--	insert_wq_barrier(cwq, &barr, prev->next);
  
-+	insert_wq_barrier(cwq, &barr, work, worker);
- 	spin_unlock_irq(&cwq->lock);
- 	wait_for_completion(&barr.done);
- 	destroy_work_on_stack(&barr.work);
-@@ -1033,16 +1140,19 @@ static void wait_on_cpu_work(struct cpu_workqueue_struct *cwq,
- 				struct work_struct *work)
- {
- 	struct wq_barrier barr;
--	int running = 0;
-+	struct worker *worker;
+ 	DPRINTK("ENTER\n");
++	mutex_lock(&ap->scsi_scan_mutex);
  
- 	spin_lock_irq(&cwq->lock);
+ 	/* Unplug detached devices.  We cannot use link iterator here
+ 	 * because PMP links have to be scanned even if PMP is
+@@ -3568,6 +3568,7 @@ void ata_scsi_hotplug(struct work_struct *work)
+ 	/* scan for new ones */
+ 	ata_scsi_scan_host(ap, 0);
+ 
++	mutex_unlock(&ap->scsi_scan_mutex);
+ 	DPRINTK("EXIT\n");
+ }
+ 
+@@ -3646,9 +3647,7 @@ static int ata_scsi_user_scan(struct Scsi_Host *shost, unsigned int channel,
+  *	@work: Pointer to ATA port to perform scsi_rescan_device()
+  *
+  *	After ATA pass thru (SAT) commands are executed successfully,
+- *	libata need to propagate the changes to SCSI layer.  This
+- *	function must be executed from ata_aux_wq such that sdev
+- *	attach/detach don't race with rescan.
++ *	libata need to propagate the changes to SCSI layer.
+  *
+  *	LOCKING:
+  *	Kernel thread context (may sleep).
+@@ -3661,6 +3660,7 @@ void ata_scsi_dev_rescan(struct work_struct *work)
+ 	struct ata_device *dev;
+ 	unsigned long flags;
+ 
++	mutex_lock(&ap->scsi_scan_mutex);
+ 	spin_lock_irqsave(ap->lock, flags);
+ 
+ 	ata_for_each_link(link, ap, EDGE) {
+@@ -3680,6 +3680,7 @@ void ata_scsi_dev_rescan(struct work_struct *work)
+ 	}
+ 
+ 	spin_unlock_irqrestore(ap->lock, flags);
++	mutex_unlock(&ap->scsi_scan_mutex);
+ }
+ 
+ /**
+diff --git a/drivers/ata/libata.h b/drivers/ata/libata.h
+index 823e630..4da2105 100644
+--- a/drivers/ata/libata.h
++++ b/drivers/ata/libata.h
+@@ -65,7 +65,6 @@ enum {
+ };
+ 
+ extern unsigned int ata_print_id;
+-extern struct workqueue_struct *ata_aux_wq;
+ extern int atapi_passthru16;
+ extern int libata_fua;
+ extern int libata_noacpi;
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 6a9c4dd..c4fd18e 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -749,6 +749,8 @@ struct ata_port {
+ 
+ 	void			*port_task_data;
+ 	struct delayed_work	port_task;
 +
-+	worker = NULL;
- 	if (unlikely(cwq->worker && cwq->worker->current_work == work)) {
--		insert_wq_barrier(cwq, &barr, cwq->worklist.next);
--		running = 1;
-+		worker = cwq->worker;
-+		insert_wq_barrier(cwq, &barr, work, worker);
- 	}
-+
- 	spin_unlock_irq(&cwq->lock);
++	struct mutex		scsi_scan_mutex;
+ 	struct delayed_work	hotplug_task;
+ 	struct work_struct	scsi_rescan_task;
  
--	if (unlikely(running)) {
-+	if (unlikely(worker)) {
- 		wait_for_completion(&barr.done);
- 		destroy_work_on_stack(&barr.work);
- 	}
 -- 
 1.6.4.2
 
