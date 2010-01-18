@@ -1,97 +1,403 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938Ab0ARSuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965Ab0ARSuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755938Ab0ARSuN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 13:50:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885Ab0ARSuJ
+	id S1755965Ab0ARSuo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 13:50:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937Ab0ARSuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 13:50:09 -0500
-Received: from kroah.org ([198.145.64.141]:46239 "EHLO coco.kroah.org"
+	Mon, 18 Jan 2010 13:50:13 -0500
+Received: from kroah.org ([198.145.64.141]:46244 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932105Ab0ARSuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755771Ab0ARSuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 Jan 2010 13:50:07 -0500
-Date: Mon, 18 Jan 2010 10:48:00 -0800
+Date: Mon, 18 Jan 2010 10:48:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Cc: lwn@lwn.net
-Subject: Linux 2.6.31.12
-Message-ID: <20100118184800.GC25918@kroah.com>
+       torvalds@linux-foundation.org, stable@kernel.org, lwn@lwn.net
+Subject: Re: Linux 2.6.31.12
+Message-ID: <20100118184816.GD25918@kroah.com>
+References: <20100118184800.GC25918@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20100118184800.GC25918@kroah.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm announcing the release of the 2.6.31.12 kernel.  All users of the
-.31 kernel series are strongly encouraged to upgrade.
-
-No, forget that, all users of the .31 kernel series as released by the
--stable team should move to the .32 kernel series as soon as possible.
-
-This is the last .31 kernel release barring something really odd
-happening, so please, everyone move to .32 now, I do not know of any
-reason you should stick with .31 at this point in time.
-
-The updated 2.6.31.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.31.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.31.y.git;a=summary
-
-thanks,
-
-greg k-h
-
-------------
-
- Makefile                         |    2 
- drivers/acpi/sleep.c             |   40 +++++++++++++++
- drivers/hwmon/adt7462.c          |    2 
- fs/fcntl.c                       |  102 +++++++++++++++++++++++++--------------
- fs/quota/dquot.c                 |    3 +
- kernel/audit_tree.c              |   13 +++-
- kernel/signal.c                  |    3 -
- net/bridge/netfilter/ebtables.c  |    6 ++
- net/ipv6/exthdrs.c               |    7 ++
- net/netfilter/nf_conntrack_ftp.c |   18 +++---
- 10 files changed, 142 insertions(+), 54 deletions(-)
-
-Al Viro (2):
-      fix braindamage in audit_tree.c untag_chunk()
-      fix more leaks in audit_tree.c tag_chunk()
-
-Andi Kleen (1):
-      kernel/signal.c: fix kernel information leak with print-fatal-signals=1
-
-David S. Miller (1):
-      ipv6: skb_dst() can be NULL in ipv6_hop_jumbo().
-
-Florian Westphal (1):
-      netfilter: ebtables: enforce CAP_NET_ADMIN
-
-Greg Kroah-Hartman (1):
-      Linux 2.6.31.12
-
-Gustavo Maciel Dias Vieira (1):
-      ACPI: add DMI entry for SCI_EN resume quirk on HP dv4
-
-Jan Kara (1):
-      quota: Fix dquot_transfer for filesystems different from ext4
-
-Len Brown (2):
-      ACPI: sleep: another HP DMI entry for init_set_sci_en_on_resume
-      ACPI: DMI init_set_sci_en_on_resume for HP-Compaq C700
-
-Linus Torvalds (1):
-      fasync: split 'fasync_helper()' into separate add/remove functions
-
-Patrick McHardy (1):
-      netfilter: nf_ct_ftp: fix out of bounds read in update_nl_seq()
-
-Roger Blofeld (1):
-      hwmon: (adt7462) Fix pin 28 monitoring
-
-Vaibhav Verma (1):
-      ACPI: sleep: another HP/Compaq DMI entries for init_set_sci_en_on_resume
-
+diff --git a/Makefile b/Makefile
+index c66c167..05c2ebf 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 31
+-EXTRAVERSION = .11
++EXTRAVERSION = .12
+ NAME = Man-Eating Seals of Antiquity
+ 
+ # *DOCUMENTATION*
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 42159a2..1caac3b 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -405,6 +405,46 @@ static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
+ 		},
+ 	},
+ 	{
++	.callback = init_set_sci_en_on_resume,
++	.ident = "Hewlett-Packard HP Pavilion dv3 Notebook PC",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "HP Pavilion dv3 Notebook PC"),
++		},
++	},
++	{
++	.callback = init_set_sci_en_on_resume,
++	.ident = "Hewlett-Packard Pavilion dv4",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "HP Pavilion dv4"),
++		},
++	},
++	{
++	.callback = init_set_sci_en_on_resume,
++	.ident = "Hewlett-Packard Pavilion dv7",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "HP Pavilion dv7"),
++		},
++	},
++	{
++	.callback = init_set_sci_en_on_resume,
++	.ident = "Hewlett-Packard Compaq Presario C700 Notebook PC",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "Compaq Presario C700 Notebook PC"),
++		},
++	},
++	{
++	.callback = init_set_sci_en_on_resume,
++	.ident = "Hewlett-Packard Compaq Presario CQ40 Notebook PC",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "Compaq Presario CQ40 Notebook PC"),
++		},
++	},
++	{
+ 	.callback = init_old_suspend_ordering,
+ 	.ident = "Panasonic CF51-2L",
+ 	.matches = {
+diff --git a/drivers/hwmon/adt7462.c b/drivers/hwmon/adt7462.c
+index 1852f27..262c133 100644
+--- a/drivers/hwmon/adt7462.c
++++ b/drivers/hwmon/adt7462.c
+@@ -97,7 +97,7 @@ I2C_CLIENT_INSMOD_1(adt7462);
+ #define		ADT7462_PIN24_SHIFT		6
+ #define		ADT7462_PIN26_VOLT_INPUT	0x08
+ #define		ADT7462_PIN25_VOLT_INPUT	0x20
+-#define		ADT7462_PIN28_SHIFT		6	/* cfg3 */
++#define		ADT7462_PIN28_SHIFT		4	/* cfg3 */
+ #define		ADT7462_PIN28_VOLT		0x5
+ 
+ #define ADT7462_REG_ALARM1			0xB8
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index ae41308..11fd78c 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -526,60 +526,90 @@ static DEFINE_RWLOCK(fasync_lock);
+ static struct kmem_cache *fasync_cache __read_mostly;
+ 
+ /*
+- * fasync_helper() is used by almost all character device drivers
+- * to set up the fasync queue. It returns negative on error, 0 if it did
+- * no changes and positive if it added/deleted the entry.
++ * Remove a fasync entry. If successfully removed, return
++ * positive and clear the FASYNC flag. If no entry exists,
++ * do nothing and return 0.
++ *
++ * NOTE! It is very important that the FASYNC flag always
++ * match the state "is the filp on a fasync list".
++ *
++ * We always take the 'filp->f_lock', in since fasync_lock
++ * needs to be irq-safe.
+  */
+-int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fapp)
++static int fasync_remove_entry(struct file *filp, struct fasync_struct **fapp)
+ {
+ 	struct fasync_struct *fa, **fp;
+-	struct fasync_struct *new = NULL;
+ 	int result = 0;
+ 
+-	if (on) {
+-		new = kmem_cache_alloc(fasync_cache, GFP_KERNEL);
+-		if (!new)
+-			return -ENOMEM;
++	spin_lock(&filp->f_lock);
++	write_lock_irq(&fasync_lock);
++	for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
++		if (fa->fa_file != filp)
++			continue;
++		*fp = fa->fa_next;
++		kmem_cache_free(fasync_cache, fa);
++		filp->f_flags &= ~FASYNC;
++		result = 1;
++		break;
+ 	}
++	write_unlock_irq(&fasync_lock);
++	spin_unlock(&filp->f_lock);
++	return result;
++}
++
++/*
++ * Add a fasync entry. Return negative on error, positive if
++ * added, and zero if did nothing but change an existing one.
++ *
++ * NOTE! It is very important that the FASYNC flag always
++ * match the state "is the filp on a fasync list".
++ */
++static int fasync_add_entry(int fd, struct file *filp, struct fasync_struct **fapp)
++{
++	struct fasync_struct *new, *fa, **fp;
++	int result = 0;
++
++	new = kmem_cache_alloc(fasync_cache, GFP_KERNEL);
++	if (!new)
++		return -ENOMEM;
+ 
+-	/*
+-	 * We need to take f_lock first since it's not an IRQ-safe
+-	 * lock.
+-	 */
+ 	spin_lock(&filp->f_lock);
+ 	write_lock_irq(&fasync_lock);
+ 	for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
+-		if (fa->fa_file == filp) {
+-			if(on) {
+-				fa->fa_fd = fd;
+-				kmem_cache_free(fasync_cache, new);
+-			} else {
+-				*fp = fa->fa_next;
+-				kmem_cache_free(fasync_cache, fa);
+-				result = 1;
+-			}
+-			goto out;
+-		}
++		if (fa->fa_file != filp)
++			continue;
++		fa->fa_fd = fd;
++		kmem_cache_free(fasync_cache, new);
++		goto out;
+ 	}
+ 
+-	if (on) {
+-		new->magic = FASYNC_MAGIC;
+-		new->fa_file = filp;
+-		new->fa_fd = fd;
+-		new->fa_next = *fapp;
+-		*fapp = new;
+-		result = 1;
+-	}
++	new->magic = FASYNC_MAGIC;
++	new->fa_file = filp;
++	new->fa_fd = fd;
++	new->fa_next = *fapp;
++	*fapp = new;
++	result = 1;
++	filp->f_flags |= FASYNC;
++
+ out:
+-	if (on)
+-		filp->f_flags |= FASYNC;
+-	else
+-		filp->f_flags &= ~FASYNC;
+ 	write_unlock_irq(&fasync_lock);
+ 	spin_unlock(&filp->f_lock);
+ 	return result;
+ }
+ 
++/*
++ * fasync_helper() is used by almost all character device drivers
++ * to set up the fasync queue, and for regular files by the file
++ * lease code. It returns negative on error, 0 if it did no changes
++ * and positive if it added/deleted the entry.
++ */
++int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fapp)
++{
++	if (!on)
++		return fasync_remove_entry(filp, fapp);
++	return fasync_add_entry(fd, filp, fapp);
++}
++
+ EXPORT_SYMBOL(fasync_helper);
+ 
+ void __kill_fasync(struct fasync_struct *fa, int sig, int band)
+diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
+index 5c5f08b..86034fe 100644
+--- a/fs/quota/dquot.c
++++ b/fs/quota/dquot.c
+@@ -1425,6 +1425,9 @@ static void inode_sub_rsv_space(struct inode *inode, qsize_t number)
+ static qsize_t inode_get_rsv_space(struct inode *inode)
+ {
+ 	qsize_t ret;
++
++	if (!inode->i_sb->dq_op->get_reserved_space)
++		return 0;
+ 	spin_lock(&inode->i_lock);
+ 	ret = *inode_reserved_space(inode);
+ 	spin_unlock(&inode->i_lock);
+diff --git a/kernel/audit_tree.c b/kernel/audit_tree.c
+index 2451dc6..4b05bd9 100644
+--- a/kernel/audit_tree.c
++++ b/kernel/audit_tree.c
+@@ -277,7 +277,7 @@ static void untag_chunk(struct node *p)
+ 		owner->root = NULL;
+ 	}
+ 
+-	for (i = j = 0; i < size; i++, j++) {
++	for (i = j = 0; j <= size; i++, j++) {
+ 		struct audit_tree *s;
+ 		if (&chunk->owners[j] == p) {
+ 			list_del_init(&p->list);
+@@ -290,7 +290,7 @@ static void untag_chunk(struct node *p)
+ 		if (!s) /* result of earlier fallback */
+ 			continue;
+ 		get_tree(s);
+-		list_replace_init(&chunk->owners[i].list, &new->owners[j].list);
++		list_replace_init(&chunk->owners[j].list, &new->owners[i].list);
+ 	}
+ 
+ 	list_replace_rcu(&chunk->hash, &new->hash);
+@@ -373,15 +373,17 @@ static int tag_chunk(struct inode *inode, struct audit_tree *tree)
+ 	for (n = 0; n < old->count; n++) {
+ 		if (old->owners[n].owner == tree) {
+ 			spin_unlock(&hash_lock);
+-			put_inotify_watch(watch);
++			put_inotify_watch(&old->watch);
+ 			return 0;
+ 		}
+ 	}
+ 	spin_unlock(&hash_lock);
+ 
+ 	chunk = alloc_chunk(old->count + 1);
+-	if (!chunk)
++	if (!chunk) {
++		put_inotify_watch(&old->watch);
+ 		return -ENOMEM;
++	}
+ 
+ 	mutex_lock(&inode->inotify_mutex);
+ 	if (inotify_clone_watch(&old->watch, &chunk->watch) < 0) {
+@@ -425,7 +427,8 @@ static int tag_chunk(struct inode *inode, struct audit_tree *tree)
+ 	spin_unlock(&hash_lock);
+ 	inotify_evict_watch(&old->watch);
+ 	mutex_unlock(&inode->inotify_mutex);
+-	put_inotify_watch(&old->watch);
++	put_inotify_watch(&old->watch); /* pair to inotify_find_watch */
++	put_inotify_watch(&old->watch); /* and kill it */
+ 	return 0;
+ }
+ 
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 64c5dee..86464ce 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -939,7 +939,8 @@ static void print_fatal_signal(struct pt_regs *regs, int signr)
+ 		for (i = 0; i < 16; i++) {
+ 			unsigned char insn;
+ 
+-			__get_user(insn, (unsigned char *)(regs->ip + i));
++			if (get_user(insn, (unsigned char *)(regs->ip + i)))
++				break;
+ 			printk("%02x ", insn);
+ 		}
+ 	}
+diff --git a/net/bridge/netfilter/ebtables.c b/net/bridge/netfilter/ebtables.c
+index 37928d5..4877d57 100644
+--- a/net/bridge/netfilter/ebtables.c
++++ b/net/bridge/netfilter/ebtables.c
+@@ -1405,6 +1405,9 @@ static int do_ebt_set_ctl(struct sock *sk,
+ {
+ 	int ret;
+ 
++	if (!capable(CAP_NET_ADMIN))
++		return -EPERM;
++
+ 	switch(cmd) {
+ 	case EBT_SO_SET_ENTRIES:
+ 		ret = do_replace(sock_net(sk), user, len);
+@@ -1424,6 +1427,9 @@ static int do_ebt_get_ctl(struct sock *sk, int cmd, void __user *user, int *len)
+ 	struct ebt_replace tmp;
+ 	struct ebt_table *t;
+ 
++	if (!capable(CAP_NET_ADMIN))
++		return -EPERM;
++
+ 	if (copy_from_user(&tmp, user, sizeof(tmp)))
+ 		return -EFAULT;
+ 
+diff --git a/net/ipv6/exthdrs.c b/net/ipv6/exthdrs.c
+index 4aae658..b15ba05 100644
+--- a/net/ipv6/exthdrs.c
++++ b/net/ipv6/exthdrs.c
+@@ -559,6 +559,11 @@ static inline struct inet6_dev *ipv6_skb_idev(struct sk_buff *skb)
+ 	return skb_dst(skb) ? ip6_dst_idev(skb_dst(skb)) : __in6_dev_get(skb->dev);
+ }
+ 
++static inline struct net *ipv6_skb_net(struct sk_buff *skb)
++{
++	return skb_dst(skb) ? dev_net(skb_dst(skb)->dev) : dev_net(skb->dev);
++}
++
+ /* Router Alert as of RFC 2711 */
+ 
+ static int ipv6_hop_ra(struct sk_buff *skb, int optoff)
+@@ -580,8 +585,8 @@ static int ipv6_hop_ra(struct sk_buff *skb, int optoff)
+ static int ipv6_hop_jumbo(struct sk_buff *skb, int optoff)
+ {
+ 	const unsigned char *nh = skb_network_header(skb);
++	struct net *net = ipv6_skb_net(skb);
+ 	u32 pkt_len;
+-	struct net *net = dev_net(skb_dst(skb)->dev);
+ 
+ 	if (nh[optoff + 1] != 4 || (optoff & 3) != 2) {
+ 		LIMIT_NETDEBUG(KERN_DEBUG "ipv6_hop_jumbo: wrong jumbo opt length/alignment %d\n",
+diff --git a/net/netfilter/nf_conntrack_ftp.c b/net/netfilter/nf_conntrack_ftp.c
+index 5509dd1..7dfd469 100644
+--- a/net/netfilter/nf_conntrack_ftp.c
++++ b/net/netfilter/nf_conntrack_ftp.c
+@@ -323,24 +323,24 @@ static void update_nl_seq(struct nf_conn *ct, u32 nl_seq,
+ 			  struct nf_ct_ftp_master *info, int dir,
+ 			  struct sk_buff *skb)
+ {
+-	unsigned int i, oldest = NUM_SEQ_TO_REMEMBER;
++	unsigned int i, oldest;
+ 
+ 	/* Look for oldest: if we find exact match, we're done. */
+ 	for (i = 0; i < info->seq_aft_nl_num[dir]; i++) {
+ 		if (info->seq_aft_nl[dir][i] == nl_seq)
+ 			return;
+-
+-		if (oldest == info->seq_aft_nl_num[dir] ||
+-		    before(info->seq_aft_nl[dir][i],
+-			   info->seq_aft_nl[dir][oldest]))
+-			oldest = i;
+ 	}
+ 
+ 	if (info->seq_aft_nl_num[dir] < NUM_SEQ_TO_REMEMBER) {
+ 		info->seq_aft_nl[dir][info->seq_aft_nl_num[dir]++] = nl_seq;
+-	} else if (oldest != NUM_SEQ_TO_REMEMBER &&
+-		   after(nl_seq, info->seq_aft_nl[dir][oldest])) {
+-		info->seq_aft_nl[dir][oldest] = nl_seq;
++	} else {
++		if (before(info->seq_aft_nl[dir][0], info->seq_aft_nl[dir][1]))
++			oldest = 0;
++		else
++			oldest = 1;
++
++		if (after(nl_seq, info->seq_aft_nl[dir][oldest]))
++			info->seq_aft_nl[dir][oldest] = nl_seq;
+ 	}
+ }
+ 
