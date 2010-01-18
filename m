@@ -1,110 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959Ab0ARMxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315Ab0ARMx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754959Ab0ARMxp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 07:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172Ab0ARMxp
+	id S1755315Ab0ARMx7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 07:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242Ab0ARMx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 07:53:45 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:47185 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750751Ab0ARMxo convert rfc822-to-8bit (ORCPT
+	Mon, 18 Jan 2010 07:53:58 -0500
+Received: from mga12.intel.com ([143.182.124.36]:39361 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755149Ab0ARMx5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 07:53:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=CC2jOj7UMNF0IZZXl8nRB+3ZnsatqBo/Y54M7Yxnp/taUBpuqslCUjRhC1h6S3uEDs
-         bGZh829f2Pfobatfhy12cB0jJU+4qkPWjs8wc9JkhrqLjQFqlOFWcmRGV+VIBZn/m5N5
-         anA5ES3+FtLAeU+Kl1hw7RJFVNLbL0xGfT54k=
+	Mon, 18 Jan 2010 07:53:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="233901702"
+Date: Mon, 18 Jan 2010 13:55:31 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Linus Walleij <linus.walleij@stericsson.com>
+Cc: linux-kernel@vger.kernel.org,
+       Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: Re: [PATCH] MFD Fix debugfs code in AB3100 OTP driver
+Message-ID: <20100118125530.GD8036@sortiz.org>
+References: <1263758263-21924-1-git-send-email-linus.walleij@stericsson.com>
 MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <1263815616.4283.332.camel@laptop>
-References: <4b4c761b.0338560a.1eaa.ffff824d@mx.google.com>
-	 <1263312616.4244.153.camel@laptop>
-	 <bd4cb8901001130154p732672b6x56e758c1ab33a8e8@mail.gmail.com>
-	 <1263400193.4244.238.camel@laptop>
-	 <bd4cb8901001130852y1de007cbqe66d77605c1ec372@mail.gmail.com>
-	 <bd4cb8901001130922s7ad85af6w6c631d90de177ef9@mail.gmail.com>
-	 <20100117141233.GF5035@nowhere> <1263813189.4283.245.camel@laptop>
-	 <1263815616.4283.332.camel@laptop>
-Date: Mon, 18 Jan 2010 13:53:41 +0100
-Message-ID: <7c86c4471001180453ueed2839n27f9e44d86ee003d@mail.gmail.com>
-Subject: Re: [perfmon2] [PATCH] perf: fix the is_software_event() definition
-From: stephane eranian <eranian@googlemail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, perfmon2-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
-       paulus@samba.org, mingo@elte.hu, davem@davemloft.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263758263-21924-1-git-send-email-linus.walleij@stericsson.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 12:53 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, 2010-01-18 at 12:13 +0100, Peter Zijlstra wrote:
->> On Sun, 2010-01-17 at 15:12 +0100, Frederic Weisbecker wrote:
->>
->> > You need to also call pmu->disable() if it is a software event,
->> > because a breakpoint needs to be unregistered in hardware level
->> > too.
->>
->> breakpoint isn't a software pmu. But yeah, enable and disable need to
->> match.
->
-> That is, it shouldn't be a software pmu, because we assume software
-> events can always be scheduled, whereas that's definitely not so for the
-> breakpoint one.
->
-> Which seems to suggest the following
->
-> ---
-> Subject: perf: fix the is_software_event() definition
->
-> When adding the breakpoint pmu Frederic forgot to exclude it from being
-> a software event. While we're at it, make it an inclusive expression.
->
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  include/linux/perf_event.h |   10 +++++++---
->  1 files changed, 7 insertions(+), 3 deletions(-)
->
-> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-> index c66b34f..835ba26 100644
-> --- a/include/linux/perf_event.h
-> +++ b/include/linux/perf_event.h
-> @@ -814,9 +814,13 @@ extern int perf_event_overflow(struct perf_event *event, int nmi,
->  */
->  static inline int is_software_event(struct perf_event *event)
->  {
-> -       return (event->attr.type != PERF_TYPE_RAW) &&
-> -               (event->attr.type != PERF_TYPE_HARDWARE) &&
-> -               (event->attr.type != PERF_TYPE_HW_CACHE);
-> +       switch (event->attr.type) {
-> +       case PERF_TYPE_SOFTWARE:
-> +       case PERF_TYPE_TRACEPOINT:
-> +       case PERF_TYPE_HW_CACHE:
-> +               return 1;
-> +       }
-> +       return 0;
->  }
->
->  extern atomic_t perf_swevent_enabled[PERF_COUNT_SW_MAX];
->
-PERF_TYPE_HW_CACHE is a hardware PMU event.
+Hi Linus,
+
+On Sun, Jan 17, 2010 at 08:57:43PM +0100, Linus Walleij wrote:
+> This fixes the aged and unreachable debugfs code in the AB3100
+> OTP driver so that it's (A) reachable and (B) works. Bug detected
+> in parallell by Christoph Egger using VAMOS and Robert P. J. Day
+> by his kernel scanning script.
+Patch applied, thanks for taking care of this.
+
+Cheers,
+Samuel.
 
 
->
->
-> ------------------------------------------------------------------------------
-> Throughout its 18-year history, RSA Conference consistently attracts the
-> world's best and brightest in the field, creating opportunities for Conference
-> attendees to learn about information security's most important issues through
-> interactions with peers, luminaries and emerging and established companies.
-> http://p.sf.net/sfu/rsaconf-dev2dev
-> _______________________________________________
-> perfmon2-devel mailing list
-> perfmon2-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/perfmon2-devel
->
+> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+> Cc: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+> Cc: Robert P. J. Day <rpjday@crashcourse.ca>
+> ---
+>  drivers/mfd/ab3100-otp.c |   13 +++++++------
+>  1 files changed, 7 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/mfd/ab3100-otp.c b/drivers/mfd/ab3100-otp.c
+> index 0499b20..b603469 100644
+> --- a/drivers/mfd/ab3100-otp.c
+> +++ b/drivers/mfd/ab3100-otp.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/mfd/ab3100.h>
+>  #include <linux/debugfs.h>
+> +#include <linux/seq_file.h>
+>  
+>  /* The OTP registers */
+>  #define AB3100_OTP0		0xb0
+> @@ -95,11 +96,10 @@ static int __init ab3100_otp_read(struct ab3100_otp *otp)
+>   * This is a simple debugfs human-readable file that dumps out
+>   * the contents of the OTP.
+>   */
+> -#ifdef CONFIG_DEBUGFS
+> -static int show_otp(struct seq_file *s, void *v)
+> +#ifdef CONFIG_DEBUG_FS
+> +static int ab3100_show_otp(struct seq_file *s, void *v)
+>  {
+>  	struct ab3100_otp *otp = s->private;
+> -	int err;
+>  
+>  	seq_printf(s, "OTP is %s\n", otp->locked ? "LOCKED" : "UNLOCKED");
+>  	seq_printf(s, "OTP clock switch startup is %uHz\n", otp->freq);
+> @@ -113,7 +113,7 @@ static int show_otp(struct seq_file *s, void *v)
+>  
+>  static int ab3100_otp_open(struct inode *inode, struct file *file)
+>  {
+> -	return single_open(file, ab3100_otp_show, inode->i_private);
+> +	return single_open(file, ab3100_show_otp, inode->i_private);
+>  }
+>  
+>  static const struct file_operations ab3100_otp_operations = {
+> @@ -131,13 +131,14 @@ static int __init ab3100_otp_init_debugfs(struct device *dev,
+>  					   &ab3100_otp_operations);
+>  	if (!otp->debugfs) {
+>  		dev_err(dev, "AB3100 debugfs OTP file registration failed!\n");
+> -		return err;
+> +		return -ENOENT;
+>  	}
+> +	return 0;
+>  }
+>  
+>  static void __exit ab3100_otp_exit_debugfs(struct ab3100_otp *otp)
+>  {
+> -	debugfs_remove_file(otp->debugfs);
+> +	debugfs_remove(otp->debugfs);
+>  }
+>  #else
+>  /* Compile this out if debugfs not selected */
+> -- 
+> 1.6.3.3
+> 
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
