@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242Ab0ARAxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292Ab0ARAxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242Ab0ARAxW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 19:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299Ab0ARAxR
+	id S1755292Ab0ARAxP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 19:53:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228Ab0ARAxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 19:53:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54214 "EHLO hera.kernel.org"
+	Sun, 17 Jan 2010 19:53:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54180 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755249Ab0ARAxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 19:53:10 -0500
+	id S1755229Ab0ARAxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 19:53:00 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
@@ -16,155 +16,182 @@ To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 12/40] workqueue: define both bit position and mask for work flags
-Date: Mon, 18 Jan 2010 09:57:24 +0900
-Message-Id: <1263776272-382-13-git-send-email-tj@kernel.org>
+Subject: [PATCH 16/40] workqueue: update cwq alignement
+Date: Mon, 18 Jan 2010 09:57:28 +0900
+Message-Id: <1263776272-382-17-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1263776272-382-1-git-send-email-tj@kernel.org>
 References: <1263776272-382-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 00:52:09 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 00:52:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Work flags are about to see more traditional mask handling.  Define
-WORK_STRUCT_*_BIT as the bit position constant and redefine
-WORK_STRUCT_* as bit masks.
+work->data field is used for two purposes.  It points to cwq it's
+queued on and the lower bits are used for flags.  Currently, two bits
+are reserved which is always safe as 4 byte alignment is guaranteed on
+every architecture.  However, future changes will need more flag bits.
 
-While at it, re-define these constants as enums and use
-WORK_STRUCT_STATIC instead of hard-coding 2 in
-WORK_DATA_STATIC_INIT().
+On SMP, the percpu allocator is capable of honoring larger alignment
+(there are other users which depend on it) and larger alignment works
+just fine.  On UP, percpu allocator is a thin wrapper around
+kzalloc/kfree() and don't honor alignment request.
+
+This patch introduces WORK_STRUCT_FLAG_BITS and implements
+alloc/free_cwqs() which guarantees (1 << WORK_STRUCT_FLAG_BITS)
+alignment both on SMP and UP.  On SMP, simply wrapping percpu
+allocator is enouhg.  On UP, extra space is allocated so that cwq can
+be aligned and the original pointer can be stored after it which is
+used in the free path.
+
+While at it, as cwqs are now forced aligned, make sure the resulting
+alignment is at least equal to or larger than that of long long.
+
+Alignment problem on UP is reported by Michal Simek.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Reported-by: Michal Simek <michal.simek@petalogix.com>
 ---
- include/linux/workqueue.h |   23 +++++++++++++++--------
- kernel/workqueue.c        |   14 +++++++-------
- 2 files changed, 22 insertions(+), 15 deletions(-)
+ include/linux/workqueue.h |    4 ++-
+ kernel/workqueue.c        |   59 +++++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 57 insertions(+), 6 deletions(-)
 
 diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 495572a..e51b5dc 100644
+index e51b5dc..011738a 100644
 --- a/include/linux/workqueue.h
 +++ b/include/linux/workqueue.h
-@@ -22,12 +22,19 @@ typedef void (*work_func_t)(struct work_struct *work);
-  */
- #define work_data_bits(work) ((unsigned long *)(&(work)->data))
+@@ -29,7 +29,9 @@ enum {
+ 	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
+ 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
  
-+enum {
-+	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
-+	WORK_STRUCT_STATIC_BIT	= 1,	/* static initializer (debugobjects) */
+-	WORK_STRUCT_FLAG_MASK	= 3UL,
++	WORK_STRUCT_FLAG_BITS	= 2,
 +
-+	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
-+	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
-+
-+	WORK_STRUCT_FLAG_MASK	= 3UL,
-+	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
-+};
-+
- struct work_struct {
- 	atomic_long_t data;
--#define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
--#define WORK_STRUCT_STATIC  1		/* static initializer (debugobjects) */
--#define WORK_STRUCT_FLAG_MASK (3UL)
--#define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
- 	struct list_head entry;
- 	work_func_t func;
- #ifdef CONFIG_LOCKDEP
-@@ -36,7 +43,7 @@ struct work_struct {
++	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
+ 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
  };
  
- #define WORK_DATA_INIT()	ATOMIC_LONG_INIT(0)
--#define WORK_DATA_STATIC_INIT()	ATOMIC_LONG_INIT(2)
-+#define WORK_DATA_STATIC_INIT()	ATOMIC_LONG_INIT(WORK_STRUCT_STATIC)
- 
- struct delayed_work {
- 	struct work_struct work;
-@@ -98,7 +105,7 @@ extern void __init_work(struct work_struct *work, int onstack);
- extern void destroy_work_on_stack(struct work_struct *work);
- static inline bool work_static(struct work_struct *work)
- {
--	return test_bit(WORK_STRUCT_STATIC, work_data_bits(work));
-+	return test_bit(WORK_STRUCT_STATIC_BIT, work_data_bits(work));
- }
- #else
- static inline void __init_work(struct work_struct *work, int onstack) { }
-@@ -167,7 +174,7 @@ static inline bool work_static(struct work_struct *work) { return false; }
-  * @work: The work item in question
-  */
- #define work_pending(work) \
--	test_bit(WORK_STRUCT_PENDING, work_data_bits(work))
-+	test_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))
- 
- /**
-  * delayed_work_pending - Find out whether a delayable work item is currently
-@@ -182,7 +189,7 @@ static inline bool work_static(struct work_struct *work) { return false; }
-  * @work: The work item in question
-  */
- #define work_clear_pending(work) \
--	clear_bit(WORK_STRUCT_PENDING, work_data_bits(work))
-+	clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))
- 
- enum {
- 	WQ_FREEZEABLE		= 1 << 0, /* freeze during suspend */
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 579041f..f8e4d67 100644
+index d29e069..14edfcd 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -115,7 +115,7 @@ static int work_fixup_activate(void *addr, enum debug_obj_state state)
- 		 * statically initialized. We just make sure that it
- 		 * is tracked in the object tracker.
- 		 */
--		if (test_bit(WORK_STRUCT_STATIC, work_data_bits(work))) {
-+		if (test_bit(WORK_STRUCT_STATIC_BIT, work_data_bits(work))) {
- 			debug_object_init(work, &work_debug_descr);
- 			debug_object_activate(work, &work_debug_descr);
- 			return 0;
-@@ -232,8 +232,8 @@ static inline void set_wq_data(struct work_struct *work,
- 	BUG_ON(!work_pending(work));
+@@ -46,7 +46,9 @@
  
- 	atomic_long_set(&work->data, (unsigned long)cwq |
--			(work_static(work) ? (1UL << WORK_STRUCT_STATIC) : 0) |
--			(1UL << WORK_STRUCT_PENDING) | extra_flags);
-+			(work_static(work) ? WORK_STRUCT_STATIC : 0) |
-+			WORK_STRUCT_PENDING | extra_flags);
+ /*
+  * The per-CPU workqueue (if single thread, we always use the first
+- * possible cpu).
++ * possible cpu).  The lower WORK_STRUCT_FLAG_BITS of
++ * work_struct->data are used for flags and thus cwqs need to be
++ * aligned at two's power of the number of flag bits.
+  */
+ struct cpu_workqueue_struct {
+ 
+@@ -58,7 +60,7 @@ struct cpu_workqueue_struct {
+ 
+ 	struct workqueue_struct *wq;		/* I: the owning workqueue */
+ 	struct task_struct	*thread;
+-} ____cacheline_aligned;
++};
+ 
+ /*
+  * The externally visible workqueue abstraction is an array of
+@@ -930,6 +932,44 @@ int current_is_keventd(void)
+ 
  }
  
- static inline
-@@ -323,7 +323,7 @@ queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
++static struct cpu_workqueue_struct *alloc_cwqs(void)
++{
++	const size_t size = sizeof(struct cpu_workqueue_struct);
++	const size_t align = 1 << WORK_STRUCT_FLAG_BITS;
++	struct cpu_workqueue_struct *cwqs;
++#ifndef CONFIG_SMP
++	void *ptr;
++
++	/*
++	 * On UP, percpu allocator doesn't honor alignment parameter
++	 * and simply uses arch-dependent default.  Allocate enough
++	 * room to align cwq and put an extra pointer at the end
++	 * pointing back to the originally allocated pointer which
++	 * will be used for free.
++	 */
++	ptr = __alloc_percpu(size + align + sizeof(void *), 1);
++	cwqs = PTR_ALIGN(ptr, align);
++	*(void **)per_cpu_ptr(cwqs + 1, 0) = ptr;
++#else
++	/* On SMP, percpu allocator can do it itself */
++	cwqs = __alloc_percpu(size, align);
++#endif
++	/* just in case, make sure it's actually aligned */
++	BUG_ON(!IS_ALIGNED((unsigned long)cwqs, align));
++	return cwqs;
++}
++
++static void free_cwqs(struct cpu_workqueue_struct *cwqs)
++{
++#ifndef CONFIG_SMP
++	/* on UP, the pointer to free is stored right after the cwq */
++	if (cwqs)
++		free_percpu(*(void **)per_cpu_ptr(cwqs + 1, 0));
++#else
++	free_percpu(cwqs);
++#endif
++}
++
+ static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
  {
- 	int ret = 0;
+ 	struct workqueue_struct *wq = cwq->wq;
+@@ -975,7 +1015,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 	if (!wq)
+ 		goto err;
  
--	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
-+	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
- 		__queue_work(cpu, wq, work);
- 		ret = 1;
+-	wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
++	wq->cpu_wq = alloc_cwqs();
+ 	if (!wq->cpu_wq)
+ 		goto err;
+ 
+@@ -994,6 +1034,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 	for_each_possible_cpu(cpu) {
+ 		struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
+ 
++		BUG_ON((unsigned long)cwq & WORK_STRUCT_FLAG_MASK);
+ 		cwq->wq = wq;
+ 		spin_lock_init(&cwq->lock);
+ 		INIT_LIST_HEAD(&cwq->worklist);
+@@ -1021,7 +1062,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 	return wq;
+ err:
+ 	if (wq) {
+-		free_percpu(wq->cpu_wq);
++		free_cwqs(wq->cpu_wq);
+ 		kfree(wq);
  	}
-@@ -373,7 +373,7 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
- 	struct timer_list *timer = &dwork->timer;
- 	struct work_struct *work = &dwork->work;
+ 	return NULL;
+@@ -1072,7 +1113,7 @@ void destroy_workqueue(struct workqueue_struct *wq)
+ 	for_each_possible_cpu(cpu)
+ 		cleanup_workqueue_thread(get_cwq(cpu, wq));
  
--	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
-+	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
- 		BUG_ON(timer_pending(timer));
- 		BUG_ON(!list_empty(&work->entry));
+-	free_percpu(wq->cpu_wq);
++	free_cwqs(wq->cpu_wq);
+ 	kfree(wq);
+ }
+ EXPORT_SYMBOL_GPL(destroy_workqueue);
+@@ -1159,6 +1200,14 @@ EXPORT_SYMBOL_GPL(work_on_cpu);
  
-@@ -509,7 +509,7 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
- 	 * might deadlock.
- 	 */
- 	INIT_WORK_ON_STACK(&barr->work, wq_barrier_func);
--	__set_bit(WORK_STRUCT_PENDING, work_data_bits(&barr->work));
-+	__set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(&barr->work));
- 	init_completion(&barr->done);
- 
- 	debug_work_activate(&barr->work);
-@@ -621,7 +621,7 @@ static int try_to_grab_pending(struct work_struct *work)
- 	struct cpu_workqueue_struct *cwq;
- 	int ret = -1;
- 
--	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
-+	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work)))
- 		return 0;
- 
- 	/*
+ void __init init_workqueues(void)
+ {
++	/*
++	 * cwqs are forced aligned according to WORK_STRUCT_FLAG_BITS.
++	 * Make sure that the alignment isn't lower than that of
++	 * unsigned long long.
++	 */
++	BUILD_BUG_ON(__alignof__(struct cpu_workqueue_struct) <
++		     __alignof__(unsigned long long));
++
+ 	singlethread_cpu = cpumask_first(cpu_possible_mask);
+ 	hotcpu_notifier(workqueue_cpu_callback, 0);
+ 	keventd_wq = create_workqueue("events");
 -- 
 1.6.4.2
 
