@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894Ab0ARSe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879Ab0ARSev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894Ab0ARSe5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 13:34:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888Ab0ARSey
+	id S1755879Ab0ARSev (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 13:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859Ab0ARSeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 13:34:54 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:57634 "EHLO relay.sgi.com"
+	Mon, 18 Jan 2010 13:34:50 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:52447 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755859Ab0ARSew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 13:34:52 -0500
-Message-Id: <20100118183444.775580000@alcatraz.americas.sgi.com>
+	id S1755857Ab0ARSer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 13:34:47 -0500
+Message-Id: <20100118183435.948841000@alcatraz.americas.sgi.com>
 References: <20100118183412.560438000@alcatraz.americas.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 18 Jan 2010 12:34:15 -0600
+Date: Mon, 18 Jan 2010 12:34:14 -0600
 From: Mike Travis <travis@sgi.com>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>
 Cc: Russ Anderson <rja@sgi.com>, Dave Airlie <airlied@redhat.com>,
@@ -29,13 +29,13 @@ Cc: Russ Anderson <rja@sgi.com>, Dave Airlie <airlied@redhat.com>,
        Matthew Wilcox <willy@linux.intel.com>,
        Christian Zander <chzander@nvidia.com>, Yu Zhao <yu.zhao@intel.com>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, x86@kernel.org
-Subject: [PATCH 3/4] vgaarb: Fix VGA Arbiter to accept PCI Domains other than 0
-Content-Disposition: inline; filename=update-vgaarb
+Subject: [PATCH 2/4] x86_64 UV: Update UV arch to target Legacy VGA I/O correctly.
+Content-Disposition: inline; filename=update-uv-using-bios
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the VGA Arbiter to accept PCI Domains other than 0.
+Add function to direct Legacy VGA I/O traffic to correct I/O Hub.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 
@@ -63,63 +63,116 @@ Cc: linux-kernel@vger.kernel.org
 Cc: linux-pci@vger.kernel.org
 Cc: x86@kernel.org
 ---
- drivers/gpu/vga/vgaarb.c |   23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
+ arch/x86/include/asm/uv/bios.h     |    4 +++-
+ arch/x86/kernel/apic/x2apic_uv_x.c |   30 ++++++++++++++++++++++++++++++
+ arch/x86/kernel/bios_uv.c          |   19 +++++++++++++++++++
+ 3 files changed, 52 insertions(+), 1 deletion(-)
 
---- linux.orig/drivers/gpu/vga/vgaarb.c
-+++ linux/drivers/gpu/vga/vgaarb.c
-@@ -954,6 +954,7 @@
- 		}
+--- linux.orig/arch/x86/include/asm/uv/bios.h
++++ linux/arch/x86/include/asm/uv/bios.h
+@@ -36,7 +36,8 @@
+ 	UV_BIOS_WATCHLIST_ALLOC,
+ 	UV_BIOS_WATCHLIST_FREE,
+ 	UV_BIOS_MEMPROTECT,
+-	UV_BIOS_GET_PARTITION_ADDR
++	UV_BIOS_GET_PARTITION_ADDR,
++	UV_BIOS_SET_LEGACY_VGA_TARGET
+ };
  
- 	} else if (strncmp(curr_pos, "target ", 7) == 0) {
-+		struct pci_bus *pbus;
- 		unsigned int domain, bus, devfn;
- 		struct vga_device *vgadev;
+ /*
+@@ -96,6 +97,7 @@
+ extern int uv_bios_mq_watchlist_free(int, int);
+ extern s64 uv_bios_change_memprotect(u64, u64, enum uv_memprotect);
+ extern s64 uv_bios_reserved_page_pa(u64, u64 *, u64 *, u64 *);
++extern int uv_bios_set_legacy_vga_target(bool decode, int domain, int bus);
  
-@@ -969,18 +970,31 @@
- 				ret_val = -EPROTO;
- 				goto done;
- 			}
-+			pr_devel("vgaarb: %s ==> %x:%x:%x.%x\n", curr_pos,
-+				domain, bus, PCI_SLOT(devfn), PCI_FUNC(devfn));
+ extern void uv_bios_init(void);
  
--			pdev = pci_get_bus_and_slot(bus, devfn);
-+			pbus = pci_find_bus(domain, bus);
-+			pr_devel("vgaarb: pbus %p\n", pbus);
-+			if (pbus == NULL) {
-+				pr_err("vgaarb: invalid PCI domain and/or bus address %x:%x\n",
-+					domain, bus);
-+				ret_val = -ENODEV;
-+				goto done;
-+			}
-+			pdev = pci_get_slot(pbus, devfn);
-+			pr_devel("vgaarb: pdev %p\n", pdev);
- 			if (!pdev) {
--				pr_info("vgaarb: invalid PCI address!\n");
-+				pr_err("vgaarb: invalid PCI address %x:%x\n",
-+					bus, devfn);
- 				ret_val = -ENODEV;
- 				goto done;
- 			}
- 		}
+--- linux.orig/arch/x86/kernel/apic/x2apic_uv_x.c
++++ linux/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -20,6 +20,7 @@
+ #include <linux/cpu.h>
+ #include <linux/init.h>
+ #include <linux/io.h>
++#include <linux/pci.h>
  
- 		vgadev = vgadev_find(pdev);
-+		pr_devel("vgaarb: vgadev %p\n", vgadev);
- 		if (vgadev == NULL) {
--			pr_info("vgaarb: this pci device is not a vga device\n");
-+			pr_err("vgaarb: this pci device is not a vga device\n");
- 			pci_dev_put(pdev);
- 			ret_val = -ENODEV;
- 			goto done;
-@@ -998,7 +1012,8 @@
- 			}
- 		}
- 		if (i == MAX_USER_CARDS) {
--			pr_err("vgaarb: maximum user cards number reached!\n");
-+			pr_err("vgaarb: maximum user cards (%d) number reached!\n",
-+				MAX_USER_CARDS);
- 			pci_dev_put(pdev);
- 			/* XXX: which value to return? */
- 			ret_val =  -ENOMEM;
+ #include <asm/uv/uv_mmrs.h>
+ #include <asm/uv/uv_hub.h>
+@@ -34,6 +35,8 @@
+ 
+ DEFINE_PER_CPU(int, x2apic_extra_bits);
+ 
++#define PR_DEVEL(fmt, args...)	pr_devel("%s: " fmt, __func__, args)
++
+ static enum uv_system_type uv_system_type;
+ static u64 gru_start_paddr, gru_end_paddr;
+ int uv_min_hub_revision_id;
+@@ -557,6 +560,30 @@
+ 
+ #endif /* !CONFIG_HOTPLUG_CPU */
+ 
++/* Direct Legacy VGA I/O traffic to designated IOH */
++int uv_set_vga_state(struct pci_dev *pdev, bool decode,
++		      unsigned int command_bits, bool change_bridge)
++{
++	int domain, bus, rc;
++
++	PR_DEVEL("devfn %x decode %d cmd %x chg_brdg %d\n",
++			pdev->devfn, decode, command_bits, change_bridge);
++
++	if (!change_bridge)
++		return 0;
++
++	if ((command_bits & PCI_COMMAND_IO) == 0)
++		return 0;
++
++	domain = pci_domain_nr(pdev->bus);
++	bus = pdev->bus->number;
++
++	rc = uv_bios_set_legacy_vga_target(decode, domain, bus);
++	PR_DEVEL("vga decode %d %x:%x, rc: %d\n", decode, domain, bus, rc);
++
++	return rc;
++}
++
+ /*
+  * Called on each cpu to initialize the per_cpu UV data area.
+  * FIXME: hotplug not supported yet
+@@ -717,4 +744,7 @@
+ 	uv_cpu_init();
+ 	uv_scir_register_cpu_notifier();
+ 	proc_mkdir("sgi_uv", NULL);
++
++	/* register Legacy VGA I/O redirection handler */
++	pci_register_set_vga_state(uv_set_vga_state);
+ }
+--- linux.orig/arch/x86/kernel/bios_uv.c
++++ linux/arch/x86/kernel/bios_uv.c
+@@ -163,6 +163,25 @@
+ }
+ EXPORT_SYMBOL_GPL(uv_bios_freq_base);
+ 
++/*
++ * uv_bios_set_legacy_vga_target - Set Legacy VGA I/O Target
++ * @decode: true to enable target, false to disable target
++ * @domain: PCI domain number
++ * @bus: PCI bus number
++ *
++ * Returns:
++ *    0: Success
++ *    -EINVAL: Invalid domain or bus number
++ *    -ENOSYS: Capability not available
++ *    -EBUSY: Legacy VGA I/O cannot be retargeted at this time
++ */
++int uv_bios_set_legacy_vga_target(bool decode, int domain, int bus)
++{
++	return uv_bios_call(UV_BIOS_SET_LEGACY_VGA_TARGET,
++				(u64)decode, (u64)domain, (u64)bus, 0, 0);
++}
++EXPORT_SYMBOL_GPL(uv_bios_set_legacy_vga_target);
++
+ 
+ #ifdef CONFIG_EFI
+ void uv_bios_init(void)
 
 -- 
