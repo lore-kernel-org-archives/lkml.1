@@ -1,40 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234Ab0ARLqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415Ab0ARLyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754234Ab0ARLqN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 06:46:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620Ab0ARLqM
+	id S1754415Ab0ARLyB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 06:54:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017Ab0ARLyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 06:46:12 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34454 "EHLO
+	Mon, 18 Jan 2010 06:54:00 -0500
+Received: from casper.infradead.org ([85.118.1.10]:47157 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471Ab0ARLqM (ORCPT
+	with ESMTP id S1751614Ab0ARLx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 06:46:12 -0500
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+	Mon, 18 Jan 2010 06:53:59 -0500
+Subject: [PATCH] perf: fix the is_software_event() definition
 From: Peter Zijlstra <peterz@infradead.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B543F93.3060509@redhat.com>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>
-	 <1263467289.4244.288.camel@laptop>
-	 <1263498366.4875.25.camel@localhost.localdomain>
-	 <1263546228.4244.343.camel@laptop>  <20100115093831.GC26396@in.ibm.com>
-	 <1263549014.4244.374.camel@laptop>  <4B53213C.9050303@redhat.com>
-	 <1263739939.557.20938.camel@twins>  <4B5325CF.5000001@redhat.com>
-	 <1263740593.557.20967.camel@twins>  <4B53661A.9090907@redhat.com>
-	 <1263800752.4283.19.camel@laptop>  <4B543F93.3060509@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
+       perfmon2-devel@lists.sf.net
+In-Reply-To: <1263813189.4283.245.camel@laptop>
+References: <4b4c761b.0338560a.1eaa.ffff824d@mx.google.com>
+	 <1263312616.4244.153.camel@laptop>
+	 <bd4cb8901001130154p732672b6x56e758c1ab33a8e8@mail.gmail.com>
+	 <1263400193.4244.238.camel@laptop>
+	 <bd4cb8901001130852y1de007cbqe66d77605c1ec372@mail.gmail.com>
+	 <bd4cb8901001130922s7ad85af6w6c631d90de177ef9@mail.gmail.com>
+	 <20100117141233.GF5035@nowhere>  <1263813189.4283.245.camel@laptop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 12:45:40 +0100
-Message-ID: <1263815140.4283.309.camel@laptop>
+Date: Mon, 18 Jan 2010 12:53:36 +0100
+Message-ID: <1263815616.4283.332.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -42,12 +34,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 13:01 +0200, Avi Kivity wrote:
-> If we reserve some address space, you don't add any heisenbugs (at 
-> least, not any additional ones over emulation).  Even if we don't, 
-> address space layout randomization means we're not keeping the address 
-> space layout constant between runs anyway. 
+On Mon, 2010-01-18 at 12:13 +0100, Peter Zijlstra wrote:
+> On Sun, 2010-01-17 at 15:12 +0100, Frederic Weisbecker wrote:
+> 
+> > You need to also call pmu->disable() if it is a software event,
+> > because a breakpoint needs to be unregistered in hardware level
+> > too.
+> 
+> breakpoint isn't a software pmu. But yeah, enable and disable need to
+> match.
 
-Well, it still limits the number of probes to the reserved area. If you
-want more you need to grow the area.. which then changes the state.
+That is, it shouldn't be a software pmu, because we assume software
+events can always be scheduled, whereas that's definitely not so for the
+breakpoint one.
+
+Which seems to suggest the following
+
+---
+Subject: perf: fix the is_software_event() definition
+
+When adding the breakpoint pmu Frederic forgot to exclude it from being
+a software event. While we're at it, make it an inclusive expression.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/perf_event.h |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index c66b34f..835ba26 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -814,9 +814,13 @@ extern int perf_event_overflow(struct perf_event *event, int nmi,
+  */
+ static inline int is_software_event(struct perf_event *event)
+ {
+-	return (event->attr.type != PERF_TYPE_RAW) &&
+-		(event->attr.type != PERF_TYPE_HARDWARE) &&
+-		(event->attr.type != PERF_TYPE_HW_CACHE);
++	switch (event->attr.type) {
++	case PERF_TYPE_SOFTWARE:
++	case PERF_TYPE_TRACEPOINT:
++	case PERF_TYPE_HW_CACHE:
++		return 1;
++	}
++	return 0;
+ }
+ 
+ extern atomic_t perf_swevent_enabled[PERF_COUNT_SW_MAX];
+
 
