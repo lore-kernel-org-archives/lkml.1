@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596Ab0ARNQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751531Ab0ARNVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596Ab0ARNQP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 08:16:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490Ab0ARNQO
+	id S1751531Ab0ARNVS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 08:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340Ab0ARNVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 08:16:14 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33408 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056Ab0ARNQN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 08:16:13 -0500
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B5455FF.7010409@redhat.com>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>
-	 <1263467289.4244.288.camel@laptop>
-	 <1263498366.4875.25.camel@localhost.localdomain>
-	 <1263546228.4244.343.camel@laptop>  <20100115093831.GC26396@in.ibm.com>
-	 <1263549014.4244.374.camel@laptop>  <4B53213C.9050303@redhat.com>
-	 <1263739939.557.20938.camel@twins>  <4B5325CF.5000001@redhat.com>
-	 <1263740593.557.20967.camel@twins>  <4B53661A.9090907@redhat.com>
-	 <1263800752.4283.19.camel@laptop>  <4B543F93.3060509@redhat.com>
-	 <1263815072.4283.305.camel@laptop>  <4B544D7C.2060708@redhat.com>
-	 <1263816396.4283.361.camel@laptop>  <4B544F8E.1080603@redhat.com>
-	 <1263816857.4283.381.camel@laptop>  <4B5455FF.7010409@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 14:15:51 +0100
-Message-ID: <1263820551.4283.499.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 18 Jan 2010 08:21:17 -0500
+Received: from bear.ext.ti.com ([192.94.94.41]:47435 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751118Ab0ARNVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 08:21:15 -0500
+From: "Chaithrika U S" <chaithrika@ti.com>
+To: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>
+Cc: <linux-serial@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <davinci-linux-open-source@linux.davincidsp.com>,
+       <khilman@deeprootsystems.com>, <akpm@linux-foundation.org>
+References: <1263386121-6644-1-git-send-email-chaithrika@ti.com> <20100113134445.010d4f1c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100113134445.010d4f1c@lxorguk.ukuu.org.uk>
+Subject: RE: [PATCH] serial: 8250: Add cpufreq support
+Date: Mon, 18 Jan 2010 18:47:49 +0530
+Message-ID: <000c01ca9840$a1fb99b0$e5f2cd10$@com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcqUU+px6G99AweuTPe3dzZQV7F/wAD7IT2w
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 14:37 +0200, Avi Kivity wrote:
-> On 01/18/2010 02:14 PM, Peter Zijlstra wrote:
-> >
-> >> Well, the alternatives are very unappealing.  Emulation and
-> >> single-stepping are going to be very slow compared to a couple of jumps.
-> >>      
-> > With CPL2 or RPL on user segments the protection issue seems to be
-> > manageable for running the instructions from kernel space.
-> >    
+On Wed, Jan 13, 2010 at 19:14:45, Alan Cox wrote:
+> > +static int serial8250_cpufreq_transition(struct notifier_block *nb,
+> > +					     unsigned long val, void *data)
+> > +{
+> > +	struct uart_8250_port *p;
+> > +	struct uart_port *uport;
+> > +
+> > +	p = container_of(nb, struct uart_8250_port, freq_transition);
+> > +	uport = &p->port;
+> > +
+> > +	if (IS_ERR(p->clk))
+> > +		goto cpu_freq_exit;
+> > +
+> > +	if (p->port.uartclk == clk_get_rate(p->clk))
+> > +		goto cpu_freq_exit;
+> > +
+> > +	p->port.uartclk = clk_get_rate(p->clk);
+> > +	if (val == CPUFREQ_POSTCHANGE) {
+> > +		struct ktermios *termios;
+> > +		struct tty_struct *tty;
+> > +		if (uport->state == NULL)
+> > +			goto cpu_freq_exit;
+> > +
+> > +		tty = uport->state->port.tty;
 > 
-> CPL2 gives unrestricted access to the kernel address space; and RPL does 
-> not affect page level protection.  Segment limits don't work on x86-64.  
-> But perhaps I missed something - these things are tricky.
+> Need locking on port->tty.
+> 
+> > +		if (tty == NULL)
+> > +			goto cpu_freq_exit;
+> > +
+> 
+> Need locking on tty->termios
+> 
+> I'd say this is also probably at the wrong level - why not do it at the
+> uart_port level instead (ie move the code you have into serial_core using
+> uart_port) - you've made it all nicely generic already.
+> 
+> Alan
+> 	
+	
+Thank you for the review comments.
+I will submit an updated version of patch soon.
 
-So setting RPL to 3 on the user segments allows access to kernel pages
-just fine? How useful.. :/
+Regards, 
+Chaithrika
 
-> It should be possible to translate the instruction into an address space 
-> check, followed by the action, but that's still slower due to privilege 
-> level switches.
-
-Well, if you manage to do the address validation you don't need the priv
-level switch anymore, right?
-
-Are the ins encodings sane enough to recognize mem parameters without
-needing to know the actual ins?
-
-How about using a hw-breakpoint to close the gap for the inline single
-step? You could even re-insert the int3 lazily when you need the
-hw-breakpoint again. It would consume one hw-breakpoint register for
-each task/cpu that has probes though..
 
