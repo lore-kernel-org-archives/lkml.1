@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711Ab0ARQYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661Ab0ARQ0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711Ab0ARQYp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 11:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687Ab0ARQYo
+	id S1754661Ab0ARQ0b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 11:26:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580Ab0ARQ0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 11:24:44 -0500
-Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:64717 "EHLO
-	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932104Ab0ARQYn (ORCPT
+	Mon, 18 Jan 2010 11:26:30 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55926 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754573Ab0ARQ0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 11:24:43 -0500
-Date: Mon, 18 Jan 2010 16:13:51 +0000
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: Ben Hutchings <ben@decadent.org.uk>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Linux driver project <devel@driverdev.osuosl.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] rt{2860,2870}sta: Use request_firmware() to load firmware
-Message-ID: <50E10D0F0C%linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <1263785156.8876.130.camel@localhost>
-References: <1263785156.8876.130.camel@localhost>
-Mail-Followup-To: Ben Hutchings <ben@decadent.org.uk>, Greg Kroah-Hartman 
- <gregkh@suse.de>, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Linux driver 
- project <devel@driverdev.osuosl.org>, LKML <linux-kernel@vger.kernel.org>, 
- Darren Salt <linux@youmustbejoking.demon.co.uk>
-User-Agent: Messenger-Pro/2.61.0.3112 (Qt/4.5.3) (Linux-x86_64)
-X-NuLabour-Date: Mon, 9180 Dec 1984 16:13:51 +0000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
+	Mon, 18 Jan 2010 11:26:30 -0500
+Subject: Re: [PATCH]  perf_events: improve x86 event scheduling (v5)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+In-Reply-To: <20100118161836.GG10364@nowhere>
+References: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com>
+	 <20100118134324.GB10364@nowhere> <1263822898.4283.558.camel@laptop>
+	 <20100118142004.GD10364@nowhere> <1263825158.4283.590.camel@laptop>
+	 <20100118144556.GE10364@nowhere> <1263826601.4283.603.camel@laptop>
+	 <20100118161836.GG10364@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jan 2010 17:26:13 +0100
+Message-ID: <1263831973.4283.622.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I demand that Ben Hutchings may or may not have written...
+On Mon, 2010-01-18 at 17:18 +0100, Frederic Weisbecker wrote:
+> On Mon, Jan 18, 2010 at 03:56:41PM +0100, Peter Zijlstra wrote:
+> > On Mon, 2010-01-18 at 15:45 +0100, Frederic Weisbecker wrote:
+> > > 
+> > > > > That requires to know in advance if we have hardware pmu
+> > > > > in the list though (can be a flag in the group).
+> > > > 
+> > > > Good point, but your proposed hw_check_constraint() call needs to know
+> > > > the exact same.
+> > > 
+> > > 
+> > > True. Whatever model we use anyway, both implement the same idea.
+> > 
+> > Hmm, we seem to already have that problem (which would indicate another
+> > bug in the hw-breakpoint stuff), how do you deal with
+> > hw_perf_{enable,disable}() for the breakpoints?
+> 
+> 
+> We don't have ordering constraints for breakpoints, only constraints
+> on the number of available registers.
+> 
+> So we check the constraints when a breakpoint registers. The
+> enable/disable then (is supposed to) always succeed on breakpoint
+> pmu, except for flexible breakpoints that can make it or not,
+> but no need to overwrite group scheduling for that.
 
-> When originally introduced into staging, these drivers had custom
-> firmware-loading code which checked a version number and CRC at the end of
-> each blob.  This reintroduces those checks, using crc-ccitt instead of
-> custom code.
+hw_perf_{enable,disable} are unrelated to groups.
 
-> The removed firmware will be added to the linux-firmware.git repository.
-
-> Based on work by Darren Salt <linux@youmustbejoking.demon.co.uk>.
-
-> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-
-Tested-By: Darren Salt <linux@youmustbejoking.demon.co.uk>
-
--- 
-| Darren Salt            | linux at youmustbejoking | nr. Ashington, | Doon
-| using Debian GNU/Linux | or ds    ,demon,co,uk    | Northumberland | Army
-| + http://wiki.debian.org/DebianEeePC/
-
-Pentium: Produces Erroneous Numbers Thru' Inadequate Understanding of Maths.
