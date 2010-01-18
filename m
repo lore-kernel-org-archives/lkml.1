@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970Ab0ARMS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980Ab0ARMTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754970Ab0ARMS0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 07:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936Ab0ARMSY
+	id S1754980Ab0ARMTk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 07:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667Ab0ARMTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 07:18:24 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:27793 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754592Ab0ARMSX convert rfc822-to-8bit (ORCPT
+	Mon, 18 Jan 2010 07:19:39 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42115 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754597Ab0ARMTj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 07:18:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=sqs5InzI6xhErDCyWZpoUr+mJ/dBUw7lvFJ/w1NM64OuT0n+E0NDamkt5CRNTR6Z4W
-         hgUeCpd3YJYQM6qm2/K8n2KzP0t5rXw62QxPpDNGppjNpw0L/jiCapl37hiScbP5bTnO
-         hOM+y4VdOQnuzqfBGSDzqQbFleRZZEhQNomvw=
-MIME-Version: 1.0
-In-Reply-To: <20100117094043.0483ee1a@infradead.org>
-References: <af0693f01001170847r49083075hc538a42b6bcd65ab@mail.gmail.com>
-	 <20100117094043.0483ee1a@infradead.org>
-Date: Mon, 18 Jan 2010 14:18:22 +0200
-Message-ID: <af0693f01001180418h6344e4b2v64f82e54ab3d9241@mail.gmail.com>
-Subject: Re: /dev/mem implementation
-From: Felix Rubinstein <felixru@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 18 Jan 2010 07:19:39 -0500
+Subject: Re: [PATCH] perf: fix the is_software_event() definition
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
+       perfmon2-devel@lists.sf.net
+In-Reply-To: <20100118120747.GG5256@nowhere>
+References: <4b4c761b.0338560a.1eaa.ffff824d@mx.google.com>
+	 <1263312616.4244.153.camel@laptop>
+	 <bd4cb8901001130154p732672b6x56e758c1ab33a8e8@mail.gmail.com>
+	 <1263400193.4244.238.camel@laptop>
+	 <bd4cb8901001130852y1de007cbqe66d77605c1ec372@mail.gmail.com>
+	 <bd4cb8901001130922s7ad85af6w6c631d90de177ef9@mail.gmail.com>
+	 <20100117141233.GF5035@nowhere> <1263813189.4283.245.camel@laptop>
+	 <1263815616.4283.332.camel@laptop>  <20100118120747.GG5256@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jan 2010 13:19:24 +0100
+Message-ID: <1263817164.4283.394.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The usecase is broadcom 10GbE switch driver which maps DMA memory to userspace.
-I can find one more libe1000 which uses char driver to map DMA memory
-to userspace too.
-So, how can I implement userspace drivers in recent kernels which want
-to map DMA memory to userspace if STRICT_DEVMEM or PAT (either of
-them) are enabled.
+On Mon, 2010-01-18 at 13:07 +0100, Frederic Weisbecker wrote:
 
-The motivation to implement network drivers is not new and there are
-here and there mini projects to bypass Linux networks stack to gain
-better latency as stack has lots of locks around, buffer copying
-(userspace to kernel and vice versa), etc... which only add latency.
+> Agreed.
+> 
+> But then Stephane will need to update his patch and use
+> something else than is_software_event() to guess if an event
+> needs its pmu->enable/disable to be called.
 
-Thanks,
-Felix R.
+Yes, that's what I told him before and even send a patch for, the name I
+chose was is_x86_event().
 
-On Sun, Jan 17, 2010 at 7:40 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Sun, 17 Jan 2010 18:47:10 +0200
-> Felix Rubinstein <felixru@gmail.com> wrote:
->
->> I see the motivation to limit the access to DRAM from root account
->> CONFIG_STRICT_DEVMEM by mmap'ing /dev/[k]mem but it's easily overruled
->> by simple char driver and implementing mmap of it's own totally
->> bypassing all limitations.
->>
->> What do you think about it guy?
->> Appreciate it.
->
-> the reason PAT bans parts of /dev/mem is simple: it is illegal to have
-> mapping aliases (different cachability) for the same physical page.
-> Normal kernel APIs take care of this for the normal case, but /dev/mem
-> would be a back door into that.
-> This is a hardware imposed requirement, and violating the rule can have
-> really nasty consequences... hence the PAT code just not allowing it.
->
-> If you feel that you have a valid use case where you really want do
-> muck with such memory, it might be a good idea to explain that
-> usecase....
->
-> --
-> Arjan van de Ven        Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
+  http://lkml.org/lkml/2010/1/12/154
+
+
+
