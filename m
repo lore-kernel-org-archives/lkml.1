@@ -1,119 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246Ab0ARNnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314Ab0ARNon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752246Ab0ARNnb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 08:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478Ab0ARNna
+	id S1752314Ab0ARNon (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 08:44:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477Ab0ARNom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 08:43:30 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:12734 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750911Ab0ARNna (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 08:43:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=m5+mKdNUy2WqiYAKx1+RG7qFmUhg2pbpLoW+5NxzH++RVXZejRPOdKjyLk2M7SW/Tj
-         a33TDR/jphz9zIbS2+0DNazHYEBwnNgUokjZ9TG+8oJv5uKmcKDnMjvHArGt+gefyMJA
-         4DIqoQQmTe1iey9a+SSVZ+7I7TkJa6DHPjFbw=
-Date: Mon, 18 Jan 2010 14:43:25 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Stephane Eranian <eranian@google.com>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, mingo@elte.hu,
-       paulus@samba.org, davem@davemloft.net, perfmon2-devel@lists.sf.net,
-       eranian@gmail.com
-Subject: Re: [PATCH]  perf_events: improve x86 event scheduling (v5)
-Message-ID: <20100118134324.GB10364@nowhere>
-References: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com>
+	Mon, 18 Jan 2010 08:44:42 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55923 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751240Ab0ARNol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 08:44:41 -0500
+Message-ID: <4B54654A.4090601@cn.fujitsu.com>
+Date: Mon, 18 Jan 2010 21:42:34 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] perf_event: fix race in perf_swevent_get_recursion_context()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 10:58:01AM +0200, Stephane Eranian wrote:
-> +int hw_perf_group_sched_in(struct perf_event *leader,
-> +	       struct perf_cpu_context *cpuctx,
-> +	       struct perf_event_context *ctx, int cpu)
-> +{
-> +	struct cpu_hw_events *cpuc = &per_cpu(cpu_hw_events, cpu);
-> +	struct perf_event *sub;
-> +	int assign[X86_PMC_IDX_MAX];
-> +	int n0, n1, ret;
-> +
-> +	/* n0 = total number of events */
-> +	n0 = collect_events(cpuc, leader, true);
-> +	if (n0 < 0)
-> +		return n0;
-> +
-> +	ret = x86_schedule_events(cpuc, n0, assign);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = x86_event_sched_in(leader, cpuctx, cpu);
-> +	if (ret)
-> +		return ret;
-> +
-> +	n1 = 1;
-> +	list_for_each_entry(sub, &leader->sibling_list, group_entry) {
-> +		if (sub->state != PERF_EVENT_STATE_OFF) {
-> +			ret = x86_event_sched_in(sub, cpuctx, cpu);
-> +			if (ret)
-> +				goto undo;
-> +			++n1;
-> +		}
-> +	}
-> +	/*
-> +	 * copy new assignment, now we know it is possible
-> +	 * will be used by hw_perf_enable()
-> +	 */
-> +	memcpy(cpuc->assign, assign, n0*sizeof(int));
-> +
-> +	cpuc->n_events  = n0;
-> +	cpuc->n_added   = n1;
-> +	ctx->nr_active += n1;
-> +
-> +	/*
-> +	 * 1 means successful and events are active
-> +	 * This is not quite true because we defer
-> +	 * actual activation until hw_perf_enable() but
-> +	 * this way we* ensure caller won't try to enable
-> +	 * individual events
-> +	 */
-> +	return 1;
-> +undo:
-> +	x86_event_sched_out(leader, cpuctx, cpu);
-> +	n0  = 1;
-> +	list_for_each_entry(sub, &leader->sibling_list, group_entry) {
-> +		if (sub->state == PERF_EVENT_STATE_ACTIVE) {
-> +			x86_event_sched_out(sub, cpuctx, cpu);
-> +			if (++n0 == n1)
-> +				break;
-> +		}
-> +	}
-> +	return ret;
+It only disable preemption in perf_swevent_get_recursion_context()
+it can't avoid race of hard-irq and NMI
 
+In this patch, we use atomic operation to avoid it and reduce
+cpu_ctx->recursion size, it also make this patch no need diable
+preemption
 
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ include/linux/perf_event.h |    2 +-
+ kernel/perf_event.c        |   14 ++++----------
+ 2 files changed, 5 insertions(+), 11 deletions(-)
 
-Looking at all these numerous places where this whole constraint
-and ad hoc scheduling machine tries to catch up with what the
-core can already do (handle non-x86 events, revert in failure,
-first handle leader, then handle the rest, etc...), I wonder
-if this hw_group_sched_in() based design is a good idea.
-
-Shouldn't we actually use the core based pmu->enable(),disable()
-model called from kernel/perf_event.c:event_sched_in(),
-like every other events, where we can fill up the queue of hardware
-events to be scheduled, and then call a hw_check_constraints()
-when we finish a group scheduling?
-
-I guess this would simplify all this code, avoid it to run through
-the list of events, handle software events, revert partial enabled
-by itself etc...
-
-Hm?
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index c6f812e..8474ab0 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -730,7 +730,7 @@ struct perf_cpu_context {
+ 	 *
+ 	 * task, softirq, irq, nmi context
+ 	 */
+-	int				recursion[4];
++	unsigned long			recursion;
+ };
+ 
+ struct perf_output_handle {
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index eae6ff6..77ef16e 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -3921,7 +3921,7 @@ static void perf_swevent_ctx_event(struct perf_event_context *ctx,
+ 
+ int perf_swevent_get_recursion_context(void)
+ {
+-	struct perf_cpu_context *cpuctx = &get_cpu_var(perf_cpu_context);
++	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
+ 	int rctx;
+ 
+ 	if (in_nmi())
+@@ -3933,13 +3933,8 @@ int perf_swevent_get_recursion_context(void)
+ 	else
+ 		rctx = 0;
+ 
+-	if (cpuctx->recursion[rctx]) {
+-		put_cpu_var(perf_cpu_context);
++	if (test_and_set_bit(rctx, &cpuctx->recursion))
+ 		return -1;
+-	}
+-
+-	cpuctx->recursion[rctx]++;
+-	barrier();
+ 
+ 	return rctx;
+ }
+@@ -3948,9 +3943,8 @@ EXPORT_SYMBOL_GPL(perf_swevent_get_recursion_context);
+ void perf_swevent_put_recursion_context(int rctx)
+ {
+ 	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
+-	barrier();
+-	cpuctx->recursion[rctx]--;
+-	put_cpu_var(perf_cpu_context);
++
++	clear_bit(rctx, &cpuctx->recursion);
+ }
+ EXPORT_SYMBOL_GPL(perf_swevent_put_recursion_context);
+ 
+-- 
+1.6.1.2
 
