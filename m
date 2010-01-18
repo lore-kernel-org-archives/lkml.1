@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804Ab0ARPP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900Ab0ARPQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804Ab0ARPP6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 10:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648Ab0ARPP5
+	id S1753900Ab0ARPQq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 10:16:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475Ab0ARPQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 10:15:57 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37280 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753048Ab0ARPP5 (ORCPT
+	Mon, 18 Jan 2010 10:16:45 -0500
+Received: from bhuna.collabora.co.uk ([93.93.128.226]:60385 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752843Ab0ARPQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 10:15:57 -0500
-Date: Mon, 18 Jan 2010 07:16:07 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Felix Rubinstein <felixru@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: /dev/mem implementation
-Message-ID: <20100118071607.17d954a2@infradead.org>
-In-Reply-To: <af0693f01001180418h6344e4b2v64f82e54ab3d9241@mail.gmail.com>
-References: <af0693f01001170847r49083075hc538a42b6bcd65ab@mail.gmail.com>
-	<20100117094043.0483ee1a@infradead.org>
-	<af0693f01001180418h6344e4b2v64f82e54ab3d9241@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+	Mon, 18 Jan 2010 10:16:44 -0500
+Date: Mon, 18 Jan 2010 10:16:30 -0500
+From: Andres Salomon <dilinger@collabora.co.uk>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: trivial@kernel.org, marcelo@kvack.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] trivial: fix grammo in tsc comment about Geode TSC
+ reliability
+Message-ID: <20100118101630.7ba94ab8@mycelium.queued.net>
+In-Reply-To: <1263764685-9871-1-git-send-email-cascardo@holoscopio.com>
+References: <1263764685-9871-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jan 2010 14:18:22 +0200
-Felix Rubinstein <felixru@gmail.com> wrote:
+Acked-by: Andres Salomon <dilinger@collabora.co.uk>
 
-> The usecase is broadcom 10GbE switch driver which maps DMA memory to
-> userspace. I can find one more libe1000 which uses char driver to map
-> DMA memory to userspace too.
-> So, how can I implement userspace drivers in recent kernels which want
-> to map DMA memory to userspace if STRICT_DEVMEM or PAT (either of
-> them) are enabled.
-
-for these cases the driver should provide it's own mmap method that
-exposes only those pages that the hardware has access to. You need
-something like this anyway to deal with the dma mapping api....
+That code should probably exist for generic kernels (distro kernels
+that aren't compiled specifically for GEODE_LX).  Currently it's
+#ifdef'd..
 
 
+On Sun, 17 Jan 2010
+19:44:44 -0200 Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+wrote:
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> ---
+>  arch/x86/kernel/tsc.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> index 597683a..23066ec 100644
+> --- a/arch/x86/kernel/tsc.c
+> +++ b/arch/x86/kernel/tsc.c
+> @@ -806,7 +806,7 @@ static void __init check_system_tsc_reliable(void)
+>  	unsigned long res_low, res_high;
+>  
+>  	rdmsr_safe(MSR_GEODE_BUSCONT_CONF0, &res_low, &res_high);
+> -	/* Geode_LX - the OLPC CPU has a possibly a very reliable
+> TSC */
+> +	/* Geode_LX - the OLPC CPU has a very reliable TSC */
+>  	if (res_low & RTSC_SUSP)
+>  		tsc_clocksource_reliable = 1;
+>  #endif
