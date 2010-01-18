@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804Ab0ARH6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855Ab0ARIHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804Ab0ARH6g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 02:58:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655Ab0ARH6f
+	id S1754855Ab0ARIHR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 03:07:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668Ab0ARIHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 02:58:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48377 "EHLO mx2.mail.elte.hu"
+	Mon, 18 Jan 2010 03:07:16 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:64946 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751931Ab0ARH6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 02:58:34 -0500
-Date: Mon, 18 Jan 2010 08:58:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>
-Subject: Re: [GIT PULL] perf scheduling updates: flexible/pinned groups
- reordering, optimizations
-Message-ID: <20100118075826.GA25476@elte.hu>
-References: <1263730935-9770-1-git-send-regression-fweisbec@gmail.com>
- <1263800285.4283.11.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263800285.4283.11.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754575Ab0ARIHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 03:07:15 -0500
+Date: Mon, 18 Jan 2010 09:07:11 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Huaxu Wan <huaxu.wan@linux.intel.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>,
+       Yuhong Bao <yuhongbao_386@hotmail.com>, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, yong.y.wang@linux.intel.com
+Subject: Re: [lm-sensors] [PATCH] hwmon: (coretemp) Fix TjMax for Atom 
+ N450/D410/D510 CPUs
+Message-ID: <20100118090711.5be2f70c@hyperion.delvare>
+In-Reply-To: <20100118072138.GA25107@owl>
+References: <20091224073102.GA23058@ywang-moblin2.bj.intel.com>
+	<20100106160817.72313551@hyperion.delvare>
+	<20100110200621.564a6682@hyperion.delvare>
+	<20100111062024.GA20804@ywang-moblin2.bj.intel.com>
+	<SNT125-W147C55AB6EB65D41CAAFFFC3680@phx.gbl>
+	<20100117161518.4912be7c@hyperion.delvare>
+	<4B536502.20102@gmail.com>
+	<20100117210536.0ae0f187@hyperion.delvare>
+	<20100118072138.GA25107@owl>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Sun, 2010-01-17 at 13:22 +0100, Frederic Weisbecker wrote:
-> > Ingo,
-> > 
-> > Please pull the perf/scheduling branch that can be found at:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> > 	perf/scheduling
-> > 
-> > It brings more progresses wrt scheduling ordering between pinned
-> > and flexible events.
-> > 
-> > There is still some work to do, for example concerning context spinlocks
-> > that could be acquired once instead of multiple times in some areas.
-> > 
-> > But this set is still much more optimized than what we had before,
-> > especially because of the third patch.
+On Mon, 18 Jan 2010 15:21:38 +0800, Huaxu Wan wrote:
+> On 21:05 Sun 17 Jan, Jean Delvare wrote:
+> > Anyway, how difficult would it be to set TjMax based on the CPUID? I
+> > presume that the Intel Atom 400 and 500 series have their own CPUID
+> > value, haven't they? This would seem even easier that checking for a
+> > PCI device.
 > 
-> Looks very nice, thanks Frederic!
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Actually, all the Atom processors share the same CPUID(0x1C) and the
+> worse is not all of them has the same TjMax. That's a big problem. 
 
-Pulled, thanks guys!
+0x1C is the product value. The stepping value could be different. There
+could also be other identification methods based on cpuid() or rdmsr()
+commands. This is done quite frequently to identify specific CPU models.
 
-	Ingo
+-- 
+Jean Delvare
