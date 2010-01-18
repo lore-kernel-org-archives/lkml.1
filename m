@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175Ab0ARIZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835Ab0ARI0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175Ab0ARIZU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 03:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218Ab0ARIZS
+	id S1753835Ab0ARI0Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 03:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895Ab0ARI0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 03:25:18 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:49051 "EHLO smtps.tip.net.au"
+	Mon, 18 Jan 2010 03:26:12 -0500
+Received: from ozlabs.org ([203.10.76.45]:38421 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751380Ab0ARIZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 03:25:17 -0500
-Date: Mon, 18 Jan 2010 19:25:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Greg Kroah-Hartman <greg@kroah.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joe Perches <joe@perches.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       =?UTF-8?B?TG/Dr2MgR3JlbmnDqQ==?= <loic.grenie@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH update] HOWTO: Updates on subsystem trees, patchwork,
- -next (vs.  -mm)
-Message-Id: <20100118192508.fb9bacfb.sfr@canb.auug.org.au>
-In-Reply-To: <tkrat.b7e388635b69af34@s5r6.in-berlin.de>
-References: <4B4F7304.5050401@s5r6.in-berlin.de>
-	<Pine.LNX.4.30.1001141303230.3979-100000@mail.perches.com>
-	<tkrat.e8ba67441fb65247@s5r6.in-berlin.de>
-	<9b06e8d21001141641u31c62480q706ed4fe122c7c20@mail.gmail.com>
-	<tkrat.b7e388635b69af34@s5r6.in-berlin.de>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__18_Jan_2010_19_25_08_+1100_w5/z8pr7Q3Kpf5xo"
+	id S1752326Ab0ARI0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 03:26:10 -0500
+Date: Mon, 18 Jan 2010 19:21:51 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       schwidefsky@de.ibm.com, balajirrao@gmail.com, dhaval@linux.vnet.ibm.com,
+       tglx@linutronix.de, kamezawa.hiroyu@jp.fujitsu.com,
+       akpm@linux-foundation.org, Tony Luck <tony.luck@intel.com>,
+       Fenghua Yu <fenghua.yu@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com
+Subject: Re: [PATCH] sched: cpuacct: Use bigger percpu counter batch values
+ for stats counters
+Message-ID: <20100118082151.GU12666@kryten>
+References: <20090512102412.GG6351@balbir.in.ibm.com>
+ <20090512102939.GB11714@elte.hu>
+ <20090512193656.D647.A69D9226@jp.fujitsu.com>
+ <20090716081010.GB3134@in.ibm.com>
+ <20090716083948.GA2950@kryten>
+ <20090820051038.GF21100@kryten>
+ <20100118044142.GS12666@kryten>
+ <1263801079.4283.22.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263801079.4283.22.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__18_Jan_2010_19_25_08_+1100_w5/z8pr7Q3Kpf5xo
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Stefan,
+Hi Peter,
 
-On Fri, 15 Jan 2010 13:23:51 +0100 (CET) Stefan Richter <stefanr@s5r6.in-be=
-rlin.de> wrote:
->
-> +2.6.x -next kernel tree for integration tests
-> +---------------------------------------------
-> +Before updates from subsystem trees are merged into the mainline 2.6.x
-> +tree, they need to be integration-tested.  For this purpose, a special
-> +testing repository exists into which virtually all subsystem trees are
-> +pulled on an almost daily basis:
-> +	http://git.kernel.org/?p=3Dlinux/kernel/git/sfr/linux-next.git
+> Seems like a good idea, but isn't that batch number rather static? If
+> so, computing it in some init path would save that multiply on the
+> actual accounting path.
 
-http://git.kernel.org/?p=3Dlinux/kernel/git/next/linux-next.git
+It is mostly static, but percpu_counter_batch does change with hotplug
+operations. Adding a hotplug notifier felt like a lot of work but I was
+worried we have issues if we didn't scale with hotplug add operations.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__18_Jan_2010_19_25_08_+1100_w5/z8pr7Q3Kpf5xo
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktUGuQACgkQjjKRsyhoI8yzdACfavaFYEeZ/4p0sBEMRtp7hZFx
-/HoAn06LyMzNxqCf8Qbu0qTF4Z5dB9AD
-=zf/j
------END PGP SIGNATURE-----
-
---Signature=_Mon__18_Jan_2010_19_25_08_+1100_w5/z8pr7Q3Kpf5xo--
+Anton
