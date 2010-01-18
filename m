@@ -1,92 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736Ab0ARRR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400Ab0ARRQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736Ab0ARRR1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 12:17:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650Ab0ARRRV
+	id S1754400Ab0ARRQt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 12:16:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047Ab0ARRQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 12:17:21 -0500
-Received: from mail.solarflare.com ([216.237.3.220]:29458 "EHLO
-	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754640Ab0ARRRR (ORCPT
+	Mon, 18 Jan 2010 12:16:45 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:44245 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919Ab0ARRQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 12:17:17 -0500
-Subject: Re: [PATCH] list.h: add list_for_each_struct_entry macro
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Jiri Pirko <jpirko@redhat.com>
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org
-In-Reply-To: <20100118162338.GD4229@psychotron.lab.eng.brq.redhat.com>
-References: <20100118162338.GD4229@psychotron.lab.eng.brq.redhat.com>
-Content-Type: text/plain
-Organization: Solarflare Communications
-Date: Mon, 18 Jan 2010 17:17:13 +0000
-Message-Id: <1263835033.3667.23.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Jan 2010 17:18:04.0284 (UTC) FILETIME=[31C743C0:01CA9862]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17138.005
-X-TM-AS-Result: No--23.429200-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
+	Mon, 18 Jan 2010 12:16:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=xO0wt/D7usu7i2vyB1mlyBQgQrT8nZPbOJueg91zqoEhbI+6uUEP6cKpcG/Zm34K+z
+         H9JGrDnrzD2KWJtsLQ+pf7fj7EWNWXbfOAsxfFEERO+NcSk1GRx/V2HgnyGbsjpaqRnF
+         ygWt61EL7jEwOdWX2RTcjoTHXTGx8KEywb7gc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 18 Jan 2010 18:15:28 +0100
+Message-Id: <20100118171528.14623.44156.sendpatchset@localhost>
+In-Reply-To: <20100118171349.14623.90030.sendpatchset@localhost>
+References: <20100118171349.14623.90030.sendpatchset@localhost>
+Subject: [PATCH 12/64] pata_cs5520: convert to use ->init_host method
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 17:23 +0100, Jiri Pirko wrote:
-> When preparing to upcoming migration of mc_list (list of multicast MACs)
-> to list_head, the need of traversing the list over one structure member
-> appeared. I thought I'll do it locally but I decided that an intruduction
-> the macro in list.h would be much clearer. Please kindly for a review.
-> 
-> Jirka
-> 
-> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-> 
-> diff --git a/include/linux/list.h b/include/linux/list.h
-> index 969f6e9..8350a94 100644
-> --- a/include/linux/list.h
-> +++ b/include/linux/list.h
-> @@ -420,6 +420,22 @@ static inline void list_splice_tail_init(struct list_head *list,
->  	     pos = list_entry(pos->member.prev, typeof(*pos), member))
->  
->  /**
-> + * list_for_each_struct_entry  -       iterate over list of given type using
-> + *                                     the struct member.
-> + * @pos:       the type * to use as a loop cursor.
-> + * @head:      the head for your list.
-> + * @type:      the type of the struct.
-> + * @posmember: the name ot the loop cursor within the struct.
-> + * @member:    the name of the list_struct within the struct.
-> + */
-> +#define list_for_each_struct_entry(pos, head, type, posmember, member)		\
-> +	for (pos = list_entry((head)->next, type, member)->posmember;		\
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] pata_cs5520: convert to use ->init_host method
 
-Surely &list_entry(...)->posmember ?
+Remove bogus kernel warning while at it.
 
-> +	     prefetch(container_of(pos, type, posmember)->member.next),		\
-> +	     &container_of(pos, type, posmember)->member != (head);		\
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ata/pata_cs5520.c |   55 +++++++++++++++++++---------------------------
+ 1 file changed, 23 insertions(+), 32 deletions(-)
 
-It seems a bit dodgy to do this pointer arithmetic on a list node which
-might be the list head.
-
-> +	     pos = list_entry(container_of(pos, type, posmember)->member.next,	\
-> +	     type, member)->posmember)
-
-My version:
-
-#define list_for_each_struct_entry(pos, head, type, posmember, member)	     \
-	for (pos = list_empty(head) ? NULL :				     \
-		&list_first_entry(head, type, member)->posmember;	     \
-	     prefetch(container_of(pos, type, posmember)->member.next), pos; \
-	     pos = list_is_last(&container_of(pos, type, posmember)->member, \
-				head) ?	NULL :				     \
-		&list_entry(container_of(pos, type, posmember)->member.next, \
-			    type, member)->posmember)
-
-Ben.
-
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
-
+Index: b/drivers/ata/pata_cs5520.c
+===================================================================
+--- a/drivers/ata/pata_cs5520.c
++++ b/drivers/ata/pata_cs5520.c
+@@ -115,6 +115,25 @@ static struct ata_port_operations cs5520
+ 	.set_piomode		= cs5520_set_piomode,
+ };
+ 
++/**
++ *	cs5520_fixup	-	device fixup
++ *	@dev: device
++ *
++ *	We need to restore DMA mode support on BIOSen which disabled it.
++ */
++
++static int cs5520_fixup(struct device *dev)
++{
++	struct pci_dev *pdev = to_pci_dev(dev);
++	u8 pcicfg;
++
++	pci_read_config_byte(pdev, 0x60, &pcicfg);
++	if ((pcicfg & 0x40) == 0)
++		pci_write_config_byte(pdev, 0x60, pcicfg | 0x40);
++
++	return 0;
++}
++
+ static int __devinit cs5520_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ {
+ 	static const unsigned int cmd_port[] = { 0x1F0, 0x170 };
+@@ -148,11 +167,7 @@ static int __devinit cs5520_init_one(str
+ 	if (pcicfg & 2)
+ 		ppi[1] = &pi;
+ 
+-	if ((pcicfg & 0x40) == 0) {
+-		dev_printk(KERN_WARNING, &pdev->dev,
+-			   "DMA mode disabled. Enabling.\n");
+-		pci_write_config_byte(pdev, 0x60, pcicfg | 0x40);
+-	}
++	cs5520_fixup(&pdev->dev);
+ 
+ 	pi.mwdma_mask = id->driver_data;
+ 
+@@ -160,6 +175,8 @@ static int __devinit cs5520_init_one(str
+ 	if (!host)
+ 		return -ENOMEM;
+ 
++	host->init_host = cs5520_fixup;
++
+ 	/* Perform set up for DMA */
+ 	if (pci_enable_device_io(pdev)) {
+ 		printk(KERN_ERR DRV_NAME ": unable to configure BAR2.\n");
+@@ -233,32 +250,6 @@ static int __devinit cs5520_init_one(str
+ 
+ #ifdef CONFIG_PM
+ /**
+- *	cs5520_reinit_one	-	device resume
+- *	@pdev: PCI device
+- *
+- *	Do any reconfiguration work needed by a resume from RAM. We need
+- *	to restore DMA mode support on BIOSen which disabled it
+- */
+-
+-static int cs5520_reinit_one(struct pci_dev *pdev)
+-{
+-	struct ata_host *host = dev_get_drvdata(&pdev->dev);
+-	u8 pcicfg;
+-	int rc;
+-
+-	rc = ata_pci_device_do_resume(pdev);
+-	if (rc)
+-		return rc;
+-
+-	pci_read_config_byte(pdev, 0x60, &pcicfg);
+-	if ((pcicfg & 0x40) == 0)
+-		pci_write_config_byte(pdev, 0x60, pcicfg | 0x40);
+-
+-	ata_host_resume(host);
+-	return 0;
+-}
+-
+-/**
+  *	cs5520_pci_device_suspend	-	device suspend
+  *	@pdev: PCI device
+  *
+@@ -299,7 +290,7 @@ static struct pci_driver cs5520_pci_driv
+ 	.remove		= ata_pci_remove_one,
+ #ifdef CONFIG_PM
+ 	.suspend	= cs5520_pci_device_suspend,
+-	.resume		= cs5520_reinit_one,
++	.resume		= ata_pci_device_resume,
+ #endif
+ };
+ 
