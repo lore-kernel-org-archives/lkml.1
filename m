@@ -1,190 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585Ab0ARVTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984Ab0ARVWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585Ab0ARVTq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 16:19:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402Ab0ARVTo
+	id S1754984Ab0ARVWb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 16:22:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574Ab0ARVWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 16:19:44 -0500
-Received: from mga01.intel.com ([192.55.52.88]:28125 "EHLO mga01.intel.com"
+	Mon, 18 Jan 2010 16:22:30 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50118 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755322Ab0ARVTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 16:19:43 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,298,1262592000"; 
-   d="scan'208";a="532321954"
-From: Mark Allyn <mark.a.allyn@intel.com>
-To: linux-kernel@vger.kernel.org, greg@kroah.com, alan@linux.intel.com,
-       charles.f.johnson@intel.com
-Cc: Mark Allyn <mark.a.allyn@intel.com>
-Subject: [PATCH] Update rar_register.h to clean up checkpatch errors and debug
-Date: Mon, 18 Jan 2010 13:23:26 -0800
-Message-Id: <1263849806-23207-1-git-send-email-mark.a.allyn@intel.com>
-X-Mailer: git-send-email 1.6.0.6
+	id S1754459Ab0ARVW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 16:22:29 -0500
+Message-ID: <4B54D01C.1070505@zytor.com>
+Date: Mon, 18 Jan 2010 13:18:20 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Arjan van de Ven <arjan@infradead.org>, rostedt@goodmis.org,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, andi@firstfloor.org,
+       roland@redhat.com, rth@redhat.com
+Subject: Re: [RFC PATCH 2/8] jump label v4 - x86: Introduce generic jump	patching
+ without stop_machine
+References: <cover.1263247113.git.jbaron@redhat.com> <a4aa5bbcf5e62eaa5dd156d318a370236f28be09.1263247114.git.jbaron@redhat.com> <1263483139.28171.3857.camel@gandalf.stny.rr.com> <4B4F3A1A.2030906@zytor.com> <20100117185539.GF9008@Krystal> <20100117111608.35a98ee2@infradead.org> <4B548562.6030008@redhat.com> <4B548B09.7040309@zytor.com> <20100118165231.GA29764@Krystal> <4B54AD7C.9000505@zytor.com> <4B54CA2F.1050604@redhat.com>
+In-Reply-To: <4B54CA2F.1050604@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The purpose of this patch is to clean up the rar_register
-header file so that has proper data types for kernel drivers,
-clean up checkpatch issues, and then removing bugs
+On 01/18/2010 12:53 PM, Masami Hiramatsu wrote:
+>>
+>> This is utter and complete nonsense.   You seem to think that everything
+>> is guaranteed to hit the breakpoint, which is obviously false.
+>> Furthermore, until you have done the serialization, you're not
+>> guaranteed the *breakpoint* is seen, so you have the same condition.
+> 
+> In that time frame, I guess that the processor sees non-modified
+> instruction and executes it. Since we'll wait until serializing on
+> each processor, I think it is OK for int3-bypass method.
+> 
+> (Of course, this can depend on chip, it is possible that there is a chip
+>  which causes a fault when it has a cache-discarding signal on current-
+>  instruction decoding slot. That's also why we are asking this method
+>  is OK for x86 processors.)
+> 
 
-This is the sixth of seven patches for the rar_register driver
-for Sunday, January 17, 2009
+Yes, it is possible, however, if that was the case, then int3 wouldn't
+work either.  As I said, to the best of our knowledge, at least Intel
+processors are okay for a single-byte update (I will wait to try to
+state the full general rule until it has been officially approved or
+killed.)
 
-The rar stands for restricted access region. The restricted access
-region is an area of memory that can be locked from access by the
-x86 processor.
-
-The purpose of the restricted access region is to safeguard confidential
-information from any unauthorized software running on the x86 processor.
-
-The purpose of this driver is to enable other drivers to obtain
-the address ranges of the restricted regions as well as lock them.
-
-This patch is referenced off the linux-next repository as pulled
-on Sunday, January 17, 2010.
-
-Signed-off-by: Mark Allyn <mark.a.allyn@intel.com>
-
-Date: January 17, 2010
----
- include/linux/rar/rar_register.h |  114 +++++++++++++++-----------------------
- 1 files changed, 44 insertions(+), 70 deletions(-)
-
-diff --git a/include/linux/rar/rar_register.h b/include/linux/rar/rar_register.h
-index 3690f98..35208f8 100644
---- a/include/linux/rar/rar_register.h
-+++ b/include/linux/rar/rar_register.h
-@@ -1,8 +1,42 @@
--/* === RAR Physical Addresses === */
--struct RAR_address_struct {
--        u32 low;
--        u32 high;
--};
-+/*
-+ * Copyright (C) 2008, 2009 Intel Corporation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General
-+ * Public License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be
-+ * useful, but WITHOUT ANY WARRANTY; without even the implied
-+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-+ * PURPOSE.  See the GNU General Public License for more details.
-+ * You should have received a copy of the GNU General Public
-+ * License along with this program; if not, write to the Free
-+ * Software Foundation, Inc., 59 Temple Place - Suite 330,
-+ * Boston, MA  02111-1307, USA.
-+ * The full GNU General Public License is included in this
-+ * distribution in the file called COPYING.
-+ */
-+
-+
-+#ifndef _RAR_REGISTER_H
-+#define _RAR_REGISTER_H
-+
-+# include <linux/types.h>
-+
-+/* PCI device id for controller */
-+#define PCI_RAR_DEVICE_ID 0x4110
-+
-+/* The register_rar function is to used by other device drivers
-+ * to ensure that this driver is ready. As we cannot be sure of
-+ * the compile/execute order of dirvers in ther kernel, it is
-+ * best to give this driver a callback function to call when
-+ * it is ready to give out addresses. The callback function
-+ * would have those steps that continue the initialization of
-+ * a driver that do require a valid RAR address. One of those
-+ * steps would be to call get_rar_address()
-+ * This function return 0 on success an -1 on failure.
-+ */
-+int register_rar(int (*callback)(void *yourparameter), void *yourparameter);
- 
- /* The get_rar_address function is used by other device drivers
-  * to obtain RAR address information on a RAR. It takes two
-@@ -19,8 +53,9 @@ struct RAR_address_struct {
-  * The function returns a 0 upon success or a -1 if there is no RAR
-  * facility on this system.
-  */
--int get_rar_address(int rar_index,struct RAR_address_struct *addresses);
--
-+int rar_get_address(int rar_index,
-+		dma_addr_t *start_address,
-+		dma_addr_t *end_address);
- 
- /* The lock_rar function is ued by other device drivers to lock an RAR.
-  * once an RAR is locked, it stays locked until the next system reboot.
-@@ -33,67 +68,6 @@ int get_rar_address(int rar_index,struct RAR_address_struct *addresses);
-  * The function returns a 0 upon success or a -1 if there is no RAR
-  * facility on this system.
-  */
--int lock_rar(int rar_index);
--
--
--/* DEBUG LEVEL MASKS */
--#define RAR_DEBUG_LEVEL_BASIC       0x1
--
--#define RAR_DEBUG_LEVEL_REGISTERS   0x2
--
--#define RAR_DEBUG_LEVEL_EXTENDED    0x4
--
--#define DEBUG_LEVEL	0x7
--
--/* FUNCTIONAL MACROS */
--
--/* debug macro without paramaters */
--#define DEBUG_PRINT_0(DEBUG_LEVEL , info) \
--do \
--{ \
--  if(DEBUG_LEVEL) \
--  { \
--    printk(KERN_WARNING info); \
--  } \
--}while(0)
--
--/* debug macro with 1 paramater */
--#define DEBUG_PRINT_1(DEBUG_LEVEL , info , param1) \
--do \
--{ \
--  if(DEBUG_LEVEL) \
--  { \
--    printk(KERN_WARNING info , param1); \
--  } \
--}while(0)
--
--/* debug macro with 2 paramaters */
--#define DEBUG_PRINT_2(DEBUG_LEVEL , info , param1, param2) \
--do \
--{ \
--  if(DEBUG_LEVEL) \
--  { \
--    printk(KERN_WARNING info , param1, param2); \
--  } \
--}while(0)
--
--/* debug macro with 3 paramaters */
--#define DEBUG_PRINT_3(DEBUG_LEVEL , info , param1, param2 , param3) \
--do \
--{ \
--  if(DEBUG_LEVEL) \
--  { \
--    printk(KERN_WARNING info , param1, param2 , param3); \
--  } \
--}while(0)
--
--/* debug macro with 4 paramaters */
--#define DEBUG_PRINT_4(DEBUG_LEVEL , info , param1, param2 , param3 , param4) \
--do \
--{ \
--  if(DEBUG_LEVEL) \
--  { \
--    printk(KERN_WARNING info , param1, param2 , param3 , param4); \
--  } \
--}while(0)
-+int rar_lock(int rar_index);
- 
-+#endif  /* _RAR_REGISTER_H */
--- 
-1.6.0.6
+	-hpa
 
