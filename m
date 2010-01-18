@@ -1,104 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691Ab0ARBzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665Ab0ARB6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752691Ab0ARBzc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 20:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136Ab0ARBzb
+	id S1752665Ab0ARB6v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 20:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281Ab0ARB6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 20:55:31 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:33560 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463Ab0ARBza convert rfc822-to-8bit (ORCPT
+	Sun, 17 Jan 2010 20:58:50 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:45511 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751114Ab0ARB6u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 20:55:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=S/DZ1g4/HOZYS0W5vV3HkeP2ouKuH2xc0ZorhIn0tqW9aDL/qckUtahtHfF52qzDj0
-         jPnGrBadjJywBcQUuzilPQhUNK/KjMVXQAhTfStzBmh3Q/YSrLKaB1EA7lH+dNte+VCo
-         6gOou01IOuTGz3qUWo1SBn2TL/lTq0ZnqiRMU=
+	Sun, 17 Jan 2010 20:58:50 -0500
+Date: Mon, 18 Jan 2010 01:58:44 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: dvomlehn@cisco.com, gregkh@suse.de, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial
+	writes" causes gobi_loader to hang
+Message-ID: <20100118015844.GA4300@srcf.ucam.org>
+References: <20100117025535.GB7045@srcf.ucam.org> <201001171014.44403.oliver@neukum.org>
 MIME-Version: 1.0
-In-Reply-To: <20100118100359.AE22.A69D9226@jp.fujitsu.com>
-References: <20100114141735.672B.A69D9226@jp.fujitsu.com>
-	 <28c262361001150923l138f6805t22546887bf81b283@mail.gmail.com>
-	 <20100118100359.AE22.A69D9226@jp.fujitsu.com>
-Date: Mon, 18 Jan 2010 10:47:20 +0900
-Message-ID: <28c262361001171747w450c8fd8j4daf84b72fb68e1a@mail.gmail.com>
-Subject: Re: [PATCH 2/3][v2] vmstat: add anon_scan_ratio field to zoneinfo
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001171014.44403.oliver@neukum.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, KOSAKI.
+On Sun, Jan 17, 2010 at 10:14:44AM +0100, Oliver Neukum wrote:
 
-On Mon, Jan 18, 2010 at 10:04 AM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->> Hi, KOSAKI.
->>
->> On Thu, Jan 14, 2010 at 2:18 PM, KOSAKI Motohiro
->> <kosaki.motohiro@jp.fujitsu.com> wrote:
->> >> > Well. zone->lock and zone->lru_lock should be not taked at the same time.
->> >>
->> >> I looked over the code since I am out of office.
->> >> I can't find any locking problem zone->lock and zone->lru_lock.
->> >> Do you know any locking order problem?
->> >> Could you explain it with call graph if you don't mind?
->> >>
->> >> I am out of office by tomorrow so I can't reply quickly.
->> >> Sorry for late reponse.
->> >
->> > This is not lock order issue. both zone->lock and zone->lru_lock are
->> > hotpath lock. then, same tame grabbing might cause performance impact.
->>
->> Sorry for late response.
->>
->> Your patch makes get_anon_scan_ratio of zoneinfo stale.
->> What you said about performance impact is effective when VM pressure high.
->> I think stale data is all right normally.
->> But when VM pressure is high and we want to see the information in zoneinfo(
->> this case is what you said), stale data is not a good, I think.
->>
->> If it's not a strong argue, I want to use old get_scan_ratio
->> in get_anon_scan_ratio.
->
-> please looks such function again.
->
-> usally we use recent_rotated/recent_scanned ratio. then following
-> decreasing doesn't change any scan-ratio meaning. it only prevent
-> stat overflow.
+> please load usbserial with debug=1 and post the output of just before the hang.
 
-It has a primary role that floating average as well as prevenitng overflow. :)
-So, It's important.
-
->
->        if (unlikely(reclaim_stat->recent_scanned[0] > anon / 4)) {
->                spin_lock_irq(&zone->lru_lock);
->                reclaim_stat->recent_scanned[0] /= 2;
->                reclaim_stat->recent_rotated[0] /= 2;
->                spin_unlock_irq(&zone->lru_lock);
->        }
->
->
-> So, I don't think current implementation can show stale data.
-
-It can make stale data when high memory pressure happens.
-
->
-> Thanks.
->
-
-Moreever, I don't want to make complicate thing(ie, need_update)
-than old if it doesn't have some benefit.(I think lru_lock isn't big overhead)
+drivers/usb/serial/generic.c: usb_serial_generic_write_bulk_callback - 
+port 0
+qcserial ttyUSB0: usb_serial_generic_write_start - length = 512, data = 
+01 00 a0 e1 60 07 00 ea 00 00 9f e5 37 07 00 ea 54 60 01 b0 04 e0 2d e5 
+20 30 9f e5 04 d0 4d e2 00 10 a0 e1 0d 20 a0 e1 00 00 93 e5 01 1b 00 eb 
+00 00 50 e3 00 00 e0 13 04 d0 8d e2 00 80 bd e8 3c 70 01 b0 01 00 12 e3 
+70 40 2d e9 02 40 a0 e1 00 50 a0 e1 01 60 a0 e1 25 00 00 0a 20 40 85 e5 
+fc 00 9f e5 06 10 a0 e1 1b f7 ff eb 01 00 70 e3 08 00 85 e5 70 80 bd 08 
+06 30 80 e0 01 20 43 e2 10 40 14 e2 0c 20 85 e5 13 00 00 1a 00 10 a0 e1 
+d0 00 9f e5 7a f7 ff eb 00 00 50 e3 2a 00 00 0a ff 34 a0 e3 f0 2f 93 e5 
+05 10 a0 e1 00 00 92 e5 07 20 a0 e3 81 fe ff eb 00 00 50 e3 1c 00 00 1a 
+0c 30 85 e2 0c 00 13 e8 02 20 43 e0 04 10 a0 e1 01 20 82 e2 08 00 95 e5 
+78 12 00 eb 05 00 a0 e1 cb ff ff eb 00 40 50 e2 07 00 00 1a 04 00 a0 e1 
+70 80 bd e8 70 00 9f e5 70 10 9f e5 70 20 9f e5 9d 30 a0 e3 da 11 00 eb 
+d3 ff ff ea 08 10 85 e2 06 00 91 e8 48 00 9f e5 53 f6 ff eb 0c 20 95 e5 
+40 00 9f e5 08 10 95 e5 31 f7 ff eb 04 00 a0 e1 70 80 bd e8 3c 00 9f e5 
+30 10 9f e5 30 20 9f e5 af 30 a0 e3 ca 11 00 eb dc ff ff ea 10 00 9f e5 
+08 10 85 e2 06 00 91 e8 43 f6 ff eb 00 00 e0 e3 70 80 bd e8 00 b0 01 b0 
+00 80 01 b0 10 ca 00 b0 24 ca 00 b0 94 c9 00 b0 54 c6 00 b0 02 00 13 e3 
+f0 41 2d e9 03 70 a0 e1 00 60 a0 e1 01 40 a0 e1 02 50 a0 e1 15 00 00 0a 
+04 30 85 e0 01 40 43 e2 20 70 86 e5 08 50 86 e5 0c 40 86 e5 06 00 a0 e1 
+97 ff ff eb 00 80 50 e2 08 00 a0 11 f0 81 bd 18 04 20 a0 e1 c4 00 9f e5 
+05 10 a0 e1 54 f7 ff eb 04 20 a0 e1 05 10 a0 e1 b4 00 9f e5 50 f7 ff eb 
+10 40 17 e2 07 00 00 0a 08 00 a0 e1 f0 81 bd e8 a0 00 9f e5 a0 10 9f e5 
+a0 20 9f e5 c3 30 a0 e3 
+drivers/usb/serial/generic.c: usb_serial_generic_write - port 0
+drivers/usb/serial/usb-serial.c: serial_write - port 0, 1536 byte(s)
+drivers/usb/serial/generic.c: usb_serial_generic_write - port 0
+drivers/usb/serial/usb-serial.c: usb_serial_port_work - port 0
+drivers/usb/serial/usb-serial.c: serial_write - port 0, 1536 byte(s)
+drivers/usb/serial/generic.c: usb_serial_generic_write - port 0
 
 -- 
-Kind regards,
-Minchan Kim
+Matthew Garrett | mjg59@srcf.ucam.org
