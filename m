@@ -1,68 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437Ab0ARDek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218Ab0ARD6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437Ab0ARDek (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 22:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586Ab0ARDej
+	id S1755218Ab0ARD6b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 22:58:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212Ab0ARD6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 22:34:39 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:60642 "EHLO smtps.tip.net.au"
+	Sun, 17 Jan 2010 22:58:30 -0500
+Received: from cantor.suse.de ([195.135.220.2]:42129 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751114Ab0ARDei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 22:34:38 -0500
-Date: Mon, 18 Jan 2010 14:34:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Russell King <rmk@arm.linux.org.uk>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: linux-next: manual merge of the arm tree with the arm-current
- tree
-Message-Id: <20100118143429.7ef34dde.sfr@canb.auug.org.au>
-In-Reply-To: <20100118013307.GD10014@trinity.fluff.org>
-References: <20100118103534.a5dc3c66.sfr@canb.auug.org.au>
-	<20100118013307.GD10014@trinity.fluff.org>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__18_Jan_2010_14_34_29_+1100_UDMfx2BV6EmZgjJU"
+	id S1752373Ab0ARD63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 22:58:29 -0500
+Date: Mon, 18 Jan 2010 14:51:46 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] vfs: Fix vmtruncate() regression
+Message-ID: <20100118035146.GA7447@laptop>
+References: <876378jxhx.fsf@devron.myhome.or.jp>
+ <20100113060734.GC3901@nick>
+ <87r5pucin4.fsf@devron.myhome.or.jp>
+ <877hrmcicu.fsf@devron.myhome.or.jp>
+ <20100114143044.cc65be51.akpm@linux-foundation.org>
+ <87ska86wo5.fsf@devron.myhome.or.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87ska86wo5.fsf@devron.myhome.or.jp>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__18_Jan_2010_14_34_29_+1100_UDMfx2BV6EmZgjJU
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jan 15, 2010 at 09:26:02AM +0900, OGAWA Hirofumi wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> > On Wed, 13 Jan 2010 21:14:09 +0900
+> > OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+> >
+> >> 
+> >> If __block_prepare_write() was failed in block_write_begin(), the
+> >> allocated blocks can be outside of ->i_size.
+> >> 
+> >> But new truncate_pagecache() in vmtuncate() does nothing if new < old.
+> >> It means the above usage is not working anymore.
+> >> 
+> >> So, this patch fixes it by removing "new < old" check. It would need
+> >> more cleanup/change. But, now -rc and truncate working is in progress,
+> >> so, this tried to fix it minimum change.
+> >> 
+> >> Acked-by: Nick Piggin <npiggin@suse.de>
+> >> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> >> ---
+> >> 
+> >>  mm/truncate.c |   28 +++++++++++++---------------
+> >>  1 file changed, 13 insertions(+), 15 deletions(-)
+> >> 
+> >> diff -puN mm/truncate.c~truncate_pagecache-fix mm/truncate.c
+> >> --- linux-2.6/mm/truncate.c~truncate_pagecache-fix	2010-01-12 05:43:06.000000000 +0900
+> >> +++ linux-2.6-hirofumi/mm/truncate.c	2010-01-12 05:43:06.000000000 +0900
+> >> @@ -522,22 +522,20 @@ EXPORT_SYMBOL_GPL(invalidate_inode_pages
+> >>   */
+> >>  void truncate_pagecache(struct inode *inode, loff_t old, loff_t new)
+> >>  {
+> >> -	if (new < old) {
+> >> -		struct address_space *mapping = inode->i_mapping;
+> >> +	struct address_space *mapping = inode->i_mapping;
+> >>  
+> >> -		/*
+> >> -		 * unmap_mapping_range is called twice, first simply for
+> >> -		 * efficiency so that truncate_inode_pages does fewer
+> >> -		 * single-page unmaps.  However after this first call, and
+> >> -		 * before truncate_inode_pages finishes, it is possible for
+> >> -		 * private pages to be COWed, which remain after
+> >> -		 * truncate_inode_pages finishes, hence the second
+> >> -		 * unmap_mapping_range call must be made for correctness.
+> >> -		 */
+> >> -		unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+> >> -		truncate_inode_pages(mapping, new);
+> >> -		unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+> >> -	}
+> >> +	/*
+> >> +	 * unmap_mapping_range is called twice, first simply for
+> >> +	 * efficiency so that truncate_inode_pages does fewer
+> >> +	 * single-page unmaps.  However after this first call, and
+> >> +	 * before truncate_inode_pages finishes, it is possible for
+> >> +	 * private pages to be COWed, which remain after
+> >> +	 * truncate_inode_pages finishes, hence the second
+> >> +	 * unmap_mapping_range call must be made for correctness.
+> >> +	 */
+> >> +	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+> >> +	truncate_inode_pages(mapping, new);
+> >> +	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+> >>  }
+> >>  EXPORT_SYMBOL(truncate_pagecache);
+> >
+> > The fix was applied to 2.6.33-rcX
+> > (cedabed49b39b4319bccc059a63344b6232b619c), appears to be needed in
+> > 2.6.32.x but no cc:stable's are present?
+> 
+> Ah, yes. I forgot to add "Cc: stable". Please apply this to 2.6.32.x.
 
-Hi Ben,
+Thanks guys, it's quite important so please apply to stable 2.6.32 and
+consider it as a high priority to release.
 
-On Mon, 18 Jan 2010 01:33:07 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
->
-> Is that from the merge of next-samsung or from two parts of the ARM
-> trees?
-
-I merged the arm-current tree
-(ssh://master.kernel.org/home/rmk/linux-2.6-arm.git#master) into
-linux-next and then later the arm tree
-(ssh://master.kernel.org/home/rmk/linux-2.6-arm.git#devel) and the second
-merge produced this conflict.  However, Russell has merged the samsung
-tree (git://git.fluff.org/bjdooks/linux.git#next-samsung) into the arm
-tree, already.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__18_Jan_2010_14_34_29_+1100_UDMfx2BV6EmZgjJU
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktT1sUACgkQjjKRsyhoI8xjswCeO9r2XL/ROv3zpdvm2FhwfKzL
-f3MAnR4xL7azl0QuKVaZ5ZdrjqSGvFZ9
-=XfxJ
------END PGP SIGNATURE-----
-
---Signature=_Mon__18_Jan_2010_14_34_29_+1100_UDMfx2BV6EmZgjJU--
