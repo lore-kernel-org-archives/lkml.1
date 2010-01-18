@@ -1,102 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281Ab0ARR2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567Ab0ARR30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281Ab0ARR2c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 12:28:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755326Ab0ARR21
+	id S1755567Ab0ARR30 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 12:29:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997Ab0ARRTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 12:28:27 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:57577 "EHLO
+	Mon, 18 Jan 2010 12:19:17 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:39792 "EHLO
 	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755079Ab0ARRUZ (ORCPT
+	with ESMTP id S1755018Ab0ARRTD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 12:20:25 -0500
+	Mon, 18 Jan 2010 12:19:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=eZDYJiiKnjfBZ6xljdpZKCXLSeKm/5Ds9hwhfysFSLhiaAmQ8+pVQaEOs8DPAz5gPD
-         4IrYCzYa8Yp6MYd29FYNS3Od9gJjsz6+RA6Cml2IzqJ70/q+Xtgx4U90Hwib6NwbLTW0
-         9RzC4GEvwd7kOzWthVOQRlxU7o77OjvidsQZM=
+        b=Hy5mkNFcmlyh9LZOGgQqKF03M5RfTVRdB0fQJLeVgv8OMNw5rY6P16YSfoK3snklYR
+         ugbXww6kdxyBfthGQpdD8k6ypNCSP/+dA37j+9KYrbVphqRm/CVvrxamn3NRBE/6E2yy
+         rceFF/H+qKRObHAE1DNhgqFza32QhGyIJK0pA=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 18 Jan 2010 18:19:14 +0100
-Message-Id: <20100118171914.14623.74426.sendpatchset@localhost>
+Date: Mon, 18 Jan 2010 18:17:50 +0100
+Message-Id: <20100118171750.14623.44548.sendpatchset@localhost>
 In-Reply-To: <20100118171349.14623.90030.sendpatchset@localhost>
 References: <20100118171349.14623.90030.sendpatchset@localhost>
-Subject: [PATCH 36/64] pdc202xx_old: add ->init_hwif method
+Subject: [PATCH 27/64] alim15x3: add ali_fifo_control() helper
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pdc202xx_old: add ->init_hwif method
+Subject: [PATCH] alim15x3: add ali_fifo_control() helper
+
+Based on libata pata_ali host driver.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/pdc202xx_old.c |   18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ drivers/ide/alim15x3.c |   31 +++++++++++++++----------------
+ 1 file changed, 15 insertions(+), 16 deletions(-)
 
-Index: b/drivers/ide/pdc202xx_old.c
+Index: b/drivers/ide/alim15x3.c
 ===================================================================
---- a/drivers/ide/pdc202xx_old.c
-+++ b/drivers/ide/pdc202xx_old.c
-@@ -1,7 +1,7 @@
- /*
-  *  Copyright (C) 1998-2002		Andre Hedrick <andre@linux-ide.org>
-  *  Copyright (C) 2006-2007, 2009	MontaVista Software, Inc.
-- *  Copyright (C) 2007			Bartlomiej Zolnierkiewicz
-+ *  Copyright (C) 2007-2010		Bartlomiej Zolnierkiewicz
-  *
-  *  Portions Copyright (C) 1999 Promise Technology, Inc.
-  *  Author: Frank Tiernan (frankt@promise.com)
-@@ -21,8 +21,6 @@
+--- a/drivers/ide/alim15x3.c
++++ b/drivers/ide/alim15x3.c
+@@ -48,6 +48,19 @@ static u8 m5229_revision;
+ static u8 chip_is_1543c_e;
+ static struct pci_dev *isa_dev;
  
- #define DRV_NAME "pdc202xx_old"
- 
--static void pdc_old_disable_66MHz_clock(ide_hwif_t *);
--
- static void pdc202xx_set_mode(ide_drive_t *drive, const u8 speed)
- {
- 	ide_hwif_t *hwif	= drive->hwif;
-@@ -32,12 +30,6 @@ static void pdc202xx_set_mode(ide_drive_
- 	u8			AP = 0, BP = 0, CP = 0;
- 	u8			TA = 0, TB = 0, TC = 0;
- 
--	/*
--	 * TODO: do this once per channel
--	 */
--	if (dev->device != PCI_DEVICE_ID_PROMISE_20246)
--		pdc_old_disable_66MHz_clock(hwif);
--
- 	pci_read_config_byte(dev, drive_pci,     &AP);
- 	pci_read_config_byte(dev, drive_pci + 1, &BP);
- 	pci_read_config_byte(dev, drive_pci + 2, &CP);
-@@ -145,6 +137,11 @@ static void pdc_old_disable_66MHz_clock(
- 	outb(clock & ~(hwif->channel ? 0x08 : 0x02), clock_reg);
- }
- 
-+static void pdc2026x_init_hwif(ide_hwif_t *hwif)
++static void ali_fifo_control(ide_hwif_t *hwif, ide_drive_t *drive, int on)
 +{
-+	pdc_old_disable_66MHz_clock(hwif);
++	struct pci_dev *pdev = to_pci_dev(hwif->dev);
++	int pio_fifo = 0x54 + hwif->channel;
++	u8 fifo;
++	int shift = 4 * (drive->dn & 1);
++
++	pci_read_config_byte(pdev, pio_fifo, &fifo);
++	fifo &= ~(0x0F << shift);
++	fifo |= (on << shift);
++	pci_write_config_byte(pdev, pio_fifo, fifo);
 +}
 +
- static void pdc202xx_dma_start(ide_drive_t *drive)
- {
- 	if (drive->current_speed > XFER_UDMA_2)
-@@ -261,6 +258,7 @@ static const struct ide_dma_ops pdc2026x
- 	{ \
- 		.name		= DRV_NAME, \
- 		.init_chipset	= init_chipset_pdc202xx, \
-+		.init_hwif	= pdc2026x_init_hwif, \
- 		.port_ops	= &pdc2026x_port_ops, \
- 		.dma_ops	= &pdc2026x_dma_ops, \
- 		.host_flags	= IDE_HFLAGS_PDC202XX, \
-@@ -356,6 +354,6 @@ static void __exit pdc202xx_ide_exit(voi
- module_init(pdc202xx_ide_init);
- module_exit(pdc202xx_ide_exit);
+ /**
+  *	ali_set_pio_mode	-	set host controller for PIO mode
+  *	@drive: drive
+@@ -64,8 +77,7 @@ static void ali_set_pio_mode(ide_drive_t
+ 	int bus_speed = ide_pci_clk ? ide_pci_clk : 33;
+ 	unsigned long T =  1000000 / bus_speed; /* PCI clock based */
+ 	int port = hwif->channel ? 0x5c : 0x58;
+-	int portFIFO = hwif->channel ? 0x55 : 0x54;
+-	u8 cd_dma_fifo = 0, unit = drive->dn & 1;
++	u8 unit = drive->dn & 1;
+ 	struct ide_timing t;
  
--MODULE_AUTHOR("Andre Hedrick, Frank Tiernan");
-+MODULE_AUTHOR("Andre Hedrick, Frank Tiernan, Bartlomiej Zolnierkiewicz");
- MODULE_DESCRIPTION("PCI driver module for older Promise IDE");
- MODULE_LICENSE("GPL");
+ 	ide_timing_compute(drive, XFER_PIO_0 + pio, &t, T, 1);
+@@ -79,20 +91,7 @@ static void ali_set_pio_mode(ide_drive_t
+ 	/* 
+ 	 * PIO mode => ATA FIFO on, ATAPI FIFO off
+ 	 */
+-	pci_read_config_byte(dev, portFIFO, &cd_dma_fifo);
+-	if (drive->media==ide_disk) {
+-		if (unit) {
+-			pci_write_config_byte(dev, portFIFO, (cd_dma_fifo & 0x0F) | 0x50);
+-		} else {
+-			pci_write_config_byte(dev, portFIFO, (cd_dma_fifo & 0xF0) | 0x05);
+-		}
+-	} else {
+-		if (unit) {
+-			pci_write_config_byte(dev, portFIFO, cd_dma_fifo & 0x0F);
+-		} else {
+-			pci_write_config_byte(dev, portFIFO, cd_dma_fifo & 0xF0);
+-		}
+-	}
++	ali_fifo_control(hwif, drive, (drive->media == ide_disk) ? 0x05 : 0x00);
+ 
+ 	pci_write_config_byte(dev, port, t.setup);
+ 	pci_write_config_byte(dev, port + unit + 2,
