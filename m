@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688Ab0ARRR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239Ab0ARRgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688Ab0ARRR0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 12:17:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193Ab0ARRRR
+	id S1754239Ab0ARRgh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 12:36:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723Ab0ARRgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 12:17:17 -0500
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:53275 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754487Ab0ARRRN (ORCPT
+	Mon, 18 Jan 2010 12:36:36 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:38848 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753951Ab0ARRgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 12:17:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=T25GuSg/7+GYCfOuTT/5RW7jJLPEFXnaR4V1YKISfOF7iNdVQ9ce/wyuOV6zvpCAJq
-         TzeNQYclP+1jXWAlQ6l5fE+RxqNK18Ob331wKIUVuzjFdPTIF6gu0YkMGz5wHtFlpUe5
-         Y8yrRU/gjJTLjt4tBma+wnmMLlFT246kt7ehQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Mon, 18 Jan 2010 18:15:55 +0100
-Message-Id: <20100118171555.14623.3131.sendpatchset@localhost>
-In-Reply-To: <20100118171349.14623.90030.sendpatchset@localhost>
-References: <20100118171349.14623.90030.sendpatchset@localhost>
-Subject: [PATCH 15/64] pata_efar: always program master_data before slave_data
+	Mon, 18 Jan 2010 12:36:35 -0500
+MIME-Version: 1.0
+In-Reply-To: <4B4DE58D.10008@petalogix.com>
+References: <4B4DE58D.10008@petalogix.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 18 Jan 2010 10:36:07 -0700
+X-Google-Sender-Auth: e277fcb81c44f7a6
+Message-ID: <fa686aa41001180936p1fd34dd4pdf675583ce5ccd86@mail.gmail.com>
+Subject: Re: xilinx-pci driver and pci in general
+To: michal.simek@petalogix.com
+Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, thunderbird2k@gmx.net,
+       John Williams <john.williams@petalogix.com>,
+       Arnd Bergmann <arnd@arndb.de>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_efar: always program master_data before slave_data
+On Wed, Jan 13, 2010 at 8:23 AM, Michal Simek
+<michal.simek@petalogix.com> wrote:
+> Hi guys,
+>
+> We (John and partially I) did initial support for pci on Microblaze.
+> It is based on powerpc files and almost everything is the same.
+> There are some small differences which could be easily removed that's why I
+> think that will be good to move that file to any generic location.
+> That's why I would like to know your opinion about this step.
+> If you don't like or prefer we will add that modified versions to
+> arch/microblaze and in future we can merge them and move to any other
+> location.
+>
+> Affected files: xilinx-pci.c, pci_32.c pci-common.c, indirect_pci.c and some
+> headers.
 
-We may need to set SITRE before programming slave_data.
+My preference is to move the common bits to a common location first,
+and then modify to make it suitable for Microblaze also.  I've just
+finished doing a bunch of fdt merge work where PowerPC and Microblaze
+diverged in subtle ways.  It isn't a whole lot of fun.
 
-This makes pata_efar match the behavior of IDE slc90e66 host driver
-and also libata ata_piix one.
+g.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ata/pata_efar.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-Index: b/drivers/ata/pata_efar.c
-===================================================================
---- a/drivers/ata/pata_efar.c
-+++ b/drivers/ata/pata_efar.c
-@@ -72,8 +72,10 @@ static void efar_set_timings(struct ata_
- 			     u8 pio, bool use_mwdma)
- {
- 	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
-+	unsigned int is_slave	= (adev->devno != 0);
- 	u8 master_port		= ap->port_no ? 0x42 : 0x40;
- 	u16 master_data;
-+	u8 slave_data;
- 	int control = 0;
- 
- 	/*
-@@ -104,14 +106,13 @@ static void efar_set_timings(struct ata_
- 	pci_read_config_word(dev, master_port, &master_data);
- 
- 	/* Set PPE, IE, and TIME as appropriate */
--	if (adev->devno == 0) {
-+	if (is_slave == 0) {
- 		master_data &= 0xCCF0;
- 		master_data |= control;
- 		master_data |= (timings[pio][0] << 12) |
- 			(timings[pio][1] << 8);
- 	} else {
- 		int shift = 4 * ap->port_no;
--		u8 slave_data;
- 
- 		master_data &= 0xFF0F;
- 		master_data |= (control << 4);
-@@ -120,11 +121,12 @@ static void efar_set_timings(struct ata_
- 		pci_read_config_byte(dev, 0x44, &slave_data);
- 		slave_data &= ap->port_no ? 0x0F : 0xF0;
- 		slave_data |= ((timings[pio][0] << 2) | timings[pio][1]) << shift;
--		pci_write_config_byte(dev, 0x44, slave_data);
- 	}
- 
- 	master_data |= 0x4000;	/* Ensure SITRE is set */
- 	pci_write_config_word(dev, master_port, master_data);
-+	if (is_slave)
-+		pci_write_config_byte(dev, 0x44, slave_data);
- }
- 
- /**
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
