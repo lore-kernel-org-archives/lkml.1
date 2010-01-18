@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456Ab0ARHuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531Ab0ARHur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754456Ab0ARHuH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 02:50:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596Ab0ARHuF
+	id S1754531Ab0ARHur (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 02:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441Ab0ARHuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 02:50:05 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:46486 "EHLO smtps.tip.net.au"
+	Mon, 18 Jan 2010 02:50:46 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46185 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753348Ab0ARHuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 02:50:04 -0500
-Date: Mon, 18 Jan 2010 18:49:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: linux-next: manual merge of the driver-core tree with Linus' tree
-Message-Id: <20100118184956.ea783994.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__18_Jan_2010_18_49_56_+1100_GQxd/yuib4/=Hioa"
+	id S1754416Ab0ARHup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 02:50:45 -0500
+Date: Mon, 18 Jan 2010 08:50:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jan Kiszka <jan.kiszka@siemens.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: linux-next: manual merge of the tip tree with Linus' tree
+Message-ID: <20100118075025.GA22476@elte.hu>
+References: <20100118180841.96628ee6.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100118180841.96628ee6.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__18_Jan_2010_18_49_56_+1100_GQxd/yuib4/=Hioa
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Greg,
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Today's linux-next merge of the driver-core tree got a conflict in
-drivers/base/memory.c between commit
-8ff410daa009c4b44be445ded5b0cec00abc0426 ("sysdev: fix prototype for
-memory_sysdev_class show/store functions") from Linus' tree and commits
-95f4918fb2826dd7fc7be8a375ee0b71e8276a62 ("sysdev: Fix type of sysdev
-class attribute in memory driver") and
-18a994bc1df640e77b853af5b6a175d6871b449f ("driver-core: Add attribute
-argument to class_attribute show/store") from the driver-core tree.
+> Hi all,
+> 
+> Today's linux-next merge of the tip tree got a conflict in
+> scripts/recordmcount.pl between commit
+> b82a4045f7962483a78a874343dc6e31b79c96c1 ("tracing/x86: Derive arch from
+> bits argument in recordmcount.pl") from Linus' tree and commit
+> dfaa9e2c5707b2c217c0121aac796e0fa3051482 ("tracing: Use appropriate perl
+> constructs in recordmcount.pl") from the tip tree.
+> 
+> I fixed it up (see below) and can carry the fix for a while.
 
-Not a big suprise.  I fixed it up by using the driver-core tree version
-(effectively reverting the version in Linus' tree).
+FYI, i resolved the conflict already in tip:master yesterday, a bit 
+differently.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Thanks,
 
---Signature=_Mon__18_Jan_2010_18_49_56_+1100_GQxd/yuib4/=Hioa
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktUEqQACgkQjjKRsyhoI8yITwCgoiZPsem7ruxt7ZkixZRjziAG
-idAAnjWMKk2w56KgUmPpoIbI7cxetNl/
-=LGnl
------END PGP SIGNATURE-----
-
---Signature=_Mon__18_Jan_2010_18_49_56_+1100_GQxd/yuib4/=Hioa--
+	Ingo
