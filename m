@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755641Ab0ARV1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053Ab0ARV2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755641Ab0ARV1e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 16:27:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413Ab0ARV1c
+	id S1756053Ab0ARV2U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 16:28:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197Ab0ARV2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 16:27:32 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50325 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751463Ab0ARV1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 16:27:30 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: RFC: deprecate CONFIG_X86_CPU_DEBUG and schedule it for rapid removal
-Date: Mon, 18 Jan 2010 22:28:14 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
-       Yinghai Lu <yinghai@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       mingo@elte.hu, a.p.zijlstra@chello.nl, stable@kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <4B4E1633.8010700@pardus.org.tr> <201001171444.14551.rjw@sisk.pl> <4B53B8DD.9000809@zytor.com>
-In-Reply-To: <4B53B8DD.9000809@zytor.com>
+	Mon, 18 Jan 2010 16:28:18 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:56685 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413Ab0ARV2S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 16:28:18 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: mcs7830 usb net: "scheduling while atomic" danger?
+Date: Mon, 18 Jan 2010 22:23:49 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Alek Du <alek.du@intel.com>,
+       Jacob Pan <jacob.jun.pan@intel.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <20100118184942.GA10171@rhlx01.hs-esslingen.de> <Pine.LNX.4.64.1001182206190.30446@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.1001182206190.30446@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-2"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001182228.14460.rjw@sisk.pl>
+Message-Id: <201001182223.49764.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/WGm5Oc6NssWUh9Dy40nYjcQUMWAOqR+QmpxL
+ eLWjubk18IBmpEZi16ls9YqMId8wdSe/gGoy+9JjTs3e6QrBxc
+ Ww7bgssaKX+s1gawC88Ig==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 January 2010, H. Peter Anvin wrote:
-> CONFIG_X86_CPU_DEBUG really seems to be causing more problems than it
-> ever solved.  This is an RFC for immediately deprecating it, and
-> schedule it for removal in the 2.6.34 cycle.
+On Monday 18 January 2010, Julia Lawall wrote:
+> On Mon, 18 Jan 2010, Andreas Mohr wrote:
+> > 
+> > Forgive me, but doesn't that mutex_lock()/msleep() (ab)use mean
+> > risking a "scheduling while atomic"?
+> > (such as discussed in e.g.
+> > http://search.luky.org/linux-kernel.2004/msg92817.html )
+> > 
+> > 
+> > And, if that is the case, shouldn't all such cases simply be killed for
+> > good via a capable semantic patch?
 > 
-> If this was a high value feature, it would be different -- but it's not
-> even close.
+> The semantic match shown below finds 55 matches.  All but two involve 
+> mutex_lock.  Those are in the file 
+> /var/linuxes/linux-next/drivers/usb/host/ehci-hub.c
+> in the functions ehci_bus_suspend and ehci_hub_control.
 
-ACK
+That code looks indeed broken as was added las July as part of 331ac6b288d9
+"USB: EHCI: Add Intel Moorestown EHCI controller HOSTPCx extensions and
+support phy low power mode". The reason that this hasn't triggered is
+probably the lack of Moorestown machines in the field.
+
+	Arnd
