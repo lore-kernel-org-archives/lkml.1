@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289Ab0ARIdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619Ab0ARIfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754289Ab0ARIdP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 03:33:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919Ab0ARIdO
+	id S1754619Ab0ARIfN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 03:35:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441Ab0ARIfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 03:33:14 -0500
-Received: from mga12.intel.com ([143.182.124.36]:29237 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752891Ab0ARIdO (ORCPT
+	Mon, 18 Jan 2010 03:35:11 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56323 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754382Ab0ARIfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 03:33:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="233837389"
-Date: Mon, 18 Jan 2010 16:27:32 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Robert Hancock <hancockrwd@gmail.com>,
-       Yuhong Bao <yuhongbao_386@hotmail.com>, linux-kernel@vger.kernel.org,
-       huaxu.wan@intel.com, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [PATCH] hwmon: (coretemp) Fix TjMax for Atom
-	N450/D410/D510 CPUs
-Message-ID: <20100118082732.GA19297@ywang-moblin2.bj.intel.com>
-References: <20091224073102.GA23058@ywang-moblin2.bj.intel.com> <20100106160817.72313551@hyperion.delvare> <20100110200621.564a6682@hyperion.delvare> <20100111062024.GA20804@ywang-moblin2.bj.intel.com> <SNT125-W147C55AB6EB65D41CAAFFFC3680@phx.gbl> <20100117161518.4912be7c@hyperion.delvare> <4B536502.20102@gmail.com> <20100117210536.0ae0f187@hyperion.delvare> <20100118065821.GA19008@ywang-moblin2.bj.intel.com> <20100118091451.7f103914@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100118091451.7f103914@hyperion.delvare>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 18 Jan 2010 03:35:10 -0500
+Subject: Re: [PATCH] sched: cpuacct: Use bigger percpu counter batch values
+ for stats counters
+From: Peter Zijlstra <peterz@infradead.org>
+To: Anton Blanchard <anton@samba.org>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       schwidefsky@de.ibm.com, balajirrao@gmail.com, dhaval@linux.vnet.ibm.com,
+       tglx@linutronix.de, kamezawa.hiroyu@jp.fujitsu.com,
+       akpm@linux-foundation.org, Tony Luck <tony.luck@intel.com>,
+       Fenghua Yu <fenghua.yu@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com
+In-Reply-To: <20100118082151.GU12666@kryten>
+References: <20090512102412.GG6351@balbir.in.ibm.com>
+	 <20090512102939.GB11714@elte.hu>
+	 <20090512193656.D647.A69D9226@jp.fujitsu.com>
+	 <20090716081010.GB3134@in.ibm.com> <20090716083948.GA2950@kryten>
+	 <20090820051038.GF21100@kryten> <20100118044142.GS12666@kryten>
+	 <1263801079.4283.22.camel@laptop>  <20100118082151.GU12666@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jan 2010 09:34:41 +0100
+Message-ID: <1263803681.4283.63.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 09:14:51AM +0100, Jean Delvare wrote:
-> On Mon, 18 Jan 2010 14:58:21 +0800, Yong Wang wrote:
-> > On Sun, Jan 17, 2010 at 09:05:36PM +0100, Jean Delvare wrote:
-> > > That's where I am confused. The patch checks for the presence of the
-> > > Intel NM10, which, reading its description looks much like a south
-> > > bridge and not a memory controller (north bridge). So I think the patch
-> > > is wrong (or at least incomplete).
-> > 
-> > Sorry, I made a mistake in the patch description. The new Atom CPU is
-> > coupled with integrated gfx and memory controller in one package. NM10
-> > chipset is another chip. This patch does check the presence of the
-> > integrated memory controller, i.e. 00:00.0 Host bridge device, which
-> > will always be present no matter whether NM10 chipset is used or not.
+On Mon, 2010-01-18 at 19:21 +1100, Anton Blanchard wrote:
+> Hi Peter,
 > 
-> OK. Then indeed the patch description was rather bad. Even the comments
-> in the code are misleading, they mention the NM10 when they don't
-> really have to.
+> > Seems like a good idea, but isn't that batch number rather static? If
+> > so, computing it in some init path would save that multiply on the
+> > actual accounting path.
 > 
-> But at least if the code itself is OK... that's not that bad.
-> 
-> > > Anyway, how difficult would it be to set TjMax based on the CPUID? I
-> > > presume that the Intel Atom 400 and 500 series have their own CPUID
-> > > value, haven't they? This would seem even easier that checking for a
-> > > PCI device.
-> > 
-> > CPUID value (family and model number) remains the same for all Atom CPUs
-> > thus far. That is why we check the new Atom CPU this way.
-> 
-> What about the stepping value? Don't these CPU models have their own?
-> 
+> It is mostly static, but percpu_counter_batch does change with hotplug
+> operations. Adding a hotplug notifier felt like a lot of work but I was
+> worried we have issues if we didn't scale with hotplug add operations.
 
-The stepping value is not architectually defined. Therefore, it is not
-the recommended way to detect CPU make and models.
+OK, trading a notifier for a mult might be worth it, we'll see if
+someone complains ;-)
 
-Thanks
--Yong
+Lets got with this for now.
 
