@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812Ab0ARVKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886Ab0ARVLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812Ab0ARVKs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 16:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434Ab0ARVKr
+	id S1754886Ab0ARVLx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 16:11:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784Ab0ARVLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 16:10:47 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:50499 "EHLO mgw2.diku.dk"
+	Mon, 18 Jan 2010 16:11:51 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:61858 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754199Ab0ARVKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 16:10:46 -0500
-Date: Mon, 18 Jan 2010 22:10:43 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Andreas Mohr <andi@lisas.de>
-Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: mcs7830 usb net: "scheduling while atomic" danger?
-In-Reply-To: <20100118184942.GA10171@rhlx01.hs-esslingen.de>
-Message-ID: <Pine.LNX.4.64.1001182206190.30446@ask.diku.dk>
-References: <20100118184942.GA10171@rhlx01.hs-esslingen.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754448Ab0ARVLu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 16:11:50 -0500
+Date: Mon, 18 Jan 2010 22:11:46 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Joe Perches <joe@perches.com>
+Cc: Peter =?UTF-8?B?SMO8d2U=?= <PeterHuewe@gmx.de>,
+       Petr Vandrovec <vandrove@vc.cvut.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>, linux-fbdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] video/matrox: Checkpatch cleanups for matroxfb_crtc2.c
+Message-ID: <20100118221146.5d81fc0e@hyperion.delvare>
+In-Reply-To: <1263844770.26846.134.camel@Joe-Laptop.home>
+References: <201001181934.49519.PeterHuewe@gmx.de>
+	<1263842269.26846.122.camel@Joe-Laptop.home>
+	<201001182027.29805.PeterHuewe@gmx.de>
+	<1263844770.26846.134.camel@Joe-Laptop.home>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jan 2010, Andreas Mohr wrote:
+On Mon, 18 Jan 2010 11:59:30 -0800, Joe Perches wrote:
+> On Mon, 2010-01-18 at 20:27 +0100, Peter Hüwe wrote:
+> > the reason behind this change was that spaces and tabs were mixed for 
+> > indention. 
+> 
+> Checkpatch isn't gospel and isn't always right.
+> 
+> There should be room for taste preference here
+> and I think whatever Petr V's is should prevail.
+> 
+> > How about this indention? Would this be better?
+> 
+> Well, I don't think so, but others will have different opinions.
 
-> Hi,
-> 
-> drivers/net/usb/mcs7830.c does several:
-> 
->         mutex_lock(&dev->phy_mutex);
->         /* write the MII command */
->         ret = mcs7830_set_reg(dev, HIF_REG_PHY_CMD1, 2, cmd);
->         if (ret < 0)
->                 goto out;
-> 
->         /* wait for the data to become valid, should be within < 1ms */
->         for (i = 0; i < 10; i++) {
->                 ret = mcs7830_get_reg(dev, HIF_REG_PHY_CMD1, 2, cmd);
->                 if ((ret < 0) || (cmd[1] &
-> HIF_REG_PHY_CMD2_READY_FLAG_BIT))
->                         break;
->                 ret = -EIO;
->                 msleep(1);
->         }
-> 
-> 
-> Forgive me, but doesn't that mutex_lock()/msleep() (ab)use mean
-> risking a "scheduling while atomic"?
-> (such as discussed in e.g.
-> http://search.luky.org/linux-kernel.2004/msg92817.html )
-> 
-> 
-> And, if that is the case, shouldn't all such cases simply be killed for
-> good via a capable semantic patch?
-
-The semantic match shown below finds 55 matches.  All but two involve 
-mutex_lock.  Those are in the file 
-/var/linuxes/linux-next/drivers/usb/host/ehci-hub.c
-in the functions ehci_bus_suspend and ehci_hub_control.
-
-julia
+I don't see it as an improvement either. Was checkpatch.pl really
+complaining about the alignment? Tabs followed by less than 8 spaces is
+acceptable and fairly common AFAICT, I can't remember the script
+yelling at me when I do it.
 
 
-@@
-@@
-
-(
-*mutex_lock(...)
-|
-*spin_lock(...)
-|
-*spin_lock_irq(...)
-|
-*spin_lock_irqsave(...)
-)
-... when != mutex_unlock(...)
-    when != spin_unlock(...)
-    when != spin_unlock_irq(...)
-    when != spin_unlock_irqrestore(...)
-*msleep(...)
+-- 
+Jean Delvare
