@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328Ab0ARQEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360Ab0ARQFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328Ab0ARQEf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 11:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301Ab0ARQEe
+	id S1754360Ab0ARQFo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 11:05:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303Ab0ARQFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 11:04:34 -0500
-Received: from mail-pz0-f190.google.com ([209.85.222.190]:61195 "EHLO
-	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754245Ab0ARQEa convert rfc822-to-8bit (ORCPT
+	Mon, 18 Jan 2010 11:05:42 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:54032 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754072Ab0ARQFk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 11:04:30 -0500
-X-Greylist: delayed 460 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jan 2010 11:04:30 EST
+	Mon, 18 Jan 2010 11:05:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=wDoymMxucIjUdEgaYq918krQAZ2jS3ahV5zB9XQbB/TPV+NF+lTlTP8ZuuCOkbZQ/t
+         LIj1JshoU2xZMErFgBdfk4sbZXDtxCgA5d1yjhXuCkCZZ3flFH5qCjoIHgtnhDVrUDaQ
+         ahUo1GhE6MiZkeLB0lTw/kwd1W6pcE6VPBiao=
 MIME-Version: 1.0
-In-Reply-To: <17852.1263819244@localhost>
-References: <alpine.LRH.2.00.1001110811350.25601@tundra.namei.org>
-	 <20100110215409.GA3705@heat> <20100110215848.GA26609@elf.ucw.cz>
-	 <5768.1263264853@localhost>
-	 <20100112075927.GA24256@atrey.karlin.mff.cuni.cz>
-	 <32558.1263306523@localhost>
-	 <20100114092250.GA11500@atrey.karlin.mff.cuni.cz>
-	 <17852.1263819244@localhost>
-Date: Mon, 18 Jan 2010 07:56:47 -0800
-X-Google-Sender-Auth: 38a602431b1c5ed4
-Message-ID: <551280e51001180756q2a438d3cv99bbb4e87eb073f4@mail.gmail.com>
-Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
-From: "Andrew G. Morgan" <morgan@kernel.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Pavel Machek <pavel@ucw.cz>, Michael Stone <michael@laptop.org>,
-       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "Am?rico Wang" <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>
+In-Reply-To: <20100118141938.GI30698@redhat.com>
+References: <20100118133755.GG30698@redhat.com>
+	 <84144f021001180609r4d7fbbd0p972d5bc0e227d09a@mail.gmail.com>
+	 <20100118141938.GI30698@redhat.com>
+Date: Mon, 18 Jan 2010 18:05:38 +0200
+X-Google-Sender-Auth: 2600eef9d0ebb65a
+Message-ID: <84144f021001180805q4d1203b8qab8ccb1de87b2866@mail.gmail.com>
+Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Gleb Natapov <gleb@redhat.com>
+Cc: linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+       akpm@linux-foundation.org, andrew.c.morrow@gmail.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 4:54 AM,  <Valdis.Kletnieks@vt.edu> wrote:
-> (Interestingly enough, the capabilities bug came *later*:
->
-> 8.12.1/8.12.1   2001/10/01
->        SECURITY: Check whether dropping group privileges actually succeeded
->                to avoid possible compromises of the mail system by
->                supplying bogus data.  Add configuration options for
->                different set*gid() calls to reset saved gid.  Problem
->                found by Michal Zalewski.
->
-> and was mostly an issue because the same problem existed in pre-8.12 sendmails
-> that were still setuid and hadn't upgraded yet...
->
->
+On Mon, Jan 18, 2010 at 4:19 PM, Gleb Natapov <gleb@redhat.com> wrote:
+> The specific use cases were discussed in the thread following previous
+> version of the patch. I can describe my specific use case in a change log
+> and I can copy what Andrew said about his case, but is it really needed in
+> a commit message itself? It boils down to greater control over when and
+> where application can get major fault. There are applications that need
+> this kind of control. As of use of mlockall(MCL_FUTURE) how can I make
+> sure that all memory allocated behind my application's back (by dynamic
+> linker, libraries, stack) will be locked otherwise?
 
-I think the above was 'a' sendmail bug. 'The' capabilities bug came before that:
+Again, why do you want to MCL_FUTURE but then go and use MAP_UNLOCKED?
+"Greater control" is not an argument for adding a new API that needs
+to be maintained forever, a real world use case is.
 
-http://userweb.kernel.org/~morgan/sendmail-capabilities-war-story.html
-
-Cheers
-
-Andrew
+And yes, this stuff needs to be in the changelog. Whether you want to
+spell it out or post an URL to some previous discussion is up to you.
