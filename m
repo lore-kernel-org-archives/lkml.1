@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954Ab0ARSy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971Ab0ARS67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755954Ab0ARSy2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 13:54:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755887Ab0ARSy2
+	id S1755971Ab0ARS67 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 13:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929Ab0ARS66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 13:54:28 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:49430 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754888Ab0ARSy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 13:54:27 -0500
-Message-ID: <4B54AD7C.9000505@zytor.com>
-Date: Mon, 18 Jan 2010 10:50:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Mon, 18 Jan 2010 13:58:58 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:59237 "HELO
+	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1754090Ab0ARS65 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 13:58:57 -0500
+Message-ID: <4B54AF06.3060800@ru.mvista.com>
+Date: Mon, 18 Jan 2010 21:57:10 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Masami Hiramatsu <mhiramat@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, rostedt@goodmis.org,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, andi@firstfloor.org,
-       roland@redhat.com, rth@redhat.com
-Subject: Re: [RFC PATCH 2/8] jump label v4 - x86: Introduce generic jump	patching
- without stop_machine
-References: <cover.1263247113.git.jbaron@redhat.com> <a4aa5bbcf5e62eaa5dd156d318a370236f28be09.1263247114.git.jbaron@redhat.com> <1263483139.28171.3857.camel@gandalf.stny.rr.com> <4B4F3A1A.2030906@zytor.com> <20100117185539.GF9008@Krystal> <20100117111608.35a98ee2@infradead.org> <4B548562.6030008@redhat.com> <4B548B09.7040309@zytor.com> <20100118165231.GA29764@Krystal>
-In-Reply-To: <20100118165231.GA29764@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/64] libata: fix CFA handling in ide_timing_compute()
+References: <20100118171349.14623.90030.sendpatchset@localhost> <20100118171357.14623.36435.sendpatchset@localhost> <4B54A724.6080701@ru.mvista.com> <201001181929.17136.bzolnier@gmail.com>
+In-Reply-To: <201001181929.17136.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/18/2010 08:52 AM, Mathieu Desnoyers wrote:
->>
->> This really doesn't make much sense to me.  The whole basis for the int3
->> scheme itself is that single-byte updates are atomic, so if single-byte
->> updates can't work -- and as I stated, we at Intel OTC currently believe
->> it safe -- then int3 can't work either.
-> 
-> The additional characteristic of the int3 instruction (compared to the
-> general case of a single-byte instruction) is that, when executed, it
-> will trigger a trap, run a trap handler and return to the original code,
-> typically with iret. This therefore implies that a serializing
-> instruction is executed before returning to the instructions following
-> the modification site when the breakpoint is hit.
-> 
-> So I hand out to Intel's expertise the question of whether single-byte
-> instruction modification is safe or not in the general case. I'm just
-> pointing out that I can very well imagine an aggressive superscalar
-> architecture for which pipeline structure would support single-byte int3
-> patching without any problem due to the implied serialization, but would
-> not support the general-case single-byte modification due to its lack of
-> serialization.
-> 
+Bartlomiej Zolnierkiewicz wrote:
 
-This is utter and complete nonsense.   You seem to think that everything
-is guaranteed to hit the breakpoint, which is obviously false.
-Furthermore, until you have done the serialization, you're not
-guaranteed the *breakpoint* is seen, so you have the same condition.
+>>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>> Subject: [PATCH] libata: fix CFA handling in ide_timing_compute()
+>>>
+>>> Use standard cycle timing for CFA PIO5 and PIO6 modes.
+>>>
+>>> Based on commit 74638c8 for IDE subsystem.
+>>>
+>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>> ---
+>>>  drivers/ata/libata-core.c |   17 +++++++++++------
+>>>  1 file changed, 11 insertions(+), 6 deletions(-)
+>>>
+>>> Index: b/drivers/ata/libata-core.c
+>>> ===================================================================
+>>> --- a/drivers/ata/libata-core.c
+>>> +++ b/drivers/ata/libata-core.c
+>>> @@ -3211,6 +3211,7 @@ const struct ata_timing *ata_timing_find
+>>>  int ata_timing_compute(struct ata_device *adev, unsigned short speed,
+>>>  		       struct ata_timing *t, int T, int UT)
+>>>  {
+>>> +	const u16 *id = adev->id;
+>>>  	const struct ata_timing *s;
+>>>  	struct ata_timing p;
+>>>  
+>>> @@ -3228,14 +3229,18 @@ int ata_timing_compute(struct ata_device
+>>>  	 * PIO/MW_DMA cycle timing.
+>>>  	 */
+>>>  
+>>> -	if (adev->id[ATA_ID_FIELD_VALID] & 2) {	/* EIDE drive */
+>>> +	if (id[ATA_ID_FIELD_VALID] & 2) {	/* EIDE drive */
+>>>  		memset(&p, 0, sizeof(p));
+>>> +
+>>>  		if (speed >= XFER_PIO_0 && speed <= XFER_SW_DMA_0) {
+>>>   
+>>>       
+>>    BTW, shouldn't this actually be 'speed < XFER_SW_DMA_0'?
+>>     
+>
+> Good catch, I'll fix the patch later (would you be willing to fix
+> ide-timings.c side of things?).
+>   
 
-> As we might have to port this algorithm to Itanium in a near future, I
-> prefer to stay on the safe side. Intel's "by the book" recommendation is
-> more or less that a serializing instruction must be executed on all CPUs
-> before new code is executed, without mention of single-vs-multi byte
-> instructions. The int3-based bypass follows this requirement, but the
-> single-byte code patching does not.
-> 
-> Unless there is a visible performance gain to special-case the
-> single-byte instruction, I would recommend to stick to the safest
-> solution, which follows Intel "official" guide-lines too.
+   I don't see what to fix there?..
 
-No, it doesn't.  The only thing that follows the "official" guidelines
-is stop_machine.
+MBR, Sergei
 
-As far as other architectures are concerned, other architectures can
-have very different and much stricter rules for I/D coherence.  Trying
-to extrapolate from the x86 rules is aggravated insanity.
-
-	-hpa
