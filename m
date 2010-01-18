@@ -1,61 +1,1189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903Ab0ARVPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986Ab0ARVR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754903Ab0ARVPF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 16:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791Ab0ARVPA
+	id S1754986Ab0ARVR6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 16:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940Ab0ARVRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 16:15:00 -0500
-Received: from exchange.solarflare.com ([216.237.3.220]:42993 "EHLO
-	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754426Ab0ARVPA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 16:15:00 -0500
-Subject: Re: [PATCH] list.h: add list_for_each_struct_entry macro
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Jiri Pirko <jpirko@redhat.com>
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org
-In-Reply-To: <20100118210718.GC4521@psychotron.redhat.com>
-References: <20100118162338.GD4229@psychotron.lab.eng.brq.redhat.com>
-	 <1263835033.3667.23.camel@achroite.uk.solarflarecom.com>
-	 <20100118210718.GC4521@psychotron.redhat.com>
-Content-Type: text/plain
-Organization: Solarflare Communications
-Date: Mon, 18 Jan 2010 21:14:18 +0000
-Message-Id: <1263849258.3667.43.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Jan 2010 21:15:09.0686 (UTC) FILETIME=[50C75960:01CA9883]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17138.005
-X-TM-AS-Result: No--19.367900-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
+	Mon, 18 Jan 2010 16:17:55 -0500
+Received: from mga01.intel.com ([192.55.52.88]:60489 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754332Ab0ARVRy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 16:17:54 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,298,1262592000"; 
+   d="scan'208";a="532321577"
+From: Mark Allyn <mark.a.allyn@intel.com>
+To: linux-kernel@vger.kernel.org, greg@kroah.com, alan@linux.intel.com,
+       charles.f.johnson@intel.com
+Cc: Mark Allyn <mark.a.allyn@intel.com>
+Subject: [PATCH] Rename rar_driver to rar_register
+Date: Mon, 18 Jan 2010 13:21:36 -0800
+Message-Id: <1263849696-23060-1-git-send-email-mark.a.allyn@intel.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 22:07 +0100, Jiri Pirko wrote:
-> Mon, Jan 18, 2010 at 06:17:13PM CET, bhutchings@solarflare.com wrote:
-[...]
-> >#define list_for_each_struct_entry(pos, head, type, posmember, member)	     \
-> >	for (pos = list_empty(head) ? NULL :				     \
-> >		&list_first_entry(head, type, member)->posmember;	     \
-> >	     prefetch(container_of(pos, type, posmember)->member.next), pos; \
-> >	     pos = list_is_last(&container_of(pos, type, posmember)->member, \
-> >				head) ?	NULL :				     \
-> >		&list_entry(container_of(pos, type, posmember)->member.next, \
-> >			    type, member)->posmember)
-> >
-> 
-> At the first glance, this would take even more cputime for lists longer
-> than 2 or so, wouldn't it?
+The purpose of this patch is to change the name of rar_register source
+files (both the .c and .h files) to rar_register.
 
-If you're concerned about speed, measure it, don't guess.
+This is the first of seven patches for the rar_register driver
+for Sunday, January 17, 2009
 
-Ben.
+This is to clarify that this driver is for the rar_register.
 
+This patch only changes the names. It does not make any changes in
+any code.
+
+Any checkpatch errors on this code were from the original code. They
+will be addressed in future patches.
+
+The rar stands for restricted access region. The restricted access
+region is an area of memory that can be locked from access by the
+x86 processor.
+
+The purpose of the restricted access region is to safeguard confidential
+information from any unauthorized software running on the x86 processor.
+
+The purpose of this driver is to enable other drivers to obtain
+the address ranges of the restricted regions as well as lock them.
+
+This patch is referenced off the linux-next repository as pulled
+on Sunday, January 17, 2010
+
+Signed-off-by: Mark Allyn <mark.a.allyn@intel.com>
+
+Date: January 17, 2010
+---
+ drivers/staging/rar/Makefile       |    2 +-
+ drivers/staging/rar/rar_driver.c   |  444 ------------------------------------
+ drivers/staging/rar/rar_driver.h   |   99 --------
+ drivers/staging/rar/rar_register.c |  444 ++++++++++++++++++++++++++++++++++++
+ drivers/staging/rar/rar_register.h |   99 ++++++++
+ 5 files changed, 544 insertions(+), 544 deletions(-)
+ delete mode 100644 drivers/staging/rar/rar_driver.c
+ delete mode 100644 drivers/staging/rar/rar_driver.h
+ create mode 100644 drivers/staging/rar/rar_register.c
+ create mode 100644 drivers/staging/rar/rar_register.h
+
+diff --git a/drivers/staging/rar/Makefile b/drivers/staging/rar/Makefile
+index 5422ed0..d5954cc 100644
+--- a/drivers/staging/rar/Makefile
++++ b/drivers/staging/rar/Makefile
+@@ -1,2 +1,2 @@
+ EXTRA_CFLAGS += -DLITTLE__ENDIAN
+-obj-$(CONFIG_RAR_REGISTER) += rar_driver.o
++obj-$(CONFIG_RAR_REGISTER) += rar_register.o
+diff --git a/drivers/staging/rar/rar_driver.c b/drivers/staging/rar/rar_driver.c
+deleted file mode 100644
+index d85d189..0000000
+--- a/drivers/staging/rar/rar_driver.c
++++ /dev/null
+@@ -1,444 +0,0 @@
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/fs.h>
+-#include <linux/cdev.h>
+-#include <linux/kdev_t.h>
+-#include <linux/semaphore.h>
+-#include <linux/mm.h>
+-#include <linux/poll.h>
+-#include <linux/wait.h>
+-#include <linux/ioctl.h>
+-#include <linux/ioport.h>
+-#include <linux/io.h>
+-#include <linux/interrupt.h>
+-#include <linux/pagemap.h>
+-#include <linux/pci.h>
+-#include <linux/firmware.h>
+-#include <linux/sched.h>
+-#include "rar_driver.h"
+-
+-/* The following defines are for the IPC process to retrieve RAR in */
+-
+-/* === Lincroft Message Bus Interface === */
+-/* Message Control Register */
+-#define LNC_MCR_OFFSET 0xD0
+-
+-/* Message Data Register */
+-#define LNC_MDR_OFFSET 0xD4
+-
+-/* Message Opcodes */
+-#define LNC_MESSAGE_READ_OPCODE  0xD0
+-#define LNC_MESSAGE_WRITE_OPCODE 0xE0
+-
+-/* Message Write Byte Enables */
+-#define LNC_MESSAGE_BYTE_WRITE_ENABLES 0xF
+-
+-/* B-unit Port */
+-#define LNC_BUNIT_PORT 0x3
+-
+-/* === Lincroft B-Unit Registers - Programmed by IA32 firmware === */
+-#define LNC_BRAR0L  0x10
+-#define LNC_BRAR0H  0x11
+-#define LNC_BRAR1L  0x12
+-#define LNC_BRAR1H  0x13
+-
+-/* Reserved for SeP */
+-#define LNC_BRAR2L  0x14
+-#define LNC_BRAR2H  0x15
+-
+-
+-/* This structure is only used during module initialization. */
+-struct RAR_offsets {
+-	int low; /* Register offset for low RAR physical address. */
+-	int high; /* Register offset for high RAR physical address. */
+-};
+-
+-struct pci_dev *rar_dev;
+-static uint32_t registered;
+-
+-/* Moorestown supports three restricted access regions. */
+-#define MRST_NUM_RAR 3
+-
+-struct RAR_address_struct rar_addr[MRST_NUM_RAR];
+-
+-/* prototype for init */
+-static int __init rar_init_handler(void);
+-static void __exit rar_exit_handler(void);
+-
+-/*
+-  function that is activated on the successfull probe of the RAR device
+-*/
+-static int __devinit rar_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
+-
+-static struct pci_device_id rar_pci_id_tbl[] = {
+-	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4110) },
+-	{ 0 }
+-};
+-
+-MODULE_DEVICE_TABLE(pci, rar_pci_id_tbl);
+-
+-/* field for registering driver to PCI device */
+-static struct pci_driver rar_pci_driver = {
+-	.name = "rar_driver",
+-	.id_table = rar_pci_id_tbl,
+-	.probe = rar_probe
+-};
+-
+-/* This function is used to retrieved RAR info using the IPC message
+-   bus interface */
+-static int memrar_get_rar_addr(struct pci_dev* pdev,
+-	                      int offset,
+-	                      u32 *addr)
+-{
+-	/*
+-	 * ======== The Lincroft Message Bus Interface ========
+-	 * Lincroft registers may be obtained from the PCI
+-	 * (the Host Bridge) using the Lincroft Message Bus
+-	 * Interface.  That message bus interface is generally
+-	 * comprised of two registers: a control register (MCR, 0xDO)
+-	 * and a data register (MDR, 0xD4).
+-	 *
+-	 * The MCR (message control register) format is the following:
+-	 *   1.  [31:24]: Opcode
+-	 *   2.  [23:16]: Port
+-	 *   3.  [15:8]: Register Offset
+-	 *   4.  [7:4]: Byte Enables (use 0xF to set all of these bits
+-	 *              to 1)
+-	 *   5.  [3:0]: reserved
+-	 *
+-	 *  Read (0xD0) and write (0xE0) opcodes are written to the
+-	 *  control register when reading and writing to Lincroft
+-	 *  registers, respectively.
+-	 *
+-	 *  We're interested in registers found in the Lincroft
+-	 *  B-unit.  The B-unit port is 0x3.
+-	 *
+-	 *  The six B-unit RAR register offsets we use are listed
+-	 *  earlier in this file.
+-	 *
+-	 *  Lastly writing to the MCR register requires the "Byte
+-	 *  enables" bits to be set to 1.  This may be achieved by
+-	 *  writing 0xF at bit 4.
+-	 *
+-	 * The MDR (message data register) format is the following:
+-	 *   1. [31:0]: Read/Write Data
+-	 *
+-	 *  Data being read from this register is only available after
+-	 *  writing the appropriate control message to the MCR
+-	 *  register.
+-	 *
+-	 *  Data being written to this register must be written before
+-	 *  writing the appropriate control message to the MCR
+-	 *  register.
+-	 */
+-
+-	int result = 0; /* result */
+-	/* Construct control message */
+-	u32 const message =
+-	       (LNC_MESSAGE_READ_OPCODE << 24)
+-	       | (LNC_BUNIT_PORT << 16)
+-	       | (offset << 8)
+-	       | (LNC_MESSAGE_BYTE_WRITE_ENABLES << 4);
+-
+-	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n",offset);
+-
+-	if (addr == 0)
+-		return -EINVAL;
+-
+-	/* Send the control message */
+-	result = pci_write_config_dword(pdev,
+-	                          LNC_MCR_OFFSET,
+-	                          message);
+-
+-	printk(KERN_WARNING "rar- result from send ctl register is %x\n"
+-	  ,result);
+-
+-	if (!result)
+-		result = pci_read_config_dword(pdev,
+-		                              LNC_MDR_OFFSET,
+-				              addr);
+-
+-	printk(KERN_WARNING "rar- result from read data register is %x\n",
+-	  result);
+-
+-	printk(KERN_WARNING "rar- value read from data register is %x\n",
+-	  *addr);
+-
+-	if (result)
+-		return -1;
+-	else
+-		return 0;
+-}
+-
+-static int memrar_set_rar_addr(struct pci_dev* pdev,
+-	                      int offset,
+-	                      u32 addr)
+-{
+-	/*
+-	 * ======== The Lincroft Message Bus Interface ========
+-	 * Lincroft registers may be obtained from the PCI
+-	 * (the Host Bridge) using the Lincroft Message Bus
+-	 * Interface.  That message bus interface is generally
+-	 * comprised of two registers: a control register (MCR, 0xDO)
+-	 * and a data register (MDR, 0xD4).
+-	 *
+-	 * The MCR (message control register) format is the following:
+-	 *   1.  [31:24]: Opcode
+-	 *   2.  [23:16]: Port
+-	 *   3.  [15:8]: Register Offset
+-	 *   4.  [7:4]: Byte Enables (use 0xF to set all of these bits
+-	 *              to 1)
+-	 *   5.  [3:0]: reserved
+-	 *
+-	 *  Read (0xD0) and write (0xE0) opcodes are written to the
+-	 *  control register when reading and writing to Lincroft
+-	 *  registers, respectively.
+-	 *
+-	 *  We're interested in registers found in the Lincroft
+-	 *  B-unit.  The B-unit port is 0x3.
+-	 *
+-	 *  The six B-unit RAR register offsets we use are listed
+-	 *  earlier in this file.
+-	 *
+-	 *  Lastly writing to the MCR register requires the "Byte
+-	 *  enables" bits to be set to 1.  This may be achieved by
+-	 *  writing 0xF at bit 4.
+-	 *
+-	 * The MDR (message data register) format is the following:
+-	 *   1. [31:0]: Read/Write Data
+-	 *
+-	 *  Data being read from this register is only available after
+-	 *  writing the appropriate control message to the MCR
+-	 *  register.
+-	 *
+-	 *  Data being written to this register must be written before
+-	 *  writing the appropriate control message to the MCR
+-	 *  register.
+-	 */
+-
+-	int result = 0; /* result */
+-
+-	/* Construct control message */
+-	u32 const message =
+-	       (LNC_MESSAGE_WRITE_OPCODE << 24)
+-	       | (LNC_BUNIT_PORT << 16)
+-	       | (offset << 8)
+-	       | (LNC_MESSAGE_BYTE_WRITE_ENABLES << 4);
+-
+-	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n",offset);
+-
+-	if (addr == 0)
+-		return -EINVAL;
+-
+-	/* Send the control message */
+-	result = pci_write_config_dword(pdev,
+-	                          LNC_MDR_OFFSET,
+-	                          addr);
+-
+-	printk(KERN_WARNING "rar- result from send ctl register is %x\n"
+-	  ,result);
+-
+-	if (!result)
+-		result = pci_write_config_dword(pdev,
+-		                              LNC_MCR_OFFSET,
+-				              message);
+-
+-	printk(KERN_WARNING "rar- result from write data register is %x\n",
+-	  result);
+-
+-	printk(KERN_WARNING "rar- value read to data register is %x\n",
+-	  addr);
+-
+-	if (result)
+-		return -1;
+-	else
+-		return 0;
+-}
+-
+-/*
+-
+- * Initialize RAR parameters, such as physical addresses, etc.
+-
+- */
+-static int memrar_init_rar_params(struct pci_dev *pdev)
+-{
+-	struct RAR_offsets const offsets[] = {
+-	       { LNC_BRAR0L, LNC_BRAR0H },
+-	       { LNC_BRAR1L, LNC_BRAR1H },
+-	       { LNC_BRAR2L, LNC_BRAR2H }
+-	};
+-
+-	size_t const num_offsets = sizeof(offsets) / sizeof(offsets[0]);
+-	struct RAR_offsets const *end = offsets + num_offsets;
+-	struct RAR_offsets const *i;
+-	unsigned int n = 0;
+-	int result = 0;
+-
+-	/* Retrieve RAR start and end physical addresses. */
+-
+-	/*
+-	 * Access the RAR registers through the Lincroft Message Bus
+-	 * Interface on PCI device: 00:00.0 Host bridge.
+-	 */
+-
+-	/* struct pci_dev *pdev = pci_get_bus_and_slot(0, PCI_DEVFN(0,0)); */
+-
+-	if (pdev == NULL)
+-	       return -ENODEV;
+-
+-	for (i = offsets; i != end; ++i, ++n) {
+-	       if (memrar_get_rar_addr (pdev,
+-		                       (*i).low,
+-		                       &(rar_addr[n].low)) != 0
+-		   || memrar_get_rar_addr (pdev,
+-		                          (*i).high,
+-		                          &(rar_addr[n].high)) != 0) {
+-		       result = -1;
+-		       break;
+-	       }
+-	}
+-
+-	/* Done accessing the device. */
+-	/* pci_dev_put(pdev); */
+-
+-	if (result == 0) {
+-	if(1) {
+-	       size_t z;
+-	       for (z = 0; z != MRST_NUM_RAR; ++z) {
+-			printk(KERN_WARNING "rar - BRAR[%Zd] physical address low\n"
+-			     "\tlow:  0x%08x\n"
+-			     "\thigh: 0x%08x\n",
+-			     z,
+-			     rar_addr[z].low,
+-			     rar_addr[z].high);
+-			}
+-	       }
+-	}
+-
+-	return result;
+-}
+-
+-/*
+-  function that is activated on the successfull probe of the RAR device
+-*/
+-static int __devinit rar_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+-{
+-	/* error */
+-	int error;
+-
+-	/*------------------------
+-	CODE
+-	---------------------------*/
+-
+-	DEBUG_PRINT_0(RAR_DEBUG_LEVEL_EXTENDED,
+-	  "Rar pci probe starting\n");
+-	error = 0;
+-
+-	/* enable the device */
+-	error = pci_enable_device(pdev);
+-	if (error) {
+-		DEBUG_PRINT_0(RAR_DEBUG_LEVEL_EXTENDED,
+-		  "error enabling pci device\n");
+-		goto end_function;
+-	}
+-
+-	rar_dev = pdev;
+-	registered = 1;
+-
+-	/* Initialize the RAR parameters, which have to be retrieved */
+-	/* via the message bus service */
+-	error=memrar_init_rar_params(rar_dev);
+-
+-	if (error) {
+-		DEBUG_PRINT_0(RAR_DEBUG_LEVEL_EXTENDED,
+-		  "error getting RAR addresses device\n");
+-		registered = 0;
+-		goto end_function;
+-		}
+-
+-end_function:
+-
+-	return error;
+-}
+-
+-/*
+-  this function registers th driver to
+-  the device subsystem( either PCI, USB, etc)
+-*/
+-static int __init rar_init_handler(void)
+-{
+-	return pci_register_driver(&rar_pci_driver);
+-}
+-
+-static void __exit rar_exit_handler(void)
+-{
+-	pci_unregister_driver(&rar_pci_driver);
+-}
+-
+-module_init(rar_init_handler);
+-module_exit(rar_exit_handler);
+-
+-MODULE_LICENSE("GPL");
+-
+-
+-/* The get_rar_address function is used by other device drivers
+- * to obtain RAR address information on a RAR. It takes two
+- * parameter:
+- *
+- * int rar_index
+- * The rar_index is an index to the rar for which you wish to retrieve
+- * the address information.
+- * Values can be 0,1, or 2.
+- *
+- * struct RAR_address_struct is a pointer to a place to which the function
+- * can return the address structure for the RAR.
+- *
+- * The function returns a 0 upon success or a -1 if there is no RAR
+- * facility on this system.
+- */
+-int get_rar_address(int rar_index,struct RAR_address_struct *addresses)
+-{
+-	if (registered && (rar_index < 3) && (rar_index >= 0)) {
+-		*addresses=rar_addr[rar_index];
+-		/* strip off lock bit information  */
+-		addresses->low = addresses->low & 0xfffffff0;
+-		addresses->high = addresses->high & 0xfffffff0;
+-		return 0;
+-		}
+-
+-	else {
+-		return -ENODEV;
+-		}
+-}
+-
+-
+-EXPORT_SYMBOL(get_rar_address);
+-
+-/* The lock_rar function is ued by other device drivers to lock an RAR.
+- * once an RAR is locked, it stays locked until the next system reboot.
+- * The function takes one parameter:
+- *
+- * int rar_index
+- * The rar_index is an index to the rar that you want to lock.
+- * Values can be 0,1, or 2.
+- *
+- * The function returns a 0 upon success or a -1 if there is no RAR
+- * facility on this system.
+- */
+-int lock_rar(int rar_index)
+-{
+-	u32 working_addr;
+-	int result;
+-if (registered && (rar_index < 3) && (rar_index >= 0)) {
+-	/* first make sure that lock bits are clear (this does lock) */
+-	working_addr=rar_addr[rar_index].low & 0xfffffff0;
+-
+-	/* now send that value to the register using the IPC */
+-        result=memrar_set_rar_addr(rar_dev,rar_index,working_addr);
+-	return result;
+-	}
+-
+-else {
+-	return -ENODEV;
+-	}
+-}
+diff --git a/drivers/staging/rar/rar_driver.h b/drivers/staging/rar/rar_driver.h
+deleted file mode 100644
+index 3690f98..0000000
+--- a/drivers/staging/rar/rar_driver.h
++++ /dev/null
+@@ -1,99 +0,0 @@
+-/* === RAR Physical Addresses === */
+-struct RAR_address_struct {
+-        u32 low;
+-        u32 high;
+-};
+-
+-/* The get_rar_address function is used by other device drivers
+- * to obtain RAR address information on a RAR. It takes two
+- * parameter:
+- *
+- * int rar_index
+- * The rar_index is an index to the rar for which you wish to retrieve
+- * the address information.
+- * Values can be 0,1, or 2.
+- *
+- * struct RAR_address_struct is a pointer to a place to which the function
+- * can return the address structure for the RAR.
+- *
+- * The function returns a 0 upon success or a -1 if there is no RAR
+- * facility on this system.
+- */
+-int get_rar_address(int rar_index,struct RAR_address_struct *addresses);
+-
+-
+-/* The lock_rar function is ued by other device drivers to lock an RAR.
+- * once an RAR is locked, it stays locked until the next system reboot.
+- * The function takes one parameter:
+- *
+- * int rar_index
+- * The rar_index is an index to the rar that you want to lock.
+- * Values can be 0,1, or 2.
+- *
+- * The function returns a 0 upon success or a -1 if there is no RAR
+- * facility on this system.
+- */
+-int lock_rar(int rar_index);
+-
+-
+-/* DEBUG LEVEL MASKS */
+-#define RAR_DEBUG_LEVEL_BASIC       0x1
+-
+-#define RAR_DEBUG_LEVEL_REGISTERS   0x2
+-
+-#define RAR_DEBUG_LEVEL_EXTENDED    0x4
+-
+-#define DEBUG_LEVEL	0x7
+-
+-/* FUNCTIONAL MACROS */
+-
+-/* debug macro without paramaters */
+-#define DEBUG_PRINT_0(DEBUG_LEVEL , info) \
+-do \
+-{ \
+-  if(DEBUG_LEVEL) \
+-  { \
+-    printk(KERN_WARNING info); \
+-  } \
+-}while(0)
+-
+-/* debug macro with 1 paramater */
+-#define DEBUG_PRINT_1(DEBUG_LEVEL , info , param1) \
+-do \
+-{ \
+-  if(DEBUG_LEVEL) \
+-  { \
+-    printk(KERN_WARNING info , param1); \
+-  } \
+-}while(0)
+-
+-/* debug macro with 2 paramaters */
+-#define DEBUG_PRINT_2(DEBUG_LEVEL , info , param1, param2) \
+-do \
+-{ \
+-  if(DEBUG_LEVEL) \
+-  { \
+-    printk(KERN_WARNING info , param1, param2); \
+-  } \
+-}while(0)
+-
+-/* debug macro with 3 paramaters */
+-#define DEBUG_PRINT_3(DEBUG_LEVEL , info , param1, param2 , param3) \
+-do \
+-{ \
+-  if(DEBUG_LEVEL) \
+-  { \
+-    printk(KERN_WARNING info , param1, param2 , param3); \
+-  } \
+-}while(0)
+-
+-/* debug macro with 4 paramaters */
+-#define DEBUG_PRINT_4(DEBUG_LEVEL , info , param1, param2 , param3 , param4) \
+-do \
+-{ \
+-  if(DEBUG_LEVEL) \
+-  { \
+-    printk(KERN_WARNING info , param1, param2 , param3 , param4); \
+-  } \
+-}while(0)
+-
+diff --git a/drivers/staging/rar/rar_register.c b/drivers/staging/rar/rar_register.c
+new file mode 100644
+index 0000000..a23a1f6
+--- /dev/null
++++ b/drivers/staging/rar/rar_register.c
+@@ -0,0 +1,444 @@
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/cdev.h>
++#include <linux/kdev_t.h>
++#include <linux/semaphore.h>
++#include <linux/mm.h>
++#include <linux/poll.h>
++#include <linux/wait.h>
++#include <linux/ioctl.h>
++#include <linux/ioport.h>
++#include <linux/io.h>
++#include <linux/interrupt.h>
++#include <linux/pagemap.h>
++#include <linux/pci.h>
++#include <linux/firmware.h>
++#include <linux/sched.h>
++#include "rar_register.h"
++
++/* The following defines are for the IPC process to retrieve RAR in */
++
++/* === Lincroft Message Bus Interface === */
++/* Message Control Register */
++#define LNC_MCR_OFFSET 0xD0
++
++/* Message Data Register */
++#define LNC_MDR_OFFSET 0xD4
++
++/* Message Opcodes */
++#define LNC_MESSAGE_READ_OPCODE  0xD0
++#define LNC_MESSAGE_WRITE_OPCODE 0xE0
++
++/* Message Write Byte Enables */
++#define LNC_MESSAGE_BYTE_WRITE_ENABLES 0xF
++
++/* B-unit Port */
++#define LNC_BUNIT_PORT 0x3
++
++/* === Lincroft B-Unit Registers - Programmed by IA32 firmware === */
++#define LNC_BRAR0L  0x10
++#define LNC_BRAR0H  0x11
++#define LNC_BRAR1L  0x12
++#define LNC_BRAR1H  0x13
++
++/* Reserved for SeP */
++#define LNC_BRAR2L  0x14
++#define LNC_BRAR2H  0x15
++
++
++/* This structure is only used during module initialization. */
++struct RAR_offsets {
++	int low; /* Register offset for low RAR physical address. */
++	int high; /* Register offset for high RAR physical address. */
++};
++
++struct pci_dev *rar_dev;
++static uint32_t registered;
++
++/* Moorestown supports three restricted access regions. */
++#define MRST_NUM_RAR 3
++
++struct RAR_address_struct rar_addr[MRST_NUM_RAR];
++
++/* prototype for init */
++static int __init rar_init_handler(void);
++static void __exit rar_exit_handler(void);
++
++/*
++  function that is activated on the successfull probe of the RAR device
++*/
++static int __devinit rar_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
++
++static struct pci_device_id rar_pci_id_tbl[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4110) },
++	{ 0 }
++};
++
++MODULE_DEVICE_TABLE(pci, rar_pci_id_tbl);
++
++/* field for registering driver to PCI device */
++static struct pci_driver rar_pci_driver = {
++	.name = "rar_driver",
++	.id_table = rar_pci_id_tbl,
++	.probe = rar_probe
++};
++
++/* This function is used to retrieved RAR info using the IPC message
++   bus interface */
++static int memrar_get_rar_addr(struct pci_dev* pdev,
++	                      int offset,
++	                      u32 *addr)
++{
++	/*
++	 * ======== The Lincroft Message Bus Interface ========
++	 * Lincroft registers may be obtained from the PCI
++	 * (the Host Bridge) using the Lincroft Message Bus
++	 * Interface.  That message bus interface is generally
++	 * comprised of two registers: a control register (MCR, 0xDO)
++	 * and a data register (MDR, 0xD4).
++	 *
++	 * The MCR (message control register) format is the following:
++	 *   1.  [31:24]: Opcode
++	 *   2.  [23:16]: Port
++	 *   3.  [15:8]: Register Offset
++	 *   4.  [7:4]: Byte Enables (use 0xF to set all of these bits
++	 *              to 1)
++	 *   5.  [3:0]: reserved
++	 *
++	 *  Read (0xD0) and write (0xE0) opcodes are written to the
++	 *  control register when reading and writing to Lincroft
++	 *  registers, respectively.
++	 *
++	 *  We're interested in registers found in the Lincroft
++	 *  B-unit.  The B-unit port is 0x3.
++	 *
++	 *  The six B-unit RAR register offsets we use are listed
++	 *  earlier in this file.
++	 *
++	 *  Lastly writing to the MCR register requires the "Byte
++	 *  enables" bits to be set to 1.  This may be achieved by
++	 *  writing 0xF at bit 4.
++	 *
++	 * The MDR (message data register) format is the following:
++	 *   1. [31:0]: Read/Write Data
++	 *
++	 *  Data being read from this register is only available after
++	 *  writing the appropriate control message to the MCR
++	 *  register.
++	 *
++	 *  Data being written to this register must be written before
++	 *  writing the appropriate control message to the MCR
++	 *  register.
++	 */
++
++	int result = 0; /* result */
++	/* Construct control message */
++	u32 const message =
++	       (LNC_MESSAGE_READ_OPCODE << 24)
++	       | (LNC_BUNIT_PORT << 16)
++	       | (offset << 8)
++	       | (LNC_MESSAGE_BYTE_WRITE_ENABLES << 4);
++
++	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n",offset);
++
++	if (addr == 0)
++		return -EINVAL;
++
++	/* Send the control message */
++	result = pci_write_config_dword(pdev,
++	                          LNC_MCR_OFFSET,
++	                          message);
++
++	printk(KERN_WARNING "rar- result from send ctl register is %x\n"
++	  ,result);
++
++	if (!result)
++		result = pci_read_config_dword(pdev,
++		                              LNC_MDR_OFFSET,
++				              addr);
++
++	printk(KERN_WARNING "rar- result from read data register is %x\n",
++	  result);
++
++	printk(KERN_WARNING "rar- value read from data register is %x\n",
++	  *addr);
++
++	if (result)
++		return -1;
++	else
++		return 0;
++}
++
++static int memrar_set_rar_addr(struct pci_dev* pdev,
++	                      int offset,
++	                      u32 addr)
++{
++	/*
++	 * ======== The Lincroft Message Bus Interface ========
++	 * Lincroft registers may be obtained from the PCI
++	 * (the Host Bridge) using the Lincroft Message Bus
++	 * Interface.  That message bus interface is generally
++	 * comprised of two registers: a control register (MCR, 0xDO)
++	 * and a data register (MDR, 0xD4).
++	 *
++	 * The MCR (message control register) format is the following:
++	 *   1.  [31:24]: Opcode
++	 *   2.  [23:16]: Port
++	 *   3.  [15:8]: Register Offset
++	 *   4.  [7:4]: Byte Enables (use 0xF to set all of these bits
++	 *              to 1)
++	 *   5.  [3:0]: reserved
++	 *
++	 *  Read (0xD0) and write (0xE0) opcodes are written to the
++	 *  control register when reading and writing to Lincroft
++	 *  registers, respectively.
++	 *
++	 *  We're interested in registers found in the Lincroft
++	 *  B-unit.  The B-unit port is 0x3.
++	 *
++	 *  The six B-unit RAR register offsets we use are listed
++	 *  earlier in this file.
++	 *
++	 *  Lastly writing to the MCR register requires the "Byte
++	 *  enables" bits to be set to 1.  This may be achieved by
++	 *  writing 0xF at bit 4.
++	 *
++	 * The MDR (message data register) format is the following:
++	 *   1. [31:0]: Read/Write Data
++	 *
++	 *  Data being read from this register is only available after
++	 *  writing the appropriate control message to the MCR
++	 *  register.
++	 *
++	 *  Data being written to this register must be written before
++	 *  writing the appropriate control message to the MCR
++	 *  register.
++	 */
++
++	int result = 0; /* result */
++
++	/* Construct control message */
++	u32 const message =
++	       (LNC_MESSAGE_WRITE_OPCODE << 24)
++	       | (LNC_BUNIT_PORT << 16)
++	       | (offset << 8)
++	       | (LNC_MESSAGE_BYTE_WRITE_ENABLES << 4);
++
++	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n",offset);
++
++	if (addr == 0)
++		return -EINVAL;
++
++	/* Send the control message */
++	result = pci_write_config_dword(pdev,
++	                          LNC_MDR_OFFSET,
++	                          addr);
++
++	printk(KERN_WARNING "rar- result from send ctl register is %x\n"
++	  ,result);
++
++	if (!result)
++		result = pci_write_config_dword(pdev,
++		                              LNC_MCR_OFFSET,
++				              message);
++
++	printk(KERN_WARNING "rar- result from write data register is %x\n",
++	  result);
++
++	printk(KERN_WARNING "rar- value read to data register is %x\n",
++	  addr);
++
++	if (result)
++		return -1;
++	else
++		return 0;
++}
++
++/*
++
++ * Initialize RAR parameters, such as physical addresses, etc.
++
++ */
++static int memrar_init_rar_params(struct pci_dev *pdev)
++{
++	struct RAR_offsets const offsets[] = {
++	       { LNC_BRAR0L, LNC_BRAR0H },
++	       { LNC_BRAR1L, LNC_BRAR1H },
++	       { LNC_BRAR2L, LNC_BRAR2H }
++	};
++
++	size_t const num_offsets = sizeof(offsets) / sizeof(offsets[0]);
++	struct RAR_offsets const *end = offsets + num_offsets;
++	struct RAR_offsets const *i;
++	unsigned int n = 0;
++	int result = 0;
++
++	/* Retrieve RAR start and end physical addresses. */
++
++	/*
++	 * Access the RAR registers through the Lincroft Message Bus
++	 * Interface on PCI device: 00:00.0 Host bridge.
++	 */
++
++	/* struct pci_dev *pdev = pci_get_bus_and_slot(0, PCI_DEVFN(0,0)); */
++
++	if (pdev == NULL)
++	       return -ENODEV;
++
++	for (i = offsets; i != end; ++i, ++n) {
++	       if (memrar_get_rar_addr (pdev,
++		                       (*i).low,
++		                       &(rar_addr[n].low)) != 0
++		   || memrar_get_rar_addr (pdev,
++		                          (*i).high,
++		                          &(rar_addr[n].high)) != 0) {
++		       result = -1;
++		       break;
++	       }
++	}
++
++	/* Done accessing the device. */
++	/* pci_dev_put(pdev); */
++
++	if (result == 0) {
++	if(1) {
++	       size_t z;
++	       for (z = 0; z != MRST_NUM_RAR; ++z) {
++			printk(KERN_WARNING "rar - BRAR[%Zd] physical address low\n"
++			     "\tlow:  0x%08x\n"
++			     "\thigh: 0x%08x\n",
++			     z,
++			     rar_addr[z].low,
++			     rar_addr[z].high);
++			}
++	       }
++	}
++
++	return result;
++}
++
++/*
++  function that is activated on the successfull probe of the RAR device
++*/
++static int __devinit rar_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
++{
++	/* error */
++	int error;
++
++	/*------------------------
++	CODE
++	---------------------------*/
++
++	DEBUG_PRINT_0(RAR_DEBUG_LEVEL_EXTENDED,
++	  "Rar pci probe starting\n");
++	error = 0;
++
++	/* enable the device */
++	error = pci_enable_device(pdev);
++	if (error) {
++		DEBUG_PRINT_0(RAR_DEBUG_LEVEL_EXTENDED,
++		  "error enabling pci device\n");
++		goto end_function;
++	}
++
++	rar_dev = pdev;
++	registered = 1;
++
++	/* Initialize the RAR parameters, which have to be retrieved */
++	/* via the message bus service */
++	error=memrar_init_rar_params(rar_dev);
++
++	if (error) {
++		DEBUG_PRINT_0(RAR_DEBUG_LEVEL_EXTENDED,
++		  "error getting RAR addresses device\n");
++		registered = 0;
++		goto end_function;
++		}
++
++end_function:
++
++	return error;
++}
++
++/*
++  this function registers th driver to
++  the device subsystem( either PCI, USB, etc)
++*/
++static int __init rar_init_handler(void)
++{
++	return pci_register_driver(&rar_pci_driver);
++}
++
++static void __exit rar_exit_handler(void)
++{
++	pci_unregister_driver(&rar_pci_driver);
++}
++
++module_init(rar_init_handler);
++module_exit(rar_exit_handler);
++
++MODULE_LICENSE("GPL");
++
++
++/* The get_rar_address function is used by other device drivers
++ * to obtain RAR address information on a RAR. It takes two
++ * parameter:
++ *
++ * int rar_index
++ * The rar_index is an index to the rar for which you wish to retrieve
++ * the address information.
++ * Values can be 0,1, or 2.
++ *
++ * struct RAR_address_struct is a pointer to a place to which the function
++ * can return the address structure for the RAR.
++ *
++ * The function returns a 0 upon success or a -1 if there is no RAR
++ * facility on this system.
++ */
++int get_rar_address(int rar_index,struct RAR_address_struct *addresses)
++{
++	if (registered && (rar_index < 3) && (rar_index >= 0)) {
++		*addresses=rar_addr[rar_index];
++		/* strip off lock bit information  */
++		addresses->low = addresses->low & 0xfffffff0;
++		addresses->high = addresses->high & 0xfffffff0;
++		return 0;
++		}
++
++	else {
++		return -ENODEV;
++		}
++}
++
++
++EXPORT_SYMBOL(get_rar_address);
++
++/* The lock_rar function is ued by other device drivers to lock an RAR.
++ * once an RAR is locked, it stays locked until the next system reboot.
++ * The function takes one parameter:
++ *
++ * int rar_index
++ * The rar_index is an index to the rar that you want to lock.
++ * Values can be 0,1, or 2.
++ *
++ * The function returns a 0 upon success or a -1 if there is no RAR
++ * facility on this system.
++ */
++int lock_rar(int rar_index)
++{
++	u32 working_addr;
++	int result;
++if (registered && (rar_index < 3) && (rar_index >= 0)) {
++	/* first make sure that lock bits are clear (this does lock) */
++	working_addr=rar_addr[rar_index].low & 0xfffffff0;
++
++	/* now send that value to the register using the IPC */
++        result=memrar_set_rar_addr(rar_dev,rar_index,working_addr);
++	return result;
++	}
++
++else {
++	return -ENODEV;
++	}
++}
+diff --git a/drivers/staging/rar/rar_register.h b/drivers/staging/rar/rar_register.h
+new file mode 100644
+index 0000000..3690f98
+--- /dev/null
++++ b/drivers/staging/rar/rar_register.h
+@@ -0,0 +1,99 @@
++/* === RAR Physical Addresses === */
++struct RAR_address_struct {
++        u32 low;
++        u32 high;
++};
++
++/* The get_rar_address function is used by other device drivers
++ * to obtain RAR address information on a RAR. It takes two
++ * parameter:
++ *
++ * int rar_index
++ * The rar_index is an index to the rar for which you wish to retrieve
++ * the address information.
++ * Values can be 0,1, or 2.
++ *
++ * struct RAR_address_struct is a pointer to a place to which the function
++ * can return the address structure for the RAR.
++ *
++ * The function returns a 0 upon success or a -1 if there is no RAR
++ * facility on this system.
++ */
++int get_rar_address(int rar_index,struct RAR_address_struct *addresses);
++
++
++/* The lock_rar function is ued by other device drivers to lock an RAR.
++ * once an RAR is locked, it stays locked until the next system reboot.
++ * The function takes one parameter:
++ *
++ * int rar_index
++ * The rar_index is an index to the rar that you want to lock.
++ * Values can be 0,1, or 2.
++ *
++ * The function returns a 0 upon success or a -1 if there is no RAR
++ * facility on this system.
++ */
++int lock_rar(int rar_index);
++
++
++/* DEBUG LEVEL MASKS */
++#define RAR_DEBUG_LEVEL_BASIC       0x1
++
++#define RAR_DEBUG_LEVEL_REGISTERS   0x2
++
++#define RAR_DEBUG_LEVEL_EXTENDED    0x4
++
++#define DEBUG_LEVEL	0x7
++
++/* FUNCTIONAL MACROS */
++
++/* debug macro without paramaters */
++#define DEBUG_PRINT_0(DEBUG_LEVEL , info) \
++do \
++{ \
++  if(DEBUG_LEVEL) \
++  { \
++    printk(KERN_WARNING info); \
++  } \
++}while(0)
++
++/* debug macro with 1 paramater */
++#define DEBUG_PRINT_1(DEBUG_LEVEL , info , param1) \
++do \
++{ \
++  if(DEBUG_LEVEL) \
++  { \
++    printk(KERN_WARNING info , param1); \
++  } \
++}while(0)
++
++/* debug macro with 2 paramaters */
++#define DEBUG_PRINT_2(DEBUG_LEVEL , info , param1, param2) \
++do \
++{ \
++  if(DEBUG_LEVEL) \
++  { \
++    printk(KERN_WARNING info , param1, param2); \
++  } \
++}while(0)
++
++/* debug macro with 3 paramaters */
++#define DEBUG_PRINT_3(DEBUG_LEVEL , info , param1, param2 , param3) \
++do \
++{ \
++  if(DEBUG_LEVEL) \
++  { \
++    printk(KERN_WARNING info , param1, param2 , param3); \
++  } \
++}while(0)
++
++/* debug macro with 4 paramaters */
++#define DEBUG_PRINT_4(DEBUG_LEVEL , info , param1, param2 , param3 , param4) \
++do \
++{ \
++  if(DEBUG_LEVEL) \
++  { \
++    printk(KERN_WARNING info , param1, param2 , param3 , param4); \
++  } \
++}while(0)
++
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+1.6.0.6
 
