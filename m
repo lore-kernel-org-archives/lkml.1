@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268Ab0ARRJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284Ab0ARRLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753268Ab0ARRJd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 12:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130Ab0ARRJc
+	id S1753284Ab0ARRLN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 12:11:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130Ab0ARRLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 12:09:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1749 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752920Ab0ARRJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 12:09:31 -0500
-Date: Mon, 18 Jan 2010 19:08:16 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       akpm@linux-foundation.org, andrew.c.morrow@gmail.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
-Message-ID: <20100118170816.GA22111@redhat.com>
-References: <20100118133755.GG30698@redhat.com>
- <84144f021001180609r4d7fbbd0p972d5bc0e227d09a@mail.gmail.com>
- <20100118141938.GI30698@redhat.com>
- <84144f021001180805q4d1203b8qab8ccb1de87b2866@mail.gmail.com>
+	Mon, 18 Jan 2010 12:11:12 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:45014 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203Ab0ARRLJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 12:11:09 -0500
+Date: Mon, 18 Jan 2010 22:40:38 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+Message-ID: <20100118171038.GB4424@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <4B53661A.9090907@redhat.com> <1263800752.4283.19.camel@laptop> <4B543F93.3060509@redhat.com> <1263815072.4283.305.camel@laptop> <4B544D7C.2060708@redhat.com> <1263816396.4283.361.camel@laptop> <4B544F8E.1080603@redhat.com> <84144f021001180413w76a8ca2axb0b9f07ee4dea67e@mail.gmail.com> <20100118154323.GA4424@in.ibm.com> <4B5491D0.20501@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f021001180805q4d1203b8qab8ccb1de87b2866@mail.gmail.com>
+In-Reply-To: <4B5491D0.20501@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 06:05:38PM +0200, Pekka Enberg wrote:
-> On Mon, Jan 18, 2010 at 4:19 PM, Gleb Natapov <gleb@redhat.com> wrote:
-> > The specific use cases were discussed in the thread following previous
-> > version of the patch. I can describe my specific use case in a change log
-> > and I can copy what Andrew said about his case, but is it really needed in
-> > a commit message itself? It boils down to greater control over when and
-> > where application can get major fault. There are applications that need
-> > this kind of control. As of use of mlockall(MCL_FUTURE) how can I make
-> > sure that all memory allocated behind my application's back (by dynamic
-> > linker, libraries, stack) will be locked otherwise?
-> 
-> Again, why do you want to MCL_FUTURE but then go and use MAP_UNLOCKED?
-I need to have all my memory locked except one big (bigger then main
-memory) chunk. I either need to rewrite my application and all libraries
-to use memory allocator that return locked memory, may be even rewrite
-dynamic loader to use this allocator to lock executable code too, or run
-mlockall(MCL_FUTURE|MCL_CURRENT) at startup and exempt one allocation
-from this rule. Note that I can't allocate it locked and then unlock
-since allocation will fail. Actually for me it hangs kernel last I
-checked.
+On Mon, Jan 18, 2010 at 06:52:32PM +0200, Avi Kivity wrote:
+> On 01/18/2010 05:43 PM, Ananth N Mavinakayanahalli wrote:
+>>>
+>>>> Well, the alternatives are very unappealing.  Emulation and single-stepping
+>>>> are going to be very slow compared to a couple of jumps.
+>>>>        
+>>> So how big chunks of the address space are we talking here for uprobes?
+>>>      
+>> As Srikar mentioned, the least we start with is 1 page. Though you can
+>> have as many probes as you want, there are certain optimizations we can
+>> do, depending on the most common usecases.
+>>
+>> For eg., if you'd consider the start of a routine to be the most
+>> commonly traced location, most routines in a binary would generally
+>> start with the same instruction (say push %ebp), and we can refcount a
+>> slot with that instruction to be used for all probes of the same
+>> instruction.
+>>    
+>
+> But then you can't follow the instruction with a jump back to the code...
 
-> "Greater control" is not an argument for adding a new API that needs
-> to be maintained forever, a real world use case is.
-> 
-If there is real world use case for mlockall() there is real use case for
-this too. People seems to be trying to convince me that I don't need
-mlockall() without proposing alternatives. The only alternative I see
-lock everything from userspace.
+Right. This will work only for the non boosted case where single-stepping
+is mandatory. I guess the tradeoff is vma space and speed.
 
-> And yes, this stuff needs to be in the changelog. Whether you want to
-> spell it out or post an URL to some previous discussion is up to you.
-The discussion was here just a couple of days ago. Here is the link
-were I describe my use case: http://marc.info/?l=linux-mm&m=126345374125942&w=2
-If you think it needs to be spelled out in commit log I'll do it.
-
---
-			Gleb.
+Ananth
