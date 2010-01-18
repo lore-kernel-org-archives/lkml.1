@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661Ab0ARQ0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688Ab0ARQ1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754661Ab0ARQ0b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 11:26:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580Ab0ARQ0a
+	id S1754688Ab0ARQ1l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 11:27:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052Ab0ARQ1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 11:26:30 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:55926 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754573Ab0ARQ0a (ORCPT
+	Mon, 18 Jan 2010 11:27:41 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:56108 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754355Ab0ARQ1k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 11:26:30 -0500
-Subject: Re: [PATCH]  perf_events: improve x86 event scheduling (v5)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
-       perfmon2-devel@lists.sf.net, eranian@gmail.com
-In-Reply-To: <20100118161836.GG10364@nowhere>
-References: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com>
-	 <20100118134324.GB10364@nowhere> <1263822898.4283.558.camel@laptop>
-	 <20100118142004.GD10364@nowhere> <1263825158.4283.590.camel@laptop>
-	 <20100118144556.GE10364@nowhere> <1263826601.4283.603.camel@laptop>
-	 <20100118161836.GG10364@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 17:26:13 +0100
-Message-ID: <1263831973.4283.622.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 18 Jan 2010 11:27:40 -0500
+Message-ID: <4B548B09.7040309@zytor.com>
+Date: Mon, 18 Jan 2010 08:23:37 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, rostedt@goodmis.org,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, andi@firstfloor.org,
+       roland@redhat.com, rth@redhat.com
+Subject: Re: [RFC PATCH 2/8] jump label v4 - x86: Introduce generic jump patching
+ without stop_machine
+References: <cover.1263247113.git.jbaron@redhat.com>	<a4aa5bbcf5e62eaa5dd156d318a370236f28be09.1263247114.git.jbaron@redhat.com>	<1263483139.28171.3857.camel@gandalf.stny.rr.com>	<4B4F3A1A.2030906@zytor.com>	<20100117185539.GF9008@Krystal> <20100117111608.35a98ee2@infradead.org> <4B548562.6030008@redhat.com>
+In-Reply-To: <4B548562.6030008@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 17:18 +0100, Frederic Weisbecker wrote:
-> On Mon, Jan 18, 2010 at 03:56:41PM +0100, Peter Zijlstra wrote:
-> > On Mon, 2010-01-18 at 15:45 +0100, Frederic Weisbecker wrote:
-> > > 
-> > > > > That requires to know in advance if we have hardware pmu
-> > > > > in the list though (can be a flag in the group).
-> > > > 
-> > > > Good point, but your proposed hw_check_constraint() call needs to know
-> > > > the exact same.
-> > > 
-> > > 
-> > > True. Whatever model we use anyway, both implement the same idea.
-> > 
-> > Hmm, we seem to already have that problem (which would indicate another
-> > bug in the hw-breakpoint stuff), how do you deal with
-> > hw_perf_{enable,disable}() for the breakpoints?
+On 01/18/2010 07:59 AM, Masami Hiramatsu wrote:
+>>>>>
+>>>>> This part bothers me. The text_poke just writes over the text
+>>>>> directly (using a separate mapping). But if that memory is in the
+>>>>> pipeline of another CPU, I think this could cause a GPF.
+>>>>>
+>>>>
+>>>> Could you clarify why you think that?
+>>>
+>>> Basically, what Steven and I were concerned about in this particular
+>>> patch version is the fact that this code took a "shortcut" for
+>>> single-byte text modification, thus bypassing the int3-bypass scheme
+>>> altogether.
+>>
+>> single byte instruction updates are likely 100x safer than any scheme
+>> of multi-byte instruction scheme that I have seen, other than a full
+>> stop_machine().
+>>
+>> That does not mean it is safe, it just means it's an order of
+>> complexity less to analyze ;-)
 > 
+> Yeah, so in the latest patch, I updated it to use int3 even if
+> len == 1. :-)
 > 
-> We don't have ordering constraints for breakpoints, only constraints
-> on the number of available registers.
-> 
-> So we check the constraints when a breakpoint registers. The
-> enable/disable then (is supposed to) always succeed on breakpoint
-> pmu, except for flexible breakpoints that can make it or not,
-> but no need to overwrite group scheduling for that.
 
-hw_perf_{enable,disable} are unrelated to groups.
+This really doesn't make much sense to me.  The whole basis for the int3
+scheme itself is that single-byte updates are atomic, so if single-byte
+updates can't work -- and as I stated, we at Intel OTC currently believe
+it safe -- then int3 can't work either.
+
+The one thing to watch out for is that unless you force an IPI/IRET
+cycle afterwards, you can't know when any particular remote processor
+will see the update.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
