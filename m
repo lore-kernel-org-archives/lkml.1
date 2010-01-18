@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143Ab0ARLpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234Ab0ARLqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754143Ab0ARLpA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 06:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471Ab0ARLpA
+	id S1754234Ab0ARLqN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 06:46:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620Ab0ARLqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 06:45:00 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37256 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106Ab0ARLo5 (ORCPT
+	Mon, 18 Jan 2010 06:46:12 -0500
+Received: from casper.infradead.org ([85.118.1.10]:34454 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471Ab0ARLqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 06:44:57 -0500
+	Mon, 18 Jan 2010 06:46:12 -0500
 Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
 From: Peter Zijlstra <peterz@infradead.org>
 To: Avi Kivity <avi@redhat.com>
@@ -33,8 +33,8 @@ References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
 	 <1263740593.557.20967.camel@twins>  <4B53661A.9090907@redhat.com>
 	 <1263800752.4283.19.camel@laptop>  <4B543F93.3060509@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 12:44:32 +0100
-Message-ID: <1263815072.4283.305.camel@laptop>
+Date: Mon, 18 Jan 2010 12:45:40 +0100
+Message-ID: <1263815140.4283.309.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -43,14 +43,11 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, 2010-01-18 at 13:01 +0200, Avi Kivity wrote:
-> 
-> You've made it clear that you don't like it, but not why.
-> 
-> The kernel already manages the user's address space (except for 
-> MAP_FIXED which is unreliable unless you've already reserved the address 
-> space).  I don't see why adding a vma for debugging is so horrible. 
+> If we reserve some address space, you don't add any heisenbugs (at 
+> least, not any additional ones over emulation).  Even if we don't, 
+> address space layout randomization means we're not keeping the address 
+> space layout constant between runs anyway. 
 
-Well, the kernel only does what the user (and loader) tell it through
-mmap(). Other than that we never (except this VDSO thing) inject vmas,
-and I see no reason to start doing that now.
+Well, it still limits the number of probes to the reserved area. If you
+want more you need to grow the area.. which then changes the state.
 
