@@ -1,52 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393Ab0ARUzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478Ab0ARU52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754393Ab0ARUzo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 15:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269Ab0ARUzn
+	id S1754478Ab0ARU52 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 15:57:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332Ab0ARU51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 15:55:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50193 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751693Ab0ARUzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 15:55:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was: Re: [linux-pm] Memory allocations in .suspend became very unreliable)
-Date: Mon, 18 Jan 2010 21:56:26 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1263549544.3112.10.camel@maxim-laptop> <201001180000.23376.rjw@sisk.pl> <201001180853.31446.oliver@neukum.org>
-In-Reply-To: <201001180853.31446.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001182156.26878.rjw@sisk.pl>
+	Mon, 18 Jan 2010 15:57:27 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:45233 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754245Ab0ARU50 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 15:57:26 -0500
+Date: Mon, 18 Jan 2010 15:56:45 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100118204658.GC3157@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B54CB0D.5070604@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B4E2F89.2050606@majjas.com> <20100113210908.GA3065@del.dom.local>
+ <4B4E3834.3000609@majjas.com> <4B533A46.9050600@majjas.com>
+ <20100117221746.GA3161@del.dom.local> <4B53906B.2020608@majjas.com>
+ <20100117230531.GC3161@del.dom.local> <4B539A0A.2000504@majjas.com>
+ <20100118073018.GA6270@ff.dom.local> <4B548C6B.10607@majjas.com>
+ <20100118204658.GC3157@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 January 2010, Oliver Neukum wrote:
-> Am Montag, 18. Januar 2010 00:00:23 schrieb Rafael J. Wysocki:
-> > On Sunday 17 January 2010, Benjamin Herrenschmidt wrote:
-> > > On Sun, 2010-01-17 at 14:27 +0100, Rafael J. Wysocki wrote:
-> > ...
-> > > However, it's hard to deal with the case of allocations that have
-> > > already started waiting for IOs. It might be possible to have some VM
-> > > hook to make them wakeup, re-evaluate the situation and get out of that
-> > > code path but in any case it would be tricky.
-> > 
-> > In the second version of the patch I used an rwsem that made us wait for these
-> > allocations to complete before we changed gfp_allowed_mask.
-> 
-> This will be a very, very hot semaphore. What's the impact on performance?
-
-rwsems are highly optimized AFAICT, but this is a good question of course.
-
-I have no data at the moment.
-
-Rafael
+On 1/18/2010 3:46 PM, Jarek Poplawski wrote:
+> On Mon, Jan 18, 2010 at 11:29:31AM -0500, Michael Breuer wrote:
+>    
+>> Ok - up on the two patches, no DMAR. Some early observations:
+>>
+>> 1. There's an early on MMAP oops (see below). This happens once, at
+>> the completion of the transition to runlevel 5 (I've seen it
+>> entering runlevel 3 as well). This does not recur when runlevels are
+>> subsequently changed. I do not see this when running with DMAR
+>> enabled.
+>>      
+> OK, you mentioned this oops (actually a warning only) happened during
+> previous tests too.
+>    
+Yes - dk if it's significant or not. Only obvious difference between 
+DMAR and not.
+>    
+>> 2. The dropped tx packet (DHCP) is a bit harder to recreate, but it
+>> still happens.
+>>      
+> Btw, I guess you improved the test because you didn't mention it here,
+> even after my explicit question?:
+> http://permalink.gmane.org/gmane.linux.network/149171
+>    
+I had been focusing on the hangs - dhcp causing the initial crash from 
+December. After things stabilized with the af patch & skb may pull I 
+started noticing the dropped tx packets. I reported the TX loss on the 
+16th of January after confirming the issue.
+>    
+>> Interestingly, I initially saw no dropped packets
+>> with ping - but after I went the DCHP route and eventually
+>> reconnected, I could then cause dropped tx packets with ping. To
+>> clarify:
+>>
+>> a) start throughput
+>> b) ping device - no packet loss - this was true for the entire test run.
+>> c) start throughput again
+>> d) ping - no loss.
+>> e) drop wifi on the device&  restart - first attempt worked. Repeat
+>> attempt yielded the dropped DHCPOFFER packets. After about 6 tries,
+>> the device reconnected to wifi.
+>> f) ping again (after the reconnection) - packet loss rate about 80%.
+>> g) simultaneously ping the wifi router - no loss.
+>> h) After a while, packets are no longer dropped during ping. If I
+>> manage to cause the dhcp drop again, and then ping after the device
+>> finally reconnects, packet loss is significant for a while (maybe 30
+>> sec to a minute). Then things return to normal. Note that the packet
+>> loss continues even if the reported throughput drops to nil.
+>> i) I can't cause the initial packet loss at RX rates below about
+>> 30,000KBPS (as reported by nethogs).  At rates over 40 I can
+>> reproduce this on this set of patches&  config about 60% of the
+>> time.
+>>      
+> I forgot to mention, but did you try to check if these lost ping
+> packets are "being dropped somewhere after wireshark sees them and
+> before hitting the wire" like DHCPOFFER? Aren't there any sky2
+> warnings/resets while this happens?
+>
+> Jarek P.
+>    
+Yes. There are no errors, and no statistics anywhere that I know to look 
+reflect the loss. Nothing in netstat; ethtool -S; etc. The only loss 
+reported is RX. The recent TX warnings/resets happened while the machine 
+was up for several days and while unattended and under high RX load.
