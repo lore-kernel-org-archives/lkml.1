@@ -1,155 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654Ab0ARR16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704Ab0ARR2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755654Ab0ARR16 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 12:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145Ab0ARR1y
+	id S1755704Ab0ARR2d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 12:28:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299Ab0ARR2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 12:27:54 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:34562 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755127Ab0ARRU1 (ORCPT
+	Mon, 18 Jan 2010 12:28:30 -0500
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:52797 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755141Ab0ARRUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 12:20:27 -0500
+	Mon, 18 Jan 2010 12:20:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=uUJy5wVTYjeaSnenYPGAU9mQus9YgKULr3pRJUjlQGLWjjVORYtEwCsTdVMFceS2Oi
-         PIlyLm8tT8w4NM+sgtU54H2qRX9W9Oe95TjxizoemZsQAeYNNZlYpMaT5+DZWCNYu6yq
-         SyXVPyKMsRlXtgHEUf3tZSkfAr9KxGy8acmc8=
-Date: Mon, 18 Jan 2010 18:20:23 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Jason Baron <jbaron@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] perf_event: cleanup for event profile buffer
-	operation
-Message-ID: <20100118172021.GL10364@nowhere>
-References: <4B54654A.4090601@cn.fujitsu.com> <4B5465D8.9070203@cn.fujitsu.com> <4B548A9A.1020806@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B548A9A.1020806@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=YVRWrPDeV26HUmBKSUln3BtkovFQ7wynCi9vEwqEFdiCv9R9CgGCHmsgyJ6ZM4iqTP
+         c/Gb208ujRz/ujbxL5bLy2d98a/34fhyqGniAB0C4/Fi/fnqgor95YxOe9QsmOv5LhRU
+         +xL8i68ZJMkvtM34hKNAfjMnNjeddIDbe+0Z4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 18 Jan 2010 18:18:47 +0100
+Message-Id: <20100118171847.14623.38391.sendpatchset@localhost>
+In-Reply-To: <20100118171349.14623.90030.sendpatchset@localhost>
+References: <20100118171349.14623.90030.sendpatchset@localhost>
+Subject: [PATCH 33/64] cy82c693: fix PIO timings calculations
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 11:21:46AM -0500, Masami Hiramatsu wrote:
-> Xiao Guangrong wrote:
-> > Introduce ftrace_profile_buf_begin() and ftrace_profile_buf_end() to
-> > operate event profile buffer, clean up redundant code
-> > 
-> > Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> [...]
-> 
-> > diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-> > index 9e25573..f0fa16b 100644
-> > --- a/kernel/trace/trace_event_profile.c
-> > +++ b/kernel/trace/trace_event_profile.c
-> > @@ -9,11 +9,8 @@
-> >  #include "trace.h"
-> >  
-> >  
-> > -char *perf_trace_buf;
-> > -EXPORT_SYMBOL_GPL(perf_trace_buf);
-> > -
-> > -char *perf_trace_buf_nmi;
-> > -EXPORT_SYMBOL_GPL(perf_trace_buf_nmi);
-> > +static char *perf_trace_buf;
-> > +static char *perf_trace_buf_nmi;
-> >  
-> >  typedef typeof(char [FTRACE_MAX_PROFILE_SIZE]) perf_trace_t ;
-> >  
-> > @@ -120,3 +117,56 @@ void ftrace_profile_disable(int event_id)
-> >  	}
-> >  	mutex_unlock(&event_mutex);
-> >  }
-> > +
-> > +void *ftrace_profile_buf_begin(int size, unsigned short type, int *rctxp,
-> > +			       unsigned long *irq_flags)
-> > +{
-> > +	struct trace_entry *entry;
-> > +	char *trace_buf, *raw_data;
-> > +	int pc, cpu;
-> > +
-> > +	pc = preempt_count();
-> > +
-> > +	/* Protect the per cpu buffer, begin the rcu read side */
-> > +	local_irq_save(*irq_flags);
-> > +
-> > +	*rctxp = perf_swevent_get_recursion_context();
-> > +	if (*rctxp < 0)
-> > +		goto err_recursion;
-> > +
-> > +	cpu = smp_processor_id();
-> > +
-> > +	if (in_nmi())
-> > +		trace_buf = rcu_dereference(perf_trace_buf_nmi);
-> > +	else
-> > +		trace_buf = rcu_dereference(perf_trace_buf);
-> > +
-> > +	if (!trace_buf)
-> > +		goto err;
-> > +
-> > +	raw_data = per_cpu_ptr(trace_buf, cpu);
-> > +
-> > +	/* zero the dead bytes from align to not leak stack to user */
-> > +	*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
-> > +
-> > +	entry = (struct trace_entry *)raw_data;
-> > +	tracing_generic_entry_update(entry, *irq_flags, pc);
-> > +	entry->type = type;
-> > +
-> > +	return raw_data;
-> > +err:
-> > +	perf_swevent_put_recursion_context(*rctxp);
-> > +err_recursion:
-> > +	local_irq_restore(*irq_flags);
-> > +	return NULL;
-> > +}
-> > +
-> > +void ftrace_profile_buf_end(void *raw_data, int size, int rctx, u64 addr,
-> > +			    u64 count, unsigned long irq_flags)
-> > +{
-> > +	struct trace_entry *entry = raw_data;
-> > +
-> > +	perf_tp_event(entry->type, addr, count, raw_data, size);
-> > +	perf_swevent_put_recursion_context(rctx);
-> > +	local_irq_restore(irq_flags);
-> > +}
-> 
-> Hmm, could you make it inline-functions or add __kprobes?
-> Because it is called from kprobes, we don't want to probe
-> the function which will be called from kprobes handlers itself.
-> 
-> (IMHO, from the viewpoint of performance, inline-function
->  could be better.)
-> 
-> Thank you,
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] cy82c693: fix PIO timings calculations
 
+Just use the standard ide_timing_compute() helper to calculate
+PIO timings.  This fixes many issues with the open-coded version
+like using 16-bit timings when 8-bit ones should be used or not
+accounting for the enhanced cycle time specified by the device.
 
+Based on libata pata_cypress host driver.
 
-Yeah, may be inline ftrace_profile_buf_end, would be better.
-But we shouldn't inline ftrace_profile_buf_begin() I guess,
-considering its size.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/cy82c693.c |  106 +++++++++----------------------------------------
+ 1 file changed, 20 insertions(+), 86 deletions(-)
 
-While at it, may be let's choose more verbose names
-like
-
-ftrace_profile_buf_fill() and ftrace_profile_buf_submit().
-
-Also, profile is a bit of a misnomer. Not a problem since
-ftrace_profile_templ_##call() is already a misnomer, but
-we should start a bit of a rename. Sometimes, perf only
-profiles trace events as counters and sometimes it records
-the raw samples too.
-
-So, as more generic names, I would suggest:
-
-ftrace_perf_buf_fill() and ftrace_perf_buf_submit().
-
-At least it's unambiguous, I hope...
-
+Index: b/drivers/ide/cy82c693.c
+===================================================================
+--- a/drivers/ide/cy82c693.c
++++ b/drivers/ide/cy82c693.c
+@@ -1,6 +1,7 @@
+ /*
+  *  Copyright (C) 1998-2000 Andreas S. Krebs (akrebs@altavista.net), Maintainer
+  *  Copyright (C) 1998-2002 Andre Hedrick <andre@linux-ide.org>, Integrator
++ *  Copyright (C) 2007-2010 Bartlomiej Zolnierkiewicz
+  *
+  * CYPRESS CY82C693 chipset IDE controller
+  *
+@@ -81,80 +82,6 @@
+ #define CY82_INDEX_CHANNEL1	0x31
+ #define CY82_INDEX_TIMEOUT	0x32
+ 
+-/* the min and max PCI bus speed in MHz - from datasheet */
+-#define CY82C963_MIN_BUS_SPEED	25
+-#define CY82C963_MAX_BUS_SPEED	33
+-
+-/* the struct for the PIO mode timings */
+-typedef struct pio_clocks_s {
+-	u8	address_time;	/* Address setup (clocks) */
+-	u8	time_16r;	/* clocks for 16bit IOR (0xF0=Active/data, 0x0F=Recovery) */
+-	u8	time_16w;	/* clocks for 16bit IOW (0xF0=Active/data, 0x0F=Recovery) */
+-	u8	time_8;		/* clocks for 8bit (0xF0=Active/data, 0x0F=Recovery) */
+-} pio_clocks_t;
+-
+-/*
+- * calc clocks using bus_speed
+- * returns (rounded up) time in bus clocks for time in ns
+- */
+-static int calc_clk(int time, int bus_speed)
+-{
+-	int clocks;
+-
+-	clocks = (time*bus_speed+999)/1000 - 1;
+-
+-	if (clocks < 0)
+-		clocks = 0;
+-
+-	if (clocks > 0x0F)
+-		clocks = 0x0F;
+-
+-	return clocks;
+-}
+-
+-/*
+- * compute the values for the clock registers for PIO
+- * mode and pci_clk [MHz] speed
+- *
+- * NOTE: for mode 0,1 and 2 drives 8-bit IDE command control registers are used
+- *       for mode 3 and 4 drives 8 and 16-bit timings are the same
+- *
+- */
+-static void compute_clocks(u8 pio, pio_clocks_t *p_pclk)
+-{
+-	struct ide_timing *t = ide_timing_find_mode(XFER_PIO_0 + pio);
+-	int clk1, clk2;
+-	int bus_speed = ide_pci_clk ? ide_pci_clk : 33;
+-
+-	/* we don't check against CY82C693's min and max speed,
+-	 * so you can play with the idebus=xx parameter
+-	 */
+-
+-	/* let's calc the address setup time clocks */
+-	p_pclk->address_time = (u8)calc_clk(t->setup, bus_speed);
+-
+-	/* let's calc the active and recovery time clocks */
+-	clk1 = calc_clk(t->active, bus_speed);
+-
+-	/* calc recovery timing */
+-	clk2 = t->cycle - t->active - t->setup;
+-
+-	clk2 = calc_clk(clk2, bus_speed);
+-
+-	clk1 = (clk1<<4)|clk2;	/* combine active and recovery clocks */
+-
+-	/* note: we use the same values for 16bit IOR and IOW
+-	 *	those are all the same, since I don't have other
+-	 *	timings than those from ide-lib.c
+-	 */
+-
+-	p_pclk->time_16r = (u8)clk1;
+-	p_pclk->time_16w = (u8)clk1;
+-
+-	/* what are good values for 8bit ?? */
+-	p_pclk->time_8 = (u8)clk1;
+-}
+-
+ /*
+  * set DMA mode a specific channel for CY82C693
+  */
+@@ -190,8 +117,11 @@ static void cy82c693_set_pio_mode(ide_dr
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+-	pio_clocks_t pclk;
++	int bus_speed = ide_pci_clk ? ide_pci_clk : 33;
++	const unsigned long T = 1000000 / bus_speed;
+ 	unsigned int addrCtrl;
++	struct ide_timing t;
++	u8 time_16, time_8;
+ 
+ 	/* select primary or secondary channel */
+ 	if (hwif->index > 0) {  /* drive is on the secondary channel */
+@@ -204,8 +134,12 @@ static void cy82c693_set_pio_mode(ide_dr
+ 		}
+ 	}
+ 
+-	/* let's calc the values for this PIO mode */
+-	compute_clocks(pio, &pclk);
++	ide_timing_compute(drive, XFER_PIO_0 + pio, &t, T, 1);
++
++	time_16 = clamp_val(t.recover - 1, 0, 15) |
++		  (clamp_val(t.active - 1, 0, 15) << 4);
++	time_8 = clamp_val(t.act8b - 1, 0, 15) |
++		 (clamp_val(t.rec8b - 1, 0, 15) << 4);
+ 
+ 	/* now let's write  the clocks registers */
+ 	if ((drive->dn & 1) == 0) {
+@@ -217,13 +151,13 @@ static void cy82c693_set_pio_mode(ide_dr
+ 		pci_read_config_dword(dev, CY82_IDE_ADDRSETUP, &addrCtrl);
+ 
+ 		addrCtrl &= (~0xF);
+-		addrCtrl |= (unsigned int)pclk.address_time;
++		addrCtrl |= clamp_val(t.setup - 1, 0, 15);
+ 		pci_write_config_dword(dev, CY82_IDE_ADDRSETUP, addrCtrl);
+ 
+ 		/* now let's set the remaining registers */
+-		pci_write_config_byte(dev, CY82_IDE_MASTER_IOR, pclk.time_16r);
+-		pci_write_config_byte(dev, CY82_IDE_MASTER_IOW, pclk.time_16w);
+-		pci_write_config_byte(dev, CY82_IDE_MASTER_8BIT, pclk.time_8);
++		pci_write_config_byte(dev, CY82_IDE_MASTER_IOR, time_16);
++		pci_write_config_byte(dev, CY82_IDE_MASTER_IOW, time_16);
++		pci_write_config_byte(dev, CY82_IDE_MASTER_8BIT, time_8);
+ 	} else {
+ 		/*
+ 		 * set slave drive
+@@ -233,13 +167,13 @@ static void cy82c693_set_pio_mode(ide_dr
+ 		pci_read_config_dword(dev, CY82_IDE_ADDRSETUP, &addrCtrl);
+ 
+ 		addrCtrl &= (~0xF0);
+-		addrCtrl |= ((unsigned int)pclk.address_time<<4);
++		addrCtrl |= (clamp_val(t.setup - 1, 0, 15) << 4);
+ 		pci_write_config_dword(dev, CY82_IDE_ADDRSETUP, addrCtrl);
+ 
+ 		/* now let's set the remaining registers */
+-		pci_write_config_byte(dev, CY82_IDE_SLAVE_IOR, pclk.time_16r);
+-		pci_write_config_byte(dev, CY82_IDE_SLAVE_IOW, pclk.time_16w);
+-		pci_write_config_byte(dev, CY82_IDE_SLAVE_8BIT, pclk.time_8);
++		pci_write_config_byte(dev, CY82_IDE_SLAVE_IOR, time_16);
++		pci_write_config_byte(dev, CY82_IDE_SLAVE_IOW, time_16);
++		pci_write_config_byte(dev, CY82_IDE_SLAVE_8BIT, time_8);
+ 	}
+ }
+ 
+@@ -325,6 +259,6 @@ static void __exit cy82c693_ide_exit(voi
+ module_init(cy82c693_ide_init);
+ module_exit(cy82c693_ide_exit);
+ 
+-MODULE_AUTHOR("Andreas Krebs, Andre Hedrick");
++MODULE_AUTHOR("Andreas Krebs, Andre Hedrick, Bartlomiej Zolnierkiewicz");
+ MODULE_DESCRIPTION("PCI driver module for the Cypress CY82C693 IDE");
+ MODULE_LICENSE("GPL");
