@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053Ab0ARV2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083Ab0ARVaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756053Ab0ARV2U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 16:28:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197Ab0ARV2S
+	id S1756083Ab0ARVaw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 16:30:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052Ab0ARVav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 16:28:18 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:56685 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413Ab0ARV2S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 16:28:18 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: mcs7830 usb net: "scheduling while atomic" danger?
-Date: Mon, 18 Jan 2010 22:23:49 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Alek Du <alek.du@intel.com>,
-       Jacob Pan <jacob.jun.pan@intel.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <20100118184942.GA10171@rhlx01.hs-esslingen.de> <Pine.LNX.4.64.1001182206190.30446@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.1001182206190.30446@ask.diku.dk>
+	Mon, 18 Jan 2010 16:30:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:52561 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755761Ab0ARVas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 16:30:48 -0500
+Date: Mon, 18 Jan 2010 22:30:29 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org
+Subject: Re: [PATCH] list.h: add list_for_each_struct_entry macro
+Message-ID: <20100118213028.GD4521@psychotron.redhat.com>
+References: <20100118162338.GD4229@psychotron.lab.eng.brq.redhat.com>
+ <1263835033.3667.23.camel@achroite.uk.solarflarecom.com>
+ <20100118210718.GC4521@psychotron.redhat.com>
+ <1263849258.3667.43.camel@achroite.uk.solarflarecom.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001182223.49764.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/WGm5Oc6NssWUh9Dy40nYjcQUMWAOqR+QmpxL
- eLWjubk18IBmpEZi16ls9YqMId8wdSe/gGoy+9JjTs3e6QrBxc
- Ww7bgssaKX+s1gawC88Ig==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263849258.3667.43.camel@achroite.uk.solarflarecom.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 January 2010, Julia Lawall wrote:
-> On Mon, 18 Jan 2010, Andreas Mohr wrote:
-> > 
-> > Forgive me, but doesn't that mutex_lock()/msleep() (ab)use mean
-> > risking a "scheduling while atomic"?
-> > (such as discussed in e.g.
-> > http://search.luky.org/linux-kernel.2004/msg92817.html )
-> > 
-> > 
-> > And, if that is the case, shouldn't all such cases simply be killed for
-> > good via a capable semantic patch?
-> 
-> The semantic match shown below finds 55 matches.  All but two involve 
-> mutex_lock.  Those are in the file 
-> /var/linuxes/linux-next/drivers/usb/host/ehci-hub.c
-> in the functions ehci_bus_suspend and ehci_hub_control.
+Mon, Jan 18, 2010 at 10:14:18PM CET, bhutchings@solarflare.com wrote:
+>On Mon, 2010-01-18 at 22:07 +0100, Jiri Pirko wrote:
+>> Mon, Jan 18, 2010 at 06:17:13PM CET, bhutchings@solarflare.com wrote:
+>[...]
+>> >#define list_for_each_struct_entry(pos, head, type, posmember, member)	     \
+>> >	for (pos = list_empty(head) ? NULL :				     \
+>> >		&list_first_entry(head, type, member)->posmember;	     \
+>> >	     prefetch(container_of(pos, type, posmember)->member.next), pos; \
+>> >	     pos = list_is_last(&container_of(pos, type, posmember)->member, \
+>> >				head) ?	NULL :				     \
+>> >		&list_entry(container_of(pos, type, posmember)->member.next, \
+>> >			    type, member)->posmember)
+>> >
+>> 
+>> At the first glance, this would take even more cputime for lists longer
+>> than 2 or so, wouldn't it?
+>
+>If you're concerned about speed, measure it, don't guess.
 
-That code looks indeed broken as was added las July as part of 331ac6b288d9
-"USB: EHCI: Add Intel Moorestown EHCI controller HOSTPCx extensions and
-support phy low power mode". The reason that this hasn't triggered is
-probably the lack of Moorestown machines in the field.
+Well I just see extra code
+"list_is_last(&container_of(pos, type, posmember)->member, head)"
+to be done in each iteration. Also I do not see additional value in doing this.
+(Unlike in checking list_empty(head)).
 
-	Arnd
+Anyway, if you want to use this optimization, I guess more code in list.h could
+use this.
+
+Jirka
+>
+>Ben.
+>
+>-- 
+>Ben Hutchings, Senior Software Engineer, Solarflare Communications
+>Not speaking for my employer; that's the marketing department's job.
+>They asked us to note that Solarflare product names are trademarked.
+>
