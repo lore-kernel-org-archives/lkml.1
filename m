@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490Ab0ARLhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118Ab0ARLmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490Ab0ARLhG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 06:37:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441Ab0ARLhA
+	id S1754118Ab0ARLmL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 06:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842Ab0ARLmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 06:37:00 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54257 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754429Ab0ARLg7 (ORCPT
+	Mon, 18 Jan 2010 06:42:09 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50420 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753813Ab0ARLmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 06:36:59 -0500
-Message-ID: <4B5447D8.9060701@cs.helsinki.fi>
-Date: Mon, 18 Jan 2010 13:36:56 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-CC: Florian Mickler <florian@mickler.org>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: 2.6.33-rc2: Reported regressions from 2.6.32
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <20100116174821.GA18306@redhat.com> <201001162257.16277.rjw@sisk.pl> <alpine.LFD.2.00.1001161402400.13231@localhost.localdomain> <20100117123218.GA3182@redhat.com> <84144f021001170618g708a7c14ob1b222ab1cbdaa20@mail.gmail.com> <20100117161726.5752b181@schatten.dmk.lab> <84144f021001170843s67afae24oaabf09e9b13af8db@mail.gmail.com> <84144f021001170923o30d37becw57ebbd780f63b69e@mail.gmail.com> <20100118112619.GA8387@redhat.com>
-In-Reply-To: <20100118112619.GA8387@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 18 Jan 2010 06:42:08 -0500
+Subject: Re: [PATCH 04/40] sched: implement __set_cpus_allowed()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <4B54445E.302@kernel.org>
+References: <1263776272-382-1-git-send-email-tj@kernel.org>
+	 <1263776272-382-5-git-send-email-tj@kernel.org>
+	 <1263808570.4283.149.camel@laptop>  <4B54445E.302@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jan 2010 12:41:09 +0100
+Message-ID: <1263814869.4283.296.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael S. Tsirkin kirjoitti:
-> Well, I've been using 2.6.32 day to day since it came out and never saw
-> this bug there. What do you do to trigger this bug?
+On Mon, 2010-01-18 at 20:22 +0900, Tejun Heo wrote:
+> On 01/18/2010 06:56 PM, Peter Zijlstra wrote:
+> >> NOTE: It would be nice to implement kthread_bind() in terms of
+> >>       __set_cpus_allowed() if we can drop the capability to bind to a
+> >>       dead CPU from kthread_bind(), which doesn't seem too popular
+> >>       anyway.  With such change, we'll have set_cpus_allowed_ptr() for
+> >>       regular tasks and kthread_bind() for kthreads and can use
+> >>       PF_THREAD_BOUND instead of passing @force parameter around.
+> > 
+> > 
+> > And your changelog still sucks... it only says what it does, not why.
+> > 
+> > still hate the patch too.
+> 
+> These part haven't changed at all since the last posting so if you
+> disliked it before it's kind of expected you still do so.
 
-It usually triggers when I'm building a kernel. I don't have a good test 
-case for this, I just need to use the machine long enough to see a 
-flash. And it's pretty hard to trigger in 2.6.32.
+You could at least have augmented the changelog with the why.. my memory
+thinks it had to so with that silly move back on up story.
 
-I am now bisecting in the middle of the i915 merge in 2.6.31 so if 
-people know there are suspicious commits that I should try to revert, 
-please let me know.
+> Anyways, I'm not the greatest fan of this patch either.  Let's see how
+> the whole series fares out first and try to make this better.  What do
+> you think about doing what's described in the NOTE?
 
-			Pekka
+I'm still not sure we need any of this. For new threads we have the
+stopped state and kthread_bind() should work in its current form (except
+you need patch 1 in your series when you're creating new threads when
+the cpu is currently going down).
+
+
+
