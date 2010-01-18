@@ -1,98 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173Ab0ARPxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216Ab0ARPxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754173Ab0ARPxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 10:53:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112Ab0ARPxW
+	id S1754216Ab0ARPxw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 10:53:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052Ab0ARPxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 10:53:22 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39107 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754075Ab0ARPxU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 10:53:20 -0500
-X-Sasl-enc: IOKM/xcNPmnuNz23j5Y7GKaL9jE0+CzdR/CxHw/Tjw+k 1263829999
-Message-ID: <4B548238.9080008@imap.cc>
-Date: Mon, 18 Jan 2010 16:46:00 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>, Greg KH <gregkh@suse.de>,
+	Mon, 18 Jan 2010 10:53:51 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53538 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754185Ab0ARPxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 10:53:50 -0500
+Date: Mon, 18 Jan 2010 16:53:47 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Michal Marek <mmarek@suse.cz>
+Cc: David Rientjes <rientjes@google.com>, Ingo Molnar <mingo@elte.hu>,
        Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
-Subject: Re: linux-next build failure (was: Re: [PATCH/REPOST] pci: push deprecated
- pci_find_device() function to last user)
-References: <10f740e81001180644yd44121cv6dd963349563a290@mail.gmail.com>
-In-Reply-To: <10f740e81001180644yd44121cv6dd963349563a290@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig8B6F6B46BA13FB05BA6FA36D"
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] kbuild: improve version string logic
+In-Reply-To: <4B5442CC.8050200@suse.cz>
+Message-ID: <alpine.LRH.2.00.1001181652140.15694@twin.jikos.cz>
+References: <alpine.DEB.2.00.1001041330230.26148@chino.kir.corp.google.com> <4B4345AF.9040600@suse.cz> <alpine.DEB.2.00.1001131300360.26527@chino.kir.corp.google.com> <20100116063754.GC20342@elte.hu> <20100116183445.29fc5d50.sfr@canb.auug.org.au>
+ <20100116092658.GA23999@elte.hu> <4B542C99.9000801@suse.cz> <alpine.DEB.2.00.1001180243300.20677@chino.kir.corp.google.com> <4B5442CC.8050200@suse.cz>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig8B6F6B46BA13FB05BA6FA36D
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, 18 Jan 2010, Michal Marek wrote:
 
-Am 18.01.2010 15:44 schrieb Geert Uytterhoeven:
-> On Fri, Jan 15, 2010 at 19:08, Jesse Barnes <jbarnes@virtuousgeek.org> =
-wrote:
->> On Thu, 14 Jan 2010 23:18:41 +0100 (CET)
->> Tilman Schmidt <tilman@imap.cc> wrote:
->>>
->>> Subject: [PATCH] pci: push deprecated pci_find_device() function to
->>> last user
->>>
->>> The ISDN4Linux HiSax driver family contains the last remaining users
->>> of the deprecated pci_find_device() function. This patch creates a
->>> private copy of that function in HiSax, and removes the now unused
->>> global function together with its controlling configuration option,
->>> CONFIG_PCI_LEGACY.
->>>
->>> Impact: code reorganization, no functional change
->>> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
->>> ---
->>> Note: This patch is not, nor does it intend to be, checkpatch.pl
->>> clean. The issues checkpatch.pl reports on it were already present
->>> before, and are unrelated to the topic of this patch.
->>
->> Applied to my linux-next branch, thanks Tilman.
->=20
-> Just guessing: something's wrong if CONFIG_PCI is not set?
->=20
-> http://kisskb.ellerman.id.au/kisskb/buildresult/2042085/
+> > Michal, where are you hosting your git tree?  Are you going to be taking 
+> > over kbuild-next on git.kernel.org?
+> 
+> git://repo.or.cz/linux-kbuild.git for-next
+> (http://repo.or.cz/w/linux-kbuild.git). Maybe I should ask for an
+> account in git.kernel.org account and move it there, you're not the
+> first one to wonder where to find the tree :).
 
-Sorry, oversight of mine. I thought that hisax/avm_pci.c depended on
-CONFIG_PCI, but it doesn't, as it also handles ISA PnP cards. I will
-issue a corrected patch ASAP.
+Yes, I think it is preferred.
 
-Thanks,
-Tilman
+I know, I know, the proper URL is listed in MAINTAINERS file ... still, I 
+believe that what most people do when looking for particular git tree is 
+going to http://git.kernel.org/ and looking around there.
 
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
+So having the tree there really helps to give it much more exposure than 
+on some random git hosting.
 
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
---------------enig8B6F6B46BA13FB05BA6FA36D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAktUgkIACgkQQ3+did9BuFvLhgCdFlr0VFSqbRUdSFpn5zHWu6gt
-1U0An0qs6CXr/zChybVdaA42sdnaRzuu
-=jS+8
------END PGP SIGNATURE-----
-
---------------enig8B6F6B46BA13FB05BA6FA36D--
