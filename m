@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098Ab0ARPpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153Ab0ARPuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098Ab0ARPpK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 10:45:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046Ab0ARPpI
+	id S1754153Ab0ARPuW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 10:50:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793Ab0ARPuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 10:45:08 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45364 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753168Ab0ARPpF (ORCPT
+	Mon, 18 Jan 2010 10:50:21 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56994 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753223Ab0ARPuU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 10:45:05 -0500
-Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Avi Kivity <avi@redhat.com>, Gleb Natapov <gleb@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org, akpm@linux-foundation.org,
-       andrew.c.morrow@gmail.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <20100118154149.38fa61d4@lxorguk.ukuu.org.uk>
-References: <20100118133755.GG30698@redhat.com>
-	 <84144f021001180609r4d7fbbd0p972d5bc0e227d09a@mail.gmail.com>
-	 <20100118141938.GI30698@redhat.com>
-	 <20100118143232.0a0c4b4d@lxorguk.ukuu.org.uk>
-	 <1263826198.4283.600.camel@laptop> <20100118150159.GB14345@redhat.com>
-	 <1263827194.4283.609.camel@laptop> <4B547A31.4090106@redhat.com>
-	 <1263827683.4283.610.camel@laptop> <4B547C09.8010906@redhat.com>
-	 <1263828247.4283.612.camel@laptop>
-	 <20100118154149.38fa61d4@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 16:44:34 +0100
-Message-ID: <1263829474.4283.617.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 18 Jan 2010 10:50:20 -0500
+Message-ID: <4B5482D3.305@s5r6.in-berlin.de>
+Date: Mon, 18 Jan 2010 16:48:35 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH 31/40] libata: take advantage of cmwq and remove concurrency
+ limitations
+References: <1263776272-382-1-git-send-email-tj@kernel.org> <1263776272-382-32-git-send-email-tj@kernel.org>
+In-Reply-To: <1263776272-382-32-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 15:41 +0000, Alan Cox wrote:
-> On Mon, 18 Jan 2010 16:24:07 +0100
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Mon, 2010-01-18 at 17:19 +0200, Avi Kivity wrote:
-> > > > I would not advice that, just mlock() the text and data you need for the
-> > > > real-time thread. mlockall() is a really blunt instrument.
-> > > >    
-> > > 
-> > > May not be feasible due to libraries. 
-> > 
-> > Esp for the real-time case I could advise not to use those libraries
-> > then, since they're clearly not designed for that use case.
-> 
-> In "hard" real time cases an awful lot of libraries have things like
-> memory allocations in them and don't care about stack growth which can
-> cause faults and sleeps. The memory allocator if you are running threaded
-> was not real time priority aware either last time I checked so the
-> standard libraries are not going to give the behaviour you want unless
-> you have a proper RT environment, and even then it may be a bit iffy here
-> and there.
+Tejun Heo wrote:
+[...]
+> b. ata_aux_wq which is used for SCSI probing has single thread.  In
+>    cases where SCSI probing is stalled for extended period of time
+>    which is possible for ATAPI devices, this will stall all probing.
 
-I'm quite aware of that, which is why we recommend people to
-pre-allocate, mlock() and pre-fault everything in advance and make sure
-the RT thread doesn't touch any data/text outside of that and uses a
-limited set of system calls.
+Are things like INQUIRY and possibly motor spin-up performed there?
+If yes, ...
 
-You can also do that for stacks using pthread_attr_setstack().
+[...]
+> #b is solved by using the default wq instead and achieving exclusion
+> via per-port mutex.
+[...]
+> --- a/drivers/ata/libata-eh.c
+> +++ b/drivers/ata/libata-eh.c
+> @@ -727,7 +727,7 @@ void ata_scsi_error(struct Scsi_Host *host)
+>  	if (ap->pflags & ATA_PFLAG_LOADING)
+>  		ap->pflags &= ~ATA_PFLAG_LOADING;
+>  	else if (ap->pflags & ATA_PFLAG_SCSI_HOTPLUG)
+> -		queue_delayed_work(ata_aux_wq, &ap->hotplug_task, 0);
+> +		schedule_delayed_work(&ap->hotplug_task, 0);
+>  
+>  	if (ap->pflags & ATA_PFLAG_RECOVERED)
+>  		ata_port_printk(ap, KERN_INFO, "EH complete\n");
+> @@ -2938,7 +2938,7 @@ static int ata_eh_revalidate_and_attach(struct ata_link *link,
+>  			ehc->i.flags |= ATA_EHI_SETMODE;
+>  
+>  			/* schedule the scsi_rescan_device() here */
+> -			queue_work(ata_aux_wq, &(ap->scsi_rescan_task));
+> +			schedule_work(&(ap->scsi_rescan_task));
+>  		} else if (dev->class == ATA_DEV_UNKNOWN &&
+>  			   ehc->tries[dev->devno] &&
+>  			   ata_class_enabled(ehc->classes[dev->devno])) {
+> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+> index f4ea5a8..08e2ef8 100644
+> --- a/drivers/ata/libata-scsi.c
+> +++ b/drivers/ata/libata-scsi.c
+> @@ -3408,8 +3408,7 @@ void ata_scsi_scan_host(struct ata_port *ap, int sync)
+>  				"                  switching to async\n");
+>  	}
+>  
+> -	queue_delayed_work(ata_aux_wq, &ap->hotplug_task,
+> -			   round_jiffies_relative(HZ));
+> +	schedule_delayed_work(&ap->hotplug_task, round_jiffies_relative(HZ));
+>  }
+>  
+>  /**
+[...]
 
-
-
+... wouldn't queue_delayed_work(system_long_wq, &ap->hotplug_task, ...);
+be more appropriate then?
+-- 
+Stefan Richter
+-=====-==-=- ---= =--=-
+http://arcgraph.de/sr/
