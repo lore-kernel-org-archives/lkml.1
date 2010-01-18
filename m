@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562Ab0ARA6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389Ab0ARA5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562Ab0ARA6R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 19:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435Ab0ARA5x
+	id S1755389Ab0ARA5n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 19:57:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324Ab0ARA5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 19:57:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54389 "EHLO hera.kernel.org"
+	Sun, 17 Jan 2010 19:57:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54437 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755357Ab0ARAxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 19:53:35 -0500
+	id S1755389Ab0ARAxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 19:53:44 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
@@ -16,9 +16,9 @@ To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 25/40] workqueue: make single thread workqueue shared worker pool friendly
-Date: Mon, 18 Jan 2010 09:57:37 +0900
-Message-Id: <1263776272-382-26-git-send-email-tj@kernel.org>
+Subject: [PATCH 30/40] workqueue: implement work_busy()
+Date: Mon, 18 Jan 2010 09:57:42 +0900
+Message-Id: <1263776272-382-31-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1263776272-382-1-git-send-email-tj@kernel.org>
 References: <1263776272-382-1-git-send-email-tj@kernel.org>
@@ -27,319 +27,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reimplement st (single thread) workqueue so that it's friendly to
-shared worker pool.  It was originally implemented by confining st
-workqueues to use cwq of a fixed cpu and always having a worker for
-the cpu.  This implementation isn't very friendly to shared worker
-pool and suboptimal in that it ends up crossing cpu boundaries often.
-
-Reimplement st workqueue using dynamic single cpu binding and
-cwq->limit.  WQ_SINGLE_THREAD is replaced with WQ_SINGLE_CPU.  In a
-single cpu workqueue, at most single cwq is bound to the wq at any
-given time.  Arbitration is done using atomic accesses to
-wq->single_cpu when queueing a work.  Once bound, the binding stays
-till the workqueue is drained.
-
-Note that the binding is never broken while a workqueue is frozen.
-This is because idle cwqs may have works waiting in delayed_works
-queue while frozen.  On thaw, the cwq is restarted if there are any
-delayed works or unbound otherwise.
-
-When combined with max_active limit of 1, single cpu workqueue has
-exactly the same execution properties as the original single thread
-workqueue while allowing sharing of per-cpu workers.
+Implement work_busy() which tests whether a work is either pending or
+running.  The test isn't synchronized against workqueue operation and
+the result is only good as advisory hints or for debugging.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- include/linux/workqueue.h |    6 +-
- kernel/workqueue.c        |  139 ++++++++++++++++++++++++++++++++-------------
- 2 files changed, 103 insertions(+), 42 deletions(-)
+ include/linux/workqueue.h |    2 +-
+ kernel/workqueue.c        |   31 +++++++++++++++++++++++++++++++
+ 2 files changed, 32 insertions(+), 1 deletions(-)
 
 diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 7a260df..b012da7 100644
+index 265207d..4f8705f 100644
 --- a/include/linux/workqueue.h
 +++ b/include/linux/workqueue.h
-@@ -212,7 +212,7 @@ static inline bool work_static(struct work_struct *work) { return false; }
+@@ -293,8 +293,8 @@ extern int keventd_up(void);
+ extern void init_workqueues(void);
+ int execute_in_process_context(work_func_t fn, struct execute_work *);
  
- enum {
- 	WQ_FREEZEABLE		= 1 << 0, /* freeze during suspend */
--	WQ_SINGLE_THREAD	= 1 << 1, /* no per-cpu worker */
-+	WQ_SINGLE_CPU		= 1 << 1, /* only single cpu at a time */
- };
- 
- extern struct workqueue_struct *
-@@ -241,9 +241,9 @@ __create_workqueue_key(const char *name, unsigned int flags, int max_active,
- #define create_workqueue(name)					\
- 	__create_workqueue((name), 0, 1)
- #define create_freezeable_workqueue(name)			\
--	__create_workqueue((name), WQ_FREEZEABLE | WQ_SINGLE_THREAD, 1)
-+	__create_workqueue((name), WQ_FREEZEABLE | WQ_SINGLE_CPU, 1)
- #define create_singlethread_workqueue(name)			\
--	__create_workqueue((name), WQ_SINGLE_THREAD, 1)
-+	__create_workqueue((name), WQ_SINGLE_CPU, 1)
- 
- extern void destroy_workqueue(struct workqueue_struct *wq);
- 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 265f480..19cfa12 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -114,8 +114,7 @@ struct global_cwq {
- } ____cacheline_aligned_in_smp;
++extern bool work_busy(struct work_struct *work);
+ extern int flush_work(struct work_struct *work);
+-
+ extern int cancel_work_sync(struct work_struct *work);
  
  /*
-- * The per-CPU workqueue (if single thread, we always use the first
-- * possible cpu).  The lower WORK_STRUCT_FLAG_BITS of
-+ * The per-CPU workqueue.  The lower WORK_STRUCT_FLAG_BITS of
-  * work_struct->data are used for flags and thus cwqs need to be
-  * aligned at two's power of the number of flag bits.
-  */
-@@ -159,6 +158,8 @@ struct workqueue_struct {
- 	struct list_head	flusher_queue;	/* F: flush waiters */
- 	struct list_head	flusher_overflow; /* F: flush overflow list */
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 233278c..882d4d8 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -1960,6 +1960,37 @@ out_unlock:
+ EXPORT_SYMBOL_GPL(flush_workqueue);
  
-+	unsigned long		single_cpu;	/* cpu for single cpu wq */
-+
- 	int			saved_max_active; /* I: saved cwq max_active */
- 	const char		*name;		/* I: workqueue name */
- #ifdef CONFIG_LOCKDEP
-@@ -289,8 +290,6 @@ static DEFINE_PER_CPU(struct global_cwq, global_cwq);
- 
- static int worker_thread(void *__worker);
- 
--static int singlethread_cpu __read_mostly;
--
- static struct global_cwq *get_gcwq(unsigned int cpu)
- {
- 	return &per_cpu(global_cwq, cpu);
-@@ -302,14 +301,6 @@ static struct cpu_workqueue_struct *get_cwq(unsigned int cpu,
- 	return per_cpu_ptr(wq->cpu_wq, cpu);
- }
- 
--static struct cpu_workqueue_struct *target_cwq(unsigned int cpu,
--					       struct workqueue_struct *wq)
--{
--	if (unlikely(wq->flags & WQ_SINGLE_THREAD))
--		cpu = singlethread_cpu;
--	return get_cwq(cpu, wq);
--}
--
- static unsigned int work_color_to_flags(int color)
- {
- 	return color << WORK_STRUCT_COLOR_SHIFT;
-@@ -403,17 +394,84 @@ static void insert_work(struct cpu_workqueue_struct *cwq,
- 	wake_up_process(cwq->worker->task);
- }
- 
--static void __queue_work(unsigned int cpu, struct workqueue_struct *wq,
--			 struct work_struct *work)
-+/**
-+ * cwq_unbind_single_cpu - unbind cwq from single cpu workqueue processing
-+ * @cwq: cwq to unbind
+ /**
++ * work_busy - test whether a work is currently pending or running
++ * @work: the work to be tested
 + *
-+ * Try to unbind @cwq from single cpu workqueue processing.  If
-+ * @cwq->wq is frozen, unbind is delayed till the workqueue is thawed.
++ * Test whether @work is currently pending or running.  There is no
++ * synchronization around this function and the test result is
++ * unreliable and only useful as advisory hints or for debugging.  The
++ * caller is responsible for ensuring the workqueue @work was last
++ * queued on stays valid until this function returns.
 + *
-+ * CONTEXT:
-+ * spin_lock_irq(gcwq->lock).
++ * RETURNS:
++ * %true if @work is currently running, %false otherwise.
 + */
-+static void cwq_unbind_single_cpu(struct cpu_workqueue_struct *cwq)
- {
--	struct cpu_workqueue_struct *cwq = target_cwq(cpu, wq);
-+	struct workqueue_struct *wq = cwq->wq;
- 	struct global_cwq *gcwq = cwq->gcwq;
-+
-+	BUG_ON(wq->single_cpu != gcwq->cpu);
-+	/*
-+	 * Unbind from workqueue if @cwq is not frozen.  If frozen,
-+	 * thaw_workqueues() will either restart processing on this
-+	 * cpu or unbind if empty.  This keeps works queued while
-+	 * frozen fully ordered and flushable.
-+	 */
-+	if (likely(!(gcwq->flags & GCWQ_FREEZING))) {
-+		smp_wmb();	/* paired with cmpxchg() in __queue_work() */
-+		wq->single_cpu = NR_CPUS;
-+	}
-+}
-+
-+static void __queue_work(unsigned int req_cpu, struct workqueue_struct *wq,
-+			 struct work_struct *work)
++bool work_busy(struct work_struct *work)
 +{
++	struct cpu_workqueue_struct *cwq = get_wq_data(work);
 +	struct global_cwq *gcwq;
-+	struct cpu_workqueue_struct *cwq;
- 	struct list_head *worklist;
-+	unsigned int cpu;
- 	unsigned long flags;
-+	bool arbitrate;
- 
- 	debug_work_activate(work);
- 
--	spin_lock_irqsave(&gcwq->lock, flags);
-+	if (!(wq->flags & WQ_SINGLE_CPU)) {
-+		/* just use the requested cpu for multicpu workqueues */
-+		cwq = get_cwq(req_cpu, wq);
-+		gcwq = cwq->gcwq;
-+		spin_lock_irqsave(&gcwq->lock, flags);
-+	} else {
-+		/*
-+		 * It's a bit more complex for single cpu workqueues.
-+		 * We first need to determine which cpu is going to be
-+		 * used.  If no cpu is currently serving this
-+		 * workqueue, arbitrate using atomic accesses to
-+		 * wq->single_cpu; otherwise, use the current one.
-+		 */
-+	retry:
-+		cpu = wq->single_cpu;
-+		arbitrate = cpu == NR_CPUS;
-+		if (arbitrate)
-+			cpu = req_cpu;
++	unsigned long flags;
++	bool ret;
 +
-+		cwq = get_cwq(cpu, wq);
-+		gcwq = cwq->gcwq;
-+		spin_lock_irqsave(&gcwq->lock, flags);
++	if (!cwq)
++		return false;
++	gcwq = cwq->gcwq;
 +
-+		/*
-+		 * The following cmpxchg() is full barrier paired with
-+		 * smp_wmb() in cwq_unbind_single_cpu() and guarantees
-+		 * that all changes to wq->st_* fields are visible on
-+		 * the new cpu after this point.
-+		 */
-+		if (arbitrate)
-+			cmpxchg(&wq->single_cpu, NR_CPUS, cpu);
++	spin_lock_irqsave(&gcwq->lock, flags);
++	ret = work_pending(work) || find_worker_executing_work(gcwq, work);
++	spin_unlock_irqrestore(&gcwq->lock, flags);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(work_busy);
 +
-+		if (unlikely(wq->single_cpu != cpu)) {
-+			spin_unlock_irqrestore(&gcwq->lock, flags);
-+			goto retry;
-+		}
-+	}
-+
- 	BUG_ON(!list_empty(&work->entry));
- 
- 	cwq->nr_in_flight[cwq->work_color]++;
-@@ -523,7 +581,7 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
- 		timer_stats_timer_set_start_info(&dwork->timer);
- 
- 		/* This stores cwq for the moment, for the timer_fn */
--		set_wq_data(work, target_cwq(raw_smp_processor_id(), wq), 0);
-+		set_wq_data(work, get_cwq(raw_smp_processor_id(), wq), 0);
- 		timer->expires = jiffies + delay;
- 		timer->data = (unsigned long)dwork;
- 		timer->function = delayed_work_timer_fn;
-@@ -784,10 +842,14 @@ static void cwq_dec_nr_in_flight(struct cpu_workqueue_struct *cwq, int color)
- 	cwq->nr_in_flight[color]--;
- 	cwq->nr_active--;
- 
--	/* one down, submit a delayed one */
--	if (!list_empty(&cwq->delayed_works) &&
--	    cwq->nr_active < cwq->max_active)
--		cwq_activate_first_delayed(cwq);
-+	if (!list_empty(&cwq->delayed_works)) {
-+		/* one down, submit a delayed one */
-+		if (cwq->nr_active < cwq->max_active)
-+			cwq_activate_first_delayed(cwq);
-+	} else if (!cwq->nr_active && cwq->wq->flags & WQ_SINGLE_CPU) {
-+		/* this was the last work, unbind from single cpu */
-+		cwq_unbind_single_cpu(cwq);
-+	}
- 
- 	/* is flush in progress and are we at the flushing tip? */
- 	if (likely(cwq->flush_color != color))
-@@ -1667,7 +1729,6 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 						struct lock_class_key *key,
- 						const char *lock_name)
- {
--	bool singlethread = flags & WQ_SINGLE_THREAD;
- 	struct workqueue_struct *wq;
- 	bool failed = false;
- 	unsigned int cpu;
-@@ -1688,6 +1749,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	atomic_set(&wq->nr_cwqs_to_flush, 0);
- 	INIT_LIST_HEAD(&wq->flusher_queue);
- 	INIT_LIST_HEAD(&wq->flusher_overflow);
-+	wq->single_cpu = NR_CPUS;
-+
- 	wq->name = name;
- 	lockdep_init_map(&wq->lockdep_map, lock_name, key, 0);
- 	INIT_LIST_HEAD(&wq->list);
-@@ -1713,8 +1776,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 
- 		if (failed)
- 			continue;
--		cwq->worker = create_worker(cwq,
--					    cpu_online(cpu) && !singlethread);
-+		cwq->worker = create_worker(cwq, cpu_online(cpu));
- 		if (cwq->worker)
- 			start_worker(cwq->worker);
- 		else
-@@ -1912,18 +1974,16 @@ static int __cpuinit trustee_thread(void *__gcwq)
- 
- 	spin_lock_irq(&gcwq->lock);
- 	/*
--	 * Make all multithread workers rogue.  Trustee must be bound
--	 * to the target cpu and can't be cancelled.
-+	 * Make all workers rogue.  Trustee must be bound to the
-+	 * target cpu and can't be cancelled.
- 	 */
- 	BUG_ON(gcwq->cpu != smp_processor_id());
- 
- 	list_for_each_entry(worker, &gcwq->idle_list, entry)
--		if (!(worker->cwq->wq->flags & WQ_SINGLE_THREAD))
--			worker->flags |= WORKER_ROGUE;
-+		worker->flags |= WORKER_ROGUE;
- 
- 	for_each_busy_worker(worker, i, pos, gcwq)
--		if (!(worker->cwq->wq->flags & WQ_SINGLE_THREAD))
--			worker->flags |= WORKER_ROGUE;
-+		worker->flags |= WORKER_ROGUE;
- 
- 	/*
- 	 * We're now in charge.  Notify and proceed to drain.  We need
-@@ -2027,20 +2087,17 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
- 		}
- 
- 		/*
--		 * Clear ROGUE from and rebind all multithread
--		 * workers.  Unsetting ROGUE and rebinding require
--		 * dropping gcwq->lock.  Restart loop after each
--		 * successful release.
-+		 * Clear ROGUE from and rebind all workers.  Unsetting
-+		 * ROGUE and rebinding require dropping gcwq->lock.
-+		 * Restart loop after each successful release.
- 		 */
- 	recheck:
- 		list_for_each_entry(worker, &gcwq->idle_list, entry)
--			if (!(worker->cwq->wq->flags & WQ_SINGLE_THREAD) &&
--			    trustee_unset_rogue(worker))
-+			if (trustee_unset_rogue(worker))
- 				goto recheck;
- 
- 		for_each_busy_worker(worker, i, pos, gcwq)
--			if (!(worker->cwq->wq->flags & WQ_SINGLE_THREAD) &&
--			    trustee_unset_rogue(worker))
-+			if (trustee_unset_rogue(worker))
- 				goto recheck;
- 		break;
- 	}
-@@ -2226,6 +2283,11 @@ void thaw_workqueues(void)
- 			       cwq->nr_active < cwq->max_active)
- 				cwq_activate_first_delayed(cwq);
- 
-+			/* perform delayed unbind from single cpu if empty */
-+			if (wq->single_cpu == gcwq->cpu &&
-+			    !cwq->nr_active && list_empty(&cwq->delayed_works))
-+				cwq_unbind_single_cpu(cwq);
-+
- 			wake_up_process(cwq->worker->task);
- 		}
- 
-@@ -2251,7 +2313,6 @@ void __init init_workqueues(void)
- 	BUILD_BUG_ON(__alignof__(struct cpu_workqueue_struct) <
- 		     __alignof__(unsigned long long));
- 
--	singlethread_cpu = cpumask_first(cpu_possible_mask);
- 	hotcpu_notifier(workqueue_cpu_callback, 0);
- 
- 	/* initialize gcwqs */
++/**
+  * flush_work - block until a work_struct's callback has terminated
+  * @work: the work which is to be flushed
+  *
 -- 
 1.6.4.2
 
