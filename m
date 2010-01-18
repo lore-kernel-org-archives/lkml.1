@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751565Ab0ARFlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624Ab0ARFpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751565Ab0ARFlz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 00:41:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458Ab0ARFly
+	id S1751624Ab0ARFpI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 00:45:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469Ab0ARFpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 00:41:54 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:52886 "EHLO smtps.tip.net.au"
+	Mon, 18 Jan 2010 00:45:07 -0500
+Received: from kroah.org ([198.145.64.141]:44872 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751225Ab0ARFlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 00:41:53 -0500
-Date: Mon, 18 Jan 2010 16:41:48 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sage Weil <sage@newdream.net>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-Subject: Re: linux-next: vfs tree build warning
-Message-Id: <20100118164148.3452f553.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.1001172032590.16533@cobra.newdream.net>
-References: <20100118131139.1ef42c6f.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.1001172032590.16533@cobra.newdream.net>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__18_Jan_2010_16_41_48_+1100_jb5zjOJAZTuqSedF"
+	id S1751275Ab0ARFpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 00:45:06 -0500
+Date: Sun, 17 Jan 2010 21:42:08 -0800
+From: Greg KH <greg@kroah.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Ozan ??a??layan <ozan@pardus.org.tr>, "H. Peter Anvin" <hpa@zytor.com>,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [0/9] 2.6.31.12-stable review
+Message-ID: <20100118054208.GB1697@kroah.com>
+References: <20100114224848.GA532@kroah.com> <4B520D98.7030202@pardus.org.tr> <20100117032319.GA27413@kroah.com> <4B5335CA.7080309@pardus.org.tr> <20100117161853.GA31781@kroah.com> <20100117180250.GB13056@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100117180250.GB13056@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__18_Jan_2010_16_41_48_+1100_jb5zjOJAZTuqSedF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Jan 17, 2010 at 04:02:50PM -0200, Henrique de Moraes Holschuh wrote:
+> On Sun, 17 Jan 2010, Greg KH wrote:
+> > Yes, I will be maintaining the .32 kernel in a "long-term" manner.  I
+> > have mentioned it before to a number of people, but don't know if I've
+> > done any "official" announcement.  Things get lost in the lkml volume at
+> > times.
+> 
+> Greg, could you do an "official announcement"?  Something that LWN can pick
+> up, etc?
 
-Hi Sage,
+Yes, I will do so on Tuesday.
 
-On Sun, 17 Jan 2010 20:34:29 -0800 (PST) Sage Weil <sage@newdream.net> wrot=
-e:
->
-> I can put this in the for-next branch of the ceph tree.
+thanks,
 
-Not unless you first merge the vfs tree into the ceph tree ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__18_Jan_2010_16_41_48_+1100_jb5zjOJAZTuqSedF
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktT9JwACgkQjjKRsyhoI8y2KgCfT6J9M7EUs+6EWpqtDj0CK4XB
-H5QAnjuYHhtbhoiYa9O0+a+wxjiEwF9i
-=kmfK
------END PGP SIGNATURE-----
-
---Signature=_Mon__18_Jan_2010_16_41_48_+1100_jb5zjOJAZTuqSedF--
+greg k-h
