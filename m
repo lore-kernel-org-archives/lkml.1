@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752211Ab0ARQcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157Ab0ARQeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752211Ab0ARQcR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 11:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463Ab0ARQcQ
+	id S1752157Ab0ARQeJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 11:34:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878Ab0ARQeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 11:32:16 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:46774 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751199Ab0ARQcP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 11:32:15 -0500
-Date: Mon, 18 Jan 2010 16:32:12 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       Sascha linux-arm <s.hauer@pengutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH] regulator: mc13783: consider Power Gates as digital
- regulators.
-Message-ID: <20100118163212.GA32045@rakim.wolfsonmicro.main>
-References: <1263830523.3632.22.camel@realization>
+	Mon, 18 Jan 2010 11:34:01 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7054 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751564Ab0ARQd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 11:33:59 -0500
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Joshua Pincus <joshua.pincus@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>, peterz@infradead.org,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: HW breakpoints perf_events request
+References: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com>
+	<87ljg1fn3u.fsf@basil.nowhere.org>
+	<bc915a051001131821x6cdd3470lf72e8c02a897ea3@mail.gmail.com>
+	<20100114092350.GF12241@basil.fritz.box>
+	<bc915a051001141003s766689beue73800a1308d957e@mail.gmail.com>
+	<20100118110406.GC5256@nowhere>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Mon, 18 Jan 2010 11:33:46 -0500
+In-Reply-To: <20100118110406.GC5256@nowhere> (Frederic Weisbecker's message of "Mon, 18 Jan 2010 12:04:07 +0100")
+Message-ID: <y0maawbid91.fsf@fche.csb>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263830523.3632.22.camel@realization>
-X-Cookie: This report is filled with omissions.
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 05:02:03PM +0100, Alberto Panizzo wrote:
+Frederic Weisbecker <fweisbec@gmail.com> writes:
 
-> +int mc13783_state_powermisc_pwgt;
-> +int mc13783_reg_rmw_powermisc(struct mc13783 *mc13783, u32 mask, u32 val)
+> [...]
+> What about extending ptrace to support a new type of
+> breakpoint debugging interface?
 
-You're missing some statics here and some whitespace to separate the
-function from the variable.
+This is the sort of reason why the utrace-gdbstub prototype was
+constructed.  It should allow in-kernel implementation of the
+multithreaded gdb extensions.  (By the way, it can already use uprobes
+rather than userspace-managed breakpoints.)
 
-> +	/* Update the stored state for Power Gates.
-> +	 * As from specs the meaning is inverted (0: en, 1: dis) */
-> +	if (mask & MC13783_REG_POWERMISC_PWGTSPI_M)
-> +		mc13783_state_powermisc_pwgt =
-> +			(mc13783_state_powermisc_pwgt & ~mask) |
-> +			((val ^ mask) & MC13783_REG_POWERMISC_PWGTSPI_M);
-
-Could this code be written in a clearer fashion?  The bit manipluation
-isn't entirely obvious, especially given the multiple masks in use...
-
-> +	ret = mc13783_reg_read(mc13783, MC13783_REG_POWERMISC, &valread);
-> +	if (ret)
-> +		return ret;
-> +
-> +	valread = (valread & ~mask) | val;
-> +
-> +	/* Re propose the stored state for Power Gates */
-> +	valread = (valread & ~MC13783_REG_POWERMISC_PWGTSPI_M) |
-> +						mc13783_state_powermisc_pwgt;
-
-...and this further mainpulation.
+- FChE
