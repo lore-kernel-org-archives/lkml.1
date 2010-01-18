@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292Ab0ARIkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340Ab0ARIoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292Ab0ARIkz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 03:40:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092Ab0ARIky
+	id S1755340Ab0ARIoV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 03:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490Ab0ARIoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 03:40:54 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38976 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755072Ab0ARIkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 03:40:53 -0500
-Date: Mon, 18 Jan 2010 19:40:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Shaohua Li <shaohua.li@intel.com>
-Subject: linux-next: pci tree build failure
-Message-Id: <20100118194050.7ea0c406.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jan 2010 03:44:20 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:49386 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753560Ab0ARIoT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 03:44:19 -0500
+X-Greylist: delayed 467 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jan 2010 03:44:18 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ZT3bx4QUEmhzoT2nRkhGnTE0xVjWM40HWjcaXx9H/tr5UdunXyZjtiyC+JK6n7CCtF
+         0Ra6V+ITDJr9btCtzSV+ygkclulS8NR7LBZD+qGWU8z9HtXVTLfwbJn8cSTwaa/CZJJp
+         9R4MT4ihQWYS8xKsNbffQl6pD0XTaI+jxS+FQ=
+MIME-Version: 1.0
+In-Reply-To: <20100118162412.9944c571.sfr@canb.auug.org.au>
+References: <20100118162412.9944c571.sfr@canb.auug.org.au>
+Date: Mon, 18 Jan 2010 09:36:29 +0100
+Message-ID: <63386a3d1001180036h2bad24cas8c407edde729678e@mail.gmail.com>
+Subject: Re: linux-next: trivial tree build failure
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesse,
+2010/1/18 Stephen Rothwell <sfr@canb.auug.org.au>:
 
-Today's linux-next build (ppc64 allyesconfig) failed like this:
+> Exposed by commit 8dcafdf0475eb4633401d1f0bf0e0d35e4ebb9d5
+> "CONFIG_DEBUG_FS wrongly written as CONFIG_DEBUGFS".
+> I have reverted that commit for today.
 
-In file included from drivers/pci/pcie/pme/pcie_pme.c:22:
-include/linux/pci-acpi.h:42: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'acpi_find_root_bridge_handle'
+I have sent a proper patch to Sam last night, that fix the #ifdef and
+makes the code work.
 
-This file was added in commit f3adb5a4f2e1dfdf9482af05481d0928a39477e8
-("PCI PM: PCIe PME root port service driver") from the pci tree and seems
-to depend on ACPI.  Maybe its building should depend on CONFIG_ACPI?
+> That file probably just needs to include <linux/seq_file.h> ...
 
-I added the following patch for today (I presume there is a better fix):
+Not quite, there was some code rot in the #ifdef:ed code as well.
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 18 Jan 2010 19:36:11 +1100
-Subject: [PATCH] pci: PCIE_PME seems to depend on ACPI
+But it should all be fixed now!
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/pci/pcie/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
-index cf3c35f..b8b494b 100644
---- a/drivers/pci/pcie/Kconfig
-+++ b/drivers/pci/pcie/Kconfig
-@@ -49,4 +49,4 @@ config PCIEASPM_DEBUG
- 
- config PCIE_PME
- 	def_bool y
--	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
-+	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL && ACPI
--- 
-1.6.6
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Linus Walleij
