@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752297Ab0ARBru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752544Ab0ARBwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752297Ab0ARBru (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 20:47:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660Ab0ARBrt
+	id S1752544Ab0ARBwk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 20:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197Ab0ARBwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 20:47:49 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:55719 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751327Ab0ARBrt convert rfc822-to-8bit (ORCPT
+	Sun, 17 Jan 2010 20:52:39 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60301 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932088Ab0ARBwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 20:47:49 -0500
-Message-ID: <4B53BDC5.1010201@cn.fujitsu.com>
-Date: Mon, 18 Jan 2010 09:47:49 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: =?UTF-8?B?QW5kcsOpIEdvZGRhcmQgUm9zYQ==?= <andre.goddard@gmail.com>
-CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       Alex Riesen <raa.lkml@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] string: teach strnstr() to not search past NUL-terminator
-References: <cover.1263675077.git.andre.goddard@gmail.com> <30e5fd087ee6fbe992cde8f09d945ed160b0c117.1263675077.git.andre.goddard@gmail.com>
-In-Reply-To: <30e5fd087ee6fbe992cde8f09d945ed160b0c117.1263675077.git.andre.goddard@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 17 Jan 2010 20:52:38 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 18 Jan 2010 10:49:13 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, Eric Paris <eparis@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       David Howells <dhowells@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
+       <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 6/6] vfs: introduce FMODE_NEG_OFFSET for allowing
+ negative f_pos
+Message-Id: <20100118104913.66c8d90c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <873a24mc3i.fsf@devron.myhome.or.jp>
+References: <20100115013954.311049665@intel.com>
+	<20100115014422.959401729@intel.com>
+	<87bpgurz00.fsf@devron.myhome.or.jp>
+	<20100118091527.7a0e2c6e.kamezawa.hiroyu@jp.fujitsu.com>
+	<87y6jwnrcz.fsf@devron.myhome.or.jp>
+	<873a24mc3i.fsf@devron.myhome.or.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-André Goddard Rosa wrote:
-> As noticed by Alex Riesen at:
-> http://marc.info/?l=linux-kernel&m=126364040821071&w=2
+On Mon, 18 Jan 2010 10:32:49 +0900
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
 > 
-
-Please don't make this change, it's the user's responsibility
-to make sure @len won't exceed @s1's length.
-
-All the string functions of "n" version should work when
-@s1 is not null-terminated, so don't call strlen() on @s1.
-
-> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
-> cc: Li Zefan <lizf@cn.fujitsu.com>
-> cc: Alex Riesen <raa.lkml@gmail.com>
-> cc: Andrew Morton <akpm@linux-foundation.org>
-> ---
->  lib/string.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
+> >>> Um... How do lseek() work? It sounds like to violate error code range.
+> >>
+> >> This is for read-write. As far as I know, 
+> >>   - generic_file_llseek,
+> >>   - default_llseek
+> >>   - no_llseek
+> >>
+> >> doesn't call this function. 
+> >
+> > It seems to allow to set negative value to ->f_pos, right? So, lseek()
+> > returns (uses) it?
 > 
-> diff --git a/lib/string.c b/lib/string.c
-> index 0f86245..94bad34 100644
-> --- a/lib/string.c
-> +++ b/lib/string.c
-> @@ -689,11 +689,13 @@ EXPORT_SYMBOL(strstr);
->   */
->  char *strnstr(const char *s1, const char *s2, size_t len)
->  {
-> -	size_t l1 = len, l2;
-> +	size_t l1, l2;
->  
->  	l2 = strlen(s2);
->  	if (!l2)
->  		return (char *)s1;
-> +	l1 = strlen(s1);
-> +	l1 = (l1 <= len) ? l1 : len;
->  	while (l1 >= l2) {
->  		l1--;
->  		if (!memcmp(s1, s2, l2))
+> BTW, another concern by negative "pos" value is, the following like code
+> 
+> 	pos >> shift_bits
+> 
+> it will break the above. So, I think it should be checked if not yet.
+
+Where do we check ?
+
+FMODE_NEG_OFFSET is just used by /dev/mem and /proc/<pid>/mem. And I don't
+think there are no additonal users. So, I myself don't have has such concerns...
+
+
+Thanks,
+-Kame
+
