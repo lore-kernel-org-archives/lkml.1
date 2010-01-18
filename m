@@ -1,39 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336Ab0ARMyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424Ab0ARMzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336Ab0ARMyZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 07:54:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874Ab0ARMyU
+	id S1755424Ab0ARMzB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 07:55:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242Ab0ARMy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 07:54:20 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:59766 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755440Ab0ARMyT (ORCPT
+	Mon, 18 Jan 2010 07:54:58 -0500
+Received: from mga10.intel.com ([192.55.52.92]:61142 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754509Ab0ARMy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 07:54:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=HZh9AUaGvQrTwzl1A8fwskEKu5REmt9RE5sKLGi09JX24w67iigmgmE/QDCWKb8UuK
-         yVhpranAsSsTn6l66mVhLKsWYfZlR7cfMBmfNdcbMQPbwlE707+whvfuFMNle1E8oxin
-         XHd9S4sBySl8zC2oC6SQ/jt2UIv77DowVU6sU=
+	Mon, 18 Jan 2010 07:54:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,292,1262592000"; 
+   d="scan'208";a="765119922"
+Date: Mon, 18 Jan 2010 13:56:30 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus Walleij <linus.ml.walleij@gmail.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
+       Linus Walleij <linus.walleij@stericsson.com>
+Subject: Re: linux-next: trivial tree build failure
+Message-ID: <20100118125630.GE8036@sortiz.org>
+References: <20100118162412.9944c571.sfr@canb.auug.org.au>
+ <63386a3d1001180036h2bad24cas8c407edde729678e@mail.gmail.com>
+ <20100118200126.0176773d.sfr@canb.auug.org.au>
+ <alpine.LNX.2.00.1001181115540.30977@pobox.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <1263816096-22310-1-git-send-email-jglisse@redhat.com>
-References: <1263816096-22310-1-git-send-email-jglisse@redhat.com>
-Date: Mon, 18 Jan 2010 13:54:17 +0100
-Message-ID: <68676e01001180454v20b15325oab4c4229e3ca1dbf@mail.gmail.com>
-Subject: Re: [PATCH] drm/radeon: r6xx/r7xx possible security issue, system ram 
-	access
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Jerome Glisse <jglisse@redhat.com>
-Cc: airlied@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.1001181115540.30977@pobox.suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o0ICtP54022326
 
-On Mon, Jan 18, 2010 at 1:01 PM, Jerome Glisse <jglisse@redhat.com> wrote:> This patch workaround a possible security issue which can allow> user to abuse drm on r6xx/r7xx hw to access any system ram memory.[...]> diff --git a/drivers/gpu/drm/radeon/r600_cs.c b/drivers/gpu/drm/radeon/r600_cs.c> index 44060b9..edafc7b 100644> --- a/drivers/gpu/drm/radeon/r600_cs.c> +++ b/drivers/gpu/drm/radeon/r600_cs.c> @@ -503,9 +531,61 @@ static int r600_packet3_check(struct radeon_cs_parser *p,>                for (i = 0; i < pkt->count; i++) {>                        reg = start_reg + (4 * i);>                        switch (reg) {> +                       /* This register were added late, there is userspace> +                        * which does provide relocation for those but set> +                        * 0 offset. In order to avoid breaking old userspace> +                        * we detect this and set address to point to last> +                        * CB_COLOR0_BASE, note that if userspace doesn't set> +                        * CB_COLOR0_BASE before this register we will report> +                        * error. Old userspace always set CB_COLOR0_BASE> +                        * before any of this.> +                        */> +                       case R_0280E0_CB_COLOR0_FRAG:> +                       case R_0280E4_CB_COLOR1_FRAG:> +                       case R_0280E8_CB_COLOR2_FRAG:> +                       case R_0280EC_CB_COLOR3_FRAG:> +                       case R_0280F0_CB_COLOR4_FRAG:> +                       case R_0280F4_CB_COLOR5_FRAG:> +                       case R_0280F8_CB_COLOR6_FRAG:> +                       case R_0280FC_CB_COLOR7_FRAG:> +                       case R_0280C0_CB_COLOR0_TILE:> +                       case R_0280C4_CB_COLOR1_TILE:> +                       case R_0280C8_CB_COLOR2_TILE:> +                       case R_0280CC_CB_COLOR3_TILE:> +                       case R_0280D0_CB_COLOR4_TILE:> +                       case R_0280D4_CB_COLOR5_TILE:> +                       case R_0280D8_CB_COLOR6_TILE:> +                       case R_0280DC_CB_COLOR7_TILE:> +                               if (!r600_cs_packet_next_is_pkt3_nop(p)) {> +                                       if (!track->cb_color0_base_last) {> +                                               dev_err(p->dev, "Broken old userspace ? no cb_color0_base supplied"> +                                                       "before trying to write 0x%08X\n", reg);
-Cosmetic issue: a space is missing between "supplied" and "before".
-Luca���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+Hi Jiri,
+
+On Mon, Jan 18, 2010 at 11:17:19AM +0100, Jiri Kosina wrote:
+> On Mon, 18 Jan 2010, Stephen Rothwell wrote:
+> 
+> > Hi Jiri,
+> > 
+> > Today's linux-next build (x86_64_allmodconfig) failed like this:
+> > 
+> > drivers/mfd/ab3100-otp.c: In function 'show_otp':
+> > drivers/mfd/ab3100-otp.c:101: error: dereferencing pointer to incomplete type
+> > drivers/mfd/ab3100-otp.c:104: error: implicit declaration of function 'seq_printf'
+> > drivers/mfd/ab3100-otp.c:102: warning: unused variable 'err'
+> > drivers/mfd/ab3100-otp.c: In function 'ab3100_otp_open':
+> > drivers/mfd/ab3100-otp.c:116: error: implicit declaration of function 'single_open'
+> > drivers/mfd/ab3100-otp.c:116: error: 'ab3100_otp_show' undeclared (first use in this function)
+> > drivers/mfd/ab3100-otp.c: At top level:
+> > drivers/mfd/ab3100-otp.c:121: error: 'seq_read' undeclared here (not in a function)
+> > drivers/mfd/ab3100-otp.c:122: error: 'seq_lseek' undeclared here (not in a function)
+> > drivers/mfd/ab3100-otp.c:123: error: 'single_release' undeclared here (not in a function)
+> > drivers/mfd/ab3100-otp.c: In function 'ab3100_otp_init_debugfs':
+> > drivers/mfd/ab3100-otp.c:134: error: 'err' undeclared (first use in this function)
+> > drivers/mfd/ab3100-otp.c: In function 'ab3100_otp_exit_debugfs':
+> > drivers/mfd/ab3100-otp.c:140: error: implicit declaration of function 'debugfs_remove_file'
+> > 
+> > Exposed by commit 8dcafdf0475eb4633401d1f0bf0e0d35e4ebb9d5
+> > "CONFIG_DEBUG_FS wrongly written as CONFIG_DEBUGFS".
+> 
+> Hmm, mea culpa. I have noticed the build failure myself and notified patch 
+> author about that, but forgot to drop the patch from my tree afterwards. 
+> Sorry.
+> 
+> On Mon, 18 Jan 2010, Linus Walleij wrote:
+> 
+> > 2010/1/18 Stephen Rothwell <sfr@canb.auug.org.au>:
+> > 
+> > > Exposed by commit 8dcafdf0475eb4633401d1f0bf0e0d35e4ebb9d5
+> > > "CONFIG_DEBUG_FS wrongly written as CONFIG_DEBUGFS".
+> > > I have reverted that commit for today.
+> > 
+> > I have sent a proper patch to Sam last night, that fix the #ifdef and
+> > makes the code work.
+> 
+> I have dropped the patch from my tree now, and I am not carrying any 
+> replacement as of now.
+I'm carrying Linus patch for it, thanks.
+
+Cheers,
+Samuel.
+
+
+> -- 
+> Jiri Kosina
+> SUSE Labs, Novell Inc.
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
