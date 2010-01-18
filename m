@@ -1,105 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327Ab0ARCLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458Ab0ARCNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327Ab0ARCLr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 21:11:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343Ab0ARCLo
+	id S1753458Ab0ARCNL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 21:13:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855Ab0ARCNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 21:11:44 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38173 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753207Ab0ARCLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 21:11:42 -0500
-Date: Mon, 18 Jan 2010 13:11:39 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Sage Weil <sage@newdream.net>
-Subject: linux-next: vfs tree build warning
-Message-Id: <20100118131139.1ef42c6f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Jan 2010 21:13:09 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:35529 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753212Ab0ARCNH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 21:13:07 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, Eric Paris <eparis@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       David Howells <dhowells@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
+       <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 6/6] vfs: introduce FMODE_NEG_OFFSET for allowing negative f_pos
+References: <20100115013954.311049665@intel.com>
+	<20100115014422.959401729@intel.com>
+	<87bpgurz00.fsf@devron.myhome.or.jp>
+	<20100118091527.7a0e2c6e.kamezawa.hiroyu@jp.fujitsu.com>
+	<87y6jwnrcz.fsf@devron.myhome.or.jp>
+	<20100118102544.3e897525.kamezawa.hiroyu@jp.fujitsu.com>
+	<87pr58kx9o.fsf@devron.myhome.or.jp>
+	<20100118110019.c55ad88a.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 18 Jan 2010 11:13:04 +0900
+In-Reply-To: <20100118110019.c55ad88a.kamezawa.hiroyu@jp.fujitsu.com>
+	(KAMEZAWA Hiroyuki's message of "Mon, 18 Jan 2010 11:00:19 +0900")
+Message-ID: <87y6jwjh3j.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Al,
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
 
-Today's linux-next build (x86_64_allmodconfig) produced this warning:
+> On Mon, 18 Jan 2010 10:38:27 +0900
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+>
+>> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
+>> 
+>> >> So, lseek() returns (uses) it?
+>> >
+>> > lseek can return negative value, as far as I know.
+>> 
+>> Umm..., how do you know the difference of -EOVERFLOW and fpos == -75? 
+>> 
+>
+> Ah, sorry. I read wrong.
+>
+> For /dev/mem, it uses its own lseek function which allows negative f_pos
+> value. Other usual file system doesn't allow negative f_pos.
+>
+> It's ok not to return -EOVEFLOW for /dev/mem because there is no file end.
 
-fs/ceph/super.c:216: warning: initialization from incompatible pointer type
+No, no. I think it has the problem.
 
-Introduced by commit bc39e28236344af617473df80abb7de43176511e ("pass
-writeback_control to ->write_inode") from the vfs tree interacting with
-commit 16725b9d2a2e3d0fd2b0034482e2eb0a2d78050f ("ceph: super.c") from
-the ceph tree.
+E.g. /dev/mem returns -75 as fpos, so, lseek(2) returns -75 to
+userland. Then the userland (e.g. glibc) convert it as
+error. I.e. finally, errno == -75, and lseek(3) returns -1, right?
 
-This will need a fixup patch (see below) which I can carry in the
-linux-next tree.  There may, of course, be a better fix (which I can
-carry if someone sends it to me).
+Thanks.
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 18 Jan 2010 11:53:08 +1100
-Subject: [PATCH] ceph: update for write_inode API change
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- fs/ceph/caps.c  |    4 +++-
- fs/ceph/super.h |    3 ++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/fs/ceph/caps.c b/fs/ceph/caps.c
-index 9b9ce14..b2a6b9a 100644
---- a/fs/ceph/caps.c
-+++ b/fs/ceph/caps.c
-@@ -5,6 +5,7 @@
- #include <linux/sched.h>
- #include <linux/vmalloc.h>
- #include <linux/wait.h>
-+#include <linux/writeback.h>
- 
- #include "super.h"
- #include "decode.h"
-@@ -1745,12 +1746,13 @@ int ceph_fsync(struct file *file, struct dentry *dentry, int datasync)
-  * get by with fewer MDS messages if we wait for data writeback to
-  * complete first.
-  */
--int ceph_write_inode(struct inode *inode, int wait)
-+int ceph_write_inode(struct inode *inode, struct writeback_control *wbc)
- {
- 	struct ceph_inode_info *ci = ceph_inode(inode);
- 	unsigned flush_tid;
- 	int err = 0;
- 	int dirty;
-+	int wait = wbc->sync_mode == WB_SYNC_ALL;
- 
- 	dout("write_inode %p wait=%d\n", inode, wait);
- 	if (wait) {
-diff --git a/fs/ceph/super.h b/fs/ceph/super.h
-index de5e324..25b0988 100644
---- a/fs/ceph/super.h
-+++ b/fs/ceph/super.h
-@@ -11,6 +11,7 @@
- #include <linux/mempool.h>
- #include <linux/pagemap.h>
- #include <linux/wait.h>
-+#include <linux/writeback.h>
- 
- #include "types.h"
- #include "messenger.h"
-@@ -806,7 +807,7 @@ static inline void ceph_remove_cap(struct ceph_cap *cap)
- }
- 
- extern void ceph_queue_caps_release(struct inode *inode);
--extern int ceph_write_inode(struct inode *inode, int unused);
-+extern int ceph_write_inode(struct inode *inode, struct writeback_control *wbc);
- extern int ceph_fsync(struct file *file, struct dentry *dentry, int datasync);
- extern void ceph_kick_flushing_caps(struct ceph_mds_client *mdsc,
- 				    struct ceph_mds_session *session);
--- 
-1.6.6
-
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
