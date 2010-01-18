@@ -1,61 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104Ab0ARMYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416Ab0ARMYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755104Ab0ARMYY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 07:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680Ab0ARMYX
+	id S1755416Ab0ARMYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 07:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197Ab0ARMYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 07:24:23 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:53082 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667Ab0ARMYW convert rfc822-to-8bit (ORCPT
+	Mon, 18 Jan 2010 07:24:46 -0500
+Received: from bld-mail18.adl2.internode.on.net ([150.101.137.103]:35864 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755095Ab0ARMYn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 07:24:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=STyXeQBcP8uzJUXdwd8InD7MwzKv/3FO9mQUpcVE4cSiESsygVlg+W0LURon1FM8LV
-         /69zKSGmGoGNWSzHByN7OfxRYEZ2C4O/I2bHIt+m59eQzuqxfcTDD1MWO+WLIdYuld6a
-         tEBIhm+PSPryBlIQHL6ywNSORGbI2Tl2uJRb4=
+	Mon, 18 Jan 2010 07:24:43 -0500
+Date: Mon, 18 Jan 2010 23:24:37 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Jan Kara <jack@suse.cz>, Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: IO error semantics
+Message-ID: <20100118122437.GF7264@discord.disaster>
+References: <4B4EB5B9.4020809@hitachi.com> <4B4EDE5C.8040600@hitachi.com> <4B4EEE86.7080807@hitachi.com> <20100114141803.GB3146@quack.suse.cz> <20100118051847.GA8678@laptop> <20100118060518.GA9151@laptop>
 MIME-Version: 1.0
-In-Reply-To: <4B545146.3080001@redhat.com>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <4B53661A.9090907@redhat.com> <1263800752.4283.19.camel@laptop>
-	 <4B543F93.3060509@redhat.com> <1263815072.4283.305.camel@laptop>
-	 <4B544D7C.2060708@redhat.com> <1263816396.4283.361.camel@laptop>
-	 <4B544F8E.1080603@redhat.com>
-	 <84144f021001180413w76a8ca2axb0b9f07ee4dea67e@mail.gmail.com>
-	 <4B545146.3080001@redhat.com>
-Date: Mon, 18 Jan 2010 14:24:19 +0200
-X-Google-Sender-Auth: ac671167500e78b2
-Message-ID: <84144f021001180424h54ce7970ra7dda2ff8a3be277@mail.gmail.com>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Avi Kivity <avi@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, ananth@in.ibm.com,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100118060518.GA9151@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/18/2010 02:13 PM, Pekka Enberg wrote:
->> So how big chunks of the address space are we talking here for uprobes?
+On Mon, Jan 18, 2010 at 05:05:18PM +1100, Nick Piggin wrote:
+> On Mon, Jan 18, 2010 at 04:18:47PM +1100, Nick Piggin wrote:
+> > We also need to remove some ClearPageUptodate calls I think (similar
+> > issues), so keep those in mind too. Unfortunately it looks like there
+> > are also a lot of filesystem specific tests of PageUptodate... but you
+> > could also move those under the new compatibility s_flag.
+> > 
+> > I don't know of a really good way to inject and test filesystem errors.
+> > Make request failures causes most fs to quickly go readonly or have
+> > bigger problems. If you're careful like try to only fail read IOs for
+> > data, or only fail write IOs not involved in integrity or journal
+> > operations, then test programs just tend to abort pretty quickly. Does
+> > anyone know of anything more systematic?
+> 
+> This might be a good time to bring up IO error behaviour again. I got
+> into some debates I think on Andi's hwpoison thread a while back, but
+> probably not appropriate thread to find a real solution to this.
+> 
+> The problem we have now is that IO error semantics are not well defined.
+> It is hard to even enumerate all the issues.
+> 
+> read IOs
+>   how to retry? appropriate defaults should happen at the block layer I
+>   think. Should retry behaviour be tunable by the mm/fs, or should that
+>   be coded explicitly as submission retry loops? Either way does imply
+>   there is either similar defaults for all types (or maybe classes) of
+>   drivers, or some way to query/set this.
 
-On Mon, Jan 18, 2010 at 2:17 PM, Avi Kivity <avi@redhat.com> wrote:
-> That's for the authors to answer, but at a guess, 32 bytes per probe
-> (largest x86 instruction is 15 bytes), so 32 MB will give you a million
-> probes. †That's a piece of cake for x86-64, probably harder to justify for
-> i386.
+It's more complex than that - there are classes of errors to
+consider as well. e.g transient vs permanent.
 
-Yup, it's 32-bit that I worry about.
+Transient is from stuff like FC path failures - failover can take up
+to 240s to occur, and then the IO will generally complete
+successfully.  Permanent errors are those that involve data loss e.g
+bad sectors on single disks or on degraded RAID devices.
+
+The action to take is generally different for different error
+classes - transient errors can be retried later, while permanent
+errors won't change no matter how many retries you do.  IOWs, we'll
+need help from the block layer to enable us to determine the error
+class we are dealing with.
+
+>   It would be nice to be able to set fs/driver behaviour from userspace
+>   too, in a generic (not driver or fs specific way). But defaults should
+>   be reasonable and similar between all, I guess.
+
+I don't think generic handling is really possible - filesystems may
+have different ways of recovering e.g. duplicate copies of data or
+metadata or internal ECC that can be used to recovery the bad
+region. Also, depending where the error occurs, the filesystem might
+need to shutdown to be repaired....
+
+> write IOs
+>   This is more interesting. How to handle write IO errors. In my opinion
+>   we must not invalidate the data before an IO error is returned to
+>   somebody (whether it be fsync or a synchronous write syscall).
+
+We already pass the error via mapping_set_error() calls when the
+error occurs and checking in it filemap_fdatawait_range().  However,
+where we check the error we've lost all context and what range the
+error occurred on. I don't see any easy way to track such an
+error for later invalidation except maybe by a new radix tree tag.
+That would allow later invalidation of only the specific range the
+error was reported from.
+
+>   Any
+>   earlier and the app just gets RAW consistency randomly violated. And I
+>   think it is important to treat IO errors as transparently as possible
+>   until the error can be detected.
+> 
+>   I happen to think that actually we should go further and not
+>   invalidate the data at all. This makes implementation simpler, and
+>   also allows us to retry writes like we can retry reads. It's also
+>   problematic to throw out errors at that point because *sync syscalls
+>   coming from elsewhere could result in loss of error reporting (think,
+>   sys_sync).
+
+The worst problem with this is what happens when you can't write
+back to the filesystem because of IO errors, but you still allow more
+incoming writes? It's not far from IO error to running out of memory
+and deadlocking....
+
+>   If we go this way, we probably need another syscall and fs helper call
+>   to invalidate the dirty data when we give up on retries. truncate_range
+>   probably not appropriate because it is much harder to implement and
+>   maybe we want to try to get at the most recent data that is on disk.
+
+First we need to track what needs invalidating...
+
+>   Also do we need to think about O_SYNC or -o sync type of writes that
+>   are implemented via writeback cache? We could invalidate the dirtied
+>   cache ASAP, which would leave a window where a concurrent read can see
+>   first new, then old data. It would also kind of break the above scheme
+>   in case the pagecache was already dirty via a descriptor without
+>   O_SYNC. It might just make sense to leave the pagecache dirty. Either
+>   way it should be documented I think.
+
+How to handle this comes down to the type of error that occurred. In
+the case of permanent error, the second read after the invalidation
+probably should return EIO because you have no idea whether what is on
+disk is the old, the new, some combination of the two or some other
+random or stale garbage....
+
+> Do we even care enough to bother thinking about this now? (serious question)
+
+It's a damn hard problem and many of the details are filesystem
+specific. However, if we want high grade reliability from our
+systems then we have to tackle these problems at some point in time.
+
+FWIW, I started to document some of what I've just been talking
+(from a XFS metadata reliability context) about a year and a half
+ago. The relevant section is here:
+
+http://xfs.org/index.php/Reliable_Detection_and_Repair_of_Metadata_Corruption#Exception_Handling
+
+Though the entire page is probably somewhat relevant.  I only got as
+far as documenting methods for handling transient and permanent read
+errors, and the TODO includes handling:
+
+	- Transient write error
+	- Permanent write error
+	- Corrupted data on read
+	- Corrupted data on write (detected during guard calculation)
+	- I/O timeouts
+	- Memory corruption
+
+If we want to handle these sort of errors, I think first we've got
+to understand what we have to do. A rough outline of the approach I
+was taking to the above document was:
+
+	- work out how to detect each type of error effectively
+	- determine strategies of how to report each type of error
+	- find the best way to recovery from the error
+	- work out what additional information was needed on disk
+	  to enable successful recovery from the error.
+	- work out what addition functionality was required from
+	  the lower layers to allow reliable detection and recovery
+	  to „ÅΩccur.
+
+In the case of reporting data errors through pagecache paths, I'd add:
+
+	- determine if the error can be handled in a generic way
+	- work out how filesystem specific handlers can be invoked
+	  for those that can do filesystem level recovery
+	- work out how to consistently report the same result after
+	  an error.
+
+There's plenty more I could write, but I need to sleep now....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
