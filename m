@@ -1,79 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349Ab0AROob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340Ab0AROqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349Ab0AROob (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 09:44:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297Ab0AROoa
+	id S1753340Ab0AROqG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 09:46:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862Ab0AROqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 09:44:30 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:25666 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752884Ab0AROo3 convert rfc822-to-8bit (ORCPT
+	Mon, 18 Jan 2010 09:46:05 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:15424 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751574Ab0AROqB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 09:44:29 -0500
+	Mon, 18 Jan 2010 09:46:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type:content-transfer-encoding;
-        b=tM22Y9cnWkDqKjhOgAUE+UF1+ShenRvVAORGJmf3UvomTdoAitXtj40neFMlZpS3vz
-         N1PS4Gv94+kEMt2eGiaVaNUJ+KmtCKRK+61LNAMP5V5uyX9ydwvmF2ma73bZusMcYoya
-         imtEP5fz8mn0gkIcd9uFNcxzGNOOPOEpJHl30=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UKvwzo8Db79gG0nvsthWmYYpdzsry3rsH3hOyQZWZncHNdMPbL6Pbb65xJ/tn4l0b+
+         GvKNQllgpZurj6xMDTGaDMHiIBBunSS7HxQxz3CeuoRixVzzxfkWLogA8SS/hvLF+7Q5
+         mQiQ7ULCiWpmwyjdY791iFShzXNqLI1FEVrRg=
+Date: Mon, 18 Jan 2010 15:45:58 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+Subject: Re: [PATCH]  perf_events: improve x86 event scheduling (v5)
+Message-ID: <20100118144556.GE10364@nowhere>
+References: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com> <20100118134324.GB10364@nowhere> <1263822898.4283.558.camel@laptop> <20100118142004.GD10364@nowhere> <1263825158.4283.590.camel@laptop>
 MIME-Version: 1.0
-Date: Mon, 18 Jan 2010 15:44:27 +0100
-X-Google-Sender-Auth: 4c94b2643838e4b3
-Message-ID: <10f740e81001180644yd44121cv6dd963349563a290@mail.gmail.com>
-Subject: linux-next build failure (was: Re: [PATCH/REPOST] pci: push 
-	deprecated pci_find_device() function to last user)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Tilman Schmidt <tilman@imap.cc>, David Miller <davem@davemloft.net>,
-       Greg KH <gregkh@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263825158.4283.590.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 19:08, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Thu, 14 Jan 2010 23:18:41 +0100 (CET)
-> Tilman Schmidt <tilman@imap.cc> wrote:
->
->> Am 14.01.2010 17:28 schrieb Jesse Barnes:
->> > I can take it, but I lost the original patch.  Tilman, can you
->> > resend?
->>
->> Sure, here you are:
->>
->> Subject: [PATCH] pci: push deprecated pci_find_device() function to
->> last user
->>
->> The ISDN4Linux HiSax driver family contains the last remaining users
->> of the deprecated pci_find_device() function. This patch creates a
->> private copy of that function in HiSax, and removes the now unused
->> global function together with its controlling configuration option,
->> CONFIG_PCI_LEGACY.
->>
->> Impact: code reorganization, no functional change
->> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
->> ---
->> Note: This patch is not, nor does it intend to be, checkpatch.pl
->> clean. The issues checkpatch.pl reports on it were already present
->> before, and are unrelated to the topic of this patch.
->
-> Applied to my linux-next branch, thanks Tilman.
+On Mon, Jan 18, 2010 at 03:32:38PM +0100, Peter Zijlstra wrote:
+> On Mon, 2010-01-18 at 15:20 +0100, Frederic Weisbecker wrote:
+> > 
+> > 
+> > Well in appearance, things go through one pass.
+> > 
+> > But actually not, there is a first iteration that collects
+> > the events (walking trhough the group list, filtering soft events),
+> > a second iteration that check the constraints and schedule (but
+> > not apply) the events.
+> > 
+> > And thereafter we schedule soft events (and revert the whole if
+> > needed).
+> > 
+> > This is a one pass from group_sched_in() POV but at the cost
+> > of reimplementating what the core does wrt soft events and iterations.
+> > And not only is it reinventing the wheel, it also produces more
+> > iterations than we need.
+> > 
+> > If we were using the common pmu->enable() from group/event_sched_in(),
+> > that would build the collection, with only one iteration through the
+> > group list (instead of one to collect, and one for the software
+> > events).
+> > 
+> > And the constraints can be validated in a second explicit iteration
+> > through hw_check_constraint(), like it's currently done explicitly
+> > from hw_perf_group_sched_in() that calls x86_schedule_event().
+> 
+> Thing is, we cannot do that, because we currently require ->enable() to
+> report schedulability. Now we could add an argument to ->enable, or add
+> callbacks like I suggested to convey that state.
 
-Just guessing: something's wrong if CONFIG_PCI is not set?
 
-http://kisskb.ellerman.id.au/kisskb/buildresult/2042085/
+Hmm, but the schedulability status can be overriden in this case by
+the callbacks you mentioned. The thing is I'm not sure how you
+mean to use these. Is it like I did in the previous mockup, by
+calling hw_perf_group_sched_in_begin() in the beginning of a group
+scheduling and hw_perf_group_sched_in_end() in the end?
 
-Gr{oetje,eeting}s,
+ 
+> > The fact is we have with this patch a _lot_ of iterations each
+> > time x86 get scheduled. This is really a lot for a fast path.
+> > But considering the dynamic cpu events / task events series
+> > we can have, I don't see other alternatives.
+> 
+> Luckily it tries to use a previous configuration, so in practise the
+> schedule phase is real quick amortized O(1) as long as we don't change
+> the set.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Yeah.
+
+
+ 
+> > Do you mean this:
+> > 
+> > hw_perf_group_sched_in_begin(&x86_pmu);
+> > 
+> > for_each_event(event, group) {
+> >         event->enable();        //do the collection here
+> > }
+> > 
+> > 
+> > if (hw_perf_group_sched_in_end(&x86_pmu)) {
+> >         rollback...
+> > }
+> > 
+> > That requires to know in advance if we have hardware pmu
+> > in the list though (can be a flag in the group).
+> 
+> Good point, but your proposed hw_check_constraint() call needs to know
+> the exact same.
+
+
+True. Whatever model we use anyway, both implement the same idea.
+
