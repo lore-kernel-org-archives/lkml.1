@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903Ab0ARJ6C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229Ab0ARJ61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752903Ab0ARJ6C (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 04:58:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428Ab0ARJ6B
+	id S1753229Ab0ARJ61 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 04:58:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101Ab0ARJ6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 04:58:01 -0500
-Received: from casper.infradead.org ([85.118.1.10]:42278 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283Ab0ARJ57 (ORCPT
+	Mon, 18 Jan 2010 04:58:25 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40375 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106Ab0ARJ6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 04:57:59 -0500
-Subject: Re: [PATCH 04/40] sched: implement __set_cpus_allowed()
+	Mon, 18 Jan 2010 04:58:24 -0500
+Subject: Re: [PATCH 06/40] sched: add wakeup/sleep sched_notifiers and
+ allow NULL notifier ops
 From: Peter Zijlstra <peterz@infradead.org>
 To: Tejun Heo <tj@kernel.org>
 Cc: torvalds@linux-foundation.org, mingo@elte.hu, awalls@radix.net,
@@ -19,12 +20,12 @@ Cc: torvalds@linux-foundation.org, mingo@elte.hu, awalls@radix.net,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
        Mike Galbraith <efault@gmx.de>
-In-Reply-To: <1263776272-382-5-git-send-email-tj@kernel.org>
+In-Reply-To: <1263776272-382-7-git-send-email-tj@kernel.org>
 References: <1263776272-382-1-git-send-email-tj@kernel.org>
-	 <1263776272-382-5-git-send-email-tj@kernel.org>
+	 <1263776272-382-7-git-send-email-tj@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 10:56:10 +0100
-Message-ID: <1263808570.4283.149.camel@laptop>
+Date: Mon, 18 Jan 2010 10:57:13 +0100
+Message-ID: <1263808633.4283.152.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -33,40 +34,34 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, 2010-01-18 at 09:57 +0900, Tejun Heo wrote:
-> set_cpus_allowed_ptr() modifies the allowed cpu mask of a task.  The
-> function performs the following checks before applying new mask.
-> 
-> * Check whether PF_THREAD_BOUND is set.  This is set for bound
->   kthreads so that they can't be moved around.
-> 
-> * Check whether the target cpu is still marked active - cpu_active().
->   Active state is cleared early while downing a cpu.
-> 
-> This patch adds __set_cpus_allowed() which takes @force parameter
-> which when true makes __set_cpus_allowed() ignore PF_THREAD_BOUND and
-> use cpu online state instead of active state for the latter.  This
-> allows migrating tasks to CPUs as long as they are online.
-> set_cpus_allowed_ptr() is implemented as inline wrapper around
-> __set_cpus_allowed().
-> 
-> Due to the way migration is implemented, the @force parameter needs to
-> be passed over to the migration thread.  @force parameter is added to
-> struct migration_req and passed to __migrate_task().
-> 
-> Please note the naming discrepancy between set_cpus_allowed_ptr() and
-> the new functions.  The _ptr suffix is from the days when cpumask API
-> wasn't mature and future changes should drop it from
-> set_cpus_allowed_ptr() too.
-> 
-> NOTE: It would be nice to implement kthread_bind() in terms of
->       __set_cpus_allowed() if we can drop the capability to bind to a
->       dead CPU from kthread_bind(), which doesn't seem too popular
->       anyway.  With such change, we'll have set_cpus_allowed_ptr() for
->       regular tasks and kthread_bind() for kthreads and can use
->       PF_THREAD_BOUND instead of passing @force parameter around.
 
+> @@ -2439,6 +2440,8 @@ static inline void ttwu_post_activation(struct task_struct *p, struct rq *rq,
+>  		rq->idle_stamp = 0;
+>  	}
+>  #endif
+> +	if (success)
+> +		fire_sched_notifiers(p, wakeup);
+>  }
+>  
+>  /**
 
-And your changelog still sucks... it only says what it does, not why.
+So why can't you call fire_sched_notifier(p, wakeup) right next to
+activate_task(rq, p, 1) in ttwu_activate() ?
 
-still hate the patch too.
+> @@ -5481,10 +5484,12 @@ need_resched_nonpreemptible:
+>  	clear_tsk_need_resched(prev);
+>  
+>  	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+> -		if (unlikely(signal_pending_state(prev->state, prev)))
+> +		if (unlikely(signal_pending_state(prev->state, prev))) {
+>  			prev->state = TASK_RUNNING;
+> -		else
+> +		} else {
+> +			fire_sched_notifiers(prev, sleep);
+>  			deactivate_task(rq, prev, 1);
+> +		}
+>  		switch_count = &prev->nvcsw;
+>  	}
+>  
+
 
