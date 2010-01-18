@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751812Ab0ARTaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752256Ab0ARTaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751812Ab0ARTaM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 14:30:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353Ab0ARTaL
+	id S1752256Ab0ARTaY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 14:30:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353Ab0ARTaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 14:30:11 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:3080 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751190Ab0ARTaK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 14:30:10 -0500
-Message-ID: <4B54B656.2090307@ru.mvista.com>
-Date: Mon, 18 Jan 2010 22:28:22 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 18 Jan 2010 14:30:22 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:41776 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751919Ab0ARTaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 14:30:15 -0500
+Date: Mon, 18 Jan 2010 13:30:04 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>, Kyle Moffett <kyle@moffetthome.net>
+Subject: Re: disablenetwork (v5): Require CAP_SETPCAP to enable
+Message-ID: <20100118193004.GA17189@us.ibm.com>
+References: <551280e51001161858q740bf246n2ed389920de689e7@mail.gmail.com>
+ <20100117044825.GA2712@heat>
+ <551280e51001162058n52ee94b7v5ccb10d80284bc@mail.gmail.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 46/64] ide: add drive->pio_mode field
-References: <20100118171349.14623.90030.sendpatchset@localhost> <20100118172028.14623.55296.sendpatchset@localhost>
-In-Reply-To: <20100118172028.14623.55296.sendpatchset@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <551280e51001162058n52ee94b7v5ccb10d80284bc@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+Quoting Andrew G. Morgan (morgan@kernel.org):
+> On Sat, Jan 16, 2010 at 8:48 PM, Michael Stone <michael@laptop.org> wrote:
+> > Andrew Morgan wrote:
+> >>
+> >> Please use CAP_NET_ADMIN for this feature (and add the corresponding
+> >> comment in include/linux/capabilities.h).
+> >
+> > Sure.
+> > However, to make sure I understand the purpose of the adjustment, would you
+> > mind saying a word or two about what considerations cause you to recommend
+> > CAP_NET_ADMIN instead of (or in addition to?) CAP_SETPCAP?
+> 
+> If you take a look at the capabilities.h file, you'll see that each of
+> the capabilities is preceded by an explanation of what privilege it
+> enables.
+> 
+> CAP_SETPCAP refers to privileged manipulation of capabilities
+> (permission to violate the normal capability rules) and nothing to do
+> with the network.
+> 
+> You are adding something akin to a per-process tree firewall setting -
+> deny/enable network access to this process.
 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] ide: add drive->pio_mode field
->
-> Add pio_mode field to ide_drive_t matching pio_mode field used in
-> struct ata_device.
->
-> The validity of the field is restricted to ->set_pio_mode method
-> only currently in IDE subsystem.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ide/ide-devsets.c   |    2 ++
->  drivers/ide/ide-probe.c     |    2 ++
->  drivers/ide/ide-xfer-mode.c |    3 +++
->  include/linux/ide.h         |    1 +
->  4 files changed, 8 insertions(+)
->
-> Index: b/drivers/ide/ide-devsets.c
-> ===================================================================
-> --- a/drivers/ide/ide-devsets.c
-> +++ b/drivers/ide/ide-devsets.c
-> @@ -105,6 +105,8 @@ static int set_pio_mode(ide_drive_t *dri
->  		return -ENOSYS;
->  
->  	if (set_pio_mode_abuse(drive->hwif, arg)) {
-> +		drive->pio_mode = arg + XFER_PIO_0;
-> +
->   
+I think I originally suggested CAP_SETPCAP - because it's not deny network
+access to this process, but deny network access to all child processes as
+well, even if they are more privileged (through setuid-root or file caps).
 
-   Er, didn't understand this... these 'arg' values are not really PIO 
-modes, no?
+CAP_NET_ADMIN is probably more straightforward, though.  Who's going to
+think to add CAP_SETPCAP to a binary that is intended to drop network
+perms, realistically...
 
->  		if (arg == 8 || arg == 9) {
->  			unsigned long flags;
->   
+> I think you'll agree that
+> the CAP_NET_ADMIN description is a much better match for this.
 
-MBR, Sergei
+I think it'll be more intuitive to most people so I agree.
 
+-serge
