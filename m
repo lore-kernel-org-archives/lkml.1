@@ -1,107 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218Ab0ARD6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509Ab0ARD6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218Ab0ARD6b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 22:58:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212Ab0ARD6a
+	id S1755509Ab0ARD6j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 22:58:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324Ab0ARD6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 22:58:30 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42129 "EHLO mx1.suse.de"
+	Sun, 17 Jan 2010 22:58:37 -0500
+Received: from mail.perches.com ([173.55.12.10]:1248 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752373Ab0ARD63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 22:58:29 -0500
-Date: Mon, 18 Jan 2010 14:51:46 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] vfs: Fix vmtruncate() regression
-Message-ID: <20100118035146.GA7447@laptop>
-References: <876378jxhx.fsf@devron.myhome.or.jp>
- <20100113060734.GC3901@nick>
- <87r5pucin4.fsf@devron.myhome.or.jp>
- <877hrmcicu.fsf@devron.myhome.or.jp>
- <20100114143044.cc65be51.akpm@linux-foundation.org>
- <87ska86wo5.fsf@devron.myhome.or.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ska86wo5.fsf@devron.myhome.or.jp>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1755311Ab0ARD6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 22:58:35 -0500
+Subject: Re: [PATCH] S2io: two branches the same in wait_for_cmd_complete()
+From: Joe Perches <joe@perches.com>
+To: David Miller <davem@davemloft.net>
+Cc: roel.kluin@gmail.com, netdev@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, sivakumar.subramani@neterion.com,
+       ram.vepa@neterion.com, santosh.rastapur@neterion.com,
+       sreenivasa.honnur@neterion.com, anil.murthy@neterion.com
+In-Reply-To: <20100117.191359.190417865.davem@davemloft.net>
+References: <4B53284C.1090405@gmail.com>
+	 <20100117.191359.190417865.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 17 Jan 2010 19:58:32 -0800
+Message-ID: <1263787112.26846.73.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 09:26:02AM +0900, OGAWA Hirofumi wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
-> > On Wed, 13 Jan 2010 21:14:09 +0900
-> > OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
-> >
-> >> 
-> >> If __block_prepare_write() was failed in block_write_begin(), the
-> >> allocated blocks can be outside of ->i_size.
-> >> 
-> >> But new truncate_pagecache() in vmtuncate() does nothing if new < old.
-> >> It means the above usage is not working anymore.
-> >> 
-> >> So, this patch fixes it by removing "new < old" check. It would need
-> >> more cleanup/change. But, now -rc and truncate working is in progress,
-> >> so, this tried to fix it minimum change.
-> >> 
-> >> Acked-by: Nick Piggin <npiggin@suse.de>
-> >> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-> >> ---
-> >> 
-> >>  mm/truncate.c |   28 +++++++++++++---------------
-> >>  1 file changed, 13 insertions(+), 15 deletions(-)
-> >> 
-> >> diff -puN mm/truncate.c~truncate_pagecache-fix mm/truncate.c
-> >> --- linux-2.6/mm/truncate.c~truncate_pagecache-fix	2010-01-12 05:43:06.000000000 +0900
-> >> +++ linux-2.6-hirofumi/mm/truncate.c	2010-01-12 05:43:06.000000000 +0900
-> >> @@ -522,22 +522,20 @@ EXPORT_SYMBOL_GPL(invalidate_inode_pages
-> >>   */
-> >>  void truncate_pagecache(struct inode *inode, loff_t old, loff_t new)
-> >>  {
-> >> -	if (new < old) {
-> >> -		struct address_space *mapping = inode->i_mapping;
-> >> +	struct address_space *mapping = inode->i_mapping;
-> >>  
-> >> -		/*
-> >> -		 * unmap_mapping_range is called twice, first simply for
-> >> -		 * efficiency so that truncate_inode_pages does fewer
-> >> -		 * single-page unmaps.  However after this first call, and
-> >> -		 * before truncate_inode_pages finishes, it is possible for
-> >> -		 * private pages to be COWed, which remain after
-> >> -		 * truncate_inode_pages finishes, hence the second
-> >> -		 * unmap_mapping_range call must be made for correctness.
-> >> -		 */
-> >> -		unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
-> >> -		truncate_inode_pages(mapping, new);
-> >> -		unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
-> >> -	}
-> >> +	/*
-> >> +	 * unmap_mapping_range is called twice, first simply for
-> >> +	 * efficiency so that truncate_inode_pages does fewer
-> >> +	 * single-page unmaps.  However after this first call, and
-> >> +	 * before truncate_inode_pages finishes, it is possible for
-> >> +	 * private pages to be COWed, which remain after
-> >> +	 * truncate_inode_pages finishes, hence the second
-> >> +	 * unmap_mapping_range call must be made for correctness.
-> >> +	 */
-> >> +	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
-> >> +	truncate_inode_pages(mapping, new);
-> >> +	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
-> >>  }
-> >>  EXPORT_SYMBOL(truncate_pagecache);
-> >
-> > The fix was applied to 2.6.33-rcX
-> > (cedabed49b39b4319bccc059a63344b6232b619c), appears to be needed in
-> > 2.6.32.x but no cc:stable's are present?
-> 
-> Ah, yes. I forgot to add "Cc: stable". Please apply this to 2.6.32.x.
+On Sun, 2010-01-17 at 19:13 -0800, David Miller wrote:
+> From: Roel Kluin <roel.kluin@gmail.com>
+> Date: Sun, 17 Jan 2010 16:10:04 +0100
+> > Regardless of the bit_state, the branches execute the same code.
+> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> > ---
+> >  drivers/net/s2io.c |   13 +++----------
+> >  1 files changed, 3 insertions(+), 10 deletions(-)
+> > Maybe something else was intended?
+> > this was introduced in commit 9fc93a41a1ad11
+> If you know the guilty commit, at least do the author(s) of commit
+> and/or the driver maintainer(s) the courtesy of CC:'ing them on
+> patches like this.
 
-Thanks guys, it's quite important so please apply to stable 2.6.32 and
-consider it as a high priority to release.
+One way to do that is to use:
+$ ./scripts/get_maintainer.pl --git-blame <patch>
+
 
