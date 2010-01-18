@@ -1,156 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029Ab0ARVYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033Ab0ARVZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756029Ab0ARVYw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 16:24:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755755Ab0ARVYl
+	id S1756033Ab0ARVZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 16:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761Ab0ARVZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 16:24:41 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:34496 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755758Ab0ARVYi (ORCPT
+	Mon, 18 Jan 2010 16:25:26 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:55187 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755449Ab0ARVZW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 16:24:38 -0500
+	Mon, 18 Jan 2010 16:25:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=RKynZZ9Ruk7W7SyC5Y/mCpguhw4jte7G6IzdwF/2JlA9+lmmqQ0x3HwjJJF0XDQ7Mb
-         BlzdubWKKViWItbyIt1P6QyoP04NwIn181CRj1RWCLsqliSEUi7qhPOak2E5SR1sjtKg
-         ypCJY07oxRdqDezKHkzQHe5SgIk6tTLHSkFAE=
-Message-ID: <4B54D192.5050503@gmail.com>
-Date: Mon, 18 Jan 2010 13:24:34 -0800
-From: Dyadya Skrudzh <gorshkov@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BoTv+Skdfcq4cH/OY0ZbtdnmGOZOu6Wg1wQha6CLpynYxp97lABYpdRnIm8aUclct5
+         PurBheyZf35GMO16XF2vxQ3HRN2iXMnxgH/NMuIBmejVF0A8Xz29mJ7CAOjzJVoQay5U
+         GbqVwCotqoqyDxBT0u2Ge8bY+ezB5qRhvQoVM=
+Date: Mon, 18 Jan 2010 22:25:16 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+Message-ID: <20100118212516.GE3157@del.dom.local>
+References: <4B4E3834.3000609@majjas.com>
+ <4B533A46.9050600@majjas.com>
+ <20100117221746.GA3161@del.dom.local>
+ <4B53906B.2020608@majjas.com>
+ <20100117230531.GC3161@del.dom.local>
+ <4B539A0A.2000504@majjas.com>
+ <20100118073018.GA6270@ff.dom.local>
+ <4B548C6B.10607@majjas.com>
+ <20100118204658.GC3157@del.dom.local>
+ <4B54CB0D.5070604@majjas.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Policy-routing of locally originated traffic?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B54CB0D.5070604@majjas.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Mon, Jan 18, 2010 at 03:56:45PM -0500, Michael Breuer wrote:
+> On 1/18/2010 3:46 PM, Jarek Poplawski wrote:
+> >On Mon, Jan 18, 2010 at 11:29:31AM -0500, Michael Breuer wrote:
+> >>Ok - up on the two patches, no DMAR. Some early observations:
+> >>
+> >>1. There's an early on MMAP oops (see below). This happens once, at
+> >>the completion of the transition to runlevel 5 (I've seen it
+> >>entering runlevel 3 as well). This does not recur when runlevels are
+> >>subsequently changed. I do not see this when running with DMAR
+> >>enabled.
+> >OK, you mentioned this oops (actually a warning only) happened during
+> >previous tests too.
+> Yes - dk if it's significant or not. Only obvious difference between
+> DMAR and not.
 
-Short version: Is it possible?
+OK, let's try (as long as possible) if it can break so hard as with
+DMAR.
 
-Long question: read on!
+> >>2. The dropped tx packet (DHCP) is a bit harder to recreate, but it
+> >>still happens.
+> >Btw, I guess you improved the test because you didn't mention it here,
+> >even after my explicit question?:
+> >http://permalink.gmane.org/gmane.linux.network/149171
+> I had been focusing on the hangs - dhcp causing the initial crash
+> from December. After things stabilized with the af patch & skb may
+> pull I started noticing the dropped tx packets. I reported the TX
+> loss on the 16th of January after confirming the issue.
 
-I'm trying to do some weird thing, here. There's dynamips running on my 
-F11 box
-(kernel 2.6.30.10-105.fc11.i586) emulating Cisco 7200 router with two 
-FastEthernets.
+OK, but we need to establish some status quo after these patches
+before any new things (including DMAR), so I'd suggest trying this
+config really longer and harder.
 
-Interfaces are connected as:
+> >>Interestingly, I initially saw no dropped packets
+> >>with ping - but after I went the DCHP route and eventually
+> >>reconnected, I could then cause dropped tx packets with ping. To
+> >>clarify:
+> >>
+> >>a) start throughput
+> >>b) ping device - no packet loss - this was true for the entire test run.
+> >>c) start throughput again
+> >>d) ping - no loss.
+> >>e) drop wifi on the device&  restart - first attempt worked. Repeat
+> >>attempt yielded the dropped DHCPOFFER packets. After about 6 tries,
+> >>the device reconnected to wifi.
+> >>f) ping again (after the reconnection) - packet loss rate about 80%.
+> >>g) simultaneously ping the wifi router - no loss.
+> >>h) After a while, packets are no longer dropped during ping. If I
+> >>manage to cause the dhcp drop again, and then ping after the device
+> >>finally reconnects, packet loss is significant for a while (maybe 30
+> >>sec to a minute). Then things return to normal. Note that the packet
+> >>loss continues even if the reported throughput drops to nil.
+> >>i) I can't cause the initial packet loss at RX rates below about
+> >>30,000KBPS (as reported by nethogs).  At rates over 40 I can
+> >>reproduce this on this set of patches&  config about 60% of the
+> >>time.
+> >I forgot to mention, but did you try to check if these lost ping
+> >packets are "being dropped somewhere after wireshark sees them and
+> >before hitting the wire" like DHCPOFFER? Aren't there any sky2
+> >warnings/resets while this happens?
+> >
+> >Jarek P.
+> Yes. There are no errors, and no statistics anywhere that I know to
+> look reflect the loss. Nothing in netstat; ethtool -S; etc. The only
+> loss reported is RX. The recent TX warnings/resets happened while
+> the machine was up for several days and while unattended and under
+> high RX load.
 
-f0/0 is attached to tap10 on Linux
-f0/1 is attached to tap20 on Linux
+Please check "tc -s qdisc" each time as well.
 
-IP addresses are:
-
-tap10: 10.10.0.1/16
-f0/0: 10.10.0.2/16
-f0/1: 10.20.0.2/16
-tap20: 10.20.0.1/16
-
-Policy routing configured as:
-
-[root@lab ~]# ip rule
-0:      from all lookup local
-32764:  from 10.20.0.1 to 10.10.0.0/16 lookup tap20
-32765:  from 10.10.0.1 to 10.20.0.0/16 lookup tap10
-32766:  from all lookup main
-32767:  from all lookup default
-
-[root@lab ~]# ip route show table tap10
-default via 10.10.0.2 dev tap10
-
-[root@lab ~]# ip route show table tap20
-default via 10.20.0.2 dev tap20
-
-Interfaces, Linux:
-
-[root@lab ~]# ip addr show dev tap10
-7: tap10: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast 
-state UNKNOWN qlen 500
-    link/ether 00:50:56:a7:5d:07 brd ff:ff:ff:ff:ff:ff
-    inet 10.10.0.1/16 brd 10.10.255.255 scope global tap10
-    inet6 fe80::250:56ff:fea7:5d07/64 scope link
-       valid_lft forever preferred_lft forever
-
-[root@lab ~]# ip addr show dev tap20
-8: tap20: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast 
-state UNKNOWN qlen 500
-    link/ether 00:50:56:b7:5b:b2 brd ff:ff:ff:ff:ff:ff
-    inet 10.20.0.1/16 brd 10.20.255.255 scope global tap20
-    inet6 fe80::250:56ff:feb7:5bb2/64 scope link
-       valid_lft forever preferred_lft forever
-
-Interfaces, Cisco:
-
-interface FastEthernet0/0
- ip address 10.10.0.2 255.255.0.0
- no ip proxy-arp
-!
-interface FastEthernet0/1
- ip address 10.20.0.2 255.255.0.0
- no ip proxy-arp
-
-Here's the results I got:
-
-[ next hop, OK ]
-
-[root@lab ~]# ip route flush cache ; ping -c 3 -I 10.10.0.1 10.10.0.2 ; 
-ip route show cache
-PING 10.10.0.2 (10.10.0.2) from 10.10.0.1 : 56(84) bytes of data.
-64 bytes from 10.10.0.2: icmp_seq=1 ttl=255 time=2.50 ms
-64 bytes from 10.10.0.2: icmp_seq=2 ttl=255 time=1.89 ms
-64 bytes from 10.10.0.2: icmp_seq=3 ttl=255 time=2.06 ms
-
---- 10.10.0.2 ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 2003ms
-rtt min/avg/max/mdev = 1.892/2.152/2.505/0.264 ms
-10.10.0.2 from 10.10.0.1 dev tap10
-    cache  mtu 1500 advmss 1460 hoplimit 64
-local 10.10.0.1 from 10.10.0.2 dev lo  src 10.10.0.1
-    cache <local,src-direct>  iif tap10
-
-[ another interface on Cisco, OK ]
-
-[root@lab ~]# ip route flush cache ; ping -c 3 -I 10.10.0.1 10.20.0.2 ; 
-ip route show cache
-PING 10.20.0.2 (10.20.0.2) from 10.10.0.1 : 56(84) bytes of data.
-64 bytes from 10.20.0.2: icmp_seq=1 ttl=255 time=2.92 ms
-64 bytes from 10.20.0.2: icmp_seq=2 ttl=255 time=2.05 ms
-64 bytes from 10.20.0.2: icmp_seq=3 ttl=255 time=2.05 ms
-
---- 10.20.0.2 ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 2003ms
-rtt min/avg/max/mdev = 2.057/2.348/2.928/0.410 ms
-10.20.0.2 from 10.10.0.1 via 10.10.0.2 dev tap10
-    cache  mtu 1500 advmss 1460 hoplimit 64
-local 10.10.0.1 from 10.20.0.2 dev lo  src 10.10.0.1
-    cache <local>  iif tap10
-
-[ tap10 -> tap20 interface through Cisco. Does not work; ping is OK but 
-route is local ]
-
-[root@lab ~]# ip route flush cache ; ping -c 3 -I 10.10.0.1 10.20.0.1 ; 
-ip route show cache
-PING 10.20.0.1 (10.20.0.1) from 10.10.0.1 : 56(84) bytes of data.
-64 bytes from 10.20.0.1: icmp_seq=1 ttl=64 time=0.052 ms
-64 bytes from 10.20.0.1: icmp_seq=2 ttl=64 time=0.022 ms
-64 bytes from 10.20.0.1: icmp_seq=3 ttl=64 time=0.021 ms
-
---- 10.20.0.1 ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 2000ms
-rtt min/avg/max/mdev = 0.021/0.031/0.052/0.015 ms
-local 10.20.0.1 from 10.10.0.1 dev lo
-    cache <local>  mtu 16436 advmss 16396 hoplimit 64
-local 10.10.0.1 from 10.20.0.1 dev lo
-    cache <local>  ipid 0xe686 mtu 16436 advmss 16396 hoplimit 64
-
-Is there any way I can make it work?
-
-Thank you,
-DS
+Jarek P.
