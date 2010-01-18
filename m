@@ -1,62 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140Ab0ARVio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136Ab0ARVkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756140Ab0ARVio (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 16:38:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097Ab0ARVin
+	id S1756136Ab0ARVkR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 16:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756041Ab0ARVkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 16:38:43 -0500
-Received: from www.tglx.de ([62.245.132.106]:57510 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756060Ab0ARVim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 16:38:42 -0500
-Date: Mon, 18 Jan 2010 22:38:34 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Julia Lawall <julia@diku.dk>
-cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: mcs7830 usb net: "scheduling while atomic" danger?
-In-Reply-To: <Pine.LNX.4.64.1001182229360.30446@ask.diku.dk>
-Message-ID: <alpine.LFD.2.00.1001182238010.2906@localhost.localdomain>
-References: <20100118184942.GA10171@rhlx01.hs-esslingen.de> <Pine.LNX.4.64.1001182206190.30446@ask.diku.dk> <alpine.LFD.2.00.1001182219580.2906@localhost.localdomain> <Pine.LNX.4.64.1001182229360.30446@ask.diku.dk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 18 Jan 2010 16:40:15 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:35419 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753037Ab0ARVkN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 16:40:13 -0500
+Date: Mon, 18 Jan 2010 16:39:24 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100118212516.GE3157@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B54D50C.90608@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B4E3834.3000609@majjas.com> <4B533A46.9050600@majjas.com>
+ <20100117221746.GA3161@del.dom.local> <4B53906B.2020608@majjas.com>
+ <20100117230531.GC3161@del.dom.local> <4B539A0A.2000504@majjas.com>
+ <20100118073018.GA6270@ff.dom.local> <4B548C6B.10607@majjas.com>
+ <20100118204658.GC3157@del.dom.local> <4B54CB0D.5070604@majjas.com>
+ <20100118212516.GE3157@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jan 2010, Julia Lawall wrote:
-> On Mon, 18 Jan 2010, Thomas Gleixner wrote:
-> 
-> > Julia,
-> > 
-> > On Mon, 18 Jan 2010, Julia Lawall wrote:
-> > > On Mon, 18 Jan 2010, Andreas Mohr wrote:
-> > >
-> > > The semantic match shown below finds 55 matches.  All but two involve 
-> > > mutex_lock.  Those are in the file 
-> > 
-> > As I said before the mutex_lock()/msleep() ones are fine. 
-> 
-> OK, I sem to have missed that message.
-> 
-> > > /var/linuxes/linux-next/drivers/usb/host/ehci-hub.c
-> > > in the functions ehci_bus_suspend and ehci_hub_control.
-> > 
-> > The msleep in ehci_hub_control() which happens with ehci->lock held
-> > and irqs disabled is definitely buggy.
-> > 
-> > I can't see anything wrong wth the msleep in ehci_bus_suspend() as it
-> > is _before_ the spin_lock_irq(&ehci->lock) region.
-> 
-> There is another one later in the function:
-> 
-> msleep(5);/* 5ms for HCD enter low pwr mode */
-> 
-> In my linux-next, it is on line 181.
+On 1/18/2010 4:25 PM, Jarek Poplawski wrote:
+> On Mon, Jan 18, 2010 at 03:56:45PM -0500, Michael Breuer wrote:
+>    
+>> On 1/18/2010 3:46 PM, Jarek Poplawski wrote:
+>>      
+>>> On Mon, Jan 18, 2010 at 11:29:31AM -0500, Michael Breuer wrote:
+>>>        
+>>>> Ok - up on the two patches, no DMAR. Some early observations:
+>>>>
+>>>> 1. There's an early on MMAP oops (see below). This happens once, at
+>>>> the completion of the transition to runlevel 5 (I've seen it
+>>>> entering runlevel 3 as well). This does not recur when runlevels are
+>>>> subsequently changed. I do not see this when running with DMAR
+>>>> enabled.
+>>>>          
+>>> OK, you mentioned this oops (actually a warning only) happened during
+>>> previous tests too.
+>>>        
+>> Yes - dk if it's significant or not. Only obvious difference between
+>> DMAR and not.
+>>      
+> OK, let's try (as long as possible) if it can break so hard as with
+> DMAR.
+>
+>    
+>>>> 2. The dropped tx packet (DHCP) is a bit harder to recreate, but it
+>>>> still happens.
+>>>>          
+>>> Btw, I guess you improved the test because you didn't mention it here,
+>>> even after my explicit question?:
+>>> http://permalink.gmane.org/gmane.linux.network/149171
+>>>        
+>> I had been focusing on the hangs - dhcp causing the initial crash
+>> from December. After things stabilized with the af patch&  skb may
+>> pull I started noticing the dropped tx packets. I reported the TX
+>> loss on the 16th of January after confirming the issue.
+>>      
+> OK, but we need to establish some status quo after these patches
+> before any new things (including DMAR), so I'd suggest trying this
+> config really longer and harder.
+>
+>    
+>>>> Interestingly, I initially saw no dropped packets
+>>>> with ping - but after I went the DCHP route and eventually
+>>>> reconnected, I could then cause dropped tx packets with ping. To
+>>>> clarify:
+>>>>
+>>>> a) start throughput
+>>>> b) ping device - no packet loss - this was true for the entire test run.
+>>>> c) start throughput again
+>>>> d) ping - no loss.
+>>>> e) drop wifi on the device&   restart - first attempt worked. Repeat
+>>>> attempt yielded the dropped DHCPOFFER packets. After about 6 tries,
+>>>> the device reconnected to wifi.
+>>>> f) ping again (after the reconnection) - packet loss rate about 80%.
+>>>> g) simultaneously ping the wifi router - no loss.
+>>>> h) After a while, packets are no longer dropped during ping. If I
+>>>> manage to cause the dhcp drop again, and then ping after the device
+>>>> finally reconnects, packet loss is significant for a while (maybe 30
+>>>> sec to a minute). Then things return to normal. Note that the packet
+>>>> loss continues even if the reported throughput drops to nil.
+>>>> i) I can't cause the initial packet loss at RX rates below about
+>>>> 30,000KBPS (as reported by nethogs).  At rates over 40 I can
+>>>> reproduce this on this set of patches&   config about 60% of the
+>>>> time.
+>>>>          
+>>> I forgot to mention, but did you try to check if these lost ping
+>>> packets are "being dropped somewhere after wireshark sees them and
+>>> before hitting the wire" like DHCPOFFER? Aren't there any sky2
+>>> warnings/resets while this happens?
+>>>
+>>> Jarek P.
+>>>        
+>> Yes. There are no errors, and no statistics anywhere that I know to
+>> look reflect the loss. Nothing in netstat; ethtool -S; etc. The only
+>> loss reported is RX. The recent TX warnings/resets happened while
+>> the machine was up for several days and while unattended and under
+>> high RX load.
+>>      
+> Please check "tc -s qdisc" each time as well.
+>
+> Jarek P
+>    
 
-Ooops, missed that one. Right, that's buggy as well.
+Some output from tc -s qdisc:
 
-Thanks,
+Before test:
+qdisc pfifo_fast 0: dev eth0 root refcnt 2 bands 3 priomap  1 2 2 2 1 2 
+0 0 1 1 1 1 1 1 1 1
+  Sent 35279532 bytes 291080 pkt (dropped 0, overlimits 0 requeues 0)
+  rate 0bit 0pps backlog 0b 0p requeues 0
+qdisc pfifo_fast 0: dev eth1 root refcnt 2 bands 3 priomap  1 2 2 2 1 2 
+0 0 1 1 1 1 1 1 1 1
+  Sent 377308 bytes 3107 pkt (dropped 0, overlimits 0 requeues 0)
+  rate 0bit 0pps backlog 0b 0p requeues 0
 
-	tglx
+During test (after initial observed packet loss):
+qdisc pfifo_fast 0: dev eth0 root refcnt 2 bands 3 priomap  1 2 2 2 1 2 
+0 0 1 1 1 1 1 1 1 1
+  Sent 123389424 bytes 1781403 pkt (dropped 0, overlimits 0 requeues 0)
+  rate 0bit 0pps backlog 0b 0p requeues 0
+qdisc pfifo_fast 0: dev eth1 root refcnt 2 bands 3 priomap  1 2 2 2 1 2 
+0 0 1 1 1 1 1 1 1 1
+  Sent 400862 bytes 3250 pkt (dropped 0, overlimits 0 requeues 0)
+  rate 0bit 0pps backlog 0b 0p requeues 0
+
+During test - while packet loss occuring:
+qdisc pfifo_fast 0: dev eth0 root refcnt 2 bands 3 priomap  1 2 2 2 1 2 
+0 0 1 1 1 1 1 1 1 1
+  Sent 150518974 bytes 2138312 pkt (dropped 0, overlimits 0 requeues 0)
+  rate 0bit 0pps backlog 0b 0p requeues 0
+qdisc pfifo_fast 0: dev eth1 root refcnt 2 bands 3 priomap  1 2 2 2 1 2 
+0 0 1 1 1 1 1 1 1 1
+  Sent 422003 bytes 3432 pkt (dropped 0, overlimits 0 requeues 0)
+  rate 0bit 0pps backlog 0b 0p requeues 0
+
+After the conclusion of the test:
+qdisc pfifo_fast 0: dev eth0 root refcnt 2 bands 3 priomap  1 2 2 2 1 2 
+0 0 1 1 1 1 1 1 1 1
+  Sent 244900497 bytes 3416350 pkt (dropped 0, overlimits 0 requeues 0)
+  rate 0bit 0pps backlog 0b 0p requeues 0
+qdisc pfifo_fast 0: dev eth1 root refcnt 2 bands 3 priomap  1 2 2 2 1 2 
+0 0 1 1 1 1 1 1 1 1
+  Sent 564380 bytes 4708 pkt (dropped 0, overlimits 0 requeues 0)
+  rate 0bit 0pps backlog 0b 0p requeues 0
+
+
+During the test, 8.9GB received; 232.9MB sent).
+
+I also connected a second device through the wifi router. I was able to 
+ping that device w/o loss while DHCP packets were being dropped to the 
+other connected device.
+
+Last note: just moved to 2.6.32.4 from .3 for this test (from git).
+
