@@ -1,117 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528Ab0ARMzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751524Ab0ARM5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751528Ab0ARMzy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 07:55:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796Ab0ARMzw
+	id S1751524Ab0ARM5g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 07:57:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033Ab0ARM5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 07:55:52 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:42254 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733Ab0ARMzu (ORCPT
+	Mon, 18 Jan 2010 07:57:35 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:45032 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842Ab0ARM5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 07:55:50 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Michael Stone <michael@laptop.org>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Am?rico Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
-In-Reply-To: Your message of "Thu, 14 Jan 2010 10:22:51 +0100."
-             <20100114092250.GA11500@atrey.karlin.mff.cuni.cz>
-From: Valdis.Kletnieks@vt.edu
-References: <alpine.LRH.2.00.1001110811350.25601@tundra.namei.org> <20100110215409.GA3705@heat> <20100110215848.GA26609@elf.ucw.cz> <5768.1263264853@localhost> <20100112075927.GA24256@atrey.karlin.mff.cuni.cz> <32558.1263306523@localhost>
-            <20100114092250.GA11500@atrey.karlin.mff.cuni.cz>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1263819244_6729P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 18 Jan 2010 07:54:04 -0500
-Message-ID: <17852.1263819244@localhost>
-X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=steiner.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020208.4B5459F0.023F,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+	Mon, 18 Jan 2010 07:57:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type;
+        b=vzBy/4l3RbJbCKrzeCoJaH8fA3+GblGkD84WrSELJ8zPRrDPRI1QQKifqD1isGmidq
+         HjSKL7jG38bSENR2ZYBcQLz/wxF2frVCfOVQD5v1ZjK9k13bJ3KZ7WfeR987VclFfglk
+         VbfJL5eb/aVct4kPvUOmVtB+2dP6FmpPaku+c=
+MIME-Version: 1.0
+Reply-To: eranian@gmail.com
+In-Reply-To: <20100118120747.GG5256@nowhere>
+References: <4b4c761b.0338560a.1eaa.ffff824d@mx.google.com>
+	 <1263312616.4244.153.camel@laptop>
+	 <bd4cb8901001130154p732672b6x56e758c1ab33a8e8@mail.gmail.com>
+	 <1263400193.4244.238.camel@laptop>
+	 <bd4cb8901001130852y1de007cbqe66d77605c1ec372@mail.gmail.com>
+	 <bd4cb8901001130922s7ad85af6w6c631d90de177ef9@mail.gmail.com>
+	 <20100117141233.GF5035@nowhere> <1263813189.4283.245.camel@laptop>
+	 <1263815616.4283.332.camel@laptop> <20100118120747.GG5256@nowhere>
+Date: Mon, 18 Jan 2010 13:57:33 +0100
+Message-ID: <7c86c4471001180457ue8738a5r25d717c939c6588c@mail.gmail.com>
+Subject: Re: [perfmon2] [PATCH] perf: fix the is_software_event() definition
+From: stephane eranian <eranian@googlemail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, perfmon2-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+       paulus@samba.org, mingo@elte.hu, davem@davemloft.net
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1263819244_6729P
-Content-Type: text/plain; charset=us-ascii
+On Mon, Jan 18, 2010 at 1:07 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> On Mon, Jan 18, 2010 at 12:53:36PM +0100, Peter Zijlstra wrote:
+>> On Mon, 2010-01-18 at 12:13 +0100, Peter Zijlstra wrote:
+>> > On Sun, 2010-01-17 at 15:12 +0100, Frederic Weisbecker wrote:
+>> >
+>> > > You need to also call pmu->disable() if it is a software event,
+>> > > because a breakpoint needs to be unregistered in hardware level
+>> > > too.
+>> >
+>> > breakpoint isn't a software pmu. But yeah, enable and disable need to
+>> > match.
+>>
+>> That is, it shouldn't be a software pmu, because we assume software
+>> events can always be scheduled, whereas that's definitely not so for the
+>> breakpoint one.
+>>
+>> Which seems to suggest the following
+>>
+>> ---
+>> Subject: perf: fix the is_software_event() definition
+>>
+>> When adding the breakpoint pmu Frederic forgot to exclude it from being
+>> a software event. While we're at it, make it an inclusive expression.
+>>
+>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>
+>
+>
+> Agreed.
+>
+> But then Stephane will need to update his patch and use
+> something else than is_software_event() to guess if an event
+> needs its pmu->enable/disable to be called.
+>
+> A kind of helper that can tell: I am not handled by
+> hw_perf_group_sched_in()
+>
+Then, we should use something that checks if the event
+is handled by the X86 PMU layer:
 
-On Thu, 14 Jan 2010 10:22:51 +0100, Pavel Machek said:
-> > On Tue, 12 Jan 2010 08:59:27 +0100, Pavel Machek said:
-> > 
-> > > Well, maybe, but mailer system where first user starts is as a daemon
-> > > makes sense...
-> > 
-> > Does it?  How do you get port 25 open for listening if the first user isn't
-> > root?  Most *actual* schemes to "launch at first use" that require privs fo
-r
-> > something have used inetd or similar - that program exists for a
-> > *reason*.
-> 
-> Remember sendmail is setuid root... so it already has the permissions.
-
-Actually, the sendmail setuid bit was removed quite some time ago:
-
-8.12.0/8.12.0   2001/09/08
-        *NOTICE*: The default installation of sendmail does not use
-                set-user-ID root anymore.  You need to create a new user and
-                a new group before installing sendmail (both called smmsp by
-                default).  The installation process tries to install
-                /etc/mail/submit.cf and creates /var/spool/clientmqueue by
-                default.  Please see sendmail/SECURITY for details.
-
-Wow.  2001. And people *still* think it's setuid. ;)
-
-(Interestingly enough, the capabilities bug came *later*:
-
-8.12.1/8.12.1   2001/10/01
-        SECURITY: Check whether dropping group privileges actually succeeded
-                to avoid possible compromises of the mail system by
-                supplying bogus data.  Add configuration options for
-                different set*gid() calls to reset saved gid.  Problem
-                found by Michal Zalewski.
-
-and was mostly an issue because the same problem existed in pre-8.12 sendmails
-that were still setuid and hadn't upgraded yet...
-
-
---==_Exmh_1263819244_6729P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFLVFnscC3lWbTT17ARArPiAJ9gsFOaXOoPI0PtsT+jBlxoTh9CwQCfaEBQ
-AhZmttLo9rYq+6PtWIOHrRg=
-=taue
------END PGP SIGNATURE-----
-
---==_Exmh_1263819244_6729P--
-
+int is_x86_hw_event(struct perf_event *event)
+{
+   return event->pmu == x86_pmu;
+}
