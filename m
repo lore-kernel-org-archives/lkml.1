@@ -1,85 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110Ab0ARO1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170Ab0AROad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753110Ab0ARO1Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 09:27:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039Ab0ARO1Q
+	id S1753170Ab0AROad (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 09:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133Ab0AROac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 09:27:16 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:57316 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574Ab0ARO1P (ORCPT
+	Mon, 18 Jan 2010 09:30:32 -0500
+Received: from mail.windriver.com ([147.11.1.11]:59145 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752850Ab0AROab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 09:27:15 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Greg Kroah-Hartman <greg@kroah.com>,
-       Joe Perches <joe@perches.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HOWTO: Updates on subsystem trees, patchwork, -next (vs. -mm)
-In-Reply-To: Your message of "Thu, 14 Jan 2010 23:39:46 +0100."
-             <tkrat.e8ba67441fb65247@s5r6.in-berlin.de>
-From: Valdis.Kletnieks@vt.edu
-References: <4B4F7304.5050401@s5r6.in-berlin.de> <Pine.LNX.4.30.1001141303230.3979-100000@mail.perches.com>
-            <tkrat.e8ba67441fb65247@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1263824779_6729P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 18 Jan 2010 09:30:31 -0500
+Message-ID: <4B54706C.20202@windriver.com>
+Date: Mon, 18 Jan 2010 08:30:04 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 20/40] arm,kgdb: Add hook to catch an oops with	debugger
+References: <20100114174821.GB21385@n2100.arm.linux.org.uk> <4B4F7EC2.6030000@windriver.com> <20100114204647.GE21385@n2100.arm.linux.org.uk>
+In-Reply-To: <20100114204647.GE21385@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 18 Jan 2010 09:26:19 -0500
-Message-ID: <25759.1263824779@localhost>
-X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=steiner.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020206.4B546F8C.011E,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+X-OriginalArrivalTime: 18 Jan 2010 14:29:55.0885 (UTC) FILETIME=[B49FBDD0:01CA984A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1263824779_6729P
-Content-Type: text/plain; charset=us-ascii
+Russell King - ARM Linux wrote:
+> On Thu, Jan 14, 2010 at 02:29:54PM -0600, Jason Wessel wrote:
+>   
+>> Russell King - ARM Linux wrote:
+>>     
+>>> I have a similar patch which implements the hook properly - but
+>>> with one caveat.  It needs a review to ensure that its safe to return
+>>> from die().  Until that's established, this patch can not be merged.
+>>>       
+>> I completed the analysis on your patch and yes, it is safe to return
+>> from __die() and die() the way you currently structured it, but it
+>> doesn't work quite the same as on some other architectures.
+>>
+>> After changing kgdb.c to register with the die notifier, I stepped
+>> through your code with an ICE, as well as running my regression tests
+>> which panic, oops, bad access etc...
+>>
+>> While kernel execution does happen to continue to work, I don't know
+>> that you really want to continue execution.
+>>
+>> 1) The kernel is marked tainted
+>> 2) bust_spinlocks() was toggled for a while
+>>
+>> On x86 for example, the notifier is invoked prior to the
+>> bust_spinlocks() etc... and then it can pass the exception along to
+>> the rest of the system (which can result in something bad, but
+>> remember the human behind the kernel debugger controls did it for some
+>> reason or another).
+>>     
+>
+> On x86, it's called in multiple places - both before die(), and also
+> inside __die().
+>
+> In __die(), notify_die() gets called with DIE_OOPS.  There's also a
+> pile of notify_die() calls in arch/x86/kernel/traps.c, which we don't
+> implement on ARM yet - it's unclear what's required here, and until
+> we have a user of notify_die()...
+>
+>   
 
-On Thu, 14 Jan 2010 23:39:46 +0100, Stefan Richter said:
-> One of the roles which -mm fulfilled some time ago (to offer an
-> integration testing ground) has been taken over by -next.  This is still
-> news to Documentation/HOWTO, so mention it there.
+Initially I was just looking to get the memory violation tests to pass
+on ARM, where the kernel debugger can catch an invalid memory write for
+instance.  That means anything that generates any kind of system fault
+should jump into the debugger via the die notifier.  There might be
+other places for this on ARM, but I figured we could start with the
+passing the memory fault tests first.
 
-> -2.6.x -mm kernel patches
-> -------------------------
-> -These are experimental kernel patches released by Andrew Morton.  Andrew
-> -takes all of the different subsystem kernel trees and patches and mushes
-> -them together, along with a lot of patches that have been plucked from
-> -the linux-kernel mailing list.  This tree serves as a proving ground for
-> -new features and patches.
+>> I made the following addition to your patch, and then it behaved as
+>> the other archs do with respect to passing along the result of the
+>> exception.  Given this information, would you be willing to merge your
+>> patch and possibly fold in the change below, or further comment?
+>>     
+>
+> This changes the behaviour away from x86, so I'm not sure it's the
+> right thing to do.  For instance, it means that kexec won't get to
+> know about the oops on ARM if NOTIFY_STOP is returned, whereas on
+> x86 it will.
+>
+> Maybe this hook wasn't meant for kgdb - what does kgdb use on x86?
+>   
 
-Note that -mm serves other purposes than just integration testing. I'm not
-sure that nuking *all* reference to it is appropriate.
+On x86, kgdb uses the notify die hook.  It is possible that there are
+some inconsistent uses of the notifiy_die(), but the general idea is
+that any user in the hook path can elect to consume the exception and
+allow the system to restore.
 
-On the other hand, I think there's like 3 other guys besides myself that
-actually test -mm kernels, so maybe the best bet is to see if it makes it
-upstream via the -mm route. ;)
+In terms of kgdb's use of this, I have only found it useful for
+programmatic testing of exception cases.  Specifically when using kdb,
+the default are always to propagate exceptions unless it was a
+breakpoint or single step exception which was set by the kernel debugger.
 
---==_Exmh_1263824779_6729P
-Content-Type: application/pgp-signature
+That being said, you patch works for the purpose of catching the
+exception and returning with or without the addition of an earlier
+return before bust_spinlocks() which I had proposed.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFLVG+LcC3lWbTT17ARAtzsAKDYM0Ir+3cPeCCcYjJt90njvLk+mwCeM1D5
-hj7UcMBhN9iNO9bsHu6GYSY=
-=K6PO
------END PGP SIGNATURE-----
-
---==_Exmh_1263824779_6729P--
-
+Jason.
