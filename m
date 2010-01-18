@@ -1,99 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356Ab0ARHaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197Ab0ARHfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753356Ab0ARHaa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 02:30:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344Ab0ARHa1
+	id S1754197Ab0ARHfX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 02:35:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028Ab0ARHfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 02:30:27 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:60957 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752151Ab0ARHa0 (ORCPT
+	Mon, 18 Jan 2010 02:35:22 -0500
+Received: from mx.neterion.com ([72.1.205.142]:10817 "EHLO owa.neterion.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751666Ab0ARHfW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 02:30:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FqZ1uVzWIuLzGclbhXOXAhG9eZj6ZZU3lybJVqqzATcPBwfPtYyI0uyA2LnWDNc/1f
-         sn2lFQ2Cc0hvFoYnkqH7qVo9XTAnRId9wpwbO95PkBwYJc8GMnEs3ty94UVhLg8tPOQv
-         krCa/CCt2geEi0BMN0KnBYtbhcusdQO90ufDk=
-Date: Mon, 18 Jan 2010 07:30:18 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-Message-ID: <20100118073018.GA6270@ff.dom.local>
-References: <20100109122830.GA4386@del.dom.local> <4B48CC2C.2090403@majjas.com> <4B4E2F89.2050606@majjas.com> <20100113210908.GA3065@del.dom.local> <4B4E3834.3000609@majjas.com> <4B533A46.9050600@majjas.com> <20100117221746.GA3161@del.dom.local> <4B53906B.2020608@majjas.com> <20100117230531.GC3161@del.dom.local> <4B539A0A.2000504@majjas.com>
+	Mon, 18 Jan 2010 02:35:22 -0500
+X-Greylist: delayed 913 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jan 2010 02:35:22 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B539A0A.2000504@majjas.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] S2io: two branches the same in wait_for_cmd_complete()
+Date: Mon, 18 Jan 2010 02:20:06 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77061418BF@nekter>
+In-Reply-To: <4B53284C.1090405@gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] S2io: two branches the same in wait_for_cmd_complete()
+Thread-Index: AcqXiq3oaGPMYqLLTRKO9OJuZ6ZP6wAgrK8A
+References: <4B53284C.1090405@gmail.com>
+From: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
+To: "Roel Kluin" <roel.kluin@gmail.com>, <netdev@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 17, 2010 at 06:15:22PM -0500, Michael Breuer wrote:
-> On 1/17/2010 6:05 PM, Jarek Poplawski wrote:
->> On Sun, Jan 17, 2010 at 05:34:19PM -0500, Michael Breuer wrote:
->>    
->>> On 1/17/2010 5:17 PM, Jarek Poplawski wrote:
->>>      
->>>> On Sun, Jan 17, 2010 at 11:26:46AM -0500, Michael Breuer wrote:
->>>>        
->>>>> On 01/13/2010 04:16 PM, Michael Breuer wrote:
->>>>>          
->>>>>> On 1/13/2010 4:09 PM, Jarek Poplawski wrote:
->>>>>>            
->>>>>>> On Wed, Jan 13, 2010 at 03:39:37PM -0500, Michael Breuer wrote:
->>>>>>>
->>>>>>>              
->>>>> Update: after leaving the system up for a few days, I hit the DMAR
->>>>> error again.
->>>>>          
->>>> My proposal is to send some summary as a new thread, with dmar in the
->>>> subject, and cc-ed dmar maintainers.
->>>>
->>>>        
->>> Not sure I agree. The symptoms are identical to those I hit without
->>> DMAR earlier on. Also, as this issue only happens when there is high
->>> receive load, I'm thinking there's some sort of race between TX and
->>> RX within the sky2 driver, or hardware. I think that DMAR is
->>> correctly catching the error.
->>>      
->> Hmm... OK, then let's wait with this report and go back to testing
->> it "really really long" ;-) without DMAR, and maybe without the
->> last Stephen's patch either? (So only the two things in the current
->> linux-2.6.)
->>
->> Jarek P.
->>    
-> Ok - but absent the last patch, I think I still need the pskb_may_pull  
-> patch... so it'd be pskb_may_pull and afpacket v3 and no DMAR.
+> Regardless of the bit_state, the branches execute the same code.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  drivers/net/s2io.c |   13 +++----------
+>  1 files changed, 3 insertions(+), 10 deletions(-)
+> 
+> Maybe something else was intended?
+> this was introduced in commit 9fc93a41a1ad11
+> 
+> diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
+> index cc42186..0e353d6 100644
+> --- a/drivers/net/s2io.c
+> +++ b/drivers/net/s2io.c
+> @@ -3415,16 +3415,9 @@ static int wait_for_cmd_complete(void __iomem
+> *addr, u64 busy_bit,
+> 
+>  	do {
+>  		val64 = readq(addr);
+> -		if (bit_state == S2IO_BIT_RESET) {
+> -			if (!(val64 & busy_bit)) {
+> -				ret = SUCCESS;
+> -				break;
+> -			}
+> -		} else {
+> -			if (!(val64 & busy_bit)) {
+> -				ret = SUCCESS;
+> -				break;
+> -			}
+> +		if (!(val64 & busy_bit)) {
+> +			ret = SUCCESS;
+> +			break;
+>  		}
+> 
+>  		if (in_interrupt())
+> --
+Thanks for catching this bug. The fix should be as follows -
+--- a/drivers/net/s2io.c
++++ b/drivers/net/s2io.c
+@@ -3421,7 +3421,7 @@ static int wait_for_cmd_complete(void __iomem
+*addr, u64 busy_bit,
+                                break;
+                        }
+                } else {
+-                       if (!(val64 & busy_bit)) {
++                       if (val64 & busy_bit) {
+                                ret = SUCCESS;
+                                break;
+                        }
 
-Exactly. Or if it's working for you already, the mainline (2.6.33-rc4)
-with the pskb_may_pull patch. And check for warnings from the latter.
+We've not hit this bug because wait_for_cmd_complete() is always called
+with S2IO_BIT_RESET.
 
->
-> Also - not sure if related, but there's still the odd tx side behavior  
-> when RX is under load. That I CAN reproduce at will (yesterday's report  
-> - no crash, but I confirmed that DHCPOFFER packets are being dropped  
-> somewhere after wireshark sees them and before hitting the wire.
-
-I'm not sure either, but until there is no crash it might be some
-minor bug or/and missing stat. Btw, you could probably try alternative
-test with ping from this overloaded box to the router and win7.
-
->
-> I am also wondering whether or not that testing I did yesterday set up  
-> today's hang - perhaps those lost TX packets are corrupting something  
-> that manifests worse later.
-
-Maybe, but you wrote earlier they had to fix something around this
-DMAR in the meantime, because it triggered much faster during your
-previous tests. So, I don't know why you assume this DMAR has to be
-correct this time.
-
-Jarek P.
+Ram
