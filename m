@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039Ab0ARLP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029Ab0ARLXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039Ab0ARLP2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 06:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620Ab0ARLP1
+	id S1754029Ab0ARLXE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 06:23:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843Ab0ARLXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 06:15:27 -0500
-Received: from cantor.suse.de ([195.135.220.2]:51266 "EHLO mx1.suse.de"
+	Mon, 18 Jan 2010 06:23:01 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:40284 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751161Ab0ARLP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 06:15:26 -0500
-Message-ID: <4B5442CC.8050200@suse.cz>
-Date: Mon, 18 Jan 2010 12:15:24 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	id S1751469Ab0ARLW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 06:22:59 -0500
+Date: Mon, 18 Jan 2010 12:22:56 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Michal Marek <mmarek@suse.cz>
+Cc: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>,
+       linux-kbuild@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>, stefanr@s5r6.in-berlin.de,
+       adi@hexapodia.org, david.vrabel@csr.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, cocci@diku.dk,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] kbuild: improve version string logic
-References: <alpine.DEB.2.00.1001041330230.26148@chino.kir.corp.google.com> <4B4345AF.9040600@suse.cz> <alpine.DEB.2.00.1001131300360.26527@chino.kir.corp.google.com> <20100116063754.GC20342@elte.hu> <20100116183445.29fc5d50.sfr@canb.auug.org.au> <20100116092658.GA23999@elte.hu> <4B542C99.9000801@suse.cz> <alpine.DEB.2.00.1001180243300.20677@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1001180243300.20677@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Nicolas Palix <npalix@diku.dk>
+Subject: Re: SmPL scripts into build environment?
+In-Reply-To: <4B543EF2.50605@suse.cz>
+Message-ID: <Pine.LNX.4.64.1001181220530.14962@ask.diku.dk>
+References: <4B502C6B.7000802@s5r6.in-berlin.de> <20100115.005445.263291449.davem@davemloft.net>
+ <tkrat.e88dd4dbf17f9bde@s5r6.in-berlin.de> <20100115.012233.202457727.davem@davemloft.net>
+ <Pine.LNX.4.64.1001151039080.23543@ask.diku.dk>
+ <84144f021001150149u3b784d26g1822be6c5c3ecbf@mail.gmail.com>
+ <Pine.LNX.4.64.1001151101320.23543@ask.diku.dk> <20100115110845.GB28625@sirena.org.uk>
+ <Pine.LNX.4.64.1001151303580.23543@ask.diku.dk> <20100115133933.GB21188@rakim.wolfsonmicro.main>
+ <4B509C90.10305@freemail.hu> <4B543EF2.50605@suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18.1.2010 11:45, David Rientjes wrote:
-> Michal, where are you hosting your git tree?  Are you going to be taking 
-> over kbuild-next on git.kernel.org?
+> Documentation/smpl/$name_of_problem_fixed.cocci? Or maybe better
+> scripts/smlp/..., if you are going to add some wrapper that runs the
+> semantic patches on the source tree. Or something like that, a dedicated
+> subdirectory to store the semantic patches in individual files.
 
-git://repo.or.cz/linux-kbuild.git for-next
-(http://repo.or.cz/w/linux-kbuild.git). Maybe I should ask for an
-account in git.kernel.org account and move it there, you're not the
-first one to wonder where to find the tree :).
+The idea is to make it possible to run them, assuming the user has 
+installed Coccinelle, so scripts seems better.
 
-Michal
+> > What do you think the best way would be to introduce some check like this
+> > in the build environment?
+> 
+> I've only heard about the tool, I haven't used it yet. Does it need to
+> preprocess and parse source files like sparse does, or can it check C
+> files without expanding macros and includes?
+
+It doesn't need to preprocess the source files.
+
+thanks,
+julia
