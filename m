@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216Ab0ARPxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162Ab0ARP4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216Ab0ARPxw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 10:53:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052Ab0ARPxv
+	id S1754162Ab0ARP4J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 10:56:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058Ab0ARP4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 10:53:51 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53538 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754185Ab0ARPxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 10:53:50 -0500
-Date: Mon, 18 Jan 2010 16:53:47 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Michal Marek <mmarek@suse.cz>
-Cc: David Rientjes <rientjes@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] kbuild: improve version string logic
-In-Reply-To: <4B5442CC.8050200@suse.cz>
-Message-ID: <alpine.LRH.2.00.1001181652140.15694@twin.jikos.cz>
-References: <alpine.DEB.2.00.1001041330230.26148@chino.kir.corp.google.com> <4B4345AF.9040600@suse.cz> <alpine.DEB.2.00.1001131300360.26527@chino.kir.corp.google.com> <20100116063754.GC20342@elte.hu> <20100116183445.29fc5d50.sfr@canb.auug.org.au>
- <20100116092658.GA23999@elte.hu> <4B542C99.9000801@suse.cz> <alpine.DEB.2.00.1001180243300.20677@chino.kir.corp.google.com> <4B5442CC.8050200@suse.cz>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Mon, 18 Jan 2010 10:56:08 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:43424 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752855Ab0ARP4H convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 10:56:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PiTYAkN2IXycMbP4F+VQ7bZWYE2ZHd7aH7oYFNBy7pqlz7GHE+eViRmCXzhnjuNEzv
+         msVjUGJa1aCyiYX4lBJXI4XYNldcuQPJKwNqLdBO8q8dTIG1gi/RUtms8nAI3kY2MrbV
+         B8LFoYyKjEnD1TJBygW0OHY5CPwQSLk0nM5PY=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1263826439.28171.4006.camel@gandalf.stny.rr.com>
+References: <4B4E86FB.40208@cn.fujitsu.com> <4B4E8743.6030805@cn.fujitsu.com>
+	 <81b0412b1001160312x3874bbddj28aac9e5a36bf98a@mail.gmail.com>
+	 <1263826439.28171.4006.camel@gandalf.stny.rr.com>
+Date: Mon, 18 Jan 2010 16:56:05 +0100
+Message-ID: <81b0412b1001180756u4daf3099h76d633f1f1143f05@mail.gmail.com>
+Subject: Re: [PATCH 4/7] lib: Introduce strnstr()
+From: Alex Riesen <raa.lkml@gmail.com>
+To: rostedt@goodmis.org
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jan 2010, Michal Marek wrote:
+On Mon, Jan 18, 2010 at 15:53, Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Sat, 2010-01-16 at 12:12 +0100, Alex Riesen wrote:
+>>
+>> Are you sure you want to search _past_ the NUL-terminator
+>> of s1?
+>>
+>> > +       l2 = strlen(s2);
+>> > +       if (!l2)
+>> > +               return (char *)s1;
+>> > +       while (l1 >= l2) {
+>> > +               l1--;
+>
+> The first check is len-1, I don't see it searching past the
+> NUL-terminator. The loop will stop when l1 == l2 (the size of s2) and s1
+> pointing near the end of the string.
 
-> > Michal, where are you hosting your git tree?  Are you going to be taking 
-> > over kbuild-next on git.kernel.org?
-> 
-> git://repo.or.cz/linux-kbuild.git for-next
-> (http://repo.or.cz/w/linux-kbuild.git). Maybe I should ask for an
-> account in git.kernel.org account and move it there, you're not the
-> first one to wonder where to find the tree :).
+I thought that len means "minimum of strlen(s1) and len".
 
-Yes, I think it is preferred.
-
-I know, I know, the proper URL is listed in MAINTAINERS file ... still, I 
-believe that what most people do when looking for particular git tree is 
-going to http://git.kernel.org/ and looking around there.
-
-So having the tree there really helps to give it much more exposure than 
-on some random git hosting.
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
-
+Li already explained that was not intended, even if s2 cannot be made to
+contain a \0, as s1 can by specifying len greater than strlen(s1).
