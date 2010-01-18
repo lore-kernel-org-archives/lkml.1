@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919Ab0AROUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959Ab0AROVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752919Ab0AROUc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 09:20:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869Ab0AROUa
+	id S1752959Ab0AROVO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 09:21:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761Ab0AROVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 09:20:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17734 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752859Ab0AROU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 09:20:27 -0500
-Date: Mon, 18 Jan 2010 16:19:38 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       akpm@linux-foundation.org, andrew.c.morrow@gmail.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
-Message-ID: <20100118141938.GI30698@redhat.com>
-References: <20100118133755.GG30698@redhat.com>
- <84144f021001180609r4d7fbbd0p972d5bc0e227d09a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f021001180609r4d7fbbd0p972d5bc0e227d09a@mail.gmail.com>
+	Mon, 18 Jan 2010 09:21:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45836 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752300Ab0AROVN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 09:21:13 -0500
+Subject: Re: [PATCH] perf_events: improve x86 event scheduling (v5)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stephane Eranian <eranian@google.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+In-Reply-To: <bd4cb8901001180612g29369150h9db09470fa6000af@mail.gmail.com>
+References: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com>
+	 <20100118134324.GB10364@nowhere> <1263822898.4283.558.camel@laptop>
+	 <bd4cb8901001180612g29369150h9db09470fa6000af@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jan 2010 15:20:52 +0100
+Message-ID: <1263824452.4283.566.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 04:09:35PM +0200, Pekka Enberg wrote:
-> Hi Gleb,
+On Mon, 2010-01-18 at 15:12 +0100, Stephane Eranian wrote:
 > 
-> On Mon, Jan 18, 2010 at 3:37 PM, Gleb Natapov <gleb@redhat.com> wrote:
-> > The current interaction between mlockall(MCL_FUTURE) and mmap has a
-> > deficiency. In 'normal' mode, without MCL_FUTURE in force, the default
-> > is that new memory mappings are not locked, but mmap provides MAP_LOCKED
-> > specifically to override that default. However, with MCL_FUTURE toggled
-> > to on, there is no analogous way to tell mmap to override the default. The
-> > proposed MAP_UNLOCKED flag would resolve this deficiency.
+> > Then there's still the question of having events of multiple hw pmus in
+> > a single group, I'd be perfectly fine with saying that's not allowed,
+> > what to others think?
 > >
-> > The benefit of the patch is that it makes it possible for an application
-> > which has previously called mlockall(MCL_FUTURE) to selectively exempt
-> > new memory mappings from memory locking, on a per-mmap-call basis. There
-> > is currently no thread-safe way for an application to do this as
-> > toggling MCL_FUTURE around calls to mmap is racy in a multi-threaded
-> > context. Other threads may manipulate the address space during the
-> > window where MCL_FUTURE is off, subverting the programmers intended
-> > memory locking semantics.
-> >
-> > The ability to exempt specific memory mappings from memory locking is
-> > necessary when the region to be mapped is larger than physical memory.
-> > In such cases a call to mmap the region cannot succeed, unless
-> > MAP_UNLOCKED is available.
-> 
-> The changelog doesn't mention what kind of applications would want to
-> use this. Are there some? Using mlockall(MCL_FUTURE) but then having
-> some memory regions MAP_UNLOCKED sounds like a strange combination to
-> me.
-The specific use cases were discussed in the thread following previous
-version of the patch. I can describe my specific use case in a change log
-and I can copy what Andrew said about his case, but is it really needed in
-a commit message itself? It boils down to greater control over when and
-where application can get major fault. There are applications that need
-this kind of control. As of use of mlockall(MCL_FUTURE) how can I make
-sure that all memory allocated behind my application's back (by dynamic
-linker, libraries, stack) will be locked otherwise?
+> I have seen requests for measuring both core and uncore PMU events
+> together for instance. It all depends on how uncore PMU will be managed.
 
+OK, hard to correlate those two though, it would basically mean only
+running that one task on the socket.
 
---
-			Gleb.
