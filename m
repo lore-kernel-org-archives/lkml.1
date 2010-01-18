@@ -1,87 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658Ab0ARR0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443Ab0ARR1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755658Ab0ARR0z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 12:26:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355Ab0ARR0v
+	id S1755443Ab0ARR1b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 12:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827Ab0ARRVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 12:26:51 -0500
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:51627 "EHLO
+	Mon, 18 Jan 2010 12:21:12 -0500
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:52797 "EHLO
 	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755253Ab0ARRVq (ORCPT
+	with ESMTP id S1755306Ab0ARRVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 12:21:46 -0500
+	Mon, 18 Jan 2010 12:21:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=v1VID5272f1hFHlNVhkaJChU31uxUzHZlrgeGl1e/Q9MWE2PLZGvaPGyROzeCL+4b2
-         pnus7kxDpFYbNfrJs0L/MA+TyHv0zo1bqK6Cms1EBnrICGan+A8YCfCEDB9tou/09oO6
-         iX8U9ix/zI4RP3ta0/J6cW8euLHKPSSIzgW10=
+        b=wk6zEbJQlg91GPpmCQ/zBxLtd1jVdHOq5sgzEHizntor6peJe9lqi8w5iSvHdeCKjU
+         9WHdut9kTw0gC8pcfUYaQIRYNOlqUz/qgK7+yhVjXh1OPYwra27bEgURu1aV60e/1sgg
+         qylipSGmKelv9xkGYnK8XuBM08XnEr7NnoAoM=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 18 Jan 2010 18:20:35 +0100
-Message-Id: <20100118172035.14623.50000.sendpatchset@localhost>
+Date: Mon, 18 Jan 2010 18:20:00 +0100
+Message-Id: <20100118172000.14623.73749.sendpatchset@localhost>
 In-Reply-To: <20100118171349.14623.90030.sendpatchset@localhost>
 References: <20100118171349.14623.90030.sendpatchset@localhost>
-Subject: [PATCH 47/64] ide: add drive->dma_mode field
+Subject: [PATCH 42/64] via82cxxx: workaround h/w bugs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: add drive->dma_mode field
+Subject: [PATCH] via82cxxx: workaround h/w bugs
 
-Add dma_mode field to ide_drive_t matching dma_mode field used in
-struct ata_device.
+Add custom struct ide_tp_ops instance to fix the internal bug of some VIA
+chipsets which will reset the device register after changing the nIEN bit
+in the device control register.
 
-The validity of the field is restricted to ->dma_pio_mode method
-only currently in IDE subsystem.
+Based on commit bfce5e0 for pata_via host driver.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/aec62xx.c       |    1 +
- drivers/ide/ide-xfer-mode.c |    2 ++
- include/linux/ide.h         |    1 +
- 3 files changed, 4 insertions(+)
+ drivers/ide/via82cxxx.c |   57 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-Index: b/drivers/ide/aec62xx.c
+Index: b/drivers/ide/via82cxxx.c
 ===================================================================
---- a/drivers/ide/aec62xx.c
-+++ b/drivers/ide/aec62xx.c
-@@ -136,6 +136,7 @@ static void aec6260_set_mode(ide_drive_t
- 
- static void aec_set_pio_mode(ide_drive_t *drive, const u8 pio)
+--- a/drivers/ide/via82cxxx.c
++++ b/drivers/ide/via82cxxx.c
+@@ -107,6 +107,7 @@ struct via82cxxx_dev
  {
-+	drive->dma_mode = pio + XFER_PIO_0;
- 	drive->hwif->port_ops->set_dma_mode(drive, pio + XFER_PIO_0);
- }
+ 	struct via_isa_bridge *via_config;
+ 	unsigned int via_80w;
++	u8 cached_device[2];
+ };
  
-Index: b/drivers/ide/ide-xfer-mode.c
-===================================================================
---- a/drivers/ide/ide-xfer-mode.c
-+++ b/drivers/ide/ide-xfer-mode.c
-@@ -167,9 +167,11 @@ int ide_set_dma_mode(ide_drive_t *drive,
- 	if (hwif->host_flags & IDE_HFLAG_POST_SET_MODE) {
- 		if (ide_config_drive_speed(drive, mode))
- 			return -1;
-+		drive->dma_mode = mode;
- 		port_ops->set_dma_mode(drive, mode);
- 		return 0;
- 	} else {
-+		drive->dma_mode = mode;
- 		port_ops->set_dma_mode(drive, mode);
- 		return ide_config_drive_speed(drive, mode);
- 	}
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -516,6 +516,7 @@ struct ide_drive_s {
-         u8	current_speed;	/* current transfer rate set */
- 	u8	desired_speed;	/* desired transfer rate set */
- 	u8	pio_mode;	/* for ->set_pio_mode _only_ */
-+	u8	dma_mode;	/* for ->dma_pio_mode _only_ */
-         u8	dn;		/* now wide spread use */
- 	u8	acoustic;	/* acoustic management */
- 	u8	media;		/* disk, cdrom, tape, floppy, ... */
+ /**
+@@ -382,10 +383,66 @@ static const struct ide_port_ops via_por
+ 	.cable_detect		= via82cxxx_cable_detect,
+ };
+ 
++static void via_write_devctl(ide_hwif_t *hwif, u8 ctl)
++{
++	struct via82cxxx_dev *vdev = hwif->host->host_priv;
++
++	outb(ctl, hwif->io_ports.ctl_addr);
++	outb(vdev->cached_device[hwif->channel], hwif->io_ports.device_addr);
++}
++
++static void __via_dev_select(ide_drive_t *drive, u8 select)
++{
++	ide_hwif_t *hwif = drive->hwif;
++	struct via82cxxx_dev *vdev = hwif->host->host_priv;
++
++	outb(select, hwif->io_ports.device_addr);
++	vdev->cached_device[hwif->channel] = select;
++}
++
++static void via_dev_select(ide_drive_t *drive)
++{
++	__via_dev_select(drive, drive->select | ATA_DEVICE_OBS);
++}
++
++static void via_tf_load(ide_drive_t *drive, struct ide_taskfile *tf, u8 valid)
++{
++	ide_hwif_t *hwif = drive->hwif;
++	struct ide_io_ports *io_ports = &hwif->io_ports;
++
++	if (valid & IDE_VALID_FEATURE)
++		outb(tf->feature, io_ports->feature_addr);
++	if (valid & IDE_VALID_NSECT)
++		outb(tf->nsect, io_ports->nsect_addr);
++	if (valid & IDE_VALID_LBAL)
++		outb(tf->lbal, io_ports->lbal_addr);
++	if (valid & IDE_VALID_LBAM)
++		outb(tf->lbam, io_ports->lbam_addr);
++	if (valid & IDE_VALID_LBAH)
++		outb(tf->lbah, io_ports->lbah_addr);
++	if (valid & IDE_VALID_DEVICE)
++		__via_dev_select(drive, tf->device);
++}
++
++const struct ide_tp_ops via_tp_ops = {
++	.exec_command		= ide_exec_command,
++	.read_status		= ide_read_status,
++	.read_altstatus		= ide_read_altstatus,
++	.write_devctl		= via_write_devctl,
++
++	.dev_select		= via_dev_select,
++	.tf_load		= via_tf_load,
++	.tf_read		= ide_tf_read,
++
++	.input_data		= ide_input_data,
++	.output_data		= ide_output_data,
++};
++
+ static const struct ide_port_info via82cxxx_chipset __devinitdata = {
+ 	.name		= DRV_NAME,
+ 	.init_chipset	= init_chipset_via82cxxx,
+ 	.enablebits	= { { 0x40, 0x02, 0x02 }, { 0x40, 0x01, 0x01 } },
++	.tp_ops		= &via_tp_ops,
+ 	.port_ops	= &via_port_ops,
+ 	.host_flags	= IDE_HFLAG_PIO_NO_BLACKLIST |
+ 			  IDE_HFLAG_POST_SET_MODE |
