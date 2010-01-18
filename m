@@ -1,45 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624Ab0ARFpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751710Ab0ARFre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751624Ab0ARFpI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 00:45:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469Ab0ARFpH
+	id S1751710Ab0ARFre (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 00:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458Ab0ARFre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 00:45:07 -0500
-Received: from kroah.org ([198.145.64.141]:44872 "EHLO coco.kroah.org"
+	Mon, 18 Jan 2010 00:47:34 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:57922 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275Ab0ARFpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 00:45:06 -0500
-Date: Sun, 17 Jan 2010 21:42:08 -0800
-From: Greg KH <greg@kroah.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Ozan ??a??layan <ozan@pardus.org.tr>, "H. Peter Anvin" <hpa@zytor.com>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [0/9] 2.6.31.12-stable review
-Message-ID: <20100118054208.GB1697@kroah.com>
-References: <20100114224848.GA532@kroah.com> <4B520D98.7030202@pardus.org.tr> <20100117032319.GA27413@kroah.com> <4B5335CA.7080309@pardus.org.tr> <20100117161853.GA31781@kroah.com> <20100117180250.GB13056@khazad-dum.debian.net>
+	id S1750733Ab0ARFrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 00:47:33 -0500
+Date: Mon, 18 Jan 2010 06:47:30 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: David Miller <davem@davemloft.net>
+Cc: ron.mercer@qlogic.com, linux-driver@qlogic.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/9] drivers/net: Eliminate useless code
+In-Reply-To: <20100117.193140.153138395.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.1001180646460.12648@ask.diku.dk>
+References: <Pine.LNX.4.64.1001161657400.28745@ask.diku.dk>
+ <20100117.193140.153138395.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100117180250.GB13056@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 17, 2010 at 04:02:50PM -0200, Henrique de Moraes Holschuh wrote:
-> On Sun, 17 Jan 2010, Greg KH wrote:
-> > Yes, I will be maintaining the .32 kernel in a "long-term" manner.  I
-> > have mentioned it before to a number of people, but don't know if I've
-> > done any "official" announcement.  Things get lost in the lkml volume at
-> > times.
+On Sun, 17 Jan 2010, David Miller wrote:
+
+> From: Julia Lawall <julia@diku.dk>
+> Date: Sat, 16 Jan 2010 16:57:56 +0100 (CET)
 > 
-> Greg, could you do an "official announcement"?  Something that LWN can pick
-> up, etc?
+> > The variable qdev is initialized twice to the same (side effect-free)
+> > expression.  Drop one initialization.
+> > 
+> > A simplified version of the semantic match that finds this problem is:
+> > (http://coccinelle.lip6.fr/)
+> > 
+> > // <smpl>
+> > @forall@
+> > idexpression *x;
+> > identifier f!=ERR_PTR;
+> > @@
+> > 
+> > x = f(...)
+> > ... when != x
+> > (
+> > x = f(...,<+...x...+>,...)
+> > |
+> > * x = f(...)
+> > )
+> > // </smpl>
+> > 
+> > Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> Something in your patch creation process is corrupting these
+> patches.
+> 
+> > diff --git a/drivers/net/qla3xxx.c b/drivers/net/qla3xxx.c
+> > index f922294..4ef0afb 100644
+> > --- a/drivers/net/qla3xxx.c
+> > +++ b/drivers/net/qla3xxx.c
+> > @@ -4087,9 +4087,8 @@ static void __devexit ql3xxx_remove(struct pci_dev *pdev)
+> >  	struct ql3_adapter *qdev = netdev_priv(ndev);
+> >  
+> >  	unregister_netdev(ndev);
+> > -	qdev = netdev_priv(ndev);
+> >  
+> >  	ql_disable_interrupts(qdev);
+> >  
+> > --
+> 
+> That hunk header states that after the line is removed there should
+> be 8 lines present in the hunk, but the patch only shows 7 such
+> lines.
+> 
+> I suspect something is eating the final line of your patches.
 
-Yes, I will do so on Tuesday.
+Oops, sorry.  I will try again.  I'm surprised that checkpatch didn't 
+complain.
 
-thanks,
-
-greg k-h
+julia
