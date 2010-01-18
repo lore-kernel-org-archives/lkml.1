@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322Ab0ARMYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606Ab0ARMaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322Ab0ARMYj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 07:24:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095Ab0ARMYi
+	id S1752606Ab0ARMaE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 07:30:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327Ab0ARMaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 07:24:38 -0500
-Received: from casper.infradead.org ([85.118.1.10]:51757 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755242Ab0ARMYh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 07:24:37 -0500
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, ananth@in.ibm.com,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B545146.3080001@redhat.com>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <4B5325CF.5000001@redhat.com> <1263740593.557.20967.camel@twins>
-	 <4B53661A.9090907@redhat.com> <1263800752.4283.19.camel@laptop>
-	 <4B543F93.3060509@redhat.com> <1263815072.4283.305.camel@laptop>
-	 <4B544D7C.2060708@redhat.com> <1263816396.4283.361.camel@laptop>
-	 <4B544F8E.1080603@redhat.com>
-	 <84144f021001180413w76a8ca2axb0b9f07ee4dea67e@mail.gmail.com>
-	 <4B545146.3080001@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 13:24:05 +0100
-Message-ID: <1263817445.4283.408.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 18 Jan 2010 07:30:00 -0500
+Received: from cantor.suse.de ([195.135.220.2]:53666 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751158Ab0ARMaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 07:30:00 -0500
+Message-ID: <4B545445.1070308@suse.cz>
+Date: Mon, 18 Jan 2010 13:29:57 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
+MIME-Version: 1.0
+To: Joe Perches <joe@perches.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       William Allen Simpson <william.allen.simpson@gmail.com>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       =?UTF-8?B?SWxwbyBKw6RydmluZW4=?= <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] Makefile: Document ability to make file.lst and file.S
+References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com>	 <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com>	 <20100113155323.GB24818@basil.fritz.box>	 <1263400835.8011.73.camel@Joe-Laptop.home>	 <20100113171411.GC24818@basil.fritz.box> <1263403904.8011.83.camel@Joe-Laptop.home>
+In-Reply-To: <1263403904.8011.83.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 14:17 +0200, Avi Kivity wrote:
-> On 01/18/2010 02:13 PM, Pekka Enberg wrote:
-> > So how big chunks of the address space are we talking here for uprobes?
-> >    
+On 13.1.2010 18:31, Joe Perches wrote:
+> Then that might as well go into the help.
 > 
-> That's for the authors to answer, but at a guess, 32 bytes per probe 
-> (largest x86 instruction is 15 bytes), so 32 MB will give you a million 
-> probes.  That's a piece of cake for x86-64, probably harder to justify 
-> for i386.
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+> diff --git a/Makefile b/Makefile
+> index 9f64552..484cff4 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -1248,7 +1248,9 @@ help:
+>  	@echo  '  firmware_install- Install all firmware to INSTALL_FW_PATH'
+>  	@echo  '                    (default: $$(INSTALL_MOD_PATH)/lib/firmware)'
+>  	@echo  '  dir/            - Build all files in dir and below'
+> -	@echo  '  dir/file.[ois]  - Build specified target only'
+> +	@echo  '  dir/file.[oisS] - Build specified target only'
+> +	@echo  '  dir/file.lst    - Build specified mixed source/assembly target only'
+> +	@echo  '                    (requires a recent binutils and recent build (System.map))'
 
-Yeah, I'm aware of people turning off address space randomization to
-gain more virtual space on i386, I'm pretty sure those folks aren't
-going to be happy if we shrink it.
+Applied, thanks.
 
-Let alone them trying to probe their app.
-
+Michal
