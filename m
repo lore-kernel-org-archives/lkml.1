@@ -1,292 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475Ab0ARAzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453Ab0ARAy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475Ab0ARAzI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 19:55:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423Ab0ARAyy
+	id S1755453Ab0ARAy1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 19:54:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344Ab0ARAyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 19:54:54 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54506 "EHLO hera.kernel.org"
+	Sun, 17 Jan 2010 19:54:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54487 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755432Ab0ARAyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 19:54:13 -0500
+	id S1754298Ab0ARAyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 19:54:00 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
        akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Cc: Tejun Heo <tj@kernel.org>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 39/40] gfs2: use workqueue instead of slow-work
-Date: Mon, 18 Jan 2010 09:57:51 +0900
-Message-Id: <1263776272-382-40-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 19/40] workqueue: reimplement work flushing using linked works
+Date: Mon, 18 Jan 2010 09:57:31 +0900
+Message-Id: <1263776272-382-20-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1263776272-382-1-git-send-email-tj@kernel.org>
 References: <1263776272-382-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 00:52:20 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 00:52:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Workqueue can now handle high concurrency.  Use system_long_wq instead
-of slow-work.
+A work is linked to the next one by having WORK_STRUCT_LINKED bit set
+and these links can be chained.  When a linked work is dispatched to a
+worker, all linked works are dispatched to the worker's newly added
+->scheduled queue and processed back-to-back.
+
+Currently, as there's only single worker per cwq, having linked works
+doesn't make any visible behavior difference.  This change is to
+prepare for multiple shared workers per cpu.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Steven Whitehouse <swhiteho@redhat.com>
 ---
- fs/gfs2/Kconfig      |    1 -
- fs/gfs2/incore.h     |    3 +-
- fs/gfs2/main.c       |    9 +-------
- fs/gfs2/ops_fstype.c |    8 +++---
- fs/gfs2/recovery.c   |   52 ++++++++++++++++++-------------------------------
- fs/gfs2/recovery.h   |    4 +-
- fs/gfs2/sys.c        |    3 +-
- 7 files changed, 29 insertions(+), 51 deletions(-)
+ include/linux/workqueue.h |    2 +
+ kernel/workqueue.c        |  152 ++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 133 insertions(+), 21 deletions(-)
 
-diff --git a/fs/gfs2/Kconfig b/fs/gfs2/Kconfig
-index 4dcddf8..f51f1bb 100644
---- a/fs/gfs2/Kconfig
-+++ b/fs/gfs2/Kconfig
-@@ -7,7 +7,6 @@ config GFS2_FS
- 	select IP_SCTP if DLM_SCTP
- 	select FS_POSIX_ACL
- 	select CRC32
--	select SLOW_WORK
- 	select QUOTA
- 	select QUOTACTL
- 	help
-diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index 4792200..b99d5be 100644
---- a/fs/gfs2/incore.h
-+++ b/fs/gfs2/incore.h
-@@ -12,7 +12,6 @@
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index 316cc48..a6650f1 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -25,9 +25,11 @@ typedef void (*work_func_t)(struct work_struct *work);
+ enum {
+ 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
+ 	WORK_STRUCT_STATIC_BIT	= 1,	/* static initializer (debugobjects) */
++	WORK_STRUCT_LINKED_BIT	= 2,	/* next work is linked to this one */
  
- #include <linux/fs.h>
- #include <linux/workqueue.h>
--#include <linux/slow-work.h>
- #include <linux/dlm.h>
- #include <linux/buffer_head.h>
+ 	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
+ 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
++	WORK_STRUCT_LINKED	= 1 << WORK_STRUCT_LINKED_BIT,
  
-@@ -383,7 +382,7 @@ struct gfs2_journal_extent {
- struct gfs2_jdesc {
- 	struct list_head jd_list;
- 	struct list_head extent_list;
--	struct slow_work jd_work;
-+	struct work_struct jd_work;
- 	struct inode *jd_inode;
- 	unsigned long jd_flags;
- #define JDF_RECOVERY 1
-diff --git a/fs/gfs2/main.c b/fs/gfs2/main.c
-index 5b31f77..f809842 100644
---- a/fs/gfs2/main.c
-+++ b/fs/gfs2/main.c
-@@ -15,7 +15,6 @@
- #include <linux/init.h>
- #include <linux/gfs2_ondisk.h>
- #include <asm/atomic.h>
--#include <linux/slow-work.h>
+ 	WORK_STRUCT_COLOR_SHIFT	= 3,	/* color for workqueue flushing */
+ 	WORK_STRUCT_COLOR_BITS	= 4,
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 17d270b..2ac1624 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -51,6 +51,7 @@ struct cpu_workqueue_struct;
  
- #include "gfs2.h"
- #include "incore.h"
-@@ -114,18 +113,12 @@ static int __init init_gfs2_fs(void)
- 	if (error)
- 		goto fail_unregister;
+ struct worker {
+ 	struct work_struct	*current_work;	/* L: work being processed */
++	struct list_head	scheduled;	/* L: scheduled works */
+ 	struct task_struct	*task;		/* I: worker task */
+ 	struct cpu_workqueue_struct *cwq;	/* I: the associated cwq */
+ 	int			id;		/* I: worker id */
+@@ -438,6 +439,8 @@ static struct worker *alloc_worker(void)
+ 	struct worker *worker;
  
--	error = slow_work_register_user(THIS_MODULE);
--	if (error)
--		goto fail_slow;
+ 	worker = kzalloc(sizeof(*worker), GFP_KERNEL);
++	if (worker)
++		INIT_LIST_HEAD(&worker->scheduled);
+ 	return worker;
+ }
+ 
+@@ -523,6 +526,7 @@ static void destroy_worker(struct worker *worker)
+ 
+ 	/* sanity check frenzy */
+ 	BUG_ON(worker->current_work);
++	BUG_ON(!list_empty(&worker->scheduled));
+ 
+ 	kthread_stop(worker->task);
+ 	kfree(worker);
+@@ -533,6 +537,48 @@ static void destroy_worker(struct worker *worker)
+ }
+ 
+ /**
++ * move_linked_works - move linked works to a list
++ * @work: start of series of works to be scheduled
++ * @head: target list to append @work to
++ * @nextp: out paramter for nested worklist walking
++ *
++ * Schedule linked works starting from @work to @head.  Work series to
++ * be scheduled starts at @work and includes any consecutive work with
++ * WORK_STRUCT_LINKED set in its predecessor.
++ *
++ * If @nextp is not NULL, it's updated to point to the next work of
++ * the last scheduled work.  This allows move_linked_works() to be
++ * nested inside outer list_for_each_entry_safe().
++ *
++ * CONTEXT:
++ * spin_lock_irq(cwq->lock).
++ */
++static void move_linked_works(struct work_struct *work, struct list_head *head,
++			      struct work_struct **nextp)
++{
++	struct work_struct *n;
++
++	/*
++	 * Linked worklist will always end before the end of the list,
++	 * use NULL for list head.
++	 */
++	work = list_entry(work->entry.prev, struct work_struct, entry);
++	list_for_each_entry_safe_continue(work, n, NULL, entry) {
++		list_move_tail(&work->entry, head);
++		if (!(*work_data_bits(work) & WORK_STRUCT_LINKED))
++			break;
++	}
++
++	/*
++	 * If we're already inside safe list traversal and have moved
++	 * multiple works to the scheduled queue, the next position
++	 * needs to be updated.
++	 */
++	if (nextp)
++		*nextp = n;
++}
++
++/**
+  * cwq_dec_nr_in_flight - decrement cwq's nr_in_flight
+  * @cwq: cwq of interest
+  * @color: color of work which left the queue
+@@ -632,17 +678,25 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
+ 	cwq_dec_nr_in_flight(cwq, work_color);
+ }
+ 
+-static void run_workqueue(struct worker *worker)
++/**
++ * process_scheduled_works - process scheduled works
++ * @worker: self
++ *
++ * Process all scheduled works.  Please note that the scheduled list
++ * may change while processing a work, so this function repeatedly
++ * fetches a work from the top and executes it.
++ *
++ * CONTEXT:
++ * spin_lock_irq(cwq->lock) which may be released and regrabbed
++ * multiple times.
++ */
++static void process_scheduled_works(struct worker *worker)
+ {
+-	struct cpu_workqueue_struct *cwq = worker->cwq;
 -
- 	gfs2_register_debugfs();
+-	spin_lock_irq(&cwq->lock);
+-	while (!list_empty(&cwq->worklist)) {
+-		struct work_struct *work = list_entry(cwq->worklist.next,
++	while (!list_empty(&worker->scheduled)) {
++		struct work_struct *work = list_first_entry(&worker->scheduled,
+ 						struct work_struct, entry);
+ 		process_one_work(worker, work);
+ 	}
+-	spin_unlock_irq(&cwq->lock);
+ }
  
- 	printk("GFS2 (built %s %s) installed\n", __DATE__, __TIME__);
- 
- 	return 0;
- 
--fail_slow:
--	unregister_filesystem(&gfs2meta_fs_type);
- fail_unregister:
- 	unregister_filesystem(&gfs2_fs_type);
- fail:
-@@ -163,7 +156,7 @@ static void __exit exit_gfs2_fs(void)
- 	gfs2_unregister_debugfs();
- 	unregister_filesystem(&gfs2_fs_type);
- 	unregister_filesystem(&gfs2meta_fs_type);
--	slow_work_unregister_user(THIS_MODULE);
-+	flush_workqueue(system_long_wq);
- 
- 	kmem_cache_destroy(gfs2_quotad_cachep);
- 	kmem_cache_destroy(gfs2_rgrpd_cachep);
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index edfee24..58e130e 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -17,7 +17,6 @@
- #include <linux/namei.h>
- #include <linux/mount.h>
- #include <linux/gfs2_ondisk.h>
--#include <linux/slow-work.h>
- #include <linux/quotaops.h>
- 
- #include "gfs2.h"
-@@ -673,7 +672,7 @@ static int gfs2_jindex_hold(struct gfs2_sbd *sdp, struct gfs2_holder *ji_gh)
+ /**
+@@ -673,7 +727,27 @@ static int worker_thread(void *__worker)
+ 		if (kthread_should_stop())
  			break;
  
- 		INIT_LIST_HEAD(&jd->extent_list);
--		slow_work_init(&jd->jd_work, &gfs2_recover_ops);
-+		INIT_WORK(&jd->jd_work, gfs2_recover_func);
- 		jd->jd_inode = gfs2_lookupi(sdp->sd_jindex, &name, 1);
- 		if (!jd->jd_inode || IS_ERR(jd->jd_inode)) {
- 			if (!jd->jd_inode)
-@@ -778,7 +777,8 @@ static int init_journal(struct gfs2_sbd *sdp, int undo)
- 	if (sdp->sd_lockstruct.ls_first) {
- 		unsigned int x;
- 		for (x = 0; x < sdp->sd_journals; x++) {
--			error = gfs2_recover_journal(gfs2_jdesc_find(sdp, x));
-+			error = gfs2_recover_journal(gfs2_jdesc_find(sdp, x),
-+						     true);
- 			if (error) {
- 				fs_err(sdp, "error recovering journal %u: %d\n",
- 				       x, error);
-@@ -788,7 +788,7 @@ static int init_journal(struct gfs2_sbd *sdp, int undo)
- 
- 		gfs2_others_may_mount(sdp);
- 	} else if (!sdp->sd_args.ar_spectator) {
--		error = gfs2_recover_journal(sdp->sd_jdesc);
-+		error = gfs2_recover_journal(sdp->sd_jdesc, true);
- 		if (error) {
- 			fs_err(sdp, "error recovering my journal: %d\n", error);
- 			goto fail_jinode_gh;
-diff --git a/fs/gfs2/recovery.c b/fs/gfs2/recovery.c
-index 4b9bece..906f1ee 100644
---- a/fs/gfs2/recovery.c
-+++ b/fs/gfs2/recovery.c
-@@ -14,7 +14,6 @@
- #include <linux/buffer_head.h>
- #include <linux/gfs2_ondisk.h>
- #include <linux/crc32.h>
--#include <linux/slow-work.h>
- 
- #include "gfs2.h"
- #include "incore.h"
-@@ -443,23 +442,7 @@ static void gfs2_recovery_done(struct gfs2_sbd *sdp, unsigned int jid,
-         kobject_uevent_env(&sdp->sd_kobj, KOBJ_CHANGE, envp);
- }
- 
--static int gfs2_recover_get_ref(struct slow_work *work)
--{
--	struct gfs2_jdesc *jd = container_of(work, struct gfs2_jdesc, jd_work);
--	if (test_and_set_bit(JDF_RECOVERY, &jd->jd_flags))
--		return -EBUSY;
--	return 0;
--}
--
--static void gfs2_recover_put_ref(struct slow_work *work)
--{
--	struct gfs2_jdesc *jd = container_of(work, struct gfs2_jdesc, jd_work);
--	clear_bit(JDF_RECOVERY, &jd->jd_flags);
--	smp_mb__after_clear_bit();
--	wake_up_bit(&jd->jd_flags, JDF_RECOVERY);
--}
--
--static void gfs2_recover_work(struct slow_work *work)
-+void gfs2_recover_func(struct work_struct *work)
- {
- 	struct gfs2_jdesc *jd = container_of(work, struct gfs2_jdesc, jd_work);
- 	struct gfs2_inode *ip = GFS2_I(jd->jd_inode);
-@@ -578,7 +561,7 @@ static void gfs2_recover_work(struct slow_work *work)
- 		gfs2_glock_dq_uninit(&j_gh);
- 
- 	fs_info(sdp, "jid=%u: Done\n", jd->jd_jid);
--	return;
-+	goto done;
- 
- fail_gunlock_tr:
- 	gfs2_glock_dq_uninit(&t_gh);
-@@ -590,32 +573,35 @@ fail_gunlock_j:
+-		run_workqueue(worker);
++		spin_lock_irq(&cwq->lock);
++
++		while (!list_empty(&cwq->worklist)) {
++			struct work_struct *work =
++				list_first_entry(&cwq->worklist,
++						 struct work_struct, entry);
++
++			if (likely(!(*work_data_bits(work) &
++				     WORK_STRUCT_LINKED))) {
++				/* optimization path, not strictly necessary */
++				process_one_work(worker, work);
++				if (unlikely(!list_empty(&worker->scheduled)))
++					process_scheduled_works(worker);
++			} else {
++				move_linked_works(work, &worker->scheduled,
++						  NULL);
++				process_scheduled_works(worker);
++			}
++		}
++
++		spin_unlock_irq(&cwq->lock);
  	}
  
- 	fs_info(sdp, "jid=%u: %s\n", jd->jd_jid, (error) ? "Failed" : "Done");
--
- fail:
- 	gfs2_recovery_done(sdp, jd->jd_jid, LM_RD_GAVEUP);
-+done:
-+	clear_bit(JDF_RECOVERY, &jd->jd_flags);
-+	smp_mb__after_clear_bit();
-+	wake_up_bit(&jd->jd_flags, JDF_RECOVERY);
- }
- 
--struct slow_work_ops gfs2_recover_ops = {
--	.owner	 = THIS_MODULE,
--	.get_ref = gfs2_recover_get_ref,
--	.put_ref = gfs2_recover_put_ref,
--	.execute = gfs2_recover_work,
--};
--
--
- static int gfs2_recovery_wait(void *word)
- {
- 	schedule();
  	return 0;
- }
- 
--int gfs2_recover_journal(struct gfs2_jdesc *jd)
-+int gfs2_recover_journal(struct gfs2_jdesc *jd, bool wait)
+@@ -694,16 +768,33 @@ static void wq_barrier_func(struct work_struct *work)
+  * insert_wq_barrier - insert a barrier work
+  * @cwq: cwq to insert barrier into
+  * @barr: wq_barrier to insert
+- * @head: insertion point
++ * @target: target work to attach @barr to
++ * @worker: worker currently executing @target, NULL if @target is not executing
+  *
+- * Insert barrier @barr into @cwq before @head.
++ * @barr is linked to @target such that @barr is completed only after
++ * @target finishes execution.  Please note that the ordering
++ * guarantee is observed only with respect to @target and on the local
++ * cpu.
++ *
++ * Currently, a queued barrier can't be canceled.  This is because
++ * try_to_grab_pending() can't determine whether the work to be
++ * grabbed is at the head of the queue and thus can't clear LINKED
++ * flag of the previous work while there must be a valid next work
++ * after a work with LINKED flag set.
++ *
++ * Note that when @worker is non-NULL, @target may be modified
++ * underneath us, so we can't reliably determine cwq from @target.
+  *
+  * CONTEXT:
+  * spin_lock_irq(cwq->lock).
+  */
+ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+-			struct wq_barrier *barr, struct list_head *head)
++			      struct wq_barrier *barr,
++			      struct work_struct *target, struct worker *worker)
  {
- 	int rv;
--	rv = slow_work_enqueue(&jd->jd_work);
--	if (rv)
--		return rv;
--	wait_on_bit(&jd->jd_flags, JDF_RECOVERY, gfs2_recovery_wait, TASK_UNINTERRUPTIBLE);
++	struct list_head *head;
++	unsigned int linked = 0;
 +
-+	if (test_and_set_bit(JDF_RECOVERY, &jd->jd_flags))
-+		return -EBUSY;
+ 	/*
+ 	 * debugobject calls are safe here even with cwq->lock locked
+ 	 * as we know for sure that this will not trigger any of the
+@@ -714,8 +805,24 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+ 	__set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(&barr->work));
+ 	init_completion(&barr->done);
+ 
++	/*
++	 * If @target is currently being executed, schedule the
++	 * barrier to the worker; otherwise, put it after @target.
++	 */
++	if (worker)
++		head = worker->scheduled.next;
++	else {
++		unsigned long *bits = work_data_bits(target);
 +
-+	/* we have JDF_RECOVERY, queue should always succeed */
-+	rv = queue_work(system_long_wq, &jd->jd_work);
-+	BUG_ON(!rv);
++		head = target->entry.next;
++		/* there can already be other linked works, inherit and set */
++		linked = *bits & WORK_STRUCT_LINKED;
++		*bits |= WORK_STRUCT_LINKED;
++	}
 +
-+	if (wait)
-+		wait_on_bit(&jd->jd_flags, JDF_RECOVERY, gfs2_recovery_wait,
-+			    TASK_UNINTERRUPTIBLE);
-+
- 	return 0;
+ 	debug_work_activate(&barr->work);
+-	insert_work(cwq, &barr->work, head, work_color_to_flags(WORK_NO_COLOR));
++	insert_work(cwq, &barr->work, head,
++		    work_color_to_flags(WORK_NO_COLOR) | linked);
  }
  
-diff --git a/fs/gfs2/recovery.h b/fs/gfs2/recovery.h
-index 1616ac2..78abd50 100644
---- a/fs/gfs2/recovery.h
-+++ b/fs/gfs2/recovery.h
-@@ -27,8 +27,8 @@ extern void gfs2_revoke_clean(struct gfs2_sbd *sdp);
+ /**
+@@ -948,8 +1055,8 @@ EXPORT_SYMBOL_GPL(flush_workqueue);
+  */
+ int flush_work(struct work_struct *work)
+ {
++	struct worker *worker = NULL;
+ 	struct cpu_workqueue_struct *cwq;
+-	struct list_head *prev;
+ 	struct wq_barrier barr;
  
- extern int gfs2_find_jhead(struct gfs2_jdesc *jd,
- 		    struct gfs2_log_header_host *head);
--extern int gfs2_recover_journal(struct gfs2_jdesc *gfs2_jd);
--extern struct slow_work_ops gfs2_recover_ops;
-+extern int gfs2_recover_journal(struct gfs2_jdesc *gfs2_jd, bool wait);
-+extern void gfs2_recover_func(struct work_struct *work);
- 
- #endif /* __RECOVERY_DOT_H__ */
- 
-diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
-index 0dc3462..ee0f3cd 100644
---- a/fs/gfs2/sys.c
-+++ b/fs/gfs2/sys.c
-@@ -26,6 +26,7 @@
- #include "quota.h"
- #include "util.h"
- #include "glops.h"
-+#include "recovery.h"
- 
- struct gfs2_attr {
- 	struct attribute attr;
-@@ -351,7 +352,7 @@ static ssize_t recover_store(struct gfs2_sbd *sdp, const char *buf, size_t len)
- 	list_for_each_entry(jd, &sdp->sd_jindex_list, jd_list) {
- 		if (jd->jd_jid != jid)
- 			continue;
--		rv = slow_work_enqueue(&jd->jd_work);
-+		rv = gfs2_recover_journal(jd, false);
- 		break;
+ 	might_sleep();
+@@ -969,14 +1076,14 @@ int flush_work(struct work_struct *work)
+ 		smp_rmb();
+ 		if (unlikely(cwq != get_wq_data(work)))
+ 			goto already_gone;
+-		prev = &work->entry;
+ 	} else {
+-		if (!cwq->worker || cwq->worker->current_work != work)
++		if (cwq->worker && cwq->worker->current_work == work)
++			worker = cwq->worker;
++		if (!worker)
+ 			goto already_gone;
+-		prev = &cwq->worklist;
  	}
- out:
+-	insert_wq_barrier(cwq, &barr, prev->next);
+ 
++	insert_wq_barrier(cwq, &barr, work, worker);
+ 	spin_unlock_irq(&cwq->lock);
+ 	wait_for_completion(&barr.done);
+ 	destroy_work_on_stack(&barr.work);
+@@ -1033,16 +1140,19 @@ static void wait_on_cpu_work(struct cpu_workqueue_struct *cwq,
+ 				struct work_struct *work)
+ {
+ 	struct wq_barrier barr;
+-	int running = 0;
++	struct worker *worker;
+ 
+ 	spin_lock_irq(&cwq->lock);
++
++	worker = NULL;
+ 	if (unlikely(cwq->worker && cwq->worker->current_work == work)) {
+-		insert_wq_barrier(cwq, &barr, cwq->worklist.next);
+-		running = 1;
++		worker = cwq->worker;
++		insert_wq_barrier(cwq, &barr, work, worker);
+ 	}
++
+ 	spin_unlock_irq(&cwq->lock);
+ 
+-	if (unlikely(running)) {
++	if (unlikely(worker)) {
+ 		wait_for_completion(&barr.done);
+ 		destroy_work_on_stack(&barr.work);
+ 	}
 -- 
 1.6.4.2
 
