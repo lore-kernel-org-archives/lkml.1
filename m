@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363Ab0ART7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423Ab0ARUBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753363Ab0ART7e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 14:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731Ab0ART7d
+	id S1753423Ab0ARUBW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 15:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296Ab0ARUBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 14:59:33 -0500
-Received: from mail.perches.com ([173.55.12.10]:1269 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752257Ab0ART7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 14:59:32 -0500
-Subject: Re: [PATCH] video/matrox: Checkpatch cleanups for matroxfb_crtc2.c
-From: Joe Perches <joe@perches.com>
-To: Peter =?ISO-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jean Delvare <khali@linux-fr.org>, Krzysztof Helt <krzysztof.h1@wp.pl>,
-       linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-In-Reply-To: <201001182027.29805.PeterHuewe@gmx.de>
-References: <201001181934.49519.PeterHuewe@gmx.de>
-	 <1263842269.26846.122.camel@Joe-Laptop.home>
-	 <201001182027.29805.PeterHuewe@gmx.de>
+	Mon, 18 Jan 2010 15:01:21 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59726 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752665Ab0ARUBU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 15:01:20 -0500
+Subject: Re: [PATCH]  perf_events: improve x86 event scheduling (v5)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+In-Reply-To: <20100118172935.GM10364@nowhere>
+References: <20100118134324.GB10364@nowhere>
+	 <1263822898.4283.558.camel@laptop> <20100118142004.GD10364@nowhere>
+	 <1263825158.4283.590.camel@laptop> <20100118144556.GE10364@nowhere>
+	 <1263826601.4283.603.camel@laptop> <20100118161836.GG10364@nowhere>
+	 <1263831973.4283.622.camel@laptop> <20100118165114.GJ10364@nowhere>
+	 <1263834806.4283.625.camel@laptop>  <20100118172935.GM10364@nowhere>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 11:59:30 -0800
-Message-ID: <1263844770.26846.134.camel@Joe-Laptop.home>
+Date: Mon, 18 Jan 2010 21:01:06 +0100
+Message-ID: <1263844866.4283.629.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 20:27 +0100, Peter Hüwe wrote:
-> the reason behind this change was that spaces and tabs were mixed for 
-> indention. 
+On Mon, 2010-01-18 at 18:29 +0100, Frederic Weisbecker wrote:
+> On Mon, Jan 18, 2010 at 06:13:26PM +0100, Peter Zijlstra wrote:
+> > On Mon, 2010-01-18 at 17:51 +0100, Frederic Weisbecker wrote:
+> > 
+> > > Right hw_perf_enable/disable have no action on breakpoint events.
+> > > These were somehow considered as software events until now.
+> > > 
+> > > That raises the question: why perf_disable() only takes care
+> > > of hardware events? Very few software events can trigger
+> > > between perf_disable() and perf_enable() sections though.
+> > > 
+> > > May be I should handle breakpoints there.
+> > 
+> > OK, so maybe I'm not understanding the breakpoint stuff correctly, why
+> > is it modeled as a software pmu? It has resource constraints like a
+> > hardware pmu.
+> 
+> 
+> It doesn't use the software pmu, it uses its own. But what kind
+> of properties can it share with other hardware events?
+> 
+> It has constraints that only need to be checked when we register
+> the event. It has also constraint on enable time but nothing
+> tricky that requires an overwritten group scheduling.
 
-Checkpatch isn't gospel and isn't always right.
+the only group scheduling bit is hw_perf_group_sched_in(), and I guess
+you can get away without hw_perf_disable() because it doesn't generate
+nmis, although I'd have to audit the code to verify a properly placed
+breakpoint won't trip things up, since the core code basically assumes
+counters won't trigger within perf_disable/enable sections.
 
-There should be room for taste preference here
-and I think whatever Petr V's is should prevail.
-
-> How about this indention? Would this be better?
-
-Well, I don't think so, but others will have different opinions.
 
 
