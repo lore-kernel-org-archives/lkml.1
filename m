@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875Ab0ARCCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928Ab0ARCDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875Ab0ARCCL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 21:02:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373Ab0ARCCK
+	id S1752928Ab0ARCDn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 21:03:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268Ab0ARCDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 21:02:10 -0500
-Received: from ozlabs.org ([203.10.76.45]:47190 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751653Ab0ARCCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 21:02:09 -0500
-Date: Mon, 18 Jan 2010 13:00:51 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>
-Cc: miltonm@bga.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] generic-ipi: Use DEFINE_PER_CPU_SHARED_ALIGNED for IPI data
-Message-ID: <20100118020051.GR12666@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sun, 17 Jan 2010 21:03:42 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60772 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751984Ab0ARCDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 21:03:41 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 18 Jan 2010 11:00:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, Eric Paris <eparis@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       David Howells <dhowells@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
+       <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 6/6] vfs: introduce FMODE_NEG_OFFSET for allowing
+ negative f_pos
+Message-Id: <20100118110019.c55ad88a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <87pr58kx9o.fsf@devron.myhome.or.jp>
+References: <20100115013954.311049665@intel.com>
+	<20100115014422.959401729@intel.com>
+	<87bpgurz00.fsf@devron.myhome.or.jp>
+	<20100118091527.7a0e2c6e.kamezawa.hiroyu@jp.fujitsu.com>
+	<87y6jwnrcz.fsf@devron.myhome.or.jp>
+	<20100118102544.3e897525.kamezawa.hiroyu@jp.fujitsu.com>
+	<87pr58kx9o.fsf@devron.myhome.or.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Milton Miller <miltonm@bga.com>
+On Mon, 18 Jan 2010 10:38:27 +0900
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
 
-The smp ipi data is passed around and given write access by other cpus
-and should be seperated from per-cpu data consumed by this cpu.
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
+> 
+> >> So, lseek() returns (uses) it?
+> >
+> > lseek can return negative value, as far as I know.
+> 
+> Umm..., how do you know the difference of -EOVERFLOW and fpos == -75? 
+> 
 
-Looking for hot lines, I saw call_function_data shared with tick_cpu_sched.
+Ah, sorry. I read wrong.
 
-Signed-off-by: Milton Miller <miltonm@bga.com>
-Acked-by: Anton Blanchard <anton@samba.org>
----
+For /dev/mem, it uses its own lseek function which allows negative f_pos
+value. Other usual file system doesn't allow negative f_pos.
 
-Index: linux.trees.git/kernel/smp.c
-===================================================================
---- linux.trees.git.orig/kernel/smp.c	2010-01-18 12:41:28.000000000 +1100
-+++ linux.trees.git/kernel/smp.c	2010-01-18 12:47:42.000000000 +1100
-@@ -12,8 +12,6 @@
- #include <linux/smp.h>
- #include <linux/cpu.h>
- 
--static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
--
- static struct {
- 	struct list_head	queue;
- 	raw_spinlock_t		lock;
-@@ -33,12 +31,14 @@ struct call_function_data {
- 	cpumask_var_t		cpumask;
- };
- 
-+static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_function_data, cfd_data);
-+
- struct call_single_queue {
- 	struct list_head	list;
- 	raw_spinlock_t		lock;
- };
- 
--static DEFINE_PER_CPU(struct call_function_data, cfd_data);
-+static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_single_queue, call_single_queue);
- 
- static int
- hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
-@@ -256,7 +256,7 @@ void generic_smp_call_function_single_in
- 	}
- }
- 
--static DEFINE_PER_CPU(struct call_single_data, csd_data);
-+static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_single_data, csd_data);
- 
- /*
-  * smp_call_function_single - Run a function on a specific CPU
+It's ok not to return -EOVEFLOW for /dev/mem because there is no file end.
+
+Thanks,
+-Kame
+
