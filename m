@@ -1,75 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555Ab0ARMHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644Ab0ARMJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754555Ab0ARMHz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 07:07:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237Ab0ARMHx
+	id S1754644Ab0ARMJj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 07:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336Ab0ARMJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 07:07:53 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:36613 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794Ab0ARMHw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 07:07:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Vtch2ZqMIoqlBOXVrpqDA/Kfsf3JjekRMVXEfMkM0c1hLJWO+JuOkargnn8E2tu8WH
-         3jTwa3PrKsBMM7gA35ogyc6W//zKjqJ2K1ImBwkgtAYcqukU+b/Mk06feQ7A23tRacwY
-         xImUnTpE1GfJdLJKWKeuwqfMhVDAifjDb/SlA=
-Date: Mon, 18 Jan 2010 13:07:49 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
-       perfmon2-devel@lists.sf.net
-Subject: Re: [PATCH] perf: fix the is_software_event() definition
-Message-ID: <20100118120747.GG5256@nowhere>
-References: <4b4c761b.0338560a.1eaa.ffff824d@mx.google.com> <1263312616.4244.153.camel@laptop> <bd4cb8901001130154p732672b6x56e758c1ab33a8e8@mail.gmail.com> <1263400193.4244.238.camel@laptop> <bd4cb8901001130852y1de007cbqe66d77605c1ec372@mail.gmail.com> <bd4cb8901001130922s7ad85af6w6c631d90de177ef9@mail.gmail.com> <20100117141233.GF5035@nowhere> <1263813189.4283.245.camel@laptop> <1263815616.4283.332.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263815616.4283.332.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 18 Jan 2010 07:09:38 -0500
+Received: from nox.protox.org ([88.191.38.29]:34057 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751469Ab0ARMJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 07:09:36 -0500
+X-Greylist: delayed 470 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jan 2010 07:09:36 EST
+From: Jerome Glisse <jglisse@redhat.com>
+To: airlied@gmail.com
+Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       Jerome Glisse <jglisse@redhat.com>
+Subject: [PATCH] drm/radeon: r6xx/r7xx possible security issue, system ram access
+Date: Mon, 18 Jan 2010 13:01:36 +0100
+Message-Id: <1263816096-22310-1-git-send-email-jglisse@redhat.com>
+X-Mailer: git-send-email 1.6.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 12:53:36PM +0100, Peter Zijlstra wrote:
-> On Mon, 2010-01-18 at 12:13 +0100, Peter Zijlstra wrote:
-> > On Sun, 2010-01-17 at 15:12 +0100, Frederic Weisbecker wrote:
-> > 
-> > > You need to also call pmu->disable() if it is a software event,
-> > > because a breakpoint needs to be unregistered in hardware level
-> > > too.
-> > 
-> > breakpoint isn't a software pmu. But yeah, enable and disable need to
-> > match.
-> 
-> That is, it shouldn't be a software pmu, because we assume software
-> events can always be scheduled, whereas that's definitely not so for the
-> breakpoint one.
-> 
-> Which seems to suggest the following
-> 
-> ---
-> Subject: perf: fix the is_software_event() definition
-> 
-> When adding the breakpoint pmu Frederic forgot to exclude it from being
-> a software event. While we're at it, make it an inclusive expression.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+This patch workaround a possible security issue which can allow
+user to abuse drm on r6xx/r7xx hw to access any system ram memory.
+This patch doesn't break userspace, it detect "valid" old use of
+CB_COLOR[0-7]_FRAG & CB_COLOR[0-7]_TILE registers and overwritte
+the address these registers are pointing to with the one of the
+last color buffer. This workaround will work for old mesa &
+xf86-video-ati and any old user which did use similar register
+programming pattern as those (we expect that there is no others
+user of those ioctl except possibly a malicious one). This patch
+add a warning if it detects such usage, warning encourage people
+to update their mesa & xf86-video-ati. New userspace will submit
+proper relocation.
 
+Fix for xf86-video-ati / mesa (this kernel patch is enough to
+prevent abuse, fix for userspace are to set proper cs stream and
+avoid kernel warning) :
+http://cgit.freedesktop.org/xorg/driver/xf86-video-ati/commit/?id=95d63e408cc88b6934bec84a0b1ef94dfe8bee7b
+http://cgit.freedesktop.org/mesa/mesa/commit/?id=46dc6fd3ed5ef96cda53641a97bc68c3bc104a9f
 
+Abusing this register to perform system ram memory is not easy,
+here is outline on how it could be achieve. First attacker must
+have access to the drm device and be able to submit command stream
+throught cs ioctl. Then attacker must build a proper command stream
+for r6xx/r7xx hw which will abuse the FRAG or TILE buffer to
+overwrite the GPU GART which is in VRAM. To achieve so attacker
+as to setup CB_COLOR[0-7]_FRAG or CB_COLOR[0-7]_TILE to point
+to the GPU GART, then it has to find a way to write predictable
+value into those buffer (with little cleverness i believe this
+can be done but this is an hard task). Once attacker have such
+program it can overwritte GPU GART to program GPU gart to point
+anywhere in system memory. It then can reusse same method as he
+used to reprogram GART to overwritte the system ram through the
+GART mapping. In the process the attacker has to be carefull to
+not overwritte any sensitive area of the GART table, like ring
+or IB gart entry as it will more then likely lead to GPU lockup.
+Bottom line is that i think it's very hard to use this flaw
+to get system ram access but in theory one can achieve so.
 
-Agreed.
+Side note: I am not aware of anyone ever using the GPU as an
+attack vector, nevertheless we take great care in the opensource
+driver to try to detect and forbid malicious use of GPU. I don't
+think the closed source driver are as cautious as we are.
 
-But then Stephane will need to update his patch and use
-something else than is_software_event() to guess if an event
-needs its pmu->enable/disable to be called.
+Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+---
+ drivers/gpu/drm/radeon/r600_cs.c   |   84 ++++++++++++++++++++++++++++++++++++
+ drivers/gpu/drm/radeon/r600d.h     |   25 +++++++++++
+ drivers/gpu/drm/radeon/radeon.h    |    1 +
+ drivers/gpu/drm/radeon/radeon_cs.c |    1 +
+ 4 files changed, 111 insertions(+), 0 deletions(-)
 
-A kind of helper that can tell: I am not handled by
-hw_perf_group_sched_in()
-
-But I suck too much in naming to propose something sane :)
+diff --git a/drivers/gpu/drm/radeon/r600_cs.c b/drivers/gpu/drm/radeon/r600_cs.c
+index 44060b9..edafc7b 100644
+--- a/drivers/gpu/drm/radeon/r600_cs.c
++++ b/drivers/gpu/drm/radeon/r600_cs.c
+@@ -36,6 +36,10 @@ static int r600_cs_packet_next_reloc_nomm(struct radeon_cs_parser *p,
+ typedef int (*next_reloc_t)(struct radeon_cs_parser*, struct radeon_cs_reloc**);
+ static next_reloc_t r600_cs_packet_next_reloc = &r600_cs_packet_next_reloc_mm;
+ 
++struct r600_cs_track {
++	u32	cb_color0_base_last;
++};
++
+ /**
+  * r600_cs_packet_parse() - parse cp packet and point ib index to next packet
+  * @parser:	parser structure holding parsing context.
+@@ -177,6 +181,28 @@ static int r600_cs_packet_next_reloc_nomm(struct radeon_cs_parser *p,
+ }
+ 
+ /**
++ * r600_cs_packet_next_is_pkt3_nop() - test if next packet is packet3 nop for reloc
++ * @parser:		parser structure holding parsing context.
++ *
++ * Check next packet is relocation packet3, do bo validation and compute
++ * GPU offset using the provided start.
++ **/
++static inline int r600_cs_packet_next_is_pkt3_nop(struct radeon_cs_parser *p)
++{
++	struct radeon_cs_packet p3reloc;
++	int r;
++
++	r = r600_cs_packet_parse(p, &p3reloc, p->idx);
++	if (r) {
++		return 0;
++	}
++	if (p3reloc.type != PACKET_TYPE3 || p3reloc.opcode != PACKET3_NOP) {
++		return 0;
++	}
++	return 1;
++}
++
++/**
+  * r600_cs_packet_next_vline() - parse userspace VLINE packet
+  * @parser:		parser structure holding parsing context.
+  *
+@@ -337,6 +363,7 @@ static int r600_packet3_check(struct radeon_cs_parser *p,
+ 				struct radeon_cs_packet *pkt)
+ {
+ 	struct radeon_cs_reloc *reloc;
++	struct r600_cs_track *track;
+ 	volatile u32 *ib;
+ 	unsigned idx;
+ 	unsigned i;
+@@ -344,6 +371,7 @@ static int r600_packet3_check(struct radeon_cs_parser *p,
+ 	int r;
+ 	u32 idx_value;
+ 
++	track = (struct r600_cs_track *)p->track;
+ 	ib = p->ib->ptr;
+ 	idx = pkt->idx + 1;
+ 	idx_value = radeon_get_ib_value(p, idx);
+@@ -503,9 +531,61 @@ static int r600_packet3_check(struct radeon_cs_parser *p,
+ 		for (i = 0; i < pkt->count; i++) {
+ 			reg = start_reg + (4 * i);
+ 			switch (reg) {
++			/* This register were added late, there is userspace
++			 * which does provide relocation for those but set
++			 * 0 offset. In order to avoid breaking old userspace
++			 * we detect this and set address to point to last
++			 * CB_COLOR0_BASE, note that if userspace doesn't set
++			 * CB_COLOR0_BASE before this register we will report
++			 * error. Old userspace always set CB_COLOR0_BASE
++			 * before any of this.
++			 */
++			case R_0280E0_CB_COLOR0_FRAG:
++			case R_0280E4_CB_COLOR1_FRAG:
++			case R_0280E8_CB_COLOR2_FRAG:
++			case R_0280EC_CB_COLOR3_FRAG:
++			case R_0280F0_CB_COLOR4_FRAG:
++			case R_0280F4_CB_COLOR5_FRAG:
++			case R_0280F8_CB_COLOR6_FRAG:
++			case R_0280FC_CB_COLOR7_FRAG:
++			case R_0280C0_CB_COLOR0_TILE:
++			case R_0280C4_CB_COLOR1_TILE:
++			case R_0280C8_CB_COLOR2_TILE:
++			case R_0280CC_CB_COLOR3_TILE:
++			case R_0280D0_CB_COLOR4_TILE:
++			case R_0280D4_CB_COLOR5_TILE:
++			case R_0280D8_CB_COLOR6_TILE:
++			case R_0280DC_CB_COLOR7_TILE:
++				if (!r600_cs_packet_next_is_pkt3_nop(p)) {
++					if (!track->cb_color0_base_last) {
++						dev_err(p->dev, "Broken old userspace ? no cb_color0_base supplied"
++							"before trying to write 0x%08X\n", reg);
++						return -EINVAL;
++					}
++					ib[idx+1+i] = track->cb_color0_base_last;
++					printk_once(KERN_WARNING "You have old & broken userspace "
++						"please consider updating mesa & xf86-video-ati\n");
++				} else {
++					r = r600_cs_packet_next_reloc(p, &reloc);
++					if (r) {
++						dev_err(p->dev, "bad SET_CONTEXT_REG 0x%04X\n", reg);
++						return -EINVAL;
++					}
++					ib[idx+1+i] += (u32)((reloc->lobj.gpu_offset >> 8) & 0xffffffff);
++				}
++				break;
+ 			case DB_DEPTH_BASE:
+ 			case DB_HTILE_DATA_BASE:
+ 			case CB_COLOR0_BASE:
++				r = r600_cs_packet_next_reloc(p, &reloc);
++				if (r) {
++					DRM_ERROR("bad SET_CONTEXT_REG "
++							"0x%04X\n", reg);
++					return -EINVAL;
++				}
++				ib[idx+1+i] += (u32)((reloc->lobj.gpu_offset >> 8) & 0xffffffff);
++				track->cb_color0_base_last = ib[idx+1+i];
++				break;
+ 			case CB_COLOR1_BASE:
+ 			case CB_COLOR2_BASE:
+ 			case CB_COLOR3_BASE:
+@@ -678,8 +758,11 @@ static int r600_packet3_check(struct radeon_cs_parser *p,
+ int r600_cs_parse(struct radeon_cs_parser *p)
+ {
+ 	struct radeon_cs_packet pkt;
++	struct r600_cs_track *track;
+ 	int r;
+ 
++	track = kzalloc(sizeof(*track), GFP_KERNEL);
++	p->track = track;
+ 	do {
+ 		r = r600_cs_packet_parse(p, &pkt, p->idx);
+ 		if (r) {
+@@ -757,6 +840,7 @@ int r600_cs_legacy(struct drm_device *dev, void *data, struct drm_file *filp,
+ 	/* initialize parser */
+ 	memset(&parser, 0, sizeof(struct radeon_cs_parser));
+ 	parser.filp = filp;
++	parser.dev = &dev->pdev->dev;
+ 	parser.rdev = NULL;
+ 	parser.family = family;
+ 	parser.ib = &fake_ib;
+diff --git a/drivers/gpu/drm/radeon/r600d.h b/drivers/gpu/drm/radeon/r600d.h
+index 05894ed..3048088 100644
+--- a/drivers/gpu/drm/radeon/r600d.h
++++ b/drivers/gpu/drm/radeon/r600d.h
+@@ -882,4 +882,29 @@
+ #define		S_000E60_SOFT_RESET_VMC(x)		(((x) & 1) << 17)
+ 
+ #define R_005480_HDP_MEM_COHERENCY_FLUSH_CNTL		0x5480
++
++#define R_0280E0_CB_COLOR0_FRAG                      0x0280E0
++#define   S_0280E0_BASE_256B(x)                        (((x) & 0xFFFFFFFF) << 0)
++#define   G_0280E0_BASE_256B(x)                        (((x) >> 0) & 0xFFFFFFFF)
++#define   C_0280E0_BASE_256B                           0x00000000
++#define R_0280E4_CB_COLOR1_FRAG                      0x0280E4
++#define R_0280E8_CB_COLOR2_FRAG                      0x0280E8
++#define R_0280EC_CB_COLOR3_FRAG                      0x0280EC
++#define R_0280F0_CB_COLOR4_FRAG                      0x0280F0
++#define R_0280F4_CB_COLOR5_FRAG                      0x0280F4
++#define R_0280F8_CB_COLOR6_FRAG                      0x0280F8
++#define R_0280FC_CB_COLOR7_FRAG                      0x0280FC
++#define R_0280C0_CB_COLOR0_TILE                      0x0280C0
++#define   S_0280C0_BASE_256B(x)                        (((x) & 0xFFFFFFFF) << 0)
++#define   G_0280C0_BASE_256B(x)                        (((x) >> 0) & 0xFFFFFFFF)
++#define   C_0280C0_BASE_256B                           0x00000000
++#define R_0280C4_CB_COLOR1_TILE                      0x0280C4
++#define R_0280C8_CB_COLOR2_TILE                      0x0280C8
++#define R_0280CC_CB_COLOR3_TILE                      0x0280CC
++#define R_0280D0_CB_COLOR4_TILE                      0x0280D0
++#define R_0280D4_CB_COLOR5_TILE                      0x0280D4
++#define R_0280D8_CB_COLOR6_TILE                      0x0280D8
++#define R_0280DC_CB_COLOR7_TILE                      0x0280DC
++
++
+ #endif
+diff --git a/drivers/gpu/drm/radeon/radeon.h b/drivers/gpu/drm/radeon/radeon.h
+index c965396..8deb8c1 100644
+--- a/drivers/gpu/drm/radeon/radeon.h
++++ b/drivers/gpu/drm/radeon/radeon.h
+@@ -464,6 +464,7 @@ struct radeon_cs_chunk {
+ };
+ 
+ struct radeon_cs_parser {
++	struct device		*dev;
+ 	struct radeon_device	*rdev;
+ 	struct drm_file		*filp;
+ 	/* chunks */
+diff --git a/drivers/gpu/drm/radeon/radeon_cs.c b/drivers/gpu/drm/radeon/radeon_cs.c
+index 65590a0..1496cb8 100644
+--- a/drivers/gpu/drm/radeon/radeon_cs.c
++++ b/drivers/gpu/drm/radeon/radeon_cs.c
+@@ -231,6 +231,7 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *filp)
+ 	memset(&parser, 0, sizeof(struct radeon_cs_parser));
+ 	parser.filp = filp;
+ 	parser.rdev = rdev;
++	parser.dev = rdev->dev;
+ 	r = radeon_cs_parser_init(&parser, data);
+ 	if (r) {
+ 		DRM_ERROR("Failed to initialize parser !\n");
+-- 
+1.6.5.2
 
