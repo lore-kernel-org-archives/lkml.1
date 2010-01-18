@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751401Ab0ARFhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751510Ab0ARFks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751401Ab0ARFhU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 00:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714Ab0ARFhS
+	id S1751510Ab0ARFks (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 00:40:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337Ab0ARFkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 00:37:18 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55634 "EHLO hera.kernel.org"
+	Mon, 18 Jan 2010 00:40:47 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:52854 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698Ab0ARFhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 00:37:17 -0500
-Message-ID: <4B53F496.8050105@kernel.org>
-Date: Mon, 18 Jan 2010 14:41:42 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Andy Walls <awalls@radix.net>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: [PATCH 30/40] workqueue: implement work_busy()
-References: <1263776272-382-1-git-send-email-tj@kernel.org>	 <1263776272-382-31-git-send-email-tj@kernel.org> <1263783156.5220.66.camel@palomino.walls.org>
-In-Reply-To: <1263783156.5220.66.camel@palomino.walls.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 05:35:41 +0000 (UTC)
+	id S1751218Ab0ARFkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 00:40:46 -0500
+Date: Mon, 18 Jan 2010 16:40:39 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Wu, Fengguang" <fengguang.wu@intel.com>
+Cc: Greg KH <greg@kroah.com>, Andi Kleen <andi@firstfloor.org>,
+       Linus <torvalds@linux-foundation.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: origin tree build warning
+Message-Id: <20100118164039.8da6403e.sfr@canb.auug.org.au>
+In-Reply-To: <6CADD16F56BC954D8E28F3836FA7ED7112A9CD50F8@shzsmsx501.ccr.corp.intel.com>
+References: <20100118150501.f6aa79e3.sfr@canb.auug.org.au>
+	<20100118151401.dd8a9ef2.sfr@canb.auug.org.au>
+	<6CADD16F56BC954D8E28F3836FA7ED7112A9CD50F8@shzsmsx501.ccr.corp.intel.com>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__18_Jan_2010_16_40_39_+1100_xC5Y_bzQNgV7=F+w"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Andy.
+--Signature=_Mon__18_Jan_2010_16_40_39_+1100_xC5Y_bzQNgV7=F+w
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 01/18/2010 11:52 AM, Andy Walls wrote:
->>From a driver writer's perspective, this function not useful since it is
-> unreliable (false positives only?) and I have no way of
-> 
-> "ensuring the workqueue @work was last queued on stays valid until this
-> function returns."
-> 
-> I don't quite know how to check and enfore a workqueue's continuing
-> validity across the function call.  (Maybe you could clarify?)
+Hi Fengguang,
 
-I don't really think that would be possible without tinkering with
-workqueue internal locking.
+On Mon, 18 Jan 2010 12:29:52 +0800 "Wu, Fengguang" <fengguang.wu@intel.com>=
+ wrote:
+>
+> On Mon, 18 Jan 2010 15:05:01 +1100 Stephen Rothwell <sfr@canb.auug.org.au=
+> wrote:
+> > >
+> > > It actually looks like commit c29af9636 ("sysdev: Pass attribute in
+> > > sysdev_class attributes show/store") referred to in the changelog for=
+ the
+> > > above commit has not yet been applied to Linus' tree?
+> >
+> > Commit c29af9636 ("sysdev: Pass attribute in sysdev_class attributes
+> > show/store") does appear in linux-next since next-20100111 (in the
+> > driver-core quilt series - therefore intended for 2.6.34) (it will have=
+ a
+> > different SHA1 today)
+>=20
+> So let's queue 8ff410daa009c (sysdev: fix prototype for memory_sysdev_cla=
+ss show/store functions)
+> in driver-core and delay it to 2.6.34?
 
-> 2. Just schedule the work object and check the return value to see if
-> the submission suceeded.  If it did, the work was "not pending".  This
-> method can't check for "running" of course.
+Then it would need to be reverted from Linus' tree.
 
-For workqueue, the above combined with proper subsystem locking would
-be the best way to do it, I think.
+Greg?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> Is there some specific use case where this function is very useful
-> despite being unreliable?  I just think it's asking for abuse by someone
-> who would think "mostly reliable" is good enough, when it actually may
-> not be.
+--Signature=_Mon__18_Jan_2010_16_40_39_+1100_xC5Y_bzQNgV7=F+w
+Content-Type: application/pgp-signature
 
-I mostly just wanted to keep the fscache debug printout which
-indicates whether a fscache object has work pending or running.  It's
-a debug printout so it doesn't need to be reliable.  If the debug
-printout can be removed, this patch can go too.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Thanks.
+iEYEARECAAYFAktT9FcACgkQjjKRsyhoI8xkuQCaAjmdttZhViJRK7qATxgGijvS
+4x4AoJQle58hz0PwYFbjMi/iMHiAmT5K
+=UnqO
+-----END PGP SIGNATURE-----
 
--- 
-tejun
+--Signature=_Mon__18_Jan_2010_16_40_39_+1100_xC5Y_bzQNgV7=F+w--
