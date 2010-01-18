@@ -1,97 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751676Ab0ARGFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752257Ab0ARG3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751676Ab0ARGFY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 01:05:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463Ab0ARGFY
+	id S1752257Ab0ARG3n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 01:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995Ab0ARG3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 01:05:24 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34034 "EHLO mx2.suse.de"
+	Mon, 18 Jan 2010 01:29:43 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:45948 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722Ab0ARGFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 01:05:23 -0500
-Date: Mon, 18 Jan 2010 17:05:18 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Jan Kara <jack@suse.cz>
-Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       linux-fsdevel@vger.kernel.org
-Subject: IO error semantics
-Message-ID: <20100118060518.GA9151@laptop>
-References: <4B4EB5B9.4020809@hitachi.com>
- <4B4EDE5C.8040600@hitachi.com>
- <4B4EEE86.7080807@hitachi.com>
- <20100114141803.GB3146@quack.suse.cz>
- <20100118051847.GA8678@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100118051847.GA8678@laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1751353Ab0ARG3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 01:29:42 -0500
+Date: Mon, 18 Jan 2010 17:29:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: linux-next: manual merge of the fsnotify tree with the vfs tree
+Message-Id: <20100118172938.d77c2a9b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 04:18:47PM +1100, Nick Piggin wrote:
-> We also need to remove some ClearPageUptodate calls I think (similar
-> issues), so keep those in mind too. Unfortunately it looks like there
-> are also a lot of filesystem specific tests of PageUptodate... but you
-> could also move those under the new compatibility s_flag.
-> 
-> I don't know of a really good way to inject and test filesystem errors.
-> Make request failures causes most fs to quickly go readonly or have
-> bigger problems. If you're careful like try to only fail read IOs for
-> data, or only fail write IOs not involved in integrity or journal
-> operations, then test programs just tend to abort pretty quickly. Does
-> anyone know of anything more systematic?
+Hi Eric,
 
-This might be a good time to bring up IO error behaviour again. I got
-into some debates I think on Andi's hwpoison thread a while back, but
-probably not appropriate thread to find a real solution to this.
+Today's linux-next merge of the fsnotify tree got a conflict in
+include/linux/fsnotify.h between commit
+8471c0d4ecfe882d76bcb99f941f6ac7d46e2ec0 ("Lose the first argument of
+audit_inode_child()") from the vfs tree and commit
+3c33b75b9aa83f6db59f5d880f881807519ad84d ("inotify: remove inotify in
+kernel interface") from the fsnotify tree.
 
-The problem we have now is that IO error semantics are not well defined.
-It is hard to even enumerate all the issues.
+Just context changes.  I fixed them up (see below) and can carry the fix
+as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-read IOs
-  how to retry? appropriate defaults should happen at the block layer I
-  think. Should retry behaviour be tunable by the mm/fs, or should that
-  be coded explicitly as submission retry loops? Either way does imply
-  there is either similar defaults for all types (or maybe classes) of
-  drivers, or some way to query/set this.
-
-  It would be nice to be able to set fs/driver behaviour from userspace
-  too, in a generic (not driver or fs specific way). But defaults should
-  be reasonable and similar between all, I guess.
-
-write IOs
-  This is more interesting. How to handle write IO errors. In my opinion
-  we must not invalidate the data before an IO error is returned to
-  somebody (whether it be fsync or a synchronous write syscall). Any
-  earlier and the app just gets RAW consistency randomly violated. And I
-  think it is important to treat IO errors as transparently as possible
-  until the error can be detected.
-
-  I happen to think that actually we should go further and not
-  invalidate the data at all. This makes implementation simpler, and
-  also allows us to retry writes like we can retry reads. It's also
-  problematic to throw out errors at that point because *sync syscalls
-  coming from elsewhere could result in loss of error reporting (think,
-  sys_sync).
-
-  If we go this way, we probably need another syscall and fs helper call
-  to invalidate the dirty data when we give up on retries. truncate_range
-  probably not appropriate because it is much harder to implement and
-  maybe we want to try to get at the most recent data that is on disk.
-
-  Also do we need to think about O_SYNC or -o sync type of writes that
-  are implemented via writeback cache? We could invalidate the dirtied
-  cache ASAP, which would leave a window where a concurrent read can see
-  first new, then old data. It would also kind of break the above scheme
-  in case the pagecache was already dirty via a descriptor without
-  O_SYNC. It might just make sense to leave the pagecache dirty. Either
-  way it should be documented I think.
-
-Do we even care enough to bother thinking about this now? (serious question)
-
+diff --cc include/linux/fsnotify.h
+index df8fd9a,8db6857..0000000
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@@ -87,24 -96,13 +97,13 @@@ static inline void fsnotify_move(struc
+  	fsnotify(old_dir, old_dir_mask, old_dir, FSNOTIFY_EVENT_INODE, old_name, fs_cookie);
+  	fsnotify(new_dir, new_dir_mask, new_dir, FSNOTIFY_EVENT_INODE, new_name, fs_cookie);
+  
+- 	if (target) {
+- 		inotify_inode_queue_event(target, IN_DELETE_SELF, 0, NULL, NULL);
+- 		inotify_inode_is_dead(target);
+- 
+- 		/* this is really a link_count change not a removal */
++ 	if (target)
+  		fsnotify_link_count(target);
+- 	}
+  
+- 	if (source) {
+- 		inotify_inode_queue_event(source, IN_MOVE_SELF, 0, NULL, NULL);
++ 	if (source)
+  		fsnotify(source, FS_MOVE_SELF, moved->d_inode, FSNOTIFY_EVENT_INODE, NULL, 0);
+- 	}
++ 
+ -	audit_inode_child(new_name, moved, new_dir);
+ +	audit_inode_child(moved, new_dir);
+  }
+  
+  /*
+@@@ -145,9 -148,7 +149,7 @@@ static inline void fsnotify_inoderemove
+   */
+  static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+  {
+- 	inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
+- 				  dentry->d_inode);
+ -	audit_inode_child(dentry->d_name.name, dentry, inode);
+ +	audit_inode_child(dentry, inode);
+  
+  	fsnotify(inode, FS_CREATE, dentry->d_inode, FSNOTIFY_EVENT_INODE, dentry->d_name.name, 0);
+  }
+@@@ -159,10 -160,8 +161,8 @@@
+   */
+  static inline void fsnotify_link(struct inode *dir, struct inode *inode, struct dentry *new_dentry)
+  {
+- 	inotify_inode_queue_event(dir, IN_CREATE, 0, new_dentry->d_name.name,
+- 				  inode);
+  	fsnotify_link_count(inode);
+ -	audit_inode_child(new_dentry->d_name.name, new_dentry, dir);
+ +	audit_inode_child(new_dentry, dir);
+  
+  	fsnotify(dir, FS_CREATE, inode, FSNOTIFY_EVENT_INODE, new_dentry->d_name.name, 0);
+  }
+@@@ -175,8 -174,7 +175,7 @@@ static inline void fsnotify_mkdir(struc
+  	__u32 mask = (FS_CREATE | FS_IN_ISDIR);
+  	struct inode *d_inode = dentry->d_inode;
+  
+- 	inotify_inode_queue_event(inode, mask, 0, dentry->d_name.name, d_inode);
+ -	audit_inode_child(dentry->d_name.name, dentry, inode);
+ +	audit_inode_child(dentry, inode);
+  
+  	fsnotify(inode, mask, d_inode, FSNOTIFY_EVENT_INODE, dentry->d_name.name, 0);
+  }
