@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458Ab0ARCNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487Ab0ARCO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753458Ab0ARCNL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 21:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855Ab0ARCNJ
+	id S1753487Ab0ARCO5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 21:14:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281Ab0ARCO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 21:13:09 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:35529 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753212Ab0ARCNH (ORCPT
+	Sun, 17 Jan 2010 21:14:56 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33034 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752492Ab0ARCO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 21:13:07 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
+	Sun, 17 Jan 2010 21:14:56 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Subject: Re: [PATCH 2/3][v2] vmstat: add anon_scan_ratio field to zoneinfo
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, Eric Paris <eparis@redhat.com>,
-       Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       David Howells <dhowells@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
-       <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 6/6] vfs: introduce FMODE_NEG_OFFSET for allowing negative f_pos
-References: <20100115013954.311049665@intel.com>
-	<20100115014422.959401729@intel.com>
-	<87bpgurz00.fsf@devron.myhome.or.jp>
-	<20100118091527.7a0e2c6e.kamezawa.hiroyu@jp.fujitsu.com>
-	<87y6jwnrcz.fsf@devron.myhome.or.jp>
-	<20100118102544.3e897525.kamezawa.hiroyu@jp.fujitsu.com>
-	<87pr58kx9o.fsf@devron.myhome.or.jp>
-	<20100118110019.c55ad88a.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 18 Jan 2010 11:13:04 +0900
-In-Reply-To: <20100118110019.c55ad88a.kamezawa.hiroyu@jp.fujitsu.com>
-	(KAMEZAWA Hiroyuki's message of "Mon, 18 Jan 2010 11:00:19 +0900")
-Message-ID: <87y6jwjh3j.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.91 (gnu/linux)
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <28c262361001171810w544614b7rdd3df0f984692f35@mail.gmail.com>
+References: <20100118104910.AE2D.A69D9226@jp.fujitsu.com> <28c262361001171810w544614b7rdd3df0f984692f35@mail.gmail.com>
+Message-Id: <20100118111337.AE33.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 18 Jan 2010 11:14:52 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
+> >> It can make stale data when high memory pressure happens.
+> >
+> > ?? why? and when?
+> > I think it depend on what's stale mean.
+> >
+> > Currently(i.e. before the patch), get_scan_ratio have following fomula.
+> > in such region, recent_scanned is not protected by zone->lru_lock.
+> >
+> >        ap = (anon_prio + 1) * (reclaim_stat->recent_scanned[0] + 1);
+> >        ap /= reclaim_stat->recent_rotated[0] + 1;
+> >        fp = (file_prio + 1) * (reclaim_stat->recent_scanned[1] + 1);
+> >        fp /= reclaim_stat->recent_rotated[1] + 1;
+> >        percent[0] = 100 * ap / (ap + fp + 1);
+> >        percent[1] = 100 - percent[0];
+> >
+> > It mean, shrink_zone() doesn't use exactly recent_scanned value. then
+> > zoneinfo can use the same unexactly value.
+> 
+> Absoultely right. I missed that. Thanks.
+> get_scan_ratio used lru_lock to get reclaim_stat->recent_xxxx.
+> But, it doesn't used lru_lock to get ap/fp.
+> 
+> Is it intentional? I think you or Rik know it. :)
+> I think if we want to get exact value, we have to use lru_lock until
+> getting ap/fp.
+> If it isn't, we don't need lru_lock when we get the reclaim_stat->recent_xxxx.
+> 
+> What do you think about it?
 
-> On Mon, 18 Jan 2010 10:38:27 +0900
-> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
->
->> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
->> 
->> >> So, lseek() returns (uses) it?
->> >
->> > lseek can return negative value, as far as I know.
->> 
->> Umm..., how do you know the difference of -EOVERFLOW and fpos == -75? 
->> 
->
-> Ah, sorry. I read wrong.
->
-> For /dev/mem, it uses its own lseek function which allows negative f_pos
-> value. Other usual file system doesn't allow negative f_pos.
->
-> It's ok not to return -EOVEFLOW for /dev/mem because there is no file end.
+I believe the current code is intentional.
 
-No, no. I think it has the problem.
 
-E.g. /dev/mem returns -75 as fpos, so, lseek(2) returns -75 to
-userland. Then the userland (e.g. glibc) convert it as
-error. I.e. finally, errno == -75, and lseek(3) returns -1, right?
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
