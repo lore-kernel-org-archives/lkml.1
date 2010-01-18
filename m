@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715Ab0ARRxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964Ab0ARR4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715Ab0ARRxN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 12:53:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900Ab0ARRxL
+	id S1754964Ab0ARR4s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 12:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881Ab0ARR4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 12:53:11 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37504 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754435Ab0ARRxK (ORCPT
+	Mon, 18 Jan 2010 12:56:45 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:57542 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752986Ab0ARR4p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 12:53:10 -0500
-Date: Mon, 18 Jan 2010 17:55:56 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 15/64] pata_efar: always program master_data before
- slave_data
-Message-ID: <20100118175556.755ae155@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100118171555.14623.3131.sendpatchset@localhost>
-References: <20100118171349.14623.90030.sendpatchset@localhost>
-	<20100118171555.14623.3131.sendpatchset@localhost>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jan 2010 12:56:45 -0500
+Date: Mon, 18 Jan 2010 17:56:43 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Sascha linux-arm <s.hauer@pengutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH] regulator: mc13783: consider Power Gates as digital
+ regulators.
+Message-ID: <20100118175642.GA12760@rakim.wolfsonmicro.main>
+References: <1263830523.3632.22.camel@realization>
+ <20100118163212.GA32045@rakim.wolfsonmicro.main>
+ <1263834473.3632.31.camel@realization>
+ <20100118172002.GB6889@rakim.wolfsonmicro.main>
+ <1263837004.3632.52.camel@realization>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263837004.3632.52.camel@realization>
+X-Cookie: Love IS what it's cracked up to be.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jan 2010 18:15:55 +0100
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+On Mon, Jan 18, 2010 at 06:50:04PM +0100, Alberto Panizzo wrote:
 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] pata_efar: always program master_data before slave_data
-> 
-> We may need to set SITRE before programming slave_data.
+> Maybe I not deep explained what's going on..
 
-You don't - but making them all the same is worth doing anyway for
-readability and future possibly merging into helpers
-
-
+Like I say, half the problem was that the first bit of code was very
+opaque so by the time you got past that the reader was already likely to
+be lost.
