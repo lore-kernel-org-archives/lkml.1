@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900Ab0ARPQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886Ab0ARPUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900Ab0ARPQq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 10:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475Ab0ARPQp
+	id S1753886Ab0ARPUO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 10:20:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668Ab0ARPUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 10:16:45 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:60385 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752843Ab0ARPQo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 10:16:44 -0500
-Date: Mon, 18 Jan 2010 10:16:30 -0500
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: trivial@kernel.org, marcelo@kvack.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] trivial: fix grammo in tsc comment about Geode TSC
- reliability
-Message-ID: <20100118101630.7ba94ab8@mycelium.queued.net>
-In-Reply-To: <1263764685-9871-1-git-send-email-cascardo@holoscopio.com>
-References: <1263764685-9871-1-git-send-email-cascardo@holoscopio.com>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 Jan 2010 10:20:12 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:39509 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753664Ab0ARPUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 10:20:11 -0500
+Message-ID: <4B547C09.8010906@redhat.com>
+Date: Mon, 18 Jan 2010 17:19:37 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Gleb Natapov <gleb@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org, akpm@linux-foundation.org,
+       andrew.c.morrow@gmail.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
+References: <20100118133755.GG30698@redhat.com>	 <84144f021001180609r4d7fbbd0p972d5bc0e227d09a@mail.gmail.com>	 <20100118141938.GI30698@redhat.com>	 <20100118143232.0a0c4b4d@lxorguk.ukuu.org.uk>	 <1263826198.4283.600.camel@laptop>  <20100118150159.GB14345@redhat.com>	 <1263827194.4283.609.camel@laptop>  <4B547A31.4090106@redhat.com> <1263827683.4283.610.camel@laptop>
+In-Reply-To: <1263827683.4283.610.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Andres Salomon <dilinger@collabora.co.uk>
+On 01/18/2010 05:14 PM, Peter Zijlstra wrote:
+> On Mon, 2010-01-18 at 17:11 +0200, Avi Kivity wrote:
+>    
+>> On 01/18/2010 05:06 PM, Peter Zijlstra wrote:
+>>      
+>>> On Mon, 2010-01-18 at 17:01 +0200, Gleb Natapov wrote:
+>>>
+>>>        
+>>>> There are valid uses for mlockall()
+>>>>
+>>>>          
+>>> That's debatable.
+>>>
+>>>
+>>>        
+>> Real-time?
+>>      
+> I would not advice that, just mlock() the text and data you need for the
+> real-time thread. mlockall() is a really blunt instrument.
+>    
 
-That code should probably exist for generic kernels (distro kernels
-that aren't compiled specifically for GEODE_LX).  Currently it's
-#ifdef'd..
+May not be feasible due to libraries.
 
+-- 
+error compiling committee.c: too many arguments to function
 
-On Sun, 17 Jan 2010
-19:44:44 -0200 Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-wrote:
-
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> ---
->  arch/x86/kernel/tsc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index 597683a..23066ec 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -806,7 +806,7 @@ static void __init check_system_tsc_reliable(void)
->  	unsigned long res_low, res_high;
->  
->  	rdmsr_safe(MSR_GEODE_BUSCONT_CONF0, &res_low, &res_high);
-> -	/* Geode_LX - the OLPC CPU has a possibly a very reliable
-> TSC */
-> +	/* Geode_LX - the OLPC CPU has a very reliable TSC */
->  	if (res_low & RTSC_SUSP)
->  		tsc_clocksource_reliable = 1;
->  #endif
