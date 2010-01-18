@@ -1,89 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153Ab0ARPuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173Ab0ARPxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153Ab0ARPuW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 10:50:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793Ab0ARPuV
+	id S1754173Ab0ARPxX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 10:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112Ab0ARPxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 10:50:21 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56994 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753223Ab0ARPuU (ORCPT
+	Mon, 18 Jan 2010 10:53:22 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39107 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754075Ab0ARPxU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 10:50:20 -0500
-Message-ID: <4B5482D3.305@s5r6.in-berlin.de>
-Date: Mon, 18 Jan 2010 16:48:35 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
+	Mon, 18 Jan 2010 10:53:20 -0500
+X-Sasl-enc: IOKM/xcNPmnuNz23j5Y7GKaL9jE0+CzdR/CxHw/Tjw+k 1263829999
+Message-ID: <4B548238.9080008@imap.cc>
+Date: Mon, 18 Jan 2010 16:46:00 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH 31/40] libata: take advantage of cmwq and remove concurrency
- limitations
-References: <1263776272-382-1-git-send-email-tj@kernel.org> <1263776272-382-32-git-send-email-tj@kernel.org>
-In-Reply-To: <1263776272-382-32-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>, Greg KH <gregkh@suse.de>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
+Subject: Re: linux-next build failure (was: Re: [PATCH/REPOST] pci: push deprecated
+ pci_find_device() function to last user)
+References: <10f740e81001180644yd44121cv6dd963349563a290@mail.gmail.com>
+In-Reply-To: <10f740e81001180644yd44121cv6dd963349563a290@mail.gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig8B6F6B46BA13FB05BA6FA36D"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-[...]
-> b. ata_aux_wq which is used for SCSI probing has single thread.  In
->    cases where SCSI probing is stalled for extended period of time
->    which is possible for ATAPI devices, this will stall all probing.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig8B6F6B46BA13FB05BA6FA36D
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Are things like INQUIRY and possibly motor spin-up performed there?
-If yes, ...
+Am 18.01.2010 15:44 schrieb Geert Uytterhoeven:
+> On Fri, Jan 15, 2010 at 19:08, Jesse Barnes <jbarnes@virtuousgeek.org> =
+wrote:
+>> On Thu, 14 Jan 2010 23:18:41 +0100 (CET)
+>> Tilman Schmidt <tilman@imap.cc> wrote:
+>>>
+>>> Subject: [PATCH] pci: push deprecated pci_find_device() function to
+>>> last user
+>>>
+>>> The ISDN4Linux HiSax driver family contains the last remaining users
+>>> of the deprecated pci_find_device() function. This patch creates a
+>>> private copy of that function in HiSax, and removes the now unused
+>>> global function together with its controlling configuration option,
+>>> CONFIG_PCI_LEGACY.
+>>>
+>>> Impact: code reorganization, no functional change
+>>> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+>>> ---
+>>> Note: This patch is not, nor does it intend to be, checkpatch.pl
+>>> clean. The issues checkpatch.pl reports on it were already present
+>>> before, and are unrelated to the topic of this patch.
+>>
+>> Applied to my linux-next branch, thanks Tilman.
+>=20
+> Just guessing: something's wrong if CONFIG_PCI is not set?
+>=20
+> http://kisskb.ellerman.id.au/kisskb/buildresult/2042085/
 
-[...]
-> #b is solved by using the default wq instead and achieving exclusion
-> via per-port mutex.
-[...]
-> --- a/drivers/ata/libata-eh.c
-> +++ b/drivers/ata/libata-eh.c
-> @@ -727,7 +727,7 @@ void ata_scsi_error(struct Scsi_Host *host)
->  	if (ap->pflags & ATA_PFLAG_LOADING)
->  		ap->pflags &= ~ATA_PFLAG_LOADING;
->  	else if (ap->pflags & ATA_PFLAG_SCSI_HOTPLUG)
-> -		queue_delayed_work(ata_aux_wq, &ap->hotplug_task, 0);
-> +		schedule_delayed_work(&ap->hotplug_task, 0);
->  
->  	if (ap->pflags & ATA_PFLAG_RECOVERED)
->  		ata_port_printk(ap, KERN_INFO, "EH complete\n");
-> @@ -2938,7 +2938,7 @@ static int ata_eh_revalidate_and_attach(struct ata_link *link,
->  			ehc->i.flags |= ATA_EHI_SETMODE;
->  
->  			/* schedule the scsi_rescan_device() here */
-> -			queue_work(ata_aux_wq, &(ap->scsi_rescan_task));
-> +			schedule_work(&(ap->scsi_rescan_task));
->  		} else if (dev->class == ATA_DEV_UNKNOWN &&
->  			   ehc->tries[dev->devno] &&
->  			   ata_class_enabled(ehc->classes[dev->devno])) {
-> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-> index f4ea5a8..08e2ef8 100644
-> --- a/drivers/ata/libata-scsi.c
-> +++ b/drivers/ata/libata-scsi.c
-> @@ -3408,8 +3408,7 @@ void ata_scsi_scan_host(struct ata_port *ap, int sync)
->  				"                  switching to async\n");
->  	}
->  
-> -	queue_delayed_work(ata_aux_wq, &ap->hotplug_task,
-> -			   round_jiffies_relative(HZ));
-> +	schedule_delayed_work(&ap->hotplug_task, round_jiffies_relative(HZ));
->  }
->  
->  /**
-[...]
+Sorry, oversight of mine. I thought that hisax/avm_pci.c depended on
+CONFIG_PCI, but it doesn't, as it also handles ISA PnP cards. I will
+issue a corrected patch ASAP.
 
-... wouldn't queue_delayed_work(system_long_wq, &ap->hotplug_task, ...);
-be more appropriate then?
--- 
-Stefan Richter
--=====-==-=- ---= =--=-
-http://arcgraph.de/sr/
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
+
+
+--------------enig8B6F6B46BA13FB05BA6FA36D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAktUgkIACgkQQ3+did9BuFvLhgCdFlr0VFSqbRUdSFpn5zHWu6gt
+1U0An0qs6CXr/zChybVdaA42sdnaRzuu
+=jS+8
+-----END PGP SIGNATURE-----
+
+--------------enig8B6F6B46BA13FB05BA6FA36D--
