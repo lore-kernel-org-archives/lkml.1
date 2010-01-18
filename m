@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067Ab0ARPns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098Ab0ARPpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067Ab0ARPns (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 10:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072Ab0ARPnp
+	id S1754098Ab0ARPpK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 10:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046Ab0ARPpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 10:43:45 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:45082 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754070Ab0ARPnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 10:43:43 -0500
-Date: Mon, 18 Jan 2010 21:13:23 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Avi Kivity <avi@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-Message-ID: <20100118154323.GA4424@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <4B5325CF.5000001@redhat.com> <1263740593.557.20967.camel@twins> <4B53661A.9090907@redhat.com> <1263800752.4283.19.camel@laptop> <4B543F93.3060509@redhat.com> <1263815072.4283.305.camel@laptop> <4B544D7C.2060708@redhat.com> <1263816396.4283.361.camel@laptop> <4B544F8E.1080603@redhat.com> <84144f021001180413w76a8ca2axb0b9f07ee4dea67e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <84144f021001180413w76a8ca2axb0b9f07ee4dea67e@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 18 Jan 2010 10:45:08 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45364 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753168Ab0ARPpF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 10:45:05 -0500
+Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Avi Kivity <avi@redhat.com>, Gleb Natapov <gleb@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org, akpm@linux-foundation.org,
+       andrew.c.morrow@gmail.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <20100118154149.38fa61d4@lxorguk.ukuu.org.uk>
+References: <20100118133755.GG30698@redhat.com>
+	 <84144f021001180609r4d7fbbd0p972d5bc0e227d09a@mail.gmail.com>
+	 <20100118141938.GI30698@redhat.com>
+	 <20100118143232.0a0c4b4d@lxorguk.ukuu.org.uk>
+	 <1263826198.4283.600.camel@laptop> <20100118150159.GB14345@redhat.com>
+	 <1263827194.4283.609.camel@laptop> <4B547A31.4090106@redhat.com>
+	 <1263827683.4283.610.camel@laptop> <4B547C09.8010906@redhat.com>
+	 <1263828247.4283.612.camel@laptop>
+	 <20100118154149.38fa61d4@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jan 2010 16:44:34 +0100
+Message-ID: <1263829474.4283.617.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 02:13:25PM +0200, Pekka Enberg wrote:
-> Hi Avi,
+On Mon, 2010-01-18 at 15:41 +0000, Alan Cox wrote:
+> On Mon, 18 Jan 2010 16:24:07 +0100
+> Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> On Mon, 2010-01-18 at 14:01 +0200, Avi Kivity wrote:
-> >>> Maybe you place no value on uprobes.  But people who debug userspace
-> >>> likely will see a reason.
+> > On Mon, 2010-01-18 at 17:19 +0200, Avi Kivity wrote:
+> > > > I would not advice that, just mlock() the text and data you need for the
+> > > > real-time thread. mlockall() is a really blunt instrument.
+> > > >    
+> > > 
+> > > May not be feasible due to libraries. 
+> > 
+> > Esp for the real-time case I could advise not to use those libraries
+> > then, since they're clearly not designed for that use case.
 > 
-> On 01/18/2010 02:06 PM, Peter Zijlstra wrote:
-> >> I do see value in uprobes, I just don't like it mucking about with the
-> >> address space. Nor does it appear required.
-> 
-> On Mon, Jan 18, 2010 at 2:09 PM, Avi Kivity <avi@redhat.com> wrote:
-> > Well, the alternatives are very unappealing.  Emulation and single-stepping
-> > are going to be very slow compared to a couple of jumps.
-> 
-> So how big chunks of the address space are we talking here for uprobes?
+> In "hard" real time cases an awful lot of libraries have things like
+> memory allocations in them and don't care about stack growth which can
+> cause faults and sleeps. The memory allocator if you are running threaded
+> was not real time priority aware either last time I checked so the
+> standard libraries are not going to give the behaviour you want unless
+> you have a proper RT environment, and even then it may be a bit iffy here
+> and there.
 
-As Srikar mentioned, the least we start with is 1 page. Though you can
-have as many probes as you want, there are certain optimizations we can
-do, depending on the most common usecases.
+I'm quite aware of that, which is why we recommend people to
+pre-allocate, mlock() and pre-fault everything in advance and make sure
+the RT thread doesn't touch any data/text outside of that and uses a
+limited set of system calls.
 
-For eg., if you'd consider the start of a routine to be the most
-commonly traced location, most routines in a binary would generally
-start with the same instruction (say push %ebp), and we can refcount a
-slot with that instruction to be used for all probes of the same
-instruction.
+You can also do that for stacks using pthread_attr_setstack().
 
-Ananth
+
+
