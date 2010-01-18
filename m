@@ -1,94 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811Ab0ARBIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757Ab0ARBMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811Ab0ARBIk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 20:08:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673Ab0ARBIf
+	id S1755757Ab0ARBMs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 20:12:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932088Ab0ARBMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 20:08:35 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:45039 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755459Ab0ARBIe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 20:08:34 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: 2.6.33-rc4-mmotm0113 - ext3 throws warning..
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1263776885_6729P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sun, 17 Jan 2010 20:12:46 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:58700 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755416Ab0ARBMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 20:12:42 -0500
+From: Alex Elder <aelder@sgi.com>
+Message-Id: <201001180112.o0I1CaCH001417@stout.americas.sgi.com>
+Date: Sun, 17 Jan 2010 19:12:36 -0600
+To: torvalds@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.33-rc4
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+User-Agent: Heirloom mailx 12.4 7/29/08
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Sun, 17 Jan 2010 20:08:05 -0500
-Message-ID: <20914.1263776885@localhost>
-X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=zidane.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020208.4B53B477.00A9,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1263776885_6729P
-Content-Type: text/plain; charset=us-ascii
+The following changes since commit 7284ce6c9f6153d1777df5f310c959724d1bd446:
+  Linus Torvalds (1):
+        Linux 2.6.33-rc4
 
-Took a power hit earlier in the day, laptop rode it out, external 500G SUB
-drive didn't. Several hours later I finally do something that references
-the filesystem on the external drive, and I get:
+are available in the git repository at:
 
-[312252.610201] EXT3-fs error (device sdb2): ext3_get_inode_loc: unable to read inode block - inode=5964029, block=23855121
-[312252.610740] ------------[ cut here ]------------
-[312252.610759] WARNING: at fs/buffer.c:1181 mark_buffer_dirty+0x65/0xdd()
-[312252.610768] Hardware name: Latitude E6500                  
-[312252.610776] Modules linked in: ppp_async sunrpc usb_storage [last unloaded: microcode]
-[312252.610808] Pid: 2256, comm: ls Not tainted 2.6.33-rc4-mmotm0113 #1
-[312252.610816] Call Trace:
-[312252.610836]  [<ffffffff81038ac1>] warn_slowpath_common+0x77/0x8f
-[312252.610849]  [<ffffffff81038ae8>] warn_slowpath_null+0xf/0x11
-[312252.610862]  [<ffffffff810fdb40>] mark_buffer_dirty+0x65/0xdd
-[312252.610875]  [<ffffffff81147997>] ext3_commit_super.clone.0+0x54/0x64
-[312252.610889]  [<ffffffff81147a37>] ext3_handle_error+0x90/0xb7
-[312252.610902]  [<ffffffff81147dd7>] ext3_error+0x76/0x81
-[312252.610918]  [<ffffffff8113e9e4>] __ext3_get_inode_loc+0x261/0x287
-[312252.610932]  [<ffffffff8113ea24>] ext3_get_inode_loc+0x1a/0x1c
-[312252.610945]  [<ffffffff8113ea4e>] ext3_reserve_inode_write+0x28/0x82
-[312252.610958]  [<ffffffff8113eae0>] ext3_mark_inode_dirty+0x38/0x55
-[312252.610971]  [<ffffffff8113ec40>] ext3_dirty_inode+0x6a/0x81
-[312252.610986]  [<ffffffff810f7b04>] __mark_inode_dirty+0x2f/0x14c
-[312252.610999]  [<ffffffff810ede7b>] touch_atime+0x102/0x125
-[312252.611014]  [<ffffffff810e902c>] ? filldir+0x0/0xcb
-[312252.611027]  [<ffffffff810e9270>] vfs_readdir+0x8a/0xb1
-[312252.611040]  [<ffffffff810e9427>] sys_getdents+0xa6/0xf8
-[312252.611057]  [<ffffffff810023ab>] system_call_fastpath+0x16/0x1b
-[312252.611067] ---[ end trace e506d3eb52cbaab0 ]---
-[312252.611138] EXT3-fs (sdb2): error in ext3_reserve_inode_write: IO failure
-[312257.701924] journal_bmap: journal block not found at offset 84 on sdb2
-[312257.701937] Aborting journal on device sdb2.
+  git://oss.sgi.com/xfs/xfs for-linus
 
-It was totally in its rights to abort the journal. The WARNING, not so much?
+Dave Chinner (7):
+      xfs: reclaim inodes under a write lock
+      xfs: Avoid inodes in reclaim when flushing from inode cache
+      xfs: reclaim all inodes by background tree walks
+      xfs: Remove inode iolock held check during allocation
+      xfs: fix stale inode flush avoidance
+      xfs: fix missing error check in xfs_rtfree_range
+      xfs: xfs_swap_extents needs to handle dynamic fork offsets
 
---==_Exmh_1263776885_6729P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFLU7R1cC3lWbTT17ARAo/9AKD/APFreN447NdSdwICSwlaTd7O/QCaAy9a
-+yKpPOHu3e17PZjSmaP1I70=
-=LtHa
------END PGP SIGNATURE-----
-
---==_Exmh_1263776885_6729P--
-
+ fs/xfs/linux-2.6/xfs_super.c   |   14 ++--
+ fs/xfs/linux-2.6/xfs_sync.c    |  183 +++++++++++++++++++---------------------
+ fs/xfs/linux-2.6/xfs_sync.h    |    2 +-
+ fs/xfs/quota/xfs_qm_syscalls.c |    2 +-
+ fs/xfs/xfs_dfrag.c             |  106 ++++++++++++++++++++----
+ fs/xfs/xfs_iget.c              |    1 -
+ fs/xfs/xfs_inode.c             |   21 ++++--
+ fs/xfs/xfs_rtalloc.c           |    2 +
+ 8 files changed, 201 insertions(+), 130 deletions(-)
