@@ -1,105 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753009Ab0ARTuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123Ab0ARTwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753009Ab0ARTuG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 14:50:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395Ab0ARTuF
+	id S1753123Ab0ARTwm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 14:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638Ab0ARTwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 14:50:05 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:59833 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340Ab0ARTuD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 14:50:03 -0500
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Mark Wielaard <mjw@redhat.com>
-Cc: Avi Kivity <avi@redhat.com>, Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       utrace-devel <utrace-devel@redhat.com>
-In-Reply-To: <1263821680.2946.85.camel@springer.wildebeest.org>
-References: <1263740593.557.20967.camel@twins>
-	 <1263800752.4283.19.camel@laptop> <4B543F93.3060509@redhat.com>
-	 <1263815072.4283.305.camel@laptop> <4B544D7C.2060708@redhat.com>
-	 <1263816396.4283.361.camel@laptop> <4B544F8E.1080603@redhat.com>
-	 <84144f021001180413w76a8ca2axb0b9f07ee4dea67e@mail.gmail.com>
-	 <4B545146.3080001@redhat.com>		<20100118124419.GC1628@linux.vnet.ibm.com>
-	 <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com>
-	 <4B5459CA.9060603@redhat.com>
-	 <1263821680.2946.85.camel@springer.wildebeest.org>
-Content-Type: text/plain
-Date: Mon, 18 Jan 2010 11:49:52 -0800
-Message-Id: <1263844192.5059.29.camel@localhost.localdomain>
+	Mon, 18 Jan 2010 14:52:42 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:45651 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751401Ab0ARTwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 14:52:41 -0500
+Date: Mon, 18 Jan 2010 11:52:24 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Tino Keitel <tino.keitel@tikei.de>
+Cc: Mike McCormack <mikem@ring3k.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Regression: Wake on LAN doesn't work in sky2 with
+ 2.6.33-rc4-git2
+Message-ID: <20100118115224.1abde88b@nehalam>
+In-Reply-To: <20100118185245.GA3750@mac.home>
+References: <20100115091053.GA5477@mac.home>
+	<201001152323.37718.rjw@sisk.pl>
+	<20100117231932.GA5504@mac.home>
+	<201001180136.45823.rjw@sisk.pl>
+	<20100118083757.GA2619@mac.home>
+	<4B544D2C.8040400@ring3k.org>
+	<20100118185245.GA3750@mac.home>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 14:34 +0100, Mark Wielaard wrote:
-> On Mon, 2010-01-18 at 14:53 +0200, Avi Kivity wrote:
-> > On 01/18/2010 02:51 PM, Pekka Enberg wrote:
-> > >
-> > > And how many probes do we expected to be live at the same time in
-> > > real-world scenarios? I guess Avi's "one million" is more than enough?
-> > >    
-> > I don't think a user will ever come close to a million, but we can 
-> > expect some inflation from inlined functions (I don't know if uprobes 
-> > replicates such probes, but if it doesn't, it should).
-> 
-> SystemTap by default places probes on all instances of an inlined
-> function. It is still hard to get to a million probes though.
-> $ stap -v -l 'process("/usr/bin/emacs").function("*")'
-> [...]
-> Pass 2: analyzed script: 4359 probe(s)
-> 
-> You can try probing all statements (for every function, in every file,
-> on every line of source code), but even that only adds up to ten
-> thousands of probes:
-> $ stap -v -l 'process("/usr/bin/emacs").statement("*@*:*")'
-> [...]
-> Pass 2: analyzed script: 39603 probe(s)
-> 
-> So a million is pretty far out, even if you add larger programs and all
-> the shared libraries they are using.
+Does it work better if config bit is set here?
 
-Thanks, Mark.  One correction, below.
+---
+ drivers/net/sky2.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-> 
-> As Srikar said the current allocation technique is the simplest you can
-> do, one xol slot for each uprobe. But there are other techniques that
-> you can use. Theoretically you only need a xol slot for each thread of a
-> process that simultaneously hits a uprobe instance. That requires a bit
-> more bookkeeping. The variant of uprobes that systemtap uses at the
-> moment does that.
-
-Actually, it's per-probepoint, with a fixed number of slots.  If the
-probepoint you just hit doesn't have a slot, and none are free, you
-steal a slot from another probepoint.  Yeah, it's messy.
-
-We considered allocating slots per-thread, hoping to make it basically
-lockless, but that way there's more likely to be constant scribbling on
-the XOL area, as a thread with n slots cycles through n+m probepoints.
-And of course, it gets dicey as the process clones more threads.
-
-I guess the point is, there are a lot of ways to allocate slots, and we
-haven't found the perfect algorithm yet, even if you accept the
-existence of (and need for) the XOL area.  Keep the ideas coming.
-
-> But the locking in that case is pretty tricky, so it
-> seemed easier to first get the code with the simplest xol allocation
-> technique upstream. But if you do that than you can use a very small xol
-> area to support millions of uprobes and only have to expand it when
-> there are hundreds of threads in a process all hitting the probes
-> simultaneously.
-> 
-> Cheers,
-> 
-> Mark
-> 
-
-Jim
-
+--- a/drivers/net/sky2.c	2010-01-18 11:45:54.444753324 -0800
++++ b/drivers/net/sky2.c	2010-01-18 11:49:18.475018945 -0800
+@@ -283,6 +283,9 @@ static void sky2_power_aux(struct sky2_h
+ 
+ 	/* turn off "driver loaded LED" */
+ 	sky2_write16(hw, B0_CTST, Y2_LED_STAT_OFF);
++
++	/* disable writes to PCI config again */
++	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
+ }
+ 
+ static void sky2_gmac_reset(struct sky2_hw *hw, unsigned port)
