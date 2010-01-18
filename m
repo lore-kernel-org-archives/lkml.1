@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933Ab0ARMu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207Ab0ARMum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754933Ab0ARMu1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 07:50:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539Ab0ARMu1
+	id S1755207Ab0ARMum (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 07:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043Ab0ARMul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 07:50:27 -0500
-Received: from mga10.intel.com ([192.55.52.92]:36856 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754503Ab0ARMu0 (ORCPT
+	Mon, 18 Jan 2010 07:50:41 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:37767 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755007Ab0ARMuk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 07:50:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,292,1262592000"; 
-   d="scan'208";a="765119151"
-Date: Mon, 18 Jan 2010 13:52:01 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: Linus Walleij <linus.walleij@stericsson.com>, linux-kernel@vger.kernel.org,
-       Robin Getz <rgetz@blackfin.uclinux.org>, Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH] Use AB3100 MFD core IRQ for interrupt randomness
-Message-ID: <20100118125200.GC8036@sortiz.org>
-References: <1262997509-5680-1-git-send-email-linus.walleij@stericsson.com>
- <1263250075.29868.4750.camel@calx>
- <63386a3d1001171118n6ac88fccx12b7fdfeda204f50@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <63386a3d1001171118n6ac88fccx12b7fdfeda204f50@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 18 Jan 2010 07:50:40 -0500
+Subject: Re: [PATCH 06/40] sched: add wakeup/sleep sched_notifiers and
+ allow NULL notifier ops
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <4B5446A1.7070306@kernel.org>
+References: <1263776272-382-1-git-send-email-tj@kernel.org>
+	 <1263776272-382-7-git-send-email-tj@kernel.org>
+	 <1263808633.4283.152.camel@laptop>  <4B5446A1.7070306@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jan 2010 13:49:27 +0100
+Message-ID: <1263818967.4283.459.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
-
-On Sun, Jan 17, 2010 at 08:18:58PM +0100, Linus Walleij wrote:
-> 2010/1/11 Matt Mackall <mpm@selenic.com>:
+On Mon, 2010-01-18 at 20:31 +0900, Tejun Heo wrote:
+> On 01/18/2010 06:57 PM, Peter Zijlstra wrote:
+> > On Mon, 2010-01-18 at 09:57 +0900, Tejun Heo wrote:
+> > 
+> >> @@ -2439,6 +2440,8 @@ static inline void ttwu_post_activation(struct task_struct *p, struct rq *rq,
+> >>  		rq->idle_stamp = 0;
+> >>  	}
+> >>  #endif
+> >> +	if (success)
+> >> +		fire_sched_notifiers(p, wakeup);
+> >>  }
+> >>  
+> >>  /**
+> > 
+> > So why can't you call fire_sched_notifier(p, wakeup) right next to
+> > activate_task(rq, p, 1) in ttwu_activate() ?
 > 
-> > Acked-by: Matt Mackall <mpm@selenic.com>
-> 
-> Sam will you take this patch then?
-Applied, thanks a lot.
+> I was worried about calling notifier callback before notifying the
+> sched_class of the wakeup.  Conceptually, the notifier callback should
+> be called after all sched internal stuff about the wakeup finish,
+> so...
 
-Cheers,
-Samuel.
+I'm thinking that we can place it next to activate_task(), if it makes
+you feel better you can place them both at the end up ttwu_activate()
+instead of in the middle.
 
+Esp. with the callback you have it really doesn't matter.
 
-> Yours,
-> Linus Walleij
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
