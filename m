@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292Ab0ARAxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326Ab0ARAxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292Ab0ARAxP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 19:53:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228Ab0ARAxL
+	id S1755326Ab0ARAxZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 19:53:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295Ab0ARAxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 19:53:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54180 "EHLO hera.kernel.org"
+	Sun, 17 Jan 2010 19:53:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54212 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755229Ab0ARAxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 19:53:00 -0500
+	id S1755242Ab0ARAxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 19:53:05 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
@@ -16,182 +16,60 @@ To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 16/40] workqueue: update cwq alignement
-Date: Mon, 18 Jan 2010 09:57:28 +0900
-Message-Id: <1263776272-382-17-git-send-email-tj@kernel.org>
+Subject: [PATCH 01/40] sched: consult online mask instead of active in select_fallback_rq()
+Date: Mon, 18 Jan 2010 09:57:13 +0900
+Message-Id: <1263776272-382-2-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1263776272-382-1-git-send-email-tj@kernel.org>
 References: <1263776272-382-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 00:52:14 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 00:52:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-work->data field is used for two purposes.  It points to cwq it's
-queued on and the lower bits are used for flags.  Currently, two bits
-are reserved which is always safe as 4 byte alignment is guaranteed on
-every architecture.  However, future changes will need more flag bits.
+If called after sched_class chooses a CPU which isn't in a task's
+cpus_allowed mask, select_fallback_rq() can end up migrating a task
+which is bound to a !active but online cpu to an active cpu.  This is
+dangerous because active is cleared before CPU_DOWN_PREPARE is called
+and subsystems expect affinities of kthreads and other tasks to be
+maintained till their CPU_DOWN_PREPARE callbacks are complete.
 
-On SMP, the percpu allocator is capable of honoring larger alignment
-(there are other users which depend on it) and larger alignment works
-just fine.  On UP, percpu allocator is a thin wrapper around
-kzalloc/kfree() and don't honor alignment request.
-
-This patch introduces WORK_STRUCT_FLAG_BITS and implements
-alloc/free_cwqs() which guarantees (1 << WORK_STRUCT_FLAG_BITS)
-alignment both on SMP and UP.  On SMP, simply wrapping percpu
-allocator is enouhg.  On UP, extra space is allocated so that cwq can
-be aligned and the original pointer can be stored after it which is
-used in the free path.
-
-While at it, as cwqs are now forced aligned, make sure the resulting
-alignment is at least equal to or larger than that of long long.
-
-Alignment problem on UP is reported by Michal Simek.
+Consult cpu_online_mask instead.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@elte.hu>
-Reported-by: Michal Simek <michal.simek@petalogix.com>
 ---
- include/linux/workqueue.h |    4 ++-
- kernel/workqueue.c        |   59 +++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 57 insertions(+), 6 deletions(-)
+ kernel/sched.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index e51b5dc..011738a 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -29,7 +29,9 @@ enum {
- 	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
- 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
+diff --git a/kernel/sched.c b/kernel/sched.c
+index c535cc4..09d97e3 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2288,12 +2288,12 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
+ 	const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(cpu));
  
--	WORK_STRUCT_FLAG_MASK	= 3UL,
-+	WORK_STRUCT_FLAG_BITS	= 2,
-+
-+	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
- 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
- };
+ 	/* Look for allowed, online CPU in same node. */
+-	for_each_cpu_and(dest_cpu, nodemask, cpu_active_mask)
++	for_each_cpu_and(dest_cpu, nodemask, cpu_online_mask)
+ 		if (cpumask_test_cpu(dest_cpu, &p->cpus_allowed))
+ 			return dest_cpu;
  
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index d29e069..14edfcd 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -46,7 +46,9 @@
+ 	/* Any allowed, online CPU? */
+-	dest_cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
++	dest_cpu = cpumask_any_and(&p->cpus_allowed, cpu_online_mask);
+ 	if (dest_cpu < nr_cpu_ids)
+ 		return dest_cpu;
  
- /*
-  * The per-CPU workqueue (if single thread, we always use the first
-- * possible cpu).
-+ * possible cpu).  The lower WORK_STRUCT_FLAG_BITS of
-+ * work_struct->data are used for flags and thus cwqs need to be
-+ * aligned at two's power of the number of flag bits.
-  */
- struct cpu_workqueue_struct {
+@@ -2302,6 +2302,7 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
+ 		rcu_read_lock();
+ 		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
+ 		rcu_read_unlock();
++		/* breaking affinity, consider active mask instead */
+ 		dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
  
-@@ -58,7 +60,7 @@ struct cpu_workqueue_struct {
- 
- 	struct workqueue_struct *wq;		/* I: the owning workqueue */
- 	struct task_struct	*thread;
--} ____cacheline_aligned;
-+};
- 
- /*
-  * The externally visible workqueue abstraction is an array of
-@@ -930,6 +932,44 @@ int current_is_keventd(void)
- 
- }
- 
-+static struct cpu_workqueue_struct *alloc_cwqs(void)
-+{
-+	const size_t size = sizeof(struct cpu_workqueue_struct);
-+	const size_t align = 1 << WORK_STRUCT_FLAG_BITS;
-+	struct cpu_workqueue_struct *cwqs;
-+#ifndef CONFIG_SMP
-+	void *ptr;
-+
-+	/*
-+	 * On UP, percpu allocator doesn't honor alignment parameter
-+	 * and simply uses arch-dependent default.  Allocate enough
-+	 * room to align cwq and put an extra pointer at the end
-+	 * pointing back to the originally allocated pointer which
-+	 * will be used for free.
-+	 */
-+	ptr = __alloc_percpu(size + align + sizeof(void *), 1);
-+	cwqs = PTR_ALIGN(ptr, align);
-+	*(void **)per_cpu_ptr(cwqs + 1, 0) = ptr;
-+#else
-+	/* On SMP, percpu allocator can do it itself */
-+	cwqs = __alloc_percpu(size, align);
-+#endif
-+	/* just in case, make sure it's actually aligned */
-+	BUG_ON(!IS_ALIGNED((unsigned long)cwqs, align));
-+	return cwqs;
-+}
-+
-+static void free_cwqs(struct cpu_workqueue_struct *cwqs)
-+{
-+#ifndef CONFIG_SMP
-+	/* on UP, the pointer to free is stored right after the cwq */
-+	if (cwqs)
-+		free_percpu(*(void **)per_cpu_ptr(cwqs + 1, 0));
-+#else
-+	free_percpu(cwqs);
-+#endif
-+}
-+
- static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
- {
- 	struct workqueue_struct *wq = cwq->wq;
-@@ -975,7 +1015,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	if (!wq)
- 		goto err;
- 
--	wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
-+	wq->cpu_wq = alloc_cwqs();
- 	if (!wq->cpu_wq)
- 		goto err;
- 
-@@ -994,6 +1034,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	for_each_possible_cpu(cpu) {
- 		struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
- 
-+		BUG_ON((unsigned long)cwq & WORK_STRUCT_FLAG_MASK);
- 		cwq->wq = wq;
- 		spin_lock_init(&cwq->lock);
- 		INIT_LIST_HEAD(&cwq->worklist);
-@@ -1021,7 +1062,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	return wq;
- err:
- 	if (wq) {
--		free_percpu(wq->cpu_wq);
-+		free_cwqs(wq->cpu_wq);
- 		kfree(wq);
- 	}
- 	return NULL;
-@@ -1072,7 +1113,7 @@ void destroy_workqueue(struct workqueue_struct *wq)
- 	for_each_possible_cpu(cpu)
- 		cleanup_workqueue_thread(get_cwq(cpu, wq));
- 
--	free_percpu(wq->cpu_wq);
-+	free_cwqs(wq->cpu_wq);
- 	kfree(wq);
- }
- EXPORT_SYMBOL_GPL(destroy_workqueue);
-@@ -1159,6 +1200,14 @@ EXPORT_SYMBOL_GPL(work_on_cpu);
- 
- void __init init_workqueues(void)
- {
-+	/*
-+	 * cwqs are forced aligned according to WORK_STRUCT_FLAG_BITS.
-+	 * Make sure that the alignment isn't lower than that of
-+	 * unsigned long long.
-+	 */
-+	BUILD_BUG_ON(__alignof__(struct cpu_workqueue_struct) <
-+		     __alignof__(unsigned long long));
-+
- 	singlethread_cpu = cpumask_first(cpu_possible_mask);
- 	hotcpu_notifier(workqueue_cpu_callback, 0);
- 	keventd_wq = create_workqueue("events");
+ 		/*
 -- 
 1.6.4.2
 
