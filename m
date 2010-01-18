@@ -1,169 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452Ab0ARGqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691Ab0ARHD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752452Ab0ARGqX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 01:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918Ab0ARGqV
+	id S1752691Ab0ARHD6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 02:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151Ab0ARHD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 01:46:21 -0500
-Received: from gate.crashing.org ([63.228.1.57]:43360 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780Ab0ARGqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 01:46:21 -0500
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 17:45:48 +1100
-Message-ID: <1263797148.724.484.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 18 Jan 2010 02:03:57 -0500
+Received: from mga05.intel.com ([192.55.52.89]:16817 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752123Ab0ARHD4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 02:03:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,292,1262592000"; 
+   d="scan'208";a="765055989"
+Date: Mon, 18 Jan 2010 14:58:21 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Robert Hancock <hancockrwd@gmail.com>,
+       Yuhong Bao <yuhongbao_386@hotmail.com>, yong.y.wang@linux.intel.com,
+       linux-kernel@vger.kernel.org, huaxu.wan@intel.com,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH] hwmon: (coretemp) Fix TjMax for Atom
+	N450/D410/D510 CPUs
+Message-ID: <20100118065821.GA19008@ywang-moblin2.bj.intel.com>
+References: <20091224073102.GA23058@ywang-moblin2.bj.intel.com> <20100106160817.72313551@hyperion.delvare> <20100110200621.564a6682@hyperion.delvare> <20100111062024.GA20804@ywang-moblin2.bj.intel.com> <SNT125-W147C55AB6EB65D41CAAFFFC3680@phx.gbl> <20100117161518.4912be7c@hyperion.delvare> <4B536502.20102@gmail.com> <20100117210536.0ae0f187@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100117210536.0ae0f187@hyperion.delvare>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus !
+On Sun, Jan 17, 2010 at 09:05:36PM +0100, Jean Delvare wrote:
+> On Sun, 17 Jan 2010 13:29:06 -0600, Robert Hancock wrote:
+> > On 01/17/2010 09:15 AM, Jean Delvare wrote:
+> > > On Fri, 15 Jan 2010 18:02:27 -0800, Yuhong Bao wrote:
+> > >>
+> > >>> No matter what chipset or gfx you use with the new Atom chip, the
+> > >>> integrated memory controller (IMC) will always be used. This patch
+> > >>> checks the presence of that IMC. Hope this clarifies.
+> > >> To be more precise, Pine Trail Atoms integrate the entire northbridge, including the integrated graphics and the memory controller into the CPU, and there is a DMI connection to the southbridge, which is the Intel NM10, that is NOT integrated.
 
-A tad late due to me slacking and leaving the patches take dust in
-patchwork for a bit too long, but here are a few bug fixes for powerpc
-and a bunch of defconfig freshen ups for some of our embedded platforms.
+This is correct.
 
-Cheers,
-Ben.
+> > >
+> > > What prevents another vendor from selling a compatible south bridge
+> > > then?
+> > 
+> > Nothing (other than licensing for the DMI bus, see NVIDIA and the 
+> > problems this creates for their ION chipset). I'm assuming this patch is 
+> > checking for the host bridge device though, that is integrated into the 
+> > CPU and would always be present.
+> 
+> That's where I am confused. The patch checks for the presence of the
+> Intel NM10, which, reading its description looks much like a south
+> bridge and not a memory controller (north bridge). So I think the patch
+> is wrong (or at least incomplete).
+> 
 
-The following changes since commit 004b35063296b6772fa72404a35b498f1e71e87e:
-  Linus Torvalds (1):
-        Merge branch 'drm-linus' of git://git.kernel.org/.../airlied/drm-2.6
+Sorry, I made a mistake in the patch description. The new Atom CPU is
+coupled with integrated gfx and memory controller in one package. NM10
+chipset is another chip. This patch does check the presence of the
+integrated memory controller, i.e. 00:00.0 Host bridge device, which
+will always be present no matter whether NM10 chipset is used or not.
 
-are available in the git repository at:
+> Anyway, how difficult would it be to set TjMax based on the CPUID? I
+> presume that the Intel Atom 400 and 500 series have their own CPUID
+> value, haven't they? This would seem even easier that checking for a
+> PCI device.
+> 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+CPUID value (family and model number) remains the same for all Atom CPUs
+thus far. That is why we check the new Atom CPU this way.
 
-Anton Blanchard (2):
-      powerpc/pseries: Fix xics interrupt affinity
-      powerpc: cpumask_of_node() should handle -1 as a node
-
-Anton Vorontsov (1):
-      powerpc/swsusp_32: Fix TLB invalidation
-
-Benjamin Herrenschmidt (3):
-      serial/pmac_zilog: Workaround problem due to interrupt on closed port
-      Merge commit 'kumar/merge' into merge
-      Merge commit 'gcl/merge' into merge
-
-FUJITA Tomonori (1):
-      powerpc/pseries: Fix dlpar compile warning without CONFIG_PROC_DEVICETREE
-
-Grant Likely (1):
-      powerpc/5200: update defconfigs
-
-Jiri Slaby (1):
-      powerpc: Use helpers for rlimits
-
-Joakim Tjernlund (2):
-      powerpc/8xx: Always pin kernel instruction TLB
-      powerpc/8xx: Fix user space TLB walk in dcbX fixup
-
-Kamalesh Babulal (1):
-      powerpc/hvc: Driver build breaks with !HVC_CONSOLE
-
-Kumar Gala (1):
-      powerpc: 2.6.33 update of defconfigs for embedded 6xx/7xxx, 8xx, 8xxx
-
-Michael Ellerman (1):
-      powerpc/iseries: Initialise on-stack completion
-
-Márton Németh (1):
-      powerpc/macintosh: Make Open Firmware device id constant
-
-Nathan Fontenot (2):
-      powerpc: Move /proc/ppc64 to /proc/powerpc update
-      powerpc: Move cpu hotplug driver lock from pseries to powerpc
-
-Peter Tyser (1):
-      powerpc: Use scripts/mkuboot.sh instead of 'mkimage'
-
-Stefan Roese (1):
-      powerpc: Fix decrementer setup on 1GHz boards
-
- arch/powerpc/boot/wrapper                         |    7 +-
- arch/powerpc/configs/52xx/cm5200_defconfig        |   75 ++++++++++++---
- arch/powerpc/configs/52xx/lite5200b_defconfig     |   90 ++++++++++++++----
- arch/powerpc/configs/52xx/motionpro_defconfig     |   79 +++++++++++++---
- arch/powerpc/configs/52xx/pcm030_defconfig        |   83 +++++++++++++----
- arch/powerpc/configs/52xx/tqm5200_defconfig       |   79 +++++++++++++---
- arch/powerpc/configs/83xx/asp8347_defconfig       |   88 +++++++++++++-----
- arch/powerpc/configs/83xx/kmeter1_defconfig       |   68 +++++++++++---
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |   97 +++++++++++++++-----
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  100 +++++++++++++++-----
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |   89 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |   93 ++++++++++++++-----
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |   95 ++++++++++++++-----
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |   92 ++++++++++++++-----
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |   86 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |   89 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |   87 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |   89 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |   91 +++++++++++++-----
- arch/powerpc/configs/83xx/sbc834x_defconfig       |   85 ++++++++++++-----
- arch/powerpc/configs/85xx/ksi8560_defconfig       |   69 ++++++++++---
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   69 ++++++++++---
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   76 ++++++++++++----
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   75 +++++++++++----
- arch/powerpc/configs/85xx/sbc8548_defconfig       |   77 ++++++++++++----
- arch/powerpc/configs/85xx/sbc8560_defconfig       |   72 +++++++++++---
- arch/powerpc/configs/85xx/socrates_defconfig      |   99 +++++++++++++++-----
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |   87 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8540_defconfig       |   89 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8541_defconfig       |   90 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8548_defconfig       |   95 ++++++++++++++----
- arch/powerpc/configs/85xx/tqm8555_defconfig       |   90 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8560_defconfig       |   90 +++++++++++++-----
- arch/powerpc/configs/85xx/xes_mpc85xx_defconfig   |  103 ++++++++++++++++----
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |  102 ++++++++++++++++----
- arch/powerpc/configs/86xx/gef_sbc310_defconfig    |   99 ++++++++++++++++----
- arch/powerpc/configs/86xx/gef_sbc610_defconfig    |   92 ++++++++++++++----
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |   88 +++++++++++++----
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |   90 ++++++++++++++----
- arch/powerpc/configs/86xx/sbc8641d_defconfig      |   81 ++++++++++++----
- arch/powerpc/configs/adder875_defconfig           |   57 +++++++++---
- arch/powerpc/configs/c2k_defconfig                |   90 +++++++++++++-----
- arch/powerpc/configs/ep8248e_defconfig            |   64 ++++++++++---
- arch/powerpc/configs/ep88xc_defconfig             |   55 +++++++++---
- arch/powerpc/configs/linkstation_defconfig        |   96 ++++++++++++++-----
- arch/powerpc/configs/mgcoge_defconfig             |   74 +++++++++++----
- arch/powerpc/configs/mgsuvd_defconfig             |   63 ++++++++++---
- arch/powerpc/configs/mpc5200_defconfig            |  106 +++++++++++++++++----
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |   79 ++++++++++++----
- arch/powerpc/configs/mpc8272_ads_defconfig        |   70 +++++++++++---
- arch/powerpc/configs/mpc83xx_defconfig            |   92 +++++++++++++-----
- arch/powerpc/configs/mpc85xx_defconfig            |   97 ++++++++++++++-----
- arch/powerpc/configs/mpc85xx_smp_defconfig        |   97 ++++++++++++++-----
- arch/powerpc/configs/mpc866_ads_defconfig         |   65 ++++++++++---
- arch/powerpc/configs/mpc86xx_defconfig            |   93 ++++++++++++++----
- arch/powerpc/configs/mpc885_ads_defconfig         |   55 +++++++++---
- arch/powerpc/configs/pq2fads_defconfig            |   72 +++++++++++---
- arch/powerpc/configs/prpmc2800_defconfig          |   94 ++++++++++++++-----
- arch/powerpc/configs/storcenter_defconfig         |   86 +++++++++++++----
- arch/powerpc/include/asm/topology.h               |    4 +-
- arch/powerpc/kernel/head_8xx.S                    |   12 +-
- arch/powerpc/kernel/rtas-proc.c                   |   14 ++--
- arch/powerpc/kernel/smp.c                         |   12 +++
- arch/powerpc/kernel/swsusp_32.S                   |    2 +-
- arch/powerpc/kernel/time.c                        |   11 ++-
- arch/powerpc/mm/mmap_64.c                         |    4 +-
- arch/powerpc/platforms/cell/spufs/coredump.c      |    2 +-
- arch/powerpc/platforms/iseries/vio.c              |    2 +
- arch/powerpc/platforms/pseries/dlpar.c            |   18 +---
- arch/powerpc/platforms/pseries/xics.c             |   12 +-
- drivers/char/Kconfig                              |    2 +-
- drivers/macintosh/smu.c                           |    2 +-
- drivers/macintosh/therm_pm72.c                    |    2 +-
- drivers/macintosh/therm_windtunnel.c              |    2 +-
- drivers/serial/pmac_zilog.c                       |   11 ++
- 75 files changed, 3837 insertions(+), 1175 deletions(-)
-
+Thanks
+-Yong
 
