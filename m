@@ -1,275 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202Ab0ARWvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193Ab0ARW4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202Ab0ARWvP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 17:51:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445Ab0ARWvO
+	id S1756193Ab0ARW4f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 17:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542Ab0ARW4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 17:51:14 -0500
-Received: from bld-mail12.adl6.internode.on.net ([150.101.137.97]:34260 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751688Ab0ARWvM (ORCPT
+	Mon, 18 Jan 2010 17:56:34 -0500
+Received: from smtp.mujha-vel.cz ([81.30.225.246]:60156 "EHLO
+	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753450Ab0ARW4d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 17:51:12 -0500
-Date: Tue, 19 Jan 2010 09:51:05 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Jan Kara <jack@suse.cz>, Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: IO error semantics
-Message-ID: <20100118225105.GH7264@discord.disaster>
-References: <4B4EB5B9.4020809@hitachi.com> <4B4EDE5C.8040600@hitachi.com> <4B4EEE86.7080807@hitachi.com> <20100114141803.GB3146@quack.suse.cz> <20100118051847.GA8678@laptop> <20100118060518.GA9151@laptop> <20100118122437.GF7264@discord.disaster> <20100118140039.GA13909@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100118140039.GA13909@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 18 Jan 2010 17:56:33 -0500
+From: Jiri Slaby <jslaby@suse.cz>
+To: linux-mm@kvack.org
+Cc: hannes@cmpxchg.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com
+Subject: [RFC 1/1] bootmem: move big allocations behing 4G
+Date: Mon, 18 Jan 2010 23:56:30 +0100
+Message-Id: <1263855390-32497-1-git-send-email-jslaby@suse.cz>
+X-Mailer: git-send-email 1.6.5.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 01:00:39AM +1100, Nick Piggin wrote:
-> On Mon, Jan 18, 2010 at 11:24:37PM +1100, Dave Chinner wrote:
-> > On Mon, Jan 18, 2010 at 05:05:18PM +1100, Nick Piggin wrote:
-> > > The problem we have now is that IO error semantics are not well defined.
-> > > It is hard to even enumerate all the issues.
-> > > 
-> > > read IOs
-> > >   how to retry? appropriate defaults should happen at the block layer I
-> > >   think. Should retry behaviour be tunable by the mm/fs, or should that
-> > >   be coded explicitly as submission retry loops? Either way does imply
-> > >   there is either similar defaults for all types (or maybe classes) of
-> > >   drivers, or some way to query/set this.
-> > 
-> > It's more complex than that - there are classes of errors to
-> > consider as well. e.g transient vs permanent.
-> > 
-> > Transient is from stuff like FC path failures - failover can take up
-> > to 240s to occur, and then the IO will generally complete
-> > successfully.  Permanent errors are those that involve data loss e.g
-> > bad sectors on single disks or on degraded RAID devices.
-> 
-> Yes. Is this something that should be visible above the block layer
-> though? If it is known transient, should it remain uncompleted until it
-> is successful?
+Hi, I'm fighting a bug where Grub loads the kernel just fine, whereas
+isolinux doesn't. I found out, it's due to different addresses of
+loaded initrd. On a machine with 128G of memory, grub loads the
+initrd at 895M in our case and flat mem_map (2G long) is allocated
+above 4G due to 2-4G BIOS reservation.
 
-I think it needs to be exposed because if the filesystem has
-multiple copies of the data it can read from the other location
-immediately and not hang the read for tens of seconds.
+On the other hand, with isolinux, the 0-2G is free and mem_map is
+placed there leaving no space for others, hence kernel panics for
+swiotlb which needs to be below 4G.
 
-> Known permanent errors yes could avoid any need for retries. Leaving
-> cases where the lower layers don't really know (in which case we'd
-> maybe want to leave it to userspace or a userspace-set policy).
+I use the patch below, but it seems, from the code, like it won't
+work out for section allocations.
 
-Personally I don't think users aren't going to be able to make
-intelligent decisions about what do with such a knob. I'd prefer to
-just make it a fixed policy first, and only provide tunables if
-that is proved to be insufficient.
+Any ideas?
 
-> > >   It would be nice to be able to set fs/driver behaviour from userspace
-> > >   too, in a generic (not driver or fs specific way). But defaults should
-> > >   be reasonable and similar between all, I guess.
-> > 
-> > I don't think generic handling is really possible - filesystems may
-> > have different ways of recovering e.g. duplicate copies of data or
-> 
-> For write errors, you could also do block re-allocation, which would be
-> fun.
-> 
-> > metadata or internal ECC that can be used to recovery the bad
-> > region. Also, depending where the error occurs, the filesystem might
-> > need to shutdown to be repaired....
-> 
-> Definitely there will be filesystem specific issues. But I mean that
-> some common things could be specified (like how long / how many times
-> to retry failed requests).
+--
 
-Agreed - there will be some common things fall out, but I'd like to
-see an analysis done first before we try to extract the common
-elements from the mess....
+If there is a big amount of memory (128G) in a machine and 2G of
+low 4 gigs are reserved by BIOS, the rest of the "low" memory is
+consumed by mem_map with flat mapping enabled.
 
-> > > write IOs
-> > >   This is more interesting. How to handle write IO errors. In my opinion
-> > >   we must not invalidate the data before an IO error is returned to
-> > >   somebody (whether it be fsync or a synchronous write syscall).
-> > 
-> > We already pass the error via mapping_set_error() calls when the
-> > error occurs and checking in it filemap_fdatawait_range().  However,
-> > where we check the error we've lost all context and what range the
-> > error occurred on. I don't see any easy way to track such an
-> > error for later invalidation except maybe by a new radix tree tag.
-> > That would allow later invalidation of only the specific range the
-> > error was reported from.
-> 
-> If we always leave the error pages / buffers as dirty and uptodate,
-> then we can walk the radix tree dirty bits. IO errors are only really
-> reported by syncing calls anyway which walk dirty bits already.
-> 
-> If we wanted a purely querying syscall, it probably doesn't need to so
-> so performance critical as to require a new tag rather than just
-> checking PageError on the dirty pages.
+Consequent allocations with limit being 4G (e.g. swiotlb) fails to
+allocate and kernel panics.
 
-The drive for the document I was writing was big, high performance
-filesystems (think petabyte scale) and machines that might cache a
-TB or two of a single file in memory. At that point, finding a
-handful of error pages is like finding a needle in a haystack....
+Try to avoid that situation on 64-bit by allocating space bigger
+than 128M above 4G if possible. With that, mem_map is allocated above
+4G and there is enough space for others (swiotlb) in low 4G.
+---
+ mm/bootmem.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-> > >   Any
-> > >   earlier and the app just gets RAW consistency randomly violated. And I
-> > >   think it is important to treat IO errors as transparently as possible
-> > >   until the error can be detected.
-> > > 
-> > >   I happen to think that actually we should go further and not
-> > >   invalidate the data at all. This makes implementation simpler, and
-> > >   also allows us to retry writes like we can retry reads. It's also
-> > >   problematic to throw out errors at that point because *sync syscalls
-> > >   coming from elsewhere could result in loss of error reporting (think,
-> > >   sys_sync).
-> > 
-> > The worst problem with this is what happens when you can't write
-> > back to the filesystem because of IO errors, but you still allow more
-> > incoming writes? It's not far from IO error to running out of memory
-> > and deadlocking....
-> 
-> Again, keeping pages dirty so we'll start synchronous dirty pagecache
-> throttling eventually.
-
-write_cache_pages() decrements nr_to_write even if there was a write
-error on that page. Hence the throttling in balance_dirty_pages
-won't kick in if lots of errors occur during synchronous writeback
-because it will think the number of pages it asked to be written
-were written. Hence IO errors for written data often lead to OOM.
-
-> That could cause problems of its own as well, but I don't know what else
-> we can do. I don't think we can throw out the dirty data by default (the
-> errors might be transient). It could be a policy, maybe.
-
-A certain number of retries is certainly worth attempting for
-errors that we can't directly report (background writeback), but
-whether that should be done for sync/fsync is an open question in my
-mind...
-
-> > >   If we go this way, we probably need another syscall and fs helper call
-> > >   to invalidate the dirty data when we give up on retries. truncate_range
-> > >   probably not appropriate because it is much harder to implement and
-> > >   maybe we want to try to get at the most recent data that is on disk.
-> > 
-> > First we need to track what needs invalidating...
-> 
-> Well by this I just mean the dirty, unwritten pagecache and its associated
-> fs private structures. For errors in filesystem metadata yes it is a lot
-> harder. I guess filesystems simply need to check and handle errors on a
-> case by case basis.
-
-Nothing simple about that. ;)
-
-> > >   Also do we need to think about O_SYNC or -o sync type of writes that
-> > >   are implemented via writeback cache? We could invalidate the dirtied
-> > >   cache ASAP, which would leave a window where a concurrent read can see
-> > >   first new, then old data. It would also kind of break the above scheme
-> > >   in case the pagecache was already dirty via a descriptor without
-> > >   O_SYNC. It might just make sense to leave the pagecache dirty. Either
-> > >   way it should be documented I think.
-> > 
-> > How to handle this comes down to the type of error that occurred. In
-> > the case of permanent error, the second read after the invalidation
-> > probably should return EIO because you have no idea whether what is on
-> > disk is the old, the new, some combination of the two or some other
-> > random or stale garbage....
-> 
-> I'm not sure if that is important because you would have the same
-> problems if the read was not preceded by a write (or if the write came
-> from previous boot, or a different machine etc).
-
-If the filesystem has been unmounted, then we have to assume that
-corrective action has been taken (i.e. we've reported a problem,
-it's been fixed) or the filesystem has marked the region bad.
-
-> If we want to catch IO errors not detected by the block layer, it really
-> needs a complete solution, in the fs.
-
-Yes, though there are plenty of different types of errors the block
-layer detects but report simply as "EIO". e.g. on Irix, the block
-layer would report EXDEV rather than EIO for transient path-failure
-errors so that it could be handled differently by the filesystem....
-
-> > FWIW, I started to document some of what I've just been talking
-> > (from a XFS metadata reliability context) about a year and a half
-> > ago. The relevant section is here:
-> > 
-> > http://xfs.org/index.php/Reliable_Detection_and_Repair_of_Metadata_Corruption#Exception_Handling
-> 
-> OK, interesting. Yes a document is needed.
-> 
->  
-> > Though the entire page is probably somewhat relevant.  I only got as
-> > far as documenting methods for handling transient and permanent read
-> > errors, and the TODO includes handling:
-> > 
-> > 	- Transient write error
-> > 	- Permanent write error
-> > 	- Corrupted data on read
-> > 	- Corrupted data on write (detected during guard calculation)
-> 
-> We do want to start by making this as _simple_ as possible. Even the
-> existing rudimentary error reporting by the block layer is not used in a
-> consistent way (or at all, in many cases).
-> 
-> So I think squashing corrupted data errors into transient/permanent
-> errors (at least to start with) could be a good idea.
-
-True. My main point is, though, we can't really make that
-classification without understanding the whole scope of errors that
-can occur and ensuring that we get the correct errors reported from
-the lower layers first. i.e. this is not just a pagecache/filesystem
-level problem - the lower layers have to do the right thing before we
-can even hope to get it right at the FS level...
-
-> > 	- I/O timeouts
-> 
-> Different from transient/permanent error cases?
-
-Yeah - a week rarely goes by when we don't get a report of an XFS
-filesystem hung due to something below it just stopping mid-IO
-(DM, md, drivers, and/or hardware). e.g what appears to be a 
-DM-related hang reported last night on #xfs:
-
-http://www.pastebin.org/78102
-
-And there was one last week where DM was stuck waiting for a barrier
-write to complete and another where a raid controller was just hanging
-mid IO.
-
-IOWs, having the IO subsystem just stop completely dead and being
-unrecoverable happens far too regularly to ignore when talking about
-reliability engineering. These events almost always result in
-filesystem corruption of some sort, even though what we have in
-memory is consistent. That's because we have to reboot to get the IO
-subsystem back and that loses the consistent in-memory state. Being
-able to detect such hangs, re-initialise the complete stack below
-the filesystem and then re-issue all the IO that was in flight would
-make a large number of these problems go away.
-
-> > 	- Memory corruption
-> 
-> Yes this needs support, which I've talked about in hwpoison discussions.
-> Currently (or last time I checked) it just causes corrupted dirty
-> pagecache to appear as an IO error. IMO this is wrong -- the fs or the
-> app might retry the write, or try to re-allocate things and write that
-> data elsewhere in the case of EIO, which is totally wrong for memory
-> corruption.
-
-Yes, and it's a hard one to detect (think bit errors in non-ECC memory)
-without end-to-end data CRCs. On reads it can be treated as a
-transient error, but I'm not sure how you'd classify it. I hadn't
-got that far...
-
-Cheers,
-
-Dave.
+diff --git a/mm/bootmem.c b/mm/bootmem.c
+index 7d14868..365a0d1 100644
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -486,6 +486,11 @@ static void * __init alloc_bootmem_core(struct bootmem_data *bdata,
+ 
+ 	step = max(align >> PAGE_SHIFT, 1UL);
+ 
++	/* on 64-bit: allocate 128M+ at 4G if satisfies limit */
++	if (BITS_PER_LONG == 64 && size >= (128UL << 20) &&
++			(4UL << 30) + size < (max << PAGE_SHIFT))
++		goal = 4UL << (30 - PAGE_SHIFT);
++
+ 	if (goal && min < goal && goal < max)
+ 		start = ALIGN(goal, step);
+ 	else
 -- 
-Dave Chinner
-david@fromorbit.com
+1.6.5.7
+
