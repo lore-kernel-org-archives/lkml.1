@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461Ab0ARCZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739Ab0ARCbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752461Ab0ARCZQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 21:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844Ab0ARCZN
+	id S1753739Ab0ARCbx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 21:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244Ab0ARCbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 21:25:13 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:49761 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753723Ab0ARCZL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 21:25:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tj6ESPVRNDpR+2Za+oeELHPwZobfLK5Qo1bZDjv0lTKHc+tW0aYmrjWTigwhntyu/u
-         dL3vL6My/d/VDRHXr5XRakhYurjSCKTCOVWXef4iEGnLehdgLYR8YdAyroZi2R+5G6Dj
-         eVWRyeSj+7/eVkuwIj0muhRLKVRUN9N2oNGCY=
+	Sun, 17 Jan 2010 21:31:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3443 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327Ab0ARCbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 21:31:46 -0500
+Message-ID: <4B53C7E0.1090201@redhat.com>
+Date: Mon, 18 Jan 2010 10:30:56 +0800
+From: Xiaotian Feng <dfeng@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <4B53C466.4010103@redhat.com>
-References: <20100118100359.AE22.A69D9226@jp.fujitsu.com>
-	 <28c262361001171747w450c8fd8j4daf84b72fb68e1a@mail.gmail.com>
-	 <20100118104910.AE2D.A69D9226@jp.fujitsu.com>
-	 <28c262361001171810w544614b7rdd3df0f984692f35@mail.gmail.com>
-	 <4B53C466.4010103@redhat.com>
-Date: Mon, 18 Jan 2010 11:25:10 +0900
-Message-ID: <28c262361001171825l59e8ecbemd30a628cd36aab01@mail.gmail.com>
-Subject: Re: [PATCH 2/3][v2] vmstat: add anon_scan_ratio field to zoneinfo
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+CC: Thomas Gleixner <tglx@linutronix.de>, damm@igel.co.jp,
+       hsweeten@visionengravers.com, akpm@linux-foundation.org,
+       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/4] clockevents: fix clockevent_devices list corruption
+ after cpu hotplug
+References: <1260450459-18072-1-git-send-email-dfeng@redhat.com> <alpine.LFD.2.00.0912101431380.3089@localhost.localdomain> <4B52D822.1010700@pardus.org.tr>
+In-Reply-To: <4B52D822.1010700@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 11:16 AM, Rik van Riel <riel@redhat.com> wrote:
-> On 01/17/2010 09:10 PM, Minchan Kim wrote:
+On 01/17/2010 05:28 PM, Ozan Çağlayan wrote:
+> Thomas Gleixner wrote:
 >
->> Absoultely right. I missed that. Thanks.
->> get_scan_ratio used lru_lock to get reclaim_stat->recent_xxxx.
->> But, it doesn't used lru_lock to get ap/fp.
 >>
->> Is it intentional? I think you or Rik know it. :)
->> I think if we want to get exact value, we have to use lru_lock until
->> getting ap/fp.
->> If it isn't, we don't need lru_lock when we get the
->> reclaim_stat->recent_xxxx.
+>> I'm not happy about that churn. Why don't we simply scan the
+>> clockevent_devices list for leftovers of the dead CPU ?
 >>
->> What do you think about it?
+>> Untested patch below solves the same problem.
 >
-> This is definately not intentional.
 >
-> Getting race conditions in this code could throw off the
-> statistics by a factor 2.  I do not know how serious that
-> would be for the VM or whether (and how quickly) it would
-> self correct.
+> Hi, I have 3 bug reports about a clockevent failure while halting the system (2.6.31.11 kernel).
+> It exactly pinpoints to the line 262 which got changed with this patch merged to 2.6.31.10 (and also 2.6.32.3):
+>
+> [4406.986777] kernel BUG at kernel/time/clockevents.c:262!
+> [4406.986777] invalid opcode: 0000 [#1] SMP
+> [4406.986777] last sysfs file: /sysfs/module/ip_tables/initstate
 
-Okay. How about making patch to get exact ap/fp?
-Although it were not serious or fast recoverable, I think it would be better
-to protect lru_lock for consistency if lru_lock isn't big contention lock.
+I think this one is duplicated of 
+http://bugzilla.kernel.org/show_bug.cgi?id=15037
+Thomas is working on the fix. I've sent a workaround patch on
+http://patchwork.kernel.org/patch/71537/
 
 >
-> --
-> All rights reversed.
+>
+> All 3 systems have Pentium 4 processors with different clock speeds.
+>
+> Here's a screenshot of the full stacktrace:
+> http://bugs.pardus.org.tr/attachment.cgi?id=4820
+>
+> and the relevant bugzilla report:
+> http://bugzilla.kernel.org/show_bug.cgi?id=15073
+>
+> Thanks,
+> Ozan Caglayan
+> Pardus Linux -- http://www.pardus.org.tr/eng
 >
 
-
-
--- 
-Kind regards,
-Minchan Kim
