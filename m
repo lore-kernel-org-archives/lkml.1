@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356Ab0ARL3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125Ab0ARLcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754356Ab0ARL3h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 06:29:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168Ab0ARL3g
+	id S1754125Ab0ARLcU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 06:32:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910Ab0ARLcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 06:29:36 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:47744 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754117Ab0ARL3e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 06:29:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nXqEopCgQO48PTIKNTCwJkRRQVMapIaz+m1GXONIOyGLwmLOb4dAVsAPFHOaXrILmy
-         QFKwNR3ZZAszPZLrtz1gCPT5uhTDV2KhbUAhvjtUKDHqFthO9ncp3d8EcCO3oWJWDflQ
-         hex+0oJRpduCvyWtmc5Kzc2b1L1zWsVjudXxw=
-Date: Mon, 18 Jan 2010 13:26:22 +0200
-From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Florian Mickler <florian@mickler.org>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: 2.6.33-rc2: Reported regressions from 2.6.32
-Message-ID: <20100118112619.GA8387@redhat.com>
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <20100116174821.GA18306@redhat.com> <201001162257.16277.rjw@sisk.pl> <alpine.LFD.2.00.1001161402400.13231@localhost.localdomain> <20100117123218.GA3182@redhat.com> <84144f021001170618g708a7c14ob1b222ab1cbdaa20@mail.gmail.com> <20100117161726.5752b181@schatten.dmk.lab> <84144f021001170843s67afae24oaabf09e9b13af8db@mail.gmail.com> <84144f021001170923o30d37becw57ebbd780f63b69e@mail.gmail.com>
+	Mon, 18 Jan 2010 06:32:19 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43606 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753434Ab0ARLcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 06:32:18 -0500
+Message-ID: <4B5446A1.7070306@kernel.org>
+Date: Mon, 18 Jan 2010 20:31:45 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f021001170923o30d37becw57ebbd780f63b69e@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH 06/40] sched: add wakeup/sleep sched_notifiers and allow
+ NULL notifier ops
+References: <1263776272-382-1-git-send-email-tj@kernel.org>	 <1263776272-382-7-git-send-email-tj@kernel.org> <1263808633.4283.152.camel@laptop>
+In-Reply-To: <1263808633.4283.152.camel@laptop>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 11:31:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 17, 2010 at 07:23:35PM +0200, Pekka Enberg wrote:
-> On Sun, Jan 17, 2010 at 6:43 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > Hi Florian,
-> >
-> > (Please don't trim the cc list.)
-> >
-> > On Sun, Jan 17, 2010 at 5:17 PM, Florian Mickler <florian@mickler.org> wrote:
-> >> on which side of the merge? linus or drm?
-> >> i.e. it is to be expected to be before the merge, (but on the drm side)
-> >> so don't get confused... or did i misunderstood the situation?
-> >
-> > Like I said, don't read too much into the results but the current
-> > situation looks like the regression happened _after_ 2.6.32 but before
-> > any of the DRM code was merged to 2.6.33-rc1. I don't think that makes
-> > much sense which is why I'm back to testing 2.6.32 more to see if the
-> > bug is there already but just harder to trigger for whatever reason.
+On 01/18/2010 06:57 PM, Peter Zijlstra wrote:
+> On Mon, 2010-01-18 at 09:57 +0900, Tejun Heo wrote:
 > 
-> OK, confirmed. I can see the "flashing" bug with 2.6.32 as well. It
-> just takes more time to trigger than in 2.6.33-rc1. I am going back to
-> test 2.6.31 now.
+>> @@ -2439,6 +2440,8 @@ static inline void ttwu_post_activation(struct task_struct *p, struct rq *rq,
+>>  		rq->idle_stamp = 0;
+>>  	}
+>>  #endif
+>> +	if (success)
+>> +		fire_sched_notifiers(p, wakeup);
+>>  }
+>>  
+>>  /**
+> 
+> So why can't you call fire_sched_notifier(p, wakeup) right next to
+> activate_task(rq, p, 1) in ttwu_activate() ?
 
+I was worried about calling notifier callback before notifying the
+sched_class of the wakeup.  Conceptually, the notifier callback should
+be called after all sched internal stuff about the wakeup finish,
+so...
 
-Well, I've been using 2.6.32 day to day since it came out and never saw
-this bug there. What do you do to trigger this bug?
+Thanks.
 
 -- 
-MST
+tejun
