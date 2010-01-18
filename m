@@ -1,121 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224Ab0ARAwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242Ab0ARAxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224Ab0ARAwy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 19:52:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231Ab0ARAwx
+	id S1755242Ab0ARAxW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 19:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299Ab0ARAxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 19:52:53 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:53345 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932088Ab0ARAww (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 19:52:52 -0500
-Date: Mon, 18 Jan 2010 09:49:20 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC] Shared page accounting for memory cgroup
-Message-Id: <20100118094920.151e1370.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <661de9471001171130p2b0ac061he6f3dab9ef46fd06@mail.gmail.com>
-References: <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100106070150.GL3059@balbir.in.ibm.com>
-	<20100106161211.5a7b600f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107071554.GO3059@balbir.in.ibm.com>
-	<20100107163610.aaf831e6.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107083440.GS3059@balbir.in.ibm.com>
-	<20100107174814.ad6820db.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107180800.7b85ed10.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107092736.GW3059@balbir.in.ibm.com>
-	<20100108084727.429c40fc.kamezawa.hiroyu@jp.fujitsu.com>
-	<661de9471001171130p2b0ac061he6f3dab9ef46fd06@mail.gmail.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 17 Jan 2010 19:53:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54214 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755249Ab0ARAxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 19:53:10 -0500
+From: Tejun Heo <tj@kernel.org>
+To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 12/40] workqueue: define both bit position and mask for work flags
+Date: Mon, 18 Jan 2010 09:57:24 +0900
+Message-Id: <1263776272-382-13-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+In-Reply-To: <1263776272-382-1-git-send-email-tj@kernel.org>
+References: <1263776272-382-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 18 Jan 2010 00:52:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jan 2010 01:00:44 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> On Fri, Jan 8, 2010 at 5:17 AM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Thu, 7 Jan 2010 14:57:36 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >
-> >> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-07 18:08:00]:
-> >>
-> >> > On Thu, 7 Jan 2010 17:48:14 +0900
-> >> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> >> > > > > "How pages are shared" doesn't show good hints. I don't hear such parameter
-> >> > > > > is used in production's resource monitoring software.
-> >> > > > >
-> >> > > >
-> >> > > > You mean "How many pages are shared" are not good hints, please see my
-> >> > > > justification above. With Virtualization (look at KSM for example),
-> >> > > > shared pages are going to be increasingly important part of the
-> >> > > > accounting.
-> >> > > >
-> >> > >
-> >> > > Considering KSM, your cuounting style is tooo bad.
-> >> > >
-> >> > > You should add
-> >> > >
-> >> > >  - MEM_CGROUP_STAT_SHARED_BY_KSM
-> >> > >  - MEM_CGROUP_STAT_FOR_TMPFS/SYSV_IPC_SHMEM
-> >> > >
-> >>
-> >> No.. I am just talking about shared memory being important and shared
-> >> accounting being useful, no counters for KSM in particular (in the
-> >> memcg context).
-> >>
-> > Think so ? The number of memcg-private pages is in interest in my point of view.
-> >
-> > Anyway, I don't change my opinion as "sum of rss" is not necessary to be calculated
-> > in the kernel.
-> > If you want to provide that in memcg, please add it to global VM as /proc/meminfo.
-> >
-> > IIUC, KSM/SHMEM has some official method in global VM.
-> >
-> 
-> Kamezawa-San,
-> 
-> I implemented the same in user space and I get really bad results, here is why
-> 
-> 1. I need to hold and walk the tasks list in cgroups and extract RSS
-> through /proc (results in worse hold times for the fork() scenario you
-> menioned)
-> 2. The data is highly inconsistent due to the higher margin of error
-> in accumulating data which is changing as we run. By the time we total
-> and look at the memcg data, the data is stale
-> 
-> Would you be OK with the patch, if I renamed "shared_usage_in_bytes"
-> to "non_private_usage_in_bytes"?
-> 
-I think the name is still ambiguous.
+Work flags are about to see more traditional mask handling.  Define
+WORK_STRUCT_*_BIT as the bit position constant and redefine
+WORK_STRUCT_* as bit masks.
 
-For example, if process A belongs to /cgroup/memory/01 and process B to /cgroup/memory/02,
-both process have 10MB anonymous pages and 10MB file caches of the same pages, and all of the
-file caches are charged to 01.
-In this case, the value in 01 is 0MB(=20MB - 20MB) and 10MB(20MB - 10MB), right?
+While at it, re-define these constants as enums and use
+WORK_STRUCT_STATIC instead of hard-coding 2 in
+WORK_DATA_STATIC_INIT().
 
-I don't think "non private usage" is appropriate to this value.
-Why don't you just show "sum_of_each_process_rss" ? I think it would be easier
-to understand for users.
-But, hmm, I don't see any strong reason to do this in kernel, then :(
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ include/linux/workqueue.h |   23 +++++++++++++++--------
+ kernel/workqueue.c        |   14 +++++++-------
+ 2 files changed, 22 insertions(+), 15 deletions(-)
 
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index 495572a..e51b5dc 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -22,12 +22,19 @@ typedef void (*work_func_t)(struct work_struct *work);
+  */
+ #define work_data_bits(work) ((unsigned long *)(&(work)->data))
+ 
++enum {
++	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
++	WORK_STRUCT_STATIC_BIT	= 1,	/* static initializer (debugobjects) */
++
++	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
++	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
++
++	WORK_STRUCT_FLAG_MASK	= 3UL,
++	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
++};
++
+ struct work_struct {
+ 	atomic_long_t data;
+-#define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
+-#define WORK_STRUCT_STATIC  1		/* static initializer (debugobjects) */
+-#define WORK_STRUCT_FLAG_MASK (3UL)
+-#define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
+ 	struct list_head entry;
+ 	work_func_t func;
+ #ifdef CONFIG_LOCKDEP
+@@ -36,7 +43,7 @@ struct work_struct {
+ };
+ 
+ #define WORK_DATA_INIT()	ATOMIC_LONG_INIT(0)
+-#define WORK_DATA_STATIC_INIT()	ATOMIC_LONG_INIT(2)
++#define WORK_DATA_STATIC_INIT()	ATOMIC_LONG_INIT(WORK_STRUCT_STATIC)
+ 
+ struct delayed_work {
+ 	struct work_struct work;
+@@ -98,7 +105,7 @@ extern void __init_work(struct work_struct *work, int onstack);
+ extern void destroy_work_on_stack(struct work_struct *work);
+ static inline bool work_static(struct work_struct *work)
+ {
+-	return test_bit(WORK_STRUCT_STATIC, work_data_bits(work));
++	return test_bit(WORK_STRUCT_STATIC_BIT, work_data_bits(work));
+ }
+ #else
+ static inline void __init_work(struct work_struct *work, int onstack) { }
+@@ -167,7 +174,7 @@ static inline bool work_static(struct work_struct *work) { return false; }
+  * @work: The work item in question
+  */
+ #define work_pending(work) \
+-	test_bit(WORK_STRUCT_PENDING, work_data_bits(work))
++	test_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))
+ 
+ /**
+  * delayed_work_pending - Find out whether a delayable work item is currently
+@@ -182,7 +189,7 @@ static inline bool work_static(struct work_struct *work) { return false; }
+  * @work: The work item in question
+  */
+ #define work_clear_pending(work) \
+-	clear_bit(WORK_STRUCT_PENDING, work_data_bits(work))
++	clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))
+ 
+ enum {
+ 	WQ_FREEZEABLE		= 1 << 0, /* freeze during suspend */
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 579041f..f8e4d67 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -115,7 +115,7 @@ static int work_fixup_activate(void *addr, enum debug_obj_state state)
+ 		 * statically initialized. We just make sure that it
+ 		 * is tracked in the object tracker.
+ 		 */
+-		if (test_bit(WORK_STRUCT_STATIC, work_data_bits(work))) {
++		if (test_bit(WORK_STRUCT_STATIC_BIT, work_data_bits(work))) {
+ 			debug_object_init(work, &work_debug_descr);
+ 			debug_object_activate(work, &work_debug_descr);
+ 			return 0;
+@@ -232,8 +232,8 @@ static inline void set_wq_data(struct work_struct *work,
+ 	BUG_ON(!work_pending(work));
+ 
+ 	atomic_long_set(&work->data, (unsigned long)cwq |
+-			(work_static(work) ? (1UL << WORK_STRUCT_STATIC) : 0) |
+-			(1UL << WORK_STRUCT_PENDING) | extra_flags);
++			(work_static(work) ? WORK_STRUCT_STATIC : 0) |
++			WORK_STRUCT_PENDING | extra_flags);
+ }
+ 
+ static inline
+@@ -323,7 +323,7 @@ queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
+ {
+ 	int ret = 0;
+ 
+-	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
++	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
+ 		__queue_work(cpu, wq, work);
+ 		ret = 1;
+ 	}
+@@ -373,7 +373,7 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
+ 	struct timer_list *timer = &dwork->timer;
+ 	struct work_struct *work = &dwork->work;
+ 
+-	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
++	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
+ 		BUG_ON(timer_pending(timer));
+ 		BUG_ON(!list_empty(&work->entry));
+ 
+@@ -509,7 +509,7 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+ 	 * might deadlock.
+ 	 */
+ 	INIT_WORK_ON_STACK(&barr->work, wq_barrier_func);
+-	__set_bit(WORK_STRUCT_PENDING, work_data_bits(&barr->work));
++	__set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(&barr->work));
+ 	init_completion(&barr->done);
+ 
+ 	debug_work_activate(&barr->work);
+@@ -621,7 +621,7 @@ static int try_to_grab_pending(struct work_struct *work)
+ 	struct cpu_workqueue_struct *cwq;
+ 	int ret = -1;
+ 
+-	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
++	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work)))
+ 		return 0;
+ 
+ 	/*
+-- 
+1.6.4.2
 
-Thanks,
-Daisuke Nishimura.
-
-> Given that the stat is user initiated, I don't see your concern w.r.t.
-> overhead. Many subsystems like KSM do pay the overhead cost if the
-> user really wants the feature or the data. I would be really
-> interested in other opinions as well (if people do feel strongly
-> against or for the feature)
-> 
-> Balbir Singh
