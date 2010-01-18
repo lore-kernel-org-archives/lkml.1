@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990Ab0ARTEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995Ab0ARTGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755990Ab0ARTEw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 14:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931Ab0ARTEv
+	id S1755995Ab0ARTGL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 14:06:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951Ab0ARTGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 14:04:51 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:52990 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932099Ab0ARTEv (ORCPT
+	Mon, 18 Jan 2010 14:06:10 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:52684 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754147Ab0ARTGI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 14:04:51 -0500
-Date: Mon, 18 Jan 2010 20:04:46 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       Sascha linux-arm <s.hauer@pengutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH] regulator: mc13783: consider Power Gates as digital
-	regulators.
-Message-ID: <20100118190445.GA16989@pengutronix.de>
-References: <1263830523.3632.22.camel@realization>
+	Mon, 18 Jan 2010 14:06:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=Dzgl+WRNRvBufGrROXqQCh8vlj0fZWY5ExqJ+KuDV7XzLIDDkQj/4WpJ3I3U8Q+Mfm
+         zNt+3UKq0iZfN2qHbQ8dvLYuEtD24FxGbm07IDlu6HFM5YbAan8sgZ39+N8m3JhaY8Sx
+         uWBc5KxPruk10RqRAPQqVKPsH/foonrDnl2Qs=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 01/64] libata: fix CFA handling in ide_timing_compute()
+Date: Mon, 18 Jan 2010 20:04:39 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20100118171349.14623.90030.sendpatchset@localhost> <201001181929.17136.bzolnier@gmail.com> <4B54AF06.3060800@ru.mvista.com>
+In-Reply-To: <4B54AF06.3060800@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1263830523.3632.22.camel@realization>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001182004.40031.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Alberto,
+On Monday 18 January 2010 07:57:10 pm Sergei Shtylyov wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> 
+> >>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >>> Subject: [PATCH] libata: fix CFA handling in ide_timing_compute()
+> >>>
+> >>> Use standard cycle timing for CFA PIO5 and PIO6 modes.
+> >>>
+> >>> Based on commit 74638c8 for IDE subsystem.
+> >>>
+> >>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >>> ---
+> >>>  drivers/ata/libata-core.c |   17 +++++++++++------
+> >>>  1 file changed, 11 insertions(+), 6 deletions(-)
+> >>>
+> >>> Index: b/drivers/ata/libata-core.c
+> >>> ===================================================================
+> >>> --- a/drivers/ata/libata-core.c
+> >>> +++ b/drivers/ata/libata-core.c
+> >>> @@ -3211,6 +3211,7 @@ const struct ata_timing *ata_timing_find
+> >>>  int ata_timing_compute(struct ata_device *adev, unsigned short speed,
+> >>>  		       struct ata_timing *t, int T, int UT)
+> >>>  {
+> >>> +	const u16 *id = adev->id;
+> >>>  	const struct ata_timing *s;
+> >>>  	struct ata_timing p;
+> >>>  
+> >>> @@ -3228,14 +3229,18 @@ int ata_timing_compute(struct ata_device
+> >>>  	 * PIO/MW_DMA cycle timing.
+> >>>  	 */
+> >>>  
+> >>> -	if (adev->id[ATA_ID_FIELD_VALID] & 2) {	/* EIDE drive */
+> >>> +	if (id[ATA_ID_FIELD_VALID] & 2) {	/* EIDE drive */
+> >>>  		memset(&p, 0, sizeof(p));
+> >>> +
+> >>>  		if (speed >= XFER_PIO_0 && speed <= XFER_SW_DMA_0) {
+> >>>   
+> >>>       
+> >>    BTW, shouldn't this actually be 'speed < XFER_SW_DMA_0'?
+> >>     
+> >
+> > Good catch, I'll fix the patch later (would you be willing to fix
+> > ide-timings.c side of things?).
+> >   
+> 
+>    I don't see what to fix there?..
 
-Can you post an updated patch addressing the discussion with Mark,
-please?
-
->From the first look I don't like the name
-MC13783_REG_POWERMISC_PWGTSPI_M as I don't understand it's purpose
-without going through mc13783_reg_rmw_powermisc (which I didn't do yet).
-
-What is the base for your patch?  (Hm, it seems next could work.
-mc13783-regulator seems to have gotten some more #defines ending in _M.
-You seem to mean "mask".  IMHO it's a bit unfortunate, because the
-nameing scheme doesn't match the already existing names :-()
-
-Shouldn't mc13783_state_powermisc_pwgt be a per-device variable instead
-of a static variable?
-
-Best regards
-Uwe
-
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Ah, sorry, ide-timings.c change is also not upstream yet..
+--
+Bartlomiej Zolnierkiewicz
