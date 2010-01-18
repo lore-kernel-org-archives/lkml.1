@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933Ab0ARPYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992Ab0ARPZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933Ab0ARPYv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 10:24:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509Ab0ARPYu
+	id S1753992Ab0ARPZv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 10:25:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781Ab0ARPZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 10:24:50 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46324 "EHLO
+	Mon, 18 Jan 2010 10:25:50 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46335 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753502Ab0ARPYt (ORCPT
+	with ESMTP id S1753739Ab0ARPZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 10:24:49 -0500
-Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
-From: Peter Zijlstra <peterz@infradead.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gleb Natapov <gleb@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org, akpm@linux-foundation.org,
-       andrew.c.morrow@gmail.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <4B547C09.8010906@redhat.com>
-References: <20100118133755.GG30698@redhat.com>
-	 <84144f021001180609r4d7fbbd0p972d5bc0e227d09a@mail.gmail.com>
-	 <20100118141938.GI30698@redhat.com>
-	 <20100118143232.0a0c4b4d@lxorguk.ukuu.org.uk>
-	 <1263826198.4283.600.camel@laptop>  <20100118150159.GB14345@redhat.com>
-	 <1263827194.4283.609.camel@laptop>  <4B547A31.4090106@redhat.com>
-	 <1263827683.4283.610.camel@laptop>  <4B547C09.8010906@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 16:24:07 +0100
-Message-ID: <1263828247.4283.612.camel@laptop>
+	Mon, 18 Jan 2010 10:25:49 -0500
+Date: Mon, 18 Jan 2010 07:25:23 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
+       johannes@sipsolutions.net, andi@firstfloor.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 32/40] async: introduce workqueue based alternative
+ implementation
+Message-ID: <20100118072523.2683cd59@linux.intel.com>
+In-Reply-To: <4B5420A3.3080200@kernel.org>
+References: <1263776272-382-1-git-send-email-tj@kernel.org>
+	<1263776272-382-33-git-send-email-tj@kernel.org>
+	<20100117220130.214d56f1@linux.intel.com>
+	<4B5420A3.3080200@kernel.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 17:19 +0200, Avi Kivity wrote:
-> > I would not advice that, just mlock() the text and data you need for the
-> > real-time thread. mlockall() is a really blunt instrument.
-> >    
-> 
-> May not be feasible due to libraries. 
+On Mon, 18 Jan 2010 17:49:39 +0900
+Tejun Heo <tj@kernel.org> wrote:
 
-Esp for the real-time case I could advise not to use those libraries
-then, since they're clearly not designed for that use case.
+> For what async is currently used for, I don't think there will be any
+> noticeable difference.  If the proposed implementation is lacking
+> somewhere, we can definitely improve it although I'm not sure whether
+> it will end up with the cookie thing.
 
+it is not that I do not like your backend implementation. I do not like
+the programming model change you're introducing.
+The cookie API allows for what is sort of the equivalent of out-of-order
+execution that the cpu does. In a very very simple way, you can start
+things in an order, then they execute in variable times and in parallel,
+and then when the side effects need to become visible (device
+registration, whatever), you go back to an in-order model. 
+I have patches to do this for KMS and we're working on getting
+something working for ACPI as well.
+
+Your API/model change gets rid of this conceptually simple programming
+model, which makes using it on other places more complex and messy. I
+do not see what enormous benefit your patches would have that would
+justify complicating the programming model. (And "sharing the thread
+pool" is not that; I'm sure it's possible to share the thread pool
+without changing the programming model... and it's not that the async
+thread pools are that big or complex anyway)
+
+So consider the current patches
+
+NAK-ed-by: Arjan van de Ven <arjan@linux.intel.com>
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
