@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815Ab0ARSVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109Ab0ARSXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755815Ab0ARSVh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 13:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933Ab0ARSVg
+	id S1755109Ab0ARSXh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 13:23:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487Ab0ARSXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 13:21:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:5319 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189Ab0ARSVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 13:21:35 -0500
-Message-ID: <4B54A68E.4050409@redhat.com>
-Date: Mon, 18 Jan 2010 13:21:02 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Mon, 18 Jan 2010 13:23:35 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:40385 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715Ab0ARSXe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 13:23:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=sgoriPObpn+Xx8BtvZStM3Zm1taWILgewRi4Kzkuj97EurYtEuBqU5JOY7rO8/J0X1
+         qEbCc8sp7JQV1D2k8G9Tn8TZVU9PtzpVhWUoXtb66iu72yRCFsX/fhFi3VoVahygpyd2
+         dYwv3bdU37mZv8Th94CGVhEeOoJQfQVEoMtco=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 03/64] pata_ali: cleanup ali_set_piomode()
+Date: Mon, 18 Jan 2010 19:16:15 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20100118171349.14623.90030.sendpatchset@localhost> <20100118171412.14623.94854.sendpatchset@localhost> <20100118174602.47f8ec24@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100118174602.47f8ec24@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       rostedt@goodmis.org, Jason Baron <jbaron@redhat.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       andi@firstfloor.org, roland@redhat.com, rth@redhat.com
-Subject: Re: [RFC PATCH 2/8] jump label v4 - x86: Introduce generic jump	patching
- without stop_machine
-References: <cover.1263247113.git.jbaron@redhat.com> <a4aa5bbcf5e62eaa5dd156d318a370236f28be09.1263247114.git.jbaron@redhat.com> <1263483139.28171.3857.camel@gandalf.stny.rr.com> <4B4F3A1A.2030906@zytor.com> <20100117185539.GF9008@Krystal> <20100117111608.35a98ee2@infradead.org> <4B548562.6030008@redhat.com> <20100118083129.675edb83@infradead.org> <20100118165443.GB29764@Krystal>
-In-Reply-To: <20100118165443.GB29764@Krystal>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-Id: <201001181916.15161.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Arjan van de Ven (arjan@infradead.org) wrote:
->> On Mon, 18 Jan 2010 10:59:30 -0500
->> Masami Hiramatsu <mhiramat@redhat.com> wrote:
->>
->>> Yeah, so in the latest patch, I updated it to use int3 even if
->>> len == 1. :-)
->>>
->>
->>
->> int3 is not making a difference for your case; there is no guarantee
->> that the other processor even sees the "int3 inbetween state" at all;
->> if it's not safe without int3 then it won't be safe with int3 either.
+On Monday 18 January 2010 06:46:02 pm Alan Cox wrote:
+> On Mon, 18 Jan 2010 18:14:12 +0100
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 > 
-> What Masami means is that he updated his patch to use the int3+IPI
-> broadcast scheme.
-
-Right.
-
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] pata_ali: cleanup ali_set_piomode()
+> > 
+> > Merge ali_fifo_control() calls.
 > 
-> Therefore, the CPUs not seeing the int3 inbetween state will be forced
-> to issue a serializing instruction while the int3 is in place anyway.
+> This also changes the behaviour. The old driver, reference code and old
+> IDE driver (at least at the time I did pata_ali) all did the fifo off
+> case, then the mode change, then the FIFO on case.
 
-By the way, in kprobes, we just use a text_poke() to put int3.
-I assume that we'd better send IPI afterward, wouldn't it?
+Well, the old IDE driver (both at the time you did pata_ali and currently)
+did it the way this patch does and unfortunately I'm not familiar with
+the reference code (I worry that it may be available under NDA only)..
 
-Thank you,
+> I don't see why it should matter but it ought to be noted in the changelog
 
--- 
-Masami Hiramatsu
+Indeed, though this should be quite obvious from looking at the patch
+(below for reference) and the lack of my usual "no functionality changes"
+note..
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+---
+ drivers/ata/pata_ali.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-e-mail: mhiramat@redhat.com
-
+Index: b/drivers/ata/pata_ali.c
+===================================================================
+--- a/drivers/ata/pata_ali.c
++++ b/drivers/ata/pata_ali.c
+@@ -222,12 +222,9 @@ static void ali_set_piomode(struct ata_p
+ 	}
+ 
+ 	/* PIO FIFO is only permitted on ATA disk */
+-	if (adev->class != ATA_DEV_ATA)
+-		ali_fifo_control(ap, adev, 0x00);
+-	ali_program_modes(ap, adev, &t, 0);
+-	if (adev->class == ATA_DEV_ATA)
+-		ali_fifo_control(ap, adev, 0x05);
++	ali_fifo_control(ap, adev, (adev->class == ATA_DEV_ATA) ? 0x05 : 0x00);
+ 
++	ali_program_modes(ap, adev, &t, 0);
+ }
+ 
+ /**
