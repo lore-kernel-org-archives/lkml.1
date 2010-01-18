@@ -1,33 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500Ab0AROyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371Ab0ARO5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500Ab0AROyL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 09:54:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445Ab0AROyH
+	id S1753371Ab0ARO5G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 09:57:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759Ab0ARO5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 09:54:07 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41971 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753423Ab0AROyF (ORCPT
+	Mon, 18 Jan 2010 09:57:05 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45784 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751937Ab0ARO5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 09:54:05 -0500
-X-Authority-Analysis: v=1.0 c=1 a=YQwRUT9YnxYA:10 a=7U3hwN5JcxgA:10 a=omOdbC7AAAAA:8 a=4FIa9aocB3aBoMHsYb8A:9 a=WVFvnJgTxtdW_sF5ISPq3x9gM6sA:4 a=xPGKiaK05RZ1OOXB:21 a=GAIDMPSfnQe9UTke:21
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 4/7] lib: Introduce strnstr()
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Alex Riesen <raa.lkml@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <81b0412b1001160312x3874bbddj28aac9e5a36bf98a@mail.gmail.com>
-References: <4B4E86FB.40208@cn.fujitsu.com>
-	 <4B4E8743.6030805@cn.fujitsu.com>
-	 <81b0412b1001160312x3874bbddj28aac9e5a36bf98a@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Mon, 18 Jan 2010 09:53:59 -0500
-Message-ID: <1263826439.28171.4006.camel@gandalf.stny.rr.com>
+	Mon, 18 Jan 2010 09:57:04 -0500
+Subject: Re: [PATCH]  perf_events: improve x86 event scheduling (v5)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+In-Reply-To: <20100118144556.GE10364@nowhere>
+References: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com>
+	 <20100118134324.GB10364@nowhere> <1263822898.4283.558.camel@laptop>
+	 <20100118142004.GD10364@nowhere> <1263825158.4283.590.camel@laptop>
+	 <20100118144556.GE10364@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jan 2010 15:56:41 +0100
+Message-ID: <1263826601.4283.603.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -35,58 +31,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-01-16 at 12:12 +0100, Alex Riesen wrote:
-> On Thu, Jan 14, 2010 at 03:53, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > @@ -667,7 +667,7 @@ EXPORT_SYMBOL(memscan);
-> >  */
-> >  char *strstr(const char *s1, const char *s2)
-> >  {
-> > -       int l1, l2;
-> > +       size_t l1, l2;
-> >
+On Mon, 2010-01-18 at 15:45 +0100, Frederic Weisbecker wrote:
 > 
-> This chunk is not related, is it?
-
-Actually it is related. Making both strstr and strnstr use the correct
-variable and be consistent. This patch introduces strnstr and in doing
-so also makes strstr consistent (and correct) with strnstr.
-
+> > > That requires to know in advance if we have hardware pmu
+> > > in the list though (can be a flag in the group).
+> > 
+> > Good point, but your proposed hw_check_constraint() call needs to know
+> > the exact same.
 > 
-> > @@ -684,6 +684,31 @@ char *strstr(const char *s1, const char *s2)
-> >  EXPORT_SYMBOL(strstr);
-> >  #endif
-> >
-> > +#ifndef __HAVE_ARCH_STRNSTR
-> > +/**
-> > + * strnstr - Find the first substring in a length-limited string
-> > + * @s1: The string to be searched
-> > + * @s2: The string to search for
-> > + * @len: the maximum number of characters to search
-> > + */
-> > +char *strnstr(const char *s1, const char *s2, size_t len)
-> > +{
-> > +       size_t l1 = len, l2;
 > 
-> Are you sure you want to search _past_ the NUL-terminator
-> of s1?
-> 
-> > +       l2 = strlen(s2);
-> > +       if (!l2)
-> > +               return (char *)s1;
-> > +       while (l1 >= l2) {
-> > +               l1--;
+> True. Whatever model we use anyway, both implement the same idea.
 
-The first check is len-1, I don't see it searching past the
-NUL-terminator. The loop will stop when l1 == l2 (the size of s2) and s1
-pointing near the end of the string.
+Hmm, we seem to already have that problem (which would indicate another
+bug in the hw-breakpoint stuff), how do you deal with
+hw_perf_{enable,disable}() for the breakpoints?
 
--- Steve
-
-> > +               if (!memcmp(s1, s2, l2))
-> > +                       return (char *)s1;
-> > +               s1++;
-> > +       }
-> > +       return NULL;
-> > +}
-
+We could fix this by making these pmu state functions into a callback
+list visiting all registered PMUs.
 
