@@ -1,101 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695Ab0ARVHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812Ab0ARVKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695Ab0ARVHc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 16:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465Ab0ARVHb
+	id S1754812Ab0ARVKs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 16:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434Ab0ARVKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 16:07:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40048 "EHLO mx1.redhat.com"
+	Mon, 18 Jan 2010 16:10:47 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:50499 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751636Ab0ARVHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 16:07:31 -0500
-Date: Mon, 18 Jan 2010 22:07:19 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org
-Subject: Re: [PATCH] list.h: add list_for_each_struct_entry macro
-Message-ID: <20100118210718.GC4521@psychotron.redhat.com>
-References: <20100118162338.GD4229@psychotron.lab.eng.brq.redhat.com>
- <1263835033.3667.23.camel@achroite.uk.solarflarecom.com>
+	id S1754199Ab0ARVKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 16:10:46 -0500
+Date: Mon, 18 Jan 2010 22:10:43 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Andreas Mohr <andi@lisas.de>
+Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: mcs7830 usb net: "scheduling while atomic" danger?
+In-Reply-To: <20100118184942.GA10171@rhlx01.hs-esslingen.de>
+Message-ID: <Pine.LNX.4.64.1001182206190.30446@ask.diku.dk>
+References: <20100118184942.GA10171@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263835033.3667.23.camel@achroite.uk.solarflarecom.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mon, Jan 18, 2010 at 06:17:13PM CET, bhutchings@solarflare.com wrote:
->On Mon, 2010-01-18 at 17:23 +0100, Jiri Pirko wrote:
->> When preparing to upcoming migration of mc_list (list of multicast MACs)
->> to list_head, the need of traversing the list over one structure member
->> appeared. I thought I'll do it locally but I decided that an intruduction
->> the macro in list.h would be much clearer. Please kindly for a review.
->> 
->> Jirka
->> 
->> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
->> 
->> diff --git a/include/linux/list.h b/include/linux/list.h
->> index 969f6e9..8350a94 100644
->> --- a/include/linux/list.h
->> +++ b/include/linux/list.h
->> @@ -420,6 +420,22 @@ static inline void list_splice_tail_init(struct list_head *list,
->>  	     pos = list_entry(pos->member.prev, typeof(*pos), member))
->>  
->>  /**
->> + * list_for_each_struct_entry  -       iterate over list of given type using
->> + *                                     the struct member.
->> + * @pos:       the type * to use as a loop cursor.
->> + * @head:      the head for your list.
->> + * @type:      the type of the struct.
->> + * @posmember: the name ot the loop cursor within the struct.
->> + * @member:    the name of the list_struct within the struct.
->> + */
->> +#define list_for_each_struct_entry(pos, head, type, posmember, member)		\
->> +	for (pos = list_entry((head)->next, type, member)->posmember;		\
->
->Surely &list_entry(...)->posmember ?
+On Mon, 18 Jan 2010, Andreas Mohr wrote:
 
-Ugh, right, I tested this with char * so it worked well. Got i corrected now so
-I can repost.
+> Hi,
+> 
+> drivers/net/usb/mcs7830.c does several:
+> 
+>         mutex_lock(&dev->phy_mutex);
+>         /* write the MII command */
+>         ret = mcs7830_set_reg(dev, HIF_REG_PHY_CMD1, 2, cmd);
+>         if (ret < 0)
+>                 goto out;
+> 
+>         /* wait for the data to become valid, should be within < 1ms */
+>         for (i = 0; i < 10; i++) {
+>                 ret = mcs7830_get_reg(dev, HIF_REG_PHY_CMD1, 2, cmd);
+>                 if ((ret < 0) || (cmd[1] &
+> HIF_REG_PHY_CMD2_READY_FLAG_BIT))
+>                         break;
+>                 ret = -EIO;
+>                 msleep(1);
+>         }
+> 
+> 
+> Forgive me, but doesn't that mutex_lock()/msleep() (ab)use mean
+> risking a "scheduling while atomic"?
+> (such as discussed in e.g.
+> http://search.luky.org/linux-kernel.2004/msg92817.html )
+> 
+> 
+> And, if that is the case, shouldn't all such cases simply be killed for
+> good via a capable semantic patch?
 
->
->> +	     prefetch(container_of(pos, type, posmember)->member.next),		\
->> +	     &container_of(pos, type, posmember)->member != (head);		\
->
->It seems a bit dodgy to do this pointer arithmetic on a list node which
->might be the list head.
+The semantic match shown below finds 55 matches.  All but two involve 
+mutex_lock.  Those are in the file 
+/var/linuxes/linux-next/drivers/usb/host/ehci-hub.c
+in the functions ehci_bus_suspend and ehci_hub_control.
 
-Well I tried to be as much close to other traverse macros as it could be.
-
->
->> +	     pos = list_entry(container_of(pos, type, posmember)->member.next,	\
->> +	     type, member)->posmember)
->
->My version:
->
->#define list_for_each_struct_entry(pos, head, type, posmember, member)	     \
->	for (pos = list_empty(head) ? NULL :				     \
->		&list_first_entry(head, type, member)->posmember;	     \
->	     prefetch(container_of(pos, type, posmember)->member.next), pos; \
->	     pos = list_is_last(&container_of(pos, type, posmember)->member, \
->				head) ?	NULL :				     \
->		&list_entry(container_of(pos, type, posmember)->member.next, \
->			    type, member)->posmember)
->
-
-At the first glance, this would take even more cputime for lists longer
-than 2 or so, wouldn't it?
+julia
 
 
-Jirka
+@@
+@@
 
->Ben.
->
->-- 
->Ben Hutchings, Senior Software Engineer, Solarflare Communications
->Not speaking for my employer; that's the marketing department's job.
->They asked us to note that Solarflare product names are trademarked.
->
+(
+*mutex_lock(...)
+|
+*spin_lock(...)
+|
+*spin_lock_irq(...)
+|
+*spin_lock_irqsave(...)
+)
+... when != mutex_unlock(...)
+    when != spin_unlock(...)
+    when != spin_unlock_irq(...)
+    when != spin_unlock_irqrestore(...)
+*msleep(...)
