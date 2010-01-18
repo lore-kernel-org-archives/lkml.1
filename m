@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923Ab0ARXeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881Ab0ARXgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923Ab0ARXeI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 18:34:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142Ab0ARXd4
+	id S1754881Ab0ARXgO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 18:36:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328Ab0ARXgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 18:33:56 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55309 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753653Ab0ARXdy (ORCPT
+	Mon, 18 Jan 2010 18:36:14 -0500
+Received: from relay2-v.mail.gandi.net ([217.70.178.76]:42002 "EHLO
+	relay2-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754238Ab0ARXgN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 18:33:54 -0500
-Date: Tue, 19 Jan 2010 00:33:52 +0100
-From: Jan Kara <jack@suse.cz>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: 2.6.33-rc4-mmotm0113 - ext3 throws warning..
-Message-ID: <20100118233352.GA6352@atrey.karlin.mff.cuni.cz>
-References: <20914.1263776885@localhost>
+	Mon, 18 Jan 2010 18:36:13 -0500
+Date: Mon, 18 Jan 2010 15:36:04 -0800
+From: Josh Triplett <josh@joshtriplett.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 8/9] idr: apply lockdep-based diagnostics
+ to rcu_dereference() uses
+Message-ID: <20100118233604.GE29076@feather>
+References: <20100115010157.GA28221@linux.vnet.ibm.com>
+ <12635173672978-git-send-email->
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20914.1263776885@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <12635173672978-git-send-email->
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
-
-> Took a power hit earlier in the day, laptop rode it out, external 500G SUB
-> drive didn't. Several hours later I finally do something that references
-> the filesystem on the external drive, and I get:
+On Thu, Jan 14, 2010 at 05:02:45PM -0800, Paul E. McKenney wrote:
+> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > 
-> [312252.610201] EXT3-fs error (device sdb2): ext3_get_inode_loc: unable to read inode block - inode=5964029, block=23855121
-> [312252.610740] ------------[ cut here ]------------
-> [312252.610759] WARNING: at fs/buffer.c:1181 mark_buffer_dirty+0x65/0xdd()
-> [312252.610768] Hardware name: Latitude E6500                  
-> [312252.610776] Modules linked in: ppp_async sunrpc usb_storage [last unloaded: microcode]
-> [312252.610808] Pid: 2256, comm: ls Not tainted 2.6.33-rc4-mmotm0113 #1
-> [312252.610816] Call Trace:
-> [312252.610836]  [<ffffffff81038ac1>] warn_slowpath_common+0x77/0x8f
-> [312252.610849]  [<ffffffff81038ae8>] warn_slowpath_null+0xf/0x11
-> [312252.610862]  [<ffffffff810fdb40>] mark_buffer_dirty+0x65/0xdd
-> [312252.610875]  [<ffffffff81147997>] ext3_commit_super.clone.0+0x54/0x64
-> [312252.610889]  [<ffffffff81147a37>] ext3_handle_error+0x90/0xb7
-> [312252.610902]  [<ffffffff81147dd7>] ext3_error+0x76/0x81
-> [312252.610918]  [<ffffffff8113e9e4>] __ext3_get_inode_loc+0x261/0x287
-> [312252.610932]  [<ffffffff8113ea24>] ext3_get_inode_loc+0x1a/0x1c
-> [312252.610945]  [<ffffffff8113ea4e>] ext3_reserve_inode_write+0x28/0x82
-> [312252.610958]  [<ffffffff8113eae0>] ext3_mark_inode_dirty+0x38/0x55
-> [312252.610971]  [<ffffffff8113ec40>] ext3_dirty_inode+0x6a/0x81
-> [312252.610986]  [<ffffffff810f7b04>] __mark_inode_dirty+0x2f/0x14c
-> [312252.610999]  [<ffffffff810ede7b>] touch_atime+0x102/0x125
-> [312252.611014]  [<ffffffff810e902c>] ? filldir+0x0/0xcb
-> [312252.611027]  [<ffffffff810e9270>] vfs_readdir+0x8a/0xb1
-> [312252.611040]  [<ffffffff810e9427>] sys_getdents+0xa6/0xf8
-> [312252.611057]  [<ffffffff810023ab>] system_call_fastpath+0x16/0x1b
-> [312252.611067] ---[ end trace e506d3eb52cbaab0 ]---
-> [312252.611138] EXT3-fs (sdb2): error in ext3_reserve_inode_write: IO failure
-> [312257.701924] journal_bmap: journal block not found at offset 84 on sdb2
-> [312257.701937] Aborting journal on device sdb2.
+> Because idr can be used with any of a number of locks or with any
+> flavor of RCU, just disable the lockdep-based diagnostics.  If idr
+> needs diagnostics, the check expression will need to be passed into
+> the relevant idr primitives as an additional argument.
 > 
-> It was totally in its rights to abort the journal. The WARNING, not so much?
-  Yeah, this is a known problem that buffer_uptodate flag gets cleared
-on IO error and so if we ever try to mark that buffer dirty again, we
-get this warning... It's harmless but annoying I agree.
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+The subject line of this patch seems wrong.  Like the preceding patches
+for radix tree and list operations, this *disables* the checking by
+using _raw.
+
+- Josh Triplett
