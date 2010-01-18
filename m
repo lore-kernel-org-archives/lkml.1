@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556Ab0ARHvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600Ab0ARHww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556Ab0ARHvv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 02:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435Ab0ARHvv
+	id S1754600Ab0ARHww (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 02:52:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504Ab0ARHwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 02:51:51 -0500
-Received: from casper.infradead.org ([85.118.1.10]:58702 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753596Ab0ARHvu (ORCPT
+	Mon, 18 Jan 2010 02:52:51 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:35862 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052Ab0ARHwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 02:51:50 -0500
-Subject: Re: [PATCH] sched: cpuacct: Use bigger percpu counter batch values
- for stats counters
-From: Peter Zijlstra <peterz@infradead.org>
-To: Anton Blanchard <anton@samba.org>
-Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       schwidefsky@de.ibm.com, balajirrao@gmail.com, dhaval@linux.vnet.ibm.com,
-       tglx@linutronix.de, kamezawa.hiroyu@jp.fujitsu.com,
-       akpm@linux-foundation.org, Tony Luck <tony.luck@intel.com>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com
-In-Reply-To: <20100118044142.GS12666@kryten>
-References: <20090512102412.GG6351@balbir.in.ibm.com>
-	 <20090512102939.GB11714@elte.hu>
-	 <20090512193656.D647.A69D9226@jp.fujitsu.com>
-	 <20090716081010.GB3134@in.ibm.com> <20090716083948.GA2950@kryten>
-	 <20090820051038.GF21100@kryten>  <20100118044142.GS12666@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 08:51:19 +0100
-Message-ID: <1263801079.4283.22.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 18 Jan 2010 02:52:50 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was: Re: [linux-pm] Memory allocations in .suspend became very unreliable)
+Date: Mon, 18 Jan 2010 08:53:31 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <1263549544.3112.10.camel@maxim-laptop> <1263754684.724.444.camel@pasglop> <201001180000.23376.rjw@sisk.pl>
+In-Reply-To: <201001180000.23376.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001180853.31446.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 15:41 +1100, Anton Blanchard wrote:
-> Hi,
+Am Montag, 18. Januar 2010 00:00:23 schrieb Rafael J. Wysocki:
+> On Sunday 17 January 2010, Benjamin Herrenschmidt wrote:
+> > On Sun, 2010-01-17 at 14:27 +0100, Rafael J. Wysocki wrote:
+> ...
+> > However, it's hard to deal with the case of allocations that have
+> > already started waiting for IOs. It might be possible to have some VM
+> > hook to make them wakeup, re-evaluate the situation and get out of that
+> > code path but in any case it would be tricky.
 > 
-> Another try at this percpu_counter batch issue with CONFIG_VIRT_CPU_ACCOUNTING
-> and CONFIG_CGROUP_CPUACCT enabled. Thoughts?
+> In the second version of the patch I used an rwsem that made us wait for these
+> allocations to complete before we changed gfp_allowed_mask.
 
-Seems like a good idea, but isn't that batch number rather static? If
-so, computing it in some init path would save that multiply on the
-actual accounting path.
+This will be a very, very hot semaphore. What's the impact on performance?
 
-> 
-> Index: linux.trees.git/kernel/sched.c
-> ===================================================================
-> --- linux.trees.git.orig/kernel/sched.c	2010-01-18 14:27:12.000000000 +1100
-> +++ linux.trees.git/kernel/sched.c	2010-01-18 15:21:59.000000000 +1100
-> @@ -10894,6 +10894,7 @@ static void cpuacct_update_stats(struct 
->  		enum cpuacct_stat_index idx, cputime_t val)
->  {
->  	struct cpuacct *ca;
-> +	int batch;
->  
->  	if (unlikely(!cpuacct_subsys.active))
->  		return;
-> @@ -10901,8 +10902,9 @@ static void cpuacct_update_stats(struct 
->  	rcu_read_lock();
->  	ca = task_ca(tsk);
->  
-> +	batch = min_t(long, percpu_counter_batch * cputime_one_jiffy, INT_MAX);
->  	do {
-> -		percpu_counter_add(&ca->cpustat[idx], val);
-> +		__percpu_counter_add(&ca->cpustat[idx], val, batch);
->  		ca = ca->parent;
->  	} while (ca);
->  	rcu_read_unlock();
-
-
+	Regards
+		Oliver
