@@ -1,96 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314Ab0ARNon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420Ab0ARNqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752314Ab0ARNon (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 08:44:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477Ab0ARNom
+	id S1752420Ab0ARNqZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 08:46:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174Ab0ARNqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 08:44:42 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:55923 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751240Ab0ARNol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 08:44:41 -0500
-Message-ID: <4B54654A.4090601@cn.fujitsu.com>
-Date: Mon, 18 Jan 2010 21:42:34 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 18 Jan 2010 08:46:24 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:45248 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752167Ab0ARNqX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 08:46:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type;
+        b=khikNXiHbDnN8ls9rtFRBOVFLZhBJAHbKri2OtClLF+LjNVxbNtiXg+68JkKCl6aQ4
+         gDRAbsRwCMv+otAWnfR5joOUhdWILLJt6FYwgGATSJ7ugk3TxxHXBGeHaDiz9JF1C5SF
+         y4SRqGhA+u6KfIndtcTxZ9EtDoqKjs8sA3EfQ=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] perf_event: fix race in perf_swevent_get_recursion_context()
+Reply-To: eranian@gmail.com
+In-Reply-To: <1263817164.4283.394.camel@laptop>
+References: <4b4c761b.0338560a.1eaa.ffff824d@mx.google.com>
+	 <bd4cb8901001130154p732672b6x56e758c1ab33a8e8@mail.gmail.com>
+	 <1263400193.4244.238.camel@laptop>
+	 <bd4cb8901001130852y1de007cbqe66d77605c1ec372@mail.gmail.com>
+	 <bd4cb8901001130922s7ad85af6w6c631d90de177ef9@mail.gmail.com>
+	 <20100117141233.GF5035@nowhere> <1263813189.4283.245.camel@laptop>
+	 <1263815616.4283.332.camel@laptop> <20100118120747.GG5256@nowhere>
+	 <1263817164.4283.394.camel@laptop>
+Date: Mon, 18 Jan 2010 14:46:21 +0100
+Message-ID: <7c86c4471001180546v74ac3b16ia8c7cadf2a030204@mail.gmail.com>
+Subject: Re: [perfmon2] [PATCH] perf: fix the is_software_event() definition
+From: stephane eranian <eranian@googlemail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, perfmon2-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+       paulus@samba.org, mingo@elte.hu, davem@davemloft.net
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It only disable preemption in perf_swevent_get_recursion_context()
-it can't avoid race of hard-irq and NMI
-
-In this patch, we use atomic operation to avoid it and reduce
-cpu_ctx->recursion size, it also make this patch no need diable
-preemption
-
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- include/linux/perf_event.h |    2 +-
- kernel/perf_event.c        |   14 ++++----------
- 2 files changed, 5 insertions(+), 11 deletions(-)
-
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index c6f812e..8474ab0 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -730,7 +730,7 @@ struct perf_cpu_context {
- 	 *
- 	 * task, softirq, irq, nmi context
- 	 */
--	int				recursion[4];
-+	unsigned long			recursion;
- };
- 
- struct perf_output_handle {
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index eae6ff6..77ef16e 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -3921,7 +3921,7 @@ static void perf_swevent_ctx_event(struct perf_event_context *ctx,
- 
- int perf_swevent_get_recursion_context(void)
- {
--	struct perf_cpu_context *cpuctx = &get_cpu_var(perf_cpu_context);
-+	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
- 	int rctx;
- 
- 	if (in_nmi())
-@@ -3933,13 +3933,8 @@ int perf_swevent_get_recursion_context(void)
- 	else
- 		rctx = 0;
- 
--	if (cpuctx->recursion[rctx]) {
--		put_cpu_var(perf_cpu_context);
-+	if (test_and_set_bit(rctx, &cpuctx->recursion))
- 		return -1;
--	}
--
--	cpuctx->recursion[rctx]++;
--	barrier();
- 
- 	return rctx;
- }
-@@ -3948,9 +3943,8 @@ EXPORT_SYMBOL_GPL(perf_swevent_get_recursion_context);
- void perf_swevent_put_recursion_context(int rctx)
- {
- 	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
--	barrier();
--	cpuctx->recursion[rctx]--;
--	put_cpu_var(perf_cpu_context);
-+
-+	clear_bit(rctx, &cpuctx->recursion);
- }
- EXPORT_SYMBOL_GPL(perf_swevent_put_recursion_context);
- 
--- 
-1.6.1.2
-
+On Mon, Jan 18, 2010 at 1:19 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Mon, 2010-01-18 at 13:07 +0100, Frederic Weisbecker wrote:
+>
+>> Agreed.
+>>
+>> But then Stephane will need to update his patch and use
+>> something else than is_software_event() to guess if an event
+>> needs its pmu->enable/disable to be called.
+>
+> Yes, that's what I told him before and even send a patch for, the name I
+> chose was is_x86_event().
+>
+Yes, I remember that. I will modify the patch to use a function like that.
+I think the PPC code would need to be updated similarly.
