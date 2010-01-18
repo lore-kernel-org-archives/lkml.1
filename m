@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318Ab0AROhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349Ab0AROob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318Ab0AROhS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 09:37:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881Ab0AROhQ
+	id S1753349Ab0AROob (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 09:44:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297Ab0AROoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 09:37:16 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42198 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753146Ab0AROhP (ORCPT
+	Mon, 18 Jan 2010 09:44:30 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:25666 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752884Ab0AROo3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 09:37:15 -0500
-Subject: Re: [PATCH]  perf_events: improve x86 event scheduling (v5)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
-       perfmon2-devel@lists.sf.net, eranian@gmail.com
-In-Reply-To: <20100118142004.GD10364@nowhere>
-References: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com>
-	 <20100118134324.GB10364@nowhere> <1263822898.4283.558.camel@laptop>
-	 <20100118142004.GD10364@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 15:37:01 +0100
-Message-ID: <1263825421.4283.597.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jan 2010 09:44:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:cc:content-type:content-transfer-encoding;
+        b=tM22Y9cnWkDqKjhOgAUE+UF1+ShenRvVAORGJmf3UvomTdoAitXtj40neFMlZpS3vz
+         N1PS4Gv94+kEMt2eGiaVaNUJ+KmtCKRK+61LNAMP5V5uyX9ydwvmF2ma73bZusMcYoya
+         imtEP5fz8mn0gkIcd9uFNcxzGNOOPOEpJHl30=
+MIME-Version: 1.0
+Date: Mon, 18 Jan 2010 15:44:27 +0100
+X-Google-Sender-Auth: 4c94b2643838e4b3
+Message-ID: <10f740e81001180644yd44121cv6dd963349563a290@mail.gmail.com>
+Subject: linux-next build failure (was: Re: [PATCH/REPOST] pci: push 
+	deprecated pci_find_device() function to last user)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Tilman Schmidt <tilman@imap.cc>, David Miller <davem@davemloft.net>,
+       Greg KH <gregkh@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-18 at 15:20 +0100, Frederic Weisbecker wrote:
-> 
-> > Then there's still the question of having events of multiple hw pmus in
-> > a single group, I'd be perfectly fine with saying that's not allowed,
-> > what to others think?
-> 
-> 
-> I guess we need that. It can be insteresting to couple
-> hardware counters with memory accesses...or whatever.
+On Fri, Jan 15, 2010 at 19:08, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> On Thu, 14 Jan 2010 23:18:41 +0100 (CET)
+> Tilman Schmidt <tilman@imap.cc> wrote:
+>
+>> Am 14.01.2010 17:28 schrieb Jesse Barnes:
+>> > I can take it, but I lost the original patch.  Tilman, can you
+>> > resend?
+>>
+>> Sure, here you are:
+>>
+>> Subject: [PATCH] pci: push deprecated pci_find_device() function to
+>> last user
+>>
+>> The ISDN4Linux HiSax driver family contains the last remaining users
+>> of the deprecated pci_find_device() function. This patch creates a
+>> private copy of that function in HiSax, and removes the now unused
+>> global function together with its controlling configuration option,
+>> CONFIG_PCI_LEGACY.
+>>
+>> Impact: code reorganization, no functional change
+>> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+>> ---
+>> Note: This patch is not, nor does it intend to be, checkpatch.pl
+>> clean. The issues checkpatch.pl reports on it were already present
+>> before, and are unrelated to the topic of this patch.
+>
+> Applied to my linux-next branch, thanks Tilman.
 
-That really depends on how easy it is to correlate events from the
-various pmus. This case could indeed do that, but the core vs uncore
-tihng is a lot less clear.
+Just guessing: something's wrong if CONFIG_PCI is not set?
 
-> Perf stat combines cache miss counting with page faults,
-> cpu clock counters.
+http://kisskb.ellerman.id.au/kisskb/buildresult/2042085/
 
-perf stat also doesn't use groups and it still works quite nicely.
+Gr{oetje,eeting}s,
 
-> We shouldn't limit such possibilities for technical/cleanliness
-> reasons. We should rather adapt.
+						Geert
 
-Maybe, I'm not a very big fan of groups myself, but they are clearly
-useful within a pmu, measuring cache misses through total-access for
-example, but the use between pmus is questionable.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-But sure, if we can do it without too much pain, that's fine.
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
