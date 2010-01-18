@@ -1,77 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243Ab0ARCmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158Ab0ARCue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754243Ab0ARCmf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jan 2010 21:42:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751Ab0ARCme
+	id S1754158Ab0ARCue (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jan 2010 21:50:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586Ab0ARCud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jan 2010 21:42:34 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:46048 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752373Ab0ARCme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jan 2010 21:42:34 -0500
-Date: Mon, 18 Jan 2010 13:42:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>
-Subject: Re: linux-next: Tree for January 14 (drm header files)
-Message-Id: <20100118134221.0c36feb3.sfr@canb.auug.org.au>
-In-Reply-To: <20100117151718.f88c5f21.randy.dunlap@oracle.com>
-References: <20100114172047.406ebda8.sfr@canb.auug.org.au>
-	<20100117151718.f88c5f21.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Sun, 17 Jan 2010 21:50:33 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:34948 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751114Ab0ARCud convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jan 2010 21:50:33 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Linux driver project <devel@driverdev.osuosl.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Mon, 18 Jan 2010 02:50:24 +0000
+Message-ID: <1263783024.8876.109.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__18_Jan_2010_13_42_21_+1100_kIT1TFen_YF2N9Vv"
+X-Mailer: Evolution 2.28.2 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: [PATCH 1/2] rt2870sta: constify RTUSBMultiWrite(),
+ RTUSBFirmwareWrite()
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__18_Jan_2010_13_42_21_+1100_kIT1TFen_YF2N9Vv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+These functions do not modify the data they are passed.
 
-[Just cc'd Dave]
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+ drivers/staging/rt2860/rtmp.h            |    6 +++---
+ drivers/staging/rt2870/common/rtusb_io.c |   10 +++++-----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-On Sun, 17 Jan 2010 15:17:18 -0800 Randy Dunlap <randy.dunlap@oracle.com> w=
-rote:
->=20
-> Is anything being done about these?
-> or does anything need to be done?
->=20
->=20
-> usr/include/drm/drm_mode.h:84: found __[us]{8,16,32,64} type without #inc=
-lude <linux/types.h>
-> usr/include/drm/i915_drm.h:119: found __[us]{8,16,32,64} type without #in=
-clude <linux/types.h>
-> usr/include/drm/mga_drm.h:260: found __[us]{8,16,32,64} type without #inc=
-lude <linux/types.h>
-> usr/include/drm/radeon_drm.h:758: found __[us]{8,16,32,64} type without #=
-include <linux/types.h>
-> usr/include/drm/via_drm.h:117: found __[us]{8,16,32,64} type without #inc=
-lude <linux/types.h>
->=20
->=20
-> Thanks,
-> ---
-> ~Randy
+diff --git a/drivers/staging/rt2860/rtmp.h b/drivers/staging/rt2860/rtmp.h
+index c50abf4..6c6503d 100644
+--- a/drivers/staging/rt2860/rtmp.h
++++ b/drivers/staging/rt2860/rtmp.h
+@@ -4043,10 +4043,10 @@ int RTUSBMultiRead(struct rt_rtmp_adapter *pAd,
+ 			u16 Offset, u8 *pData, u16 length);
+ 
+ int RTUSBMultiWrite(struct rt_rtmp_adapter *pAd,
+-			 u16 Offset, u8 *pData, u16 length);
++		    u16 Offset, const u8 *pData, u16 length);
+ 
+ int RTUSBMultiWrite_OneByte(struct rt_rtmp_adapter *pAd,
+-				 u16 Offset, u8 *pData);
++			    u16 Offset, const u8 *pData);
+ 
+ int RTUSBReadBBPRegister(struct rt_rtmp_adapter *pAd,
+ 			      u8 Id, u8 *pValue);
+@@ -4112,7 +4112,7 @@ int RTUSBSingleWrite(struct rt_rtmp_adapter *pAd,
+ 			  u16 Offset, u16 Value);
+ 
+ int RTUSBFirmwareWrite(struct rt_rtmp_adapter *pAd,
+-			    u8 *pFwImage, unsigned long FwLen);
++		       const u8 *pFwImage, unsigned long FwLen);
+ 
+ int RTUSBVenderReset(struct rt_rtmp_adapter *pAd);
+ 
+diff --git a/drivers/staging/rt2870/common/rtusb_io.c b/drivers/staging/rt2870/common/rtusb_io.c
+index 34443f2..cf0d2f5 100644
+--- a/drivers/staging/rt2870/common/rtusb_io.c
++++ b/drivers/staging/rt2870/common/rtusb_io.c
+@@ -84,7 +84,7 @@ static int RTUSBFirmwareRun(struct rt_rtmp_adapter *pAd)
+ 	========================================================================
+ */
+ int RTUSBFirmwareWrite(struct rt_rtmp_adapter *pAd,
+-			    u8 *pFwImage, unsigned long FwLen)
++		       const u8 *pFwImage, unsigned long FwLen)
+ {
+ 	u32 MacReg;
+ 	int Status;
+@@ -167,7 +167,7 @@ int RTUSBMultiRead(struct rt_rtmp_adapter *pAd,
+ 	========================================================================
+ */
+ int RTUSBMultiWrite_OneByte(struct rt_rtmp_adapter *pAd,
+-				 u16 Offset, u8 *pData)
++			    u16 Offset, const u8 *pData)
+ {
+ 	int Status;
+ 
+@@ -175,18 +175,18 @@ int RTUSBMultiWrite_OneByte(struct rt_rtmp_adapter *pAd,
+ 	Status = RTUSB_VendorRequest(pAd,
+ 				     USBD_TRANSFER_DIRECTION_OUT,
+ 				     DEVICE_VENDOR_REQUEST_OUT,
+-				     0x6, 0, Offset, pData, 1);
++				     0x6, 0, Offset, (u8 *)pData, 1);
+ 
+ 	return Status;
+ }
+ 
+ int RTUSBMultiWrite(struct rt_rtmp_adapter *pAd,
+-			 u16 Offset, u8 *pData, u16 length)
++		    u16 Offset, const u8 *pData, u16 length)
+ {
+ 	int Status;
+ 
+ 	u16 index = 0, Value;
+-	u8 *pSrc = pData;
++	const u8 *pSrc = pData;
+ 	u16 resude = 0;
+ 
+ 	resude = length % 2;
+-- 
+1.6.6
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__18_Jan_2010_13_42_21_+1100_kIT1TFen_YF2N9Vv
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktTyo0ACgkQjjKRsyhoI8y99QCgtucuf3EKHUPcWaEpGrOv3zIT
-lg8AoKffatVEyzqokOpRuN+zVqYozcdY
-=7zje
------END PGP SIGNATURE-----
-
---Signature=_Mon__18_Jan_2010_13_42_21_+1100_kIT1TFen_YF2N9Vv--
