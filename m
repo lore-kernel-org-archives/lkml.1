@@ -1,60 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037Ab0ARTMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046Ab0ARTRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037Ab0ARTMw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 14:12:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026Ab0ARTMu
+	id S1756046Ab0ARTRw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 14:17:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756028Ab0ARTRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 14:12:50 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:10108 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1754264Ab0ARTMs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 14:12:48 -0500
-Message-ID: <4B54B245.4050507@ru.mvista.com>
-Date: Mon, 18 Jan 2010 22:11:01 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 25/64] ide: use standard timing for XFER_PIO_SLOW mode
- in ide_timing_compute()
-References: <20100118171349.14623.90030.sendpatchset@localhost> <20100118171729.14623.46024.sendpatchset@localhost>
-In-Reply-To: <20100118171729.14623.46024.sendpatchset@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jan 2010 14:17:51 -0500
+Received: from mail.perches.com ([173.55.12.10]:1257 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754260Ab0ARTRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 14:17:50 -0500
+Subject: Re: [PATCH] video/matrox: Checkpatch cleanups for matroxfb_crtc2.c
+From: Joe Perches <joe@perches.com>
+To: Peter =?ISO-8859-1?Q?H=FCwe?= <PeterHuewe@gmx.de>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jean Delvare <khali@linux-fr.org>, Krzysztof Helt <krzysztof.h1@wp.pl>,
+       linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+In-Reply-To: <201001181934.49519.PeterHuewe@gmx.de>
+References: <201001181934.49519.PeterHuewe@gmx.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 18 Jan 2010 11:17:49 -0800
+Message-ID: <1263842269.26846.122.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] ide: use standard timing for XFER_PIO_SLOW mode in ide_timing_compute()
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ide/ide-timings.c |   13 +++++++------
->  1 file changed, 7 insertions(+), 6 deletions(-)
->
-> Index: b/drivers/ide/ide-timings.c
-> ===================================================================
-> --- a/drivers/ide/ide-timings.c
-> +++ b/drivers/ide/ide-timings.c
-> @@ -166,12 +166,13 @@ int ide_timing_compute(ide_drive_t *driv
->  	if (id[ATA_ID_FIELD_VALID] & 2) {	/* EIDE drive */
->  		memset(&p, 0, sizeof(p));
+On Mon, 2010-01-18 at 19:34 +0100, Peter Hüwe wrote:
+> From: Peter Huewe <peterhuewe@gmx.de>
+> Date: Mon, 18 Jan 2010 19:21:02 +0100
+> This patch fixes all 77 errors reported by checkpatch - no functional
+> change was made. The line over 80 chars warnings were left untouched.
+> diff --git a/drivers/video/matrox/matroxfb_crtc2.c b/drivers/video/matrox/matroxfb_crtc2.c
+> index 78414ba..790ca47 100644
+> --- a/drivers/video/matrox/matroxfb_crtc2.c
+> +++ b/drivers/video/matrox/matroxfb_crtc2.c
+> @@ -42,42 +43,41 @@ static int matroxfb_dh_setcolreg(unsigned regno, unsigned red, unsigned green,
+>  	blue = CNVT_TOHW(blue, m2info->fbcon.var.blue.length);
+>  	transp = CNVT_TOHW(transp, m2info->fbcon.var.transp.length);
 >  
-> -		if (speed <= XFER_PIO_2)
-> -			p.cycle = p.cyc8b = id[ATA_ID_EIDE_PIO];
-> -		else if ((speed <= XFER_PIO_4) ||
-> -			 (speed == XFER_PIO_5 && !ata_id_is_cfa(id)))
-> -			p.cycle = p.cyc8b = id[ATA_ID_EIDE_PIO_IORDY];
-> -		else if (speed >= XFER_MW_DMA_0 && speed <= XFER_MW_DMA_2)
-> +		if (speed >= XFER_PIO_0 && speed <= XFER_SW_DMA_0) {
->   
+> -	col = (red << m2info->fbcon.var.red.offset)     |
+> -	      (green << m2info->fbcon.var.green.offset) |
+> -	      (blue << m2info->fbcon.var.blue.offset)   |
+> -	      (transp << m2info->fbcon.var.transp.offset);
+> +	col =	(red << m2info->fbcon.var.red.offset)		|
+> +			(green << m2info->fbcon.var.green.offset)	|
+> +			(blue << m2info->fbcon.var.blue.offset)		|
+> +			(transp << m2info->fbcon.var.transp.offset);
 
-   Ah, I see what to fix now but I guess it's rather your call. :-)
+I think this is not an improvement.
 
-MBR, Sergei
+[]
+
+> +	case 16:
+> +		tmp = 0x00400000;
+> +		break;
+>  /*		case 32: */
+
+Even in a comment, you should change this indent.
+
+[]
+> @@ -428,133 +435,133 @@ static int matroxfb_dh_ioctl(struct fb_info *info,
+>  	DBG(__func__)
+>  
+>  	switch (cmd) {
+> -		case FBIOGET_VBLANK:
+> -			{
+> -				struct fb_vblank vblank;
+> -				int err;
+> -
+> -				err = matroxfb_dh_get_vblank(m2info, &vblank);
+> -				if (err)
+> -					return err;
+> -				if (copy_to_user((void __user *)arg, &vblank, sizeof(vblank)))
+> -					return -EFAULT;
+> -				return 0;
+> -			}
+
+I suggest putting the open braces on the same line as the case
+because that's the more common (~2:1) kernel style and it saves
+an indent level
+
+	switch (foo) {
+	case: bar {
+	}
+	}
+
+[]
+
+> +	case MATROXFB_SET_OUTPUT_MODE:
+> +	case MATROXFB_GET_OUTPUT_MODE:
+> +	case MATROXFB_GET_ALL_OUTPUTS:
+> +		{
+> +			return minfo->fbcon.fbops->fb_ioctl(&minfo->fbcon, cmd, arg);
+> +		}
+
+unnecessary braces, 1 indent level deeper than necessary.
+
+cheers, Joe
 
