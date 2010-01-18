@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150Ab0ARWnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199Ab0ARWrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150Ab0ARWnx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 17:43:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992Ab0ARWnw
+	id S1756199Ab0ARWrv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 17:47:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187Ab0ARWru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 17:43:52 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:53558 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754907Ab0ARWnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 17:43:51 -0500
-Date: Mon, 18 Jan 2010 14:43:40 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Tino Keitel <tino.keitel@tikei.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression: Wake on LAN doesn't work in sky2 with
- 2.6.33-rc4-git2
-Message-ID: <20100118144340.100c9544@nehalam>
-In-Reply-To: <201001182234.55113.rjw@sisk.pl>
-References: <20100115091053.GA5477@mac.home>
-	<201001180136.45823.rjw@sisk.pl>
-	<20100118083757.GA2619@mac.home>
-	<201001182234.55113.rjw@sisk.pl>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jan 2010 17:47:50 -0500
+Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:62103 "EHLO
+	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754878Ab0ARWrt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 17:47:49 -0500
+Date: Mon, 18 Jan 2010 17:47:11 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100118221747.GH3157@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B54E4EF.8080602@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B53906B.2020608@majjas.com> <20100117230531.GC3161@del.dom.local>
+ <4B539A0A.2000504@majjas.com> <20100118073018.GA6270@ff.dom.local>
+ <4B548C6B.10607@majjas.com> <20100118204658.GC3157@del.dom.local>
+ <4B54CB0D.5070604@majjas.com> <20100118212516.GE3157@del.dom.local>
+ <4B54D50C.90608@majjas.com> <20100118220814.GG3157@del.dom.local>
+ <20100118221747.GH3157@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jan 2010 22:34:55 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On 1/18/2010 5:17 PM, Jarek Poplawski wrote:
+> On Mon, Jan 18, 2010 at 11:08:14PM +0100, Jarek Poplawski wrote:
+>    
+>> Btw, I wonder if you could test it skipping the (HP?) switch?
+>>      
+> If so, then of course don't forget to try tcpdump on the router.
+>
+> Jarek P.
+>    
+Well - no.... but I'm not sure that would show anything.
 
-> On Monday 18 January 2010, Tino Keitel wrote:
-> > Hi,
-> > 
-> > reverting this commit fixes WoL for me:
-> > 
-> > commit 166a0fd4c788ec7f10ca8194ec6d526afa12db75
-> > Author: stephen hemminger <shemminger@vyatta.com>
-> > Date:   Mon Dec 14 08:50:12 2009 +0000
-> > 
-> >     sky2: leave PCI config space writeable
-> >     
-> >     Since power management is done by PCI subsystem as well as driver,
-> >     don't toggle the bit that disables PCI register writes.
-> >     
-> >     Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> >     Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >     Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> Hmm, this is kind of interesting.
-> 
-> Perhaps we clear the WoL setting somewhere we shouldn't, but the
-> "disable PCI register writes" bit prevents this from actually happening?
-> 
-> Rafael
+Setup diagram:
 
-How about getting a register dump of pci config space with
-good/bad version?
+Server->gb switch-> (100mb) wifi router -> devices
+                     |
+               Win7 PC (gb)
 
--- 
+The problem does not occur (at least I haven't been able to recreate it) 
+at 100mb, and the wifi router doesn't do 1Gb. I drive the traffic from 
+the win7 PC to the server. I've seen the loss when the only traffic 
+going through the wifi router was ping & dhcp. I've also never seen any 
+loss on a device directly attached to the 1GB switch. I can drive load 
+through the wifi router while driving load from the Win7 box, but don't 
+see TX packet loss at all when not doing DHCP RELEASE/RENEW.
+
+As there is no packet loss to devices not involved in the DHCP sequence 
+through the same path, I'm not really sure that the GB switch is implicated.
+
+As I don't have a standalone sniffer, I'm thinking that it might be 
+easier to instrument places where the TX packet could be dropped and see 
+at least whether it's getting to the card.
+
+Given the circumstances of the TX drop, and that it was DHCP traffic 
+while under load that caused the oops rectified with the two patches, 
+I'm thinking that the packet loss is the current manifestation of 
+whatever the underlying problem is. Given the extra hop required to 
+break things, and given that a dhcp release/renew seems to trigger 
+things, I keep coming back to arp logic as being somehow implicated.
+
+If arp is somehow involved, then I'd expect to see manifestations under 
+similar circumstances with other drivers. As the pskb_may_pull patch 
+stopped the crash, perhaps other drivers do suffer packet loss and it's 
+just not been widely noticed or attributed to the kernel - especially if 
+the network topology is a factor. I do know people at large enterprises 
+who have been complaining of what *could* be this same issue, however 
+they're currently blaming their switch vendors. As most traffic is TCP, 
+this is really only noticed by those few places deeply concerned with 
+latency. It's likely something altogether different, but then again, 
+maybe not.
