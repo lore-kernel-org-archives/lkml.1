@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919Ab0ASWkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944Ab0ASWl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755919Ab0ASWkx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 17:40:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755840Ab0ASWkw
+	id S1755944Ab0ASWl3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 17:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755833Ab0ASWl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 17:40:52 -0500
-Received: from exht1.emulex.com ([138.239.113.183]:13950 "EHLO
+	Tue, 19 Jan 2010 17:41:28 -0500
+Received: from exht1.emulex.com ([138.239.113.183]:13962 "EHLO
 	exht1.ad.emulex.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755322Ab0ASWks (ORCPT
+	with ESMTP id S1753934Ab0ASWl1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 17:40:48 -0500
-Message-ID: <4B5634D9.2060303@emulex.com>
-Date: Tue, 19 Jan 2010 17:40:25 -0500
+	Tue, 19 Jan 2010 17:41:27 -0500
+Message-ID: <4B563502.6070908@emulex.com>
+Date: Tue, 19 Jan 2010 17:41:06 -0500
 From: James Smart <james.smart@emulex.com>
 User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
@@ -33,14 +33,15 @@ Acked-by:  James Smart <james.smart@emulex.com>
 -- james s
 
 
+
 Roel Kluin wrote:
 > Regardless of the flag state, the branches execute the same code
->
+> 
 > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 > ---
 >  drivers/scsi/lpfc/lpfc_ct.c |    7 +------
 >  1 files changed, 1 insertions(+), 6 deletions(-)
->
+> 
 > diff --git a/drivers/scsi/lpfc/lpfc_ct.c b/drivers/scsi/lpfc/lpfc_ct.c
 > index 0ebcd9b..bf7bf62 100644
 > --- a/drivers/scsi/lpfc/lpfc_ct.c
@@ -59,5 +60,4 @@ Roel Kluin wrote:
 >  	}
 >  	return;
 >  }
->
->   
+> 
