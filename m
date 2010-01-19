@@ -1,132 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311Ab0ASPsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337Ab0ASPwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311Ab0ASPsQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 10:48:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034Ab0ASPsP
+	id S1754337Ab0ASPwb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 10:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325Ab0ASPwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 10:48:15 -0500
-Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:61669 "EHLO
-	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754032Ab0ASPsO (ORCPT
+	Tue, 19 Jan 2010 10:52:30 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:65200 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753912Ab0ASPw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 10:48:14 -0500
-Date: Tue, 19 Jan 2010 10:47:27 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <20100119104739.GA9088@ff.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B55D40F.5080509@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100118073018.GA6270@ff.dom.local> <4B548C6B.10607@majjas.com>
- <20100118204658.GC3157@del.dom.local> <4B54CB0D.5070604@majjas.com>
- <20100118212516.GE3157@del.dom.local> <4B54D50C.90608@majjas.com>
- <20100118220814.GG3157@del.dom.local> <20100118221747.GH3157@del.dom.local>
- <4B54E4EF.8080602@majjas.com> <4B554730.6090000@majjas.com>
- <20100119104739.GA9088@ff.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Tue, 19 Jan 2010 10:52:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Lo9I17doZxzm0gmfswRcsTxC4abu/q+i+QZZRusXKuphaKgh3/vPw+QZ3/nJtmd4RS
+         PUBE/PDQjUJ0LgwSMK7osMc7Gru2DOFaZjCwb9WDe6Ly5MNh2qRN5zJtpisjM+tX4R/M
+         tFEKrp/0yDjyZnpAM1BBI/YvE/G5GF96Muw68=
+Date: Tue, 19 Jan 2010 16:52:25 +0100
+From: Johan Hovold <jhovold@gmail.com>
+To: Johan Hovold <jhovold@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Oliver Neukum <oliver@neukum.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com,
+       gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial
+ writes" causes gobi_loader to hang
+Message-ID: <20100119155225.GB2104@localhost>
+References: <20100117025535.GB7045@srcf.ucam.org>
+ <201001191420.29652.oliver@neukum.org>
+ <20100119132934.0c1688f7@lxorguk.ukuu.org.uk>
+ <201001191457.00504.oliver@neukum.org>
+ <20100119142657.02856d15@lxorguk.ukuu.org.uk>
+ <20100119152536.GA2104@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100119152536.GA2104@localhost>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/19/2010 5:47 AM, Jarek Poplawski wrote:
-> On Tue, Jan 19, 2010 at 12:46:24AM -0500, Michael Breuer wrote:
->    
->> Ok - one last update for a while ...not sure what's next... I put some
->> printk's into sky2.c xmit logic - the packets are being sent to the
->>      
-> ...
->
-> Btw, could you try if this patch can makes difference in triggering
-> the "lib/dma-debug.c:898" warning?
->
-> Jarek P.
-> ---
->
->   drivers/net/sky2.c |    3 +++
->   1 files changed, 3 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-> index 7650f73..e02e9e9 100644
-> --- a/drivers/net/sky2.c
-> +++ b/drivers/net/sky2.c
-> @@ -2479,6 +2479,9 @@ static int sky2_status_intr(struct sky2_hw *hw, int to_do, u16 idx)
->
->   		port = le->css&  CSS_LINK_BIT;
->   		dev = hw->dev[port];
-> +		if (!netif_running(dev))
-> +			continue;
-> +
->   		sky2 = netdev_priv(dev);
->   		length = le16_to_cpu(le->length);
->   		status = le32_to_cpu(le->status);
->    
-Still get the warning... but now 60 bytes.
-Jan 19 10:43:50 mail kernel: ------------[ cut here ]------------
-Jan 19 10:43:50 mail kernel: WARNING: at lib/dma-debug.c:902 
-check_sync+0xc1/0x43f()
-Jan 19 10:43:50 mail kernel: Hardware name: System Product Name
-Jan 19 10:43:50 mail kernel: sky2 0000:04:00.0: DMA-API: device driver 
-tries to sync DMA memory it has not allocated [device 
-address=0x0000000320a0b022] [size=60 bytes]
-Jan 19 10:43:50 mail kernel: Modules linked in: microcode(+) 
-ip6table_filter ip6table_mangle ip6_tables iptable_raw iptable_mangle 
-ipt_MASQUERADE iptable_nat nf_nat appletalk psnap llc nfsd lockd nfs_acl 
-auth_rpcgss exportfs hwmon_vid coretemp sunrpc acpi_cpufreq sit tunnel4 
-ipt_LOG nf_conntrack_netbios_ns nf_conntrack_ftp xt_DSCP xt_dscp xt_MARK 
-nf_conntrack_ipv6 xt_multiport ipv6 dm_multipath kvm_intel kvm 
-snd_hda_codec_analog snd_ens1371 gameport snd_rawmidi snd_ac97_codec 
-snd_hda_intel ac97_bus snd_hda_codec snd_hwdep snd_seq snd_seq_device 
-snd_pcm gspca_spca505 snd_timer gspca_main firewire_ohci snd soundcore 
-videodev i2c_i801 firewire_core v4l1_compat snd_page_alloc 
-v4l2_compat_ioctl32 pcspkr wmi crc_itu_t iTCO_wdt iTCO_vendor_support 
-asus_atk0110 sky2 hwmon fbcon tileblit font bitblit softcursor raid456 
-async_raid6_recov async_pq raid6_pq async_xor xor async_memcpy async_tx 
-raid1 ata_generic pata_acpi pata_marvell nouveau ttm drm_kms_helper drm 
-agpgart fb i2c_algo_bit cfbcopyarea i2c_core cfbimgblt cfbf
-Jan 19 10:43:50 mail kernel: illrect [last unloaded: ip6_tables]
-Jan 19 10:43:50 mail kernel: Pid: 0, comm: swapper Not tainted 
-2.6.32.4MMAPNODMARAF3SKY2PSKBMAYPULL-00912-g914160d-dirty #3
-Jan 19 10:43:50 mail kernel: Call Trace:
-Jan 19 10:43:50 mail kernel: <IRQ>  [<ffffffff810536ee>] 
-warn_slowpath_common+0x7c/0x94
-Jan 19 10:43:50 mail kernel: [<ffffffff8105375d>] 
-warn_slowpath_fmt+0x41/0x43
-Jan 19 10:43:50 mail kernel: [<ffffffff8127b871>] check_sync+0xc1/0x43f
-Jan 19 10:43:50 mail kernel: [<ffffffff8107a683>] ? 
-timekeeping_get_ns+0x1b/0x3d
-Jan 19 10:43:50 mail kernel: [<ffffffff813c6770>] ? 
-__netdev_alloc_skb+0x34/0x50
-Jan 19 10:43:50 mail kernel: [<ffffffff8127bf42>] 
-debug_dma_sync_single_for_cpu+0x42/0x44
-Jan 19 10:43:50 mail kernel: [<ffffffff812792c7>] ? 
-swiotlb_sync_single+0x2a/0xb6
-Jan 19 10:43:50 mail kernel: [<ffffffff81279423>] ? 
-swiotlb_sync_single_for_cpu+0xc/0xe
-Jan 19 10:43:50 mail kernel: [<ffffffffa0155ee0>] sky2_poll+0x4d0/0xaeb 
-[sky2]
-Jan 19 10:43:50 mail kernel: [<ffffffff813cd40e>] net_rx_action+0xb5/0x1f3
-Jan 19 10:43:50 mail kernel: [<ffffffff8105af0f>] __do_softirq+0xf8/0x1cd
-Jan 19 10:43:50 mail kernel: [<ffffffff810a3006>] ? 
-handle_IRQ_event+0x119/0x12b
-Jan 19 10:43:50 mail kernel: [<ffffffff81012e1c>] call_softirq+0x1c/0x30
-Jan 19 10:43:50 mail kernel: [<ffffffff810143a3>] do_softirq+0x4b/0xa6
-Jan 19 10:43:50 mail kernel: [<ffffffff8105aaef>] irq_exit+0x4a/0x8c
-Jan 19 10:43:50 mail kernel: [<ffffffff8146c095>] do_IRQ+0xa5/0xbc
-Jan 19 10:43:50 mail kernel: [<ffffffff81012613>] ret_from_intr+0x0/0x16
-Jan 19 10:43:50 mail kernel: <EOI>  [<ffffffff812c2f6e>] ? 
-acpi_idle_enter_bm+0x256/0x28a
-Jan 19 10:43:50 mail kernel: [<ffffffff812c2f67>] ? 
-acpi_idle_enter_bm+0x24f/0x28a
-Jan 19 10:43:50 mail kernel: [<ffffffff813a279c>] ? 
-cpuidle_idle_call+0x9e/0xfa
-Jan 19 10:43:50 mail kernel: [<ffffffff81010c90>] ? cpu_idle+0xb4/0xf6
-Jan 19 10:43:50 mail kernel: [<ffffffff814616d2>] ? 
-start_secondary+0x201/0x242
-Jan 19 10:43:50 mail kernel: ---[ end trace 310dbc8966610916 ]---
+> > > The log shows no call to usb_serial_generic_write_room()
+> > > Do you consider this a bug in the tty layer?
+> > 
+> > Actually this all makes sense because of where it was hanging. A reply of
+> > 0 to the tty->ops->write will cause it to either return (O_NONBLOCK) or
+> > sleep in the n_tty write code waiting for a write_wait wakeup
+> > (tty_wakeup(tty))
+> > 
+> > So the fix does indeed look correct.
+> 
+> Is it really a fix? If the fifo is already full the write urb should be
+> in use and Oliver's patch would amount to only a minor optimisation as
+> usb_serial_generic_write_start would return 0 anyway.
+
+So the question seems to be: why doesn't the on-going transfer finish (so
+that tty_wakeup is called)?
+
+
+> drivers/usb/serial/usb-serial.c: usb_serial_port_work - port 0
+> drivers/usb/serial/usb-serial.c: serial_write - port 0, 29 byte(s)
+> drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 29
+> bytes
+> drivers/usb/serial/generic.c: usb_serial_generic_write - put 0 bytes
+> into fifo
+
+Writer got woken but fifo is still full so write returns 0 and writer goes
+back to sleep.
+
+> drivers/usb/serial/generic.c: usb_serial_generic_write_bulk_callback -
+> port 0
+> drivers/usb/serial/generic.c: usb_serial_generic_write_start - starting
+> IO
+> qcserial ttyUSB0: usb_serial_generic_write_start - length = 512, data =
+> f0 f8 0a 01 f0 00 0b 01 f0 0c 10 01 f0 38 10 01 f0 0f 22 a0 e3 04 40 92
+> e5 1c 30 94 e5 a3 32 a0 e1 7f 3f c3 e3 ff 33 c3 e3 0f 35 c3 e3 0e 12 83
+> e2 08 00 91 e5 00 00 50 e3 0a 00 00 0a 0a 20 d0 e5 02 00 52 e3 0d 00 00
+> 0a 60 31 91 e5 0a 30 c0 e5 64 21 91 e5 0b 20 c0 e5 38 10 81 e2 44 30 91
+> e5 c0 30 c3 e3 44 30 81 e5 04 00 a0 e1 96 fc ff eb 50 31 94 e5 fe df 8d
+> e3 03 f0 a0 e1 fe ff ff ea 08 30 94 e5 0a 20 c3 e5 38 20 84 e2 44 30 92
+> e5 80 30 83 e3 44 30 82 e5 ea ff ff ea 02 60 a0 e1 01 50 a0 e1 04 d0 4d
+> e2 00 70 a0 e1 03 80 a0 e1 4d ff ff eb a5 2f a0 e1 86 30 82 e1 00 00 a0
+> e3 2f 20 e0 e3 00 00 8d e5 b2 20 cd e1 00 10 9d e5 03 19 81 e3 00 10 8d
+> e5 a6 4f a0 e1 a3 20 a0 e1 84 3f 82 e1 08 20 97 e5 48 30 82 e5 0f 32 a0
+> e3 40 10 82 e5 0c 00 82 e5 44 50 82 e5 04 10 93 e5 2c 30 91 e5 e4 00 97
+> e5 20 20 9f e5 01 30 83 e3 2c 30 81 e5 80 20 87 e5 50 81 87 e5 10 30 9f
+> e5 00 10 a0 e1 0c e0 9f e5 03 f0 a0 e1 fe ff ff ea 20 81 00 f0 8c 89 00
+> f0 10 b6 00 f0 0f 32 a0 e3 04 40 93 e5 08 20 94 e5 40 30 92 e5 04 d0 4d
+> e2 00 30 8d e5 04 00 a0 e1 5b fc ff eb d1 30 dd e1 00 00 53 e3 03 00 00
+> ba 50 31 94 e5 fe df 8d e3 03 f0 a0 e1 fe ff ff ea 04 00 9f e5 73 05 00
+> eb f8 ff ff ea 4c 10 01 f0 0f c2 a0 e3 18 40 dc e5 18 d0 4d e2 00 00 54
+> e3 0e 60 a0 e1 14 00 8d e5 01 a0 a0 e1 10 20 8d e5 03 90 a0 e1 20 b0 9d
+> e5 51 01 00 1a 0f 32 a0 e3 04 80 93 e5 50 26 9f e5 0c 30 98 e5 00 10 92
+> e5 01 00 53 e1 00 00 a0 13 01 00 a0 03 00 00 50 e3 41 01 00 0a 14 50 9d
+> e5 01 20 75 e2 00 20 a0 33 00 00 52 e3 0d 00 00 1a b4 31 dd e1 3f 00 13
+> e3 02 30 a0 e1 03 00 00
+
+New transfer started from completion handler.
+
+> drivers/usb/serial/usb-serial.c: usb_serial_port_work - port 0
+
+Writer woken up from completion handler after having started the
+next transfer.
+
+> drivers/usb/serial/usb-serial.c: serial_write - port 0, 29 byte(s)
+> drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 29
+> bytes
+> drivers/usb/serial/generic.c: usb_serial_generic_write - put 29 bytes
+> into fifo
+> drivers/usb/serial/usb-serial.c: serial_write - port 0, 2048 byte(s)
+> drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 2048
+> bytes
+> drivers/usb/serial/generic.c: usb_serial_generic_write - put 483 bytes
+> into fifo
+> drivers/usb/serial/usb-serial.c: serial_write - port 0, 1565 byte(s)
+> drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 1565
+> bytes
+> drivers/usb/serial/generic.c: usb_serial_generic_write - put 0 bytes
+> into fifo
+
+Now there was some room (29 + 483 = 512 bytes bytes just transfered).
+
+> drivers/usb/serial/generic.c: usb_serial_generic_read_bulk_callback -
+> port 0
+
+Waiting forever for on-going transfer to finish...
 
