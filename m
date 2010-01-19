@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748Ab0ASORN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229Ab0ASOTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752748Ab0ASORN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 09:17:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130Ab0ASORM
+	id S1753229Ab0ASOTS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 09:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654Ab0ASOTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 09:17:12 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:56179 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581Ab0ASORL (ORCPT
+	Tue, 19 Jan 2010 09:19:17 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49838 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751271Ab0ASOTR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 09:17:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Y7rDWpiuO0ukt1Fa/uiPwkXFvQHqkP6fYSg3jghr+loLWnUXnF/i0lrmhdt+41//B8
-         KM/hychwtL5daZDhezBqdcKdbvM43R+3fdey25W2dVFJsVQLhWQTHSTPK+rxn6oH/7DP
-         eFe7MuAarVCFf2+AjMR8CKTzHkzToeh9w6a8U=
-Date: Tue, 19 Jan 2010 22:19:06 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: mojtaba <kernelppc@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: module init data
-Message-ID: <20100119141906.GA3473@hack>
-References: <1dec3f771001180601jd511ab0g51aaaf8ed2195e9d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1dec3f771001180601jd511ab0g51aaaf8ed2195e9d@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 19 Jan 2010 09:19:17 -0500
+Date: Tue, 19 Jan 2010 14:21:24 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com, gregkh@suse.de,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial
+ writes" causes gobi_loader to hang
+Message-ID: <20100119142124.6f2a7034@lxorguk.ukuu.org.uk>
+In-Reply-To: <201001191457.00504.oliver@neukum.org>
+References: <20100117025535.GB7045@srcf.ucam.org>
+	<201001191420.29652.oliver@neukum.org>
+	<20100119132934.0c1688f7@lxorguk.ukuu.org.uk>
+	<201001191457.00504.oliver@neukum.org>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 03:01:56PM +0100, mojtaba wrote:
->Hi there,
->
->I have a kernel modules which needs to maintain a table of some
->information. the data in the table can be changed during the system
->run and some new raws might be added to the  table. The table also
->must be initialized at the system startup with the values from the
->previous run.
->
->As using files is not good in kernel mode, how can I load the data at
->the startup and store them as they changed? These information are
->device related. Can I use sysfs for this issue? Is there any tutorial
->on how to do that?
->
+On Tue, 19 Jan 2010 14:57:00 +0100
+Oliver Neukum <oliver@neukum.org> wrote:
 
-You can't use sysfs here, since it also stays in memory.
+> Am Dienstag, 19. Januar 2010 14:29:34 schrieb Alan Cox:
+> > On Tue, 19 Jan 2010 14:20:29 +0100
+> > Oliver Neukum <oliver@neukum.org> wrote:
+> > 
+> > > Am Montag, 18. Januar 2010 21:14:16 schrieb Matthew Garrett:
+> > > 
+> > > > drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 1565 
+> > > > bytes
+> > > > drivers/usb/serial/generic.c: usb_serial_generic_write - put 0 bytes 
+> > > > into fifo
+> > > > drivers/usb/serial/generic.c: usb_serial_generic_read_bulk_callback - 
+> > > > port 0
+> > > 
+> > > If the FIFO is full we can do nothing. Please try the attached patch.
+> > 
+> > If the FIFO is full how are we getting called - we should have throttled
+> > earlier if there is any flow control (including 'look no URBs' cases) ?
+> 
+> The log shows no call to usb_serial_generic_write_room()
+> Do you consider this a bug in the tty layer?
 
-What you want is an interface to read and write those information
-to/from the userspace, you can take iptables-save and iptables-restore
-as an example.
-
-One design of such interface would be passing a data structure which
-contains all the table information from user space to kernel space
-via syscall. Thus a user-space program will need to parse the data in
-a file into that data structure and then do that syscall.
-
-With this interface on hand, you can write an init-script to load the
-table info during boot and to save the info during shutdown.
-
--- 
-Live like a child, think like the god.
- 
+Some of the line disciplines just throw data at the board but not n_tty
+(the normal one) - so for PPP you wouldn't see checks on room but the
+loader I assume is using the normal tty layer - if so something is up
+because the ldisc shouldn't have written more than there is room for.
