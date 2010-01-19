@@ -1,80 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958Ab0ASB2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597Ab0ASBdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958Ab0ASB2X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 20:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279Ab0ASB2U
+	id S1752597Ab0ASBdL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 20:33:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104Ab0ASBdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 20:28:20 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57213 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752257Ab0ASB2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 20:28:12 -0500
-Message-ID: <4B550A32.6010508@cn.fujitsu.com>
-Date: Tue, 19 Jan 2010 09:26:10 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 18 Jan 2010 20:33:10 -0500
+Received: from mga02.intel.com ([134.134.136.20]:37645 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752088Ab0ASBdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 20:33:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,300,1262592000"; 
+   d="scan'208";a="588263444"
+Date: Tue, 19 Jan 2010 09:33:03 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [PATCH 5/8] vmalloc: simplify vread()/vwrite()
+Message-ID: <20100119013303.GA12513@localhost>
+References: <20100113135305.013124116@intel.com> <20100113135957.833222772@intel.com> <20100114124526.GB7518@laptop> <20100118133512.GC721@localhost> <20100118142359.GA14472@laptop>
 MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Jason Baron <jbaron@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] perf_event: cleanup for event profile buffer	operation
-References: <4B54654A.4090601@cn.fujitsu.com> <4B5465D8.9070203@cn.fujitsu.com> <4B548A9A.1020806@redhat.com> <20100118172021.GL10364@nowhere> <4B549F00.6060704@redhat.com>
-In-Reply-To: <4B549F00.6060704@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100118142359.GA14472@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
->> On Mon, Jan 18, 2010 at 11:21:46AM -0500, Masami Hiramatsu wrote:
->>> Hmm, could you make it inline-functions or add __kprobes?
->>> Because it is called from kprobes, we don't want to probe
->>> the function which will be called from kprobes handlers itself.
->>>
->>> (IMHO, from the viewpoint of performance, inline-function
->>>  could be better.)
->>>
->>> Thank you,
->>
->>
->> Yeah, may be inline ftrace_profile_buf_end, would be better.
->> But we shouldn't inline ftrace_profile_buf_begin() I guess,
->> considering its size.
+On Mon, Jan 18, 2010 at 07:23:59AM -0700, Nick Piggin wrote:
+> On Mon, Jan 18, 2010 at 09:35:12PM +0800, Wu Fengguang wrote:
+> > On Thu, Jan 14, 2010 at 05:45:26AM -0700, Nick Piggin wrote:
+> > > On Wed, Jan 13, 2010 at 09:53:10PM +0800, Wu Fengguang wrote:
+> > > > vread()/vwrite() is only called from kcore/kmem to access one page at a time.
+> > > > So the logic can be vastly simplified.
+> > > > 
+> > > > The changes are:
+> > > > - remove the vmlist walk and rely solely on vmalloc_to_page()
+> > > > - replace the VM_IOREMAP check with (page && page_is_ram(pfn))
+> > > > - rename to vread_page()/vwrite_page()
+> > > > 
+> > > > The page_is_ram() check is necessary because kmap_atomic() is not
+> > > > designed to work with non-RAM pages.
+> > > 
+> > > I don't know if you can really do this. Previously vmlist_lock would be
+> > > taken, which will prevent these vm areas from being freed.
+> > >  
+> > > > Note that even for a RAM page, we don't own the page, and cannot assume
+> > > > it's a _PAGE_CACHE_WB page.
+> > > 
+> > > So why is this not a problem for your patch? I don't see how you handle
+> > > it.
+> > 
+> > Sorry I didn't handle it. Just hope to catch attentions from someone
+> > (ie. you :).
+> > 
+> > It's not a problem for x86_64 at all. For others I wonder if any
+> > driver will vmalloc HIGHMEM pages with !_PAGE_CACHE_WB attribute..
+> > 
+> > So I noted the possible problem and leave it alone.
 > 
-> Indeed, especially for events...
-> 
+> Well it doesn't need to be vmalloc. Any kind of vmap like ioremap. And
+> these can be accompanied by changing the caching attribute. Like agp
+> code, for an example. But I don't know if that ever becomes a problem
+> in practice.
 
-Thanks Masami and Frederic, i'll fix it in the next version
+Yes vmap in general can change caching attribute. However I only care
+about vmap that maps RAM pages, since my patch treats non-RAM pages as
+hole and won't access them.
 
->> While at it, may be let's choose more verbose names
->> like
->>
->> ftrace_profile_buf_fill() and ftrace_profile_buf_submit().
->>
->> Also, profile is a bit of a misnomer. Not a problem since
->> ftrace_profile_templ_##call() is already a misnomer, but
->> we should start a bit of a rename. Sometimes, perf only
->> profiles trace events as counters and sometimes it records
->> the raw samples too.
->>
->> So, as more generic names, I would suggest:
->>
->> ftrace_perf_buf_fill() and ftrace_perf_buf_submit().
+> > > What's the problem with the current code, exactly? I would prefer that
+> > 
+> > - unnecessary complexity to handle multi-page case, since it's always
+> >   called to access one single page;
 > 
+> Fair point there. It just wasn't clear what exactly is your rationale
+> because this was in a set of other patches.
+>  
+> > - the kmap_atomic() cache consistency problem, which I expressed some
+> >   concern (without further action)
 > 
-> Actual filling buffer is done in the profile handlers,
-> so I think ftrace_perf_buf_prepare() may be better :-)
-> ftrace_perf_buf_submit is good to me:-)
-> 
+> Which kmap_atomic problem? Can you explain again? Virtual cache aliasing
+> problem you mean? Or caching attribute conflicts?
 
-OK, i'll rename those functions and add __kprobe for ftrace_perf_buf_prepare(),
-i guess i can add you Acked-by :-)
+kmap_atomic() assumes you own the page and always use _PAGE_CACHE_WB.
+So there may be conflicts if the page was !_PAGE_CACHE_WB.
+
+> The whole thing looks stupid though, apparently kmap is used to avoid "the
+> lock". But the lock is already held. We should just use the vmap
+> address.
+
+Yes. I wonder why Kame introduced kmap_atomic() in d0107eb07 -- given
+that he at the same time fixed the order of removing vm_struct and
+vmap in dd32c279983b.
+
+> > > you continue using the same vmlist locking and checking for validating
+> > > addresses.
+> > 
+> > It's a reasonable suggestion. Kame, would you agree on killing the
+> > kmap_atomic() and revert to the vmlist walk?
+> 
+> Yes, vmlist locking is always required to have a pin on the pages, and
+> IMO it should be quite easy to check for IOREMAP, so we should leave
+> that check there to avoid the possibility of regressions.
+
+I have no problem if Kame could dismiss my question :)
 
 Thanks,
-Xiao
+Fengguang
