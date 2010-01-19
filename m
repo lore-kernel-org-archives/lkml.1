@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045Ab0ASA4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104Ab0ASA5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045Ab0ASA4z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 19:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938Ab0ASA4x
+	id S1755104Ab0ASA5p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 19:57:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508Ab0ASA5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 19:56:53 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:44331 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753300Ab0ASA4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 19:56:52 -0500
-Date: Mon, 18 Jan 2010 16:56:46 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Josh Triplett <josh@joshtriplett.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 8/9] idr: apply lockdep-based diagnostics
-	to rcu_dereference() uses
-Message-ID: <20100119005646.GA6196@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100115010157.GA28221@linux.vnet.ibm.com> <20100118233604.GE29076@feather>
+	Mon, 18 Jan 2010 19:57:44 -0500
+Received: from mga05.intel.com ([192.55.52.89]:59761 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753300Ab0ASA5l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 19:57:41 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,299,1262592000"; 
+   d="scan'208";a="765297287"
+Message-ID: <4B550384.8030103@linux.intel.com>
+Date: Mon, 18 Jan 2010 16:57:40 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100118233604.GE29076@feather>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Tejun Heo <tj@kernel.org>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
+       johannes@sipsolutions.net, andi@firstfloor.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 32/40] async: introduce workqueue based alternative implementation
+References: <1263776272-382-1-git-send-email-tj@kernel.org>	<1263776272-382-33-git-send-email-tj@kernel.org>	<20100117220130.214d56f1@linux.intel.com>	<4B5420A3.3080200@kernel.org> <20100118072523.2683cd59@linux.intel.com> <4B55038D.3070106@kernel.org>
+In-Reply-To: <4B55038D.3070106@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 03:36:04PM -0800, Josh Triplett wrote:
-> On Thu, Jan 14, 2010 at 05:02:45PM -0800, Paul E. McKenney wrote:
-> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > 
-> > Because idr can be used with any of a number of locks or with any
-> > flavor of RCU, just disable the lockdep-based diagnostics.  If idr
-> > needs diagnostics, the check expression will need to be passed into
-> > the relevant idr primitives as an additional argument.
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> The subject line of this patch seems wrong.  Like the preceding patches
-> for radix tree and list operations, this *disables* the checking by
-> using _raw.
+On 1/18/2010 16:57, Tejun Heo wrote:
+> Hello, Arjan.
+>
+> On 01/19/2010 12:25 AM, Arjan van de Ven wrote:
+>> Your API/model change gets rid of this conceptually simple programming
+>> model, which makes using it on other places more complex and messy. I
+>> do not see what enormous benefit your patches would have that would
+>> justify complicating the programming model. (And "sharing the thread
+>> pool" is not that; I'm sure it's possible to share the thread pool
+>> without changing the programming model... and it's not that the async
+>> thread pools are that big or complex anyway)
+>
+> Oh yeah, if you want the cookies, it can be implemented on top of
+> workqueue.  I'm just not sure whether that has justifiable benefit.
+> About the same things can be achived using flushes and if some
+> subsystem want low level control, it can simply use the workqueue
+> directly implementing whatever level of concurrency as it sees fit and
+> flushing as necessary.
+>
+> As cmwq can provide async contexts flexibly, the benefit of async is
+> simplification of simple cases where the caller doesn't have to worry
+> about allocating works or whatever.  I don't really see much point in
+> introducing a different set of sync rules based on cookies when the
+> same thing can be achieved using wq interfaces directly and I think
+> that having two different models for async synchronization might hurt
+> more than help.  What type of ordering rules are you currently working
+> on using cookies?
 
-It does indeed use _raw.  If we start having enough issues with these
-interfaces, this will need to change.  At the moment, the obvious change
-is to provide multiple interfaces as was done for rcu_dereference().
-For example, idr_find(), idr_find_bh(), idr_find_sched(), idr_find_srcu(),
-idr_find_rcu(), and idr_find_check().
+there are two types:
+there's the domains, where you synchronize only within a domain,
+and then there's the "async string", think ACPI.
+the ACPI init is a whole series of sort of dependent steps, where you synchronize
+about halfway, but the whole set runs async to all other inits in the system, and only
+near the very end when a full synchronization is done do you wait.
+basically what you get (sorry, lame ascii graph)
 
-Probably only a few of these are actually in use, but even so, I decided
-to see how rcu_dereference() turned out before pushing up to the
-higher-level APIs.  My guess would be that the list APIs would be most
-pressing, but we will see.  ;-)
+***************************************  (main init flow)
+    ***				driver 1
+    *  **			driver 2
+     *   **			driver 3
+     *     **			driver 4
+     *       **                  driver 5
 
-							Thanx, Paul
+where you get maximum concurrency during the pre-synchronization part,
+and a "chain" of synchronized execution *as part of the same function flow*,
+but possibly independent of other synchronization flows.
+
+
+the async infrastructure as you say took away the hassle of allocating, and more
+importantly, caring for the lifetime of the metadata object. But it also introduced
+a sychronization mechanism that is natural and simple for driver init and some other flows.
+
+
+
+>
+> Thanks.
+>
+
