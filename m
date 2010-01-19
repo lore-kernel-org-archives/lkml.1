@@ -1,83 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033Ab0ASCfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396Ab0ASCid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033Ab0ASCfo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 21:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536Ab0ASCfn
+	id S1753396Ab0ASCid (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 21:38:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710Ab0ASCic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 21:35:43 -0500
-Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:45248 "HELO
-	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753481Ab0ASCfm (ORCPT
+	Mon, 18 Jan 2010 21:38:32 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:62760 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633Ab0ASCib (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 21:35:42 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=X/Xg8MZ8NMiF7A/EarzY6QsMwv3jJBps2zafl61LELOlM3yDRMwyTGthLWbrTnSEB+r4DKj2d65tclXO+t5MmVKBBKUVPaCO047zBI7rRxAMB37EEoipa5pSOFs8LrA1;
-Date: Tue, 19 Jan 2010 02:35:34 +0000
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Shaohua Li <shaohua.li@intel.com>
-Subject: Re: linux-next: pci tree build failure
-Message-ID: <20100119023534.69a7790a@jbarnes-x200>
-In-Reply-To: <201001182224.44223.rjw@sisk.pl>
-References: <20100118194050.7ea0c406.sfr@canb.auug.org.au>
-	<201001182224.44223.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i586-moblin-linux-gnu)
+	Mon, 18 Jan 2010 21:38:31 -0500
+Date: Tue, 19 Jan 2010 11:34:43 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC] Shared page accounting for memory cgroup
+Message-Id: <20100119113443.562e38ba.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <661de9471001181749y2fe22a15j1c01c94aa1838e99@mail.gmail.com>
+References: <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107083440.GS3059@balbir.in.ibm.com>
+	<20100107174814.ad6820db.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107180800.7b85ed10.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107092736.GW3059@balbir.in.ibm.com>
+	<20100108084727.429c40fc.kamezawa.hiroyu@jp.fujitsu.com>
+	<661de9471001171130p2b0ac061he6f3dab9ef46fd06@mail.gmail.com>
+	<20100118094920.151e1370.nishimura@mxp.nes.nec.co.jp>
+	<4B541B44.3090407@linux.vnet.ibm.com>
+	<20100119102208.59a16397.nishimura@mxp.nes.nec.co.jp>
+	<661de9471001181749y2fe22a15j1c01c94aa1838e99@mail.gmail.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 213.28.64.71 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jan 2010 22:24:44 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Monday 18 January 2010, Stephen Rothwell wrote:
-> > Hi Jesse,
-> > 
-> > Today's linux-next build (ppc64 allyesconfig) failed like this:
-> > 
-> > In file included from drivers/pci/pcie/pme/pcie_pme.c:22:
-> > include/linux/pci-acpi.h:42: error: expected '=', ',', ';', 'asm'
-> > or '__attribute__' before 'acpi_find_root_bridge_handle'
-> > 
-> > This file was added in commit
-> > f3adb5a4f2e1dfdf9482af05481d0928a39477e8 ("PCI PM: PCIe PME root
-> > port service driver") from the pci tree and seems to depend on
-> > ACPI.  Maybe its building should depend on CONFIG_ACPI?
-> > 
-> > I added the following patch for today (I presume there is a better
-> > fix):
-> > 
-> > From: Stephen Rothwell <sfr@canb.auug.org.au>
-> > Date: Mon, 18 Jan 2010 19:36:11 +1100
-> > Subject: [PATCH] pci: PCIE_PME seems to depend on ACPI
-> > 
-> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> > ---
-> >  drivers/pci/pcie/Kconfig |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
-> > index cf3c35f..b8b494b 100644
-> > --- a/drivers/pci/pcie/Kconfig
-> > +++ b/drivers/pci/pcie/Kconfig
-> > @@ -49,4 +49,4 @@ config PCIEASPM_DEBUG
-> >  
-> >  config PCIE_PME
-> >  	def_bool y
-> > -	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
-> > +	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL &&
-> > ACPI
+On Tue, 19 Jan 2010 07:19:42 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> On Tue, Jan 19, 2010 at 6:52 AM, Daisuke Nishimura
+> <nishimura@mxp.nes.nec.co.jp> wrote:
+> [snip]
+> >> Correct, file cache is almost always considered shared, so it has
+> >>
+> >> 1. non-private or shared usage of 10MB
+> >> 2. 10 MB of file cache
+> >>
+> >> > I don't think "non private usage" is appropriate to this value.
+> >> > Why don't you just show "sum_of_each_process_rss" ? I think it would be easier
+> >> > to understand for users.
+> >>
+> >> Here is my concern
+> >>
+> >> 1. The gap between looking at memcg stat and sum of all RSS is way
+> >> higher in user space
+> >> 2. Summing up all rss without walking the tasks atomically can and
+> >> will lead to consistency issues. Data can be stale as long as it
+> >> represents a consistent snapshot of data
+> >>
+> >> We need to differentiate between
+> >>
+> >> 1. Data snapshot (taken at a time, but valid at that point)
+> >> 2. Data taken from different sources that does not form a uniform
+> >> snapshot, because the timestamping of the each of the collected data
+> >> items is different
+> >>
+> > Hmm, I'm sorry I can't understand why you need "difference".
+> > IOW, what can users or middlewares know by the value in the above case
+> > (0MB in 01 and 10MB in 02)? I've read this thread, but I can't understande about
+> > this point... Why can this value mean some of the groups are "heavy" ?
+> >
 > 
-> Thanks a lot, this is the right fix IMO.
+> Consider a default cgroup that is not root and assume all applications
+> move there initially. Now with a lot of shared memory,
+> the default cgroup will be the first one to page in a lot of the
+> memory and its usage will be very high. Without the concept of
+> showing how much is non-private, how does one decide if the default
+> cgroup is using a lot of memory or sharing it? How
+> do we decide on limits of a cgroup without knowing its actual usage -
+> PSS equivalent for a region of memory for a task.
 > 
-> Jesse, do you want me to resend the patch with this fix included or
-> are you going to take the Stephens patch to your tree?
+As for limit, I think we should decide it based on the actual usage because
+we account and limit the accual usage. Why we should take account of the sum of rss ?
+I agree that we'd better not to ignore the sum of rss completely, but could you show me
+how the value 0MB/10MB can be used to caluculate the limit in 01/02 in detail ?
+I wouldn't argue against you if I could understand the value would be useful,
+but I can't understand how the value can be used, so I'm asking :)
 
-I'll pull in Stephen's fix, thanks.
-
-Jesse
+Thanks
+Daisuke Nishimura.
