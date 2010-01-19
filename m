@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630Ab0ASHVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919Ab0ASHed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630Ab0ASHVa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 02:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568Ab0ASHV2
+	id S1754919Ab0ASHed (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 02:34:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821Ab0ASHec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 02:21:28 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:34177 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751932Ab0ASHV0 (ORCPT
+	Tue, 19 Jan 2010 02:34:32 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:35441 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753274Ab0ASHeb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 02:21:26 -0500
-Date: Tue, 19 Jan 2010 16:21:14 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: David Miller <davem@davemloft.net>, arnd@arndb.de, geert@linux-m68k.org,
-       acme@redhat.com, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
-Subject: Re: sys_recvmmsg: wire up or not?
-Message-ID: <20100119072114.GB16013@linux-sh.org>
-References: <10f740e80912260239n17bbbd08w6c3065c12bde9c95@mail.gmail.com> <200912261212.14264.arnd@arndb.de> <1263442833.724.325.camel@pasglop> <20100113.202807.233259060.davem@davemloft.net> <1263452379.724.348.camel@pasglop>
+	Tue, 19 Jan 2010 02:34:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=sPJN4h6Q/78KvZI6EnL9GQy5FDGNFSdAJNNYsOygEO8G508PSbyWlLHgg1zNOBAd++
+         1joRsy3LN7PeY9rO8SaRTDVLaqbG2fL4USPKD3pDSKvtEK4hZomWzlyTjIOc4p+spNDA
+         qVVXpVRsCGbx1OtPYQ405/dLQ0x2AjmfpERU4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263452379.724.348.camel@pasglop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4B5557A7.5000401@cn.fujitsu.com>
+References: <4104961b1001182254x74f3fcd1r906de8f10c105f8a@mail.gmail.com>
+	 <4B5557A7.5000401@cn.fujitsu.com>
+Date: Tue, 19 Jan 2010 15:34:31 +0800
+Message-ID: <4104961b1001182334n7bd9c472r9689caf6b84788a2@mail.gmail.com>
+Subject: Re: Where is proc_misc.c?
+From: jidong xiao <jidong.xiao@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 14, 2010 at 05:59:39PM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2010-01-13 at 20:28 -0800, David Miller wrote:
-> > > Anything happening here ? We're getting that warning on ppc too
-> > despite
-> > > the fact that we use socketcall like x86... Should checksyscall be
-> > made
-> > > smarter or the syscall just removed from x86 ? :-)
-> > 
-> > I think it's better to trap directly to the system call rather
-> > than going through yet another demultiplexer.
-> > 
-> > I severely regretted using sys_socketcall initially on sparc32
-> > because it added a few microseconds to socket syscall latency
-> > (cpus back then were slow :-) 
-> 
-> Oh I definitely agree that a direct syscall is better, and I wonder in
-> fact if I should add new syscalls in addition to socketcall for powerpc,
-> for glibc to do a slow migration :-) I was just wondering about the
-> inconsistency for archs like us who have socketcall today, to also have
-> to define the syscall ...
-> 
-> IE. I'd rather have them all duplicated into real syscalls than some of
-> them only in socketcall and some on both since that will make any kind
-> of userspace transition even more hellish.
-> 
-Presumably you're going to have to support both given that binaries with
-both ABIs are going to be left around for the forseeable future. We
-started out with socketcall on sh64 with the initial ABI and then
-transitioned over to broken out direct system calls. While having both is
-a bit inconsistent, it's not really something that can be avoided until
-all of the old binaries go away. There are certainly enough architectures
-today that provide both that you shouldn't really run in to any nasty
-surprises at least.
+On Tue, Jan 19, 2010 at 2:56 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> jidong xiao wrote:
+>> Hi,
+>>
+>> Does anybody know what happend to fs/proc/proc_misc.c? The file is
+>> missing in 2.6.29. Seems like there was an cleanup, but i can't find
+>> the new location of the methods. Any help appreciated.
+>>
+>
+> $ git log -- fs/proc/proc_misc.c
+> commit 59c7572e82d69483a66eaa67b46548baeb69ecf4
+> Author: Alexey Dobriyan <adobriyan@gmail.com>
+> Date:   Mon Oct 6 14:49:39 2008 +0400
+>
+>    proc: remove fs/proc/proc_misc.c
+>
+>    Now that everything was moved to their more or less expected places,
+>    apply rm(1).
+>
+>    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+>
+>
 
-32-bit SH only uses socketcall at the moment, but I'm also inclined to
-add in the broken out versions and start migrating glibc over.
+Oh, I see. It looks like proc_misc.c has been splited into several
+files, such as cmdline.c,version.c,uptime.c,meminfo.c.Thank you.
 
-Unfortunately there are not a lot of good options for the syscall checker
-with things like this however, given that some platforms will want one or
-the other or both ;-)
+Regards
+Jason
