@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008Ab0ASOKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961Ab0ASOPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753008Ab0ASOKT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 09:10:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748Ab0ASOKS
+	id S1752961Ab0ASOPB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 09:15:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997Ab0ASOPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 09:10:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43489 "EHLO mx1.redhat.com"
+	Tue, 19 Jan 2010 09:15:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:57842 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752746Ab0ASOKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 09:10:17 -0500
-Subject: Re: [PATCH] kconfig: dont hardcode path to lsmod
-From: Steven Rostedt <srostedt@redhat.com>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kbuild@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1263883920-17289-1-git-send-email-vapier@gentoo.org>
-References: <1263883920-17289-1-git-send-email-vapier@gentoo.org>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Tue, 19 Jan 2010 09:10:02 -0500
-Message-Id: <1263910202.2737.133.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1751439Ab0ASOO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 09:14:59 -0500
+Date: Tue, 19 Jan 2010 16:14:36 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+       akpm@linux-foundation.org, andrew.c.morrow@gmail.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
+Message-ID: <20100119141436.GA5238@redhat.com>
+References: <20100118141938.GI30698@redhat.com>
+ <84144f021001180805q4d1203b8qab8ccb1de87b2866@mail.gmail.com>
+ <20100118170816.GA22111@redhat.com>
+ <84144f021001181009m52f7eaebp2bd746f92de08da9@mail.gmail.com>
+ <20100118181942.GD22111@redhat.com>
+ <20100118191031.0088f49a@lxorguk.ukuu.org.uk>
+ <20100119071734.GG14345@redhat.com>
+ <84144f021001182337o274c8ed3q8ce60581094bc2b9@mail.gmail.com>
+ <20100119075205.GI14345@redhat.com>
+ <1263910043.2163.24.camel@barrios-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263910043.2163.24.camel@barrios-desktop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-19 at 01:52 -0500, Mike Frysinger wrote:
-> The lsmod utility has always been installed into /bin with the newer
-> module-init-tools package, so let lsmod be found via PATH instead of
-> hardcoding the old modutils /sbin path.
+On Tue, Jan 19, 2010 at 11:07:23PM +0900, Minchan Kim wrote:
+> On Tue, 2010-01-19 at 09:52 +0200, Gleb Natapov wrote:
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-
-Thanks Mike, I actually have another patch like this. I was first a bit
-nervous about using non hard code, but then perhaps it's OK. I my patch
-actually checked the main paths first before choosing the "lsmod". But
-maybe that would be the better solution, since it would allow someone to
-choose their own lsmod.
-
-Thanks!
-
--- Steve
-
-> ---
->  scripts/kconfig/streamline_config.pl |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> > In my case (virtualization) I want to test/profile guest under heavy swapping
+> > of a guests memory, so I intentionally create memory shortage by creating
 > 
-> diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
-> index 0d80082..e1dfc8c 100644
-> --- a/scripts/kconfig/streamline_config.pl
-> +++ b/scripts/kconfig/streamline_config.pl
-> @@ -238,7 +238,7 @@ foreach my $makefile (@makefiles) {
->  my %modules;
->  
->  # see what modules are loaded on this system
-> -open(LIN,"/sbin/lsmod|") || die "Cant lsmod";
-> +open(LIN,"lsmod|") || die "Cant lsmod";
->  while (<LIN>) {
->  	next if (/^Module/);  # Skip the first line.
->  	if (/^(\S+)/) {
+> You mean "guest memory" that is area emulated DRAM in qemu?
+> It is anonymous vma. 
+> 
+> > guest much large then host memory, but I want system to swap out only
+> > guest's memory.
+> 
+> Couldn't you use MADV_SEQUENTIAL on only guest memory area?
+> It doesn't make side effect about readahead since it's anon area. 
+> And it would make do best effort to swap out guest's memory.
+> 
+I can try, should be better then nothing I guess. Doesn't guaranty that
+emulator memory will not be swapped out though.
 
+--
+			Gleb.
