@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549Ab0ASUnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568Ab0ASUrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755549Ab0ASUnK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 15:43:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016Ab0ASUnI
+	id S1755568Ab0ASUrc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 15:47:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466Ab0ASUrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 15:43:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:18590 "EHLO mx1.redhat.com"
+	Tue, 19 Jan 2010 15:47:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57757 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752596Ab0ASUnF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 15:43:05 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>,
-       "Zhang\, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Shaohua Li <shaohua.li@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: fio mmap randread 64k more than 40% regression with 2.6.33-rc1
-References: <1262250960.1819.68.camel@localhost>
-	<4e5e476b0912310234mf9ccaadm771c637a3d107d18@mail.gmail.com>
-	<1262340730.19773.47.camel@localhost>
-	<4e5e476b1001010832o24f6a0efudbfc36598bfc7c5e@mail.gmail.com>
-	<1262435612.19773.80.camel@localhost>
-	<4e5e476b1001021052u51a90a91qb2fbb4089498a3ca@mail.gmail.com>
-	<1262593090.29897.14.camel@localhost>
-	<4e5e476b1001041028v1f204834r1fa97e732a094210@mail.gmail.com>
-	<4e5e476b1001160827n6dc73b35vee8b46e541134c2@mail.gmail.com>
-	<1263783999.12893.2.camel@localhost>
-	<4e5e476b1001191210s37423e4av6673225d5078a88e@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 19 Jan 2010 15:42:56 -0500
-In-Reply-To: <4e5e476b1001191210s37423e4av6673225d5078a88e@mail.gmail.com>
-	(Corrado Zoccolo's message of "Tue, 19 Jan 2010 21:10:33 +0100")
-Message-ID: <x49zl49vnan.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	id S1753733Ab0ASUra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 15:47:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was: Re: [linux-pm] Memory allocations in .suspend became very unreliable)
+Date: Tue, 19 Jan 2010 21:47:58 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20100118110324.AE30.A69D9226@jp.fujitsu.com> <20100119101101.5F2E.A69D9226@jp.fujitsu.com> <1263871194.724.520.camel@pasglop>
+In-Reply-To: <1263871194.724.520.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001192147.58185.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
+On Tuesday 19 January 2010, Benjamin Herrenschmidt wrote:
+> On Tue, 2010-01-19 at 10:19 +0900, KOSAKI Motohiro wrote:
+> > I think the race happen itself is bad. memory and I/O subsystem can't solve such race
+> > elegantly. These doesn't know enough suspend state knowlege. I think the practical 
+> > solution is that higher level design prevent the race happen.
+> > 
+> > 
+> > > My patch attempts to avoid these two problems as well as the problem with
+> > > drivers using GFP_KERNEL allocations during suspend which I admit might be
+> > > solved by reworking the drivers.
+> > 
+> > Agreed. In this case, only drivers change can solve the issue. 
+> 
+> As I explained earlier, this is near to impossible since the allocations
+> are too often burried deep down the call stack or simply because the
+> driver doesn't know that we started suspending -another- driver...
+> 
+> I don't think trying to solve those problems at the driver level is
+> realistic to be honest. This is one of those things where we really just
+> need to make allocators 'just work' from a driver perspective.
+> 
+> It can't be perfect of course, as mentioned earlier, there will be a
+> problem if too little free memory is really available due to lots of
+> dirty pages around, but most of this can be somewhat alleviated in
+> practice, for example by pushing things out a bit at suspend time,
+> making some more memory free etc... But yeah, nothing replaces proper
+> error handling in drivers for allocation failures even with
+> GFP_KERNEL :-)
 
-> On Mon, Jan 18, 2010 at 4:06 AM, Zhang, Yanmin
-> <yanmin_zhang@linux.intel.com> wrote:
->> On Sat, 2010-01-16 at 17:27 +0100, Corrado Zoccolo wrote:
->>> Hi Yanmin
->>> On Mon, Jan 4, 2010 at 7:28 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
->>> > Hi Yanmin,
->>> >> When low_latency=1, we get the biggest number with kernel 2.6.32.
->>> >> Comparing with low_latency=0's result, the prior one is about 4% better.
->>> > Ok, so 2.6.33 + corrado (with low_latency =0) is comparable with
->>> > fastest 2.6.32, so we can consider the first part of the problem
->>> > solved.
->>> >
->>> I think we can return now to your full script with queue merging.
->>> I'm wondering if (in arm_slice_timer):
->>> -       if (cfqq->dispatched)
->>> +      if (cfqq->dispatched || (cfqq->new_cfqq && rq_in_driver(cfqd)))
->>>                return;
->>> gives the same improvement you were experiencing just reverting to rq_in_driver.
->> I did a quick testing against 2.6.33-rc1. With the new method, fio mmap randread 46k
->> has about 20% improvement. With just checking rq_in_driver(cfqd), it has
->> about 33% improvement.
->>
-> Jeff, do you have an idea why in arm_slice_timer, checking
-> rq_in_driver instead of cfqq->dispatched gives so much improvement in
-> presence of queue merging, while it doesn't have noticeable effect
-> when there are no merges?
+Agreed.
 
-It's tough to say.  Is there any chance I could get some blktrace data
-for the run?
+Moreover, I didn't try to do anything about that before, because memory
+allocation problems during suspend/resume just didn't happen.  We kind of knew
+they were possible, but since they didn't show up, it wasn't immediately
+necessary to address them.
 
-Cheers,
-Jeff
+Now, however, people started to see these problems in testing and I'm quite
+confident that this is a result of recent changes in the mm subsystem.  Namely,
+if you read the Maxim's report carefully, you'll notice that in his test case
+the mm subsystem apparently attempted to use I/O even though there was free
+memory available in the system.  This is the case I want to prevent from
+happening in the first place.
+
+Rafael
