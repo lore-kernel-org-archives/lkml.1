@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975Ab0ASPke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277Ab0ASPpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975Ab0ASPke (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 10:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819Ab0ASPkb
+	id S1754277Ab0ASPpA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 10:45:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254Ab0ASPo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 10:40:31 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:37704 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753921Ab0ASPk2 (ORCPT
+	Tue, 19 Jan 2010 10:44:57 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:49156 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753938Ab0ASPo4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 10:40:28 -0500
-Date: Tue, 19 Jan 2010 10:40:22 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [Update][RFC][PATCH] PM / Runtime: Add sysfs switch for disabling
- device run-time PM
-In-Reply-To: <201001182325.28094.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.1001191035150.1437-100000@iolanthe.rowland.org>
+	Tue, 19 Jan 2010 10:44:56 -0500
+Date: Tue, 19 Jan 2010 10:44:55 -0500
+To: David Miller <davem@davemloft.net>
+Cc: lsorense@csclub.uwaterloo.ca, linux-kernel@vger.kernel.org,
+       gabriele.paoloni@intel.com, netdev@vger.kernel.org
+Subject: Re: ppp_generic.c severly whitespace damanged by
+	9c705260feea6ae329bc6b6d5f6d2ef0227eda0a
+Message-ID: <20100119154455.GJ24305@caffeine.csclub.uwaterloo.ca>
+References: <20100118225955.GA24307@caffeine.csclub.uwaterloo.ca> <20100119.021301.228036686.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100119.021301.228036686.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jan 2010, Rafael J. Wysocki wrote:
-
-> > Ouch.  This does nearly the same thing as the power/level attribute in
-> > the USB subsystem, but in an incompatible and more complicated way.
+On Tue, Jan 19, 2010 at 02:13:01AM -0800, David Miller wrote:
+> From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+> Date: Mon, 18 Jan 2010 17:59:55 -0500
+> 
+> > I was just looking at ppp_generic, and noticed that it fairly recently
+> > (as in the last year) got rather mangled with many spaces turned into tabs
+> > in places they very much shouldn't have been.  I tracked it down to commit
+> > 9c705260feea6ae329bc6b6d5f6d2ef0227eda0a (ppp: ppp_mp_explode() redesign).
 > > 
-> > The power/level attribute can contain either "on" or "auto", meaning
-> > that the device is always on or that it is subject to automatic runtime
-> > power management (autosuspend).
+> > I am amazed if that patch passed the patch checking script.  I have no
+> > idea what kind of weird editor setting did this, but it has to have been a
+> > weird editor setting or a very unfortunate search and replace gone wrong.
+> > I only found it trying to apply a patch I was playing with and wondering
+> > why it wouldn't apply.  Then I found there were tabs in the middle of
+> > comments that used to be spaces.
+> > 
+> > Well here is a patch that should fix it up as far as I can tell.
+> > 
+> > Purely whitespace repair.  No actual code changes.
+> > 
+> > Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
 > 
-> It looks like my "disable" is similar to "on", while my "enable" is similar to
-> "auto".  I can use "auto" and "on" just fine.
-
-Good.
-
-> > Changing the setting from "auto" to "on" merely does sets a flag and does
-> > pm_runtime_get_sync(); changing it from "on" to "auto" clears the flag and
-> > does pm_runtime_put_sync().
+> I'm probably responsible for not catching this sorry.
 > 
-> We can do it almost this way in general, although I think the flag should be
-> changed under the power.lock.
+> Applied to net-next-2.6, thanks.
 
-Yes.  I was using the device semaphore, but the power.lock is more 
-appropriate here.
+Great.  I hope I got them all.  I couldn't find anymore searching though.
 
-> Updated patch is appended.
-
-Why change the name from "level" to "runtime"?
-
->  /*
-> + *	runtime - Report/change current runtime PM setting of the device
-> + *
-> + *	Runtime power management of a device can be blocked with the help of
-> + *	this attribute.  All devices have one of the following two values for
-> + *	the power/runtime file:
-> + *
-> + *	 + "auto\n" to allow the device to be power managed at run time;
-> + *	 + "on\n" to prevent the device from being power managemed at run time;
-
----------------------------------------------------------------^^  typo
-
-Don't forget to add an entry to Documentation/ABI/testing/.
-
-Alan Stern
-
+-- 
+Len Sorensen
