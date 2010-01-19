@@ -1,82 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940Ab0ASWMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055Ab0ASWM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754940Ab0ASWMI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 17:12:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558Ab0ASWMG
+	id S1755055Ab0ASWM1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 17:12:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970Ab0ASWMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 17:12:06 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33670 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754428Ab0ASWMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 17:12:02 -0500
-Message-ID: <4B562DFE.7020006@kernel.org>
-Date: Tue, 19 Jan 2010 14:11:10 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 01/11] pci: add pci_bridge_release_unused_res and	pci_bus_release_unused_bridge_res
-References: <1263640037-24134-1-git-send-email-yinghai@kernel.org> <1263640037-24134-2-git-send-email-yinghai@kernel.org> <20100119212608.GF11010@ldl.fc.hp.com>
-In-Reply-To: <20100119212608.GF11010@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 19 Jan 2010 17:12:25 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34834
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754955Ab0ASWMZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 17:12:25 -0500
+Date: Tue, 19 Jan 2010 14:12:34 -0800 (PST)
+Message-Id: <20100119.141234.151191622.davem@davemloft.net>
+To: roel.kluin@gmail.com
+Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, kuznet@ms2.inr.ac.ru,
+       jmorris@namei.org, kaber@trash.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [NETLINK]: With opcode INET_DIAG_BC_S_LE dport was
+ compared in inet_diag_bc_run()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B56291D.2000304@gmail.com>
+References: <4B56291D.2000304@gmail.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/19/2010 01:26 PM, Alex Chiang wrote:
->> +static void __ref pci_bus_release_bridge_resources(struct pci_bus *bus,
->> +						   unsigned long type,
->> +						   enum release_type rel_type)
->> +{
->> +	struct pci_dev *dev;
->> +	bool is_leaf_bridge = true;
->> +
->> +	list_for_each_entry(dev, &bus->devices, bus_list) {
->> +		struct pci_bus *b = dev->subordinate;
->> +		if (!b)
->> +			continue;
->> +
->> +		switch (dev->class >> 8) {
->> +		case PCI_CLASS_BRIDGE_CARDBUS:
->> +			is_leaf_bridge = false;
->> +			break;
->> +
->> +		case PCI_CLASS_BRIDGE_PCI:
->> +		default:
->> +			is_leaf_bridge = false;
->> +			if (rel_type == whole_subtree)
->> +				pci_bus_release_bridge_resources(b, type,
->> +							 whole_subtree);
->> +			break;
->> +		}
->> +	}
-> 
-> I still don't understand this loop. Can't you write it like this:
-> 
-> 	list_for_each_entry(dev, &bus->devices, bus_list) {
-> 		struct pci_bus *b = dev->subordinate;
-> 		if (!b)
-> 			continue;
-> 
-> 		is_leaf_bridge = false;
-> 
-> 		if ((dev->class >> 8) == PCI_CLASS_BRIDGE_CARDBUS)
-> 			continue;
-> 
-> 		if (rel_type == whole_subtree)
-> 			pci_bus_release_bridge_resources(b, type,
-> 						whole_subtree);
-> 	}
-> 
-> I'm looking at that 'default' label in your switch() statement
-> which causes us to always set is_leaf_bridge = false after 'b' is
-> valid.
+From: Roel Kluin <roel.kluin@gmail.com>
+Date: Tue, 19 Jan 2010 22:50:21 +0100
 
-ok
+> The s-port should be compared.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> I presume?
+
+Yep, looks good.
+
+Excellent catch, applied, thanks!
