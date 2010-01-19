@@ -1,34 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407Ab0ANSec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753738Ab0ASOll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757407Ab0ANSec (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 13:34:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713Ab0ANSeb
+	id S1753738Ab0ASOll (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 09:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522Ab0ASOlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 13:34:31 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:46937 "EHLO relay.sgi.com"
+	Tue, 19 Jan 2010 09:41:40 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:50803 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754519Ab0ANSea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 13:34:30 -0500
-Date: Thu, 14 Jan 2010 12:34:22 -0600
+	id S1751512Ab0ASOlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 09:41:39 -0500
+Date: Tue, 19 Jan 2010 08:41:37 -0600
 From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86, UV: Read RTC using replicated cachelines
-Message-ID: <20100114183422.GA12152@sgi.com>
-References: <20100112210904.GA24546@sgi.com> <20100113092433.GB6739@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Jack Steiner <steiner@sgi.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de
+Subject: [PATCH] x86, UV: Fix RTC latency bug by reading replicated
+	cachelines
+Message-ID: <20100119144137.GB22276@sgi.com>
+References: <20100112210904.GA24546@sgi.com> <20100113092433.GB6739@elte.hu> <20100114183422.GA12152@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100113092433.GB6739@elte.hu>
+In-Reply-To: <20100114183422.GA12152@sgi.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For SGI UV node controllers (HUB) rev 2.0 or greater, use replicated
-cachelines to read the RTC timer.  This optimization allows faster
-simulataneous reads from a given socket.
+Fix an RTC read latency bug by using replicated cachelines to read the RTC
+timer on SGI UV node controllers (HUB) rev 2.0 or greater.
 
 Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
