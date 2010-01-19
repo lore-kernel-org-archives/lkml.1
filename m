@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055Ab0ASWM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567Ab0ASWRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755055Ab0ASWM1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 17:12:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970Ab0ASWMZ
+	id S1755567Ab0ASWRN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 17:17:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278Ab0ASWRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 17:12:25 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34834
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754955Ab0ASWMZ (ORCPT
+	Tue, 19 Jan 2010 17:17:08 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:35320 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753969Ab0ASWRB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 17:12:25 -0500
-Date: Tue, 19 Jan 2010 14:12:34 -0800 (PST)
-Message-Id: <20100119.141234.151191622.davem@davemloft.net>
-To: roel.kluin@gmail.com
-Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, kuznet@ms2.inr.ac.ru,
-       jmorris@namei.org, kaber@trash.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [NETLINK]: With opcode INET_DIAG_BC_S_LE dport was
- compared in inet_diag_bc_run()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B56291D.2000304@gmail.com>
-References: <4B56291D.2000304@gmail.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jan 2010 17:17:01 -0500
+Date: Tue, 19 Jan 2010 22:16:48 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Joe Perches <joe@perches.com>
+Cc: Wim Van Sebroeck <wim@iguana.be>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Florian Fainelli <florian@openwrt.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-omap@vger.kernel.org
+Subject: Re: [RFC] [PATCH] watchdog_info separation and constify
+Message-ID: <20100119221647.GC29306@sirena.org.uk>
+References: <20100119211759.GE3804@infomag.iguana.be> <1263937351.18117.69.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263937351.18117.69.camel@Joe-Laptop.home>
+X-Cookie: Hope is a waking dream.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roel Kluin <roel.kluin@gmail.com>
-Date: Tue, 19 Jan 2010 22:50:21 +0100
+On Tue, Jan 19, 2010 at 01:42:31PM -0800, Joe Perches wrote:
 
-> The s-port should be compared.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> I presume?
+> Maybe a standard #define WATCHDOG_NAME <foo>
 
-Yep, looks good.
+> .identity = WATCHGOD_NAME
 
-Excellent catch, applied, thanks!
+I don't really see that the indrection via the #define would buy us
+anything?
