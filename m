@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944Ab0ASOvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932Ab0ASOxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944Ab0ASOvO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 09:51:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746Ab0ASOvN
+	id S1753932Ab0ASOxp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 09:53:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805Ab0ASOxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 09:51:13 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:38709 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752928Ab0ASOvL (ORCPT
+	Tue, 19 Jan 2010 09:53:44 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:64507 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752289Ab0ASOxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 09:51:11 -0500
-X-Sasl-enc: ux2MncWc5j3Pn0ZkQFtqRFyTsv4RyYmLM547spsR7aCr 1263912670
-Date: Tue, 19 Jan 2010 12:51:08 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Hagen Paul Pfeifer <hagen@jauu.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] thinkpad-acpi: fix link error to include sound arch
-Message-ID: <20100119145108.GD2668@khazad-dum.debian.net>
-References: <1263820516-6924-1-git-send-email-hagen@jauu.net>
+	Tue, 19 Jan 2010 09:53:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Za9N7rETgkir/NhNt+w/+wY5TITt2FN2wce1CTqU6M/gAzT992p7HNlZOLnhbZpFQE
+         qqODDMp05oZ0zTFAa2yRx2dz/3tEu8spZy3L14MYGjzDdsUV3GrJl80UfTSDE0gy7fYy
+         5ir0aSzeaWpHTh3zOrr/y+6Hba/AoZ9nSm720=
+Date: Tue, 19 Jan 2010 15:53:40 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Joshua Pincus <joshua.pincus@gmail.com>, peterz@infradead.org,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: HW breakpoints perf_events request
+Message-ID: <20100119145337.GC8061@nowhere>
+References: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com> <20100118174505.GB23680@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1263820516-6924-1-git-send-email-hagen@jauu.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100118174505.GB23680@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jan 2010, Hagen Paul Pfeifer wrote:
-> Thinkpad ACPI depends on sound for resume/suspend/shutdown
-> events. This fix corrects the Kconfig dependency between
+On Mon, Jan 18, 2010 at 11:15:05PM +0530, K.Prasad wrote:
+> Signal generation happens by default for all user-space breakpoint
+> requests (and not just for ptrace requests).
 
-Does it?  I'd rather fix the real problem, it shouldn't depend on sound for
-resume/suspend/shutdown.  If it does, the fix is to break the dependency.
 
-> in-kernel build and module build. The preprocessor
-> directive #ifdef CONFIG_THINKPAD_ACPI_ALSA_SUPPORT
-> isn't sufficient to handle this build dependency.
+Ah? That's not a good thing. We should be able to
+set userspace breakpoints later on perf without
+generating signals.
 
-NAK.
-
-Can you describe the problem in more detail?  That will save me precious
-time, as I am rather overworked right now...
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
