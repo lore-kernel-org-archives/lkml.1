@@ -1,78 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160Ab0ASSvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261Ab0ASSw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160Ab0ASSvS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 13:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173Ab0ASSvR
+	id S1754261Ab0ASSw1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 13:52:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938Ab0ASSwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 13:51:17 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:45045 "EHLO mail.vyatta.com"
+	Tue, 19 Jan 2010 13:52:25 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:42499 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752551Ab0ASSvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 13:51:17 -0500
-Date: Tue, 19 Jan 2010 10:51:05 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Tino Keitel <tino.keitel@tikei.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression: Wake on LAN doesn't work in sky2 with
- 2.6.33-rc4-git2
-Message-ID: <20100119105105.184c3f01@nehalam>
-In-Reply-To: <20100119103248.GA8527@mac.home>
-References: <20100115091053.GA5477@mac.home>
-	<201001180136.45823.rjw@sisk.pl>
-	<20100118083757.GA2619@mac.home>
-	<201001182234.55113.rjw@sisk.pl>
-	<20100118144340.100c9544@nehalam>
-	<20100119103248.GA8527@mac.home>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753697Ab0ASSwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 13:52:25 -0500
+Date: Tue, 19 Jan 2010 18:52:13 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] delay-accounting: Re-implement -c for getdelays.c to
+	report information on a target command
+Message-ID: <20100119185213.GB5154@csn.ul.ie>
+References: <20100119180027.GA5154@csn.ul.ie> <4B55F657.9000009@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4B55F657.9000009@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is this better worse or the same? It make sure that some
-registers are set on resume that might matter.
+On Tue, Jan 19, 2010 at 11:43:43PM +0530, Balbir Singh wrote:
+> On Tuesday 19 January 2010 11:30 PM, Mel Gorman wrote:
+> > Task delay-accounting was identified as one means of determining how long
+> > a process spends in congestion_wait() without adding new statistics. For
+> > example, if the workload should not be doing IO, delay-accounting could
+> > reveal how long it was spending in unexpected IO or delays. Unfortunately,
+> > on closer examination it was clear that getdelays does not act as documented.
+> > 
+> > Commit a3baf649 added Documentation/accounting/getdelays.c with a -c switch
+> > that was documented to fork/exec a child and report statistics on it but for
+> > reasons that are unclear to me, commit 9e06d3f9 deleted support for this
+> 
+> That is an oversight and not intentional. I've not gotten around to
+> reimplementing the -c option due to lack for people asking for it.
+> 
 
+Consider this a request then. Man, I'd really like if someone
+implemented that -c switch thing :P
 
---- a/drivers/net/sky2.c	2010-01-19 10:32:47.549541152 -0800
-+++ b/drivers/net/sky2.c	2010-01-19 10:49:06.726853816 -0800
-@@ -3002,11 +3002,17 @@ static void sky2_reset(struct sky2_hw *h
- 	u32 hwe_mask = Y2_HWE_ALL_MASK;
- 
- 	/* disable ASF */
--	if (hw->chip_id == CHIP_ID_YUKON_EX) {
-+	if (hw->chip_id == CHIP_ID_YUKON_EX ||
-+	    hw->chip_id == CHIP_ID_YUKON_SUPR) {
-+		/* stop the watchdog */
-+		sky2_write32(hw, CPU_WDOG, 0);
-+
- 		status = sky2_read16(hw, HCU_CCSR);
- 		status &= ~(HCU_CCSR_AHB_RST | HCU_CCSR_CPU_RST_MODE |
- 			    HCU_CCSR_UC_STATE_MSK);
-+		status &= ~HCU_CCSR_CPU_CLK_DIVIDE_MSK;
- 		sky2_write16(hw, HCU_CCSR, status);
-+		sky2_write32(hw, CPU_WDOG, 0);
- 	} else
- 		sky2_write8(hw, B28_Y2_ASF_STAT_CMD, Y2_ASF_RESET);
- 	sky2_write16(hw, B0_CTST, Y2_ASF_DISABLE);
-@@ -4807,11 +4813,12 @@ static int sky2_resume(struct pci_dev *p
- 
- 	pci_enable_wake(pdev, PCI_D0, 0);
- 
--	/* Re-enable all clocks */
--	if (hw->chip_id == CHIP_ID_YUKON_EX ||
--	    hw->chip_id == CHIP_ID_YUKON_EC_U ||
--	    hw->chip_id == CHIP_ID_YUKON_FE_P)
--		sky2_pci_write32(hw, PCI_DEV_REG3, 0);
-+	/* Enable all clocks and check for bad PCI access */
-+	err = pci_write_config_dword(pdev, PCI_DEV_REG3, 0);
-+	if (err)
-+		goto out;
-+
-+	sky2_write8(hw, B0_CTST, CS_RST_CLR);
- 
- 	sky2_reset(hw);
- 	sky2_write32(hw, B0_IMSK, Y2_IS_BASE);
+> > switch but did not update the documentation. It might be an oversight or
+> > it might be because the control flow of the program meant that accounting
+> > information would be printed once early in the lifetime of the program
+> > making it of limited use.
+> > 
+> > This patch reimplements -c for getdelays.c to act as documented. Unlike the
+> > original version, it waits until the command completes before printing any
+> > information on it. An example of it being used looks like
+> > 
+> 
+> Looks good, could you please keep the original sign-offs as well?
+> 
+
+Well, the reimplementation is significantly different to what was there
+so I'm not sure that's appropriate. Look at the differences yourself.
+
+> > $ ./getdelays -d -c find /home/mel -name mel
+> > print delayacct stats ON
+> > /home/mel
+> > /home/mel/.notes-wine/drive_c/windows/profiles/mel
+> > /home/mel/.wine/drive_c/windows/profiles/mel
+> > /home/mel/git-configs/dot.kde/share/apps/konqueror/home/mel
+> > PID	5923
+> > 
+> > CPU             count     real total  virtual total    delay total
+> >                 42779     5051232096     5164722692      564207988
+> > IO              count    delay total
+> >                 41727    97804147758
+> > SWAP            count    delay total
+> >                     0              0
+> > RECLAIM         count    delay total
+> >                     0              0
+> > 
+> > It's not clear how or if this subsystem is being maintained. If the
+> > authors agree on it but do not pick it up for merging, I'll go bug
+> > Andrew with it.
+> > 
+> 
+> I am maintaining it, please do let me know if you have an issue with the
+> subsystem or utilities.
+> 
+
+If you're happy with the patch then, can you pick it up, add your
+signed-off-by and go with whatever submission path you use for this
+subsystem?
+
+Thanks
+
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > --- 
+> >  Documentation/accounting/getdelays.c |   37 +++++++++++++++++++++++++++++++++--
+> >  1 file changed, 35 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+> > index 6e25c26..c6648bc 100644
+> > --- a/Documentation/accounting/getdelays.c
+> > +++ b/Documentation/accounting/getdelays.c
+> > @@ -21,6 +21,7 @@
+> >  #include <sys/types.h>
+> >  #include <sys/stat.h>
+> >  #include <sys/socket.h>
+> > +#include <sys/wait.h>
+> >  #include <signal.h>
+> > 
+> >  #include <linux/genetlink.h>
+> > @@ -266,11 +267,13 @@ int main(int argc, char *argv[])
+> >  	int containerset = 0;
+> >  	char containerpath[1024];
+> >  	int cfd = 0;
+> > +	int forking = 0;
+> > +	sigset_t sigset;
+> > 
+> >  	struct msgtemplate msg;
+> > 
+> > -	while (1) {
+> > -		c = getopt(argc, argv, "qdiw:r:m:t:p:vlC:");
+> > +	while (!forking) {
+> > +		c = getopt(argc, argv, "qdiw:r:m:t:p:vlC:c:");
+> >  		if (c < 0)
+> >  			break;
+> > 
+> > @@ -319,6 +322,27 @@ int main(int argc, char *argv[])
+> >  				err(1, "Invalid pid\n");
+> >  			cmd_type = TASKSTATS_CMD_ATTR_PID;
+> >  			break;
+> > +		case 'c':
+> > +
+> > +			/* Block SIGCHLD for sigwait() later */
+> > +			if (sigemptyset(&sigset) == -1)
+> > +				err(1, "Failed to empty sigset");
+> > +			if (sigaddset(&sigset, SIGCHLD))
+> > +				err(1, "Failed to set sigchld in sigset");
+> > +			sigprocmask(SIG_BLOCK, &sigset, NULL);
+> > +
+> > +			/* fork/exec a child */
+> > +			tid = fork();
+> > +			if (tid < 0)
+> > +				err(1, "Fork failed\n");
+> > +			if (tid == 0)
+> > +				if (execvp(argv[optind - 1], &argv[optind - 1]) < 0)
+> > +					exit(-1);
+> > +
+> > +			/* Set the command type and avoid further processing */
+> > +			cmd_type = TASKSTATS_CMD_ATTR_PID;
+> > +			forking = 1;
+> > +			break;
+> >  		case 'v':
+> >  			printf("debug on\n");
+> >  			dbg = 1;
+> > @@ -370,6 +394,15 @@ int main(int argc, char *argv[])
+> >  		goto err;
+> >  	}
+> > 
+> > +	/*
+> > +	 * If we forked a child, wait for it to exit. Cannot use waitpid()
+> > +	 * as all the delicious data would be reaped as part of the wait 
+> > +	 */
+> > +	if (tid && forking) {
+> > +		int sig_received;
+> > +		sigwait(&sigset, &sig_received);
+> > +	}
+> > +
+> >  	if (tid) {
+> >  		rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
+> >  			      cmd_type, &tid, sizeof(__u32));
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
