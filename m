@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932164Ab0ASKrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755Ab0ASK54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932164Ab0ASKrr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 05:47:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447Ab0ASKrq
+	id S1755755Ab0ASK54 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 05:57:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060Ab0ASK5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 05:47:46 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:43835 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752221Ab0ASKrp (ORCPT
+	Tue, 19 Jan 2010 05:57:54 -0500
+Received: from mga06.intel.com ([134.134.136.21]:45710 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752841Ab0ASK5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 05:47:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mlG8MW+QZVl8+KOQjRvzS1lC/QY1IttN/OMTksYfCSGq/CSc8kIPYu8DA8Oa1TOza6
-         7e4l/pQpsysTFUhg49QRrtZb+JwbZPC7BDKh2nLvfraCLCINS573GIZJ095FbJlXV/j2
-         neHx6glWe+TtpdZqWbKgw/Vhi0sOlULjbM87Y=
-Date: Tue, 19 Jan 2010 10:47:39 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-Message-ID: <20100119104739.GA9088@ff.dom.local>
-References: <20100118073018.GA6270@ff.dom.local> <4B548C6B.10607@majjas.com> <20100118204658.GC3157@del.dom.local> <4B54CB0D.5070604@majjas.com> <20100118212516.GE3157@del.dom.local> <4B54D50C.90608@majjas.com> <20100118220814.GG3157@del.dom.local> <20100118221747.GH3157@del.dom.local> <4B54E4EF.8080602@majjas.com> <4B554730.6090000@majjas.com>
+	Tue, 19 Jan 2010 05:57:54 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,302,1262592000"; 
+   d="scan'208";a="485131939"
+Date: Tue, 19 Jan 2010 11:59:27 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Cory Maccarrone <darkstar6262@gmail.com>
+Subject: Re: linux-next: mfd tree build failure
+Message-ID: <20100119105926.GA554@sortiz.org>
+References: <20100119150653.1b9bbf67.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B554730.6090000@majjas.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100119150653.1b9bbf67.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 12:46:24AM -0500, Michael Breuer wrote:
-> Ok - one last update for a while ...not sure what's next... I put some  
-> printk's into sky2.c xmit logic - the packets are being sent to the  
-...
+Hi Stephen,
 
-Btw, could you try if this patch can makes difference in triggering
-the "lib/dma-debug.c:898" warning?
+On Tue, Jan 19, 2010 at 03:06:53PM +1100, Stephen Rothwell wrote:
+> Hi Samuel,
+> 
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+> 
+> drivers/mfd/htc-i2cpld.c: In function 'htcpld_set_type':
+> drivers/mfd/htc-i2cpld.c:106: error: 'irq_desc' undeclared (first use in this function)
+> 
+> Caused by commit b4714172cd2f1cd8694546169237c30c5b4fdf3b ("mfd: Add
+> HTCPLD driver").
+Thanks for the report. It should be all fixed now.
 
-Jarek P.
----
+Cheers,
+Samuel.
 
- drivers/net/sky2.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index 7650f73..e02e9e9 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -2479,6 +2479,9 @@ static int sky2_status_intr(struct sky2_hw *hw, int to_do, u16 idx)
- 
- 		port = le->css & CSS_LINK_BIT;
- 		dev = hw->dev[port];
-+		if (!netif_running(dev))
-+			continue;
-+
- 		sky2 = netdev_priv(dev);
- 		length = le16_to_cpu(le->length);
- 		status = le32_to_cpu(le->status);
+> I have used the mfd tree from next-20100118 for today.
+> 
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
+
+
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
