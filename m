@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326Ab0ASSKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850Ab0ASSLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326Ab0ASSKB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 13:10:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492Ab0ASSKB
+	id S1753850Ab0ASSLj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 13:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750703Ab0ASSLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 13:10:01 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:59402 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752187Ab0ASSKA (ORCPT
+	Tue, 19 Jan 2010 13:11:38 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:65521 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752475Ab0ASSLh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 13:10:00 -0500
-Date: Tue, 19 Jan 2010 13:09:58 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Simmons <jsimmons@infradead.org>
-cc: dri-devel@lists.sourceforge.net,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Font selection with i915
-In-Reply-To: <alpine.LFD.2.00.1001191625420.29861@casper.infradead.org>
-Message-ID: <Pine.LNX.4.44L0.1001191306180.1334-100000@iolanthe.rowland.org>
+	Tue, 19 Jan 2010 13:11:37 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19qir89LYTIOrtZOVUH8HV2
+Date: Tue, 19 Jan 2010 10:11:46 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 16/24] MAINTAINERS: OMAP - Add "Q" patchwork entry
+Message-ID: <20100119181146.GE10318@atomide.com>
+References: <cover.1263452908.git.joe@perches.com>
+ <7eecdeff5ad10fb8e27ae62a1dba58bf765fed9a.1263452909.git.joe@perches.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7eecdeff5ad10fb8e27ae62a1dba58bf765fed9a.1263452909.git.joe@perches.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jan 2010, James Simmons wrote:
+* Joe Perches <joe@perches.com> [100113 23:15]:
+> Signed-off-by: Joe Perches <joe@perches.com>
 
+Acked-by: Tony Lindgren <tony@atomide.com>
+
+> ---
+>  MAINTAINERS |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> > When Fedora 12 loads i915 during initramfs probing on my system, the
-> > driver automatically installs a tiny 160x64 font.  How can I prevent it
-> > from doing this, or tell it to use a larger 80x25 font instead?
-> > 
-> > Is this documented anywhere?
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 1a8b365..3ad39ed 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3923,6 +3923,7 @@ M:	Tony Lindgren <tony@atomide.com>
+>  L:	linux-omap@vger.kernel.org
+>  W:	http://www.muru.com/linux/omap/
+>  W:	http://linux.omap.com/
+> +Q:	http://patchwork.kernel.org/project/linux-omap/list/
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git
+>  S:	Maintained
+>  F:	arch/arm/*omap*/
+> -- 
+> 1.6.6.rc0.57.gad7a
 > 
-> Not really. Here is how you enable larger fonts. Configure your kernel. Go
-> into the Graphics support menu. This the the menu that has the 
-> DRI/Framebuffer and backlight options. You will see a "Console display 
-> driver support" option. Select it and you will have a new menu. You will 
-> see the option "Select compiled-in fonts". Enable that and select the font 
-> you want. Most likely it will be the Sun 12x22 font. Build your kernel.
-> 
-> Their might be one more setup to do. Some distros like to load a console 
-> font at boot up. Depending on the distro if that is the case you will have 
-> to disable it.
-
-It turns out that preventing the mode switch is easier.  Finding it
-took a certain amount of digging, but the "nomodeset" kernel parameter
-prevents the console from leaving normal VGA mode.  If only it were
-documented...
-
-Alan Stern
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
