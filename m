@@ -1,167 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752257Ab0ASMAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171Ab0ASMBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752257Ab0ASMAd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 07:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512Ab0ASMAc
+	id S1753171Ab0ASMBi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 07:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915Ab0ASMBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 07:00:32 -0500
-Received: from mail-a01.ithnet.com ([217.64.83.96]:56913 "HELO ithnet.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751342Ab0ASMAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 07:00:31 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jan 2010 07:00:30 EST
-X-Sender-Authentication: net64
-Date: Tue, 19 Jan 2010 12:53:45 +0100
-From: Stephan von Krawczynski <skraw@ithnet.com>
-To: linux-kernel@vger.kernel.org
-Subject: kernel cpufreq on intel core2quad
-Message-Id: <20100119125345.e5d1c6a8.skraw@ithnet.com>
-Organization: ith Kommunikationstechnik GmbH
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.18.1; x86_64-unknown-linux-gnu)
+	Tue, 19 Jan 2010 07:01:36 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:34122 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638Ab0ASMBf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 07:01:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=wESKEEODtHgvyKrgf/Nu28wcLtLk0dixT5bcdC/sAJFVJ1q+qnbsdMxRYmgs6ERrrJ
+         dagwCa4TxLTntA3g4d9THcXbJcxXt56571D2EYJysCRqRi567lE/E1uh1RIUu4aDmRL+
+         EGnq2ksvFNy3UF8W0ZL9smq4ADHN8+IVNEMWM=
+Subject: Re: [PATCH] vmalloc: remove BUG_ON due to racy counting of
+ VM_LAZY_FREE
+From: Minchan Kim <minchan.kim@gmail.com>
+To: yongseok.koh@samsung.com
+Cc: "'Nick Piggin'" <npiggin@suse.de>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>, gregkh@suse.de,
+       vegard.nossum@gmail.com, "'Ingo Molnar'" <mingo@elte.hu>,
+       penberg@cs.helsinki.fi, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <001c01ca98e2$231d8b10$6958a130$@koh@samsung.com>
+References: <006d01ca8f8b$b62c8ec0$2285ac40$%koh@samsung.com>
+	 <20100111163205.4d013e86.akpm@linux-foundation.org>
+	 <20100113045538.GA3901@nick> <1263388030.2818.6.camel@barrios-desktop>
+	 <alpine.LFD.2.00.1001130829490.13231@localhost.localdomain>
+	 <20100114123328.GA7518@laptop>
+	 <28c262361001150902g569683a1nbd3e0212655a87a0@mail.gmail.com>
+	 <20100118073759.GB10052@laptop>
+	 <001c01ca98e2$231d8b10$6958a130$@koh@samsung.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 19 Jan 2010 21:01:27 +0900
+Message-ID: <1263902487.2163.4.camel@barrios-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all,
+On Tue, 2010-01-19 at 17:33 +0900, Yongseok Koh wrote:
+> From: Yongseok Koh <yongseok.koh@samsung.com>
 
-lately I tried to make use of the CPUFreq governor "ondemand". I tried two
-boxes, one with Intel(R) Core(TM)2 Quad CPU Q6700 @ 2.66GHz, another with Intel
-(R) Core(TM)2 Quad CPU Q9300 @ 2.50GHz both running kernel 2.6.32.4.
-At first I thought there is something wrong with the second one (Q9300). It showed the following in /proc/cpuinfo:
+You don't need above line.
+We use "From" when we send patch instead of someone. 
 
-processor       : 3
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 23
-model name      : Intel(R) Core(TM)2 Quad  CPU   Q9300  @ 2.50GHz
-stepping        : 7
-cpu MHz         : 2000.000
-cache size      : 3072 KB
-physical id     : 0
-siblings        : 4
-core id         : 3
-cpu cores       : 4
-apicid          : 3
-initial apicid  : 3
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm constant_tsc arch_perfmon pebs bts rep_good aperfmperf pni dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm sse4_1 lahf_lm tpr_shadow vnmi flexpriority
-bogomips        : 4987.51
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 36 bits physical, 48 bits virtual
-power management:
+> 
+> In free_unmap_area_noflush(), va->flags is marked as VM_LAZY_FREE first, and
+> then vmap_lazy_nr is increased atomically.
+> But, in __purge_vmap_area_lazy(), while traversing of vmap_are_list, nr is
+> counted by checking VM_LAZY_FREE is set to va->flags.
+> After counting the variable nr, kernel reads vmap_lazy_nr atomically and
+> checks a BUG_ON condition whether nr is greater than vmap_lazy_nr to prevent
+> vmap_lazy_nr from being negative.
+> 
+> The problem is that, if interrupted right after marking VM_LAZY_FREE,
+> increment of vmap_lazy_nr can be delayed.
+> Consequently, BUG_ON condition can be met because nr is counted more than
+> vmap_lazy_nr.
+> 
+> It is highly probable when vmalloc/vfree are called frequently.
+> This scenario have been verified by adding delay between marking
+> VM_LAZY_FREE and increasing vmap_lazy_nr in free_unmap_area_noflush().
+> 
+> Even the vmap_lazy_nr is for checking high watermark, it never be the strict
+> watermark.
+> Although the BUG_ON condition is to prevent vmap_lazy_nr from being
+> negative, vmap_lazy_nr is signed variable.
+> So, it could go down to negative value temporarily.
+> 
+> Consequently, removing the BUG_ON condition is proper.
+> 
+> A possible BUG_ON message is like the below.
+> 
+> kernel BUG at mm/vmalloc.c:517!
+> invalid opcode: 0000 [#1] SMP
+> EIP: 0060:[<c04824a4>] EFLAGS: 00010297 CPU: 3
+> EIP is at __purge_vmap_area_lazy+0x144/0x150
+> EAX: ee8a8818 EBX: c08e77d4 ECX: e7c7ae40 EDX: c08e77ec
+> ESI: 000081fe EDI: e7c7ae60 EBP: e7c7ae64 ESP: e7c7ae3c
+> DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Call Trace:
+> [<c0482ad9>] free_unmap_vmap_area_noflush+0x69/0x70
+> [<c0482b02>] remove_vm_area+0x22/0x70
+> [<c0482c15>] __vunmap+0x45/0xe0
+> [<c04831ec>] vmalloc+0x2c/0x30
+> Code: 8d 59 e0 eb 04 66 90 89 cb 89 d0 e8 87 fe ff ff 8b 43 20 89 da 8d 48
+> e0 8d 43 20 3b 04 24 75 e7 fe 05 a8 a5 a3 c0 e9 78 ff ff ff <0f> 0b eb fe 90
+> 8d b4 26 00 00 00 00 56 89 c6 b8 ac a5 a3 c0 31
+> EIP: [<c04824a4>] __purge_vmap_area_lazy+0x144/0x150 SS:ESP 0068:e7c7ae3c
+> 
+> 
+> Signed-off-by: Yongseok Koh <yongseok.koh@samsung.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-All four cores are the same, so I leave the others for now.
-As you can see it shows a cpu MHz of 2000.000. This looked suspicious to me, as the Q6700 showed this:
+We discussed about this following as. 
+http://marc.info/?l=linux-kernel&m=126335856228090&w=2
 
-processor       : 3
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Core(TM)2 Quad CPU    Q6700  @ 2.66GHz
-stepping        : 11
-cpu MHz         : 600.000
-cache size      : 4096 KB
-physical id     : 0
-siblings        : 4
-core id         : 3
-cpu cores       : 4
-apicid          : 3
-initial apicid  : 3
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc arch_perfmon pebs bts aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow vnmi flexpriority
-bogomips        : 5333.69
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 36 bits physical, 48 bits virtual
-power management:
 
-Which means only 600 MHz in idle on Q6700 compared to 2000 MHz on Q9300.
+Thanks for contribution for linux kernel, Yongseok. :) 
 
-So I turned on debugging and that left me puzzled. 
-See this on Q6700:
-
-kernel: acpi-cpufreq: acpi_cpufreq_init  
-kernel: acpi-cpufreq: acpi_cpufreq_early_init
-kernel: cpufreq-core: trying to register driver acpi-cpufreq
-kernel: cpufreq-core: adding CPU 0
-kernel: acpi-cpufreq: acpi_cpufreq_cpu_init
-kernel: acpi-cpufreq: HARDWARE addr space
-kernel: freq-table: table entry 0: 1000000 kHz, 0 index
-kernel: freq-table: table entry 1: 800000 kHz, 1 index
-kernel: freq-table: table entry 2: 600000 kHz, 2 index
-kernel: acpi-cpufreq: get_cur_freq_on_cpu (0)
-kernel: acpi-cpufreq: get_cur_val = 100665893
-kernel: acpi-cpufreq: cur freq = 1000000
-kernel: acpi-cpufreq: CPU0 - ACPI performance management activated.
-kernel: acpi-cpufreq:      *P0: 1000 MHz, 31000 mW, 10 uS
-kernel: acpi-cpufreq:       P1: 800 MHz, 22000 mW, 10 uS
-kernel: acpi-cpufreq:       P2: 600 MHz, 13000 mW, 10 uS
-kernel: freq-table: setting show_table for cpu 0 to f71ca7e0
-kernel: cpufreq-core: setting new policy for CPU 0: 600000 - 1000000 kHz
-kernel: acpi-cpufreq: acpi_cpufreq_verify
-kernel: freq-table: request for verification of policy (600000 - 1000000 kHz) for cpu 0
-kernel: freq-table: verification lead to (600000 - 1000000 kHz) for cpu 0
-kernel: acpi-cpufreq: acpi_cpufreq_verify
-kernel: freq-table: request for verification of policy (600000 - 1000000 kHz) for cpu 0
-kernel: freq-table: verification lead to (600000 - 1000000 kHz) for cpu 0
-kernel: cpufreq-core: new min and max freqs are 600000 - 1000000 kHz
-kernel: cpufreq-core: governor switch
-kernel: cpufreq-core: __cpufreq_governor for CPU 0, event 1
-kernel: cpufreq-core: governor: change or update limits
-kernel: cpufreq-core: __cpufreq_governor for CPU 0, event 3
-kernel: cpufreq-core: initialization complete
-
-And on Q9300:
-
-kernel: acpi-cpufreq: acpi_cpufreq_init
-kernel: acpi-cpufreq: acpi_cpufreq_early_init
-kernel: cpufreq-core: trying to register driver acpi-cpufreq
-kernel: cpufreq-core: adding CPU 0
-kernel: acpi-cpufreq: acpi_cpufreq_cpu_init
-kernel: acpi-cpufreq: HARDWARE addr space
-kernel: freq-table: table entry 0: 2500000 kHz, 0 index
-kernel: freq-table: table entry 1: 2000000 kHz, 1 index
-kernel: acpi-cpufreq: get_cur_freq_on_cpu (0)
-kernel: acpi-cpufreq: get_cur_val = 100681504
-kernel: acpi-cpufreq: cur freq = 2500000
-kernel: acpi-cpufreq: CPU0 - ACPI performance management activated.
-kernel: acpi-cpufreq:      *P0: 2500 MHz, 35000 mW, 10 uS
-kernel: acpi-cpufreq:       P1: 2000 MHz, 16000 mW, 10 uS
-kernel: freq-table: setting show_table for cpu 0 to ffff88020d80cb00
-kernel: cpufreq-core: setting new policy for CPU 0: 2000000 - 2500000 kHz
-kernel: acpi-cpufreq: acpi_cpufreq_verify
-kernel: freq-table: request for verification of policy (2000000 - 2500000 kHz) for cpu 0
-kernel: freq-table: verification lead to (2000000 - 2500000 kHz) for cpu 0
-kernel: acpi-cpufreq: acpi_cpufreq_verify
-kernel: freq-table: request for verification of policy (2000000 - 2500000 kHz) for cpu 0
-kernel: freq-table: verification lead to (2000000 - 2500000 kHz) for cpu 0
-kernel: cpufreq-core: new min and max freqs are 2000000 - 2500000 kHz
-kernel: cpufreq-core: governor switch
-kernel: cpufreq-core: __cpufreq_governor for CPU 0, event 1
-kernel: cpufreq-core: governor: change or update limits
-kernel: cpufreq-core: __cpufreq_governor for CPU 0, event 3
-kernel: cpufreq-core: initialization complete
-
-So, now it looks like the Q6700 is in fact somehow wrong setting max freq only to 1000 MHz, though being capable of 2660 MHz.
-The Q9300 in comparison shows a correct max freq of 2500 MHz, but seems only being able to slow down to 2000 MHz.
-Both boxes show correct cpu freq in /proc/cpuinfo if using the performance governor btw.
-
-Am I right that the Q6700 setup has indeed severe problems, and that the Q9300 cannot go below 2000 MHz? 
 
 -- 
-Regards,
-Stephan
+Kind regards,
+Minchan Kim
+
