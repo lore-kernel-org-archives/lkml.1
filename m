@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574Ab0ASOYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753625Ab0ASOZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753574Ab0ASOYg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 09:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296Ab0ASOYe
+	id S1753625Ab0ASOZZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 09:25:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234Ab0ASOZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 09:24:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753334Ab0ASOYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 09:24:23 -0500
-Message-ID: <4B55C125.6040602@redhat.com>
-Date: Tue, 19 Jan 2010 09:26:45 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Tue, 19 Jan 2010 09:25:23 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:38452 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753220Ab0ASOZT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 09:25:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=LqhxH3Ge/wlH0xuduzI4OLOd303kZq2aLYEYDOIGyNILN8y86+GJzv2Sp8+NVBxUD5
+         eAxUJOFbfj7WfoeM/9MAiuPVvLXzWkMLmdNJBv671eNoGqAl/bUaDAKQ62ADNvsa6fpY
+         UnFTTgIPXkKlLjk8sdKYQibQJZt0FEvQS7y3c=
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Jason Baron <jbaron@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] perf_event: cleanup for event profile buffer	operation
-References: <4B54654A.4090601@cn.fujitsu.com> <4B5465D8.9070203@cn.fujitsu.com> <4B548A9A.1020806@redhat.com> <20100118172021.GL10364@nowhere> <4B549F00.6060704@redhat.com> <4B550A32.6010508@cn.fujitsu.com> <20100119085958.GB5145@nowhere>
-In-Reply-To: <20100119085958.GB5145@nowhere>
+In-Reply-To: <20100115160602.f1523a68.akpm@linux-foundation.org>
+References: <20091127045956.15251.84958.sendpatchset@rxone.opensource.se>
+	 <20091127050022.15251.43017.sendpatchset@rxone.opensource.se>
+	 <20100115160602.f1523a68.akpm@linux-foundation.org>
+Date: Tue, 19 Jan 2010 23:25:18 +0900
+Message-ID: <aec7e5c31001190625x2b0629f7xdef38dc6edc43586@mail.gmail.com>
+Subject: Re: [PATCH 03/03] mmc: Balance tmio-mmc cell enable()/disable() calls
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ian@mnementh.co.uk, lethal@linux-sh.org, philipp.zabel@gmail.com,
+       pierre@ossman.eu
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Tue, Jan 19, 2010 at 09:26:10AM +0800, Xiao Guangrong wrote:
->>> Actual filling buffer is done in the profile handlers,
->>> so I think ftrace_perf_buf_prepare() may be better :-)
->>> ftrace_perf_buf_submit is good to me:-)
->>>
+On Sat, Jan 16, 2010 at 9:06 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Fri, 27 Nov 2009 14:00:22 +0900
+> Magnus Damm <magnus.damm@gmail.com> wrote:
+>
+>> From: Magnus Damm <damm@opensource.se>
 >>
->> OK, i'll rename those functions and add __kprobe for ftrace_perf_buf_prepare(),
->> i guess i can add you Acked-by :-)
-> 
-> 
-> You can add mine yeah (couldn't tell for Masami).
+>> This patch adds cell->disable() calls to the tmio-mmc
+>> probe() error handling and the remove() function.
+>>
+>
+> This patch still doesn't apply due to linux-next changes which never
+> got merged into 2.6.33-rcX.
 
-Sure, add mine too, because other parts look good for me. :-)
+Good news is that the linux-next issue seems solved now thanks to help
+from Samuel Ortiz.
 
+> If you think it should go into 2.6.33 then please redo a patch against
+> mainline and we'll cheerily trash the problematic stuff in linux-next.
 
--- 
-Masami Hiramatsu
+Nah, this patch is not urgent. It may also break other platforms, so I
+prefer to resend it later.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+Thanks,
 
-e-mail: mhiramat@redhat.com
-
+/ magnus
