@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902Ab0ASVYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899Ab0ASV0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902Ab0ASVYq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 16:24:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837Ab0ASVYa
+	id S1755899Ab0ASV0O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 16:26:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813Ab0ASV0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 16:24:30 -0500
-Received: from mga11.intel.com ([192.55.52.93]:4260 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755717Ab0ASVY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 16:24:29 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,305,1262592000"; 
-   d="scan'208";a="765578917"
-Subject: Re: [patch] x86, irq: don't block IRQ0_VECTOR..IRQ15_VECTOR's on
- all cpu's
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+	Tue, 19 Jan 2010 16:26:13 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:1564 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755798Ab0ASV0M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 16:26:12 -0500
+Date: Tue, 19 Jan 2010 14:26:08 -0700
+From: Alex Chiang <achiang@hp.com>
 To: Yinghai Lu <yinghai@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B561D37.9040007@kernel.org>
-References: <1263932453.2814.52.camel@sbs-t61.sc.intel.com>
-	 <4B561D37.9040007@kernel.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 19 Jan 2010 13:23:20 -0800
-Message-Id: <1263936200.2814.55.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH 01/11] pci: add pci_bridge_release_unused_res and
+	pci_bus_release_unused_bridge_res
+Message-ID: <20100119212608.GF11010@ldl.fc.hp.com>
+References: <1263640037-24134-1-git-send-email-yinghai@kernel.org> <1263640037-24134-2-git-send-email-yinghai@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263640037-24134-2-git-send-email-yinghai@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-19 at 12:59 -0800, Yinghai Lu wrote:
-> when PIC is used, if the user is setting /proc/irq/[0-15]/smp_affinity to cpu other than 0,
-> we need to prevent that happen.
+> +static void __ref pci_bus_release_bridge_resources(struct pci_bus *bus,
+> +						   unsigned long type,
+> +						   enum release_type rel_type)
+> +{
+> +	struct pci_dev *dev;
+> +	bool is_leaf_bridge = true;
+> +
+> +	list_for_each_entry(dev, &bus->devices, bus_list) {
+> +		struct pci_bus *b = dev->subordinate;
+> +		if (!b)
+> +			continue;
+> +
+> +		switch (dev->class >> 8) {
+> +		case PCI_CLASS_BRIDGE_CARDBUS:
+> +			is_leaf_bridge = false;
+> +			break;
+> +
+> +		case PCI_CLASS_BRIDGE_PCI:
+> +		default:
+> +			is_leaf_bridge = false;
+> +			if (rel_type == whole_subtree)
+> +				pci_bus_release_bridge_resources(b, type,
+> +							 whole_subtree);
+> +			break;
+> +		}
+> +	}
 
-If it is handled by i8259A_chip, then even today we won't be able to
-change smp_affinity because of no "set_affinity" for that irq_chip.
+I still don't understand this loop. Can't you write it like this:
 
-thanks,
-suresh
+	list_for_each_entry(dev, &bus->devices, bus_list) {
+		struct pci_bus *b = dev->subordinate;
+		if (!b)
+			continue;
 
+		is_leaf_bridge = false;
+
+		if ((dev->class >> 8) == PCI_CLASS_BRIDGE_CARDBUS)
+			continue;
+
+		if (rel_type == whole_subtree)
+			pci_bus_release_bridge_resources(b, type,
+						whole_subtree);
+	}
+
+I'm looking at that 'default' label in your switch() statement
+which causes us to always set is_leaf_bridge = false after 'b' is
+valid.
+
+/ac
