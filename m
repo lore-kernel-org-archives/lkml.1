@@ -1,120 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476Ab0ASQVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418Ab0ASQZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754476Ab0ASQVL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 11:21:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029Ab0ASQVK
+	id S1754418Ab0ASQZo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 11:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029Ab0ASQZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 11:21:10 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:54262 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932067Ab0ASQVG (ORCPT
+	Tue, 19 Jan 2010 11:25:43 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51684 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932067Ab0ASQZn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 11:21:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=a7IFD5DCgTSpixg2qXnxNbJnhNATkSaj7MgzBDqhAc4XP38S9JWnPTncjP0ZKcIDFV
-         vGZToOr4vH14qdotpJDNrQIohAnUAiFvgIFMvk7zVqPI4XfaC+5+T0I0Xxs6A5qx5Kea
-         xUiJnw/UzO62LAv88uDPzJ48RGnqfdmocPO1c=
-Date: Tue, 19 Jan 2010 17:21:02 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Joshua Pincus <joshua.pincus@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>, peterz@infradead.org,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: HW breakpoints perf_events request
-Message-ID: <20100119162059.GF8061@nowhere>
-References: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com> <87ljg1fn3u.fsf@basil.nowhere.org> <bc915a051001131821x6cdd3470lf72e8c02a897ea3@mail.gmail.com> <20100114092350.GF12241@basil.fritz.box> <bc915a051001141003s766689beue73800a1308d957e@mail.gmail.com> <20100118110406.GC5256@nowhere> <y0maawbid91.fsf@fche.csb> <20100119145027.GB8061@nowhere> <20100119151210.GC16096@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100119151210.GC16096@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 19 Jan 2010 11:25:43 -0500
+Date: Tue, 19 Jan 2010 16:27:46 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Johan Hovold <jhovold@gmail.com>
+Cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial
+ writes" causes gobi_loader to hang
+Message-ID: <20100119162746.04ba6d9e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100119152536.GA2104@localhost>
+References: <20100117025535.GB7045@srcf.ucam.org>
+	<201001191420.29652.oliver@neukum.org>
+	<20100119132934.0c1688f7@lxorguk.ukuu.org.uk>
+	<201001191457.00504.oliver@neukum.org>
+	<20100119142657.02856d15@lxorguk.ukuu.org.uk>
+	<20100119152536.GA2104@localhost>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 10:12:10AM -0500, Frank Ch. Eigler wrote:
-> Hi -
-> 
-> > > > [...]
-> > > > What about extending ptrace to support a new type of
-> > > > breakpoint debugging interface?
-> > > 
-> > > This is the sort of reason why the utrace-gdbstub prototype was
-> > > constructed.  It should allow in-kernel implementation of the
-> > > multithreaded gdb extensions.  (By the way, it can already use uprobes
-> > > rather than userspace-managed breakpoints.)
+On Tue, 19 Jan 2010 16:25:36 +0100
+Johan Hovold <jhovold@gmail.com> wrote:
+
+> > > The log shows no call to usb_serial_generic_write_room()
+> > > Do you consider this a bug in the tty layer?
 > > 
-> > Can utrace somehow meet Joshua's needs? 
+> > Actually this all makes sense because of where it was hanging. A reply of
+> > 0 to the tty->ops->write will cause it to either return (O_NONBLOCK) or
+> > sleep in the n_tty write code waiting for a write_wait wakeup
+> > (tty_wakeup(tty))
+> > 
+> > So the fix does indeed look correct.
 > 
-> Not directly, I'm afraid.  I jumped in at a late stage of the thread
-> that got a bit away from Joshua's original note
-> (http://lkml.org/lkml/2010/1/13/490).  OTOH, it could be made to work
-> a few different ways.
-> 
-> One is a systemtap or hand-written module that maps selected
-> perf-event hits in the kernel to an application SIGTRAP.
+> Is it really a fix? If the fifo is already full the write urb should be
+> in use and Oliver's patch would amount to only a minor optimisation as
+> usb_serial_generic_write_start would return 0 anyway.
 
-
-
-Yeah would work.
-
-But I rather hope we can extend ptrace interface to handle
-such new needs instead (ie: having a more scalable breakpoint
-interface support by ptrace).
-
-
-
-> Another is using the gdbstub, extended with gdb watchpoint support (Z*
-> packets), which would tie into the hw-breakpoint system directly.
-> Joshua's application would manage the debug registers by means of a
-> userspace supervisor process sending the appropriate Z* packets to the
-> gdbstub, and otherwise letting the program run.  When a watchpoint
-> fires, the supervisor process can instruct gdbstub to send a SIGTRAP
-> to the application.  In this scenario, the perf syscall / subsystem is
-> not used at all.
-
-
-
-Is this gdbstub an interface to utrace?
-
-This: http://lwn.net/Articles/364268/ ?
-
-
-
-> 
-> > I'm not sure what kind of interface it can offer for that. The fact
-> > is I don't know very well utrace :)
-> 
-> That's ok.  utrace is an in-kernel API for process management.  ptrace
-> and the RFC gdbstub are two possible userspace interfaces tuned for
-> third-party debugging.
-
-
-
-Ok.
-
- 
-> 
-> > Do you plan a resubmission soon?
-> 
-> Utrace core has been resubmitted at the end of December
-> (http://lkml.org/lkml/2009/12/17/466), with no further comments
-> received.
-
-
-Hmm, there has been deep review from Peter, IIRC.
-
-
-> I hope it gets plopped into linux-next ASAP and merged next
-> time.  The gdbstub was an RFC only at this stage, but if other people
-> get excited about it, we're happy to spiff it up for proposed merging.
-
-
-
-Ok.
-
-Thanks.
-
+IF the write returns a zero then it will sleep in n_tty waiting for a
+wakeup when the FIFO level drops sufficiently. If that isn't working
+check that all cases where data is cleared from the FIFO called
+tty_wakeup and do so *after* the FIFO has been partly emptied and the
+locking has ensured the space is visible to the write side.
