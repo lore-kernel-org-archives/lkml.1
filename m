@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198Ab0ASSma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220Ab0ASSoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198Ab0ASSma (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 13:42:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310Ab0ASSm3
+	id S1755220Ab0ASSoQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 13:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165Ab0ASSoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 13:42:29 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:47154 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995Ab0ASSm2 (ORCPT
+	Tue, 19 Jan 2010 13:44:15 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:40187 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752175Ab0ASSoP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 13:42:28 -0500
-Date: Tue, 19 Jan 2010 10:41:39 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, netdev <netdev@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@redhat.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for January 19 (vhost_net)
-Message-Id: <20100119104139.2ec9164b.randy.dunlap@oracle.com>
-In-Reply-To: <20100119181041.ab55f645.sfr@canb.auug.org.au>
-References: <20100119181041.ab55f645.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 19 Jan 2010 13:44:15 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Tue, 19 Jan 2010 19:44:54 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Johan Hovold <jhovold@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20100117025535.GB7045@srcf.ucam.org> <20100119152536.GA2104@localhost> <20100119162746.04ba6d9e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100119162746.04ba6d9e@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B55FCFD.0169:SCFMA4539814,ss=1,fgs=0
+Message-Id: <201001191944.54622.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jan 2010 18:10:41 +1100 Stephen Rothwell wrote:
+Am Dienstag, 19. Januar 2010 17:27:46 schrieb Alan Cox:
+> On Tue, 19 Jan 2010 16:25:36 +0100
+> Johan Hovold <jhovold@gmail.com> wrote:
 
-> Hi all,
+> > Is it really a fix? If the fifo is already full the write urb should be
+> > in use and Oliver's patch would amount to only a minor optimisation as
+> > usb_serial_generic_write_start would return 0 anyway.
 > 
-> Changes since 20100118:
+> IF the write returns a zero then it will sleep in n_tty waiting for a
+> wakeup when the FIFO level drops sufficiently. If that isn't working
+> check that all cases where data is cleared from the FIFO called
+> tty_wakeup and do so *after* the FIFO has been partly emptied and the
+> locking has ensured the space is visible to the write side.
+> 
+usb_serial_generic_write_bulk_callback() always calls the softint
+in the single URB case. Therefore the test with the patch I sent.
+It is unlikely to be chance that the hang happens just as the FIFO
+is full.
 
-
-When CONFIG_TUN is not enabled:
-
-drivers/built-in.o: In function `get_socket':
-net.c:(.text+0x2899a3): undefined reference to `tun_get_socket'
-
-
-so VHOST_NET can either depend on TUN or select TUN, but if it
-selects TUN, it will also need to select CRC32.
-
----
-~Randy
+	Regards
+		Oliver
