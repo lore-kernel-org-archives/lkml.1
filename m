@@ -1,161 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208Ab0ASRaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112Ab0ASRfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754208Ab0ASRaz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 12:30:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911Ab0ASRay
+	id S1754112Ab0ASRfL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 12:35:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872Ab0ASRfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 12:30:54 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50503 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753607Ab0ASRam (ORCPT
+	Tue, 19 Jan 2010 12:35:09 -0500
+Received: from mail-iw0-f197.google.com ([209.85.223.197]:38483 "EHLO
+	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932105Ab0ASRfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 12:30:42 -0500
-X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=D19gQVrFAAAA:8 a=jKtF9JfShlQoTCHitWYA:9 a=WLDztGozk5uui_qvhIUA:7 a=MtQvHTMUuDqAjgCyP3VejgMMaVcA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier (v5)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-In-Reply-To: <1263919667.4283.732.camel@laptop>
-References: <20100113013757.GA29314@Krystal>
-	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
-	 <1263460096.4244.282.camel@laptop>  <20100114162609.GC3487@Krystal>
-	 <1263919667.4283.732.camel@laptop>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Tue, 19 Jan 2010 12:30:38 -0500
-Message-ID: <1263922238.31321.14.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 19 Jan 2010 12:35:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=QlrVhZ5CQG3gDYF9tQgjeh1AjZPTCCoMic6pwD1h4oQbRK0d2Jo0OfLZEDBFeUGfQe
+         S6PQtfUeYJaOSRPinT1yGPtRHMSSNo819DGjYwEQoyf8OCnOkiVp9xlE4NFuL2lPvg0P
+         Bzm2GjwWxdLcoJtJRUensi2O7mNSu4As4YPuo=
+Message-ID: <4B55ED46.40909@gmail.com>
+Date: Tue, 19 Jan 2010 12:35:02 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Linux Kernel Developers <linux-kernel@vger.kernel.org>
+CC: Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH v2] tcp: input header length, prediction, and timestamp
+ bugs
+References: <4B49C2D0.1070704@gmail.com> <4B50BFFC.8010108@gmail.com>
+In-Reply-To: <4B50BFFC.8010108@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-19 at 17:47 +0100, Peter Zijlstra wrote:
-> On Thu, 2010-01-14 at 11:26 -0500, Mathieu Desnoyers wrote:
+Over the weekend, I've been reviewing the .lst output that Andi
+explained, and I've found a few interesting things.
 
-> > It's this scenario that is causing problem. Let's consider this
-> > execution:
-> > 
-> >        CPU 0 (membarrier)                  CPU 1 (another mm -> our mm)
-> >        <kernel-space>                      <kernel-space>
-> >                                            switch_mm()
-> >                                              smp_mb()
-> >                                              clear_mm_cpumask()
-> >                                              set_mm_cpumask()
-> >                                              smp_mb() (by load_cr3() on x86)
-> >                                            switch_to()
-> >        mm_cpumask includes CPU 1
-> >        rcu_read_lock()
-> >        if (CPU 1 mm != our mm)
-> >          skip CPU 1.
-> >        rcu_read_unlock()
-> >                                              current = next (1)
-> 
-> OK, so on x86 current uses esp and will be flipped somewhere in the
-> switch_to() magic, cpu_curr(cpu) as used by CPU 0 uses rq->curr, which
-> will be set before context_switch() and that always implies a mb() for
-> non matching ->mm's [*]
+1) The 4.4 compiler isn't very smart about shifts:
 
+static inline unsigned int tcp_header_len_th(const struct tcphdr *th)
+{
+	return th->doff * 4;
+c04ea93e:	0f b6 47 0c          	movzbl 0xc(%edi),%eax
+c04ea942:	c0 e8 04             	shr    $0x4,%al
+c04ea945:	0f b6 c0             	movzbl %al,%eax
+c04ea948:	c1 e0 02             	shl    $0x2,%eax
 
-This explanation by Mathieu still does not show the issue. He finally
-explained it correctly here:
+That could easily be done as shr $0x2 instead.
 
- http://lkml.org/lkml/2010/1/14/319
+2) This "fast path" code is under quite a bit of register pressure on
+the 32-bit i386.  There's a lot of saving and re-loading.
 
-The issue is before switch_to. If the read side reads in a pointer but
-gets preempted and goes to the kernel, and the kernel updates next
-(before the switch_to), and the write side does sys_membarrier(), the:
+3) Particularly, the seldom used *th and len parameters are saved and
+reloaded in the very beginning of the fast path, really wasting time.
 
-if (cpu_curr(1)->mm != our mm)
+4) Since both *th and len are actually indexed loads from *skb (which
+the compiler keeps in a register most of the time), doing indexed loads
+from the stack (%ebp) is the same, so they shouldn't be sent as
+parameters at all!
 
-will fail, so no memory barrier will happen yet.
+5) There's already code, added back in 2006 for DMA, that directly
+references skb->len instead of the len parameter.  Probably lack of
+header documentation, so the coder failed to notice:
 
-Then the userspace side of the writer will free or change the data, but
-the reader side read is still stuck in the bus (still before the
-switch_to). Then the reader can get a bad pointer.
+				if (copied_early)
+					tcp_cleanup_rbuf(sk, skb->len);
+c04ead5d:	8b 56 50             	mov    0x50(%esi),%edx
+c04ead60:	89 d8                	mov    %ebx,%eax
+c04ead62:	e8 fc ff ff ff       	call   c04ead63 <tcp_rcv_established+0x633>
 
-Here's a simple explanation:
-
-	CPU 0				CPU 1
-      ----------		     -----------
-	<userspace>			<userspace>
-	obj = get_obj();
-					rcu_read_lock();
-					obj = get_obj(); <load of obj>
-					<obj still being retrieved from memory>
-					<interrupt, schedule out>
-					<kernelspace>
-					rq->curr = next;
-					<bus stall>
-					<obj still in memory>
-
-	sys_membarrier();
-	<kernel space>
-	if (curr_cpu(1)->mm != mm) <-- false
-	<userspace>
-
-	modify object
-
-					switch_to()
-					<obj finally is loaded>
-					<schedule kernel thread>
-					<schedule task back>
-					<userspace>
-					refer(obj) <-- corruption!
-
-	
-					
-
-> 
-> >                                            <switch back to user-space>
-> >                                            read-lock()
-> >                                              read gp, store local gp
-> >                                              barrier()
-> >                                              access critical section (2)
-> > 
-> > So if we don't have any memory barrier between (1) and (2), the memory
-> > operations can be reordered in such a way that CPU 0 will not send IPI
-> > to a CPU that would need to have it's barrier() promoted into a
-> > smp_mb().
-> 
-> OK, so I'm utterly failing to make sense of the above, do you need more
-> than the 2 cpus discussed to make it go boom?
-
-Just 2 cpu's as explained above.
-
-> 
-> > Replacing these kernel rcu_read_lock/unlock() by rq locks ensures that
-> > when the scheduler runs concurrently on another CPU, _all_ the scheduling
-> > code is executed atomically wrt the spin lock taken on cpu 0.
-> 
-> Sure, but taking the rq->lock is fairly heavy handed.
-
-Yes, but for now it seems to be the only safe way.
-
-> 
-> > When x86 uses iret to return to user-space, then we have a serializing
-> > instruction. But if it uses sysexit, or if we are on a different
-> > architecture, are we sure that a memory barrier is issued before
-> > returning to user-space ?
-> 
-> [*] and possibly also for matching ->mm's, because:
-> 
-> OK, so I had a quick look at the switch_to() magic, and from what I can
-> make of it it implies an mb, if only because poking at the segment
-> registers implies LOCK semantics.
-
-The problem is that this issue can be caused before we get to
-switch_to().
-
--- Steve
-
-
+Therefore, I'll resubmit this patch, removing the existing len parameter.
+And maybe *th, too....
