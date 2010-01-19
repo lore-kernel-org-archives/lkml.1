@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106Ab0ASSWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147Ab0ASS31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755106Ab0ASSWN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 13:22:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581Ab0ASSV6
+	id S1755147Ab0ASS31 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 13:29:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524Ab0ASS30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 13:21:58 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:48044 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753988Ab0ASSV5 (ORCPT
+	Tue, 19 Jan 2010 13:29:26 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:43862 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995Ab0ASS30 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 13:21:57 -0500
-Subject: Re: [PATCH v2] [Bluetooth] redo checks in IRQ handler for shared
- IRQ  support
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <8bd0f97a1001190316k6167ad39h20be3343aba3acb8@mail.gmail.com>
-References: <1252905504-26666-1-git-send-email-vapier@gentoo.org>
-	 <1252950229-9629-1-git-send-email-vapier@gentoo.org>
-	 <8bd0f97a1001190316k6167ad39h20be3343aba3acb8@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 19 Jan 2010 10:21:32 -0800
-Message-ID: <1263925292.5591.169.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jan 2010 13:29:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=frzinXis7Ik5S83Kl013XlSkH1g2dXOQxZz0H/qOnPJKFzxV7R9V1tAqISPR/w0yhL
+         uBUHw/BsZU1mnOdJ6LjHVHo+rUESaFMr0/sepHkaJY27hOXjvXcDkJzo5LXmopIE5g00
+         foCn5OdDdJC2X+kKpe+NZtS7efpnOV/1mA2B0=
+MIME-Version: 1.0
+Date: Tue, 19 Jan 2010 19:29:24 +0100
+Message-ID: <d65b1b151001191029o66794c24t228177a8ca544e44@mail.gmail.com>
+Subject: [PATCH] Use full path to dnsdomainname and domainname in 
+	scripts/mkcompile_h
+From: Glenn Sommer <glemsom@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike,
+With reference to: http://bugzilla.kernel.org/show_bug.cgi?id=14920
+I'll post my suggestion here.
 
-> > Commit ac019360fe3 changed the irq handler logic to BUG_ON rather than
-> > returning IRQ_NONE when the incoming argument is invalid.  While this
-> > works in most cases, it doesn't work when the IRQ is shared with other
-> > devices (or when DEBUG_SHIRQ is enabled).
-> >
-> > So revert the previous change and replace the warning message with a
-> > comment explaining that we want this behavior.
-> 
-> was this picked up ?
+Currently scripts/mkcompile_h checks for "/bin/dnsdomainname" and
+"/bin/domainname" when trying to find the DNS name.
+Though, when running the executable - the full path isn't used!
 
-not it was not, but now it has been applied to my trees. Thanks.
-
-Regards
-
-Marcel
+IMO if we check for "/bin/dnsdomainname", we should also use
+"/bin/dnsdomainname" - and not blindly trust /bin is the first directory in
+$PATH  which contains a executable named "dnsdomainname"
 
 
+I propose to use the full path, that we know is valid. Here's my proposed patch:
+
+
+--- scripts/mkcompile_h.orig	2009-12-28 23:02:34.000000000 +0100
++++ scripts/mkcompile_h	2009-12-28 23:03:12.000000000 +0100
+@@ -66,9 +66,9 @@
+   echo \#define LINUX_COMPILE_HOST \"`hostname | $UTS_TRUNCATE`\"
+
+   if [ -x /bin/dnsdomainname ]; then
+-    echo \#define LINUX_COMPILE_DOMAIN \"`dnsdomainname | $UTS_TRUNCATE`\"
++    echo \#define LINUX_COMPILE_DOMAIN \"`/bin/dnsdomainname | $UTS_TRUNCATE`\"
+   elif [ -x /bin/domainname ]; then
+-    echo \#define LINUX_COMPILE_DOMAIN \"`domainname | $UTS_TRUNCATE`\"
++    echo \#define LINUX_COMPILE_DOMAIN \"`/bin/domainname | $UTS_TRUNCATE`\"
+   else
+     echo \#define LINUX_COMPILE_DOMAIN
+   fi
+
+
+Signed-off-by: Glenn Sommer <glemsom@gmail.com>
