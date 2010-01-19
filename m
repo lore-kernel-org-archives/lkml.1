@@ -1,69 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617Ab0ASQjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632Ab0ASQtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754617Ab0ASQjN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 11:39:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593Ab0ASQjM
+	id S1754632Ab0ASQtT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 11:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536Ab0ASQtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 11:39:12 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:63376 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754536Ab0ASQjJ convert rfc822-to-8bit (ORCPT
+	Tue, 19 Jan 2010 11:49:18 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57876 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754490Ab0ASQtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 11:39:09 -0500
-Date: Tue, 19 Jan 2010 08:38:39 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Phillip Lougher <phillip.lougher@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, albin.tonnerre@free-electrons.com,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>
-Subject: Re: linux-next: Tree for January 12 (unlzo)
-Message-Id: <20100119083839.4b5dfb1b.randy.dunlap@oracle.com>
-In-Reply-To: <bffbecbb1001121626j61fab30aj87048a17a2b091ff@mail.gmail.com>
-References: <20100112171739.2011a0eb.sfr@canb.auug.org.au>
-	<20100112083013.1dad8a8d.randy.dunlap@oracle.com>
-	<20100113102254.332dbf33.sfr@canb.auug.org.au>
-	<bffbecbb1001121626j61fab30aj87048a17a2b091ff@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+	Tue, 19 Jan 2010 11:49:17 -0500
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier (v5)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+In-Reply-To: <20100114162609.GC3487@Krystal>
+References: <20100113013757.GA29314@Krystal>
+	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
+	 <1263460096.4244.282.camel@laptop>  <20100114162609.GC3487@Krystal>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 19 Jan 2010 17:47:47 +0100
+Message-ID: <1263919667.4283.732.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B55E01F.0152:SCFMA4539814,ss=1,fgs=0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010 00:26:56 +0000 Phillip Lougher wrote:
-
-> On Tue, Jan 12, 2010 at 11:22 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > Hi Randy,
-> >
-> > On Tue, 12 Jan 2010 08:30:13 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> >>
-> >> arch/x86/boot/compressed/../../../../lib/decompress_unlzo.c:53: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'parse_header'
-> >> arch/x86/boot/compressed/../../../../lib/decompress_unlzo.c:90: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'unlzo'
-> >>
-> >> Problem is the "INIT" there, seems to be undefined.
-> >
-> > Caused by an interaction between Linus' tree and the squashfs tree that
-> > is being worked on.  It should not occur with today's linux-next as the
-> > squashfs changes have been removed pending a fix.
+On Thu, 2010-01-14 at 11:26 -0500, Mathieu Desnoyers wrote:
+> * Peter Zijlstra (peterz@infradead.org) wrote:
+> > On Wed, 2010-01-13 at 14:36 -0500, Mathieu Desnoyers wrote:
+> > > * Peter Zijlstra (peterz@infradead.org) wrote:
+> > > > On Tue, 2010-01-12 at 20:37 -0500, Mathieu Desnoyers wrote:
+> > > > > +       for_each_cpu(cpu, tmpmask) {
+> > > > > +               spin_lock_irq(&cpu_rq(cpu)->lock);
+> > > > > +               mm = cpu_curr(cpu)->mm;
+> > > > > +               spin_unlock_irq(&cpu_rq(cpu)->lock);
+> > > > > +               if (current->mm != mm)
+> > > > > +                       cpumask_clear_cpu(cpu, tmpmask);
+> > > > > +       } 
+> > > > 
+> > > > Why not:
+> > > > 
+> > > >   rcu_read_lock();
+> > > >   if (current->mm != cpu_curr(cpu)->mm)
+> > > >     cpumask_clear_cpu(cpu, tmpmask);
+> > > >   rcu_read_unlock();
+> > > > 
+> > > > the RCU read lock ensures the task_struct obtained remains valid, and it
+> > > > avoids taking the rq->lock.
+> > > > 
+> > > 
+> > > If we go for a simple rcu_read_lock, I think that we need a smp_mb()
+> > > after switch_to() updates the current task on the remote CPU, before it
+> > > returns to user-space. Do we have this guarantee for all architectures ?
+> > > 
+> > > So what I'm looking for, overall, is:
+> > > 
+> > > schedule()
+> > >   ...
+> > >   switch_mm()
+> > >     smp_mb()
+> > >     clear mm_cpumask
+> > >     set mm_cpumask
+> > >   switch_to()
+> > >     update current task
+> > >     smp_mb()
+> > > 
+> > > If we have that, then the rcu_read_lock should work.
+> > > 
+> > > What the rq lock currently gives us is the guarantee that if the current
+> > > thread changes on a remote CPU while we are not holding this lock, then
+> > > a full scheduler execution is performed, which implies a memory barrier
+> > > if we change the current thread (it does, right ?).
+> > 
+> > I'm not quite seeing it, we have 4 possibilities, switches between
+> > threads with:
+> > 
+> >  a) our mm, another mm
+> > 
+> >    - if we observe the former, we'll send an IPI (redundant)
+> >    - if we observe the latter, the switch_mm will have issued an mb
+> > 
+> >  b) another mm, our mm
+> > 
+> >    - if we observe the former, we're good because the cpu didn't run our
+> >      thread when we called sys_membarrier()
+> >    - if we observe the latter, we'll send an IPI (redundant)
 > 
-> This problem is caused by the introduction of the unlzo code in Linus'
-> tree, and some patches in
-> the squashfs-next tree that move things out of
-> include/linux/decompress/mm.h into separate
-> xxx_mm.h files for each decompressor.  These parches were, obviously,
-> done before the unlzo
-> code was present.
+> It's this scenario that is causing problem. Let's consider this
+> execution:
 > 
-> I've fixed the patches in the squashfs-next tree for unlzo, and the
-> breakage should be fixed :-)
+>        CPU 0 (membarrier)                  CPU 1 (another mm -> our mm)
+>        <kernel-space>                      <kernel-space>
+>                                            switch_mm()
+>                                              smp_mb()
+>                                              clear_mm_cpumask()
+>                                              set_mm_cpumask()
+>                                              smp_mb() (by load_cr3() on x86)
+>                                            switch_to()
+>        mm_cpumask includes CPU 1
+>        rcu_read_lock()
+>        if (CPU 1 mm != our mm)
+>          skip CPU 1.
+>        rcu_read_unlock()
+>                                              current = next (1)
+
+OK, so on x86 current uses esp and will be flipped somewhere in the
+switch_to() magic, cpu_curr(cpu) as used by CPU 0 uses rq->curr, which
+will be set before context_switch() and that always implies a mb() for
+non matching ->mm's [*]
+
+>                                            <switch back to user-space>
+>                                            read-lock()
+>                                              read gp, store local gp
+>                                              barrier()
+>                                              access critical section (2)
+> 
+> So if we don't have any memory barrier between (1) and (2), the memory
+> operations can be reordered in such a way that CPU 0 will not send IPI
+> to a CPU that would need to have it's barrier() promoted into a
+> smp_mb().
+
+OK, so I'm utterly failing to make sense of the above, do you need more
+than the 2 cpus discussed to make it go boom?
+
+> Replacing these kernel rcu_read_lock/unlock() by rq locks ensures that
+> when the scheduler runs concurrently on another CPU, _all_ the scheduling
+> code is executed atomically wrt the spin lock taken on cpu 0.
+
+Sure, but taking the rq->lock is fairly heavy handed.
+
+> When x86 uses iret to return to user-space, then we have a serializing
+> instruction. But if it uses sysexit, or if we are on a different
+> architecture, are we sure that a memory barrier is issued before
+> returning to user-space ?
+
+[*] and possibly also for matching ->mm's, because:
+
+OK, so I had a quick look at the switch_to() magic, and from what I can
+make of it it implies an mb, if only because poking at the segment
+registers implies LOCK semantics.
 
 
-linux-next-20100119 .. still happening.
-
----
-~Randy
