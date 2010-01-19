@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811Ab0ASLQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259Ab0ASL3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811Ab0ASLQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 06:16:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059Ab0ASLQ1
+	id S1756259Ab0ASL3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 06:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876Ab0ASL3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 06:16:27 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:61069 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754123Ab0ASLQ0 convert rfc822-to-8bit (ORCPT
+	Tue, 19 Jan 2010 06:29:46 -0500
+Received: from mga10.intel.com ([192.55.52.92]:5519 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755826Ab0ASL3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 06:16:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=o5OQGR9ZWiGMQkNIv8oGRaVUjR3jnfQPS/agQ9+4/z6vi9Q+GTJJSSzV/kdAnsadMs
-         Q3Dee5i2P+b8Ex5z829/R2sqejc6MVoeZ3BBHRuvQ1pGvgoppIahifbvPF2eGxJkctEy
-         p8olU/D6scYiZ+8OMON8/9qiQVDXxrG79011o=
+	Tue, 19 Jan 2010 06:29:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,300,1262592000"; 
+   d="scan'208";a="765423061"
+Message-ID: <4B5597A7.4080607@linux.intel.com>
+Date: Tue, 19 Jan 2010 19:29:43 +0800
+From: Haicheng Li <haicheng.li@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-In-Reply-To: <1252950229-9629-1-git-send-email-vapier@gentoo.org>
-References: <1252905504-26666-1-git-send-email-vapier@gentoo.org> 
-	<1252950229-9629-1-git-send-email-vapier@gentoo.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 19 Jan 2010 06:16:05 -0500
-Message-ID: <8bd0f97a1001190316k6167ad39h20be3343aba3acb8@mail.gmail.com>
-Subject: Re: [PATCH v2] [Bluetooth] redo checks in IRQ handler for shared IRQ 
-	support
-To: linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
-Cc: linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: David Rientjes <rientjes@google.com>
+CC: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       x86@kernel.org, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86/mm/srat_64.c: nodes_parsed should include all nodes
+ detected by ACPI.
+References: <4B501C4D.4080907@linux.intel.com> <alpine.DEB.2.00.1001171338170.16238@chino.kir.corp.google.com> <86802c441001172230y137b4916h7d744a96ab75873d@mail.gmail.com> <alpine.DEB.2.00.1001180231430.20677@chino.kir.corp.google.com> <4B5592B1.9030800@linux.intel.com>
+In-Reply-To: <4B5592B1.9030800@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 12:43, Mike Frysinger wrote:
-> Commit ac019360fe3 changed the irq handler logic to BUG_ON rather than
-> returning IRQ_NONE when the incoming argument is invalid.  While this
-> works in most cases, it doesn't work when the IRQ is shared with other
-> devices (or when DEBUG_SHIRQ is enabled).
->
-> So revert the previous change and replace the warning message with a
-> comment explaining that we want this behavior.
+Haicheng Li wrote:
+> - it recovers node with oldnode as long as current entry is 
+> HOT_PLUGGABLE. so it handles the recover issue. but I think following 
+> patch can simply fix it as well.
+> 
+> diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+> index dbb5381..fdf067f 100644
+> --- a/arch/x86/mm/srat_64.c
+> +++ b/arch/x86/mm/srat_64.c
+> @@ -281,7 +281,7 @@ acpi_numa_memory_affinity_init(struct 
+> acpi_srat_mem_affinity *ma)
+>      if (!node_test_and_set(node, nodes_parsed)) {
+>          nd->start = start;
+>          nd->end = end;
+> -    } else {
+> +    } else if ((nd->start | nd->end) != 0) {
+oops, typo here, should be:
++    } else if ((start | end) != 0) {
 
-was this picked up ?
--mike
+>          if (start < nd->start)
+>              nd->start = start;
+>          if (nd->end < end)
+> 
+
