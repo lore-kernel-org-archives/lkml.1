@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675Ab0ASQbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518Ab0ASQcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753675Ab0ASQbL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 11:31:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146Ab0ASQbJ
+	id S1754518Ab0ASQcx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 11:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940Ab0ASQcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 11:31:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:9594 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766Ab0ASQbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 11:31:06 -0500
-Date: Tue, 19 Jan 2010 17:29:45 +0100 (CET)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Mike Frysinger <vapier@gentoo.org>
-cc: Steven Rostedt <srostedt@redhat.com>,
-       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] kconfig: dont hardcode path to lsmod
-In-Reply-To: <520f0cf11001190822t6d3221bco20739d586608bfde@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1001191723030.5999@localhost.localdomain>
-References: <1263883920-17289-1-git-send-email-vapier@gentoo.org>  <20100119142545.GB3473@hack> <520f0cf11001190822t6d3221bco20739d586608bfde@mail.gmail.com>
+	Tue, 19 Jan 2010 11:32:52 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36092 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753220Ab0ASQcw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 11:32:52 -0500
+Date: Tue, 19 Jan 2010 16:32:40 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: dri-devel@lists.sourceforge.net,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Font selection with i915
+In-Reply-To: <Pine.LNX.4.44L0.1001171154220.21718-100000@netrider.rowland.org>
+Message-ID: <alpine.LFD.2.00.1001191625420.29861@casper.infradead.org>
+References: <Pine.LNX.4.44L0.1001171154220.21718-100000@netrider.rowland.org>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1225411871-1263918592=:5999"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323328-1225411871-1263918592=:5999
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
- 
->> On Tue, Jan 19, 2010 at 01:52:00AM -0500, Mike Frysinger wrote:
->> The lsmod utility has always been installed into /bin with the newer
->> module-init-tools package, so let lsmod be found via PATH instead of
->> hardcoding the old modutils /sbin path.
->>
+> When Fedora 12 loads i915 during initramfs probing on my system, the
+> driver automatically installs a tiny 160x64 font.  How can I prevent it
+> from doing this, or tell it to use a larger 80x25 font instead?
 > 
-> Some distro doesn't set /sbin to PATH, so for me a better solution
-> would be making PATH contain /sbin, and then use "lsmod".
+> Is this documented anywhere?
 
-How about the following solution then? (Warning, untested)
- 
->From 6a98295f6dc260d13e1abb39210a2a832c9bdd1f Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Tue, 19 Jan 2010 17:10:48 +0100
-Subject: [PATCH] kconfig: If lsmod is not in the /sbin, check the path
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Not really. Here is how you enable larger fonts. Configure your kernel. Go
+into the Graphics support menu. This the the menu that has the 
+DRI/Framebuffer and backlight options. You will see a "Console display 
+driver support" option. Select it and you will have a new menu. You will 
+see the option "Select compiled-in fonts". Enable that and select the font 
+you want. Most likely it will be the Sun 12x22 font. Build your kernel.
 
-Mike Frysinger reported that lsmod is installed in /bin on newer kernels
-which causes a problem when we hardcode the path to /sbin
+Their might be one more setup to do. Some distros like to load a console 
+font at boot up. Depending on the distro if that is the case you will have 
+to disable it.
 
-However, Américo Wang reports that some distros don't have /sbin in PATH, 
-so you can't just let lsmod be found via PATH.
+> In addition, are the error messages in the following dmesg log anything 
+> to be concerned about?  They appear during every boot:
+> 
+> 
+> [drm] Initialized drm 1.1.0 20060810
+> i915 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> i915 0000:00:02.0: setting latency timer to 64
+> fbcon: inteldrmfb (fb0) is primary device
+> render error detected, EIR: 0x00000010
+> [drm:i915_handle_error] *ERROR* EIR stuck: 0x00000010, masking
+> render error detected, EIR: 0x00000010
+> [drm] DAC-5: set mode 1280x1024 16
+> Console: switching to colour frame buffer device 160x64
+> fb0: inteldrmfb frame buffer device
+> registered panic notifier
+> [drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
 
-So, first check if lsmod is at /sbin/lsmod, and then check PATH if that fails.
-
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- scripts/kconfig/streamline_config.pl |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
-index 0d80082..1803d2e 100644
---- a/scripts/kconfig/streamline_config.pl
-+++ b/scripts/kconfig/streamline_config.pl
-@@ -238,7 +238,8 @@ foreach my $makefile (@makefiles) {
- my %modules;
- 
- # see what modules are loaded on this system
--open(LIN,"/sbin/lsmod|") || die "Cant lsmod";
-+# If lsmod isn't in the sbin dir, check if it is in the path
-+open(LIN,"/sbin/lsmod|") || open(LIN,"lsmod|") || die "Cant lsmod";
- while (<LIN>) {
- 	next if (/^Module/);  # Skip the first line.
- 	if (/^(\S+)/) {
--- 
-1.6.0.6
-
---8323328-1225411871-1263918592=:5999--
+No idea here.
