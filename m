@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842Ab0ASXO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664Ab0ASXPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842Ab0ASXO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 18:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902Ab0ASXO6
+	id S1755664Ab0ASXPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 18:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175Ab0ASXPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 18:14:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50247 "EHLO mx1.redhat.com"
+	Tue, 19 Jan 2010 18:15:38 -0500
+Received: from gate.crashing.org ([63.228.1.57]:43397 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750865Ab0ASXO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 18:14:57 -0500
-Date: Tue, 19 Jan 2010 17:14:39 -0600
-From: Clark Williams <williams@redhat.com>
-To: RT <linux-rt-users@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Carsten Emde <ce@ceag.ch>,
-       John Kacur <jkacur@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: RFC: NUMA modifications to cyclictest
-Message-ID: <20100119171439.24726f2e@torg>
-Organization: Red Hat, Inc
+	id S1751892Ab0ASXPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 18:15:37 -0500
+Subject: Re: sys_recvmmsg: wire up or not?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: David Miller <davem@davemloft.net>, arnd@arndb.de, geert@linux-m68k.org,
+       acme@redhat.com, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
+In-Reply-To: <20100119072114.GB16013@linux-sh.org>
+References: <10f740e80912260239n17bbbd08w6c3065c12bde9c95@mail.gmail.com>
+	 <200912261212.14264.arnd@arndb.de> <1263442833.724.325.camel@pasglop>
+	 <20100113.202807.233259060.davem@davemloft.net>
+	 <1263452379.724.348.camel@pasglop>  <20100119072114.GB16013@linux-sh.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 20 Jan 2010 10:14:44 +1100
+Message-ID: <1263942884.724.537.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/uBDN3AmdiuNvPDlM=GwJldQ"; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/uBDN3AmdiuNvPDlM=GwJldQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2010-01-19 at 16:21 +0900, Paul Mundt wrote:
+> 
+> > IE. I'd rather have them all duplicated into real syscalls than some of
+> > them only in socketcall and some on both since that will make any kind
+> > of userspace transition even more hellish.
+> > 
+> Presumably you're going to have to support both given that binaries with
+> both ABIs are going to be left around for the forseeable future. We
+> started out with socketcall on sh64 with the initial ABI and then
+> transitioned over to broken out direct system calls. While having both is
+> a bit inconsistent, it's not really something that can be avoided until
+> all of the old binaries go away. There are certainly enough architectures
+> today that provide both that you shouldn't really run in to any nasty
+> surprises at least.
 
-RT-ers,
+I agree, my point was more like I'd rather not add the syscall for
+recvmmsg only right now, and others later, and instead of an
+all-or-nothing approach, ie, add all the syscalls at once (while keeping
+the socketcall around of course). That would make glibc work easier not
+having to track syscall availability on a per-syscall basis etc...
 
-Lately we've been struggling with some performance issues on high-core
-count (>16 cores) NUMA machines with the RT kernel. During the course
-of troubleshooting this issue, we tried using the 'numactl' program to
-constrain our measurement testing tool (rteval) to a particular memory
-node, rather than letting everything float. Doing so showed marked
-improvement in both max latency and jitter.  While this doesn't solve
-our performance problems I thought it might make sense to have a --numa
-mode for cylictest that compliments the --smp mode just added.=20
+Cheers,
+Ben.
 
-The big difference here is that when using --numa, each measurement
-thread (one per cpu) has it's stack allocated from the memory node
-associated with it's cpu. Also, the major data structures for each
-thread (parameter block, statistics block and histogram) are allocated
-from the appropriate node. This is done with calls into libnuma,
-which means this will add a dependency on libnuma.=20
+> 32-bit SH only uses socketcall at the moment, but I'm also inclined to
+> add in the broken out versions and start migrating glibc over.
+> 
+> Unfortunately there are not a lot of good options for the syscall checker
+> with things like this however, given that some platforms will want one or
+> the other or both ;-)
+> 
+> 
 
-The intent is to measure latency on a numa system in the same way a
-well-written RT application would run on a NUMA machine, that is
-minimizing the off-node memory references.=20
-
-If you're interested in looking at this, please pull the numa branch
-from my git repo at:
-
-	git://git.kernel.org/pub/scm/linux/kernel/git/clrkwllms/rt-tests.git
-
-and let me know if you find bugs or disagree with the approach.=20
-
-Thanks,
-Clark
-
---Sig_/uBDN3AmdiuNvPDlM=GwJldQ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
-
-iEYEARECAAYFAktWPOcACgkQHyuj/+TTEp0AeQCfUialeqzQtuz30tUGZASsQpah
-+U4AoJpMmEFnjbv3Rn4brrvGi3WcBX5O
-=0+y3
------END PGP SIGNATURE-----
-
---Sig_/uBDN3AmdiuNvPDlM=GwJldQ--
