@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551Ab0ASN4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438Ab0ASODY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752551Ab0ASN4V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 08:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710Ab0ASN4U
+	id S1752438Ab0ASODY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 09:03:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170Ab0ASODX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 08:56:20 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:54677 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751522Ab0ASN4T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 08:56:19 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
-Date: Tue, 19 Jan 2010 14:57:00 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com, gregkh@suse.de,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20100117025535.GB7045@srcf.ucam.org> <201001191420.29652.oliver@neukum.org> <20100119132934.0c1688f7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100119132934.0c1688f7@lxorguk.ukuu.org.uk>
+	Tue, 19 Jan 2010 09:03:23 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36757 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750911Ab0ASODW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 09:03:22 -0500
+Message-ID: <4B55BBA6.2050806@redhat.com>
+Date: Tue, 19 Jan 2010 16:03:18 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Jan Kiszka <jan.kiszka@siemens.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] kvm: fix spurious interrupt with irqfd
+References: <cover.1263402727.git.mst@redhat.com> <20100113171230.GB19798@redhat.com> <4B55B2B8.5090105@siemens.com>
+In-Reply-To: <4B55B2B8.5090105@siemens.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001191457.00504.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 19. Januar 2010 14:29:34 schrieb Alan Cox:
-> On Tue, 19 Jan 2010 14:20:29 +0100
-> Oliver Neukum <oliver@neukum.org> wrote:
-> 
-> > Am Montag, 18. Januar 2010 21:14:16 schrieb Matthew Garrett:
-> > 
-> > > drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 1565 
-> > > bytes
-> > > drivers/usb/serial/generic.c: usb_serial_generic_write - put 0 bytes 
-> > > into fifo
-> > > drivers/usb/serial/generic.c: usb_serial_generic_read_bulk_callback - 
-> > > port 0
-> > 
-> > If the FIFO is full we can do nothing. Please try the attached patch.
-> 
-> If the FIFO is full how are we getting called - we should have throttled
-> earlier if there is any flow control (including 'look no URBs' cases) ?
+On 01/19/2010 03:25 PM, Jan Kiszka wrote:
+>
+> For kvm-kmod, I'm fighting with compat support for
+> eventfd_ctx_remove_wait_queue. I basically have a solution for kernels
+> with CONFIG_KPROBES enabled (I need to look up unexported
+> __wake_up_locked[_key]), but there will also be target kernels that do
+> not have this. So there are three options for that case:
+>
+>   - Warn the user and fall back to the old racy approach
+>   - (Somehow) disable KVM subsystems that use eventfd
+>   - Refuse to start KVM
+>
+> As far as I understood, irqfd is interesting for device assignment and
+> now also for vhost, right? What about ioeventfd? I just wonder how broad
+> the impact of a broken or non-existent eventfd subsystem for kvm-kmod
+> is. Any thoughts welcome.
+>
+>    
 
-The log shows no call to usb_serial_generic_write_room()
-Do you consider this a bug in the tty layer?
+Since vhost is only a performance option (and there isn't a vhost-kmod) 
+and device assignment wants a new kernel anyway (and only applies to a 
+small subset of users), I think it's okay to drop it from kvm-kmod.  It 
+should be sufficient to return 0 from KVM_CHECK_EXCEPTION and substitute 
+some stubs for the functions.
 
-	Regards
-		Oliver
+ioeventfd/irqfd are useful for inter-guest wakeups, but there isn't any 
+public code for that that I'm aware of.
+
+> PS: If anyone forgot why Avi handed over this job, you should now
+> remember why. :)
+>    
+
+It's only going to get more difficult, I'm afraid.  The list of old 
+kernels keeps growing and we're going to depend on core kernel 
+functionality more and more.
+
+Luckily for me you accepted in time...
+
+-- 
+error compiling committee.c: too many arguments to function
+
