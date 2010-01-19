@@ -1,107 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290Ab0ASTvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189Ab0ASTy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290Ab0ASTvj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 14:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961Ab0ASTvi
+	id S1753189Ab0ASTy5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 14:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398Ab0ASTy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 14:51:38 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:52469 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750976Ab0ASTvh (ORCPT
+	Tue, 19 Jan 2010 14:54:56 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:46079 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752100Ab0ASTyz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 14:51:37 -0500
-Message-Id: <1263930694.9779.1355491925@webmail.messagingengine.com>
-X-Sasl-Enc: fwD5crpZ/k/x/oydMg+dPUlaMv+y2AWbCy1pgrz5VQwb 1263930694
-From: myuboot@fastmail.fm
-To: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+	Tue, 19 Jan 2010 14:54:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=XlWVQhkDkIm7RSSl2rqmdV2r4g7oI7xSJqNxKcazh+geOVuCuu7kcO/9fAboM6DFHQ
+         0DOGKPMqmXOcOr1MwaDENhfxUZy2SvN1rUCfGteK9+GA21AIYRQk/pePkH1T+veRuxhX
+         xk6dk1c08pbEHeUFRw6qPttVNrqtY0aLPQOBE=
+Message-ID: <4B560F33.1080805@gmail.com>
+Date: Tue, 19 Jan 2010 20:59:47 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
+To: Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+       ibm-acpi-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] thinkpad-acpi: wrong thermal attribute_group removed in thermal_exit()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1255735395.30097.1340523469@webmail.messagingengine.com>
- <4AD906D8.3020404@caviumnetworks.com>
-Subject: loadable kernel module link failure -  endianness incompatible with
- that of the selected emulation
-In-Reply-To: <4AD906D8.3020404@caviumnetworks.com>
-Date: Tue, 19 Jan 2010 13:51:34 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got a link error when compiling 2 loadable kernel modules -
-"endianness incompatible with that of the selected emulation". 
+sysfs_remove_group() removed the wrong attribute_group for 
+thermal_read_mode TPEC_8, ACPI_TMP07 and ACPI_UPDT
 
-But both kernel and the kernel modules of error are in big endian. I
-don't know what I should check or fix. Any suggestions? I checked the
-endianess of the kernel by checking the elf header of vmlinux file, is
-that the right way to do it?
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Was this maybe intended? otherwise in case TPACPI_THERMAL_TPEC_16:
+the same code is executed. Please review.
 
-Below are the error info and the readelf output, showing both the kernel
-and a kernel module are in big endian.
-Thanks for your help. Andrew
-
-1) error log 
-make -C /home/root123/sources/kernel/linux
-CROSS_COMPILE=""/home/root123/sources/gcc3.4.3-be"/bin/mips-linux-"
-M=/home/root123/sources/sdk/platform/src/linux/mxp/src modules    
-
-  LD [M]  /home/root123/sources/sdk/platform/src/linux/mxp/src/mxpmod.o
-/home/root123/sources/gcc3.4.3-be/bin/mips-linux-ld:
-/home/root123/sources/sdk/platform/src/linux/mxp/src/mmxpcore.o:
-compiled for a big endian system and target is little endian
-/home/root123/sources/gcc3.4.3-be/bin/mips-linux-ld:
-/home/root123/sources/sdk/platform/src/linux/mxp/src/mmxpcore.o:
-endianness incompatible with that of the selected emulation
-/home/root123/sources/gcc3.4.3-be/bin/mips-linux-ld: failed to merge
-target specific data of file
-/home/root123/sources/sdk/platform/src/linux/mxp/src/mmxpcore.o
-make[13]: ***
-[/home/root123/sources/sdk/platform/src/linux/mxp/src/mxpmod.o] Error 1
-
-2) kernel is in big endian
-readelf -h vmlinux
-ELF Header:
-  Magic:   7f 45 4c 46 01 02 01 00 00 00 00 00 00 00 00 00 
-  Class:                             ELF32
-  Data:                              2's complement, big endian
-  Version:                           1 (current)
-  OS/ABI:                            UNIX - System V
-  ABI Version:                       0
-  Type:                              EXEC (Executable file)
-  Machine:                           MIPS R3000
-  Version:                           0x1
-  Entry point address:               0x941aa000
-  Start of program headers:          52 (bytes into file)
-  Start of section headers:          1720624 (bytes into file)
-  Flags:                             0x50001001, noreorder, o32, mips32
-  Size of this header:               52 (bytes)
-  Size of program headers:           32 (bytes)
-  Number of program headers:         1
-  Size of section headers:           40 (bytes)
-  Number of section headers:         27
-  Section header string table index: 24
-
-
-3) kernel module is big endian.
-readelf -h mmxpcore.o
-ELF Header:
-  Magic:   7f 45 4c 46 01 02 01 00 00 00 00 00 00 00 00 00 
-  Class:                             ELF32
-  Data:                              2's complement, big endian
-  Version:                           1 (current)
-  OS/ABI:                            UNIX - System V
-  ABI Version:                       0
-  Type:                              REL (Relocatable file)
-  Machine:                           MIPS R3000
-  Version:                           0x1
-  Entry point address:               0x0
-  Start of program headers:          0 (bytes into file)
-  Start of section headers:          81024 (bytes into file)
-  Flags:                             0x10001001, noreorder, o32, mips2
-  Size of this header:               52 (bytes)
-  Size of program headers:           0 (bytes)
-  Number of program headers:         0
-  Size of section headers:           40 (bytes)
-  Number of section headers:         34
-  Section header string table index: 31
-
+diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
+index e67e4fe..eb603f1 100644
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -5771,7 +5771,7 @@ static void thermal_exit(void)
+ 	case TPACPI_THERMAL_ACPI_TMP07:
+ 	case TPACPI_THERMAL_ACPI_UPDT:
+ 		sysfs_remove_group(&tpacpi_sensors_pdev->dev.kobj,
+-				   &thermal_temp_input16_group);
++				   &thermal_temp_input8_group);
+ 		break;
+ 	case TPACPI_THERMAL_NONE:
+ 	default:
