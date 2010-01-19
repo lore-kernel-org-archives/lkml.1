@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891Ab0ASG4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949Ab0ASHAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753891Ab0ASG4h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 01:56:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994Ab0ASG4f
+	id S1753949Ab0ASHAr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 02:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366Ab0ASHAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 01:56:35 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54358 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753218Ab0ASG4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 01:56:35 -0500
-Message-ID: <4B5557A7.5000401@cn.fujitsu.com>
-Date: Tue, 19 Jan 2010 14:56:39 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 19 Jan 2010 02:00:46 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:60042 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751353Ab0ASHAp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 02:00:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=M1zILjIhCk7UhKt3hZ9FERIWT6zHflg1Du/tqSbTEzcEPJvDGxqzN0VjnLfnHzrx3N
+         LgmpNFucw7uD0L2gYbCAu1dqO/kji2Ok8+lZIj1crUJdntTlbnm8xMh57y3QVLXRucLZ
+         a1ESwOgR9ujd2TblM1E4aoJXb2LlWbYOFCbyY=
 MIME-Version: 1.0
-To: jidong xiao <jidong.xiao@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Where is proc_misc.c?
-References: <4104961b1001182254x74f3fcd1r906de8f10c105f8a@mail.gmail.com>
-In-Reply-To: <4104961b1001182254x74f3fcd1r906de8f10c105f8a@mail.gmail.com>
+In-Reply-To: <4B55130D.8070503@gmail.com>
+References: <64bb37e0912250122n4e0e1842q88c0dad7e99ec6a7@mail.gmail.com>
+	 <4B484829.6060405@kernel.org>
+	 <64bb37e1001092033r1f0b4defw46c1a07101bb2d1b@mail.gmail.com>
+	 <4B4A7BC7.6060106@kernel.org> <4B4A815A.60503@gmail.com>
+	 <64bb37e1001161358r79ea2da0u88e9894fa5987ef1@mail.gmail.com>
+	 <4B536383.7090609@gmail.com>
+	 <64bb37e1001171311u21c58fbj9a13b6aaeb7b2c3f@mail.gmail.com>
+	 <64bb37e1001181251y733513cdm1be9850af880ee73@mail.gmail.com>
+	 <4B55130D.8070503@gmail.com>
+Date: Tue, 19 Jan 2010 08:00:43 +0100
+Message-ID: <64bb37e1001182300u13f41817hf1a3d18ffdc75847@mail.gmail.com>
+Subject: Re: MSI broken in libata?
+From: Torsten Kaiser <just.for.lkml@googlemail.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jidong xiao wrote:
-> Hi,
-> 
-> Does anybody know what happend to fs/proc/proc_misc.c? The file is
-> missing in 2.6.29. Seems like there was an cleanup, but i can't find
-> the new location of the methods. Any help appreciated.
-> 
+On Tue, Jan 19, 2010 at 3:03 AM, Robert Hancock <hancockrwd@gmail.com> wrote:
+> On 01/18/2010 02:51 PM, Torsten Kaiser wrote:
+>> Should I try to put some printks in arch/x86/kernel/apic/io_apic.c
+>> __assign_irq_vector() or is there a better way to look at the irq
+>> vectors?
+>
+> Might not be a bad idea.
 
-$ git log -- fs/proc/proc_misc.c
-commit 59c7572e82d69483a66eaa67b46548baeb69ecf4
-Author: Alexey Dobriyan <adobriyan@gmail.com>
-Date:   Mon Oct 6 14:49:39 2008 +0400
+OK, I will try it later today.
 
-    proc: remove fs/proc/proc_misc.c
+> Something definitely seems to be banging on vector
+> 165. Any references to 165 in dmesg prior to that? I wonder where that is
+> coming from..
 
-    Now that everything was moved to their more or less expected places,
-    apply rm(1).
+No, grepping for 165 only shows some timestamps and some output from
+the serial driver, because that's a 16550A.
 
-    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+I hope adding these debugs will help, maybe something suspicious
+reserved 164 or 166...
 
+
+Torsten
