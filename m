@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576Ab0ASQfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584Ab0ASQi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576Ab0ASQfz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 11:35:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547Ab0ASQfu
+	id S1754584Ab0ASQi2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 11:38:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542Ab0ASQi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 11:35:50 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41957 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754492Ab0ASQft (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 11:35:49 -0500
-Subject: Re: HW breakpoints perf_events request
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       Joshua Pincus <joshua.pincus@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>, paulus@samba.org,
-       acme@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20100119162059.GF8061@nowhere>
-References: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com>
-	 <87ljg1fn3u.fsf@basil.nowhere.org>
-	 <bc915a051001131821x6cdd3470lf72e8c02a897ea3@mail.gmail.com>
-	 <20100114092350.GF12241@basil.fritz.box>
-	 <bc915a051001141003s766689beue73800a1308d957e@mail.gmail.com>
-	 <20100118110406.GC5256@nowhere> <y0maawbid91.fsf@fche.csb>
-	 <20100119145027.GB8061@nowhere> <20100119151210.GC16096@redhat.com>
-	 <20100119162059.GF8061@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 19 Jan 2010 17:26:45 +0100
-Message-ID: <1263918405.4283.710.camel@laptop>
+	Tue, 19 Jan 2010 11:38:27 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48300 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750783Ab0ASQi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 11:38:26 -0500
+Subject: Re: [PATCH] kconfig: dont hardcode path to lsmod
+From: Steven Rostedt <srostedt@redhat.com>
+To: John Kacur <jkacur@redhat.com>
+Cc: Mike Frysinger <vapier@gentoo.org>,
+       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.1001191723030.5999@localhost.localdomain>
+References: <1263883920-17289-1-git-send-email-vapier@gentoo.org>
+	 <20100119142545.GB3473@hack>
+	 <520f0cf11001190822t6d3221bco20739d586608bfde@mail.gmail.com>
+	 <alpine.LFD.2.00.1001191723030.5999@localhost.localdomain>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Tue, 19 Jan 2010 11:37:55 -0500
+Message-Id: <1263919075.2737.134.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-19 at 17:21 +0100, Frederic Weisbecker wrote:
-> 
-> 
-> Hmm, there has been deep review from Peter, IIRC.
+On Tue, 2010-01-19 at 17:29 +0100, John Kacur wrote:
 
-I did provide some feedback on an earlier version, didn't get around to
-look at the latest. Also I didn't cover all of it.
+> diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
+> index 0d80082..1803d2e 100644
+> --- a/scripts/kconfig/streamline_config.pl
+> +++ b/scripts/kconfig/streamline_config.pl
+> @@ -238,7 +238,8 @@ foreach my $makefile (@makefiles) {
+>  my %modules;
+>  
+>  # see what modules are loaded on this system
+> -open(LIN,"/sbin/lsmod|") || die "Cant lsmod";
+> +# If lsmod isn't in the sbin dir, check if it is in the path
+> +open(LIN,"/sbin/lsmod|") || open(LIN,"lsmod|") || die "Cant lsmod";
+
+I've tried this before, but it gives an error that the "|" pipe failed.
+
+-- Steve
 
 
+>  while (<LIN>) {
+>  	next if (/^Module/);  # Skip the first line.
+>  	if (/^(\S+)/) {
 
