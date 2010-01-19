@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881Ab0ASWLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940Ab0ASWMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881Ab0ASWLQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 17:11:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765Ab0ASWLM
+	id S1754940Ab0ASWMI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 17:12:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558Ab0ASWMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 17:11:12 -0500
-Received: from nbd.name ([88.198.39.176]:57703 "EHLO ds10.nbd.name"
+	Tue, 19 Jan 2010 17:12:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33670 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754705Ab0ASWLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 17:11:10 -0500
-Message-ID: <4B562DF4.70302@openwrt.org>
-Date: Tue, 19 Jan 2010 23:11:00 +0100
-From: Felix Fietkau <nbd@openwrt.org>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	id S1754428Ab0ASWMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 17:12:02 -0500
+Message-ID: <4B562DFE.7020006@kernel.org>
+Date: Tue, 19 Jan 2010 14:11:10 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
-CC: Dave Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
-       =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirqus@gmail.com>
-Subject: Re: [PATCH 2.6.33 1/3] net: Micrel KSZ8841/2 PCI Ethernet driver
-References: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com> <e2d7436a1001160800u11206f54iaf07bb92331a256a@mail.gmail.com> <4B51E64B.6010706@openwrt.org> <14385191E87B904DBD836449AA30269D580AA0@MORGANITE.micrel.com>
-In-Reply-To: <14385191E87B904DBD836449AA30269D580AA0@MORGANITE.micrel.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
+To: Alex Chiang <achiang@hp.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH 01/11] pci: add pci_bridge_release_unused_res and	pci_bus_release_unused_bridge_res
+References: <1263640037-24134-1-git-send-email-yinghai@kernel.org> <1263640037-24134-2-git-send-email-yinghai@kernel.org> <20100119212608.GF11010@ldl.fc.hp.com>
+In-Reply-To: <20100119212608.GF11010@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010-01-19 10:51 PM, Ha, Tristram wrote:
-> Your work looks interesting, but rtl8036 seems to use MDIO page
-> registers to access its own internal registers.  Micrel switches do
-> not have that feature and so cannot use that way.
+On 01/19/2010 01:26 PM, Alex Chiang wrote:
+>> +static void __ref pci_bus_release_bridge_resources(struct pci_bus *bus,
+>> +						   unsigned long type,
+>> +						   enum release_type rel_type)
+>> +{
+>> +	struct pci_dev *dev;
+>> +	bool is_leaf_bridge = true;
+>> +
+>> +	list_for_each_entry(dev, &bus->devices, bus_list) {
+>> +		struct pci_bus *b = dev->subordinate;
+>> +		if (!b)
+>> +			continue;
+>> +
+>> +		switch (dev->class >> 8) {
+>> +		case PCI_CLASS_BRIDGE_CARDBUS:
+>> +			is_leaf_bridge = false;
+>> +			break;
+>> +
+>> +		case PCI_CLASS_BRIDGE_PCI:
+>> +		default:
+>> +			is_leaf_bridge = false;
+>> +			if (rel_type == whole_subtree)
+>> +				pci_bus_release_bridge_resources(b, type,
+>> +							 whole_subtree);
+>> +			break;
+>> +		}
+>> +	}
 > 
-> I am looking at those PHY drivers and try to figure out how they work
-> under mdio bus.  I am using Micrel's own KSZ8695P and KSZ9692P SoC to
-> develop and debug the KSZ884X PCI driver.  KSZ9692P actually has two
-> external PHYs so that the PHY driver can run on it.  But the driver
-> does not load because I probably need to add some hooks to the mdio
-> bus driver to do the actual hardware access.  Can somebody give me
-> some pointers to this mdio bus support?  Does the PHY driver create a
-> user interface like eth0 so that it can be accessed using some tools
-> like ethtool?
+> I still don't understand this loop. Can't you write it like this:
 > 
-> Anyway I am afraid the phy driver model does not work on KSZ884X.  I
-> cannot think of how the mdio bus accesses hardware registers located
-> on a PCI device.
-The switch config core that i wrote is not specific to PHY drivers, it
-can be used from ethernet drivers, GPIO based platform drivers or any
-other kind of drivers as well.
-It exports a simple netlink based config interface to user space that
-allows you to get a list of all configurable attributes for the device,
-ports and vlans, and change them.
+> 	list_for_each_entry(dev, &bus->devices, bus_list) {
+> 		struct pci_bus *b = dev->subordinate;
+> 		if (!b)
+> 			continue;
+> 
+> 		is_leaf_bridge = false;
+> 
+> 		if ((dev->class >> 8) == PCI_CLASS_BRIDGE_CARDBUS)
+> 			continue;
+> 
+> 		if (rel_type == whole_subtree)
+> 			pci_bus_release_bridge_resources(b, type,
+> 						whole_subtree);
+> 	}
+> 
+> I'm looking at that 'default' label in your switch() statement
+> which causes us to always set is_leaf_bridge = false after 'b' is
+> valid.
 
-I also have a config utility for it:
-https://dev.openwrt.org/browser/trunk/package/swconfig/src
-
-It currently depends on our config library (libuci), but that can be
-removed easily, as the code for that is not spread over the core of the
-utility.
-
-Part of this code can also be used as a small library, if you want to
-write your own utility.
-
-- Felix
+ok
