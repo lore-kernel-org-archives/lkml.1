@@ -1,97 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322Ab0ASTD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335Ab0ASTHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322Ab0ASTD7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 14:03:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952Ab0ASTD6
+	id S1755335Ab0ASTHm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 14:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278Ab0ASTHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 14:03:58 -0500
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:45702 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754913Ab0ASTD4 (ORCPT
+	Tue, 19 Jan 2010 14:07:41 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45639 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755266Ab0ASTHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 14:03:56 -0500
-Message-ID: <4B560213.2020707@linux.vnet.ibm.com>
-Date: Wed, 20 Jan 2010 00:33:47 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0b1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: Alexey Dobriyan <adobriyan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] delay-accounting: Re-implement -c for getdelays.c to
- report information on a target command
-References: <20100119180027.GA5154@csn.ul.ie> <4B55F657.9000009@linux.vnet.ibm.com> <20100119185213.GB5154@csn.ul.ie>
-In-Reply-To: <20100119185213.GB5154@csn.ul.ie>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Tue, 19 Jan 2010 14:07:40 -0500
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier (v5)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+In-Reply-To: <1263926259.4283.757.camel@laptop>
+References: <20100113013757.GA29314@Krystal>
+	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
+	 <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal>
+	 <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal>
+	 <20100114183739.GA18435@Krystal>
+	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
+	 <20100114193355.GA23436@Krystal>  <1263926259.4283.757.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 19 Jan 2010 20:06:46 +0100
+Message-ID: <1263928006.4283.762.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 January 2010 12:22 AM, Mel Gorman wrote:
->>
->> That is an oversight and not intentional. I've not gotten around to
->> reimplementing the -c option due to lack for people asking for it.
->>
+On Tue, 2010-01-19 at 19:37 +0100, Peter Zijlstra wrote:
+> On Thu, 2010-01-14 at 14:33 -0500, Mathieu Desnoyers wrote:
+> > It's a case where CPU 1 switches from our mm to another mm:
+> > 
+> >        CPU 0 (membarrier)                  CPU 1 (another mm -our mm)
+> >        <user-space>                        <user-space>
+> >                                            <buffered access C.S. data>
+> >                                            urcu read unlock()
+> >                                              barrier()
+> >                                              store local gp
+> >                                            <kernel-space>
 > 
-> Consider this a request then. Man, I'd really like if someone
-> implemented that -c switch thing :P
+> OK, so the question is how we end up here, if its though interrupt
+> preemption I think the interrupt delivery will imply an mb,
+
+I keep thinking that, but I think we actually refuted that in an earlier
+discussion on this patch.
+
+>  if its a
+> blocking syscall, the set_task_state() mb [*] should be there.
 > 
-
-:)
-
->>> This patch reimplements -c for getdelays.c to act as documented. Unlike the
->>> original version, it waits until the command completes before printing any
->>> information on it. An example of it being used looks like
->>>
->>
->> Looks good, could you please keep the original sign-offs as well?
->>
+> Then we also do:
 > 
-> Well, the reimplementation is significantly different to what was there
-> so I'm not sure that's appropriate. Look at the differences yourself.
+> 					clear_tsk_need_resched()
 > 
-
-Fair enough
-
->>> $ ./getdelays -d -c find /home/mel -name mel
->>> print delayacct stats ON
->>> /home/mel
->>> /home/mel/.notes-wine/drive_c/windows/profiles/mel
->>> /home/mel/.wine/drive_c/windows/profiles/mel
->>> /home/mel/git-configs/dot.kde/share/apps/konqueror/home/mel
->>> PID	5923
->>>
->>> CPU             count     real total  virtual total    delay total
->>>                 42779     5051232096     5164722692      564207988
->>> IO              count    delay total
->>>                 41727    97804147758
->>> SWAP            count    delay total
->>>                     0              0
->>> RECLAIM         count    delay total
->>>                     0              0
->>>
->>> It's not clear how or if this subsystem is being maintained. If the
->>> authors agree on it but do not pick it up for merging, I'll go bug
->>> Andrew with it.
->>>
->>
->> I am maintaining it, please do let me know if you have an issue with the
->> subsystem or utilities.
->>
+> which is an atomic bitop (although does not imply a full barrier
+> per-se).
 > 
-> If you're happy with the patch then, can you pick it up, add your
-> signed-off-by and go with whatever submission path you use for this
-> subsystem?
-> 
+> >                                            rq->curr = next (1)
 
-Absolutely!
+We could possibly look at placing that assignment in context_switch()
+between switch_mm() and switch_to(), which should provide a mb before
+and after I think, Ingo?
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
-Andrew, could you please pick this up?
-
-Thanks,
-Balbir Singh.
