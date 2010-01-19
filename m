@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220Ab0ASSoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235Ab0ASSqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220Ab0ASSoQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 13:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165Ab0ASSoP
+	id S1755235Ab0ASSqh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 13:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859Ab0ASSqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 13:44:15 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:40187 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752175Ab0ASSoP (ORCPT
+	Tue, 19 Jan 2010 13:46:36 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:33317 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932099Ab0ASSqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 13:44:15 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
-Date: Tue, 19 Jan 2010 19:44:54 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Johan Hovold <jhovold@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20100117025535.GB7045@srcf.ucam.org> <20100119152536.GA2104@localhost> <20100119162746.04ba6d9e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100119162746.04ba6d9e@lxorguk.ukuu.org.uk>
+	Tue, 19 Jan 2010 13:46:34 -0500
+Date: Tue, 19 Jan 2010 13:46:31 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Dave Chinner <david@fromorbit.com>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, Christoph Hellwig <hch@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, swhiteho@redhat.com
+Subject: Re: lockdep: inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R}
+	usage.
+Message-ID: <20100119184631.GA11408@infradead.org>
+References: <20100115120253.GH28498@discord.disaster> <1263557473.4244.399.camel@laptop> <20100115124410.GI28498@discord.disaster> <1263559995.4244.403.camel@laptop>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001191944.54622.oliver@neukum.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263559995.4244.403.camel@laptop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 19. Januar 2010 17:27:46 schrieb Alan Cox:
-> On Tue, 19 Jan 2010 16:25:36 +0100
-> Johan Hovold <jhovold@gmail.com> wrote:
-
-> > Is it really a fix? If the fifo is already full the write urb should be
-> > in use and Oliver's patch would amount to only a minor optimisation as
-> > usb_serial_generic_write_start would return 0 anyway.
+On Fri, Jan 15, 2010 at 01:53:15PM +0100, Peter Zijlstra wrote:
+> Well, I don't know enough about xfs (of filesystems in generic) to say
+> that with any certainty, but I can imagine inode writeback from the sync
+> that goes with umount to cause issues.
 > 
-> IF the write returns a zero then it will sleep in n_tty waiting for a
-> wakeup when the FIFO level drops sufficiently. If that isn't working
-> check that all cases where data is cleared from the FIFO called
-> tty_wakeup and do so *after* the FIFO has been partly emptied and the
-> locking has ensured the space is visible to the write side.
-> 
-usb_serial_generic_write_bulk_callback() always calls the softint
-in the single URB case. Therefore the test with the patch I sent.
-It is unlikely to be chance that the hang happens just as the FIFO
-is full.
+> If this inode reclaim is past all that and the filesystem is basically
+> RO, then I don't think so and this could be considered a false positive,
+> in which case we need an annotation for this.
 
-	Regards
-		Oliver
+The issue is a bit more complicated.  In the unmount case
+invalidate_inodes() is indeed called after the filesystem is effectively
+read-only for user origination operations.  But there's a miriad of
+other invalidate_inodes() calls:
+
+ - fs/block_dev.c:__invalidate_device()
+
+	This gets called from block device codes for various kinds of
+	invalidations.  Doesn't make any sense at all to me, but hey..
+
+ - fs/ext2/super.c:ext2_remount()
+
+	Appears like it's used to check for activate inodes during
+	remount.  Very fishy usage, and could just be replaced with
+	a list walk without any I/O
+
+ - fs/gfs2/glock.c:gfs2_gl_hash_clear()
+
+	No idea.
+
+ - fs/gfs2/ops_fstype.c:fill_super()
+
+	Tries to kill all inodes in the fill_super error path, looks
+	very fishy.
+
+ - fs/ntfs/super.c:ntfs_fill_super()
+
+	Failure case of fill_super again, does not look very useful.A
+
+ - fs/smbfs/inode.c:smb_invalidate_inodes()
+
+	Used when a connection goes bad.
+
+In short we can't generally rely on this only happening on a dead fs.
+
+
+But in the end we abuse iprune_sem to work around a ref counting
+problem.  As long as we keep a reference to the superblock for each
+inode on the dispose list the superblock can't go away and there's
+no need for the lock at all.
