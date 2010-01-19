@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667Ab0ASKc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971Ab0ASKl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667Ab0ASKc5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 05:32:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755746Ab0ASKc4
+	id S1755971Ab0ASKl1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 05:41:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877Ab0ASKl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 05:32:56 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:32850 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755681Ab0ASKcz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 05:32:55 -0500
-Date: Tue, 19 Jan 2010 11:32:48 +0100
-From: Tino Keitel <tino.keitel@tikei.de>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression: Wake on LAN doesn't work in sky2 with
- 2.6.33-rc4-git2
-Message-ID: <20100119103248.GA8527@mac.home>
-Mail-Followup-To: Stephen Hemminger <shemminger@vyatta.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20100115091053.GA5477@mac.home>
- <201001180136.45823.rjw@sisk.pl>
- <20100118083757.GA2619@mac.home>
- <201001182234.55113.rjw@sisk.pl>
- <20100118144340.100c9544@nehalam>
+	Tue, 19 Jan 2010 05:41:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56435 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755798Ab0ASKlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 05:41:25 -0500
+Date: Tue, 19 Jan 2010 12:40:58 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-mm@kvack.org,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org, akpm@linux-foundation.org,
+       andrew.c.morrow@gmail.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       minchan.kim@gmail.com
+Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
+Message-ID: <20100119104058.GL14345@redhat.com>
+References: <20100118170816.GA22111@redhat.com>
+ <84144f021001181009m52f7eaebp2bd746f92de08da9@mail.gmail.com>
+ <20100118181942.GD22111@redhat.com>
+ <20100118191031.0088f49a@lxorguk.ukuu.org.uk>
+ <20100119071734.GG14345@redhat.com>
+ <84144f021001182337o274c8ed3q8ce60581094bc2b9@mail.gmail.com>
+ <20100119075205.GI14345@redhat.com>
+ <84144f021001190007q54a334dfwed64189e6cf0b7c4@mail.gmail.com>
+ <20100119082638.GK14345@redhat.com>
+ <84144f021001190044s397c6665qb00af48235d2d818@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100118144340.100c9544@nehalam>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <84144f021001190044s397c6665qb00af48235d2d818@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 14:43:40 -0800, Stephen Hemminger wrote:
-> On Mon, 18 Jan 2010 22:34:55 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-[...]
-
-> > Perhaps we clear the WoL setting somewhere we shouldn't, but the
-> > "disable PCI register writes" bit prevents this from actually happening?
-> > 
-> > Rafael
+On Tue, Jan 19, 2010 at 10:44:23AM +0200, Pekka Enberg wrote:
+> On Tue, Jan 19, 2010 at 10:26 AM, Gleb Natapov <gleb@redhat.com> wrote:
+> >> me that you're trying to use a big hammer (mlock) when a polite hint
+> >> for the VM would probably be sufficient for it do its job.
+> >>
+> > I what to tell to VM "swap this, don't swap that" and as far as I see
+> > there is no other way to do it currently.
 > 
-> How about getting a register dump of pci config space with
-> good/bad version?
+> Yeah, which is why I was suggesting that maybe posix_madvise() needs
+> to be extended to have a MADV_NEED_BUT_LESS_IMPORTANT flag that can be
+> used as a hint by mm/vmscan.c to first swap the guest address spaces.
+> 
+If such thing would exist may be I would have used it since swapping out
+of a wrong page is not live or death matter in my case, but mlockall()
+provides me with exactly what I need and without swapping out wrong
+pages. Speaking about adding such madvise call wouldn't it be even
+harder to justify? It obviously not good enough for real-time use and my
+case, I admit, is unusual. Also if we start prioritise memory why stop
+on binary, why not set value like "this memory is more important then
+that memory by factor of 5"?
 
-At which point should the dump be placed? Somewhere as near to the              
-actual suspend as possible?                                                     
-                                                                                
-Regards,                                                                        
-Tino                                                                            
+--
+			Gleb.
