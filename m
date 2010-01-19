@@ -1,61 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928Ab0ASNST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753078Ab0ASNTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752928Ab0ASNST (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 08:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624Ab0ASNSS
+	id S1753078Ab0ASNTv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 08:19:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163Ab0ASNTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 08:18:18 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:6774 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898Ab0ASNSP (ORCPT
+	Tue, 19 Jan 2010 08:19:50 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:33541 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751590Ab0ASNTt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 08:18:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=oU6cwom3PUTl1gHNq8dMXLaqbVNWp9uKzMBVp4BZYRbcMkFfj889OO2/m+T3nKhHu4
-         ohS7SuP+nhNm+sBDtel506xqXWda/nqBnJ1oYdpGvdQYfrLxnAbphU+fjDMyzr1F8krM
-         Z/vHLwt9CvVnfnZUXYqa4tPNJIzu1zKSFkl5g=
+	Tue, 19 Jan 2010 08:19:49 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Tue, 19 Jan 2010 14:20:29 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20100117025535.GB7045@srcf.ucam.org> <201001181825.39823.oliver@neukum.org> <20100118201416.GA26511@srcf.ucam.org>
+In-Reply-To: <20100118201416.GA26511@srcf.ucam.org>
 MIME-Version: 1.0
-In-Reply-To: <1263905332.2163.11.camel@barrios-desktop>
-References: <20100118141938.GI30698@redhat.com>
-	 <20100118181942.GD22111@redhat.com>
-	 <20100118191031.0088f49a@lxorguk.ukuu.org.uk>
-	 <20100119071734.GG14345@redhat.com>
-	 <84144f021001182337o274c8ed3q8ce60581094bc2b9@mail.gmail.com>
-	 <20100119075205.GI14345@redhat.com>
-	 <84144f021001190007q54a334dfwed64189e6cf0b7c4@mail.gmail.com>
-	 <20100119082638.GK14345@redhat.com>
-	 <84144f021001190044s397c6665qb00af48235d2d818@mail.gmail.com>
-	 <1263905332.2163.11.camel@barrios-desktop>
-Date: Tue, 19 Jan 2010 15:18:11 +0200
-X-Google-Sender-Auth: 462d10fb89b9b267
-Message-ID: <84144f021001190518x450868eax2edfa5e16ff6e4b@mail.gmail.com>
-Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Gleb Natapov <gleb@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       akpm@linux-foundation.org, andrew.c.morrow@gmail.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_dGbVLPFLLlx2qRL"
+Message-Id: <201001191420.29652.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 2:48 PM, Minchan Kim <minchan.kim@gmail.com> wrote:
-> Gleb. How about using MADV_SEQUENTIAL on guest memory?
-> It makes that pages of guest are moved into inactive reclaim list more
-> fast. It means it is likely to swap out faster than other pages if it
-> isn't hit during inactive list.
+--Boundary-00=_dGbVLPFLLlx2qRL
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-Yeah, something like that but we don't want the readahead. OTOH, it's
-not clear what Gleb's real problem is. Are the guest address spaces
-anonymous or file backed? Which parts of the emulator are swapped out
-that are causing the problem? Maybe it's a VM balancing issue that
-mlock papers over?
+Am Montag, 18. Januar 2010 21:14:16 schrieb Matthew Garrett:
 
-                         Pekka
+> drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 1565 
+> bytes
+> drivers/usb/serial/generic.c: usb_serial_generic_write - put 0 bytes 
+> into fifo
+> drivers/usb/serial/generic.c: usb_serial_generic_read_bulk_callback - 
+> port 0
+
+If the FIFO is full we can do nothing. Please try the attached patch.
+
+	Regards
+		Oliver
+
+--Boundary-00=_dGbVLPFLLlx2qRL
+Content-Type: text/x-patch;
+  charset="UTF-8";
+  name="0001-usb-serial-Deal-with-filled-FIFO.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="0001-usb-serial-Deal-with-filled-FIFO.patch"
+
+=46rom d7317bae0772b794a1cc9b832bc3d3e1b3642a13 Mon Sep 17 00:00:00 2001
+=46rom: Oliver Neukum <oliver@neukum.org>
+Date: Tue, 19 Jan 2010 14:16:41 +0100
+Subject: [PATCH] usb:serial:Deal with filled FIFO
+
+Bail out if the FIFO is filled
+
+Signed-off-by: Oliver Neukum <oliver@neukum.org>
+=2D--
+ drivers/usb/serial/generic.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/usb/serial/generic.c b/drivers/usb/serial/generic.c
+index 76e5514..053f7f1 100644
+=2D-- a/drivers/usb/serial/generic.c
++++ b/drivers/usb/serial/generic.c
+@@ -349,6 +349,10 @@ int usb_serial_generic_write(struct tty_struct *tty,
+=20
+ 	count =3D kfifo_in_locked(&port->write_fifo, buf, count, &port->lock);
+ 	dbg("%s - put %d bytes into fifo", __func__, count);
++	if (!count) {
++		dbg("%s - FIFO is full", __func__);
++		return 0;
++	}
+ 	result =3D usb_serial_generic_write_start(port);
+=20
+ 	if (result >=3D 0)
+=2D-=20
+1.6.4.2
+
+
+--Boundary-00=_dGbVLPFLLlx2qRL--
