@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961Ab0ASOPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748Ab0ASORN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752961Ab0ASOPB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 09:15:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997Ab0ASOPA
+	id S1752748Ab0ASORN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 09:17:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130Ab0ASORM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 09:15:00 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:57842 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751439Ab0ASOO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 09:14:59 -0500
-Date: Tue, 19 Jan 2010 16:14:36 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       akpm@linux-foundation.org, andrew.c.morrow@gmail.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
-Message-ID: <20100119141436.GA5238@redhat.com>
-References: <20100118141938.GI30698@redhat.com>
- <84144f021001180805q4d1203b8qab8ccb1de87b2866@mail.gmail.com>
- <20100118170816.GA22111@redhat.com>
- <84144f021001181009m52f7eaebp2bd746f92de08da9@mail.gmail.com>
- <20100118181942.GD22111@redhat.com>
- <20100118191031.0088f49a@lxorguk.ukuu.org.uk>
- <20100119071734.GG14345@redhat.com>
- <84144f021001182337o274c8ed3q8ce60581094bc2b9@mail.gmail.com>
- <20100119075205.GI14345@redhat.com>
- <1263910043.2163.24.camel@barrios-desktop>
+	Tue, 19 Jan 2010 09:17:12 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:56179 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751581Ab0ASORL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 09:17:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Y7rDWpiuO0ukt1Fa/uiPwkXFvQHqkP6fYSg3jghr+loLWnUXnF/i0lrmhdt+41//B8
+         KM/hychwtL5daZDhezBqdcKdbvM43R+3fdey25W2dVFJsVQLhWQTHSTPK+rxn6oH/7DP
+         eFe7MuAarVCFf2+AjMR8CKTzHkzToeh9w6a8U=
+Date: Tue, 19 Jan 2010 22:19:06 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: mojtaba <kernelppc@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: module init data
+Message-ID: <20100119141906.GA3473@hack>
+References: <1dec3f771001180601jd511ab0g51aaaf8ed2195e9d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1263910043.2163.24.camel@barrios-desktop>
+In-Reply-To: <1dec3f771001180601jd511ab0g51aaaf8ed2195e9d@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 11:07:23PM +0900, Minchan Kim wrote:
-> On Tue, 2010-01-19 at 09:52 +0200, Gleb Natapov wrote:
-> 
-> > In my case (virtualization) I want to test/profile guest under heavy swapping
-> > of a guests memory, so I intentionally create memory shortage by creating
-> 
-> You mean "guest memory" that is area emulated DRAM in qemu?
-> It is anonymous vma. 
-> 
-> > guest much large then host memory, but I want system to swap out only
-> > guest's memory.
-> 
-> Couldn't you use MADV_SEQUENTIAL on only guest memory area?
-> It doesn't make side effect about readahead since it's anon area. 
-> And it would make do best effort to swap out guest's memory.
-> 
-I can try, should be better then nothing I guess. Doesn't guaranty that
-emulator memory will not be swapped out though.
+On Mon, Jan 18, 2010 at 03:01:56PM +0100, mojtaba wrote:
+>Hi there,
+>
+>I have a kernel modules which needs to maintain a table of some
+>information. the data in the table can be changed during the system
+>run and some new raws might be added to the  table. The table also
+>must be initialized at the system startup with the values from the
+>previous run.
+>
+>As using files is not good in kernel mode, how can I load the data at
+>the startup and store them as they changed? These information are
+>device related. Can I use sysfs for this issue? Is there any tutorial
+>on how to do that?
+>
 
---
-			Gleb.
+You can't use sysfs here, since it also stays in memory.
+
+What you want is an interface to read and write those information
+to/from the userspace, you can take iptables-save and iptables-restore
+as an example.
+
+One design of such interface would be passing a data structure which
+contains all the table information from user space to kernel space
+via syscall. Thus a user-space program will need to parse the data in
+a file into that data structure and then do that syscall.
+
+With this interface on hand, you can write an init-script to load the
+table info during boot and to save the info during shutdown.
+
+-- 
+Live like a child, think like the god.
+ 
