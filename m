@@ -1,64 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949Ab0ASHAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171Ab0ASHHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949Ab0ASHAr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 02:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366Ab0ASHAq
+	id S1754171Ab0ASHHl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 02:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229Ab0ASHHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 02:00:46 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:60042 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751353Ab0ASHAp (ORCPT
+	Tue, 19 Jan 2010 02:07:40 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:45086 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668Ab0ASHHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 02:00:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=M1zILjIhCk7UhKt3hZ9FERIWT6zHflg1Du/tqSbTEzcEPJvDGxqzN0VjnLfnHzrx3N
-         LgmpNFucw7uD0L2gYbCAu1dqO/kji2Ok8+lZIj1crUJdntTlbnm8xMh57y3QVLXRucLZ
-         a1ESwOgR9ujd2TblM1E4aoJXb2LlWbYOFCbyY=
-MIME-Version: 1.0
-In-Reply-To: <4B55130D.8070503@gmail.com>
-References: <64bb37e0912250122n4e0e1842q88c0dad7e99ec6a7@mail.gmail.com>
-	 <4B484829.6060405@kernel.org>
-	 <64bb37e1001092033r1f0b4defw46c1a07101bb2d1b@mail.gmail.com>
-	 <4B4A7BC7.6060106@kernel.org> <4B4A815A.60503@gmail.com>
-	 <64bb37e1001161358r79ea2da0u88e9894fa5987ef1@mail.gmail.com>
-	 <4B536383.7090609@gmail.com>
-	 <64bb37e1001171311u21c58fbj9a13b6aaeb7b2c3f@mail.gmail.com>
-	 <64bb37e1001181251y733513cdm1be9850af880ee73@mail.gmail.com>
-	 <4B55130D.8070503@gmail.com>
-Date: Tue, 19 Jan 2010 08:00:43 +0100
-Message-ID: <64bb37e1001182300u13f41817hf1a3d18ffdc75847@mail.gmail.com>
-Subject: Re: MSI broken in libata?
-From: Torsten Kaiser <just.for.lkml@googlemail.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 19 Jan 2010 02:07:40 -0500
+From: Ike Panhc <ike.pan@canonical.com>
+To: stable@kernel.org, linux-kernel@vger.kernel.org
+Cc: Corentin Chary <corentincj@iksaif.net>, Len Brown <len.brown@intel.com>
+Subject: [stable .32] [PATCH] asus-laptop: add Lenovo SL hotkey support
+Date: Tue, 19 Jan 2010 15:07:31 +0800
+Message-Id: <1263884851-7197-1-git-send-email-ike.pan@canonical.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 3:03 AM, Robert Hancock <hancockrwd@gmail.com> wrote:
-> On 01/18/2010 02:51 PM, Torsten Kaiser wrote:
->> Should I try to put some printks in arch/x86/kernel/apic/io_apic.c
->> __assign_irq_vector() or is there a better way to look at the irq
->> vectors?
->
-> Might not be a bad idea.
+commit 14f8af311e7d3e4198cbaade84a34f86505dcb37 upstream.
 
-OK, I will try it later today.
+This patch is made against current checkout of 2.6.32.y stable tree with a
+minor modification - BTN_TOUCH instead of KEY_F13, the same with
+asus-laptop.c in 2.6.32.
 
-> Something definitely seems to be banging on vector
-> 165. Any references to 165 in dmesg prior to that? I wonder where that is
-> coming from..
+Lenovo SL series laptop has a very similar DSDT with Asus laptops. We can
+easily have the extra ACPI function support with little modification in
+asus-laptop.c
 
-No, grepping for 165 only shows some timestamps and some output from
-the serial driver, because that's a 16550A.
+Here is the hotkey enablement for Lenovo SL series laptop.
 
-I hope adding these debugs will help, maybe something suspicious
-reserved 164 or 166...
+This patch will enable the following hotkey:
+ - Volumn Up
+ - Volumn Down
+ - Mute
+ - Screen Lock (Fn+F2)
+ - Battery Status (Fn+F3)
+ - WLAN switch (Fn+F5)
+ - Video output switch (Fn+F7)
+ - Touchpad switch (Fn+F8)
+ - Screen Magnifier (Fn+Space)
 
+Signed-off-by: Ike Panhc <ike.pan@canonical.com>
+---
+ drivers/platform/x86/asus-laptop.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-Torsten
+diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
+index 849359a..22d742d 100644
+--- a/drivers/platform/x86/asus-laptop.c
++++ b/drivers/platform/x86/asus-laptop.c
+@@ -221,6 +221,7 @@ static struct asus_hotk *hotk;
+  */
+ static const struct acpi_device_id asus_device_ids[] = {
+ 	{"ATK0100", 0},
++	{"ATK0101", 0},
+ 	{"", 0},
+ };
+ MODULE_DEVICE_TABLE(acpi, asus_device_ids);
+@@ -293,6 +294,11 @@ struct key_entry {
+ enum { KE_KEY, KE_END };
+ 
+ static struct key_entry asus_keymap[] = {
++	{KE_KEY, 0x02, KEY_SCREENLOCK},
++	{KE_KEY, 0x05, KEY_WLAN},
++	{KE_KEY, 0x08, BTN_TOUCH},
++	{KE_KEY, 0x17, KEY_ZOOM},
++	{KE_KEY, 0x1f, KEY_BATTERY},
+ 	{KE_KEY, 0x30, KEY_VOLUMEUP},
+ 	{KE_KEY, 0x31, KEY_VOLUMEDOWN},
+ 	{KE_KEY, 0x32, KEY_MUTE},
+@@ -312,6 +318,8 @@ static struct key_entry asus_keymap[] = {
+ 	{KE_KEY, 0x5F, KEY_WLAN},
+ 	{KE_KEY, 0x60, KEY_SWITCHVIDEOMODE},
+ 	{KE_KEY, 0x61, KEY_SWITCHVIDEOMODE},
++	{KE_KEY, 0x62, KEY_SWITCHVIDEOMODE},
++	{KE_KEY, 0x63, KEY_SWITCHVIDEOMODE},
+ 	{KE_KEY, 0x6B, BTN_TOUCH}, /* Lock Mouse */
+ 	{KE_KEY, 0x82, KEY_CAMERA},
+ 	{KE_KEY, 0x8A, KEY_PROG1},
+-- 
+1.6.3.3
+
