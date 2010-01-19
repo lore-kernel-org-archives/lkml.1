@@ -1,195 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752148Ab0ASFp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752333Ab0ASFr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752148Ab0ASFp3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 00:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875Ab0ASFp3
+	id S1752333Ab0ASFr1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 00:47:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029Ab0ASFr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 00:45:29 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47740 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751873Ab0ASFp2 (ORCPT
+	Tue, 19 Jan 2010 00:47:26 -0500
+Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:49519 "EHLO
+	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305Ab0ASFrZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 00:45:28 -0500
-Date: Tue, 19 Jan 2010 06:45:17 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <greg@kroah.com>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>
-Subject: Re: [PATCH] staging/dream: add missing include files/fix
- compilation
-Message-ID: <20100119054516.GB22153@elf.ucw.cz>
-References: <20091225205917.GA25761@elf.ucw.cz>
- <20100115002419.GA25643@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100115002419.GA25643@kroah.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 19 Jan 2010 00:47:25 -0500
+Date: Tue, 19 Jan 2010 00:46:24 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <4B54E4EF.8080602@majjas.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B554730.6090000@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B53906B.2020608@majjas.com> <20100117230531.GC3161@del.dom.local>
+ <4B539A0A.2000504@majjas.com> <20100118073018.GA6270@ff.dom.local>
+ <4B548C6B.10607@majjas.com> <20100118204658.GC3157@del.dom.local>
+ <4B54CB0D.5070604@majjas.com> <20100118212516.GE3157@del.dom.local>
+ <4B54D50C.90608@majjas.com> <20100118220814.GG3157@del.dom.local>
+ <20100118221747.GH3157@del.dom.local> <4B54E4EF.8080602@majjas.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2010-01-14 16:24:19, Greg KH wrote:
-> On Fri, Dec 25, 2009 at 09:59:18PM +0100, Pavel Machek wrote:
-> > This adds missing include files, so it should now compile. ifdef
-> > guards were added to Kconfig, so it should not cause problems on
-> > non-arch-msm machines.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> 
-> Odd, this doesn't apply to the linux-next tree, some of the files are
-> already there.
+On 1/18/2010 5:47 PM, Michael Breuer wrote:
+> On 1/18/2010 5:17 PM, Jarek Poplawski wrote:
+>> On Mon, Jan 18, 2010 at 11:08:14PM +0100, Jarek Poplawski wrote:
+>>> Btw, I wonder if you could test it skipping the (HP?) switch?
+>> If so, then of course don't forget to try tcpdump on the router.
+>>
+>> Jarek P.
+> Well - no.... but I'm not sure that would show anything.
+>
+> Setup diagram:
+>
+> Server->gb switch-> (100mb) wifi router -> devices
+>                     |
+>               Win7 PC (gb)
+>
+> The problem does not occur (at least I haven't been able to recreate 
+> it) at 100mb, and the wifi router doesn't do 1Gb. I drive the traffic 
+> from the win7 PC to the server. I've seen the loss when the only 
+> traffic going through the wifi router was ping & dhcp. I've also never 
+> seen any loss on a device directly attached to the 1GB switch. I can 
+> drive load through the wifi router while driving load from the Win7 
+> box, but don't see TX packet loss at all when not doing DHCP 
+> RELEASE/RENEW.
+>
+> As there is no packet loss to devices not involved in the DHCP 
+> sequence through the same path, I'm not really sure that the GB switch 
+> is implicated.
+>
+> As I don't have a standalone sniffer, I'm thinking that it might be 
+> easier to instrument places where the TX packet could be dropped and 
+> see at least whether it's getting to the card.
+>
+> Given the circumstances of the TX drop, and that it was DHCP traffic 
+> while under load that caused the oops rectified with the two patches, 
+> I'm thinking that the packet loss is the current manifestation of 
+> whatever the underlying problem is. Given the extra hop required to 
+> break things, and given that a dhcp release/renew seems to trigger 
+> things, I keep coming back to arp logic as being somehow implicated.
+>
+> If arp is somehow involved, then I'd expect to see manifestations 
+> under similar circumstances with other drivers. As the pskb_may_pull 
+> patch stopped the crash, perhaps other drivers do suffer packet loss 
+> and it's just not been widely noticed or attributed to the kernel - 
+> especially if the network topology is a factor. I do know people at 
+> large enterprises who have been complaining of what *could* be this 
+> same issue, however they're currently blaming their switch vendors. As 
+> most traffic is TCP, this is really only noticed by those few places 
+> deeply concerned with latency. It's likely something altogether 
+> different, but then again, maybe not.
+Ok - one last update for a while ...not sure what's next... I put some 
+printk's into sky2.c xmit logic - the packets are being sent to the 
+card, and the i/o's are completing successfully. So it would seem either 
+the switch is dropping the packets, or else the wifi router is. As 
+tcpdump doesn't show the packets arriving on the wifi router, I'm 
+leaning towards the switch. I ran wireshark on the win7 box to see what 
+is coming off the switch. I did notice one thing that's visible to the 
+win7 box but is not showing up on the linux wireshark - before every 
+successful dhcpoffer, there's an XID message broadcast from the device. 
+I'm wondering why I don't see this on the linux side:
 
-Strange, it seems it is almost all already in. Well, good :-).
+The packet is from the mac of the device, dst ff:ff:ff:ff:ff:ff; 
+protocol eth:llc... hex packet: ffffffffffff001cccf39ff600060001af810100.
 
-But there's small problem. linux-next now contains dwalker's tree, and
-I could not get it to compile, even with staging disabled. I'll need
-to look into that.
+Now I guess I've got some reading to do... I've got no idea what the 
+correct application of llc messages would be given my topology :(. I do 
+suspect that the llc stuff (or lack thereof under some conditions) is 
+causing the switch to fail to forward the dhcpoffer message. As the 
+dhcpoffer message is not broadcast, but directed to the remote mac 
+address and as that address is not connected directly to the switch, I'm 
+guessing that under some conditions whatever tells the switch how to 
+find the mac is missing. I'd guess that the wifi router should be 
+letting the switch know around the time it forwards the first arp and/or 
+DHCP broadcast message from the client... or maybe the linux box should 
+be doing something before the offer.
 
-Here are remaining few patches, now easy to read. (It also shows that
-at least CONFIG_AMSS_VERSION and CONFIG_GPIO should really be in
-arch/arm. I believe it will get there in .34 or so...)
-
----
-
-Guard whole dream/ specific Kconfig with CONFIG_DREAM so that we don't
-cause compile failures in other architectures. Add missing pieces so
-that it compiles.
-
-I am not sure if this is ready for staging. I guess we should wait
-till I get tree to compile in -next...?
-
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-diff --git a/drivers/staging/dream/Kconfig b/drivers/staging/dream/Kconfig
-index 4afa081..a824417 100644
---- a/drivers/staging/dream/Kconfig
-+++ b/drivers/staging/dream/Kconfig
-@@ -1,16 +1,55 @@
- config DREAM
--       tristate "HTC Dream support"
--       depends on BROKEN
-+       bool "HTC Dream support"
-+       depends on ARCH_MSM
-+
-+if DREAM
- 
- source "drivers/staging/dream/smd/Kconfig"
- 
- source "drivers/staging/dream/camera/Kconfig"
- 
-+config MSM_AMSS_VERSION
-+	int
-+	default 6210 if MSM_AMSS_VERSION_6210
-+	default 6220 if MSM_AMSS_VERSION_6220
-+	default 6225 if MSM_AMSS_VERSION_6225
-+	default 6350 if MSM_AMSS_VERSION_6350
-+
-+choice
-+	prompt "AMSS modem firmware version"
-+
-+	default MSM_AMSS_VERSION_6225
-+
-+	config MSM_AMSS_VERSION_6210
-+		bool "6.2.10"
-+
-+	config MSM_AMSS_VERSION_6220
-+		bool "6.2.20"
-+
-+	config MSM_AMSS_VERSION_6225
-+		bool "6.2.20 + New ADSP"
-+
-+	config MSM_AMSS_VERSION_6350
-+		bool "6.3.50"
-+endchoice
-+
-+config MSM_ADSP
-+	tristate "MSM ADSP driver"
-+	default y
-+	help
-+	  Provides access to registers needed by the userspace aDSP library.
- 
- config INPUT_GPIO
- 	tristate "GPIO driver support"
- 	help
- 	  Say Y here if you want to support gpio based keys, wheels etc...
- 
-+config GENERIC_GPIO
-+	bool
-+	default y
- 
-+config ANDROID_PMEM
-+	bool "Android pmem allocator"
-+	default y
- 
-+endif
-diff --git a/drivers/staging/dream/Makefile b/drivers/staging/dream/Makefile
-index 2b79151..f1e0429 100644
---- a/drivers/staging/dream/Makefile
-+++ b/drivers/staging/dream/Makefile
-@@ -1,4 +1,7 @@
-+EXTRA_CFLAGS=-Idrivers/staging/dream/include
- obj-$(CONFIG_MSM_ADSP)		+= qdsp5/ smd/
- obj-$(CONFIG_MSM_CAMERA)	+= camera/
- obj-$(CONFIG_INPUT_GPIO)	+= gpio_axis.o gpio_event.o gpio_input.o gpio_matrix.o gpio_output.o
-+obj-$(CONFIG_ANDROID_PMEM)	+= pmem.o
-+obj-y				+= generic_gpio.o
- 
-diff --git a/drivers/staging/dream/camera/mt9t013.c b/drivers/staging/dream/camera/mt9t013.c
-index 88229f2..ecb4866 100644
---- a/drivers/staging/dream/camera/mt9t013.c
-+++ b/drivers/staging/dream/camera/mt9t013.c
-@@ -9,7 +9,7 @@
- #include <linux/miscdevice.h>
- #include <linux/kernel.h>
- #include <media/msm_camera.h>
--#include <mach/gpio.h>
-+#include <linux/gpio.h>
- #include <mach/camera.h>
- #include <asm/mach-types.h>
- #include "mt9t013.h"
-diff --git a/drivers/staging/dream/qdsp5/adsp.c b/drivers/staging/dream/qdsp5/adsp.c
-index 9069535..1fab9ce 100644
---- a/drivers/staging/dream/qdsp5/adsp.c
-+++ b/drivers/staging/dream/qdsp5/adsp.c
-@@ -45,6 +45,7 @@ static inline void allow_suspend(void)
- #include "adsp.h"
- 
- #define INT_ADSP INT_ADSP_A9_A11
-+#define MSM_AD5_BASE          IOMEM(0xE0300000)
- 
- static struct adsp_info adsp_info;
- static struct msm_rpc_endpoint *rpc_cb_server_client;
-diff --git a/drivers/staging/dream/qdsp5/snd.c b/drivers/staging/dream/qdsp5/snd.c
-index 037d7ff..9ee0d90 100644
---- a/drivers/staging/dream/qdsp5/snd.c
-+++ b/drivers/staging/dream/qdsp5/snd.c
-@@ -28,6 +28,16 @@
- #include <mach/board.h>
- #include <mach/msm_rpcrouter.h>
- 
-+struct snd_endpoint {
-+        int id;
-+        const char *name;
-+};
-+
-+struct msm_snd_endpoints {
-+        struct snd_endpoint *endpoints;
-+        unsigned num;
-+};
-+
- struct snd_ctxt {
- 	struct mutex lock;
- 	int opened;
+So net-net, as far as my TX packet loss issue, sky2 is in the clear. If 
+something on the linux side should be informing the switch about 
+something then there may still be an issue. If the wifi router should be 
+doing something differently, then it's unfortunately likely a 2.4.37 
+kernel issue (That's what dd-wrt is using).
 
 
 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
