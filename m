@@ -1,104 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434Ab0ASOX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487Ab0ASOYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753434Ab0ASOX7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 09:23:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260Ab0ASOX5
+	id S1753487Ab0ASOYH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 09:24:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368Ab0ASOX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 19 Jan 2010 09:23:58 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:65068 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753223Ab0ASOX5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Jan 2010 09:23:57 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58343 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752221Ab0ASOX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 09:23:56 -0500
-Date: Tue, 19 Jan 2010 14:22:54 GMT
-From: tip-bot for Milton Miller <miltonm@bga.com>
-Cc: linux-kernel@vger.kernel.org, anton@samba.org, hpa@zytor.com,
-       mingo@redhat.com, torvalds@linux-foundation.org, peterz@infradead.org,
-       miltonm@bga.com, jens.axboe@oracle.com, npiggin@suse.de,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, anton@samba.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       miltonm@bga.com, peterz@infradead.org, jens.axboe@oracle.com,
-       npiggin@suse.de, akpm@linux-foundation.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20100118020051.GR12666@kryten>
-References: <20100118020051.GR12666@kryten>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/ipi] generic-ipi: Optimize accesses by using DEFINE_PER_CPU_SHARED_ALIGNED for IPI data
-Message-ID: <tip-e03bcb68629c7f0728c95f1afe06ce48565c7713@git.kernel.org>
-Git-Commit-ID: e03bcb68629c7f0728c95f1afe06ce48565c7713
-X-Mailer: tip-git-log-daemon
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=r448a/75bSJE1497Nyc7ZIws5s7C5mJy6CFIF8vB2SA4mlCNnHIN0UrP/9r9DgGuli
+         +AHaW6KdlfinknJbalUzFxIi5Y4YgWt92ETyGBMyCcea3DNr70euJUvUNWCZSZ8k9fgi
+         sQ77T2X6RPInsGYIURMYMF3cBK58dRB2TxEaY=
+Date: Tue, 19 Jan 2010 22:25:45 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: Steven Rostedt <srostedt@redhat.com>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: dont hardcode path to lsmod
+Message-ID: <20100119142545.GB3473@hack>
+References: <1263883920-17289-1-git-send-email-vapier@gentoo.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 19 Jan 2010 14:22:55 +0000 (UTC)
+In-Reply-To: <1263883920-17289-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e03bcb68629c7f0728c95f1afe06ce48565c7713
-Gitweb:     http://git.kernel.org/tip/e03bcb68629c7f0728c95f1afe06ce48565c7713
-Author:     Milton Miller <miltonm@bga.com>
-AuthorDate: Mon, 18 Jan 2010 13:00:51 +1100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 18 Jan 2010 09:02:59 +0100
+On Tue, Jan 19, 2010 at 01:52:00AM -0500, Mike Frysinger wrote:
+>The lsmod utility has always been installed into /bin with the newer
+>module-init-tools package, so let lsmod be found via PATH instead of
+>hardcoding the old modutils /sbin path.
+>
 
-generic-ipi: Optimize accesses by using DEFINE_PER_CPU_SHARED_ALIGNED for IPI data
+Some distro doesn't set /sbin to PATH, so for me a better solution
+would be making PATH contain /sbin, and then use "lsmod".
 
-The smp ipi data is passed around and given write access by
-other cpus and should be separated from per-cpu data consumed by
-this cpu.
+Thanks.
 
-Looking for hot lines, I saw call_function_data shared with
-tick_cpu_sched.
-
-Signed-off-by: Milton Miller <miltonm@bga.com>
-Acked-by: Anton Blanchard <anton@samba.org>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: : Nick Piggin <npiggin@suse.de>
-LKML-Reference: <20100118020051.GR12666@kryten>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/smp.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/smp.c b/kernel/smp.c
-index f104084..9867b6b 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -12,8 +12,6 @@
- #include <linux/smp.h>
- #include <linux/cpu.h>
+-- 
+Live like a child, think like the god.
  
--static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
--
- static struct {
- 	struct list_head	queue;
- 	raw_spinlock_t		lock;
-@@ -33,12 +31,14 @@ struct call_function_data {
- 	cpumask_var_t		cpumask;
- };
- 
-+static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_function_data, cfd_data);
-+
- struct call_single_queue {
- 	struct list_head	list;
- 	raw_spinlock_t		lock;
- };
- 
--static DEFINE_PER_CPU(struct call_function_data, cfd_data);
-+static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_single_queue, call_single_queue);
- 
- static int
- hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
-@@ -256,7 +256,7 @@ void generic_smp_call_function_single_interrupt(void)
- 	}
- }
- 
--static DEFINE_PER_CPU(struct call_single_data, csd_data);
-+static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_single_data, csd_data);
- 
- /*
-  * smp_call_function_single - Run a function on a specific CPU
