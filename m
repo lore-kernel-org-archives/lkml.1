@@ -1,110 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162Ab0ASSjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198Ab0ASSma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162Ab0ASSjZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 13:39:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145Ab0ASSjZ
+	id S1755198Ab0ASSma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 13:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310Ab0ASSm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 13:39:25 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:46957 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754971Ab0ASSjY (ORCPT
+	Tue, 19 Jan 2010 13:42:29 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:47154 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995Ab0ASSm2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 13:39:24 -0500
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier (v5)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-In-Reply-To: <20100114193355.GA23436@Krystal>
-References: <20100113013757.GA29314@Krystal>
-	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
-	 <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal>
-	 <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal>
-	 <20100114183739.GA18435@Krystal>
-	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
-	 <20100114193355.GA23436@Krystal>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 19 Jan 2010 19:37:39 +0100
-Message-ID: <1263926259.4283.757.camel@laptop>
+	Tue, 19 Jan 2010 13:42:28 -0500
+Date: Tue, 19 Jan 2010 10:41:39 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, netdev <netdev@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@redhat.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for January 19 (vhost_net)
+Message-Id: <20100119104139.2ec9164b.randy.dunlap@oracle.com>
+In-Reply-To: <20100119181041.ab55f645.sfr@canb.auug.org.au>
+References: <20100119181041.ab55f645.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4B55FCFD.0169:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 14:33 -0500, Mathieu Desnoyers wrote:
-> It's a case where CPU 1 switches from our mm to another mm:
+On Tue, 19 Jan 2010 18:10:41 +1100 Stephen Rothwell wrote:
+
+> Hi all,
 > 
->        CPU 0 (membarrier)                  CPU 1 (another mm -our mm)
->        <user-space>                        <user-space>
->                                            <buffered access C.S. data>
->                                            urcu read unlock()
->                                              barrier()
->                                              store local gp
->                                            <kernel-space>
-
-OK, so the question is how we end up here, if its though interrupt
-preemption I think the interrupt delivery will imply an mb, if its a
-blocking syscall, the set_task_state() mb [*] should be there.
-
-Then we also do:
-
-					clear_tsk_need_resched()
-
-which is an atomic bitop (although does not imply a full barrier
-per-se).
-
->                                            rq->curr = next (1)
->        memory access before membarrier
->        <call sys_membarrier()>
->        smp_mb()
->        mm_cpumask includes CPU 1
->        rcu_read_lock()
->        if (cpu_curr(1)->mm != our mm)
->          skip CPU 1     -> here, rq->curr new version is already visible
->        rcu_read_unlock()
->        smp_mb()
->        <return to user-space>
->        memory access after membarrier
->        -> this is where we allow freeing
->           the old structure although the
->           buffered access C.S. data is
->           still in flight.
->                                            User-space access C.S. data (2)
->                                              (buffer flush)
->                                            switch_mm()
->                                              smp_mb()
->                                              clear_mm_cpumask()
->                                              set_mm_cpumask()
->                                              smp_mb() (by load_cr3() on x86)
->                                            switch_to()
->                                              <buffered current = next>
->                                            <switch back to user-space>
->                                              current = next (1) (buffer flush)
->                                            access critical section data (3)
-> 
-> As we can see, the reordering of (1) and (2) is problematic, as it lets
-> the check skip over a CPU that have global side-effects not committed to
-> memory yet. 
-
-Right, this one I get, thanks!
+> Changes since 20100118:
 
 
-So about that [*], Oleg, kernel/signal.c:SYSCALL_DEFINE0(pause) does:
+When CONFIG_TUN is not enabled:
 
-SYSCALL_DEFINE0(pause)
-{
-        current->state = TASK_INTERRUPTIBLE;
-        schedule();
-        return -ERESTARTNOHAND;
-}
+drivers/built-in.o: In function `get_socket':
+net.c:(.text+0x2899a3): undefined reference to `tun_get_socket'
 
-Isn't that ->state assignment buggy? If so, there appear to be quite a
-few such sites, which worries me.
 
+so VHOST_NET can either depend on TUN or select TUN, but if it
+selects TUN, it will also need to select CRC32.
+
+---
+~Randy
