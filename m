@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598Ab0ASARL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255Ab0ASAkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598Ab0ASARL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 19:17:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255Ab0ASARJ
+	id S1754255Ab0ASAkx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 19:40:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330Ab0ASAkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 19:17:09 -0500
-Received: from icebox.esperi.org.uk ([81.187.191.129]:43943 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752248Ab0ASARH (ORCPT
+	Mon, 18 Jan 2010 19:40:52 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40682 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751638Ab0ASAkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 19:17:07 -0500
-X-Greylist: delayed 2195 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jan 2010 19:17:07 EST
-To: linux-kernel@vger.kernel.org
-Cc: linux-ext4@vger.kernel.org, Mingming Cao <cmm@us.ibm.com>
-Subject: 2.6.32+: ext4 direct-io kernel thread invasion
-From: Nix <nix@esperi.org.uk>
-Emacs: you'll understand when you're older, dear.
-Date: Mon, 18 Jan 2010 23:40:23 +0000
-Message-ID: <87y6jv9e3c.fsf@spindle.srvr.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b29 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-x.dcc-servers-Metrics: spindle 104; Body=5 Fuz1=5 Fuz2=5
+	Mon, 18 Jan 2010 19:40:51 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 19 Jan 2010 09:37:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Wu, Fengguang" <fengguang.wu@intel.com>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, Eric Paris <eparis@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       David Howells <dhowells@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 6/6] vfs: introduce FMODE_NEG_OFFSET for allowing
+ negative f_pos
+Message-Id: <20100119093719.fb7d32b1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6CADD16F56BC954D8E28F3836FA7ED7112A9CD50FA@shzsmsx501.ccr.corp.intel.com>
+References: <20100115013954.311049665@intel.com>
+	<20100115014422.959401729@intel.com>
+	<87bpgurz00.fsf@devron.myhome.or.jp>
+	<20100118091527.7a0e2c6e.kamezawa.hiroyu@jp.fujitsu.com>
+	<87y6jwnrcz.fsf@devron.myhome.or.jp>
+	<20100118102544.3e897525.kamezawa.hiroyu@jp.fujitsu.com>
+	<87pr58kx9o.fsf@devron.myhome.or.jp>
+	<20100118110019.c55ad88a.kamezawa.hiroyu@jp.fujitsu.com>
+	<87y6jwjh3j.fsf@devron.myhome.or.jp>
+	<20100118113026.4c6efd26.kamezawa.hiroyu@jp.fujitsu.com>
+	<6CADD16F56BC954D8E28F3836FA7ED7112A9CD50F6@shzsmsx501.ccr.corp.intel.com>
+	<20100118122214.1d13a3e4.kamezawa.hiroyu@jp.fujitsu.com>
+	<6CADD16F56BC954D8E28F3836FA7ED7112A9CD50FA@shzsmsx501.ccr.corp.intel.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So I upgraded one of my servers to 2.6.32 recently. It's got twelve ext4
-filesystems on it, right now, and has direct I/O enabled because I have
-one program that wants to do direct I/O to one of those filesystems on
-rare occasions, and because you never know but someone might install
-something else that wants to do direct I/O.
+On Mon, 18 Jan 2010 13:26:44 +0800
+"Wu, Fengguang" <fengguang.wu@intel.com> wrote:
 
-But what did I find in 2.6.32 but a new set of per-CPU, per-sb
-workqueues whose raison d'etre appears to be something related to direct
-I/O. Per-CPU, per-sb, that's a lot. Their full name is apparently
-'ext4-dio-unwritten', apparently something to do with writing extents
-for direct I/O-written blocks. But, boyoboy are there a lot of them:
+> 
+> > On error, the kernel returns -EOVERFLOW (via %eax) and libc hides
+> > it by
+> >  errno = EOVERFLOW
+> >  ret = -1
+> 
+> Ah got it. How about the attached patch?
+> 
 
-nix@spindle 9 /home/nix% ps -fC ext4-dio-unwrit | wc -l
-97
+Seems good to me. Thank you very much.
 
-Now kernel threads are all very well --- it's obvious that e.g. a per-sb
-journal flushing thread is worthwhile --- but *ninety-seven* kernel
-threads for something like direct I/O, which in all but very unusual
-high-end Oracle workloads is going to be a small proportion of I/O, is
-just *insane*. And as core count goes up it's just going to get more
-insane. Even my readonly-mounted filesystems seem to have some.
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Do these threads really have to be per-CPU? Can't they default to
-something much less aggressive, and then people with massive beefy
-Oracle installations can up the number of these threads? (Dynamically
-tuning their numbers according to the workload would be ideal: the
-slow-work infrastructure can do this, IIRC, spawning new threads when
-needed.)
