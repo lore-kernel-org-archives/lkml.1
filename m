@@ -1,111 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996Ab0ASO61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075Ab0ASPL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996Ab0ASO61 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 09:58:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153Ab0ASO60
+	id S1754075Ab0ASPL4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 10:11:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130Ab0ASPLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 09:58:26 -0500
-Received: from f0.cmpxchg.org ([85.214.51.133]:54412 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559Ab0ASO60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 09:58:26 -0500
-X-Greylist: delayed 1456 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jan 2010 09:58:25 EST
-Date: Tue, 19 Jan 2010 15:33:55 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Ralf Baechle <ralf@linux-mips.org>, x86@kernel.org
-Subject: Re: [RFC 1/1] bootmem: move big allocations behing 4G
-Message-ID: <20100119143355.GB7932@cmpxchg.org>
-References: <1263855390-32497-1-git-send-email-jslaby@suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263855390-32497-1-git-send-email-jslaby@suse.cz>
+	Tue, 19 Jan 2010 10:11:54 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:48848 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932067Ab0ASPLw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 10:11:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=rSjRsHTXoqSaL0SfGuu73IlA4vT9oT7dV/bSFhJsbbdKR3yhvARBZml6GjkntvfddM
+         i5YKttiUO1gsN3MDy7pFFds0OWCDrNCMeSnZuTwYSZwayEDjMpaxuM3EiM/sy+PDpIFX
+         za38ZLA/H8ZHuCIboEVwakpv1MZ7qxV+Lsd2I=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 25/64] ide: use standard timing for XFER_PIO_SLOW mode in ide_timing_compute()
+Date: Tue, 19 Jan 2010 16:09:42 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20100118171349.14623.90030.sendpatchset@localhost> <20100118171729.14623.46024.sendpatchset@localhost> <20100119.012526.203639880.davem@davemloft.net>
+In-Reply-To: <20100119.012526.203639880.davem@davemloft.net>
+MIME-Version: 1.0
+Message-Id: <201001191609.42582.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Jiri,
-
-On Mon, Jan 18, 2010 at 11:56:30PM +0100, Jiri Slaby wrote:
-> Hi, I'm fighting a bug where Grub loads the kernel just fine, whereas
-> isolinux doesn't. I found out, it's due to different addresses of
-> loaded initrd. On a machine with 128G of memory, grub loads the
-> initrd at 895M in our case and flat mem_map (2G long) is allocated
-> above 4G due to 2-4G BIOS reservation.
+On Tuesday 19 January 2010 10:25:26 am David Miller wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date: Mon, 18 Jan 2010 18:17:29 +0100
 > 
-> On the other hand, with isolinux, the 0-2G is free and mem_map is
-> placed there leaving no space for others, hence kernel panics for
-> swiotlb which needs to be below 4G.
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] ide: use standard timing for XFER_PIO_SLOW mode in ide_timing_compute()
+> > 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> 
+> Applied.
 
-Bootmem already protects the lower 16MB DMA zone for the obvious reasons,
-how about shifting the default bootmem goal above the DMA32 zone if it exists?
+Thanks.
 
-I added Ralf and the x86 Team on Cc as this only affects x86 and mips, afaics.
+Here is a bonus fixup for a small issue noticed by Sergei yesterday.
 
-> Any ideas?
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide: ide_timing_compute() fixup
 
-I tested the below on a rather dull x86_64 machine and it seems to work.  Would
-this work in your case as well?  The goal for mem_map should now be above 4G.
+XFER_SW_DMA_0 mode should be excluded from the extended cycle
+timing computations.
 
-	Hannes
+[ This is just a documentation fix -- code inside the affected
+  'if' block already makes sure to accept only PIO modes. ]
 
->From 1c11ce1e82c6209f0eda72e3340ab0c55cd6f330 Mon Sep 17 00:00:00 2001
-From: Johannes Weiner <jw@emlix.com>
-Date: Tue, 19 Jan 2010 14:14:44 +0100
-Subject: [patch] bootmem: avoid DMA32 zone, if any, by default
-
-x86_64 and mips define a DMA32 zone additionally to the old DMA
-zone of 16MB.  Bootmem already avoids the old DMA zone if the
-allocation site did not request otherwise.
-
-But since DMA32 is also a limited resource, avoid using it as well
-by default, if defined.
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Noticed-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- include/linux/bootmem.h |   20 +++++++++++++-------
- 1 files changed, 13 insertions(+), 7 deletions(-)
+ drivers/ide/ide-timings.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index b10ec49..f21ac4b 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -96,20 +96,26 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
- 				      unsigned long align,
- 				      unsigned long goal);
+Index: b/drivers/ide/ide-timings.c
+===================================================================
+--- a/drivers/ide/ide-timings.c
++++ b/drivers/ide/ide-timings.c
+@@ -166,7 +166,7 @@ int ide_timing_compute(ide_drive_t *driv
+ 	if (id[ATA_ID_FIELD_VALID] & 2) {	/* EIDE drive */
+ 		memset(&p, 0, sizeof(p));
  
-+#ifdef MAX_DMA32_PFN
-+#define BOOTMEM_DEFAULT_GOAL	(__pa(MAX_DMA32_PFN << PAGE_SHIFT))
-+#else
-+#define BOOTMEM_DEFAULT_GOAL	MAX_DMA_ADDRESS
-+#endif
-+
- #define alloc_bootmem(x) \
--	__alloc_bootmem(x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem(x, SMP_CACHE_BYTES, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_nopanic(x) \
--	__alloc_bootmem_nopanic(x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem_nopanic(x, SMP_CACHE_BYTES, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_pages(x) \
--	__alloc_bootmem(x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem(x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_pages_nopanic(x) \
--	__alloc_bootmem_nopanic(x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem_nopanic(x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_node(pgdat, x) \
--	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_pages_node(pgdat, x) \
--	__alloc_bootmem_node(pgdat, x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem_node(pgdat, x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_pages_node_nopanic(pgdat, x) \
--	__alloc_bootmem_node_nopanic(pgdat, x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem_node_nopanic(pgdat, x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
- 
- #define alloc_bootmem_low(x) \
- 	__alloc_bootmem_low(x, SMP_CACHE_BYTES, 0)
--- 
-1.6.5.4
-
+-		if (speed >= XFER_PIO_0 && speed <= XFER_SW_DMA_0) {
++		if (speed >= XFER_PIO_0 && speed < XFER_SW_DMA_0) {
+ 			if (speed <= XFER_PIO_2)
+ 				p.cycle = p.cyc8b = id[ATA_ID_EIDE_PIO];
+ 			else if ((speed <= XFER_PIO_4) ||
