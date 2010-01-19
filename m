@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818Ab0ASIFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369Ab0ASIHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818Ab0ASIFZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 03:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949Ab0ASIFY
+	id S1755369Ab0ASIHP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 03:07:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968Ab0ASIHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 03:05:24 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:45673 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932151Ab0ASIFV (ORCPT
+	Tue, 19 Jan 2010 03:07:13 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:60419 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932153Ab0ASIHL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 03:05:21 -0500
-Date: Tue, 19 Jan 2010 17:05:09 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.33-rc5, part 2.
-Message-ID: <20100119080509.GD16013@linux-sh.org>
+	Tue, 19 Jan 2010 03:07:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=XoH5a0iG52ctAI4o4QJBLqEdY4QcxBVQAm7Awj2kF9IdgbIhQ8E9km8NgWSHgCy1xj
+         6HPMlmfoyw39i20BoL1fvdA5z624gtP8rKEjkymOtyo9nYQvaMPwIxWV6cj8XRQmuBBK
+         wipAWGYkm3AVp+lUtxEnd4mRQI7t/36M3rJ/U=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20100119075205.GI14345@redhat.com>
+References: <20100118133755.GG30698@redhat.com>
+	 <20100118141938.GI30698@redhat.com>
+	 <84144f021001180805q4d1203b8qab8ccb1de87b2866@mail.gmail.com>
+	 <20100118170816.GA22111@redhat.com>
+	 <84144f021001181009m52f7eaebp2bd746f92de08da9@mail.gmail.com>
+	 <20100118181942.GD22111@redhat.com>
+	 <20100118191031.0088f49a@lxorguk.ukuu.org.uk>
+	 <20100119071734.GG14345@redhat.com>
+	 <84144f021001182337o274c8ed3q8ce60581094bc2b9@mail.gmail.com>
+	 <20100119075205.GI14345@redhat.com>
+Date: Tue, 19 Jan 2010 10:07:07 +0200
+X-Google-Sender-Auth: 21a8032aac59ea4d
+Message-ID: <84144f021001190007q54a334dfwed64189e6cf0b7c4@mail.gmail.com>
+Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Gleb Natapov <gleb@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-mm@kvack.org,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org, akpm@linux-foundation.org,
+       andrew.c.morrow@gmail.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few more minor changes, primarily addressing the recvmmsg/accept4 mess.
+Hi Gleb,
 
-Please pull from:
+On Tue, Jan 19, 2010 at 9:52 AM, Gleb Natapov <gleb@redhat.com> wrote:
+>> It would be probably useful if you could point us to the application
+>> source code that actually wants this feature.
+>>
+> This is two line patch to qemu that calls mlockall(MCL_CURRENT|MCL_FUTURE)
+> at the beginning of the main() and changes guest memory allocation to
+> use MAP_UNLOCKED flag. All alternative solutions in this thread suggest
+> that I should rewrite qemu + all library it uses. You see why I can't
+> take them seriously?
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.33
+Well, that's not going to be portable, is it, so the application
+design would still be broken, no? Did you try using (or extending)
+posix_madvise(MADV_DONTNEED) for the guest address space? It seems to
+me that you're trying to use a big hammer (mlock) when a polite hint
+for the VM would probably be sufficient for it do its job.
 
-Which contains:
-
-Kuninori Morimoto (1):
-      sh: ms7724: Correct sh-eth EEPROM polling timeout.
-
-Paul Mundt (2):
-      sh: unwire sys_recvmmsg.
-      sh64: wire up sys_accept4.
-
- arch/sh/boards/mach-se/7724/setup.c |    2 +-
- arch/sh/include/asm/unistd_32.h     |    5 +++--
- arch/sh/include/asm/unistd_64.h     |    3 ++-
- arch/sh/kernel/syscalls_32.S        |    1 -
- arch/sh/kernel/syscalls_64.S        |    1 +
- 5 files changed, 7 insertions(+), 5 deletions(-)
+                        Pekka
