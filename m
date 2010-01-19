@@ -1,89 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679Ab0ASEUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813Ab0ASEUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754679Ab0ASEUJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 23:20:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608Ab0ASEUG
+	id S1754813Ab0ASEUL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 23:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260Ab0ASEUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 23:20:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29067 "EHLO mx1.redhat.com"
+	Mon, 18 Jan 2010 23:20:07 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:37233 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753260Ab0ASEUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753391Ab0ASEUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 Jan 2010 23:20:05 -0500
-Message-ID: <4B553383.9070107@redhat.com>
-Date: Mon, 18 Jan 2010 23:22:27 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -tip 2/2] kprobetrace,	doc: Add the explanation to remove
- probe points
-References: <20100117071411.GD19512@elte.hu> <20100119023512.31880.35535.stgit@localhost6.localdomain6>
-In-Reply-To: <20100119023512.31880.35535.stgit@localhost6.localdomain6>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Date: Tue, 19 Jan 2010 15:19:55 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sage Weil <sage@newdream.net>
+Cc: =?UTF-8?B?IkrDtnJuIEVuZ2VsIg==?= <joern@logfs.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: merge fixups relative to the vfs tree
+Message-Id: <20100119151955.1d07aa71.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.1001181512340.1759@cobra.newdream.net>
+References: <20100118182852.9820b770.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.1001181512340.1759@cobra.newdream.net>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__19_Jan_2010_15_19_55_+1100_BtsVC_PDsHOnqjPE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> From: Motohiro KOSAKI <kosaki.motohiro@jp.fujitsu.com>
-> 
-> Latest kprobetrace can remove probe points selectively. thus
-> documentation should be updated too.
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+--Signature=_Tue__19_Jan_2010_15_19_55_+1100_BtsVC_PDsHOnqjPE
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Hi Sage,
 
-Since I've delivered this patch.:-)
+On Mon, 18 Jan 2010 15:16:39 -0800 (PST) Sage Weil <sage@newdream.net> wrot=
+e:
+>
+> That works, thanks.  I was planning on just making sure my tree got pulle=
+d=20
+> after the vfs tree, but this will work either way.
 
-> ---
-> 
->  Documentation/trace/kprobetrace.txt |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-> index ab57f02..a9100b2 100644
-> --- a/Documentation/trace/kprobetrace.txt
-> +++ b/Documentation/trace/kprobetrace.txt
-> @@ -24,6 +24,7 @@ Synopsis of kprobe_events
->  -------------------------
->    p[:[GRP/]EVENT] SYMBOL[+offs]|MEMADDR [FETCHARGS]	: Set a probe
->    r[:[GRP/]EVENT] SYMBOL[+0] [FETCHARGS]		: Set a return probe
-> +  -:[GRP/]EVENT						: Clear a probe
->  
->   GRP		: Group name. If omitted, use "kprobes" for it.
->   EVENT		: Event name. If omitted, the event name is generated
-> @@ -122,6 +123,12 @@ REC->dfd, REC->filename, REC->flags, REC->mode
->  
->   This clears all probe points.
->  
-> + Or,
-> +
-> +  echo -:myprobe >> kprobe_events
-> +
-> + This clears probe points selectively.
-> +
->   Right after definition, each event is disabled by default. For tracing these
->  events, you need to enable it.
->  
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+It looks like you added my patch to your tree, but did not merge Al's
+write_inode branch.  So, I assume that your tree is currently broken if
+built on its own.
 
--- 
-Masami Hiramatsu
+> More generally, I'm not sure I understand how your fixups are supposed to=
+=20
+> be used down the line.  Is whichever tree that caused the conflict to get=
+=20
+> merged second supposed to pick it up in their branch to pull, or are thos=
+e=20
+> patches being fed to Linus somehow, or does he usually fix up those=20
+> conflicts himself?
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+Yeah, either the second tree's owner will do the fixup after the first is
+merged into Linus' tree or (more commonly for simple fixups), Linus will
+do the fix when he merges the second tree.  In this particular case, the
+conflicts are not noticed by git during the merge, so they need to be
+done manually by the second tree's owner, or by Linus (if we tell him).
 
-e-mail: mhiramat@redhat.com
+I will attempt to remember to warn Linus if these conflicts remain during
+the next merge window but if you and J=C3=B6rn merge Al's branch and apply =
+the
+fix, then it will all be OK.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__19_Jan_2010_15_19_55_+1100_BtsVC_PDsHOnqjPE
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktVMusACgkQjjKRsyhoI8zKNQCgwG05cfPMuE+3sm38jSshtDdp
+KE8An0/iy53ETjrahgCenUcpsdeV2wXc
+=eMQP
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__19_Jan_2010_15_19_55_+1100_BtsVC_PDsHOnqjPE--
