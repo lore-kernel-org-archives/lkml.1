@@ -1,62 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147Ab0ASS31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162Ab0ASSjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147Ab0ASS31 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 13:29:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524Ab0ASS30
+	id S1755162Ab0ASSjZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 13:39:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145Ab0ASSjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 13:29:26 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:43862 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995Ab0ASS30 (ORCPT
+	Tue, 19 Jan 2010 13:39:25 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46957 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754971Ab0ASSjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 13:29:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=frzinXis7Ik5S83Kl013XlSkH1g2dXOQxZz0H/qOnPJKFzxV7R9V1tAqISPR/w0yhL
-         uBUHw/BsZU1mnOdJ6LjHVHo+rUESaFMr0/sepHkaJY27hOXjvXcDkJzo5LXmopIE5g00
-         foCn5OdDdJC2X+kKpe+NZtS7efpnOV/1mA2B0=
-MIME-Version: 1.0
-Date: Tue, 19 Jan 2010 19:29:24 +0100
-Message-ID: <d65b1b151001191029o66794c24t228177a8ca544e44@mail.gmail.com>
-Subject: [PATCH] Use full path to dnsdomainname and domainname in 
-	scripts/mkcompile_h
-From: Glenn Sommer <glemsom@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Tue, 19 Jan 2010 13:39:24 -0500
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier (v5)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+In-Reply-To: <20100114193355.GA23436@Krystal>
+References: <20100113013757.GA29314@Krystal>
+	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
+	 <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal>
+	 <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal>
+	 <20100114183739.GA18435@Krystal>
+	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
+	 <20100114193355.GA23436@Krystal>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 19 Jan 2010 19:37:39 +0100
+Message-ID: <1263926259.4283.757.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With reference to: http://bugzilla.kernel.org/show_bug.cgi?id=14920
-I'll post my suggestion here.
+On Thu, 2010-01-14 at 14:33 -0500, Mathieu Desnoyers wrote:
+> It's a case where CPU 1 switches from our mm to another mm:
+> 
+>        CPU 0 (membarrier)                  CPU 1 (another mm -our mm)
+>        <user-space>                        <user-space>
+>                                            <buffered access C.S. data>
+>                                            urcu read unlock()
+>                                              barrier()
+>                                              store local gp
+>                                            <kernel-space>
 
-Currently scripts/mkcompile_h checks for "/bin/dnsdomainname" and
-"/bin/domainname" when trying to find the DNS name.
-Though, when running the executable - the full path isn't used!
+OK, so the question is how we end up here, if its though interrupt
+preemption I think the interrupt delivery will imply an mb, if its a
+blocking syscall, the set_task_state() mb [*] should be there.
 
-IMO if we check for "/bin/dnsdomainname", we should also use
-"/bin/dnsdomainname" - and not blindly trust /bin is the first directory in
-$PATH  which contains a executable named "dnsdomainname"
+Then we also do:
+
+					clear_tsk_need_resched()
+
+which is an atomic bitop (although does not imply a full barrier
+per-se).
+
+>                                            rq->curr = next (1)
+>        memory access before membarrier
+>        <call sys_membarrier()>
+>        smp_mb()
+>        mm_cpumask includes CPU 1
+>        rcu_read_lock()
+>        if (cpu_curr(1)->mm != our mm)
+>          skip CPU 1     -> here, rq->curr new version is already visible
+>        rcu_read_unlock()
+>        smp_mb()
+>        <return to user-space>
+>        memory access after membarrier
+>        -> this is where we allow freeing
+>           the old structure although the
+>           buffered access C.S. data is
+>           still in flight.
+>                                            User-space access C.S. data (2)
+>                                              (buffer flush)
+>                                            switch_mm()
+>                                              smp_mb()
+>                                              clear_mm_cpumask()
+>                                              set_mm_cpumask()
+>                                              smp_mb() (by load_cr3() on x86)
+>                                            switch_to()
+>                                              <buffered current = next>
+>                                            <switch back to user-space>
+>                                              current = next (1) (buffer flush)
+>                                            access critical section data (3)
+> 
+> As we can see, the reordering of (1) and (2) is problematic, as it lets
+> the check skip over a CPU that have global side-effects not committed to
+> memory yet. 
+
+Right, this one I get, thanks!
 
 
-I propose to use the full path, that we know is valid. Here's my proposed patch:
+So about that [*], Oleg, kernel/signal.c:SYSCALL_DEFINE0(pause) does:
 
+SYSCALL_DEFINE0(pause)
+{
+        current->state = TASK_INTERRUPTIBLE;
+        schedule();
+        return -ERESTARTNOHAND;
+}
 
---- scripts/mkcompile_h.orig	2009-12-28 23:02:34.000000000 +0100
-+++ scripts/mkcompile_h	2009-12-28 23:03:12.000000000 +0100
-@@ -66,9 +66,9 @@
-   echo \#define LINUX_COMPILE_HOST \"`hostname | $UTS_TRUNCATE`\"
+Isn't that ->state assignment buggy? If so, there appear to be quite a
+few such sites, which worries me.
 
-   if [ -x /bin/dnsdomainname ]; then
--    echo \#define LINUX_COMPILE_DOMAIN \"`dnsdomainname | $UTS_TRUNCATE`\"
-+    echo \#define LINUX_COMPILE_DOMAIN \"`/bin/dnsdomainname | $UTS_TRUNCATE`\"
-   elif [ -x /bin/domainname ]; then
--    echo \#define LINUX_COMPILE_DOMAIN \"`domainname | $UTS_TRUNCATE`\"
-+    echo \#define LINUX_COMPILE_DOMAIN \"`/bin/domainname | $UTS_TRUNCATE`\"
-   else
-     echo \#define LINUX_COMPILE_DOMAIN
-   fi
-
-
-Signed-off-by: Glenn Sommer <glemsom@gmail.com>
