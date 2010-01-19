@@ -1,74 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335Ab0ASTHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913Ab0ASTTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335Ab0ASTHm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 14:07:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278Ab0ASTHl
+	id S1751913Ab0ASTTJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 14:19:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663Ab0ASTTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 14:07:41 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45639 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755266Ab0ASTHk (ORCPT
+	Tue, 19 Jan 2010 14:19:07 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:46199 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506Ab0ASTTG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 14:07:40 -0500
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier (v5)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-In-Reply-To: <1263926259.4283.757.camel@laptop>
-References: <20100113013757.GA29314@Krystal>
-	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
-	 <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal>
-	 <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal>
-	 <20100114183739.GA18435@Krystal>
-	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
-	 <20100114193355.GA23436@Krystal>  <1263926259.4283.757.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 19 Jan 2010 20:06:46 +0100
-Message-ID: <1263928006.4283.762.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jan 2010 14:19:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=RE0/x5RvKkCuQNKh2pxFOEiWWLBz3NJivbSbsRO0bCyGo1MMB/kvH0w8Euj6IzVdnN
+         f8UECPW/jLzFRrZ9uTgIkc6X9mQtk+u5RFkp5bGEfgE9JthvJM+tCBEvQEo87DxIrGVj
+         WfZGloGGtFwH6bKJkQg1eLm9bSuAczobFnjHc=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.00.1001191900340.5999@localhost.localdomain>
+References: <1263883920-17289-1-git-send-email-vapier@gentoo.org> 
+	<20100119142545.GB3473@hack> <8bd0f97a1001190923p6104acb4if5ec7225d549b713@mail.gmail.com> 
+	<520f0cf11001190942n2c765618m8a66b8afe82010d0@mail.gmail.com> 
+	<8bd0f97a1001190954q62b3bc5ejbdb69684d61c087c@mail.gmail.com> 
+	<alpine.LFD.2.00.1001191900340.5999@localhost.localdomain>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 19 Jan 2010 14:18:44 -0500
+Message-ID: <8bd0f97a1001191118q4d8f5e02he6df84a654a66d69@mail.gmail.com>
+Subject: Re: [PATCH] kconfig: dont hardcode path to lsmod
+To: John Kacur <jkacur@redhat.com>
+Cc: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-19 at 19:37 +0100, Peter Zijlstra wrote:
-> On Thu, 2010-01-14 at 14:33 -0500, Mathieu Desnoyers wrote:
-> > It's a case where CPU 1 switches from our mm to another mm:
-> > 
-> >        CPU 0 (membarrier)                  CPU 1 (another mm -our mm)
-> >        <user-space>                        <user-space>
-> >                                            <buffered access C.S. data>
-> >                                            urcu read unlock()
-> >                                              barrier()
-> >                                              store local gp
-> >                                            <kernel-space>
-> 
-> OK, so the question is how we end up here, if its though interrupt
-> preemption I think the interrupt delivery will imply an mb,
+On Tue, Jan 19, 2010 at 13:12, John Kacur wrote:
+> On Tue, 19 Jan 2010, Mike Frysinger wrote:
+>> On Tue, Jan 19, 2010 at 12:42, John Kacur wrote:
+>> > On Tue, Jan 19, 2010 at 6:23 PM, Mike Frysinger wrote:
+>> >> On Tue, Jan 19, 2010 at 09:25, Américo Wang wrote:
+>> >>> On Tue, Jan 19, 2010 at 01:52:00AM -0500, Mike Frysinger wrote:
+>> >>>>The lsmod utility has always been installed into /bin with the newer
+>> >>>>module-init-tools package, so let lsmod be found via PATH instead of
+>> >>>>hardcoding the old modutils /sbin path.
+>> >>>>
+>> >>>
+>> >>> Some distro doesn't set /sbin to PATH, so for me a better solution
+>> >>> would be making PATH contain /sbin, and then use "lsmod".
+>> >>
+>> >> read my changelog -- module-init-tools has always installed into /bin.
+>> >>  so what your distro does with /sbin doesnt matter.
+>> >
+>> > I prefer my patches work for the real-world instead of the "so what
+>> > your distro does doesn't matter" world.
+>>
+>> try reading my comment instead of getting huffy.  if you have a distro
+>> that does something stupid like break the correct default m-i-t
+>> install setup, you should actually point it out.  the ones i checked
+>> were sane and installed lsmod into /bin (and some symlinked lsmod for
+>> backwards compat with modutils into /sbin).
+>
+> Well, I'm currently running Fedora (10 thru 12), and lsmod is in /sbin
+> Your patch would still not break for me because /sbin is in the PATH.
+>
+> However if Américo is correct that there are distros that have lsmod in
+> /sbin and don't have /sbin in the PATH, then your patch would break them.
+> You can argue that the distro is doing something stupid, but I'll bet you
+> they will blame your patch for breaking them. It seems reasonable to
+> me that a distro might only put /sbin in the superuser path, so I can
+> imagine there are cases like Américo suggests.
 
-I keep thinking that, but I think we actually refuted that in an earlier
-discussion on this patch.
+i am saying they're stupid for doing this, but i'm not saying we
+shouldnt support it.  the premise for my original patch was that
+upstream m-i-t has always used /bin (which means all 2.6 module
+handers should be there per upstream), and the downstream distros i
+had access to followed upstream's direction.
 
->  if its a
-> blocking syscall, the set_task_state() mb [*] should be there.
-> 
-> Then we also do:
-> 
-> 					clear_tsk_need_resched()
-> 
-> which is an atomic bitop (although does not imply a full barrier
-> per-se).
-> 
-> >                                            rq->curr = next (1)
-
-We could possibly look at placing that assignment in context_switch()
-between switch_mm() and switch_to(), which should provide a mb before
-and after I think, Ingo?
-
+sounds like Fedora should have a bug report to get their things fixed
+... there's no reason for `lsmod` to not be in /bin (and everyone's
+PATH) since it only reads /proc/modules and that is word readable.
+-mike
