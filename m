@@ -1,102 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707Ab0ASTf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103Ab0ASThB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707Ab0ASTf0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 14:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462Ab0ASTfZ
+	id S1755103Ab0ASThB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 14:37:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892Ab0ASTg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 14:35:25 -0500
-Received: from mail-iw0-f197.google.com ([209.85.223.197]:62759 "EHLO
-	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754413Ab0ASTfY (ORCPT
+	Tue, 19 Jan 2010 14:36:58 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:37413 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754605Ab0ASTg5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 14:35:24 -0500
+	Tue, 19 Jan 2010 14:36:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=qRZ1iz9oXxGwhPccZHd7+pBxspF03pquh2IZp3RN/pbepmGQNlmkm/rBqosSNvFfIo
-         7b7sb/8PT5zn82XpcFMKxohC6mZIh3137FQM4kGmfF/972TuGg77Bh+JgtqdgrfAcwod
-         YsByCT0GVijFsuSk2vqiSticRUU11W/hNyNag=
-Message-ID: <4B560978.8080707@gmail.com>
-Date: Tue, 19 Jan 2010 14:35:20 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=KxBLSjl3CRcpTiJbaC6hFWcf7RmjwDaS+KL3yq4I4A8LA+RYT5tTQXr2kXZyOQoWek
+         vpuvt5q2ZnbJ1MWi43kAbOJUVNQUAAJgtj8INXNRCoAH0f15rpyU2LITwB1WCbNuS2s3
+         tQusiazZGFfZKsOIQCrjIVsaH3rK6gPsI0pjI=
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>
-CC: Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH v2] tcp: input header length, prediction, and timestamp
- bugs
-References: <4B49C2D0.1070704@gmail.com> <4B50BFFC.8010108@gmail.com> <4B55ED46.40909@gmail.com>
-In-Reply-To: <4B55ED46.40909@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <53cc795f1001190813m377c6c91l16b2dc04f63049e7@mail.gmail.com>
+References: <53cc795f1001190813m377c6c91l16b2dc04f63049e7@mail.gmail.com>
+Date: Tue, 19 Jan 2010 22:36:53 +0300
+Message-ID: <53cc795f1001191136m7a935fd7ydc83ff26db9fa1b3@mail.gmail.com>
+Subject: Re: Panic at tcp_xmit_retransmit_queue
+From: sbs <gexlie@gmail.com>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Allen Simpson wrote:
-> Therefore, I'll resubmit this patch, removing the existing len parameter.
-> And maybe *th, too....
-> 
-Just to quickly note that gcc 4.4 doesn't properly remember that it has
-already loaded *th with this rampant use of an inline function (unlike the
-older macro method):
+seems that i found a bug.
+it was a problem with nvidia card(forcedeth):
+00:08.0 Bridge: nVidia Corporation MCP55 Ethernet (rev a3)
+and dynamic netconsole compiled into the kernel:
+CONFIG_NETCONSOLE=y
+CONFIG_NETCONSOLE_DYNAMIC=y
 
-c04ea739:	89 d3                	mov    %edx,%ebx
-
-static inline struct tcphdr *tcp_hdr(const struct sk_buff *skb)
-{
-	return (struct tcphdr *)skb_transport_header(skb);
-c04ea743:	8b 92 94 00 00 00    	mov    0x94(%edx),%edx
-	 *
-	 *	Our current scheme is not silly either but we take the
-	 *	extra cost of the net_bh soft interrupt processing...
-	 *	We do checksum and copy also but from device to kernel.
-	 */
-	if ((tcp_flag_word(tcp_hdr(skb)) & TCP_HP_BITS) == tp->pred_flags &&
-...
+but need to check it though.
 
 
-Note that the index is in both %edx and %ebx, but it uses replaced %edx.
-Although by inspection that result stays in %edx, it reloaded twice more:
-
-	res = tcp_validate_incoming(sk, skb, tcp_hdr(skb), 1);
-c04ea78c:	8b 8b 94 00 00 00    	mov    0x94(%ebx),%ecx
-c04ea792:	89 da                	mov    %ebx,%edx
-c04ea794:	89 f0                	mov    %esi,%eax
-c04ea796:	c7 04 24 01 00 00 00 	movl   $0x1,(%esp)
-c04ea79d:	e8 0e c3 ff ff       	call   c04e6ab0 <tcp_validate_incoming>
-	if (res <= 0)
-c04ea7a2:	85 c0                	test   %eax,%eax
-c04ea7a4:	0f 8e 8e 03 00 00    	jle    c04eab38 <tcp_rcv_established+0x408>
-
-#else /* NET_SKBUFF_DATA_USES_OFFSET */
-
-static inline unsigned char *skb_transport_header(const struct sk_buff *skb)
-{
-	return skb->transport_header;
-c04ea7aa:	8b 83 94 00 00 00    	mov    0x94(%ebx),%eax
-c04ea7b0:	f6 40 0d 10          	testb  $0x10,0xd(%eax)
-c04ea7b4:	0f 85 5e 03 00 00    	jne    c04eab18 <tcp_rcv_established+0x3e8>
-
-
-This doesn't happen with the parameter *th (undisturbed in %edi):
-
-c04ea78a:	89 f9                	mov    %edi,%ecx
-c04ea78c:	89 f2                	mov    %esi,%edx
-c04ea78e:	89 d8                	mov    %ebx,%eax
-c04ea790:	c7 04 24 01 00 00 00 	movl   $0x1,(%esp)
-c04ea797:	e8 14 c3 ff ff       	call   c04e6ab0 <tcp_validate_incoming>
-	if (res <= 0)
-c04ea79c:	85 c0                	test   %eax,%eax
-c04ea79e:	0f 8e 8c 03 00 00    	jle    c04eab30 <tcp_rcv_established+0x400>
-		return -res;
-
-step5:
-	if (th->ack && tcp_ack(sk, skb, FLAG_SLOWPATH) < 0)
-c04ea7a4:	f6 47 0d 10          	testb  $0x10,0xd(%edi)
-c04ea7a8:	0f 85 62 03 00 00    	jne    c04eab10 <tcp_rcv_established+0x3e0>
-
-
-Therefore, keeping the parameter *th.
+On Tue, Jan 19, 2010 at 7:13 PM, sbs <gexlie@gmail.com> wrote:
+> We are hiting kernel panics on servers with nVidia MCP55 NICs once a day;
+> it appears usualy under a high network trafic ( around 10000Mbit/s) but
+> it is not a rule, it has happened even on low trafic.
+>
+> Servers are used as nginx+static content
+> On 2 equal servers this panic happens aprox 2 times a day depending on
+> network load. Machine completly freezes till the netconsole reboots.
+>
+> Kernel: 2.6.32.3
+>
+> what can it be? whats wrong with tcp_xmit_retransmit_queue() function ?
+> can anyone explain or fix?
+>
+> Panic output:
+>
+> Dec 29 22:33:51 linuxtest [1188725.037019] BUG: unable to handle kernel
+> Dec 29 22:33:51 linuxtest NULL pointer dereference
+> Dec 29 22:33:51 linuxtest at (null)
+> Dec 29 22:33:51 linuxtest [1188725.037042] IP:
+> Dec 29 22:33:51 linuxtest [<c060164a>] tcp_xmit_retransmit_queue+0x1b2/0x1dc
+> Dec 29 22:33:51 linuxtest [1188725.037064] *pdpt = 00000000229c2001
+> Dec 29 22:33:51 linuxtest *pde = 0000000000000000
+> Dec 29 22:33:51 linuxtest
+> Dec 29 22:33:51 linuxtest [1188725.037080] Thread overran stack, or
+> stack corrupted
+> Dec 29 22:33:51 linuxtest [1188725.037091] Oops: 0000 [#1]
+> Dec 29 22:33:51 linuxtest SMP
+> Dec 29 22:33:51 linuxtest
+> Dec 29 22:33:51 linuxtest [1188725.037104] last sysfs file:
+> /sys/devices/pci0000:00/0000:00:0f.0/0000:07:00.0/0000:08:01.0/0000:09:00.0/class
+> Dec 29 22:33:51 linuxtest [1188725.037124]
+> Dec 29 22:33:51 linuxtest [1188725.037131] Pid: 0, comm: swapper Not
+> tainted (2.6.31.6-v03 #2) H8DMU
+> Dec 29 22:33:51 linuxtest [1188725.037145] EIP: 0060:[<c060164a>]
+> EFLAGS: 00010246 CPU: 0
+> Dec 29 22:33:51 linuxtest [1188725.037158] EIP is at
+> tcp_xmit_retransmit_queue+0x1b2/0x1dc
+> Dec 29 22:33:51 linuxtest [1188725.037170] EAX: c540513c EBX: c54050c0
+> ECX: 0e377f15 EDX: c540513c
+> Dec 29 22:33:51 linuxtest [1188725.037183] ESI: 00000000 EDI: 00000000
+> EBP: c0805d28 ESP: c0805d0c
+> Dec 29 22:33:51 linuxtest [1188725.037196]  DS: 007b ES: 007b FS: 00d8
+> GS: 0000 SS: 0068
+> Dec 29 22:33:51 linuxtest [1188725.037208] Process swapper (pid: 0,
+> ti=c0804000 task=c080b5a0 task.ti=c0804000)
+> Dec 29 22:33:51 linuxtest [1188725.037285] Stack:
+> Dec 29 22:33:51 linuxtest [1188725.037368]  00000202
+> Dec 29 22:33:51 linuxtest 00000000
+> Dec 29 22:33:51 linuxtest c540513c
+> Dec 29 22:33:51 linuxtest 0e377f14
+> Dec 29 22:33:51 linuxtest 00000000
+> Dec 29 22:33:51 linuxtest c54050c0
+> Dec 29 22:33:51 linuxtest 0000050e
+> Dec 29 22:33:51 linuxtest c0805da8
+> Dec 29 22:33:51 linuxtest
+> Dec 29 22:33:51 linuxtest [1188725.037472] <0>
+> Dec 29 22:33:51 linuxtest c05fe931
+> Dec 29 22:33:51 linuxtest 00000001
+> Dec 29 22:33:51 linuxtest 00000001
+> Dec 29 22:33:51 linuxtest 00000006
+> Dec 29 22:33:51 linuxtest 00000005
+> Dec 29 22:33:51 linuxtest 00000001
+> Dec 29 22:33:51 linuxtest 00000001
+> Dec 29 22:33:51 linuxtest 00000006
+> Dec 29 22:33:51 linuxtest
+> Dec 29 22:33:51 linuxtest [1188725.037629] <0>
+> Dec 29 22:33:51 linuxtest 01000246
+> Dec 29 22:33:51 linuxtest 00000005
+> Dec 29 22:33:51 linuxtest 11b57b53
+> Dec 29 22:33:51 linuxtest c5405168
+> Dec 29 22:33:51 linuxtest c061df41
+> Dec 29 22:33:51 linuxtest 00000006
+> Dec 29 22:33:51 linuxtest 00000000
+> Dec 29 22:33:51 linuxtest 00000000
+> Dec 29 22:33:51 linuxtest
+> Dec 29 22:33:51 linuxtest [1188725.037887] Call Trace:
+> Dec 29 22:33:51 linuxtest [1188725.037975]  [<c05fe931>] ? tcp_ack+0x1591/0x1778
+> Dec 29 22:33:51 linuxtest [1188725.038073]  [<c061df41>] ?
+> ipt_do_table+0x2f8/0x310
+> Dec 29 22:33:51 linuxtest [1188725.038148]  [<c05ff493>] ?
+> tcp_rcv_state_process+0x4db/0x7fc
+> Dec 29 22:33:51 linuxtest [1188725.038246]  [<c0604e3d>] ?
+> tcp_v4_do_rcv+0x263/0x29d
+> Dec 29 22:33:51 linuxtest [1188725.038321]  [<c023381a>] ?
+> local_bh_enable+0xb/0xd
+> Dec 29 22:33:51 linuxtest [1188725.038419]  [<c05d4571>] ? sk_filter+0x5e/0x69
+> Dec 29 22:33:51 linuxtest [1188725.038510]  [<c06059b4>] ?
+> tcp_v4_rcv+0x371/0x502
+> Dec 29 22:33:51 linuxtest [1188725.038607]  [<c05ee78c>] ?
+> ip_local_deliver_finish+0x0/0x171
+> Dec 29 22:33:51 linuxtest [1188725.038684]  [<c05ee88a>] ?
+> ip_local_deliver_finish+0xfe/0x171
+> Dec 29 22:33:51 linuxtest [1188725.038784]  [<c05ee95e>] ?
+> ip_local_deliver+0x61/0x66
+> Dec 29 22:33:51 linuxtest [1188725.038876]  [<c05ee531>] ?
+> ip_rcv_finish+0x289/0x2b1
+> Dec 29 22:33:51 linuxtest [1188725.038961]  [<c05ee75c>] ? ip_rcv+0x203/0x233
+> Dec 29 22:33:51 linuxtest [1188725.039052]  [<c05ca149>] ?
+> netif_receive_skb+0x335/0x350
+> Dec 29 22:33:51 linuxtest [1188725.039151]  [<c05ca1c6>] ?
+> process_backlog+0x62/0x88
+> Dec 29 22:33:51 linuxtest [1188725.039242]  [<c05ca6c5>] ?
+> net_rx_action+0x8e/0x16b
+> Dec 29 22:33:51 linuxtest [1188725.039333]  [<c02335bb>] ?
+> __do_softirq+0xa7/0x148
+> Dec 29 22:33:51 linuxtest [1188725.039423]  [<c0233682>] ? do_softirq+0x26/0x2b
+> Dec 29 22:33:51 linuxtest [1188725.039520]  [<c0233764>] ? irq_exit+0x29/0x5c
+> Dec 29 22:33:51 linuxtest [1188725.039610]  [<c0204365>] ? do_IRQ+0x81/0x95
+> Dec 29 22:33:51 linuxtest [1188725.039706]  [<c0202ec9>] ?
+> common_interrupt+0x29/0x30
+> Dec 29 22:33:51 linuxtest [1188725.039797]  [<c0208b74>] ?
+> default_idle+0x3e/0x5b
+> Dec 29 22:33:51 linuxtest [1188725.039895]  [<c02479c9>] ?
+> clockevents_notify+0x60/0x65
+> Dec 29 22:33:51 linuxtest [1188725.039986]  [<c0208c49>] ? c1e_idle+0xb8/0xd2
+> Dec 29 22:33:51 linuxtest [1188725.040058]  [<c0201bba>] ? cpu_idle+0x45/0x5f
+> Dec 29 22:33:51 linuxtest [1188725.040131]  [<c0643560>] ? rest_init+0x58/0x5a
+> Dec 29 22:33:51 linuxtest [1188725.040212]  [<c084f7f9>] ?
+> start_kernel+0x2f0/0x2f5
+> Dec 29 22:33:51 linuxtest [1188725.040285]  [<c084f070>] ?
+> i386_start_kernel+0x70/0x77
+> Dec 29 22:33:51 linuxtest [1188725.040381] Code:
+> Dec 29 22:33:51 linuxtest ec
+> Dec 29 22:33:51 linuxtest bd
+> Dec 29 22:33:51 linuxtest 84
+> Dec 29 22:33:51 linuxtest c0
+> Dec 29 22:33:51 linuxtest ff
+> Dec 29 22:33:51 linuxtest 04
+> Dec 29 22:33:51 linuxtest 88
+> Dec 29 22:33:51 linuxtest 8b
+> Dec 29 22:33:51 linuxtest 55
+> Dec 29 22:33:51 linuxtest ec
+> Dec 29 22:33:51 linuxtest 8b
+> Dec 29 22:33:51 linuxtest 02
+> Dec 29 22:33:51 linuxtest 39
+> Dec 29 22:33:51 linuxtest d0
+> Dec 29 22:33:51 linuxtest ba
+> Dec 29 22:33:51 linuxtest 00
+> Dec 29 22:33:51 linuxtest 00
+> Dec 29 22:33:51 linuxtest 00
+> Dec 29 22:33:51 linuxtest 00
+> Dec 29 22:33:51 linuxtest 0f
+> Dec 29 22:33:51 linuxtest 44
+> Dec 29 22:33:51 linuxtest c2
+> Dec 29 22:33:51 linuxtest 39
+> Dec 29 22:33:51 linuxtest c6
+> Dec 29 22:33:51 linuxtest 75
+> Dec 29 22:33:51 linuxtest 0f
+> Dec 29 22:33:51 linuxtest 8b
+> Dec 29 22:33:51 linuxtest 8b
+> Dec 29 22:33:51 linuxtest 18
+> Dec 29 22:33:51 linuxtest 02
+> Dec 29 22:33:51 linuxtest 00
+> Dec 29 22:33:51 linuxtest 00
+> Dec 29 22:33:51 linuxtest b2
+> Dec 29 22:33:51 linuxtest 01
+> Dec 29 22:33:51 linuxtest 89
+> Dec 29 22:33:51 linuxtest d8
+> Dec 29 22:33:51 linuxtest e8
+> Dec 29 22:33:51 linuxtest ee
+> Dec 29 22:33:51 linuxtest fd
+> Dec 29 22:33:51 linuxtest ff
+> Dec 29 22:33:51 linuxtest ff
+> Dec 29 22:33:51 linuxtest 8b
+> Dec 29 22:33:51 linuxtest 36
+> Dec 29 13:33:50 linuxtest unparseable log message: "<8b> "
+> Dec 29 22:33:51 linuxtest 06
+> Dec 29 22:33:51 linuxtest 0f
+> Dec 29 22:33:51 linuxtest 18
+> Dec 29 22:33:51 linuxtest 00
+> Dec 29 22:33:51 linuxtest 90
+> Dec 29 22:33:51 linuxtest 3b
+> Dec 29 22:33:51 linuxtest 75
+> Dec 29 22:33:51 linuxtest ec
+> Dec 29 22:33:51 linuxtest 0f
+> Dec 29 22:33:51 linuxtest 85
+> Dec 29 22:33:51 linuxtest a9
+> Dec 29 22:33:51 linuxtest fe
+> Dec 29 22:33:51 linuxtest ff
+> Dec 29 22:33:51 linuxtest ff
+> Dec 29 22:33:51 linuxtest eb
+> Dec 29 22:33:51 linuxtest 11
+> Dec 29 22:33:51 linuxtest 85
+> Dec 29 22:33:51 linuxtest ff
+> Dec 29 22:33:51 linuxtest 0f
+> Dec 29 22:33:51 linuxtest 84
+> Dec 29 22:33:51 linuxtest
+> Dec 29 22:33:51 linuxtest [1188725.040771] EIP: [<c060164a>]
+> Dec 29 22:33:51 linuxtest tcp_xmit_retransmit_queue+0x1b2/0x1dc
+> Dec 29 22:33:51 linuxtest SS:ESP 0068:c0805d0c
+> Dec 29 22:33:51 linuxtest [1188725.040929] CR2: 0000000000000000
+> Dec 29 22:33:51 linuxtest [1188725.041346] ---[ end trace 1b9e8ae01c5d5485 ]---
+> Dec 29 22:33:51 linuxtest [1188725.042940] Kernel panic - not syncing:
+> Fatal exception in interrupt
+> Dec 29 22:33:51 linuxtest [1188725.043076] Pid: 0, comm: swapper
+> Tainted: G      D    2.6.31.6-v03 #2
+> Dec 29 22:33:51 linuxtest [1188725.043188] Call Trace:
+> Dec 29 22:33:51 linuxtest [1188725.043318]  [<c066812b>] ? printk+0xf/0x11
+> Dec 29 22:33:51 linuxtest [1188725.043441]  [<c066807f>] panic+0x39/0xd6
+> Dec 29 22:33:51 linuxtest [1188725.043558]  [<c0205811>] oops_end+0x8b/0x9a
+> Dec 29 22:33:51 linuxtest [1188725.043683]  [<c021c974>] no_context+0x13c/0x146
+> Dec 29 22:33:51 linuxtest [1188725.043814]  [<c021ca91>]
+> __bad_area_nosemaphore+0x113/0x11b
+> Dec 29 22:33:51 linuxtest [1188725.043943]  [<c0553967>] ?
+> nv_start_xmit_optimized+0x3d4/0x401
+> Dec 29 22:33:51 linuxtest [1188725.044073]  [<c02253b2>] ?
+> __enqueue_entity+0x8d/0x95
+> Dec 29 22:33:51 linuxtest [1188725.044182]  [<c021caa6>]
+> bad_area_nosemaphore+0xd/0x10
+> Dec 29 22:33:51 linuxtest [1188725.044319]  [<c021cce3>]
+> do_page_fault+0x108/0x265
+> Dec 29 22:33:51 linuxtest [1188725.044444]  [<c0223993>] ?
+> enqueue_task+0x72/0x7f
+> Dec 29 22:33:51 linuxtest [1188725.044562]  [<c021cbdb>] ?
+> do_page_fault+0x0/0x265
+> Dec 29 22:33:51 linuxtest [1188725.044686]  [<c0669b86>] error_code+0x66/0x6c
+> Dec 29 22:33:51 linuxtest [1188725.044817]  [<c021cbdb>] ?
+> do_page_fault+0x0/0x265
+> Dec 29 22:33:51 linuxtest [1188725.044944]  [<c060164a>] ?
+> tcp_xmit_retransmit_queue+0x1b2/0x1dc
+> Dec 29 22:33:51 linuxtest [1188725.045077]  [<c05fe931>] tcp_ack+0x1591/0x1778
+> Dec 29 22:33:51 linuxtest [1188725.045201]  [<c061df41>] ?
+> ipt_do_table+0x2f8/0x310
+> Dec 29 22:33:51 linuxtest [1188725.045332]  [<c05ff493>]
+> tcp_rcv_state_process+0x4db/0x7fc
+> Dec 29 22:33:51 linuxtest [1188725.045442]  [<c0604e3d>]
+> tcp_v4_do_rcv+0x263/0x29d
+> Dec 29 22:33:51 linuxtest [1188725.045567]  [<c023381a>] ?
+> local_bh_enable+0xb/0xd
+> Dec 29 22:33:51 linuxtest [1188725.045694]  [<c05d4571>] ? sk_filter+0x5e/0x69
+> Dec 29 22:33:51 linuxtest [1188725.045802]  [<c06059b4>] tcp_v4_rcv+0x371/0x502
+> Dec 29 22:33:51 linuxtest [1188725.045911]  [<c05ee78c>] ?
+> ip_local_deliver_finish+0x0/0x171
+> Dec 29 22:33:51 linuxtest [1188725.046045]  [<c05ee88a>]
+> ip_local_deliver_finish+0xfe/0x171
+> Dec 29 22:33:51 linuxtest [1188725.046155]  [<c05ee95e>]
+> ip_local_deliver+0x61/0x66
+> Dec 29 22:33:51 linuxtest [1188725.046301]  [<c05ee531>]
+> ip_rcv_finish+0x289/0x2b1
+> Dec 29 22:33:51 linuxtest [1188725.046429]  [<c05ee75c>] ip_rcv+0x203/0x233
+> Dec 29 22:33:51 linuxtest [1188725.046555]  [<c05ca149>]
+> netif_receive_skb+0x335/0x350
+> Dec 29 22:33:51 linuxtest [1188725.046664]  [<c05ca1c6>]
+> process_backlog+0x62/0x88
+> Dec 29 22:33:51 linuxtest [1188725.046809]  [<c05ca6c5>]
+> net_rx_action+0x8e/0x16b
+> Dec 29 22:33:51 linuxtest [1188725.046917]  [<c02335bb>] __do_softirq+0xa7/0x148
+> Dec 29 22:33:51 linuxtest [1188725.047041]  [<c0233682>] do_softirq+0x26/0x2b
+> Dec 29 22:33:51 linuxtest [1188725.047162]  [<c0233764>] irq_exit+0x29/0x5c
+> Dec 29 22:33:51 linuxtest [1188725.047285]  [<c0204365>] do_IRQ+0x81/0x95
+> Dec 29 22:33:51 linuxtest [1188725.047409]  [<c0202ec9>]
+> common_interrupt+0x29/0x30
+> Dec 29 22:33:51 linuxtest [1188725.047536]  [<c0208b74>] ?
+> default_idle+0x3e/0x5b
+> Dec 29 22:33:51 linuxtest [1188725.047664]  [<c02479c9>] ?
+> clockevents_notify+0x60/0x65
+> Dec 29 22:33:51 linuxtest [1188725.047790]  [<c0208c49>] c1e_idle+0xb8/0xd2
+> Dec 29 22:33:51 linuxtest [1188725.047913]  [<c0201bba>] cpu_idle+0x45/0x5f
+> Dec 29 22:33:51 linuxtest [1188725.048030]  [<c0643560>] rest_init+0x58/0x5a
+> Dec 29 22:33:51 linuxtest [1188725.048153]  [<c084f7f9>]
+> start_kernel+0x2f0/0x2f5
+> Dec 29 22:33:51 linuxtest [1188725.048271]  [<c084f070>]
+> i386_start_kernel+0x70/0x77
+> Dec 29 22:33:51 linuxtest [1188725.048404] Rebooting in 10 seconds..
+>
