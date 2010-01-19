@@ -1,83 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235Ab0ASSqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160Ab0ASSvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755235Ab0ASSqh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 13:46:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859Ab0ASSqg
+	id S1755160Ab0ASSvS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 13:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173Ab0ASSvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 13:46:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33317 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932099Ab0ASSqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 13:46:34 -0500
-Date: Tue, 19 Jan 2010 13:46:31 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dave Chinner <david@fromorbit.com>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-fsdevel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, swhiteho@redhat.com
-Subject: Re: lockdep: inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R}
-	usage.
-Message-ID: <20100119184631.GA11408@infradead.org>
-References: <20100115120253.GH28498@discord.disaster> <1263557473.4244.399.camel@laptop> <20100115124410.GI28498@discord.disaster> <1263559995.4244.403.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263559995.4244.403.camel@laptop>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 19 Jan 2010 13:51:17 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:45045 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752551Ab0ASSvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 13:51:17 -0500
+Date: Tue, 19 Jan 2010 10:51:05 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Tino Keitel <tino.keitel@tikei.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Regression: Wake on LAN doesn't work in sky2 with
+ 2.6.33-rc4-git2
+Message-ID: <20100119105105.184c3f01@nehalam>
+In-Reply-To: <20100119103248.GA8527@mac.home>
+References: <20100115091053.GA5477@mac.home>
+	<201001180136.45823.rjw@sisk.pl>
+	<20100118083757.GA2619@mac.home>
+	<201001182234.55113.rjw@sisk.pl>
+	<20100118144340.100c9544@nehalam>
+	<20100119103248.GA8527@mac.home>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 01:53:15PM +0100, Peter Zijlstra wrote:
-> Well, I don't know enough about xfs (of filesystems in generic) to say
-> that with any certainty, but I can imagine inode writeback from the sync
-> that goes with umount to cause issues.
-> 
-> If this inode reclaim is past all that and the filesystem is basically
-> RO, then I don't think so and this could be considered a false positive,
-> in which case we need an annotation for this.
-
-The issue is a bit more complicated.  In the unmount case
-invalidate_inodes() is indeed called after the filesystem is effectively
-read-only for user origination operations.  But there's a miriad of
-other invalidate_inodes() calls:
-
- - fs/block_dev.c:__invalidate_device()
-
-	This gets called from block device codes for various kinds of
-	invalidations.  Doesn't make any sense at all to me, but hey..
-
- - fs/ext2/super.c:ext2_remount()
-
-	Appears like it's used to check for activate inodes during
-	remount.  Very fishy usage, and could just be replaced with
-	a list walk without any I/O
-
- - fs/gfs2/glock.c:gfs2_gl_hash_clear()
-
-	No idea.
-
- - fs/gfs2/ops_fstype.c:fill_super()
-
-	Tries to kill all inodes in the fill_super error path, looks
-	very fishy.
-
- - fs/ntfs/super.c:ntfs_fill_super()
-
-	Failure case of fill_super again, does not look very useful.A
-
- - fs/smbfs/inode.c:smb_invalidate_inodes()
-
-	Used when a connection goes bad.
-
-In short we can't generally rely on this only happening on a dead fs.
+Is this better worse or the same? It make sure that some
+registers are set on resume that might matter.
 
 
-But in the end we abuse iprune_sem to work around a ref counting
-problem.  As long as we keep a reference to the superblock for each
-inode on the dispose list the superblock can't go away and there's
-no need for the lock at all.
+--- a/drivers/net/sky2.c	2010-01-19 10:32:47.549541152 -0800
++++ b/drivers/net/sky2.c	2010-01-19 10:49:06.726853816 -0800
+@@ -3002,11 +3002,17 @@ static void sky2_reset(struct sky2_hw *h
+ 	u32 hwe_mask = Y2_HWE_ALL_MASK;
+ 
+ 	/* disable ASF */
+-	if (hw->chip_id == CHIP_ID_YUKON_EX) {
++	if (hw->chip_id == CHIP_ID_YUKON_EX ||
++	    hw->chip_id == CHIP_ID_YUKON_SUPR) {
++		/* stop the watchdog */
++		sky2_write32(hw, CPU_WDOG, 0);
++
+ 		status = sky2_read16(hw, HCU_CCSR);
+ 		status &= ~(HCU_CCSR_AHB_RST | HCU_CCSR_CPU_RST_MODE |
+ 			    HCU_CCSR_UC_STATE_MSK);
++		status &= ~HCU_CCSR_CPU_CLK_DIVIDE_MSK;
+ 		sky2_write16(hw, HCU_CCSR, status);
++		sky2_write32(hw, CPU_WDOG, 0);
+ 	} else
+ 		sky2_write8(hw, B28_Y2_ASF_STAT_CMD, Y2_ASF_RESET);
+ 	sky2_write16(hw, B0_CTST, Y2_ASF_DISABLE);
+@@ -4807,11 +4813,12 @@ static int sky2_resume(struct pci_dev *p
+ 
+ 	pci_enable_wake(pdev, PCI_D0, 0);
+ 
+-	/* Re-enable all clocks */
+-	if (hw->chip_id == CHIP_ID_YUKON_EX ||
+-	    hw->chip_id == CHIP_ID_YUKON_EC_U ||
+-	    hw->chip_id == CHIP_ID_YUKON_FE_P)
+-		sky2_pci_write32(hw, PCI_DEV_REG3, 0);
++	/* Enable all clocks and check for bad PCI access */
++	err = pci_write_config_dword(pdev, PCI_DEV_REG3, 0);
++	if (err)
++		goto out;
++
++	sky2_write8(hw, B0_CTST, CS_RST_CLR);
+ 
+ 	sky2_reset(hw);
+ 	sky2_write32(hw, B0_IMSK, Y2_IS_BASE);
