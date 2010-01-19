@@ -1,64 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520Ab0ASWs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160Ab0ASWwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754520Ab0ASWs1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 17:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052Ab0ASWs0
+	id S1755160Ab0ASWwN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 17:52:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488Ab0ASWwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 17:48:26 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:60782 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754003Ab0ASWsZ convert rfc822-to-8bit (ORCPT
+	Tue, 19 Jan 2010 17:52:11 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:17791 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751913Ab0ASWwJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 17:48:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=TmF3t7zeM80G8rEGfKdgZ7jloTSv+rw4+XiECQgU/uHsgyvNpm0lM2BRLXIbQRPp8r
-         rxdHQvcyYXFbk1PgabHQh8xpU3MO98BvXz0BAdWtpimCy7UqymU3xWRdkcCzI/rTwdDm
-         XL4bxy8KM6s4WeRBXz97nLc7e9Bb1OWGSbTIQ=
+	Tue, 19 Jan 2010 17:52:09 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] x86/pci: intel ioh need to subtract mmconf range
+Date: Tue, 19 Jan 2010 15:52:02 -0700
+User-Agent: KMail/1.9.10
+Cc: Jeff Garrett <jeff@jgarrett.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+       David Airlie <airlied@linux.ie>
+References: <20100113053736.GA6720@jgarrett.org> <20100119194228.GA13570@jgarrett.org> <4B560EB3.4090604@kernel.org>
+In-Reply-To: <4B560EB3.4090604@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20100119212209.GF3804@infomag.iguana.be>
-References: <20100119212209.GF3804@infomag.iguana.be>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 19 Jan 2010 17:48:05 -0500
-Message-ID: <8bd0f97a1001191448k70b04ea7u98a6df64d2cc987b@mail.gmail.com>
-Subject: Re: [RFC] [PATCH] change reboot_notifier to platform-shutdown method.
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: H Hartley Sweeten <hsweeten@visionengravers.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thierry Reding <thierry.reding@avionic-design.de>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001191552.03274.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 16:22, Wim Van Sebroeck wrote:
->    [WATCHDOG] change reboot_notifier to platform-shutdown method.
->
->    Platform device drivers can use the .shutdown method to handle soft
->    shutdown's instead of reboot_notifier's.
->
-> --- a/drivers/watchdog/bfin_wdt.c
-> +++ b/drivers/watchdog/bfin_wdt.c
+On Tuesday 19 January 2010 12:57:39 pm Yinghai Lu wrote:
+> On 01/19/2010 11:42 AM, Jeff Garrett wrote:
+> > On Fri, Jan 15, 2010 at 10:14:17AM -0800, Jesse Barnes wrote:
+> >> On Thu, 14 Jan 2010 16:39:13 -0800
+> >> Yinghai Lu <yinghai@kernel.org> wrote:
+> >>
+> >>> On 01/14/2010 03:49 PM, Bjorn Helgaas wrote:
+> >>>> On Thursday 14 January 2010 04:38:08 pm Yinghai Lu wrote:
+> >>>>> On 01/14/2010 03:09 PM, Bjorn Helgaas wrote:
+> >>>>>> On Thursday 14 January 2010 03:46:35 pm Yinghai Lu wrote:
+> >>>>>>>
+> >>>>>>> Bjorn pointed out we need to remove mmconf range
+> >>>>>>>
+> >>>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >>>>>>>
+> >>>>>>> ---
+> > ...
+> >>>>>>
+> >>>>>> This can't be right, can it?  Let's say the kernel was built with
+> >>>>>> CONFIG_PCI_MMCONFIG turned off, or the user used "pci=nommconf",
+> >>>>>> or the kernel decides not to use MMCONFIG for some other reason.
+> >>>>>>
+> >>>>>> In that case, the hardware may still be configured to support
+> >>>>>> MMCONFIG, but the pci_mmcfg_list will be empty, so your code will
+> >>>>>> leave the window alone.  We might assign some of that MMCONFIG
+> >>>>>> space to a device, but the hardware will route it to MMCONFIG,
+> >>>>>> not to the device.
+> >>>>>
+> >>>>> so if there is mmconf specified, we just skip the whole function?
+> >>>>
+> >>>> No, I'm saying that intel-bus.c must ALWAYS remove the MMCONFIG
+> >>>> region from the host bridge apertures, even if Linux isn't using
+> >>>> MMCONFIG.
+> >>>>
+> >>>> That means intel-bus.c has to be smart enough to figure out on its
+> >>>> own what the MMCONFIG area is.  It can't depend on mmconfig-shared.c
+> >>>> to do it, because mmconfig-shared.c might not be there.
+> >>>
+> >>> that seems go too far away...
+> >>>
+> >>> Subject: [PATCH -v2] x86/pci: intel ioh need to subtrac mmconf range
+> >>>
+> >>> Bjorn pointed out we need to remove mmconf range
+> >>>
+> >>> -v2: if mmconf is not there, get out early.
+> >>>
+> >>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >>>
+> >>> ---
+> > ...
+> >>
+> >> This goes against the real intent of intel_bus.c doesn't it?  When we
+> >> first added it, the thought was that it would be a purely native way of
+> >> getting at bridge window information and not rely on firmware.  If
+> >> you're going to make it dependent on MMCONFIG now, why not trust other
+> >> firmware tables as well, like _CRS?
+> >>
+> >> The MMCONFIG ranges are pretty easy to get at, the public docs have
+> >> info about the registers that control the MMCONFIG decode ranges, so
+> >> you should be able to read them out and add them to this file,
+> >> preserving the original intent.
+> > 
+> > I did attempt a bisection last week, but my pared down config kept
+> > hitting a sysfs_create_file panic.  I didn't succeed.
 
-seems to work fine on my Blackfin boards:
-root:/> dmesg -n 8
-root:/> reboot
-bfin_wdt_write:222: here i am
-bfin_wdt_keepalive:88: here i am
-bfin_wdt_release:196: here i am
-bfin_wdt_stop:100: here i am
-bfin_wdt_shutdown:418: here i am
-bfin_wdt_stop:100: here i am
-Restarting system.�
+I don't think there's any need to bisect this; sorry I didn't
+mention this earlier.
 
-and i like things that shrink code:
--   1792     176      20    1988     7c4 drivers/watchdog/bfin_wdt.o
-+   1676     164      20    1860     744 drivers/watchdog/bfin_wdt.o
+2.6.32 didn't include intel-bus.c, so the kernel just assumed that
+all non-RAM addresses got routed to the PCI bus.  This would have
+included the [mem 0xd0000000-0xdfffffff] used by your Radeon device,
+which explains why it would work there.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
--mike
+After 2.6.32, we added intel-bus.c, which reads some of the host
+bridge aperture information from the chipset.  This is apparently
+missing something, because intel-bus.c didn't find that region,
+so Linux thought the Radeon resource was wrong and disabled it,
+which broke it.
+
+> > Should I try the v2 patch above?  What tree is it against?
+> 
+> maybe later with -tip tree + pci/linux-next.
+
+Yinghai, did you figure out how to discover the [mem 0xd0000000-0xdfffffff]
+region in intel-bus.c?  Jeff's video isn't going to work without that.
+
+I don't think we have anything that's worth testing yet.
+
+Bjorn
