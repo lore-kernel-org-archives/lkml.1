@@ -1,81 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472Ab0ASVk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751735Ab0ASVlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752472Ab0ASVk7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 16:40:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947Ab0ASVk6
+	id S1751735Ab0ASVlU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 16:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731Ab0ASVlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 16:40:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28335 "EHLO mx1.redhat.com"
+	Tue, 19 Jan 2010 16:41:15 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:52850 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751937Ab0ASVk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 16:40:58 -0500
-Date: Tue, 19 Jan 2010 16:40:46 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "jmoyer@redhat.com" <jmoyer@redhat.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Shaohua Li <shaohua.li@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: fio mmap randread 64k more than 40% regression with 2.6.33-rc1
-Message-ID: <20100119214046.GB4992@redhat.com>
-References: <4e5e476b0912310234mf9ccaadm771c637a3d107d18@mail.gmail.com> <1262340730.19773.47.camel@localhost> <4e5e476b1001010832o24f6a0efudbfc36598bfc7c5e@mail.gmail.com> <1262435612.19773.80.camel@localhost> <4e5e476b1001021052u51a90a91qb2fbb4089498a3ca@mail.gmail.com> <1262593090.29897.14.camel@localhost> <4e5e476b1001041028v1f204834r1fa97e732a094210@mail.gmail.com> <4e5e476b1001160827n6dc73b35vee8b46e541134c2@mail.gmail.com> <1263783999.12893.2.camel@localhost> <4e5e476b1001191210s37423e4av6673225d5078a88e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b1001191210s37423e4av6673225d5078a88e@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1752724Ab0ASVlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 16:41:12 -0500
+Date: Tue, 19 Jan 2010 13:40:59 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+Cc: "David Miller" <davem@davemloft.net>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2.6.33 1/3] net: Micrel KSZ8841/2 PCI Ethernet driver
+Message-ID: <20100119134059.63b355e4@nehalam>
+In-Reply-To: <14385191E87B904DBD836449AA30269D580A76@MORGANITE.micrel.com>
+References: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com>
+	<20100116.012004.166836523.davem@davemloft.net>
+	<14385191E87B904DBD836449AA30269D580A76@MORGANITE.micrel.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 09:10:33PM +0100, Corrado Zoccolo wrote:
-> On Mon, Jan 18, 2010 at 4:06 AM, Zhang, Yanmin
-> <yanmin_zhang@linux.intel.com> wrote:
-> > On Sat, 2010-01-16 at 17:27 +0100, Corrado Zoccolo wrote:
-> >> Hi Yanmin
-> >> On Mon, Jan 4, 2010 at 7:28 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> >> > Hi Yanmin,
-> >> >> When low_latency=1, we get the biggest number with kernel 2.6.32.
-> >> >> Comparing with low_latency=0's result, the prior one is about 4% better.
-> >> > Ok, so 2.6.33 + corrado (with low_latency =0) is comparable with
-> >> > fastest 2.6.32, so we can consider the first part of the problem
-> >> > solved.
-> >> >
-> >> I think we can return now to your full script with queue merging.
-> >> I'm wondering if (in arm_slice_timer):
-> >> -       if (cfqq->dispatched)
-> >> +      if (cfqq->dispatched || (cfqq->new_cfqq && rq_in_driver(cfqd)))
-> >>                return;
-> >> gives the same improvement you were experiencing just reverting to rq_in_driver.
-> > I did a quick testing against 2.6.33-rc1. With the new method, fio mmap randread 46k
-> > has about 20% improvement. With just checking rq_in_driver(cfqd), it has
-> > about 33% improvement.
-> >
-> Jeff, do you have an idea why in arm_slice_timer, checking
-> rq_in_driver instead of cfqq->dispatched gives so much improvement in
-> presence of queue merging, while it doesn't have noticeable effect
-> when there are no merges?
+On Tue, 19 Jan 2010 12:03:20 -0800
+"Ha, Tristram" <Tristram.Ha@Micrel.Com> wrote:
 
-Performance improvement because of replacing cfqq->dispatched with
-rq_in_driver() is really strange. This will mean we will do even lesser
-idling on the cfqq. That means faster cfqq switching and that should mean more
-seeks (for this test case) and reduce throughput. This is just opposite to your approach of treating a random read mmap queue as sync where we will idle on
-the queue.
-
-Thanks
-Vivek
-
+> David Miller wrote:
+> > From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+> > Date: Fri, 15 Jan 2010 18:57:59 -0800
+> > 
+> >> The KSZ8842 has a switch with lots of hardware configurations.  The =
+> >> driver uses the proc system to allow users to configure the switch.
+> >> If = this is not desired the whole thing can be removed by not
+> calling the =
+> >> init_proc() function.
+> > 
+> > I think there needs to be a serious discussion about how this driver
+> uses bridge layer internals
+> > by doing things like: 
+> > 
+> > +/* Needed for STP support. */
+> > +#ifdef CONFIG_KSZ8842_STP
+> > +#include <../net/bridge/br_private.h>
+> > +#endif
+> > 
+> > and uses procfs to configure the ports.
+> > 
+> > Stephen please look this over and make suggestions for better ways to
+> support and configure
+> > these kinds of devices. 
+> > 
+> > Thanks.
 > 
-> Thanks,
-> Corrado
+> I like to explain a little bit about this Spanning Tree Protocol
+> support.
 > 
-> >
-> >>
-> >> We saw that cfqq->dispatched worked fine when there was no queue
-> >> merging happening, so it must be something concerning merging,
-> >> probably dispatched is not accurate when we set up for a merging, but
-> >> the merging was not yet done.
-> >
-> >
-> >
+> Micrel KSZ8842's 3-port switch and Micrel's other 5-port switches have
+> port controls to enable/disable tx and rx and stop MAC address learning.
+> They are supposed to help run STP more efficiently, but somebody needs
+> to control those ports.
+> 
+> From my observation of how the brctl application controls the network
+> devices when running STP, I know the kernel bridge puts all the devices
+> under it in promiscuous mode and declares the state of each bridge port
+> associated with the device blocked or forwarding depending on the BPDU
+> frames received.  When the port is blocked, the device is still active
+> and passes all frames to the host.  The bridge only looks at BPDU frames
+> and drops all other frames.  It is better to just shut off the port.
+
+Ok.
+
+> From the time when the KSZ8842 driver was developed for the Linux 2.4
+> kernel I looked for a kernel API to tell the bridge port's state so the
+> device driver can shut off the port if necessary.  I could not find one
+> and so I came up with this hack to look at the bridge port's structure
+> directly.  It looks dangerous but is quite safe.  The driver only looks
+> at the bridge port state variable and finds out the MAC address
+> associated with the bridge device.  It can get the state definitions
+> from the if_bridge header.  The private bridge structure may change in
+> the future and break the code, but as kernel network interfaces are
+> changing all the time, the driver just needs to be modified for the new
+> version.  To avoid this situation, the kernel may need to export two
+> functions to tell the bridge port state and bridge device address and
+> put the prototypes in the if_bridge header.
+
+There was one added for user level RSTP support.
+RSTP is where Linux STP is headed, so adding more hooks into
+existing STP is going backwards.
+
+> Now for the driver implementation for STP support.  I programmed the
+> switch's static MAC table to always pass the following frames to the
+> host: BPDU frames with specific multicast address, broadcast frames,
+> unicast frames with the device bridge's MAC address, and multicast
+> frames with ICMPv6 multicast address.  All other frames are not passed
+> to the host and are handled by the switch, forwarding each frame with
+> its standard forwarding logic.  The port can be shut off if it is
+> blocked and those frames will not pass through that port.  The host gets
+> BPDU frames so that the bridge can determine each port's state.  The
+> other broadcast, unicast, and multicast frames passed to the host are
+> necessary if some other network devices want to communicate with the
+> host.  As the forwarding is done by hardware rather than software,
+> overall performance does increase.
+
+What about LACP needed by bridging?
+
+> I did verify the driver disables or enables the port appropriately when
+> the bridge port state changes, but as I do not have the experience of
+> running a full-scale Spanning Tree, I do not know if this hardware
+> implementation behaves the same as the software one provided by the
+> kernel and brctl.  I also did not try using VLAN.
+
+
+-- 
