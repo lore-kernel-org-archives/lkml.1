@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971Ab0ASKl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932164Ab0ASKrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755971Ab0ASKl1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 05:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877Ab0ASKl0
+	id S932164Ab0ASKrr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 05:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447Ab0ASKrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 05:41:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:56435 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755798Ab0ASKlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 05:41:25 -0500
-Date: Tue, 19 Jan 2010 12:40:58 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-mm@kvack.org,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org, akpm@linux-foundation.org,
-       andrew.c.morrow@gmail.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       minchan.kim@gmail.com
-Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
-Message-ID: <20100119104058.GL14345@redhat.com>
-References: <20100118170816.GA22111@redhat.com>
- <84144f021001181009m52f7eaebp2bd746f92de08da9@mail.gmail.com>
- <20100118181942.GD22111@redhat.com>
- <20100118191031.0088f49a@lxorguk.ukuu.org.uk>
- <20100119071734.GG14345@redhat.com>
- <84144f021001182337o274c8ed3q8ce60581094bc2b9@mail.gmail.com>
- <20100119075205.GI14345@redhat.com>
- <84144f021001190007q54a334dfwed64189e6cf0b7c4@mail.gmail.com>
- <20100119082638.GK14345@redhat.com>
- <84144f021001190044s397c6665qb00af48235d2d818@mail.gmail.com>
+	Tue, 19 Jan 2010 05:47:46 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:43835 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221Ab0ASKrp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 05:47:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mlG8MW+QZVl8+KOQjRvzS1lC/QY1IttN/OMTksYfCSGq/CSc8kIPYu8DA8Oa1TOza6
+         7e4l/pQpsysTFUhg49QRrtZb+JwbZPC7BDKh2nLvfraCLCINS573GIZJ095FbJlXV/j2
+         neHx6glWe+TtpdZqWbKgw/Vhi0sOlULjbM87Y=
+Date: Tue, 19 Jan 2010 10:47:39 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+Message-ID: <20100119104739.GA9088@ff.dom.local>
+References: <20100118073018.GA6270@ff.dom.local> <4B548C6B.10607@majjas.com> <20100118204658.GC3157@del.dom.local> <4B54CB0D.5070604@majjas.com> <20100118212516.GE3157@del.dom.local> <4B54D50C.90608@majjas.com> <20100118220814.GG3157@del.dom.local> <20100118221747.GH3157@del.dom.local> <4B54E4EF.8080602@majjas.com> <4B554730.6090000@majjas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f021001190044s397c6665qb00af48235d2d818@mail.gmail.com>
+In-Reply-To: <4B554730.6090000@majjas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 10:44:23AM +0200, Pekka Enberg wrote:
-> On Tue, Jan 19, 2010 at 10:26 AM, Gleb Natapov <gleb@redhat.com> wrote:
-> >> me that you're trying to use a big hammer (mlock) when a polite hint
-> >> for the VM would probably be sufficient for it do its job.
-> >>
-> > I what to tell to VM "swap this, don't swap that" and as far as I see
-> > there is no other way to do it currently.
-> 
-> Yeah, which is why I was suggesting that maybe posix_madvise() needs
-> to be extended to have a MADV_NEED_BUT_LESS_IMPORTANT flag that can be
-> used as a hint by mm/vmscan.c to first swap the guest address spaces.
-> 
-If such thing would exist may be I would have used it since swapping out
-of a wrong page is not live or death matter in my case, but mlockall()
-provides me with exactly what I need and without swapping out wrong
-pages. Speaking about adding such madvise call wouldn't it be even
-harder to justify? It obviously not good enough for real-time use and my
-case, I admit, is unusual. Also if we start prioritise memory why stop
-on binary, why not set value like "this memory is more important then
-that memory by factor of 5"?
+On Tue, Jan 19, 2010 at 12:46:24AM -0500, Michael Breuer wrote:
+> Ok - one last update for a while ...not sure what's next... I put some  
+> printk's into sky2.c xmit logic - the packets are being sent to the  
+...
 
---
-			Gleb.
+Btw, could you try if this patch can makes difference in triggering
+the "lib/dma-debug.c:898" warning?
+
+Jarek P.
+---
+
+ drivers/net/sky2.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
+index 7650f73..e02e9e9 100644
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -2479,6 +2479,9 @@ static int sky2_status_intr(struct sky2_hw *hw, int to_do, u16 idx)
+ 
+ 		port = le->css & CSS_LINK_BIT;
+ 		dev = hw->dev[port];
++		if (!netif_running(dev))
++			continue;
++
+ 		sky2 = netdev_priv(dev);
+ 		length = le16_to_cpu(le->length);
+ 		status = le32_to_cpu(le->status);
