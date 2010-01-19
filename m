@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672Ab0ASWK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881Ab0ASWLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672Ab0ASWK5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 17:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246Ab0ASWK4
+	id S1754881Ab0ASWLQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 17:11:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765Ab0ASWLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 17:10:56 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58303 "EHLO hera.kernel.org"
+	Tue, 19 Jan 2010 17:11:12 -0500
+Received: from nbd.name ([88.198.39.176]:57703 "EHLO ds10.nbd.name"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234Ab0ASWKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 17:10:55 -0500
-Message-ID: <4B562DB8.8000801@kernel.org>
-Date: Tue, 19 Jan 2010 14:10:00 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1754705Ab0ASWLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 17:11:10 -0500
+Message-ID: <4B562DF4.70302@openwrt.org>
+Date: Tue, 19 Jan 2010 23:11:00 +0100
+From: Felix Fietkau <nbd@openwrt.org>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 05/11] pci: update bridge res to get more big range in
- pci assign unssign
-References: <1263640037-24134-1-git-send-email-yinghai@kernel.org> <1263640037-24134-6-git-send-email-yinghai@kernel.org> <20100119214823.GH11010@ldl.fc.hp.com>
-In-Reply-To: <20100119214823.GH11010@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+CC: Dave Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
+       =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirqus@gmail.com>
+Subject: Re: [PATCH 2.6.33 1/3] net: Micrel KSZ8841/2 PCI Ethernet driver
+References: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com> <e2d7436a1001160800u11206f54iaf07bb92331a256a@mail.gmail.com> <4B51E64B.6010706@openwrt.org> <14385191E87B904DBD836449AA30269D580AA0@MORGANITE.micrel.com>
+In-Reply-To: <14385191E87B904DBD836449AA30269D580AA0@MORGANITE.micrel.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/19/2010 01:48 PM, Alex Chiang wrote:
->> +	/* retore size and flags */
+On 2010-01-19 10:51 PM, Ha, Tristram wrote:
+> Your work looks interesting, but rtl8036 seems to use MDIO page
+> registers to access its own internal registers.  Micrel switches do
+> not have that feature and so cannot use that way.
 > 
-> "restore"
+> I am looking at those PHY drivers and try to figure out how they work
+> under mdio bus.  I am using Micrel's own KSZ8695P and KSZ9692P SoC to
+> develop and debug the KSZ884X PCI driver.  KSZ9692P actually has two
+> external PHYs so that the PHY driver can run on it.  But the driver
+> does not load because I probably need to add some hooks to the mdio
+> bus driver to do the actual hardware access.  Can somebody give me
+> some pointers to this mdio bus support?  Does the PHY driver create a
+> user interface like eth0 so that it can be accessed using some tools
+> like ethtool?
 > 
->> +	for (list = head.next; list;) {
->> +		struct resource *res = list->res;
->> +
->> +		res->start = list->start;
->> +		res->end = list->end;
->> +		res->flags = list->flags;
->> +		if (list->dev->subordinate)
->> +			res->flags = 0;
->> +
->> +		list = list->next;
->> +	}
->> +	free_failed_list(&head);
->> +
->> +	goto again;
->> +
->> +enable_and_dump:
->> +	/* Depth last, update the hardware. */
->> +	list_for_each_entry(bus, &pci_root_buses, node) {
->>  		pci_enable_bridges(bus);
->>  	}
-> 
-> Strictly speaking, you don't need these curly braces.
+> Anyway I am afraid the phy driver model does not work on KSZ884X.  I
+> cannot think of how the mdio bus accesses hardware registers located
+> on a PCI device.
+The switch config core that i wrote is not specific to PHY drivers, it
+can be used from ethernet drivers, GPIO based platform drivers or any
+other kind of drivers as well.
+It exports a simple netlink based config interface to user space that
+allows you to get a list of all configurable attributes for the device,
+ports and vlans, and change them.
 
-ok
+I also have a config utility for it:
+https://dev.openwrt.org/browser/trunk/package/swconfig/src
+
+It currently depends on our config library (libuci), but that can be
+removed easily, as the code for that is not spread over the core of the
+utility.
+
+Part of this code can also be used as a small library, if you want to
+write your own utility.
+
+- Felix
