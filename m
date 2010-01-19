@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871Ab0ASRmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751734Ab0ASRol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871Ab0ASRmR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 12:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628Ab0ASRmQ
+	id S1751734Ab0ASRol (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 12:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137Ab0ASRok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 12:42:16 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:45139 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754573Ab0ASRmP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 12:42:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=B1vJsGSD+zZ7HUtZ8IGZqso4pCWOql09RSXHHIhcq2v4r/0fySFygX54HAK1qpHqoy
-         w13lLVDMLAVSwMmQA0iy0VmA2EkT5bzkYfZ8FONmBgmhxOUWZUMrN4bA2ZZEUetMJmIL
-         sEyWy+t7pKWhX+zcmqDk8B6jQWAltr+PkxEQQ=
-MIME-Version: 1.0
-In-Reply-To: <8bd0f97a1001190923p6104acb4if5ec7225d549b713@mail.gmail.com>
-References: <1263883920-17289-1-git-send-email-vapier@gentoo.org>
-	 <20100119142545.GB3473@hack>
-	 <8bd0f97a1001190923p6104acb4if5ec7225d549b713@mail.gmail.com>
-Date: Tue, 19 Jan 2010 18:42:13 +0100
-X-Google-Sender-Auth: ece7d943d2056ad8
-Message-ID: <520f0cf11001190942n2c765618m8a66b8afe82010d0@mail.gmail.com>
-Subject: Re: [PATCH] kconfig: dont hardcode path to lsmod
-From: John Kacur <jkacur@redhat.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 19 Jan 2010 12:44:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7796 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751118Ab0ASRoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 12:44:38 -0500
+Date: Tue, 19 Jan 2010 12:44:14 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Joshua Pincus <joshua.pincus@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>, peterz@infradead.org,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: HW breakpoints perf_events request
+Message-ID: <20100119174414.GE16096@redhat.com>
+References: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com> <87ljg1fn3u.fsf@basil.nowhere.org> <bc915a051001131821x6cdd3470lf72e8c02a897ea3@mail.gmail.com> <20100114092350.GF12241@basil.fritz.box> <bc915a051001141003s766689beue73800a1308d957e@mail.gmail.com> <20100118110406.GC5256@nowhere> <y0maawbid91.fsf@fche.csb> <20100119145027.GB8061@nowhere> <20100119151210.GC16096@redhat.com> <20100119162059.GF8061@nowhere>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100119162059.GF8061@nowhere>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 6:23 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Tue, Jan 19, 2010 at 09:25, Américo Wang wrote:
->> On Tue, Jan 19, 2010 at 01:52:00AM -0500, Mike Frysinger wrote:
->>>The lsmod utility has always been installed into /bin with the newer
->>>module-init-tools package, so let lsmod be found via PATH instead of
->>>hardcoding the old modutils /sbin path.
->>>
->>
->> Some distro doesn't set /sbin to PATH, so for me a better solution
->> would be making PATH contain /sbin, and then use "lsmod".
->
-> read my changelog -- module-init-tools has always installed into /bin.
->  so what your distro does with /sbin doesnt matter.
-> -mike
-> --
+Hi -
 
-I prefer my patches work for the real-world instead of the "so what
-your distro does doesn't matter" world.
+On Tue, Jan 19, 2010 at 05:21:02PM +0100, Frederic Weisbecker wrote:
+> [...]
+> But I rather hope we can extend ptrace interface to handle such new
+> needs instead (ie: having a more scalable breakpoint interface
+> support by ptrace).
+
+According to its maintainer, ptrace per se appears to be not well
+suited for extensions that affect control flow, but maybe.
+(http://www.mail-archive.com/utrace-devel@redhat.com/msg02276.html)
+
+
+> > Another is using the gdbstub, extended with gdb watchpoint support (Z*
+> > packets), which would tie into the hw-breakpoint system directly.
+> > [...]
+
+> Is this gdbstub an interface to utrace?
+> This: http://lwn.net/Articles/364268/ ?
+
+Yes, but I wouldn't think of it that way ("an interface to utrace").
+Yes, it uses utrace, but that's an implementation detail.  To
+userspace it presents gdb's existing wire protocol for debugging
+processes.
+
+
+> > > Do you plan a resubmission soon?
+> > 
+> > Utrace core has been resubmitted at the end of December
+> > (http://lkml.org/lkml/2009/12/17/466), with no further comments
+> > received.
+> 
+> Hmm, there has been deep review from Peter, IIRC.
+
+I haven't seen any after that particular resubmission.  Rather, there
+has been lots of discussion lately about *uprobes*, which is a
+separate & optional process breakpoint management layer that happens
+to use utrace and happens to be used by systemtap and the gdbstub.
+
+
+- FChE
