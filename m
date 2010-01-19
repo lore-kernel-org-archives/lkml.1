@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987Ab0ASAzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045Ab0ASA4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754987Ab0ASAzu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jan 2010 19:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712Ab0ASAzu
+	id S1755045Ab0ASA4z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jan 2010 19:56:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938Ab0ASA4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jan 2010 19:55:50 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48982 "EHLO hera.kernel.org"
+	Mon, 18 Jan 2010 19:56:53 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:44331 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752625Ab0ASAzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jan 2010 19:55:49 -0500
-Message-ID: <4B550440.4040800@kernel.org>
-Date: Tue, 19 Jan 2010 10:00:48 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1753300Ab0ASA4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jan 2010 19:56:52 -0500
+Date: Mon, 18 Jan 2010 16:56:46 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Josh Triplett <josh@joshtriplett.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 8/9] idr: apply lockdep-based diagnostics
+	to rcu_dereference() uses
+Message-ID: <20100119005646.GA6196@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100115010157.GA28221@linux.vnet.ibm.com> <20100118233604.GE29076@feather>
 MIME-Version: 1.0
-To: Steven Whitehouse <swhiteho@redhat.com>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: [PATCH 39/40] gfs2: use workqueue instead of slow-work
-References: <1263776272-382-1-git-send-email-tj@kernel.org>	 <1263776272-382-40-git-send-email-tj@kernel.org>	 <1263807959.2715.4.camel@localhost>  <4B5444FD.4050500@kernel.org> <1263816447.2715.45.camel@localhost>
-In-Reply-To: <1263816447.2715.45.camel@localhost>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 19 Jan 2010 00:54:48 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100118233604.GE29076@feather>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, Jan 18, 2010 at 03:36:04PM -0800, Josh Triplett wrote:
+> On Thu, Jan 14, 2010 at 05:02:45PM -0800, Paul E. McKenney wrote:
+> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > 
+> > Because idr can be used with any of a number of locks or with any
+> > flavor of RCU, just disable the lockdep-based diagnostics.  If idr
+> > needs diagnostics, the check expression will need to be passed into
+> > the relevant idr primitives as an additional argument.
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> The subject line of this patch seems wrong.  Like the preceding patches
+> for radix tree and list operations, this *disables* the checking by
+> using _raw.
 
-On 01/18/2010 09:07 PM, Steven Whitehouse wrote:
-> Hmm, I thought I'd checked slow work pretty carefully before I decided
-> to use it :( Looking at it though, its pretty unlikely that it would
-> cause a problem. We can be 100% safe by just increasing the number of
-> slow work threads to one per mounted gfs2 fs (assuming no other slow
-> work users).
+It does indeed use _raw.  If we start having enough issues with these
+interfaces, this will need to change.  At the moment, the obvious change
+is to provide multiple interfaces as was done for rcu_dereference().
+For example, idr_find(), idr_find_bh(), idr_find_sched(), idr_find_srcu(),
+idr_find_rcu(), and idr_find_check().
 
-I don't think that will guarantee anything as there's nothing which
-guarantees the new additional work to the gfs2 code.  At any rate,
-these problems are pretty unlikely to happen but they still need
-guarantees, so...
+Probably only a few of these are actually in use, but even so, I decided
+to see how rcu_dereference() turned out before pushing up to the
+higher-level APIs.  My guess would be that the list APIs would be most
+pressing, but we will see.  ;-)
 
-> Anyway, if its easy to solve that problem in the new code, thats all
-> good :-) Thanks for pointing out this issue,
-
-Yeap, I'll post updated patch soonish.
-
-Thanks.
-
--- 
-tejun
+							Thanx, Paul
