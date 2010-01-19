@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905Ab0ASLAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009Ab0ASLAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755905Ab0ASLAP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 06:00:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394Ab0ASLAM
+	id S1756009Ab0ASLAr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 06:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755695Ab0ASLAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 06:00:12 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52243 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752141Ab0ASLAK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 06:00:10 -0500
-Date: Tue, 19 Jan 2010 02:57:34 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
-       David Miller <davem@davemloft.net>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] lib/vsprintf.c: Add %pMF to format FDDI bit reversed
- MAC addresses
-Message-Id: <20100119025734.ce74ae5b.akpm@linux-foundation.org>
-In-Reply-To: <1262888625.10429.23.camel@Joe-Laptop.home>
-References: <BD79186B4FD85F4B8E60E381CAEE19090208954A@mi8nycmail19.Mi8.com>
-	<1262888625.10429.23.camel@Joe-Laptop.home>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+	Tue, 19 Jan 2010 06:00:46 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:49450 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754123Ab0ASLAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 06:00:45 -0500
+Date: Tue, 19 Jan 2010 12:00:40 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Seth Heasley <seth.heasley@intel.com>
+Cc: linux-kernel@vger.kernel.org, Linux I2C <linux-i2c@vger.kernel.org>,
+       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
+Subject: Re: [PATCH 2.6.32.3] i2c-i801: SMBus patch for Intel Cougar Point
+ DeviceIDs
+Message-ID: <20100119120040.14444393@hyperion.delvare>
+In-Reply-To: <201001121658.54044.seth.heasley@intel.com>
+References: <201001121658.54044.seth.heasley@intel.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,10 +27,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Jan 2010 10:23:45 -0800 Joe Perches <joe@perches.com> wrote:
+Hi Seth,
 
-> Adds 56 bytes to object size
+Please note that the i2c mailing list address has changed.
 
-You might want to consider making some of the net-specific code in
-vsprintf.c go away if CONFIG_NET=n.
+On Tue, 12 Jan 2010 16:58:53 -0800, Seth Heasley wrote:
+> This patch adds the Intel Cougar Point (PCH) SMBus Controller DeviceIDs.
 
+This comment suggests that Cougar Point == PCH, while the comments in
+i2c-i801 suggests otherwise. Who is right?
+
+> 
+> Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+> 
+> --- linux-2.6.32.3/drivers/i2c/busses/i2c-i801.c.orig	2010-01-06 15:07:45.000000000 -0800
+> +++ linux-2.6.32.3/drivers/i2c/busses/i2c-i801.c	2010-01-07 13:10:28.000000000 -0800
+> @@ -41,7 +41,8 @@
+>    Tolapai               0x5032     32     hard     yes     yes     yes
+>    ICH10                 0x3a30     32     hard     yes     yes     yes
+>    ICH10                 0x3a60     32     hard     yes     yes     yes
+> -  PCH                   0x3b30     32     hard     yes     yes     yes
+> +  3400/5 Series (PCH)   0x3b30     32     hard     yes     yes     yes
+> +  CPT                   0x1c22     32     hard     yes     yes     yes
+>  
+>    Features supported by this driver:
+>    Software PEC                     no
+> @@ -578,6 +579,7 @@
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_4) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_5) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PCH_SMBUS) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_CPT_SMBUS) },
+>  	{ 0, }
+>  };
+>  
+> @@ -707,6 +709,7 @@
+>  	case PCI_DEVICE_ID_INTEL_ICH10_4:
+>  	case PCI_DEVICE_ID_INTEL_ICH10_5:
+>  	case PCI_DEVICE_ID_INTEL_PCH_SMBUS:
+> +	case PCI_DEVICE_ID_INTEL_CPT_SMBUS:
+>  		i801_features |= FEATURE_I2C_BLOCK_READ;
+>  		/* fall through */
+>  	case PCI_DEVICE_ID_INTEL_82801DB_3:
+> --- linux-2.6.32.3/drivers/i2c/busses/Kconfig.orig	2010-01-06 15:07:45.000000000 -0800
+> +++ linux-2.6.32.3/drivers/i2c/busses/Kconfig	2010-01-07 13:10:28.000000000 -0800
+> @@ -98,6 +98,7 @@
+>  	    Tolapai
+>  	    ICH10
+>  	    PCH
+> +	    CPT
+
+It might be clear for you that "CPT" means "Cougar Point", but for the
+reader it may not be. I'd rather list the full chip name. Same in
+i2c-i801.c's header comment, BTW.
+
+>  
+>  	  This driver can also be built as a module.  If so, the module
+>  	  will be called i2c-i801.
+
+Documentation/i2c/busses/i2c-i801 needs to be updated as well.
+
+-- 
+Jean Delvare
