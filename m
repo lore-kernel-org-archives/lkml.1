@@ -1,121 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751735Ab0ASVlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033Ab0ASVmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751735Ab0ASVlU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 16:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731Ab0ASVlP
+	id S1753033Ab0ASVmg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 16:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191Ab0ASVmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 16:41:15 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:52850 "EHLO mail.vyatta.com"
+	Tue, 19 Jan 2010 16:42:35 -0500
+Received: from mail.perches.com ([173.55.12.10]:1292 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752724Ab0ASVlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 16:41:12 -0500
-Date: Tue, 19 Jan 2010 13:40:59 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
-Cc: "David Miller" <davem@davemloft.net>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.33 1/3] net: Micrel KSZ8841/2 PCI Ethernet driver
-Message-ID: <20100119134059.63b355e4@nehalam>
-In-Reply-To: <14385191E87B904DBD836449AA30269D580A76@MORGANITE.micrel.com>
-References: <14385191E87B904DBD836449AA30269D021A4A@MORGANITE.micrel.com>
-	<20100116.012004.166836523.davem@davemloft.net>
-	<14385191E87B904DBD836449AA30269D580A76@MORGANITE.micrel.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	id S1752174Ab0ASVme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 16:42:34 -0500
+Subject: Re: [RFC] [PATCH] watchdog_info separation and constify
+From: Joe Perches <joe@perches.com>
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Florian Fainelli <florian@openwrt.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-omap@vger.kernel.org
+In-Reply-To: <20100119211759.GE3804@infomag.iguana.be>
+References: <20100119211759.GE3804@infomag.iguana.be>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 19 Jan 2010 13:42:31 -0800
+Message-ID: <1263937351.18117.69.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jan 2010 12:03:20 -0800
-"Ha, Tristram" <Tristram.Ha@Micrel.Com> wrote:
+On Tue, 2010-01-19 at 22:17 +0100, Wim Van Sebroeck wrote:
+> -static struct watchdog_info at32_wdt_info = {
+> +static const struct watchdog_info at32_wdt_info = {
 
-> David Miller wrote:
-> > From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
-> > Date: Fri, 15 Jan 2010 18:57:59 -0800
-> > 
-> >> The KSZ8842 has a switch with lots of hardware configurations.  The =
-> >> driver uses the proc system to allow users to configure the switch.
-> >> If = this is not desired the whole thing can be removed by not
-> calling the =
-> >> init_proc() function.
-> > 
-> > I think there needs to be a serious discussion about how this driver
-> uses bridge layer internals
-> > by doing things like: 
-> > 
-> > +/* Needed for STP support. */
-> > +#ifdef CONFIG_KSZ8842_STP
-> > +#include <../net/bridge/br_private.h>
-> > +#endif
-> > 
-> > and uses procfs to configure the ports.
-> > 
-> > Stephen please look this over and make suggestions for better ways to
-> support and configure
-> > these kinds of devices. 
-> > 
-> > Thanks.
-> 
-> I like to explain a little bit about this Spanning Tree Protocol
-> support.
-> 
-> Micrel KSZ8842's 3-port switch and Micrel's other 5-port switches have
-> port controls to enable/disable tx and rx and stop MAC address learning.
-> They are supposed to help run STP more efficiently, but somebody needs
-> to control those ports.
-> 
-> From my observation of how the brctl application controls the network
-> devices when running STP, I know the kernel bridge puts all the devices
-> under it in promiscuous mode and declares the state of each bridge port
-> associated with the device blocked or forwarding depending on the BPDU
-> frames received.  When the port is blocked, the device is still active
-> and passes all frames to the host.  The bridge only looks at BPDU frames
-> and drops all other frames.  It is better to just shut off the port.
+It'd be good to use a consistent structure name:
 
-Ok.
+static const struct watchdog_info ident = {
+	etc...
+}
 
-> From the time when the KSZ8842 driver was developed for the Linux 2.4
-> kernel I looked for a kernel API to tell the bridge port's state so the
-> device driver can shut off the port if necessary.  I could not find one
-> and so I came up with this hack to look at the bridge port's structure
-> directly.  It looks dangerous but is quite safe.  The driver only looks
-> at the bridge port state variable and finds out the MAC address
-> associated with the bridge device.  It can get the state definitions
-> from the if_bridge header.  The private bridge structure may change in
-> the future and break the code, but as kernel network interfaces are
-> changing all the time, the driver just needs to be modified for the new
-> version.  To avoid this situation, the kernel may need to export two
-> functions to tell the bridge port state and bridge device address and
-> put the prototypes in the if_bridge header.
+$ grep -Poh "struct\s*watchdog_info\s*\w+" *.[ch] | sort | uniq -c | sort -rn
+     65 struct watchdog_info ident
+      8 struct watchdog_info __user
+      4 struct watchdog_info info
+      2 struct watchdog_info sh_wdt_info
+      2 struct watchdog_info bfin_wdt_info
+      2 struct watchdog_info at91_wdt_info
+      1 struct watchdog_info zf_info
+      1 struct watchdog_info wdinfo
+      1 struct watchdog_info twl4030_wd_ident
+      1 struct watchdog_info s3c2410_wdt_ident
+      1 struct watchdog_info nuc900_wdt_info
+      1 struct watchdog_info ks8695_wdt_info
+      1 struct watchdog_info bcm47xx_wdt_info
+      1 struct watchdog_info at32_wdt_info
+      1 struct watchdog_info adx_wdt_info
 
-There was one added for user level RSTP support.
-RSTP is where Linux STP is headed, so adding more hooks into
-existing STP is going backwards.
+firmware_version doesn't have to be initialized to 0.
 
-> Now for the driver implementation for STP support.  I programmed the
-> switch's static MAC table to always pass the following frames to the
-> host: BPDU frames with specific multicast address, broadcast frames,
-> unicast frames with the device bridge's MAC address, and multicast
-> frames with ICMPv6 multicast address.  All other frames are not passed
-> to the host and are handled by the switch, forwarding each frame with
-> its standard forwarding logic.  The port can be shut off if it is
-> blocked and those frames will not pass through that port.  The host gets
-> BPDU frames so that the bridge can determine each port's state.  The
-> other broadcast, unicast, and multicast frames passed to the host are
-> necessary if some other network devices want to communicate with the
-> host.  As the forwarding is done by hardware rather than software,
-> overall performance does increase.
+It might be good to standardize .identity to include
+either "WDT" or "watchdog" or exclude both of those.
 
-What about LACP needed by bridging?
+Maybe a standard #define WATCHDOG_NAME <foo>
 
-> I did verify the driver disables or enables the port appropriately when
-> the bridge port state changes, but as I do not have the experience of
-> running a full-scale Spanning Tree, I do not know if this hardware
-> implementation behaves the same as the software one provided by the
-> kernel and brctl.  I also did not try using VLAN.
+.identity = WATCHGOD_NAME
 
+$ grep -Poh "\.identity\s*=\s*.*$" *.[ch] | sed -r -e 's/\s+/ /g' | sort 
+.identity = "ALi M1535 WatchDog Timer",
+.identity = "ALiM7101",
+.identity = "at32ap700x watchdog",
+.identity = "at91 watchdog",
+.identity = "Avionic Design Xanthos Watchdog",
+.identity = "Blackfin Watchdog",
+.identity = "COH 901 327 Watchdog",
+.identity = "CPU5 WDT",
+.identity = "DaVinci Watchdog",
+.identity = DRIVER_NAME,
+.identity = DRIVER_NAME,
+.identity = DRIVER_NAME,
+.identity = DRV_NAME,
+.identity = DRV_NAME,
+.identity = DRV_NAME,
+.identity = DRV_NAME,
+.identity = DRV_NAME,
+.identity = "EP93xx Watchdog",
+.identity = ESB_MODULE_NAME,
+.identity = "Footbridge Watchdog",
+.identity = "GE Fanuc watchdog",
+.identity = "Hardware Watchdog for PNX833x",
+.identity = "Hardware Watchdog for SGI IP22",
+.identity = "Hardware Watchdog for TXx9",
+.identity = "HP iLO2 HW Watchdog Timer",
+.identity = "IB700 WDT",
+.identity = "IBM ASR",
+.identity = "iop watchdog",
+.identity = "IT8712F Watchdog",
+.identity = "IXP2000 Watchdog",
+.identity = "IXP4xx Watchdog",
+.identity = "ks8695 watchdog",
+.identity = LONGNAME,
+.identity = "MixCOM watchdog",
+.identity = "MPC8xxx",
+.identity = "MPcore Watchdog",
+.identity = "MTX-1 WDT",
+.identity = "MV64x60 watchdog",
+.identity = "NatSemi SCx200 Watchdog",
+.identity = "nuc900 watchdog",
+.identity = "OMAP Watchdog",
+.identity = "Orion Watchdog",
+.identity = "PC87307/PC97307",
+.identity = "PC87413(HF/F) watchdog",
+.identity = "PCI-WDT500/501",
+.identity = "PCWD",
+.identity = "PNX4008 Watchdog",
+.identity = "PowerPC Book-E Watchdog",
+.identity = "RC32434_WDT Watchdog",
+.identity = "RDC321x WDT",
+.identity = "S3C2410 Watchdog",
+.identity = "SA1100/PXA255 Watchdog",
+.identity = "SBC60xx",
+.identity = "SBC7240",
+.identity = "SC520",
+.identity = "SH WDT",
+.identity = "SiByte Watchdog",
+.identity = "SMsC 37B787 Watchdog",
+.identity = "Software Watchdog",
+.identity = "STMP3XXX Watchdog",
+.identity = "TWL4030 Watchdog",
+.identity = "W83627HF WDT",
+.identity = "W83697HF WDT",
+.identity = "W83697UG WDT",
+.identity = "W83877F",
+.identity = "Wafer 5823 WDT",
+.identity = WATCHDOG_DRIVER_NAME,
+.identity = WATCHDOG_NAME,
+.identity = WATCHDOG_NAME,
+.identity = WATCHDOG_NAME,
+.identity = WATCHDOG_NAME,
+.identity = WATCHDOG_NAME,
+.identity = WATCHDOG_NAME,
+.identity = WATCHDOG_NAME,
+.identity = "wdrtas",
+.identity = "WDT500/501",
+.identity = "WDT Eurotech CPU-1220/1410",
+.identity = "Winsystems EPX-C3 H/W Watchdog",
+.identity = "WM831x Watchdog",
+.identity = "WM8350 Watchdog",
+.identity = "ZF-Logic watchdog",
 
--- 
+Maybe a DECLARE_WATCHDOG_IDENT() macro?
+
