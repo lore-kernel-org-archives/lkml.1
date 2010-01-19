@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751734Ab0ASRol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596Ab0ASRqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751734Ab0ASRol (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 12:44:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137Ab0ASRok
+	id S1752596Ab0ASRqG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 12:46:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524Ab0ASRqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 12:44:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7796 "EHLO mx1.redhat.com"
+	Tue, 19 Jan 2010 12:46:01 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56712 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118Ab0ASRoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 12:44:38 -0500
-Date: Tue, 19 Jan 2010 12:44:14 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Joshua Pincus <joshua.pincus@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>, peterz@infradead.org,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: HW breakpoints perf_events request
-Message-ID: <20100119174414.GE16096@redhat.com>
-References: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com> <87ljg1fn3u.fsf@basil.nowhere.org> <bc915a051001131821x6cdd3470lf72e8c02a897ea3@mail.gmail.com> <20100114092350.GF12241@basil.fritz.box> <bc915a051001141003s766689beue73800a1308d957e@mail.gmail.com> <20100118110406.GC5256@nowhere> <y0maawbid91.fsf@fche.csb> <20100119145027.GB8061@nowhere> <20100119151210.GC16096@redhat.com> <20100119162059.GF8061@nowhere>
-Mime-Version: 1.0
+	id S1751373Ab0ASRpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 12:45:55 -0500
+Date: Tue, 19 Jan 2010 19:44:38 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, kvm@vger.kernel.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       mingo@elte.hu, tglx@linutronix.de, riel@redhat.com,
+       cl@linux-foundation.org
+Subject: Re: [PATCH v3 04/12] Add "handle page fault" PV helper.
+Message-ID: <20100119174438.GA19450@redhat.com>
+References: <1262700774-1808-1-git-send-email-gleb@redhat.com>
+ <1262700774-1808-5-git-send-email-gleb@redhat.com>
+ <1263490267.4244.340.camel@laptop>
+ <20100117144411.GI31692@redhat.com>
+ <4B541D08.9040802@zytor.com>
+ <20100118085022.GA30698@redhat.com>
+ <4B5510B1.9010202@zytor.com>
+ <20100119065537.GF14345@redhat.com>
+ <4B55E5D8.1070402@zytor.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100119162059.GF8061@nowhere>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <4B55E5D8.1070402@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
-
-On Tue, Jan 19, 2010 at 05:21:02PM +0100, Frederic Weisbecker wrote:
-> [...]
-> But I rather hope we can extend ptrace interface to handle such new
-> needs instead (ie: having a more scalable breakpoint interface
-> support by ptrace).
-
-According to its maintainer, ptrace per se appears to be not well
-suited for extensions that affect control flow, but maybe.
-(http://www.mail-archive.com/utrace-devel@redhat.com/msg02276.html)
-
-
-> > Another is using the gdbstub, extended with gdb watchpoint support (Z*
-> > packets), which would tie into the hw-breakpoint system directly.
-> > [...]
-
-> Is this gdbstub an interface to utrace?
-> This: http://lwn.net/Articles/364268/ ?
-
-Yes, but I wouldn't think of it that way ("an interface to utrace").
-Yes, it uses utrace, but that's an implementation detail.  To
-userspace it presents gdb's existing wire protocol for debugging
-processes.
-
-
-> > > Do you plan a resubmission soon?
+On Tue, Jan 19, 2010 at 09:03:20AM -0800, H. Peter Anvin wrote:
+> On 01/18/2010 10:55 PM, Gleb Natapov wrote:
+> >>
+> >> What I mean is that vector 14 is page faults -- that's what it is all
+> >> about.  Why on Earth do you need another vector?
+> >>
+> > Because this is not usual pagefault that tell the OS that page is not
+> > mapped. This is a notification to a guest OS that the page it is trying
+> > to access is swapped out by the host OS. There is nothing guest can do
+> > about it except schedule another task. So the guest should handle both
+> > type of exceptions: usual #PF when page is not mapped by the guest and
+> > new type of notifications. Ideally we would use one of unused exception
+> > vectors for new type of notifications.
 > > 
-> > Utrace core has been resubmitted at the end of December
-> > (http://lkml.org/lkml/2009/12/17/466), with no further comments
-> > received.
 > 
-> Hmm, there has been deep review from Peter, IIRC.
+> Ah, this kind of stuff.  We have talked about this in the past, and the
+> right way to do that is to have the guest OS pick a vector our of the
+> standard 0x20-0xff range, and then notify the hypervisor via a hypercall
+> which vector to use.
+> 
+> In Linux this means marking it as a system vector.  Note that there are
+> real hardware system vectors which will be mutually exclusive with this,
+> e.g. the UV one.
 
-I haven't seen any after that particular resubmission.  Rather, there
-has been lots of discussion lately about *uprobes*, which is a
-separate & optional process breakpoint management layer that happens
-to use utrace and happens to be used by systemtap and the gdbstub.
+Yes it can be done this way and I'll look into it once more. Using
+exception vector is more convenient for three reasons: it allows to pass
+additional data in error code, it doesn't require guest to issue EOI,
+exception can be injected when interrupts are disabled by a guest. The
+last one is not important for now since host doesn't inject notifications
+when interrupts are disabled currently. Having Intel allocate one
+exception vector for hypervisor use would be really nice though.
 
-
-- FChE
+--
+			Gleb.
