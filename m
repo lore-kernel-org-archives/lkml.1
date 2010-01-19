@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582Ab0ASVpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753673Ab0ASVs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753582Ab0ASVpa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 16:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458Ab0ASVp2
+	id S1753673Ab0ASVs1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 16:48:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681Ab0ASVs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 16:45:28 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:52013 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753371Ab0ASVp0 (ORCPT
+	Tue, 19 Jan 2010 16:48:26 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:7815 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478Ab0ASVsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 16:45:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=nnSUi+CuhOn1EVEFn3SQ04TTPBZWwalyY9YsoCNZmNHVRd68K19I/4dkE1Md59B4T+
-         34avaUl87Kug59+jFxerYQbR1yej7hoj2OCqoTsWyXOwarvrrstFDOCGk+pCG2UAjY2/
-         Xh9rRZYN/mCDTcNPifehZ7H5ekx6ob1U0CuKM=
-Message-ID: <4B56291D.2000304@gmail.com>
-Date: Tue, 19 Jan 2010 22:50:21 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Tue, 19 Jan 2010 16:48:25 -0500
+Date: Tue, 19 Jan 2010 14:48:23 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH 05/11] pci: update bridge res to get more big range in
+	pci assign unssign
+Message-ID: <20100119214823.GH11010@ldl.fc.hp.com>
+References: <1263640037-24134-1-git-send-email-yinghai@kernel.org> <1263640037-24134-6-git-send-email-yinghai@kernel.org>
 MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       James Morris <jmorris@namei.org>, Patrick McHardy <kaber@trash.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [NETLINK]: With opcode INET_DIAG_BC_S_LE dport was compared
- in inet_diag_bc_run()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263640037-24134-6-git-send-email-yinghai@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The s-port should be compared.
+> +	/* retore size and flags */
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-I presume?
+"restore"
 
-diff --git a/net/ipv4/inet_diag.c b/net/ipv4/inet_diag.c
-index bdb78dd..1aaa811 100644
---- a/net/ipv4/inet_diag.c
-+++ b/net/ipv4/inet_diag.c
-@@ -368,7 +368,7 @@ static int inet_diag_bc_run(const void *bc, int len,
- 			yes = entry->sport >= op[1].no;
- 			break;
- 		case INET_DIAG_BC_S_LE:
--			yes = entry->dport <= op[1].no;
-+			yes = entry->sport <= op[1].no;
- 			break;
- 		case INET_DIAG_BC_D_GE:
- 			yes = entry->dport >= op[1].no;
+> +	for (list = head.next; list;) {
+> +		struct resource *res = list->res;
+> +
+> +		res->start = list->start;
+> +		res->end = list->end;
+> +		res->flags = list->flags;
+> +		if (list->dev->subordinate)
+> +			res->flags = 0;
+> +
+> +		list = list->next;
+> +	}
+> +	free_failed_list(&head);
+> +
+> +	goto again;
+> +
+> +enable_and_dump:
+> +	/* Depth last, update the hardware. */
+> +	list_for_each_entry(bus, &pci_root_buses, node) {
+>  		pci_enable_bridges(bus);
+>  	}
+
+Strictly speaking, you don't need these curly braces.
+
+/ac
+
