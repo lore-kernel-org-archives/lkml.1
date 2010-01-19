@@ -1,51 +1,311 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188Ab0ASPPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144Ab0ASPWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188Ab0ASPPj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 10:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834Ab0ASPPe
+	id S1754144Ab0ASPWq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 10:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217Ab0ASPWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 10:15:34 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:42729 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752167Ab0ASPPI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 10:15:08 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
-Date: Tue, 19 Jan 2010 16:15:47 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com, gregkh@suse.de,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20100117025535.GB7045@srcf.ucam.org> <201001191457.00504.oliver@neukum.org> <20100119142124.6f2a7034@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100119142124.6f2a7034@lxorguk.ukuu.org.uk>
+	Tue, 19 Jan 2010 10:22:45 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:58681 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752167Ab0ASPWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 10:22:44 -0500
+Message-ID: <4B55CE3C.7060305@sgi.com>
+Date: Tue, 19 Jan 2010 07:22:36 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Xiaotian Feng <xtfeng@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland Dreier <rdreier@cisco.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Steiner <steiner@sgi.com>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Limit the number of processor bootup messages
+References: <4B219E28.8080601@sgi.com> <7b6bb4a51001182107n1929d36ch358687062f65d37b@mail.gmail.com>
+In-Reply-To: <7b6bb4a51001182107n1929d36ch358687062f65d37b@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001191615.47589.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 19. Januar 2010 15:21:24 schrieb Alan Cox:
-> > > > If the FIFO is full we can do nothing. Please try the attached patch.
-> > > 
-> > > If the FIFO is full how are we getting called - we should have throttled
-> > > earlier if there is any flow control (including 'look no URBs' cases) ?
-> > 
-> > The log shows no call to usb_serial_generic_write_room()
-> > Do you consider this a bug in the tty layer?
+Sure, any suggestions for improvement are welcome.  The general theme
+of the changes though, was to limit the per cpu messages, and to rethink
+the output of so many useless lines of information.
+
+Thanks,
+Mike
+
+Xiaotian Feng wrote:
+> Could we consider such cases that system doesn't have a large number
+> of processors? This commit makes my system bootup message ugly ....
 > 
-> Some of the line disciplines just throw data at the board but not n_tty
-> (the normal one) - so for PPP you wouldn't see checks on room but the
-> loader I assume is using the normal tty layer - if so something is up
-> because the ldisc shouldn't have written more than there is room for.
+> CPU0: Intel(R) Core(TM)2 Quad CPU    Q9400  @ 2.66GHz stepping 0a
+> lockdep: fixing up alternatives.
+> Booting Node   0, Processors  #1lockdep: fixing up alternatives.
+>  #2lockdep: fixing up alternatives.
+>  #3
+> Brought up 4 CPUs
+> Total of 4 processors activated (21278.36 BogoMIPS).
+> 
+> So if num_present_cpus < nr_cpu_ids, the output will never print OK.....
+> And the output is also twisted with lockdep prints...
+> 
+> On Fri, Dec 11, 2009 at 9:19 AM, Mike Travis <travis@sgi.com> wrote:
+>> x86: Limit the number of processor bootup messages
+>>
+>> When there are a large number of processors in a system, there
+>> is an excessive amount of messages sent to the system console.
+>> It's estimated that with 4096 processors in a system, and the
+>> console baudrate set to 56K, the startup messages will take
+>> about 84 minutes to clear the serial port.
+>>
+>> This set of patches limits the number of repetitious messages
+>> which contain no additional information.  Much of this information
+>> is obtainable from the /proc and /sysfs.   Some of the messages
+>> are also sent to the kernel log buffer as KERN_DEBUG messages so
+>> dmesg can be used to examine more closely any details specific to
+>> a problem.
+>>
+>> The new cpu bootup sequence for system_state == SYSTEM_BOOTING:
+>>
+>> Booting Node   0, Processors  #1 #2 #3 #4 #5 #6 #7 Ok.
+>> Booting Node   1, Processors  #8 #9 #10 #11 #12 #13 #14 #15 Ok.
+>> ...
+>> Booting Node   3, Processors  #56 #57 #58 #59 #60 #61 #62 #63 Ok.
+>> Brought up 64 CPUs
+>>
+>> After the system is running, a single line boot message is displayed
+>> when CPU's are hotplugged on:
+>>
+>>   Booting Node %d Processor %d APIC 0x%x
+>>
+>>
+>> Status of the following lines:
+>>
+>>   CPU: Physical Processor ID:          printed once (for boot cpu)
+>>   CPU: Processor Core ID:              printed once (for boot cpu)
+>>   CPU: Hyper-Threading is disabled     printed once (for boot cpu)
+>>   CPU: Thermal monitoring enabled      printed once (for boot cpu)
+>>   CPU %d/0x%x -> Node %d:              removed
+>>   CPU %d is now offline:               only if system_state == RUNNING
+>>   Initializing CPU#%d:         KERN_DEBUG
+>>
+>> Signed-off-by: Mike Travis <travis@sgi.com>
+>> ---
+>> arch/x86/kernel/cpu/addon_cpuid_features.c |   15 +++++----
+>> arch/x86/kernel/cpu/amd.c                  |    2 -
+>> arch/x86/kernel/cpu/common.c               |    8 +++--
+>> arch/x86/kernel/cpu/intel.c                |    2 -
+>> arch/x86/kernel/cpu/mcheck/therm_throt.c   |    4 +-
+>> arch/x86/kernel/smpboot.c                  |   45
+>> +++++++++++++++++++----------
+>> 6 files changed, 47 insertions(+), 29 deletions(-)
+>>
+>> --- linux.orig/arch/x86/kernel/cpu/addon_cpuid_features.c
+>> +++ linux/arch/x86/kernel/cpu/addon_cpuid_features.c
+>> @@ -74,6 +74,7 @@
+>>        unsigned int eax, ebx, ecx, edx, sub_index;
+>>        unsigned int ht_mask_width, core_plus_mask_width;
+>>        unsigned int core_select_mask, core_level_siblings;
+>> +       static bool printed;
+>>
+>>        if (c->cpuid_level < 0xb)
+>>                return;
+>> @@ -127,12 +128,14 @@
+>>
+>>        c->x86_max_cores = (core_level_siblings / smp_num_siblings);
+>>
+>> -
+>> -       printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
+>> -              c->phys_proc_id);
+>> -       if (c->x86_max_cores > 1)
+>> -               printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
+>> -                      c->cpu_core_id);
+>> +       if (!printed) {
+>> +               printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
+>> +                      c->phys_proc_id);
+>> +               if (c->x86_max_cores > 1)
+>> +                       printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
+>> +                              c->cpu_core_id);
+>> +               printed = 1;
+>> +       }
+>>        return;
+>> #endif
+>> }
+>> --- linux.orig/arch/x86/kernel/cpu/amd.c
+>> +++ linux/arch/x86/kernel/cpu/amd.c
+>> @@ -375,8 +375,6 @@
+>>                        node = nearby_node(apicid);
+>>        }
+>>        numa_set_node(cpu, node);
+>> -
+>> -       printk(KERN_INFO "CPU %d/0x%x -> Node %d\n", cpu, apicid, node);
+>> #endif
+>> }
+>>
+>> --- linux.orig/arch/x86/kernel/cpu/common.c
+>> +++ linux/arch/x86/kernel/cpu/common.c
+>> @@ -427,6 +427,7 @@
+>> #ifdef CONFIG_X86_HT
+>>        u32 eax, ebx, ecx, edx;
+>>        int index_msb, core_bits;
+>> +       static bool printed;
+>>
+>>        if (!cpu_has(c, X86_FEATURE_HT))
+>>                return;
+>> @@ -442,7 +443,7 @@
+>>        smp_num_siblings = (ebx & 0xff0000) >> 16;
+>>
+>>        if (smp_num_siblings == 1) {
+>> -               printk(KERN_INFO  "CPU: Hyper-Threading is disabled\n");
+>> +               printk_once(KERN_INFO "CPU0: Hyper-Threading is
+>> disabled\n");
+>>                goto out;
+>>        }
+>>
+>> @@ -469,11 +470,12 @@
+>>                                       ((1 << core_bits) - 1);
+>>
+>> out:
+>> -       if ((c->x86_max_cores * smp_num_siblings) > 1) {
+>> +       if (!printed && (c->x86_max_cores * smp_num_siblings) > 1) {
+>>                printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
+>>                       c->phys_proc_id);
+>>                printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
+>>                       c->cpu_core_id);
+>> +               printed = 1;
+>>        }
+>> #endif
+>> }
+>> @@ -1115,7 +1117,7 @@
+>>        if (cpumask_test_and_set_cpu(cpu, cpu_initialized_mask))
+>>                panic("CPU#%d already initialized!\n", cpu);
+>>
+>> -       printk(KERN_INFO "Initializing CPU#%d\n", cpu);
+>> +       pr_debug("Initializing CPU#%d\n", cpu);
+>>
+>>        clear_in_cr4(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
+>>
+>> --- linux.orig/arch/x86/kernel/cpu/intel.c
+>> +++ linux/arch/x86/kernel/cpu/intel.c
+>> @@ -266,8 +266,6 @@
+>>        if (node == NUMA_NO_NODE || !node_online(node))
+>>                node = first_node(node_online_map);
+>>        numa_set_node(cpu, node);
+>> -
+>> -       printk(KERN_INFO "CPU %d/0x%x -> Node %d\n", cpu, apicid, node);
+>> #endif
+>> }
+>>
+>> --- linux.orig/arch/x86/kernel/cpu/mcheck/therm_throt.c
+>> +++ linux/arch/x86/kernel/cpu/mcheck/therm_throt.c
+>> @@ -339,8 +339,8 @@
+>>        l = apic_read(APIC_LVTTHMR);
+>>        apic_write(APIC_LVTTHMR, l & ~APIC_LVT_MASKED);
+>>
+>> -       printk(KERN_INFO "CPU%d: Thermal monitoring enabled (%s)\n",
+>> -              cpu, tm2 ? "TM2" : "TM1");
+>> +       printk_once(KERN_INFO "CPU0: Thermal monitoring enabled (%s)\n",
+>> +                      tm2 ? "TM2" : "TM1");
+>>
+>>        /* enable thermal throttle processing */
+>>        atomic_set(&therm_throt_en, 1);
+>> --- linux.orig/arch/x86/kernel/smpboot.c
+>> +++ linux/arch/x86/kernel/smpboot.c
+>> @@ -671,6 +671,26 @@
+>>        complete(&c_idle->done);
+>> }
+>>
+>> +/* reduce the number of lines printed when booting a large cpu count system
+>> */
+>> +static void __cpuinit announce_cpu(int cpu, int apicid)
+>> +{
+>> +       static int current_node = -1;
+>> +       int node = cpu_to_node(cpu);
+>> +
+>> +       if (system_state == SYSTEM_BOOTING) {
+>> +               if (node != current_node) {
+>> +                       if (current_node > (-1))
+>> +                               pr_cont(" Ok.\n");
+>> +                       current_node = node;
+>> +                       pr_info("Booting Node %3d, Processors ", node);
+>> +               }
+>> +               pr_cont(" #%d%s", cpu, cpu == (nr_cpu_ids - 1) ? " Ok.\n" :
+>> "");
+>> +               return;
+>> +       } else
+>> +               pr_info("Booting Node %d Processor %d APIC 0x%x\n",
+>> +                       node, cpu, apicid);
+>> +}
+>> +
+>> /*
+>>  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
+>>  * (ie clustered apic addressing mode), this is a LOGICAL apic ID.
+>> @@ -736,9 +756,8 @@
+>>        /* start_ip had better be page-aligned! */
+>>        start_ip = setup_trampoline();
+>>
+>> -       /* So we see what's up   */
+>> -       printk(KERN_INFO "Booting processor %d APIC 0x%x ip 0x%lx\n",
+>> -                         cpu, apicid, start_ip);
+>> +       /* So we see what's up */
+>> +       announce_cpu(cpu, apicid);
+>>
+>>        /*
+>>         * This grunge runs the startup process for
+>> @@ -787,21 +806,17 @@
+>>                        udelay(100);
+>>                }
+>>
+>> -               if (cpumask_test_cpu(cpu, cpu_callin_mask)) {
+>> -                       /* number CPUs logically, starting from 1 (BSP is 0)
+>> */
+>> -                       pr_debug("OK.\n");
+>> -                       printk(KERN_INFO "CPU%d: ", cpu);
+>> -                       print_cpu_info(&cpu_data(cpu));
+>> -                       pr_debug("CPU has booted.\n");
+>> -               } else {
+>> +               if (cpumask_test_cpu(cpu, cpu_callin_mask))
+>> +                       pr_debug("CPU%d: has booted.\n", cpu);
+>> +               else {
+>>                        boot_error = 1;
+>>                        if (*((volatile unsigned char *)trampoline_base)
+>>                                        == 0xA5)
+>>                                /* trampoline started but...? */
+>> -                               printk(KERN_ERR "Stuck ??\n");
+>> +                               pr_err("CPU%d: Stuck ??\n", cpu);
+>>                        else
+>>                                /* trampoline code not run */
+>> -                               printk(KERN_ERR "Not responding.\n");
+>> +                               pr_err("CPU%d: Not responding.\n", cpu);
+>>                        if (apic->inquire_remote_apic)
+>>                                apic->inquire_remote_apic(apicid);
+>>                }
+>> @@ -1291,14 +1306,16 @@
+>>        for (i = 0; i < 10; i++) {
+>>                /* They ack this in play_dead by setting CPU_DEAD */
+>>                if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
+>> -                       printk(KERN_INFO "CPU %d is now offline\n", cpu);
+>> +                       if (system_state == SYSTEM_RUNNING)
+>> +                               pr_info("CPU %u is now offline\n", cpu);
+>> +
+>>                        if (1 == num_online_cpus())
+>>                                alternatives_smp_switch(0);
+>>                        return;
+>>                }
+>>                msleep(100);
+>>        }
+>> -       printk(KERN_ERR "CPU %u didn't die...\n", cpu);
+>> +       pr_err("CPU %u didn't die...\n", cpu);
+>> }
+>>
+>> void play_dead_common(void)
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
 
-I don't know which line discipline is used. Matthew?
-
-But anyway, if this can happen buglessly, the generic function
-must handle it.
-
-	Regards
-		Oliver
