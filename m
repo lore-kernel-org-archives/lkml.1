@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314Ab0ASIIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415Ab0ASI1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314Ab0ASIIU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 03:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608Ab0ASIIU
+	id S1755415Ab0ASI1k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 03:27:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312Ab0ASI1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 03:08:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55727 "EHLO mx1.redhat.com"
+	Tue, 19 Jan 2010 03:27:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3875 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753458Ab0ASIIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 03:08:19 -0500
-Message-ID: <4B556855.6040800@redhat.com>
-Date: Tue, 19 Jan 2010 10:07:49 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	id S1755249Ab0ASI1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 03:27:37 -0500
+Date: Tue, 19 Jan 2010 10:26:38 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-mm@kvack.org,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org, akpm@linux-foundation.org,
+       andrew.c.morrow@gmail.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
+Message-ID: <20100119082638.GK14345@redhat.com>
+References: <20100118141938.GI30698@redhat.com>
+ <84144f021001180805q4d1203b8qab8ccb1de87b2866@mail.gmail.com>
+ <20100118170816.GA22111@redhat.com>
+ <84144f021001181009m52f7eaebp2bd746f92de08da9@mail.gmail.com>
+ <20100118181942.GD22111@redhat.com>
+ <20100118191031.0088f49a@lxorguk.ukuu.org.uk>
+ <20100119071734.GG14345@redhat.com>
+ <84144f021001182337o274c8ed3q8ce60581094bc2b9@mail.gmail.com>
+ <20100119075205.GI14345@redhat.com>
+ <84144f021001190007q54a334dfwed64189e6cf0b7c4@mail.gmail.com>
 MIME-Version: 1.0
-To: Jim Keniston <jkenisto@us.ibm.com>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, ananth@in.ibm.com,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-References: <1263740593.557.20967.camel@twins>	 <1263800752.4283.19.camel@laptop> <4B543F93.3060509@redhat.com>	 <1263815072.4283.305.camel@laptop> <4B544D7C.2060708@redhat.com>	 <1263816396.4283.361.camel@laptop> <4B544F8E.1080603@redhat.com>	 <84144f021001180413w76a8ca2axb0b9f07ee4dea67e@mail.gmail.com>	 <4B545146.3080001@redhat.com>	 <20100118124419.GC1628@linux.vnet.ibm.com>	 <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com>	 <4B5459CA.9060603@redhat.com>  <4B545ACF.40203@cs.helsinki.fi> <1263852957.2266.38.camel@localhost.localdomain>
-In-Reply-To: <1263852957.2266.38.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f021001190007q54a334dfwed64189e6cf0b7c4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/19/2010 12:15 AM, Jim Keniston wrote:
->
->> I don't like the idea but if the performance benefits are real (are
->> they?),
->>      
-> Based on what seems to be the closest thing to an apples-to-apples
-> comparison -- counting the number of calls to a specified function --
-> uprobes is 6-7 times faster than the ptrace-based equivalent, ltrace -c.
-> And of course, uprobes provides much, much more flexibility, appears to
-> scale better, and works with multithreaded apps.
->
-> Likewise, FWIW, utrace is more than 10x faster than strace -c in
-> counting system calls.
->
->    
+On Tue, Jan 19, 2010 at 10:07:07AM +0200, Pekka Enberg wrote:
+> Hi Gleb,
+> 
+> On Tue, Jan 19, 2010 at 9:52 AM, Gleb Natapov <gleb@redhat.com> wrote:
+> >> It would be probably useful if you could point us to the application
+> >> source code that actually wants this feature.
+> >>
+> > This is two line patch to qemu that calls mlockall(MCL_CURRENT|MCL_FUTURE)
+> > at the beginning of the main() and changes guest memory allocation to
+> > use MAP_UNLOCKED flag. All alternative solutions in this thread suggest
+> > that I should rewrite qemu + all library it uses. You see why I can't
+> > take them seriously?
+> 
+> Well, that's not going to be portable, is it, so the application
+KVM is not portable ;) and that is what my main interest is.
 
-This is still with a kernel entry, yes?  Do you have plans for a variant 
-that's completely in userspace?
+> design would still be broken, no? Did you try using (or extending)
+> posix_madvise(MADV_DONTNEED) for the guest address space? It seems to
+After mlockall() I can't even allocate guest address space. Or do you mean
+instead of mlockall()? Then how MADV_DONTNEED will help? It just drops
+page table for the address range (which is not what I need) and does not
+have any long time effect.
 
--- 
-error compiling committee.c: too many arguments to function
+> me that you're trying to use a big hammer (mlock) when a polite hint
+> for the VM would probably be sufficient for it do its job.
+> 
+I what to tell to VM "swap this, don't swap that" and as far as I see
+there is no other way to do it currently.
 
+--
+			Gleb.
