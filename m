@@ -1,149 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677Ab0ASI6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714Ab0ASI6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755677Ab0ASI6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 03:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556Ab0ASI6U
+	id S1755714Ab0ASI6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 03:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583Ab0ASI6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 03:58:20 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:53929 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234Ab0ASI6T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 03:58:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aZOotHb4uFLqo2sr33uE/wwpg3tOkDcbLs0Sy/Wndg7kPJssKQU4N9HlQzJiJ+q0ie
-         jMzWDHdtjH5/bKnm1VS8xGOHSrAloS+Qz3cgilLead+uBSkU9J4DCEbYGSrdEHZ0BGJw
-         ea460yJBMEhYH/z0ZLeJ/8HE75hwgthlejYEw=
-Date: Tue, 19 Jan 2010 09:58:15 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] perf_event: fix race in
-	perf_swevent_get_recursion_context()
-Message-ID: <20100119085811.GA5145@nowhere>
-References: <4B54654A.4090601@cn.fujitsu.com> <20100118164128.GI10364@nowhere> <4B5508AF.1080302@cn.fujitsu.com>
+	Tue, 19 Jan 2010 03:58:51 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60192 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755571Ab0ASI6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 03:58:51 -0500
+Message-ID: <4B557417.6030806@kernel.org>
+Date: Tue, 19 Jan 2010 17:57:59 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B5508AF.1080302@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Robert Hancock <hancockrwd@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Seth Heasley <seth.heasley@intel.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: JMB363 false hotplug detections
+References: <51f3faa71001161010m47d885cfx5d17486016476ed5@mail.gmail.com>	<4B5270D6.6030005@kernel.org> <m3eilocwmz.fsf@intrepid.localdomain>
+In-Reply-To: <m3eilocwmz.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 19 Jan 2010 08:58:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 09:19:43AM +0800, Xiao Guangrong wrote:
+Hello,
+
+On 01/18/2010 05:19 AM, Krzysztof Halasa wrote:
+> http://lkml.org/lkml/2010/1/13/342
+> http://lkml.org/lkml/2010/1/15/245
+
+Definitely looks like electrical problem to me.  The controller is
+repeatedly reporting spurious hotplug events and the problem is not
+universal to the controller either.  I've played with several
+different jmb363s and they all worked just fine.  It would be
+interesting to see whether the problem is reproducible on different
+boards of the same model.
+
+> BTW setting the JMB363 mode in BIOS setup from IDE to AHCI or RAID
+> (thus enabling JMB363 BIOS) changes nothing.
+
+That's expected.  The controller is always put into ahci mode during
+intialization regardless of the mode programmed by the bios.
+
+> The only weird thing is that some time ago the problems weren't there.
+> It could be genuine hardware problem. I have full kernel logs. Sometimes
+> the same kernel (build) is "good" at one time and "bad" at another.
 > 
+> I had booted the board (with JMB363 and the driver enabled) 57 times.
+> Out of these, there was no problems 16 times (date-hrs-result):
+...
+> There are no significant kernel log differences between *good and *bad
+> (excluding the AHCI messages). Sometimes the exceptions were sporadic,
+> like in 09-01-12:53-bad case:
 > 
-> Frederic Weisbecker wrote:
-> > On Mon, Jan 18, 2010 at 09:42:34PM +0800, Xiao Guangrong wrote:
-> >> It only disable preemption in perf_swevent_get_recursion_context()
-> >> it can't avoid race of hard-irq and NMI
-> >>
-> >> In this patch, we use atomic operation to avoid it and reduce
-> >> cpu_ctx->recursion size, it also make this patch no need diable
-> >> preemption
-> >>
-> >> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> > 
-> > 
-> > 
-> > I don't understand what is racy in what we have currently.
-> > 
+> Sep  1 12:53:38 Machine booted
+> Sep  1 13:02:33 ata8: exception Emask 0x10 SAct 0x0 SErr 0x4040000 action 0xe frozen
+> Sep  1 13:02:33 ata8: irq_stat 0x00000040, connection status changed
+> Sep  1 13:02:33 ata8: SError: { CommWake DevExch }
+> Sep  1 13:02:33 ata8: hard resetting link
+> Sep  1 13:02:34 ata8: SATA link down (SStatus 0 SControl 300)
+> Sep  1 13:02:34 ata8: EH complete
+> Sep  1 15:47:12 Machine rebooted
 > 
-> It's because hard-irq(we can handle interruption with interruption enabled)
-> and NMI are nested, for example:
+> Perhaps I should really check these resistors around the JMB363 chip,
+> and maybe using a vacuum cleaner is a good idea? I think I will do.
 > 
-> int perf_swevent_get_recursion_context(void)
-> {
-> 	......
-> 	if (cpuctx->recursion[rctx]) {
-> 		put_cpu_var(perf_cpu_context);
-> 		return -1;
-> 	}
-> 
-> 	/*
-> 	 * Another interruption handler/NMI will re-enter there if it
-> 	 * happed, it make the recursion value chaotic
-> 	 */
-> 	cpuctx->recursion[rctx]++;
-> 	......
+> It's certaing there was nothing connected do JMB363 SATA. I don't know
+> BIOS versions and CMOS (BIOS) configs.
 
+They don't matter.  Once the OS takes over, the controller is forced
+into multi function ahci mode and the kernel version wouldn't have any
+effect on it either.  That part of code hasn't changed for years now.
+So, yeah, looks like a genuine hardware problem to me.
 
+Thanks.
 
-
-I still don't understand the problem.
-
-It's not like a fight between different cpus, it's a local per cpu
-fight.
-
-NMIs can't nest other NMIs but hardirq can nest another hardirqs,
-we don't care much about these though.
-So let's imagine the following sequence, a fight between nested
-hardirqs:
-
-cpuctx->recursion[irq] initially = 0
-
-Interrupt (level 0):
-
-       if (cpuctx->recursion[rctx]) {
-               put_cpu_var(perf_cpu_context);
-               return -1;
-       }
-
-Interrupt (level 1):
-
-
-	cpuctx->recursion[rctx]++; // = 1
-
-	...
-	do something
-	...
-	cpuctx->recursion[rctx]--; // = 0
-
-End Interrupt (level 1)
-
-	cpuctx->recursion[rctx]++; // = 1
-
-        ...
-        do something
-        ...
-        cpuctx->recursion[rctx]--; // = 0
-
-End interrupt (level 0)
-
-Another sequence could be Interrupt level 0 has
-already incremented recursion and we are interrupted by
-irq level 1 which then won't be able to get the recursion
-context. But that's not a big deal I think.
-
-
-> > This looks broken. We don't call back perf_swevent_put_recursion_context
-> > in fail case, so the bit won't ever be cleared once we recurse.
-> > 
-> 
-> Um, i think we can't clear the bit in this fail case, consider below
-> sequence:
-> 
->  path A:                                path B
-> 
->                                 set bit but find the bit already set
->  atomic set bit                                 |
->     |                                           |
->     V                                           |
->  handle SW event                                | 
->     |                                           V
->     V                               exit and not clear the bit 
->  atomic clear bit
-> 
-> After A and B, the bit is still zero
-> 
-> Right? :-)
-
-
-Ah indeed, it will be cleared by the interrupted path.
-I still don't understand what this patch brings us though.
-
+-- 
+tejun
