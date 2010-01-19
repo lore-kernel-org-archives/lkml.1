@@ -1,82 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664Ab0ASNZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813Ab0ASN0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664Ab0ASNZg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 08:25:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500Ab0ASNZe
+	id S1753813Ab0ASN0B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 08:26:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246Ab0ASNZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 08:25:34 -0500
-Received: from thoth.sbs.de ([192.35.17.2]:19715 "EHLO thoth.sbs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753463Ab0ASNZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 08:25:33 -0500
-Message-ID: <4B55B2B8.5090105@siemens.com>
-Date: Tue, 19 Jan 2010 14:25:12 +0100
-From: Jan Kiszka <jan.kiszka@siemens.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
+	Tue, 19 Jan 2010 08:25:58 -0500
+Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:65322 "EHLO
+	mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750732Ab0ASNZ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 08:25:57 -0500
+X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jan 2010 08:25:57 EST
+X-IronPort-AV: E=Sophos;i="4.49,303,1262559600"; 
+   d="scan'208";a="41747959"
+Date: Tue, 19 Jan 2010 14:15:54 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Ramagudi Naziir <naziirr@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: how do YOU hack the linux kernel ?
+Message-ID: <20100119131554.GW4780@const.bordeaux.inria.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Ramagudi Naziir <naziirr@gmail.com>, linux-kernel@vger.kernel.org
+References: <dfb262381001190452k3bad790ax14bbdbe92210b2d3@mail.gmail.com>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@redhat.com>,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] kvm: fix spurious interrupt with irqfd
-References: <cover.1263402727.git.mst@redhat.com> <20100113171230.GB19798@redhat.com>
-In-Reply-To: <20100113171230.GB19798@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <dfb262381001190452k3bad790ax14bbdbe92210b2d3@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael S. Tsirkin wrote:
-> kvm didn't clear irqfd counter on deassign, as a result we could get a
-> spurious interrupt when irqfd is assigned back. this leads to poor
-> performance and, in theory, guest crash.
-> 
-> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> ---
->  virt/kvm/eventfd.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-> index 62e4cd9..a9d3fc6 100644
-> --- a/virt/kvm/eventfd.c
-> +++ b/virt/kvm/eventfd.c
-> @@ -72,12 +72,13 @@ static void
->  irqfd_shutdown(struct work_struct *work)
->  {
->  	struct _irqfd *irqfd = container_of(work, struct _irqfd, shutdown);
-> +	u64 cnt;
->  
->  	/*
->  	 * Synchronize with the wait-queue and unhook ourselves to prevent
->  	 * further events.
->  	 */
-> -	remove_wait_queue(irqfd->wqh, &irqfd->wait);
-> +	eventfd_ctx_remove_wait_queue(irqfd->eventfd, &irqfd->wait, &cnt);
->  
->  	/*
->  	 * We know no new events will be scheduled at this point, so block
+Ramagudi Naziir, le Tue 19 Jan 2010 14:52:57 +0200, a écrit :
+> Any ideas ?
 
-For kvm-kmod, I'm fighting with compat support for
-eventfd_ctx_remove_wait_queue. I basically have a solution for kernels
-with CONFIG_KPROBES enabled (I need to look up unexported
-__wake_up_locked[_key]), but there will also be target kernels that do
-not have this. So there are three options for that case:
+I just use tags.
 
- - Warn the user and fall back to the old racy approach
- - (Somehow) disable KVM subsystems that use eventfd
- - Refuse to start KVM
-
-As far as I understood, irqfd is interesting for device assignment and
-now also for vhost, right? What about ioeventfd? I just wonder how broad
-the impact of a broken or non-existent eventfd subsystem for kvm-kmod
-is. Any thoughts welcome.
-
-Jan
-
-PS: If anyone forgot why Avi handed over this job, you should now
-remember why. :)
-
--- 
-Siemens AG, Corporate Technology, CT T DE IT 1
-Corporate Competence Center Embedded Linux
+Samuel
