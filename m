@@ -1,94 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793Ab0ASOhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385Ab0ASOkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793Ab0ASOhg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 09:37:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559Ab0ASOhe
+	id S1753385Ab0ASOkN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 09:40:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750790Ab0ASOkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 09:37:34 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49627 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524Ab0ASOhd (ORCPT
+	Tue, 19 Jan 2010 09:40:11 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:61775 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752324Ab0ASOkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 09:37:33 -0500
-Date: Tue, 19 Jan 2010 06:37:18 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
-       johannes@sipsolutions.net, andi@firstfloor.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 32/40] async: introduce workqueue based alternative
- implementation
-Message-ID: <20100119063718.3f1f39cc@linux.intel.com>
-In-Reply-To: <4B5565BE.4050406@kernel.org>
-References: <1263776272-382-1-git-send-email-tj@kernel.org>
-	<1263776272-382-33-git-send-email-tj@kernel.org>
-	<20100117220130.214d56f1@linux.intel.com>
-	<4B5420A3.3080200@kernel.org>
-	<20100118072523.2683cd59@linux.intel.com>
-	<4B55038D.3070106@kernel.org>
-	<4B550384.8030103@linux.intel.com>
-	<4B5565BE.4050406@kernel.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jan 2010 09:40:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tgQXaSN/CMx4oNWHr9L5yq5PWFtQMHNQtze8bQmdlnkAIStONKkAzRfeiTfwPO4h0b
+         FTHaYAg0ezPIH89Wxlect5/zLgLSNjN1Q7biNyxxiwd2fUgpK35Z331bTSCH7yX8rumL
+         Yn6CxyymMBXiOBUNdxvt/7CGY6lAojdrSs0QI=
+Date: Tue, 19 Jan 2010 15:40:06 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Joshua Pincus <joshua.pincus@gmail.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>, peterz@infradead.org,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: HW breakpoints perf_events request
+Message-ID: <20100119144003.GA8061@nowhere>
+References: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com> <87ljg1fn3u.fsf@basil.nowhere.org> <bc915a051001131821x6cdd3470lf72e8c02a897ea3@mail.gmail.com> <20100114092350.GF12241@basil.fritz.box> <bc915a051001141003s766689beue73800a1308d957e@mail.gmail.com> <20100118110406.GC5256@nowhere> <20100118113559.GA21012@basil.fritz.box>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100118113559.GA21012@basil.fritz.box>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jan 2010 16:56:46 +0900
-Tejun Heo <tj@kernel.org> wrote:
-
-> > where you get maximum concurrency during the pre-synchronization
-> > part, and a "chain" of synchronized execution *as part of the same
-> > function flow*, but possibly independent of other synchronization
-> > flows.
+On Mon, Jan 18, 2010 at 12:35:59PM +0100, Andi Kleen wrote:
+> On Mon, Jan 18, 2010 at 12:04:07PM +0100, Frederic Weisbecker wrote:
+> > I don't quite understand what signals are masked here,
 > 
-> This too can be implemented using wq directly.  More below.
-
-however you are forcing the function to be split in pieces,
-which makes for a more complex programming model.
-For example, I have trouble proving to myself that your ata conversion
-is acutally correct.
+> ptrace reports all signals to the tracer and only
+> delivers them on PTRACE_CONT. "Masking" is probably
+> not the right term for it.
 
 
+Ah, ok.
+
+> > actually I'm not sure what is the true problem with ptrace.
+> > Is it because a breakpoint in a thread is going to stop
+> > all thread in the process until the parent handles the
+> > signal?
 > 
-> The tradeoff changes with the worker pool implementation can be shared
-> with workqueue which provides its own ways to control concurrency and
-> synchronize. 
-
-while I don't mind sharing the pool implementation (all 20 lines of
-it ;-), I don't think the objective of sharing some implementation
-detail is worth complicating the programming model.
+> I didn't think ptrace stopped all threads by its own,
+> it just stops the current one and also only until 
+> the problem is reported. And for a break point you
+> typically want (in fact need to) to stop until it is handled.
 
 
-> Before, the cookie based synchronization is something
-> inherent to the async mechanism.  The async worker pool was needed and
-> the synchronization mechanism came integrated with it.  Now that the
-> backend can be replaced with workqueue which supplies its own ways of
-> synchronization, the cookie based synchronization model needs stronger
-> justification as it no longer comes as a integral part of something
-> bigger which is needed anyway.
+Yeah, ok.
 
-the wq model is either "full async" or "fully ordered".
-the cookie mechanism allows for "run async for the expensive bit, and
-then INSIDE THE SAME FUNCTION, synchronize, and then run some more".
-
-> If so, we can leave the list based cookie synchronization alone and
-> simply use wq's to provide concurrency only without using its
-> synchronization mechanisms (flushes).
-
-can you flush from inside a wq element?
-That's the critical part that makes the cookie based system easy to
-program.
+ 
+> > Anyway, although I first suggested extending perf, with
+> > more thoughts I now agree that perf should keep doing what
+> > it does currently (profiling) and not trying to become an
+> > messy mix of a profiler, debugger, etc...
+> 
+> I find it surprising that you say that -- my
+> impression is that whatever gets proposed recently: 
+> error injection, testing, error handling, any other event 
+> someone proposed perf as the answer.
 
 
+Event injection is not off boundaries. This is still
+in the topic of profiling/tracing.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Not sure what you mean. My point was that perf should
+keep being an event performance observation tool, and
+that controlling the execution flow of a process is not
+the role of perf.
+
+ 
+> 
+> > What about extending ptrace to support a new type of
+> > breakpoint debugging interface?
+> 
+> There's this utrace interface, but it seems to be more
+> a in kernel layer with some "we can't make up our mind what
+> the interface to the user looks like" and a lot of
+> overengineering in interfaces thrown in.
+> 
+> ptrace in its current form is somewhat messy, but for
+> me it seems there isn't anything better. So yes extending
+> it would seem like a good idea.
+> 
+> A good starting point might be the debug store interfaces
+> that got recently added to ptrace.
+
+
+I need to look at this then. Thanks.
+
