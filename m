@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314Ab0ASJ4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265Ab0ASJ7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756314Ab0ASJ4j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 04:56:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990Ab0ASJxZ
+	id S1756265Ab0ASJ7x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 04:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712Ab0ASJ7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 04:53:25 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44783
+	Tue, 19 Jan 2010 04:59:51 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50762
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755747Ab0ASJxQ (ORCPT
+	by vger.kernel.org with ESMTP id S1755701Ab0ASJ7t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 04:53:16 -0500
-Date: Tue, 19 Jan 2010 01:53:23 -0800 (PST)
-Message-Id: <20100119.015323.40128671.davem@davemloft.net>
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 52/64] alim15x3: fix handling of command timings
+	Tue, 19 Jan 2010 04:59:49 -0500
+Date: Tue, 19 Jan 2010 01:59:59 -0800 (PST)
+Message-Id: <20100119.015959.104877543.davem@davemloft.net>
+To: Ramkrishna.Vepa@neterion.com
+Cc: roel.kluin@gmail.com, netdev@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] S2io: two branches the same in wait_for_cmd_complete()
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100118172112.14623.45532.sendpatchset@localhost>
-References: <20100118171349.14623.90030.sendpatchset@localhost>
-	<20100118172112.14623.45532.sendpatchset@localhost>
+In-Reply-To: <78C9135A3D2ECE4B8162EBDCE82CAD77061418BF@nekter>
+References: <4B53284C.1090405@gmail.com>
+	<78C9135A3D2ECE4B8162EBDCE82CAD77061418BF@nekter>
 X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,16 +28,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date: Mon, 18 Jan 2010 18:21:12 +0100
+From: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
+Date: Mon, 18 Jan 2010 02:20:06 -0500
 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] alim15x3: fix handling of command timings
-> 
-> Stop depending on the BIOS setup.
-> 
-> Based on libata pata_ali host driver.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Thanks for catching this bug. The fix should be as follows -
 
-Applied.
+This doesn't apply to net-2.6, and I'd need your signoff too.
+
+Please fix this up and resubmit, thanks.
