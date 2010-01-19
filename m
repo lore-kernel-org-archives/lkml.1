@@ -1,48 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173Ab0ASGvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753022Ab0ASGyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173Ab0ASGvy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 01:51:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332Ab0ASGvw
+	id S1753022Ab0ASGyt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 01:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316Ab0ASGys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 01:51:52 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:40121 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751668Ab0ASGvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 01:51:51 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: Steven Rostedt <srostedt@redhat.com>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] kconfig: dont hardcode path to lsmod
-Date: Tue, 19 Jan 2010 01:52:00 -0500
-Message-Id: <1263883920-17289-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.6
+	Tue, 19 Jan 2010 01:54:48 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:45719 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803Ab0ASGys (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 01:54:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=nn4wIi/Y3v4GYJQI0/MrUOHoi07JJ/gn100vWVqP97FKblGogpHuOGFbR1QVg8IObE
+         01BpG+tDqN7pEiGCsr/hpNTdtBbbp+h/Zpqb4vUeYpbRO2+N209/Z4+X+firxVXFPaRN
+         AFWVC2IP86sBM4Pvw5g7jELet3o7tiVjR7G3I=
+MIME-Version: 1.0
+Date: Tue, 19 Jan 2010 14:54:47 +0800
+Message-ID: <4104961b1001182254x74f3fcd1r906de8f10c105f8a@mail.gmail.com>
+Subject: Where is proc_misc.c?
+From: jidong xiao <jidong.xiao@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The lsmod utility has always been installed into /bin with the newer
-module-init-tools package, so let lsmod be found via PATH instead of
-hardcoding the old modutils /sbin path.
+Hi,
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- scripts/kconfig/streamline_config.pl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Does anybody know what happend to fs/proc/proc_misc.c? The file is
+missing in 2.6.29. Seems like there was an cleanup, but i can't find
+the new location of the methods. Any help appreciated.
 
-diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
-index 0d80082..e1dfc8c 100644
---- a/scripts/kconfig/streamline_config.pl
-+++ b/scripts/kconfig/streamline_config.pl
-@@ -238,7 +238,7 @@ foreach my $makefile (@makefiles) {
- my %modules;
- 
- # see what modules are loaded on this system
--open(LIN,"/sbin/lsmod|") || die "Cant lsmod";
-+open(LIN,"lsmod|") || die "Cant lsmod";
- while (<LIN>) {
- 	next if (/^Module/);  # Skip the first line.
- 	if (/^(\S+)/) {
--- 
-1.6.6
-
+Regards
+Jason
