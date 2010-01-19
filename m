@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394Ab0ASTnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362Ab0ASTou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755394Ab0ASTnv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 14:43:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285Ab0ASTnu
+	id S1755362Ab0ASTou (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 14:44:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696Ab0ASTot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 14:43:50 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49548 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755284Ab0ASTnt (ORCPT
+	Tue, 19 Jan 2010 14:44:49 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:6546 "HELO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751524Ab0ASTos (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 14:43:49 -0500
-X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=7U3hwN5JcxgA:10 a=xaSl2R8rfcS0pZdVIu0A:9 a=bepXwgT_aGvrAZsTRocA:7 a=LT-og1TQ2e_SfYGD-VUc8BjMyH0A:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier (v5)
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-In-Reply-To: <1263926259.4283.757.camel@laptop>
-References: <20100113013757.GA29314@Krystal>
-	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
-	 <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal>
-	 <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal>
-	 <20100114183739.GA18435@Krystal>
-	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
-	 <20100114193355.GA23436@Krystal>  <1263926259.4283.757.camel@laptop>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Tue, 19 Jan 2010 14:43:44 -0500
-Message-ID: <1263930224.31321.24.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 19 Jan 2010 14:44:48 -0500
+Message-ID: <4B560B41.6080205@ru.mvista.com>
+Date: Tue, 19 Jan 2010 22:42:57 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: David Miller <davem@davemloft.net>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 25/64] ide: use standard timing for XFER_PIO_SLOW mode
+ in ide_timing_compute()
+References: <20100118171349.14623.90030.sendpatchset@localhost> <20100118171729.14623.46024.sendpatchset@localhost> <20100119.012526.203639880.davem@davemloft.net> <201001191609.42582.bzolnier@gmail.com>
+In-Reply-To: <201001191609.42582.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-19 at 19:37 +0100, Peter Zijlstra wrote:
+Hello.
 
-> So about that [*], Oleg, kernel/signal.c:SYSCALL_DEFINE0(pause) does:
-> 
-> SYSCALL_DEFINE0(pause)
-> {
->         current->state = TASK_INTERRUPTIBLE;
->         schedule();
->         return -ERESTARTNOHAND;
-> }
-> 
-> Isn't that ->state assignment buggy? If so, there appear to be quite a
-> few such sites, which worries me.
-> 
+Bartlomiej Zolnierkiewicz wrote:
 
-That looks buggy to me. Isn't this the reason we have
-set_current_state()?
+>>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>> Subject: [PATCH] ide: use standard timing for XFER_PIO_SLOW mode in ide_timing_compute()
+>>>
+>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>>       
+>> Applied.
+>>     
+>
+> Thanks.
+>
+> Here is a bonus fixup for a small issue noticed by Sergei yesterday.
+>
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] ide: ide_timing_compute() fixup
+>
+> XFER_SW_DMA_0 mode should be excluded from the extended cycle
+> timing computations.
+>
+> [ This is just a documentation fix -- code inside the affected
+>   'if' block already makes sure to accept only PIO modes. ]
+>
+> Noticed-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  drivers/ide/ide-timings.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: b/drivers/ide/ide-timings.c
+> ===================================================================
+> --- a/drivers/ide/ide-timings.c
+> +++ b/drivers/ide/ide-timings.c
+> @@ -166,7 +166,7 @@ int ide_timing_compute(ide_drive_t *driv
+>  	if (id[ATA_ID_FIELD_VALID] & 2) {	/* EIDE drive */
+>  		memset(&p, 0, sizeof(p));
+>  
+> -		if (speed >= XFER_PIO_0 && speed <= XFER_SW_DMA_0) {
+> +		if (speed >= XFER_PIO_0 && speed < XFER_SW_DMA_0) {
+>  			if (speed <= XFER_PIO_2)
+>  				p.cycle = p.cyc8b = id[ATA_ID_EIDE_PIO];
+>  			else if ((speed <= XFER_PIO_4) ||
+>   
 
-Although, since it is not checking any condition, it may not be buggy.
-The check inside scheduler for state != TASK_RUNNING is protected inside
-the rq locks, and any other task must grab the rq lock of the task
-before it can change the task's state. schedule() also checks for
-signals which would force schedule() to wake it up.
+   But shouldn't this just be merged to "ide: use standard timing for 
+XFER_PIO_SLOW mode in ide_timing_compute()" since it's the patch that 
+introduced that check?
 
-But that said, I still think that should be changed to
-set_current_state(TASK_INTERRUPTIBLE).
-	
-
--- Steve
-
-
+MBR, Sergei
 
