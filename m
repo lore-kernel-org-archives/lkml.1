@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755Ab0ASK54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905Ab0ASLAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755755Ab0ASK54 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 05:57:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060Ab0ASK5y
+	id S1755905Ab0ASLAP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 06:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394Ab0ASLAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 05:57:54 -0500
-Received: from mga06.intel.com ([134.134.136.21]:45710 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752841Ab0ASK5y (ORCPT
+	Tue, 19 Jan 2010 06:00:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52243 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752141Ab0ASLAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 05:57:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,302,1262592000"; 
-   d="scan'208";a="485131939"
-Date: Tue, 19 Jan 2010 11:59:27 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Cory Maccarrone <darkstar6262@gmail.com>
-Subject: Re: linux-next: mfd tree build failure
-Message-ID: <20100119105926.GA554@sortiz.org>
-References: <20100119150653.1b9bbf67.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100119150653.1b9bbf67.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 19 Jan 2010 06:00:10 -0500
+Date: Tue, 19 Jan 2010 02:57:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Perches <joe@perches.com>
+Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
+       David Miller <davem@davemloft.net>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] lib/vsprintf.c: Add %pMF to format FDDI bit reversed
+ MAC addresses
+Message-Id: <20100119025734.ce74ae5b.akpm@linux-foundation.org>
+In-Reply-To: <1262888625.10429.23.camel@Joe-Laptop.home>
+References: <BD79186B4FD85F4B8E60E381CAEE19090208954A@mi8nycmail19.Mi8.com>
+	<1262888625.10429.23.camel@Joe-Laptop.home>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+On Thu, 07 Jan 2010 10:23:45 -0800 Joe Perches <joe@perches.com> wrote:
 
-On Tue, Jan 19, 2010 at 03:06:53PM +1100, Stephen Rothwell wrote:
-> Hi Samuel,
-> 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> drivers/mfd/htc-i2cpld.c: In function 'htcpld_set_type':
-> drivers/mfd/htc-i2cpld.c:106: error: 'irq_desc' undeclared (first use in this function)
-> 
-> Caused by commit b4714172cd2f1cd8694546169237c30c5b4fdf3b ("mfd: Add
-> HTCPLD driver").
-Thanks for the report. It should be all fixed now.
+> Adds 56 bytes to object size
 
-Cheers,
-Samuel.
+You might want to consider making some of the net-specific code in
+vsprintf.c go away if CONFIG_NET=n.
 
-
-> I have used the mfd tree from next-20100118 for today.
-> 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
-
-
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
