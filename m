@@ -1,117 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510Ab0ATU3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541Ab0ATU3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754510Ab0ATU3I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 15:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015Ab0ATU3H
+	id S1754541Ab0ATU3X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 15:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522Ab0ATU3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 15:29:07 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:46871 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754501Ab0ATU3G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 15:29:06 -0500
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Avi Kivity <avi@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, ananth@in.ibm.com,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100120195826.GB24355@basil.fritz.box>
-References: <4B545146.3080001@redhat.com>
-	 <20100118124419.GC1628@linux.vnet.ibm.com>
-	 <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com>
-	 <4B5459CA.9060603@redhat.com> <4B545ACF.40203@cs.helsinki.fi>
-	 <1263852957.2266.38.camel@localhost.localdomain>
-	 <4B556855.6040800@redhat.com>
-	 <1263923265.4998.28.camel@localhost.localdomain>
-	 <87wrzc39ww.fsf@basil.nowhere.org>
-	 <1264016052.5122.40.camel@localhost.localdomain>
-	 <20100120195826.GB24355@basil.fritz.box>
-Content-Type: text/plain
-Date: Wed, 20 Jan 2010 12:28:45 -0800
-Message-Id: <1264019325.5122.62.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	Wed, 20 Jan 2010 15:29:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55255 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753652Ab0ATU3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 15:29:19 -0500
+Message-ID: <4B57675E.7070309@kernel.org>
+Date: Wed, 20 Jan 2010 12:28:14 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH 22/37] move round_up/down to kernel.h
+References: <1263611228-6751-1-git-send-email-yinghai@kernel.org> <1263611228-6751-23-git-send-email-yinghai@kernel.org> <alpine.DEB.2.00.1001191155540.22304@router.home>
+In-Reply-To: <alpine.DEB.2.00.1001191155540.22304@router.home>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2010-01-20 at 20:58 +0100, Andi Kleen wrote:
-> > Re: rewriting instructions that use rip-relative addressing.  We do that
-> > now.  See handle_riprel_insn() in patch #2.  (As far as we can tell, it
-> > works, but we'd appreciate your review of it.)
+On 01/19/2010 09:57 AM, Christoph Lameter wrote:
+> On Fri, 15 Jan 2010, Yinghai Lu wrote:
 > 
-> Yes, but how do you get within 2GB of it?
-
-I'm not sure what you're asking.
-
-To jump between the probed instruction stream and the XOL area, I've
-proposed
-  jmpq *(%rip)
-  .quad next_insn
-next_insn is a 64-bit address, which presumably allows you to jump to
-anywhere in the address space.
-
-To read/write the memory addressed by a rip-relative instruction, we
-convert the rip-relative addressing to indirect addressing through a
-64-bit scratch register (whose saved value we restore before returning
-to the probed instruction stream).
-
-> Add lots of holes
-> in the address space? 
-
-No.
-
+>>
+>>  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+>>
+>> +/*
+>> + * This looks more complex than it should be. But we need to
+>> + * get the type for the ~ right in round_down (it needs to be
+>> + * as wide as the result!), and we want to evaluate the macro
+>> + * arguments just once each.
+>> + */
+>> +#define __round_mask(x,y) ((__typeof__(x))((y)-1))
+>> +#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
+>> +#define round_down(x,y) ((x) & ~__round_mask(x,y))
+>> +
+>>  #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+>>  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+>>  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
 > 
-> > The instruction decoder is used only during instruction analysis, while
-> > registering the probe -- i.e., in kernel space.
-> 
-> Registering the user probe? That means if there's a buffer overflow
-> in there it would be exploitable.
+> Note the last two lines! We already have roundup(), DIV_ROUND_UP and
+> DIV_ROUND_CLOSEST. Please integrate them properly. Maybe extract
+> __round_mask() from all of them.
 
-Certainly a poorly written probe handler would be a problem.  Could you
-explain further what you mean?  Are you talking about a buffer overflow
-in the probed program?  in the probe handler?  in uprobes?
+like this, using DIVIDE for all ?
 
-> 
-> > > 
-> > > In general the trend has been also to make traps faster in the CPU, make 
-> > > sure you're not optimizing for some old CPU here.
-> > 
-> > I won't argue with that.  What Avi seems to be proposing buys us a
-> > speedup, but at the cost of increased complexity -- among other things,
-> > splitting the instrumentation code between user space (in the "XOL" area
-> > -- which would then be used for much more than XOL instruction slots)
-> 
-> You can't have a single XOL area, at least not if you want to support
-> shared libraries on 64bit & rip relative.
+---
+ include/linux/kernel.h |   14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
-I disagree.  See above.
-
-> 
-> > and kernel space.  The splitting would presumably be handled by
-> > higher-level code -- SystemTap, perf, or whatever.  It's a neat idea,
-> > but it seems like a v2 kind of feature.
-> 
-> I'm not sure it can even work, unless you severly limited the allowed
-> instructions.
-
-I'm not sure it can work, either.  But I still believe that we've
-addressed the known issues wrt the big x86_64 address space.
-
-> 
-> -Andi
-> 
-
-Thanks.
-Jim
-
+Index: linux-2.6/include/linux/kernel.h
+===================================================================
+--- linux-2.6.orig/include/linux/kernel.h
++++ linux-2.6/include/linux/kernel.h
+@@ -44,19 +44,13 @@ extern const char linux_proc_banner[];
+ 
+ #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+ 
+-/*
+- * This looks more complex than it should be. But we need to
+- * get the type for the ~ right in round_down (it needs to be
+- * as wide as the result!), and we want to evaluate the macro
+- * arguments just once each.
+- */
+-#define __round_mask(x,y) ((__typeof__(x))((y)-1))
+-#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
+-#define round_down(x,y) ((x) & ~__round_mask(x,y))
++#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
++#define rounddown(x, y) (((x) / (y)) * (y))
++#define round_up(x,y) roundup(x,y)
++#define round_down(x,y) rounddown(x,y)
+ 
+ #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+ #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+-#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+ #define DIV_ROUND_CLOSEST(x, divisor)(			\
+ {							\
+ 	typeof(divisor) __divisor = divisor;		\
