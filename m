@@ -1,44 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122Ab0AXXja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246Ab0AXXlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753122Ab0AXXja (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 18:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181Ab0AXXj3
+	id S1753246Ab0AXXlU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 18:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090Ab0AXXlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 18:39:29 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46206 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932102Ab0AXXj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 18:39:27 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [Bug #14625] Commit d451564 breaks ARM
-Date: Mon, 25 Jan 2010 00:39:50 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Soeren Sandmann <sandmann@daimi.au.dk>
-References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera> <q60Z28d_9yH.A.5sB.QbMXLB@chimera> <20100124232912.GA10805@flint.arm.linux.org.uk>
-In-Reply-To: <20100124232912.GA10805@flint.arm.linux.org.uk>
+	Sun, 24 Jan 2010 18:41:19 -0500
+Received: from ip-85-161-27-212.eurotel.cz ([85.161.27.212]:34001 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751563Ab0AXXlS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 18:41:18 -0500
+X-Greylist: delayed 1409 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jan 2010 18:41:15 EST
+Date: Wed, 20 Jan 2010 08:22:07 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Mark Allyn <mark.a.allyn@intel.com>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com, alan@linux.intel.com,
+       charles.f.johnson@intel.com
+Subject: Re: [PATCH] Add Linux Driver for Intel Langwell Watchdog
+Message-ID: <20100120072206.GA1420@ucw.cz>
+References: <1263849859-23265-1-git-send-email-mark.a.allyn@intel.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001250039.50622.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263849859-23265-1-git-send-email-mark.a.allyn@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 January 2010, Russell King wrote:
-> On Sun, Jan 24, 2010 at 11:22:52PM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let me know (either way).
-> 
-> Fixed by 4ff1fa2.
 
-Thanks, closing.
+> +#include <linux/uaccess.h>
+> +#include <linux/slab.h>
+> +#include <linux/io.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/delay.h>
+> +#include <linux/sched.h>
+> +#include <linux/signal.h>
+> +#include <linux/sfi.h>
+> +#include <linux/types.h>
+> +#include <asm/irq.h>
+> +#include <asm/atomic.h>
+> +
+> +/* See arch/x86/kernel/ipc_mrst.c */
+> +#include <asm/ipc_defs.h>
 
-Rafael
+WTF?
+
+> +/* #include <asm/mrst.h> */
+
+remove.
+
+> +MODULE_PARM_DESC(timer_margin,
+> +		"Watchdog timer margin"
+> +		"Time between interrupt and resetting the system"
+> +		"The range is from 1 to 160"
+> +		"This is the time for all keep alives to arrive");
+
+In miliseconds or what?
+
+> +static int timer_set = DEFAULT_TIME;
+> +module_param(timer_set, int, 0);
+> +
+> +MODULE_PARM_DESC(timer_set,
+> +		"Default Watchdog timer setting"
+> +		"Complete cycle time"
+> +		"The range is from 1 to 170"
+> +		"This is the time for all keep alives to arrive");
+> +
+> +/* driver will force boot on closure of device file */
+> +static int force_boot = 1;
+> +
+> +module_param(force_boot, int, 0);
+> +MODULE_PARM_DESC(force_boot,
+> +		 "A value of 1 means that the driver will reboot"
+> +		 "the system if the /dev/watchdog device is closed"
+> +		 );
+
+I'd hope watchdogs were somehow standardized?
+
+> +/* This is used to force reboot if anyone tries to close this device */
+> +static void watchdog_fire(void)
+> +{
+> +	module_put(THIS_MODULE);
+
+Why?
+
+> +	if (force_boot) {
+> +		printk(KERN_CRIT PFX "Initiating system reboot.\n");
+> +		emergency_restart();
+> +		printk(KERN_CRIT PFX "Reboot didn't ?????\n");
+> +	}
+> +
+> +	else {
+> +		printk(KERN_CRIT PFX "Reboot would have happend\n");
+> +		printk(KERN_CRIT PFX "You now have force_boot set to 0\n");
+> +		printk(KERN_CRIT PFX "I am not rebooting\n");
+> +	}
+
+Little chatty?
+
+> +/* timer interrupt handler */
+> +irqreturn_t watchdog_timer_interrupt(int irq, void *dev_id)
+> +{
+> +	int int_status;
+> +	int_status = ioread32(watchdog_device.timer_interrupt_status_addr);
+> +
+> +	pr_debug("Watchdog timer -  irq 7 interrupt received\n");
+
+is it always irq 7?
+
+> +static int langwell_set_heartbeat(u32 t)
+> +{
+> +	struct watchdog_reg_data reg_data;
+> +
+> +	watchdog_device.timer_set = t;
+> +	watchdog_device.threshold =
+> +	  timer_margin * watchdog_device.mtmr_ptr->freq;
+> +	watchdog_device.soft_threshold =
+> +	  (watchdog_device.timer_set - timer_margin)
+> +	  * watchdog_device.mtmr_ptr->freq;
+> +
+> +	pr_debug("Watchdog timer - timer_margin is %x (hex) seconds\n",
+> +	  timer_margin);
+> +
+> +	pr_debug("Watchdog timer - following are in clock cycles\n");
+> +
+> +	pr_debug("Watchdog timer - there are %x (hex) clock cycles\n",
+> +	  watchdog_device.mtmr_ptr->freq);
+> +
+> +	pr_debug("Watchdog timer - per second\n");
+> +
+> +	pr_debug("Watchdog timer - thres is %x (hex) and warm is %x (hex)\n",
+> +	  watchdog_device.threshold, watchdog_device.soft_threshold);
+> +
+> +	pr_debug("Watchdog timer - setting timer_set is %x (hex) seconds\n",
+> +	  watchdog_device.timer_set);
+
+Kill excessive debugging?
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
