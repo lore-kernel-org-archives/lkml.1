@@ -1,136 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322Ab0ATUtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396Ab0ATUwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322Ab0ATUtS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 15:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413Ab0ATUtR
+	id S1753396Ab0ATUwI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 15:52:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735Ab0ATUwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 15:49:17 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52599 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751952Ab0ATUtR (ORCPT
+	Wed, 20 Jan 2010 15:52:07 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42052 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752694Ab0ATUwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 15:49:17 -0500
-Subject: Re: [PATCH 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
-Cc: ego@in.ibm.com, linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-In-Reply-To: <1264017847.5717.132.camel@jschopp-laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	 <1264017847.5717.132.camel@jschopp-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Jan 2010 21:48:37 +0100
-Message-ID: <1264020517.4283.1117.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jan 2010 15:52:06 -0500
+Date: Wed, 20 Jan 2010 14:51:09 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [x86] Unify semaphore_32.S and rwlock_64.S
+In-Reply-To: <4B57641E.5060303@zytor.com>
+Message-ID: <alpine.DEB.2.00.1001201443340.17915@router.home>
+References: <alpine.DEB.2.00.1001191616280.28622@router.home> <4B56328E.9080108@zytor.com> <alpine.DEB.2.00.1001201333430.15175@router.home> <4B57641E.5060303@zytor.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-20 at 14:04 -0600, Joel Schopp wrote:
-> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
-> there is performance benefit to idling the higher numbered threads in
-> the core.  
+On Wed, 20 Jan 2010, H. Peter Anvin wrote:
 
-So this is an actual performance improvement, not only power savings?
+> > No I just saw it. Linus first patch increases the 64/32 bit separation by
+> > creating yet another 64 bit specific file. Can we avoid that and have
+> > code that is shared as much as possible between 32 and 64 bit?
+>
+> The ABI is completely different between 32 and 64 bits.  The stubs avoid
+> keeping track of *those* differences in each and every inline.  It might
+> be possible with macros, but there is something that really is very
+> different: for x86-32, there are only three function-clobbered
+> registers, which we pretty much need to use anyway.  For x86-64, there
+> are a lot more -- which means that each callsite would end up having gcc
+> generate save/restore code that would be in the fast path.  Linus' patch
+> pushes that into the slow path, which seems significantly better to me.
 
-> This patch implements arch_scale_smt_power to dynamically update smt
-> thread power in these idle cases in order to prefer threads 0,1 over
-> threads 2,3 within a core.
-> 
-> Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
-> ---
-> Index: linux-2.6.git/arch/powerpc/kernel/smp.c
-> ===================================================================
-> --- linux-2.6.git.orig/arch/powerpc/kernel/smp.c
-> +++ linux-2.6.git/arch/powerpc/kernel/smp.c
-> @@ -617,3 +617,44 @@ void __cpu_die(unsigned int cpu)
->  		smp_ops->cpu_die(cpu);
->  }
->  #endif
-> +
-> +static inline int thread_in_smt4core(int x)
-> +{
-> +  return x % 4;
-> +}
-> +unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
-> +{
-> +  int cpu2;
-> +  int idle_count = 0;
-> +
-> +  struct cpumask *cpu_map = sched_domain_span(sd);
-> +
-> +	unsigned long weight = cpumask_weight(cpu_map);
-> +	unsigned long smt_gain = sd->smt_gain;
-> +
-> +	if (cpu_has_feature(CPU_FTRS_POWER7) && weight == 4) {
-> +		for_each_cpu(cpu2, cpu_map) {
-> +			if (idle_cpu(cpu2))
-> +				idle_count++;
-> +		}
-> +
-> +		/* the following section attempts to tweak cpu power based
-> +		 * on current idleness of the threads dynamically at runtime
-> +		 */
-> +		if (idle_count == 2 || idle_count == 3 || idle_count == 4) {
-> +			if (thread_in_smt4core(cpu) == 0 ||
-> +			    thread_in_smt4core(cpu) == 1) {
-> +				/* add 75 % to thread power */
-> +				smt_gain += (smt_gain >> 1) + (smt_gain >> 2);
-> +			} else {
-> +				 /* subtract 75 % to thread power */
-> +				smt_gain = smt_gain >> 2;
-> +			}
-> +		}
-> +	}
-> +	/* default smt gain is 1178, weight is # of SMT threads */
-> +	smt_gain /= weight;
-> +
-> +	return smt_gain;
-> +
-> +}
+That does not seem to be such a problematic thing to solve.
 
-This looks to suffer significant whitespace damage.
+> > Why have a rwsem_count_t when a simple long would do in both cases? Just
+> > make sure that long is consistently used.
+>
+> The motivation for rwsem_count_t seemed to be making it easier to switch
+> over.  I leave it up to Linus to motivate the typedef... I have to say,
+> though, that using a typedef also tells you want the number is for.
 
-The design goal for smt_power was to be able to actually measure the
-processing gains from smt and feed that into the scheduler, not really
-placement tricks like this.
+I thought we discourage such typedefs?
 
-Now I also heard AMD might want to have something similar to this,
-something to do with powerlines and die layout.
+> > __downgrade_write:  Why use the inc trick instead of the add
+> > like in 32 bit? There is not much difference and it results in much
+> > stabler code.
+>
+> Because you can't do an add with a 64-bit immediate!  Yes, we could have
+> loaded it into a register, but that would have required an additional
+> 10-byte(!) instruction for no good reason.
 
-I'm not sure playing games with cpu_power is the best or if simply
-moving tasks to lower numbered cpus using an SD_flag is the best
-solution for these kinds of things.
-
-> Index: linux-2.6.git/kernel/sched_features.h
-> ===================================================================
-> --- linux-2.6.git.orig/kernel/sched_features.h
-> +++ linux-2.6.git/kernel/sched_features.h
-> @@ -107,7 +107,7 @@ SCHED_FEAT(CACHE_HOT_BUDDY, 1)
->  /*
->   * Use arch dependent cpu power functions
->   */
-> -SCHED_FEAT(ARCH_POWER, 0)
-> +SCHED_FEAT(ARCH_POWER, 1)
->  
->  SCHED_FEAT(HRTICK, 0)
->  SCHED_FEAT(DOUBLE_TICK, 0)
-
-And you just wrecked x86 ;-)
-
-It has an smt_power implementation that tries to measure smt gains using
-aperf/mperf, trouble is that this represents the actual performance not
-the capacity. This has the problem that when idle it represents 0
-capacity and will not attract work.
-
-Coming up with something that actually works there is on the todo list,
-I was thinking perhaps temporal maximums from !idle.
-
-So if you want to go with this, you'll need to stub out
-arch/x86/kernel/cpu/sched.c
-
-
+Well 2^32 readers is a bit large anyways. If we are satisifed with 2^30
+(only a billion) then it works with the same code.
 
