@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541Ab0ATU3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458Ab0ATUcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541Ab0ATU3X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 15:29:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522Ab0ATU3W
+	id S1754458Ab0ATUcO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 15:32:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129Ab0ATUcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 15:29:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55255 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753652Ab0ATU3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 15:29:19 -0500
-Message-ID: <4B57675E.7070309@kernel.org>
-Date: Wed, 20 Jan 2010 12:28:14 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 22/37] move round_up/down to kernel.h
-References: <1263611228-6751-1-git-send-email-yinghai@kernel.org> <1263611228-6751-23-git-send-email-yinghai@kernel.org> <alpine.DEB.2.00.1001191155540.22304@router.home>
-In-Reply-To: <alpine.DEB.2.00.1001191155540.22304@router.home>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 20 Jan 2010 15:32:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60793 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752638Ab0ATUcM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 15:32:12 -0500
+Date: Wed, 20 Jan 2010 12:30:33 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: "Michael Chan" <mchan@broadcom.com>
+Cc: "Jarek Poplawski" <jarkao2@gmail.com>,
+       "David Miller" <davem@davemloft.net>,
+       "Michael Breuer" <mbreuer@majjas.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "flyboy@gmail.com" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Don Fry" <pcnet32@verizon.net>,
+       "Francois Romieu" <romieu@fr.zoreil.com>,
+       "Matthew Carlson" <mcarlson@broadcom.com>
+Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
+Message-ID: <20100120123033.0746b11e@nehalam>
+In-Reply-To: <1264018312.9030.76.camel@nseg_linux_HP1.broadcom.com>
+References: <20100120094103.GA6225@ff.dom.local>
+	<20100120100316.2b5b1b05@nehalam>
+	<1264018312.9030.76.camel@nseg_linux_HP1.broadcom.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/19/2010 09:57 AM, Christoph Lameter wrote:
-> On Fri, 15 Jan 2010, Yinghai Lu wrote:
+On Wed, 20 Jan 2010 12:11:52 -0800
+"Michael Chan" <mchan@broadcom.com> wrote:
+
 > 
->>
->>  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
->>
->> +/*
->> + * This looks more complex than it should be. But we need to
->> + * get the type for the ~ right in round_down (it needs to be
->> + * as wide as the result!), and we want to evaluate the macro
->> + * arguments just once each.
->> + */
->> +#define __round_mask(x,y) ((__typeof__(x))((y)-1))
->> +#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
->> +#define round_down(x,y) ((x) & ~__round_mask(x,y))
->> +
->>  #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
->>  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
->>  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+> On Wed, 2010-01-20 at 10:03 -0800, Stephen Hemminger wrote:
+> > On Wed, 20 Jan 2010 09:41:03 +0000
+> > Jarek Poplawski <jarkao2@gmail.com> wrote:
+> > > > Seems like an underlying bug in the DMA api. Maybe it just can't
+> > > > handle operations on partial mapping.
+> > > > 
+> > > > Other drivers with same problem:
+> > > >   bnx2, cassini, pcnet32, r8169, rrunner, skge, sungem, tg3, 
+> > > 
+> > > It seems using the same length (even without pci_unmap_len()) is
+> > > crucial here, but I hope maintainers (added to CC) will take care.
+> > > 
 > 
-> Note the last two lines! We already have roundup(), DIV_ROUND_UP and
-> DIV_ROUND_CLOSEST. Please integrate them properly. Maybe extract
-> __round_mask() from all of them.
+> I'm still unsure how to do dma_sync properly in bnx2.  In the current
+> code, we always dma_sync_for_cpu a small portion of the SKB because the
+> rx descriptor is at the beginning of the SKB.  We get the packet length,
+> for example, from the rx descriptor.
+> 
+> If it's a big packet, we'll simply unmap the entire SKB buffer (with the
+> beginning portion already dma_sync'ed).  If the packet is smaller than
+> what we dma_sync'ed, we'll just copy the data to a new SKB.  We'll then
+> dma_sync_for_device the portion of the original buffer and recycle the
+> whole buffer back to the device for new packets.
+> 
+> So, is it correct to just change the dma_sync length to the full length
+> of the buffer?  It doesn't sound right to me.
 
-like this, using DIVIDE for all ?
-
----
- include/linux/kernel.h |   14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
-
-Index: linux-2.6/include/linux/kernel.h
-===================================================================
---- linux-2.6.orig/include/linux/kernel.h
-+++ linux-2.6/include/linux/kernel.h
-@@ -44,19 +44,13 @@ extern const char linux_proc_banner[];
- 
- #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
- 
--/*
-- * This looks more complex than it should be. But we need to
-- * get the type for the ~ right in round_down (it needs to be
-- * as wide as the result!), and we want to evaluate the macro
-- * arguments just once each.
-- */
--#define __round_mask(x,y) ((__typeof__(x))((y)-1))
--#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
--#define round_down(x,y) ((x) & ~__round_mask(x,y))
-+#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
-+#define rounddown(x, y) (((x) / (y)) * (y))
-+#define round_up(x,y) roundup(x,y)
-+#define round_down(x,y) rounddown(x,y)
- 
- #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
- #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
--#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
- #define DIV_ROUND_CLOSEST(x, divisor)(			\
- {							\
- 	typeof(divisor) __divisor = divisor;		\
+It looks like the size passed to sync_single has to match size of original
+mapping.
