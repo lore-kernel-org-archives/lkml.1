@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123Ab0ATXDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277Ab0ATXGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753123Ab0ATXDf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 18:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631Ab0ATXDe
+	id S1753277Ab0ATXGV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 18:06:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986Ab0ATXGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 18:03:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51704
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752472Ab0ATXDd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 18:03:33 -0500
-Date: Wed, 20 Jan 2010 15:03:43 -0800 (PST)
-Message-Id: <20100120.150343.236848237.davem@davemloft.net>
-To: vladislav.yasevich@hp.com
-Cc: julia@diku.dk, sri@us.ibm.com, linux-sctp@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 4/9] net/sctp: Eliminate useless code
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B574702.4040602@hp.com>
-References: <Pine.LNX.4.64.1001161657570.28745@ask.diku.dk>
-	<4B574702.4040602@hp.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 20 Jan 2010 18:06:20 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:38405 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752207Ab0ATXGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 18:06:19 -0500
+Message-ID: <4B578C0E.5090709@zytor.com>
+Date: Wed, 20 Jan 2010 15:04:46 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Borislav Petkov <bp@amd64.org>
+CC: mingo@elte.hu, tglx@linutronix.de, andreas.herrmann3@amd.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86, cacheinfo: Fix disabling of L3 cache indexes
+References: <1263899279-30739-1-git-send-email-bp@amd64.org> <1263899279-30739-2-git-send-email-bp@amd64.org>
+In-Reply-To: <1263899279-30739-2-git-send-email-bp@amd64.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-Date: Wed, 20 Jan 2010 13:10:10 -0500
+On 01/19/2010 03:07 AM, Borislav Petkov wrote:
+>  
+> +static void __wbinvd(void *dummy)
+> +{
+> +	asm volatile("wbinvd" : : : "memory");
+> +}
+> +
 
-> 
-> 
-> Julia Lawall wrote:
->> From: Julia Lawall <julia@diku.dk>
->> 
->> The variable newinet is initialized twice to the same (side effect-free)
->> expression.  Drop one initialization.
->> 
->> A simplified version of the semantic match that finds this problem is:
->> (http://coccinelle.lip6.fr/)
->> 
->> // <smpl>
->> @forall@
->> idexpression *x;
->> identifier f!=ERR_PTR;
->> @@
->> 
->> x = f(...)
->> ... when != x
->> (
->> x = f(...,<+...x...+>,...)
->> |
->> * x = f(...)
->> )
->> // </smpl>
->> 
->> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> Acked-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+[...]
 
-Julia,  just like patch #3 this one had the missing final
-line of the patch corrupting it, so you'll need to resubmit.
+> +	smp_call_function_single(cpu, __wbinvd, NULL, 1);
+
+I really don't like this combination.
+
+First of all, it's an asm version of an instruction we already have
+macros for.  This should probably just be wbinvd(), or *possibly*
+native_wbinvd(), although that would have to be justified -- especially
+since the preexisting code used wbinvd().
+
+Second, it's pretty obvious that the only reason for this function at
+all is to provide a wrapper that can be passed to smp_call_function*().
+ It would be a lot cleaner to have a small function wbinvd_on_cpu(cpu)
+as a wrapper for the higher-order functionality.
+
+	-hpa
