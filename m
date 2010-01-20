@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751938Ab0ATMiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140Ab0ATMhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751938Ab0ATMiO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 07:38:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481Ab0ATMiJ
+	id S1752140Ab0ATMhr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 07:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955Ab0ATMhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 07:38:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29630 "EHLO mx1.redhat.com"
+	Wed, 20 Jan 2010 07:37:39 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17760 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932128Ab0ATMh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 07:37:56 -0500
+	id S1751922Ab0ATMhh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 07:37:37 -0500
 From: Stanislaw Gruszka <sgruszka@redhat.com>
 To: Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
@@ -17,135 +17,169 @@ Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
        Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
        Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
        Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: [PATCH 4/6 -mm] cpu-timers: change SIGEV_NONE timer implementation
-Date: Wed, 20 Jan 2010 13:34:26 +0100
-Message-Id: <1263990868-8119-5-git-send-email-sgruszka@redhat.com>
-In-Reply-To: <1263990868-8119-4-git-send-email-sgruszka@redhat.com>
+Subject: [PATCH 6/6 -mm] cpu-timers: optimize run_posix_cpu_timers()
+Date: Wed, 20 Jan 2010 13:34:28 +0100
+Message-Id: <1263990868-8119-7-git-send-email-sgruszka@redhat.com>
+In-Reply-To: <1263990868-8119-6-git-send-email-sgruszka@redhat.com>
 References: <1263990868-8119-1-git-send-email-sgruszka@redhat.com>
  <1263990868-8119-2-git-send-email-sgruszka@redhat.com>
  <1263990868-8119-3-git-send-email-sgruszka@redhat.com>
  <1263990868-8119-4-git-send-email-sgruszka@redhat.com>
+ <1263990868-8119-5-git-send-email-sgruszka@redhat.com>
+ <1263990868-8119-6-git-send-email-sgruszka@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When user will setup timer without associated signal and process does
-not use any other cpu timers and does not exit, tsk->signal->cputimer
-is enabled and running forever, change that.
+We can optimize and simplify things taking into account signal->cputimer
+is always running when we have configured any process wide cpu timer.
 
-I used below program to check patch does not break current user space
-visible behavior.
-
- #include <sys/time.h>
- #include <signal.h>
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
- #include <time.h>
- #include <unistd.h>
- #include <assert.h>
-
- void consume_cpu(void)
- {
-	int i = 0;
-	int count = 0;
-
-	for(i=0; i<100000000; i++)
-		count++;
- }
-
- int main(void)
- {
-	int i;
-	struct sigaction act;
-	struct sigevent evt = { };
-	timer_t tid;
-	struct itimerspec spec = { };
-
-	evt.sigev_notify = SIGEV_NONE;
-	assert(timer_create(CLOCK_PROCESS_CPUTIME_ID, &evt,  &tid) == 0);
-
-	spec.it_value.tv_sec = 10;
-	assert(timer_settime(tid, 0, &spec,  NULL) == 0);
-
-	for (i = 0; i < 30; i++) {
-		consume_cpu();
-		memset(&spec, 0, sizeof(spec));
-		assert(timer_gettime(tid, &spec) == 0);
-		printf("%lu.%09lu\n",
-			(unsigned long) spec.it_value.tv_sec,
-			(unsigned long) spec.it_value.tv_nsec);
-	}
-
-	assert(timer_delete(tid) == 0);
-	return 0;
- }
+In check_process_timers(), we don't have to check if new updated value
+of signal->cputime_expires is smaller, since we maintain new first
+expiration time ({prof,virt,sched}_expires) in code flow and all other
+writes to expiration cache are protected by sighand->siglock .
 
 Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
 ---
- kernel/posix-cpu-timers.c |   28 ++++++----------------------
- 1 files changed, 6 insertions(+), 22 deletions(-)
+ kernel/posix-cpu-timers.c |   80 ++++++++++++++++----------------------------
+ 1 files changed, 29 insertions(+), 51 deletions(-)
 
 diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index e9aa4dc..faa0b42 100644
+index 67c877e..ffba8f4 100644
 --- a/kernel/posix-cpu-timers.c
 +++ b/kernel/posix-cpu-timers.c
-@@ -614,7 +614,12 @@ static void arm_timer(struct k_itimer *timer)
-  */
- static void cpu_timer_fire(struct k_itimer *timer)
- {
--	if (unlikely(timer->sigq == NULL)) {
-+	if ((timer->it_sigev_notify & ~SIGEV_THREAD_ID) == SIGEV_NONE) {
-+		/*
-+		 * User don't want any signal.
-+		 */
-+		timer->it.cpu.expires.sched = 0;
-+	} else if (unlikely(timer->sigq == NULL)) {
- 		/*
- 		 * This a special case for clock_nanosleep,
- 		 * not a normal timer from sys_timer_create.
-@@ -783,7 +788,6 @@ int posix_cpu_timer_set(struct k_itimer *timer, int flags,
- 	 */
- 	timer->it.cpu.expires = new_expires;
- 	if (new_expires.sched != 0 &&
--	    (timer->it_sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_NONE &&
- 	    cpu_time_before(timer->it_clock, val, new_expires)) {
- 		arm_timer(timer);
- 	}
-@@ -808,7 +812,6 @@ int posix_cpu_timer_set(struct k_itimer *timer, int flags,
- 	timer->it_overrun = -1;
+@@ -1000,16 +1000,9 @@ static void stop_process_timers(struct signal_struct *sig)
+ 	struct thread_group_cputimer *cputimer = &sig->cputimer;
+ 	unsigned long flags;
  
- 	if (new_expires.sched != 0 &&
--	    (timer->it_sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_NONE &&
- 	    !cpu_time_before(timer->it_clock, val, new_expires)) {
- 		/*
- 		 * The designated time already passed, so we notify
-@@ -882,25 +885,6 @@ void posix_cpu_timer_get(struct k_itimer *timer, struct itimerspec *itp)
- 		read_unlock(&tasklist_lock);
- 	}
+-	if (!cputimer->running)
+-		return;
+-
+ 	spin_lock_irqsave(&cputimer->lock, flags);
+ 	cputimer->running = 0;
+ 	spin_unlock_irqrestore(&cputimer->lock, flags);
+-
+-	sig->cputime_expires.prof_exp = cputime_zero;
+-	sig->cputime_expires.virt_exp = cputime_zero;
+-	sig->cputime_expires.sched_exp = 0;
+ }
  
--	if ((timer->it_sigev_notify & ~SIGEV_THREAD_ID) == SIGEV_NONE) {
--		if (timer->it.cpu.incr.sched == 0 &&
--		    cpu_time_before(timer->it_clock,
--				    timer->it.cpu.expires, now)) {
--			/*
--			 * Do-nothing timer expired and has no reload,
--			 * so it's as if it was never set.
--			 */
--			timer->it.cpu.expires.sched = 0;
--			itp->it_value.tv_sec = itp->it_value.tv_nsec = 0;
--			return;
--		}
--		/*
--		 * Account for any expirations and reloads that should
--		 * have happened.
--		 */
--		bump_cpu_timer(timer, now);
+ static u32 onecputick;
+@@ -1046,6 +1039,23 @@ static void check_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
+ 	}
+ }
+ 
++/**
++ * task_cputime_zero - Check a task_cputime struct for all zero fields.
++ *
++ * @cputime:	The struct to compare.
++ *
++ * Checks @cputime to see if all fields are zero.  Returns true if all fields
++ * are zero, false if any field is nonzero.
++ */
++static inline int task_cputime_zero(const struct task_cputime *cputime)
++{
++	if (cputime_eq(cputime->utime, cputime_zero) &&
++	    cputime_eq(cputime->stime, cputime_zero) &&
++	    cputime->sum_exec_runtime == 0)
++		return 1;
++	return 0;
++}
++
+ /*
+  * Check for any per-thread CPU timers that have fired and move them
+  * off the tsk->*_timers list onto the firing list.  Per-thread timers
+@@ -1062,19 +1072,6 @@ static void check_process_timers(struct task_struct *tsk,
+ 	struct task_cputime cputime;
+ 
+ 	/*
+-	 * Don't sample the current process CPU clocks if there are no timers.
+-	 */
+-	if (list_empty(&timers[CPUCLOCK_PROF]) &&
+-	    cputime_eq(sig->it[CPUCLOCK_PROF].expires, cputime_zero) &&
+-	    sig->rlim[RLIMIT_CPU].rlim_cur == RLIM_INFINITY &&
+-	    list_empty(&timers[CPUCLOCK_VIRT]) &&
+-	    cputime_eq(sig->it[CPUCLOCK_VIRT].expires, cputime_zero) &&
+-	    list_empty(&timers[CPUCLOCK_SCHED])) {
+-		stop_process_timers(sig);
+-		return;
 -	}
 -
- 	if (unlikely(clear_dead)) {
- 		/*
- 		 * We've noticed that the thread is dead, but
+-	/*
+ 	 * Collect the current process totals.
+ 	 */
+ 	thread_group_cputimer(tsk, &cputime);
+@@ -1161,18 +1158,11 @@ static void check_process_timers(struct task_struct *tsk,
+ 		}
+ 	}
+ 
+-	if (!cputime_eq(prof_expires, cputime_zero) &&
+-	    (cputime_eq(sig->cputime_expires.prof_exp, cputime_zero) ||
+-	     cputime_gt(sig->cputime_expires.prof_exp, prof_expires)))
+-		sig->cputime_expires.prof_exp = prof_expires;
+-	if (!cputime_eq(virt_expires, cputime_zero) &&
+-	    (cputime_eq(sig->cputime_expires.virt_exp, cputime_zero) ||
+-	     cputime_gt(sig->cputime_expires.virt_exp, virt_expires)))
+-		sig->cputime_expires.virt_exp = virt_expires;
+-	if (sched_expires != 0 &&
+-	    (sig->cputime_expires.sched_exp == 0 ||
+-	     sig->cputime_expires.sched_exp > sched_expires))
+-		sig->cputime_expires.sched_exp = sched_expires;
++	sig->cputime_expires.prof_exp = prof_expires;
++	sig->cputime_expires.virt_exp = virt_expires;
++	sig->cputime_expires.sched_exp = sched_expires;
++	if (task_cputime_zero(&sig->cputime_expires))
++		stop_process_timers(sig);
+ }
+ 
+ /*
+@@ -1245,23 +1235,6 @@ out:
+ }
+ 
+ /**
+- * task_cputime_zero - Check a task_cputime struct for all zero fields.
+- *
+- * @cputime:	The struct to compare.
+- *
+- * Checks @cputime to see if all fields are zero.  Returns true if all fields
+- * are zero, false if any field is nonzero.
+- */
+-static inline int task_cputime_zero(const struct task_cputime *cputime)
+-{
+-	if (cputime_eq(cputime->utime, cputime_zero) &&
+-	    cputime_eq(cputime->stime, cputime_zero) &&
+-	    cputime->sum_exec_runtime == 0)
+-		return 1;
+-	return 0;
+-}
+-
+-/**
+  * task_cputime_expired - Compare two task_cputime entities.
+  *
+  * @sample:	The task_cputime structure to be checked for expiration.
+@@ -1317,7 +1290,7 @@ static inline int fastpath_timer_check(struct task_struct *tsk)
+ 	}
+ 
+ 	sig = tsk->signal;
+-	if (!task_cputime_zero(&sig->cputime_expires)) {
++	if (sig->cputimer.running) {
+ 		struct task_cputime group_sample;
+ 
+ 		thread_group_cputimer(tsk, &group_sample);
+@@ -1354,7 +1327,12 @@ void run_posix_cpu_timers(struct task_struct *tsk)
+ 	 * put them on the firing list.
+ 	 */
+ 	check_thread_timers(tsk, &firing);
+-	check_process_timers(tsk, &firing);
++	/*
++	 * If there are any active process wide timers (POSIX 1.b, itimers,
++	 * RLIMIT_CPU) cputimer must be running.
++	 */
++	if (tsk->signal->cputimer.running)
++		check_process_timers(tsk, &firing);
+ 
+ 	/*
+ 	 * We must release these locks before taking any timer's lock.
 -- 
 1.6.2.5
 
