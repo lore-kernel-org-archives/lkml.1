@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869Ab0ATPTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920Ab0ATPUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752869Ab0ATPTG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 10:19:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461Ab0ATPTB
+	id S1752920Ab0ATPUZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 10:20:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413Ab0ATPUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 10:19:01 -0500
-Received: from gimli.pxnet.com ([195.227.45.7]:36906 "EHLO mail.pxnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752300Ab0ATPTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 10:19:00 -0500
-From: Tilman Schmidt <tilman@imap.cc>
-Subject: Re: Can we remove pci_find_device() yet?
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <gregkh@suse.de>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
-References: <20100108112236.462a3da2.sfr@canb.auug.org.au> <20100108044646.GC6611@suse.de> <4B4B802A.2010709@imap.cc> <20100111200136.GA29955@suse.de> <877hrlf0rf.fsf@basil.nowhere.org> <20100114110214.37d7ffc9@lxorguk.ukuu.org.uk>
-Message-Id: <20100120151109.29FA240109@xenon.ts.pxnet.com>
-Date: Wed, 20 Jan 2010 16:11:08 +0100 (CET)
-X-Spam-Score: -2.185 () AWL,BAYES_00,RDNS_NONE
+	Wed, 20 Jan 2010 10:20:24 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:45514 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752207Ab0ATPUX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 10:20:23 -0500
+Date: Wed, 20 Jan 2010 17:19:12 +0200
+From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] mm: Fix nr_good_pages calculation
+Message-ID: <20100120151912.GA27747@angel.research.nokia.com>
+Reply-To: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: GNU/Linux angel.research.nokia.com
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 20 Jan 2010 15:19:14.0637 (UTC) FILETIME=[ED00F7D0:01CA99E3]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 14, 2010 at 11:02:14AM +0000, Alan Cox wrote:
-> > e.g. set some global variable that forbids device removal
-> > and warn in the kernel log. In theory this could be also
-> > done per device, but I guess that would be more effort.
-> 
-> There is a simpler way to do that, which is to just leak a reference in
-> the hisax_find_pci_device hack. The pci_dev won't be going anywhere then.
+Swapon wastes one page of swap space to no effect.
 
-Something like this? (On top of my previous patch introducing
-hisax_find_pci_device in the first place.)
+Mkswap stores the value 'pages - 1' into last_page field, where pages is the
+partition size in pages.  When nr_good_pages is calculated, last_page + 1
+should be used for the number of all the pages header included.
 
-Subject: [PATCH RFC] isdn/hisax: intentionally leak a reference in hisax_find_pci_device
-
-Take a reference to the returned pci_dev which will never be released.
-Until the HiSax drivers are fixed for proper PCI hotplug support,
-this appears as the lesser evil compared to the danger of the
-structure being freed without the caller knowing it.
-
-Impact: replacing a bug by another, less consequential one
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
 ---
- drivers/isdn/hisax/hisax.h |   13 +++++--------
- 1 files changed, 5 insertions(+), 8 deletions(-)
+ mm/swapfile.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/isdn/hisax/hisax.h b/drivers/isdn/hisax/hisax.h
-index 832a878..e459502 100644
---- a/drivers/isdn/hisax/hisax.h
-+++ b/drivers/isdn/hisax/hisax.h
-@@ -1328,21 +1328,18 @@ void TeiFree(void);
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 6c0585b..50d90ca 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -1961,7 +1961,7 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
+ 	if (error)
+ 		goto bad_swap;
  
- #include <linux/pci.h>
+-	nr_good_pages = swap_header->info.last_page -
++	nr_good_pages = swap_header->info.last_page + 1 -
+ 			swap_header->info.nr_badpages -
+ 			1 /* header page */;
  
--/* adaptation wrapper for old usage
-- * WARNING! This is unfit for use in a PCI hotplug environment,
-- * as the returned PCI device can disappear at any moment in time.
-+/* This function replaces the former function pci_find_device().
-+ * Unlike the latter, it takes a reference on the returned pci_dev,
-+ * resulting in a reference leak. This is intentional and serves to
-+ * prevent an untimely release of the PCI device structure.
-  * Callers should be converted to use pci_get_device() instead.
-  */
- static inline struct pci_dev *hisax_find_pci_device(unsigned int vendor,
- 						    unsigned int device,
- 						    struct pci_dev *from)
- {
--	struct pci_dev *pdev;
--
- 	pci_dev_get(from);
--	pdev = pci_get_subsys(vendor, device, PCI_ANY_ID, PCI_ANY_ID, from);
--	pci_dev_put(pdev);
--	return pdev;
-+	return pci_get_subsys(vendor, device, PCI_ANY_ID, PCI_ANY_ID, from);
- }
- 
- #endif
 -- 
-1.6.5.3.298.g39add
+1.6.5
 
