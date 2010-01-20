@@ -1,65 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118Ab0ATKyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391Ab0ATKyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118Ab0ATKyN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 05:54:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061Ab0ATKyM
+	id S1753391Ab0ATKyU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 05:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325Ab0ATKyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 05:54:12 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49607 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752187Ab0ATKyJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 05:54:09 -0500
-Date: Wed, 20 Jan 2010 10:53:50 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: monstr@monstr.eu
-Cc: linux-kernel@vger.kernel.org, michal.simek@petalogix.com, arnd@arndb.de,
-       linux-arch@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
-       akpm@linux-foundation.org, mingo@elte.hu, joerg.roedel@amd.com
-Subject: Re: Generic DMA - BUG_ON
-Message-ID: <20100120105350.GA23394@flint.arm.linux.org.uk>
-Mail-Followup-To: monstr@monstr.eu, linux-kernel@vger.kernel.org,
-	michal.simek@petalogix.com, arnd@arndb.de,
-	linux-arch@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
-	akpm@linux-foundation.org, mingo@elte.hu, joerg.roedel@amd.com
-References: <1263982111-24123-1-git-send-email-monstr@monstr.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263982111-24123-1-git-send-email-monstr@monstr.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 20 Jan 2010 05:54:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752061Ab0ATKyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 05:54:14 -0500
+Subject: Re: lockdep: inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R}
+ usage.
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Dave Chinner <david@fromorbit.com>,
+       linux-kernel@vger.kernel.org, mingo@redhat.com,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+In-Reply-To: <20100119184631.GA11408@infradead.org>
+References: <20100115120253.GH28498@discord.disaster>
+	 <1263557473.4244.399.camel@laptop>
+	 <20100115124410.GI28498@discord.disaster>
+	 <1263559995.4244.403.camel@laptop>  <20100119184631.GA11408@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Red Hat UK Ltd
+Date: Wed, 20 Jan 2010 10:57:01 +0000
+Message-ID: <1263985021.2528.34.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 11:08:30AM +0100, monstr@monstr.eu wrote:
-> Hi All,
+Hi,
+
+On Tue, 2010-01-19 at 13:46 -0500, Christoph Hellwig wrote:
+> On Fri, Jan 15, 2010 at 01:53:15PM +0100, Peter Zijlstra wrote:
+> > Well, I don't know enough about xfs (of filesystems in generic) to say
+> > that with any certainty, but I can imagine inode writeback from the sync
+> > that goes with umount to cause issues.
+> > 
+> > If this inode reclaim is past all that and the filesystem is basically
+> > RO, then I don't think so and this could be considered a false positive,
+> > in which case we need an annotation for this.
 > 
-> I have this patch in my repo. I just added BUG_ON for dma ops.
-> The reason for that is if driver not setup ops correctly than
-> the system do bad access to any memory space without any visible reason.
-> BUG_ON points to it and helps to solve where the problem is.
+> The issue is a bit more complicated.  In the unmount case
+> invalidate_inodes() is indeed called after the filesystem is effectively
+> read-only for user origination operations.  But there's a miriad of
+> other invalidate_inodes() calls:
+> 
+>  - fs/block_dev.c:__invalidate_device()
+> 
+> 	This gets called from block device codes for various kinds of
+> 	invalidations.  Doesn't make any sense at all to me, but hey..
+> 
+>  - fs/ext2/super.c:ext2_remount()
+> 
+> 	Appears like it's used to check for activate inodes during
+> 	remount.  Very fishy usage, and could just be replaced with
+> 	a list walk without any I/O
+> 
+>  - fs/gfs2/glock.c:gfs2_gl_hash_clear()
+> 
+> 	No idea.
+> 
+Its rather complicated and all down to using "special" inodes to cache
+metadata so that GFS2 has two VFS inodes per "real" inode, one as per
+normal and one just to cache metadata.
 
-I have a question of principle to raise here.
+This causes a circular dependency between glocks and inodes since we
+have something like this (in my best ascii art):
 
-If you have code which does:
+gfs2 inode -> iopen glock
+           -> inode glock -> metadata inode
 
-	if (ops->foo)
-		ops->foo();
+So at umount time, historically we've had to invalidate inodes once, and
+then get rid of the inode glocks which implied a iput() on the metadata
+inode and then invalidate inodes again to be rid of the metadata inodes.
 
-and ops is NULL, then this code will oops; you will get a full register
-dump and backtrace.  You can use this information along with markup_oops.pl
-to find out where the problem is.
+This has been the source of many problems at umount time. In my -nmw git
+tree at the moment, there are a couple of patches which are aimed at
+fixing this issue. The solution is to embed a struct address_space in
+each glock which caches metadata, rather than a complete inode.
 
-If you add a BUG_ON() to this, the only additional information you end
-up with is (possibly) a nice friendly message which tells you the file
-and line number - but you add additional run-time tests to the code.
+>  - fs/gfs2/ops_fstype.c:fill_super()
+> 
+> 	Tries to kill all inodes in the fill_super error path, looks
+> 	very fishy.
+> 
+For the same reason as above.
 
-The question is: is this worth it?  Is there some problem with the
-original oops that makes the problem hard to find?  Should we be using
-BUG_ON() to augment normal oopses in this way?
+It should be possible to remove one or even both of these calls now. The
+two patches in the -nmw tree do the bare minimum really to make the
+change, but it should be possible to do a bit more clean up in that
+area now,
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Steve.
+
+
