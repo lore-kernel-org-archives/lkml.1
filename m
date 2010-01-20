@@ -1,88 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423Ab0ATNhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499Ab0ATNic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423Ab0ATNhu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 08:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146Ab0ATNhr
+	id S1753499Ab0ATNic (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 08:38:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118Ab0ATNia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 08:37:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:56107 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751591Ab0ATNhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 08:37:46 -0500
-Date: Wed, 20 Jan 2010 07:37:34 -0600
-From: Clark Williams <williams@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: RT <linux-rt-users@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Carsten Emde <ce@ceag.ch>, John Kacur <jkacur@redhat.com>
-Subject: Re: RFC: NUMA modifications to cyclictest
-Message-ID: <20100120073734.4be7a52b@torg>
-In-Reply-To: <alpine.LFD.2.00.1001200741000.2906@localhost.localdomain>
-References: <20100119171439.24726f2e@torg>
-	<alpine.LFD.2.00.1001200741000.2906@localhost.localdomain>
-Organization: Red Hat, Inc
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/dSWNDpu1MzBAg+Lj9jzN+/2"; protocol="application/pgp-signature"
+	Wed, 20 Jan 2010 08:38:30 -0500
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:60040 "EHLO
+	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751322Ab0ATNi3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 08:38:29 -0500
+Date: Wed, 20 Jan 2010 14:38:27 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: Re: [PATCH] Obsolete config in kernel source (USE_MIXARTLOADER)
+Message-ID: <20100120133827.GB2040@stud.informatik.uni-erlangen.de>
+References: <20100120133144.GD3580@faui49.informatik.uni-erlangen.de>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="liOOAslEiF7prFVr"
+Content-Disposition: inline
+In-Reply-To: <20100120133144.GD3580@faui49.informatik.uni-erlangen.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/dSWNDpu1MzBAg+Lj9jzN+/2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 20 Jan 2010 07:51:41 +0100 (CET)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> On Tue, 19 Jan 2010, Clark Williams wrote:
-> > RT-ers,
-> >=20
-> > Lately we've been struggling with some performance issues on high-core
-> > count (>16 cores) NUMA machines with the RT kernel. During the course
-> > of troubleshooting this issue, we tried using the 'numactl' program to
-> > constrain our measurement testing tool (rteval) to a particular memory
-> > node, rather than letting everything float. Doing so showed marked
-> > improvement in both max latency and jitter.  While this doesn't solve
-> > our performance problems I thought it might make sense to have a --numa
-> > mode for cylictest that compliments the --smp mode just added.=20
-> >=20
-> > The big difference here is that when using --numa, each measurement
-> > thread (one per cpu) has it's stack allocated from the memory node
-> > associated with it's cpu. Also, the major data structures for each
-> > thread (parameter block, statistics block and histogram) are allocated
-> > from the appropriate node. This is done with calls into libnuma,
-> > which means this will add a dependency on libnuma.=20
->=20
-> That might cause some trouble for embedded folks. :(
+On Wed, Jan 20, 2010 at 02:31:44PM +0100, Christoph Egger wrote:
+> Hi all!
+> 
+> 	As part of the VAMOS[0] research project at the University of
+> Erlangen we're checking referential integrity between kernel KConfig
+> options and in-code Conditional blocks.
+> 
+> 	The config Variable USE_MIXARTLOADER has been non-existent for
+> all git based linux kernels (2.6.12-rc) and seems to be no longer
+> relevant. It is only referenced at one place in the Code
+> (sound/pci/mixart/mixart_hwdep.c).
+> 
+> 	The attached patch makes the behaviour more obvious as it is
+> equivalent to the old one when assuming CONFIG_MIXARTLOADER as not
+> defined.
+> 
+> 	Please keep me informed of this patch getting confirmed /
+> merged so we can keep track of it.
 
-Yeah, that's why I send the RFC, wanted to see who would hate me for
-it :).
+	Same is, of course, true for USE_PCXHRLOADER. Attached is a
+patch doing the same for both of them.
+ 
+Regards
 
-Carsten already told me off-list that one of his build machines didn't
-have numa.h, so I'm going to have to rearrange the build a bit.
+	Christoph Egger
 
-As much as I hate to say it, I think the best option is to use autoconf
-to detect if libnuma is available on the build platform and to take
-appropriate steps if it's not.=20
 
-The other idea I toyed with was dynamic loading of libnuma so there's
-not an install dependency for the libnuma package with the rt-tests
-package. I only use five functions from libnuma, so that's not too bad
-a set of function pointers to manage. Hmmm, that probably won't work
-very well, since I'll still have to include numa.h. Sigh...
 
-Clark
+--liOOAslEiF7prFVr
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="0001-config-USE_MIXARTLOADER-has-never-existed-in-KConfig.patch"
 
---Sig_/dSWNDpu1MzBAg+Lj9jzN+/2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+>From 5a6f78fb03278e0f825be74c94546a7d05c222df Mon Sep 17 00:00:00 2001
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Wed, 20 Jan 2010 14:23:47 +0100
+Subject: [PATCH] config USE_MIXARTLOADER has never existed in KConfig for 2.6 linux
+ kernels so this part of the check always evaluates to true thus
+ removing the part of the check.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
+The same is true for USE_PCXHRLOADER
 
-iEYEARECAAYFAktXByIACgkQHyuj/+TTEp0OtwCfZa2g3qej2MA8RCO/R16NJulx
-/p4Anied3kZJF+nXaLVqgbXQZd+CRA7Y
-=M8XX
------END PGP SIGNATURE-----
+Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+---
+ sound/pci/mixart/mixart_hwdep.c |    2 +-
+ sound/pci/pcxhr/pcxhr_hwdep.c   |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---Sig_/dSWNDpu1MzBAg+Lj9jzN+/2--
+diff --git a/sound/pci/mixart/mixart_hwdep.c b/sound/pci/mixart/mixart_hwdep.c
+index 4cf4cd8..ef39a58 100644
+--- a/sound/pci/mixart/mixart_hwdep.c
++++ b/sound/pci/mixart/mixart_hwdep.c
+@@ -545,7 +545,7 @@ static int mixart_dsp_load(struct mixart_mgr* mgr, int index, const struct firmw
+ 
+ 
+ #if defined(CONFIG_FW_LOADER) || defined(CONFIG_FW_LOADER_MODULE)
+-#if !defined(CONFIG_USE_MIXARTLOADER) && !defined(CONFIG_SND_MIXART) /* built-in kernel */
++#if !defined(CONFIG_SND_MIXART) /* built-in kernel */
+ #define SND_MIXART_FW_LOADER	/* use the standard firmware loader */
+ #endif
+ #endif
+diff --git a/sound/pci/pcxhr/pcxhr_hwdep.c b/sound/pci/pcxhr/pcxhr_hwdep.c
+index 17cb123..16152ce 100644
+--- a/sound/pci/pcxhr/pcxhr_hwdep.c
++++ b/sound/pci/pcxhr/pcxhr_hwdep.c
+@@ -35,7 +35,7 @@
+ 
+ 
+ #if defined(CONFIG_FW_LOADER) || defined(CONFIG_FW_LOADER_MODULE)
+-#if !defined(CONFIG_USE_PCXHRLOADER) && !defined(CONFIG_SND_PCXHR) /* built-in kernel */
++#if !defined(CONFIG_SND_PCXHR) /* built-in kernel */
+ #define SND_PCXHR_FW_LOADER	/* use the standard firmware loader */
+ #endif
+ #endif
+-- 
+1.6.3.3
+
+
+--liOOAslEiF7prFVr--
