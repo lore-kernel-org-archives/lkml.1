@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580Ab0ATKme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638Ab0ATKnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752580Ab0ATKme (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 05:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503Ab0ATKmd
+	id S1752638Ab0ATKnX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 05:43:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930Ab0ATKnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 05:42:33 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:46600 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340Ab0ATKmc convert rfc822-to-8bit (ORCPT
+	Wed, 20 Jan 2010 05:43:22 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:36938 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962Ab0ATKnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 05:42:32 -0500
-Subject: Re: linux-next: kvm tree build warning
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20100120174814.43195995.sfr@canb.auug.org.au>
-Date: Wed, 20 Jan 2010 11:42:28 +0100
-Cc: Avi Kivity <avi@qumranet.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <3727B46C-0197-47A4-AF41-023517C15752@suse.de>
-References: <20100120174814.43195995.sfr@canb.auug.org.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-X-Mailer: Apple Mail (2.1077)
+	Wed, 20 Jan 2010 05:43:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=gRwXEmJEOgzA+zs/fDVNBraNTws0EaIj8Afp2mBR+2qpWyW77bYO7eOuohCqD/ei3a
+         f5zONHPv9EBYErimWkr8pCCnVh7of8M3uOOSuM3kxFGvhlDIfAUlK0/4xMl38bD4YEXb
+         qLrIiaYjyOBrOo/JRVUXvKuUM7FdIgCqXNYAo=
+MIME-Version: 1.0
+In-Reply-To: <4B56A8A0.3050309@gmail.com>
+References: <20100116235653.898098245@gmail.com>
+	 <20100116235851.884756038@gmail.com> <4B5678E2.2050709@gmail.com>
+	 <4B568C63.4050506@gmail.com>
+	 <7eb6a4d81001192233i5418249ct5a1717045f75167c@mail.gmail.com>
+	 <4B56A8A0.3050309@gmail.com>
+Date: Wed, 20 Jan 2010 11:43:17 +0100
+Message-ID: <7eb6a4d81001200243k7ca637cco25d319a43edf86f5@mail.gmail.com>
+Subject: Re: [patch 2/2] sata_via: Delay on vt6420 when starting ATAPI DMA 
+	write
+From: Bart Hartgers <bart.hartgers@gmail.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       juergen.metzdorf@telelev-dsl.de, markpschool@hotmail.com,
+       sporadic.crash@gmail.com, apopov@sirma.bg, david@coomber.co.za,
+       jay4mail@gmail.com
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On 20.01.2010, at 07:48, Stephen Rothwell wrote:
+2010/1/20 Tejun Heo <htejun@gmail.com>:
+> Hello,
+>
+> On 01/20/2010 03:33 PM, Bart Hartgers wrote:
+>> Well, the ata_sff_pause actually does a ndelay(400), and with today's
+>> processors that would be a 'slow path', right?
+>
+> unlikely() is used to mark very unlikely paths not the slow ones and I
+> don't really think DMA_TO_DEVICE would qualify as an unlikely path.
+>
 
-> [Not sure what happened to the previous versions To/CC lists, sorry]
-> 
-> Hi all,
-> 
-> Today's linux-next build (powerpc allyesconfig) produced this warning:
-> 
-> arch/powerpc/kvm/book3s.c: In function '__kvmppc_vcpu_run':
-> arch/powerpc/kvm/book3s.c:1102: warning: 'ext_bkp.vrsave' may be used uninitialized in this function
-> 
-> Introduced by commit 2609c1d06b6a7952273fb33b33ad32aff0628146 ("KVM: PPC:
-> Add support for FPU/Altivec/VSX").  This *may* be a false positive but
-> will be a problem for normal builds where warnings are treated as errors
-> in arch/powerpc.
+Ok, I am convinced; I'll drop the unlikely.
 
+Groeten,
+Bart
 
-This is odd. The same function saves and restores ext_bkp.vrsave under a common condition:
-
-        if (save_vec) {
-                if (current->thread.regs->msr & MSR_VEC)
-                        giveup_altivec(current);
-                memcpy(ext_bkp.vr, current->thread.vr, sizeof(ext_bkp.vr));
-                ext_bkp.vscr = current->thread.vscr;
-                ext_bkp.vrsave = current->thread.vrsave;
-        }
+> Thanks.
+>
+> --
+> tejun
+>
 
 
-[...]
 
-        if (save_vec && current->thread.used_vr) {
-                memcpy(current->thread.vr, ext_bkp.vr, sizeof(ext_bkp.vr));
-                current->thread.vscr = ext_bkp.vscr;
-                current->thread.vrsave = ext_bkp.vrsave;
-        }
-
-
-So there can't be a case where ext_bkp.vrsave is read, but not written to before, which is what this warning implies, right?
-Also, why doesn't gcc complain about vscr too then? They're both used in the very same if statement.
-
-Additionally, while compiling locally I looked for warnings and didn't spot any. So apparently our compiler versions / options don't match. Which version of gcc are you using? I assume a gcc bug.
-
-$ gcc --version
-gcc (SUSE Linux) 4.3.2 [gcc-4_3-branch revision 141291]
-
-
-Alex
+-- 
+Bart Hartgers - New e-mail: bart.hartgers@gmail.com
