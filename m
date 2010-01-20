@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751695Ab0ATWz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752297Ab0ATW4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751695Ab0ATWz6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 17:55:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461Ab0ATWz5
+	id S1752297Ab0ATW4c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 17:56:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457Ab0ATW4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 17:55:57 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50269
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751147Ab0ATWz4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 17:55:56 -0500
-Date: Wed, 20 Jan 2010 14:56:04 -0800 (PST)
-Message-Id: <20100120.145604.21219905.davem@davemloft.net>
-To: marcel@holtmann.org
-Cc: lrodriguez@atheros.com, Luis.Rodriguez@atheros.com,
-       torvalds@linux-foundation.org, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mcgrof@gmail.com,
-       Vikram.Kandukuri@atheros.com, SongXing.Xu@atheros.com
-Subject: Re: [PATCH] Bluetooth: Add DFU driver for Atheros Bluetooth
- chipset AR3011
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1264027973.5591.241.camel@localhost.localdomain>
-References: <1264019268.5591.223.camel@localhost.localdomain>
-	<20100120210813.GF10113@tux>
-	<1264027973.5591.241.camel@localhost.localdomain>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jan 2010 17:56:31 -0500
+Received: from kroah.org ([198.145.64.141]:60838 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634Ab0ATW42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 17:56:28 -0500
+Date: Wed, 20 Jan 2010 14:50:27 -0800
+From: Greg KH <greg@kroah.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM / Runtime: Add sysfs switch for disabling
+ device run-time PM
+Message-ID: <20100120225027.GB31280@kroah.com>
+References: <201001180129.55219.rjw@sisk.pl>
+ <20100120025147.GA20979@kroah.com>
+ <201001202155.37062.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001202155.37062.rjw@sisk.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcel Holtmann <marcel@holtmann.org>
-Date: Wed, 20 Jan 2010 14:52:53 -0800
+On Wed, Jan 20, 2010 at 09:55:36PM +0100, Rafael J. Wysocki wrote:
+> On Wednesday 20 January 2010, Greg KH wrote:
+> > On Mon, Jan 18, 2010 at 01:29:55AM +0100, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > Subject: PM / Runtime: Add sysfs switch for disabling device run-time PM
+> > > 
+> > > Add new device sysfs attribute, power/runtime, allowing the user
+> > > space to block the run-time power management of the device.  If this
+> > > attribute is set to "disabled", the driver of the device won't be
+> > > able to enable run-time power management for it (without breaking the
+> > > rules).
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > >  drivers/base/power/power.h   |    4 +
+> > >  drivers/base/power/runtime.c |  107 +++++++++++++++++++++++++++++++++----------
+> > >  drivers/base/power/sysfs.c   |   46 ++++++++++++++++++
+> > >  include/linux/pm.h           |    1 
+> > >  include/linux/pm_runtime.h   |   11 +---
+> > >  5 files changed, 139 insertions(+), 30 deletions(-)
+> > 
+> > You forgot to also add an entry into Documentation/ABI/ for when you
+> > add/change a sysfs file :)
+> 
+> There's no description for /sys/devices/.../power/wakeup in there too and
+> that one has been present for quite some time already.
+> 
+> I'd prefer adding them both in a separate patch if you don't mind.
 
-> sorry that I missed that email, I read the subject as FYI if you are
-> using that driver. Which I actually don't since nobody ever send me
-> hardware ;)
+That's fine with me, as long as you add them :)
 
-Marcel, you miss quite a few bluetooth patches I have to
-say.
+thanks,
 
-Why not setup patchwork for linux-bluetooth and that way there can
-much less confusion and less situations like this?
-
-Thanks.
+greg k-h
