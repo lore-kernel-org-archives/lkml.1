@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221Ab0ATJgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752332Ab0ATJiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752221Ab0ATJgE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 04:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478Ab0ATJgA
+	id S1752332Ab0ATJiA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 04:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187Ab0ATJh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 04:36:00 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56254 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751413Ab0ATJgA (ORCPT
+	Wed, 20 Jan 2010 04:37:59 -0500
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:34891 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490Ab0ATJh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 04:36:00 -0500
-Date: Wed, 20 Jan 2010 10:35:55 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Dan Terpstra <terpstra@eecs.utk.edu>, Philip Mucci <mucci@eecs.utk.edu>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>
-Subject: Re: [RFC] perf_events: support for uncore a.k.a. nest units
-Message-ID: <20100120093555.GA24355@basil.fritz.box>
-References: <4B560ACD.4040206@linux.vnet.ibm.com> <20100120004430.GA23484@basil.fritz.box> <4B566131.6020300@linux.vnet.ibm.com>
+	Wed, 20 Jan 2010 04:37:57 -0500
+Message-ID: <4B56CEF0.2040406@linux.vnet.ibm.com>
+Date: Wed, 20 Jan 2010 15:07:52 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0b1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B566131.6020300@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       kirill@shutemov.name
+Subject: Re: [PATCH mmotm] memcg use generic percpu allocator instead of private
+ one
+References: <20100120161825.15c372ac.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100120161825.15c372ac.kamezawa.hiroyu@jp.fujitsu.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes, I agree.  Also it's easy to construct a system design that doesn't 
-> have a hierarchical topology.  A simple example would be a cluster of 32 
-> nodes, each of which is connected to its 31 neighbors.  Perhaps for the 
+On Wednesday 20 January 2010 12:48 PM, KAMEZAWA Hiroyuki wrote:
+> This patch is onto mmotm Jan/15.
+> =
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> When per-cpu counter for memcg was implemneted, dynamic percpu allocator
+> was not very good. But now, we have good one and useful macros.
+> This patch replaces memcg's private percpu counter implementation with
+> generic dynamic percpu allocator and macros.
+> 
+> The benefits are
+> 	- We can remove private implementation.
+> 	- The counters will be NUMA-aware. (Current one is not...)
+> 	- This patch reduces sizeof(struct mem_cgroup). Then,
+> 	  struct mem_cgroup may be fit in page size on small config.
+> 
+> By this, size of text is reduced.
+>  [Before]
+>  [kamezawa@bluextal mmotm-2.6.33-Jan15]$ size mm/memcontrol.o
+>    text    data     bss     dec     hex filename
+>   24373    2528    4132   31033    7939 mm/memcontrol.o
+>  [After]
+>  [kamezawa@bluextal mmotm-2.6.33-Jan15]$ size mm/memcontrol.o
+>    text    data     bss     dec     hex filename
+>   23913    2528    4132   30573    776d mm/memcontrol.o
+> 
+> This includes no functional changes.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-I doubt it's needed or useful to describe all details of an interconnect.
 
-If detailed distance information is needed a simple table like
-the SLIT table exported by ACPI would seem easier to handle.
+Before review, could you please post parallel pagefault data on a large
+system, since root now uses these per cpu counters and its overhead is
+now dependent on these counters. Also the data read from root cgroup is
+also dependent on these, could you make sure that is not broken.
 
-But at least some degree of locality (e.g. "local memory controller")
-would make sense.
-
-
-> purposes of just enumerating PMUs, a tree might be sufficient, but it's not 
-> clear to me that it is mathematically sufficient for all topologies, not to 
-> mention if it's intuitive enough to use.  For example, 
-> highly-interconnected components might require that PMU leaf nodes be 
-> duplicated in multiple branches, i.e. PMU paths might not be unique in some 
-> topologies.
-
-We already have cyclical graphs in sysfs using symlinks. I'm not 
-sure they are all that easy to parse/handle, but at least they
-can be described.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Balbir
