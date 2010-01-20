@@ -1,100 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995Ab0ATR7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677Ab0ATSA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752995Ab0ATR7P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 12:59:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077Ab0ATR7O
+	id S1753677Ab0ATSA1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 13:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875Ab0ATSA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 12:59:14 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:60754 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053Ab0ATR7L (ORCPT
+	Wed, 20 Jan 2010 13:00:26 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:62418 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752710Ab0ATSAZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 12:59:11 -0500
-X-Greylist: delayed 384 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jan 2010 12:59:11 EST
+	Wed, 20 Jan 2010 13:00:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=pzIv5qwXo3WiZvWnBgKwJGs4Iql2w0BgVTD71JsEZ50oXWzZHx45dBlCDJG3q8CLMN
-         t2bggwphmtve2ryRCcSKjzmMoecfyvYuOkA6CAENU0bSTeSOiWPP+VZAePt11Dh2f16x
-         SwZyL8GP+Edcv25TJhzUS8EcLOvLVteIjakeI=
-Date: Wed, 20 Jan 2010 18:52:09 +0100
+        b=xAUPAcSb1RkUxlGfuIL6CBc9OURL6L4LwK4axfv1Da9kN2SvKebSKt9bPwH6jZDCnL
+         K7U8n0ymGd3GaZFr4wMaNoI/UiAHL3Ab7g7CPqiSyMHCiOrXmvWNKBKZoB5ZEUDVq1wy
+         +7DoTfDoy7dyl68gh5xxoLQsf14QYZrdd0AjA=
+Date: Wed, 20 Jan 2010 19:00:21 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
        Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/6] : bug fix, remove partial zero out
-Message-ID: <20100120175205.GA5017@nowhere>
-References: <4B556064.7080700@cn.fujitsu.com>
+Subject: Re: [PATCH 3/6] tracing: tracing_stats_read() uses simple buffer
+	instead of trace_seq
+Message-ID: <20100120180019.GB5017@nowhere>
+References: <4B556070.6000204@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B556064.7080700@cn.fujitsu.com>
+In-Reply-To: <4B556070.6000204@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 03:33:56PM +0800, Lai Jiangshan wrote:
-> partial-zero-out a struct is very dangerous, we should zero out
-> field by field directly when need.
+On Tue, Jan 19, 2010 at 03:34:08PM +0800, Lai Jiangshan wrote:
 > 
-> partial-zero-out for struct trace_iterator exists when ftrace
-> was first introduced into mainline kernel. But in this few years,
-> the code of ftrace is changed a lot, and:
-> 
-> 1) partial-zero-out for struct trace_iterator has a bug now,
->    cpumask_var_t started should not be zeroed out.
-> 
-> 2) I viewed the codes and found that fields below
->    "/* The below is zeroed out in pipe_read */"
->    don't need to be zeroed out or initialized now.
-> 
-> So, we remove the code of "partial zero out"
+> It seems that struct trace_seq is too heavy for tracing_stats_read().
+> we use simple buffer instead of struct trace_seq.
 > 
 > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 > ---
-> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> index 3ca9485..c6d0e1a 100644
-> --- a/include/linux/ftrace_event.h
-> +++ b/include/linux/ftrace_event.h
-> @@ -54,7 +54,6 @@ struct trace_iterator {
->  	struct ring_buffer_iter	*buffer_iter[NR_CPUS];
->  	unsigned long		iter_flags;
->  
-> -	/* The below is zeroed out in pipe_read */
->  	struct trace_seq	seq;
->  	struct trace_entry	*ent;
->  	int			leftover;
 > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 5314c90..27fecf8 100644
+> index 27fecf8..aa1cd92 100644
 > --- a/kernel/trace/trace.c
 > +++ b/kernel/trace/trace.c
-> @@ -3124,12 +3124,6 @@ waitagain:
->  	if (cnt >= PAGE_SIZE)
->  		cnt = PAGE_SIZE - 1;
+> @@ -3807,27 +3807,22 @@ tracing_stats_read(struct file *filp, char __user *ubuf,
+>  {
+>  	unsigned long cpu = (unsigned long)filp->private_data;
+>  	struct trace_array *tr = &global_trace;
+> -	struct trace_seq *s;
+>  	unsigned long cnt;
 >  
-> -	/* reset all but tr, trace, and overruns */
-> -	memset(&iter->seq, 0,
-> -	       sizeof(struct trace_iterator) -
-> -	       offsetof(struct trace_iterator, seq));
-> -	iter->pos = -1;
+> -	s = kmalloc(sizeof(*s), GFP_KERNEL);
+> -	if (!s)
+> -		return -ENOMEM;
 > -
+> -	trace_seq_init(s);
+> +	unsigned char buf[128];
 
 
 
-I'm not sure exaclty why we needed to zero the seq here.
-We already reset it in trace_seq_init().
+No problem with the conversion. But perhaps keep using a dynamic
+buffer as 128 is a bit big for a kernel stack.
 
-We might do it again on waitagain. I lost track how we could
-ever need to goto waitagain. It was about a tricky bug to fix
-but I'm don't remember exactly the details.
 
-That said, if trace_seq_to_user returns -EBUSY, we
-re-init the seq buffer, so it should be fine I guess.
-
-But concerning the need of setting iter->pos to -1, I'm not
-sure we need to remove it. Shouldn't it be set to 0 btw?
-
-Steve?
+> +	int len = 0;
+>  
+>  	cnt = ring_buffer_entries_cpu(tr->buffer, cpu);
+> -	trace_seq_printf(s, "entries: %ld\n", cnt);
+> +	len += sprintf(buf + len, "entries: %ld\n", cnt);
+>  
+>  	cnt = ring_buffer_overrun_cpu(tr->buffer, cpu);
+> -	trace_seq_printf(s, "overrun: %ld\n", cnt);
+> +	len += sprintf(buf + len, "overrun: %ld\n", cnt);
+>  
+>  	cnt = ring_buffer_commit_overrun_cpu(tr->buffer, cpu);
+> -	trace_seq_printf(s, "commit overrun: %ld\n", cnt);
+> -
+> -	count = simple_read_from_buffer(ubuf, count, ppos, s->buffer, s->len);
+> +	len += sprintf(buf + len, "commit overrun: %ld\n", cnt);
+>  
+> -	kfree(s);
+> +	BUG_ON(len >= sizeof(buf)); /* should not happen, 128 is enough. */
+> +	count = simple_read_from_buffer(ubuf, count, ppos, buf, len);
+>  
+>  	return count;
+>  }
+> 
 
