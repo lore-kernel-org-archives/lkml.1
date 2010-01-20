@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309Ab0ATMqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646Ab0ATMwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752309Ab0ATMqt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 07:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955Ab0ATMqt
+	id S1752646Ab0ATMwg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 07:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922Ab0ATMwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 07:46:49 -0500
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:45268 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739Ab0ATMqs (ORCPT
+	Wed, 20 Jan 2010 07:52:33 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:62309 "EHLO
+	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752137Ab0ATMwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 07:46:48 -0500
-Message-ID: <4B56FB33.2090408@linux.vnet.ibm.com>
-Date: Wed, 20 Jan 2010 18:16:43 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0b1 Thunderbird/3.0
+	Wed, 20 Jan 2010 07:52:33 -0500
+Date: Wed, 20 Jan 2010 13:52:49 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: linux-kernel@vger.kernel.org, hch@infradead.org, xfs@oss.sgi.com,
+       xfs-masters@oss.sgi.com
+Cc: siccegge@stud.informatik.uni-erlangen.de,
+       Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: Obsolete config in kernel build system (XFS_TRACE)
+Message-ID: <20100120125249.GC3580@faui49.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       kirill@shutemov.name
-Subject: Re: [PATCH mmotm] memcg use generic percpu allocator instead of private
- one
-References: <20100120161825.15c372ac.kamezawa.hiroyu@jp.fujitsu.com> <4B56CEF0.2040406@linux.vnet.ibm.com> <20100120184707.ed99b540.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100120184707.ed99b540.kamezawa.hiroyu@jp.fujitsu.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 January 2010 03:17 PM, KAMEZAWA Hiroyuki wrote:
-> On Wed, 20 Jan 2010 15:07:52 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> On Wednesday 20 January 2010 12:48 PM, KAMEZAWA Hiroyuki wrote:
->>> This patch is onto mmotm Jan/15.
->>> =
->>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>>
->>> When per-cpu counter for memcg was implemneted, dynamic percpu allocator
->>> was not very good. But now, we have good one and useful macros.
->>> This patch replaces memcg's private percpu counter implementation with
->>> generic dynamic percpu allocator and macros.
->>>
->>> The benefits are
->>> 	- We can remove private implementation.
->>> 	- The counters will be NUMA-aware. (Current one is not...)
->>> 	- This patch reduces sizeof(struct mem_cgroup). Then,
->>> 	  struct mem_cgroup may be fit in page size on small config.
->>>
->>> By this, size of text is reduced.
->>>  [Before]
->>>  [kamezawa@bluextal mmotm-2.6.33-Jan15]$ size mm/memcontrol.o
->>>    text    data     bss     dec     hex filename
->>>   24373    2528    4132   31033    7939 mm/memcontrol.o
->>>  [After]
->>>  [kamezawa@bluextal mmotm-2.6.33-Jan15]$ size mm/memcontrol.o
->>>    text    data     bss     dec     hex filename
->>>   23913    2528    4132   30573    776d mm/memcontrol.o
->>>
->>> This includes no functional changes.
->>>
->>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>
->>
->> Before review, could you please post parallel pagefault data on a large
->> system, since root now uses these per cpu counters and its overhead is
->> now dependent on these counters. Also the data read from root cgroup is
->> also dependent on these, could you make sure that is not broken.
->>
-> No number difference before/after patch on my SMP quick test.
-> But I don't have NUMA. Could you test on NUMA ?
-> 
-> I'll measure again tomorrow if I have machine time.
+Hi all!
 
-I'll do the same as well if possible.
+	As part of the VAMOS[0] research project at the University of
+Erlangen we're checking referential integrity between kernel KConfig
+options and in-code Conditional blocks.
 
-Balbir
+	Git commit 0b1b213fcf3a8486ada99a2bab84ab8c6f51b264 by
+Christoph Hellwig removed all References to CONFIG_XFS_TRACE, which is
+unreferenced from KConfig side from the linux source code so there's
+only a small bit of it left in KBuild. Mayee remove it as well?
+
+./fs/xfs/Makefile:95
++++>
+
+xfs-$(CONFIG_XFS_TRACE)         += xfs_btree_trace.o
+
+<+++
+
+	Please keep me informed of this patch getting confirmed /
+merged so we can keep track of it.
+
+Regards
+
+	Christoph Egger
+
