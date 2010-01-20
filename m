@@ -1,110 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753690Ab0ATRyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555Ab0ATR4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753690Ab0ATRyj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 12:54:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499Ab0ATRyi
+	id S1752555Ab0ATR4X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 12:56:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258Ab0ATR4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 12:54:38 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:45504 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753420Ab0ATRyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 12:54:37 -0500
-Message-ID: <4B574359.9080308@us.ibm.com>
-Date: Wed, 20 Jan 2010 09:54:33 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 20 Jan 2010 12:56:22 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:32840 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218Ab0ATR4V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 12:56:21 -0500
+Message-ID: <4B574297.7070504@nortel.com>
+Date: Wed, 20 Jan 2010 11:51:19 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-To: Andrew Athan <linux_kernel_aathan@memeplex.com>
-CC: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Gong Cheng <chengg11@yahoo.com>
-Subject: Re: Futex hang/lockup problem in 2.6.30+ on AMD64
-References: <4B4C3E4F.9060001@memeplex.com> <20100112145213.GB3925@hack> <1263308127.4244.142.camel@laptop> <2375c9f91001120700r4c2e1e05l5e5be3ddc6a13da2@mail.gmail.com> <4B4CA27F.1060102@memeplex.com> <4B568C3A.4080301@memeplex.com>
-In-Reply-To: <4B568C3A.4080301@memeplex.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Catalin Marinas <catalin.marinas@arm.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: issues with kmemleak backport
+References: <4B55F3EF.9020408@nortel.com> <4B561D8D.1000003@nortel.com>
+In-Reply-To: <4B561D8D.1000003@nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Jan 2010 17:56:06.0429 (UTC) FILETIME=[D6DE74D0:01CA99F9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Athan wrote:
-> Andrew Athan wrote:
->> Américo Wang wrote:
->>> On Tue, Jan 12, 2010 at 10:55 PM, Peter Zijlstra 
->>> <peterz@infradead.org> wrote:
->>>  
->>>> On Tue, 2010-01-12 at 22:52 +0800, Américo Wang wrote:
->>>>
->>>>   
->>>>>> $ uname -a
->>>>>> Linux UK22 2.6.30-2-amd64 #1 SMP Fri Sep 25 22:16:56 UTC 2009 x86_64
->>>>>> GNU/Linux
->>>>>>         
->>>> Does a recent kernel work?
->>>>
->>>>
->>>>     
->>>
->>> Ah, I just wanted to ask the same question, adding the original reporter
->>> Gong Cheng into Cc...
->>>
->>> Gong, could you reproduce it on the latest kernel? And what is your 
->>> .config?
->>>
->>> Thanks!
->>> -- 
->>> To unsubscribe from this list: send the line "unsubscribe 
->>> linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>>   
->> Due to remote location of the hardware and I haven't been able to test 
->> a more recent (or older) kernel.  Remote hands have put a KVM on the 
->> box as of an hour ago, so I hope to have some information for you in a 
->> day or two.
->>
->> A.
->>
-> 
-> 
-> I wanted to report that although I have had no luck (so far) running 
-> anything more recent than 2.6.30, I was able to revert to 2.6.26.  
-> Unfortunately, the application hang still occurs.  I also saw a similar 
-> hang of the application running on a 32 bit Intel box, also under 
-> 2.6.26.  So far, the hang *always* involves threads stuck on 
-> pthread_cond_broadcast()'s  condition variable's internal lock while 
-> other threads are waiting on the outer "public" lock.
+After the previous message I commented out the per-cpu scan but now I'm
+seeing the following:
 
 
-Are you using real-time scheduling policy or priority inheritance 
-(PTHREAD_PRIO_INHERIT)? It is possible to suffer an unbounded priority 
-inversion on the internal condvar data lock in the current distro 
-implementations of glibc.
+root@10:/root> BUG: unable to handle kernel paging request at 8152a79c
+IP: [<c048ad52>] scan_block+0xd2/0x120
+Kcore timestamp : 1263971633.595000
+Kcore HighResolution timestamp : 238BAE499D2
+Oops: 0000 [#1] SMP
+Modules linked in: kmemleak_test pmemfs
+
+Pid: 889, comm: bash Not tainted (2.6.27-pne #32)
+EIP: 0060:[<c048ad52>] EFLAGS: 00010082 CPU: 2
+EIP is at scan_block+0xd2/0x120
+EAX: 00000000 EBX: 8152a79c ECX: 00000000 EDX: 8e7d441b
+ESI: 8152a79c EDI: 8152a79d EBP: de893ea8 ESP: de893e8c
+ DS: 0068 ES: 0068 FS: 00d8 GS: 0033 SS: 0068
+Process bash (pid: 889, ti=de892000 task=df947200 task.ti=de892000)
+Stack: c08a758d 8152a79c 8152a7a0 df9889a0 8152b79c 00000246 df9889a0
+de893ed0
+       c048aee8 00000000 8152a79c 8152a7a0 8152a7a0 8152a79c df947200
+c0919220
+       00020000 de893f00 c048b074 00000000 00000000 00000202 00000001
+df940068
+Call Trace:
+ [<c048aee8>] ? scan_gray_list+0x148/0x190
+ [<c048b074>] ? kmemleak_scan+0x144/0x390
+ [<c048b5aa>] ? kmemleak_write+0x1aa/0x2e0
+ [<c048a62b>] ? put_object+0x2b/0x40
+ [<c048e40c>] ? vfs_write+0x9c/0x140
+ [<c048b400>] ? kmemleak_write+0x0/0x2e0
+ [<c048e5c3>] ? sys_write+0x43/0xb0
+ [<c0403541>] ? system_call_done+0x0/0x4
 
 
-> These other 
-> threads are *not* yet (nor about to) pthread_cond_wait().  I saw a 
-> message from Darren Hart (subject "Re: Problems with futex") in response 
-> to someone who apparently was having futex problems in 2.6.27, so I'm 
-> still operating under the assumption that this is not an application bug.
+The code is failing at the "pointer = *ptr;" line in scan_block().
 
-Those all turned out to be application issues with one exception which 
-had already been fixed upstream.
+Based on some added instrumentation, we're scanning an object from from
+8152a79c to 8152a7a0, which in turn is scanning a block from 8152a79c to
+8152a7a0, so this is the first address in the block.
+
+The odd thing is that as far as I can tell this should be a valid
+address.  This is a 32-bit x86 kernel, with CONFIG_FLATMEM=y, and the
+memory map is:
+
+virtual kernel memory layout:
+    fixmap  : 0xfff81000 - 0xfffff000   ( 504 kB)
+    pkmap   : 0xffa00000 - 0xffc00000   (2048 kB)
+    vmalloc : 0xe0800000 - 0xff9fe000   ( 497 MB)
+    lowmem  : 0xc0000000 - 0xe0000000   ( 512 MB)
+      .init : 0xc0106000 - 0xc0400000   (3048 kB)
+      .data : 0xc0919000 - 0xc095634c   ( 244 kB)
+      .text : 0xc0400000 - 0xc081bcdc   (4207 kB)
 
 
-> Over the next couple of days, I will be running a version of the 
-> application in which I replaced the pthread_cond calls with simpler 
-> locks, in the hopes that it won't hang (because I'm hoping the 
-> underlying implementation in pthreads uses a different set of futex 
-> opcodes).
-> 
-> Andrew Athan
-> 
+If anyone has any suggestions, I'd appreciate it.
 
+Thanks,
+Chris
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
