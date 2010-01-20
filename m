@@ -1,97 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925Ab0ATSFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942Ab0ATSKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925Ab0ATSFP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 13:05:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859Ab0ATSFO
+	id S1753942Ab0ATSKV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 13:10:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847Ab0ATSKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 13:05:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35140 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753766Ab0ATSFL (ORCPT
+	Wed, 20 Jan 2010 13:10:15 -0500
+Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:17357 "EHLO
+	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752899Ab0ATSKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 13:05:11 -0500
-Date: Wed, 20 Jan 2010 10:03:16 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>, Michael Breuer <mbreuer@majjas.com>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
-Message-ID: <20100120100316.2b5b1b05@nehalam>
-In-Reply-To: <20100120094103.GA6225@ff.dom.local>
-References: <20100120094103.GA6225@ff.dom.local>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 20 Jan 2010 13:10:13 -0500
+Message-ID: <4B574702.4040602@hp.com>
+Date: Wed, 20 Jan 2010 13:10:10 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Julia Lawall <julia@diku.dk>
+Cc: Sridhar Samudrala <sri@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-sctp@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/9] net/sctp: Eliminate useless code
+References: <Pine.LNX.4.64.1001161657570.28745@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.1001161657570.28745@ask.diku.dk>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010 09:41:03 +0000
-Jarek Poplawski <jarkao2@gmail.com> wrote:
 
-> [ previously: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit() ]
-> On Tue, Jan 19, 2010 at 05:10:13PM -0800, Stephen Hemminger wrote:
-> > On Tue, 19 Jan 2010 20:01:10 -0500
-> > Michael Breuer <mbreuer@majjas.com> wrote:
-> > 
-> > > On 1/19/2010 5:45 PM, Jarek Poplawski wrote:
-> > > > On Tue, Jan 19, 2010 at 03:06:01PM -0500, Michael Breuer wrote:
-> > > >    
-> > > >> On 1/19/2010 2:59 PM, Jarek Poplawski wrote:
-> > > >>      
-> > > >>> On Tue, Jan 19, 2010 at 10:47:27AM -0500, Michael Breuer wrote:
-> > > >>> ...
-> > > >>>        
-> > > >>>> Still get the warning... but now 60 bytes.
-> > > >>>> Jan 19 10:43:50 mail kernel: ------------[ cut here ]------------
-> > > >>>> Jan 19 10:43:50 mail kernel: WARNING: at lib/dma-debug.c:902
-> ...
-> > > That not only compiled, but it cleared the error as well. Additionally, 
-> > > I used to see a bit of a delay receiving the login prompt when first 
-> > > connecting to the box by ssh. That delay is gone with this patch. I'd 
-> > > guess that the warning wasn't quite as innocuous as I thought.
-> > > Note: tested on 2.6.32.4.  I'll leave this up for a bit before 
-> > > attempting to move back to head.
-> > 
-> > Seems like an underlying bug in the DMA api. Maybe it just can't
-> > handle operations on partial mapping.
-> > 
-> > Other drivers with same problem:
-> >   bnx2, cassini, pcnet32, r8169, rrunner, skge, sungem, tg3, 
+
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> It seems using the same length (even without pci_unmap_len()) is
-> crucial here, but I hope maintainers (added to CC) will take care.
+> The variable newinet is initialized twice to the same (side effect-free)
+> expression.  Drop one initialization.
 > 
-> Btw, it's not tested yet, but it might affect CONFIG_DMAR problems.
+> A simplified version of the semantic match that finds this problem is:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @forall@
+> idexpression *x;
+> identifier f!=ERR_PTR;
+> @@
+> 
+> x = f(...)
+> ... when != x
+> (
+> x = f(...,<+...x...+>,...)
+> |
+> * x = f(...)
+> )
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-The list of places to inspect is:
+Acked-by: Vlad Yasevich <vladislav.yasevich@hp.com>
 
-$ git grep -l sync_single_for_cpu $(git grep -l skb_copy_from_linear_data)
-drivers/infiniband/ulp/ipoib/ipoib_cm.c
-drivers/message/fusion/mptlan.c
-drivers/net/b44.c
-drivers/net/bnx2.c
-drivers/net/cassini.c
-drivers/net/chelsio/sge.c
-drivers/net/cxgb3/sge.c
-drivers/net/irda/vlsi_ir.c
-drivers/net/myri_sbus.c
-drivers/net/r8169.c
-drivers/net/rrunner.c
-drivers/net/skge.c
-drivers/net/sky2.c
-drivers/net/sungem.c
-drivers/net/sunhme.c
-drivers/net/tg3.c
-drivers/net/tokenring/3c359.c
-drivers/net/tokenring/olympic.c
-drivers/net/tulip/de2104x.c
-drivers/net/via-velocity.c
-drivers/net/wireless/ipw2x00/ipw2100.c
-drivers/net/wireless/ipw2x00/ipw2200.c
+
+> 
+> ---
+>  net/sctp/socket.c                   |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/sctp/socket.c b/net/sctp/socket.c
+> index 67fdac9..f6d1e59 100644
+> --- a/net/sctp/socket.c
+> +++ b/net/sctp/socket.c
+> @@ -6359,7 +6359,7 @@ void sctp_copy_sock(struct sock *newsk, struct sock *sk,
+>  		    struct sctp_association *asoc)
+>  {
+>  	struct inet_sock *inet = inet_sk(sk);
+> -	struct inet_sock *newinet = inet_sk(newsk);
+> +	struct inet_sock *newinet;
+>  
+>  	newsk->sk_type = sk->sk_type;
+>  	newsk->sk_bound_dev_if = sk->sk_bound_dev_if;
+> 
