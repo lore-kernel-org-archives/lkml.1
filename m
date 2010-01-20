@@ -1,74 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301Ab0ATT6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343Ab0ATUB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301Ab0ATT6d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 14:58:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268Ab0ATT6c
+	id S1754343Ab0ATUB0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 15:01:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330Ab0ATUBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 14:58:32 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:41911 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754213Ab0ATT6c (ORCPT
+	Wed, 20 Jan 2010 15:01:25 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46446 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754320Ab0ATUBW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 14:58:32 -0500
-Date: Wed, 20 Jan 2010 20:58:26 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, ananth@in.ibm.com,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-Message-ID: <20100120195826.GB24355@basil.fritz.box>
-References: <4B545146.3080001@redhat.com> <20100118124419.GC1628@linux.vnet.ibm.com> <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com> <4B5459CA.9060603@redhat.com> <4B545ACF.40203@cs.helsinki.fi> <1263852957.2266.38.camel@localhost.localdomain> <4B556855.6040800@redhat.com> <1263923265.4998.28.camel@localhost.localdomain> <87wrzc39ww.fsf@basil.nowhere.org> <1264016052.5122.40.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264016052.5122.40.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 20 Jan 2010 15:01:22 -0500
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: torvalds@linux-foundation.org, marcel@holtmann.org
+Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mcgrof@gmail.com, Vikram Kandukuri <vkandukuri@atheros.com>,
+       Vikram Kandukuri <vikram.kandukuri@atheros.com>,
+       Alicke Xu <sxu@atheros.com>
+Subject: [PATCH] Bluetooth: Add DFU driver for Atheros Bluetooth chipset AR3011
+Date: Wed, 20 Jan 2010 15:01:19 -0500
+Message-Id: <1264017679-19324-1-git-send-email-lrodriguez@atheros.com>
+X-Mailer: git-send-email 1.6.2.rc1.3.g81d3f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Re: rewriting instructions that use rip-relative addressing.  We do that
-> now.  See handle_riprel_insn() in patch #2.  (As far as we can tell, it
-> works, but we'd appreciate your review of it.)
+From: Vikram Kandukuri <vkandukuri@atheros.com>
 
-Yes, but how do you get within 2GB of it? Add lots of holes
-in the address space? 
+Signed-off-by: Vikram Kandukuri <vikram.kandukuri@atheros.com>
+Signed-off-by: Alicke Xu <sxu@atheros.com>
+Reviewed-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+---
 
-> The instruction decoder is used only during instruction analysis, while
-> registering the probe -- i.e., in kernel space.
+Linus, this was merged into linux-next already. The driver is small enough,
+it just uploads firmware, I figured it would likely be welcomed into 2.6.33-rc5.
+The patch is the same as it went into linux-next. The firmware is already
+merged as part of the linux-firmware git tree.
 
-Registering the user probe? That means if there's a buffer overflow
-in there it would be exploitable.
+Distributions who want ath3k as part of older kernels (distributions preparing
+a release based on 2.6.32) can snatch the driver apart by using:
 
-> > 
-> > In general the trend has been also to make traps faster in the CPU, make 
-> > sure you're not optimizing for some old CPU here.
-> 
-> I won't argue with that.  What Avi seems to be proposing buys us a
-> speedup, but at the cost of increased complexity -- among other things,
-> splitting the instrumentation code between user space (in the "XOL" area
-> -- which would then be used for much more than XOL instruction slots)
+git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/ath3k.git
 
-You can't have a single XOL area, at least not if you want to support
-shared libraries on 64bit & rip relative.
+  Luis
 
-> and kernel space.  The splitting would presumably be handled by
-> higher-level code -- SystemTap, perf, or whatever.  It's a neat idea,
-> but it seems like a v2 kind of feature.
+ drivers/bluetooth/Kconfig  |   13 +++-
+ drivers/bluetooth/Makefile |    1 +
+ drivers/bluetooth/ath3k.c  |  187 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 200 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/bluetooth/ath3k.c
 
-I'm not sure it can even work, unless you severly limited the allowed
-instructions.
-
--Andi
-
+diff --git a/drivers/bluetooth/Kconfig b/drivers/bluetooth/Kconfig
+index 652367a..058fbcc 100644
+--- a/drivers/bluetooth/Kconfig
++++ b/drivers/bluetooth/Kconfig
+@@ -195,5 +195,16 @@ config BT_MRVL_SDIO
+ 	  Say Y here to compile support for Marvell BT-over-SDIO driver
+ 	  into the kernel or say M to compile it as module.
+ 
+-endmenu
++config BT_ATH3K
++	tristate "Atheros firmware download driver"
++	depends on BT_HCIBTUSB
++	select FW_LOADER
++	help
++	  Bluetooth firmware download driver.
++	  This driver loads the firmware into the Atheros Bluetooth
++	  chipset.
+ 
++	  Say Y here to compile support for "Atheros firmware download driver"
++	  into the kernel or say M to compile it as module (ath3k).
++
++endmenu
+diff --git a/drivers/bluetooth/Makefile b/drivers/bluetooth/Makefile
+index b3f57d2..7e5aed5 100644
+--- a/drivers/bluetooth/Makefile
++++ b/drivers/bluetooth/Makefile
+@@ -15,6 +15,7 @@ obj-$(CONFIG_BT_HCIBTUART)	+= btuart_cs.o
+ obj-$(CONFIG_BT_HCIBTUSB)	+= btusb.o
+ obj-$(CONFIG_BT_HCIBTSDIO)	+= btsdio.o
+ 
++obj-$(CONFIG_BT_ATH3K)		+= ath3k.o
+ obj-$(CONFIG_BT_MRVL)		+= btmrvl.o
+ obj-$(CONFIG_BT_MRVL_SDIO)	+= btmrvl_sdio.o
+ 
+diff --git a/drivers/bluetooth/ath3k.c b/drivers/bluetooth/ath3k.c
+new file mode 100644
+index 0000000..add9485
+--- /dev/null
++++ b/drivers/bluetooth/ath3k.c
+@@ -0,0 +1,187 @@
++/*
++ * Copyright (c) 2008-2009 Atheros Communications Inc.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ */
++
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/device.h>
++#include <linux/firmware.h>
++#include <linux/usb.h>
++#include <net/bluetooth/bluetooth.h>
++
++#define VERSION "1.0"
++
++
++static struct usb_device_id ath3k_table[] = {
++	/* Atheros AR3011 */
++	{ USB_DEVICE(0x0CF3, 0x3000) },
++	{ }	/* Terminating entry */
++};
++
++MODULE_DEVICE_TABLE(usb, ath3k_table);
++
++#define USB_REQ_DFU_DNLOAD	1
++#define BULK_SIZE		4096
++
++struct ath3k_data {
++	struct usb_device *udev;
++	u8 *fw_data;
++	u32 fw_size;
++	u32 fw_sent;
++};
++
++static int ath3k_load_firmware(struct ath3k_data *data,
++				unsigned char *firmware,
++				int count)
++{
++	u8 *send_buf;
++	int err, pipe, len, size, sent = 0;
++
++	BT_DBG("ath3k %p udev %p", data, data->udev);
++
++	pipe = usb_sndctrlpipe(data->udev, 0);
++
++	if ((usb_control_msg(data->udev, pipe,
++				USB_REQ_DFU_DNLOAD,
++				USB_TYPE_VENDOR, 0, 0,
++				firmware, 20, USB_CTRL_SET_TIMEOUT)) < 0) {
++		BT_ERR("Can't change to loading configuration err");
++		return -EBUSY;
++	}
++	sent += 20;
++	count -= 20;
++
++	send_buf = kmalloc(BULK_SIZE, GFP_ATOMIC);
++	if (!send_buf) {
++		BT_ERR("Can't allocate memory chunk for firmware");
++		return -ENOMEM;
++	}
++
++	while (count) {
++		size = min_t(uint, count, BULK_SIZE);
++		pipe = usb_sndbulkpipe(data->udev, 0x02);
++		memcpy(send_buf, firmware + sent, size);
++
++		err = usb_bulk_msg(data->udev, pipe, send_buf, size,
++					&len, 3000);
++
++		if (err || (len != size)) {
++			BT_ERR("Error in firmware loading err = %d,"
++				"len = %d, size = %d", err, len, size);
++			goto error;
++		}
++
++		sent  += size;
++		count -= size;
++	}
++
++	kfree(send_buf);
++	return 0;
++
++error:
++	kfree(send_buf);
++	return err;
++}
++
++static int ath3k_probe(struct usb_interface *intf,
++			const struct usb_device_id *id)
++{
++	const struct firmware *firmware;
++	struct usb_device *udev = interface_to_usbdev(intf);
++	struct ath3k_data *data;
++	int size;
++
++	BT_DBG("intf %p id %p", intf, id);
++
++	if (intf->cur_altsetting->desc.bInterfaceNumber != 0)
++		return -ENODEV;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->udev = udev;
++
++	if (request_firmware(&firmware, "ath3k-1.fw", &udev->dev) < 0) {
++		kfree(data);
++		return -EIO;
++	}
++
++	size = max_t(uint, firmware->size, 4096);
++	data->fw_data = kmalloc(size, GFP_KERNEL);
++	if (!data->fw_data) {
++		release_firmware(firmware);
++		kfree(data);
++		return -ENOMEM;
++	}
++
++	memcpy(data->fw_data, firmware->data, firmware->size);
++	data->fw_size = firmware->size;
++	data->fw_sent = 0;
++	release_firmware(firmware);
++
++	usb_set_intfdata(intf, data);
++	if (ath3k_load_firmware(data, data->fw_data, data->fw_size)) {
++		usb_set_intfdata(intf, NULL);
++		return -EIO;
++	}
++
++	return 0;
++}
++
++static void ath3k_disconnect(struct usb_interface *intf)
++{
++	struct ath3k_data *data = usb_get_intfdata(intf);
++
++	BT_DBG("ath3k_disconnect intf %p", intf);
++
++	kfree(data->fw_data);
++	kfree(data);
++}
++
++static struct usb_driver ath3k_driver = {
++	.name		= "ath3k",
++	.probe		= ath3k_probe,
++	.disconnect	= ath3k_disconnect,
++	.id_table	= ath3k_table,
++};
++
++static int __init ath3k_init(void)
++{
++	BT_INFO("Atheros AR30xx firmware driver ver %s", VERSION);
++	return usb_register(&ath3k_driver);
++}
++
++static void __exit ath3k_exit(void)
++{
++	usb_deregister(&ath3k_driver);
++}
++
++module_init(ath3k_init);
++module_exit(ath3k_exit);
++
++MODULE_AUTHOR("Atheros Communications");
++MODULE_DESCRIPTION("Atheros AR30xx firmware driver");
++MODULE_VERSION(VERSION);
++MODULE_LICENSE("GPL");
++MODULE_FIRMWARE("ath3k-1.fw");
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.3.3
+
