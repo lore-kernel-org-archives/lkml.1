@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865Ab0ATD0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928Ab0ATD1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865Ab0ATD0y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 22:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814Ab0ATD0x
+	id S1754928Ab0ATD1O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 22:27:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846Ab0ATD1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 22:26:53 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:64618 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751708Ab0ATD0w convert rfc822-to-8bit (ORCPT
+	Tue, 19 Jan 2010 22:27:09 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:39938 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754890Ab0ATD1C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 22:26:52 -0500
+	Tue, 19 Jan 2010 22:27:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DvmealXbKIadbbQ2rGAr2XVABx+gotGmcWL7ikps9ZZl7BJ4w2Y0LzzpYsbURILfSB
-         sP2pZWaLj3SCBGm7IIQQ6ruiI8jVYo0q+lzNj406PZWaQgHGkYls03K7qqvLHYx3mfur
-         HLFcd7pkFLmRZDHIoOHXHYPmAxvF208Jb4XH4=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=LbKaC/11Sch5vjb87cLQmEL1SXO93J5gBe2qVYJwqoGKkm/dQmw/bqlv/eiQRVmTVO
+         iTST6jVHpNMYV1BeR5wQD4gSWQEMp9mvMCByaB15LMu9aOBBl6nGSHuqYotjuAv/j21i
+         q045C2AvAcOTI5kyLpJkYUBR3ivJjEx93CZo0=
+Message-ID: <4B567971.7000904@gmail.com>
+Date: Wed, 20 Jan 2010 12:33:05 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <d65b1b151001191029o66794c24t228177a8ca544e44@mail.gmail.com>
-References: <d65b1b151001191029o66794c24t228177a8ca544e44@mail.gmail.com>
-Date: Wed, 20 Jan 2010 11:26:51 +0800
-Message-ID: <2375c9f91001191926hc80dc50mb264f757295c1337@mail.gmail.com>
-Subject: Re: [PATCH] Use full path to dnsdomainname and domainname in 
-	scripts/mkcompile_h
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Glenn Sommer <glemsom@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Bart Hartgers <bart.hartgers@gmail.com>
+CC: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       linux-ide@vger.kernel.org
+Subject: Re: [patch 1/2] sata_via: Correctly setup PIO/DMA for pata slave
+ on vt6421.
+References: <20100116235653.898098245@gmail.com> <20100116235849.969478053@gmail.com>
+In-Reply-To: <20100116235849.969478053@gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 2:29 AM, Glenn Sommer <glemsom@gmail.com> wrote:
-> With reference to: http://bugzilla.kernel.org/show_bug.cgi?id=14920
-> I'll post my suggestion here.
->
-> Currently scripts/mkcompile_h checks for "/bin/dnsdomainname" and
-> "/bin/domainname" when trying to find the DNS name.
-> Though, when running the executable - the full path isn't used!
->
-> IMO if we check for "/bin/dnsdomainname", we should also use
-> "/bin/dnsdomainname" - and not blindly trust /bin is the first directory in
-> $PATH  which contains a executable named "dnsdomainname"
->
->
-> I propose to use the full path, that we know is valid. Here's my proposed patch:
->
->
-> --- scripts/mkcompile_h.orig    2009-12-28 23:02:34.000000000 +0100
-> +++ scripts/mkcompile_h 2009-12-28 23:03:12.000000000 +0100
-> @@ -66,9 +66,9 @@
->   echo \#define LINUX_COMPILE_HOST \"`hostname | $UTS_TRUNCATE`\"
->
->   if [ -x /bin/dnsdomainname ]; then
-> -    echo \#define LINUX_COMPILE_DOMAIN \"`dnsdomainname | $UTS_TRUNCATE`\"
-> +    echo \#define LINUX_COMPILE_DOMAIN \"`/bin/dnsdomainname | $UTS_TRUNCATE`\"
->   elif [ -x /bin/domainname ]; then
-> -    echo \#define LINUX_COMPILE_DOMAIN \"`domainname | $UTS_TRUNCATE`\"
-> +    echo \#define LINUX_COMPILE_DOMAIN \"`/bin/domainname | $UTS_TRUNCATE`\"
->   else
->     echo \#define LINUX_COMPILE_DOMAIN
->   fi
->
->
-> Signed-off-by: Glenn Sommer <glemsom@gmail.com>
+On 01/17/2010 08:56 AM, Bart Hartgers wrote:
+> Before only the timings for master were set. Datasheet can be found
+> here: ftp://ftp.vtbridge.org/Docs/Storage/DS_VT6421A_100_CCPL.PDF
+> Surprisingly, a slave drive works without this patch. According to the
+> datasheet, the controller by default derives the DMA mode from the 
+> Set Features command issued to a drive. Not sure about the PIO
+> timings, though. The real problem is that the timings for the master
+> effectively are the ones tuned for the slave. If these support
+> different UDMA-settings, there is trouble, especially when the slave
+> supports a higher UDMA than the master. 
+> 
+> Anyhow, using the same mechanism for both master and slave seems like 
+> a good idea.
+> 
+> Signed-off-by: Bart Hartgers <bart.hartgers@gmail.com>
 
-Makes sense, but is that possible we have 'domainname' installed in two
-different directories?
+Acked-by: Tejun Heo <tj@kernel.org>
+
+Thanks.
+
+-- 
+tejun
