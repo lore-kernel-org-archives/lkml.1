@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557Ab0ATPoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626Ab0ATPoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753557Ab0ATPoA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 10:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836Ab0ATPn6
+	id S1753626Ab0ATPoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 10:44:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310Ab0ATPoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 10:43:58 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55895 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753438Ab0ATPn4 (ORCPT
+	Wed, 20 Jan 2010 10:44:16 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:48598 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753494Ab0ATPoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 10:43:56 -0500
-Date: Wed, 20 Jan 2010 15:42:50 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Jamie Iles <jamie.iles@picochip.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, jpihet@mvista.com,
-       p.osciak@samsung.com, will.deacon@arm.com,
-       =?utf-8?Q?Micha=C5=82?= Nazarewicz <m.nazarewicz@samsung.com>,
-       linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, mingo@elte.hu,
-       m.szyprowski@samsung.com, linux-arm-kernel@lists.infradead.org,
-       Tomasz Fujak <t.fujak@samsung.com>
-Subject: Re: [PATCH/RFC v1 0/2] Human readable performance event
-	description in sysfs
-Message-ID: <20100120154250.GA27507@n2100.arm.linux.org.uk>
-References: <1263978706-15499-1-git-send-email-t.fujak@samsung.com> <1263978999.4283.823.camel@laptop> <op.u6tslipz7p4s8u@pikus> <20100120133145.GE4089@wear.picochip.com> <1263994779.4283.1057.camel@laptop> <20100120135553.GA22897@n2100.arm.linux.org.uk> <1263996080.4283.1064.camel@laptop> <20100120144140.GB22897@n2100.arm.linux.org.uk> <20100120150303.GG4089@wear.picochip.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100120150303.GG4089@wear.picochip.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 20 Jan 2010 10:44:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
+         :references;
+        b=mxLMzWuKsTJxYjfvGiO5BOFpzC5oBGYYaizc6FFnngL43smbM+Bsn0fp2pKLSK/C6F
+         ZNtFFEE6+W2F4h2e176d4dd58MLWu5FMzn6oojloX4eM13N51GvQsh1oKSM4pedyU7Qr
+         jYGIEvUzfVGYin3K+1GU1v/j8K5cWmnu4FjKM=
+From: John Kacur <jkacur@redhat.com>
+To: Clark Williams <williams@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Carsten Emde <C.Emde@osadl.org>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       "Nikita V. Youshchenko" <yoush@cs.msu.su>,
+       John Kacur <jkacur@redhat.com>
+Subject: [PATCH 1/2] rt-tests: Makefile: Add NUMA compile option.
+Date: Wed, 20 Jan 2010 16:36:23 +0100
+Message-Id: <1264001784-11965-2-git-send-email-jkacur@redhat.com>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1264001784-11965-1-git-send-email-jkacur@redhat.com>
+References: <1264001784-11965-1-git-send-email-jkacur@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 03:03:03PM +0000, Jamie Iles wrote:
-> On Wed, Jan 20, 2010 at 02:41:40PM +0000, Russell King - ARM Linux wrote:
-> > Given that history has shown that identification schemes on ARM change
-> > in extremely annoying ways, I don't think decoding these registers to
-> > some kind of textual representation for /proc/cpuinfo is the right
-> > approach.  It might instead make more sense to just export the entire
-> > set of CPU ID registers to userspace, and let userspace grapple with
-> > the complexities of decoding the information it wants from them.
-> Yes, this would probably be the best generic solution, but in the specific
-> case of ARM perfevents, the kernel code already has to decode some of the CPU
-> ID registers to work out what set of events to use. Why make userspace do all
-> of this decoding again? The x86 code sets up the x86_pmu depending on CPU type
-> so this is doing a similar thing (although it is easier for x86).
+This adds a NUMA compile option, and links to numa only for the tests that
+need it. (Currently that is only cyclictest)
 
-If you're referring to reading the main CPU ID register and relying
-on the part number telling you what CPU you're running on, that's
-unreliable if you're only checking the part number - you at least
-need to check the implementer.
+If you want to build with the NUMA feature, then define NUMA to anything.
+Eg., make NUMA=1
 
-If you want to do ID checking via the main ID register, there are
-some clashes even if you take the implementer field into account.
+This only adds support to the Makefile. Further patches are required
+to make this work in cyclictest itself.
+
+Signed-off-by: John Kacur <jkacur@redhat.com>
+---
+ Makefile |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 5db524d..4e1a7e3 100644
+--- a/Makefile
++++ b/Makefile
+@@ -3,7 +3,7 @@ VERSION_STRING = 0.61
+ TARGETS	= cyclictest signaltest pi_stress \
+ 	  hwlatdetect rt-migrate-test ptsematest sigwaittest svsematest \
+ 	  sendme pip
+-LIBS 	= -lpthread -lrt -lnuma
++LIBS 	= -lpthread -lrt
+ EXTRA_LIBS ?= -ldl	# for get_cpu
+ DESTDIR	?=
+ prefix  ?= /usr/local
+@@ -19,6 +19,11 @@ else
+ 	CFLAGS	+= -O0 -g
+ endif
+ 
++ifdef NUMA
++	CFLAGS += -DNUMA
++	NUMA_LIBS = -lnuma
++endif
++
+ VPATH	= src/cyclictest:
+ VPATH	+= src/signaltest:
+ VPATH	+= src/pi_tests:
+@@ -36,7 +41,7 @@ VPATH	+= src/lib
+ all: $(TARGETS)
+ 
+ cyclictest: cyclictest.o rt-utils.o
+-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
++	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(NUMA_LIBS)
+ 
+ signaltest: signaltest.o rt-utils.o
+ 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+-- 
+1.6.6
+
