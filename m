@@ -1,96 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164Ab0ATGoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867Ab0ATGn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164Ab0ATGoV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 01:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275Ab0ATGoN
+	id S1752867Ab0ATGn5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 01:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973Ab0ATGn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 01:44:13 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:25728 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753025Ab0ATGoJ convert rfc822-to-8bit (ORCPT
+	Wed, 20 Jan 2010 01:43:56 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40283 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365Ab0ATGnz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 01:44:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=stUPbNC6yk35hZFwi/m/NuDJTzgbD5lh8HEdv8eKBO2KYProIDWqUm2oy1giXy90KT
-         dza3hffsNiKgRj1RM/didPXJ7L8REgKVjzH8AnTeJaZA5SSN41oTti2N/n29JjxZUEtJ
-         t2Zk8fSiX29I0+5NpLD1fHwX/qCACg5VetFr0=
+	Wed, 20 Jan 2010 01:43:55 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.4.0
+Message-ID: <4B56A60F.6060207@jp.fujitsu.com>
+Date: Wed, 20 Jan 2010 15:43:27 +0900
+From: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <4B5678E2.2050709@gmail.com>
-References: <20100116235653.898098245@gmail.com>
-	 <20100116235851.884756038@gmail.com> <4B5678E2.2050709@gmail.com>
-Date: Wed, 20 Jan 2010 07:44:07 +0100
-Message-ID: <7eb6a4d81001192244k19d28805p9cb4eaec7eed9366@mail.gmail.com>
-Subject: Re: [patch 2/2] sata_via: Delay on vt6420 when starting ATAPI DMA 
-	write
-From: Bart Hartgers <bart.hartgers@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org, juergen.metzdorf@telelev-dsl.de,
-       markpschool@hotmail.com, sporadic.crash@gmail.com, apopov@sirma.bg,
-       david@coomber.co.za, jay4mail@gmail.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: linux-scsi@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>,
+       Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>,
+       Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+Subject: [PATCH 1/2] scsi: add __print_hex() to ftrace
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-2010/1/20 Tejun Heo <htejun@gmail.com>:
-> Hello,
->
-> On 01/17/2010 08:56 AM, Bart Hartgers wrote:
->> When writing a disc on certain lite-on dvd-writers (also rebadged as
->> optiarc/LG/...) connected to a vt6420, the ATAPI CDB ends up in the
->> datastream and on the disc, causing silent corruption.  Delaying
->> between sending the CDB and starting DMA seems to prevent this.
->>
->> I do not know if there are burners that do not suffer from this, but
->> the patch should be safe for those as well.
->>
->> There are many reports of this issue, but AFAICT no solution was
->> found before. For example:
->> http://lkml.indiana.edu/hypermail/linux/kernel/0802.3/0561.html
->>
->> Signed-off-by: Bart Hartgers <bart.hartgers@gmail.com>
->
-> Ah... you found solution for this?  That's great.  This is one of the
-> three problems that have been lingering for years - the other two
-> being pata_ali ATAPI DMA problem and sata_sil data corruption problem.
-> I'll be ecstatic if this fix works.  Just one thing, I don't think
-> we'll need a warning message there.  It's useful during development
-> but it doesn't really provide any useful information afterwards.
->
+__print_hex() prints values in an array in hex (w/o '0x') (space separated)
+EX) 92 33 32 f3 ee 4d
 
-Yes, you're right. I'll drop the printk_once and send another patch
-for inclusion. However, for testing I found it very useful to make
-sure that I got the right module loaded. So I figured it could be
-helpful for the interpretation of success/failure reports.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+Signed-off-by: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+---
 
-Assuming that this patch works for other people as well, what is
-prefered: resending both patches or just to make a new #2/2 (the
-vt6420 one)?
+ linux-2.6.33-rc4-trace-kei/include/linux/ftrace_event.h |    3 +++
+ linux-2.6.33-rc4-trace-kei/include/trace/ftrace.h       |    3 +++
+ linux-2.6.33-rc4-trace-kei/kernel/trace/trace_output.c  |   15 +++++++++++++++
+ 3 files changed, 21 insertions(+)
 
-Groeten,
-Bart
+diff -puN include/linux/ftrace_event.h~ftrace_print_hex include/linux/ftrace_event.h
+--- linux-2.6.33-rc4-trace/include/linux/ftrace_event.h~ftrace_print_hex	2010-01-14 19:55:24.000000000 +0900
++++ linux-2.6.33-rc4-trace-kei/include/linux/ftrace_event.h	2010-01-14 19:56:59.000000000 +0900
+@@ -24,6 +24,9 @@ const char *ftrace_print_flags_seq(struc
+ const char *ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
+ 				     const struct trace_print_flags *symbol_array);
+ 
++const char *ftrace_print_hex_seq(struct trace_seq *p,
++				 const unsigned char *buf, int len);
++
+ /*
+  * The trace entry - the most basic unit of tracing. This is what
+  * is printed in the end as a single line in the trace output, such as:
+diff -puN kernel/trace/trace_output.c~ftrace_print_hex kernel/trace/trace_output.c
+--- linux-2.6.33-rc4-trace/kernel/trace/trace_output.c~ftrace_print_hex	2010-01-14 19:55:45.000000000 +0900
++++ linux-2.6.33-rc4-trace-kei/kernel/trace/trace_output.c	2010-01-14 20:02:49.000000000 +0900
+@@ -355,6 +355,21 @@ ftrace_print_symbols_seq(struct trace_se
+ }
+ EXPORT_SYMBOL(ftrace_print_symbols_seq);
+ 
++const char *
++ftrace_print_hex_seq(struct trace_seq *p, const unsigned char *buf, int buf_len)
++{
++	int i;
++	const char *ret = p->buffer + p->len;
++
++	for (i = 0; i < buf_len; i++)
++		trace_seq_printf(p, "%s%2.2x", i == 0 ? "" : " ", buf[i]);
++
++	trace_seq_putc(p, 0);
++
++	return ret;
++}
++EXPORT_SYMBOL(ftrace_print_hex_seq);
++
+ #ifdef CONFIG_KRETPROBES
+ static inline const char *kretprobed(const char *name)
+ {
+diff -puN include/trace/ftrace.h~ftrace_print_hex include/trace/ftrace.h
+--- linux-2.6.33-rc4-trace/include/trace/ftrace.h~ftrace_print_hex	2010-01-14 20:00:39.000000000 +0900
++++ linux-2.6.33-rc4-trace-kei/include/trace/ftrace.h	2010-01-14 20:01:42.000000000 +0900
+@@ -321,6 +321,9 @@ ftrace_format_##name(struct ftrace_event
+ 		ftrace_print_symbols_seq(p, value, symbols);		\
+ 	})
+ 
++#undef __print_hex
++#define __print_hex(buf, buf_len) ftrace_print_hex_seq(p, buf, buf_len)
++
+ #undef DECLARE_EVENT_CLASS
+ #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
+ static enum print_line_t						\
 
-> Digging up the mailing list and cc'ing people who have reported this
-> problem.  If you still have the affected systems, can you guys please
-> test the patch in the following message and see whether it fixes the
-> problem?
->
->  http://article.gmane.org/gmane.linux.kernel/939112/raw
->
-> Thanks a lot.  :-)
->
-> --
-> tejun
->
+_
 
 
 
--- 
-Bart Hartgers - New e-mail: bart.hartgers@gmail.com
