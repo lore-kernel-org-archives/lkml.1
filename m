@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751055Ab0ATFAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751492Ab0ATFHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751055Ab0ATFAb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 00:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739Ab0ATFAa
+	id S1751492Ab0ATFHI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 00:07:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330Ab0ATFHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 00:00:30 -0500
-Received: from thinktradellc.com ([66.17.177.171]:8451 "EHLO
-	old.thinktradellc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1749667Ab0ATFA3 (ORCPT
+	Wed, 20 Jan 2010 00:07:01 -0500
+Received: from vms173001pub.verizon.net ([206.46.173.1]:43954 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750747Ab0ATFHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 00:00:29 -0500
-Message-ID: <4B568C3A.4080301@memeplex.com>
-Date: Tue, 19 Jan 2010 20:53:14 -0800
-From: Andrew Athan <linux_kernel_aathan@memeplex.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Athan <linux_kernel_aathan@memeplex.com>,
-       linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Gong Cheng <chengg11@yahoo.com>
-Subject: Re: Futex hang/lockup problem in 2.6.30+ on AMD64
-References: <4B4C3E4F.9060001@memeplex.com> <20100112145213.GB3925@hack>	 <1263308127.4244.142.camel@laptop> <2375c9f91001120700r4c2e1e05l5e5be3ddc6a13da2@mail.gmail.com> <4B4CA27F.1060102@memeplex.com>
-In-Reply-To: <4B4CA27F.1060102@memeplex.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 20 Jan 2010 00:07:00 -0500
+Date: Wed, 20 Jan 2010 00:06:49 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christian Hofstaedtler <ch@zeha.at>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bruce.w.allan@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-acpi@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] Add DMI quirk for Intel DP55KG mainboard
+In-reply-to: <4B45001E.7000404@zytor.com>
+Message-id: <alpine.LFD.2.00.1001200003520.4265@localhost.localdomain>
+References: <20100104162114.GA30113@percival.namespace.at>
+ <alpine.LFD.2.00.1001041209300.4012@localhost.localdomain>
+ <4B4225B3.8070705@zytor.com> <20100104174558.158cd512@infradead.org>
+ <20100106143640.GB13984@srcf.ucam.org>
+ <alpine.LFD.2.00.1001061321260.4086@localhost.localdomain>
+ <20100106193608.GA21447@srcf.ucam.org>
+ <alpine.LFD.2.00.1001061504110.4086@localhost.localdomain>
+ <4B45001E.7000404@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Athan wrote:
-> Américo Wang wrote:
->> On Tue, Jan 12, 2010 at 10:55 PM, Peter Zijlstra 
->> <peterz@infradead.org> wrote:
->>  
->>> On Tue, 2010-01-12 at 22:52 +0800, Américo Wang wrote:
->>>
->>>    
->>>>> $ uname -a
->>>>> Linux UK22 2.6.30-2-amd64 #1 SMP Fri Sep 25 22:16:56 UTC 2009 x86_64
->>>>> GNU/Linux
->>>>>         
->>> Does a recent kernel work?
->>>
->>>
->>>     
->>
->> Ah, I just wanted to ask the same question, adding the original reporter
->> Gong Cheng into Cc...
->>
->> Gong, could you reproduce it on the latest kernel? And what is your 
->> .config?
->>
->> Thanks!
->> -- 
->> To unsubscribe from this list: send the line "unsubscribe 
->> linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>   
-> Due to remote location of the hardware and I haven't been able to test 
-> a more recent (or older) kernel.  Remote hands have put a KVM on the 
-> box as of an hour ago, so I hope to have some information for you in a 
-> day or two.
->
-> A.
->
+> What about using _OSI() with a *blacklist*, i.e. treat _OSI("Unknown
+> String") as "new enough", whereas _OSI("Windows 2000") is ignored?
 
+Sound reasoning, but I think that parsing the _OSI strings presented
+by the BIOS so that the OS can deving whether it is a Windows XP
+box or newer is more complicated than this problem merits.
 
-I wanted to report that although I have had no luck (so far) running 
-anything more recent than 2.6.30, I was able to revert to 2.6.26.  
-Unfortunately, the application hang still occurs.  I also saw a similar 
-hang of the application running on a 32 bit Intel box, also under 
-2.6.26.  So far, the hang *always* involves threads stuck on 
-pthread_cond_broadcast()'s  condition variable's internal lock while 
-other threads are waiting on the outer "public" lock.  These other 
-threads are *not* yet (nor about to) pthread_cond_wait().  I saw a 
-message from Darren Hart (subject "Re: Problems with futex") in response 
-to someone who apparently was having futex problems in 2.6.27, so I'm 
-still operating under the assumption that this is not an application bug.
+I recommend that we compare DMI date with 2003 and go from there.
+If we find that doesn't work, we can apply additional cleverness.
 
-Over the next couple of days, I will be running a version of the 
-application in which I replaced the pthread_cond calls with simpler 
-locks, in the hopes that it won't hang (because I'm hoping the 
-underlying implementation in pthreads uses a different set of futex 
-opcodes).
-
-Andrew Athan
+-Len Brown
+Intel Open Source Technology Center
 
