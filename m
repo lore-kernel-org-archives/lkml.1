@@ -1,116 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752492Ab0ATJlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551Ab0ATJoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752492Ab0ATJlS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 04:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245Ab0ATJlQ
+	id S1752551Ab0ATJoI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 04:44:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521Ab0ATJoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 04:41:16 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:62637 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752010Ab0ATJlL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 04:41:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=CqjC+4MAbqPFa+xSETBT/rM3mt8kVj/gmql23q2SxN++zACRh4GfGXbyoUcdzg1dMk
-         WrLqzlCxpqsjrvVRaGuaue0QIm2siSjaPWKsL6C67Ur/JF+IVRe959grDwP3n9MewHf+
-         vP/3j5L4s13ppviLeHwBdvahb8Rw39BQQLMQs=
-Date: Wed, 20 Jan 2010 09:41:03 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Michael Breuer <mbreuer@majjas.com>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
-Message-ID: <20100120094103.GA6225@ff.dom.local>
+	Wed, 20 Jan 2010 04:44:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:45592 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751202Ab0ATJoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 04:44:05 -0500
+Message-ID: <4B56D027.3010808@redhat.com>
+Date: Wed, 20 Jan 2010 11:43:03 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jim Keniston <jkenisto@us.ibm.com>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>, ananth@in.ibm.com,
+       Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+References: <1263740593.557.20967.camel@twins>	 <1263800752.4283.19.camel@laptop> <4B543F93.3060509@redhat.com>	 <1263815072.4283.305.camel@laptop> <4B544D7C.2060708@redhat.com>	 <1263816396.4283.361.camel@laptop> <4B544F8E.1080603@redhat.com>	 <84144f021001180413w76a8ca2axb0b9f07ee4dea67e@mail.gmail.com>	 <4B545146.3080001@redhat.com>	 <20100118124419.GC1628@linux.vnet.ibm.com>	 <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com>	 <4B5459CA.9060603@redhat.com>  <4B545ACF.40203@cs.helsinki.fi>	 <1263852957.2266.38.camel@localhost.localdomain>	 <4B556855.6040800@redhat.com> <1263923265.4998.28.camel@localhost.localdomain>
+In-Reply-To: <1263923265.4998.28.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ previously: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit() ]
-On Tue, Jan 19, 2010 at 05:10:13PM -0800, Stephen Hemminger wrote:
-> On Tue, 19 Jan 2010 20:01:10 -0500
-> Michael Breuer <mbreuer@majjas.com> wrote:
-> 
-> > On 1/19/2010 5:45 PM, Jarek Poplawski wrote:
-> > > On Tue, Jan 19, 2010 at 03:06:01PM -0500, Michael Breuer wrote:
-> > >    
-> > >> On 1/19/2010 2:59 PM, Jarek Poplawski wrote:
-> > >>      
-> > >>> On Tue, Jan 19, 2010 at 10:47:27AM -0500, Michael Breuer wrote:
-> > >>> ...
-> > >>>        
-> > >>>> Still get the warning... but now 60 bytes.
-> > >>>> Jan 19 10:43:50 mail kernel: ------------[ cut here ]------------
-> > >>>> Jan 19 10:43:50 mail kernel: WARNING: at lib/dma-debug.c:902
-...
-> > That not only compiled, but it cleared the error as well. Additionally, 
-> > I used to see a bit of a delay receiving the login prompt when first 
-> > connecting to the box by ssh. That delay is gone with this patch. I'd 
-> > guess that the warning wasn't quite as innocuous as I thought.
-> > Note: tested on 2.6.32.4.  I'll leave this up for a bit before 
-> > attempting to move back to head.
-> 
-> Seems like an underlying bug in the DMA api. Maybe it just can't
-> handle operations on partial mapping.
-> 
-> Other drivers with same problem:
->   bnx2, cassini, pcnet32, r8169, rrunner, skge, sungem, tg3, 
+On 01/19/2010 07:47 PM, Jim Keniston wrote:
+>
+>> This is still with a kernel entry, yes?
+>>      
+> Yes, this involves setting a breakpoint and trapping into the kernel
+> when it's hit.  The 6-7x figure is with the current 2-trap approach
+> (breakpoint, single-step).  Boosting could presumably make that more
+> like 12-14x.
+>    
 
-It seems using the same length (even without pci_unmap_len()) is
-crucial here, but I hope maintainers (added to CC) will take care.
+A trap is IIRC ~1000 cycles, we can reduce this to ~50 (totally 
+negligible from the executed code's point of view).
 
-Btw, it's not tested yet, but it might affect CONFIG_DMAR problems.
+>> Do you have plans for a variant
+>> that's completely in userspace?
+>>      
+> I don't know of any such plans, but I'd be interested to read more of
+> your thoughts here.  As I understand it, you've suggested replacing the
+> probed instruction with a jump into an instrumentation vma (the XOL
+> area, or something similar).  Masami has demonstrated -- through his
+> djprobes enhancement to kprobes -- that this can be done for many x86
+> instructions.
+>
+> What does the code in the jumped-to vma do?
 
-Thanks,
-Jarek P.
------------------------>
+1. Write a trace entry into shared memory, trap into the kernel on overflow.
+2. Trap if a condition is satisfied (fast watchpoint implementation).
 
-Using pci_unmap_len(), with the same length as pci_map_single(), with
-pci_dma_sync_single_for_cpu()/_device() fixes this warning (2.6.32.4):
+> Is the instrumentation code
+> that corresponds to the uprobe handlers encoded in an ad hoc .so?
+>    
 
-> Jan 19 10:43:50 mail kernel: WARNING: at lib/dma-debug.c:902 
-> check_sync+0xc1/0x43f()
-> Jan 19 10:43:50 mail kernel: Hardware name: System Product Name
-> Jan 19 10:43:50 mail kernel: sky2 0000:04:00.0: DMA-API: device driver 
-> tries to sync DMA memory it has not allocated [device 
-> address=0x0000000320a0b022] [size=60 bytes]
+Looks like a good idea, but it doesn't matter much to me.
 
-Reported-by: Michael Breuer <mbreuer@majjas.com>
-Tested-by: Michael Breuer <mbreuer@majjas.com>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
----
+-- 
+error compiling committee.c: too many arguments to function
 
- drivers/net/sky2.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index 7650f73..cdebdd3 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -2252,12 +2252,14 @@ static struct sk_buff *receive_copy(struct sky2_port *sky2,
- 	skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
- 	if (likely(skb)) {
- 		pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
--					    length, PCI_DMA_FROMDEVICE);
-+					    pci_unmap_len(re, data_size),
-+					    PCI_DMA_FROMDEVICE);
- 		skb_copy_from_linear_data(re->skb, skb->data, length);
- 		skb->ip_summed = re->skb->ip_summed;
- 		skb->csum = re->skb->csum;
- 		pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
--					       length, PCI_DMA_FROMDEVICE);
-+					       pci_unmap_len(re, data_size),
-+					       PCI_DMA_FROMDEVICE);
- 		re->skb->ip_summed = CHECKSUM_NONE;
- 		skb_put(skb, length);
- 	}
