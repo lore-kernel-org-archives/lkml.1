@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597Ab0ATUgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613Ab0ATUg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597Ab0ATUgO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 15:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998Ab0ATUgL
+	id S1754613Ab0ATUg2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 15:36:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600Ab0ATUg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 15:36:11 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:48271 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754576Ab0ATUf6 (ORCPT
+	Wed, 20 Jan 2010 15:36:26 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:48312 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754580Ab0ATUgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 15:35:58 -0500
+	Wed, 20 Jan 2010 15:36:04 -0500
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
@@ -17,33 +17,50 @@ Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
        Hugh Dickins <hugh.dickins@tiscali.co.uk>,
        James Morris <jmorris@namei.org>,
        David Safford <safford@watson.ibm.com>,
-       "Serge E. Hallyn" <serue@linux.vnet.ibm.com>
-Subject: [RFC PATCH 0/2] Fix untangling ima mess, part 2 with counters
-Date: Wed, 20 Jan 2010 15:35:39 -0500
-Message-Id: <cover.1264018123.git.zohar@linux.vnet.ibm.com>
+       "Serge E. Hallyn" <serue@linux.vnet.ibm.com>,
+       Mimi Zohar <zohar@us.ibm.com>
+Subject: [RFC PATCH 2/2] Fix 2 untangling ima mess, part 2 with counters
+Date: Wed, 20 Jan 2010 15:35:41 -0500
+Message-Id: <6671b3cf65d96375a40ee4e2cd9a0898b12a55c9.1264018123.git.zohar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <cover.1264018123.git.zohar@linux.vnet.ibm.com>
+References: <cover.1264018123.git.zohar@linux.vnet.ibm.com>
+In-Reply-To: <cover.1264018123.git.zohar@linux.vnet.ibm.com>
+References: <cover.1264018123.git.zohar@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The "Untangling ima mess, part 2 with counters" patch not
-only messed up the counters, but also doesn't measure files
-which should be measured. The "Untangling ima mess ..."
-patchset, applied some of Eric's patches, but not all, leaving
-inodes allocated before late_initcall() not allocated/measured.
-(8262bb85da ima: initialize ima before inodes can be allocated)
+The "Untangling ima mess, part 2 with counters" patch did
+not measure all files, which should have been measured.
 
-Up to now, measuring files and updating the IMA open/read/write
-counters associated with the file were done at the same time
-in ima_path_check().  An imbalanced counter was an indication
-that the file hadn't been measured. Each case needed to be
-inspected, resulting in adding either a new ima_counts_get()
-or ima_path_check() call (e.g. nfsd, ecryptfs, openAFS).
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+---
+ fs/namei.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-This patchset separates incrementing the counters from measuring
-the file.  However, the underlying assumption is that all regular
-files are opened via do_filp_open(). Is this assumption correct or,
-by incrementing the file counters separately, have we inadvertently
-hidden the fact that a file wasn't measured?
+diff --git a/fs/namei.c b/fs/namei.c
+index a89ebc3..e1f15e8 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1730,7 +1730,7 @@ do_last:
+ 		if (nd.root.mnt)
+ 			path_put(&nd.root);
+ 		if (!IS_ERR(filp)) {
+-			error = ima_path_check(filp, filp->f_mode &
++			error = ima_path_check(filp, acc_mode &
+ 				       (MAY_READ | MAY_WRITE | MAY_EXEC));
+ 			if (error) {
+ 				fput(filp);
+@@ -1791,7 +1791,7 @@ ok:
+ 	}
+ 	filp = nameidata_to_filp(&nd, open_flag);
+ 	if (!IS_ERR(filp)) {
+-		error = ima_path_check(filp, filp->f_mode &
++		error = ima_path_check(filp, acc_mode &
+ 			       (MAY_READ | MAY_WRITE | MAY_EXEC));
+ 		if (error) {
+ 			fput(filp);
+-- 
+1.6.0.6
 
-Mimi
