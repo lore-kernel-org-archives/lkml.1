@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711Ab0ATXtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942Ab0ATXtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753711Ab0ATXtM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 18:49:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237Ab0ATXtE
+	id S1753942Ab0ATXtb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 18:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318Ab0ATXtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 18:49:04 -0500
-Received: from kroah.org ([198.145.64.141]:33553 "EHLO coco.kroah.org"
+	Wed, 20 Jan 2010 18:49:01 -0500
+Received: from kroah.org ([198.145.64.141]:33552 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753246Ab0ATXs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 18:48:59 -0500
-Date: Wed, 20 Jan 2010 15:47:59 -0800
+	id S1752311Ab0ATXs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 18:48:56 -0500
+Date: Wed, 20 Jan 2010 15:47:53 -0800
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] TTY patches for 2.6.33-rc4
-Message-ID: <20100120234759.GC32068@kroah.com>
+Subject: [GIT PATCH] driver core patches for 2.6.33-rc4
+Message-ID: <20100120234753.GB32068@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,15 +24,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's the big TTY patchset for your .33-rc4 tree.
+Here are two 2.6.33-rc4 patches for the driver core:
 
-Lots of bugfixes and a new device id was added.
+They fix:
+	- s390 boot oops with devtmpfs
+	- revert a patch that was sent by Andrew that should not have
+	  been merged into your tree yet as the api has not changed in
+	  your tree, it is coming in the .34 merge.  This fixes a build
+	  error in your current tree.
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/tty-2.6.git/
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-core-2.6.git/
 
-Patches will be sent to the linux-kernel mailing list, if anyone wants
-to see them.
+All of these patches have been in the linux-next and mm trees.
+
+The patches will be sent as a follow-on to this message to lkml for people
+to see.
 
 thanks,
 
@@ -40,36 +47,15 @@ greg k-h
 
 ------------
 
- drivers/char/nozomi.c        |    2 +-
- drivers/char/tty_io.c        |    2 +-
- drivers/serial/8250_pnp.c    |   10 +----
- drivers/serial/imx.c         |    2 +-
- drivers/serial/serial_core.c |  105 ++++++++++++++++++------------------------
- drivers/serial/serial_cs.c   |    3 +-
- fs/compat_ioctl.c            |    3 +
- 7 files changed, 54 insertions(+), 73 deletions(-)
+ drivers/base/devtmpfs.c |    3 ++-
+ drivers/base/memory.c   |   32 ++++++++++++--------------------
+ 2 files changed, 14 insertions(+), 21 deletions(-)
 
 ---------------
 
-Alan Cox (2):
-      nozomi: quick fix for the close/close bug
-      serial: Fix crash if the minimum rate of the device is > 9600 baud
-
-Atsushi Nemoto (1):
-      compat_ioctl: Supress "unknown cmd" message on serial /dev/console
-
 Greg Kroah-Hartman (1):
-      tty: fix race in tty_fasync
+      Revert "sysdev: fix prototype for memory_sysdev_class show/store functions"
 
-Matthew Garrett (1):
-      serial: 8250_pnp: use wildcard for serial Wacom tablets
-
-Pavel Machek (1):
-      serial: serial_cs: oxsemi quirk breaks resume
-
-Roel Kluin (1):
-      serial: imx: bit &/| confusion
-
-Stanislav Brabec (1):
-      serial-core: resume serial hardware with no_console_suspend
+Heiko Carstens (1):
+      driver-core: fix devtmpfs crash on s390
 
