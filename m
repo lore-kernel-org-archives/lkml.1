@@ -1,100 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391Ab0ATKyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379Ab0ATK51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391Ab0ATKyU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 05:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325Ab0ATKyQ
+	id S1753379Ab0ATK51 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 05:57:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872Ab0ATK5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 05:54:16 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752061Ab0ATKyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 05:54:14 -0500
-Subject: Re: lockdep: inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-R}
- usage.
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Dave Chinner <david@fromorbit.com>,
-       linux-kernel@vger.kernel.org, mingo@redhat.com,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-fsdevel@vger.kernel.org,
-       viro@zeniv.linux.org.uk
-In-Reply-To: <20100119184631.GA11408@infradead.org>
-References: <20100115120253.GH28498@discord.disaster>
-	 <1263557473.4244.399.camel@laptop>
-	 <20100115124410.GI28498@discord.disaster>
-	 <1263559995.4244.403.camel@laptop>  <20100119184631.GA11408@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Red Hat UK Ltd
-Date: Wed, 20 Jan 2010 10:57:01 +0000
-Message-ID: <1263985021.2528.34.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jan 2010 05:57:25 -0500
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:56759
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750962Ab0ATK5X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 05:57:23 -0500
+X-SpamScore: -6
+X-BigFish: VPS-6(z1039ozab9bh1432R98dNzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KWJL2A-02-0UO-02
+X-M-MSG: 
+Date: Wed, 20 Jan 2010 11:56:34 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: monstr@monstr.eu
+CC: linux-kernel@vger.kernel.org, michal.simek@petalogix.com, arnd@arndb.de,
+       linux-arch@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH] asm-generic: dma: Add BUG_ON for uninitialized dma_ops
+Message-ID: <20100120105634.GC8665@amd.com>
+References: <1263982111-24123-1-git-send-email-monstr@monstr.eu>
+ <1263982111-24123-2-git-send-email-monstr@monstr.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1263982111-24123-2-git-send-email-monstr@monstr.eu>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 20 Jan 2010 10:56:34.0965 (UTC) FILETIME=[3B81DC50:01CA99BF]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Jan 20, 2010 at 11:08:31AM +0100, monstr@monstr.eu wrote:
+> From: Michal Simek <monstr@monstr.eu>
+> 
+> Check that dma_ops are initialized correctly. Without this
+> checking you get kernel fault and you don't know where the problem is.
+> 
+> Signed-off-by: Michal Simek <monstr@monstr.eu>
+> ---
+>  include/asm-generic/dma-mapping-common.h |   10 ++++++++++
+>  1 files changed, 10 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/asm-generic/dma-mapping-common.h b/include/asm-generic/dma-mapping-common.h
+> index e694263..ca8bc25 100644
+> --- a/include/asm-generic/dma-mapping-common.h
+> +++ b/include/asm-generic/dma-mapping-common.h
+> @@ -15,6 +15,7 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
+>  	dma_addr_t addr;
+>  
+>  	kmemcheck_mark_initialized(ptr, size);
+> +	BUG_ON(!ops);
+>  	BUG_ON(!valid_dma_direction(dir));
+>  	addr = ops->map_page(dev, virt_to_page(ptr),
+>  			     (unsigned long)ptr & ~PAGE_MASK, size,
 
-On Tue, 2010-01-19 at 13:46 -0500, Christoph Hellwig wrote:
-> On Fri, Jan 15, 2010 at 01:53:15PM +0100, Peter Zijlstra wrote:
-> > Well, I don't know enough about xfs (of filesystems in generic) to say
-> > that with any certainty, but I can imagine inode writeback from the sync
-> > that goes with umount to cause issues.
-> > 
-> > If this inode reclaim is past all that and the filesystem is basically
-> > RO, then I don't think so and this could be considered a false positive,
-> > in which case we need an annotation for this.
-> 
-> The issue is a bit more complicated.  In the unmount case
-> invalidate_inodes() is indeed called after the filesystem is effectively
-> read-only for user origination operations.  But there's a miriad of
-> other invalidate_inodes() calls:
-> 
->  - fs/block_dev.c:__invalidate_device()
-> 
-> 	This gets called from block device codes for various kinds of
-> 	invalidations.  Doesn't make any sense at all to me, but hey..
-> 
->  - fs/ext2/super.c:ext2_remount()
-> 
-> 	Appears like it's used to check for activate inodes during
-> 	remount.  Very fishy usage, and could just be replaced with
-> 	a list walk without any I/O
-> 
->  - fs/gfs2/glock.c:gfs2_gl_hash_clear()
-> 
-> 	No idea.
-> 
-Its rather complicated and all down to using "special" inodes to cache
-metadata so that GFS2 has two VFS inodes per "real" inode, one as per
-normal and one just to cache metadata.
+[...]
 
-This causes a circular dependency between glocks and inodes since we
-have something like this (in my best ascii art):
+> @@ -169,6 +178,7 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
+>  {
+>  	struct dma_map_ops *ops = get_dma_ops(dev);
+>  
+> +	BUG_ON(!ops);
+>  	BUG_ON(!valid_dma_direction(dir));
+>  	if (ops->sync_sg_for_device)
+>  		ops->sync_sg_for_device(dev, sg, nelems, dir);
 
-gfs2 inode -> iopen glock
-           -> inode glock -> metadata inode
+The more logical place for all these checks would be in get_dma_ops. But
+I also question the value of the check. Every dma_ops implementation
+that has survived a boot test shouldn't have this bug. So I see no point
+in adding extra cycles to every dma-api call.
 
-So at umount time, historically we've had to invalidate inodes once, and
-then get rid of the inode glocks which implied a iput() on the metadata
-inode and then invalidate inodes again to be rid of the metadata inodes.
-
-This has been the source of many problems at umount time. In my -nmw git
-tree at the moment, there are a couple of patches which are aimed at
-fixing this issue. The solution is to embed a struct address_space in
-each glock which caches metadata, rather than a complete inode.
-
->  - fs/gfs2/ops_fstype.c:fill_super()
-> 
-> 	Tries to kill all inodes in the fill_super error path, looks
-> 	very fishy.
-> 
-For the same reason as above.
-
-It should be possible to remove one or even both of these calls now. The
-two patches in the -nmw tree do the bare minimum really to make the
-change, but it should be possible to do a bit more clean up in that
-area now,
-
-Steve.
+	Joerg
 
 
