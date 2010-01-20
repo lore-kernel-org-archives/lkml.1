@@ -1,89 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555Ab0ATR4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995Ab0ATR7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555Ab0ATR4X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 12:56:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258Ab0ATR4W
+	id S1752995Ab0ATR7P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 12:59:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077Ab0ATR7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 12:56:22 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:32840 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218Ab0ATR4V (ORCPT
+	Wed, 20 Jan 2010 12:59:14 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:60754 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752053Ab0ATR7L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 12:56:21 -0500
-Message-ID: <4B574297.7070504@nortel.com>
-Date: Wed, 20 Jan 2010 11:51:19 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Wed, 20 Jan 2010 12:59:11 -0500
+X-Greylist: delayed 384 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jan 2010 12:59:11 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=pzIv5qwXo3WiZvWnBgKwJGs4Iql2w0BgVTD71JsEZ50oXWzZHx45dBlCDJG3q8CLMN
+         t2bggwphmtve2ryRCcSKjzmMoecfyvYuOkA6CAENU0bSTeSOiWPP+VZAePt11Dh2f16x
+         SwZyL8GP+Edcv25TJhzUS8EcLOvLVteIjakeI=
+Date: Wed, 20 Jan 2010 18:52:09 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/6] : bug fix, remove partial zero out
+Message-ID: <20100120175205.GA5017@nowhere>
+References: <4B556064.7080700@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@arm.com>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: issues with kmemleak backport
-References: <4B55F3EF.9020408@nortel.com> <4B561D8D.1000003@nortel.com>
-In-Reply-To: <4B561D8D.1000003@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Jan 2010 17:56:06.0429 (UTC) FILETIME=[D6DE74D0:01CA99F9]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B556064.7080700@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After the previous message I commented out the per-cpu scan but now I'm
-seeing the following:
+On Tue, Jan 19, 2010 at 03:33:56PM +0800, Lai Jiangshan wrote:
+> partial-zero-out a struct is very dangerous, we should zero out
+> field by field directly when need.
+> 
+> partial-zero-out for struct trace_iterator exists when ftrace
+> was first introduced into mainline kernel. But in this few years,
+> the code of ftrace is changed a lot, and:
+> 
+> 1) partial-zero-out for struct trace_iterator has a bug now,
+>    cpumask_var_t started should not be zeroed out.
+> 
+> 2) I viewed the codes and found that fields below
+>    "/* The below is zeroed out in pipe_read */"
+>    don't need to be zeroed out or initialized now.
+> 
+> So, we remove the code of "partial zero out"
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index 3ca9485..c6d0e1a 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -54,7 +54,6 @@ struct trace_iterator {
+>  	struct ring_buffer_iter	*buffer_iter[NR_CPUS];
+>  	unsigned long		iter_flags;
+>  
+> -	/* The below is zeroed out in pipe_read */
+>  	struct trace_seq	seq;
+>  	struct trace_entry	*ent;
+>  	int			leftover;
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 5314c90..27fecf8 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -3124,12 +3124,6 @@ waitagain:
+>  	if (cnt >= PAGE_SIZE)
+>  		cnt = PAGE_SIZE - 1;
+>  
+> -	/* reset all but tr, trace, and overruns */
+> -	memset(&iter->seq, 0,
+> -	       sizeof(struct trace_iterator) -
+> -	       offsetof(struct trace_iterator, seq));
+> -	iter->pos = -1;
+> -
 
 
-root@10:/root> BUG: unable to handle kernel paging request at 8152a79c
-IP: [<c048ad52>] scan_block+0xd2/0x120
-Kcore timestamp : 1263971633.595000
-Kcore HighResolution timestamp : 238BAE499D2
-Oops: 0000 [#1] SMP
-Modules linked in: kmemleak_test pmemfs
 
-Pid: 889, comm: bash Not tainted (2.6.27-pne #32)
-EIP: 0060:[<c048ad52>] EFLAGS: 00010082 CPU: 2
-EIP is at scan_block+0xd2/0x120
-EAX: 00000000 EBX: 8152a79c ECX: 00000000 EDX: 8e7d441b
-ESI: 8152a79c EDI: 8152a79d EBP: de893ea8 ESP: de893e8c
- DS: 0068 ES: 0068 FS: 00d8 GS: 0033 SS: 0068
-Process bash (pid: 889, ti=de892000 task=df947200 task.ti=de892000)
-Stack: c08a758d 8152a79c 8152a7a0 df9889a0 8152b79c 00000246 df9889a0
-de893ed0
-       c048aee8 00000000 8152a79c 8152a7a0 8152a7a0 8152a79c df947200
-c0919220
-       00020000 de893f00 c048b074 00000000 00000000 00000202 00000001
-df940068
-Call Trace:
- [<c048aee8>] ? scan_gray_list+0x148/0x190
- [<c048b074>] ? kmemleak_scan+0x144/0x390
- [<c048b5aa>] ? kmemleak_write+0x1aa/0x2e0
- [<c048a62b>] ? put_object+0x2b/0x40
- [<c048e40c>] ? vfs_write+0x9c/0x140
- [<c048b400>] ? kmemleak_write+0x0/0x2e0
- [<c048e5c3>] ? sys_write+0x43/0xb0
- [<c0403541>] ? system_call_done+0x0/0x4
+I'm not sure exaclty why we needed to zero the seq here.
+We already reset it in trace_seq_init().
 
+We might do it again on waitagain. I lost track how we could
+ever need to goto waitagain. It was about a tricky bug to fix
+but I'm don't remember exactly the details.
 
-The code is failing at the "pointer = *ptr;" line in scan_block().
+That said, if trace_seq_to_user returns -EBUSY, we
+re-init the seq buffer, so it should be fine I guess.
 
-Based on some added instrumentation, we're scanning an object from from
-8152a79c to 8152a7a0, which in turn is scanning a block from 8152a79c to
-8152a7a0, so this is the first address in the block.
+But concerning the need of setting iter->pos to -1, I'm not
+sure we need to remove it. Shouldn't it be set to 0 btw?
 
-The odd thing is that as far as I can tell this should be a valid
-address.  This is a 32-bit x86 kernel, with CONFIG_FLATMEM=y, and the
-memory map is:
-
-virtual kernel memory layout:
-    fixmap  : 0xfff81000 - 0xfffff000   ( 504 kB)
-    pkmap   : 0xffa00000 - 0xffc00000   (2048 kB)
-    vmalloc : 0xe0800000 - 0xff9fe000   ( 497 MB)
-    lowmem  : 0xc0000000 - 0xe0000000   ( 512 MB)
-      .init : 0xc0106000 - 0xc0400000   (3048 kB)
-      .data : 0xc0919000 - 0xc095634c   ( 244 kB)
-      .text : 0xc0400000 - 0xc081bcdc   (4207 kB)
-
-
-If anyone has any suggestions, I'd appreciate it.
-
-Thanks,
-Chris
+Steve?
 
