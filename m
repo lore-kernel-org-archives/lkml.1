@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752061Ab0ATGis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367Ab0ATGkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752061Ab0ATGis (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 01:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601Ab0ATGir
+	id S1752367Ab0ATGkh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 01:40:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954Ab0ATGkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 01:38:47 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:59280 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519Ab0ATGir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 01:38:47 -0500
-Date: Wed, 20 Jan 2010 17:38:40 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alexander Graf <agraf@suse.de>, ppc@vger.kernel.org
-Subject: linux-next: kvm tree build warning
-Message-Id: <20100120173840.21df33df.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__20_Jan_2010_17_38_40_+1100_MNZ_n0bvMOoNI5a5"
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 20 Jan 2010 01:40:36 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50105 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181Ab0ATGkf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 01:40:35 -0500
+Date: Wed, 20 Jan 2010 12:10:26 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100120064026.GC6588@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20100119211646.GF16096@redhat.com> <20100120111220.e7fb4e2c.sfr@canb.auug.org.au> <20100120054950.GB27108@elte.hu> <20100120061551.GB6588@in.ibm.com> <20100120062834.GB12165@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100120062834.GB12165@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__20_Jan_2010_17_38_40_+1100_MNZ_n0bvMOoNI5a5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jan 20, 2010 at 07:28:34AM +0100, Ingo Molnar wrote:
+> 
+> * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+> 
+> > On Wed, Jan 20, 2010 at 06:49:50AM +0100, Ingo Molnar wrote:
 
-Hi all,
+...
+ 
+> > On the other hand, having ptrace/utrace in the -next tree will give it a
+> > lot more testing, while any outstanding technical issues are being addressed.
+> 
+> Including experimental code that is RFC and which is not certain to go 
+> upstream is certainly not the purpose of linux-next though.
 
-Today's linux-next build (powerpc allyesconfig) produced this warning:
+OK.
 
-arch/powerpc/kvm/book3s.c: In function '__kvmppc_vcpu_run':
-arch/powerpc/kvm/book3s.c:1102: warning: 'ext_bkp.vrsave' may be used unini=
-tialized in this function
+> It will cause conflicts with various other trees and increases the overhead 
+> all around. It also causes us to trust linux-next bugreports less - as it's 
+> not the 'next Linux' anymore. Also, there's virtually no high-level technical 
+> review done in linux-next: the trees are implicitly trusted (because they are 
+> pushed by maintainers), bugs and conflicts are reported but otherwise it's a 
+> neutral tree that includes pretty much any commit indiscriminately.
+> 
+> If you need review and testing there's a number of trees you can get inclusion 
+> into.
 
-Introduced by commit 2609c1d06b6a7952273fb33b33ad32aff0628146 ("KVM: PPC:
-Add support for FPU/Altivec/VSX").  This *may* be a false positive but
-will be a problem for normal builds where warnings are treated as errors
-in arch/powerpc.
+So would -tip be one of them? If so could you pull the utrace-ptrace
+branch in?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Or did you intend some other tree (random-tracing)? (Though I think a
+ptrace reimplementation isn't 'random'-tracing :-))
 
---Signature=_Wed__20_Jan_2010_17_38_40_+1100_MNZ_n0bvMOoNI5a5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktWpPAACgkQjjKRsyhoI8zqfwCgnLzVIPCdsXofoMmHy+8OFdb0
-HOoAn2hu6F56MeVhslTILvw+w2nqG+9K
-=Vv9k
------END PGP SIGNATURE-----
-
---Signature=_Wed__20_Jan_2010_17_38_40_+1100_MNZ_n0bvMOoNI5a5--
+Ananth
