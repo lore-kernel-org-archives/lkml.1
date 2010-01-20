@@ -1,162 +1,69 @@
-Return-Path: <linux-kernel-owner@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751710Ab0ATIKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754896Ab0BAAxs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 19:53:48 -0500
-Received: from mga01.intel.com ([192.55.52.88]:12854 "EHLO mga01.intel.com"
+	id S1751710Ab0ATIKd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 03:10:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634Ab0ATIKc
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 20 Jan 2010 03:10:32 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57009 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754671Ab0BAAxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 19:53:46 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,379,1262592000"; 
-   d="scan'208";a="768870592"
-Date: Sun, 31 Jan 2010 22:31:42 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Chris Frost <frost@cs.ucla.edu>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steve Dickson <steved@redhat.com>, David Howells <dhowells@redhat.com>,
-       Xu Chenfeng <xcf@ustc.edu.cn>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Steve VanDeBogart <vandebo-lkml@nerdbox.net>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH] mm/readahead.c: update the LRU positions of in-core
-	pages, too
-Message-ID: <20100131143142.GA11186@localhost>
-References: <20100120215536.GN27212@frostnet.net> <20100121054734.GC24236@localhost> <20100123040348.GC30844@frostnet.net> <20100123102222.GA6943@localhost> <20100125094228.f7ca1430.kamezawa.hiroyu@jp.fujitsu.com> <20100125024544.GA16462@localhost> <20100125223635.GC2822@frostnet.net> <20100126133217.GB25407@localhost>
+	id S1751540Ab0ATIKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 03:10:32 -0500
+Date: Wed, 20 Jan 2010 09:10:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dimitri Sivanich <sivanich@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de
+Subject: Re: [PATCH] x86, UV: Fix RTC latency bug by reading replicated
+ cachelines
+Message-ID: <20100120081020.GG20621@elte.hu>
+References: <20100112210904.GA24546@sgi.com>
+ <20100113092433.GB6739@elte.hu>
+ <20100114183422.GA12152@sgi.com>
+ <20100119144137.GB22276@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100126133217.GB25407@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100119144137.GB22276@sgi.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 1.2
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.2 required=5.9 tests=FS_REPLICA autolearn=no SpamAssassin version=3.2.5
+	1.2 FS_REPLICA             Subject says "replica"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 09:32:17PM +0800, Wu Fengguang wrote:
-> On Mon, Jan 25, 2010 at 03:36:35PM -0700, Chris Frost wrote:
-> > I changed Wu's patch to add a PageLRU() guard that I believe is required
-> > and optimized zone lock acquisition to only unlock and lock at zone changes.
-> > This optimization seems to provide a 10-20% system time improvement for
-> > some of my GIMP benchmarks and no improvement for other benchmarks.
-> 
-> > +			del_page_from_lru_list(zone, page, lru);
-> > +			add_page_to_lru_list(zone, page, lru);
-> > +		}
-> > +		put_page(page);
 
-I feel very uncomfortable about this put_page() inside zone->lru_lock. 
-(might deadlock: put_page() conditionally takes zone->lru_lock again)
+* Dimitri Sivanich <sivanich@sgi.com> wrote:
 
-If you really want the optimization, can we do it like this?
+> +++ linux/drivers/char/uv_mmtimer.c	2010-01-14 11:56:57.000000000 -0600
+> @@ -89,12 +89,19 @@ static long uv_mmtimer_ioctl(struct file
+>  	switch (cmd) {
+>  	case MMTIMER_GETOFFSET:	/* offset of the counter */
+>  		/*
+> -		 * UV RTC register is on its own page
+> +		 * Starting with HUB rev 2.0, the UV RTC register is
+> +		 * replicated across all cachelines of it's own page.
+> +		 * This allows faster simultaneous reads from a given socket.
+> +		 *
+> +		 * The offset returned is in 64 bit units.
+>  		 */
+> -		if (PAGE_SIZE <= (1 << 16))
+> -			ret = ((UV_LOCAL_MMR_BASE | UVH_RTC) & (PAGE_SIZE-1))
+> -				/ 8;
+> -		else
+> +		if (PAGE_SIZE <= (1 << 16)) {
+> +			if (uv_get_min_hub_revision_id() == 1)
+> +				ret = 0;
+> +			else
+> +				ret = ((uv_blade_processor_id() *
+> +					L1_CACHE_BYTES) % PAGE_SIZE) / 8;
+> +		} else
 
-Thanks,
-Fengguang
----
-readahead: retain inactive lru pages to be accessed soon
-From: Chris Frost <frost@cs.ucla.edu>
+That 64K PAGE_SIZE check in the ioctl looks rather weird. What is the purpose 
+of it?
 
-Ensure that cached pages in the inactive list are not prematurely evicted;
-move such pages to lru head when they are covered by
-- in-kernel heuristic readahead
-- an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
-
-Before this patch, pages already in core may be evicted before the
-pages covered by the same prefetch scan but that were not yet in core.
-Many small read requests may be forced on the disk because of this behavior.
-
-In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
-has no effect on the page's location in the LRU list, even if it is the
-next victim on the inactive list.
-
-This change helps address the performance problems we encountered
-while modifying SQLite and the GIMP to use large file prefetching.
-Overall these prefetching techniques improved the runtime of large
-benchmarks by 10-17x for these applications. More in the publication
-_Reducing Seek Overhead with Application-Directed Prefetching_ in
-USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
-
-Signed-off-by: Chris Frost <frost@cs.ucla.edu>
-Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/readahead.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
-
---- linux.orig/mm/readahead.c	2010-01-31 21:39:24.000000000 +0800
-+++ linux/mm/readahead.c	2010-01-31 22:20:24.000000000 +0800
-@@ -9,7 +9,9 @@
- 
- #include <linux/kernel.h>
- #include <linux/fs.h>
-+#include <linux/memcontrol.h>
- #include <linux/mm.h>
-+#include <linux/mm_inline.h>
- #include <linux/module.h>
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
-@@ -133,6 +135,48 @@ out:
- }
- 
- /*
-+ * The file range is expected to be accessed in near future.  Move pages
-+ * (possibly in inactive lru tail) to lru head, so that they are retained
-+ * in memory for some reasonable time.
-+ */
-+static void retain_inactive_pages(struct address_space *mapping,
-+				  pgoff_t index, int len)
-+{
-+	struct page *grabbed_page;
-+	struct page *page;
-+	struct zone *zone;
-+	int i;
-+
-+	for (i = 0; i < len; i++) {
-+		grabbed_page = page = find_get_page(mapping, index + i);
-+		if (!page)
-+			continue;
-+
-+		zone = page_zone(page);
-+		spin_lock_irq(&zone->lru_lock);
-+		if (PageLRU(page) &&
-+		    !PageActive(page) &&
-+		    !PageUnevictable(page)) {
-+			int lru = page_lru_base_type(page);
-+
-+			for (; i < len; i++) {
-+				struct page *p = page;
-+
-+				if (page->mapping != mapping ||
-+				    page->index != index + i)
-+					break;
-+				page = list_to_page(&page->lru);
-+				del_page_from_lru_list(zone, p, lru);
-+				add_page_to_lru_list(zone, p, lru);
-+			}
-+		}
-+		spin_unlock_irq(&zone->lru_lock);
-+		page_cache_release(grabbed_page);
-+		cond_resched();
-+	}
-+}
-+
-+/*
-  * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
-  * the pages first, then submits them all for I/O. This avoids the very bad
-  * behaviour which would occur if page allocations are causing VM writeback.
-@@ -184,6 +228,14 @@ __do_page_cache_readahead(struct address
- 	}
- 
- 	/*
-+	 * Normally readahead will auto stop on cached segments, so we won't
-+	 * hit many cached pages. If it does happen, bring the inactive pages
-+	 * adjecent to the newly prefetched ones(if any).
-+	 */
-+	if (ret < nr_to_read)
-+		retain_inactive_pages(mapping, offset, page_idx);
-+
-+	/*
- 	 * Now start the IO.  We ignore I/O errors - if the page is not
- 	 * uptodate then the caller will launch readpage again, and
- 	 * will then handle the error.
+	Ingo
