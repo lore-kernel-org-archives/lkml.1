@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751696Ab0ATVqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751995Ab0ATVvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751696Ab0ATVqB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 16:46:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506Ab0ATVp6
+	id S1751995Ab0ATVvi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 16:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900Ab0ATVvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 16:45:58 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:40647 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751490Ab0ATVp5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 16:45:57 -0500
-Date: Wed, 20 Jan 2010 16:45:56 -0500
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
-       linux-usb@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: Strange EHCI/OHCI IRQ and other PCI errors on boot with 2.6.32
-	(which 2.6.26 did not see) on Geode LX/CS5536.
-Message-ID: <20100120214556.GP24305@caffeine.csclub.uwaterloo.ca>
-References: <20100120200125.GO24305@caffeine.csclub.uwaterloo.ca> <Pine.LNX.4.44L0.1001201515520.1672-100000@iolanthe.rowland.org>
+	Wed, 20 Jan 2010 16:51:37 -0500
+Received: from proxima.lp0.eu ([81.2.80.65]:53441 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751673Ab0ATVvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 16:51:36 -0500
+Message-ID: <4B577AE5.6080303@simon.arlott.org.uk>
+Date: Wed, 20 Jan 2010 21:51:33 +0000
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090927)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1001201515520.1672-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: Patrick McHardy <kaber@trash.net>,
+       William Allen Simpson <william.allen.simpson@gmail.com>,
+       netdev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH] xt_TCPMSS: SYN packets are allowed to contain data
+References: <4B54CDE5.3070100@simon.arlott.org.uk> <4B5578A5.50705@gmail.com>    <dad314e12c5750b1b5d70c3ea3c6f6134b8fa0f3@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>    <4B55D372.4020807@gmail.com> <710ab0ca79305c82013982d43250b0a1fd45824d@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid> <4B5773C2.2010000@simon.arlott.org.uk> <alpine.LSU.2.01.1001202238400.18680@obet.zrqbmnf.qr> <alpine.LSU.2.01.1001202240350.18680@obet.zrqbmnf.qr>
+In-Reply-To: <alpine.LSU.2.01.1001202240350.18680@obet.zrqbmnf.qr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 03:20:46PM -0500, Alan Stern wrote:
-> Okay, this means that something else is affecting the IRQ line.
-
-Yep.  I went and disabled irq5 on the LPC bus, and that didn't help.
-
-> > Interestingly the number of interrupts listed in /proc/interrupts is
-> > exactly 300000.
+On 20/01/10 21:41, Jan Engelhardt wrote:
+> On Wednesday 2010-01-20 22:39, Jan Engelhardt wrote:
 > 
-> That's probably because the kernel disabled the IRQ after 100000 
-> unhandled interrupts, and re-enabled it each time a new device was
-> registered for that IRQ.
+>>On Wednesday 2010-01-20 22:21, Simon Arlott wrote:
+>>
+>>>The TCPMSS target is dropping SYN packets where:
+>>>  1) There is data, or
+>>>  2) The data offset makes the TCP header larger than
+>>>  the packet.
+>>>
+>>>Both of these result in an error level printk.
+>>>
+>>>This change fixes the drop of SYN packets with data
+>>>(because the MSS option can safely be modified) and
+>>>passes packets with no MSS option instead of adding
+>>>one (which is not valid).
+>>
+>>Can you explain why the automatic addition of a MSS option is removed?
+> 
+> That is, of course, for the git log. If I followed the thread right, it 
+> was that adding the option could exceed the MTU. Well, can't we check 
+> for the outgoing MTU?
 
-Certainly seems to be the case.
+The MSS option is for the MRU of whoever sent the SYN packet. There's no
+way of knowing this information so it's not possible to avoid using an
+MSS that is too large. With no option, "any" segment size could be used,
+which implies 536 to match the MRU of 576.
 
-> Or you could just stop using USB on the old box.  :-)
-
-Well I just tried another box, and same thing.
-
-If I boot with 'irqpoll' then everything seems fine.
-
-Any idea how I can figure out why irqpoll makes it happy?  Does it give
-any reports anywhere about misrouted irqs?
+The other reason for not being able to add it is that it may increase the
+packet size beyond an MRU/MTU limit if there is data. There's no guarantee
+we'll see an ICMP error message if this occurs, because the limit doesn't
+have to be local and the return path does not need to be the same. The
+original host won't know that the packet is going to be increased in size.
 
 -- 
-Len Sorensen
+Simon Arlott
