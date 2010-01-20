@@ -1,89 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205Ab0ATAOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234Ab0ATARb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205Ab0ATAOj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 19:14:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172Ab0ATAOi
+	id S1756234Ab0ATARb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 19:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755421Ab0ATARa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 19:14:38 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52022 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755322Ab0ATAOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 19:14:37 -0500
-Message-ID: <4B564C23.1030708@kernel.org>
-Date: Wed, 20 Jan 2010 09:19:47 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Tue, 19 Jan 2010 19:17:30 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:21119 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754188Ab0ATAR3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 19:17:29 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com
+Subject: [PATCH] rtc-ep93xx.c: cleanup probe/remove routines
+Date: Tue, 19 Jan 2010 17:17:35 -0700
+Cc: a.zummo@towertech.it, p_gortmaker@yahoo.com
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
-       johannes@sipsolutions.net, andi@firstfloor.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 32/40] async: introduce workqueue based alternative implementation
-References: <1263776272-382-1-git-send-email-tj@kernel.org>	<1263776272-382-33-git-send-email-tj@kernel.org>	<20100117220130.214d56f1@linux.intel.com>	<4B5420A3.3080200@kernel.org>	<20100118072523.2683cd59@linux.intel.com>	<4B55038D.3070106@kernel.org>	<4B550384.8030103@linux.intel.com>	<4B5565BE.4050406@kernel.org> <20100119063718.3f1f39cc@linux.intel.com>
-In-Reply-To: <20100119063718.3f1f39cc@linux.intel.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 20 Jan 2010 00:13:41 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <201001191717.35708.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Arjan.
+Fix issue with rtc device not getting unregistered in probe error path.
 
-On 01/19/2010 11:37 PM, Arjan van de Ven wrote:
->> This too can be implemented using wq directly.  More below.
-> 
-> however you are forcing the function to be split in pieces,
-> which makes for a more complex programming model.
-> For example, I have trouble proving to myself that your ata conversion
-> is acutally correct.
+Use the devres managed resource functions in the probe routine to
+cleanup the error path.
 
-I think it is.  :-)
+Use sysfs_{create/remove}_group to add/remove the sysfs files.
 
->> The tradeoff changes with the worker pool implementation can be shared
->> with workqueue which provides its own ways to control concurrency and
->> synchronize. 
-> 
-> while I don't mind sharing the pool implementation (all 20 lines of
-> it ;-), I don't think the objective of sharing some implementation
-> detail is worth complicating the programming model.
+Reduces the text size by 132 bytes, increases data by 12 bytes:
+    text	   data	    bss	    dec	    hex	filename
+-    937	    124	      0	   1061	    425	rtc-ep93xx.o
++    805	    136	      0	    941	    3ad	rtc-ep93xx.o
 
-Oh yeah, we can definitely pay some lines of code for a separate
-synchronization model if it makes driver writers' lives easier.  I'm
-just wondering whether the benefit is enough to justify a separate
-sync model.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
 
->> Before, the cookie based synchronization is something
->> inherent to the async mechanism.  The async worker pool was needed and
->> the synchronization mechanism came integrated with it.  Now that the
->> backend can be replaced with workqueue which supplies its own ways of
->> synchronization, the cookie based synchronization model needs stronger
->> justification as it no longer comes as a integral part of something
->> bigger which is needed anyway.
-> 
-> the wq model is either "full async" or "fully ordered".
-> the cookie mechanism allows for "run async for the expensive bit, and
-> then INSIDE THE SAME FUNCTION, synchronize, and then run some more".
+---
 
-Hmmm...
-
->> If so, we can leave the list based cookie synchronization alone and
->> simply use wq's to provide concurrency only without using its
->> synchronization mechanisms (flushes).
-> 
-> can you flush from inside a wq element?  That's the critical part
-> that makes the cookie based system easy to program.
-
-Yeah, you can flush individual works from other works and wqs from
-works running from different wqs.  What's not allowed is flushing the
-wq a work is running on from the work.  Let's say if the flush code
-can be modified to do so, would that change your opinion?
-
-Thanks.
-
--- 
-tejun
+diff --git a/drivers/rtc/rtc-ep93xx.c b/drivers/rtc/rtc-ep93xx.c
+index 9da02d1..91bde97 100644
+--- a/drivers/rtc/rtc-ep93xx.c
++++ b/drivers/rtc/rtc-ep93xx.c
+@@ -115,6 +115,15 @@ static ssize_t ep93xx_rtc_show_comp_delete(struct device *dev,
+ }
+ static DEVICE_ATTR(comp_delete, S_IRUGO, ep93xx_rtc_show_comp_delete, NULL);
+ 
++static struct attribute *ep93xx_rtc_attrs[] = {
++	&dev_attr_comp_preload.attr,
++	&dev_attr_comp_delete.attr,
++	NULL
++};
++
++static const struct attribute_group ep93xx_rtc_sysfs_files = {
++	.attrs	= ep93xx_rtc_attrs,
++};
+ 
+ static int __init ep93xx_rtc_probe(struct platform_device *pdev)
+ {
+@@ -123,27 +132,22 @@ static int __init ep93xx_rtc_probe(struct platform_device *pdev)
+ 	struct rtc_device *rtc;
+ 	int err;
+ 
+-	ep93xx_rtc = kzalloc(sizeof(struct ep93xx_rtc), GFP_KERNEL);
+-	if (ep93xx_rtc == NULL)
++	ep93xx_rtc = devm_kzalloc(&pdev->dev, sizeof(*ep93xx_rtc), GFP_KERNEL);
++	if (!ep93xx_rtc)
+ 		return -ENOMEM;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (res == NULL) {
+-		err = -ENXIO;
+-		goto fail_free;
+-	}
++	if (!res)
++		return -ENXIO;
+ 
+-	res = request_mem_region(res->start, resource_size(res), pdev->name);
+-	if (res == NULL) {
+-		err = -EBUSY;
+-		goto fail_free;
+-	}
++	if (!devm_request_mem_region(&pdev->dev, res->start,
++				     resource_size(res), pdev->name))
++		return -EBUSY;
+ 
+-	ep93xx_rtc->mmio_base = ioremap(res->start, resource_size(res));
+-	if (ep93xx_rtc->mmio_base == NULL) {
+-		err = -ENXIO;
+-		goto fail;
+-	}
++	ep93xx_rtc->mmio_base = devm_ioremap(&pdev->dev, res->start,
++					     resource_size(res));
++	if (!ep93xx_rtc->mmio_base)
++		return -ENXIO;
+ 
+ 	pdev->dev.platform_data = ep93xx_rtc;
+ 
+@@ -151,53 +155,34 @@ static int __init ep93xx_rtc_probe(struct platform_device *pdev)
+ 				&pdev->dev, &ep93xx_rtc_ops, THIS_MODULE);
+ 	if (IS_ERR(rtc)) {
+ 		err = PTR_ERR(rtc);
+-		goto fail;
++		goto exit;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, rtc);
+ 
+-	err = device_create_file(&pdev->dev, &dev_attr_comp_preload);
++	err = sysfs_create_group(&pdev->dev.kobj, &ep93xx_rtc_sysfs_files);
+ 	if (err)
+ 		goto fail;
+-	err = device_create_file(&pdev->dev, &dev_attr_comp_delete);
+-	if (err) {
+-		device_remove_file(&pdev->dev, &dev_attr_comp_preload);
+-		goto fail;
+-	}
+ 
+ 	return 0;
+ 
+ fail:
+-	if (ep93xx_rtc->mmio_base) {
+-		iounmap(ep93xx_rtc->mmio_base);
+-		pdev->dev.platform_data = NULL;
+-	}
+-	release_mem_region(res->start, resource_size(res));
+-fail_free:
+-	kfree(ep93xx_rtc);
++	platform_set_drvdata(pdev, NULL);
++	rtc_device_unregister(rtc);
++exit:
++	pdev->dev.platform_data = NULL;
+ 	return err;
+ }
+ 
+ static int __exit ep93xx_rtc_remove(struct platform_device *pdev)
+ {
+ 	struct rtc_device *rtc = platform_get_drvdata(pdev);
+-	struct ep93xx_rtc *ep93xx_rtc = pdev->dev.platform_data;
+-	struct resource *res;
+-
+-	/* cleanup sysfs */
+-	device_remove_file(&pdev->dev, &dev_attr_comp_delete);
+-	device_remove_file(&pdev->dev, &dev_attr_comp_preload);
+ 
++	sysfs_remove_group(&pdev->dev.kobj, &ep93xx_rtc_sysfs_files);
++	platform_set_drvdata(pdev, NULL);
+ 	rtc_device_unregister(rtc);
+-
+-	iounmap(ep93xx_rtc->mmio_base);
+ 	pdev->dev.platform_data = NULL;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	release_mem_region(res->start, resource_size(res));
+-
+-	platform_set_drvdata(pdev, NULL);
+-
+ 	return 0;
+ }
+ 
