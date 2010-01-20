@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022Ab0ATCDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084Ab0ATCDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756022Ab0ATCDY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 21:03:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408Ab0ATCDP
+	id S1756084Ab0ATCDh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 21:03:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881Ab0ATCDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 21:03:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53095 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754881Ab0ATCDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 21:03:12 -0500
-Message-ID: <4B566590.5030804@kernel.org>
-Date: Wed, 20 Jan 2010 11:08:16 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Tue, 19 Jan 2010 21:03:35 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:57204 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755505Ab0ATCDd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 21:03:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=QoX3nD/6RhYcoiHP/9Nzghm5B8wnp1VjxQQ3LtbklDr3TYEgGdZAivxeWHJw27jv0U
+         Y+72YyX/oLNAqn4zCzzxfpEJy4vESnIuhetGCoafb2l91YM6OSZoZlJXTfNOcy4Aip0x
+         WRP4ZAFuk7QglfWWXVCCjG8/UlFqJaXF0tG/k=
+Message-ID: <4B56659E.3040001@gmail.com>
+Date: Wed, 20 Jan 2010 03:08:30 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
-       johannes@sipsolutions.net, andi@firstfloor.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 32/40] async: introduce workqueue based alternative implementation
-References: <1263776272-382-1-git-send-email-tj@kernel.org>	<1263776272-382-33-git-send-email-tj@kernel.org>	<20100117220130.214d56f1@linux.intel.com>	<4B5420A3.3080200@kernel.org>	<20100118072523.2683cd59@linux.intel.com>	<4B55038D.3070106@kernel.org>	<4B550384.8030103@linux.intel.com>	<4B5565BE.4050406@kernel.org> <20100119063718.3f1f39cc@linux.intel.com> <4B564C23.1030708@kernel.org> <4B564ECC.9080707@linux.intel.com>
-In-Reply-To: <4B564ECC.9080707@linux.intel.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+To: Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+       Steve Hodgson <shodgson@solarflare.com>,
+       Ben Hutchings <bhutchings@solarflare.com>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] sfc: EFX_ETHTOOL_STAT calculates the offset of the efx##source_name's
+ field in both cases
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 20 Jan 2010 02:02:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+EFX_ETHTOOL_STAT calculated the offset of the efx##source_name's field
+Regardless of whether that field was NULL.
 
-On 01/20/2010 09:31 AM, Arjan van de Ven wrote:
-> On 1/19/2010 16:19, Tejun Heo wrote:
-> 
->> Yeah, you can flush individual works from other works and wqs from
->> works running from different wqs.  What's not allowed is flushing the
->> wq a work is running on from the work.  Let's say if the flush code
->> can be modified to do so, would that change your opinion?
-> 
-> once you get "run in parallel, but have an API to wait on everyone
-> who was scheduled before me"...  ... that'd be fine ;)
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+This looks like a bug, but I am not sure whether I understood this correctly,
+nor was it tested, was this intended?
 
-Cool, I'll give a shot at it then.  I think it would be better to
-adapt the existing interface to the new uses if at all possible.
-
-> but then you pretty much HAVE the cookie API, even if you don't have
-> an actual cookie.  (just the cookie was an easy way to determine the
-> "before me")
-
-Yeap, but then again, whatever we do, all those synchronization
-interfaces can be mapped onto each other eventually.
-
-Thanks.
-
--- 
-tejun
+diff --git a/drivers/net/sfc/ethtool.c b/drivers/net/sfc/ethtool.c
+index 6c0bbed..722bac7 100644
+--- a/drivers/net/sfc/ethtool.c
++++ b/drivers/net/sfc/ethtool.c
+@@ -41,7 +41,7 @@ struct efx_ethtool_stat {
+ 	.source = EFX_ETHTOOL_STAT_SOURCE_##source_name,		\
+ 	.offset = ((((field_type *) 0) ==				\
+ 		      &((struct efx_##source_name *)0)->field) ?	\
+-		    offsetof(struct efx_##source_name, field) :		\
++		    offsetof(struct efx_##stat_name, field) :		\
+ 		    offsetof(struct efx_##source_name, field)),		\
+ 	.get_stat = get_stat_function,					\
+ }
