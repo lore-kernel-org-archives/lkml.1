@@ -1,61 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023Ab0ATUzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112Ab0ATU7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023Ab0ATUzP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 15:55:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636Ab0ATUzN
+	id S1754112Ab0ATU7p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 15:59:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690Ab0ATU7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 15:55:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33664 "EHLO ogre.sisk.pl"
+	Wed, 20 Jan 2010 15:59:44 -0500
+Received: from www.tglx.de ([62.245.132.106]:42998 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753652Ab0ATUzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 15:55:12 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [RFC][PATCH] PM / Runtime: Add sysfs switch for disabling device run-time PM
-Date: Wed, 20 Jan 2010 21:55:36 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <201001180129.55219.rjw@sisk.pl> <20100120025147.GA20979@kroah.com>
-In-Reply-To: <20100120025147.GA20979@kroah.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001202155.37062.rjw@sisk.pl>
+	id S1753118Ab0ATU7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 15:59:44 -0500
+Message-Id: <20100120171629.734886007@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Wed, 20 Jan 2010 20:58:57 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Carsten Emde <cbe@osadl.org>,
+       Mathias Weber <mathias.weber.mw1@roche.com>
+Subject: [patch 1/3] sched: Extend enqueue_task to allow head queueing
+References: <20100120171231.922420383@linutronix.de>
+Content-Disposition: inline;
+	filename=sched-extend-enqueue-task-to-allow-head-queueing.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 January 2010, Greg KH wrote:
-> On Mon, Jan 18, 2010 at 01:29:55AM +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM / Runtime: Add sysfs switch for disabling device run-time PM
-> > 
-> > Add new device sysfs attribute, power/runtime, allowing the user
-> > space to block the run-time power management of the device.  If this
-> > attribute is set to "disabled", the driver of the device won't be
-> > able to enable run-time power management for it (without breaking the
-> > rules).
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/base/power/power.h   |    4 +
-> >  drivers/base/power/runtime.c |  107 +++++++++++++++++++++++++++++++++----------
-> >  drivers/base/power/sysfs.c   |   46 ++++++++++++++++++
-> >  include/linux/pm.h           |    1 
-> >  include/linux/pm_runtime.h   |   11 +---
-> >  5 files changed, 139 insertions(+), 30 deletions(-)
-> 
-> You forgot to also add an entry into Documentation/ABI/ for when you
-> add/change a sysfs file :)
+The ability of enqueueing a task to the head of a SCHED_FIFO priority
+list is required to fix some violations of POSIX scheduling policy.
 
-There's no description for /sys/devices/.../power/wakeup in there too and
-that one has been present for quite some time already.
+Extend the related functions with a "head" argument.
 
-I'd prefer adding them both in a separate patch if you don't mind.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ include/linux/sched.h |    3 ++-
+ kernel/sched.c        |   13 +++++++------
+ kernel/sched_fair.c   |    3 ++-
+ kernel/sched_rt.c     |    3 ++-
+ 4 files changed, 13 insertions(+), 9 deletions(-)
 
-Rafael
+Index: linux-2.6-tip/include/linux/sched.h
+===================================================================
+--- linux-2.6-tip.orig/include/linux/sched.h
++++ linux-2.6-tip/include/linux/sched.h
+@@ -1075,7 +1075,8 @@ struct sched_domain;
+ struct sched_class {
+ 	const struct sched_class *next;
+ 
+-	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
++	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup,
++			      bool head);
+ 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
+ 	void (*yield_task) (struct rq *rq);
+ 
+Index: linux-2.6-tip/kernel/sched.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sched.c
++++ linux-2.6-tip/kernel/sched.c
+@@ -1883,13 +1883,14 @@ static void update_avg(u64 *avg, u64 sam
+ 	*avg += diff >> 3;
+ }
+ 
+-static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
++static void
++enqueue_task(struct rq *rq, struct task_struct *p, int wakeup, bool head)
+ {
+ 	if (wakeup)
+ 		p->se.start_runtime = p->se.sum_exec_runtime;
+ 
+ 	sched_info_queued(p);
+-	p->sched_class->enqueue_task(rq, p, wakeup);
++	p->sched_class->enqueue_task(rq, p, wakeup, head);
+ 	p->se.on_rq = 1;
+ }
+ 
+@@ -1965,7 +1966,7 @@ static void activate_task(struct rq *rq,
+ 	if (task_contributes_to_load(p))
+ 		rq->nr_uninterruptible--;
+ 
+-	enqueue_task(rq, p, wakeup);
++	enqueue_task(rq, p, wakeup, false);
+ 	inc_nr_running(rq);
+ }
+ 
+@@ -6065,7 +6066,7 @@ void rt_mutex_setprio(struct task_struct
+ 	if (running)
+ 		p->sched_class->set_curr_task(rq);
+ 	if (on_rq) {
+-		enqueue_task(rq, p, 0);
++		enqueue_task(rq, p, 0, false);
+ 
+ 		check_class_changed(rq, p, prev_class, oldprio, running);
+ 	}
+@@ -6109,7 +6110,7 @@ void set_user_nice(struct task_struct *p
+ 	delta = p->prio - old_prio;
+ 
+ 	if (on_rq) {
+-		enqueue_task(rq, p, 0);
++		enqueue_task(rq, p, 0, false);
+ 		/*
+ 		 * If the task increased its priority or is running and
+ 		 * lowered its priority, then reschedule its CPU:
+@@ -10110,7 +10111,7 @@ void sched_move_task(struct task_struct 
+ 	if (unlikely(running))
+ 		tsk->sched_class->set_curr_task(rq);
+ 	if (on_rq)
+-		enqueue_task(rq, tsk, 0);
++		enqueue_task(rq, tsk, 0, false);
+ 
+ 	task_rq_unlock(rq, &flags);
+ }
+Index: linux-2.6-tip/kernel/sched_fair.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sched_fair.c
++++ linux-2.6-tip/kernel/sched_fair.c
+@@ -1053,7 +1053,8 @@ static inline void hrtick_update(struct 
+  * increased. Here we update the fair scheduling stats and
+  * then put the task into the rbtree:
+  */
+-static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int wakeup)
++static void
++enqueue_task_fair(struct rq *rq, struct task_struct *p, int wakeup, bool head)
+ {
+ 	struct cfs_rq *cfs_rq;
+ 	struct sched_entity *se = &p->se;
+Index: linux-2.6-tip/kernel/sched_rt.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sched_rt.c
++++ linux-2.6-tip/kernel/sched_rt.c
+@@ -878,7 +878,8 @@ static void dequeue_rt_entity(struct sch
+ /*
+  * Adding/removing a task to/from a priority array:
+  */
+-static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
++static void
++enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup, bool head)
+ {
+ 	struct sched_rt_entity *rt_se = &p->rt;
+ 
+
+
