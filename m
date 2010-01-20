@@ -1,29 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308Ab0ATRHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391Ab0ATRNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308Ab0ATRHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 12:07:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062Ab0ATRHO
+	id S1753391Ab0ATRNW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 12:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810Ab0ATRNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 12:07:14 -0500
-Received: from tur.go2.pl ([193.17.41.50]:56904 "EHLO tur.go2.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751723Ab0ATRHN convert rfc822-to-8bit (ORCPT
+	Wed, 20 Jan 2010 12:13:20 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:29290 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461Ab0ATRNT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 12:07:13 -0500
-Subject: =?UTF-8?Q?linux_na_Compaq_T1000?=
-From: =?UTF-8?Q?msuma?= <msuma@o2.pl>
-To: linux-kernel@vger.kernel.org
+	Wed, 20 Jan 2010 12:13:19 -0500
+Date: Wed, 20 Jan 2010 09:12:41 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Avi Kivity <avi@redhat.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       kvm@vger.kernel.org
+Subject: Re: linux-next: Tree for January 20 (kvm warnings)
+Message-Id: <20100120091241.3f10428d.randy.dunlap@oracle.com>
+In-Reply-To: <20100120181016.6ba3e504.sfr@canb.auug.org.au>
+References: <20100120181016.6ba3e504.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Message-ID: <15729f67.48e41c11.4b57380f.890f7@o2.pl>
-Date: Wed, 20 Jan 2010 18:06:23 +0100
-X-Originator: 95.48.127.34
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B57399A.0116:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Widziałem twoje posty o instalowaniu linuxa na tym thin cliencie. Czy coś się ruszyło w tym temacie? Umiem przygotować pakiet programami z winterm.gaast.net i sflashować pamięć przez kabel laplink ale jakoś nie idzie mi kompilowanie jądra :-/
+On Wed, 20 Jan 2010 18:10:16 +1100 Stephen Rothwell wrote:
 
--- 
-dcm_Marecheq
+> Hi all,
+> 
+> Changes since 20100119:
+> 
+> The kvm tree lost its build failure.
+
+
+on i386/X86_32:
+
+arch/x86/kvm/x86.c:3810: warning: left shift count >= width of type
+arch/x86/kvm/x86.c:3812: warning: left shift count >= width of type
+arch/x86/kvm/x86.c:3814: warning: left shift count >= width of type
+
+---
+~Randy
