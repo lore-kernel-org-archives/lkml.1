@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466Ab0ATQhL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752321Ab0ATQiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752466Ab0ATQhL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 11:37:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317Ab0ATQhJ
+	id S1752321Ab0ATQiP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 11:38:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493Ab0ATQiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 11:37:09 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:35395 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752108Ab0ATQhI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 11:37:08 -0500
-Date: Wed, 20 Jan 2010 11:37:07 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-cc: linux-kernel@vger.kernel.org, <linux-geode@lists.infradead.org>,
-       <linux-usb@vger.kernel.org>, <linux-pci@vger.kernel.org>
-Subject: Re: Strange EHCI/OHCI IRQ and other PCI errors on boot with 2.6.32
- (which 2.6.26 did not see) on Geode LX/CS5536.
-In-Reply-To: <20100120154005.GB24307@caffeine.csclub.uwaterloo.ca>
-Message-ID: <Pine.LNX.4.44L0.1001201134270.1672-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 20 Jan 2010 11:38:13 -0500
+Received: from xenotime.net ([72.52.64.118]:40628 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751122Ab0ATQiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 11:38:12 -0500
+Date: Wed, 20 Jan 2010 08:38:06 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       ok@artecdesign.ee, sarah.a.sharp@linux.intel.com,
+       Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: Re: [PATCH] Obsolete config in kernel source (USB_HCD_DMA)
+Message-Id: <20100120083806.25b69d9f.rdunlap@xenotime.net>
+In-Reply-To: <4B571122.6060407@ru.mvista.com>
+References: <20100120123540.GB3580@faui49.informatik.uni-erlangen.de>
+	<4B571122.6060407@ru.mvista.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010, Lennart Sorensen wrote:
+On Wed, 20 Jan 2010 17:20:18 +0300 Sergei Shtylyov wrote:
 
-> I am working on upgrading from 2.6.26 to 2.6.32 on our router, and I am
-> now seeing some strange IRQ errors on boot when the EHCI and OHCI drivers
-> load for USB.  2.6.26 never complained.  It appears to be working just
-> fine with both kernels, but the errors are rather concerning to see.
-> Perhaps I have to fix something in the PCI setup of the system.
+> Hello.
+> 
+> Christoph Egger wrote:
+> 
+> > From 2e5a8a322a6cd74ecb77eda8f0a09a0a01c6dbc6 Mon Sep 17 00:00:00 2001
+> > From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+> > Date: Wed, 20 Jan 2010 13:32:36 +0100
+> > Subject: [PATCH] The configuration Option USB_HCD_DMA is not reachable in KConfig so
+> >  this piece of Code is effectively dead and useless. Remove it to avoid
+> >  confusion.
+> >   
+> 
+>    The patch's subject should be a terse description of change, not the 
+> substitute for the lengthy description as in your case.
 
-...
+Also please insert patches inline in the email body instead of using
+attachments.  mutt can surely do this -- people do it all the time
+(though I don't use mutt, so please don't ask me how).
 
-> So the only devices on IRQ5 are the USB controllers, unless there is
-> some junk on the LPC bus generating an IRQ 5 (if there is I can certainly
-> mask that).
-
-It's true that the USB controllers appear to be the only devices using
-IRQ 5.  But your startup log shows that only two of the three
-controllers have an associated driver.  Maybe the third controller is
-generating the unwanted interrupts?
-
-Alan Stern
-
+---
+~Randy
