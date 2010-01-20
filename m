@@ -1,86 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545Ab0ATFuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752271Ab0ATGCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752545Ab0ATFuZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 00:50:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125Ab0ATFuY
+	id S1752271Ab0ATGCK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 01:02:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466Ab0ATGCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 00:50:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59173 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403Ab0ATFuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 00:50:22 -0500
-Date: Wed, 20 Jan 2010 06:49:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, utrace-devel@redhat.com,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100120054950.GB27108@elte.hu>
-References: <20100119211646.GF16096@redhat.com>
- <20100120111220.e7fb4e2c.sfr@canb.auug.org.au>
+	Wed, 20 Jan 2010 01:02:09 -0500
+Received: from e28smtp07.in.ibm.com ([122.248.162.7]:39585 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813Ab0ATGCF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 01:02:05 -0500
+Date: Wed, 20 Jan 2010 11:31:59 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Jan Kiszka <jan.kiszka@siemens.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC Patch 2/2][Bugfix][x86][hw-breakpoint] Fix return-code to
+	notifier chain in hw_breakpoint_handler
+Message-ID: <20100120060159.GA4859@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20091226175533.149765731@linux.vnet.ibm.com> <20091226182833.GC9494@in.ibm.com> <20091231003808.GC23808@nowhere> <20091231190217.GC3676@in.ibm.com> <20100110031857.GB15195@nowhere> <4B4B78D1.2080606@siemens.com> <20100116194058.GA31079@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100120111220.e7fb4e2c.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20100116194058.GA31079@in.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> Hi Frank,
-> 
-> On Tue, 19 Jan 2010 16:16:46 -0500 "Frank Ch. Eigler" <fche@redhat.com> wrote:
-> >
-> > Having been reviewed a couple of times, and we hope being a good
-> > candidate for merging next time, please start pulling
+On Sun, Jan 17, 2010 at 01:10:58AM +0530, K.Prasad wrote:
+> On Mon, Jan 11, 2010 at 08:15:29PM +0100, Jan Kiszka wrote:
+> > Frederic Weisbecker wrote:
+> > > On Fri, Jan 01, 2010 at 12:32:17AM +0530, K.Prasad wrote:
+> > >> On Thu, Dec 31, 2009 at 01:38:09AM +0100, Frederic Weisbecker wrote:
+> > >>> On Sat, Dec 26, 2009 at 11:58:33PM +0530, K.Prasad wrote:
+> > >>>> The hw-breakpoint handler will return NOTIFY_DONE for user-space breakpoints
+> > >>>> to generate SIGTRAP signal (and not for kernel-space addresses). 
+> > >>>>
+> > >>>> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > >>>> ---
+> > >>>>  arch/x86/kernel/hw_breakpoint.c |    9 +++++++--
+> > >>>>  1 file changed, 7 insertions(+), 2 deletions(-)
+> > >>>>
+> > >>>> Index: linux-2.6-tip/arch/x86/kernel/hw_breakpoint.c
+> > >>>> ===================================================================
+> > >>>> --- linux-2.6-tip.orig/arch/x86/kernel/hw_breakpoint.c
+> > >>>> +++ linux-2.6-tip/arch/x86/kernel/hw_breakpoint.c
+> > >>>> @@ -502,8 +502,6 @@ static int __kprobes hw_breakpoint_handl
+> > >>>>  		rcu_read_lock();
+> > >>>>  
+> > >>>>  		bp = per_cpu(bp_per_reg[i], cpu);
+> > >>>> -		if (bp)
+> > >>>> -			rc = NOTIFY_DONE;
+> > >>>>  		/*
+> > >>>>  		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
+> > >>>>  		 * exception handling
+> > >>>> @@ -517,6 +515,13 @@ static int __kprobes hw_breakpoint_handl
+> > >>>>  			rcu_read_unlock();
+> > >>>>  			break;
+> > >>>>  		}
+> > >>>> +		/*
+> > >>>> +		 * Further processing in do_debug() is needed for a) user-space
+> > >>>> +		 * breakpoints (to generate signals) and b) when the system has
+> > >>>> +		 * taken exception due to multiple causes
+> > >>>> +		 */
+> > >>>> +		if (bp->attr.bp_addr < TASK_SIZE)
+> > >>>> +			rc = NOTIFY_DONE;
+> > >>>>  
+> > >>>>  		perf_bp_event(bp, args->regs);
+> > >>>>  
+> > >>>>
+> > >>>
+> > >>> Oh and now that I see this patch, the previous one indeed makes sense
+> > >>> with this check:
+> > >>>
+> > >>> if (dr6 & (~DR_TRAP_BITS))
+> > >>> 	rc = NOTIFY_DONE;
+> > >>>
+> > >>> That said, it means thread.debugreg6 won't get the reserved bits anymore.
+> > >>> I see some use of them from kvm (it restores the reserved bits on guest<->host
+> > >>> switch). Not sure if this inconsistency could affect kvm...
+> > >>>
+> > >> Can you point me to the relevant code?
+> > > 
+> > > 
+> > > I see various uses of DR6_VOLATILE and DR6_FIXED_1 in arch/x86/kvm/,
+> > > DR6_FIXED_1 being the fixed unused bits in dr6. Not sure how
+> > > this patch would affect what's set there.
+> > > 
+> > > I'll wait for Jan's answer.
+> > > 
 > > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git branch master
+> > You may need to synchronize me: What does the patch change, the shadow
+> > register KVM will restore into DR6 on return to the host? Or the
+> > register content KVM finds on guest entry?
+> > 
 > 
-> I have added this from today with you and utrace-devel as the contacts.
-> I have cc'd the wider community on this email so that people are aware
-> that this has been included.
+> Sorry, this mail got buried deeply in my mailbox (hence the delay).
 > 
-> > This repo contains frequent merges from Linus' tree.  If you'd prefer
-> > a cleaner rebase-based branch to pull from, we can make one of those too.
+> Basically, this patch tries to remove DR6 from its reserved bits to help
+> easy checks for certain status bits (such as DR_STEP). For instance, in
+> order to verify if DR_STEP (Bit 14) is set we must now do
+> if ((DR6 & ~DR6_RESERVED) & DR_STEP) {}
+> or
+> if (DR6 & (DR_STEP | DR6_RESERVED)) {}
+> which is redundant.
 > 
-> For now it is OK, but you might like to ask Linus if he would like it
-> cleaned up before submission since it seems to have history right back to
-> 2.6.29 and (as you say) lots of merges with his tree.
+> Instead this patch would expunge all reserved bits in DR6 before checks
+> for various status bits (to detect the cause of exception) are made in
+> do_debug().
 > 
-> You should also add a commit with an entry in MAINTAINERS.
+> At the outset, I don't think changes in the way the value of DR6 is used
+> for comparison in do_debug() would affect exception handling for either
+> KVM's guest or host OS (given that there are no hooks for the same in
+> do_debug()).
+> 
+> > The rules are simple: On entry, KVM assumes nothing about the register
+> > state, just overwrites it (on demand) with the guest state. On exit, it
+> > calls into hw_breakpoint_restore to ensure the host sees a proper state
+> > (if required). But there is at no time an architecturally invalid state
+> > loaded into the real register (that's basically what DR6_VOLATILE and
+> > DR6_FIXED_1 are used for while in guest mode).
+> > 
+> 
+> Such a behaviour shouldn't be affected by the above change...your
+> confirmation would help!
+> 
 
-Note, i'm not yet convinced that this (and the rest: uprobes and systemtap, 
-etc.) can go uptream in its present form.
+Hi Jan,
+	I presume that the above explanation makes the role of this
+patch/bugfix clear.
 
-IMHO the far more important thing to address beyond formalities and workflow 
-cleanliness are the (many) technical observations and objections offered by 
-Peter Zijstra on lkml. Not just the git history but also the abstractions and 
-concepts are messy and should be reworked IMO, and also good and working perf 
-events integration should be achieved, etc.
-
-The fact that there's a well established upstream workflow for instrumentation 
-patches, which is being routed around by the utrace/uprobes/systemtap code 
-here is not a good sign in terms of reaching a good upstream solution. Lets 
-hope it works out well though.
+Kindly let me know if you have any further queries.
 
 Thanks,
+K.Prasad
 
-	Ingo
