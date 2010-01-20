@@ -1,131 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751856Ab0ATMil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309Ab0ATMqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751856Ab0ATMil (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 07:38:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332Ab0ATMiE
+	id S1752309Ab0ATMqt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 07:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955Ab0ATMqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 07:38:04 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61914 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932099Ab0ATMh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 07:37:59 -0500
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: [PATCH 5/6 -mm] cpu-timers: assure to not iterate over all threads in fastpath_timer_check()
-Date: Wed, 20 Jan 2010 13:34:27 +0100
-Message-Id: <1263990868-8119-6-git-send-email-sgruszka@redhat.com>
-In-Reply-To: <1263990868-8119-5-git-send-email-sgruszka@redhat.com>
-References: <1263990868-8119-1-git-send-email-sgruszka@redhat.com>
- <1263990868-8119-2-git-send-email-sgruszka@redhat.com>
- <1263990868-8119-3-git-send-email-sgruszka@redhat.com>
- <1263990868-8119-4-git-send-email-sgruszka@redhat.com>
- <1263990868-8119-5-git-send-email-sgruszka@redhat.com>
+	Wed, 20 Jan 2010 07:46:49 -0500
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:45268 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739Ab0ATMqs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 07:46:48 -0500
+Message-ID: <4B56FB33.2090408@linux.vnet.ibm.com>
+Date: Wed, 20 Jan 2010 18:16:43 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0b1 Thunderbird/3.0
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       kirill@shutemov.name
+Subject: Re: [PATCH mmotm] memcg use generic percpu allocator instead of private
+ one
+References: <20100120161825.15c372ac.kamezawa.hiroyu@jp.fujitsu.com> <4B56CEF0.2040406@linux.vnet.ibm.com> <20100120184707.ed99b540.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100120184707.ed99b540.kamezawa.hiroyu@jp.fujitsu.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spread p->sighand->siglock locking scope to assure fastpath_timer_check()
-never iterate over each threads. Without locking there is small possibility
-that signal->cputimer will stop running while we write values to
-signal->cputime_expires.
+On Wednesday 20 January 2010 03:17 PM, KAMEZAWA Hiroyuki wrote:
+> On Wed, 20 Jan 2010 15:07:52 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> On Wednesday 20 January 2010 12:48 PM, KAMEZAWA Hiroyuki wrote:
+>>> This patch is onto mmotm Jan/15.
+>>> =
+>>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>>
+>>> When per-cpu counter for memcg was implemneted, dynamic percpu allocator
+>>> was not very good. But now, we have good one and useful macros.
+>>> This patch replaces memcg's private percpu counter implementation with
+>>> generic dynamic percpu allocator and macros.
+>>>
+>>> The benefits are
+>>> 	- We can remove private implementation.
+>>> 	- The counters will be NUMA-aware. (Current one is not...)
+>>> 	- This patch reduces sizeof(struct mem_cgroup). Then,
+>>> 	  struct mem_cgroup may be fit in page size on small config.
+>>>
+>>> By this, size of text is reduced.
+>>>  [Before]
+>>>  [kamezawa@bluextal mmotm-2.6.33-Jan15]$ size mm/memcontrol.o
+>>>    text    data     bss     dec     hex filename
+>>>   24373    2528    4132   31033    7939 mm/memcontrol.o
+>>>  [After]
+>>>  [kamezawa@bluextal mmotm-2.6.33-Jan15]$ size mm/memcontrol.o
+>>>    text    data     bss     dec     hex filename
+>>>   23913    2528    4132   30573    776d mm/memcontrol.o
+>>>
+>>> This includes no functional changes.
+>>>
+>>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>>
+>> Before review, could you please post parallel pagefault data on a large
+>> system, since root now uses these per cpu counters and its overhead is
+>> now dependent on these counters. Also the data read from root cgroup is
+>> also dependent on these, could you make sure that is not broken.
+>>
+> No number difference before/after patch on my SMP quick test.
+> But I don't have NUMA. Could you test on NUMA ?
+> 
+> I'll measure again tomorrow if I have machine time.
 
-Calling thread_group_cputime() from fastpath_timer_check() is not only
-bad because it is slow, also it is racy with __exit_signal() which can
-lead to invalid signal->{s,u}time values.
+I'll do the same as well if possible.
 
-Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
----
- kernel/posix-cpu-timers.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index faa0b42..67c877e 100644
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -549,7 +549,7 @@ static inline int expires_gt(cputime_t expires, cputime_t new_exp)
- /*
-  * Insert the timer on the appropriate list before any timers that
-  * expire later.  This must be called with the tasklist_lock held
-- * for reading, and interrupts disabled.
-+ * for reading, interrupts disabled and p->sighand->siglock taken.
-  */
- static void arm_timer(struct k_itimer *timer)
- {
-@@ -568,9 +568,6 @@ static void arm_timer(struct k_itimer *timer)
- 	}
- 	head += CPUCLOCK_WHICH(timer->it_clock);
- 
--	BUG_ON(!irqs_disabled());
--	spin_lock(&p->sighand->siglock);
--
- 	listpos = head;
- 	list_for_each_entry(next, head, entry) {
- 		if (cpu_time_before(timer->it_clock, nt->expires, next->expires))
-@@ -605,8 +602,6 @@ static void arm_timer(struct k_itimer *timer)
- 			break;
- 		}
- 	}
--
--	spin_unlock(&p->sighand->siglock);
- }
- 
- /*
-@@ -719,7 +714,6 @@ int posix_cpu_timer_set(struct k_itimer *timer, int flags,
- 		ret = TIMER_RETRY;
- 	} else
- 		list_del_init(&timer->it.cpu.entry);
--	spin_unlock(&p->sighand->siglock);
- 
- 	/*
- 	 * We need to sample the current value to convert the new
-@@ -773,6 +767,7 @@ int posix_cpu_timer_set(struct k_itimer *timer, int flags,
- 		 * disable this firing since we are already reporting
- 		 * it as an overrun (thanks to bump_cpu_timer above).
- 		 */
-+		spin_unlock(&p->sighand->siglock);
- 		read_unlock(&tasklist_lock);
- 		goto out;
- 	}
-@@ -792,6 +787,7 @@ int posix_cpu_timer_set(struct k_itimer *timer, int flags,
- 		arm_timer(timer);
- 	}
- 
-+	spin_unlock(&p->sighand->siglock);
- 	read_unlock(&tasklist_lock);
- 
- 	/*
-@@ -1205,6 +1201,7 @@ void posix_cpu_timer_schedule(struct k_itimer *timer)
- 			goto out;
- 		}
- 		read_lock(&tasklist_lock); /* arm_timer needs it.  */
-+		spin_lock(&p->sighand->siglock);
- 	} else {
- 		read_lock(&tasklist_lock);
- 		if (unlikely(p->signal == NULL)) {
-@@ -1225,6 +1222,7 @@ void posix_cpu_timer_schedule(struct k_itimer *timer)
- 			clear_dead_task(timer, now);
- 			goto out_unlock;
- 		}
-+		spin_lock(&p->sighand->siglock);
- 		cpu_timer_sample_group(timer->it_clock, p, &now);
- 		bump_cpu_timer(timer, now);
- 		/* Leave the tasklist_lock locked for the call below.  */
-@@ -1233,7 +1231,9 @@ void posix_cpu_timer_schedule(struct k_itimer *timer)
- 	/*
- 	 * Now re-arm for the new expiry time.
- 	 */
-+	BUG_ON(!irqs_disabled());
- 	arm_timer(timer);
-+	spin_unlock(&p->sighand->siglock);
- 
- out_unlock:
- 	read_unlock(&tasklist_lock);
--- 
-1.6.2.5
-
+Balbir
