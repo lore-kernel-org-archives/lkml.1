@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974Ab0ATMi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751856Ab0ATMil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752974Ab0ATMi2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 07:38:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638Ab0ATMiH
+	id S1751856Ab0ATMil (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 07:38:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332Ab0ATMiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 07:38:07 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:39604 "EHLO mx1.redhat.com"
+	Wed, 20 Jan 2010 07:38:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61914 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932127Ab0ATMh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 07:37:56 -0500
+	id S932099Ab0ATMh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 07:37:59 -0500
 From: Stanislaw Gruszka <sgruszka@redhat.com>
 To: Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
@@ -17,173 +17,115 @@ Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
        Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
        Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
        Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: [PATCH 1/6 -mm] cpu-timers: simplify RLIMIT_CPU handling
-Date: Wed, 20 Jan 2010 13:34:23 +0100
-Message-Id: <1263990868-8119-2-git-send-email-sgruszka@redhat.com>
-In-Reply-To: <1263990868-8119-1-git-send-email-sgruszka@redhat.com>
+Subject: [PATCH 5/6 -mm] cpu-timers: assure to not iterate over all threads in fastpath_timer_check()
+Date: Wed, 20 Jan 2010 13:34:27 +0100
+Message-Id: <1263990868-8119-6-git-send-email-sgruszka@redhat.com>
+In-Reply-To: <1263990868-8119-5-git-send-email-sgruszka@redhat.com>
 References: <1263990868-8119-1-git-send-email-sgruszka@redhat.com>
+ <1263990868-8119-2-git-send-email-sgruszka@redhat.com>
+ <1263990868-8119-3-git-send-email-sgruszka@redhat.com>
+ <1263990868-8119-4-git-send-email-sgruszka@redhat.com>
+ <1263990868-8119-5-git-send-email-sgruszka@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let always set signal->cputime_expires expiration cache when setting
-new itimer, POSIX 1.b timer, and RLIMIT_CPU. Since we are initializing
-prof_exp expiration cache during fork(), this allow to remove
-"RLIMIT_CPU != inf" check from fastpath_timer_check() and do some other
-cleanups.
+Spread p->sighand->siglock locking scope to assure fastpath_timer_check()
+never iterate over each threads. Without locking there is small possibility
+that signal->cputimer will stop running while we write values to
+signal->cputime_expires.
 
-Checked against regression using test cases from:
-http://marc.info/?l=linux-kernel&m=123749066504641&w=4
-http://marc.info/?l=linux-kernel&m=123811277916642&w=2
+Calling thread_group_cputime() from fastpath_timer_check() is not only
+bad because it is slow, also it is racy with __exit_signal() which can
+lead to invalid signal->{s,u}time values.
 
 Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
 ---
- kernel/posix-cpu-timers.c |   74 ++++++++++++++++-----------------------------
- 1 files changed, 26 insertions(+), 48 deletions(-)
+ kernel/posix-cpu-timers.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index 9931a64..3e31d51 100644
+index faa0b42..67c877e 100644
 --- a/kernel/posix-cpu-timers.c
 +++ b/kernel/posix-cpu-timers.c
-@@ -11,19 +11,17 @@
- #include <trace/events/timer.h>
- 
+@@ -549,7 +549,7 @@ static inline int expires_gt(cputime_t expires, cputime_t new_exp)
  /*
-- * Called after updating RLIMIT_CPU to set timer expiration if necessary.
-+ * Called after updating RLIMIT_CPU to run cpu timer and update
-+ * tsk->signal->cputime_expires expiration cache if necessary. Needs siglock
-+ * protection since other code may update expiration cache as well.
+  * Insert the timer on the appropriate list before any timers that
+  * expire later.  This must be called with the tasklist_lock held
+- * for reading, and interrupts disabled.
++ * for reading, interrupts disabled and p->sighand->siglock taken.
   */
- void update_rlimit_cpu(struct task_struct *task, unsigned long rlim_new)
+ static void arm_timer(struct k_itimer *timer)
  {
- 	cputime_t cputime = secs_to_cputime(rlim_new);
--	struct signal_struct *const sig = task->signal;
- 
--	if (cputime_eq(sig->it[CPUCLOCK_PROF].expires, cputime_zero) ||
--	    cputime_gt(sig->it[CPUCLOCK_PROF].expires, cputime)) {
--		spin_lock_irq(&task->sighand->siglock);
--		set_process_cpu_timer(task, CPUCLOCK_PROF, &cputime, NULL);
--		spin_unlock_irq(&task->sighand->siglock);
--	}
-+	spin_lock_irq(&task->sighand->siglock);
-+	set_process_cpu_timer(task, CPUCLOCK_PROF, &cputime, NULL);
-+	spin_unlock_irq(&task->sighand->siglock);
- }
- 
- static int check_clock(const clockid_t which_clock)
-@@ -564,7 +562,6 @@ static void arm_timer(struct k_itimer *timer, union cpu_time_count now)
- 	struct list_head *head, *listpos;
- 	struct cpu_timer_list *const nt = &timer->it.cpu;
- 	struct cpu_timer_list *next;
--	unsigned long i;
- 
- 	head = (CPUCLOCK_PERTHREAD(timer->it_clock) ?
- 		p->cpu_timers : p->signal->cpu_timers);
-@@ -630,20 +627,11 @@ static void arm_timer(struct k_itimer *timer, union cpu_time_count now)
- 			default:
- 				BUG();
- 			case CPUCLOCK_VIRT:
--				if (expires_le(sig->it[CPUCLOCK_VIRT].expires,
--					       exp->cpu))
--					break;
--				sig->cputime_expires.virt_exp = exp->cpu;
--				break;
-+				if (expires_gt(sig->cputime_expires.virt_exp, exp->cpu))
-+					sig->cputime_expires.virt_exp = exp->cpu;
- 			case CPUCLOCK_PROF:
--				if (expires_le(sig->it[CPUCLOCK_PROF].expires,
--					       exp->cpu))
--					break;
--				i = sig->rlim[RLIMIT_CPU].rlim_cur;
--				if (i != RLIM_INFINITY &&
--				    i <= cputime_to_secs(exp->cpu))
--					break;
--				sig->cputime_expires.prof_exp = exp->cpu;
-+				if (expires_gt(sig->cputime_expires.prof_exp, exp->cpu))
-+					sig->cputime_expires.prof_exp = exp->cpu;
- 				break;
- 			case CPUCLOCK_SCHED:
- 				sig->cputime_expires.sched_exp = exp->sched;
-@@ -1386,7 +1374,7 @@ static inline int fastpath_timer_check(struct task_struct *tsk)
- 			return 1;
+@@ -568,9 +568,6 @@ static void arm_timer(struct k_itimer *timer)
  	}
+ 	head += CPUCLOCK_WHICH(timer->it_clock);
  
--	return sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY;
-+	return 0;
- }
- 
- /*
-@@ -1452,21 +1440,23 @@ void run_posix_cpu_timers(struct task_struct *tsk)
- }
- 
- /*
-- * Set one of the process-wide special case CPU timers.
-+ * Set one of the process-wide special case CPU timers or RLIMIT_CPU.
-  * The tsk->sighand->siglock must be held by the caller.
-- * The *newval argument is relative and we update it to be absolute, *oldval
-- * is absolute and we update it to be relative.
-  */
- void set_process_cpu_timer(struct task_struct *tsk, unsigned int clock_idx,
- 			   cputime_t *newval, cputime_t *oldval)
- {
- 	union cpu_time_count now;
--	struct list_head *head;
- 
- 	BUG_ON(clock_idx == CPUCLOCK_SCHED);
- 	cpu_timer_sample_group(clock_idx, tsk, &now);
- 
- 	if (oldval) {
-+		/*
-+		 * We are setting itimer. The *oldval is absolute and we update
-+		 * it to be relative, *newval argument is relative and we update
-+		 * it to be absolute.
-+		 */
- 		if (!cputime_eq(*oldval, cputime_zero)) {
- 			if (cputime_le(*oldval, now.cpu)) {
- 				/* Just about to fire. */
-@@ -1479,33 +1469,21 @@ void set_process_cpu_timer(struct task_struct *tsk, unsigned int clock_idx,
- 		if (cputime_eq(*newval, cputime_zero))
- 			return;
- 		*newval = cputime_add(*newval, now.cpu);
+-	BUG_ON(!irqs_disabled());
+-	spin_lock(&p->sighand->siglock);
 -
--		/*
--		 * If the RLIMIT_CPU timer will expire before the
--		 * ITIMER_PROF timer, we have nothing else to do.
--		 */
--		if (tsk->signal->rlim[RLIMIT_CPU].rlim_cur
--		    < cputime_to_secs(*newval))
--			return;
+ 	listpos = head;
+ 	list_for_each_entry(next, head, entry) {
+ 		if (cpu_time_before(timer->it_clock, nt->expires, next->expires))
+@@ -605,8 +602,6 @@ static void arm_timer(struct k_itimer *timer)
+ 			break;
+ 		}
  	}
+-
+-	spin_unlock(&p->sighand->siglock);
+ }
+ 
+ /*
+@@ -719,7 +714,6 @@ int posix_cpu_timer_set(struct k_itimer *timer, int flags,
+ 		ret = TIMER_RETRY;
+ 	} else
+ 		list_del_init(&timer->it.cpu.entry);
+-	spin_unlock(&p->sighand->siglock);
  
  	/*
--	 * Check whether there are any process timers already set to fire
--	 * before this one.  If so, we don't have anything more to do.
-+	 * Update expiration cache if we are the earliest timer, or eventually
-+	 * RLIMIT_CPU limit is earlier than prof_exp cpu timer expire.
- 	 */
--	head = &tsk->signal->cpu_timers[clock_idx];
--	if (list_empty(head) ||
--	    cputime_ge(list_first_entry(head,
--				  struct cpu_timer_list, entry)->expires.cpu,
--		       *newval)) {
--		switch (clock_idx) {
--		case CPUCLOCK_PROF:
-+	switch (clock_idx) {
-+	case CPUCLOCK_PROF:
-+		if (expires_gt(tsk->signal->cputime_expires.prof_exp, *newval))
- 			tsk->signal->cputime_expires.prof_exp = *newval;
--			break;
--		case CPUCLOCK_VIRT:
-+		break;
-+	case CPUCLOCK_VIRT:
-+		if (expires_gt(tsk->signal->cputime_expires.virt_exp, *newval))
- 			tsk->signal->cputime_expires.virt_exp = *newval;
--			break;
--		}
-+		break;
+ 	 * We need to sample the current value to convert the new
+@@ -773,6 +767,7 @@ int posix_cpu_timer_set(struct k_itimer *timer, int flags,
+ 		 * disable this firing since we are already reporting
+ 		 * it as an overrun (thanks to bump_cpu_timer above).
+ 		 */
++		spin_unlock(&p->sighand->siglock);
+ 		read_unlock(&tasklist_lock);
+ 		goto out;
  	}
- }
+@@ -792,6 +787,7 @@ int posix_cpu_timer_set(struct k_itimer *timer, int flags,
+ 		arm_timer(timer);
+ 	}
  
++	spin_unlock(&p->sighand->siglock);
+ 	read_unlock(&tasklist_lock);
+ 
+ 	/*
+@@ -1205,6 +1201,7 @@ void posix_cpu_timer_schedule(struct k_itimer *timer)
+ 			goto out;
+ 		}
+ 		read_lock(&tasklist_lock); /* arm_timer needs it.  */
++		spin_lock(&p->sighand->siglock);
+ 	} else {
+ 		read_lock(&tasklist_lock);
+ 		if (unlikely(p->signal == NULL)) {
+@@ -1225,6 +1222,7 @@ void posix_cpu_timer_schedule(struct k_itimer *timer)
+ 			clear_dead_task(timer, now);
+ 			goto out_unlock;
+ 		}
++		spin_lock(&p->sighand->siglock);
+ 		cpu_timer_sample_group(timer->it_clock, p, &now);
+ 		bump_cpu_timer(timer, now);
+ 		/* Leave the tasklist_lock locked for the call below.  */
+@@ -1233,7 +1231,9 @@ void posix_cpu_timer_schedule(struct k_itimer *timer)
+ 	/*
+ 	 * Now re-arm for the new expiry time.
+ 	 */
++	BUG_ON(!irqs_disabled());
+ 	arm_timer(timer);
++	spin_unlock(&p->sighand->siglock);
+ 
+ out_unlock:
+ 	read_unlock(&tasklist_lock);
 -- 
 1.6.2.5
 
