@@ -1,142 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246Ab0AXXlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454Ab0AXXl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753246Ab0AXXlU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 18:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090Ab0AXXlT
+	id S1753454Ab0AXXl2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 18:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205Ab0AXXlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 18:41:19 -0500
-Received: from ip-85-161-27-212.eurotel.cz ([85.161.27.212]:34001 "EHLO
+	Sun, 24 Jan 2010 18:41:20 -0500
+Received: from ip-85-161-27-212.eurotel.cz ([85.161.27.212]:34003 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751563Ab0AXXlS (ORCPT
+	with ESMTP id S1751726Ab0AXXlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 18:41:18 -0500
-X-Greylist: delayed 1409 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jan 2010 18:41:15 EST
-Date: Wed, 20 Jan 2010 08:22:07 +0100
+	Sun, 24 Jan 2010 18:41:19 -0500
+Date: Wed, 20 Jan 2010 13:55:46 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Mark Allyn <mark.a.allyn@intel.com>
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com, alan@linux.intel.com,
-       charles.f.johnson@intel.com
-Subject: Re: [PATCH] Add Linux Driver for Intel Langwell Watchdog
-Message-ID: <20100120072206.GA1420@ucw.cz>
-References: <1263849859-23265-1-git-send-email-mark.a.allyn@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Avi Kivity <avi@redhat.com>, ananth@in.ibm.com,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+Message-ID: <20100120125546.GC1420@ucw.cz>
+References: <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com> <1263467289.4244.288.camel@laptop> <1263498366.4875.25.camel@localhost.localdomain> <1263546228.4244.343.camel@laptop> <20100115093831.GC26396@in.ibm.com> <1263549014.4244.374.camel@laptop> <4B53213C.9050303@redhat.com> <1263739939.557.20938.camel@twins> <4B532508.4000806@redhat.com> <1263740506.557.20963.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1263849859-23265-1-git-send-email-mark.a.allyn@intel.com>
+In-Reply-To: <1263740506.557.20963.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun 2010-01-17 16:01:46, Peter Zijlstra wrote:
+> On Sun, 2010-01-17 at 16:56 +0200, Avi Kivity wrote:
+> > On 01/17/2010 04:52 PM, Peter Zijlstra wrote:
+> 
+> > > Also, if its fixed size you're imposing artificial limits on the number
+> > > of possible probes.
+> > >    
+> > 
+> > Obviously we'll need a limit, a uprobe will also take kernel memory, we 
+> > can't allow people to exhaust it.
+> 
+> Only if its unprivilidged, kernel and root should be able to place as
+> many probes until the machine keels over.
 
-> +#include <linux/uaccess.h>
-> +#include <linux/slab.h>
-> +#include <linux/io.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/delay.h>
-> +#include <linux/sched.h>
-> +#include <linux/signal.h>
-> +#include <linux/sfi.h>
-> +#include <linux/types.h>
-> +#include <asm/irq.h>
-> +#include <asm/atomic.h>
-> +
-> +/* See arch/x86/kernel/ipc_mrst.c */
-> +#include <asm/ipc_defs.h>
-
-WTF?
-
-> +/* #include <asm/mrst.h> */
-
-remove.
-
-> +MODULE_PARM_DESC(timer_margin,
-> +		"Watchdog timer margin"
-> +		"Time between interrupt and resetting the system"
-> +		"The range is from 1 to 160"
-> +		"This is the time for all keep alives to arrive");
-
-In miliseconds or what?
-
-> +static int timer_set = DEFAULT_TIME;
-> +module_param(timer_set, int, 0);
-> +
-> +MODULE_PARM_DESC(timer_set,
-> +		"Default Watchdog timer setting"
-> +		"Complete cycle time"
-> +		"The range is from 1 to 170"
-> +		"This is the time for all keep alives to arrive");
-> +
-> +/* driver will force boot on closure of device file */
-> +static int force_boot = 1;
-> +
-> +module_param(force_boot, int, 0);
-> +MODULE_PARM_DESC(force_boot,
-> +		 "A value of 1 means that the driver will reboot"
-> +		 "the system if the /dev/watchdog device is closed"
-> +		 );
-
-I'd hope watchdogs were somehow standardized?
-
-> +/* This is used to force reboot if anyone tries to close this device */
-> +static void watchdog_fire(void)
-> +{
-> +	module_put(THIS_MODULE);
-
-Why?
-
-> +	if (force_boot) {
-> +		printk(KERN_CRIT PFX "Initiating system reboot.\n");
-> +		emergency_restart();
-> +		printk(KERN_CRIT PFX "Reboot didn't ?????\n");
-> +	}
-> +
-> +	else {
-> +		printk(KERN_CRIT PFX "Reboot would have happend\n");
-> +		printk(KERN_CRIT PFX "You now have force_boot set to 0\n");
-> +		printk(KERN_CRIT PFX "I am not rebooting\n");
-> +	}
-
-Little chatty?
-
-> +/* timer interrupt handler */
-> +irqreturn_t watchdog_timer_interrupt(int irq, void *dev_id)
-> +{
-> +	int int_status;
-> +	int_status = ioread32(watchdog_device.timer_interrupt_status_addr);
-> +
-> +	pr_debug("Watchdog timer -  irq 7 interrupt received\n");
-
-is it always irq 7?
-
-> +static int langwell_set_heartbeat(u32 t)
-> +{
-> +	struct watchdog_reg_data reg_data;
-> +
-> +	watchdog_device.timer_set = t;
-> +	watchdog_device.threshold =
-> +	  timer_margin * watchdog_device.mtmr_ptr->freq;
-> +	watchdog_device.soft_threshold =
-> +	  (watchdog_device.timer_set - timer_margin)
-> +	  * watchdog_device.mtmr_ptr->freq;
-> +
-> +	pr_debug("Watchdog timer - timer_margin is %x (hex) seconds\n",
-> +	  timer_margin);
-> +
-> +	pr_debug("Watchdog timer - following are in clock cycles\n");
-> +
-> +	pr_debug("Watchdog timer - there are %x (hex) clock cycles\n",
-> +	  watchdog_device.mtmr_ptr->freq);
-> +
-> +	pr_debug("Watchdog timer - per second\n");
-> +
-> +	pr_debug("Watchdog timer - thres is %x (hex) and warm is %x (hex)\n",
-> +	  watchdog_device.threshold, watchdog_device.soft_threshold);
-> +
-> +	pr_debug("Watchdog timer - setting timer_set is %x (hex) seconds\n",
-> +	  watchdog_device.timer_set);
-
-Kill excessive debugging?
+Well, it is address space that limits you in both cases...
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
