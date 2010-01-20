@@ -1,58 +1,848 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550Ab0ATMYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752357Ab0ATM0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550Ab0ATMYi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 07:24:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137Ab0ATMYh
+	id S1752357Ab0ATM0i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 07:26:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129Ab0ATM0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 07:24:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61336 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751261Ab0ATMYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 07:24:36 -0500
-Message-ID: <4B56F5DE.1060405@redhat.com>
-Date: Wed, 20 Jan 2010 14:23:58 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-CC: Jim Keniston <jkenisto@us.ibm.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>, ananth@in.ibm.com,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-References: <84144f021001180413w76a8ca2axb0b9f07ee4dea67e@mail.gmail.com> <4B545146.3080001@redhat.com> <20100118124419.GC1628@linux.vnet.ibm.com> <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com> <4B5459CA.9060603@redhat.com> <4B545ACF.40203@cs.helsinki.fi> <1263852957.2266.38.camel@localhost.localdomain> <4B556855.6040800@redhat.com> <1263923265.4998.28.camel@localhost.localdomain> <4B56D027.3010808@redhat.com> <20100120104541.GB30109@linux.vnet.ibm.com>
-In-Reply-To: <20100120104541.GB30109@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 20 Jan 2010 07:26:34 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:18347 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221Ab0ATM0c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 07:26:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=FZ2CnR9Bstd7jJwFK5INnv0BzlhyovnU310wRupMSVKOc3cYXayFycizch4Uf+Gjcu
+         pinjDwshjDhGRYo0uRkZTjY+cvknWrS4yt3ODILWiyju8WYyGNnjnj01m8KQze5JvORc
+         3bOhhYGb4OYvz6fJFTg9Pn4XFFOFrWt26l0jQ=
+Subject: sched: Remove USER_SCHED
+From: Dhaval Giani <dhaval.giani@gmail.com>
+To: a.p.zijlstra@chello.nl, mingo@elte.hu, bharata@linux.vnet.ibm.com,
+       vatsa@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 20 Jan 2010 13:26:18 +0100
+Message-ID: <1263990378.24844.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20/2010 12:45 PM, Srikar Dronamraju wrote:
->>> What does the code in the jumped-to vma do?
->>>        
->> 1. Write a trace entry into shared memory, trap into the kernel on overflow.
->> 2. Trap if a condition is satisfied (fast watchpoint implementation).
->>      
-> That looks to be a nice idea. We should certainly look into this
-> possibility. However can we look at this option probably a little later?
->
-> Our plan was to do one step at a time i.e have the basic uprobes in
-> first and target the booster (i.e jump to the next instruction without
-> the need for single-stepping next).
->
-> We could look at this option of using jump instead of int3 after we are
-> done with the booster.  Hope that's okay.
->    
 
-I'm all for incremental development and merging, as long as we keep the 
-interfaces flexible enough for the future.
+Remove the USER_SCHED feature. It has been scheduled to be removed in 2.6.34
+as per http://marc.info/?l=linux-kernel&m=125728479022976&w=2
 
--- 
-error compiling committee.c: too many arguments to function
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+---
+ Documentation/feature-removal-schedule.txt |   15 -
+ include/linux/sched.h                      |   14 -
+ init/Kconfig                               |   81 ++-----
+ kernel/ksysfs.c                            |    8 
+ kernel/sched.c                             |  114 ----------
+ kernel/sys.c                               |    5 
+ kernel/user.c                              |  305 -----------------------------
+ 7 files changed, 38 insertions(+), 504 deletions(-)
+
+Index: master/init/Kconfig
+===================================================================
+--- master.orig/init/Kconfig
++++ master/init/Kconfig
+@@ -445,57 +445,6 @@ config LOG_BUF_SHIFT
+ config HAVE_UNSTABLE_SCHED_CLOCK
+ 	bool
+ 
+-config GROUP_SCHED
+-	bool "Group CPU scheduler"
+-	depends on EXPERIMENTAL
+-	default n
+-	help
+-	  This feature lets CPU scheduler recognize task groups and control CPU
+-	  bandwidth allocation to such task groups.
+-	  In order to create a group from arbitrary set of processes, use
+-	  CONFIG_CGROUPS. (See Control Group support.)
+-
+-config FAIR_GROUP_SCHED
+-	bool "Group scheduling for SCHED_OTHER"
+-	depends on GROUP_SCHED
+-	default GROUP_SCHED
+-
+-config RT_GROUP_SCHED
+-	bool "Group scheduling for SCHED_RR/FIFO"
+-	depends on EXPERIMENTAL
+-	depends on GROUP_SCHED
+-	default n
+-	help
+-	  This feature lets you explicitly allocate real CPU bandwidth
+-	  to users or control groups (depending on the "Basis for grouping tasks"
+-	  setting below. If enabled, it will also make it impossible to
+-	  schedule realtime tasks for non-root users until you allocate
+-	  realtime bandwidth for them.
+-	  See Documentation/scheduler/sched-rt-group.txt for more information.
+-
+-choice
+-	depends on GROUP_SCHED
+-	prompt "Basis for grouping tasks"
+-	default USER_SCHED
+-
+-config USER_SCHED
+-	bool "user id"
+-	help
+-	  This option will choose userid as the basis for grouping
+-	  tasks, thus providing equal CPU bandwidth to each user.
+-
+-config CGROUP_SCHED
+-	bool "Control groups"
+- 	depends on CGROUPS
+- 	help
+-	  This option allows you to create arbitrary task groups
+-	  using the "cgroup" pseudo filesystem and control
+-	  the cpu bandwidth allocated to each such task group.
+-	  Refer to Documentation/cgroups/cgroups.txt for more
+-	  information on "cgroup" pseudo filesystem.
+-
+-endchoice
+-
+ menuconfig CGROUPS
+ 	boolean "Control Group support"
+ 	help
+@@ -616,6 +565,36 @@ config CGROUP_MEM_RES_CTLR_SWAP
+ 	  Now, memory usage of swap_cgroup is 2 bytes per entry. If swap page
+ 	  size is 4096bytes, 512k per 1Gbytes of swap.
+ 
++menuconfig CGROUP_SCHED
++	bool "Group CPU scheduler"
++	depends on EXPERIMENTAL && CGROUPS
++	default n
++	help
++	  This feature lets CPU scheduler recognize task groups and control CPU
++	  bandwidth allocation to such task groups. It uses cgroups to group
++	  tasks.
++
++if CGROUP_SCHED
++config FAIR_GROUP_SCHED
++	bool "Group scheduling for SCHED_OTHER"
++	depends on CGROUP_SCHED
++	default CGROUP_SCHED
++
++config RT_GROUP_SCHED
++	bool "Group scheduling for SCHED_RR/FIFO"
++	depends on EXPERIMENTAL
++	depends on CGROUP_SCHED
++	default n
++	help
++	  This feature lets you explicitly allocate real CPU bandwidth
++	  to users or control groups (depending on the "Basis for grouping tasks"
++	  setting below. If enabled, it will also make it impossible to
++	  schedule realtime tasks for non-root users until you allocate
++	  realtime bandwidth for them.
++	  See Documentation/scheduler/sched-rt-group.txt for more information.
++
++endif #CGROUP_SCHED
++
+ endif # CGROUPS
+ 
+ config MM_OWNER
+Index: master/Documentation/feature-removal-schedule.txt
+===================================================================
+--- master.orig/Documentation/feature-removal-schedule.txt
++++ master/Documentation/feature-removal-schedule.txt
+@@ -6,21 +6,6 @@ be removed from this file.
+ 
+ ---------------------------
+ 
+-What:	USER_SCHED
+-When:	2.6.34
+-
+-Why:	USER_SCHED was implemented as a proof of concept for group scheduling.
+-	The effect of USER_SCHED can already be achieved from userspace with
+-	the help of libcgroup. The removal of USER_SCHED will also simplify
+-	the scheduler code with the removal of one major ifdef. There are also
+-	issues USER_SCHED has with USER_NS. A decision was taken not to fix
+-	those and instead remove USER_SCHED. Also new group scheduling
+-	features will not be implemented for USER_SCHED.
+-
+-Who:	Dhaval Giani <dhaval@linux.vnet.ibm.com>
+-
+----------------------------
+-
+ What:	PRISM54
+ When:	2.6.34
+ 
+Index: master/include/linux/sched.h
+===================================================================
+--- master.orig/include/linux/sched.h
++++ master/include/linux/sched.h
+@@ -736,14 +736,6 @@ struct user_struct {
+ 	uid_t uid;
+ 	struct user_namespace *user_ns;
+ 
+-#ifdef CONFIG_USER_SCHED
+-	struct task_group *tg;
+-#ifdef CONFIG_SYSFS
+-	struct kobject kobj;
+-	struct delayed_work work;
+-#endif
+-#endif
+-
+ #ifdef CONFIG_PERF_EVENTS
+ 	atomic_long_t locked_vm;
+ #endif
+@@ -2513,13 +2505,9 @@ extern long sched_getaffinity(pid_t pid,
+ 
+ extern void normalize_rt_tasks(void);
+ 
+-#ifdef CONFIG_GROUP_SCHED
++#ifdef CONFIG_CGROUP_SCHED
+ 
+ extern struct task_group init_task_group;
+-#ifdef CONFIG_USER_SCHED
+-extern struct task_group root_task_group;
+-extern void set_tg_uid(struct user_struct *user);
+-#endif
+ 
+ extern struct task_group *sched_create_group(struct task_group *parent);
+ extern void sched_destroy_group(struct task_group *tg);
+Index: master/kernel/sched.c
+===================================================================
+--- master.orig/kernel/sched.c
++++ master/kernel/sched.c
+@@ -233,7 +233,7 @@ static void destroy_rt_bandwidth(struct 
+  */
+ static DEFINE_MUTEX(sched_domains_mutex);
+ 
+-#ifdef CONFIG_GROUP_SCHED
++#ifdef CONFIG_CGROUP_SCHED
+ 
+ #include <linux/cgroup.h>
+ 
+@@ -243,13 +243,7 @@ static LIST_HEAD(task_groups);
+ 
+ /* task group related information */
+ struct task_group {
+-#ifdef CONFIG_CGROUP_SCHED
+ 	struct cgroup_subsys_state css;
+-#endif
+-
+-#ifdef CONFIG_USER_SCHED
+-	uid_t uid;
+-#endif
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 	/* schedulable entities of this group on each cpu */
+@@ -274,35 +268,7 @@ struct task_group {
+ 	struct list_head children;
+ };
+ 
+-#ifdef CONFIG_USER_SCHED
+-
+-/* Helper function to pass uid information to create_sched_user() */
+-void set_tg_uid(struct user_struct *user)
+-{
+-	user->tg->uid = user->uid;
+-}
+-
+-/*
+- * Root task group.
+- *	Every UID task group (including init_task_group aka UID-0) will
+- *	be a child to this group.
+- */
+-struct task_group root_task_group;
+-
+-#ifdef CONFIG_FAIR_GROUP_SCHED
+-/* Default task group's sched entity on each cpu */
+-static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
+-/* Default task group's cfs_rq on each cpu */
+-static DEFINE_PER_CPU_SHARED_ALIGNED(struct cfs_rq, init_tg_cfs_rq);
+-#endif /* CONFIG_FAIR_GROUP_SCHED */
+-
+-#ifdef CONFIG_RT_GROUP_SCHED
+-static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
+-static DEFINE_PER_CPU_SHARED_ALIGNED(struct rt_rq, init_rt_rq_var);
+-#endif /* CONFIG_RT_GROUP_SCHED */
+-#else /* !CONFIG_USER_SCHED */
+ #define root_task_group init_task_group
+-#endif /* CONFIG_USER_SCHED */
+ 
+ /* task_group_lock serializes add/remove of task groups and also changes to
+  * a task group's cpu shares.
+@@ -318,11 +284,7 @@ static int root_task_group_empty(void)
+ }
+ #endif
+ 
+-#ifdef CONFIG_USER_SCHED
+-# define INIT_TASK_GROUP_LOAD	(2*NICE_0_LOAD)
+-#else /* !CONFIG_USER_SCHED */
+ # define INIT_TASK_GROUP_LOAD	NICE_0_LOAD
+-#endif /* CONFIG_USER_SCHED */
+ 
+ /*
+  * A weight of 0 or 1 can cause arithmetics problems.
+@@ -348,11 +310,7 @@ static inline struct task_group *task_gr
+ {
+ 	struct task_group *tg;
+ 
+-#ifdef CONFIG_USER_SCHED
+-	rcu_read_lock();
+-	tg = __task_cred(p)->user->tg;
+-	rcu_read_unlock();
+-#elif defined(CONFIG_CGROUP_SCHED)
++#ifdef CONFIG_CGROUP_SCHED
+ 	tg = container_of(task_subsys_state(p, cpu_cgroup_subsys_id),
+ 				struct task_group, css);
+ #else
+@@ -383,7 +341,7 @@ static inline struct task_group *task_gr
+ 	return NULL;
+ }
+ 
+-#endif	/* CONFIG_GROUP_SCHED */
++#endif	/* CONFIG_CGROUP_SCHED */
+ 
+ /* CFS-related fields in a runqueue */
+ struct cfs_rq {
+@@ -9471,9 +9429,6 @@ void __init sched_init(void)
+ #ifdef CONFIG_RT_GROUP_SCHED
+ 	alloc_size += 2 * nr_cpu_ids * sizeof(void **);
+ #endif
+-#ifdef CONFIG_USER_SCHED
+-	alloc_size *= 2;
+-#endif
+ #ifdef CONFIG_CPUMASK_OFFSTACK
+ 	alloc_size += num_possible_cpus() * cpumask_size();
+ #endif
+@@ -9487,13 +9442,6 @@ void __init sched_init(void)
+ 		init_task_group.cfs_rq = (struct cfs_rq **)ptr;
+ 		ptr += nr_cpu_ids * sizeof(void **);
+ 
+-#ifdef CONFIG_USER_SCHED
+-		root_task_group.se = (struct sched_entity **)ptr;
+-		ptr += nr_cpu_ids * sizeof(void **);
+-
+-		root_task_group.cfs_rq = (struct cfs_rq **)ptr;
+-		ptr += nr_cpu_ids * sizeof(void **);
+-#endif /* CONFIG_USER_SCHED */
+ #endif /* CONFIG_FAIR_GROUP_SCHED */
+ #ifdef CONFIG_RT_GROUP_SCHED
+ 		init_task_group.rt_se = (struct sched_rt_entity **)ptr;
+@@ -9502,13 +9450,6 @@ void __init sched_init(void)
+ 		init_task_group.rt_rq = (struct rt_rq **)ptr;
+ 		ptr += nr_cpu_ids * sizeof(void **);
+ 
+-#ifdef CONFIG_USER_SCHED
+-		root_task_group.rt_se = (struct sched_rt_entity **)ptr;
+-		ptr += nr_cpu_ids * sizeof(void **);
+-
+-		root_task_group.rt_rq = (struct rt_rq **)ptr;
+-		ptr += nr_cpu_ids * sizeof(void **);
+-#endif /* CONFIG_USER_SCHED */
+ #endif /* CONFIG_RT_GROUP_SCHED */
+ #ifdef CONFIG_CPUMASK_OFFSTACK
+ 		for_each_possible_cpu(i) {
+@@ -9528,22 +9469,13 @@ void __init sched_init(void)
+ #ifdef CONFIG_RT_GROUP_SCHED
+ 	init_rt_bandwidth(&init_task_group.rt_bandwidth,
+ 			global_rt_period(), global_rt_runtime());
+-#ifdef CONFIG_USER_SCHED
+-	init_rt_bandwidth(&root_task_group.rt_bandwidth,
+-			global_rt_period(), RUNTIME_INF);
+-#endif /* CONFIG_USER_SCHED */
+ #endif /* CONFIG_RT_GROUP_SCHED */
+ 
+-#ifdef CONFIG_GROUP_SCHED
++#ifdef CONFIG_CGROUP_SCHED
+ 	list_add(&init_task_group.list, &task_groups);
+ 	INIT_LIST_HEAD(&init_task_group.children);
+ 
+-#ifdef CONFIG_USER_SCHED
+-	INIT_LIST_HEAD(&root_task_group.children);
+-	init_task_group.parent = &root_task_group;
+-	list_add(&init_task_group.siblings, &root_task_group.children);
+-#endif /* CONFIG_USER_SCHED */
+-#endif /* CONFIG_GROUP_SCHED */
++#endif /* CONFIG_CGROUP_SCHED */
+ 
+ #if defined CONFIG_FAIR_GROUP_SCHED && defined CONFIG_SMP
+ 	update_shares_data = __alloc_percpu(nr_cpu_ids * sizeof(unsigned long),
+@@ -9583,25 +9515,6 @@ void __init sched_init(void)
+ 		 * directly in rq->cfs (i.e init_task_group->se[] = NULL).
+ 		 */
+ 		init_tg_cfs_entry(&init_task_group, &rq->cfs, NULL, i, 1, NULL);
+-#elif defined CONFIG_USER_SCHED
+-		root_task_group.shares = NICE_0_LOAD;
+-		init_tg_cfs_entry(&root_task_group, &rq->cfs, NULL, i, 0, NULL);
+-		/*
+-		 * In case of task-groups formed thr' the user id of tasks,
+-		 * init_task_group represents tasks belonging to root user.
+-		 * Hence it forms a sibling of all subsequent groups formed.
+-		 * In this case, init_task_group gets only a fraction of overall
+-		 * system cpu resource, based on the weight assigned to root
+-		 * user's cpu share (INIT_TASK_GROUP_LOAD). This is accomplished
+-		 * by letting tasks of init_task_group sit in a separate cfs_rq
+-		 * (init_tg_cfs_rq) and having one entity represent this group of
+-		 * tasks in rq->cfs (i.e init_task_group->se[] != NULL).
+-		 */
+-		init_tg_cfs_entry(&init_task_group,
+-				&per_cpu(init_tg_cfs_rq, i),
+-				&per_cpu(init_sched_entity, i), i, 1,
+-				root_task_group.se[i]);
+-
+ #endif
+ #endif /* CONFIG_FAIR_GROUP_SCHED */
+ 
+@@ -9610,12 +9523,6 @@ void __init sched_init(void)
+ 		INIT_LIST_HEAD(&rq->leaf_rt_rq_list);
+ #ifdef CONFIG_CGROUP_SCHED
+ 		init_tg_rt_entry(&init_task_group, &rq->rt, NULL, i, 1, NULL);
+-#elif defined CONFIG_USER_SCHED
+-		init_tg_rt_entry(&root_task_group, &rq->rt, NULL, i, 0, NULL);
+-		init_tg_rt_entry(&init_task_group,
+-				&per_cpu(init_rt_rq_var, i),
+-				&per_cpu(init_sched_rt_entity, i), i, 1,
+-				root_task_group.rt_se[i]);
+ #endif
+ #endif
+ 
+@@ -10011,7 +9918,7 @@ static inline void unregister_rt_sched_g
+ }
+ #endif /* CONFIG_RT_GROUP_SCHED */
+ 
+-#ifdef CONFIG_GROUP_SCHED
++#ifdef CONFIG_CGROUP_SCHED
+ static void free_sched_group(struct task_group *tg)
+ {
+ 	free_fair_sched_group(tg);
+@@ -10120,7 +10027,7 @@ void sched_move_task(struct task_struct 
+ 
+ 	task_rq_unlock(rq, &flags);
+ }
+-#endif /* CONFIG_GROUP_SCHED */
++#endif /* CONFIG_CGROUP_SCHED */
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ static void __set_se_shares(struct sched_entity *se, unsigned long shares)
+@@ -10262,13 +10169,6 @@ static int tg_schedulable(struct task_gr
+ 		runtime = d->rt_runtime;
+ 	}
+ 
+-#ifdef CONFIG_USER_SCHED
+-	if (tg == &root_task_group) {
+-		period = global_rt_period();
+-		runtime = global_rt_runtime();
+-	}
+-#endif
+-
+ 	/*
+ 	 * Cannot have more runtime than the period.
+ 	 */
+Index: master/kernel/user.c
+===================================================================
+--- master.orig/kernel/user.c
++++ master/kernel/user.c
+@@ -56,9 +56,6 @@ struct user_struct root_user = {
+ 	.sigpending	= ATOMIC_INIT(0),
+ 	.locked_shm     = 0,
+ 	.user_ns	= &init_user_ns,
+-#ifdef CONFIG_USER_SCHED
+-	.tg		= &init_task_group,
+-#endif
+ };
+ 
+ /*
+@@ -75,268 +72,6 @@ static void uid_hash_remove(struct user_
+ 	put_user_ns(up->user_ns);
+ }
+ 
+-#ifdef CONFIG_USER_SCHED
+-
+-static void sched_destroy_user(struct user_struct *up)
+-{
+-	sched_destroy_group(up->tg);
+-}
+-
+-static int sched_create_user(struct user_struct *up)
+-{
+-	int rc = 0;
+-
+-	up->tg = sched_create_group(&root_task_group);
+-	if (IS_ERR(up->tg))
+-		rc = -ENOMEM;
+-
+-	set_tg_uid(up);
+-
+-	return rc;
+-}
+-
+-#else	/* CONFIG_USER_SCHED */
+-
+-static void sched_destroy_user(struct user_struct *up) { }
+-static int sched_create_user(struct user_struct *up) { return 0; }
+-
+-#endif	/* CONFIG_USER_SCHED */
+-
+-#if defined(CONFIG_USER_SCHED) && defined(CONFIG_SYSFS)
+-
+-static struct user_struct *uid_hash_find(uid_t uid, struct hlist_head *hashent)
+-{
+-	struct user_struct *user;
+-	struct hlist_node *h;
+-
+-	hlist_for_each_entry(user, h, hashent, uidhash_node) {
+-		if (user->uid == uid) {
+-			/* possibly resurrect an "almost deleted" object */
+-			if (atomic_inc_return(&user->__count) == 1)
+-				cancel_delayed_work(&user->work);
+-			return user;
+-		}
+-	}
+-
+-	return NULL;
+-}
+-
+-static struct kset *uids_kset; /* represents the /sys/kernel/uids/ directory */
+-static DEFINE_MUTEX(uids_mutex);
+-
+-static inline void uids_mutex_lock(void)
+-{
+-	mutex_lock(&uids_mutex);
+-}
+-
+-static inline void uids_mutex_unlock(void)
+-{
+-	mutex_unlock(&uids_mutex);
+-}
+-
+-/* uid directory attributes */
+-#ifdef CONFIG_FAIR_GROUP_SCHED
+-static ssize_t cpu_shares_show(struct kobject *kobj,
+-			       struct kobj_attribute *attr,
+-			       char *buf)
+-{
+-	struct user_struct *up = container_of(kobj, struct user_struct, kobj);
+-
+-	return sprintf(buf, "%lu\n", sched_group_shares(up->tg));
+-}
+-
+-static ssize_t cpu_shares_store(struct kobject *kobj,
+-				struct kobj_attribute *attr,
+-				const char *buf, size_t size)
+-{
+-	struct user_struct *up = container_of(kobj, struct user_struct, kobj);
+-	unsigned long shares;
+-	int rc;
+-
+-	sscanf(buf, "%lu", &shares);
+-
+-	rc = sched_group_set_shares(up->tg, shares);
+-
+-	return (rc ? rc : size);
+-}
+-
+-static struct kobj_attribute cpu_share_attr =
+-	__ATTR(cpu_share, 0644, cpu_shares_show, cpu_shares_store);
+-#endif
+-
+-#ifdef CONFIG_RT_GROUP_SCHED
+-static ssize_t cpu_rt_runtime_show(struct kobject *kobj,
+-				   struct kobj_attribute *attr,
+-				   char *buf)
+-{
+-	struct user_struct *up = container_of(kobj, struct user_struct, kobj);
+-
+-	return sprintf(buf, "%ld\n", sched_group_rt_runtime(up->tg));
+-}
+-
+-static ssize_t cpu_rt_runtime_store(struct kobject *kobj,
+-				    struct kobj_attribute *attr,
+-				    const char *buf, size_t size)
+-{
+-	struct user_struct *up = container_of(kobj, struct user_struct, kobj);
+-	unsigned long rt_runtime;
+-	int rc;
+-
+-	sscanf(buf, "%ld", &rt_runtime);
+-
+-	rc = sched_group_set_rt_runtime(up->tg, rt_runtime);
+-
+-	return (rc ? rc : size);
+-}
+-
+-static struct kobj_attribute cpu_rt_runtime_attr =
+-	__ATTR(cpu_rt_runtime, 0644, cpu_rt_runtime_show, cpu_rt_runtime_store);
+-
+-static ssize_t cpu_rt_period_show(struct kobject *kobj,
+-				   struct kobj_attribute *attr,
+-				   char *buf)
+-{
+-	struct user_struct *up = container_of(kobj, struct user_struct, kobj);
+-
+-	return sprintf(buf, "%lu\n", sched_group_rt_period(up->tg));
+-}
+-
+-static ssize_t cpu_rt_period_store(struct kobject *kobj,
+-				    struct kobj_attribute *attr,
+-				    const char *buf, size_t size)
+-{
+-	struct user_struct *up = container_of(kobj, struct user_struct, kobj);
+-	unsigned long rt_period;
+-	int rc;
+-
+-	sscanf(buf, "%lu", &rt_period);
+-
+-	rc = sched_group_set_rt_period(up->tg, rt_period);
+-
+-	return (rc ? rc : size);
+-}
+-
+-static struct kobj_attribute cpu_rt_period_attr =
+-	__ATTR(cpu_rt_period, 0644, cpu_rt_period_show, cpu_rt_period_store);
+-#endif
+-
+-/* default attributes per uid directory */
+-static struct attribute *uids_attributes[] = {
+-#ifdef CONFIG_FAIR_GROUP_SCHED
+-	&cpu_share_attr.attr,
+-#endif
+-#ifdef CONFIG_RT_GROUP_SCHED
+-	&cpu_rt_runtime_attr.attr,
+-	&cpu_rt_period_attr.attr,
+-#endif
+-	NULL
+-};
+-
+-/* the lifetime of user_struct is not managed by the core (now) */
+-static void uids_release(struct kobject *kobj)
+-{
+-	return;
+-}
+-
+-static struct kobj_type uids_ktype = {
+-	.sysfs_ops = &kobj_sysfs_ops,
+-	.default_attrs = uids_attributes,
+-	.release = uids_release,
+-};
+-
+-/*
+- * Create /sys/kernel/uids/<uid>/cpu_share file for this user
+- * We do not create this file for users in a user namespace (until
+- * sysfs tagging is implemented).
+- *
+- * See Documentation/scheduler/sched-design-CFS.txt for ramifications.
+- */
+-static int uids_user_create(struct user_struct *up)
+-{
+-	struct kobject *kobj = &up->kobj;
+-	int error;
+-
+-	memset(kobj, 0, sizeof(struct kobject));
+-	if (up->user_ns != &init_user_ns)
+-		return 0;
+-	kobj->kset = uids_kset;
+-	error = kobject_init_and_add(kobj, &uids_ktype, NULL, "%d", up->uid);
+-	if (error) {
+-		kobject_put(kobj);
+-		goto done;
+-	}
+-
+-	kobject_uevent(kobj, KOBJ_ADD);
+-done:
+-	return error;
+-}
+-
+-/* create these entries in sysfs:
+- * 	"/sys/kernel/uids" directory
+- * 	"/sys/kernel/uids/0" directory (for root user)
+- * 	"/sys/kernel/uids/0/cpu_share" file (for root user)
+- */
+-int __init uids_sysfs_init(void)
+-{
+-	uids_kset = kset_create_and_add("uids", NULL, kernel_kobj);
+-	if (!uids_kset)
+-		return -ENOMEM;
+-
+-	return uids_user_create(&root_user);
+-}
+-
+-/* delayed work function to remove sysfs directory for a user and free up
+- * corresponding structures.
+- */
+-static void cleanup_user_struct(struct work_struct *w)
+-{
+-	struct user_struct *up = container_of(w, struct user_struct, work.work);
+-	unsigned long flags;
+-	int remove_user = 0;
+-
+-	/* Make uid_hash_remove() + sysfs_remove_file() + kobject_del()
+-	 * atomic.
+-	 */
+-	uids_mutex_lock();
+-
+-	spin_lock_irqsave(&uidhash_lock, flags);
+-	if (atomic_read(&up->__count) == 0) {
+-		uid_hash_remove(up);
+-		remove_user = 1;
+-	}
+-	spin_unlock_irqrestore(&uidhash_lock, flags);
+-
+-	if (!remove_user)
+-		goto done;
+-
+-	if (up->user_ns == &init_user_ns) {
+-		kobject_uevent(&up->kobj, KOBJ_REMOVE);
+-		kobject_del(&up->kobj);
+-		kobject_put(&up->kobj);
+-	}
+-
+-	sched_destroy_user(up);
+-	key_put(up->uid_keyring);
+-	key_put(up->session_keyring);
+-	kmem_cache_free(uid_cachep, up);
+-
+-done:
+-	uids_mutex_unlock();
+-}
+-
+-/* IRQs are disabled and uidhash_lock is held upon function entry.
+- * IRQ state (as stored in flags) is restored and uidhash_lock released
+- * upon function exit.
+- */
+-static void free_user(struct user_struct *up, unsigned long flags)
+-{
+-	INIT_DELAYED_WORK(&up->work, cleanup_user_struct);
+-	schedule_delayed_work(&up->work, msecs_to_jiffies(1000));
+-	spin_unlock_irqrestore(&uidhash_lock, flags);
+-}
+-
+-#else	/* CONFIG_USER_SCHED && CONFIG_SYSFS */
+-
+ static struct user_struct *uid_hash_find(uid_t uid, struct hlist_head *hashent)
+ {
+ 	struct user_struct *user;
+@@ -352,11 +87,6 @@ static struct user_struct *uid_hash_find
+ 	return NULL;
+ }
+ 
+-int uids_sysfs_init(void) { return 0; }
+-static inline int uids_user_create(struct user_struct *up) { return 0; }
+-static inline void uids_mutex_lock(void) { }
+-static inline void uids_mutex_unlock(void) { }
+-
+ /* IRQs are disabled and uidhash_lock is held upon function entry.
+  * IRQ state (as stored in flags) is restored and uidhash_lock released
+  * upon function exit.
+@@ -365,32 +95,11 @@ static void free_user(struct user_struct
+ {
+ 	uid_hash_remove(up);
+ 	spin_unlock_irqrestore(&uidhash_lock, flags);
+-	sched_destroy_user(up);
+ 	key_put(up->uid_keyring);
+ 	key_put(up->session_keyring);
+ 	kmem_cache_free(uid_cachep, up);
+ }
+ 
+-#endif
+-
+-#if defined(CONFIG_RT_GROUP_SCHED) && defined(CONFIG_USER_SCHED)
+-/*
+- * We need to check if a setuid can take place. This function should be called
+- * before successfully completing the setuid.
+- */
+-int task_can_switch_user(struct user_struct *up, struct task_struct *tsk)
+-{
+-
+-	return sched_rt_can_attach(up->tg, tsk);
+-
+-}
+-#else
+-int task_can_switch_user(struct user_struct *up, struct task_struct *tsk)
+-{
+-	return 1;
+-}
+-#endif
+-
+ /*
+  * Locate the user_struct for the passed UID.  If found, take a ref on it.  The
+  * caller must undo that ref with free_uid().
+@@ -431,8 +140,6 @@ struct user_struct *alloc_uid(struct use
+ 	/* Make uid_hash_find() + uids_user_create() + uid_hash_insert()
+ 	 * atomic.
+ 	 */
+-	uids_mutex_lock();
+-
+ 	spin_lock_irq(&uidhash_lock);
+ 	up = uid_hash_find(uid, hashent);
+ 	spin_unlock_irq(&uidhash_lock);
+@@ -445,14 +152,8 @@ struct user_struct *alloc_uid(struct use
+ 		new->uid = uid;
+ 		atomic_set(&new->__count, 1);
+ 
+-		if (sched_create_user(new) < 0)
+-			goto out_free_user;
+-
+ 		new->user_ns = get_user_ns(ns);
+ 
+-		if (uids_user_create(new))
+-			goto out_destoy_sched;
+-
+ 		/*
+ 		 * Before adding this, check whether we raced
+ 		 * on adding the same user already..
+@@ -475,17 +176,11 @@ struct user_struct *alloc_uid(struct use
+ 		spin_unlock_irq(&uidhash_lock);
+ 	}
+ 
+-	uids_mutex_unlock();
+-
+ 	return up;
+ 
+-out_destoy_sched:
+-	sched_destroy_user(new);
+ 	put_user_ns(new->user_ns);
+-out_free_user:
+ 	kmem_cache_free(uid_cachep, new);
+ out_unlock:
+-	uids_mutex_unlock();
+ 	return NULL;
+ }
+ 
+Index: master/kernel/ksysfs.c
+===================================================================
+--- master.orig/kernel/ksysfs.c
++++ master/kernel/ksysfs.c
+@@ -197,16 +197,8 @@ static int __init ksysfs_init(void)
+ 			goto group_exit;
+ 	}
+ 
+-	/* create the /sys/kernel/uids/ directory */
+-	error = uids_sysfs_init();
+-	if (error)
+-		goto notes_exit;
+-
+ 	return 0;
+ 
+-notes_exit:
+-	if (notes_size > 0)
+-		sysfs_remove_bin_file(kernel_kobj, &notes_attr);
+ group_exit:
+ 	sysfs_remove_group(kernel_kobj, &kernel_attr_group);
+ kset_exit:
+Index: master/kernel/sys.c
+===================================================================
+--- master.orig/kernel/sys.c
++++ master/kernel/sys.c
+@@ -569,11 +569,6 @@ static int set_user(struct cred *new)
+ 	if (!new_user)
+ 		return -EAGAIN;
+ 
+-	if (!task_can_switch_user(new_user, current)) {
+-		free_uid(new_user);
+-		return -EINVAL;
+-	}
+-
+ 	if (atomic_read(&new_user->processes) >=
+ 				current->signal->rlim[RLIMIT_NPROC].rlim_cur &&
+ 			new_user != INIT_USER) {
+
 
