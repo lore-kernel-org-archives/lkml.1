@@ -1,56 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659Ab0ATVJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677Ab0ATVLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659Ab0ATVJI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 16:09:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369Ab0ATVJG
+	id S1754677Ab0ATVLi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 16:11:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419Ab0ATVLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 16:09:06 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33717 "EHLO ogre.sisk.pl"
+	Wed, 20 Jan 2010 16:11:37 -0500
+Received: from gate.crashing.org ([63.228.1.57]:55776 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753113Ab0ATVJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 16:09:03 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Update][RFC][PATCH] PM / Runtime: Add sysfs switch for disabling device run-time PM
-Date: Wed, 20 Jan 2010 22:09:29 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-References: <Pine.LNX.4.44L0.1001201005380.1672-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1001201005380.1672-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1753690Ab0ATVLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 16:11:37 -0500
+Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was:
+ Re: [linux-pm] Memory allocations in .suspend became very unreliable)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Bastien ROUCARIES <roucaries.bastien@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <201001201231.17540.oliver@neukum.org>
+References: <20100118110324.AE30.A69D9226@jp.fujitsu.com>
+	 <195c7a901001190104x164381f9v4a58d1fce70b17b6@mail.gmail.com>
+	 <1263943071.724.540.camel@pasglop>  <201001201231.17540.oliver@neukum.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 21 Jan 2010 08:11:04 +1100
+Message-ID: <1264021864.724.552.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001202209.29207.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 January 2010, Alan Stern wrote:
-> On Tue, 19 Jan 2010, Rafael J. Wysocki wrote:
+On Wed, 2010-01-20 at 12:31 +0100, Oliver Neukum wrote:
 > 
-> > > Why change the name from "level" to "runtime"?
-> > 
-> > Because it wouldn't be really obvious what "level" applied to.  For example,
-> > some people might expect the values of "level" to correspond to PCI power
-> > states for PCI devices and so on, so it might turn out to be confusing. 
-> 
-> But is the name "runtime" any clearer?  Especially to people who have 
-> never come across the phrase "runtime power management"?
-> 
-> Does anybody have a suggestion for a better attribute name?
+> But we have the freezer. So generally we don't require that knowledge.
+> We can expect no normal IO to happen.
 
-Apparently not, but I can try. ;-)
+That came before and it's just not a safe assumption :-) The freezer to
+some extent protects drivers against ioctl's and that sort of stuff but
+really that's about it. There's plenty of things in the kernel that can
+kick IOs on their own for a reason or another, or do memory allocations
+which in turn will try to push something out and do IOs etc... even when
+"frozen".
 
-* status
+> The question is in the suspend paths. We never may use anything
+> but GFP_NOIO (and GFP_ATOMIC) in the suspend() path. We can
+> take care of that requirement in the allocator only if the whole
+> system
+> is suspended. As soon as a driver does runtime power management,
+> it is on its own. 
 
-* power (power/power looks weird, but the values would make sense)
+I'm not sure I understand what you are trying to say here :-)
 
-* control
+First of all, the problem goes beyond what a driver does in its own
+suspend() path. If it was just that, we might be able to some extent to
+push enough stuff up for the driver to specify the right GFP flags
+(though even that could be nasty).
 
-No more ideas for now.
+The problem with system suspend also happens when your driver has not
+been suspended yet, but another one, which happens to be a block device
+with dirty pages for example, has.
 
-Rafael
+Your not-yet-suspended driver might well be blocked somewhere in an
+allocation or about to make one with some kind of internal mutex held,
+that sort of thing, as part of it's normal operations, and -that- can
+hang, causing problems when subsequently that same driver suspend() gets
+called and tries to synchronize with the driver operations, for example
+by trying to acquire that same mutex.
+
+There's more of similarily nasty scenario. The fact is that it's going
+to hit rarely, probably without a bakctrace or a crash, and so will
+basically cause one of those rare "my laptop didn't suspend" cases that
+may not even be reported, and just contribute to the general
+unreliability of suspend/resume.
+
+Cheers,
+Ben.
+
+
