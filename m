@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677Ab0ATSA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774Ab0ATSCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753677Ab0ATSA1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 13:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875Ab0ATSA0
+	id S1753774Ab0ATSCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 13:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899Ab0ATSCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 13:00:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:62418 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710Ab0ATSAZ (ORCPT
+	Wed, 20 Jan 2010 13:02:15 -0500
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:43305 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752849Ab0ATSCO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 13:00:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xAUPAcSb1RkUxlGfuIL6CBc9OURL6L4LwK4axfv1Da9kN2SvKebSKt9bPwH6jZDCnL
-         K7U8n0ymGd3GaZFr4wMaNoI/UiAHL3Ab7g7CPqiSyMHCiOrXmvWNKBKZoB5ZEUDVq1wy
-         +7DoTfDoy7dyl68gh5xxoLQsf14QYZrdd0AjA=
-Date: Wed, 20 Jan 2010 19:00:21 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/6] tracing: tracing_stats_read() uses simple buffer
-	instead of trace_seq
-Message-ID: <20100120180019.GB5017@nowhere>
-References: <4B556070.6000204@cn.fujitsu.com>
+	Wed, 20 Jan 2010 13:02:14 -0500
+X-Greylist: delayed 488 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jan 2010 13:02:14 EST
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B556070.6000204@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100117065803.6e5e089e@infradead.org>
+References: <1263505677.2074.2.camel@yio.site> <20100115065638.005ac690@infradead.org> 
+	<20100115180341.GA12146@kroah.com> <20100117065803.6e5e089e@infradead.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Wed, 20 Jan 2010 18:53:49 +0100
+Message-ID: <ac3eb2511001200953g3fc2be3ay30174b0429707c93@mail.gmail.com>
+Subject: Re: Driver-Core: devtmpfs - remove EXPERIMENTAL and enable it by 
+	default
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 03:34:08PM +0800, Lai Jiangshan wrote:
-> 
-> It seems that struct trace_seq is too heavy for tracing_stats_read().
-> we use simple buffer instead of struct trace_seq.
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 27fecf8..aa1cd92 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -3807,27 +3807,22 @@ tracing_stats_read(struct file *filp, char __user *ubuf,
->  {
->  	unsigned long cpu = (unsigned long)filp->private_data;
->  	struct trace_array *tr = &global_trace;
-> -	struct trace_seq *s;
->  	unsigned long cnt;
->  
-> -	s = kmalloc(sizeof(*s), GFP_KERNEL);
-> -	if (!s)
-> -		return -ENOMEM;
-> -
-> -	trace_seq_init(s);
-> +	unsigned char buf[128];
+On Sun, Jan 17, 2010 at 15:58, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Fri, 15 Jan 2010 10:03:41 -0800
+> Greg KH <greg@kroah.com> wrote:
+>> > removing experimental is fine... but setting it by default is a bit
+>> > over the top and very inconsistent with how the 'default' option is
+>> > used.
+>>
+>> Why?
+>
+> because the convention is that we use "default y" only for those things
+> that used to be on, and are now turned into a config option.
 
+Oh, I never heard of such a convention. Sure, we can remove that "y",
+if this is the way it should be used, not be used.
 
+Looking at the current Kconfig files many "default y" looks more like:
+"stuff that should be in a kernel to work in a common setup". I see
+new functionality often switched on with that flag.
 
-No problem with the conversion. But perhaps keep using a dynamic
-buffer as 128 is a bit big for a kernel stack.
+As said, I don't mind dropping that "y", if there is such a convention.
 
-
-> +	int len = 0;
->  
->  	cnt = ring_buffer_entries_cpu(tr->buffer, cpu);
-> -	trace_seq_printf(s, "entries: %ld\n", cnt);
-> +	len += sprintf(buf + len, "entries: %ld\n", cnt);
->  
->  	cnt = ring_buffer_overrun_cpu(tr->buffer, cpu);
-> -	trace_seq_printf(s, "overrun: %ld\n", cnt);
-> +	len += sprintf(buf + len, "overrun: %ld\n", cnt);
->  
->  	cnt = ring_buffer_commit_overrun_cpu(tr->buffer, cpu);
-> -	trace_seq_printf(s, "commit overrun: %ld\n", cnt);
-> -
-> -	count = simple_read_from_buffer(ubuf, count, ppos, s->buffer, s->len);
-> +	len += sprintf(buf + len, "commit overrun: %ld\n", cnt);
->  
-> -	kfree(s);
-> +	BUG_ON(len >= sizeof(buf)); /* should not happen, 128 is enough. */
-> +	count = simple_read_from_buffer(ubuf, count, ppos, buf, len);
->  
->  	return count;
->  }
-> 
-
+Thanks,
+Kay
