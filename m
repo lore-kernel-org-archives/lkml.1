@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863Ab0ATO2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110Ab0ATO3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752863Ab0ATO2Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 09:28:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706Ab0ATO2P
+	id S1753110Ab0ATO3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 09:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253Ab0ATO3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 09:28:15 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:55290 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646Ab0ATO2O (ORCPT
+	Wed, 20 Jan 2010 09:29:23 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:34371 "EHLO
+	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752670Ab0ATO3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 09:28:14 -0500
-Subject: Re: [PATCH/RFC v1 0/2] Human readable performance event
- description in sysfs
-From: Peter Zijlstra <peterz@infradead.org>
-To: =?UTF-8?Q?Micha=C5=82?= Nazarewicz <m.nazarewicz@samsung.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Jamie Iles <jamie.iles@picochip.com>, jpihet@mvista.com,
-       p.osciak@samsung.com, will.deacon@arm.com, linux-kernel@vger.kernel.org,
-       kyungmin.park@samsung.com, mingo@elte.hu, m.szyprowski@samsung.com,
-       linux-arm-kernel@lists.infradead.org,
-       Tomasz Fujak <t.fujak@samsung.com>
-In-Reply-To: <1263996979.4283.1066.camel@laptop>
-References: <1263978706-15499-1-git-send-email-t.fujak@samsung.com>
-	 <1263978999.4283.823.camel@laptop> <op.u6tslipz7p4s8u@pikus>
-	 <20100120133145.GE4089@wear.picochip.com>
-	 <1263994779.4283.1057.camel@laptop>
-	 <20100120135553.GA22897@n2100.arm.linux.org.uk>
-	 <1263996080.4283.1064.camel@laptop>  <op.u6t4atd07p4s8u@pikus>
-	 <1263996979.4283.1066.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Jan 2010 15:26:49 +0100
-Message-ID: <1263997609.4283.1067.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 20 Jan 2010 09:29:23 -0500
+Date: Wed, 20 Jan 2010 15:29:43 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: linux-kernel@vger.kernel.org, htejun@gmail.com, linux-ide@vger.kernel.org,
+       jgarzik@pobox.com
+Cc: siccegge@stud.informatik.uni-erlangen.de,
+       Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: Unreferenced config in kernel (libata-sff.c) source (NO_ATA_LEGACY)
+Message-ID: <20100120142943.GE3580@faui49.informatik.uni-erlangen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-20 at 15:16 +0100, Peter Zijlstra wrote:
-> On Wed, 2010-01-20 at 15:09 +0100, Michał Nazarewicz wrote:
-> > On Wed, 20 Jan 2010 15:01:20 +0100, Peter Zijlstra <peterz@infradead.org> wrote:
-> > > It seems to me userspace might care about the exact platform they're
-> > > running on.
-> > 
-> > In my humble opinion, user space should never care about platform it's
-> > running on.  Interfaces provided by kernel should suffice to implement
-> > abstraction layer between user space and hardware.  If we abandon that
-> > we're back in DOS times.  But hey, again, that's just my opinion.
-> 
-> Well, you're completely right. But the often sad reality is that perfect
-> abstraction is either impossible or prohibitively expensive.
+Hi all!
 
-And then there is the simple matter of knowing what kind of box it is
-without having to resort to a screwdriver or worse.
+	As part of the VAMOS[0] research project at the University of
+Erlangen we're checking referential integrity between kernel KConfig
+options and in-code Conditional blocks.
+
+./drivers/ata/libata-sff.c:2948:#if defined(CONFIG_NO_ATA_LEGACY)
+
+	That's the only place where it is checked for
+NO_ATA_LEGACY. As this Item does appear nowhere in KConfig and
+therefor is not selectable I'm wondering whether that small Code
+fragment should be dropped or a new KConfig option should be added?
+
+	Please keep me informed of this patch getting confirmed /
+merged so we can keep track of it.
+
+Regards
+
+	Christoph Egger
 
