@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084Ab0ATCDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182Ab0ATCHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756084Ab0ATCDh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 21:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881Ab0ATCDf
+	id S1756182Ab0ATCHM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 21:07:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125Ab0ATCHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 21:03:35 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:57204 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755505Ab0ATCDd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 21:03:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=QoX3nD/6RhYcoiHP/9Nzghm5B8wnp1VjxQQ3LtbklDr3TYEgGdZAivxeWHJw27jv0U
-         Y+72YyX/oLNAqn4zCzzxfpEJy4vESnIuhetGCoafb2l91YM6OSZoZlJXTfNOcy4Aip0x
-         WRP4ZAFuk7QglfWWXVCCjG8/UlFqJaXF0tG/k=
-Message-ID: <4B56659E.3040001@gmail.com>
-Date: Wed, 20 Jan 2010 03:08:30 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Tue, 19 Jan 2010 21:07:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52732 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756102Ab0ATCHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 21:07:06 -0500
+Message-ID: <4B5666B4.6000804@kernel.org>
+Date: Wed, 20 Jan 2010 11:13:08 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
-       Steve Hodgson <shodgson@solarflare.com>,
-       Ben Hutchings <bhutchings@solarflare.com>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] sfc: EFX_ETHTOOL_STAT calculates the offset of the efx##source_name's
- field in both cases
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: =?UTF-8?B?Q2VuZ2l6IEfDvG5heQ==?= <cgunay@emory.edu>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: sata_nv times out for BD-ROM iHOS104-08
+References: <Pine.LNX.4.64.0912221105010.5876@stg.biology.emory.edu> 	<4B31C8EE.3030003@kernel.org> <d2d378040912232302u4b550dap687fcadced237935@mail.gmail.com> 	<4B331771.3090309@kernel.org> <d2d378041001161334r6fe3ee65w39cf98a6c2d1d399@mail.gmail.com>
+In-Reply-To: <d2d378041001161334r6fe3ee65w39cf98a6c2d1d399@mail.gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 20 Jan 2010 02:07:02 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-EFX_ETHTOOL_STAT calculated the offset of the efx##source_name's field
-Regardless of whether that field was NULL.
+Hello, Cengiz.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-This looks like a bug, but I am not sure whether I understood this correctly,
-nor was it tested, was this intended?
+On 01/17/2010 06:34 AM, Cengiz Günay wrote:
+> 2009/12/24 Tejun Heo <tj@kernel.org>:
+>> I don't think the controller has anything to do with the issue but
+>> just in case can you please try it with a different controller?
+> 
+> I tried the iHOS BD-ROM with a VIA VT6412 SATA controller today and it worked:
 
-diff --git a/drivers/net/sfc/ethtool.c b/drivers/net/sfc/ethtool.c
-index 6c0bbed..722bac7 100644
---- a/drivers/net/sfc/ethtool.c
-+++ b/drivers/net/sfc/ethtool.c
-@@ -41,7 +41,7 @@ struct efx_ethtool_stat {
- 	.source = EFX_ETHTOOL_STAT_SOURCE_##source_name,		\
- 	.offset = ((((field_type *) 0) ==				\
- 		      &((struct efx_##source_name *)0)->field) ?	\
--		    offsetof(struct efx_##source_name, field) :		\
-+		    offsetof(struct efx_##stat_name, field) :		\
- 		    offsetof(struct efx_##source_name, field)),		\
- 	.get_stat = get_stat_function,					\
- }
+Hmm.... it worked?  Does kernel parameter sata_nv.adma_enabled=0 make
+any difference?  Can you please attach boot log with the kernel
+parameter specified?
+
+Thanks.
+
+-- 
+tejun
