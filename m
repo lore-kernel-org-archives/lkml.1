@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796Ab0ATDXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823Ab0ATDYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796Ab0ATDXk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 22:23:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326Ab0ATDXi
+	id S1754823Ab0ATDYk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 22:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683Ab0ATDYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 22:23:38 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:46249 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751059Ab0ATDXh convert rfc822-to-8bit (ORCPT
+	Tue, 19 Jan 2010 22:24:39 -0500
+Received: from mail-pz0-f190.google.com ([209.85.222.190]:34064 "EHLO
+	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753217Ab0ATDYi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 22:23:37 -0500
+	Tue, 19 Jan 2010 22:24:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=XjGaBiErlEYkyAy/6WfBsnHZk8o3mjvrEExJEHGUpATo7OXgUPUheX4cSMnPtEZMSP
+         QqLsnvgbJ4zfIOUPqLFJclCAaPGXpAMm+Qrq8k7/MHzVI9jJfew5OpyMGt/wExHue54Z
+         a/yItR792HZm7hfOJBgpTXwHsXeuKqELk6Kjs=
+Message-ID: <4B5678E2.2050709@gmail.com>
+Date: Wed, 20 Jan 2010 12:30:42 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <4B56685E.9060909@gmail.com>
-References: <4B56685E.9060909@gmail.com>
-Date: Tue, 19 Jan 2010 22:23:36 -0500
-Message-ID: <829197381001191923i5d4e74belabaf6a7d9cbf7988@mail.gmail.com>
-Subject: Re: [PATCH] mxl5005s: bad checks of state->Mode
-From: Devin Heitmueller <dheitmueller@kernellabs.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+To: Bart Hartgers <bart.hartgers@gmail.com>
+CC: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       linux-ide@vger.kernel.org, juergen.metzdorf@telelev-dsl.de,
+       markpschool@hotmail.com, sporadic.crash@gmail.com, apopov@sirma.bg,
+       david@coomber.co.za, jay4mail@gmail.com
+Subject: Re: [patch 2/2] sata_via: Delay on vt6420 when starting ATAPI DMA
+ write
+References: <20100116235653.898098245@gmail.com> <20100116235851.884756038@gmail.com>
+In-Reply-To: <20100116235851.884756038@gmail.com>
+X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 19, 2010 at 9:20 PM, Roel Kluin <roel.kluin@gmail.com> wrote:
-> Regardless of the state->Mode in both cases the same value was
-> written.
-> If state->Mode wasn't set, it is always 0.
->
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
->  drivers/media/common/tuners/mxl5005s.c |    7 +++----
->  1 files changed, 3 insertions(+), 4 deletions(-)
->
-> Or were the ones and zeroes in these MXL_ControlWrite in the wrong place?
->
-> diff --git a/drivers/media/common/tuners/mxl5005s.c b/drivers/media/common/tuners/mxl5005s.c
-> index 605e28b..3967412 100644
-> --- a/drivers/media/common/tuners/mxl5005s.c
-> +++ b/drivers/media/common/tuners/mxl5005s.c
-> @@ -1815,9 +1815,8 @@ static u16 MXL_BlockInit(struct dvb_frontend *fe)
->
->        /* Charge Pump Control Dig  Ana */
->        status += MXL_ControlWrite(fe, RFSYN_CHP_GAIN, state->Mode ? 5 : 8);
-> -       status += MXL_ControlWrite(fe,
-> -               RFSYN_EN_CHP_HIGAIN, state->Mode ? 1 : 1);
-> -       status += MXL_ControlWrite(fe, EN_CHP_LIN_B, state->Mode ? 0 : 0);
-> +       status += MXL_ControlWrite(fe, RFSYN_EN_CHP_HIGAIN, 1);
-> +       status += MXL_ControlWrite(fe, EN_CHP_LIN_B, 0);
->
->        /* AGC TOP Control */
->        if (state->AGC_Mode == 0) /* Dual AGC */ {
-> @@ -2161,7 +2160,7 @@ static u16 MXL_IFSynthInit(struct dvb_frontend *fe)
->                }
->        }
->
-> -       if (state->Mode || (state->Mode == 0 && state->IF_Mode == 0)) {
-> +       if (state->Mode || state->IF_Mode == 0) {
->                if (state->IF_LO == 57000000UL) {
->                        status += MXL_ControlWrite(fe, IF_DIVVAL,   0x10);
->                        status += MXL_ControlWrite(fe, IF_VCO_BIAS, 0x08);
+Hello,
 
-Roel,
+On 01/17/2010 08:56 AM, Bart Hartgers wrote:
+> When writing a disc on certain lite-on dvd-writers (also rebadged as
+> optiarc/LG/...) connected to a vt6420, the ATAPI CDB ends up in the
+> datastream and on the disc, causing silent corruption.  Delaying
+> between sending the CDB and starting DMA seems to prevent this.
+> 
+> I do not know if there are burners that do not suffer from this, but
+> the patch should be safe for those as well.
+> 
+> There are many reports of this issue, but AFAICT no solution was 
+> found before. For example:
+> http://lkml.indiana.edu/hypermail/linux/kernel/0802.3/0561.html
+> 
+> Signed-off-by: Bart Hartgers <bart.hartgers@gmail.com>
 
-Thanks for pointing this out.
+Ah... you found solution for this?  That's great.  This is one of the
+three problems that have been lingering for years - the other two
+being pata_ali ATAPI DMA problem and sata_sil data corruption problem.
+I'll be ecstatic if this fix works.  Just one thing, I don't think
+we'll need a warning message there.  It's useful during development
+but it doesn't really provide any useful information afterwards.
 
-This patch should not be applied.
+Digging up the mailing list and cc'ing people who have reported this
+problem.  If you still have the affected systems, can you guys please
+test the patch in the following message and see whether it fixes the
+problem?
 
-While I agree with Roel's assessment that the logic is incorrect,
-removing the conditional logic and forcing the register writes to the
-given value is almost certainly the incorrect fix.  I will have to
-look at the datasheet and see what the logic is actually supposed to
-be.
+  http://article.gmane.org/gmane.linux.kernel/939112/raw
 
-Devin
+Thanks a lot.  :-)
 
 -- 
-Devin J. Heitmueller - Kernel Labs
-http://www.kernellabs.com
+tejun
