@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453Ab0ATRPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521Ab0ATRPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753453Ab0ATRPP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 12:15:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300Ab0ATRPN
+	id S1753521Ab0ATRPp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 12:15:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446Ab0ATRPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 12:15:13 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:45182 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187Ab0ATRPL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 12:15:11 -0500
+	Wed, 20 Jan 2010 12:15:44 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40929 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752413Ab0ATRPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 12:15:42 -0500
+Message-ID: <4B573A36.9090308@redhat.com>
+Date: Wed, 20 Jan 2010 19:15:34 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <4B573501.9090001@jic23.retrosnub.co.uk>
-References: <4B571DA4.6070603@cam.ac.uk> <20100120153748.GA29401@kroah.com> 
-	<4B573501.9090001@jic23.retrosnub.co.uk>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 20 Jan 2010 18:14:54 +0100
-Message-ID: <ac3eb2511001200914g601422bfm52f4fc1bdfe66c27@mail.gmail.com>
-Subject: Re: [RFC] Staging:IIO: New ABI
-To: Jonathan Cameron <kernel@jic23.retrosnub.co.uk>
-Cc: Greg KH <greg@kroah.com>, Jonathan Cameron <jic23@cam.ac.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Manuel Stahl <manuel.stahl@iis.fraunhofer.de>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
-       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
-       "Getz, Robin" <Robin.Getz@analog.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
-       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
-       Ira Snyder <iws@ovro.caltech.edu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Marcelo Tosatti <mtosatti@redhat.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org
+Subject: Re: linux-next: Tree for January 20 (kvm warnings)
+References: <20100120181016.6ba3e504.sfr@canb.auug.org.au> <20100120091241.3f10428d.randy.dunlap@oracle.com>
+In-Reply-To: <20100120091241.3f10428d.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 17:53, Jonathan Cameron
-<kernel@jic23.retrosnub.co.uk> wrote:
->>> What:                /sys/.../ring_buffer[m]/ring_event[o]/dev
->>> Description:
->>>              Ring buffer m event character device o major:minor numbers.
+On 01/20/2010 07:12 PM, Randy Dunlap wrote:
+> On Wed, 20 Jan 2010 18:10:16 +1100 Stephen Rothwell wrote:
+>
+>    
+>> Hi all,
 >>
->> Again, don't bury devices.  Or if you are, use a bus, not a class,
->> that's the wrong classification.
-> Cool, I'll look into making the change.  What we really have here
-> is a single conceptual device using a pair or character interfaces.  Is a bus
-> the right way to handle that?
+>> Changes since 20100119:
+>>
+>> The kvm tree lost its build failure.
+>>      
+>
+> on i386/X86_32:
+>
+> arch/x86/kvm/x86.c:3810: warning: left shift count>= width of type
+> arch/x86/kvm/x86.c:3812: warning: left shift count>= width of type
+> arch/x86/kvm/x86.c:3814: warning: left shift count>= width of type
+>
+>    
 
-"bus" and "class" are almost the same regarding the driver core, it
-should not make any difference for you. The "class" implementation is
-only a very simple case of a "bus" -- just with a pretty much broken
-userspace interface. :)
+Gleb already posted a patch to fix this.
 
-Today, if we would start from scratch, there would be only something
-like /sys/subsystem in the layout of today's /sys/bus, and /sys/class,
-/sys/bus and /sys/block would not event exist. Tools like udev
-intentionally make no difference between them, and do not allow to
-distinguish between "class" or "bus". It's just called "susbsystem"
-there from the early days on.
+-- 
+error compiling committee.c: too many arguments to function
 
-The "class" has only a single flat directory in  /sys so it can never
-be extended with anything custom. No new subsystem should use the
-class interface anymore, all should use a "bus". I guess it's time to
-document that somewhere. :)
-
-Thanks,
-Kay
