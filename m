@@ -1,48 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210Ab0ATAbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408Ab0ATAdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756210Ab0ATAbM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 19:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120Ab0ATAbL
+	id S1755408Ab0ATAdR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 19:33:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495Ab0ATAdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 19:31:11 -0500
-Received: from mga05.intel.com ([192.55.52.89]:24224 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751460Ab0ATAbK (ORCPT
+	Tue, 19 Jan 2010 19:33:17 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42069 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458Ab0ATAdQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 19:31:10 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,306,1262592000"; 
-   d="scan'208";a="532706038"
-Message-ID: <4B564ECC.9080707@linux.intel.com>
-Date: Tue, 19 Jan 2010 16:31:08 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Tue, 19 Jan 2010 19:33:16 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was: Re: [linux-pm] Memory allocations in .suspend became very unreliable)
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <201001192147.58185.rjw@sisk.pl>
+References: <1263871194.724.520.camel@pasglop> <201001192147.58185.rjw@sisk.pl>
+Message-Id: <20100120085053.405A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
-       johannes@sipsolutions.net, andi@firstfloor.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 32/40] async: introduce workqueue based alternative implementation
-References: <1263776272-382-1-git-send-email-tj@kernel.org>	<1263776272-382-33-git-send-email-tj@kernel.org>	<20100117220130.214d56f1@linux.intel.com>	<4B5420A3.3080200@kernel.org>	<20100118072523.2683cd59@linux.intel.com>	<4B55038D.3070106@kernel.org>	<4B550384.8030103@linux.intel.com>	<4B5565BE.4050406@kernel.org> <20100119063718.3f1f39cc@linux.intel.com> <4B564C23.1030708@kernel.org>
-In-Reply-To: <4B564C23.1030708@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 20 Jan 2010 09:33:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/19/2010 16:19, Tejun Heo wrote:
+> On Tuesday 19 January 2010, Benjamin Herrenschmidt wrote:
+> > On Tue, 2010-01-19 at 10:19 +0900, KOSAKI Motohiro wrote:
+> > > I think the race happen itself is bad. memory and I/O subsystem can't solve such race
+> > > elegantly. These doesn't know enough suspend state knowlege. I think the practical 
+> > > solution is that higher level design prevent the race happen.
+> > > 
+> > > 
+> > > > My patch attempts to avoid these two problems as well as the problem with
+> > > > drivers using GFP_KERNEL allocations during suspend which I admit might be
+> > > > solved by reworking the drivers.
+> > > 
+> > > Agreed. In this case, only drivers change can solve the issue. 
+> > 
+> > As I explained earlier, this is near to impossible since the allocations
+> > are too often burried deep down the call stack or simply because the
+> > driver doesn't know that we started suspending -another- driver...
+> > 
+> > I don't think trying to solve those problems at the driver level is
+> > realistic to be honest. This is one of those things where we really just
+> > need to make allocators 'just work' from a driver perspective.
+> > 
+> > It can't be perfect of course, as mentioned earlier, there will be a
+> > problem if too little free memory is really available due to lots of
+> > dirty pages around, but most of this can be somewhat alleviated in
+> > practice, for example by pushing things out a bit at suspend time,
+> > making some more memory free etc... But yeah, nothing replaces proper
+> > error handling in drivers for allocation failures even with
+> > GFP_KERNEL :-)
+> 
+> Agreed.
+> 
+> Moreover, I didn't try to do anything about that before, because memory
+> allocation problems during suspend/resume just didn't happen.  We kind of knew
+> they were possible, but since they didn't show up, it wasn't immediately
+> necessary to address them.
+> 
+> Now, however, people started to see these problems in testing and I'm quite
+> confident that this is a result of recent changes in the mm subsystem.  Namely,
+> if you read the Maxim's report carefully, you'll notice that in his test case
+> the mm subsystem apparently attempted to use I/O even though there was free
+> memory available in the system.  This is the case I want to prevent from
+> happening in the first place.
 
-> Yeah, you can flush individual works from other works and wqs from
-> works running from different wqs.  What's not allowed is flushing the
-> wq a work is running on from the work.  Let's say if the flush code
-> can be modified to do so, would that change your opinion?
+Hi Rafael,
 
-once you get "run in parallel, but have an API to wait on everyone who was scheduled before me"...
-... that'd be fine ;)
+Do you mean this is the unrelated issue of nVidia bug? Probably I haven't
+catch your point. I don't find Maxim's original bug report. Can we share
+the test-case and your analysis detail?
 
-but then you pretty much HAVE the cookie API, even if you don't have an actual cookie.
-(just the cookie was an easy way to determine the "before me")
+
+
