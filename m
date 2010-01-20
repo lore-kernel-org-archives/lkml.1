@@ -1,43 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074Ab0ATXRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349Ab0ATXSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074Ab0ATXRQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 18:17:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310Ab0ATXRQ
+	id S1753349Ab0ATXSP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 18:18:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311Ab0ATXSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 18:17:16 -0500
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:63615 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752737Ab0ATXRP (ORCPT
+	Wed, 20 Jan 2010 18:18:14 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:40664 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147Ab0ATXSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 18:17:15 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArcEACcbV0uuWOiG/2dsb2JhbACBRtgrhDYE
-Date: Wed, 20 Jan 2010 18:17:13 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: [RELEASE] LTTng 0.187 forkernel 2.6.32.4
-Message-ID: <20100120231713.GA23819@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 18:15:32 up 35 days,  7:34,  5 users,  load average: 0.01, 0.10,
-	0.14
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 20 Jan 2010 18:18:14 -0500
+Date: Wed, 20 Jan 2010 15:18:49 -0800 (PST)
+From: Sage Weil <sage@newdream.net>
+To: Julia Lawall <julia@diku.dk>
+cc: ceph-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [ceph-devel] [PATCH 8/9] fs/ceph: Eliminate useless code
+In-Reply-To: <Pine.LNX.4.64.1001161659520.28745@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.1001201518230.29039@cobra.newdream.net>
+References: <Pine.LNX.4.64.1001161659520.28745@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 16 Jan 2010, Julia Lawall wrote:
 
-I hereby announce an updated lttng 0.187 for 2.6.32.4 Linux kernel. It
-contains a fix for 32-bit apm cpuidle instrumentation.
+> From: Julia Lawall <julia@diku.dk>
+> 
+> The variable client is initialized twice to the same (side effect-free)
+> expression.  Drop one initialization.
 
-Mathieu
+Applied to the ceph tree.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Thanks-
+sage
