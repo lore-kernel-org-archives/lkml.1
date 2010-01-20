@@ -1,207 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775Ab0ATEjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710Ab0ATEmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775Ab0ATEjy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 23:39:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697Ab0ATEjx
+	id S1754710Ab0ATEmj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 23:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023Ab0ATEmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 23:39:53 -0500
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:40712 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754683Ab0ATEjw (ORCPT
+	Tue, 19 Jan 2010 23:42:38 -0500
+Received: from vms173001pub.verizon.net ([206.46.173.1]:33612 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984Ab0ATEmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 23:39:52 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=aylybvmpxWOJftfVBfp+r03RwxTWKJc/PyHAraA1xRrtZF1gSkBDiDO1PgxmWs5mu1/sebvyxbK+9+WqCLKia6p+7XRGnvxy4we0D5TlI60+SDq52wUgDQmk0odb5R1a;
-Date: Wed, 20 Jan 2010 06:39:45 +0200
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: linux-next: Tree for January 18 (pci + pm)
-Message-ID: <20100120063945.03d75e46@jbarnes-x200.intel.com>
-In-Reply-To: <201001200004.07654.rjw@sisk.pl>
-References: <20100118195743.b45f119e.sfr@canb.auug.org.au>
-	<20100118154424.d54c0e3e.randy.dunlap@oracle.com>
-	<201001200004.07654.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i586-moblin-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 213.28.64.81 authed with jbarnes@virtuousgeek.org}
+	Tue, 19 Jan 2010 23:42:37 -0500
+Date: Tue, 19 Jan 2010 23:42:29 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Alex Chiang <achiang@hp.com>
+Cc: shemminger@linux-foundation.org, ming.m.lin@intel.com,
+       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ACPI: processor: only call _PDC on physically present
+ processors
+In-reply-to: <20100114201214.GH4545@ldl.fc.hp.com>
+Message-id: <alpine.LFD.2.00.1001192340140.4265@localhost.localdomain>
+References: <20100114201214.GH4545@ldl.fc.hp.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010 00:04:07 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+A couple reasons to not get excited about this solution.
 
-> On Tuesday 19 January 2010, Randy Dunlap wrote:
-> > On Mon, 18 Jan 2010 19:57:43 +1100 Stephen Rothwell wrote:
-> > 
-> > > Hi all,
-> > > 
-> > > Changes since 20100114:
-> > 
-> > 
-> > drivers/pci/pci-driver.c: In function 'pci_pm_runtime_resume':
-> > drivers/pci/pci-driver.c:991: error: implicit declaration of
-> > function 'pci_pm_default_resume_early' drivers/pci/pci-driver.c: At
-> > top level: drivers/pci/pci-driver.c:1027: error: 'pci_pm_prepare'
-> > undeclared here (not in a function) drivers/pci/pci-driver.c:1028:
-> > error: 'pci_pm_complete' undeclared here (not in a function)
-> > drivers/pci/pci-driver.c:1029: error: 'pci_pm_suspend' undeclared
-> > here (not in a function) drivers/pci/pci-driver.c:1030: error:
-> > 'pci_pm_resume' undeclared here (not in a function)
-> > drivers/pci/pci-driver.c:1031: error: 'pci_pm_freeze' undeclared
-> > here (not in a function) drivers/pci/pci-driver.c:1032: error:
-> > 'pci_pm_thaw' undeclared here (not in a function)
-> > drivers/pci/pci-driver.c:1033: error: 'pci_pm_poweroff' undeclared
-> > here (not in a function) drivers/pci/pci-driver.c:1034: error:
-> > 'pci_pm_restore' undeclared here (not in a function)
-> > drivers/pci/pci-driver.c:1035: error: 'pci_pm_suspend_noirq'
-> > undeclared here (not in a function) drivers/pci/pci-driver.c:1036:
-> > error: 'pci_pm_resume_noirq' undeclared here (not in a function)
-> > drivers/pci/pci-driver.c:1037: error: 'pci_pm_freeze_noirq'
-> > undeclared here (not in a function) drivers/pci/pci-driver.c:1038:
-> > error: 'pci_pm_thaw_noirq' undeclared here (not in a function)
-> > drivers/pci/pci-driver.c:1039: error: 'pci_pm_poweroff_noirq'
-> > undeclared here (not in a function) drivers/pci/pci-driver.c:1040:
-> > error: 'pci_pm_restore_noirq' undeclared here (not in a function)
-> > 
-> > 
-> > partial config:
-> > 
-> > CONFIG_PM=y
-> > # CONFIG_PM_DEBUG is not set
-> > # CONFIG_SUSPEND is not set
-> > # CONFIG_HIBERNATION is not set
-> > CONFIG_PM_RUNTIME=y
-> > CONFIG_PM_OPS=y
-> > 
-> > 
-> > Full config is attached.
-> 
-> Ah, too many ifdefs.
-> 
-> Thanks, the patch below fixes that for me.
-> 
-> Rafael
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PCI / PM: Fix compilation for set CONFIG_PM_RUNTIME and
-> CONFIG_PM_SLEEP unset
-> 
-> Fix failure to compile drivers/pci/pci-driver.c for CONFIG_PM_RUNTIME
-> set and CONFIG_PM_SLEEP is unset, introduced by the PCI run-time
-> power management patches.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/pci/pci-driver.c |   61
-> +++++++++++++++++++++++++++-------------------- 1 file changed, 36
-> insertions(+), 25 deletions(-)
-> 
-> Index: linux-2.6/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci-driver.c
-> +++ linux-2.6/drivers/pci/pci-driver.c
-> @@ -405,6 +405,35 @@ static void pci_device_shutdown(struct d
->  	pci_msix_shutdown(pci_dev);
->  }
->  
-> +#ifdef CONFIG_PM_OPS
-> +
-> +/* Auxiliary functions used for system resume and run-time resume. */
-> +
-> +/**
-> + * pci_restore_standard_config - restore standard config registers
-> of PCI device
-> + * @pci_dev: PCI device to handle
-> + */
-> +static int pci_restore_standard_config(struct pci_dev *pci_dev)
-> +{
-> +	pci_update_current_state(pci_dev, PCI_UNKNOWN);
-> +
-> +	if (pci_dev->current_state != PCI_D0) {
-> +		int error = pci_set_power_state(pci_dev, PCI_D0);
-> +		if (error)
-> +			return error;
-> +	}
-> +
-> +	return pci_restore_state(pci_dev);
-> +}
-> +
-> +static void pci_pm_default_resume_early(struct pci_dev *pci_dev)
-> +{
-> +	pci_restore_standard_config(pci_dev);
-> +	pci_fixup_device(pci_fixup_resume_early, pci_dev);
-> +}
-> +
-> +#endif
-> +
->  #ifdef CONFIG_PM_SLEEP
->  
->  /*
-> @@ -521,29 +550,6 @@ static int pci_legacy_resume(struct devi
->  
->  /* Auxiliary functions used by the new power management framework */
->  
-> -/**
-> - * pci_restore_standard_config - restore standard config registers
-> of PCI device
-> - * @pci_dev: PCI device to handle
-> - */
-> -static int pci_restore_standard_config(struct pci_dev *pci_dev)
-> -{
-> -	pci_update_current_state(pci_dev, PCI_UNKNOWN);
-> -
-> -	if (pci_dev->current_state != PCI_D0) {
-> -		int error = pci_set_power_state(pci_dev, PCI_D0);
-> -		if (error)
-> -			return error;
-> -	}
-> -
-> -	return pci_restore_state(pci_dev);
-> -}
-> -
-> -static void pci_pm_default_resume_early(struct pci_dev *pci_dev)
-> -{
-> -	pci_restore_standard_config(pci_dev);
-> -	pci_fixup_device(pci_fixup_resume_early, pci_dev);
-> -}
-> -
->  static void pci_pm_default_resume(struct pci_dev *pci_dev)
->  {
->  	pci_fixup_device(pci_fixup_resume, pci_dev);
-> @@ -607,6 +613,13 @@ static void pci_pm_complete(struct devic
->  		drv->pm->complete(dev);
->  }
->  
-> +#else /* !CONFIG_PM_SLEEP */
-> +
-> +#define pci_pm_prepare	NULL
-> +#define pci_pm_complete	NULL
-> +
-> +#endif /* !CONFIG_PM_SLEEP */
-> +
->  #ifdef CONFIG_SUSPEND
->  
->  static int pci_pm_suspend(struct device *dev)
-> @@ -943,8 +956,6 @@ static int pci_pm_restore(struct device 
->  
->  #endif /* !CONFIG_HIBERNATION */
->  
-> -#endif /* !CONFIG_PM_SLEEP */
-> -
->  #ifdef CONFIG_PM_RUNTIME
->  
->  static int pci_pm_runtime_suspend(struct device *dev)
-> 
+I don't like the processor enumeration code moving to a file called 
+processor_pdc.c.
 
-Pushed this one into linux-next, thanks.
+Too big for rc4 -- a logical revert to evaluate PDC when
+we did in 2.6.32 would be more attractive at this point.
 
-Jesse
+
+thanks,
+Len Brown, Intel Open Source Technology Center
+
