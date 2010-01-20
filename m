@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713Ab0ATWG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171Ab0ATWJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753713Ab0ATWG6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 17:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344Ab0ATWG5
+	id S1754171Ab0ATWJn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 17:09:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361Ab0ATWJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 17:06:57 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:57144 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751672Ab0ATWG4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 17:06:56 -0500
-Date: Wed, 20 Jan 2010 17:06:53 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-cc: linux-kernel@vger.kernel.org, <linux-geode@lists.infradead.org>,
-       <linux-usb@vger.kernel.org>, <linux-pci@vger.kernel.org>
-Subject: Re: Strange EHCI/OHCI IRQ and other PCI errors on boot with 2.6.32
- (which 2.6.26 did not see) on Geode LX/CS5536.
-In-Reply-To: <20100120214556.GP24305@caffeine.csclub.uwaterloo.ca>
-Message-ID: <Pine.LNX.4.44L0.1001201704360.1360-100000@iolanthe.rowland.org>
+	Wed, 20 Jan 2010 17:09:42 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:35605 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751439Ab0ATWJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 17:09:41 -0500
+Message-ID: <4B577F1A.9060907@austin.ibm.com>
+Date: Wed, 20 Jan 2010 16:09:30 -0600
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michael Neuling <mikey@neuling.org>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       ego@in.ibm.com
+Subject: Re: [PATCH 2/2] powerpc: implement arch_scale_smt_power for Power7
+References: <1264017638.5717.121.camel@jschopp-laptop> <1264017847.5717.132.camel@jschopp-laptop> <26556.1264021443@neuling.org>
+In-Reply-To: <26556.1264021443@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010, Lennart Sorensen wrote:
 
-> On Wed, Jan 20, 2010 at 03:20:46PM -0500, Alan Stern wrote:
-> > Okay, this means that something else is affecting the IRQ line.
-> 
-> Yep.  I went and disabled irq5 on the LPC bus, and that didn't help.
-> 
-> > > Interestingly the number of interrupts listed in /proc/interrupts is
-> > > exactly 300000.
-> > 
-> > That's probably because the kernel disabled the IRQ after 100000 
-> > unhandled interrupts, and re-enabled it each time a new device was
-> > registered for that IRQ.
-> 
-> Certainly seems to be the case.
-> 
-> > Or you could just stop using USB on the old box.  :-)
-> 
-> Well I just tried another box, and same thing.
-> 
-> If I boot with 'irqpoll' then everything seems fine.
-> 
-> Any idea how I can figure out why irqpoll makes it happy?  Does it give
-> any reports anywhere about misrouted irqs?
-
-Not that I know of.
-
-Does 2.6.26 fail on the new machine?
-
-Are you using a .config different from the one that used to work with 
-2.6.26?
-
-Alan Stern
-
+>> +	if (cpu_has_feature(CPU_FTRS_POWER7) && weight == 4) {
+>>     
+>
+> I think we should avoid using cpu_has_feature like this.  It's better to
+> create a new feature and add it to POWER7 in the cputable, then check
+> for that here.
+>
+> The way that it is now, I think any CPU that has superset of the POWER7
+> features, will be true here.  This is not what we want.
+>   
+Any ideas for what to call this feature?  ASYM_SMT4 ?
+>
+>> +	smt_gain /= weight;
+>>     
+>
+> This results in a PPC div, when most of the time it's going to be a
+> power of two divide.  You've optimised the divides a few lines above
+> this, but not this one.  Some consistency would be good.
+>
+>   
+I can turn that into a conditional branch (case statement) with a shift 
+for the common 1,2,4 cases which should cover all procs available today 
+falling back to a divide for any theoretical future processors that do 
+other numbers of threads.
