@@ -1,82 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942Ab0ATSKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975Ab0ATSK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753942Ab0ATSKV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 13:10:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847Ab0ATSKP
+	id S1753975Ab0ATSK7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 13:10:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933Ab0ATSK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 13:10:15 -0500
-Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:17357 "EHLO
-	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752899Ab0ATSKN (ORCPT
+	Wed, 20 Jan 2010 13:10:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45754 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752003Ab0ATSKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 13:10:13 -0500
-Message-ID: <4B574702.4040602@hp.com>
-Date: Wed, 20 Jan 2010 13:10:10 -0500
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-Cc: Sridhar Samudrala <sri@us.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, linux-sctp@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 4/9] net/sctp: Eliminate useless code
-References: <Pine.LNX.4.64.1001161657570.28745@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.1001161657570.28745@ask.diku.dk>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 20 Jan 2010 13:10:53 -0500
+Date: Wed, 20 Jan 2010 10:09:36 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Miller <davem@davemloft.net>, Michael Breuer <mbreuer@majjas.com>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
+Message-ID: <20100120100936.16e10507@nehalam>
+In-Reply-To: <20100120094103.GA6225@ff.dom.local>
+References: <20100120094103.GA6225@ff.dom.local>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 20 Jan 2010 09:41:03 +0000
+Jarek Poplawski <jarkao2@gmail.com> wrote:
 
+> It seems using the same length (even without pci_unmap_len()) is
+> crucial here, but I hope maintainers (added to CC) will take care.
+> 
+> Btw, it's not tested yet, but it might affect CONFIG_DMAR problems.
+> 
+> Thanks,
+> Jarek P.
 
-Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The variable newinet is initialized twice to the same (side effect-free)
-> expression.  Drop one initialization.
-> 
-> A simplified version of the semantic match that finds this problem is:
-> (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @forall@
-> idexpression *x;
-> identifier f!=ERR_PTR;
-> @@
-> 
-> x = f(...)
-> ... when != x
-> (
-> x = f(...,<+...x...+>,...)
-> |
-> * x = f(...)
-> )
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+Update Documentation/PCI-DMA-mapping as well please.
 
-Acked-by: Vlad Yasevich <vladislav.yasevich@hp.com>
-
-
-> 
-> ---
->  net/sctp/socket.c                   |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/sctp/socket.c b/net/sctp/socket.c
-> index 67fdac9..f6d1e59 100644
-> --- a/net/sctp/socket.c
-> +++ b/net/sctp/socket.c
-> @@ -6359,7 +6359,7 @@ void sctp_copy_sock(struct sock *newsk, struct sock *sk,
->  		    struct sctp_association *asoc)
->  {
->  	struct inet_sock *inet = inet_sk(sk);
-> -	struct inet_sock *newinet = inet_sk(newsk);
-> +	struct inet_sock *newinet;
->  
->  	newsk->sk_type = sk->sk_type;
->  	newsk->sk_bound_dev_if = sk->sk_bound_dev_if;
-> 
+-- 
