@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691Ab0ATO0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863Ab0ATO2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752691Ab0ATO0M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 09:26:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472Ab0ATO0I
+	id S1752863Ab0ATO2Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 09:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706Ab0ATO2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 09:26:08 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:44818 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752613Ab0ATO0I (ORCPT
+	Wed, 20 Jan 2010 09:28:15 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55290 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752646Ab0ATO2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 09:26:08 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was: Re: [linux-pm] Memory allocations in .suspend became very unreliable)
-Date: Wed, 20 Jan 2010 15:05:41 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <1263549544.3112.10.camel@maxim-laptop> <201001191025.37579.oliver@neukum.org> <201001192137.35232.rjw@sisk.pl>
-In-Reply-To: <201001192137.35232.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001201505.41167.oliver@neukum.org>
+	Wed, 20 Jan 2010 09:28:14 -0500
+Subject: Re: [PATCH/RFC v1 0/2] Human readable performance event
+ description in sysfs
+From: Peter Zijlstra <peterz@infradead.org>
+To: =?UTF-8?Q?Micha=C5=82?= Nazarewicz <m.nazarewicz@samsung.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Jamie Iles <jamie.iles@picochip.com>, jpihet@mvista.com,
+       p.osciak@samsung.com, will.deacon@arm.com, linux-kernel@vger.kernel.org,
+       kyungmin.park@samsung.com, mingo@elte.hu, m.szyprowski@samsung.com,
+       linux-arm-kernel@lists.infradead.org,
+       Tomasz Fujak <t.fujak@samsung.com>
+In-Reply-To: <1263996979.4283.1066.camel@laptop>
+References: <1263978706-15499-1-git-send-email-t.fujak@samsung.com>
+	 <1263978999.4283.823.camel@laptop> <op.u6tslipz7p4s8u@pikus>
+	 <20100120133145.GE4089@wear.picochip.com>
+	 <1263994779.4283.1057.camel@laptop>
+	 <20100120135553.GA22897@n2100.arm.linux.org.uk>
+	 <1263996080.4283.1064.camel@laptop>  <op.u6t4atd07p4s8u@pikus>
+	 <1263996979.4283.1066.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 20 Jan 2010 15:26:49 +0100
+Message-ID: <1263997609.4283.1067.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 19. Januar 2010 21:37:35 schrieb Rafael J. Wysocki:
-> That said, Maxim reported that in his test case the mm subsystem apparently
-> attempted to use I/O even if there was a plenty of free memory available and
-> I'd like prevent that from happening.
+On Wed, 2010-01-20 at 15:16 +0100, Peter Zijlstra wrote:
+> On Wed, 2010-01-20 at 15:09 +0100, Michał Nazarewicz wrote:
+> > On Wed, 20 Jan 2010 15:01:20 +0100, Peter Zijlstra <peterz@infradead.org> wrote:
+> > > It seems to me userspace might care about the exact platform they're
+> > > running on.
+> > 
+> > In my humble opinion, user space should never care about platform it's
+> > running on.  Interfaces provided by kernel should suffice to implement
+> > abstraction layer between user space and hardware.  If we abandon that
+> > we're back in DOS times.  But hey, again, that's just my opinion.
+> 
+> Well, you're completely right. But the often sad reality is that perfect
+> abstraction is either impossible or prohibitively expensive.
 
-Hi,
+And then there is the simple matter of knowing what kind of box it is
+without having to resort to a screwdriver or worse.
 
-it seems to me that this is caused by the mm subsytem maintaing
-a share of clean pages precisely so that GFP_NOIO will work.
-Perhaps it is a good idea to
-a) launder a number of pages if the system is about to be suspended
-between the freezer and notifying drivers
-b) set the ration of clean pages to dirty pages to 0 while suspending
-the system.
-
-	Regards
-		Oliver
