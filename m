@@ -1,75 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891Ab0ATKne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998Ab0ATKo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752891Ab0ATKne (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 05:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681Ab0ATKnc
+	id S1752998Ab0ATKo0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 05:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762Ab0ATKoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 05:43:32 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:40084 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752723Ab0ATKna (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 05:43:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ehBUBgOqBeh98k0AZnuHnofw5ql2CLmnPT2/l6XtgWbrrq0pkuEaQW5zYb4X87KRMu
-         cBwWb3jP+XCOE0omCOTUl/wntpKr9M1rmzQYCkvpOcqazgqVx7bfk9VTtWiJyf81S9UL
-         DUI9rieWtngSI3PGfR6xhItbqe1rPbTfcdSeY=
-Date: Wed, 20 Jan 2010 11:43:24 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100120104322.GA5149@nowhere>
-References: <20100119211646.GF16096@redhat.com> <20100120111220.e7fb4e2c.sfr@canb.auug.org.au> <20100120054950.GB27108@elte.hu> <20100120061551.GB6588@in.ibm.com> <20100120062834.GB12165@elte.hu> <20100120064026.GC6588@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100120064026.GC6588@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 20 Jan 2010 05:44:25 -0500
+Received: from gw.wifiinternet.cz ([89.31.42.6]:35055 "EHLO monstr.eu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752551Ab0ATKoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 05:44:23 -0500
+X-Greylist: delayed 1993 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jan 2010 05:44:23 EST
+From: monstr@monstr.eu
+To: linux-kernel@vger.kernel.org
+Cc: michal.simek@petalogix.com, arnd@arndb.de, linux-arch@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org, mingo@elte.hu,
+       joerg.roedel@amd.com, Michal Simek <monstr@monstr.eu>
+Subject: [PATCH] asm-generic: dma: Add BUG_ON for uninitialized dma_ops
+Date: Wed, 20 Jan 2010 11:08:31 +0100
+Message-Id: <1263982111-24123-2-git-send-email-monstr@monstr.eu>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <1263982111-24123-1-git-send-email-monstr@monstr.eu>
+References: <1263982111-24123-1-git-send-email-monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 12:10:26PM +0530, Ananth N Mavinakayanahalli wrote:
-> > It will cause conflicts with various other trees and increases the overhead 
-> > all around. It also causes us to trust linux-next bugreports less - as it's 
-> > not the 'next Linux' anymore. Also, there's virtually no high-level technical 
-> > review done in linux-next: the trees are implicitly trusted (because they are 
-> > pushed by maintainers), bugs and conflicts are reported but otherwise it's a 
-> > neutral tree that includes pretty much any commit indiscriminately.
-> > 
-> > If you need review and testing there's a number of trees you can get inclusion 
-> > into.
-> 
-> So would -tip be one of them? If so could you pull the utrace-ptrace
-> branch in?
-> 
-> Or did you intend some other tree (random-tracing)? (Though I think a
-> ptrace reimplementation isn't 'random'-tracing :-))
+From: Michal Simek <monstr@monstr.eu>
 
+Check that dma_ops are initialized correctly. Without this
+checking you get kernel fault and you don't know where the problem is.
 
-Heh. No this is a tree I use for, well, random tracing patches indeed,
-which has extended to random tracing/perf/* patches by the time.
-I sometimes relay other's patches to Ingo toward this tree but this is
-usually about small volumes and for small term storage: patches that
-have been reviewed/acked already.
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ include/asm-generic/dma-mapping-common.h |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-utrace/uprobe is about high volume and longer time debate/review/maintainance
-and I won't have the time to carry this.
-
-
+diff --git a/include/asm-generic/dma-mapping-common.h b/include/asm-generic/dma-mapping-common.h
+index e694263..ca8bc25 100644
+--- a/include/asm-generic/dma-mapping-common.h
++++ b/include/asm-generic/dma-mapping-common.h
+@@ -15,6 +15,7 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
+ 	dma_addr_t addr;
  
-> Ananth
+ 	kmemcheck_mark_initialized(ptr, size);
++	BUG_ON(!ops);
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	addr = ops->map_page(dev, virt_to_page(ptr),
+ 			     (unsigned long)ptr & ~PAGE_MASK, size,
+@@ -32,6 +33,7 @@ static inline void dma_unmap_single_attrs(struct device *dev, dma_addr_t addr,
+ {
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
+ 
++	BUG_ON(!ops);
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	if (ops->unmap_page)
+ 		ops->unmap_page(dev, addr, size, dir, attrs);
+@@ -48,6 +50,7 @@ static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
+ 
+ 	for_each_sg(sg, s, nents, i)
+ 		kmemcheck_mark_initialized(sg_virt(s), s->length);
++	BUG_ON(!ops);
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	ents = ops->map_sg(dev, sg, nents, dir, attrs);
+ 	debug_dma_map_sg(dev, sg, nents, ents, dir);
+@@ -61,6 +64,7 @@ static inline void dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sg
+ {
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
+ 
++	BUG_ON(!ops);
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	debug_dma_unmap_sg(dev, sg, nents, dir);
+ 	if (ops->unmap_sg)
+@@ -75,6 +79,7 @@ static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
+ 	dma_addr_t addr;
+ 
+ 	kmemcheck_mark_initialized(page_address(page) + offset, size);
++	BUG_ON(!ops);
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	addr = ops->map_page(dev, page, offset, size, dir, NULL);
+ 	debug_dma_map_page(dev, page, offset, size, dir, addr, false);
+@@ -87,6 +92,7 @@ static inline void dma_unmap_page(struct device *dev, dma_addr_t addr,
+ {
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
+ 
++	BUG_ON(!ops);
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	if (ops->unmap_page)
+ 		ops->unmap_page(dev, addr, size, dir, NULL);
+@@ -125,6 +131,7 @@ static inline void dma_sync_single_range_for_cpu(struct device *dev,
+ {
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
+ 
++	BUG_ON(!ops);
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	if (ops->sync_single_range_for_cpu) {
+ 		ops->sync_single_range_for_cpu(dev, addr, offset, size, dir);
+@@ -142,6 +149,7 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
+ {
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
+ 
++	BUG_ON(!ops);
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	if (ops->sync_single_range_for_device) {
+ 		ops->sync_single_range_for_device(dev, addr, offset, size, dir);
+@@ -157,6 +165,7 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
+ {
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
+ 
++	BUG_ON(!ops);
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	if (ops->sync_sg_for_cpu)
+ 		ops->sync_sg_for_cpu(dev, sg, nelems, dir);
+@@ -169,6 +178,7 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
+ {
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
+ 
++	BUG_ON(!ops);
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	if (ops->sync_sg_for_device)
+ 		ops->sync_sg_for_device(dev, sg, nelems, dir);
+-- 
+1.5.5.1
 
