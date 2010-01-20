@@ -1,53 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302Ab0ATPmC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420Ab0ATPnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302Ab0ATPmC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 10:42:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681Ab0ATPl7
+	id S1753420Ab0ATPnQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 10:43:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681Ab0ATPnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 10:41:59 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:63925 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752384Ab0ATPl6 (ORCPT
+	Wed, 20 Jan 2010 10:43:14 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57252 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752384Ab0ATPnN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 10:41:58 -0500
-X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jan 2010 10:41:58 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer;
-        b=Z6r0gEBsLjQ67HTEj1bHDZfshSAeBiSksPImzdUUSMYIK1mGsW3340GKB0YGZwFG9K
-         A01vCScMIRA7952qEULQKw87S497VC2hzdKyyV+ogAKsKjoGgiKmVxpCSYj+X1PLdQoW
-         7ReZZ9botXx5hNKNxvSmrnQ36WZ7I2EKZz+qE=
-From: John Kacur <jkacur@redhat.com>
-To: Clark Williams <williams@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Carsten Emde <C.Emde@osadl.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       "Nikita V. Youshchenko" <yoush@cs.msu.su>,
-       John Kacur <jkacur@redhat.com>
-Subject: [rt-tests] [PATCH 0/2] Make numa a compiletime option
-Date: Wed, 20 Jan 2010 16:36:22 +0100
-Message-Id: <1264001784-11965-1-git-send-email-jkacur@redhat.com>
-X-Mailer: git-send-email 1.6.6
+	Wed, 20 Jan 2010 10:43:13 -0500
+Date: Wed, 20 Jan 2010 13:43:03 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf tools: fix write_event()
+Message-ID: <20100120154303.GS14636@ghostprotocols.net>
+References: <4B570657.5090105@cn.fujitsu.com>
+ <1263994901.4283.1060.camel@laptop>
+ <1263995096.4283.1062.camel@laptop>
+ <20100120140942.GP14636@ghostprotocols.net>
+ <1263996897.4283.1065.camel@laptop>
+ <20100120142626.GQ14636@ghostprotocols.net>
+ <1263998272.4283.1075.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263998272.4283.1075.camel@laptop>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These patches are for Clark's experimental numa branch of rt-tests.
+Em Wed, Jan 20, 2010 at 03:37:52PM +0100, Peter Zijlstra escreveu:
+> On Wed, 2010-01-20 at 12:26 -0200, Arnaldo Carvalho de Melo wrote:
+> 
+> > > Can't report/archive/etc.. sort all this out?
+> > 
+> > We need to record the buildids at record time, preferrably at
+> > PERF_RECORD_MMAP time, from the kernel, for long running, low frequency
+> > sessions were DSOs may be updated.
+> > 
+> > Or for when a developer is updating his binary and doing perf record
+> > runs to then use perf diff:
+> > 
+> > 	perf record ./myapp
+> > 	vi myapp.c
+> > 	make
+> > 	perf record ./myapp
+> > 	perf diff
+> 
+> > Works now because the first 'perf record' saved a copy of myapp so that
+> > 'perf diff', finding the right build-id in ~/.debug/.build-id/ can do
+> > the right thing.
+> > 
+> > But till we send the buildid in an extended PERF_RECORD_MMAP event sent
+> > from the kernel, I try to reduce the window by doing this at record
+> > time.
+> > 
+> > The current way of intercepting events at write_event() is deemed
+> > broken, so I can do it atexit(), when we go to write the header, but
+> > this will hurt because we'll have to reprocess it all.
+> > 
+> > Yes, since we'd still have the window, we could do it on perf archive,
+> > but it would be an extra explicit step and since I think the right place
+> > to do this is at perf record (with the kernel injecting the buildid, if
+> > present in the binary being loaded), I'd prefer to keep it that way.
+> > 
+> > Then work on having the buildid stored in some suitable kernel data
+> > structure and injected in the PERF_RECORD_MMAP event.
+> 
+> OK, so my typical workflow is something like:
+> 
+> perf record -o baseline ./foo
+> 
+> # again:
+> 
+> vi foo.c
+> make
+> perf record ./foo
+> 
+> perf diff -i baseline -i perf.data
+> 
+> # if good enough, quit, else goto again
+> 
+> I don't find intermediate diff's all that interesting.
 
-It is important that numa be a compile time option, runtime checking is not
-good enough, since most systems will not even have the numa libraries.
+Well, I plan to write 'perf diff --plot N' and have it look at the N
+last perf.data files (perf.data, perf.data.N, perf.data.(N - 1)), that
+may be per tag (v2.6.30, v2.6.31, v2.6.32, v2.6.33) or per
+changeset to show if we are regressing over time.
 
-You can pull these patches from
+Like people do from time to time to find regressions on subsystems they
+don't pay that much attention.
+ 
+> So we could create a perf snapshot like command that collects everything
+> (and maybe allow something like: perf record --snapshot), and have perf
+> diff compare against that by default, instead of perf.data~ or whatever
+> that was called again. 
 
-pub/scm/linux/kernel/git/jkacur/rt-tests.git numa
+Oh, --baseline for 'perf record' to set a baseline file that then would
+by default be used and compared against the latest perf.data file
+collected seems useful, that way it would be just:
 
-John Kacur (2):
-  rt-tests: Makefile: Add NUMA compile option.
-  rt-tests: Make cyclic test compilable for non-numa systems.
+	perf record --baseline ./myapp
+repeat:
+	vi myapp.c
+	make
+	perf record ./myapp
+	perf diff
+	goto repeat;
 
- Makefile                    |    9 ++++-
- src/cyclictest/cyclictest.c |   46 +++++++-------------------
- src/cyclictest/rt_numa.h    |   74 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 94 insertions(+), 35 deletions(-)
- create mode 100644 src/cyclictest/rt_numa.h
+> As to buildids from kernel space, I don't think the kernel actually
+> knows or cares enough about executable maps to be able to extract those.
+> The initial ELF loader could (maybe) for the main executable, but all
+> DSOs and esp stuff like dlopen() would become mightly tricky.
 
+Having a way to unequivocally connect the DSO that appeared on a
+PERF_RECORD_MMAP to a file where a symtab is still seems a requirement
+for me.
+
+I'll try to figure out a way to do it cheaply and non-intrusively if at
+all possible.
+
+- Arnaldo
