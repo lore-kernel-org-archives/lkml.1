@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896Ab0ATHAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621Ab0ATHG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896Ab0ATHAP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 02:00:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181Ab0ATHAM
+	id S1755621Ab0ATHG2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 02:06:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181Ab0ATHG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 02:00:12 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:59756 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932124Ab0ATHAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 02:00:09 -0500
-Date: Wed, 20 Jan 2010 17:59:59 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next: add utrace tree
-Message-Id: <20100120175959.59daa481.sfr@canb.auug.org.au>
-In-Reply-To: <20100120062834.GB12165@elte.hu>
-References: <20100119211646.GF16096@redhat.com>
-	<20100120111220.e7fb4e2c.sfr@canb.auug.org.au>
-	<20100120054950.GB27108@elte.hu>
-	<20100120061551.GB6588@in.ibm.com>
-	<20100120062834.GB12165@elte.hu>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__20_Jan_2010_17_59_59_+1100_D3wSZ4FjdL/zm5He"
+	Wed, 20 Jan 2010 02:06:27 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:23002 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547Ab0ATHG0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 02:06:26 -0500
+Subject: [PATCH 0/2] ACPI: Early _PDC tweaks
+To: lenb@kernel.org
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Wed, 20 Jan 2010 00:06:25 -0700
+Message-ID: <20100120070403.19777.31978.stgit@bob.kio>
+User-Agent: StGit/0.15
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__20_Jan_2010_17_59_59_+1100_D3wSZ4FjdL/zm5He
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+As requested by Len, a few more improvements in how we handle the
+early _PDC path.
 
-Hi Frank,
+Allow platforms not listed in the DMI table to opt-in for early _PDC
+with a kernel command line param.
 
-On Wed, 20 Jan 2010 07:28:34 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->
-> Including experimental code that is RFC and which is not certain to go=20
-> upstream is certainly not the purpose of linux-next though.
+If we do evaluate _PDC early, remember that fact and do not evaluate
+it a second time when the ACPI processor driver loads.
 
-Ingo is correct in what he says here.  See the boilerplate:
+/ac
 
-"     * destined for the current or next Linux merge window.
+---
 
-Basically, this should be just what you would send to Linus (or ask him
-to fetch)."
+Alex Chiang (2):
+      ACPI: processor: add kernel command line support for early _PDC eval
+      ACPI: processor: only evaluate _PDC once per processor
 
-I will remove this tree from linux-next tomorrow and wait until it is
-more ready for mainline inclusion.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ Documentation/kernel-parameters.txt |    4 ++++
+ drivers/acpi/processor_pdc.c        |   14 ++++++++++++++
+ 2 files changed, 18 insertions(+), 0 deletions(-)
 
---Signature=_Wed__20_Jan_2010_17_59_59_+1100_D3wSZ4FjdL/zm5He
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktWqe8ACgkQjjKRsyhoI8waqwCeKAuM57L412X0UK/aNa0vPR3G
-P6UAoLDTK3LHo3U3OKwer2D1r/Icnevb
-=Htge
------END PGP SIGNATURE-----
-
---Signature=_Wed__20_Jan_2010_17_59_59_+1100_D3wSZ4FjdL/zm5He--
