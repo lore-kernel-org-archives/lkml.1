@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723Ab0ATGEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975Ab0ATGGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752723Ab0ATGEh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 01:04:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037Ab0ATGEg
+	id S1753975Ab0ATGGN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 01:06:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742Ab0ATGGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 01:04:36 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40937 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751236Ab0ATGEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 01:04:35 -0500
-Date: Wed, 20 Jan 2010 00:04:32 -0600
-From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ecryptfs-devel@lists.launchpad.net
-Subject: [GIT PULL] eCryptfs fixes for 2.6.33
-Message-ID: <20100120060431.GA1480@fedora-virt>
+	Wed, 20 Jan 2010 01:06:12 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38049 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416Ab0ATGGJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 01:06:09 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [cleanup][PATCH] Kill anon local variable from migrate_page_copy
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20100120150451.406A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 20 Jan 2010 15:06:01 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 24bc7347da73a9ed3383056c3d0f28c0e361621e:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../wim/linux-2.6-watchdog
 
-are available in the git repository at:
+commit 01b1ae63c2 (memcg: simple migration handling) removed
+mem_cgroup_uncharge_cache_page() call from migrate_page_copy.
+Then, now anon variable is unused.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/ecryptfs/ecryptfs-2.6.git for-linus
+This patch remove it.
 
-Dan Carpenter (1):
-      ecryptfs: use after free
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ mm/migrate.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-Erez Zadok (5):
-      ecryptfs: initialize private persistent file before dereferencing pointer
-      ecryptfs: don't ignore return value from lock_rename
-      ecryptfs: remove unnecessary d_drop calls in ecryptfs_link
-      ecryptfs: pass matching flags to interpose as defined and used there
-      ecryptfs: fix interpose/interpolate typos in comments
+diff --git a/mm/migrate.c b/mm/migrate.c
+index efddbf0..9e4a13f 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -275,8 +275,6 @@ static int migrate_page_move_mapping(struct address_space *mapping,
+  */
+ static void migrate_page_copy(struct page *newpage, struct page *page)
+ {
+-	int anon;
+-
+ 	copy_highpage(newpage, page);
+ 
+ 	if (PageError(page))
+@@ -313,8 +311,6 @@ static void migrate_page_copy(struct page *newpage, struct page *page)
+ 	ClearPageSwapCache(page);
+ 	ClearPagePrivate(page);
+ 	set_page_private(page, 0);
+-	/* page->mapping contains a flag for PageAnon() */
+-	anon = PageAnon(page);
+ 	page->mapping = NULL;
+ 
+ 	/*
+-- 
+1.6.5.2
 
-Julia Lawall (1):
-      ecryptfs: Eliminate useless code
 
-Tyler Hicks (3):
-      eCryptfs: Use notify_change for truncating lower inodes
-      eCryptfs: Add getattr function
-      eCryptfs: Remove mmap from directory operations
 
- fs/ecryptfs/crypto.c |    4 +-
- fs/ecryptfs/file.c   |   17 +++---
- fs/ecryptfs/inode.c  |  134 ++++++++++++++++++++++++++++++++++++--------------
- fs/ecryptfs/main.c   |    4 +-
- 4 files changed, 109 insertions(+), 50 deletions(-)
