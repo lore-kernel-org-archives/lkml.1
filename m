@@ -1,116 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473Ab0ATA7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881Ab0ATBBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473Ab0ATA7q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 19:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260Ab0ATA7p
+	id S1754881Ab0ATBBq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 20:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144Ab0ATBBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 19:59:45 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:56366 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754237Ab0ATA7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 19:59:44 -0500
-Date: Tue, 19 Jan 2010 19:56:41 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       Steve French <sfrench@samba.org>
-Subject: Re: [PATCH 38/40] cifs: use workqueue instead of slow-work
-Message-ID: <20100119195641.7b6a17e4@tlielax.poochiereds.net>
-In-Reply-To: <4B564B12.7020909@kernel.org>
-References: <1263776272-382-1-git-send-email-tj@kernel.org>
-	<1263776272-382-39-git-send-email-tj@kernel.org>
-	<20100119072000.247ac894@tlielax.poochiereds.net>
-	<4B564B12.7020909@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jan 2010 20:01:45 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:39900 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754141Ab0ATBBo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 20:01:44 -0500
+Date: Tue, 19 Jan 2010 20:01:10 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100119224508.GA3473@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B5655D6.8090503@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100118212516.GE3157@del.dom.local> <4B54D50C.90608@majjas.com>
+ <20100118220814.GG3157@del.dom.local> <20100118221747.GH3157@del.dom.local>
+ <4B54E4EF.8080602@majjas.com> <4B554730.6090000@majjas.com>
+ <20100119104739.GA9088@ff.dom.local> <4B55D40F.5080509@majjas.com>
+ <20100119195933.GA3060@del.dom.local> <4B5610A9.7030902@majjas.com>
+ <20100119224508.GA3473@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010 09:15:14 +0900
-Tejun Heo <tj@kernel.org> wrote:
-
-> Hello,
-> 
-> On 01/19/2010 09:20 PM, Jeff Layton wrote:
-> >> @@ -584,13 +583,13 @@ is_valid_oplock_break(struct smb_hdr *buf, struct TCP_Server_Info *srv)
-> >>  				pCifsInode->clientCanCacheAll = false;
-> >>  				if (pSMB->OplockLevel == 0)
-> >>  					pCifsInode->clientCanCacheRead = false;
-> >> -				rc = slow_work_enqueue(&netfile->oplock_break);
-> >> -				if (rc) {
-> >> -					cERROR(1, ("failed to enqueue oplock "
-> >> -						   "break: %d\n", rc));
-> >> -				} else {
-> >> -					netfile->oplock_break_cancelled = false;
-> >> -				}
-> >> +
-> >> +				cifs_oplock_break_get(netfile);
-> >> +				if (!queue_work(system_single_wq,
-> >> +						&netfile->oplock_break))
-> >> +					cifs_oplock_break_put(netfile);
-> >> +				netfile->oplock_break_cancelled = false;
-> >> +
-> >>  				read_unlock(&GlobalSMBSeslock);
-> >>  				read_unlock(&cifs_tcp_ses_lock);
-> >>  				return true;
-> > 
-> > This block of code looks problematic. This code is run by the
-> > cifs_demultiplex_thread (cifsd). We can't do an oplock_break_put in
-> > this context, since it might trigger a blocking SMB and cause a
-> > deadlock.
-> 
-> Okay, thanks for pointing it out.
-> 
-> > A while back, I backported this code to earlier kernels and used a
-> > standard workqueue there. What I did there was to only do the "get" if
-> > the queue_work succeeded, and then had the queued work take and
-> > immediately drop the GlobalSMBSeslock first thing. Yes, it's ugly, but
-> > it prevented the possible deadlock and didn't require adding anything
-> > like completion vars to the struct.
-> 
-> Hmmm... Why is locking GlobalSMBSeslock necessary?
-> cifs_oplock_break_get() can never fail and it seems that
-> is_valid_oplock_break() should be holding valid reference by the time
-> it enqueues the work, so wouldn't the following be sufficient?
-> 
-> 	if (queue_work(system_single_wq, &netfile->oplock_break))
-> 		cifs_oplock_break_get(netfile);
-> 
-
-I guess I wasn't sure I could count on that. It seems unlikely that the
-work would run before you did the "get", but unlikely races are even
-harder to troubleshoot when they do get hit.
-
-FWIW, it's not a terribly hot codepath, so taking and dropping the
-spinlock shouldn't be too bad for performance. If you're certain that
-we don't need to worry about it though, then maybe we can just skip
-doing that.
-
-> > Also, this change seems to have changed the logic a bit. The
-> > oplock_break_cancelled flag is being set to false unconditionally, and
-> > the printk was dropped. Not a big deal on the last part, but we can't
-> > really do much with errors in this codepath so it might be helpful to
-> > have some indication that there are problems here.
-> 
-> The thing is that slow_work_enqueue() can only fail if getting a
-> reference fails.  In cifs' case, it always succeeds so there's no
-> failure case to handle there.
-> 
-
-Ok, but here we're changing this to queue_work. Is that also guaranteed
-to succeed here? If so, then dropping the printk is fine. If not, then
-I think we should keep it in.
-
-It's been a while since I overhauled this code, so I'll need to look
-again at the semantics for the oplock_break_cancelled flag. It may be
-ok to just set it unconditionally like this, but I'll need to check
-and be sure.
-
--- 
-Jeff Layton <jlayton@redhat.com>
+On 1/19/2010 5:45 PM, Jarek Poplawski wrote:
+> On Tue, Jan 19, 2010 at 03:06:01PM -0500, Michael Breuer wrote:
+>    
+>> On 1/19/2010 2:59 PM, Jarek Poplawski wrote:
+>>      
+>>> On Tue, Jan 19, 2010 at 10:47:27AM -0500, Michael Breuer wrote:
+>>> ...
+>>>        
+>>>> Still get the warning... but now 60 bytes.
+>>>> Jan 19 10:43:50 mail kernel: ------------[ cut here ]------------
+>>>> Jan 19 10:43:50 mail kernel: WARNING: at lib/dma-debug.c:902
+>>>>          
+>>> Thanks for trying this.
+>>> Jarek P.
+>>>        
+>> NP. Let me know what else I can do to help with this one. Note that
+>> it seems innocuous. I'll continue with the older set and no dmar for
+>> now and see if I get another crash.
+>>      
+> Maybe one more idea to try (not compiled).
+>
+> Jarek P.
+> ---
+>
+>   drivers/net/sky2.c |    6 ++++--
+>   1 files changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
+> index 7650f73..cdebdd3 100644
+> --- a/drivers/net/sky2.c
+> +++ b/drivers/net/sky2.c
+> @@ -2252,12 +2252,14 @@ static struct sk_buff *receive_copy(struct sky2_port *sky2,
+>   	skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
+>   	if (likely(skb)) {
+>   		pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
+> -					    length, PCI_DMA_FROMDEVICE);
+> +					    pci_unmap_len(re, data_size),
+> +					    PCI_DMA_FROMDEVICE);
+>   		skb_copy_from_linear_data(re->skb, skb->data, length);
+>   		skb->ip_summed = re->skb->ip_summed;
+>   		skb->csum = re->skb->csum;
+>   		pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
+> -					       length, PCI_DMA_FROMDEVICE);
+> +					       pci_unmap_len(re, data_size),
+> +					       PCI_DMA_FROMDEVICE);
+>   		re->skb->ip_summed = CHECKSUM_NONE;
+>   		skb_put(skb, length);
+>   	}
+>    
+That not only compiled, but it cleared the error as well. Additionally, 
+I used to see a bit of a delay receiving the login prompt when first 
+connecting to the box by ssh. That delay is gone with this patch. I'd 
+guess that the warning wasn't quite as innocuous as I thought.
+Note: tested on 2.6.32.4.  I'll leave this up for a bit before 
+attempting to move back to head.
