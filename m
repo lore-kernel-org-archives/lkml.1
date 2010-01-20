@@ -1,47 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175Ab0ATJWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967Ab0ATJ0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175Ab0ATJWO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 04:22:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700Ab0ATJV4
+	id S1751967Ab0ATJ0V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 04:26:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734Ab0ATJ0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 04:21:56 -0500
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:15384 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473Ab0ATJVy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 04:21:54 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN
-Date: Wed, 20 Jan 2010 10:11:44 +0100
-From: Tomasz Fujak <t.fujak@samsung.com>
-Subject: [PATCH/RFC v1 0/2] Human readable performance event description in
- sysfs
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: jamie.iles@picochip.com, will.deacon@arm.com, jpihet@mvista.com,
-       mingo@elte.hu, peterz@infradead.org, p.osciak@samsung.com,
-       m.szyprowski@samsung.com, kyungmin.park@samsung.com
-Message-id: <1263978706-15499-1-git-send-email-t.fujak@samsung.com>
-X-Mailer: git-send-email 1.6.5.3
+	Wed, 20 Jan 2010 04:26:17 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:46812 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751663Ab0ATJ0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 04:26:15 -0500
+Date: Wed, 20 Jan 2010 10:26:13 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] block bits for 2.6.34-rc4
+Message-ID: <20100120092613.GY13771@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Linus,
 
-While I managed to build and run the early version (back from December), I was unable to find the newest sources (infra + ARMv6, ARMv7 support).
-Where do I find them?
+Nothing major in here. A CFQ bug fix, two rounds of drbd fixups, some
+fixes to the IO stacking calculations, and a few other bug fixes.
+Please pull!
 
-The following patches provide a sysfs entry with hardware event human readable description in the form of "0x%llx\t%lld-%lld\t%s\t%s" % (event_value, minval, maxval, name, description) and means to populate the file.
-The version posted contains ARMv6, ARMv7 (Cortex-A[89]) support in this matter.
 
-The intended use is twofold: for users to read the list directly and for tools (like perf).
+  git://git.kernel.dk/linux-2.6-block.git for-linus
 
-This series includes:
-[PATCH v1 1/2] perfevent: Add performance event structure definition and 'extevents' sysfs entry
-[PATCH v1 2/2] [ARM] perfevent: Event description list for ARMv6, Cortex-A8 and Cortex-A9 exported
+Divyesh Shah (1):
+      cfq-iosched: Respect ioprio_class when preempting
 
-Thanks,
+Jens Axboe (2):
+      Merge branch 'for-jens' of git://git.drbd.org/linux-2.6-drbd into for-linus
+      Merge branch 'for-jens' of http://git.drbd.org/linux-2.6-drbd into for-linus
+
+Johannes Thoma (2):
+      drbd: Kconfig fix
+      drbd: Don't go into StandAlone mode when authentification failes because of network error
+
+Julia Lawall (2):
+      drivers/block/drbd: Correct NULL test
+      drivers/block/drbd/drbd_receiver.c: correct NULL test
+
+Kirill Afonshin (1):
+      block: removed unused as_io_context
+
+Lars Ellenberg (1):
+      drbd: check on CONFIG_LBDAF, not LBD
+
+Martin K. Petersen (4):
+      block: Correct handling of bottom device misaligment
+      block: Fix discard alignment calculation and printing
+      block: bdev_stack_limits wrapper
+      DM: Fix device mapper topology stacking
+
+Philipp Reisner (5):
+      drbd: Use drbd_crypto_is_hash() instead of an open coded check
+      drbd: Fix for a race between IO and a detach operation [Bugz 262]
+      drbd: Silenced an assert that could triggered after changing write ordering method
+      drbd: Allow online resizing of DRBD devices while peer not reachable (needs to be explicitly forced)
+      drbd: The kernel code is now equivalent to out of tree release 8.3.7
+
+Stephen Hemminger (1):
+      genhd: overlapping variable definition
+
+Thiago Farina (1):
+      fs/bio.c: fix shadows sparse warning
+
+ block/blk-ioc.c                    |    5 ----
+ block/blk-settings.c               |   39 +++++++++++++++++++++++++++---
+ block/cfq-iosched.c                |    6 ++++
+ block/genhd.c                      |    2 +-
+ drivers/block/drbd/Kconfig         |    2 +-
+ drivers/block/drbd/drbd_int.h      |    7 ++---
+ drivers/block/drbd/drbd_main.c     |    1 +
+ drivers/block/drbd/drbd_nl.c       |   19 +++++++++-----
+ drivers/block/drbd/drbd_receiver.c |   46 +++++++++++++++++++++++------------
+ drivers/md/dm-table.c              |   20 ++++-----------
+ fs/bio.c                           |    2 +-
+ include/linux/blkdev.h             |    9 +++++-
+ include/linux/drbd.h               |    2 +-
+ include/linux/drbd_nl.h            |    1 +
+ include/linux/genhd.h              |    6 ++--
+ include/linux/iocontext.h          |   27 ---------------------
+ 16 files changed, 107 insertions(+), 87 deletions(-)
+
 -- 
-Tomasz Fujak
+Jens Axboe
 
