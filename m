@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779Ab0ATVjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693Ab0ATVmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779Ab0ATVjN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 16:39:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150Ab0ATVjM
+	id S1754693Ab0ATVmL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 16:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276Ab0ATVmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 16:39:12 -0500
-Received: from borg.medozas.de ([188.40.89.202]:35592 "EHLO borg.medozas.de"
+	Wed, 20 Jan 2010 16:42:09 -0500
+Received: from borg.medozas.de ([188.40.89.202]:52616 "EHLO borg.medozas.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753733Ab0ATVjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 16:39:11 -0500
-Date: Wed, 20 Jan 2010 22:39:09 +0100 (CET)
+	id S1753975Ab0ATVmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 16:42:00 -0500
+Date: Wed, 20 Jan 2010 22:41:59 +0100 (CET)
 From: Jan Engelhardt <jengelh@medozas.de>
 To: Simon Arlott <simon@fire.lp0.eu>
 cc: Patrick McHardy <kaber@trash.net>,
@@ -18,10 +18,10 @@ cc: Patrick McHardy <kaber@trash.net>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        netfilter-devel@vger.kernel.org
 Subject: Re: [PATCH] xt_TCPMSS: SYN packets are allowed to contain data
-In-Reply-To: <4B5773C2.2010000@simon.arlott.org.uk>
-Message-ID: <alpine.LSU.2.01.1001202238400.18680@obet.zrqbmnf.qr>
+In-Reply-To: <alpine.LSU.2.01.1001202238400.18680@obet.zrqbmnf.qr>
+Message-ID: <alpine.LSU.2.01.1001202240350.18680@obet.zrqbmnf.qr>
 References: <4B54CDE5.3070100@simon.arlott.org.uk> <4B5578A5.50705@gmail.com>    <dad314e12c5750b1b5d70c3ea3c6f6134b8fa0f3@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>    <4B55D372.4020807@gmail.com> <710ab0ca79305c82013982d43250b0a1fd45824d@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
- <4B5773C2.2010000@simon.arlott.org.uk>
+ <4B5773C2.2010000@simon.arlott.org.uk> <alpine.LSU.2.01.1001202238400.18680@obet.zrqbmnf.qr>
 User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,18 +29,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 2010-01-20 22:21, Simon Arlott wrote:
+On Wednesday 2010-01-20 22:39, Jan Engelhardt wrote:
 
->The TCPMSS target is dropping SYN packets where:
->  1) There is data, or
->  2) The data offset makes the TCP header larger than
->  the packet.
+>On Wednesday 2010-01-20 22:21, Simon Arlott wrote:
 >
->Both of these result in an error level printk.
+>>The TCPMSS target is dropping SYN packets where:
+>>  1) There is data, or
+>>  2) The data offset makes the TCP header larger than
+>>  the packet.
+>>
+>>Both of these result in an error level printk.
+>>
+>>This change fixes the drop of SYN packets with data
+>>(because the MSS option can safely be modified) and
+>>passes packets with no MSS option instead of adding
+>>one (which is not valid).
 >
->This change fixes the drop of SYN packets with data
->(because the MSS option can safely be modified) and
->passes packets with no MSS option instead of adding
->one (which is not valid).
+>Can you explain why the automatic addition of a MSS option is removed?
 
-Can you explain why the automatic addition of a MSS option is removed?
+That is, of course, for the git log. If I followed the thread right, it 
+was that adding the option could exceed the MTU. Well, can't we check 
+for the outgoing MTU?
