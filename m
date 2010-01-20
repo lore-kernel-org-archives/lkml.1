@@ -1,85 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755Ab0ATBTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790Ab0ATB3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755755Ab0ATBTA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 20:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755690Ab0ATBTA
+	id S1755790Ab0ATB3i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 20:29:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469Ab0ATB3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 20:19:00 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59234 "EHLO hera.kernel.org"
+	Tue, 19 Jan 2010 20:29:38 -0500
+Received: from mga01.intel.com ([192.55.52.88]:9153 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755055Ab0ATBS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 20:18:59 -0500
-Message-ID: <4B565B26.3060709@kernel.org>
-Date: Wed, 20 Jan 2010 10:23:50 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Jeff Layton <jlayton@redhat.com>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       Steve French <sfrench@samba.org>
-Subject: Re: [PATCH 38/40] cifs: use workqueue instead of slow-work
-References: <1263776272-382-1-git-send-email-tj@kernel.org>	<1263776272-382-39-git-send-email-tj@kernel.org>	<20100119072000.247ac894@tlielax.poochiereds.net>	<4B564B12.7020909@kernel.org> <20100119195641.7b6a17e4@tlielax.poochiereds.net>
-In-Reply-To: <20100119195641.7b6a17e4@tlielax.poochiereds.net>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755218Ab0ATB3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 20:29:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,306,1262592000"; 
+   d="scan'208";a="532721466"
+Subject: Re: fio mmap randread 64k more than 40% regression with 2.6.33-rc1
+From: Shaohua Li <shaohua.li@intel.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       "jmoyer@redhat.com" <jmoyer@redhat.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100119214046.GB4992@redhat.com>
+References: <4e5e476b0912310234mf9ccaadm771c637a3d107d18@mail.gmail.com>
+	 <1262340730.19773.47.camel@localhost>
+	 <4e5e476b1001010832o24f6a0efudbfc36598bfc7c5e@mail.gmail.com>
+	 <1262435612.19773.80.camel@localhost>
+	 <4e5e476b1001021052u51a90a91qb2fbb4089498a3ca@mail.gmail.com>
+	 <1262593090.29897.14.camel@localhost>
+	 <4e5e476b1001041028v1f204834r1fa97e732a094210@mail.gmail.com>
+	 <4e5e476b1001160827n6dc73b35vee8b46e541134c2@mail.gmail.com>
+	 <1263783999.12893.2.camel@localhost>
+	 <4e5e476b1001191210s37423e4av6673225d5078a88e@mail.gmail.com>
+	 <20100119214046.GB4992@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 20 Jan 2010 09:29:35 +0800
+Message-ID: <1263950975.7958.9.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 20 Jan 2010 01:17:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20/2010 09:56 AM, Jeff Layton wrote:
->> Hmmm... Why is locking GlobalSMBSeslock necessary?
->> cifs_oplock_break_get() can never fail and it seems that
->> is_valid_oplock_break() should be holding valid reference by the time
->> it enqueues the work, so wouldn't the following be sufficient?
->>
->> 	if (queue_work(system_single_wq, &netfile->oplock_break))
->> 		cifs_oplock_break_get(netfile);
->>
+On Tue, 2010-01-19 at 13:40 -0800, Vivek Goyal wrote:
+> On Tue, Jan 19, 2010 at 09:10:33PM +0100, Corrado Zoccolo wrote:
+> > On Mon, Jan 18, 2010 at 4:06 AM, Zhang, Yanmin
+> > <yanmin_zhang@linux.intel.com> wrote:
+> > > On Sat, 2010-01-16 at 17:27 +0100, Corrado Zoccolo wrote:
+> > >> Hi Yanmin
+> > >> On Mon, Jan 4, 2010 at 7:28 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> > >> > Hi Yanmin,
+> > >> >> When low_latency=1, we get the biggest number with kernel 2.6.32.
+> > >> >> Comparing with low_latency=0's result, the prior one is about 4% better.
+> > >> > Ok, so 2.6.33 + corrado (with low_latency =0) is comparable with
+> > >> > fastest 2.6.32, so we can consider the first part of the problem
+> > >> > solved.
+> > >> >
+> > >> I think we can return now to your full script with queue merging.
+> > >> I'm wondering if (in arm_slice_timer):
+> > >> -       if (cfqq->dispatched)
+> > >> +      if (cfqq->dispatched || (cfqq->new_cfqq && rq_in_driver(cfqd)))
+> > >>                return;
+> > >> gives the same improvement you were experiencing just reverting to rq_in_driver.
+> > > I did a quick testing against 2.6.33-rc1. With the new method, fio mmap randread 46k
+> > > has about 20% improvement. With just checking rq_in_driver(cfqd), it has
+> > > about 33% improvement.
+> > >
+> > Jeff, do you have an idea why in arm_slice_timer, checking
+> > rq_in_driver instead of cfqq->dispatched gives so much improvement in
+> > presence of queue merging, while it doesn't have noticeable effect
+> > when there are no merges?
 > 
-> I guess I wasn't sure I could count on that. It seems unlikely that the
-> work would run before you did the "get", but unlikely races are even
-> harder to troubleshoot when they do get hit.
-> 
-> FWIW, it's not a terribly hot codepath, so taking and dropping the
-> spinlock shouldn't be too bad for performance. If you're certain that
-> we don't need to worry about it though, then maybe we can just skip
-> doing that.
+> Performance improvement because of replacing cfqq->dispatched with
+> rq_in_driver() is really strange. This will mean we will do even lesser
+> idling on the cfqq. That means faster cfqq switching and that should mean more
+> seeks (for this test case) and reduce throughput. This is just opposite to your approach of treating a random read mmap queue as sync where we will idle on
+> the queue.
+I used to look at the issue, but not fully understand it. Some
+interesting finding:
+the cfqq->dispatched cause cfq_select_queue frequently switch queues.
+it appears frequent switch can make we could quickly switch to
+sequential requests in the workload. without the cfqq->dispatched, we
+dispatch queue1 request, M requests from other queues, queue1 request.
+with it, we dispatch queue1 request, N requests from other queues,
+queue1 request. It appears M < N from blktrace, which cause we have less
+seeky. I don't see any other obvious difference from blktrace in the two
+cases.
 
-Oooh, I don't know the code very well and can't guarantee any of that.
-Ah, okay, I was confused.  Work can run and finish before the
-reference is incremented.  So, yeap, I'll add the spinlocking in the
-work function.
+Thanks,
+Shaohua
 
->>> Also, this change seems to have changed the logic a bit. The
->>> oplock_break_cancelled flag is being set to false unconditionally, and
->>> the printk was dropped. Not a big deal on the last part, but we can't
->>> really do much with errors in this codepath so it might be helpful to
->>> have some indication that there are problems here.
->>
->> The thing is that slow_work_enqueue() can only fail if getting a
->> reference fails.  In cifs' case, it always succeeds so there's no
->> failure case to handle there.
->>
-> 
-> Ok, but here we're changing this to queue_work. Is that also guaranteed
-> to succeed here? If so, then dropping the printk is fine. If not, then
-> I think we should keep it in.
-
-Yeap, queue_work() is guaranteed to succeed.  The only possible
-outcomes are 1. queued or 2. is already queued.
-
-> It's been a while since I overhauled this code, so I'll need to look
-> again at the semantics for the oplock_break_cancelled flag. It may be
-> ok to just set it unconditionally like this, but I'll need to check
-> and be sure.
-
-Thanks.
-
--- 
-tejun
