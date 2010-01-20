@@ -1,41 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751565Ab0ATI2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751059Ab0ATIa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751565Ab0ATI2S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 03:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319Ab0ATI2R
+	id S1751059Ab0ATIa2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 03:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750747Ab0ATIa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 03:28:17 -0500
-Received: from host-207-63-250-9.unit5.org ([207.63.250.9]:56548 "EHLO
-	unof-exchange.unit5.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101Ab0ATI2R convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 03:28:17 -0500
-X-Greylist: delayed 316 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jan 2010 03:28:17 EST
-From: "Shaw, James" <SHAWJ@unit5.org>
-Date: Wed, 20 Jan 2010 02:23:23 -0600
-Subject: Important: Email Account Verification Update!! !
-Thread-Topic: Important: Email Account Verification Update!! !
-Thread-Index: AQHKmanU5YNlOICO4UCIBGJ3sVWytw==
-Message-ID: <7A266AE7A8EC104096E27185CB38C95B0678A993F8@unof-exchange.unit5.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 20 Jan 2010 03:30:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37949 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1749667Ab0ATIa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 03:30:27 -0500
+Message-ID: <4B56C047.6070808@kernel.org>
+Date: Wed, 20 Jan 2010 17:35:19 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: unlisted-recipients:; (no To-header on input)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH 04/40] sched: implement __set_cpus_allowed()
+References: <1263776272-382-1-git-send-email-tj@kernel.org>	 <1263776272-382-5-git-send-email-tj@kernel.org>	 <1263808570.4283.149.camel@laptop>  <4B54445E.302@kernel.org>	 <1263814869.4283.296.camel@laptop>  <4B5505E2.4080203@kernel.org> <1263890222.4283.634.camel@laptop>
+In-Reply-To: <1263890222.4283.634.camel@laptop>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 20 Jan 2010 08:29:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your mailbox quota has been exceeded the storage limit which is 20GB
-as set by your administrator, You are currently running on 20.9GB.
-You may not be able to send or receive new mails until you re-validate
-your mailbox.
-To re-activate your account please click the link below:
-http://www.acc-central.com/
+Hello,
 
-Thanks and we are sorry for the inconveniences
-Local Host.
+On 01/19/2010 05:37 PM, Peter Zijlstra wrote:
+> On Tue, 2010-01-19 at 10:07 +0900, Tejun Heo wrote:
+>>
+>> It's also necessary to guarantee forward progress during CPU_DOWN.
+>> The problem with kthread_bind() is that it's not synchronized against
+>> CPU hotplug operations.  It needs outer synchronization like calling
+>> it directly from CPU_DOWN_PREP.  I guess it's doable but I think it
+>> would be better to simply share the backend implementation between
+>> set_cpus_allowed_ptr() and kthread_bind().
+> 
+> OK, so you're saying you need to migrate the rescue thread during
+> cpu-down. That thread is guaranteed sleeping right,
+
+No, it's not.  It might have been tasked to process works from other
+CPUs.
+
+> if it were not it'd not be elegible to run on our dying cpu.  Hence
+> kthread_bind() ought to just work, no?
+
+Why wouldn't it be elegible?
+
+Commit e2912009fb7b715728311b0d8fe327a1432b3f79 killed the ability to
+bind a kthread to a dead CPU which means that the only differences
+between kthread_bind() and set_cpus_allowed_ptr() are...
+
+* Whether to use cpu_online_mask or cpu_active_mask.
+
+* Whether to set or check PF_THREAD_BOUND.
+
+Wouldn't it make more sense to share the backend implementation
+between kthread_bind() and set_cpus_allowed_ptr() instead of making
+kthread_bind() a special case?  The goals of the two functions are
+basically identical.  Why have two separate implementations?
+kthread_bind() implementation as it currently stands is pretty fragile
+too.  Making kthread_bind() backed by set_cpus_allowed_ptr() will make
+it more robust and less error-prone and all that's necessary to
+achieve that is modifying sanity checks.
+
+Thanks.
+
+-- 
+tejun
