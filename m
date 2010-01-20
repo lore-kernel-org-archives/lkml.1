@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751676Ab0ATPBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751661Ab0ATPCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751676Ab0ATPBc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 10:01:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122Ab0ATPBb
+	id S1751661Ab0ATPCj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 10:02:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575Ab0ATPCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 10:01:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:24166 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751129Ab0ATPBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 10:01:30 -0500
-Date: Wed, 20 Jan 2010 16:58:22 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: mtosatti@redhat.com, Davide Libenzi <davidel@xmailserver.org>,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] kvm: fix spurious interrupt with irqfd
-Message-ID: <20100120145822.GB3434@redhat.com>
-References: <20100113171222.GA19798@redhat.com> <4B5305CA.5070001@redhat.com> <20100119145202.GC28465@redhat.com> <4B570EDD.6000808@redhat.com>
+	Wed, 20 Jan 2010 10:02:37 -0500
+Received: from mail2.picochip.com ([82.111.145.34]:50843 "EHLO
+	thurne.picochip.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751519Ab0ATPCg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 10:02:36 -0500
+Date: Wed, 20 Jan 2010 15:03:03 +0000
+From: Jamie Iles <jamie.iles@picochip.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Jamie Iles <jamie.iles@picochip.com>, jpihet@mvista.com,
+       p.osciak@samsung.com, will.deacon@arm.com,
+       =?utf-8?Q?Micha=C5=82?= Nazarewicz <m.nazarewicz@samsung.com>,
+       linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, mingo@elte.hu,
+       m.szyprowski@samsung.com, linux-arm-kernel@lists.infradead.org,
+       Tomasz Fujak <t.fujak@samsung.com>
+Subject: Re: [PATCH/RFC v1 0/2] Human readable performance event
+	description in sysfs
+Message-ID: <20100120150303.GG4089@wear.picochip.com>
+References: <1263978706-15499-1-git-send-email-t.fujak@samsung.com> <1263978999.4283.823.camel@laptop> <op.u6tslipz7p4s8u@pikus> <20100120133145.GE4089@wear.picochip.com> <1263994779.4283.1057.camel@laptop> <20100120135553.GA22897@n2100.arm.linux.org.uk> <1263996080.4283.1064.camel@laptop> <20100120144140.GB22897@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B570EDD.6000808@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20100120144140.GB22897@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (thurne.picochip.com [172.17.0.105]); Wed, 20 Jan 2010 15:01:45 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 04:10:37PM +0200, Avi Kivity wrote:
-> On 01/19/2010 04:52 PM, Michael S. Tsirkin wrote:
->> On Sun, Jan 17, 2010 at 02:42:50PM +0200, Avi Kivity wrote:
->>    
->>> On 01/13/2010 07:12 PM, Michael S. Tsirkin wrote:
->>>      
->>>> Deassigning irqfd and assigning back caused spurious interrupt. fix this
->>>> by clearing the counter on deassign.  This is on top of davidel's patch
->>>> which makes clearing eventfd counter from modules possible.
->>>>
->>>>        
->>> Applied both, thanks.
->>>      
->> Hmm, I see this in kvm master.  Avi/Marcelo, since this is a bugfix, can
->> you queue this patchset for 2.6.33 and 2.6.32 stable as well please?
->>    
->
-> I'm uncomfortable with pushing Davide's patch into stable and possibly  
-> causing regressions with unrelated applications.  Can't a guest live  
-> with a spurious interrupt?
+On Wed, Jan 20, 2010 at 02:41:40PM +0000, Russell King - ARM Linux wrote:
+> Given that history has shown that identification schemes on ARM change
+> in extremely annoying ways, I don't think decoding these registers to
+> some kind of textual representation for /proc/cpuinfo is the right
+> approach.  It might instead make more sense to just export the entire
+> set of CPU ID registers to userspace, and let userspace grapple with
+> the complexities of decoding the information it wants from them.
+Yes, this would probably be the best generic solution, but in the specific
+case of ARM perfevents, the kernel code already has to decode some of the CPU
+ID registers to work out what set of events to use. Why make userspace do all
+of this decoding again? The x86 code sets up the x86_pmu depending on CPU type
+so this is doing a similar thing (although it is easier for x86).
 
-Well guests mask/unmask vector on each interrupt, so this will trigger
-an irq storm I think.
+Having perf do all of this decoding for all of the supported CPU types when
+the kernel has already done it once and maintaining 2 sets of event lists
+seems a bit fiddly compared to simply exporting the supported events from the
+kernel...
 
->  It's not like they're unknown.
-
-Depends on the device really.
-In theory, if they trigger at an unfortunate time this could cause
-crashes.
-
-
-
--- 
-MST
+Jamie
