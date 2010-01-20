@@ -1,78 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751059Ab0ATIa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751431Ab0ATIbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751059Ab0ATIa2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 03:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750747Ab0ATIa1
+	id S1751431Ab0ATIbf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 03:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783Ab0ATIbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 03:30:27 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37949 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667Ab0ATIa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 03:30:27 -0500
-Message-ID: <4B56C047.6070808@kernel.org>
-Date: Wed, 20 Jan 2010 17:35:19 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Wed, 20 Jan 2010 03:31:34 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:57459 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739Ab0ATIbe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 03:31:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=vY1nOmQafLSulmqEJqBG4kOZq3Ejr6zj3eD3bxnJq7N7IihMJkHOeEv6PDOENtN03X
+         Unlv1+wGgN/SC8zP+y9lakcbNXqBY1hBN1wfXPvCxqE7ITlXVnfpq1xsa9GSESlJmAJm
+         0wnRlBMnK0jxBVkH6/760VMpFTf46NxGEEtpg=
+Date: Wed, 20 Jan 2010 16:26:10 +0800
+From: anfei <anfei.zhou@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: linux@arm.linux.org.uk, jamie@shareable.org
+Subject: cache alias in mmap + write
+Message-ID: <20100120082610.GA5155@desktop>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH 04/40] sched: implement __set_cpus_allowed()
-References: <1263776272-382-1-git-send-email-tj@kernel.org>	 <1263776272-382-5-git-send-email-tj@kernel.org>	 <1263808570.4283.149.camel@laptop>  <4B54445E.302@kernel.org>	 <1263814869.4283.296.camel@laptop>  <4B5505E2.4080203@kernel.org> <1263890222.4283.634.camel@laptop>
-In-Reply-To: <1263890222.4283.634.camel@laptop>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 20 Jan 2010 08:29:12 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hello,
 
-On 01/19/2010 05:37 PM, Peter Zijlstra wrote:
-> On Tue, 2010-01-19 at 10:07 +0900, Tejun Heo wrote:
->>
->> It's also necessary to guarantee forward progress during CPU_DOWN.
->> The problem with kthread_bind() is that it's not synchronized against
->> CPU hotplug operations.  It needs outer synchronization like calling
->> it directly from CPU_DOWN_PREP.  I guess it's doable but I think it
->> would be better to simply share the backend implementation between
->> set_cpus_allowed_ptr() and kthread_bind().
-> 
-> OK, so you're saying you need to migrate the rescue thread during
-> cpu-down. That thread is guaranteed sleeping right,
+The below test case is easy to reproduce the cache alias problem on
+omap2430 with the VIPT cache.  The steps as these:
 
-No, it's not.  It might have been tasked to process works from other
-CPUs.
+$ dd if=/dev/zero of=abc bs=4k count=1
+$ ./a.out               # this program
+$ xxd abc | head -1     # check the result
 
-> if it were not it'd not be elegible to run on our dying cpu.  Hence
-> kthread_bind() ought to just work, no?
+I expect it's always 0x11111111 0x77777777 at the beginning of file
+"abc",  but the result is not (run multiple times):
 
-Why wouldn't it be elegible?
+0x11111111 0x77777777
+0x44444444 0x77777777
+0x11111111 0x77777777
+0x44444444 0x77777777
+0x44444444 0x77777777
 
-Commit e2912009fb7b715728311b0d8fe327a1432b3f79 killed the ability to
-bind a kthread to a dead CPU which means that the only differences
-between kthread_bind() and set_cpus_allowed_ptr() are...
+If I add munmap()/msync() before write(), I can see it's always as
+expected (0x11111111 0x77777777).
 
-* Whether to use cpu_online_mask or cpu_active_mask.
+Does Linux guarantee the coherence between write and the shared mappings
+w/o the help of munmap/msync?  If not, what kind of the coherence are
+ensured?  Can anyone give a clear definition?
 
-* Whether to set or check PF_THREAD_BOUND.
+And if I apply the below patch to write (only for the fs using this
+generic function), the problem disappeared.  That's another question,
+why do we only do flush for read (see flush_dcache_page in
+do_generic_file_read), but not write too?
 
-Wouldn't it make more sense to share the backend implementation
-between kthread_bind() and set_cpus_allowed_ptr() instead of making
-kthread_bind() a special case?  The goals of the two functions are
-basically identical.  Why have two separate implementations?
-kthread_bind() implementation as it currently stands is pretty fragile
-too.  Making kthread_bind() backed by set_cpus_allowed_ptr() will make
-it more robust and less error-prone and all that's necessary to
-achieve that is modifying sanity checks.
+Thanks,
+Anfei.
 
-Thanks.
+---
+#include <stdio.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
--- 
-tejun
+int main(void)
+{
+        int fd;
+        int *addr;
+        int tmp;
+        int val = 0x11111111;
+
+        fd = open("abc", O_RDWR);
+        addr = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+        *(addr+0) = 0x44444444;
+        tmp = *(addr+0);
+        *(addr+1) = 0x77777777;
+        write(fd, &val, sizeof(int));
+        close(fd);
+
+        return 0;
+}
+
+
+
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 96ac6b0..07056fb 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2196,6 +2196,9 @@ again:
+ 		if (unlikely(status))
+ 			break;
+ 
++		if (mapping_writably_mapped(mapping))
++			flush_dcache_page(page);
++
+ 		pagefault_disable();
+ 		copied = iov_iter_copy_from_user_atomic(page, i, offset, bytes);
+ 		pagefault_enable();
