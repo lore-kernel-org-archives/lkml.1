@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567Ab0ATCCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755Ab0ATCDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567Ab0ATCCK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 21:02:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842Ab0ATCCJ
+	id S1755755Ab0ATCDQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 21:03:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993Ab0ATCDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 21:02:09 -0500
-Received: from trinity.fluff.org ([89.16.178.74]:58646 "EHLO trinity.fluff.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754033Ab0ATCCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 21:02:08 -0500
-Date: Wed, 20 Jan 2010 02:02:02 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: linux-arm-kernel@lists.infradead.org,
-       Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: git pre-commit hook running checkpatch.pl
-Message-ID: <20100120020202.GE26562@trinity.fluff.org>
+	Tue, 19 Jan 2010 21:03:12 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:15870 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754614Ab0ATCDF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 21:03:05 -0500
+Message-ID: <4B56641E.1030803@caviumnetworks.com>
+Date: Tue, 19 Jan 2010 18:02:06 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="DocE+STaALJfprDB"
-Content-Disposition: inline
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+To: Roel Kluin <roel.kluin@gmail.com>
+CC: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] MIPS: cleanup switches with cases that can be merged
+References: <4B56475F.8070608@gmail.com>
+In-Reply-To: <4B56475F.8070608@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Jan 2010 02:02:07.0189 (UTC) FILETIME=[919F9050:01CA9974]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roel Kluin wrote:
+> I did a search for switch statements with cases that can be merged, but maybe
+> some were not intended?
+> ---------------->8------------------------------------------8<-----------------
+> In these cases the same code was executed.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  arch/mips/include/asm/octeon/octeon-feature.h |    8 ++------
+>  arch/mips/kernel/cpu-probe.c                  |    3 ---
+>  arch/mips/math-emu/ieee754dp.c                |    1 -
+>  arch/mips/math-emu/ieee754sp.c                |    1 -
+>  arch/mips/pci/pci-octeon.c                    |    6 ++----
+>  arch/mips/powertv/asic/asic_devices.c         |    4 ----
+>  arch/mips/sgi-ip32/ip32-irq.c                 |    9 +--------
+>  7 files changed, 5 insertions(+), 27 deletions(-)
 
---DocE+STaALJfprDB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch should be split up.
 
-I've written a git pre-commit[1] hook which stops any commits happening if
-checkpatch.pl reports problems with the patch. Any comments?
+Octeon, PowerTV, and IP32 are all different architectures.  They should 
+be in their own patches.
 
-[1] http://www.fluff.org/ben/linux/githooks/pre-commit
+The two math-emu parts could probably go together.
 
---=20
-Ben
+cpu-probe seems like its own thing.
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+This brings us to the larger question:  This is just code churn.  Is it 
+even worthwhile?
 
 
---DocE+STaALJfprDB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+David Daney
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iD8DBQFLVmQaJZCApG2L7OYRAoX+AJ9nPRUmdDpLmJ+Uj1Nst/f1bQswrQCcC7gq
-RFWd5CyZXe4O7WzLvYSwpZ8=
-=JC9a
------END PGP SIGNATURE-----
 
---DocE+STaALJfprDB--
