@@ -1,92 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773Ab0ATTVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988Ab0ATTWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753773Ab0ATTVM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 14:21:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547Ab0ATTVL
+	id S1753988Ab0ATTWe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 14:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762Ab0ATTWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 14:21:11 -0500
-Received: from mail.gmx.net ([213.165.64.20]:43318 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751695Ab0ATTVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 14:21:10 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19Ha6h4K6lH18T6ID9QFU1VMm/hWUL6+n+jQ9VlTj
-	fRmqAXREAs3M/b
-Date: Wed, 20 Jan 2010 20:21:00 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Roel Kluin <roel.kluin@gmail.com>
-cc: Dan Williams <dan.j.williams@intel.com>,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] dma: cases IPU_PIX_FMT_BGRA32, BGR32 and ABGR32 are the
- same in ipu_ch_param_set_size()
-In-Reply-To: <4B564D94.3080804@gmail.com>
-Message-ID: <Pine.LNX.4.64.1001202020320.4151@axis700.grange>
-References: <4B564D94.3080804@gmail.com>
+	Wed, 20 Jan 2010 14:22:33 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:52648 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752357Ab0ATTWc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 14:22:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=jn/3ZFtwDTZsDV644BvoTueP/ig9ealdt9x57aW3dAnoCxLbB1F2RHoMmrw1Dpvr7Q
+         yaonHf8pllKV36MCRHVX6ILkn4cKc+87zspAOPOayuRwYcQ7vAsKObodbItImAJQxGZc
+         AundMCKYR8tXKK21oVAAJVM9h574AXU2gRfjE=
+Date: Wed, 20 Jan 2010 20:22:27 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 5/6] tracing: reduce latency and remove percpu trace_seq
+Message-ID: <20100120192225.GC6194@nowhere>
+References: <4B55607E.8070403@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B55607E.8070403@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010, Roel Kluin wrote:
-
-> In these cases the same statements are executed.
+On Tue, Jan 19, 2010 at 03:34:22PM +0800, Lai Jiangshan wrote:
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-
-Acked-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-
-Thanks
-Guennadi
-
+> __print_flags() and __print_symbolic() use percpu trace_seq:
+> 
+> 1) Its memory is preallocated, it wastes memory when we don't use tracing.
+> 2) It wastes memory for multi-cpus system.
+> 3) It disables preemption when it executes its core routine
+>    "trace_seq_printf(s, "%s: ", #call);" and introduce latency
+>    for more important process.
+> 
+> So we move this trace_seq to struct trace_iterator.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 > ---
-> But was this intended? if not, what should differ? bpp?
-> 
-> diff --git a/drivers/dma/ipu/ipu_idmac.c b/drivers/dma/ipu/ipu_idmac.c
-> index 9a5bc1a..1c518f1 100644
-> --- a/drivers/dma/ipu/ipu_idmac.c
-> +++ b/drivers/dma/ipu/ipu_idmac.c
-> @@ -348,6 +348,7 @@ static void ipu_ch_param_set_size(union chan_param_mem *params,
->  		break;
->  	case IPU_PIX_FMT_BGRA32:
->  	case IPU_PIX_FMT_BGR32:
-> +	case IPU_PIX_FMT_ABGR32:
->  		params->ip.bpp	= 0;
->  		params->ip.pfs	= 4;
->  		params->ip.npb	= 7;
-> @@ -376,20 +377,6 @@ static void ipu_ch_param_set_size(union chan_param_mem *params,
->  		params->ip.wid2	= 7;		/* Blue bit width - 1 */
->  		params->ip.wid3	= 7;		/* Alpha bit width - 1 */
->  		break;
-> -	case IPU_PIX_FMT_ABGR32:
-> -		params->ip.bpp	= 0;
-> -		params->ip.pfs	= 4;
-> -		params->ip.npb	= 7;
-> -		params->ip.sat	= 2;		/* SAT = 32-bit access */
-> -		params->ip.ofs0	= 8;		/* Red bit offset */
-> -		params->ip.ofs1	= 16;		/* Green bit offset */
-> -		params->ip.ofs2	= 24;		/* Blue bit offset */
-> -		params->ip.ofs3	= 0;		/* Alpha bit offset */
-> -		params->ip.wid0	= 7;		/* Red bit width - 1 */
-> -		params->ip.wid1	= 7;		/* Green bit width - 1 */
-> -		params->ip.wid2	= 7;		/* Blue bit width - 1 */
-> -		params->ip.wid3	= 7;		/* Alpha bit width - 1 */
-> -		break;
->  	case IPU_PIX_FMT_UYVY:
->  		params->ip.bpp	= 2;
->  		params->ip.pfs	= 6;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index be9ece5..348500d 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -12,9 +12,6 @@ struct dentry;
+>  
+>  #define FTRACE_SEQ_BUFSIZE PAGE_SIZE
+>  
+> -DECLARE_PER_CPU(struct trace_seq, ftrace_event_seq);
+> -DECLARE_PER_CPU(unsigned char[FTRACE_SEQ_BUFSIZE], ftrace_event_buffer);
+> -
+>  struct trace_print_flags {
+>  	unsigned long		mask;
+>  	const char		*name;
+> @@ -60,6 +57,10 @@ struct trace_iterator {
+>  	struct trace_seq	seq;
+>  	unsigned char		buffer[FTRACE_SEQ_BUFSIZE];
+>  
+> +	/* trace_seq for __print_flags() and __print_symbolic() */
+> +	struct trace_seq	tmp_seq;
+> +	unsigned char 		tmp_buffer[FTRACE_SEQ_BUFSIZE];
 
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+
+
+
+Well, I don't like much that because it's a temporary buffer
+in trace iter only used by few events.
+But the problem is indeed tricky.
+
+May be should we use a kmalloc in raw_output?
+
+We could pass a trace_seq without buffer in ftrace_print_flags_seq
+which can alloc the buffer and then free it after?
+
