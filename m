@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739Ab0ATHuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106Ab0ATH7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739Ab0ATHuK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 02:50:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947Ab0ATHuI
+	id S1756106Ab0ATH7p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 02:59:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508Ab0ATH7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 02:50:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40929 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723Ab0ATHuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 02:50:04 -0500
-Date: Wed, 20 Jan 2010 08:49:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Anton Blanchard <anton@samba.org>
-Cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 2/2] perf tools: Cope with sparsely-numbered CPUs
-Message-ID: <20100120074946.GA20621@elte.hu>
-References: <20091215093437.GB18661@brick.ozlabs.ibm.com>
- <20091215120851.GA21780@elte.hu>
- <20100120022802.GW12666@kryten>
+	Wed, 20 Jan 2010 02:59:43 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:63118 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752271Ab0ATH7m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 02:59:42 -0500
+To: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+Cc: linux-scsi@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>,
+       Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 2/2] scsi: add scsi trace core function and put trace points
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <4B56A621.2070301@jp.fujitsu.com>
+Date: Wed, 20 Jan 2010 02:58:34 -0500
+In-Reply-To: <4B56A621.2070301@jp.fujitsu.com> (Kei Tokunaga's message of
+	"Wed, 20 Jan 2010 15:43:45 +0900")
+Message-ID: <yq1ockpky1h.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100120022802.GW12666@kryten>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4B56B7CE.0157:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>>>> "Kei" == Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com> writes:
 
-* Anton Blanchard <anton@samba.org> wrote:
++	TP_printk("host_no=%u channel=%u id=%u lun=%u cmnd=(%s %s raw=%s) "
+                              ^^^^^^^^^^
 
-> 
-> Hi Ingo,
-> 
-> > > For system-wide monitoring, the perf tools currently ask how many CPUs are 
-> > > online, and then instantiate perf_events for CPUs 0 ... N-1.  This doesn't 
-> > > work correctly when CPUs are numbered sparsely.  For example, a four-core 
-> > > POWER6 in single-thread mode will have CPUs 0, 2, 4 and 6. The perf tools 
-> > > will try to open counters on CPUs 0, 1, 2 and 3, and either fail with an 
-> > > error message or silently ignore CPUs 4 and 6.
-> > > 
-> > > This fixes the problem by making perf stat, perf record and perf top
-> > > create counters for increasing CPU numbers until they have a counter
-> > > for each online CPU.  If the attempt to create a counter on a given
-> > > CPU fails, we get an ENODEV error and we just move on to the next CPU.
-> > > To avoid an infinite loop in case the number of online CPUs gets
-> > > reduced while we are creating counters, we re-read the number of
-> > > online CPUs when we fail to create a counter on some CPU.
-> > > 
-> > > Reported-by: Michael Neuling <mikey@neuling.org>
-> > > Tested-by: Michael Neuling <mikey@neuling.org>
-> > > Cc: stable@kernel.org
-> > > Signed-off-by: Paul Mackerras <paulus@samba.org>
-> > > ---
-> > >  tools/perf/builtin-record.c |   36 ++++++++++++++++++++++++++++--------
-> > >  tools/perf/builtin-stat.c   |   15 +++++++++++++--
-> > >  tools/perf/builtin-top.c    |   27 +++++++++++++++++++--------
-> > >  3 files changed, 60 insertions(+), 18 deletions(-)
-> > 
-> > nice fix!
-> > 
-> > The linecount bloat is a bit worrying though. I'm wondering, since we have 3 
-> > loops now (and possibly more upcoming), wouldnt it be a cleaner fix to have 
-> > some generic idiom of 'loop through all online cpus' somewhere in lib/*.c?
-> > 
-> > This would work better in the long run than spreading all the sysconf calls 
-> > and special cases across all those callsites. (new tools will inevitably get 
-> > it wrong as well)
-> > 
-> > As a practical matter we can commit your fix and do the cleanup/consolidation 
-> > as a separate patch, to not hold up your fix (and to help fix/bisect any 
-> > problems that would happen due to the consolidation) - as long as a 
-> > consolidation patch is forthcoming as well.
-> 
-> It looks like this hasn't made it to mainline. Any chance we could get it in 
-> and look at a cleanup post 2.6.33?
+I'm not sure anybody cares about channels in this millennium so that may
+be a waste of space.
 
-Sure, if they come together we can apply one to an urgent branch and the other 
-to a .34 branch.
 
-	Ingo
++scsi_trace_rw10(struct trace_seq *p, unsigned char *cdb, int len)
++scsi_trace_rw12(struct trace_seq *p, unsigned char *cdb, int len)
++scsi_trace_rw16(struct trace_seq *p, unsigned char *cdb, int len)
++scsi_trace_rw32(struct trace_seq *p, unsigned char *cdb, int len)
+
+Would be handy to get FUA and {RD,WR}PROTECT decoded in these commands.
+And prot_op would be nice too.
+
+Other decode-worthy commands might be WRITE SAME(16) and UNMAP.
+
+
++scsi_trace_parse_cdb(struct trace_seq *p, unsigned char *cdb, int len)
++{
+        [...]
++	case READ_32:
++	case WRITE_32:
++		return scsi_trace_rw32(p, cdb, len);
+
+This won't work.  READ/WRITE(32) are variable length commands.  They
+share the same operation code and are distinguished by the service
+action field.  Several of the most recent additions to the SCSI
+protocols are implemented like this.
+
+Other commands requiring two-level parsing are READ CAPACITY(16) and GET
+LBA STATUS.
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
