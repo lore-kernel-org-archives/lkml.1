@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132Ab0ATTfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127Ab0ATTiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132Ab0ATTfW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 14:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118Ab0ATTfU
+	id S1754127Ab0ATTiS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 14:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461Ab0ATTiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 14:35:20 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:53110 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754092Ab0ATTfS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 14:35:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=BlgRAWtdEOg52hH5HLIFkXvpdKhO/1ck50wC/QLfAj/darCAfqBnZreyJowIigod0Y
-         nv7EfYM+yp3ZBPgESEZyeedyF+e06vaEwpyJdPLqzgBgy+Ui4zhAGuD7WKGBkYuyd7XC
-         jbVThdfzqDOe0rBAsFQBIzrCoyaeLaPcRj0G0=
-Message-ID: <4B575AF1.5020607@pobox.com>
-Date: Wed, 20 Jan 2010 14:35:13 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Bart Hartgers <bart.hartgers@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [patch 1/2] sata_via: Correctly setup PIO/DMA for pata slave
- on vt6421.
-References: <20100116235653.898098245@gmail.com> <20100116235849.969478053@gmail.com>
-In-Reply-To: <20100116235849.969478053@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 20 Jan 2010 14:38:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:59052 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753666Ab0ATTiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 14:38:12 -0500
+Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
+From: Bastien Nocera <hadess@hadess.net>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
+In-Reply-To: <4B575621.9050204@gmail.com>
+References: <1264011793.1735.3683.camel@localhost.localdomain>
+	 <4B575621.9050204@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Wed, 20 Jan 2010 19:37:48 +0000
+Message-ID: <1264016268.1735.3915.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/16/2010 06:56 PM, Bart Hartgers wrote:
-> Before only the timings for master were set. Datasheet can be found
-> here: ftp://ftp.vtbridge.org/Docs/Storage/DS_VT6421A_100_CCPL.PDF
-> Surprisingly, a slave drive works without this patch. According to the
-> datasheet, the controller by default derives the DMA mode from the
-> Set Features command issued to a drive. Not sure about the PIO
-> timings, though. The real problem is that the timings for the master
-> effectively are the ones tuned for the slave. If these support
-> different UDMA-settings, there is trouble, especially when the slave
-> supports a higher UDMA than the master.
->
-> Anyhow, using the same mechanism for both master and slave seems like
-> a good idea.
->
-> Signed-off-by: Bart Hartgers<bart.hartgers@gmail.com>
+On Wed, 2010-01-20 at 11:14 -0800, Justin P. Mattock wrote:
+> On 01/20/10 10:23, Bastien Nocera wrote:
+> > As those computers never had any i8042 controllers, and the
+> > current lookup code could potentially lock up/hang/wait for
+> > timeout for long periods of time.
+> >
+> > Fixes intermittent hangs on boot on a MacbookAir1,1
+<snip>
+> glad you submitted this. i.g. been looking at some dmi
+> blacklist thing over here(been racking my brain around
+> a bit, and seeing your idea simplified it a bit more for me).
 
-applied
+Yeah, dmi_check_system() returns the number of matches. I had to look up
+the code to see what it did :)
 
+> as for what you have here, do you think individually
+> defining each machine is safer, or does it not matter?
+
+For this particular case, it's not necessary, as none of the Apple
+machines ever had any i8042 hardware. Or at least that's what Peter
+Jones told me, and I have no reasons to doubt him.
+
+Cheers
 
