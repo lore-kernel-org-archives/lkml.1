@@ -1,75 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752972Ab0ATLTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082Ab0ATLUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752972Ab0ATLTx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 06:19:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588Ab0ATLTu
+	id S1753082Ab0ATLUh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 06:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103Ab0ATLUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 06:19:50 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:54057 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752420Ab0ATLTt (ORCPT
+	Wed, 20 Jan 2010 06:20:35 -0500
+Received: from mail-pz0-f190.google.com ([209.85.222.190]:64657 "EHLO
+	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181Ab0ATLUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 06:19:49 -0500
-Message-ID: <4B56E66C.50004@monstr.eu>
-Date: Wed, 20 Jan 2010 12:18:04 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Wed, 20 Jan 2010 06:20:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=L8fCxTMx7FQoU0VBoYgDRuAmVhMCzQHcrt80gFrqJxxbayp4ZHWtUjPzznTM4uCfNp
+         v3VU+YmeZqDShae4BwEPfOrnKAa/rRMsatGf7YNlVRI97+cRS1jqTbTMrNJ0Q8cwbPjB
+         kb8OJMXMkOnrOU7U0B3qiSZsr0vKEDaemfOWM=
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: linux-kernel@vger.kernel.org, michal.simek@petalogix.com, arnd@arndb.de,
-       linux-arch@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: Generic DMA - BUG_ON
-References: <1263982111-24123-1-git-send-email-monstr@monstr.eu> <20100120105350.GA23394@flint.arm.linux.org.uk> <20100120110031.GD8665@amd.com>
-In-Reply-To: <20100120110031.GD8665@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Wed, 20 Jan 2010 19:20:34 +0800
+Message-ID: <de04351e1001200320y2e763680gc7e3b20319c6386e@mail.gmail.com>
+Subject: nfs-error-RPC: multiple fragments per record not supported
+From: jin zhencheng <zhenchengjin@gmail.com>
+To: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       zhenchengjin@163.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> On Wed, Jan 20, 2010 at 10:53:50AM +0000, Russell King wrote:
->> and ops is NULL, then this code will oops; you will get a full register
->> dump and backtrace.  You can use this information along with markup_oops.pl
->> to find out where the problem is.
-> 
-> You can't rely on the oops if the code runs in process context. The
-> process may have address 0 mapped which would result in a security hole.
-> We had two of these bugs last year.
+I use kernel 2.6.26.2
 
-That's the same problem which I had some days ago and Microblaze misses 
-valuable backtrace (because we don't have FP or constant frame size).
+I use  29 clients,
 
-> 
-> But I don't see any point in checking for dma_ops != NULL too. Any
-> developer would mention such a bug long before init is started.
+every client mount parameters as this: mount -t nfs -o
+rw,noatime,v3,rsize=32768,wsize=32768,hard,intr,tcp,nolock
 
-I agree that checking adds extra cycles to every dma-api call.
+my system have many errors lke these :
 
-I like as wrote Russel to check if ops exists or not.
-
-Let's look at code which is there.
-dma_map_single_attrs - calls ops->map_page without any checking
-The same for dma_map_sg_attrs, dma_map_page
-
-The rest of functions is ok. If any checking will be there, I don't have 
-any problem with it.
-
-Michal
+RPC: multiple fragments per record not supported
+RPC: multiple fragments per record not supported
+RPC: fragment too large: 0x318c87ee
+RPC: multiple fragments per record not supported
+RPC: fragment too large: 0x78bdeedb
+RPC: multiple fragments per record not supported
+RPC: fragment too large: 0x75cf8a33
+RPC: fragment too large: 0x44764ada
+RPC: multiple fragments per record not supported
+RPC: fragment too large: 0x0a08e7c0
+RPC: multiple fragments per record not supported
+RPC: multiple fragments per record not supported
+RPC: fragment too large: 0x5b4e13a1
+RPC: fragment too large: 0x08351a9f
 
 
 
 
-> 
-> 	Joerg
-> 
-> 
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+cat /var/lib/nfs/rmtab
+52.2.1.1:/share/vd01/share01:0x00000088
+52.2.1.3:/share/vd01/share01:0x00000085
+52.2.1.4:/share/vd01/share01:0x0000005c
+52.2.1.6:/share/vd01/share01:0x00000052
+52.2.1.7:/share/vd01/share01:0x0000005a
+52.2.1.9:/share/vd01/share01:0x0000004e
+52.2.1.10:/share/vd01/share01:0x0000008b
+52.2.1.11:/share/vd01/share01:0x00000071
+52.2.1.12:/share/vd01/share01:0x0000007b
+52.2.1.13:/share/vd01/share01:0x0000005d
+52.2.1.14:/share/vd01/share01:0x0000007c
+52.2.1.15:/share/vd01/share01:0x0000004e
+52.2.1.17:/share/vd02/share02:0x00000068
+52.2.1.18:/share/vd02/share02:0x00000052
+52.2.1.19:/share/vd02/share02:0x00000088
+52.2.1.41:/share/vd02/share02:0x00000066
+52.2.1.42:/share/vd02/share02:0x0000005f
+52.2.1.43:/share/vd02/share02:0x00000075
+52.2.1.44:/share/vd02/share02:0x0000008c
+52.2.1.45:/share/vd02/share02:0x0000009b
+52.2.1.46:/share/vd02/share02:0x00000038
+52.2.1.47:/share/vd02/share02:0x000000a0
+52.2.1.81:/share/vd02/share02:0x00000014
+52.2.1.21:/share/vd02/share02:0x00000062
+52.2.1.22:/share/vd02/share02:0x00000077
+52.2.1.23:/share/vd02/share02:0x0000007b
+52.2.1.2:/share/vd01/share01:0x0000005f
+52.2.1.20:/share/vd02/share02:0x0000009f
+52.2.0.201:/share/vd02/share02:0x00000002
