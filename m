@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811Ab0ATM7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813Ab0ATNAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752811Ab0ATM7Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 07:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819Ab0ATM7U
+	id S1752813Ab0ATNAV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 08:00:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237Ab0ATNAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 07:59:20 -0500
-Received: from proxima.lp0.eu ([81.2.80.65]:36136 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750976Ab0ATM7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 07:59:19 -0500
-Message-ID: <710ab0ca79305c82013982d43250b0a1fd45824d@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
-In-Reply-To: <4B55D372.4020807@gmail.com>
-References: <4B54CDE5.3070100@simon.arlott.org.uk> <4B5578A5.50705@gmail.com>
-    <dad314e12c5750b1b5d70c3ea3c6f6134b8fa0f3@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
-    <4B55D372.4020807@gmail.com>
-Date: Wed, 20 Jan 2010 12:59:16 -0000
-Subject: Re: [PATCH] xt_TCPMSS: SYN packets are allowed to contain data
-From: "Simon Arlott" <simon@fire.lp0.eu>
-To: "William Allen Simpson" <william.allen.simpson@gmail.com>,
-       "Patrick McHardy" <kaber@trash.net>
-Cc: "netdev" <netdev@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.19
+	Wed, 20 Jan 2010 08:00:19 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:52836 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751819Ab0ATNAR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 08:00:17 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+In-Reply-To: <4B5652A2.8060500@gmail.com>
+References: <4B5652A2.8060500@gmail.com>
+Date: Wed, 20 Jan 2010 08:00:16 -0500
+Message-ID: <83bcf6341001200500h24cb3238rfee89297dae7f8f1@mail.gmail.com>
+Subject: Re: [PATCH] cx23885: Wrong command printed in cmd_to_str()
+From: Steven Toth <stoth@kernellabs.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, January 19, 2010 15:44, William Allen Simpson wrote:
-> Simon Arlott wrote:
->> On Tue, January 19, 2010 09:17, William Allen Simpson wrote:
->> I could change the comment too, but the same logic applies when
->> there is data and no MSS option - the packet can't be increased
->> in size if it would then exceed 576 bytes and/or the destination
->> MTU.
->>
-> Please change the comment.
+Thanks Roel.
 
-I've made a new version of the patch which I'll be able to test
-tonight.
+Acked-By: Steven Toth <stoth@kernellabs.com>
 
-> If there is no MSS option, it should *not* be added, under *ANY*
-> circumstances.  That violates the end-to-end arguments (some call
-> them principles).
-
-Agreed. The added MSS is likely to be larger than 536 too... I've
-removed this code.
-
-> MSS isn't about the _destination_ MTU, it's about the *source*.
-> If you cannot guarantee you know the source MTU, there's no basis
-> for deciding the MSS.
-
-I was referring to the SYN packet itself. It wouldn't always be
-possible to add an option without exceeding the MTU of that packet's
-destination if it had data.
-
-
-On 19/01/10 12:53, Patrick McHardy wrote:
-> Simon Arlott wrote:
->> If this is 20 (IPv4 Header) + 20 (TCP Header) = 40 bytes, then
->> there is no data and the header offset is wrong so it hasn't been
->> checked.
->
-> That's odd. If the packet is really only 40 bytes large, then there
-> are no TCP options, so your patch shouldn't have any effect.
-
-Except to remove the printk which fills up my serial console (because
-the header offset is wrong).
+- Steve
 
 -- 
-Simon Arlott
+Steven Toth - Kernel Labs
+http://www.kernellabs.com
+
+On Tue, Jan 19, 2010 at 7:47 PM, Roel Kluin <roel.kluin@gmail.com> wrote:
+> The wrong command was printed for case CX2341X_ENC_SET_DNR_FILTER_MODE,
+> and a typo in case CX2341X_ENC_SET_PCR_ID.
+>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Or is this intended?
+>
+> diff --git a/drivers/media/video/cx23885/cx23885-417.c b/drivers/media/video/cx23885/cx23885-417.c
+> index 88c0d24..2ab97ad 100644
+> --- a/drivers/media/video/cx23885/cx23885-417.c
+> +++ b/drivers/media/video/cx23885/cx23885-417.c
+> @@ -681,7 +681,7 @@ static char *cmd_to_str(int cmd)
+>        case CX2341X_ENC_SET_VIDEO_ID:
+>                return  "SET_VIDEO_ID";
+>        case CX2341X_ENC_SET_PCR_ID:
+> -               return  "SET_PCR_PID";
+> +               return  "SET_PCR_ID";
+>        case CX2341X_ENC_SET_FRAME_RATE:
+>                return  "SET_FRAME_RATE";
+>        case CX2341X_ENC_SET_FRAME_SIZE:
+> @@ -693,7 +693,7 @@ static char *cmd_to_str(int cmd)
+>        case CX2341X_ENC_SET_ASPECT_RATIO:
+>                return  "SET_ASPECT_RATIO";
+>        case CX2341X_ENC_SET_DNR_FILTER_MODE:
+> -               return  "SET_DNR_FILTER_PROPS";
+> +               return  "SET_DNR_FILTER_MODE";
+>        case CX2341X_ENC_SET_DNR_FILTER_PROPS:
+>                return  "SET_DNR_FILTER_PROPS";
+>        case CX2341X_ENC_SET_CORING_LEVELS:
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+
+
+
+-- 
+Steven Toth - Kernel Labs
+http://www.kernellabs.com
