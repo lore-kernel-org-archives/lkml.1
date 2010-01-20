@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566Ab0ATEjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775Ab0ATEjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566Ab0ATEjl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 23:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023Ab0ATEjk
+	id S1754775Ab0ATEjy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 23:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697Ab0ATEjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 23:39:40 -0500
-Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:50428 "HELO
-	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753975Ab0ATEjk (ORCPT
+	Tue, 19 Jan 2010 23:39:53 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:40712 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754683Ab0ATEjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 23:39:40 -0500
+	Tue, 19 Jan 2010 23:39:52 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=lxLBtBSPlqJJFhxAYrK5m2+cgA+QZ57AeT7ODTIwjLvYYcuqH7jSTx8VV+DLwQjV6/wd4949i+m0cuh6xTwytfTh+pw1WF4DeV7sLsaawDPlXewTtEXh+JLCiRTiDyrf;
-Date: Wed, 20 Jan 2010 06:39:32 +0200
+	b=aylybvmpxWOJftfVBfp+r03RwxTWKJc/PyHAraA1xRrtZF1gSkBDiDO1PgxmWs5mu1/sebvyxbK+9+WqCLKia6p+7XRGnvxy4we0D5TlI60+SDq52wUgDQmk0odb5R1a;
+Date: Wed, 20 Jan 2010 06:39:45 +0200
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Shaohua Li <shaohua.li@intel.com>
-Subject: Re: linux-next: pci tree build failure
-Message-ID: <20100120063932.3a8ac69e@jbarnes-x200.intel.com>
-In-Reply-To: <20100118194050.7ea0c406.sfr@canb.auug.org.au>
-References: <20100118194050.7ea0c406.sfr@canb.auug.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: linux-next: Tree for January 18 (pci + pm)
+Message-ID: <20100120063945.03d75e46@jbarnes-x200.intel.com>
+In-Reply-To: <201001200004.07654.rjw@sisk.pl>
+References: <20100118195743.b45f119e.sfr@canb.auug.org.au>
+	<20100118154424.d54c0e3e.randy.dunlap@oracle.com>
+	<201001200004.07654.rjw@sisk.pl>
 X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i586-moblin-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,45 +34,174 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pushed this fix out to linux-next, thanks.
+On Wed, 20 Jan 2010 00:04:07 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Tuesday 19 January 2010, Randy Dunlap wrote:
+> > On Mon, 18 Jan 2010 19:57:43 +1100 Stephen Rothwell wrote:
+> > 
+> > > Hi all,
+> > > 
+> > > Changes since 20100114:
+> > 
+> > 
+> > drivers/pci/pci-driver.c: In function 'pci_pm_runtime_resume':
+> > drivers/pci/pci-driver.c:991: error: implicit declaration of
+> > function 'pci_pm_default_resume_early' drivers/pci/pci-driver.c: At
+> > top level: drivers/pci/pci-driver.c:1027: error: 'pci_pm_prepare'
+> > undeclared here (not in a function) drivers/pci/pci-driver.c:1028:
+> > error: 'pci_pm_complete' undeclared here (not in a function)
+> > drivers/pci/pci-driver.c:1029: error: 'pci_pm_suspend' undeclared
+> > here (not in a function) drivers/pci/pci-driver.c:1030: error:
+> > 'pci_pm_resume' undeclared here (not in a function)
+> > drivers/pci/pci-driver.c:1031: error: 'pci_pm_freeze' undeclared
+> > here (not in a function) drivers/pci/pci-driver.c:1032: error:
+> > 'pci_pm_thaw' undeclared here (not in a function)
+> > drivers/pci/pci-driver.c:1033: error: 'pci_pm_poweroff' undeclared
+> > here (not in a function) drivers/pci/pci-driver.c:1034: error:
+> > 'pci_pm_restore' undeclared here (not in a function)
+> > drivers/pci/pci-driver.c:1035: error: 'pci_pm_suspend_noirq'
+> > undeclared here (not in a function) drivers/pci/pci-driver.c:1036:
+> > error: 'pci_pm_resume_noirq' undeclared here (not in a function)
+> > drivers/pci/pci-driver.c:1037: error: 'pci_pm_freeze_noirq'
+> > undeclared here (not in a function) drivers/pci/pci-driver.c:1038:
+> > error: 'pci_pm_thaw_noirq' undeclared here (not in a function)
+> > drivers/pci/pci-driver.c:1039: error: 'pci_pm_poweroff_noirq'
+> > undeclared here (not in a function) drivers/pci/pci-driver.c:1040:
+> > error: 'pci_pm_restore_noirq' undeclared here (not in a function)
+> > 
+> > 
+> > partial config:
+> > 
+> > CONFIG_PM=y
+> > # CONFIG_PM_DEBUG is not set
+> > # CONFIG_SUSPEND is not set
+> > # CONFIG_HIBERNATION is not set
+> > CONFIG_PM_RUNTIME=y
+> > CONFIG_PM_OPS=y
+> > 
+> > 
+> > Full config is attached.
+> 
+> Ah, too many ifdefs.
+> 
+> Thanks, the patch below fixes that for me.
+> 
+> Rafael
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PCI / PM: Fix compilation for set CONFIG_PM_RUNTIME and
+> CONFIG_PM_SLEEP unset
+> 
+> Fix failure to compile drivers/pci/pci-driver.c for CONFIG_PM_RUNTIME
+> set and CONFIG_PM_SLEEP is unset, introduced by the PCI run-time
+> power management patches.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  drivers/pci/pci-driver.c |   61
+> +++++++++++++++++++++++++++-------------------- 1 file changed, 36
+> insertions(+), 25 deletions(-)
+> 
+> Index: linux-2.6/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pci-driver.c
+> +++ linux-2.6/drivers/pci/pci-driver.c
+> @@ -405,6 +405,35 @@ static void pci_device_shutdown(struct d
+>  	pci_msix_shutdown(pci_dev);
+>  }
+>  
+> +#ifdef CONFIG_PM_OPS
+> +
+> +/* Auxiliary functions used for system resume and run-time resume. */
+> +
+> +/**
+> + * pci_restore_standard_config - restore standard config registers
+> of PCI device
+> + * @pci_dev: PCI device to handle
+> + */
+> +static int pci_restore_standard_config(struct pci_dev *pci_dev)
+> +{
+> +	pci_update_current_state(pci_dev, PCI_UNKNOWN);
+> +
+> +	if (pci_dev->current_state != PCI_D0) {
+> +		int error = pci_set_power_state(pci_dev, PCI_D0);
+> +		if (error)
+> +			return error;
+> +	}
+> +
+> +	return pci_restore_state(pci_dev);
+> +}
+> +
+> +static void pci_pm_default_resume_early(struct pci_dev *pci_dev)
+> +{
+> +	pci_restore_standard_config(pci_dev);
+> +	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+> +}
+> +
+> +#endif
+> +
+>  #ifdef CONFIG_PM_SLEEP
+>  
+>  /*
+> @@ -521,29 +550,6 @@ static int pci_legacy_resume(struct devi
+>  
+>  /* Auxiliary functions used by the new power management framework */
+>  
+> -/**
+> - * pci_restore_standard_config - restore standard config registers
+> of PCI device
+> - * @pci_dev: PCI device to handle
+> - */
+> -static int pci_restore_standard_config(struct pci_dev *pci_dev)
+> -{
+> -	pci_update_current_state(pci_dev, PCI_UNKNOWN);
+> -
+> -	if (pci_dev->current_state != PCI_D0) {
+> -		int error = pci_set_power_state(pci_dev, PCI_D0);
+> -		if (error)
+> -			return error;
+> -	}
+> -
+> -	return pci_restore_state(pci_dev);
+> -}
+> -
+> -static void pci_pm_default_resume_early(struct pci_dev *pci_dev)
+> -{
+> -	pci_restore_standard_config(pci_dev);
+> -	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+> -}
+> -
+>  static void pci_pm_default_resume(struct pci_dev *pci_dev)
+>  {
+>  	pci_fixup_device(pci_fixup_resume, pci_dev);
+> @@ -607,6 +613,13 @@ static void pci_pm_complete(struct devic
+>  		drv->pm->complete(dev);
+>  }
+>  
+> +#else /* !CONFIG_PM_SLEEP */
+> +
+> +#define pci_pm_prepare	NULL
+> +#define pci_pm_complete	NULL
+> +
+> +#endif /* !CONFIG_PM_SLEEP */
+> +
+>  #ifdef CONFIG_SUSPEND
+>  
+>  static int pci_pm_suspend(struct device *dev)
+> @@ -943,8 +956,6 @@ static int pci_pm_restore(struct device 
+>  
+>  #endif /* !CONFIG_HIBERNATION */
+>  
+> -#endif /* !CONFIG_PM_SLEEP */
+> -
+>  #ifdef CONFIG_PM_RUNTIME
+>  
+>  static int pci_pm_runtime_suspend(struct device *dev)
+> 
+
+Pushed this one into linux-next, thanks.
 
 Jesse
-
-On Mon, 18 Jan 2010 19:40:50 +1100
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> Hi Jesse,
-> 
-> Today's linux-next build (ppc64 allyesconfig) failed like this:
-> 
-> In file included from drivers/pci/pcie/pme/pcie_pme.c:22:
-> include/linux/pci-acpi.h:42: error: expected '=', ',', ';', 'asm' or
-> '__attribute__' before 'acpi_find_root_bridge_handle'
-> 
-> This file was added in commit f3adb5a4f2e1dfdf9482af05481d0928a39477e8
-> ("PCI PM: PCIe PME root port service driver") from the pci tree and
-> seems to depend on ACPI.  Maybe its building should depend on
-> CONFIG_ACPI?
-> 
-> I added the following patch for today (I presume there is a better
-> fix):
-> 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Mon, 18 Jan 2010 19:36:11 +1100
-> Subject: [PATCH] pci: PCIE_PME seems to depend on ACPI
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  drivers/pci/pcie/Kconfig |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
-> index cf3c35f..b8b494b 100644
-> --- a/drivers/pci/pcie/Kconfig
-> +++ b/drivers/pci/pcie/Kconfig
-> @@ -49,4 +49,4 @@ config PCIEASPM_DEBUG
->  
->  config PCIE_PME
->  	def_bool y
-> -	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
-> +	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL && ACPI
