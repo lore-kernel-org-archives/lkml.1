@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021Ab0ATKCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217Ab0ATKD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753021Ab0ATKCK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 05:02:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986Ab0ATKCH
+	id S1753217Ab0ATKD1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 05:03:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902Ab0ATKD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 05:02:07 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:36840 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750943Ab0ATKCG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 05:02:06 -0500
-Date: Wed, 20 Jan 2010 10:01:55 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-arm-kernel@lists.infradead.org,
-       Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: git pre-commit hook running checkpatch.pl
-Message-ID: <20100120100155.GA851@sirena.org.uk>
-References: <20100120020202.GE26562@trinity.fluff.org>
+	Wed, 20 Jan 2010 05:03:27 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53442 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751261Ab0ATKD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 05:03:26 -0500
+Date: Wed, 20 Jan 2010 12:02:54 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, kvm@vger.kernel.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       mingo@elte.hu, tglx@linutronix.de, riel@redhat.com,
+       cl@linux-foundation.org
+Subject: Re: [PATCH v3 04/12] Add "handle page fault" PV helper.
+Message-ID: <20100120100254.GC5238@redhat.com>
+References: <1262700774-1808-5-git-send-email-gleb@redhat.com>
+ <1263490267.4244.340.camel@laptop>
+ <20100117144411.GI31692@redhat.com>
+ <4B541D08.9040802@zytor.com>
+ <20100118085022.GA30698@redhat.com>
+ <4B5510B1.9010202@zytor.com>
+ <20100119065537.GF14345@redhat.com>
+ <4B55E5D8.1070402@zytor.com>
+ <20100119174438.GA19450@redhat.com>
+ <4B5611A9.4050301@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100120020202.GE26562@trinity.fluff.org>
-X-Cookie: Allow 6 to 8 weeks for delivery.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <4B5611A9.4050301@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 02:02:02AM +0000, Ben Dooks wrote:
+On Tue, Jan 19, 2010 at 12:10:17PM -0800, H. Peter Anvin wrote:
+> On 01/19/2010 09:44 AM, Gleb Natapov wrote:
+> > 
+> > Yes it can be done this way and I'll look into it once more. Using
+> > exception vector is more convenient for three reasons: it allows to pass
+> > additional data in error code, it doesn't require guest to issue EOI,
+> > exception can be injected when interrupts are disabled by a guest. The
+> > last one is not important for now since host doesn't inject notifications
+> > when interrupts are disabled currently. Having Intel allocate one
+> > exception vector for hypervisor use would be really nice though.
+> > 
+> 
+> That's probably not going to happen, for the rather obvious reason: *you
+> already have 224 of them*.
+> 
+> You seem to be thinking here that vectors 0-31 have to be exceptions and
+> 32-255 have to be interrupts.  *There is no such distinction*; the only
+> thing special about 0-31 is that we (Intel) reserve the right to control
+> the assignments; for 32-255 the platform and OS control the assignment.
+> 
+I would be glad to interpret the spec like you do, but table 6-1 SDM 3A
+mark vectors 2,32-255 as interrupts while others are traps, fault and
+aborts. Unfortunately VMX designers seems to be interpreting the spec
+like I do. See below.
 
-> I've written a git pre-commit[1] hook which stops any commits happening if
-> checkpatch.pl reports problems with the patch. Any comments?
+> You can have the guest OS take an exception on a vector above 31 just
+> fine; you just need it to tell the hypervisor which vector it, the OS,
+> assigned for this purpose.
+> 
+VMX doesn't allow to inject hardware exception with vector greater then 31.
+SDM 3B section 23.2.1.3.
 
-> [1] http://www.fluff.org/ben/linux/githooks/pre-commit
-
-Checkpatch does sometimes generate the occasional false positive which
-can be annoying when they trigger.  It can also be a problem when doing
-bugfixes IME - if an existing file has lots of checkpatch issues then a
-fix which maintains the same coding style as the surrounding code can
-trigger checkpatch issues which would if fixed make the code not fit in
-with the rest of the file.  Obviously it'd be desirable to fix the file
-but that's a bit unreasonable for people submitting bug fixes,
-especially when pushing fixes to Linus and stable.
-
-That said, monitoring for checkpatch issues is useful.
+I can inject the event as HW interrupt on vector greater then 32 but not
+go through APIC so EOI will not be required. This sounds non-architectural
+and I am not sure kernel has entry point code for this kind of event, it
+has one for exception and one for interrupts that goes through __do_IRQ()
+which assumes that interrupts should be ACKed.
+ 
+--
+			Gleb.
