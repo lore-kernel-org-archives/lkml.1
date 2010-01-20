@@ -1,92 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680Ab0ATW3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729Ab0ATW3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680Ab0ATW3P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 17:29:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657Ab0ATW3N
+	id S1754729Ab0ATW3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 17:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594Ab0ATW3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 17:29:13 -0500
-Received: from ip-58-28-153-233.static-xdsl.xnet.co.nz ([58.28.153.233]:35047
-	"EHLO treenet.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753075Ab0ATW3M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 17:29:14 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14953 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752724Ab0ATW3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 20 Jan 2010 17:29:12 -0500
-X-Greylist: delayed 407 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jan 2010 17:29:11 EST
+Date: Wed, 20 Jan 2010 17:29:10 -0500
+From: Jarod Wilson <jarod@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: greg@kroah.com
+Subject: [PATCH] staging/crystalhd: fix build on powerpc
+Message-ID: <20100120222910.GA9498@redhat.com>
 MIME-Version: 1.0
-Date: Thu, 21 Jan 2010 11:22:21 +1300
-From: Amos Jeffries <squid3@treenet.co.nz>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: Jan Engelhardt <jengelh@medozas.de>, Patrick McHardy <kaber@trash.net>,
-       William Allen Simpson <william.allen.simpson@gmail.com>,
-       netdev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <netfilter-devel@vger.kernel.org>
-Subject: Re: [PATCH] =?UTF-8?Q?xt=5FTCPMSS=3A=20SYN=20packets=20are=20allowed=20to?=
- =?UTF-8?Q?=20contain=20data?=
-In-Reply-To: <4B577AE5.6080303@simon.arlott.org.uk>
-References: <4B54CDE5.3070100@simon.arlott.org.uk> <4B5578A5.50705@gmail.com>    <dad314e12c5750b1b5d70c3ea3c6f6134b8fa0f3@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>    <4B55D372.4020807@gmail.com> <710ab0ca79305c82013982d43250b0a1fd45824d@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid> <4B5773C2.2010000@simon.arlott.org.uk> <alpine.LSU.2.01.1001202238400.18680@obet.zrqbmnf.qr> <alpine.LSU.2.01.1001202240350.18680@obet.zrqbmnf.qr> <4B577AE5.6080303@simon.arlott.org.uk>
-Message-ID: <a1c28b6de59cfa265e9b667e93fa3b99@mail.treenet.co.nz>
-User-Agent: RoundCube Webmail/0.3.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain;
- charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010 21:51:33 +0000, Simon Arlott <simon@fire.lp0.eu>
-wrote:
-> On 20/01/10 21:41, Jan Engelhardt wrote:
->> On Wednesday 2010-01-20 22:39, Jan Engelhardt wrote:
->> 
->>>On Wednesday 2010-01-20 22:21, Simon Arlott wrote:
->>>
->>>>The TCPMSS target is dropping SYN packets where:
->>>>  1) There is data, or
->>>>  2) The data offset makes the TCP header larger than
->>>>  the packet.
->>>>
->>>>Both of these result in an error level printk.
->>>>
->>>>This change fixes the drop of SYN packets with data
->>>>(because the MSS option can safely be modified) and
->>>>passes packets with no MSS option instead of adding
->>>>one (which is not valid).
->>>
->>>Can you explain why the automatic addition of a MSS option is removed?
->> 
->> That is, of course, for the git log. If I followed the thread right, it
 
->> was that adding the option could exceed the MTU. Well, can't we check 
->> for the outgoing MTU?
-> 
-> The MSS option is for the MRU of whoever sent the SYN packet. There's no
-> way of knowing this information so it's not possible to avoid using an
-> MSS that is too large. With no option, "any" segment size could be used,
-> which implies 536 to match the MRU of 576.
-> 
-> The other reason for not being able to add it is that it may increase
-the
-> packet size beyond an MRU/MTU limit if there is data. There's no
-guarantee
-> we'll see an ICMP error message if this occurs, because the limit
-doesn't
-> have to be local and the return path does not need to be the same. The
-> original host won't know that the packet is going to be increased in
-size.
+From: Dave Airlie <airlied@redhat.com>
+Date: Wed, 20 Jan 2010 15:38:58 -0500
+Subject: staging/crystalhd: fix build on powerpc
 
-(I know little, so just my 2c)
+Add necessary include to fix build on PowerPC
 
-So... packets are 'tunneled' down a link where MSS is required/added.
-However packets which will not fit into the MTU of that 'tunnel' are send
-down it without MSS and without fragmentation? I wonder what would happen
-if all TCP MTUs worked that way...
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+---
+ drivers/staging/crystalhd/crystalhd_lnx.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Maybe I've misunderstood how path MTU discovery works. But is it and TCP
-not built on the premise that the origin source host always receives the
-ACKs regardless of reverse route? With PMTU discovery built on that
-guarantee, to return the ICMP error to the same source the ACK would go?
+diff --git a/drivers/staging/crystalhd/crystalhd_lnx.h b/drivers/staging/crystalhd/crystalhd_lnx.h
+index d3f9fc4..d338ae9 100644
+--- a/drivers/staging/crystalhd/crystalhd_lnx.h
++++ b/drivers/staging/crystalhd/crystalhd_lnx.h
+@@ -40,6 +40,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/pagemap.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
+-- 
+1.6.5.2
 
-If ICMP is administrively crippled to break TCP its not iptables fault,
-nor the admin who is using TCP/ICMP correctly to signal available MTU.
+-- 
+Jarod Wilson
+jarod@redhat.com
 
-AYJ
