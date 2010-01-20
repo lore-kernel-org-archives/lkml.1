@@ -1,71 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752332Ab0ATJiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752492Ab0ATJlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752332Ab0ATJiA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 04:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187Ab0ATJh7
+	id S1752492Ab0ATJlS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 04:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245Ab0ATJlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 04:37:59 -0500
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:34891 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751490Ab0ATJh5 (ORCPT
+	Wed, 20 Jan 2010 04:41:16 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:62637 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010Ab0ATJlL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 04:37:57 -0500
-Message-ID: <4B56CEF0.2040406@linux.vnet.ibm.com>
-Date: Wed, 20 Jan 2010 15:07:52 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0b1 Thunderbird/3.0
+	Wed, 20 Jan 2010 04:41:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=CqjC+4MAbqPFa+xSETBT/rM3mt8kVj/gmql23q2SxN++zACRh4GfGXbyoUcdzg1dMk
+         WrLqzlCxpqsjrvVRaGuaue0QIm2siSjaPWKsL6C67Ur/JF+IVRe959grDwP3n9MewHf+
+         vP/3j5L4s13ppviLeHwBdvahb8Rw39BQQLMQs=
+Date: Wed, 20 Jan 2010 09:41:03 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Michael Breuer <mbreuer@majjas.com>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
+Message-ID: <20100120094103.GA6225@ff.dom.local>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       kirill@shutemov.name
-Subject: Re: [PATCH mmotm] memcg use generic percpu allocator instead of private
- one
-References: <20100120161825.15c372ac.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100120161825.15c372ac.kamezawa.hiroyu@jp.fujitsu.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 January 2010 12:48 PM, KAMEZAWA Hiroyuki wrote:
-> This patch is onto mmotm Jan/15.
-> =
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+[ previously: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit() ]
+On Tue, Jan 19, 2010 at 05:10:13PM -0800, Stephen Hemminger wrote:
+> On Tue, 19 Jan 2010 20:01:10 -0500
+> Michael Breuer <mbreuer@majjas.com> wrote:
 > 
-> When per-cpu counter for memcg was implemneted, dynamic percpu allocator
-> was not very good. But now, we have good one and useful macros.
-> This patch replaces memcg's private percpu counter implementation with
-> generic dynamic percpu allocator and macros.
+> > On 1/19/2010 5:45 PM, Jarek Poplawski wrote:
+> > > On Tue, Jan 19, 2010 at 03:06:01PM -0500, Michael Breuer wrote:
+> > >    
+> > >> On 1/19/2010 2:59 PM, Jarek Poplawski wrote:
+> > >>      
+> > >>> On Tue, Jan 19, 2010 at 10:47:27AM -0500, Michael Breuer wrote:
+> > >>> ...
+> > >>>        
+> > >>>> Still get the warning... but now 60 bytes.
+> > >>>> Jan 19 10:43:50 mail kernel: ------------[ cut here ]------------
+> > >>>> Jan 19 10:43:50 mail kernel: WARNING: at lib/dma-debug.c:902
+...
+> > That not only compiled, but it cleared the error as well. Additionally, 
+> > I used to see a bit of a delay receiving the login prompt when first 
+> > connecting to the box by ssh. That delay is gone with this patch. I'd 
+> > guess that the warning wasn't quite as innocuous as I thought.
+> > Note: tested on 2.6.32.4.  I'll leave this up for a bit before 
+> > attempting to move back to head.
 > 
-> The benefits are
-> 	- We can remove private implementation.
-> 	- The counters will be NUMA-aware. (Current one is not...)
-> 	- This patch reduces sizeof(struct mem_cgroup). Then,
-> 	  struct mem_cgroup may be fit in page size on small config.
+> Seems like an underlying bug in the DMA api. Maybe it just can't
+> handle operations on partial mapping.
 > 
-> By this, size of text is reduced.
->  [Before]
->  [kamezawa@bluextal mmotm-2.6.33-Jan15]$ size mm/memcontrol.o
->    text    data     bss     dec     hex filename
->   24373    2528    4132   31033    7939 mm/memcontrol.o
->  [After]
->  [kamezawa@bluextal mmotm-2.6.33-Jan15]$ size mm/memcontrol.o
->    text    data     bss     dec     hex filename
->   23913    2528    4132   30573    776d mm/memcontrol.o
-> 
-> This includes no functional changes.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Other drivers with same problem:
+>   bnx2, cassini, pcnet32, r8169, rrunner, skge, sungem, tg3, 
 
+It seems using the same length (even without pci_unmap_len()) is
+crucial here, but I hope maintainers (added to CC) will take care.
 
-Before review, could you please post parallel pagefault data on a large
-system, since root now uses these per cpu counters and its overhead is
-now dependent on these counters. Also the data read from root cgroup is
-also dependent on these, could you make sure that is not broken.
+Btw, it's not tested yet, but it might affect CONFIG_DMAR problems.
 
-Balbir
+Thanks,
+Jarek P.
+----------------------->
+
+Using pci_unmap_len(), with the same length as pci_map_single(), with
+pci_dma_sync_single_for_cpu()/_device() fixes this warning (2.6.32.4):
+
+> Jan 19 10:43:50 mail kernel: WARNING: at lib/dma-debug.c:902 
+> check_sync+0xc1/0x43f()
+> Jan 19 10:43:50 mail kernel: Hardware name: System Product Name
+> Jan 19 10:43:50 mail kernel: sky2 0000:04:00.0: DMA-API: device driver 
+> tries to sync DMA memory it has not allocated [device 
+> address=0x0000000320a0b022] [size=60 bytes]
+
+Reported-by: Michael Breuer <mbreuer@majjas.com>
+Tested-by: Michael Breuer <mbreuer@majjas.com>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+---
+
+ drivers/net/sky2.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
+index 7650f73..cdebdd3 100644
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -2252,12 +2252,14 @@ static struct sk_buff *receive_copy(struct sky2_port *sky2,
+ 	skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
+ 	if (likely(skb)) {
+ 		pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
+-					    length, PCI_DMA_FROMDEVICE);
++					    pci_unmap_len(re, data_size),
++					    PCI_DMA_FROMDEVICE);
+ 		skb_copy_from_linear_data(re->skb, skb->data, length);
+ 		skb->ip_summed = re->skb->ip_summed;
+ 		skb->csum = re->skb->csum;
+ 		pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
+-					       length, PCI_DMA_FROMDEVICE);
++					       pci_unmap_len(re, data_size),
++					       PCI_DMA_FROMDEVICE);
+ 		re->skb->ip_summed = CHECKSUM_NONE;
+ 		skb_put(skb, length);
+ 	}
