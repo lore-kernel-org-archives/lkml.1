@@ -1,95 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578Ab0ATVVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650Ab0ATVVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578Ab0ATVVM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 16:21:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384Ab0ATVVM
+	id S1754650Ab0ATVVQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 16:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610Ab0ATVVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 16:21:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33783 "EHLO ogre.sisk.pl"
+	Wed, 20 Jan 2010 16:21:15 -0500
+Received: from proxima.lp0.eu ([81.2.80.65]:43411 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753368Ab0ATVVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 16:21:10 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was: Re: [linux-pm] Memory allocations in .suspend became very unreliable)
-Date: Wed, 20 Jan 2010 22:21:34 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1263871194.724.520.camel@pasglop> <201001192147.58185.rjw@sisk.pl> <20100120085053.405A.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20100120085053.405A.A69D9226@jp.fujitsu.com>
+	id S1754536Ab0ATVVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 16:21:13 -0500
+Message-ID: <4B5773C2.2010000@simon.arlott.org.uk>
+Date: Wed, 20 Jan 2010 21:21:06 +0000
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090927)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Patrick McHardy <kaber@trash.net>
+CC: William Allen Simpson <william.allen.simpson@gmail.com>,
+       netdev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org
+Subject: [PATCH] xt_TCPMSS: SYN packets are allowed to contain data
+References: <4B54CDE5.3070100@simon.arlott.org.uk> <4B5578A5.50705@gmail.com>    <dad314e12c5750b1b5d70c3ea3c6f6134b8fa0f3@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>    <4B55D372.4020807@gmail.com> <710ab0ca79305c82013982d43250b0a1fd45824d@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
+In-Reply-To: <710ab0ca79305c82013982d43250b0a1fd45824d@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001202221.34804.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 January 2010, KOSAKI Motohiro wrote:
-> > On Tuesday 19 January 2010, Benjamin Herrenschmidt wrote:
-> > > On Tue, 2010-01-19 at 10:19 +0900, KOSAKI Motohiro wrote:
-> > > > I think the race happen itself is bad. memory and I/O subsystem can't solve such race
-> > > > elegantly. These doesn't know enough suspend state knowlege. I think the practical 
-> > > > solution is that higher level design prevent the race happen.
-> > > > 
-> > > > 
-> > > > > My patch attempts to avoid these two problems as well as the problem with
-> > > > > drivers using GFP_KERNEL allocations during suspend which I admit might be
-> > > > > solved by reworking the drivers.
-> > > > 
-> > > > Agreed. In this case, only drivers change can solve the issue. 
-> > > 
-> > > As I explained earlier, this is near to impossible since the allocations
-> > > are too often burried deep down the call stack or simply because the
-> > > driver doesn't know that we started suspending -another- driver...
-> > > 
-> > > I don't think trying to solve those problems at the driver level is
-> > > realistic to be honest. This is one of those things where we really just
-> > > need to make allocators 'just work' from a driver perspective.
-> > > 
-> > > It can't be perfect of course, as mentioned earlier, there will be a
-> > > problem if too little free memory is really available due to lots of
-> > > dirty pages around, but most of this can be somewhat alleviated in
-> > > practice, for example by pushing things out a bit at suspend time,
-> > > making some more memory free etc... But yeah, nothing replaces proper
-> > > error handling in drivers for allocation failures even with
-> > > GFP_KERNEL :-)
-> > 
-> > Agreed.
-> > 
-> > Moreover, I didn't try to do anything about that before, because memory
-> > allocation problems during suspend/resume just didn't happen.  We kind of knew
-> > they were possible, but since they didn't show up, it wasn't immediately
-> > necessary to address them.
-> > 
-> > Now, however, people started to see these problems in testing and I'm quite
-> > confident that this is a result of recent changes in the mm subsystem.  Namely,
-> > if you read the Maxim's report carefully, you'll notice that in his test case
-> > the mm subsystem apparently attempted to use I/O even though there was free
-> > memory available in the system.  This is the case I want to prevent from
-> > happening in the first place.
-> 
-> Hi Rafael,
-> 
-> Do you mean this is the unrelated issue of nVidia bug?
+The TCPMSS target is dropping SYN packets where:
+  1) There is data, or
+  2) The data offset makes the TCP header larger than
+  the packet.
 
-The nvidia driver _is_ buggy, but Maxim said he couldn't reproduce the
-problem if all the allocations made by the nvidia driver during suspend
-were changed to GFP_ATOMIC.
+Both of these result in an error level printk.
 
-> Probably I haven't catch your point. I don't find Maxim's original bug
-> report. Can we share the test-case and your analysis detail?
+This change fixes the drop of SYN packets with data
+(because the MSS option can safely be modified) and
+passes packets with no MSS option instead of adding
+one (which is not valid).
 
-The Maxim's original report is here:
-https://lists.linux-foundation.org/pipermail/linux-pm/2010-January/023982.html
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+---
+Tested mangle OUTPUT rule with IPv4 and IPv6.
+SYN with data not tested.
 
-and the message I'm referring to is at:
-https://lists.linux-foundation.org/pipermail/linux-pm/2010-January/023990.html
+ net/netfilter/xt_TCPMSS.c |   82 +++++++-------------------------------------
+ 1 files changed, 13 insertions(+), 69 deletions(-)
 
-Thanks,
-Rafael
+diff --git a/net/netfilter/xt_TCPMSS.c b/net/netfilter/xt_TCPMSS.c
+index eda64c1..3648761 100644
+--- a/net/netfilter/xt_TCPMSS.c
++++ b/net/netfilter/xt_TCPMSS.c
+@@ -41,7 +41,7 @@ optlen(const u_int8_t *opt, unsigned int offset)
+ 		return opt[offset+1];
+ }
+ 
+-static int
++static unsigned int
+ tcpmss_mangle_packet(struct sk_buff *skb,
+ 		     const struct xt_tcpmss_info *info,
+ 		     unsigned int in_mtu,
+@@ -50,27 +50,18 @@ tcpmss_mangle_packet(struct sk_buff *skb,
+ {
+ 	struct tcphdr *tcph;
+ 	unsigned int tcplen, i;
+-	__be16 oldval;
+ 	u16 newmss;
+ 	u8 *opt;
+ 
+ 	if (!skb_make_writable(skb, skb->len))
+-		return -1;
++		return NF_DROP;
+ 
+ 	tcplen = skb->len - tcphoff;
+ 	tcph = (struct tcphdr *)(skb_network_header(skb) + tcphoff);
+ 
+-	/* Since it passed flags test in tcp match, we know it is is
+-	   not a fragment, and has data >= tcp header length.  SYN
+-	   packets should not contain data: if they did, then we risk
+-	   running over MTU, sending Frag Needed and breaking things
+-	   badly. --RR */
+-	if (tcplen != tcph->doff*4) {
+-		if (net_ratelimit())
+-			printk(KERN_ERR "xt_TCPMSS: bad length (%u bytes)\n",
+-			       skb->len);
+-		return -1;
+-	}
++	/* Header cannot be larger than the packet */
++	if (tcplen < tcph->doff*4)
++		return NF_DROP;
+ 
+ 	if (info->mss == XT_TCPMSS_CLAMP_PMTU) {
+ 		if (dst_mtu(skb_dst(skb)) <= minlen) {
+@@ -78,13 +69,13 @@ tcpmss_mangle_packet(struct sk_buff *skb,
+ 				printk(KERN_ERR "xt_TCPMSS: "
+ 				       "unknown or invalid path-MTU (%u)\n",
+ 				       dst_mtu(skb_dst(skb)));
+-			return -1;
++			return NF_DROP;
+ 		}
+ 		if (in_mtu <= minlen) {
+ 			if (net_ratelimit())
+ 				printk(KERN_ERR "xt_TCPMSS: unknown or "
+ 				       "invalid path-MTU (%u)\n", in_mtu);
+-			return -1;
++			return NF_DROP;
+ 		}
+ 		newmss = min(dst_mtu(skb_dst(skb)), in_mtu) - minlen;
+ 	} else
+@@ -103,7 +94,7 @@ tcpmss_mangle_packet(struct sk_buff *skb,
+ 			 * on MSS being set correctly.
+ 			 */
+ 			if (oldmss <= newmss)
+-				return 0;
++				return XT_CONTINUE;
+ 
+ 			opt[i+2] = (newmss & 0xff00) >> 8;
+ 			opt[i+3] = newmss & 0x00ff;
+@@ -111,40 +102,12 @@ tcpmss_mangle_packet(struct sk_buff *skb,
+ 			inet_proto_csum_replace2(&tcph->check, skb,
+ 						 htons(oldmss), htons(newmss),
+ 						 0);
+-			return 0;
++			return XT_CONTINUE;
+ 		}
+ 	}
+ 
+-	/*
+-	 * MSS Option not found ?! add it..
+-	 */
+-	if (skb_tailroom(skb) < TCPOLEN_MSS) {
+-		if (pskb_expand_head(skb, 0,
+-				     TCPOLEN_MSS - skb_tailroom(skb),
+-				     GFP_ATOMIC))
+-			return -1;
+-		tcph = (struct tcphdr *)(skb_network_header(skb) + tcphoff);
+-	}
+-
+-	skb_put(skb, TCPOLEN_MSS);
+-
+-	opt = (u_int8_t *)tcph + sizeof(struct tcphdr);
+-	memmove(opt + TCPOLEN_MSS, opt, tcplen - sizeof(struct tcphdr));
+-
+-	inet_proto_csum_replace2(&tcph->check, skb,
+-				 htons(tcplen), htons(tcplen + TCPOLEN_MSS), 1);
+-	opt[0] = TCPOPT_MSS;
+-	opt[1] = TCPOLEN_MSS;
+-	opt[2] = (newmss & 0xff00) >> 8;
+-	opt[3] = newmss & 0x00ff;
+-
+-	inet_proto_csum_replace4(&tcph->check, skb, 0, *((__be32 *)opt), 0);
+-
+-	oldval = ((__be16 *)tcph)[6];
+-	tcph->doff += TCPOLEN_MSS/4;
+-	inet_proto_csum_replace2(&tcph->check, skb,
+-				 oldval, ((__be16 *)tcph)[6], 0);
+-	return TCPOLEN_MSS;
++	/* MSS Option not found */
++	return XT_CONTINUE;
+ }
+ 
+ static u_int32_t tcpmss_reverse_mtu(const struct sk_buff *skb,
+@@ -177,22 +140,11 @@ static unsigned int
+ tcpmss_tg4(struct sk_buff *skb, const struct xt_target_param *par)
+ {
+ 	struct iphdr *iph = ip_hdr(skb);
+-	__be16 newlen;
+-	int ret;
+ 
+-	ret = tcpmss_mangle_packet(skb, par->targinfo,
++	return tcpmss_mangle_packet(skb, par->targinfo,
+ 				   tcpmss_reverse_mtu(skb, PF_INET),
+ 				   iph->ihl * 4,
+ 				   sizeof(*iph) + sizeof(struct tcphdr));
+-	if (ret < 0)
+-		return NF_DROP;
+-	if (ret > 0) {
+-		iph = ip_hdr(skb);
+-		newlen = htons(ntohs(iph->tot_len) + ret);
+-		csum_replace2(&iph->check, iph->tot_len, newlen);
+-		iph->tot_len = newlen;
+-	}
+-	return XT_CONTINUE;
+ }
+ 
+ #if defined(CONFIG_IP6_NF_IPTABLES) || defined(CONFIG_IP6_NF_IPTABLES_MODULE)
+@@ -202,23 +154,15 @@ tcpmss_tg6(struct sk_buff *skb, const struct xt_target_param *par)
+ 	struct ipv6hdr *ipv6h = ipv6_hdr(skb);
+ 	u8 nexthdr;
+ 	int tcphoff;
+-	int ret;
+ 
+ 	nexthdr = ipv6h->nexthdr;
+ 	tcphoff = ipv6_skip_exthdr(skb, sizeof(*ipv6h), &nexthdr);
+ 	if (tcphoff < 0)
+ 		return NF_DROP;
+-	ret = tcpmss_mangle_packet(skb, par->targinfo,
++	return tcpmss_mangle_packet(skb, par->targinfo,
+ 				   tcpmss_reverse_mtu(skb, PF_INET6),
+ 				   tcphoff,
+ 				   sizeof(*ipv6h) + sizeof(struct tcphdr));
+-	if (ret < 0)
+-		return NF_DROP;
+-	if (ret > 0) {
+-		ipv6h = ipv6_hdr(skb);
+-		ipv6h->payload_len = htons(ntohs(ipv6h->payload_len) + ret);
+-	}
+-	return XT_CONTINUE;
+ }
+ #endif
+ 
+-- 
+1.6.3.3
+
+-- 
+Simon Arlott
