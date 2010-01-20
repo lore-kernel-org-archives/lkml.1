@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881Ab0ATWxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451Ab0ATWxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881Ab0ATWxk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 17:53:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596Ab0ATWxj
+	id S1753451Ab0ATWxw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 17:53:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682Ab0ATWxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 17:53:39 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:41271 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754865Ab0ATWx3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 17:53:40 -0500
+Received: from f0.cmpxchg.org ([85.214.51.133]:40382 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754863Ab0ATWx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 20 Jan 2010 17:53:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=osUq3pglXXuiowm8u6IcHFUqmBfOjpE++OFD8zUFd4DlhQxgZngGvQcwfAycPDLxpI
-         ZJW7rILXjiFtYCiwnt+trkxKydBXyl8enCZNUf1CcqREfM/xWhOyg1zOLptGVxQ6ZdX+
-         WBfEFwDa1IwFR4PFCutrApYOSzEMld6BWTq3U=
-Date: Wed, 20 Jan 2010 23:53:22 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Michael Breuer <mbreuer@majjas.com>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
-Message-ID: <20100120225322.GC3072@del.dom.local>
-References: <20100120094103.GA6225@ff.dom.local>
- <20100120222414.57909d14@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100120222414.57909d14@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jiri Slaby <jslaby@suse.cz>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       x86@kernel.org, stable@kernel.org
+Subject: [PATCH] bootmem: avoid DMA32 zone by default
+Date: Wed, 20 Jan 2010 23:53:18 +0100
+Message-Id: <1264027998-15257-1-git-send-email-hannes@cmpxchg.org>
+X-Mailer: git-send-email 1.6.4
+In-Reply-To: <20100120153000.GA13172@cmpxchg.org>
+References: <20100120153000.GA13172@cmpxchg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 10:24:14PM +0000, Alan Cox wrote:
-> > > Seems like an underlying bug in the DMA api. Maybe it just can't
-> > > handle operations on partial mapping.
-> > > 
-> > > Other drivers with same problem:
-> > >   bnx2, cassini, pcnet32, r8169, rrunner, skge, sungem, tg3, 
-> > 
-> > It seems using the same length (even without pci_unmap_len()) is
-> > crucial here, but I hope maintainers (added to CC) will take care.
-> 
-> The API needs fixing - if you've got a large mapping and you want to sync
-> part of it then we need to support that. Now it might well be that the
-> implementation on some braindead platform has to sync the entire thing,
-> and some implementations entire pages or cache lines.
-> 
-> You can't fix this in the drivers, they requested a service and they
-> don't have enough information nor is it their job to know about all the
-> platform specific rules.
+Bootmem already tries normal allocations above the DMA zone to reserve
+it for users that can not cope with higher addresses.
 
-Yes, the need to repeat some other values if there is a dedicated
-structure/pointer could be misleading. Btw, it seems to be a trivial
-overlooking since there is dma_sync_single_range() ready to use.
+The same principle applies to the DMA32 zone, which is currently not
+spared from normal allocations.
 
-Jarek P.
+This can lead to exhaustion of this limited amount of address space
+through things that can easily live elsewhere, like the mem_map e.g.
+
+Raise bootmem's default goal beyond DMA32 for architectures with this
+zone defined.  For now, these are x86 and mips.
+
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Reported-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: x86@kernel.org
+Cc: stable@kernel.org
+---
+ include/linux/bootmem.h |   20 +++++++++++++-------
+ 1 files changed, 13 insertions(+), 7 deletions(-)
+
+I cc'd stable because this affects already released kernels.  But since this is
+the first report of DMA32 memory exhaustion through bootmem that I hear of,
+you guys might want to skip this patch due to the fragile nature of early memory
+management.
+
+diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+index b10ec49..52c8272 100644
+--- a/include/linux/bootmem.h
++++ b/include/linux/bootmem.h
+@@ -96,20 +96,26 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
+ 				      unsigned long align,
+ 				      unsigned long goal);
+ 
++#ifdef MAX_DMA32_PFN
++#define BOOTMEM_DEFAULT_GOAL	(MAX_DMA32_PFN << PAGE_SHIFT)
++#else
++#define BOOTMEM_DEFAULT_GOAL	__pa(MAX_DMA_ADDRESS)
++#endif
++
+ #define alloc_bootmem(x) \
+-	__alloc_bootmem(x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
++	__alloc_bootmem(x, SMP_CACHE_BYTES, BOOTMEM_DEFAULT_GOAL)
+ #define alloc_bootmem_nopanic(x) \
+-	__alloc_bootmem_nopanic(x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
++	__alloc_bootmem_nopanic(x, SMP_CACHE_BYTES, BOOTMEM_DEFAULT_GOAL)
+ #define alloc_bootmem_pages(x) \
+-	__alloc_bootmem(x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
++	__alloc_bootmem(x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
+ #define alloc_bootmem_pages_nopanic(x) \
+-	__alloc_bootmem_nopanic(x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
++	__alloc_bootmem_nopanic(x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
+ #define alloc_bootmem_node(pgdat, x) \
+-	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
++	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, BOOTMEM_DEFAULT_GOAL)
+ #define alloc_bootmem_pages_node(pgdat, x) \
+-	__alloc_bootmem_node(pgdat, x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
++	__alloc_bootmem_node(pgdat, x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
+ #define alloc_bootmem_pages_node_nopanic(pgdat, x) \
+-	__alloc_bootmem_node_nopanic(pgdat, x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
++	__alloc_bootmem_node_nopanic(pgdat, x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
+ 
+ #define alloc_bootmem_low(x) \
+ 	__alloc_bootmem_low(x, SMP_CACHE_BYTES, 0)
+-- 
+1.6.5.4
+
