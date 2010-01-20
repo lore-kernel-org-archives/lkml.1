@@ -1,62 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724Ab0ATDPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767Ab0ATDQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724Ab0ATDPQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 22:15:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539Ab0ATDPO
+	id S1754767Ab0ATDQW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 22:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678Ab0ATDQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 22:15:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48772 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751349Ab0ATDPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 22:15:12 -0500
-Message-ID: <4B5676A9.2070808@kernel.org>
-Date: Wed, 20 Jan 2010 12:21:13 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Tue, 19 Jan 2010 22:16:20 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:54858 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754310Ab0ATDQT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 22:16:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kJViKBr3Urgk/WOIJOXqp8zhzMjIMMN+SQxfu5SusYskbcLhPwjMZ1RBe/ZWVRWMLp
+         RoTsxvHrk2UFXUMENBodkUIfMkVJkHZepCxVyp/ruKCNEtXGX/wWrdw+yMjoYnapZn8i
+         rD0NP3fhAjmYTTno0GC5L1Y83wd4JgfRi9fL8=
 MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>
-CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Jeff Garzik <jgarzik@pobox.com>, Seth Heasley <seth.heasley@intel.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.32.3] ahci: AHCI and RAID mode SATA patch for Intel
- 	Cougar Point DeviceIDs
-References: <201001121700.18234.seth.heasley@intel.com>	 <4B4D4EAA.2010109@gmail.com> <4B4DAA68.60608@pobox.com>	 <51f3faa71001131611y343ad225n1acc73900fd49894@mail.gmail.com>	 <51f3faa71001131642u2cc9de80n8e73be7a8707afb2@mail.gmail.com>	 <20100114201136.GA3814@khazad-dum.debian.net> <51f3faa71001141615k3223a02fhb0b882b6cbe680cf@mail.gmail.com>
-In-Reply-To: <51f3faa71001141615k3223a02fhb0b882b6cbe680cf@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 20 Jan 2010 03:15:06 +0000 (UTC)
+In-Reply-To: <8bd0f97a1001191118q4d8f5e02he6df84a654a66d69@mail.gmail.com>
+References: <1263883920-17289-1-git-send-email-vapier@gentoo.org>
+	 <20100119142545.GB3473@hack>
+	 <8bd0f97a1001190923p6104acb4if5ec7225d549b713@mail.gmail.com>
+	 <520f0cf11001190942n2c765618m8a66b8afe82010d0@mail.gmail.com>
+	 <8bd0f97a1001190954q62b3bc5ejbdb69684d61c087c@mail.gmail.com>
+	 <alpine.LFD.2.00.1001191900340.5999@localhost.localdomain>
+	 <8bd0f97a1001191118q4d8f5e02he6df84a654a66d69@mail.gmail.com>
+Date: Wed, 20 Jan 2010 11:16:18 +0800
+Message-ID: <2375c9f91001191916l18588245ndf6c50aa2723fb08@mail.gmail.com>
+Subject: Re: [PATCH] kconfig: dont hardcode path to lsmod
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: John Kacur <jkacur@redhat.com>, Steven Rostedt <srostedt@redhat.com>,
+       linux-kbuild@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/15/2010 09:15 AM, Robert Hancock wrote:
-> On Thu, Jan 14, 2010 at 2:11 PM, Henrique de Moraes Holschuh
-> <hmh@hmh.eng.br> wrote:
->> On Wed, 13 Jan 2010, Robert Hancock wrote:
->>> Hmm, it seems like it's a bit more complicated than that. For ICH6R
->>> (0x2652), ata_piix attaches to it regardless of mode intentionally, it
->>> has specific logic to disable AHCI on the controller since it can be
->>> used in either mode. That seems a bit questionable. Having the same
->>> device being handled by different enabled drivers and depending on
->>> link or module load order to decide which one loads is fragile and
->>> prone to errors. I'd be in favor of removing the ICH6R support from
->>> ata_piix entirely and saying that you should be using ahci for that
->>> device. Maybe when ahci was immature there was a benefit to allowing
->>> ata_piix to run it, but I doubt that's true today.
+On Wed, Jan 20, 2010 at 3:18 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On Tue, Jan 19, 2010 at 13:12, John Kacur wrote:
+>> On Tue, 19 Jan 2010, Mike Frysinger wrote:
+>>> On Tue, Jan 19, 2010 at 12:42, John Kacur wrote:
+>>> > On Tue, Jan 19, 2010 at 6:23 PM, Mike Frysinger wrote:
+>>> >> On Tue, Jan 19, 2010 at 09:25, Américo Wang wrote:
+>>> >>> On Tue, Jan 19, 2010 at 01:52:00AM -0500, Mike Frysinger wrote:
+>>> >>>>The lsmod utility has always been installed into /bin with the newer
+>>> >>>>module-init-tools package, so let lsmod be found via PATH instead of
+>>> >>>>hardcoding the old modutils /sbin path.
+>>> >>>>
+>>> >>>
+>>> >>> Some distro doesn't set /sbin to PATH, so for me a better solution
+>>> >>> would be making PATH contain /sbin, and then use "lsmod".
+>>> >>
+>>> >> read my changelog -- module-init-tools has always installed into /bin.
+>>> >>  so what your distro does with /sbin doesnt matter.
+>>> >
+>>> > I prefer my patches work for the real-world instead of the "so what
+>>> > your distro does doesn't matter" world.
+>>>
+>>> try reading my comment instead of getting huffy.  if you have a distro
+>>> that does something stupid like break the correct default m-i-t
+>>> install setup, you should actually point it out.  the ones i checked
+>>> were sane and installed lsmod into /bin (and some symlinked lsmod for
+>>> backwards compat with modutils into /sbin).
 >>
->> Maybe it is the silicon AHCI in ICH6R that is immature, and one is much
->> better of using it in IDE mode?
-> 
-> That seems unlikely, since the Intel-provided Matrix Storage drivers
-> for that controller on Windows will be using AHCI mode..
+>> Well, I'm currently running Fedora (10 thru 12), and lsmod is in /sbin
+>> Your patch would still not break for me because /sbin is in the PATH.
+>>
+>> However if Américo is correct that there are distros that have lsmod in
+>> /sbin and don't have /sbin in the PATH, then your patch would break them.
+>> You can argue that the distro is doing something stupid, but I'll bet you
+>> they will blame your patch for breaking them. It seems reasonable to
+>> me that a distro might only put /sbin in the superuser path, so I can
+>> imagine there are cases like Américo suggests.
+>
+> i am saying they're stupid for doing this, but i'm not saying we
+> shouldnt support it.  the premise for my original patch was that
+> upstream m-i-t has always used /bin (which means all 2.6 module
+> handers should be there per upstream), and the downstream distros i
+> had access to followed upstream's direction.
+>
+> sounds like Fedora should have a bug report to get their things fixed
+> ... there's no reason for `lsmod` to not be in /bin (and everyone's
+> PATH) since it only reads /proc/modules and that is word readable.
 
-Oh, some ich6 ahcis are very not very mature.  I have a ich6 which can
-do ATA in ahci mode fine but craps out on ATAPI (it ends up spitting
-out garbage FISes on the wire).  It works fine in piix mode.
-ich6 is a dying strange beast.
-
-Thanks.
-
--- 
-tejun
+This certainly makes sense, but the fact is that lsmod is still there,
+what is worse, on RHEL (Fedora too, I think) /sbin is not in PATH
+of my zsh.
