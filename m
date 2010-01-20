@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752108Ab0ATIxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751478Ab0ATIzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752108Ab0ATIxR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 03:53:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984Ab0ATIxQ
+	id S1751478Ab0ATIzB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 03:55:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237Ab0ATIzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 03:53:16 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48885 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200Ab0ATIxP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 03:53:15 -0500
-Subject: Re: linux-next: add utrace tree
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus <torvalds@linux-foundation.org>
-In-Reply-To: <20100120062834.GB12165@elte.hu>
-References: <20100119211646.GF16096@redhat.com>
-	 <20100120111220.e7fb4e2c.sfr@canb.auug.org.au>
-	 <20100120054950.GB27108@elte.hu> <20100120061551.GB6588@in.ibm.com>
-	 <20100120062834.GB12165@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Jan 2010 09:52:52 +0100
-Message-ID: <1263977572.4283.820.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 20 Jan 2010 03:55:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36903 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751055Ab0ATIy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 03:54:59 -0500
+Message-ID: <4B56C622.2030608@kernel.org>
+Date: Wed, 20 Jan 2010 18:00:18 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH 04/40] sched: implement __set_cpus_allowed()
+References: <1263776272-382-1-git-send-email-tj@kernel.org>	 <1263776272-382-5-git-send-email-tj@kernel.org>	 <1263808570.4283.149.camel@laptop>  <4B54445E.302@kernel.org>	 <1263814869.4283.296.camel@laptop>  <4B5505E2.4080203@kernel.org>	 <1263890222.4283.634.camel@laptop>  <4B56C047.6070808@kernel.org> <1263977401.4283.819.camel@laptop>
+In-Reply-To: <1263977401.4283.819.camel@laptop>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 20 Jan 2010 08:54:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-20 at 07:28 +0100, Ingo Molnar wrote:
-> > I think Oleg addressed most of Peter's concerns on utrace when the 
-> > ptrace/utrace patchset was reposted.
-> 
-> Peter is Cc:-ed and he might want to chime in.
+Hello,
 
-Yeah, I'll make some time to go through the latest code again.. if only
-there was a clone() for humans ;-)
+On 01/20/2010 05:50 PM, Peter Zijlstra wrote:
+> OK, so maybe I'm confused, but in general the workqueue thing needs to
+> ensure work affinity, right? So why can we move the rescue thread while
+> its processing another CPU's works?
 
+It doesn't get moved directly.  The CPU requests rescuer and rescuer
+will move itself to the CPU when it becomes idle.  We can of course
+make the rescuer wake up some other thread and then go to sleep and
+the other thread can kthread_bind() the rescuer to the dying CPU but
+that exactly is what the set_cpus_allowed_ptr() does.
+
+Thanks.
+
+-- 
+tejun
