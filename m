@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486Ab0ATFtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545Ab0ATFuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752486Ab0ATFtt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 00:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236Ab0ATFts
+	id S1752545Ab0ATFuZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 00:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125Ab0ATFuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 00:49:48 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:56106 "EHLO smtps.tip.net.au"
+	Wed, 20 Jan 2010 00:50:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59173 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751147Ab0ATFtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 00:49:47 -0500
-Date: Wed, 20 Jan 2010 16:49:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Frank Ch. Eigler" <fche@redhat.com>, utrace-devel@redhat.com
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>, Eric Paris <eparis@redhat.com>
-Subject: linux-next: manual merge of the utrace tree with the fsnotify tree
-Message-Id: <20100120164945.4c6f018e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751403Ab0ATFuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 00:50:22 -0500
+Date: Wed, 20 Jan 2010 06:49:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, utrace-devel@redhat.com,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100120054950.GB27108@elte.hu>
+References: <20100119211646.GF16096@redhat.com>
+ <20100120111220.e7fb4e2c.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100120111220.e7fb4e2c.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-Today's linux-next merge of the utrace tree got a conflict in
-kernel/Makefile between commit 9878914352df8ccfbad1307d51ca05706d50cae4
-("Audit: split audit watch Kconfig") from the fsnotify tree and commit
-f357a74067bc548772166a4817d5f2c32005a449 ("utrace core") from the utrace
-tree.
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Just context changes.  I fixed it up (see below) and can carry the fix as
-necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> Hi Frank,
+> 
+> On Tue, 19 Jan 2010 16:16:46 -0500 "Frank Ch. Eigler" <fche@redhat.com> wrote:
+> >
+> > Having been reviewed a couple of times, and we hope being a good
+> > candidate for merging next time, please start pulling
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git branch master
+> 
+> I have added this from today with you and utrace-devel as the contacts.
+> I have cc'd the wider community on this email so that people are aware
+> that this has been included.
+> 
+> > This repo contains frequent merges from Linus' tree.  If you'd prefer
+> > a cleaner rebase-based branch to pull from, we can make one of those too.
+> 
+> For now it is OK, but you might like to ask Linus if he would like it
+> cleaned up before submission since it seems to have history right back to
+> 2.6.29 and (as you say) lots of merges with his tree.
+> 
+> You should also add a commit with an entry in MAINTAINERS.
 
-diff --cc kernel/Makefile
-index 702260a,8a0185e..0000000
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@@ -69,13 -69,13 +69,14 @@@ obj-$(CONFIG_IKCONFIG) += configs.
-  obj-$(CONFIG_RESOURCE_COUNTERS) += res_counter.o
-  obj-$(CONFIG_STOP_MACHINE) += stop_machine.o
-  obj-$(CONFIG_KPROBES_SANITY_TEST) += test_kprobes.o
-+ obj-$(CONFIG_UTRACE) += utrace.o
- -obj-$(CONFIG_AUDIT) += audit.o auditfilter.o audit_watch.o
- +obj-$(CONFIG_AUDIT) += audit.o auditfilter.o
-  obj-$(CONFIG_AUDITSYSCALL) += auditsc.o
- -obj-$(CONFIG_GCOV_KERNEL) += gcov/
- +obj-$(CONFIG_AUDIT_WATCH) += audit_watch.o
-  obj-$(CONFIG_AUDIT_TREE) += audit_tree.o
- +obj-$(CONFIG_GCOV_KERNEL) += gcov/
-  obj-$(CONFIG_KPROBES) += kprobes.o
- -obj-$(CONFIG_KGDB) += kgdb.o
- +obj-$(CONFIG_KGDB) += debug/
-  obj-$(CONFIG_DETECT_SOFTLOCKUP) += softlockup.o
-  obj-$(CONFIG_DETECT_HUNG_TASK) += hung_task.o
-  obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
+Note, i'm not yet convinced that this (and the rest: uprobes and systemtap, 
+etc.) can go uptream in its present form.
+
+IMHO the far more important thing to address beyond formalities and workflow 
+cleanliness are the (many) technical observations and objections offered by 
+Peter Zijstra on lkml. Not just the git history but also the abstractions and 
+concepts are messy and should be reworked IMO, and also good and working perf 
+events integration should be achieved, etc.
+
+The fact that there's a well established upstream workflow for instrumentation 
+patches, which is being routed around by the utrace/uprobes/systemtap code 
+here is not a good sign in terms of reaching a good upstream solution. Lets 
+hope it works out well though.
+
+Thanks,
+
+	Ingo
