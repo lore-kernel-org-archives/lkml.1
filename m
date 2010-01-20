@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774Ab0ATSCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835Ab0ATSEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753774Ab0ATSCQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 13:02:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899Ab0ATSCP
+	id S1753835Ab0ATSEd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 13:04:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418Ab0ATSE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 13:02:15 -0500
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:43305 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752849Ab0ATSCO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 13:02:14 -0500
-X-Greylist: delayed 488 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jan 2010 13:02:14 EST
+	Wed, 20 Jan 2010 13:04:29 -0500
+Received: from khc.piap.pl ([195.187.100.11]:44560 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751268Ab0ATSE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 13:04:28 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Ramagudi Naziir <naziirr@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: how do YOU hack the linux kernel ?
+References: <dfb262381001190452k3bad790ax14bbdbe92210b2d3@mail.gmail.com>
+Date: Wed, 20 Jan 2010 19:04:22 +0100
+In-Reply-To: <dfb262381001190452k3bad790ax14bbdbe92210b2d3@mail.gmail.com>
+	(Ramagudi Naziir's message of "Tue, 19 Jan 2010 14:52:57 +0200")
+Message-ID: <m3my08tzyx.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20100117065803.6e5e089e@infradead.org>
-References: <1263505677.2074.2.camel@yio.site> <20100115065638.005ac690@infradead.org> 
-	<20100115180341.GA12146@kroah.com> <20100117065803.6e5e089e@infradead.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 20 Jan 2010 18:53:49 +0100
-Message-ID: <ac3eb2511001200953g3fc2be3ay30174b0429707c93@mail.gmail.com>
-Subject: Re: Driver-Core: devtmpfs - remove EXPERIMENTAL and enable it by 
-	default
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 17, 2010 at 15:58, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Fri, 15 Jan 2010 10:03:41 -0800
-> Greg KH <greg@kroah.com> wrote:
->> > removing experimental is fine... but setting it by default is a bit
->> > over the top and very inconsistent with how the 'default' option is
->> > used.
->>
->> Why?
->
-> because the convention is that we use "default y" only for those things
-> that used to be on, and are now turned into a config option.
+Ramagudi Naziir <naziirr@gmail.com> writes:
 
-Oh, I never heard of such a convention. Sure, we can remove that "y",
-if this is the way it should be used, not be used.
+> do you use vim ?
 
-Looking at the current Kconfig files many "default y" looks more like:
-"stuff that should be in a kernel to work in a common setup". I see
-new functionality often switched on with that flag.
+Sure, for small changes. And emacs.
 
-As said, I don't mind dropping that "y", if there is such a convention.
+> If so, how do you open files you want to read/edit ?
+> Assuming you don't remember their exact name/location, you'd need to
+> use something like 'find . -iname '*pattern*'. which is slow.
 
-Thanks,
-Kay
+Not very slow, if the tree is already in cache. You need only ca. 1 GB
+of RAM for this. I never use ".", I use "*" instead as it ignores .git
+directory:
+
+$ time find * -iname \*pattern\*
+real    0m0.051s
+
+$ time grep "The pattern" * -r
+(results)
+real    0m0.330s
+
+(grep -i is much slower).
+
+Other tools? Git, gitk and WWW browser :-)
+-- 
+Krzysztof Halasa
