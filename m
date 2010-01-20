@@ -1,76 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603Ab0ATGn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164Ab0ATGoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752603Ab0ATGn2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 01:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973Ab0ATGn1
+	id S1753164Ab0ATGoV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 01:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275Ab0ATGoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 01:43:27 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40256 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319Ab0ATGn0 (ORCPT
+	Wed, 20 Jan 2010 01:44:13 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:25728 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753025Ab0ATGoJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 01:43:26 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.4.0
-Message-ID: <4B56A5EF.40703@jp.fujitsu.com>
-Date: Wed, 20 Jan 2010 15:42:55 +0900
-From: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 20 Jan 2010 01:44:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=stUPbNC6yk35hZFwi/m/NuDJTzgbD5lh8HEdv8eKBO2KYProIDWqUm2oy1giXy90KT
+         dza3hffsNiKgRj1RM/didPXJ7L8REgKVjzH8AnTeJaZA5SSN41oTti2N/n29JjxZUEtJ
+         t2Zk8fSiX29I0+5NpLD1fHwX/qCACg5VetFr0=
 MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>,
-       Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-CC: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>,
-       lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-Subject: [PATCH 0/2] scsi: ftrace based scsi tracing feature
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4B5678E2.2050709@gmail.com>
+References: <20100116235653.898098245@gmail.com>
+	 <20100116235851.884756038@gmail.com> <4B5678E2.2050709@gmail.com>
+Date: Wed, 20 Jan 2010 07:44:07 +0100
+Message-ID: <7eb6a4d81001192244k19d28805p9cb4eaec7eed9366@mail.gmail.com>
+Subject: Re: [patch 2/2] sata_via: Delay on vt6420 when starting ATAPI DMA 
+	write
+From: Bart Hartgers <bart.hartgers@gmail.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       linux-ide@vger.kernel.org, juergen.metzdorf@telelev-dsl.de,
+       markpschool@hotmail.com, sporadic.crash@gmail.com, apopov@sirma.bg,
+       david@coomber.co.za, jay4mail@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-We'd like to propose this patchset (ftrace based scsi tracing)
-as the first attempt for SCSI tracing, starting with the minimum
-trace points.
+2010/1/20 Tejun Heo <htejun@gmail.com>:
+> Hello,
+>
+> On 01/17/2010 08:56 AM, Bart Hartgers wrote:
+>> When writing a disc on certain lite-on dvd-writers (also rebadged as
+>> optiarc/LG/...) connected to a vt6420, the ATAPI CDB ends up in the
+>> datastream and on the disc, causing silent corruption.  Delaying
+>> between sending the CDB and starting DMA seems to prevent this.
+>>
+>> I do not know if there are burners that do not suffer from this, but
+>> the patch should be safe for those as well.
+>>
+>> There are many reports of this issue, but AFAICT no solution was
+>> found before. For example:
+>> http://lkml.indiana.edu/hypermail/linux/kernel/0802.3/0561.html
+>>
+>> Signed-off-by: Bart Hartgers <bart.hartgers@gmail.com>
+>
+> Ah... you found solution for this?  That's great.  This is one of the
+> three problems that have been lingering for years - the other two
+> being pata_ali ATAPI DMA problem and sata_sil data corruption problem.
+> I'll be ecstatic if this fix works.  Just one thing, I don't think
+> we'll need a warning message there.  It's useful during development
+> but it doesn't really provide any useful information afterwards.
+>
 
-Tracing gives us an idea how far SCSI processing goes, for
-example, even in a case that a SCSI IRQ handling is blocked by
-other drivers that disable interrupts for a long time.  Also,
-trace could be used for debugging purpose in development similar
-to how USB developers use usbmon for collecting submitted and
-completed URBs for debugging.  In a mission critical area, there
-is sometimes a case that we have to analyze a problem at customers
-without taking a memory dump as much as possible.  There is also
-a case to solve a problem which reproducibility is very low (but
-we can not just leave the problem) so collecting additional data
-afterwards is difficult.
+Yes, you're right. I'll drop the printk_once and send another patch
+for inclusion. However, for testing I found it very useful to make
+sure that I got the right module loaded. So I figured it could be
+helpful for the interpretation of success/failure reports.
 
-In this version, it prints host#, channel, id, lun, and CDB (and
-a value of 'result' if it's called in scsi_done().)  All fields
-of CDB are printed in hex, and some of them are printed in ascii
-as well.  That makes the outputs be more user-friendly.  For
-example, retrieving 'lba' and 'transfer length (txlen)' data from
-CDB of "SCSI3 block command READ/WRITE," and printing them in the
-friendly format, users can easily correlate the info from SCSI
-layer with block layer.  (All the conversions to ascii that requires
-relatively large costs are done in TP_printk(), making the overheads
-at storing trace be minimum.)
+Assuming that this patch works for other people as well, what is
+prefered: resending both patches or just to make a new #2/2 (the
+vt6420 one)?
 
-CDB has various lengths for its size and that made us end up
-creating __print_hex().
+Groeten,
+Bart
 
-This patchset applies to 2.6.33-rc4.
-
- ([PATCH 0/2] scsi: ftrace based scsi tracing feature)
-  [PATCH 1/2] scsi: add __print_hex() to ftrace
-  [PATCH 2/2] scsi: add scsi trace core function and put trace points
-
-Thanks,
-Kei
+> Digging up the mailing list and cc'ing people who have reported this
+> problem.  If you still have the affected systems, can you guys please
+> test the patch in the following message and see whether it fixes the
+> problem?
+>
+>  http://article.gmane.org/gmane.linux.kernel/939112/raw
+>
+> Thanks a lot.  :-)
+>
+> --
+> tejun
+>
 
 
 
-
+-- 
+Bart Hartgers - New e-mail: bart.hartgers@gmail.com
