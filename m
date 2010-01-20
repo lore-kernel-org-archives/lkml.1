@@ -1,46 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751931Ab0ATNZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752081Ab0ATNb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751931Ab0ATNZT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 08:25:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288Ab0ATNZO
+	id S1752081Ab0ATNb2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 08:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709Ab0ATNbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 08:25:14 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:39631 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751458Ab0ATNZM (ORCPT
+	Wed, 20 Jan 2010 08:31:25 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:64415 "EHLO
+	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751711Ab0ATNbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 08:25:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ggmQitqWV5YFMuhqjlj4j5oMf+q9AL0H0/5DKKg5Z2raauva6f/2Io9AXVcjDZYAdq
-         gIbWQTW/KtoP0aRINNRnt/hAmpprUXnO/sulPDLFNqpV1vv9QC+qDF0gV215JJq5H4DN
-         E9D1pDv+Giy5CIvhmj2GZkBCZDX9iefaVheM0=
-Subject: Re: sched: Remove USER_SCHED
-From: Dhaval Giani <dhaval.giani@gmail.com>
-To: a.p.zijlstra@chello.nl
-Cc: mingo@elte.hu, bharata@linux.vnet.ibm.com, vatsa@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com
-In-Reply-To: <1263990378.24844.3.camel@localhost>
-References: <1263990378.24844.3.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Jan 2010 14:25:05 +0100
-Message-ID: <1263993905.24844.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jan 2010 08:31:25 -0500
+Date: Wed, 20 Jan 2010 14:31:44 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: siccegge@stud.informatik.uni-erlangen.de,
+       Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: [PATCH] Obsolete config in kernel source (USE_MIXARTLOADER)
+Message-ID: <20100120133144.GD3580@faui49.informatik.uni-erlangen.de>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="+pHx0qQiF2pBVqBT"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-20 at 13:26 +0100, Dhaval Giani wrote:
-> Remove the USER_SCHED feature. It has been scheduled to be removed in 2.6.34
-> as per http://marc.info/?l=linux-kernel&m=125728479022976&w=2
-> 
-> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 
-Sorry, this is no longer correct. Corrected sign-off follows!
+--+pHx0qQiF2pBVqBT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Signed-off-by: Dhaval Giani <dhaval.giani@gmail.com>
+Hi all!
 
+	As part of the VAMOS[0] research project at the University of
+Erlangen we're checking referential integrity between kernel KConfig
+options and in-code Conditional blocks.
+
+	The config Variable USE_MIXARTLOADER has been non-existent for
+all git based linux kernels (2.6.12-rc) and seems to be no longer
+relevant. It is only referenced at one place in the Code
+(sound/pci/mixart/mixart_hwdep.c).
+
+	The attached patch makes the behaviour more obvious as it is
+equivalent to the old one when assuming CONFIG_MIXARTLOADER as not
+defined.
+
+	Please keep me informed of this patch getting confirmed /
+merged so we can keep track of it.
+
+Regards
+
+	Christoph Egger
+
+
+--+pHx0qQiF2pBVqBT
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="0001-config-USE_MIXARTLOADER-has-never-existed-in-KConfig.patch"
+
+>From 974a2f370b3401e948821bae47c3e9edb1b21a5e Mon Sep 17 00:00:00 2001
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Wed, 20 Jan 2010 14:23:47 +0100
+Subject: [PATCH] config USE_MIXARTLOADER has never existed in KConfig for 2.6 linux
+ kernels so this part of the check always evaluates to true thus
+ removing the part of the check.
+
+
+Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+---
+ sound/pci/mixart/mixart_hwdep.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/sound/pci/mixart/mixart_hwdep.c b/sound/pci/mixart/mixart_hwdep.c
+index 4cf4cd8..ef39a58 100644
+--- a/sound/pci/mixart/mixart_hwdep.c
++++ b/sound/pci/mixart/mixart_hwdep.c
+@@ -545,7 +545,7 @@ static int mixart_dsp_load(struct mixart_mgr* mgr, int index, const struct firmw
+ 
+ 
+ #if defined(CONFIG_FW_LOADER) || defined(CONFIG_FW_LOADER_MODULE)
+-#if !defined(CONFIG_USE_MIXARTLOADER) && !defined(CONFIG_SND_MIXART) /* built-in kernel */
++#if !defined(CONFIG_SND_MIXART) /* built-in kernel */
+ #define SND_MIXART_FW_LOADER	/* use the standard firmware loader */
+ #endif
+ #endif
+-- 
+1.6.3.3
+
+
+--+pHx0qQiF2pBVqBT--
