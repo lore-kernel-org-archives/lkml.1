@@ -1,98 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748Ab0ATJrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752491Ab0ATJtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752748Ab0ATJrg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 04:47:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545Ab0ATJre
+	id S1752491Ab0ATJtL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 04:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506Ab0ATJtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 04:47:34 -0500
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:29258 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752682Ab0ATJrc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 04:47:32 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=us-ascii
-Date: Wed, 20 Jan 2010 10:46:25 +0100
-From: Tomasz Fujak <t.fujak@samsung.com>
-Subject: RE: [PATCH/RFC v1 0/2] Human readable performance event description in
- sysfs
-In-reply-to: <1263978999.4283.823.camel@laptop>
-To: "'Peter Zijlstra'" <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Message-id: <023a01ca99b5$6ea3cf80$4beb6e80$%fujak@samsung.com>
-X-Mailer: Microsoft Office Outlook 12.0
-Content-language: pl
-Thread-index: AcqZsWLXbhwWwsAaSSqug+IaSbAUGwAAQ4Ow
-References: <1263978706-15499-1-git-send-email-t.fujak@samsung.com>
- <1263978999.4283.823.camel@laptop>
+	Wed, 20 Jan 2010 04:49:08 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:56249 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750739Ab0ATJtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 04:49:07 -0500
+Date: Wed, 20 Jan 2010 09:48:56 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 5/7] Add /proc trigger for memory compaction
+Message-ID: <20100120094856.GD5154@csn.ul.ie>
+References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie> <1262795169-9095-6-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.1001071352100.23894@chino.kir.corp.google.com> <alpine.DEB.2.00.1001131518240.10201@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1001131518240.10201@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: linux-arm-kernel-bounces@lists.infradead.org [mailto:linux-arm-
-> kernel-bounces@lists.infradead.org] On Behalf Of Peter Zijlstra
-> Sent: Wednesday, January 20, 2010 10:17 AM
-> To: Tomasz Fujak
-> Cc: jpihet@mvista.com; p.osciak@samsung.com; jamie.iles@picochip.com;
-> will.deacon@arm.com; linux-kernel@vger.kernel.org;
-> kyungmin.park@samsung.com; mingo@elte.hu; linux-arm-
-> kernel@lists.infradead.org; m.szyprowski@samsung.com
-> Subject: Re: [PATCH/RFC v1 0/2] Human readable performance event
-> description in sysfs
+On Wed, Jan 13, 2010 at 03:23:44PM -0800, David Rientjes wrote:
+> On Thu, 7 Jan 2010, David Rientjes wrote:
 > 
-> On Wed, 2010-01-20 at 10:11 +0100, Tomasz Fujak wrote:
-> > Hi,
-> >
-> > While I managed to build and run the early version (back from
-> > December), I was unable to find the newest sources (infra + ARMv6,
-> > ARMv7 support).
-> > Where do I find them?
-> >
-> > The following patches provide a sysfs entry with hardware event human
-> > readable description in the form of "0x%llx\t%lld-%lld\t%s\t%s" %
-> > (event_value, minval, maxval, name, description) and means to
-> populate
-> > the file.
-> > The version posted contains ARMv6, ARMv7 (Cortex-A[89]) support in
-> > this matter.
-> >
-> > The intended use is twofold: for users to read the list directly and
-> > for tools (like perf).
-> >
-> > This series includes:
-> > [PATCH v1 1/2] perfevent: Add performance event structure definition
-> > and 'extevents' sysfs entry
-> > [PATCH v1 2/2] [ARM] perfevent: Event description list for ARMv6,
-> > Cortex-A8 and Cortex-A9 exported
+> > > diff --git a/include/linux/compaction.h b/include/linux/compaction.h
+> > > index 6201371..5965ef2 100644
+> > > --- a/include/linux/compaction.h
+> > > +++ b/include/linux/compaction.h
+> > > @@ -5,4 +5,9 @@
+> > >  #define COMPACT_INCOMPLETE	0
+> > >  #define COMPACT_COMPLETE	1
+> > >  
+> > > +#ifdef CONFIG_MIGRATION
+> > > +extern int sysctl_compaction_handler(struct ctl_table *table, int write,
+> > > +			void __user *buffer, size_t *length, loff_t *ppos);
+> > > +#endif /* CONFIG_MIGRATION */
+> > > +
+> > >  #endif /* _LINUX_COMPACTION_H */
 > 
-> Why do this in kernel space? Listing available events seems like
-> something we can do from userspace just fine.
-
-Sure we could, it's the other option. But it does not appeal to me. In case
-of userspace tools (like the pref for which the above is meant) they'd need
-to come with their own version of the list, which must match the host
-platform. Right now the perf just forwards raw event number to the kernel
-and that's it. Potentially it could bind a set of events supported to a
-platform (how to detect which platform we execute on?). But how do we handle
-different revisions and minor changes within a single platform?
-
-That's why I think the kernel should expose supported events. At least with
-an identifier suitable to unambiguously detect which HW defined event it is.
-
-In the proposed approach I also provided a name a and description.
-Right now if one wants to set a counter with some non-generic value, a
-datasheet comes handy.
-And Joe the average user does not necessarily know the detailed machine
-he/she has, let alone the datasheet. With this approach the user is armed
-with the event definition, which helps them go around outdated/unsupported
-tools.
-
+> This should be CONFIG_COMPACTION since mm/compaction.c won't be compiled 
+> without it; the later additions to this ifdef, fragmentation_index() and 
+> try_to_compact_pages(), can also be under CONFIG_COMPACTION since neither 
+> are used outside of the compaction core directly (__fragmentation_index() 
+> from vmstat uses its wrapped function at file scope).
 > 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
+True. It's corrected now.
 
+> > > diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> > > index 8a68b24..6202e95 100644
+> > > --- a/kernel/sysctl.c
+> > > +++ b/kernel/sysctl.c
+> > > @@ -50,6 +50,7 @@
+> > >  #include <linux/ftrace.h>
+> > >  #include <linux/slow-work.h>
+> > >  #include <linux/perf_event.h>
+> > > +#include <linux/compaction.h>
+> > >  
+> > >  #include <asm/uaccess.h>
+> > >  #include <asm/processor.h>
+> > > @@ -80,6 +81,7 @@ extern int pid_max;
+> > >  extern int min_free_kbytes;
+> > >  extern int pid_max_min, pid_max_max;
+> > >  extern int sysctl_drop_caches;
+> > > +extern int sysctl_compact_node;
+> > >  extern int percpu_pagelist_fraction;
+> > >  extern int compat_log;
+> > >  extern int latencytop_enabled;
+> > > @@ -1109,6 +1111,15 @@ static struct ctl_table vm_table[] = {
+> > >  		.mode		= 0644,
+> > >  		.proc_handler	= drop_caches_sysctl_handler,
+> > >  	},
+> > > +#ifdef CONFIG_MIGRATION
+> > > +	{
+> > > +		.procname	= "compact_node",
+> > > +		.data		= &sysctl_compact_node,
+> > > +		.maxlen		= sizeof(int),
+> > > +		.mode		= 0644,
+> > 
+> > This should only need 0200?
+> > 
+> 
+> This needs to be CONFIG_COMPACTION as well, we won't have the handler 
+> without mm/compaction.c.
+> 
+
+Both corrected.
+
+Thanks
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
