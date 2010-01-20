@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823Ab0ATDYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865Ab0ATD0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823Ab0ATDYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 22:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683Ab0ATDYj
+	id S1754865Ab0ATD0y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 22:26:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814Ab0ATD0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 22:24:39 -0500
-Received: from mail-pz0-f190.google.com ([209.85.222.190]:34064 "EHLO
-	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753217Ab0ATDYi (ORCPT
+	Tue, 19 Jan 2010 22:26:53 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:64618 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751708Ab0ATD0w convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 22:24:38 -0500
+	Tue, 19 Jan 2010 22:26:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=XjGaBiErlEYkyAy/6WfBsnHZk8o3mjvrEExJEHGUpATo7OXgUPUheX4cSMnPtEZMSP
-         QqLsnvgbJ4zfIOUPqLFJclCAaPGXpAMm+Qrq8k7/MHzVI9jJfew5OpyMGt/wExHue54Z
-         a/yItR792HZm7hfOJBgpTXwHsXeuKqELk6Kjs=
-Message-ID: <4B5678E2.2050709@gmail.com>
-Date: Wed, 20 Jan 2010 12:30:42 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=DvmealXbKIadbbQ2rGAr2XVABx+gotGmcWL7ikps9ZZl7BJ4w2Y0LzzpYsbURILfSB
+         sP2pZWaLj3SCBGm7IIQQ6ruiI8jVYo0q+lzNj406PZWaQgHGkYls03K7qqvLHYx3mfur
+         HLFcd7pkFLmRZDHIoOHXHYPmAxvF208Jb4XH4=
 MIME-Version: 1.0
-To: Bart Hartgers <bart.hartgers@gmail.com>
-CC: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org, juergen.metzdorf@telelev-dsl.de,
-       markpschool@hotmail.com, sporadic.crash@gmail.com, apopov@sirma.bg,
-       david@coomber.co.za, jay4mail@gmail.com
-Subject: Re: [patch 2/2] sata_via: Delay on vt6420 when starting ATAPI DMA
- write
-References: <20100116235653.898098245@gmail.com> <20100116235851.884756038@gmail.com>
-In-Reply-To: <20100116235851.884756038@gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <d65b1b151001191029o66794c24t228177a8ca544e44@mail.gmail.com>
+References: <d65b1b151001191029o66794c24t228177a8ca544e44@mail.gmail.com>
+Date: Wed, 20 Jan 2010 11:26:51 +0800
+Message-ID: <2375c9f91001191926hc80dc50mb264f757295c1337@mail.gmail.com>
+Subject: Re: [PATCH] Use full path to dnsdomainname and domainname in 
+	scripts/mkcompile_h
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Glenn Sommer <glemsom@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Jan 20, 2010 at 2:29 AM, Glenn Sommer <glemsom@gmail.com> wrote:
+> With reference to: http://bugzilla.kernel.org/show_bug.cgi?id=14920
+> I'll post my suggestion here.
+>
+> Currently scripts/mkcompile_h checks for "/bin/dnsdomainname" and
+> "/bin/domainname" when trying to find the DNS name.
+> Though, when running the executable - the full path isn't used!
+>
+> IMO if we check for "/bin/dnsdomainname", we should also use
+> "/bin/dnsdomainname" - and not blindly trust /bin is the first directory in
+> $PATH  which contains a executable named "dnsdomainname"
+>
+>
+> I propose to use the full path, that we know is valid. Here's my proposed patch:
+>
+>
+> --- scripts/mkcompile_h.orig    2009-12-28 23:02:34.000000000 +0100
+> +++ scripts/mkcompile_h 2009-12-28 23:03:12.000000000 +0100
+> @@ -66,9 +66,9 @@
+>   echo \#define LINUX_COMPILE_HOST \"`hostname | $UTS_TRUNCATE`\"
+>
+>   if [ -x /bin/dnsdomainname ]; then
+> -    echo \#define LINUX_COMPILE_DOMAIN \"`dnsdomainname | $UTS_TRUNCATE`\"
+> +    echo \#define LINUX_COMPILE_DOMAIN \"`/bin/dnsdomainname | $UTS_TRUNCATE`\"
+>   elif [ -x /bin/domainname ]; then
+> -    echo \#define LINUX_COMPILE_DOMAIN \"`domainname | $UTS_TRUNCATE`\"
+> +    echo \#define LINUX_COMPILE_DOMAIN \"`/bin/domainname | $UTS_TRUNCATE`\"
+>   else
+>     echo \#define LINUX_COMPILE_DOMAIN
+>   fi
+>
+>
+> Signed-off-by: Glenn Sommer <glemsom@gmail.com>
 
-On 01/17/2010 08:56 AM, Bart Hartgers wrote:
-> When writing a disc on certain lite-on dvd-writers (also rebadged as
-> optiarc/LG/...) connected to a vt6420, the ATAPI CDB ends up in the
-> datastream and on the disc, causing silent corruption.  Delaying
-> between sending the CDB and starting DMA seems to prevent this.
-> 
-> I do not know if there are burners that do not suffer from this, but
-> the patch should be safe for those as well.
-> 
-> There are many reports of this issue, but AFAICT no solution was 
-> found before. For example:
-> http://lkml.indiana.edu/hypermail/linux/kernel/0802.3/0561.html
-> 
-> Signed-off-by: Bart Hartgers <bart.hartgers@gmail.com>
-
-Ah... you found solution for this?  That's great.  This is one of the
-three problems that have been lingering for years - the other two
-being pata_ali ATAPI DMA problem and sata_sil data corruption problem.
-I'll be ecstatic if this fix works.  Just one thing, I don't think
-we'll need a warning message there.  It's useful during development
-but it doesn't really provide any useful information afterwards.
-
-Digging up the mailing list and cc'ing people who have reported this
-problem.  If you still have the affected systems, can you guys please
-test the patch in the following message and see whether it fixes the
-problem?
-
-  http://article.gmane.org/gmane.linux.kernel/939112/raw
-
-Thanks a lot.  :-)
-
--- 
-tejun
+Makes sense, but is that possible we have 'domainname' installed in two
+different directories?
