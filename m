@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144Ab0ATPaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326Ab0ATPaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753144Ab0ATPaK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 10:30:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250Ab0ATPaH
+	id S1753326Ab0ATPaf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 10:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694Ab0ATPad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 10:30:07 -0500
-Received: from f0.cmpxchg.org ([85.214.51.133]:56185 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751863Ab0ATPaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 10:30:06 -0500
-Date: Wed, 20 Jan 2010 16:30:00 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, x86@kernel.org
-Subject: Re: [RFC 1/1] bootmem: move big allocations behing 4G
-Message-ID: <20100120153000.GA13172@cmpxchg.org>
-References: <1263855390-32497-1-git-send-email-jslaby@suse.cz> <20100119143355.GB7932@cmpxchg.org> <4B570A15.8040601@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 20 Jan 2010 10:30:33 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50365 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753233Ab0ATPad (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 10:30:33 -0500
+Date: Wed, 20 Jan 2010 16:30:27 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: git pre-commit hook running checkpatch.pl
+Message-ID: <20100120153027.GB20271@pengutronix.de>
+References: <20100120020202.GE26562@trinity.fluff.org> <20100120100155.GA851@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4B570A15.8040601@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100120100155.GA851@sirena.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
-
-On Wed, Jan 20, 2010 at 02:50:13PM +0100, Jiri Slaby wrote:
-> On 01/19/2010 03:33 PM, Johannes Weiner wrote:
-> > --- a/include/linux/bootmem.h
-> > +++ b/include/linux/bootmem.h
-> > @@ -96,20 +96,26 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
-> >  				      unsigned long align,
-> >  				      unsigned long goal);
-> >  
-> > +#ifdef MAX_DMA32_PFN
-> > +#define BOOTMEM_DEFAULT_GOAL	(__pa(MAX_DMA32_PFN << PAGE_SHIFT))
-> > +#else
-> > +#define BOOTMEM_DEFAULT_GOAL	MAX_DMA_ADDRESS
+On Wed, Jan 20, 2010 at 10:01:55AM +0000, Mark Brown wrote:
+> On Wed, Jan 20, 2010 at 02:02:02AM +0000, Ben Dooks wrote:
 > 
-> I just noticed this should write:
-> #define BOOTMEM_DEFAULT_GOAL   __pa(MAX_DMA_ADDRESS)
+> > I've written a git pre-commit[1] hook which stops any commits happening if
+> > checkpatch.pl reports problems with the patch. Any comments?
+> 
+> > [1] http://www.fluff.org/ben/linux/githooks/pre-commit
+> 
+> Checkpatch does sometimes generate the occasional false positive which
+> can be annoying when they trigger.  It can also be a problem when doing
+> bugfixes IME - if an existing file has lots of checkpatch issues then a
+> fix which maintains the same coding style as the surrounding code can
+> trigger checkpatch issues which would if fixed make the code not fit in
+> with the rest of the file.  Obviously it'd be desirable to fix the file
+> but that's a bit unreasonable for people submitting bug fixes,
+> especially when pushing fixes to Linus and stable.
+> 
+> That said, monitoring for checkpatch issues is useful.
+Maybe only print the warnings instead of stopping a commit?  I'd not
+like me stopping here not only for the reasons pointed out by Mark and
+Russell, but also as I frequently do wip-commits that not necessarily
+are checkpatch-clean.
 
-Pardon my sloppiness, it's all backwards.  The other case should
-be without the __pa(), of course.
+Best regards
+Uwe
 
-I'll send a fixed and tested version later.
-
-Thanks,
-	Hannes
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
