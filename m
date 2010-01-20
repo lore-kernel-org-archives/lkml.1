@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281Ab0ATKwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118Ab0ATKyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753281Ab0ATKwG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 05:52:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339Ab0ATKwF
+	id S1753118Ab0ATKyN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 05:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061Ab0ATKyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 05:52:05 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:24434 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480Ab0ATKwE (ORCPT
+	Wed, 20 Jan 2010 05:54:12 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49607 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187Ab0ATKyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 05:52:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CNmJZhHTcf/5mrwgQ8wC3sNect42mlfDtakqJ9xFyT1LSQ+6LZTE/zvVCBjL7k09LJ
-         JIoe5ka92mc+FMR8Uh2BJT2evy9r42195PUSBeWM/VuiREaWWpJzGb2o7rY98LqJvowF
-         o6HSmQzqgMON3tB7cjm/gXKaMQLTx89jtJWiY=
-Date: Wed, 20 Jan 2010 11:51:57 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>, ananth@in.ibm.com,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-Message-ID: <20100120105155.GC5149@nowhere>
-References: <4B545146.3080001@redhat.com> <20100118124419.GC1628@linux.vnet.ibm.com> <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com> <4B5459CA.9060603@redhat.com> <4B545ACF.40203@cs.helsinki.fi> <1263852957.2266.38.camel@localhost.localdomain> <4B556855.6040800@redhat.com> <1263923265.4998.28.camel@localhost.localdomain> <20100119180610.GA11005@nowhere> <20100120063620.GA30109@linux.vnet.ibm.com>
+	Wed, 20 Jan 2010 05:54:09 -0500
+Date: Wed, 20 Jan 2010 10:53:50 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: monstr@monstr.eu
+Cc: linux-kernel@vger.kernel.org, michal.simek@petalogix.com, arnd@arndb.de,
+       linux-arch@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
+       akpm@linux-foundation.org, mingo@elte.hu, joerg.roedel@amd.com
+Subject: Re: Generic DMA - BUG_ON
+Message-ID: <20100120105350.GA23394@flint.arm.linux.org.uk>
+Mail-Followup-To: monstr@monstr.eu, linux-kernel@vger.kernel.org,
+	michal.simek@petalogix.com, arnd@arndb.de,
+	linux-arch@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
+	akpm@linux-foundation.org, mingo@elte.hu, joerg.roedel@amd.com
+References: <1263982111-24123-1-git-send-email-monstr@monstr.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100120063620.GA30109@linux.vnet.ibm.com>
+In-Reply-To: <1263982111-24123-1-git-send-email-monstr@monstr.eu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 12:06:20PM +0530, Srikar Dronamraju wrote:
-> * Frederic Weisbecker <fweisbec@gmail.com> [2010-01-19 19:06:12]:
+On Wed, Jan 20, 2010 at 11:08:30AM +0100, monstr@monstr.eu wrote:
+> Hi All,
 > 
-> > On Tue, Jan 19, 2010 at 09:47:45AM -0800, Jim Keniston wrote:
-> > > 
-> > > What does the code in the jumped-to vma do?  Is the instrumentation code
-> > > that corresponds to the uprobe handlers encoded in an ad hoc .so?
-> > 
-> > 
-> > Once the instrumentation is requested by a process that is not the
-> > instrumented one, this looks impossible to set a uprobe without a
-> > minimal voluntary collaboration from the instrumented process
-> > (events sent through IPC or whatever). So that looks too limited,
-> > this is not anymore a true dynamic uprobe.
-> 
-> I dont see a case where the thread being debugged refuses to place a
-> probe unless the process is exiting. The traced process doesnt decide
-> if it wants to be probed or not. There could be a slight delay from the
-> time the tracer requested to the time the probe is placed. But this
-> delay in only affecting the tracer and the tracee. This is in contract
-> to say stop_machine where the threads of other applications are also
-> affected.
+> I have this patch in my repo. I just added BUG_ON for dma ops.
+> The reason for that is if driver not setup ops correctly than
+> the system do bad access to any memory space without any visible reason.
+> BUG_ON points to it and helps to solve where the problem is.
 
+I have a question of principle to raise here.
 
-I did not think about a kind of trace point inserted in a shared memory.
-I was just confused :)
+If you have code which does:
 
+	if (ops->foo)
+		ops->foo();
+
+and ops is NULL, then this code will oops; you will get a full register
+dump and backtrace.  You can use this information along with markup_oops.pl
+to find out where the problem is.
+
+If you add a BUG_ON() to this, the only additional information you end
+up with is (possibly) a nice friendly message which tells you the file
+and line number - but you add additional run-time tests to the code.
+
+The question is: is this worth it?  Is there some problem with the
+original oops that makes the problem hard to find?  Should we be using
+BUG_ON() to augment normal oopses in this way?
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
