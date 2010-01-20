@@ -1,122 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309Ab0ATNga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423Ab0ATNhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752309Ab0ATNga (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 08:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062Ab0ATNgV
+	id S1753423Ab0ATNhu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 08:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146Ab0ATNhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 08:36:21 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57365 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181Ab0ATNgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 08:36:20 -0500
-Message-ID: <4B570657.5090105@cn.fujitsu.com>
-Date: Wed, 20 Jan 2010 21:34:15 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>, Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] perf tools: fix write_event()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jan 2010 08:37:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56107 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751591Ab0ATNhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 08:37:46 -0500
+Date: Wed, 20 Jan 2010 07:37:34 -0600
+From: Clark Williams <williams@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: RT <linux-rt-users@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Carsten Emde <ce@ceag.ch>, John Kacur <jkacur@redhat.com>
+Subject: Re: RFC: NUMA modifications to cyclictest
+Message-ID: <20100120073734.4be7a52b@torg>
+In-Reply-To: <alpine.LFD.2.00.1001200741000.2906@localhost.localdomain>
+References: <20100119171439.24726f2e@torg>
+	<alpine.LFD.2.00.1001200741000.2906@localhost.localdomain>
+Organization: Red Hat, Inc
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+ boundary="Sig_/dSWNDpu1MzBAg+Lj9jzN+/2"; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We parse the event while it's read from mmap buffer in
-write_event(), but sometimes the event will straddles the
-mmap boundary, we should handle this case
+--Sig_/dSWNDpu1MzBAg+Lj9jzN+/2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-And if we record events(such as perf kmem/sched) for long
-times, Ctrl + C can't interrupt it just for this reason
+On Wed, 20 Jan 2010 07:51:41 +0100 (CET)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- tools/perf/builtin-record.c |   62 +++++++++++++++++++++++++++++++++---------
- 1 files changed, 48 insertions(+), 14 deletions(-)
+> On Tue, 19 Jan 2010, Clark Williams wrote:
+> > RT-ers,
+> >=20
+> > Lately we've been struggling with some performance issues on high-core
+> > count (>16 cores) NUMA machines with the RT kernel. During the course
+> > of troubleshooting this issue, we tried using the 'numactl' program to
+> > constrain our measurement testing tool (rteval) to a particular memory
+> > node, rather than letting everything float. Doing so showed marked
+> > improvement in both max latency and jitter.  While this doesn't solve
+> > our performance problems I thought it might make sense to have a --numa
+> > mode for cylictest that compliments the --smp mode just added.=20
+> >=20
+> > The big difference here is that when using --numa, each measurement
+> > thread (one per cpu) has it's stack allocated from the memory node
+> > associated with it's cpu. Also, the major data structures for each
+> > thread (parameter block, statistics block and histogram) are allocated
+> > from the appropriate node. This is done with calls into libnuma,
+> > which means this will add a dependency on libnuma.=20
+>=20
+> That might cause some trouble for embedded folks. :(
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 7bb9ca1..97573b7 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -111,28 +111,62 @@ static void write_output(void *buf, size_t size)
- 	}
- }
- 
--static void write_event(event_t *buf, size_t size)
-+static void write_event(void *buf, size_t size)
- {
--	size_t processed_size = buf->header.size;
--	event_t *ev = buf;
-+	event_t *ev;
-+	struct mmap_event mmap_ev;
-+	static void *rec_buf;
-+	static unsigned long rec_len;
- 
--	do {
--		/*
--		* Add it to the list of DSOs, so that when we finish this
--		 * record session we can pick the available build-ids.
--		 */
-+	write_output(buf, size);
-+
-+	while (size > 0) {
-+		if (rec_buf) {
-+			int len;
-+
-+			memcpy(&mmap_ev, rec_buf, rec_len);
-+			len = sizeof(mmap_ev.header) - rec_len;
-+			if (len > 0) {
-+				memcpy(&mmap_ev + rec_len, buf, len);
-+				buf += len;
-+				size -= len;
-+				rec_len = sizeof((mmap_ev.header));
-+			}
-+
-+			len = mmap_ev.header.size - rec_len;
-+			if (mmap_ev.header.type == PERF_RECORD_MMAP)
-+				memcpy(&mmap_ev + rec_len, buf, len);
-+
-+			buf += len;
-+			size -= len;
-+
-+			rec_buf = NULL;
-+			rec_len = 0;
-+
-+			ev = (event_t *)&mmap_ev;
-+			goto handle_mmap;
-+		}
-+
-+		ev = (event_t *)buf;
-+		if (size < sizeof(struct perf_event_header) ||
-+		    ev->header.size > size) {
-+			rec_buf = buf;
-+			rec_len = size;
-+			break;
-+		}
-+
-+		buf += ev->header.size;
-+		size -= ev->header.size;
-+
-+handle_mmap:
- 		if (ev->header.type == PERF_RECORD_MMAP) {
- 			struct list_head *head = &dsos__user;
- 			if (ev->header.misc == 1)
- 				head = &dsos__kernel;
- 			__dsos__findnew(head, ev->mmap.filename);
- 		}
-+	}
- 
--		ev = ((void *)ev) + ev->header.size;
--		processed_size += ev->header.size;
--	} while (processed_size < size);
--
--	write_output(buf, size);
- }
- 
- static int process_synthesized_event(event_t *event,
--- 
-1.6.1.2
+Yeah, that's why I send the RFC, wanted to see who would hate me for
+it :).
 
+Carsten already told me off-list that one of his build machines didn't
+have numa.h, so I'm going to have to rearrange the build a bit.
+
+As much as I hate to say it, I think the best option is to use autoconf
+to detect if libnuma is available on the build platform and to take
+appropriate steps if it's not.=20
+
+The other idea I toyed with was dynamic loading of libnuma so there's
+not an install dependency for the libnuma package with the rt-tests
+package. I only use five functions from libnuma, so that's not too bad
+a set of function pointers to manage. Hmmm, that probably won't work
+very well, since I'll still have to include numa.h. Sigh...
+
+Clark
+
+--Sig_/dSWNDpu1MzBAg+Lj9jzN+/2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.13 (GNU/Linux)
+
+iEYEARECAAYFAktXByIACgkQHyuj/+TTEp0OtwCfZa2g3qej2MA8RCO/R16NJulx
+/p4Anied3kZJF+nXaLVqgbXQZd+CRA7Y
+=M8XX
+-----END PGP SIGNATURE-----
+
+--Sig_/dSWNDpu1MzBAg+Lj9jzN+/2--
