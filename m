@@ -1,91 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790Ab0ATB3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030Ab0ATBtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755790Ab0ATB3i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 20:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469Ab0ATB3i
+	id S1756030Ab0ATBtp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 20:49:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965Ab0ATBtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 20:29:38 -0500
-Received: from mga01.intel.com ([192.55.52.88]:9153 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755218Ab0ATB3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 20:29:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,306,1262592000"; 
-   d="scan'208";a="532721466"
-Subject: Re: fio mmap randread 64k more than 40% regression with 2.6.33-rc1
-From: Shaohua Li <shaohua.li@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       "jmoyer@redhat.com" <jmoyer@redhat.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100119214046.GB4992@redhat.com>
-References: <4e5e476b0912310234mf9ccaadm771c637a3d107d18@mail.gmail.com>
-	 <1262340730.19773.47.camel@localhost>
-	 <4e5e476b1001010832o24f6a0efudbfc36598bfc7c5e@mail.gmail.com>
-	 <1262435612.19773.80.camel@localhost>
-	 <4e5e476b1001021052u51a90a91qb2fbb4089498a3ca@mail.gmail.com>
-	 <1262593090.29897.14.camel@localhost>
-	 <4e5e476b1001041028v1f204834r1fa97e732a094210@mail.gmail.com>
-	 <4e5e476b1001160827n6dc73b35vee8b46e541134c2@mail.gmail.com>
-	 <1263783999.12893.2.camel@localhost>
-	 <4e5e476b1001191210s37423e4av6673225d5078a88e@mail.gmail.com>
-	 <20100119214046.GB4992@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Jan 2010 09:29:35 +0800
-Message-ID: <1263950975.7958.9.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 19 Jan 2010 20:49:45 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:51260 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755956Ab0ATBto (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jan 2010 20:49:44 -0500
+Message-ID: <4B566131.6020300@linux.vnet.ibm.com>
+Date: Tue, 19 Jan 2010 17:49:37 -0800
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Paul Mackerras <paulus@samba.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Dan Terpstra <terpstra@eecs.utk.edu>, Philip Mucci <mucci@eecs.utk.edu>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>
+Subject: Re: [RFC] perf_events: support for uncore a.k.a. nest units
+References: <4B560ACD.4040206@linux.vnet.ibm.com> <20100120004430.GA23484@basil.fritz.box>
+In-Reply-To: <20100120004430.GA23484@basil.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-19 at 13:40 -0800, Vivek Goyal wrote:
-> On Tue, Jan 19, 2010 at 09:10:33PM +0100, Corrado Zoccolo wrote:
-> > On Mon, Jan 18, 2010 at 4:06 AM, Zhang, Yanmin
-> > <yanmin_zhang@linux.intel.com> wrote:
-> > > On Sat, 2010-01-16 at 17:27 +0100, Corrado Zoccolo wrote:
-> > >> Hi Yanmin
-> > >> On Mon, Jan 4, 2010 at 7:28 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> > >> > Hi Yanmin,
-> > >> >> When low_latency=1, we get the biggest number with kernel 2.6.32.
-> > >> >> Comparing with low_latency=0's result, the prior one is about 4% better.
-> > >> > Ok, so 2.6.33 + corrado (with low_latency =0) is comparable with
-> > >> > fastest 2.6.32, so we can consider the first part of the problem
-> > >> > solved.
-> > >> >
-> > >> I think we can return now to your full script with queue merging.
-> > >> I'm wondering if (in arm_slice_timer):
-> > >> -       if (cfqq->dispatched)
-> > >> +      if (cfqq->dispatched || (cfqq->new_cfqq && rq_in_driver(cfqd)))
-> > >>                return;
-> > >> gives the same improvement you were experiencing just reverting to rq_in_driver.
-> > > I did a quick testing against 2.6.33-rc1. With the new method, fio mmap randread 46k
-> > > has about 20% improvement. With just checking rq_in_driver(cfqd), it has
-> > > about 33% improvement.
-> > >
-> > Jeff, do you have an idea why in arm_slice_timer, checking
-> > rq_in_driver instead of cfqq->dispatched gives so much improvement in
-> > presence of queue merging, while it doesn't have noticeable effect
-> > when there are no merges?
-> 
-> Performance improvement because of replacing cfqq->dispatched with
-> rq_in_driver() is really strange. This will mean we will do even lesser
-> idling on the cfqq. That means faster cfqq switching and that should mean more
-> seeks (for this test case) and reduce throughput. This is just opposite to your approach of treating a random read mmap queue as sync where we will idle on
-> the queue.
-I used to look at the issue, but not fully understand it. Some
-interesting finding:
-the cfqq->dispatched cause cfq_select_queue frequently switch queues.
-it appears frequent switch can make we could quickly switch to
-sequential requests in the workload. without the cfqq->dispatched, we
-dispatch queue1 request, M requests from other queues, queue1 request.
-with it, we dispatch queue1 request, N requests from other queues,
-queue1 request. It appears M < N from blktrace, which cause we have less
-seeky. I don't see any other obvious difference from blktrace in the two
-cases.
+On 1/19/2010 4:44 PM, Andi Kleen wrote:
+> On Tue, Jan 19, 2010 at 11:41:01AM -0800, Corey Ashford wrote:
+>> 4. How do you encode uncore events?
+>> ----
+>> Uncore events will need to be encoded in the config field of the
+>> perf_event_attr struct using the existing PERF_TYPE_RAW encoding.  64 bits
+>> are available in the config field, and that may be sufficient to support
+>> events on most systems. However, due to  the proliferation and added
+>> complexity of PMUs we envision, we might want to add another 64-bit config
+>> (perhaps call it config_extra or config2) field to encode any extra
+>> attributes that might be needed.  The exact encoding used, just as for the
+>> current encoding for core events, will be on a per-arch and possibly
+>> per-system basis.
+>
+> I don't think a raw hex number will scale anywhere. You'll need a human
+> readable event list / sub event masks with help texts.
+>
+> Often uncore events have specific restrictions, and that needs
+> to be enforced somewhere too.
+>
+> Doing that all in a clean way that is also usable
+> by programs likely needs a lot more thinking.
 
-Thanks,
-Shaohua
+I left out one critical detail here: I had in mind that we'd be using a library 
+like libpfm for handling the issue of event names + attributes to raw code 
+translation.  In fact, we are using libpfm today for this purpose in the 
+PAPI/perf_events substrate implementation.
+
+>
+>
+>> bits   field
+>> ------ -----
+>> 3..0   PMU number 0-15  /* specifies which of several identical PMUs being
+>> addressed */
+>> 7..4   core id 0-15
+>> 8..8   node id 0-1
+>> 11..9  chip id 0-7
+>> 16..12 blade id 0-31
+>> 23..17 rack id 0-128
+>
+> Such a compressed addressing scheme doesn't seem very future proof.
+> e.g. core 4 bits for the core is already obsolete (see the "80 core chip" that
+> was recently announced)
+
+Agreed.  If the designer is very generous with the size of each field, it could 
+hold up for quite awhile, but still there's a problem with relating these 
+addresses to actual hardware.
+
+>
+>
+>> probably put something together for a particular system.
+>>
+>> Addressing Option 2)
+>>
+>> Have the kernel create nodes for each uncore PMU in /sys/devices/system or
+>> other pseudo file system, such as the existing  /proc/device-tree on Power
+>> systems. /sys/devices/system or /proc/device-tree could be explored by the
+>> user tool, and the user could then specify the path of the requested PMU
+>> via a string which the kernel could interpret.  To be overly simplistic,
+>> something like "/sys/devices/system/pmus/blade4/cpu0/vectorcopro1".  If we
+>> settled on a common tree root to use, we could specify only the relative
+>> path name, "blade4/cpu0/vectorcopro1".
+>
+> That's a more workable scheme, but you still need to find a clean
+> way to describe topology (see above). The existing examples in sysfs
+> are unfortuately all clumpsy imho.
+>
+
+Yes, I agree.  Also it's easy to construct a system design that doesn't have a 
+hierarchical topology.  A simple example would be a cluster of 32 nodes, each of 
+which is connected to its 31 neighbors.  Perhaps for the purposes of just 
+enumerating PMUs, a tree might be sufficient, but it's not clear to me that it 
+is mathematically sufficient for all topologies, not to mention if it's 
+intuitive enough to use.  For example, highly-interconnected components might 
+require that PMU leaf nodes be duplicated in multiple branches, i.e. PMU paths 
+might not be unique in some topologies.
+
+I'm certainly open to better alternatives!
+
+
+Thanks for your thoughts,
+
+- Corey
 
