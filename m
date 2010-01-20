@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751952Ab0ATImN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752032Ab0ATIqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751952Ab0ATImN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 03:42:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842Ab0ATImM
+	id S1752032Ab0ATIqf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 03:46:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862Ab0ATIqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 03:42:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33483 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750775Ab0ATImL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 03:42:11 -0500
-Message-ID: <4B56C314.7000908@kernel.org>
-Date: Wed, 20 Jan 2010 17:47:16 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH 06/40] sched: add wakeup/sleep sched_notifiers and allow
- NULL notifier ops
-References: <1263776272-382-1-git-send-email-tj@kernel.org>	 <1263776272-382-7-git-send-email-tj@kernel.org>	 <1263808633.4283.152.camel@laptop>  <4B5446A1.7070306@kernel.org>	 <1263818967.4283.459.camel@laptop> <4B55050B.5020600@kernel.org>	 <4B556D44.1060101@kernel.org> <1263891302.4283.641.camel@laptop>
-In-Reply-To: <1263891302.4283.641.camel@laptop>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 20 Jan 2010 03:46:34 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50862 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779Ab0ATIqd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 03:46:33 -0500
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier (v5)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20100120031323.GA15318@Krystal>
+References: <20100113193603.GA27327@Krystal>
+	 <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal>
+	 <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal>
+	 <20100114183739.GA18435@Krystal>
+	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
+	 <20100114193355.GA23436@Krystal> <1263926259.4283.757.camel@laptop>
+	 <1263928006.4283.762.camel@laptop>  <20100120031323.GA15318@Krystal>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 20 Jan 2010 09:45:51 +0100
+Message-ID: <1263977151.4283.816.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 20 Jan 2010 08:41:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 2010-01-19 at 22:13 -0500, Mathieu Desnoyers wrote:
+> * Peter Zijlstra (peterz@infradead.org) wrote:
+> > On Tue, 2010-01-19 at 19:37 +0100, Peter Zijlstra wrote:
+> > > On Thu, 2010-01-14 at 14:33 -0500, Mathieu Desnoyers wrote:
+> > > > It's a case where CPU 1 switches from our mm to another mm:
+> > > > 
+> > > >        CPU 0 (membarrier)                  CPU 1 (another mm -our mm)
+> > > >        <user-space>                        <user-space>
+> > > >                                            <buffered access C.S. data>
+> > > >                                            urcu read unlock()
+> > > >                                              barrier()
+> > > >                                              store local gp
+> > > >                                            <kernel-space>
+> > > 
+> > > OK, so the question is how we end up here, if its though interrupt
+> > > preemption I think the interrupt delivery will imply an mb,
+> > 
+> > I keep thinking that, but I think we actually refuted that in an earlier
+> > discussion on this patch.
+> 
+> Intel Architecture Software Developer's Manual Vol. 3: System
+> Programming
+> 7.4 Serializing Instructions
+> 
+> "MOV to control reg, MOV to debug reg, WRMSR, INVD, INVLPG, WBINDV, LGDT,
+> LLDT, LIDT, LTR, CPUID, IRET, RSM"
+> 
+> So, this list does _not_ include: INT, SYSENTER, SYSEXIT.
+> 
+> Only IRET is included. So I don't think it is safe to assume that x86
+> has serializing instructions when entering/leaving the kernel.
 
-On 01/19/2010 05:55 PM, Peter Zijlstra wrote:
-> I think so, still doing a wakeup from a wakeup sounds like trouble in
-> that it has the potential to a thundering herd, so I'd really rather
-> you'd not do something like that.
+I got confused by 7.1.2.1 automatic locking on interrupt acknowledge.
 
-cmwq is not gonna do that and if someone is gonna do that there of
-course needs to be some sort of limiting.
+But I already retracted that stmt.
 
-I still feel a bit uneasy about calling out external callbacks before
-scheduler internal state update is complete.  If you still think
-moving it right below activate_task() would be better, I'll move it
-and modify the comment above try_to_wake_up_local().  Please let me
-know what you think.
+> > 
+> > >  if its a
+> > > blocking syscall, the set_task_state() mb [*] should be there.
+> > > 
+> > > Then we also do:
+> > > 
+> > > 					clear_tsk_need_resched()
+> > > 
+> > > which is an atomic bitop (although does not imply a full barrier
+> > > per-se).
+> > > 
+> > > >                                            rq->curr = next (1)
+> > 
+> > We could possibly look at placing that assignment in context_switch()
+> > between switch_mm() and switch_to(), which should provide a mb before
+> > and after I think, Ingo?
+> 
+> That's an interesting idea. It would indeed fix the problem of the
+> missing barrier before the assignment, but would lack the appropriate
+> barrier after the assignment. If the rq->curr = next; assignment is made
+> after load_cr3, then we lack a memory barrier between the assignment and
+> execution of following user-space code after returning with SYSEXIT (and
+> we lack the appropriate barrier for other architectures too).
 
-Thanks.
+Well, 7.1.2.1 says that writing a segment register implies a LOCK, but
+on second reading there are a number of qualifiers there, not sure we
+satisfy that.
 
--- 
-tejun
+Peter, does our switch_to() imply a mb?
+
