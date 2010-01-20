@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452Ab0ATM6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811Ab0ATM7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752452Ab0ATM6Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 07:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112Ab0ATM6Z
+	id S1752811Ab0ATM7Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 07:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819Ab0ATM7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 07:58:25 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:34862 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751227Ab0ATM6Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 07:58:24 -0500
-Date: Wed, 20 Jan 2010 07:57:23 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-cc: linux-kernel@vger.kernel.org, hch@infradead.org, xfs@oss.sgi.com,
-       xfs-masters@oss.sgi.com, Reinhard.Tartler@informatik.uni-erlangen.de
-Subject: Re: Obsolete config in kernel build system (XFS_TRACE)
-In-Reply-To: <20100120125249.GC3580@faui49.informatik.uni-erlangen.de>
-Message-ID: <alpine.LFD.2.00.1001200756490.19226@localhost>
-References: <20100120125249.GC3580@faui49.informatik.uni-erlangen.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 20 Jan 2010 07:59:20 -0500
+Received: from proxima.lp0.eu ([81.2.80.65]:36136 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750976Ab0ATM7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 07:59:19 -0500
+Message-ID: <710ab0ca79305c82013982d43250b0a1fd45824d@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
+In-Reply-To: <4B55D372.4020807@gmail.com>
+References: <4B54CDE5.3070100@simon.arlott.org.uk> <4B5578A5.50705@gmail.com>
+    <dad314e12c5750b1b5d70c3ea3c6f6134b8fa0f3@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
+    <4B55D372.4020807@gmail.com>
+Date: Wed, 20 Jan 2010 12:59:16 -0000
+Subject: Re: [PATCH] xt_TCPMSS: SYN packets are allowed to contain data
+From: "Simon Arlott" <simon@fire.lp0.eu>
+To: "William Allen Simpson" <william.allen.simpson@gmail.com>,
+       "Patrick McHardy" <kaber@trash.net>
+Cc: "netdev" <netdev@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010, Christoph Egger wrote:
+On Tue, January 19, 2010 15:44, William Allen Simpson wrote:
+> Simon Arlott wrote:
+>> On Tue, January 19, 2010 09:17, William Allen Simpson wrote:
+>> I could change the comment too, but the same logic applies when
+>> there is data and no MSS option - the packet can't be increased
+>> in size if it would then exceed 576 bytes and/or the destination
+>> MTU.
+>>
+> Please change the comment.
 
-> Hi all!
+I've made a new version of the patch which I'll be able to test
+tonight.
+
+> If there is no MSS option, it should *not* be added, under *ANY*
+> circumstances.  That violates the end-to-end arguments (some call
+> them principles).
+
+Agreed. The added MSS is likely to be larger than 536 too... I've
+removed this code.
+
+> MSS isn't about the _destination_ MTU, it's about the *source*.
+> If you cannot guarantee you know the source MTU, there's no basis
+> for deciding the MSS.
+
+I was referring to the SYN packet itself. It wouldn't always be
+possible to add an option without exceeding the MTU of that packet's
+destination if it had data.
+
+
+On 19/01/10 12:53, Patrick McHardy wrote:
+> Simon Arlott wrote:
+>> If this is 20 (IPv4 Header) + 20 (TCP Header) = 40 bytes, then
+>> there is no data and the header offset is wrong so it hasn't been
+>> checked.
 >
-> 	As part of the VAMOS[0] research project at the University of
-> Erlangen we're checking referential integrity between kernel KConfig
-> options and in-code Conditional blocks.
->
-> 	Git commit 0b1b213fcf3a8486ada99a2bab84ab8c6f51b264 by
-> Christoph Hellwig removed all References to CONFIG_XFS_TRACE, which is
-> unreferenced from KConfig side from the linux source code so there's
-> only a small bit of it left in KBuild. Mayee remove it as well?
->
-> ./fs/xfs/Makefile:95
-> +++>
->
-> xfs-$(CONFIG_XFS_TRACE)         += xfs_btree_trace.o
->
-> <+++
+> That's odd. If the packet is really only 40 bytes large, then there
+> are no TCP options, so your patch shouldn't have any effect.
 
-  if the reference is being removed from the Makefile, wouldn't it
-also make sense to delete the corresponding source file as well?
+Except to remove the printk which fills up my serial console (because
+the header offset is wrong).
 
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+-- 
+Simon Arlott
