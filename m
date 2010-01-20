@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118Ab0ATMMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502Ab0ATMMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118Ab0ATMMJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 07:12:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862Ab0ATMMH
+	id S1753502Ab0ATMMg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 07:12:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682Ab0ATMMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 07:12:07 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38193 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751967Ab0ATMMF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 07:12:05 -0500
-Message-ID: <4B56F30C.5040605@redhat.com>
-Date: Wed, 20 Jan 2010 14:11:56 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Wed, 20 Jan 2010 07:12:34 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:48458 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752352Ab0ATMMc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 07:12:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=U2OJnvpULlKcsj2cBfGgs8STtWUHxQG8WtewI69jaE142tcLYZlUWkIEe1fZGYbZVJ
+         Jz/DWYw9JgrEI5jy/p2xb44Ciz7ukIoCFn6OCaxvWqfiZ5wKvVL/BWalXHR6JG60zUdf
+         KaBYChu8b8EnHWrN//vxl0/jmZrkRTf4/hKvE=
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, Gleb Natapov <gleb@redhat.com>,
-       Julia Lawall <julia@diku.dk>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kvm: only allow one gsi per fd
-References: <20100113165809.GA13334@redhat.com> <4B53052D.3020905@redhat.com> <20100120113641.GB9610@redhat.com> <4B56EE60.4030009@redhat.com> <20100120115911.GA9761@redhat.com>
-In-Reply-To: <20100120115911.GA9761@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1259146071-2372-1-git-send-email-amit.kucheria@verdurent.com>
+References: <1259146071-2372-1-git-send-email-amit.kucheria@verdurent.com>
+Date: Wed, 20 Jan 2010 15:12:29 +0300
+Message-ID: <48239d391001200412i7736354dg4e07076a63d7b966@mail.gmail.com>
+Subject: Re: [PATCH] mfd: twl4030: Driver for twl4030 madc module
+From: Sergey Lapin <slapinid@gmail.com>
+To: Amit Kucheria <amit.kucheria@verdurent.com>
+Cc: sameo@linux.intel.com, List Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-omap@vger.kernel.org, Mikko Ylinen <mikko.k.ylinen@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20/2010 01:59 PM, Michael S. Tsirkin wrote:
+Hi, all!
+
+On Wed, Nov 25, 2009 at 1:47 PM, Amit Kucheria
+<amit.kucheria@verdurent.com> wrote:
+> From: Mikko Ylinen <mikko.k.ylinen@nokia.com>
 >
->    
->>> I'm guessing we need this for 2.6.32 stable and 2.6.33 as well?
->>>
->>>        
->> That's what 'queued' means.
->>      
-> Aha. Which git branch is used for these?
+> This ADC allows monitoring of analog signals such as battery levels,
+> temperatures, etc.
 >
->    
+> Several people have contributed to this driver on the linux-omap list.
+>
+> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
+> ---
+>  drivers/mfd/Kconfig              |   21 ++
+>  drivers/mfd/Makefile             |    3 +-
+>  drivers/mfd/twl4030-madc.c       |  548 ++++++++++++++++++++++++++++++++++++++
+>  include/linux/i2c/twl4030-madc.h |  126 +++++++++
+>  4 files changed, 697 insertions(+), 1 deletions(-)
+>  create mode 100644 drivers/mfd/twl4030-madc.c
+>  create mode 100644 include/linux/i2c/twl4030-madc.h
+>
 
-kvm-updates/2.6.33.  Cc: stable@kernel.org means it will get 
-auto-submitted to 2.6.32.
+We have just tried to adopt this driver to our custom OMAP3 board, but
+were unable to get any interrupts.
+Any ideas on what is missing? We've checked whole TRM and found
+nothing wrong yet :(
 
--- 
-error compiling committee.c: too many arguments to function
-
+Thanks a lot.
+S.
