@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997Ab0ATQKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703Ab0ATQS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751997Ab0ATQKR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 11:10:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122Ab0ATQKO
+	id S1752703Ab0ATQS3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 11:18:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147Ab0ATQS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 11:10:14 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48711 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751335Ab0ATQKN (ORCPT
+	Wed, 20 Jan 2010 11:18:26 -0500
+Received: from mail2.picochip.com ([82.111.145.34]:38589 "EHLO
+	thurne.picochip.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752608Ab0ATQS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 11:10:13 -0500
-Message-Id: <1264003812.20542.1355658217@webmail.messagingengine.com>
-X-Sasl-Enc: BuPKQ8ueY2/LGQc96bq7BnWYU0seQQuDMQ7kix6Av13r 1264003812
-From: myuboot@fastmail.fm
-To: "David Daney" <ddaney@caviumnetworks.com>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+	Wed, 20 Jan 2010 11:18:26 -0500
+Date: Wed, 20 Jan 2010 16:18:08 +0000
+From: Jamie Iles <jamie.iles@picochip.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jamie Iles <jamie.iles@picochip.com>,
+       Peter Zijlstra <peterz@infradead.org>, jpihet@mvista.com,
+       p.osciak@samsung.com, will.deacon@arm.com,
+       =?utf-8?Q?Micha=C5=82?= Nazarewicz <m.nazarewicz@samsung.com>,
+       linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, mingo@elte.hu,
+       m.szyprowski@samsung.com, linux-arm-kernel@lists.infradead.org,
+       Tomasz Fujak <t.fujak@samsung.com>
+Subject: Re: [PATCH/RFC v1 0/2] Human readable performance event
+	description in sysfs
+Message-ID: <20100120161808.GI4089@wear.picochip.com>
+References: <1263978706-15499-1-git-send-email-t.fujak@samsung.com> <1263978999.4283.823.camel@laptop> <op.u6tslipz7p4s8u@pikus> <20100120133145.GE4089@wear.picochip.com> <1263994779.4283.1057.camel@laptop> <20100120135553.GA22897@n2100.arm.linux.org.uk> <1263996080.4283.1064.camel@laptop> <20100120144140.GB22897@n2100.arm.linux.org.uk> <20100120150303.GG4089@wear.picochip.com> <20100120154250.GA27507@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
-X-Mailer: MessagingEngine.com Webmail Interface
-In-Reply-To: <4B564496.3090509@caviumnetworks.com>
-References: <1255735395.30097.1340523469@webmail.messagingengine.com>
- <4AD906D8.3020404@caviumnetworks.com>
- <1263930694.9779.1355491925@webmail.messagingengine.com>
- <4B564496.3090509@caviumnetworks.com>
-Subject: Re: loadable kernel module link failure -  endianness incompatible with
- that of the selected emulation
-Date: Wed, 20 Jan 2010 10:10:12 -0600
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100120154250.GA27507@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (thurne.picochip.com [172.17.0.105]); Wed, 20 Jan 2010 16:16:50 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 19 Jan 2010 15:47 -0800, "David Daney"
-<ddaney@caviumnetworks.com> wrote:
-> myuboot@fastmail.fm wrote:
-> > I got a link error when compiling 2 loadable kernel modules -
-> > "endianness incompatible with that of the selected emulation". 
-> > 
-> > But both kernel and the kernel modules of error are in big endian. I
-> > don't know what I should check or fix. Any suggestions? I checked the
-> > endianess of the kernel by checking the elf header of vmlinux file, is
-> > that the right way to do it?
-> > 
-> > Below are the error info and the readelf output, showing both the kernel
-> > and a kernel module are in big endian.
-> > Thanks for your help. Andrew
-> > 
-> > 1) error log 
-> > make -C /home/root123/sources/kernel/linux
-> > CROSS_COMPILE=""/home/root123/sources/gcc3.4.3-be"/bin/mips-linux-"
-> > M=/home/root123/sources/sdk/platform/src/linux/mxp/src modules    
-> > 
-> >   LD [M]  /home/root123/sources/sdk/platform/src/linux/mxp/src/mxpmod.o
-> > /home/root123/sources/gcc3.4.3-be/bin/mips-linux-ld:
-> > /home/root123/sources/sdk/platform/src/linux/mxp/src/mmxpcore.o:
-> > compiled for a big endian system and target is little endian
-> > /home/root123/sources/gcc3.4.3-be/bin/mips-linux-ld:
-> > /home/root123/sources/sdk/platform/src/linux/mxp/src/mmxpcore.o:
-> > endianness incompatible with that of the selected emulation
-> > /home/root123/sources/gcc3.4.3-be/bin/mips-linux-ld: failed to merge
-> > target specific data of file
-> > /home/root123/sources/sdk/platform/src/linux/mxp/src/mmxpcore.o
-> > make[13]: ***
-> > [/home/root123/sources/sdk/platform/src/linux/mxp/src/mxpmod.o] Error 1
-> > 
+On Wed, Jan 20, 2010 at 03:42:50PM +0000, Russell King - ARM Linux wrote:
+> If you're referring to reading the main CPU ID register and relying
+> on the part number telling you what CPU you're running on, that's
+> unreliable if you're only checking the part number - you at least
+> need to check the implementer.
 > 
-> Looks like a toolchain bug/configuration-problem.  Hard to tell though 
-> as you didn't pass 'V=1' on the make invocation line.
-> 
-> David Daney
-With the V=1 option suggested, I found the culprit is this "-m
-elf32ltsmip". It is working now.
+> If you want to do ID checking via the main ID register, there are
+> some clashes even if you take the implementer field into account.
+Ok, so for the kernel based code I should check the implementer and part
+number then. For now we can make sure that the implementor is ARM and add
+others if they have compatible PMUs and hope that there aren't any clashes
+with nasty side effects.
 
-Thanks. Andrew
+Jamie
