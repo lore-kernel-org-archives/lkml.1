@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752297Ab0ATW4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682Ab0ATW62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752297Ab0ATW4c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 17:56:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457Ab0ATW4b
+	id S1752682Ab0ATW62 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 17:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191Ab0ATW61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 17:56:31 -0500
-Received: from kroah.org ([198.145.64.141]:60838 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634Ab0ATW42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 17:56:28 -0500
-Date: Wed, 20 Jan 2010 14:50:27 -0800
-From: Greg KH <greg@kroah.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM / Runtime: Add sysfs switch for disabling
- device run-time PM
-Message-ID: <20100120225027.GB31280@kroah.com>
-References: <201001180129.55219.rjw@sisk.pl>
- <20100120025147.GA20979@kroah.com>
- <201001202155.37062.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001202155.37062.rjw@sisk.pl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 20 Jan 2010 17:58:27 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:46575 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752074Ab0ATW60 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 17:58:26 -0500
+Subject: Re: issues with kmemleak backport
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B574297.7070504@nortel.com>
+References: <4B55F3EF.9020408@nortel.com> <4B561D8D.1000003@nortel.com>
+	 <4B574297.7070504@nortel.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Wed, 20 Jan 2010 22:58:19 +0000
+Message-Id: <1264028299.5185.20.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Jan 2010 22:58:19.0620 (UTC) FILETIME=[0F17D240:01CA9A24]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 09:55:36PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday 20 January 2010, Greg KH wrote:
-> > On Mon, Jan 18, 2010 at 01:29:55AM +0100, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Subject: PM / Runtime: Add sysfs switch for disabling device run-time PM
-> > > 
-> > > Add new device sysfs attribute, power/runtime, allowing the user
-> > > space to block the run-time power management of the device.  If this
-> > > attribute is set to "disabled", the driver of the device won't be
-> > > able to enable run-time power management for it (without breaking the
-> > > rules).
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > ---
-> > >  drivers/base/power/power.h   |    4 +
-> > >  drivers/base/power/runtime.c |  107 +++++++++++++++++++++++++++++++++----------
-> > >  drivers/base/power/sysfs.c   |   46 ++++++++++++++++++
-> > >  include/linux/pm.h           |    1 
-> > >  include/linux/pm_runtime.h   |   11 +---
-> > >  5 files changed, 139 insertions(+), 30 deletions(-)
-> > 
-> > You forgot to also add an entry into Documentation/ABI/ for when you
-> > add/change a sysfs file :)
-> 
-> There's no description for /sys/devices/.../power/wakeup in there too and
-> that one has been present for quite some time already.
-> 
-> I'd prefer adding them both in a separate patch if you don't mind.
+Hi,
 
-That's fine with me, as long as you add them :)
+First of all, apart from backporting the kmemleak patches I would
+suggest you do a kernel grep for kmemleak_* function calls as there may
+be explicit cases where allocated memory blocks are ignored from
+scanning (like the AGP aperture which is unmapped from the standard
+kernel linear mapping).
 
-thanks,
+On Wed, 2010-01-20 at 17:51 +0000, Chris Friesen wrote:
+> root@10:/root> BUG: unable to handle kernel paging request at 8152a79c
+> IP: [<c048ad52>] scan_block+0xd2/0x120
+[...]
+> The code is failing at the "pointer = *ptr;" line in scan_block().
 
-greg k-h
+This happens when kmemleak was told about a memory block being allocated
+but there isn't any valid virtual address for that location.
+
+I can't really tell where it came from but I would suggest that you
+disable the kmemleak automatic scanning and do an "echo dump=0x815sa79c
+> /sys/kernel/debug/kmemleak" and you should get the information that
+kmemleak has about that location.
+
+Alternatively, until you get this to work, just modify kmemleak to dump
+information it has about every object it scans via dump_object_info()
+called from scan_object(). The amount of information is quite large but
+at least you should see the last block that it fails to scan and maybe
+add a kmemleak_ignore() on the block allocation site.
+
+-- 
+Catalin
+
