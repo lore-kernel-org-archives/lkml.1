@@ -1,103 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751817Ab0ATMfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762Ab0ATMhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751817Ab0ATMfX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 07:35:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181Ab0ATMfU
+	id S1751762Ab0ATMhb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 07:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181Ab0ATMh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 07:35:20 -0500
-Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:61449 "EHLO
-	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751081Ab0ATMfT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 07:35:19 -0500
-Date: Wed, 20 Jan 2010 13:35:40 +0100
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, ok@artecdesign.ee,
-       sarah.a.sharp@linux.intel.com
-Cc: siccegge@stud.informatik.uni-erlangen.de,
-       Reinhard.Tartler@informatik.uni-erlangen.de
-Subject: [PATCH] Obsolete config in kernel source (USB_HCD_DMA)
-Message-ID: <20100120123540.GB3580@faui49.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="IJpNTDwzlM2Ie8A6"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 20 Jan 2010 07:37:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:65416 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750922Ab0ATMh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 07:37:28 -0500
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Stanislaw Gruszka <sgruszka@redhat.com>
+Subject: [PATCH 0/6 -mm] cpu-timers patches
+Date: Wed, 20 Jan 2010 13:34:22 +0100
+Message-Id: <1263990868-8119-1-git-send-email-sgruszka@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here are patches for cpu-timers I mainly wrote to not call 
+thread_group_cputime() in fastpath_timer_check(), which we
+discuss in this thread:
 
---IJpNTDwzlM2Ie8A6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+http://thread.gmane.org/gmane.linux.kernel/909349/focus=912327
+  
+On the way I fix some other bugs (SIGEV_NONE timer, old increase value
+in timer_settime()) and do other cleanups and optimizations, patch 5
+however increase time when sighand->siglock is held. 
 
-Hi all!
+Compared with previous send of patches as RFC, I rebased them to -mm
+tree, change some changelogs and do some minor code changes.
 
-	As part of the VAMOS[0] research project at the University of
-Erlangen we're checking referential integrity between kernel KConfig
-options and in-code Conditional blocks.
+[PATCH 1/6 -mm] cpu-timers: simplify RLIMIT_CPU handling
+[PATCH 2/6 -mm] cpu-timers: cleanup arm_timer()
+[PATCH 3/6 -mm] cpu-timers: return correct previous timer reload value
+[PATCH 4/6 -mm] cpu-timers: change SIGEV_NONE timer implementation
+[PATCH 5/6 -mm] cpu-timers: assure to not iterate over all threads in fastpath_timer_check()
+[PATCH 6/6 -mm] cpu-timers: optimize run_posix_cpu_timers()
 
-	Similar to the config Option USB_HCD_STAT there's another
-Zombi called USB_HCD_DMA only present in
-./drivers/usb/host/isp1362-hcd.c The attached patch would just drop
-the unreachable parts if you agree that's the correct solution.
+Cheers
+Stanislaw
 
-	Please keep me informed of this patch getting confirmed /
-merged so we can keep track of it.
-
-Regards
-
-	Christoph Egger
-
-
---IJpNTDwzlM2Ie8A6
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="0001-The-configuration-Option-USB_HCD_DMA-is-not-reachabl.patch"
-
->From 2e5a8a322a6cd74ecb77eda8f0a09a0a01c6dbc6 Mon Sep 17 00:00:00 2001
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Date: Wed, 20 Jan 2010 13:32:36 +0100
-Subject: [PATCH] The configuration Option USB_HCD_DMA is not reachable in KConfig so
- this piece of Code is effectively dead and useless. Remove it to avoid
- confusion.
-
-
-Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
----
- drivers/usb/host/isp1362-hcd.c |   13 -------------
- 1 files changed, 0 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/usb/host/isp1362-hcd.c b/drivers/usb/host/isp1362-hcd.c
-index 73352f3..341db2c 100644
---- a/drivers/usb/host/isp1362-hcd.c
-+++ b/drivers/usb/host/isp1362-hcd.c
-@@ -2716,24 +2716,11 @@ static int __init isp1362_probe(struct platform_device *pdev)
- 		goto err1;
- 	}
- 
--#ifdef CONFIG_USB_HCD_DMA
--	if (pdev->dev.dma_mask) {
--		struct resource *dma_res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
--
--		if (!dma_res) {
--			retval = -ENODEV;
--			goto err1;
--		}
--		isp1362_hcd->data_dma = dma_res->start;
--		isp1362_hcd->max_dma_size = resource_len(dma_res);
--	}
--#else
- 	if (pdev->dev.dma_mask) {
- 		DBG(1, "won't do DMA");
- 		retval = -ENODEV;
- 		goto err1;
- 	}
--#endif
- 
- 	if (!request_mem_region(addr->start, resource_len(addr), hcd_name)) {
- 		retval = -EBUSY;
--- 
-1.6.3.3
-
-
---IJpNTDwzlM2Ie8A6--
