@@ -1,59 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839Ab0ATQk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700Ab0ATQpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839Ab0ATQk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 11:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694Ab0ATQk0
+	id S1752700Ab0ATQpj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 11:45:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147Ab0ATQph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 11:40:26 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:34564 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751601Ab0ATQkX convert rfc822-to-8bit (ORCPT
+	Wed, 20 Jan 2010 11:45:37 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:56912 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703Ab0ATQpg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 11:40:23 -0500
+	Wed, 20 Jan 2010 11:45:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=nsGo60N/nT2YdFVV9F44byS/UIgEfm7qTKo9VAbiyAUifA2fJfrKmw6eT8hAjgIp1i
+         z5WO8Dytj4nyeM8eEbNWyfLeD3k0hXNpxaqneEv1OvkQorKjHbkB8U6TXXWSTXeeVlzV
+         iKvYfICWloQcDpshDDPRhO++x1F6qgOugCbmQ=
 MIME-Version: 1.0
-In-Reply-To: <20100120153748.GA29401@kroah.com>
-References: <4B571DA4.6070603@cam.ac.uk> <20100120153748.GA29401@kroah.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 20 Jan 2010 17:40:06 +0100
-Message-ID: <ac3eb2511001200840v185617ecm60b5282cb810a4fb@mail.gmail.com>
-Subject: Re: [RFC] Staging:IIO: New ABI
-To: Greg KH <greg@kroah.com>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Manuel Stahl <manuel.stahl@iis.fraunhofer.de>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
-       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
-       "Getz, Robin" <Robin.Getz@analog.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
-       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
-       Ira Snyder <iws@ovro.caltech.edu>
+In-Reply-To: <20100120135202.GA20937@flint.arm.linux.org.uk>
+References: <20100120135202.GA20937@flint.arm.linux.org.uk>
+Date: Wed, 20 Jan 2010 17:45:34 +0100
+X-Google-Sender-Auth: c02152ab99937721
+Message-ID: <10f740e81001200845o7a31bcb6yea475f3aabcb5476@mail.gmail.com>
+Subject: Re: [CFT] MM: Pass a PTE pointer to update_mmu_cache() rather than 
+	the PTE itself
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 16:37, Greg KH <greg@kroah.com> wrote:
-> On Wed, Jan 20, 2010 at 03:13:40PM +0000, Jonathan Cameron wrote:
->> What:        /sys/class/iio/ring_buffer[m]
->> Description:
->>               Link to /sys/class/iio/device[n]/ring_buffer[m]. Ring buffer
->>               numbering may not match that of device as some devices do not
->>               have ring buffers.
+On Wed, Jan 20, 2010 at 14:52, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> On VIVT ARM, when we have multiple shared mappings of the same file
+> in the same MM, we need to ensure that we have coherency across all
+> copies.  We do this via make_coherent() by making the pages
+> uncacheable.
 >
-> Why is this link needed?  Why can't you just look in the device
-> directory for a ring buffer?  And wouldn't the ring buffer be 1..n for
-> every device?  They shouldn't be "unique" for all iio devices, that
-> would be wierd.
+> This used to work fine, until we allowed highmem with highpte - we
+> now have a page table which is mapped as required, and is not available
+> for modification via update_mmu_cache().
+>
+> Ralf Beache suggested getting rid of the PTE value passed to
+> update_mmu_cache():
+>
+>  On MIPS update_mmu_cache() calls __update_tlb() which walks pagetables
+>  to construct a pointer to the pte again.  Passing a pte_t * is much
+>  more elegant.  Maybe we might even replace the pte argument with the
+>  pte_t?
+>
+> Ben Herrenschmidt would also like the pte pointer for PowerPC:
+>
+>  Passing the ptep in there is exactly what I want.  I want that
+>  -instead- of the PTE value, because I have issue on some ppc cases,
+>  for I$/D$ coherency, where set_pte_at() may decide to mask out the
+>  _PAGE_EXEC.
+>
+> So, pass in the mapped page table pointer into update_mmu_cache(), and
+> remove the PTE value, updating all implementations and call sites to
+> suit.
 
-I think with the hidden class kobject we successfully prevent any
-custom links from being created there. :) The class sysfs layout does
-not allow custom links added to its single directory, it confuses
-userspace.
+> diff --git a/Documentation/cachetlb.txt b/Documentation/cachetlb.txt
+> index da42ab4..74a8b6f 100644
+> --- a/Documentation/cachetlb.txt
+> +++ b/Documentation/cachetlb.txt
+> @@ -88,12 +88,12 @@ changes occur:
+>        This is used primarily during fault processing.
+>
+>  5) void update_mmu_cache(struct vm_area_struct *vma,
+> -                        unsigned long address, pte_t pte)
+> +                        unsigned long address, pte_t *ptep)
+>
+>        At the end of every page fault, this routine is invoked to
+>        tell the architecture specific code that a translation
+> -       described by "pte" now exists at virtual address "address"
+> -       for address space "vma->vm_mm", in the software page tables.
+> +       now exists at virtual address "address" for address space
+> +       "vma->vm_mm", in the software page tables.
+>
+>        A port may use this information in any way it so chooses.
+>        For example, it could use this event to pre-load TLB
 
-Jonathan, if you need anything like this, please consider using a
-"bus_type", which has the proper userspace interface. The "class"
-interface can not be extended to make such things possible.
+Now the documentation no longer mentions what the 3rd parameter is used for?
 
-Thanks,
-Kay
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
