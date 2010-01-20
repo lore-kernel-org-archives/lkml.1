@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505Ab0ATAYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210Ab0ATAbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505Ab0ATAYO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jan 2010 19:24:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122Ab0ATAYM
+	id S1756210Ab0ATAbM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jan 2010 19:31:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120Ab0ATAbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jan 2010 19:24:12 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55829 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751458Ab0ATAYK (ORCPT
+	Tue, 19 Jan 2010 19:31:11 -0500
+Received: from mga05.intel.com ([192.55.52.89]:24224 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751460Ab0ATAbK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jan 2010 19:24:10 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH v6] add MAP_UNLOCKED mmap flag
-Cc: kosaki.motohiro@jp.fujitsu.com, Gleb Natapov <gleb@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       akpm@linux-foundation.org, andrew.c.morrow@gmail.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       minchan.kim@gmail.com
-In-Reply-To: <84144f021001190044s397c6665qb00af48235d2d818@mail.gmail.com>
-References: <20100119082638.GK14345@redhat.com> <84144f021001190044s397c6665qb00af48235d2d818@mail.gmail.com>
-Message-Id: <20100120091051.405D.A69D9226@jp.fujitsu.com>
+	Tue, 19 Jan 2010 19:31:10 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,306,1262592000"; 
+   d="scan'208";a="532706038"
+Message-ID: <4B564ECC.9080707@linux.intel.com>
+Date: Tue, 19 Jan 2010 16:31:08 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Tejun Heo <tj@kernel.org>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
+       johannes@sipsolutions.net, andi@firstfloor.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 32/40] async: introduce workqueue based alternative implementation
+References: <1263776272-382-1-git-send-email-tj@kernel.org>	<1263776272-382-33-git-send-email-tj@kernel.org>	<20100117220130.214d56f1@linux.intel.com>	<4B5420A3.3080200@kernel.org>	<20100118072523.2683cd59@linux.intel.com>	<4B55038D.3070106@kernel.org>	<4B550384.8030103@linux.intel.com>	<4B5565BE.4050406@kernel.org> <20100119063718.3f1f39cc@linux.intel.com> <4B564C23.1030708@kernel.org>
+In-Reply-To: <4B564C23.1030708@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 20 Jan 2010 09:24:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi Gleb,
-> 
-> On Tue, Jan 19, 2010 at 10:26 AM, Gleb Natapov <gleb@redhat.com> wrote:
-> >> design would still be broken, no? Did you try using (or extending)
-> >> posix_madvise(MADV_DONTNEED) for the guest address space? It seems to
-> > After mlockall() I can't even allocate guest address space. Or do you mean
-> > instead of mlockall()? Then how MADV_DONTNEED will help? It just drops
-> > page table for the address range (which is not what I need) and does not
-> > have any long time effect.
-> 
-> Oh right, MADV_DONTNEED is no good.
+On 1/19/2010 16:19, Tejun Heo wrote:
 
-Off topic:
+> Yeah, you can flush individual works from other works and wqs from
+> works running from different wqs.  What's not allowed is flushing the
+> wq a work is running on from the work.  Let's say if the flush code
+> can be modified to do so, would that change your opinion?
 
-posix_madvise(MADV_DONTNEED) is nop. glibc's posix_madvise(MADV_DONTNEED)
-don't call linux's madvise(MADV_DONTNEED).
-It's because madvise(MADV_DONTNEED) is not POSIX compliant. 
+once you get "run in parallel, but have an API to wait on everyone who was scheduled before me"...
+... that'd be fine ;)
 
-The behavior of linux madvise(MADV_DONTNEED) is similar to Solaris (or *BSD) 
-madvise(MADV_FREE).
-
-
-
-
+but then you pretty much HAVE the cookie API, even if you don't have an actual cookie.
+(just the cookie was an easy way to determine the "before me")
