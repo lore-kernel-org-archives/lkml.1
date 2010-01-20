@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193Ab0ATPYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144Ab0ATPaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193Ab0ATPYz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 10:24:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696Ab0ATPYx
+	id S1753144Ab0ATPaK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 10:30:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250Ab0ATPaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 10:24:53 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:46892 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751519Ab0ATPYw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 10:24:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oh6Ol4xy7NR6XsSIsl19HyPeA7df9q7rWYDiYzSAZlETGyxDkDji+/Rw0RRrk1vGlx
-         KSDsOC69iL1uoaMby4WdVyN+x0Pxdg8AWXPLghcgAz8WVpezB+Uk2SPUrDmqL6eKfmyb
-         z568YxIzUfXoRBKZ8Es8ijP/tq2YSlDUe400Q=
-Date: Wed, 20 Jan 2010 23:26:52 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: jin zhencheng <zhenchengjin@gmail.com>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       zhenchengjin@163.com
-Subject: Re: nfs-error-RPC: multiple fragments per record not supported
-Message-ID: <20100120152652.GA3595@hack>
-References: <de04351e1001200320y2e763680gc7e3b20319c6386e@mail.gmail.com>
-MIME-Version: 1.0
+	Wed, 20 Jan 2010 10:30:07 -0500
+Received: from f0.cmpxchg.org ([85.214.51.133]:56185 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751863Ab0ATPaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 10:30:06 -0500
+Date: Wed, 20 Jan 2010 16:30:00 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Ralf Baechle <ralf@linux-mips.org>, x86@kernel.org
+Subject: Re: [RFC 1/1] bootmem: move big allocations behing 4G
+Message-ID: <20100120153000.GA13172@cmpxchg.org>
+References: <1263855390-32497-1-git-send-email-jslaby@suse.cz> <20100119143355.GB7932@cmpxchg.org> <4B570A15.8040601@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <de04351e1001200320y2e763680gc7e3b20319c6386e@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4B570A15.8040601@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 07:20:34PM +0800, jin zhencheng wrote:
->I use kernel 2.6.26.2
->
->I use  29 clients,
->
->every client mount parameters as this: mount -t nfs -o
->rw,noatime,v3,rsize=32768,wsize=32768,hard,intr,tcp,nolock
->
->my system have many errors lke these :
->
->RPC: multiple fragments per record not supported
->RPC: multiple fragments per record not supported
->RPC: fragment too large: 0x318c87ee
->RPC: multiple fragments per record not supported
->RPC: fragment too large: 0x78bdeedb
->RPC: multiple fragments per record not supported
->RPC: fragment too large: 0x75cf8a33
->RPC: fragment too large: 0x44764ada
->RPC: multiple fragments per record not supported
->RPC: fragment too large: 0x0a08e7c0
->RPC: multiple fragments per record not supported
->RPC: multiple fragments per record not supported
->RPC: fragment too large: 0x5b4e13a1
->RPC: fragment too large: 0x08351a9f
->
+Hi Jiri,
 
-Does 'ethtool -K eth0 tso off' help?
+On Wed, Jan 20, 2010 at 02:50:13PM +0100, Jiri Slaby wrote:
+> On 01/19/2010 03:33 PM, Johannes Weiner wrote:
+> > --- a/include/linux/bootmem.h
+> > +++ b/include/linux/bootmem.h
+> > @@ -96,20 +96,26 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
+> >  				      unsigned long align,
+> >  				      unsigned long goal);
+> >  
+> > +#ifdef MAX_DMA32_PFN
+> > +#define BOOTMEM_DEFAULT_GOAL	(__pa(MAX_DMA32_PFN << PAGE_SHIFT))
+> > +#else
+> > +#define BOOTMEM_DEFAULT_GOAL	MAX_DMA_ADDRESS
+> 
+> I just noticed this should write:
+> #define BOOTMEM_DEFAULT_GOAL   __pa(MAX_DMA_ADDRESS)
 
--- 
-Live like a child, think like the god.
- 
+Pardon my sloppiness, it's all backwards.  The other case should
+be without the __pa(), of course.
+
+I'll send a fixed and tested version later.
+
+Thanks,
+	Hannes
