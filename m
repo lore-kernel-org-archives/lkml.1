@@ -1,115 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352Ab0ATHaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164Ab0ATHqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352Ab0ATHaL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 02:30:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990Ab0ATHaJ
+	id S1753164Ab0ATHqX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 02:46:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061Ab0ATHqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 02:30:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34364 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297Ab0ATHaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 02:30:08 -0500
-Date: Wed, 20 Jan 2010 08:29:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100120072925.GA11395@elte.hu>
-References: <20100119211646.GF16096@redhat.com>
- <20100120111220.e7fb4e2c.sfr@canb.auug.org.au>
- <20100120054950.GB27108@elte.hu>
- <20100120061551.GB6588@in.ibm.com>
- <20100120062834.GB12165@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100120062834.GB12165@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Wed, 20 Jan 2010 02:46:22 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49325 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673Ab0ATHqV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 02:46:21 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 20 Jan 2010 16:43:02 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] Shared page accounting for memory cgroup
+Message-Id: <20100120164302.f05a91ef.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100120161533.6d83f607.nishimura@mxp.nes.nec.co.jp>
+References: <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107083440.GS3059@balbir.in.ibm.com>
+	<20100107174814.ad6820db.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107180800.7b85ed10.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107092736.GW3059@balbir.in.ibm.com>
+	<20100108084727.429c40fc.kamezawa.hiroyu@jp.fujitsu.com>
+	<661de9471001171130p2b0ac061he6f3dab9ef46fd06@mail.gmail.com>
+	<20100118094920.151e1370.nishimura@mxp.nes.nec.co.jp>
+	<4B541B44.3090407@linux.vnet.ibm.com>
+	<20100119102208.59a16397.nishimura@mxp.nes.nec.co.jp>
+	<661de9471001181749y2fe22a15j1c01c94aa1838e99@mail.gmail.com>
+	<20100119113443.562e38ba.nishimura@mxp.nes.nec.co.jp>
+	<4B552C89.8000004@linux.vnet.ibm.com>
+	<20100120130902.865d8269.nishimura@mxp.nes.nec.co.jp>
+	<20100120161533.6d83f607.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 20 Jan 2010 16:15:33 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > I would agree with you if you add interfaces to show some hints to users about above values,
+> > but "shared_usage_in_bytes" doesn't meet it at all.
+> > 
+> This is just an idea(At least, we need interfaces to read and reset them).
+> 
+seems atractive but there is no way to decrement this counter in _scalable_ way.
+We need some inovation to go this way.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+But I doubt how this comes to be useful.
 
-> 
-> * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
-> 
-> > On Wed, Jan 20, 2010 at 06:49:50AM +0100, Ingo Molnar wrote:
-> > 
-> > Ingo,
-> > 
-> > > Note, i'm not yet convinced that this (and the rest: uprobes and systemtap, 
-> > > etc.) can go uptream in its present form.
-> > 
-> > Agreed, uprobes is still not upstream ready -- it was an RFC. We are
-> > working through the comments there to get it ready for merger.
-> > 
-> > > IMHO the far more important thing to address beyond formalities and workflow 
-> > > cleanliness are the (many) technical observations and objections offered by 
-> > > Peter Zijstra on lkml. Not just the git history but also the abstractions and 
-> > > concepts are messy and should be reworked IMO, and also good and working perf 
-> > > events integration should be achieved, etc.
-> > 
-> > I think Oleg addressed most of Peter's concerns on utrace when the 
-> > ptrace/utrace patchset was reposted.
-> 
-> Peter is Cc:-ed and he might want to chime in.
-> 
-> > Perf integration with uprobes will be done and discussions have started with 
-> > Masami and Frederic. There are a couple of fundamental technical aspects 
-> > (XOL vma vs. emulation; breakpoint insertion through CoW and not through 
-> > quiesce) that need resolution.
-> > 
-> > > The fact that there's a well established upstream workflow for instrumentation 
-> > > patches, which is being routed around by the utrace/uprobes/systemtap code 
-> > > here is not a good sign in terms of reaching a good upstream solution. Lets 
-> > > hope it works out well though.
-> > 
-> > Agreed.
-> > 
-> > On the other hand, having ptrace/utrace in the -next tree will give it a
-> > lot more testing, while any outstanding technical issues are being addressed.
-> 
-> Including experimental code that is RFC and which is not certain to go 
-> upstream is certainly not the purpose of linux-next though.
-> 
-> It will cause conflicts with various other trees and increases the overhead 
-> all around. It also causes us to trust linux-next bugreports less - as it's 
-> not the 'next Linux' anymore. Also, there's virtually no high-level 
-> technical review done in linux-next: the trees are implicitly trusted 
-> (because they are pushed by maintainers), bugs and conflicts are reported 
-> but otherwise it's a neutral tree that includes pretty much any commit 
-> indiscriminately.
-> 
-> If you need review and testing there's a number of trees you can get 
-> inclusion into.
+In general, we can assume
+   - file is shared. (because of their nature.)
+   - rss is private. (because of thier nature.)
 
-Btw., the utrace code has lived in -mm for quite some time - that's an 
-excellent route as Andrew does thorough review and testing.
+Then, the problem is how rss(private anon) is shared. 
+Except for crazy progam as AIM7, rss is private in many case.
+Even if highly shared, in most case, shared rss can be estimated by the size
+of parent process's rss. And processe's parent-child relationship is appearent.
+Measurement is easy. If COW is troublesome, counting # of COW per process
+is reasonable way. (But you have to fight with the cost of adding that.)
 
-If Andrew agrees with this particular tree as-is and wants these bits to live 
-in linux-next and have it in -mm that way then that's a fair approach 
-obviously and i have no objections ...
+I tend not to disagree to add a counter to show "shared with other cgroup"
+but disagree "shared between process". 
 
-The point is to have at least one relevant maintainer request and track it and 
-then supervise the completion of it (which includes the resolution of all 
-outstanding objections) and then push it to Linus.
+Thanks,
+-Kame
 
-	Ingo
+
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 385e29b..bf601f2 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -83,6 +83,8 @@ enum mem_cgroup_stat_index {
+>  					used by soft limit implementation */
+>  	MEM_CGROUP_STAT_THRESHOLDS, /* decrements on each page in/out.
+>  					used by threshold implementation */
+> +	MEM_CGROUP_STAT_SHARED_IN_GROUP,
+> +	MEM_CGROUP_STAT_SHARED_FROM_OTHERS,
+>  
+>  	MEM_CGROUP_STAT_NSTATS,
+>  };
+> @@ -1707,8 +1709,25 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
+>  
+>  	lock_page_cgroup(pc);
+>  	if (unlikely(PageCgroupUsed(pc))) {
+> +		struct mem_cgroup *charged = pc->mem_cgroup;
+> +		struct mem_cgroup_stat *stat;
+> +		struct mem_cgroup_stat_cpu *cpustat;
+> +		int cpu;
+> +		int shared_type;
+> +
+>  		unlock_page_cgroup(pc);
+>  		mem_cgroup_cancel_charge(mem);
+> +
+> +		stat = &charged->stat;
+> +		cpu = get_cpu();
+> +		cpustat = &stat->cpustat[cpu];
+> +		if (charged == mem)
+> +			shared_type = MEM_CGROUP_STAT_SHARED_IN_GROUP;
+> +		else
+> +			shared_type = MEM_CGROUP_STAT_SHARED_FROM_OTHERS;
+> +		__mem_cgroup_stat_add_safe(cpustat, shared_type, 1);
+> +		put_cpu();
+> +
+>  		return;
+>  	}
+>  
+> 
+
