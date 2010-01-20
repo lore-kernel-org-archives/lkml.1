@@ -1,79 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751987Ab0ATXXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751969Ab0ATXcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751987Ab0ATXXu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 18:23:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318Ab0ATXXt
+	id S1751969Ab0ATXcj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 18:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413Ab0ATXci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 18:23:49 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:45379 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297Ab0ATXXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 18:23:49 -0500
-Message-ID: <4B57907E.5000207@linux.vnet.ibm.com>
-Date: Wed, 20 Jan 2010 15:23:42 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Wed, 20 Jan 2010 18:32:38 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:21322 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365Ab0ATXch (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 18:32:37 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=KCPx1bwcmAUmc63+p+ymLW/b+P3vV/SkPpVWDng8prEAj0fdKwuWJFLzBYzsxPe/9
+	AUtSny2fI8iZ8KA03laTQ==
+Date: Wed, 20 Jan 2010 15:32:26 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Haicheng Li <haicheng.li@linux.intel.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       x86@kernel.org, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] x86: set hotpluggable nodes in nodes_possible_map
+In-Reply-To: <4B578797.3040908@kernel.org>
+Message-ID: <alpine.DEB.2.00.1001201528380.28399@chino.kir.corp.google.com>
+References: <4B501C4D.4080907@linux.intel.com> <alpine.DEB.2.00.1001171338170.16238@chino.kir.corp.google.com> <86802c441001172230y137b4916h7d744a96ab75873d@mail.gmail.com> <alpine.DEB.2.00.1001180231430.20677@chino.kir.corp.google.com> <4B5592B1.9030800@linux.intel.com>
+ <alpine.DEB.2.00.1001191513010.24223@chino.kir.corp.google.com> <4B5731E2.4040207@linux.intel.com> <alpine.DEB.2.00.1001201152040.30528@chino.kir.corp.google.com> <4B578797.3040908@kernel.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Dan Terpstra <terpstra@eecs.utk.edu>, Philip Mucci <mucci@eecs.utk.edu>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>
-Subject: Re: [RFC] perf_events: support for uncore a.k.a. nest units
-References: <4B560ACD.4040206@linux.vnet.ibm.com> <1263994448.4283.1052.camel@laptop> <1264023204.4283.1124.camel@laptop>
-In-Reply-To: <1264023204.4283.1124.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 20 Jan 2010, Yinghai Lu wrote:
 
+> > nodes_possible_map does not currently include nodes that have SRAT
+> > entries that are all ACPI_SRAT_MEM_HOT_PLUGGABLE since the bit is cleared
+> > in nodes_parsed if it does not have an online address range.
+> > 
+> > Unequivocally setting the bit in nodes_parsed is insufficient since
+> > existing code, such as acpi_get_nodes(), assumes all nodes in the map
+> > have online address ranges.  In fact, all code using nodes_parsed assumes
+> > such nodes represent an address range of online memory.
+> > 
+> > nodes_possible_map is created by unioning nodes_parsed and
+> > cpu_nodes_parsed; the former represents nodes with online memory and the
+> > latter represents memoryless nodes.  We now set the bit for hotpluggable
+> > nodes in cpu_nodes_parsed so that it also gets set in nodes_possible_map.
+> > 
+> > Signed-off-by: David Rientjes <rientjes@google.com>
+> > ---
+> >  arch/x86/mm/srat_64.c |    4 +++-
+> >  1 files changed, 3 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+> > --- a/arch/x86/mm/srat_64.c
+> > +++ b/arch/x86/mm/srat_64.c
+> > @@ -229,9 +229,11 @@ update_nodes_add(int node, unsigned long start, unsigned long end)
+> >  			printk(KERN_ERR "SRAT: Hotplug zone not continuous. Partly ignored\n");
+> >  	}
+> >  
+> > -	if (changed)
+> > +	if (changed) {
+> > +		node_set(node, cpu_nodes_parsed);
+> >  		printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n",
+> >  				 nd->start, nd->end);
+> > +	}
+> >  }
+> >  
+> >  /* Callback for parsing of the Proximity Domain <-> Memory Area mappings */
+> 
+>         if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
+>                 update_nodes_add(node, start, end);
+>                 /* restore nodes[node] */
+>                 *nd = oldnode;
+>                 if ((nd->start | nd->end) == 0)
+>                         node_clear(node, nodes_parsed);
+>         }
+> 
+> removing clearing with nodes_parsed is not working?
+> 
 
-On 1/20/2010 1:33 PM, Peter Zijlstra wrote:
-> On Wed, 2010-01-20 at 14:34 +0100, Peter Zijlstra wrote:
->
->> So how about PERF_TYPE_{CORE,NODE,SOCKET} like things?
->
-> OK, so I read most of the intel uncore stuff, and it seems to suggest
-> you need a regular pmu event to receive uncore events (chained setup),
-> this seems rather retarded since it wastes a perfectly good pmu event
-> and makes configuring all this more intricate...
->
-> A well, nothing to be done about that I guess..
+As previously discussed in this thread, the semantics of nodes_parsed is 
+to define nodes that have online address ranges; all code written to use 
+nodes_parsed operates on those address ranges.  Requiring it to also 
+support memoryless (or hotpluggable) nodes would require a change in 
+semantics in other areas such as acpi_get_nodes() and would be contrary to 
+the effort in dc098551 to fix this inconsistency.
 
-Yes, we have a similar situation where in addition to events that are counted on 
-core PMU counters, we also have counters that are off-core; in some cases the 
-counters are in off-core units which take their actual events from other 
-off-core units, in addition to their own events.  So you can see that this can 
-be almost arbitrarily complex.
-
-As for the PERF_TYPE_(CORE,NODE,SOCKET) idea, that could still work, even 
-though, for example, a socket event may be counted on a core PMU.  Using more 
-encodings for the type field, as you've suggested, would allow us to reuse the 
-64-bit config space multiple times.  Were you thinking that with the type field 
-we'd still re-use the "cpu" argument for the actual pmu address within the 
-PERF_TYPE_* space?  If so, that's an interesting idea, but I think it still 
-leaves open the problem of how to actually relate those address to the real 
-hardware, especially in the case of using a hypervisor which has provided you a 
-small subset of the physical hardware in the system.
-
-I really think we need some sort of data structure which is passed from the 
-kernel to user space to represent the topology of the system, and give useful 
-information to be able to identify each PMU node.  Whether this is done with a 
-sysfs-style tree, a table in a file, XML, etc... it doesn't really matter much, 
-but it needs to be something that can be parsed relatively easily and *contains 
-just enough information* for the user to be able to correctly choose PMUs, and 
-for the kernel to be able to relate that back to actual PMU hardware.
-
-In our case, we are looking at /proc/device-tree, and it actually does appear to 
-contain enough information for us.  However, since /proc/device-tree is not 
-available anywhere but Power arch (/proc/device-tree originates from a data 
-structure passed into the OS from the Open Firmware) we'd like to have a more 
-general approach that can be used on x86 and other arches.
-
-- Corey
-
+I believe Haicheng will be posting an incremental patch that changes the 
+name of cpu_nodes_parsed to something such as acpi_nodes_parsed to 
+indicate it does not necessarily represent memory but rather another ACPI 
+definition: either a node including only cpus or hotpluggable ranges.  
