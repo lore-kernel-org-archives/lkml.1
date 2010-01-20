@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515Ab0ATOCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751723Ab0ATOKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515Ab0ATOCA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 09:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472Ab0ATOB6
+	id S1751723Ab0ATOKN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 09:10:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232Ab0ATOKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 09:01:58 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55417 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752517Ab0ATOB6 (ORCPT
+	Wed, 20 Jan 2010 09:10:06 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57783 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751082Ab0ATOKC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 09:01:58 -0500
-Subject: Re: [PATCH/RFC v1 0/2] Human readable performance event
- description in sysfs
-From: Peter Zijlstra <peterz@infradead.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Jamie Iles <jamie.iles@picochip.com>, jpihet@mvista.com,
-       p.osciak@samsung.com, will.deacon@arm.com,
-       =?UTF-8?Q?Micha=C5=82?= Nazarewicz <m.nazarewicz@samsung.com>,
-       linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, mingo@elte.hu,
-       m.szyprowski@samsung.com, linux-arm-kernel@lists.infradead.org,
-       Tomasz Fujak <t.fujak@samsung.com>
-In-Reply-To: <20100120135553.GA22897@n2100.arm.linux.org.uk>
-References: <1263978706-15499-1-git-send-email-t.fujak@samsung.com>
-	 <1263978999.4283.823.camel@laptop> <op.u6tslipz7p4s8u@pikus>
-	 <20100120133145.GE4089@wear.picochip.com>
-	 <1263994779.4283.1057.camel@laptop>
-	 <20100120135553.GA22897@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Jan 2010 15:01:20 +0100
-Message-ID: <1263996080.4283.1064.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jan 2010 09:10:02 -0500
+Date: Wed, 20 Jan 2010 12:09:42 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf tools: fix write_event()
+Message-ID: <20100120140942.GP14636@ghostprotocols.net>
+References: <4B570657.5090105@cn.fujitsu.com>
+ <1263994901.4283.1060.camel@laptop>
+ <1263995096.4283.1062.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263995096.4283.1062.camel@laptop>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-20 at 13:55 +0000, Russell King - ARM Linux wrote:
+Em Wed, Jan 20, 2010 at 02:44:56PM +0100, Peter Zijlstra escreveu:
+> On Wed, 2010-01-20 at 14:41 +0100, Peter Zijlstra wrote:
+> > On Wed, 2010-01-20 at 21:34 +0800, Xiao Guangrong wrote:
+> > > We parse the event while it's read from mmap buffer in
+> > > write_event(), but sometimes the event will straddles the
+> > > mmap boundary, we should handle this case
+> > > 
+> > > And if we record events(such as perf kmem/sched) for long
+> > > times, Ctrl + C can't interrupt it just for this reason
+> > 
+> > Uhm, how why? it didn't used to know about events and just copied the
+> > data.
 > 
-> Unfortunately, it isn't.  CPU identification has become a fairly murky
-> business on ARM that the information exported from /proc/cpuinfo can
-> no longer precisely identify the CPU itself.
-> 
-> For example, we just treat Cortex A8 and A9 as "ARMv7" because from the
-> kernel's point of view, they're the same. 
+> looks like acme wrecked it in f5a2c3dc.. anyway the fix is wrong, record
+> should not know or care about the actual events and simply write data
+> out.
 
-Would it make sense to extend arm's cpuinfo to include enough
-information so that userspace can indeed do this?
+Oh well, I guess then we should do that after record finishes,
+reprocessing all the data in the file.
 
-It seems to me userspace might care about the exact platform they're
-running on.
-
+- Arnaldo
