@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087Ab0ATJww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271Ab0ATJxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087Ab0ATJww (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 04:52:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867Ab0ATJwt
+	id S1753271Ab0ATJxW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 04:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009Ab0ATJxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 04:52:49 -0500
+	Wed, 20 Jan 2010 04:53:20 -0500
 Received: from mail-iw0-f197.google.com ([209.85.223.197]:56597 "EHLO
 	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751986Ab0ATJwr (ORCPT
+	with ESMTP id S1753123Ab0ATJxQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 04:52:47 -0500
+	Wed, 20 Jan 2010 04:53:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=S7MSE53CIvX3bMWWkrOZ/jooNmcqXu4QCSyBoG80eirIw/DLavYcZkRtJUPYJZEpjM
-         AA0MsjZRmh/3AcKhIKZj0UicprF3eN85O6nAVyH3iIFA8YVHidGBbD+kch43paXcSyg2
-         lL//DK4gAolY7KN3pho5tbLgT6n+boC/YLElU=
-Date: Wed, 20 Jan 2010 17:52:42 +0800
-From: anfei <anfei.zhou@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux@arm.linux.org.uk,
-       jamie@shareable.org
-Subject: Re: cache alias in mmap + write
-Message-ID: <20100120095242.GA5672@desktop>
-References: <20100120082610.GA5155@desktop> <20100120174630.4071.A69D9226@jp.fujitsu.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TvNB4Q0s/kF38aUHwws0KcS9evaKkPChqI2aIlmqzMFnvVjSTysfZWRb+ggn0FrjnD
+         G9P51tYqvV10gh5rk5WOMwsuA+NOnF/0CYawFcss/4Lt7b6TJYho7EH2kMbDUsy7Q4JO
+         t7Ug5QmBNwqOjcC2GfGzVkh5CWPkDDItCiWM4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100120174630.4071.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100119165639.GC23161@linux-mips.org>
+References: <20100118202414.GA4207@x200>
+	 <20100119165639.GC23161@linux-mips.org>
+Date: Wed, 20 Jan 2010 11:53:16 +0200
+Message-ID: <b6fcc0a1001200153h6561d14ft61a9425719fb4203@mail.gmail.com>
+Subject: Re: what's up with "make -j N" output?
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 06:10:11PM +0900, KOSAKI Motohiro wrote:
-> Hello,
-> 
-> > diff --git a/mm/filemap.c b/mm/filemap.c
-> > index 96ac6b0..07056fb 100644
-> > --- a/mm/filemap.c
-> > +++ b/mm/filemap.c
-> > @@ -2196,6 +2196,9 @@ again:
-> >  		if (unlikely(status))
-> >  			break;
-> >  
-> > +		if (mapping_writably_mapped(mapping))
-> > +			flush_dcache_page(page);
-> > +
-> >  		pagefault_disable();
-> >  		copied = iov_iter_copy_from_user_atomic(page, i, offset, bytes);
-> >  		pagefault_enable();
-> 
-> I'm not sure ARM cache coherency model. but I guess correct patch is here.
-> 
-> +		if (mapping_writably_mapped(mapping))
-> +			flush_dcache_page(page);
-> +
->  		pagefault_disable();
->  		copied = iov_iter_copy_from_user_atomic(page, i, offset, bytes);
->  		pagefault_enable();
-> -		flush_dcache_page(page);
-> 
-> 
-> Why do we need to call flush_dcache_page() twice?
-> 
-The latter flush_dcache_page is used to flush the kernel changes
-(iov_iter_copy_from_user_atomic), which makes the userspace to see the
-write,  and the one I added is used to flush the userspace changes.
-And I think it's better to split this function into two:
-	flush_dcache_user_page(page);
-	kmap_atomic(page);
-	write to  page;
-	kunmap_atomic(page);
-	flush_dcache_kern_page(page);
-But currently there is no such API.
-> 
-> 
-> 
+On Tue, Jan 19, 2010 at 6:56 PM, Ralf Baechle <ralf@linux-mips.org> wrote:
+> On Mon, Jan 18, 2010 at 10:24:14PM +0200, Alexey Dobriyan wrote:
+>
+>> Script does effectively:
+>>
+>>       make -k -j5 &>1.log
+>
+> My automated builds effectively run a number of "make -j 1" builds in
+> parallel so I get sane parsable and readable logs.
+
+I do this too, still -j1 is waste of time if only one compile is running
+for whatever reason.
+
+> I don't think we give any guarantees for -j 2 or higher even though
+> that would be highly desirable when things go wrong.
+
+Meanwhile, bug dissapeared somewhere. :-\
