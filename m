@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367Ab0ATGkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603Ab0ATGn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752367Ab0ATGkh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 01:40:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954Ab0ATGkg
+	id S1752603Ab0ATGn2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 01:43:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973Ab0ATGn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 01:40:36 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:50105 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181Ab0ATGkf (ORCPT
+	Wed, 20 Jan 2010 01:43:27 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40256 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319Ab0ATGn0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 01:40:35 -0500
-Date: Wed, 20 Jan 2010 12:10:26 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100120064026.GC6588@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20100119211646.GF16096@redhat.com> <20100120111220.e7fb4e2c.sfr@canb.auug.org.au> <20100120054950.GB27108@elte.hu> <20100120061551.GB6588@in.ibm.com> <20100120062834.GB12165@elte.hu>
+	Wed, 20 Jan 2010 01:43:26 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.4.0
+Message-ID: <4B56A5EF.40703@jp.fujitsu.com>
+Date: Wed, 20 Jan 2010 15:42:55 +0900
+From: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100120062834.GB12165@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: linux-scsi@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>,
+       Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+CC: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>,
+       lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+Subject: [PATCH 0/2] scsi: ftrace based scsi tracing feature
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 07:28:34AM +0100, Ingo Molnar wrote:
-> 
-> * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
-> 
-> > On Wed, Jan 20, 2010 at 06:49:50AM +0100, Ingo Molnar wrote:
+Hi,
 
-...
- 
-> > On the other hand, having ptrace/utrace in the -next tree will give it a
-> > lot more testing, while any outstanding technical issues are being addressed.
-> 
-> Including experimental code that is RFC and which is not certain to go 
-> upstream is certainly not the purpose of linux-next though.
+We'd like to propose this patchset (ftrace based scsi tracing)
+as the first attempt for SCSI tracing, starting with the minimum
+trace points.
 
-OK.
+Tracing gives us an idea how far SCSI processing goes, for
+example, even in a case that a SCSI IRQ handling is blocked by
+other drivers that disable interrupts for a long time.  Also,
+trace could be used for debugging purpose in development similar
+to how USB developers use usbmon for collecting submitted and
+completed URBs for debugging.  In a mission critical area, there
+is sometimes a case that we have to analyze a problem at customers
+without taking a memory dump as much as possible.  There is also
+a case to solve a problem which reproducibility is very low (but
+we can not just leave the problem) so collecting additional data
+afterwards is difficult.
 
-> It will cause conflicts with various other trees and increases the overhead 
-> all around. It also causes us to trust linux-next bugreports less - as it's 
-> not the 'next Linux' anymore. Also, there's virtually no high-level technical 
-> review done in linux-next: the trees are implicitly trusted (because they are 
-> pushed by maintainers), bugs and conflicts are reported but otherwise it's a 
-> neutral tree that includes pretty much any commit indiscriminately.
-> 
-> If you need review and testing there's a number of trees you can get inclusion 
-> into.
+In this version, it prints host#, channel, id, lun, and CDB (and
+a value of 'result' if it's called in scsi_done().)  All fields
+of CDB are printed in hex, and some of them are printed in ascii
+as well.  That makes the outputs be more user-friendly.  For
+example, retrieving 'lba' and 'transfer length (txlen)' data from
+CDB of "SCSI3 block command READ/WRITE," and printing them in the
+friendly format, users can easily correlate the info from SCSI
+layer with block layer.  (All the conversions to ascii that requires
+relatively large costs are done in TP_printk(), making the overheads
+at storing trace be minimum.)
 
-So would -tip be one of them? If so could you pull the utrace-ptrace
-branch in?
+CDB has various lengths for its size and that made us end up
+creating __print_hex().
 
-Or did you intend some other tree (random-tracing)? (Though I think a
-ptrace reimplementation isn't 'random'-tracing :-))
+This patchset applies to 2.6.33-rc4.
 
-Ananth
+ ([PATCH 0/2] scsi: ftrace based scsi tracing feature)
+  [PATCH 1/2] scsi: add __print_hex() to ftrace
+  [PATCH 2/2] scsi: add scsi trace core function and put trace points
+
+Thanks,
+Kei
+
+
+
+
