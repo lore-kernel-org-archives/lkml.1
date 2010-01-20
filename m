@@ -1,93 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451Ab0ATWxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751695Ab0ATWz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451Ab0ATWxw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 17:53:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682Ab0ATWxk
+	id S1751695Ab0ATWz6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 17:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461Ab0ATWz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 17:53:40 -0500
-Received: from f0.cmpxchg.org ([85.214.51.133]:40382 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754863Ab0ATWx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 17:53:29 -0500
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       x86@kernel.org, stable@kernel.org
-Subject: [PATCH] bootmem: avoid DMA32 zone by default
-Date: Wed, 20 Jan 2010 23:53:18 +0100
-Message-Id: <1264027998-15257-1-git-send-email-hannes@cmpxchg.org>
-X-Mailer: git-send-email 1.6.4
-In-Reply-To: <20100120153000.GA13172@cmpxchg.org>
-References: <20100120153000.GA13172@cmpxchg.org>
+	Wed, 20 Jan 2010 17:55:57 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50269
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751147Ab0ATWz4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 17:55:56 -0500
+Date: Wed, 20 Jan 2010 14:56:04 -0800 (PST)
+Message-Id: <20100120.145604.21219905.davem@davemloft.net>
+To: marcel@holtmann.org
+Cc: lrodriguez@atheros.com, Luis.Rodriguez@atheros.com,
+       torvalds@linux-foundation.org, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mcgrof@gmail.com,
+       Vikram.Kandukuri@atheros.com, SongXing.Xu@atheros.com
+Subject: Re: [PATCH] Bluetooth: Add DFU driver for Atheros Bluetooth
+ chipset AR3011
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1264027973.5591.241.camel@localhost.localdomain>
+References: <1264019268.5591.223.camel@localhost.localdomain>
+	<20100120210813.GF10113@tux>
+	<1264027973.5591.241.camel@localhost.localdomain>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bootmem already tries normal allocations above the DMA zone to reserve
-it for users that can not cope with higher addresses.
+From: Marcel Holtmann <marcel@holtmann.org>
+Date: Wed, 20 Jan 2010 14:52:53 -0800
 
-The same principle applies to the DMA32 zone, which is currently not
-spared from normal allocations.
+> sorry that I missed that email, I read the subject as FYI if you are
+> using that driver. Which I actually don't since nobody ever send me
+> hardware ;)
 
-This can lead to exhaustion of this limited amount of address space
-through things that can easily live elsewhere, like the mem_map e.g.
+Marcel, you miss quite a few bluetooth patches I have to
+say.
 
-Raise bootmem's default goal beyond DMA32 for architectures with this
-zone defined.  For now, these are x86 and mips.
+Why not setup patchwork for linux-bluetooth and that way there can
+much less confusion and less situations like this?
 
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Reported-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: x86@kernel.org
-Cc: stable@kernel.org
----
- include/linux/bootmem.h |   20 +++++++++++++-------
- 1 files changed, 13 insertions(+), 7 deletions(-)
-
-I cc'd stable because this affects already released kernels.  But since this is
-the first report of DMA32 memory exhaustion through bootmem that I hear of,
-you guys might want to skip this patch due to the fragile nature of early memory
-management.
-
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index b10ec49..52c8272 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -96,20 +96,26 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
- 				      unsigned long align,
- 				      unsigned long goal);
- 
-+#ifdef MAX_DMA32_PFN
-+#define BOOTMEM_DEFAULT_GOAL	(MAX_DMA32_PFN << PAGE_SHIFT)
-+#else
-+#define BOOTMEM_DEFAULT_GOAL	__pa(MAX_DMA_ADDRESS)
-+#endif
-+
- #define alloc_bootmem(x) \
--	__alloc_bootmem(x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem(x, SMP_CACHE_BYTES, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_nopanic(x) \
--	__alloc_bootmem_nopanic(x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem_nopanic(x, SMP_CACHE_BYTES, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_pages(x) \
--	__alloc_bootmem(x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem(x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_pages_nopanic(x) \
--	__alloc_bootmem_nopanic(x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem_nopanic(x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_node(pgdat, x) \
--	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_pages_node(pgdat, x) \
--	__alloc_bootmem_node(pgdat, x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem_node(pgdat, x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
- #define alloc_bootmem_pages_node_nopanic(pgdat, x) \
--	__alloc_bootmem_node_nopanic(pgdat, x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
-+	__alloc_bootmem_node_nopanic(pgdat, x, PAGE_SIZE, BOOTMEM_DEFAULT_GOAL)
- 
- #define alloc_bootmem_low(x) \
- 	__alloc_bootmem_low(x, SMP_CACHE_BYTES, 0)
--- 
-1.6.5.4
-
+Thanks.
