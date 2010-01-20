@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306Ab0ATXvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261Ab0ATXu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306Ab0ATXvB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 18:51:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215Ab0ATXux
+	id S1754261Ab0ATXu6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 18:50:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005Ab0ATXuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 18:50:53 -0500
-Received: from kroah.org ([198.145.64.141]:33650 "EHLO coco.kroah.org"
+	Wed, 20 Jan 2010 18:50:52 -0500
+Received: from kroah.org ([198.145.64.141]:33639 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753309Ab0ATXuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 18:50:51 -0500
+	id S1753515Ab0ATXut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 18:50:49 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Stanislav Brabec <sbrabec@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 4/8] serial-core: resume serial hardware with no_console_suspend
-Date: Wed, 20 Jan 2010 15:49:59 -0800
-Message-Id: <1264031403-32239-4-git-send-email-gregkh@suse.de>
+Cc: Alan Cox <alan@linux.intel.com>, stable <stable@kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 2/8] nozomi: quick fix for the close/close bug
+Date: Wed, 20 Jan 2010 15:49:57 -0800
+Message-Id: <1264031403-32239-2-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100120234759.GC32068@kroah.com>
 References: <20100120234759.GC32068@kroah.com>
@@ -22,186 +23,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stanislav Brabec <sbrabec@suse.cz>
+From: Alan Cox <alan@linux.intel.com>
 
-Perform a tricky suspend/resume even with no_console_suspend.
+Nozomi goes wrong if you get the sequence
 
-With no_console_suspend, kernel skips serial port suspend/resume and the
-serial hardware may remain in undefined state after resume. It actually
-happens on devices that don't have BIOS that handle serial
-initialization. It makes impossible to use serial console after resume.
+	open
+	open
+	close
 
-Devices affected by this problem include:
-Sharp Zaurus devices
-Several PXA based ARM embedded boards
+	[stuff]
+	close
 
-The patch does:
-- Save the hardware state
-- Perform buffer flush in time of its suspend call
-- Tell the driver that port is suspended
-- But still accept new data
-- And keep console hardware in state that allows to send them
+which turns out to occur on some ppp type setups.
 
-It allows to capture late console messages without breaking console
-after resume.
+This is a quick patch up for the problem. It's not really fixing Nozomi
+which completely fails to implement tty open/close semantics and all the
+other needed stuff. Doing it right is a rather more invasive patch set and
+not one that will backport.
 
-This is just a resend of a patch discussed in these threads, as the
-patch was not yet applied.
-
-"Possible suspend/resume regression in .32-rc?" (Nov 1-5, 2009, ARM
-list, later LKML)
-
-"serial-core: resume serial hardware with no_console_suspend" (Sep
-15-Oct 18, 2009, LKML & ARM lists)
-
-Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
-Tested-by: Haojian Zhuang <haojian.zhuang@gmail.com>
-Tested-by: Daniel Mack <daniel@caiaq.de>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Cc: stable <stable@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/serial/serial_core.c |   88 ++++++++++++++++--------------------------
- 1 files changed, 33 insertions(+), 55 deletions(-)
+ drivers/char/nozomi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 047530b..fa4f170 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2006,12 +2006,6 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
+diff --git a/drivers/char/nozomi.c b/drivers/char/nozomi.c
+index 7d73cd4..2ad7d37 100644
+--- a/drivers/char/nozomi.c
++++ b/drivers/char/nozomi.c
+@@ -1651,10 +1651,10 @@ static void ntty_close(struct tty_struct *tty, struct file *file)
  
- 	mutex_lock(&port->mutex);
+ 	dc->open_ttys--;
+ 	port->count--;
+-	tty_port_tty_set(port, NULL);
  
--	if (!console_suspend_enabled && uart_console(uport)) {
--		/* we're going to avoid suspending serial console */
--		mutex_unlock(&port->mutex);
--		return 0;
--	}
--
- 	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
- 	if (device_may_wakeup(tty_dev)) {
- 		enable_irq_wake(uport->irq);
-@@ -2019,20 +2013,23 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 		mutex_unlock(&port->mutex);
- 		return 0;
- 	}
--	uport->suspended = 1;
-+	if (console_suspend_enabled || !uart_console(uport))
-+		uport->suspended = 1;
- 
- 	if (port->flags & ASYNC_INITIALIZED) {
- 		const struct uart_ops *ops = uport->ops;
- 		int tries;
- 
--		set_bit(ASYNCB_SUSPENDED, &port->flags);
--		clear_bit(ASYNCB_INITIALIZED, &port->flags);
-+		if (console_suspend_enabled || !uart_console(uport)) {
-+			set_bit(ASYNCB_SUSPENDED, &port->flags);
-+			clear_bit(ASYNCB_INITIALIZED, &port->flags);
- 
--		spin_lock_irq(&uport->lock);
--		ops->stop_tx(uport);
--		ops->set_mctrl(uport, 0);
--		ops->stop_rx(uport);
--		spin_unlock_irq(&uport->lock);
-+			spin_lock_irq(&uport->lock);
-+			ops->stop_tx(uport);
-+			ops->set_mctrl(uport, 0);
-+			ops->stop_rx(uport);
-+			spin_unlock_irq(&uport->lock);
-+		}
- 
- 		/*
- 		 * Wait for the transmitter to empty.
-@@ -2047,16 +2044,18 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 			       drv->dev_name,
- 			       drv->tty_driver->name_base + uport->line);
- 
--		ops->shutdown(uport);
-+		if (console_suspend_enabled || !uart_console(uport))
-+			ops->shutdown(uport);
- 	}
- 
- 	/*
- 	 * Disable the console device before suspending.
- 	 */
--	if (uart_console(uport))
-+	if (console_suspend_enabled && uart_console(uport))
- 		console_stop(uport->cons);
- 
--	uart_change_pm(state, 3);
-+	if (console_suspend_enabled || !uart_console(uport))
-+		uart_change_pm(state, 3);
- 
- 	mutex_unlock(&port->mutex);
- 
-@@ -2073,29 +2072,6 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
- 
- 	mutex_lock(&port->mutex);
- 
--	if (!console_suspend_enabled && uart_console(uport)) {
--		/* no need to resume serial console, it wasn't suspended */
--		/*
--		 * First try to use the console cflag setting.
--		 */
--		memset(&termios, 0, sizeof(struct ktermios));
--		termios.c_cflag = uport->cons->cflag;
--		/*
--		 * If that's unset, use the tty termios setting.
--		 */
--		if (termios.c_cflag == 0)
--			termios = *state->port.tty->termios;
--		else {
--			termios.c_ispeed = termios.c_ospeed =
--				tty_termios_input_baud_rate(&termios);
--			termios.c_ispeed = termios.c_ospeed =
--				tty_termios_baud_rate(&termios);
--		}
--		uport->ops->set_termios(uport, &termios, NULL);
--		mutex_unlock(&port->mutex);
--		return 0;
--	}
--
- 	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
- 	if (!uport->suspended && device_may_wakeup(tty_dev)) {
- 		disable_irq_wake(uport->irq);
-@@ -2121,21 +2097,23 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
- 		spin_lock_irq(&uport->lock);
- 		ops->set_mctrl(uport, 0);
- 		spin_unlock_irq(&uport->lock);
--		ret = ops->startup(uport);
--		if (ret == 0) {
--			uart_change_speed(state, NULL);
--			spin_lock_irq(&uport->lock);
--			ops->set_mctrl(uport, uport->mctrl);
--			ops->start_tx(uport);
--			spin_unlock_irq(&uport->lock);
--			set_bit(ASYNCB_INITIALIZED, &port->flags);
--		} else {
--			/*
--			 * Failed to resume - maybe hardware went away?
--			 * Clear the "initialized" flag so we won't try
--			 * to call the low level drivers shutdown method.
--			 */
--			uart_shutdown(state);
-+		if (console_suspend_enabled || !uart_console(uport)) {
-+			ret = ops->startup(uport);
-+			if (ret == 0) {
-+				uart_change_speed(state, NULL);
-+				spin_lock_irq(&uport->lock);
-+				ops->set_mctrl(uport, uport->mctrl);
-+				ops->start_tx(uport);
-+				spin_unlock_irq(&uport->lock);
-+				set_bit(ASYNCB_INITIALIZED, &port->flags);
-+			} else {
-+				/*
-+				 * Failed to resume - maybe hardware went away?
-+				 * Clear the "initialized" flag so we won't try
-+				 * to call the low level drivers shutdown method.
-+				 */
-+				uart_shutdown(state);
-+			}
- 		}
- 
- 		clear_bit(ASYNCB_SUSPENDED, &port->flags);
+ 	if (port->count == 0) {
+ 		DBG1("close: %d", nport->token_dl);
++		tty_port_tty_set(port, NULL);
+ 		spin_lock_irqsave(&dc->spin_mutex, flags);
+ 		dc->last_ier &= ~(nport->token_dl);
+ 		writew(dc->last_ier, dc->reg_ier);
 -- 
 1.6.5.7
 
