@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626Ab0ATPoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751711Ab0ATPtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753626Ab0ATPoT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 10:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310Ab0ATPoQ
+	id S1751711Ab0ATPtR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 10:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457Ab0ATPtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 10:44:16 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:48598 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753494Ab0ATPoO (ORCPT
+	Wed, 20 Jan 2010 10:49:16 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:38281 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478Ab0ATPtP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 10:44:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=mxLMzWuKsTJxYjfvGiO5BOFpzC5oBGYYaizc6FFnngL43smbM+Bsn0fp2pKLSK/C6F
-         ZNtFFEE6+W2F4h2e176d4dd58MLWu5FMzn6oojloX4eM13N51GvQsh1oKSM4pedyU7Qr
-         jYGIEvUzfVGYin3K+1GU1v/j8K5cWmnu4FjKM=
-From: John Kacur <jkacur@redhat.com>
-To: Clark Williams <williams@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Carsten Emde <C.Emde@osadl.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       "Nikita V. Youshchenko" <yoush@cs.msu.su>,
-       John Kacur <jkacur@redhat.com>
-Subject: [PATCH 1/2] rt-tests: Makefile: Add NUMA compile option.
-Date: Wed, 20 Jan 2010 16:36:23 +0100
-Message-Id: <1264001784-11965-2-git-send-email-jkacur@redhat.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1264001784-11965-1-git-send-email-jkacur@redhat.com>
-References: <1264001784-11965-1-git-send-email-jkacur@redhat.com>
+	Wed, 20 Jan 2010 10:49:15 -0500
+Date: Wed, 20 Jan 2010 07:48:15 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, netdev <netdev@vger.kernel.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for January 19 (vhost_net)
+Message-Id: <20100120074815.ceff3a44.randy.dunlap@oracle.com>
+In-Reply-To: <20100120113341.GA9610@redhat.com>
+References: <20100119181041.ab55f645.sfr@canb.auug.org.au>
+	<20100119104139.2ec9164b.randy.dunlap@oracle.com>
+	<20100120113341.GA9610@redhat.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4B5725E4.0161:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a NUMA compile option, and links to numa only for the tests that
-need it. (Currently that is only cyclictest)
+On Wed, 20 Jan 2010 13:33:41 +0200 Michael S. Tsirkin wrote:
 
-If you want to build with the NUMA feature, then define NUMA to anything.
-Eg., make NUMA=1
+> On Tue, Jan 19, 2010 at 10:41:39AM -0800, Randy Dunlap wrote:
+> > On Tue, 19 Jan 2010 18:10:41 +1100 Stephen Rothwell wrote:
+> > 
+> > > Hi all,
+> > > 
+> > > Changes since 20100118:
+> > 
+> > 
+> > When CONFIG_TUN is not enabled:
+> > 
+> > drivers/built-in.o: In function `get_socket':
+> > net.c:(.text+0x2899a3): undefined reference to `tun_get_socket'
+> > 
+> > 
+> > so VHOST_NET can either depend on TUN or select TUN, but if it
+> > selects TUN, it will also need to select CRC32.
+> > 
+> > ---
+> > ~Randy
+> 
+> Just to clarify sure, the broken configuration is VHOST=y TUN=m, I sent
+> a fixup patch to forbid that configuration.  But both VHOST=y TUN=n and
+> VHOST=m TUN=n build fine for me on linux-next (commit
+> af2b07e7e0a9c6bf82ce4d6a77f0412ae54f575b).  Randy, could you please
+> confirm that VHOST=y TUN=m is what you tested, or alternatively make
+> your .config available to me so I can reproduce the problem?
 
-This only adds support to the Makefile. Further patches are required
-to make this work in cyclictest itself.
+Hi Michael,
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
+You are correct, VHOST_NET=y, TUN=m.
+
+Thanks.
 ---
- Makefile |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/Makefile b/Makefile
-index 5db524d..4e1a7e3 100644
---- a/Makefile
-+++ b/Makefile
-@@ -3,7 +3,7 @@ VERSION_STRING = 0.61
- TARGETS	= cyclictest signaltest pi_stress \
- 	  hwlatdetect rt-migrate-test ptsematest sigwaittest svsematest \
- 	  sendme pip
--LIBS 	= -lpthread -lrt -lnuma
-+LIBS 	= -lpthread -lrt
- EXTRA_LIBS ?= -ldl	# for get_cpu
- DESTDIR	?=
- prefix  ?= /usr/local
-@@ -19,6 +19,11 @@ else
- 	CFLAGS	+= -O0 -g
- endif
- 
-+ifdef NUMA
-+	CFLAGS += -DNUMA
-+	NUMA_LIBS = -lnuma
-+endif
-+
- VPATH	= src/cyclictest:
- VPATH	+= src/signaltest:
- VPATH	+= src/pi_tests:
-@@ -36,7 +41,7 @@ VPATH	+= src/lib
- all: $(TARGETS)
- 
- cyclictest: cyclictest.o rt-utils.o
--	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
-+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(NUMA_LIBS)
- 
- signaltest: signaltest.o rt-utils.o
- 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
--- 
-1.6.6
-
+~Randy
