@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638Ab0ATKnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891Ab0ATKne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638Ab0ATKnX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 05:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930Ab0ATKnW
+	id S1752891Ab0ATKne (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 05:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681Ab0ATKnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 05:43:22 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:36938 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750962Ab0ATKnV (ORCPT
+	Wed, 20 Jan 2010 05:43:32 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:40084 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723Ab0ATKna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 05:43:21 -0500
+	Wed, 20 Jan 2010 05:43:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=gRwXEmJEOgzA+zs/fDVNBraNTws0EaIj8Afp2mBR+2qpWyW77bYO7eOuohCqD/ei3a
-         f5zONHPv9EBYErimWkr8pCCnVh7of8M3uOOSuM3kxFGvhlDIfAUlK0/4xMl38bD4YEXb
-         qLrIiaYjyOBrOo/JRVUXvKuUM7FdIgCqXNYAo=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ehBUBgOqBeh98k0AZnuHnofw5ql2CLmnPT2/l6XtgWbrrq0pkuEaQW5zYb4X87KRMu
+         cBwWb3jP+XCOE0omCOTUl/wntpKr9M1rmzQYCkvpOcqazgqVx7bfk9VTtWiJyf81S9UL
+         DUI9rieWtngSI3PGfR6xhItbqe1rPbTfcdSeY=
+Date: Wed, 20 Jan 2010 11:43:24 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100120104322.GA5149@nowhere>
+References: <20100119211646.GF16096@redhat.com> <20100120111220.e7fb4e2c.sfr@canb.auug.org.au> <20100120054950.GB27108@elte.hu> <20100120061551.GB6588@in.ibm.com> <20100120062834.GB12165@elte.hu> <20100120064026.GC6588@in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <4B56A8A0.3050309@gmail.com>
-References: <20100116235653.898098245@gmail.com>
-	 <20100116235851.884756038@gmail.com> <4B5678E2.2050709@gmail.com>
-	 <4B568C63.4050506@gmail.com>
-	 <7eb6a4d81001192233i5418249ct5a1717045f75167c@mail.gmail.com>
-	 <4B56A8A0.3050309@gmail.com>
-Date: Wed, 20 Jan 2010 11:43:17 +0100
-Message-ID: <7eb6a4d81001200243k7ca637cco25d319a43edf86f5@mail.gmail.com>
-Subject: Re: [patch 2/2] sata_via: Delay on vt6420 when starting ATAPI DMA 
-	write
-From: Bart Hartgers <bart.hartgers@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       juergen.metzdorf@telelev-dsl.de, markpschool@hotmail.com,
-       sporadic.crash@gmail.com, apopov@sirma.bg, david@coomber.co.za,
-       jay4mail@gmail.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100120064026.GC6588@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-2010/1/20 Tejun Heo <htejun@gmail.com>:
-> Hello,
->
-> On 01/20/2010 03:33 PM, Bart Hartgers wrote:
->> Well, the ata_sff_pause actually does a ndelay(400), and with today's
->> processors that would be a 'slow path', right?
->
-> unlikely() is used to mark very unlikely paths not the slow ones and I
-> don't really think DMA_TO_DEVICE would qualify as an unlikely path.
->
-
-Ok, I am convinced; I'll drop the unlikely.
-
-Groeten,
-Bart
-
-> Thanks.
->
-> --
-> tejun
->
+On Wed, Jan 20, 2010 at 12:10:26PM +0530, Ananth N Mavinakayanahalli wrote:
+> > It will cause conflicts with various other trees and increases the overhead 
+> > all around. It also causes us to trust linux-next bugreports less - as it's 
+> > not the 'next Linux' anymore. Also, there's virtually no high-level technical 
+> > review done in linux-next: the trees are implicitly trusted (because they are 
+> > pushed by maintainers), bugs and conflicts are reported but otherwise it's a 
+> > neutral tree that includes pretty much any commit indiscriminately.
+> > 
+> > If you need review and testing there's a number of trees you can get inclusion 
+> > into.
+> 
+> So would -tip be one of them? If so could you pull the utrace-ptrace
+> branch in?
+> 
+> Or did you intend some other tree (random-tracing)? (Though I think a
+> ptrace reimplementation isn't 'random'-tracing :-))
 
 
+Heh. No this is a tree I use for, well, random tracing patches indeed,
+which has extended to random tracing/perf/* patches by the time.
+I sometimes relay other's patches to Ingo toward this tree but this is
+usually about small volumes and for small term storage: patches that
+have been reviewed/acked already.
 
--- 
-Bart Hartgers - New e-mail: bart.hartgers@gmail.com
+utrace/uprobe is about high volume and longer time debate/review/maintainance
+and I won't have the time to carry this.
+
+
+ 
+> Ananth
+
