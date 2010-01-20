@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751836Ab0ATOKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751626Ab0ATOPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751836Ab0ATOKm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 09:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497Ab0ATOKl
+	id S1751626Ab0ATOPX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 09:15:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082Ab0ATOPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 09:10:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19437 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751396Ab0ATOKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 09:10:40 -0500
-Message-ID: <4B570EDD.6000808@redhat.com>
-Date: Wed, 20 Jan 2010 16:10:37 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: mtosatti@redhat.com, Davide Libenzi <davidel@xmailserver.org>,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] kvm: fix spurious interrupt with irqfd
-References: <20100113171222.GA19798@redhat.com> <4B5305CA.5070001@redhat.com> <20100119145202.GC28465@redhat.com>
-In-Reply-To: <20100119145202.GC28465@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 20 Jan 2010 09:15:20 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56133 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288Ab0ATOPT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 09:15:19 -0500
+Subject: Re: [PATCH] perf tools: fix write_event()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100120140942.GP14636@ghostprotocols.net>
+References: <4B570657.5090105@cn.fujitsu.com>
+	 <1263994901.4283.1060.camel@laptop> <1263995096.4283.1062.camel@laptop>
+	 <20100120140942.GP14636@ghostprotocols.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 20 Jan 2010 15:14:57 +0100
+Message-ID: <1263996897.4283.1065.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/19/2010 04:52 PM, Michael S. Tsirkin wrote:
-> On Sun, Jan 17, 2010 at 02:42:50PM +0200, Avi Kivity wrote:
->    
->> On 01/13/2010 07:12 PM, Michael S. Tsirkin wrote:
->>      
->>> Deassigning irqfd and assigning back caused spurious interrupt. fix this
->>> by clearing the counter on deassign.  This is on top of davidel's patch
->>> which makes clearing eventfd counter from modules possible.
->>>
->>>        
->> Applied both, thanks.
->>      
-> Hmm, I see this in kvm master.  Avi/Marcelo, since this is a bugfix, can
-> you queue this patchset for 2.6.33 and 2.6.32 stable as well please?
->    
+On Wed, 2010-01-20 at 12:09 -0200, Arnaldo Carvalho de Melo wrote:
+> Em Wed, Jan 20, 2010 at 02:44:56PM +0100, Peter Zijlstra escreveu:
+> > On Wed, 2010-01-20 at 14:41 +0100, Peter Zijlstra wrote:
+> > > On Wed, 2010-01-20 at 21:34 +0800, Xiao Guangrong wrote:
+> > > > We parse the event while it's read from mmap buffer in
+> > > > write_event(), but sometimes the event will straddles the
+> > > > mmap boundary, we should handle this case
+> > > > 
+> > > > And if we record events(such as perf kmem/sched) for long
+> > > > times, Ctrl + C can't interrupt it just for this reason
+> > > 
+> > > Uhm, how why? it didn't used to know about events and just copied the
+> > > data.
+> > 
+> > looks like acme wrecked it in f5a2c3dc.. anyway the fix is wrong, record
+> > should not know or care about the actual events and simply write data
+> > out.
+> 
+> Oh well, I guess then we should do that after record finishes,
+> reprocessing all the data in the file.
 
-I'm uncomfortable with pushing Davide's patch into stable and possibly 
-causing regressions with unrelated applications.  Can't a guest live 
-with a spurious interrupt?  It's not like they're unknown.
+Why do we need it at all?
 
--- 
-error compiling committee.c: too many arguments to function
+Can't report/archive/etc.. sort all this out?
 
