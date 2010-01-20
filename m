@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274Ab0ATT5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301Ab0ATT6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274Ab0ATT5u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 14:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703Ab0ATT5t
+	id S1754301Ab0ATT6d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 14:58:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268Ab0ATT6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 14:57:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37593 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752062Ab0ATT5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 14:57:49 -0500
-Message-ID: <4B576018.2000201@kernel.org>
-Date: Wed, 20 Jan 2010 11:57:12 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Wed, 20 Jan 2010 14:58:32 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:41911 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754213Ab0ATT6c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 14:58:32 -0500
+Date: Wed, 20 Jan 2010 20:58:26 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>, ananth@in.ibm.com,
+       Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+Message-ID: <20100120195826.GB24355@basil.fritz.box>
+References: <4B545146.3080001@redhat.com> <20100118124419.GC1628@linux.vnet.ibm.com> <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com> <4B5459CA.9060603@redhat.com> <4B545ACF.40203@cs.helsinki.fi> <1263852957.2266.38.camel@localhost.localdomain> <4B556855.6040800@redhat.com> <1263923265.4998.28.camel@localhost.localdomain> <87wrzc39ww.fsf@basil.nowhere.org> <1264016052.5122.40.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 02/37] x86: check range in update range
-References: <1263611228-6751-1-git-send-email-yinghai@kernel.org> <1263611228-6751-3-git-send-email-yinghai@kernel.org> <alpine.DEB.2.00.1001191055070.22304@router.home> <4B575C07.8080002@kernel.org> <alpine.DEB.2.00.1001201349540.15175@router.home>
-In-Reply-To: <alpine.DEB.2.00.1001201349540.15175@router.home>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264016052.5122.40.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20/2010 11:50 AM, Christoph Lameter wrote:
-> On Wed, 20 Jan 2010, Yinghai Lu wrote:
-> 
->> On 01/19/2010 08:56 AM, Christoph Lameter wrote:
->>> On Fri, 15 Jan 2010, Yinghai Lu wrote:
->>>
->>>> fend off wrong range
->>>
->>> Why is it ok now to call these functions with start >= end? Bootmem
->>> compatibilty?
->>
->> and amd_bus/intel_bus etc will be use 32bit etc
-> 
-> Can you be more detailed?
+> Re: rewriting instructions that use rip-relative addressing.  We do that
+> now.  See handle_riprel_insn() in patch #2.  (As far as we can tell, it
+> works, but we'd appreciate your review of it.)
 
-need to cap resources for 32bit if the reading is > 4g.
+Yes, but how do you get within 2GB of it? Add lots of holes
+in the address space? 
 
-YH
+> The instruction decoder is used only during instruction analysis, while
+> registering the probe -- i.e., in kernel space.
+
+Registering the user probe? That means if there's a buffer overflow
+in there it would be exploitable.
+
+> > 
+> > In general the trend has been also to make traps faster in the CPU, make 
+> > sure you're not optimizing for some old CPU here.
+> 
+> I won't argue with that.  What Avi seems to be proposing buys us a
+> speedup, but at the cost of increased complexity -- among other things,
+> splitting the instrumentation code between user space (in the "XOL" area
+> -- which would then be used for much more than XOL instruction slots)
+
+You can't have a single XOL area, at least not if you want to support
+shared libraries on 64bit & rip relative.
+
+> and kernel space.  The splitting would presumably be handled by
+> higher-level code -- SystemTap, perf, or whatever.  It's a neat idea,
+> but it seems like a v2 kind of feature.
+
+I'm not sure it can even work, unless you severly limited the allowed
+instructions.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
