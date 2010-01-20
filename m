@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438Ab0ATLwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515Ab0ATL7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438Ab0ATLwL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 06:52:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118Ab0ATLwJ
+	id S1753515Ab0ATL7b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 06:59:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416Ab0ATL7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 06:52:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15598 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753340Ab0ATLwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 06:52:08 -0500
-Message-ID: <4B56EE60.4030009@redhat.com>
-Date: Wed, 20 Jan 2010 13:52:00 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Wed, 20 Jan 2010 06:59:30 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:58559 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752972Ab0ATL73 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 06:59:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:content-type;
+        b=bT8VTmtPbHlkFDGWfHliUQgSx2Y3Vdvc+QteWsuHhARhsojUoNXmI8xGGLf1E6zoRj
+         G3WY9UmX1+p/dfas5pewf+WB3DDa0NaVwQc7SP9DYqG/ZvFezDrJ8N5c7SW3yY32jyjw
+         PQYspCZiSLC1E/3XYqMMRsSVUUfKaZDdaE0No=
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, Gleb Natapov <gleb@redhat.com>,
-       Julia Lawall <julia@diku.dk>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kvm: only allow one gsi per fd
-References: <20100113165809.GA13334@redhat.com> <4B53052D.3020905@redhat.com> <20100120113641.GB9610@redhat.com>
-In-Reply-To: <20100120113641.GB9610@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Shahar Havivi <shaharh@gmail.com>
+Date: Wed, 20 Jan 2010 13:59:08 +0200
+Message-ID: <b0ae6fcc1001200359y8779182j76f92b50924b340b@mail.gmail.com>
+Subject: [PATCH] Remove unused variables
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20/2010 01:36 PM, Michael S. Tsirkin wrote:
-> On Sun, Jan 17, 2010 at 02:40:13PM +0200, Avi Kivity wrote:
->    
->> On 01/13/2010 06:58 PM, Michael S. Tsirkin wrote:
->>      
->>> Looks like repeatedly binding same fd to multiple gsi's with irqfd can
->>> use up a ton of kernel memory for irqfd structures.
->>>
->>> A simple fix is to allow each fd to only trigger one gsi: triggering a
->>> srorm of interrupts in guest is likely useless anyway, and we can do it
->>> by binding a single gsi to many interrupts if we really want to.
->>>
->>>        
->> Applied and queued, thanks.
->>      
-> I'm guessing we need this for 2.6.32 stable and 2.6.33 as well?
->    
+Remove unused fields in drivers/char/vt.c
+variables orig_buf and orig_count are assigned but never used.
 
-That's what 'queued' means.
+Shahar Havivi
 
+---
+ drivers/char/vt.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 50faa1f..94f530a 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -2119,8 +2119,6 @@ static int do_con_write(struct tty_struct *tty,
+const unsigned char *buf, int co
+    uint8_t inverse;
+    uint8_t width;
+    u16 himask, charmask;
+-   const unsigned char *orig_buf = NULL;
+-   int orig_count;
+
+    if (in_interrupt())
+        return count;
+@@ -2142,8 +2140,6 @@ static int do_con_write(struct tty_struct *tty,
+const unsigned char *buf, int co
+        release_console_sem();
+        return 0;
+    }
+-   orig_buf = buf;
+-   orig_count = count;
+
+    himask = vc->vc_hi_font_mask;
+    charmask = himask ? 0x1ff : 0xff;
 -- 
-error compiling committee.c: too many arguments to function
-
+1.6.3.3
