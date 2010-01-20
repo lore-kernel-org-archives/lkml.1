@@ -1,98 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751969Ab0ATXcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968Ab0ATXgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751969Ab0ATXcj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 18:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413Ab0ATXci
+	id S1752968Ab0ATXgo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 18:36:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538Ab0ATXgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 18:32:38 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:21322 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365Ab0ATXch (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 18:32:37 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=KCPx1bwcmAUmc63+p+ymLW/b+P3vV/SkPpVWDng8prEAj0fdKwuWJFLzBYzsxPe/9
-	AUtSny2fI8iZ8KA03laTQ==
-Date: Wed, 20 Jan 2010 15:32:26 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Haicheng Li <haicheng.li@linux.intel.com>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       x86@kernel.org, Andi Kleen <andi@firstfloor.org>,
+	Wed, 20 Jan 2010 18:36:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8599 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752515Ab0ATXgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 18:36:39 -0500
+Date: Wed, 20 Jan 2010 18:31:02 -0500
+From: Valerie Aurora <vaurora@redhat.com>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: set hotpluggable nodes in nodes_possible_map
-In-Reply-To: <4B578797.3040908@kernel.org>
-Message-ID: <alpine.DEB.2.00.1001201528380.28399@chino.kir.corp.google.com>
-References: <4B501C4D.4080907@linux.intel.com> <alpine.DEB.2.00.1001171338170.16238@chino.kir.corp.google.com> <86802c441001172230y137b4916h7d744a96ab75873d@mail.gmail.com> <alpine.DEB.2.00.1001180231430.20677@chino.kir.corp.google.com> <4B5592B1.9030800@linux.intel.com>
- <alpine.DEB.2.00.1001191513010.24223@chino.kir.corp.google.com> <4B5731E2.4040207@linux.intel.com> <alpine.DEB.2.00.1001201152040.30528@chino.kir.corp.google.com> <4B578797.3040908@kernel.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Subject: Re: [PATCH 06/41] VFS: Introduce dput() variant that maintains a kill-list
+Message-ID: <20100120233102.GA16090@shell>
+References: <1256152779-10054-7-git-send-email-vaurora@redhat.com> <200911300228.nAU2Se3A007387@agora.fsl.cs.sunysb.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911300228.nAU2Se3A007387@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010, Yinghai Lu wrote:
+On Sun, Nov 29, 2009 at 09:28:40PM -0500, Erez Zadok wrote:
+> In message <1256152779-10054-7-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> > From: Jan Blunck <jblunck@suse.de>
+> > 
+> > This patch introduces a new variant of dput(). This becomes necessary to
+> > prevent a recursive call to dput() from the union mount code.
+> > 
+> >   void __dput(struct dentry *dentry, struct list_head *list, int greedy);
+> >   struct dentry *__d_kill(struct dentry *dentry, struct list_head *list,
+> >   	 		  int greedy);
+> > 
+> > __dput() works mostly like the original dput() did. The main difference is
+> > that if it the greedy argument is zero it will put the parent on a special
+> > list instead of trying to get rid of it directly.
+> > 
+> > Therefore the union mount code can safely call __dput() when it wants to get
+> > rid of underlying dentry references during a dput(). After calling __dput()
+> > or __d_kill() the caller must make sure that __d_kill_final() is called on all
+> > dentries on the kill list. __d_kill_final() is actually doing the
+> > dentry_iput() and is also dereferencing the parent.
+> 
+> From the description above, there is something somewhat unclean about all
+> the special things that now have to happen: a special flags to affect how a
+> function behaves, an extra requirement on the caller of __d_kill, etc.  I
+> wonder if there is a clear way to achieve this.
 
-> > nodes_possible_map does not currently include nodes that have SRAT
-> > entries that are all ACPI_SRAT_MEM_HOT_PLUGGABLE since the bit is cleared
-> > in nodes_parsed if it does not have an online address range.
-> > 
-> > Unequivocally setting the bit in nodes_parsed is insufficient since
-> > existing code, such as acpi_get_nodes(), assumes all nodes in the map
-> > have online address ranges.  In fact, all code using nodes_parsed assumes
-> > such nodes represent an address range of online memory.
-> > 
-> > nodes_possible_map is created by unioning nodes_parsed and
-> > cpu_nodes_parsed; the former represents nodes with online memory and the
-> > latter represents memoryless nodes.  We now set the bit for hotpluggable
-> > nodes in cpu_nodes_parsed so that it also gets set in nodes_possible_map.
-> > 
-> > Signed-off-by: David Rientjes <rientjes@google.com>
+I looked into this some more, and looks like this patch might be
+unnecessary with the current code base.
+
+We were worried about a recursive dput() call through:
+
+dput()->d_kill()->shrink_d_unions()->union_put()->dput()
+
+But this path can only be reached if the dentry is unhashed when we
+enter the first dput(), and it can only be unhashed if it was
+rmdir()'d, and that means we called d_delete(), and d_delete() calls
+shrink_d_unions() for us.  So if we do call d_kill() from dput(), the
+unions are already gone and there is no danger of calling dput()
+again.
+
+Jan, does this make sense?  If not, do you have a test case that
+triggers a recursive dput()?
+
+Thanks,
+
+-VAL
+
+> > Signed-off-by: Jan Blunck <jblunck@suse.de>
+> > Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 > > ---
-> >  arch/x86/mm/srat_64.c |    4 +++-
-> >  1 files changed, 3 insertions(+), 1 deletions(-)
+> >  fs/dcache.c |  115 +++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+> >  1 files changed, 105 insertions(+), 10 deletions(-)
 > > 
-> > diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
-> > --- a/arch/x86/mm/srat_64.c
-> > +++ b/arch/x86/mm/srat_64.c
-> > @@ -229,9 +229,11 @@ update_nodes_add(int node, unsigned long start, unsigned long end)
-> >  			printk(KERN_ERR "SRAT: Hotplug zone not continuous. Partly ignored\n");
-> >  	}
-> >  
-> > -	if (changed)
-> > +	if (changed) {
-> > +		node_set(node, cpu_nodes_parsed);
-> >  		printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n",
-> >  				 nd->start, nd->end);
-> > +	}
+> > diff --git a/fs/dcache.c b/fs/dcache.c
+> > index 38bf982..3415e9e 100644
+> > --- a/fs/dcache.c
+> > +++ b/fs/dcache.c
+> > @@ -157,14 +157,19 @@ static void dentry_lru_del_init(struct dentry *dentry)
 > >  }
 > >  
-> >  /* Callback for parsing of the Proximity Domain <-> Memory Area mappings */
+> >  /**
+> > - * d_kill - kill dentry and return parent
+> > + * __d_kill - kill dentry and return parent
+> >   * @dentry: dentry to kill
+> > + * @list: kill list
+> > + * @greedy: return parent instead of putting it on the kill list
+> >   *
+> >   * The dentry must already be unhashed and removed from the LRU.
+> >   *
+> > - * If this is the root of the dentry tree, return NULL.
+> > + * If this is the root of the dentry tree, return NULL. If greedy is zero, we
+> > + * put the parent of this dentry on the kill list instead. The callers must
+> > + * make sure that __d_kill_final() is called on all dentries on the kill list.
+> >   */
+> > -static struct dentry *d_kill(struct dentry *dentry)
+> > +static struct dentry *__d_kill(struct dentry *dentry, struct list_head *list,
+> > +			       int greedy)
 > 
->         if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
->                 update_nodes_add(node, start, end);
->                 /* restore nodes[node] */
->                 *nd = oldnode;
->                 if ((nd->start | nd->end) == 0)
->                         node_clear(node, nodes_parsed);
->         }
+> If you're keeping 'greedy' then perhaps make it a bool instead of 'int';
+> that way you don't have to pass an unclear '0' or '1' in the rest of the
+> code.
 > 
-> removing clearing with nodes_parsed is not working?
+> > +void __dput(struct dentry *, struct list_head *, int);
 > 
-
-As previously discussed in this thread, the semantics of nodes_parsed is 
-to define nodes that have online address ranges; all code written to use 
-nodes_parsed operates on those address ranges.  Requiring it to also 
-support memoryless (or hotpluggable) nodes would require a change in 
-semantics in other areas such as acpi_get_nodes() and would be contrary to 
-the effort in dc098551 to fix this inconsistency.
-
-I believe Haicheng will be posting an incremental patch that changes the 
-name of cpu_nodes_parsed to something such as acpi_nodes_parsed to 
-indicate it does not necessarily represent memory but rather another ACPI 
-definition: either a node including only cpus or hotpluggable ranges.  
+> Can you move the __dput() code here and avoid the forward function
+> declaration?
+> 
+> Can __dput() be made static, or you need to call it from elsewhere.  I
+> didn't see an extern for it in this patch.  If there's an extern in another
+> patch, then it should be moved here.
+> 
+> > +static void __d_kill_final(struct dentry *dentry, struct list_head *list)
+> > +{
+> 
+> Your patch header says that the caller of __dput or _-d_kill must called
+> __d_kill_final.  So shouldn't this be a non-static extern'ed function?
+> 
+> Either way, I suggest documenting in a comment above __d_kill_final() who
+> should call it and under what circumstances.
+> 
+> 
+> > +			iput(inode);
+> > +	}
+> > +
+> > +	if (IS_ROOT(dentry))
+> > +		parent = NULL;
+> > +	else
+> > +		parent = dentry->d_parent;
+> > +	d_free(dentry);
+> > +	__dput(parent, list, 1);
+> > +}
+> > +
+> > +/**
+> > + * d_kill - kill dentry and return parent
+> > + * @dentry: dentry to kill
+> > + *
+> > + * The dentry must already be unhashed and removed from the LRU.
+> > + *
+> > + * If this is the root of the dentry tree, return NULL.
+> > + */
+> > +static struct dentry *d_kill(struct dentry *dentry)
+> > +{
+> > +	LIST_HEAD(mortuary);
+> > +	struct dentry *parent;
+> > +
+> > +	parent = __d_kill(dentry, &mortuary, 1);
+> > +	while (!list_empty(&mortuary)) {
+> > +		dentry = list_entry(mortuary.next, struct dentry, d_lru);
+> > +		list_del(&dentry->d_lru);
+> > +		__d_kill_final(dentry, &mortuary);
+> > +	}
+> > +
+> > +	return parent;
+> > +}
+> > +
+> >  /* 
+> >   * This is dput
+> >   *
+> > @@ -199,19 +266,24 @@ static struct dentry *d_kill(struct dentry *dentry)
+> >   * Real recursion would eat up our stack space.
+> >   */
+> >  
+> > -/*
+> > - * dput - release a dentry
+> > - * @dentry: dentry to release 
+> > +/**
+> > + * __dput - release a dentry
+> > + * @dentry: dentry to release
+> > + * @list: kill list argument for __d_kill()
+> > + * @greedy: greedy argument for __d_kill()
+> >   *
+> >   * Release a dentry. This will drop the usage count and if appropriate
+> >   * call the dentry unlink method as well as removing it from the queues and
+> >   * releasing its resources. If the parent dentries were scheduled for release
+> > - * they too may now get deleted.
+> > + * they too may now get deleted if @greedy is not zero. Otherwise parent is
+> > + * added to the kill list. The callers must make sure that __d_kill_final() is
+> > + * called on all dentries on the kill list.
+> > + *
+> > + * You probably want to use dput() instead.
+> >   *
+> >   * no dcache lock, please.
+> >   */
+> > -
+> > -void dput(struct dentry *dentry)
+> > +void __dput(struct dentry *dentry, struct list_head *list, int greedy)
+> >  {
+> 
+> I wonder now if the "__" prefix in __dput is appropriate: usually it's
+> reserved for "hidden" internal functions that are not supposed to be called
+> by other users, right?  I try to avoid naming things FOO and __FOO because
+> the name alone doesn't help me understand what each one might be doing.  So
+> maybe rename __dput() to something more descriptive?
+> 
+> Erez.
