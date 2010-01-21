@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232Ab0AUVIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188Ab0AUVNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232Ab0AUVIf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 16:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200Ab0AUVIc
+	id S1755188Ab0AUVNv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 16:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822Ab0AUVNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 16:08:32 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:57755 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750952Ab0AUVIc (ORCPT
+	Thu, 21 Jan 2010 16:13:50 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43255 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754705Ab0AUVNt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 16:08:32 -0500
-Date: Thu, 21 Jan 2010 15:07:24 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 02/36] x86: check range in update range
-In-Reply-To: <4B58C0E8.2050205@kernel.org>
-Message-ID: <alpine.DEB.2.00.1001211507110.19009@router.home>
-References: <1264055303-15123-1-git-send-email-yinghai@kernel.org> <1264055303-15123-3-git-send-email-yinghai@kernel.org> <alpine.DEB.2.00.1001211443030.13130@router.home> <4B58C0E8.2050205@kernel.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 21 Jan 2010 16:13:49 -0500
+Date: Thu, 21 Jan 2010 13:13:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Tilman Schmidt <tilman@imap.cc>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: linux-next: Tree for January 21
+Message-Id: <20100121131339.5e86dfef.akpm@linux-foundation.org>
+In-Reply-To: <20100121165713.7b8a746d.sfr@canb.auug.org.au>
+References: <20100121165713.7b8a746d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jan 2010, Yinghai Lu wrote:
+On Thu, 21 Jan 2010 16:57:13 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> On 01/21/2010 12:43 PM, Christoph Lameter wrote:
-> > On Wed, 20 Jan 2010, Yinghai Lu wrote:
-> >
-> >> -v2: update comments
-> >
-> > Dont see any comments being added.
-> ----------------------------
-> so later could use it with 32bit amd_bus/intel_bus, and it could have cap_resource.
-> ----------------------------
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
 
-Ah the description.
+It includes this screwed up commit:
+
+:commit e303d9eadc64907535a0a104afa5871d2b83275e
+:Author:     Tilman Schmidt <tilman@imap.cc>
+:AuthorDate: Thu Jan 14 23:18:41 2010 +0100
+:Commit:     Jesse Barnes <jbarnes@virtuousgeek.org>
+:CommitDate: Fri Jan 15 10:08:07 2010 -0800
+:
+:    PCI/ISDN: push deprecated pci_find_device() function to last user (isdn)
+:    
+:    The ISDN4Linux HiSax driver family contains the last remaining users of
+:    the deprecated pci_find_device() function. This patch creates a private
+:    copy of that function in HiSax, and removes the now unused global
+:    function together with its controlling configuration option,
+:    CONFIG_PCI_LEGACY.
+:    
+:    Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+:    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+
+It adds a bunch of files which are compile-time generated:
+
+include/linux/autoconf.h
+include/linux/bounds.h
+include/linux/compile.h
+include/linux/utsrelease.h
 
