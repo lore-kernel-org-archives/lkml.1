@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610Ab0AUSgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631Ab0AUShx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610Ab0AUSgr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 13:36:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194Ab0AUSgq
+	id S1754631Ab0AUShx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 13:37:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312Ab0AUShw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 13:36:46 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:49000 "EHLO
-	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752167Ab0AUSgo (ORCPT
+	Thu, 21 Jan 2010 13:37:52 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:52718 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753075Ab0AUShv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 13:36:44 -0500
-Date: Thu, 21 Jan 2010 19:36:53 +0100
-From: Borislav Petkov <bp@amd64.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, andreas.herrmann3@amd.com,
-       x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] x86, smp: Adjust native_wbinvd for
- smp_call_function-helpers
-Message-ID: <20100121183653.GA14808@aftab>
-References: <1264092093-13739-1-git-send-email-bp@amd64.org>
- <1264092093-13739-3-git-send-email-bp@amd64.org>
- <4B5897F7.5000008@zytor.com>
+	Thu, 21 Jan 2010 13:37:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=QdCecyESkwjTu+DjoPBIvfNRqC7EwjHmBf6U8Dppt4zFkCdFzlbns1nwY6Y1yIu0C6
+         YwbWv41cY4BjMSiTqjK8w8LE4KUNOfjR5yGUsexXp8Z5cjKuAF7712ukypmC9Gxobb21
+         +0J1iTZMbx9o8ZGZ3XapL5e9bUiwmX3tbjTLA=
+Message-ID: <4B589EFC.6050002@garzik.org>
+Date: Thu, 21 Jan 2010 13:37:48 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B5897F7.5000008@zytor.com>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: SATA_SIL on IXP425 workaround
+References: <m33a4nfvva.fsf@intrepid.localdomain> <201001141659.19687.bzolnier@gmail.com> <4B57DEE9.8030604@garzik.org> <4B57F8D6.6080902@garzik.org>
+In-Reply-To: <4B57F8D6.6080902@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 10:07:51AM -0800, H. Peter Anvin wrote:
-> On 01/21/2010 08:41 AM, Borislav Petkov wrote:
-> > From: Borislav Petkov <borislav.petkov@amd.com>
-> > 
-> > Add a wbinvd_on_cpu() helper and fold the void * arg in the wbinvd macro
-> > definition so that native_wbinvd can be used in the smp_call_function_*
-> > helpers as a pointed-to function.
-> > 
-> > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-> 
-> This patch is a lot of extra uglification just to avoid a simple jump
-> stub -- and even then only with PV enabled -- for an operation which is
-> then going to perform an IPI and WBINVD.  That doesn't exactly seem like
-> the right tradeoff.
-> 
-> As such, I'm going to request that you just put a simple stub function
-> in lib/smp.c rather than this whole patchset (well, the smp.h bit
-> obviously needs to stay.)
+On 01/21/2010 01:48 AM, Jeff Garzik wrote:
+> On 01/20/2010 11:58 PM, Jeff Garzik wrote:
+>> On 01/14/2010 10:59 AM, Bartlomiej Zolnierkiewicz wrote:
+>>> On Monday 09 November 2009 06:31:21 pm Krzysztof Halasa wrote:
+>>>> I'm trying to add a workaround for IXP4xx CPUs to SATA SIL driver. The
+>>>> problem is that IXP4xx CPUs (Intel's XScale (ARM) network-oriented
+>>>> processors) are unable to perform 8 and 16-bit read from PCI MMIO, they
+>>>> can only do a full 32-bit readl(); SIL chips respond to that with PCI
+>>>> abort. The workaround is to use 8 and 16-bit regular IO reads (inb/inw)
+>>>> instead (MMIO write is not a problem).
+>>>>
+>>>> For SIL3x12 the workaround is simple (attached) and it works on my
+>>>> 3512.
+>>>> I'm not sure about 3114 (the 4-port chip) - the PIO BARs have TF, CTL
+>>>> and BWDMA registers which are common to channels 0 and 2, and (the
+>>>> other
+>>>> set) to channels 1 and 3. Channel selection is done with bit 4 of
+>>>> device/head TF register, this is similar (same?) as PATA master/slave.
+>>>> Does that mean that I can simply treat channel 0 as PRI master, ch#2 as
+>>>> PRI slave, ch#1 as SEC master and ch#3 as SEC slave, and the SFF code
+>>>> will select the right device correctly? Does it need additional code?
+>>>> I don't have anything based on 3114.
+>>>>
+>>>> Note: the large PRD is not a problem here, the transfer can be started
+>>>> by MMIO write. Only reads are an issue.
+>>>
+>>> FWIW your patch is now in my atang tree (I'm aware that Jeff is working
+>>> on generic solution but in the meantime this non-intrusive patch allows
+>>> sata_sil to work on IXP425).
+>>
+>> I was asking an open question, is a generic solution possible?
+>>
+>> Something like the attached patch might work, due it is completely
+>> untested, and I did not verify that the BMDMA Status register is not
+>> stomped. Also, the additional ioread32() calls in bmdma start/stop are
+>> LIKELY to be unnecessary.
+>
+> As I suspected, there is a W1C register in there. But it does look
+> possible to do all-32-bit accesses.
 
-..and I was wrapping the wrong way: wbinvd() was going to hide the void
-* function argument while a simple stub in lib/smp.c could wrap around
-wbinvd() which is much more cleaner. Thanks.
+It is definitely possible to do all 32-bit accesses...  but that 
+requires activating and exclusively using the command buffering feature, 
+because direct 32-bit access to the taskfile registers will result in a 
+32-bit access to Data rather than the desired effect.
 
-Will redo the patchset tomorrow.
+The chip docs are at http://gkernel.sourceforge.net/specs/sii/ for those 
+unfamiliar with my doc archive.
 
--- 
-Regards/Gruss,
-Boris.
+	Jeff
 
--
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
+
+
