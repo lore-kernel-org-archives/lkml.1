@@ -1,200 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822Ab0AUAUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751834Ab0AUA2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822Ab0AUAUf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 19:20:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444Ab0AUAUc
+	id S1751834Ab0AUA2Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 19:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335Ab0AUA2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 19:20:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63340 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754466Ab0AUAUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 19:20:31 -0500
-Date: Wed, 20 Jan 2010 19:19:37 -0500
-From: Valerie Aurora <vaurora@redhat.com>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 09/41] whiteout: Don't return information about whiteouts to userspace
-Message-ID: <20100121001937.GB16090@shell>
-References: <1256152779-10054-10-git-send-email-vaurora@redhat.com> <200911300253.nAU2rUFP007609@agora.fsl.cs.sunysb.edu>
-Mime-Version: 1.0
+	Wed, 20 Jan 2010 19:28:15 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:57534 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752813Ab0AUA2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 19:28:10 -0500
+Date: Thu, 21 Jan 2010 01:28:01 +0100
+To: Zhu Yi <yi.zhu@intel.com>, Johannes Berg <johannes@sipsolutions.net>
+Cc: "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>
+Subject: Re: [ipw3945-devel] hang on 2.6.33-rc4
+Message-ID: <20100121002801.GA9738@gamma.logic.tuwien.ac.at>
+References: <1263576588.2751.455.camel@rc-desk> <20100119054715.GA10780@gamma.logic.tuwien.ac.at> <1263920481.4838.32.camel@rchatre-DESK> <1263923990.28066.3.camel@johannes.local> <20100120003603.GB21011@gamma.logic.tuwien.ac.at> <1263981160.9171.5.camel@johannes.local> <20100115152215.GC2541@gamma.logic.tuwien.ac.at> <1263576588.2751.455.camel@rc-desk> <20100119054715.GA10780@gamma.logic.tuwien.ac.at> <1263979965.10275.2.camel@debian>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200911300253.nAU2rUFP007609@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <1263981160.9171.5.camel@johannes.local> <1263979965.10275.2.camel@debian>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 29, 2009 at 09:53:30PM -0500, Erez Zadok wrote:
-> In message <1256152779-10054-10-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
-> > From: Jan Blunck <jblunck@suse.de>
-> > 
-> > The userspace isn't ready for handling another filetype. Therefore this
-> > patch lets readdir() and others skip over the whiteout directory entries
-> > they might find.
-> 
-> The NFSD maintainers and MLs should be CC'ed on such patches which touch
-> fs/nfsd/.  I'd also suggst you change the subject line of this patch to:
-> 
-> 	whiteout/NFSD: don't return ...
+Dear all,
 
-Thanks, I made these and your other suggested changes below.
+On Mi, 20 Jan 2010, Zhu Yi wrote:
+> Looks like this this is the BUG_ON in skb_pull. Please try if this patch
+> help? BTW, are you using swiotlb?
 
--VAL
+On Mi, 20 Jan 2010, Johannes Berg wrote:
+> > # CONFIG_FRAME_POINTER is not set
+> 
+> The stacktrace would be a lot more useful with it set, yes. Other than
+> that, I don't know. If there's a way to make your display resolution
+> higher that might be useful so more info fits on the screen, or maybe
+> trimming the stack trace depth (though I don't know if that's possible,
+> I do know it is on powerpc because I added it there but not sure on x86)
+> 
+> All assuming you can reproduce this issue, of course.
 
-> This patch seems fairly straightforward: it returns 0 when d_type is DT_WHT.
-> As long as there's no way to create such whiteout entries (not until UM is
-> used), then there's no harm in pushing such patches upstream, no?
-> 
-> > Signed-off-by: Jan Blunck <j.blunck@tu-harburg.de>
-> > Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-> > Signed-off-by: Valerie Aurora <vaurora@redhat.com>
-> > ---
-> >  fs/compat.c       |    9 +++++++++
-> >  fs/nfsd/nfs3xdr.c |    5 +++++
-> >  fs/nfsd/nfs4xdr.c |    2 +-
-> >  fs/nfsd/nfsxdr.c  |    4 ++++
-> >  fs/readdir.c      |    9 +++++++++
-> >  5 files changed, 28 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/fs/compat.c b/fs/compat.c
-> > index 6d6f98f..43f6102 100644
-> > --- a/fs/compat.c
-> > +++ b/fs/compat.c
-> > @@ -847,6 +847,9 @@ static int compat_fillonedir(void *__buf, const char *name, int namlen,
-> >  	struct compat_old_linux_dirent __user *dirent;
-> >  	compat_ulong_t d_ino;
-> >  
-> > +	if (d_type == DT_WHT)
-> > +		return 0;
-> > +
-> >  	if (buf->result)
-> >  		return -EINVAL;
-> >  	d_ino = ino;
-> > @@ -918,6 +921,9 @@ static int compat_filldir(void *__buf, const char *name, int namlen,
-> >  	compat_ulong_t d_ino;
-> >  	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 2, sizeof(compat_long_t));
-> >  
-> > +	if (d_type == DT_WHT)
-> > +		return 0;
-> > +
-> >  	buf->error = -EINVAL;	/* only used if we fail.. */
-> >  	if (reclen > buf->count)
-> >  		return -EINVAL;
-> > @@ -1007,6 +1013,9 @@ static int compat_filldir64(void * __buf, const char * name, int namlen, loff_t
-> >  	int reclen = ALIGN(jj + namlen + 1, sizeof(u64));
-> >  	u64 off;
-> >  
-> > +	if (d_type == DT_WHT)
-> > +		return 0;
-> > +
-> >  	buf->error = -EINVAL;	/* only used if we fail.. */
-> >  	if (reclen > buf->count)
-> >  		return -EINVAL;
-> > diff --git a/fs/nfsd/nfs3xdr.c b/fs/nfsd/nfs3xdr.c
-> > index 01d4ec1..59576d0 100644
-> > --- a/fs/nfsd/nfs3xdr.c
-> > +++ b/fs/nfsd/nfs3xdr.c
-> > @@ -884,6 +884,11 @@ encode_entry(struct readdir_cd *ccd, const char *name, int namlen,
-> >  	int		elen;		/* estimated entry length in words */
-> >  	int		num_entry_words = 0;	/* actual number of words */
-> >  
-> > +	if (d_type == DT_WHT) {
-> > +		cd->common.err = nfs_ok;
-> > +		return 0;
-> > +	}
-> > +
-> >  	if (cd->offset) {
-> >  		u64 offset64 = offset;
-> >  
-> > diff --git a/fs/nfsd/nfs4xdr.c b/fs/nfsd/nfs4xdr.c
-> > index 2dcc7fe..8c25012 100644
-> > --- a/fs/nfsd/nfs4xdr.c
-> > +++ b/fs/nfsd/nfs4xdr.c
-> > @@ -2263,7 +2263,7 @@ nfsd4_encode_dirent(void *ccdv, const char *name, int namlen,
-> >  	__be32 nfserr = nfserr_toosmall;
-> >  
-> >  	/* In nfsv4, "." and ".." never make it onto the wire.. */
-> > -	if (name && isdotent(name, namlen)) {
-> > +	if (d_type == DT_WHT || (name && isdotent(name, namlen))) {
-> 
-> Optimization: I would swap the order of the two conditions separated by the
-> '||': the right-hand-side condition is far more likely to occur than
-> d_type==DT_WHT, so you can enter the body of the 'if' more quickly for the
-> common case.
-> 
-> >  		cd->common.err = nfs_ok;
-> >  		return 0;
-> >  	}
-> > diff --git a/fs/nfsd/nfsxdr.c b/fs/nfsd/nfsxdr.c
-> > index afd08e2..a7d622c 100644
-> > --- a/fs/nfsd/nfsxdr.c
-> > +++ b/fs/nfsd/nfsxdr.c
-> > @@ -513,6 +513,10 @@ nfssvc_encode_entry(void *ccdv, const char *name,
-> >  			namlen, name, offset, ino);
-> >  	 */
-> >  
-> > +	if (d_type == DT_WHT) {
-> > +		cd->common.err = nfs_ok;
-> > +		return 0;
-> > +	}
-> >  	if (offset > ~((u32) 0)) {
-> >  		cd->common.err = nfserr_fbig;
-> >  		return -EINVAL;
-> > diff --git a/fs/readdir.c b/fs/readdir.c
-> > index 7723401..3a48491 100644
-> > --- a/fs/readdir.c
-> > +++ b/fs/readdir.c
-> > @@ -77,6 +77,9 @@ static int fillonedir(void * __buf, const char * name, int namlen, loff_t offset
-> >  	struct old_linux_dirent __user * dirent;
-> >  	unsigned long d_ino;
-> >  
-> > +	if (d_type == DT_WHT)
-> > +		return 0;
-> > +
-> >  	if (buf->result)
-> >  		return -EINVAL;
-> >  	d_ino = ino;
-> > @@ -154,6 +157,9 @@ static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
-> >  	unsigned long d_ino;
-> >  	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 2, sizeof(long));
-> >  
-> > +	if (d_type == DT_WHT)
-> > +		return 0;
-> > +
-> >  	buf->error = -EINVAL;	/* only used if we fail.. */
-> >  	if (reclen > buf->count)
-> >  		return -EINVAL;
-> > @@ -239,6 +245,9 @@ static int filldir64(void * __buf, const char * name, int namlen, loff_t offset,
-> >  	struct getdents_callback64 * buf = (struct getdents_callback64 *) __buf;
-> >  	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, sizeof(u64));
-> >  
-> > +	if (d_type == DT_WHT)
-> > +		return 0;
-> > +
-> >  	buf->error = -EINVAL;	/* only used if we fail.. */
-> >  	if (reclen > buf->count)
-> >  		return -EINVAL;
-> > -- 
-> > 1.6.3.3
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> Erez.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+@Zhu: the patch didn't help. I patched it into the kernel plus activated
+CONFIG_FRAME_POINTER which led to the same hang (not surprisingly, the
+patch does only debug more ;-)
+
+This time unfortunately I there was too much output to actually capture it.
+
+@Johannes: 100% reproducible. Everytime I boot into 33-rc4 and ssh into
+any remote place it goes boom. 100%.
+
+Maybe another tidbig might help: With 2.6.32.3 it happens that I have
+hickups with WLAN:
+[  996.514491] iwlagn 0000:06:00.0: iwl_tx_agg_start on ra = 00:24:c4:ab:bb:42 tid = 0
+and the connections needs 10-20secs (hard to guess) until it is
+back alive.
+
+Best wishes
+
+Norbert
+------------------------------------------------------------------------
+Norbert Preining            preining@{jaist.ac.jp, logic.at, debian.org}
+JAIST, Japan            TU Wien, Austria           Debian TeX Task Force
+DSA: 0x09C5B094   fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+------------------------------------------------------------------------
+AITH (n.)
+The single bristle that sticks out sideways on a cheap paintbrush.
+			--- Douglas Adams, The Meaning of Liff
