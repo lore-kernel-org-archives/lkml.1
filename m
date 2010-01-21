@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178Ab0AUVCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219Ab0AUVCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755178Ab0AUVCW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 16:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104Ab0AUVCU
+	id S1755219Ab0AUVCf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 16:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195Ab0AUVC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 16:02:20 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:20738 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754729Ab0AUVCU (ORCPT
+	Thu, 21 Jan 2010 16:02:29 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:57507 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755188Ab0AUVC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 16:02:20 -0500
-Date: Thu, 21 Jan 2010 14:02:18 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 6/9] pci: introduce
-	pci_assign_unassigned_bridge_resources
-Message-ID: <20100121210218.GF17684@ldl.fc.hp.com>
-References: <1264054456-12694-1-git-send-email-yinghai@kernel.org> <1264054456-12694-7-git-send-email-yinghai@kernel.org>
+	Thu, 21 Jan 2010 16:02:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=k09hwUXFPAdvx+atmVuiHUMC/R5xMskz4Ecad2PrVdbJfVt8i1//C8A5dQ2P9oDOb8
+         k5ZJ1zflY8hXVQwZvkQzT2eqvjUdYOwl1Ejm4BgPUTA6ZJt3P8Jb2hDmRXkn5jUoImhD
+         qaL1rH6C6GnxwXC3kEmqW0n346HwjHs+4KpJA=
+Date: Thu, 21 Jan 2010 22:02:21 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: David Miller <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
+Message-ID: <20100121210221.GA3448@del.dom.local>
+References: <20100120094103.GA6225@ff.dom.local>
+ <4B58B217.8030001@majjas.com>
+ <20100121204133.GB3085@del.dom.local>
+ <4B58BD3A.1000705@majjas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1264054456-12694-7-git-send-email-yinghai@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B58BD3A.1000705@majjas.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Yinghai Lu <yinghai@kernel.org>:
-> for pciehp to use it later
-> 
-> pci_setup_bridge() will not check enabled for the slot bridge, otherwise
-> update res is not updated to bridge BAR. that is bridge is enabled already for
-> port service.
-> 
-> -v2: update it with resource_list_x
-> -v3: remove the clear busmaster. according to Kenji
-> -v4: make pdev_assign_resources_sorted and pbus_assign_resources_sorted share two small functions
->      according to Alex.
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+On Thu, Jan 21, 2010 at 03:46:50PM -0500, Michael Breuer wrote:
+> On 1/21/2010 3:41 PM, Jarek Poplawski wrote:
+> >On Thu, Jan 21, 2010 at 02:59:19PM -0500, Michael Breuer wrote:
+> >>Test notes:
+> >>
+> >>1) Warning previously apparent on start (dma_debug check_sync) with
+> >>CONFIG_DMAR=n is gone.
+> >>2) W/o the above patch, I was getting sky2 DMAR errors and
+> >>subsequent TX hangs requiring reboot to clear. The hangs happened
+> >>after at least 12 hours of uptime, and under RX load at the time of
+> >>the hang.
+> >>3) With the above patch (and no other changes) I have not been able
+> >>to recreate the crash - the system is stable.
+> >Btw, could you remind us if during last dmar bugs jumbo frames might
+> >have been used or maybe mtu was changed, and the current test setting?
+> >
+> I've hit this with and without Jumbo frames enabled. Last couple of
+> recreations were with mtu = 1500, which is how I'm running now.
+> >>I have been following the discussion about the DMA api would suggest
+> >>that the length issue when DMAR is enabled is less innocuous than
+> >>previously believed.
+> >Actually, the last conclusions are - it's more innocuous than ever
+> >believed, and I completely agree with this (at least until the next
+> >week ;-).
+> I stand grammatically corrected.
 
-Reviewed-by: Alex Chiang <achiang@hp.com>
+I didn't mean anything grammatical, sorry! (Except, it's equally
+complex ;-)
 
-But it would be great if Kenji-san could actually get some test
-cycles on this.
-
-/ac
-
+Jarek P.
