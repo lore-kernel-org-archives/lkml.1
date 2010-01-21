@@ -1,72 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303Ab0AUQie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813Ab0AUQkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752303Ab0AUQie (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147Ab0AUQid
+	id S1752813Ab0AUQkL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:40:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503Ab0AUQkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:38:33 -0500
-Received: from kroah.org ([198.145.64.141]:59945 "EHLO coco.kroah.org"
+	Thu, 21 Jan 2010 11:40:09 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:57076 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807Ab0AUQic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 11:38:32 -0500
-Date: Thu, 21 Jan 2010 08:37:42 -0800
-From: Greg KH <greg@kroah.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Driver-Core: devtmpfs - remove EXPERIMENTAL and enable it by
- default
-Message-ID: <20100121163742.GA13222@kroah.com>
-References: <1263505677.2074.2.camel@yio.site>
- <20100115065638.005ac690@infradead.org>
- <20100115180341.GA12146@kroah.com>
- <20100117065803.6e5e089e@infradead.org>
- <ac3eb2511001200953g3fc2be3ay30174b0429707c93@mail.gmail.com>
- <20100120220553.66af4fd7@infradead.org>
+	id S1752311Ab0AUQkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 11:40:07 -0500
+Date: Thu, 21 Jan 2010 17:39:21 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com, CAI Qian <caiqian@redhat.com>
+Subject: [PATCH -mm] utrace: fix utrace_maybe_reap() vs
+	find_matching_engine() race
+Message-ID: <20100121163921.GA10096@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100120220553.66af4fd7@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 10:05:53PM -0800, Arjan van de Ven wrote:
-> On Wed, 20 Jan 2010 18:53:49 +0100
-> Kay Sievers <kay.sievers@vrfy.org> wrote:
-> 
-> > On Sun, Jan 17, 2010 at 15:58, Arjan van de Ven <arjan@infradead.org>
-> > wrote:
-> > > On Fri, 15 Jan 2010 10:03:41 -0800
-> > > Greg KH <greg@kroah.com> wrote:
-> > >> > removing experimental is fine... but setting it by default is a
-> > >> > bit over the top and very inconsistent with how the 'default'
-> > >> > option is used.
-> > >>
-> > >> Why?
-> > >
-> > > because the convention is that we use "default y" only for those
-> > > things that used to be on, and are now turned into a config option.
-> > 
-> > Oh, I never heard of such a convention. Sure, we can remove that "y",
-> > if this is the way it should be used, not be used.
-> 
-> For example in (this is just the first one google found, there's been a
-> bunch of discussion at various times)
-> 
-> http://article.gmane.org/gmane.linux.kernel/706458
-> 
-> Linus was rather explicit:
-> 
-> The rule of thumb should be:
-> 
-> 	NO NEW FEATURES SHOULD _EVER_ DEFAULT TO 'ON'!
+(on top of utrace-core.patch)
 
-But this is not a "new" feature, it's been around for 6+ months by the
-time it hits a release.  Does this imply that we can never change
-anything to 'on' in the Kconfig files?
+The comment in utrace_maybe_reap() correctly explains why
+utrace_attach_task/utrace_control/etc can't modify or use
+attaching/attached lists.  But find_matching_engine() can
+scan ->attached under utrace->lock without any checks, it
+can race with utrace_maybe_reap() destroying list nodes.
 
-thanks,
+Change utrace_maybe_reap() to empty ->attached before it
+drops utrace->lock, update the comments a bit.
 
-greg k-h
+Reported-by: CAI Qian <caiqian@redhat.com>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ kernel/utrace.c |   23 ++++++++++++++++-------
+ 1 files changed, 16 insertions(+), 7 deletions(-)
+
+--- V1/kernel/utrace.c~8_REAP_FIND_RACE	2009-12-18 01:58:37.000000000 +0100
++++ V1/kernel/utrace.c	2010-01-21 17:31:18.000000000 +0100
+@@ -1,7 +1,7 @@
+ /*
+  * utrace infrastructure interface for debugging user processes
+  *
+- * Copyright (C) 2006-2009 Red Hat, Inc.  All rights reserved.
++ * Copyright (C) 2006-2010 Red Hat, Inc.  All rights reserved.
+  *
+  * This copyrighted material is made available to anyone wishing to use,
+  * modify, copy, or redistribute it subject to the terms and conditions
+@@ -859,6 +859,7 @@ void utrace_maybe_reap(struct task_struc
+ 		       bool reap)
+ {
+ 	struct utrace_engine *engine, *next;
++	struct list_head attached;
+ 
+ 	spin_lock(&utrace->lock);
+ 
+@@ -897,16 +898,24 @@ void utrace_maybe_reap(struct task_struc
+ 	}
+ 
+ 	/*
+-	 * utrace_add_engine() checks ->utrace_flags != 0.
+-	 * Since @utrace->reap is set, nobody can set or clear
+-	 * UTRACE_EVENT(REAP) in @engine->flags or change
+-	 * @engine->ops, and nobody can change @utrace->attached.
++	 * utrace_add_engine() checks ->utrace_flags != 0.  Since
++	 * @utrace->reap is set, nobody can set or clear UTRACE_EVENT(REAP)
++	 * in @engine->flags or change @engine->ops and nobody can change
++	 * @utrace->attached after we drop the lock.
+ 	 */
+ 	target->utrace_flags = 0;
+-	splice_attaching(utrace);
++
++	/*
++	 * We clear out @utrace->attached before we drop the lock so
++	 * that find_matching_engine() can't come across any old engine
++	 * while we are busy tearing it down.
++	 */
++	list_replace_init(&utrace->attached, &attached);
++	list_splice_tail_init(&utrace->attaching, &attached);
++
+ 	spin_unlock(&utrace->lock);
+ 
+-	list_for_each_entry_safe(engine, next, &utrace->attached, entry) {
++	list_for_each_entry_safe(engine, next, &attached, entry) {
+ 		if (engine->flags & UTRACE_EVENT(REAP))
+ 			engine->ops->report_reap(engine, target);
+ 
+
