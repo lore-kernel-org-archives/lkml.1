@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737Ab0AUPze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915Ab0AUQBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752737Ab0AUPze (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 10:55:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565Ab0AUPzd
+	id S1752915Ab0AUQBG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:01:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717Ab0AUQBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 10:55:33 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43109 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752323Ab0AUPzc (ORCPT
+	Thu, 21 Jan 2010 11:01:00 -0500
+Received: from mail.digidescorp.com ([66.244.163.200]:54482 "EHLO
+	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077Ab0AUQA7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 10:55:32 -0500
-Date: Thu, 21 Jan 2010 07:54:39 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 05/36] x86/pci: enable pci root res read out for 32bit
- too
-In-Reply-To: <1264055303-15123-6-git-send-email-yinghai@kernel.org>
-Message-ID: <alpine.LFD.2.00.1001210750140.13231@localhost.localdomain>
-References: <1264055303-15123-1-git-send-email-yinghai@kernel.org> <1264055303-15123-6-git-send-email-yinghai@kernel.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 21 Jan 2010 11:00:59 -0500
+X-Greylist: delayed 558 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Jan 2010 11:00:59 EST
+X-Spam-Processed: digidescorp.com, Thu, 21 Jan 2010 09:51:40 -0600
+X-Authenticated-Sender: steve@digidescorp.com
+X-Return-Path: prvs=1637e7ab51=steve@digidescorp.com
+X-Envelope-From: steve@digidescorp.com
+Subject: Re: Generic DMA - BUG_ON
+From: "Steven J. Magnani" <steve@digidescorp.com>
+Reply-To: steve@digidescorp.com
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: monstr@monstr.eu, linux-kernel@vger.kernel.org, michal.simek@petalogix.com,
+       arnd@arndb.de, linux-arch@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org, mingo@elte.hu
+In-Reply-To: <20100120110031.GD8665@amd.com>
+References: <1263982111-24123-1-git-send-email-monstr@monstr.eu>
+	 <20100120105350.GA23394@flint.arm.linux.org.uk>
+	 <20100120110031.GD8665@amd.com>
+Content-Type: text/plain
+Organization: Digital Design Corporation
+Date: Thu, 21 Jan 2010 09:51:37 -0600
+Message-Id: <1264089097.18869.0.camel@iscandar.digidescorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2010-01-20 at 12:00 +0100, Joerg Roedel wrote:
+> On Wed, Jan 20, 2010 at 10:53:50AM +0000, Russell King wrote:
+> > and ops is NULL, then this code will oops; you will get a full register
+> > dump and backtrace.  You can use this information along with markup_oops.pl
+> > to find out where the problem is.
+> 
+> You can't rely on the oops if the code runs in process context. The
+> process may have address 0 mapped which would result in a security hole.
+> We had two of these bugs last year.
+
+You also can't rely on an oops in a NOMMU environment.
+
+------------------------------------------------------------------------
+ Steven J. Magnani               "I claim this network for MARS!
+ www.digidescorp.com              Earthling, return my space modulator!"
+
+ #include <standard.disclaimer>
 
 
-On Wed, 20 Jan 2010, Yinghai Lu wrote:
->
->  			printk(KERN_DEBUG "bus: %02x index %x %s: [%llx, %llx]\n",
->  			       busnum, j,
->  			       (res->flags & IORESOURCE_IO)?"io port":"mmio",
-> -			       res->start, res->end);
-> +			       (u64)res->start, (u64)res->end);
 
-When fixing these kinds of things, please just make it use '%pR' instead.
-
-A simple
-
-	printk(KERN_DEBUG "bus: %02x index %x %pR\n", busnum, j, res);
-
-should do the right thing, printing the resource with nice human-readable 
-flags. Including things like 64-bit/prefetching information for memory 
-resources etc that the current manual resource printout doesn't do.
-
-		Linus
