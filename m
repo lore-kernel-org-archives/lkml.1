@@ -1,39 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412Ab0AUNIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636Ab0AUNMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412Ab0AUNIN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 08:08:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187Ab0AUNIM
+	id S1753636Ab0AUNMx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 08:12:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187Ab0AUNMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 08:08:12 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51738
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751575Ab0AUNIL (ORCPT
+	Thu, 21 Jan 2010 08:12:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:39789 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751460Ab0AUNMv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 08:08:11 -0500
-Date: Thu, 21 Jan 2010 05:08:21 -0800 (PST)
-Message-Id: <20100121.050821.80020283.davem@davemloft.net>
-To: julia@diku.dk
-Cc: vladislav.yasevich@hp.com, sri@us.ibm.com, linux-sctp@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 4/9] net/sctp: Eliminate useless code
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.1001211148310.13529@ask.diku.dk>
-References: <Pine.LNX.4.64.1001211121500.13529@ask.diku.dk>
-	<20100121.024337.57448535.davem@davemloft.net>
-	<Pine.LNX.4.64.1001211148310.13529@ask.diku.dk>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 08:12:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mLeDvV3+WIMUh6lyJG7KZ9uT360DQSXKkORKGdfIlWW3hQ9+mjy/zmp4HGe1hiwQ0t
+         zram14bZHFl8t42Z4aeY9WaToaUy4t00FZ6MWR6AxxjbA4QNkdlXXEXS8ees+jIfM9Er
+         Ev4rA/T+j2x94+416b7eIs1Bh68DIquQXFiRw=
+Date: Thu, 21 Jan 2010 14:12:47 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       prasad@linux.vnet.ibm.com, maneesh@in.ibm.com
+Subject: Re: [patch] HWBKPT FIX: Release the bp slot if
+	arch_validate_hwbkpt_settings() fails.
+Message-ID: <20100121131245.GG5017@nowhere>
+References: <20100121125113.152043766@mars.in.ibm.com> <20100121125516.GA32521@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100121125516.GA32521@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
-Date: Thu, 21 Jan 2010 11:49:10 +0100 (CET)
+On Thu, Jan 21, 2010 at 06:25:16PM +0530, Mahesh Salgaonkar wrote:
+> 
+> On a given architecture, when hardware breakpoint registration fails due
+> to un-supported access type (read/write/execute), we loose the bp slot since
+> register_perf_hw_breakpoint() does not release the bp slot on failure.
+> Hence, any subsequent hardware breakpoint registration starts failing
+> with 'no space left on device' error.
+> 
+> This patch introduces error handling in register_perf_hw_breakpoint()
+> function and releases bp slot on error.
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-> Is the new one better than the old one?  Because in my local copies, they 
-> are the same...
 
-The new one worked and I applied it.
+Thanks. I'm queuing it.
+
