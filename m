@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453Ab0AUEY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444Ab0AUEZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453Ab0AUEY6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:24:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754366Ab0AUEYk
+	id S1754444Ab0AUEZf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303Ab0AUEZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:24:40 -0500
-Received: from kroah.org ([198.145.64.141]:60212 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754258Ab0AUEXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:23:09 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:36 2010
-Message-Id: <20100121041836.286147376@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Wed, 20 Jan 2010 20:15:50 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: [29/30] sched: Fix task priority bug
-In-Reply-To: <20100121041852.GA9656@kroah.com>
+	Wed, 20 Jan 2010 23:25:21 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:62935 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753991Ab0AUEZR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 23:25:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=vdfHNuPDmIvKzibjesH9TBWKzwg7ZEcXMxH518q1KjoE/OXVyuE7vby/y4L6Cxe8RE
+         zxMLwCZFiIMMFwQBxcJ24+BGcNV0T+HhlhjnzV8p59JSv1ei6bTu8tvT7UBimvTiRN7W
+         9BNwNHy4vHIf6rE3gaiI91UyaMTgGIO2qW0B4=
+Message-ID: <4B57D72A.2040905@garzik.org>
+Date: Wed, 20 Jan 2010 23:25:14 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 23/64] pata_via: store UDMA masks in via_isa_bridges table
+References: <20100118171349.14623.90030.sendpatchset@localhost> <20100118171712.14623.9408.sendpatchset@localhost>
+In-Reply-To: <20100118171712.14623.9408.sendpatchset@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+On 01/18/2010 12:17 PM, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> Subject: [PATCH] pata_via: store UDMA masks in via_isa_bridges table
+>
+> * store UDMA masks in via_isa_bridges[] and while at it make "flags"
+>    field to be u8 instead of u16
+>
+> * convert the driver to use UDMA masks from via_isa_bridges[]
+>
+> * remove no longer needed VIA_UDMA* defines
+>
+> Make some minor documentation and CodingStyle fixes while at it.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> ---
+>   drivers/ata/pata_via.c |  198 +++++++++++++++++++++++--------------------------
+>   1 file changed, 93 insertions(+), 105 deletions(-)
 
-------------------
-
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-commit 57785df5ac53c70da9fb53696130f3c551bfe1f9 upstream.
-
-83f9ac removed a call to effective_prio() in wake_up_new_task(), which
-leads to tasks running at MAX_PRIO.
-
-This is caused by the idle thread being set to MAX_PRIO before forking
-off init. O(1) used that to make sure idle was always preempted, CFS
-uses check_preempt_curr_idle() for that so we can savely remove this bit
-of legacy code.
-
-Reported-by: Mike Galbraith <efault@gmx.de>
-Tested-by: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1259754383.4003.610.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- kernel/sched.c |    6 ------
- 1 file changed, 6 deletions(-)
-
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3177,10 +3177,6 @@ static void pull_task(struct rq *src_rq,
- 	deactivate_task(src_rq, p, 0);
- 	set_task_cpu(p, this_cpu);
- 	activate_task(this_rq, p, 0);
--	/*
--	 * Note that idle threads have a prio of MAX_PRIO, for this test
--	 * to be always true for them.
--	 */
- 	check_preempt_curr(this_rq, p, 0);
- }
- 
-@@ -6982,7 +6978,6 @@ void __cpuinit init_idle(struct task_str
- 	__sched_fork(idle);
- 	idle->se.exec_start = sched_clock();
- 
--	idle->prio = idle->normal_prio = MAX_PRIO;
- 	cpumask_copy(&idle->cpus_allowed, cpumask_of(cpu));
- 	__set_task_cpu(idle, cpu);
- 
-@@ -7686,7 +7681,6 @@ migration_call(struct notifier_block *nf
- 		spin_lock_irq(&rq->lock);
- 		update_rq_clock(rq);
- 		deactivate_task(rq, rq->idle, 0);
--		rq->idle->static_prio = MAX_PRIO;
- 		__setscheduler(rq, rq->idle, SCHED_NORMAL, 0);
- 		rq->idle->sched_class = &idle_sched_class;
- 		migrate_dead_tasks(cpu);
+applied
 
 
