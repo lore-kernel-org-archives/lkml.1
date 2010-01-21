@@ -1,58 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103Ab0AUR1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313Ab0AURbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752103Ab0AUR1N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 12:27:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534Ab0AUR1I
+	id S1753313Ab0AURbq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 12:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346Ab0AURbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 12:27:08 -0500
-Received: from mail.windriver.com ([147.11.1.11]:35932 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752153Ab0AUR1G (ORCPT
+	Thu, 21 Jan 2010 12:31:45 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46506 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752273Ab0AURbo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 12:27:06 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-To: mingo@elte.hu, peterz@infradead.org
-Cc: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] softlockup kgdb fix for tip for 2.6.34
-Date: Thu, 21 Jan 2010 11:26:30 -0600
-Message-Id: <1264094791-8883-1-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.4.rc1
-X-OriginalArrivalTime: 21 Jan 2010 17:26:34.0018 (UTC) FILETIME=[E0D7C020:01CA9ABE]
+	Thu, 21 Jan 2010 12:31:44 -0500
+X-Authority-Analysis: v=1.0 c=1 a=LvvgB44tUwgA:10 a=7U3hwN5JcxgA:10 a=Inz39NyLQJO6Pg41jRYA:9 a=lJmB3rpkmu89hkJB8C8A:7 a=i5e5PbsV7znP5mbP0sGcOwBAgRUA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: Lots of bugs with current->state = TASK_*INTERRUPTIBLE
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Julia Lawall <julia@diku.dk>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Andy Whitcroft <apw@canonical.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <Pine.LNX.4.64.1001211145480.13529@ask.diku.dk>
+References: <1263932978.31321.53.camel@gandalf.stny.rr.com>
+	 <Pine.LNX.4.64.1001192155490.28583@ask.diku.dk>
+	 <1263935333.4561.26.camel@frodo>
+	 <Pine.LNX.4.64.1001211145480.13529@ask.diku.dk>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 21 Jan 2010 12:31:34 -0500
+Message-ID: <1264095094.31321.283.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo, would it be possible to pull in this change or recommend what
-needs to be done to reach closure on this long standing problem.
+On Thu, 2010-01-21 at 11:47 +0100, Julia Lawall wrote:
+> What about something like the following (drivers/macintosh/adb.c):
+> 
+>         add_wait_queue(&state->wait_queue, &wait);
+>         current->state = TASK_INTERRUPTIBLE;
+> 
+> 	for (;;) {
+> 	        req = state->completed;
+>                 if (req != NULL)
+>                         state->completed = req->next;
+>                 else if (atomic_read(&state->n_pending) == 0)
+>                         ret = -EIO;
+> 		if (req != NULL || ret != 0)
+> 			break;
+> 
+>                 if (file->f_flags & O_NONBLOCK) {
+>                         ret = -EAGAIN;
+>                         break;
+> 		}
+>                 if (signal_pending(current)) {
+>                         ret = -ERESTARTSYS;
+>                         break;
+>                 }
+>                 spin_unlock_irqrestore(&state->lock, flags);
+>                 schedule();
+>         	spin_lock_irqsave(&state->lock, flags);
+>         }
+> 
+>         current->state = TASK_RUNNING;
+>         remove_wait_queue(&state->wait_queue, &wait);
+> 
+> There is a call to schedule eventually after the first current->state 
+> assignment, but it is not right after.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_igno
+I looked at this code in a bit more detail. Seems that it does not need
+the set_current_state(), because all activities between the state of the
+task and the variables being checked (state->n_pending, et al) are under
+the state->lock.
 
-This particular fix for kgdb to allows it to work correctly with the
-softlockup code.  It has been around since September 2009 and in
-linux-next since the creation of the patch.  I never issued a pull to
-the Linus tree because I did not get an ack from either yourself or
-Peter.
+But there should be a comment stating that above the assignment of
+current->state. Something like:
 
-Thanks,
-Jason.
+	/*
+	 * No need for the set_current_state() memory barrier since
+	 * all checks between state and wakeups are done under the
+	 * state->lock.
+	 */
+	current->state = TASK_INTERRUPTIBLE;
 
 
----
-short log follows:
+But I'd rather have the author of this code write that.
 
-The following changes since commit 24bc7347da73a9ed3383056c3d0f28c0e361621e:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../wim/linux-2.6-watchdog
+-- Steve
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_ingo
 
-Jason Wessel (1):
-      softlockup: add sched_clock_tick() to avoid kernel warning on kgdb resume
-
- include/linux/sched.h |    4 ++++
- kernel/kgdb.c         |    6 +++---
- kernel/softlockup.c   |   15 +++++++++++++++
- 3 files changed, 22 insertions(+), 3 deletions(-)
 
