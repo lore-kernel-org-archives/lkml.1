@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719Ab0AUD5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194Ab0AUD6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752719Ab0AUD5e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 22:57:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863Ab0AUD5d
+	id S1753194Ab0AUD6K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 22:58:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143Ab0AUD6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 22:57:33 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:50309 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731Ab0AUD5c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 22:57:32 -0500
-Message-ID: <4B57D07B.7080604@oracle.com>
-Date: Wed, 20 Jan 2010 19:56:43 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-CC: Stefani Seibold <stefani@seibold.net>
-Subject: [PATCH] kfifo: fix kernel-doc notation
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4B57D097.0105:SCFMA4539814,ss=1,fgs=0
+	Wed, 20 Jan 2010 22:58:08 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42261 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751418Ab0AUD6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 22:58:06 -0500
+Date: Thu, 21 Jan 2010 14:57:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Feng Tang <feng.tang@intel.com>
+Subject: linux-next: spi tree build failure
+Message-Id: <20100121145757.f9d76da7.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__21_Jan_2010_14_57_57_+1100_6RHufuf9dxMnQ=/A"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+--Signature=_Thu__21_Jan_2010_14_57_57_+1100_6RHufuf9dxMnQ=/A
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Fix kfifo kernel-doc warnings:
+Hi Grant,
 
-Warning(kernel/kfifo.c:361): No description found for parameter 'total'
-Warning(kernel/kfifo.c:402): bad line:  @ @lenout: pointer to output variable with copied data
-Warning(kernel/kfifo.c:412): No description found for parameter 'lenout'
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stefani Seibold <stefani@seibold.net>
----
- kernel/kfifo.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ERROR: "dw_spi_remove_host" [drivers/spi/dw_spi_pci.ko] undefined!
 
---- linux-2.6.33-rc4-git7.orig/kernel/kfifo.c
-+++ linux-2.6.33-rc4-git7/kernel/kfifo.c
-@@ -349,6 +349,7 @@ EXPORT_SYMBOL(__kfifo_from_user_n);
-  * @fifo: the fifo to be used.
-  * @from: pointer to the data to be added.
-  * @len: the length of the data to be added.
-+ * @total: the actual returned data length.
-  *
-  * This function copies at most @len bytes from the @from into the
-  * FIFO depending and returns -EFAULT/0.
-@@ -399,7 +400,7 @@ EXPORT_SYMBOL(__kfifo_to_user_n);
-  * @fifo: the fifo to be used.
-  * @to: where the data must be copied.
-  * @len: the size of the destination buffer.
-- @ @lenout: pointer to output variable with copied data
-+ * @lenout: pointer to output variable with copied data
-  *
-  * This function copies at most @len bytes from the FIFO into the
-  * @to buffer and 0 or -EFAULT.
+Caused by commit 51f921c1eb1124fb99ab0728c19e8e14c82c81be ("spi/dw_spi:
+add a missed dw_spi_remove_host() in exit sequence").
+
+I have used the spi tree from next-20100120 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__21_Jan_2010_14_57_57_+1100_6RHufuf9dxMnQ=/A
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktX0MUACgkQjjKRsyhoI8z/ZACdGnmnTORybG6JzE71mma0LACv
+ijUAn16U3jLC80P8024VofQNlze6pSWN
+=JF3c
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__21_Jan_2010_14_57_57_+1100_6RHufuf9dxMnQ=/A--
