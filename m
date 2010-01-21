@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289Ab0AUETP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055Ab0AUEWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289Ab0AUETP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:19:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453Ab0AUETM
+	id S1754055Ab0AUEWk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:22:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713Ab0AUEWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:19:12 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:62518 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753396Ab0AUETK (ORCPT
+	Wed, 20 Jan 2010 23:22:37 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:47363 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752915Ab0AUEWg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:19:10 -0500
+	Wed, 20 Jan 2010 23:22:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=qcnnJbeCxpJqk8f70U2TPcpM26ve5VgkE2bMPWOgZK/u+geuYUirrI8jFFJycmw9c3
-         yNG24t/KafY4VK5kQBkVZBvdB3mJAX1e8ikFavTxKUzwmvEXPFeEQMIlkfhECJomUXKJ
-         dfBsxWZmMQSasPD4pYKHfKW5M2rUlIm5pqJNk=
-Message-ID: <4B57D5BC.5020107@garzik.org>
-Date: Wed, 20 Jan 2010 23:19:08 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=haU3ZIOmsELYn1qL7zZcNT4HLYqU0H53MwZwrNR228G22LELI2zzVjZkValq1KgEjE
+         n6QatjAnym3XR04GyIIC8EkpNjjHuFzgOFMYg8uXpLS+YYdYLqApUbiUwB8LGhaHTqoa
+         d1U3MY40a/SMF/jg7WAiLUeJWDTvY5simg/Iw=
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 22/64] pata_via: fix address setup timings underlocking
-References: <20100118171349.14623.90030.sendpatchset@localhost> <20100118171703.14623.85025.sendpatchset@localhost>
-In-Reply-To: <20100118171703.14623.85025.sendpatchset@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100120171901.b2e06465.sfr@canb.auug.org.au>
+References: <20100120171901.b2e06465.sfr@canb.auug.org.au>
+Date: Thu, 21 Jan 2010 10:22:19 +0600
+Message-ID: <b9df5fa11001202022q22c2d81cs5b90f694be37c1f4@mail.gmail.com>
+Subject: Re: linux-next: tty tree build warning
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Greg KH <greg@kroah.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/18/2010 12:17 PM, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
-> Subject: [PATCH] pata_via: fix address setup timings underlocking
+On 1/20/10, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Greg,
 >
-> Correct via_do_set_mode() documentation while at it.
+>  Today's linux-next build (x86_64 allmodconfig) produced this warning:
 >
-> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
-> ---
->   drivers/ata/pata_via.c |    4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/char/ip2/ip2main.c:511: warning: 'ip2_setup' defined but not used
+>
+Can we use module parameters? A check could be made if parameter hasn't
+passed then we'll just return.
 
-applied
-
-
+>  Introduced by commit 3f042287578018e0dc1c38b6f684767e657db62f ("ip2:
+>  remove #ifdef MODULE from ip2main.c").
+>
+>  __setup() is a noop if CONFIG_MODULE is defined.
+>
+> --
+>  Cheers,
+>  Stephen Rothwell                    sfr@canb.auug.org.au
+>  http://www.canb.auug.org.au/~sfr/
+>
+>
