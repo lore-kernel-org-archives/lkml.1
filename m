@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262Ab0AUDGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347Ab0AUDMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752262Ab0AUDGR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 22:06:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668Ab0AUDGQ
+	id S1752347Ab0AUDMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 22:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591Ab0AUDMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 22:06:16 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:34237 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703Ab0AUDGG convert rfc822-to-8bit (ORCPT
+	Wed, 20 Jan 2010 22:12:16 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56098 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218Ab0AUDMQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 22:06:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xn2CR8c5MaFSAd0mTqHM9+KlVpLpSYch8yMgmNJGpkNwfYM5GeWKGW36QsOvlXfShQ
-         Tyvd6LE1nrmBEN+7CfqbQaa3DGdzAphbLm3X7uucZuo1N7c2sckXO80BhExFYN/dyhYB
-         wkMzLaZQMjP8DHvEBLHrcAjwDokbmm33Rj9tc=
+	Wed, 20 Jan 2010 22:12:16 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [RFC-PATCH 0/7] Memory Compaction v1
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <1262795169-9095-1-git-send-email-mel@csn.ul.ie>
+References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie>
+Message-Id: <20100121115636.73BA.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20100121013205.GA29808@shareable.org>
-References: <20100120174630.4071.A69D9226@jp.fujitsu.com>
-	 <20100120095242.GA5672@desktop>
-	 <20100121094733.3778.A69D9226@jp.fujitsu.com>
-	 <20100121013205.GA29808@shareable.org>
-Date: Thu, 21 Jan 2010 11:06:03 +0800
-Message-ID: <979dd0561001201906j5acedd8ay42d7bc68beefbb9e@mail.gmail.com>
-Subject: Re: cache alias in mmap + write
-From: anfei zhou <anfei.zhou@gmail.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux@arm.linux.org.uk
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 21 Jan 2010 12:12:11 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 9:32 AM, Jamie Lokier <jamie@shareable.org> wrote:
-> KOSAKI Motohiro wrote:
->>  2. Add some commnet. almost developer only have x86 machine. so, arm
->>     specific trick need additional explicit explanation. otherwise anybody
->>     might break this code in the future.
->
-> That's Documentation/cachetlb.txt.
->
-> What's being discussed here is not ARM-specific, although it appears
-> maintainers of different architecture (ARM and MIPS for a start) may
-> have different ideas about what they are guaranteeing to userspace.
-> It sounds like MIPS expects userspace to use msync() sometimes (even
-> though Linux msync(MS_INVALIDATE) is quite broken), and ARM expects to
-> to keep mappings coherent automatically (which is sometimes slower
-> than necessary, but usually very helpful).
->
->>  3. Resend the patch. original mail isn't good patch format. please
->>  consider to reduce akpm suffer.
->
-> This type of change in generic code would need review from a number of
-> architecture maintainers, I'd expect.
->
-So should I broadcast this mail in order to get their attentions,
-linux-arch@vger.kernel.org?
+Hi Mel,
 
-Thanks!
-> -- Jamie
->
+Sorry, I haven't read this patch at all.
+
+> The time differences are marginal but bear in mind that this is an ideal
+> case of mostly unmapped buffer pages. On nice set of results is between
+> allocations 13-18 where no pages were reclaimed, some compaction occured
+> and 300 huge pages were allocated in 0.16 seconds. Furthermore, compaction
+> allocated a high higher percentage of memory (91% of RAM as huge pages).
+> 
+> The downside appears to be that the compaction kernel reclaimed even more
+> pages than the vanilla kernel. However, take the cut-off point of 880 pages
+> that both kernels succeeded. The vanilla kernel had reclaimed 105132 pages
+> at that point. The kernel with compaction had reclaimed 59071, less than
+> half of what the vanilla kernel reclaimed. i.e. the bulk of pages reclaimed
+> with the compaction kernel were to get from 87% of memory allocated to 91%
+> as huge pages.
+> 
+> These results would appear to be an encouraging enough start.
+> 
+> Comments?
+
+I think "Total pages reclaimed" increasing is not good thing ;)
+Honestly, I haven't understand why your patch increase reclaimed and
+the exactly meaning of the your tool's rclm field.
+
+Can you share your mesurement script? May I run the same test?
+
+I like this patch, but I don't like increasing reclaim. I'd like to know
+this patch require any vmscan change and/or its change mitigate the issue.
+
+Thanks.
+
+
+
