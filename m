@@ -1,146 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760Ab0AUT7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939Ab0AUUCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760Ab0AUT7Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 14:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805Ab0AUT7W
+	id S1754939Ab0AUUCn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 15:02:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566Ab0AUUCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 14:59:22 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:42359 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752436Ab0AUT7V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 14:59:21 -0500
-Date: Thu, 21 Jan 2010 14:59:19 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
-In-reply-to: <20100120094103.GA6225@ff.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B58B217.8030001@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100120094103.GA6225@ff.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	Thu, 21 Jan 2010 15:02:42 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53412 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753256Ab0AUUCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 15:02:41 -0500
+Message-ID: <4B58B2AC.5050906@kernel.org>
+Date: Thu, 21 Jan 2010 12:01:48 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 04/36] x86/pci: add cap_resource
+References: <1264055303-15123-1-git-send-email-yinghai@kernel.org> <1264055303-15123-5-git-send-email-yinghai@kernel.org> <alpine.LFD.2.00.1001210745330.13231@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1001210745330.13231@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/20/2010 4:41 AM, Jarek Poplawski wrote:
-> [ previously: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit() ]
-> On Tue, Jan 19, 2010 at 05:10:13PM -0800, Stephen Hemminger wrote:
->    
->> On Tue, 19 Jan 2010 20:01:10 -0500
->> Michael Breuer<mbreuer@majjas.com>  wrote:
+On 01/21/2010 07:49 AM, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 20 Jan 2010, Yinghai Lu wrote:
 >>
->>      
->>> On 1/19/2010 5:45 PM, Jarek Poplawski wrote:
->>>        
->>>> On Tue, Jan 19, 2010 at 03:06:01PM -0500, Michael Breuer wrote:
->>>>
->>>>          
->>>>> On 1/19/2010 2:59 PM, Jarek Poplawski wrote:
->>>>>
->>>>>            
->>>>>> On Tue, Jan 19, 2010 at 10:47:27AM -0500, Michael Breuer wrote:
->>>>>> ...
->>>>>>
->>>>>>              
->>>>>>> Still get the warning... but now 60 bytes.
->>>>>>> Jan 19 10:43:50 mail kernel: ------------[ cut here ]------------
->>>>>>> Jan 19 10:43:50 mail kernel: WARNING: at lib/dma-debug.c:902
->>>>>>>                
-> ...
->    
->>> That not only compiled, but it cleared the error as well. Additionally,
->>> I used to see a bit of a delay receiving the login prompt when first
->>> connecting to the box by ssh. That delay is gone with this patch. I'd
->>> guess that the warning wasn't quite as innocuous as I thought.
->>> Note: tested on 2.6.32.4.  I'll leave this up for a bit before
->>> attempting to move back to head.
->>>        
->> Seems like an underlying bug in the DMA api. Maybe it just can't
->> handle operations on partial mapping.
->>
->> Other drivers with same problem:
->>    bnx2, cassini, pcnet32, r8169, rrunner, skge, sungem, tg3,
->>      
-> It seems using the same length (even without pci_unmap_len()) is
-> crucial here, but I hope maintainers (added to CC) will take care.
->
-> Btw, it's not tested yet, but it might affect CONFIG_DMAR problems.
->
-> Thanks,
-> Jarek P.
-> ----------------------->
->
-> Using pci_unmap_len(), with the same length as pci_map_single(), with
-> pci_dma_sync_single_for_cpu()/_device() fixes this warning (2.6.32.4):
->
->    
->> Jan 19 10:43:50 mail kernel: WARNING: at lib/dma-debug.c:902
->> check_sync+0xc1/0x43f()
->> Jan 19 10:43:50 mail kernel: Hardware name: System Product Name
->> Jan 19 10:43:50 mail kernel: sky2 0000:04:00.0: DMA-API: device driver
->> tries to sync DMA memory it has not allocated [device
->> address=0x0000000320a0b022] [size=60 bytes]
->>      
-> Reported-by: Michael Breuer<mbreuer@majjas.com>
-> Tested-by: Michael Breuer<mbreuer@majjas.com>
-> Signed-off-by: Jarek Poplawski<jarkao2@gmail.com>
-> ---
->
->   drivers/net/sky2.c |    6 ++++--
->   1 files changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-> index 7650f73..cdebdd3 100644
-> --- a/drivers/net/sky2.c
-> +++ b/drivers/net/sky2.c
-> @@ -2252,12 +2252,14 @@ static struct sk_buff *receive_copy(struct sky2_port *sky2,
->   	skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
->   	if (likely(skb)) {
->   		pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
-> -					    length, PCI_DMA_FROMDEVICE);
-> +					    pci_unmap_len(re, data_size),
-> +					    PCI_DMA_FROMDEVICE);
->   		skb_copy_from_linear_data(re->skb, skb->data, length);
->   		skb->ip_summed = re->skb->ip_summed;
->   		skb->csum = re->skb->csum;
->   		pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
-> -					       length, PCI_DMA_FROMDEVICE);
-> +					       pci_unmap_len(re, data_size),
-> +					       PCI_DMA_FROMDEVICE);
->   		re->skb->ip_summed = CHECKSUM_NONE;
->   		skb_put(skb, length);
->   	}
->    
-Just a testing update: I went back to CONFIG_DMAR=Y yesterday and have 
-not (yet) encountered the sky2 crash I'd been having prior to this fix. 
-I've been pumping traffic through, and based on pre-patch experience, it 
-would likely have crashed by now.
+>> -v2: hpa said we should compare with (resource_size_t)~0
+> 
+> Hmm. Some of these look dubious.
+> 
+>> diff --git a/arch/x86/pci/bus_numa.c b/arch/x86/pci/bus_numa.c
+>> index f939d60..b267919 100644
+>> --- a/arch/x86/pci/bus_numa.c
+>> +++ b/arch/x86/pci/bus_numa.c
+>> @@ -60,6 +60,9 @@ void __devinit update_res(struct pci_root_info *info, size_t start,
+>>  	if (start > end)
+>>  		return;
+>>  
+>> +	if (start == (resource_size_t)~0)
+>> +		return;
+> 
+> Here, 'start' isn't a resource_size_t. It's a regular size_t. And if 
+> resource_size_t is u64, and size_t is u32, this test can never be true.
+> 
+> Maybe that is intentional, but if looks odd/wrong. Needs a comment if 
+> right, needs fixing if wrong.
 
-Will keep the system up for the next couple of days w/o reboot to 
-confirm that the sky2 lockup I'd been seeing has stopped happening with 
-this patch.
+you are right, there are two patches about that already went into pci/linux-next
 
-Test notes:
+will ask Jesse to drop them from pci tree.
 
-1) Warning previously apparent on start (dma_debug check_sync) with 
-CONFIG_DMAR=n is gone.
-2) W/o the above patch, I was getting sky2 DMAR errors and subsequent TX 
-hangs requiring reboot to clear. The hangs happened after at least 12 
-hours of uptime, and under RX load at the time of the hang.
-3) With the above patch (and no other changes) I have not been able to 
-recreate the crash - the system is stable.
+so could make them go via tip/x86
 
-I have been following the discussion about the DMA api would suggest 
-that the length issue when DMAR is enabled is less innocuous than 
-previously believed.
+http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=commitdiff;h=f84fe8aef6e4b23ab58175a15dd12c197c993f81
+http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=commitdiff;h=693f084f82a38fc1b01e3b05664a6fe014a3488a
+
+or later may have merge problem.
+
+
+> 
+>> +static inline resource_size_t cap_resource(u64 val)
+>> +{
+>> +	if (val > (resource_size_t)~0)
+>> +		return (resource_size_t)~0;
+>> +	else
+>> +		return val;
+>> +}
+>>  #endif
+> 
+> And this just looks odd. I'd suggest just doing
+> 
+> 	#define MAX_RESOURCE ((resource_size_t)~0)
+> 
+> 	static inline resource_size_t cap_resource(u64 val)
+> 	{
+> 		if (val > MAX_RESOURCE)
+> 			val = MAX_RESOURCE;
+> 		return val;
+> 	}
+> 
+> instead, which looks a whole lot more natural. No?
+
+OK
+
+Yinghai
