@@ -1,291 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174Ab0AUUhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752409Ab0AUUi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752174Ab0AUUhJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 15:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636Ab0AUUhI
+	id S1752409Ab0AUUi1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 15:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755Ab0AUUi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 15:37:08 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36266 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559Ab0AUUhH (ORCPT
+	Thu, 21 Jan 2010 15:38:26 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:11872 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751921Ab0AUUiY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 15:37:07 -0500
-Subject: [RFC][PATCH] sched: Fix fork vs hotplug vs cpuset namespaces
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Jean-Marc Pigeon <jmp@safe.ca>, containers@lists.linux-foundation.org,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1264095325.4283.1198.camel@laptop>
-References: <1263852243.4745.363.camel@Mercier.safe.ca>
-	 <20100119150931.GA7708@us.ibm.com>
-	 <1263916851.4745.386.camel@Mercier.safe.ca>
-	 <20100121171338.GA16904@us.ibm.com>  <1264095325.4283.1198.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 21 Jan 2010 21:36:30 +0100
-Message-ID: <1264106190.4283.1314.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 21 Jan 2010 15:38:24 -0500
+Cc: Ingo Molnar <mingo@elte.hu>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       "James.Bottomley@suse.de" <James.Bottomley@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-Scsi <linux-scsi@vger.kernel.org>
+Message-Id: <CD882469-BBED-443E-A07D-4AB92FBB9DDB@qlogic.com>
+From: Giridhar Malavali <giridhar.malavali@qlogic.com>
+To: Yinghai Lu <yinghai@kernel.org>
+In-Reply-To: <86802c441001201710heee6a1g744f69f4edcbc52c@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v912)
+Subject: Re: qlogic lockdep warning
+Date: Thu, 21 Jan 2010 12:38:23 -0800
+References: <86802c441001201710heee6a1g744f69f4edcbc52c@mail.gmail.com>
+X-Mailer: Apple Mail (2.912)
+X-OriginalArrivalTime: 21 Jan 2010 20:38:23.0841 (UTC) FILETIME=[AD3B5D10:01CA9AD9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-21 at 18:35 +0100, Peter Zijlstra wrote:
-> On Thu, 2010-01-21 at 11:13 -0600, Serge E. Hallyn wrote:
-> > The culprit is e2912009fb7b715728311b0d8fe327a1432b3f79
-> >     sched: Ensure set_task_cpu() is never called on blocked tasks
-> > 
-> > If you mount both the ns and cpuset cgroups with this patch applied,
-> > then doing clone with CLONE_NEWPID, CLONE_NEWNET, etc, you get the
-> > hang.  The hang is actually hard enough that alt-sysrq isn't helpful :)
-> > Still trying to figure out what is going on - Peter, any ideas offhand?
+On Jan 20, 2010, at 5:10 PM, Yinghai Lu wrote:
 
-> Hmm, I have an idea.. does it really need the ns cgroup stuff?
+> [   77.814629] calling  qla2x00_module_init+0x0/0x12b @ 1
+> [   77.818427] QLogic Fibre Channel HBA Driver: 8.03.02-k0
+> [   77.834218] qla2xxx 0000:86:00.0: PCI INT A -> GSI 59 (level,  
+> low) -> IRQ 59
+> [   77.839720] qla2xxx 0000:86:00.0: MSI-X vector count: 31
+> [   77.854678] qla2xxx 0000:86:00.0: Found an ISP2532, irq 59, iobase
+> 0xffffc9002acb0000
+> [   77.871740] qla2xxx 0000:86:00.0: using 64bit consistent DMA mask
+> [   77.876934]   alloc irq_desc for 88 on node 3
+> [   77.879181]   alloc kstat_irqs on node 3
+> [   77.894822] qla2xxx 0000:86:00.0: irq 88 for MSI/MSI-X
+> [   77.899210]   alloc irq_desc for 89 on node 3
+> [   77.913580]   alloc kstat_irqs on node 3
+> [   77.916743] qla2xxx 0000:86:00.0: irq 89 for MSI/MSI-X
+> [   77.920996] qla2xxx 0000:86:00.0: Configuring PCI space...
+> [   77.937287] qla2xxx 0000:86:00.0: setting latency timer to 64
+> [   77.951598] qla2xxx 0000:86:00.0: enabling Mem-Wr-Inval
+> [   77.962879] ------------[ cut here ]------------
+> [   77.965784] WARNING: at kernel/lockdep.c:2332
+> trace_hardirqs_on_caller+0xc6/0x14b()
+> [   77.977492] Hardware name: Sun
+> [   77.979485] Modules linked in:
+> [   77.994337] Pid: 0, comm: swapper Not tainted
+> 2.6.33-rc4-tip-yh-03949-g3a8e3f5-dirty #64
+> [   78.000120] Call Trace:
+> [   78.013298]  <IRQ>  [<ffffffff81076b54>] warn_slowpath_common 
+> +0x7c/0x94
+> [   78.017746]  [<ffffffff81cd712c>] ? _raw_spin_unlock_irq+0x30/0x36
+> [   78.035171]  [<ffffffff81076b80>] warn_slowpath_null+0x14/0x16
+> [   78.040152]  [<ffffffff810a2ae8>] trace_hardirqs_on_caller 
+> +0xc6/0x14b
+> [   78.055400]  [<ffffffff810a2b7a>] trace_hardirqs_on+0xd/0xf
+> [   78.058951]  [<ffffffff81cd712c>] _raw_spin_unlock_irq+0x30/0x36
+> [   78.074889]  [<ffffffff816461ef>] qla24xx_msix_default+0x243/0x281
+> [   78.091598]  [<ffffffff810a5752>] ? __lock_release+0xa5/0xae
+> [   78.096799]  [<ffffffff810c02ae>] handle_IRQ_event+0x53/0x113
+> [   78.111568]  [<ffffffff810c2061>] handle_edge_irq+0xf3/0x13b
+> [   78.116255]  [<ffffffff81035109>] handle_irq+0x24/0x2f
+> [   78.132063]  [<ffffffff81cdc4b4>] do_IRQ+0x5c/0xc3
+> [   78.134684]  [<ffffffff81cd7393>] ret_from_intr+0x0/0xf
+> [   78.137903]  <EOI>  [<ffffffff81039a56>] ? mwait_idle+0xaf/0xbb
+> [   78.155674]  [<ffffffff81039a4d>] ? mwait_idle+0xa6/0xbb
+> [   78.158600]  [<ffffffff81031c7c>] cpu_idle+0x61/0xa1
+> [   78.174333]  [<ffffffff81c85d7a>] rest_init+0x7e/0x80
+> [   78.178122]  [<ffffffff82832d1f>] start_kernel+0x316/0x31d
+> [   78.193623]  [<ffffffff82832297>] x86_64_start_reservations 
+> +0xa7/0xab
+> [   78.198924]  [<ffffffff8283237f>] x86_64_start_kernel+0xe4/0xeb
+> [   78.214540] ---[ end trace be4529f30a2e4ef5 ]---
+> [   78.225365] qla2xxx 0000:86:00.0: Configure NVRAM parameters...
+> [   78.243079] qla2xxx 0000:86:00.0: Verifying loaded RISC code...
+> [   78.247917] qla2xxx 0000:86:00.0: firmware: using built-in firmware
+> ql2500_fw.bin
+>
 
-It appears so, what is happening is that:
-
-copy_process()
-
-  sched_fork()
-    child->state = TASK_WAKING; /* waiting for wake_up_new_task() */
-
-  if (current->nsproxy != p->nsproxy)
-     ns_cgroup_clone()
-       cgroup_clone()
-         mutex_lock(inode->i_mutex)
-         mutex_lock(cgroup_mutex)
-         cgroup_attach_task()
-	   ss->can_attach()
-           ss->attach() [ -> cpuset_attach() ]
-             cpuset_attach_task()
-               set_cpus_allowed_ptr();
-                 while (child->state == TASK_WAKING)
-                   cpu_relax();
-
-
-which will pretty much mess up your system. However sysrq not working
-shouldn't be amongst that and s390 working is also unexplained.
-
-While that spin on TASK_WAKING is new, the behaviour was dubious because
-when we stick the new child into the tasklist we copy the
-parent->cpus_allowed back into the child:
-
-
-  	/* Need tasklist lock for parent etc handling! */
-	write_lock_irq(&tasklist_lock);
-
-	/*
-	 * The task hasn't been attached yet, so its cpus_allowed mask will
-	 * not be changed, nor will its assigned CPU.
-	 *
-	 * The cpus_allowed mask of the parent may have changed after it was
-	 * copied first time - so re-copy it here, then check the child's CPU
-	 * to ensure it is on a valid CPU (and if not, just force it back to
-	 * parent's CPU). This avoids alot of nasty races.
-	 */
-	p->cpus_allowed = current->cpus_allowed;
-	p->rt.nr_cpus_allowed = current->rt.nr_cpus_allowed;
-	if (unlikely(!cpu_isset(task_cpu(p), p->cpus_allowed) ||
-			!cpu_online(task_cpu(p))))
-		set_task_cpu(p, smp_processor_id());
-
-
-which mostly stems from 2005.
-
-Now, I'm not quite sure how to fix this to be honest.. calling
-->can_attach and ->attach on half finished tasks seems somewhat ill
-defined.
-
-So while pondering this I think I might have found another bug which
-needs to get closed, hotplug vs fork might end up removing the target
-cpu between this second ->cpus_allowed copy in copy_process() and
-wake_up_new_task(), so we need to move the fork migration step anyway.
-
-So I think the below ought to cure at least the immediate problem,
-leaving the question if cgroups really want to call ->attach that early.
-
-Utterly untested.... never even seen a compiler but here goes:
-
----
-Subject: sched: Fix fork vs hotplug vs cpuset namespaces
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Thu Jan 21 21:04:57 CET 2010
-
-There are a number of issues:
-
-1) TASK_WAKING vs cgroup_clone (cpusets)
-
-copy_process():
-
-  sched_fork()
-    child->state = TASK_WAKING; /* waiting for wake_up_new_task() */
-
-  if (current->nsproxy != p->nsproxy)
-     ns_cgroup_clone()
-       cgroup_clone()
-         mutex_lock(inode->i_mutex)
-         mutex_lock(cgroup_mutex)
-         cgroup_attach_task()
-	   ss->can_attach()
-           ss->attach() [ -> cpuset_attach() ]
-             cpuset_attach_task()
-               set_cpus_allowed_ptr();
-                 while (child->state == TASK_WAKING)
-                   cpu_relax();
-
-will deadlock the system.
-
-
-2) cgroup_clone (cpusets) vs copy_process
-
-So even if the above would work we still have:
-
-copy_process():
-
-  if (current->nsproxy != p->nsproxy)
-     ns_cgroup_clone()
-       cgroup_clone()
-         mutex_lock(inode->i_mutex)
-         mutex_lock(cgroup_mutex)
-         cgroup_attach_task()
-	   ss->can_attach()
-           ss->attach() [ -> cpuset_attach() ]
-             cpuset_attach_task()
-               set_cpus_allowed_ptr();
-  
-  ...
-
-  p->cpus_allowed = current->cpus_allowed
-
-over-writing the modified cpus_allowed.
-
-
-3) fork() vs hotplug
-
-  if we unplug the child's cpu after the sanity check when the child
-  gets attached to the task_list but before wake_up_new_task() shit
-  will meet with fan.
-
-Solve all these issues by moving fork cpu selection into
-wake_up_new_task().
-
-Reported-by: Serge E. Hallyn <serue@us.ibm.com>
-Almost-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/fork.c  |   15 ---------------
- kernel/sched.c |   39 +++++++++++++++++++++++++++------------
- 2 files changed, 27 insertions(+), 27 deletions(-)
-
-Index: linux-2.6/kernel/fork.c
-===================================================================
---- linux-2.6.orig/kernel/fork.c
-+++ linux-2.6/kernel/fork.c
-@@ -1241,21 +1241,6 @@ static struct task_struct *copy_process(
- 	/* Need tasklist lock for parent etc handling! */
- 	write_lock_irq(&tasklist_lock);
- 
--	/*
--	 * The task hasn't been attached yet, so its cpus_allowed mask will
--	 * not be changed, nor will its assigned CPU.
--	 *
--	 * The cpus_allowed mask of the parent may have changed after it was
--	 * copied first time - so re-copy it here, then check the child's CPU
--	 * to ensure it is on a valid CPU (and if not, just force it back to
--	 * parent's CPU). This avoids alot of nasty races.
--	 */
--	p->cpus_allowed = current->cpus_allowed;
--	p->rt.nr_cpus_allowed = current->rt.nr_cpus_allowed;
--	if (unlikely(!cpu_isset(task_cpu(p), p->cpus_allowed) ||
--			!cpu_online(task_cpu(p))))
--		set_task_cpu(p, smp_processor_id());
--
- 	/* CLONE_PARENT re-uses the old parent */
- 	if (clone_flags & (CLONE_PARENT|CLONE_THREAD)) {
- 		p->real_parent = current->real_parent;
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -2300,14 +2300,12 @@ static int select_fallback_rq(int cpu, s
- }
- 
- /*
-- * Called from:
-+ * Gets called from 3 sites (exec, fork, wakeup), since it is called without
-+ * holding rq->lock we need to ensure ->cpus_allowed is stable, this is done
-+ * by:
-  *
-- *  - fork, @p is stable because it isn't on the tasklist yet
-- *
-- *  - exec, @p is unstable, retry loop
-- *
-- *  - wake-up, we serialize ->cpus_allowed against TASK_WAKING so
-- *             we should be good.
-+ *  exec:           is unstable, retry loop
-+ *  fork & wake-up: serialize ->cpus_allowed against TASK_WAKING
-  */
- static inline
- int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
-@@ -2600,9 +2598,6 @@ void sched_fork(struct task_struct *p, i
- 	if (p->sched_class->task_fork)
- 		p->sched_class->task_fork(p);
- 
--#ifdef CONFIG_SMP
--	cpu = select_task_rq(p, SD_BALANCE_FORK, 0);
--#endif
- 	set_task_cpu(p, cpu);
- 
- #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
-@@ -2632,6 +2627,21 @@ void wake_up_new_task(struct task_struct
- {
- 	unsigned long flags;
- 	struct rq *rq;
-+	int cpu = get_cpu;
-+
-+#ifdef CONFIG_SMP
-+	/*
-+	 * Fork balancing, do it here and not earlier because:
-+	 *  - cpus_allowed can change in the fork path
-+	 *  - any previously selected cpu might disappear through hotplug
-+	 *
-+	 * We still have TASK_WAKING but PF_STARTING is gone now, meaning
-+	 * ->cpus_allowed is stable, we have preemption disabled, meaning
-+	 * cpu_online_mask is stable.
-+	 */
-+	cpu = select_task_rq(p, SD_BALANCE_FORK, 0);
-+	set_task_cpu(p, cpu);
-+#endif
- 
- 	rq = task_rq_lock(p, &flags);
- 	BUG_ON(p->state != TASK_WAKING);
-@@ -2645,6 +2655,7 @@ void wake_up_new_task(struct task_struct
- 		p->sched_class->task_woken(rq, p);
- #endif
- 	task_rq_unlock(rq, &flags);
-+	put_cpu();
- }
- 
- #ifdef CONFIG_PREEMPT_NOTIFIERS
-@@ -5316,14 +5327,18 @@ int set_cpus_allowed_ptr(struct task_str
- 	 * the ->cpus_allowed mask from under waking tasks, which would be
- 	 * possible when we change rq->lock in ttwu(), so synchronize against
- 	 * TASK_WAKING to avoid that.
-+	 *
-+	 * Make an exception for freshly cloned tasks, since cpuset namespaces
-+	 * might move the task about, we have to validate the target in
-+	 * wake_up_new_task() anyway since the cpu might have gone away.
- 	 */
- again:
--	while (p->state == TASK_WAKING)
-+	while (p->state == TASK_WAKING && !(p->flags & PF_STARTING))
- 		cpu_relax();
- 
- 	rq = task_rq_lock(p, &flags);
- 
--	if (p->state == TASK_WAKING) {
-+	if (p->state == TASK_WAKING && !(p->flags & PF_STARTING)) {
- 		task_rq_unlock(rq, &flags);
- 		goto again;
- 	}
-
+could you enable error-logging (ql2xextended_error_logging=1) and send  
+over the full
+kernel-messages output for the failure.
 
