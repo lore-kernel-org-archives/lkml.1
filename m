@@ -1,88 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631Ab0AUShx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965Ab0AUSmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631Ab0AUShx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 13:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312Ab0AUShw
+	id S1754965Ab0AUSmN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 13:42:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895Ab0AUSmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 13:37:52 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:52718 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753075Ab0AUShv (ORCPT
+	Thu, 21 Jan 2010 13:42:09 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:61765 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753312Ab0AUSmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 13:37:51 -0500
+	Thu, 21 Jan 2010 13:42:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=QdCecyESkwjTu+DjoPBIvfNRqC7EwjHmBf6U8Dppt4zFkCdFzlbns1nwY6Y1yIu0C6
-         YwbWv41cY4BjMSiTqjK8w8LE4KUNOfjR5yGUsexXp8Z5cjKuAF7712ukypmC9Gxobb21
-         +0J1iTZMbx9o8ZGZ3XapL5e9bUiwmX3tbjTLA=
-Message-ID: <4B589EFC.6050002@garzik.org>
-Date: Thu, 21 Jan 2010 13:37:48 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EAUUHAhVouK/Yo5+9dtTMX38lLiFI7vVfe5fg6FxKhKsZzKU64pZ8acGpU7eVj2Ndr
+         RFJ1tOKHcpo661nxk9OY8xVGZpJG/Fgr5LfCMRNMS/5pKQNtWqBM3WOCdjUJtMv/6N/x
+         Vq8MqAdSQpzQE+KmreTn1byJ3qtLKtSm5a2HY=
+Date: Thu, 21 Jan 2010 19:41:58 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: alan@lxorguk.ukuu.org.uk, davem@davemloft.net,
+       shemminger@linux-foundation.org, mbreuer@majjas.com,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       mchan@broadcom.com, pcnet32@verizon.net, romieu@fr.zoreil.com,
+       mcarlson@broadcom.com
+Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
+Message-ID: <20100121184158.GA3085@del.dom.local>
+References: <20100120094103.GA6225@ff.dom.local>
+ <20100120222414.57909d14@lxorguk.ukuu.org.uk>
+ <20100120225322.GC3072@del.dom.local>
+ <20100122002053X.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: SATA_SIL on IXP425 workaround
-References: <m33a4nfvva.fsf@intrepid.localdomain> <201001141659.19687.bzolnier@gmail.com> <4B57DEE9.8030604@garzik.org> <4B57F8D6.6080902@garzik.org>
-In-Reply-To: <4B57F8D6.6080902@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100122002053X.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21/2010 01:48 AM, Jeff Garzik wrote:
-> On 01/20/2010 11:58 PM, Jeff Garzik wrote:
->> On 01/14/2010 10:59 AM, Bartlomiej Zolnierkiewicz wrote:
->>> On Monday 09 November 2009 06:31:21 pm Krzysztof Halasa wrote:
->>>> I'm trying to add a workaround for IXP4xx CPUs to SATA SIL driver. The
->>>> problem is that IXP4xx CPUs (Intel's XScale (ARM) network-oriented
->>>> processors) are unable to perform 8 and 16-bit read from PCI MMIO, they
->>>> can only do a full 32-bit readl(); SIL chips respond to that with PCI
->>>> abort. The workaround is to use 8 and 16-bit regular IO reads (inb/inw)
->>>> instead (MMIO write is not a problem).
->>>>
->>>> For SIL3x12 the workaround is simple (attached) and it works on my
->>>> 3512.
->>>> I'm not sure about 3114 (the 4-port chip) - the PIO BARs have TF, CTL
->>>> and BWDMA registers which are common to channels 0 and 2, and (the
->>>> other
->>>> set) to channels 1 and 3. Channel selection is done with bit 4 of
->>>> device/head TF register, this is similar (same?) as PATA master/slave.
->>>> Does that mean that I can simply treat channel 0 as PRI master, ch#2 as
->>>> PRI slave, ch#1 as SEC master and ch#3 as SEC slave, and the SFF code
->>>> will select the right device correctly? Does it need additional code?
->>>> I don't have anything based on 3114.
->>>>
->>>> Note: the large PRD is not a problem here, the transfer can be started
->>>> by MMIO write. Only reads are an issue.
->>>
->>> FWIW your patch is now in my atang tree (I'm aware that Jeff is working
->>> on generic solution but in the meantime this non-intrusive patch allows
->>> sata_sil to work on IXP425).
->>
->> I was asking an open question, is a generic solution possible?
->>
->> Something like the attached patch might work, due it is completely
->> untested, and I did not verify that the BMDMA Status register is not
->> stomped. Also, the additional ioread32() calls in bmdma start/stop are
->> LIKELY to be unnecessary.
->
-> As I suspected, there is a W1C register in there. But it does look
-> possible to do all-32-bit accesses.
+On Fri, Jan 22, 2010 at 12:22:10AM +0900, FUJITA Tomonori wrote:
+> On Wed, 20 Jan 2010 23:53:22 +0100
+> Jarek Poplawski <jarkao2@gmail.com> wrote:
+> 
+> > On Wed, Jan 20, 2010 at 10:24:14PM +0000, Alan Cox wrote:
+> > > > > Seems like an underlying bug in the DMA api. Maybe it just can't
+> > > > > handle operations on partial mapping.
+> > > > > 
+> > > > > Other drivers with same problem:
+> > > > >   bnx2, cassini, pcnet32, r8169, rrunner, skge, sungem, tg3, 
+> > > > 
+> > > > It seems using the same length (even without pci_unmap_len()) is
+> > > > crucial here, but I hope maintainers (added to CC) will take care.
+> > > 
+> > > The API needs fixing - if you've got a large mapping and you want to sync
+> > > part of it then we need to support that. Now it might well be that the
+> > > implementation on some braindead platform has to sync the entire thing,
+> > > and some implementations entire pages or cache lines.
+> > > 
+> > > You can't fix this in the drivers, they requested a service and they
+> > > don't have enough information nor is it their job to know about all the
+> > > platform specific rules.
+> > 
+> > Yes, the need to repeat some other values if there is a dedicated
+> > structure/pointer could be misleading. Btw, it seems to be a trivial
+> > overlooking since there is dma_sync_single_range() ready to use.
+> 
+> Yeah, dma_sync_single_range() enables you to do a partial sync. But
+> you must be really careful with a partial sync (as DMA-API.txt says).
 
-It is definitely possible to do all 32-bit accesses...  but that 
-requires activating and exclusively using the command buffering feature, 
-because direct 32-bit access to the taskfile registers will result in a 
-32-bit access to Data rather than the desired effect.
+Actually, we are trying to establish here (and a few more netdev@
+threads) what exactly the author was worried about. After looking at
+some implementations it seems to me this carefullness in observing
+the cache alignment and width is needed only wrt. the 'offset'. But
+then, the way the 'size' is used (or rather not used for anything
+crucial) suggests dma_sync_single_range() with zero offset seems
+completely safe. But then it's equivalent to dma_sync_single() with
+the 'size' possibly less than 'passed into the single mapping'. Which
+according to the other comment seems wrong...
 
-The chip docs are at http://gkernel.sourceforge.net/specs/sii/ for those 
-unfamiliar with my doc archive.
-
-	Jeff
-
-
-
+Jarek P.
