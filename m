@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753044Ab0AUArr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642Ab0AUArT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753044Ab0AUArr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 19:47:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077Ab0AUArq
+	id S1752642Ab0AUArT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 19:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524Ab0AUArS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 19:47:46 -0500
-Received: from mail-iw0-f196.google.com ([209.85.223.196]:55980 "EHLO
-	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752626Ab0AUArp (ORCPT
+	Wed, 20 Jan 2010 19:47:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44059 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751240Ab0AUArR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 19:47:45 -0500
-X-Greylist: delayed 346 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jan 2010 19:47:45 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Mibz9TDXnVtgE3BxKOL8rFFV6cVbHiWm50tgFX6+6ImXtKyEYY0djs3prBxkr+vSQW
-         f/E7X27nQS3HHYYWgH6DEgwxUp6OP8d1IjA0aOwk7YdHcNGJZYgmnLuTtvGG7xFy3sz3
-         sWsEur6a0AesIJfqJn4gDOoyH5nxMZqPAaNmI=
-Message-ID: <4B57A2D4.9030204@gmail.com>
-Date: Wed, 20 Jan 2010 18:41:56 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Wed, 20 Jan 2010 19:47:17 -0500
+Date: Wed, 20 Jan 2010 16:46:29 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [x86] Unify semaphore_32.S and rwlock_64.S
+In-Reply-To: <alpine.LFD.2.00.1001201546330.13231@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.1001201637320.13231@localhost.localdomain>
+References: <alpine.DEB.2.00.1001191616280.28622@router.home> <4B56328E.9080108@zytor.com> <alpine.DEB.2.00.1001201333430.15175@router.home> <4B57641E.5060303@zytor.com> <alpine.DEB.2.00.1001201443340.17915@router.home>
+ <alpine.LFD.2.00.1001201546330.13231@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Bastien Nocera <hadess@hadess.net>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
-Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
-References: <1264011793.1735.3683.camel@localhost.localdomain>
-In-Reply-To: <1264011793.1735.3683.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20/2010 12:23 PM, Bastien Nocera wrote:
-> As those computers never had any i8042 controllers, and the
-> current lookup code could potentially lock up/hang/wait for
-> timeout for long periods of time.
->
-> Fixes intermittent hangs on boot on a MacbookAir1,1
->
-> Signed-off-by: Bastien Nocera<hadess@hadess.net>
 
-I assume this is happening because of this code in 
-drivers/input/serio/i8042-x86ia64io.h:
 
-         if (!i8042_pnp_kbd_devices && !i8042_pnp_aux_devices) {
-                 i8042_pnp_exit();
-#if defined(__ia64__)
-                 return -ENODEV;
-#else
-                 printk(KERN_INFO "PNP: No PS/2 controller found. 
-Probing ports directly.\n");
-                 return 0;
-#endif
+On Wed, 20 Jan 2010, Linus Torvalds wrote:
+> 
+> 	#define RWSEM_UNLOCKED_VALUE            0x00000000
+> 	#define RWSEM_ACTIVE_BIAS               0x00000001
+> 	#define RWSEM_ACTIVE_MASK               0x3fffffff
+> 	#define RWSEM_WAITING_BIAS              (~RWSEM_ACTIVE_MASK)
+> 	#define RWSEM_ACTIVE_READ_BIAS          RWSEM_ACTIVE_BIAS
+> 	#define RWSEM_ACTIVE_WRITE_BIAS         (RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
 
-In other words, on x86, if PNP and/or ACPI don't indicate any PS/2 
-controller exists, we randomly bang on the ports in the expectation 
-they'll be there anyway. This seems rather misguided. It would seem like 
-a better idea to fix this rather than adding yet another DMI list 
-(especially since there likely are, or will be, machines without i8042 
-other than Macs).
+Btw, doing that RWSEM_WAITING_BIAS cleanup (we currently have it as an 
+independent constant) means that now all constants are shared except for 
+that RWSEM_ACTIVE_MASK. So it ends up being something like this:
 
-I can see continuing on and probing if PNP isn't present on the machine, 
-but certainly if ACPI is enabled, I don't think we should be doing such 
-things.
+	#ifdef CONFIG_RWSEM_64bit
+	  typedef __s64 rwsem_count_t;
+	  #define RWSEM_ACTIVE_MASK	0x3fffffff
+	#else
+	  typedef __s32 rwsem_count_t;
+	  #define RWSEM_ACTIVE_MASK     0xffff
+	#endif
+
+	#define RWSEM_UNLOCKED_VALUE	0x00000000
+	#define RWSEM_ACTIVE_BIAS	0x00000001
+	#define RWSEM_WAITING_BIAS	(~RWSEM_ACTIVE_MASK)
+	#define RWSEM_ACTIVE_READ_BIAS	RWSEM_ACTIVE_BIAS   
+	#define RWSEM_ACTIVE_WRITE_BIAS	(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
+
+with just that two-line difference for the 32-bit/64-bit case.
+
+At least I _think_ so.
+
+And it's worth noting (again) that I didn't actually push the 
+twsem_count_t changes down into the slow-path code in lib/rwsem.c. There's 
+a few variables there that might need looking at too. I _think_ they are 
+all ok as-is (unlike the header file, lib/rwsem.c seems to consistently 
+use 'signed long' rather than mix 32-bit and 64-bit types), but it migh be 
+cleaner to make them rwsem_count_t's too.
+
+			Linus
