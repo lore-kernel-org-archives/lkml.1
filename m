@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779Ab0AUGPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754Ab0AUGO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752779Ab0AUGPO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 01:15:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763Ab0AUGPA
+	id S1752754Ab0AUGO7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 01:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663Ab0AUGOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 01:15:00 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:35749 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752689Ab0AUGO5 (ORCPT
+	Thu, 21 Jan 2010 01:14:55 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38540 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752164Ab0AUGOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 01:14:57 -0500
+	Thu, 21 Jan 2010 01:14:53 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 20 Jan 2010 22:14:12 -0800
+Date: Wed, 20 Jan 2010 22:14:08 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 5/9] pci: update bridge res to get more big range in pci assign
- unssign
+Subject: [PATCH 1/9] pci: add pci_bridge_release_unused_res and
+ pci_bus_release_unused_bridge_res
 In-reply-to: <1264054456-12694-1-git-send-email-yinghai@kernel.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -25,175 +25,127 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264054456-12694-6-git-send-email-yinghai@kernel.org>
+Message-id: <1264054456-12694-2-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264054456-12694-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BIOS separate IO range between several IOHs, and on some slots, BIOS assign the
-resource to the bridge, but stop assigning resource to the device under that
-bridge, because the device need big resource.
+so later we could use it to release small resource before pci assign unassign res
 
-1. pci assign unassign and record the failed device resource.
-2. clear the BIOS assigned resource of the parent bridge of fail device
-3. go back and call pci assign unsigned
-4. if it still fail, will go up more bridges. and clear and try again.
-
-use pci_try_num to control back track bridge levels.
-
--v2: update it with resource_list_x
--v3: make pci_try_num default to 1. and when pci_try_num is set to more than 1
-     will check it with max_depth, and adjust that to make sure it is bigger
-     enough
--v4: update to enum release_type and _used_calling
--v5: seems all doesn't like pci=try=N at this point, let remove it at first
--v6: fix typo about restore ...
+-v2: change name to release_child_resources according to Jesse
+-v3: according to Linus, move release_child_resources to resource.c
+     also need to put the lock around them all to avoid recursive deep.
+     (my test case only have one level that need to be released)
+-v4: seperate release_child_resources to another patch
+     according to Bjorn, change hard code 3 to PCI_BRIDGE_RESOURCE_END
+-v5: remove unused in the name, and also use enum for release type according
+     to Jesse
+-v6: use pci_is_root_bus instead acording to Alex.
+-v7: remove the switch case in pci_bus_release_resources accord to Alex
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- drivers/pci/setup-bus.c |  114 ++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 112 insertions(+), 2 deletions(-)
+ drivers/pci/setup-bus.c |   85 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 85 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 76b2d0b..eea53f2 100644
+index 52fbd42..5b42255 100644
 --- a/drivers/pci/setup-bus.c
 +++ b/drivers/pci/setup-bus.c
-@@ -788,11 +788,65 @@ static void pci_bus_dump_resources(struct pci_bus *bus)
- 	}
+@@ -604,6 +604,91 @@ void __ref pci_bus_assign_resources(const struct pci_bus *bus)
  }
+ EXPORT_SYMBOL(pci_bus_assign_resources);
  
-+static int __init pci_bus_get_depth(struct pci_bus *bus)
++static void pci_bridge_release_resources(struct pci_bus *bus,
++					  unsigned long type)
 +{
-+	int depth = 0;
++	int idx;
++	bool changed = false;
 +	struct pci_dev *dev;
++	struct resource *r;
++	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
++
++	dev = bus->self;
++	for (idx = PCI_BRIDGE_RESOURCES; idx <= PCI_BRIDGE_RESOURCE_END;
++	     idx++) {
++		r = &dev->resource[idx];
++		if ((r->flags & type_mask) != type)
++			continue;
++		if (!r->parent)
++			continue;
++		/*
++		 * if there are children under that, we should release them
++		 *  all
++		 */
++		release_child_resources(r);
++		if (!release_resource(r)) {
++			dev_printk(KERN_DEBUG, &dev->dev,
++				 "resource %d %pR released\n", idx, r);
++			/* keep the old size */
++			r->end = resource_size(r) - 1;
++			r->start = 0;
++			r->flags = 0;
++			changed = true;
++		}
++	}
++
++	if (changed) {
++		if (type & IORESOURCE_PREFETCH) {
++			/* avoiding touch the one without PREF */
++			type = IORESOURCE_PREFETCH;
++		}
++		__pci_setup_bridge(bus, type);
++	}
++}
++
++enum release_type {
++	leaf_only,
++	whole_subtree,
++};
++/*
++ * try to release pci bridge resources that is from leaf bridge,
++ * so we can allocate big new one later
++ */
++static void __ref pci_bus_release_bridge_resources(struct pci_bus *bus,
++						   unsigned long type,
++						   enum release_type rel_type)
++{
++	struct pci_dev *dev;
++	bool is_leaf_bridge = true;
 +
 +	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		int ret;
 +		struct pci_bus *b = dev->subordinate;
 +		if (!b)
 +			continue;
 +
-+		ret = pci_bus_get_depth(b);
-+		if (ret + 1 > depth)
-+			depth = ret + 1;
++		is_leaf_bridge = false;
++
++		if ((dev->class >> 8) != PCI_CLASS_BRIDGE_PCI)
++			continue;
++
++		if (rel_type == whole_subtree)
++			pci_bus_release_bridge_resources(b, type,
++						 whole_subtree);
 +	}
 +
-+	return depth;
-+}
-+static int __init pci_get_max_depth(void)
-+{
-+	int depth = 0;
-+	struct pci_bus *bus;
++	/* The root bus? */
++	if (pci_is_root_bus(bus))
++		return;
 +
-+	list_for_each_entry(bus, &pci_root_buses, node) {
-+		int ret;
++	if ((bus->self->class >> 8) != PCI_CLASS_BRIDGE_PCI)
++		return;
 +
-+		ret = pci_bus_get_depth(bus);
-+		if (ret > depth)
-+			depth = ret;
-+	}
-+
-+	return depth;
++	if (((rel_type == leaf_only) && is_leaf_bridge) ||
++		    (rel_type == whole_subtree))
++		pci_bridge_release_resources(bus, type);
 +}
 +
-+/*
-+ * first try will not touch pci bridge res
-+ * second  and later try will clear small leaf bridge res
-+ * will stop till to the max  deepth if can not find good one
-+ */
- void __init
- pci_assign_unassigned_resources(void)
+ static void pci_bus_dump_res(struct pci_bus *bus)
  {
- 	struct pci_bus *bus;
-+	int tried_times = 0;
-+	enum release_type rel_type = leaf_only;
-+	struct resource_list_x head, *list;
-+	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
-+				  IORESOURCE_PREFETCH;
-+	unsigned long failed_type;
-+	int max_depth = pci_get_max_depth();
-+	int pci_try_num;
-+
-+	head.next = NULL;
- 
-+	pci_try_num = max_depth + 1;
-+	printk(KERN_DEBUG "PCI: max bus depth: %d pci_try_num: %d\n",
-+		 max_depth, pci_try_num);
-+
-+again:
- 	/* Depth first, calculate sizes and alignments of all
- 	   subordinate buses. */
- 	list_for_each_entry(bus, &pci_root_buses, node) {
-@@ -800,9 +854,65 @@ pci_assign_unassigned_resources(void)
- 	}
- 	/* Depth last, allocate resources and update the hardware. */
- 	list_for_each_entry(bus, &pci_root_buses, node) {
--		pci_bus_assign_resources(bus);
--		pci_enable_bridges(bus);
-+		__pci_bus_assign_resources(bus, &head);
-+	}
-+	tried_times++;
-+
-+	/* any device complain? */
-+	if (!head.next)
-+		goto enable_and_dump;
-+	failed_type = 0;
-+	for (list = head.next; list;) {
-+		failed_type |= list->flags;
-+		list = list->next;
-+	}
-+	/*
-+	 * io port are tight, don't try extra
-+	 * or if reach the limit, don't want to try more
-+	 */
-+	failed_type &= type_mask;
-+	if ((failed_type == IORESOURCE_IO) || (tried_times >= pci_try_num)) {
-+		free_failed_list(&head);
-+		goto enable_and_dump;
-+	}
-+
-+	printk(KERN_DEBUG "PCI: No. %d try to assign unassigned res\n",
-+			 tried_times + 1);
-+
-+	/* third times and later will not check if it is leaf */
-+	if ((tried_times + 1) > 2)
-+		rel_type = whole_subtree;
-+
-+	/*
-+	 * Try to release leaf bridge's resources that doesn't fit resource of
-+	 * child device under that bridge
-+	 */
-+	for (list = head.next; list;) {
-+		bus = list->dev->bus;
-+		pci_bus_release_bridge_resources(bus, list->flags & type_mask,
-+						  rel_type);
-+		list = list->next;
- 	}
-+	/* restore size and flags */
-+	for (list = head.next; list;) {
-+		struct resource *res = list->res;
-+
-+		res->start = list->start;
-+		res->end = list->end;
-+		res->flags = list->flags;
-+		if (list->dev->subordinate)
-+			res->flags = 0;
-+
-+		list = list->next;
-+	}
-+	free_failed_list(&head);
-+
-+	goto again;
-+
-+enable_and_dump:
-+	/* Depth last, update the hardware. */
-+	list_for_each_entry(bus, &pci_root_buses, node)
-+		pci_enable_bridges(bus);
- 
- 	/* dump the resource on buses */
- 	list_for_each_entry(bus, &pci_root_buses, node) {
+         int i;
 -- 
 1.6.4.2
 
