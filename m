@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128Ab0AUCTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299Ab0AUCdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128Ab0AUCTb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 21:19:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196Ab0AUCTS
+	id S1752299Ab0AUCdP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 21:33:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874Ab0AUCdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 21:19:18 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43128 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752299Ab0AUCTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 21:19:17 -0500
-Date: Thu, 21 Jan 2010 13:19:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christian Hofstaedtler <ch@zeha.at>
-Subject: linux-next: acpi tree build warning
-Message-Id: <20100121131908.fd4c91a3.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__21_Jan_2010_13_19_08_+1100_bFqW4quhASsVGUGs"
+	Wed, 20 Jan 2010 21:33:13 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:55004 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751591Ab0AUCdM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 21:33:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=LVYWdHU/+LUf+spO7eJg83Kmr4MedXOhg5gdQZf2AErnuVw3kNnk8Qnn1rnjpSqRVP
+         NWvSPk61WLuB6I46wh1oQIpTcRbxjGpBchFQWMLfgc8Ak5riLpHFIQ056oe5CZcWpAD5
+         7bwB0KlMqB7q6OIioN1nt/73A48gfduJy5eGo=
+Message-ID: <4B57BCDA.1070705@gmail.com>
+Date: Wed, 20 Jan 2010 23:32:58 -0300
+From: "Tomas M." <tmezzadra@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091215 Shredder/3.0
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Corbin Simpson <mostawesomedude@gmail.com>,
+       James Simmons <jsimmons@infradead.org>, dri-devel@lists.sourceforge.net,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Font selection with i915
+References: <Pine.LNX.4.44L0.1001201504390.1672-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1001201504390.1672-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__21_Jan_2010_13_19_08_+1100_bFqW4quhASsVGUGs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+since 2.6.32 you can change the resolution with video=VGA-1:640x480 boot 
+parameter and emulate the old behaviour.
 
-Hi Len,
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-arch/x86/kernel/reboot.c: In function 'native_machine_emergency_restart':
-arch/x86/kernel/reboot.c:575: warning: enumeration value 'BOOT_UNDECIDED' n=
-ot handled in switch
-
-Introduced by commit 42b6f08e3f79a802332db1ce4a343923e690fc32 ("Default
-to ACPI reboots on newish X86 hardware").
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__21_Jan_2010_13_19_08_+1100_bFqW4quhASsVGUGs
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktXuZwACgkQjjKRsyhoI8wvgACgpozV3gae5FvtIq4pq8AqBlUn
-BcwAoKfbJc6CK9VhaTnPCEvApwv5TBnJ
-=sndd
------END PGP SIGNATURE-----
-
---Signature=_Thu__21_Jan_2010_13_19_08_+1100_bFqW4quhASsVGUGs--
+On 01/20/2010 05:39 PM, Alan Stern wrote:
+> On Wed, 20 Jan 2010, Corbin Simpson wrote:
+>
+>    
+>> FYI the legacy non-KMS path (nomodeset) is deprecated in kernel and
+>> was recently dropped from the X driver. You should be able to use
+>> fbset to change the resolution of your fbcon though.
+>>      
+> I tried fbset, and it was distinctly unsuccessful.  When I ran "fbset
+> 640x480-60", the general appearance of the screen did not change but
+> all new text got squeezed into the upper-left corner in an unreadable
+> form.
+>
+> It's not clear what mode I should specify.  The output from "fbset" is
+> rather unhelpful (I didn't save the exact output but this is close):
+>
+> 	mode: "1280x1024-0"
+> 	D: 0 MHz H: 0 kHz V: 0 Hz
+> 	geometry: 1280 1024 1280 1024 32
+> 	timings: -1 0 0 0 0 0 0
+> 	rgba: 8/16,8/8,8/0,0/0
+>
+> Alan Stern
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>    
