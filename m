@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200Ab0AUKnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218Ab0AUKnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755200Ab0AUKnP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 05:43:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060Ab0AUKnN
+	id S1755218Ab0AUKnc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 05:43:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060Ab0AUKna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 05:43:13 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:56835 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751492Ab0AUKnI convert rfc822-to-8bit (ORCPT
+	Thu, 21 Jan 2010 05:43:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48143
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755203Ab0AUKn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 05:43:08 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=NclVGvtEqmXzw6KT79UFylubL4ukBUy4s3ZPhvx9QSxfSjxXtaivpWV5jDmd9xLO4
-	pLnhRKMMxC6Hr8aTir6OQ==
-MIME-Version: 1.0
-In-Reply-To: <1264070181.4283.1149.camel@laptop>
-References: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com>
-	 <1264070181.4283.1149.camel@laptop>
-Date: Thu, 21 Jan 2010 11:43:02 +0100
-Message-ID: <bd4cb8901001210243y16dbbf8doe66cf24d15120443@mail.gmail.com>
-Subject: Re: [PATCH] perf_events: improve x86 event scheduling (v5)
-From: Stephane Eranian <eranian@google.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       davem@davemloft.net, fweisbec@gmail.com, perfmon2-devel@lists.sf.net,
-       eranian@gmail.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Thu, 21 Jan 2010 05:43:28 -0500
+Date: Thu, 21 Jan 2010 02:43:37 -0800 (PST)
+Message-Id: <20100121.024337.57448535.davem@davemloft.net>
+To: julia@diku.dk
+Cc: vladislav.yasevich@hp.com, sri@us.ibm.com, linux-sctp@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/9] net/sctp: Eliminate useless code
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.1001211121500.13529@ask.diku.dk>
+References: <4B574702.4040602@hp.com>
+	<20100120.150343.236848237.davem@davemloft.net>
+	<Pine.LNX.4.64.1001211121500.13529@ask.diku.dk>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 11:36 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, 2010-01-18 at 10:58 +0200, Stephane Eranian wrote:
->>  void hw_perf_enable(void)
->>  {
->
->
->> +               cpuc->n_added = 0;
->> +               perf_events_lapic_init();
->
-> Just wondering, why do we need that lapic_init() there?
->
-I think I picked it up from x86_pmu_enable(). I don't think
-you necessarily need it here. Not clear to me why it was
-in x86_pmu_enable() to begin with.
+From: Julia Lawall <julia@diku.dk>
+Date: Thu, 21 Jan 2010 11:22:38 +0100 (CET)
 
-I will post a new version of the patch which fixes some bugs and
-also implements true fast path (reuse of previous assignment). It turned
-out, things were a bit more complicated than what I had in v5.
+> On Wed, 20 Jan 2010, David Miller wrote:
+> 
+>> From: Vlad Yasevich <vladislav.yasevich@hp.com>
+>> Date: Wed, 20 Jan 2010 13:10:10 -0500
+>> 
+>> > 
+>> > 
+>> > Julia Lawall wrote:
+>> >> From: Julia Lawall <julia@diku.dk>
+>> >> 
+>> >> The variable newinet is initialized twice to the same (side effect-free)
+>> >> expression.  Drop one initialization.
+>> >> 
+>> >> A simplified version of the semantic match that finds this problem is:
+>> >> (http://coccinelle.lip6.fr/)
+>> >> 
+>> >> // <smpl>
+>> >> @forall@
+>> >> idexpression *x;
+>> >> identifier f!=ERR_PTR;
+>> >> @@
+>> >> 
+>> >> x = f(...)
+>> >> ... when != x
+>> >> (
+>> >> x = f(...,<+...x...+>,...)
+>> >> |
+>> >> * x = f(...)
+>> >> )
+>> >> // </smpl>
+>> >> 
+>> >> Signed-off-by: Julia Lawall <julia@diku.dk>
+>> > 
+>> > Acked-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+>> 
+>> Julia,  just like patch #3 this one had the missing final
+>> line of the patch corrupting it, so you'll need to resubmit.
+> 
+> I have generated and sent it again, but this time I don't see the problem.  
+> If there is still a problem, perhaps you could send me back the patch you 
+> received?
+
+You dropped Vlad' ACK in your re-submission.
+
+I'll fix it up this time, but please accumulate ACK's when
+resubmitting patches merely for the purpose of fixing some
+technical submission problem.
+
+Thanks.
