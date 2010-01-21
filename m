@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219Ab0AUVCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216Ab0AUVDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219Ab0AUVCf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 16:02:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195Ab0AUVC3
+	id S1755216Ab0AUVDV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 16:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145Ab0AUVDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 16:02:29 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:57507 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755188Ab0AUVC1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 16:02:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=k09hwUXFPAdvx+atmVuiHUMC/R5xMskz4Ecad2PrVdbJfVt8i1//C8A5dQ2P9oDOb8
-         k5ZJ1zflY8hXVQwZvkQzT2eqvjUdYOwl1Ejm4BgPUTA6ZJt3P8Jb2hDmRXkn5jUoImhD
-         qaL1rH6C6GnxwXC3kEmqW0n346HwjHs+4KpJA=
-Date: Thu, 21 Jan 2010 22:02:21 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
-Message-ID: <20100121210221.GA3448@del.dom.local>
-References: <20100120094103.GA6225@ff.dom.local>
- <4B58B217.8030001@majjas.com>
- <20100121204133.GB3085@del.dom.local>
- <4B58BD3A.1000705@majjas.com>
+	Thu, 21 Jan 2010 16:03:18 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55467 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755104Ab0AUVDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 16:03:17 -0500
+Message-ID: <4B58C0E8.2050205@kernel.org>
+Date: Thu, 21 Jan 2010 13:02:32 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B58BD3A.1000705@majjas.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 02/36] x86: check range in update range
+References: <1264055303-15123-1-git-send-email-yinghai@kernel.org> <1264055303-15123-3-git-send-email-yinghai@kernel.org> <alpine.DEB.2.00.1001211443030.13130@router.home>
+In-Reply-To: <alpine.DEB.2.00.1001211443030.13130@router.home>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 03:46:50PM -0500, Michael Breuer wrote:
-> On 1/21/2010 3:41 PM, Jarek Poplawski wrote:
-> >On Thu, Jan 21, 2010 at 02:59:19PM -0500, Michael Breuer wrote:
-> >>Test notes:
-> >>
-> >>1) Warning previously apparent on start (dma_debug check_sync) with
-> >>CONFIG_DMAR=n is gone.
-> >>2) W/o the above patch, I was getting sky2 DMAR errors and
-> >>subsequent TX hangs requiring reboot to clear. The hangs happened
-> >>after at least 12 hours of uptime, and under RX load at the time of
-> >>the hang.
-> >>3) With the above patch (and no other changes) I have not been able
-> >>to recreate the crash - the system is stable.
-> >Btw, could you remind us if during last dmar bugs jumbo frames might
-> >have been used or maybe mtu was changed, and the current test setting?
-> >
-> I've hit this with and without Jumbo frames enabled. Last couple of
-> recreations were with mtu = 1500, which is how I'm running now.
-> >>I have been following the discussion about the DMA api would suggest
-> >>that the length issue when DMAR is enabled is less innocuous than
-> >>previously believed.
-> >Actually, the last conclusions are - it's more innocuous than ever
-> >believed, and I completely agree with this (at least until the next
-> >week ;-).
-> I stand grammatically corrected.
+On 01/21/2010 12:43 PM, Christoph Lameter wrote:
+> On Wed, 20 Jan 2010, Yinghai Lu wrote:
+> 
+>> -v2: update comments
+> 
+> Dont see any comments being added.
+----------------------------
+so later could use it with 32bit amd_bus/intel_bus, and it could have cap_resource.
+----------------------------
 
-I didn't mean anything grammatical, sorry! (Except, it's equally
-complex ;-)
 
-Jarek P.
