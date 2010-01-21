@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581Ab0AUROr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519Ab0AURTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754581Ab0AUROr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 12:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948Ab0AUROr
+	id S1753519Ab0AURTZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 12:19:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810Ab0AURTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 12:14:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46560 "EHLO mx2.mail.elte.hu"
+	Thu, 21 Jan 2010 12:19:25 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:38122 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751673Ab0AUROq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 12:14:46 -0500
-Date: Thu, 21 Jan 2010 18:14:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: clean up rwsem type system
-Message-ID: <20100121171437.GA16994@elte.hu>
-References: <alpine.LFD.2.00.1001121613560.17145@localhost.localdomain>
- <4B4D1865.5000107@zytor.com>
- <alpine.LFD.2.00.1001121659220.17145@localhost.localdomain>
- <alpine.LFD.2.00.1001121708100.17145@localhost.localdomain>
- <alpine.LFD.2.00.1001121755220.17145@localhost.localdomain>
- <alpine.LFD.2.00.1001121810410.17145@localhost.localdomain>
- <4B4EC1A5.4010701@zytor.com>
- <20100117060517.GA26525@elte.hu>
- <alpine.LFD.2.00.1001171023440.13231@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001171023440.13231@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752447Ab0AURTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 12:19:24 -0500
+Subject: Re: [PATCH] kernel/timekeeping:  move xtime_cache to be in the
+ same cache line as the lock
+From: john stultz <johnstul@us.ibm.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1264088361.2082.45.camel@localhost>
+References: <1264088361.2082.45.camel@localhost>
+Content-Type: text/plain
+Date: Thu, 21 Jan 2010 09:19:19 -0800
+Message-Id: <1264094359.3253.11.camel@work-vm>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Sun, 17 Jan 2010, Ingo Molnar wrote:
-> > 
-> > FYI, -tip testing found that these changes break the UML build:
-> > 
-> > kernel/built-in.o: In function `__up_read':
-> > /home/mingo/tip/arch/x86/include/asm/rwsem.h:192: undefined reference to `call_rwsem_wake'
-> > kernel/built-in.o: In function `__up_write':
-> > /home/mingo/tip/arch/x86/include/asm/rwsem.h:210: undefined reference to `call_rwsem_wake'
-> > kernel/built-in.o: In function `__downgrade_write':
-> > /home/mingo/tip/arch/x86/include/asm/rwsem.h:228: undefined reference to `call_rwsem_downgrade_wake'
-> > kernel/built-in.o: In function `__down_read':
-> > /home/mingo/tip/arch/x86/include/asm/rwsem.h:112: undefined reference to `call_rwsem_down_read_failed'
-> > kernel/built-in.o: In function `__down_write_nested':
-> > /home/mingo/tip/arch/x86/include/asm/rwsem.h:154: undefined reference to `call_rwsem_down_write_failed'
-> > collect2: ld returned 1 exit status
+On Thu, 2010-01-21 at 15:39 +0000, Richard Kennedy wrote:
+> move xtime_cache to be in the same cache line as the lock
+>     
+> allowing current_kernel_time() to access only one cache line
 > 
-> I think something like this should fix it.
+> when running fio write tests on a 2 core machine, on some of the runs
+> 'perf record -e cache_misses' shows current_kernel_time near the top of
+> the list of cache_misses with 5.5%.
+> On the other runs it's down at 0.05% so I'm assuming that the difference
+> is just down to which core the test client get run on.
+> 
+> This patch moves the xtime_cache variable near to the lock so that it
+> only need to access one cache line.
+> With this applied it drops the current_kernel_time cache_misses in the
+> slow case to 4.5%
+> 
+> Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
 
-That did the trick - thanks!
+Hrm.. I'm hoping to kill off the xtime_cache at some point soon, so I'm
+not sure if this patch will do much for long. That said, I'm not opposed
+to it in the mean time, and when xtime_cache does get yanked, I'd
+appreciate similar performance review to make sure we're not regressing.
 
-	Ingo
+> ---
+> patch against v2.6.33-rc4
+> compiled & tested on AMD64X2 x86_64
+> 
+> 
+> BTW on 64 bit timespec is a 16 byte structure so the aligned 16 doesn't
+> do much, and on 32bit timepec is 8bytes so this just seems to spread
+> these variables across more cache lines than necessary. Any ideas what
+> this is here for?
+
+I think it was a copy-paste from the xtime and wall_to_monotonic
+definitions, which both have the same alignment. 
+
+thanks
+-john
+
