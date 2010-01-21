@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304Ab0AUL0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310Ab0AUL2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304Ab0AUL0x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 06:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198Ab0AUL0w
+	id S1755310Ab0AUL2N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 06:28:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285Ab0AUL2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 06:26:52 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:57845 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755193Ab0AUL0v (ORCPT
+	Thu, 21 Jan 2010 06:28:13 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44423 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755198Ab0AUL2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 06:26:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=enVSDRoqZUrIeWQAF9dJ3HianS+d6xWpmAWletzO/anzGWgQBMQYgfwwP/EM/3aylM
-         Uwvj+RFzIgjP8L1pcnV0Y4egH4Eqm57H8iK4Zu8EFvOVLQzI5eNmrU13lqhwmevTX8jj
-         6tEAmc3yHs2IZwjoshRm3oBg6IvEn6o72fZNU=
-MIME-Version: 1.0
-Date: Thu, 21 Jan 2010 14:26:49 +0300
-Message-ID: <48239d391001210326y25986d59hd10d390ef9c8ddea@mail.gmail.com>
-Subject: MUSB crash on OMAP3 board with second load of gadget
-From: Sergey Lapin <slapinid@gmail.com>
-To: linux-omap@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 21 Jan 2010 06:28:11 -0500
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier (v5)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+In-Reply-To: <1263928006.4283.762.camel@laptop>
+References: <20100113013757.GA29314@Krystal>
+	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
+	 <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal>
+	 <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal>
+	 <20100114183739.GA18435@Krystal>
+	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
+	 <20100114193355.GA23436@Krystal>  <1263926259.4283.757.camel@laptop>
+	 <1263928006.4283.762.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 21 Jan 2010 12:26:52 +0100
+Message-ID: <1264073212.4283.1158.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi! I have crashes in MUSB code when working with USB gadget drivers.
-Kernel version: linux-omap master d8ebff302ff819587377b123e900e501e4135d86
-To reproduce: (USB device cable should be attached).
+On Tue, 2010-01-19 at 20:06 +0100, Peter Zijlstra wrote:
+> 
+> We could possibly look at placing that assignment in context_switch()
+> between switch_mm() and switch_to(), which should provide a mb before
+> and after I think, Ingo?
 
-dd if=/dev/zero of=/tmp/disk bs=1k count=1024
-mkdosfs -F 32 /tmp/disk
-insmod g_mass_storage  file=/tmp/disk stall=0
+Right, just found out why we cannot do that, the first thing
+context_switch() does is prepare_context_switch() which includes
+prepare_lock_switch() which on __ARCH_WANT_UNLOCKED_CTXSW machines drops
+the rq->lock, and we have to have rq->curr assigned by then.
 
-Wait till disk is mounted on host, then
 
-rmmod g_mass_storage
-insmod g_mass_storage  file=/tmp/disk stall=0
 
-And here we get Oops in include/linux/list.h line 93,
-list_del function, which leads us to drivers/usb/musb/musb_gadget.c,
-function void musb_g_giveback(
-        struct musb_ep          *ep,
-        struct usb_request      *request,
-        int                     status),
-just at the beginning of function.
-
-if we add
-pr_debug("list.prev = %p\n", request->list.prev);
-pr_debug("list.next = %p\n", request->list.next);
-
-and we see
-
-list.prev = 6b6b6b6b
-list.next = 6b6b6b6b
-
-And these are NOT values set during list deletion.
-
-Any ideas where to debug from here? If I just do return from that
-function in case
-of list.prev = 6b6b6b6b, then there's no crash, but there's no working
-USB either.
-if I just ignore list_del, I have crash later, where it seems to
-execute bad code
-from address 0x6b6b6b6a. Please, help!
-
-Thanks a lot,
-S.
