@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470Ab0AUEY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453Ab0AUEY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754470Ab0AUEY7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288Ab0AUEYl
+	id S1754453Ab0AUEY6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:24:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754366Ab0AUEYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:24:41 -0500
-Received: from kroah.org ([198.145.64.141]:60205 "EHLO coco.kroah.org"
+	Wed, 20 Jan 2010 23:24:40 -0500
+Received: from kroah.org ([198.145.64.141]:60212 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754254Ab0AUEXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:23:08 -0500
+	id S1754258Ab0AUEXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 23:23:09 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:36 2010
-Message-Id: <20100121041836.148602112@mini.kroah.org>
+Message-Id: <20100121041836.286147376@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 20 Jan 2010 20:15:49 -0800
+Date: Wed, 20 Jan 2010 20:15:50 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ping Cheng <pingc@wacom.com>, Dmitry Torokhov <dtor@mail.ru>
-Subject: [28/30] serial/8250_pnp: add a new Fujitsu Wacom Tablet PC device
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: [29/30] sched: Fix task priority bug
 In-Reply-To: <20100121041852.GA9656@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,33 +28,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ping <pinglinux@gmail.com>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-commit 3018aa4b1a46946dfd0ee73a533038f24e390539 upstream.
+commit 57785df5ac53c70da9fb53696130f3c551bfe1f9 upstream.
 
-This is a new two finger touch Fujitsu Wacom Tablet PC.
+83f9ac removed a call to effective_prio() in wake_up_new_task(), which
+leads to tasks running at MAX_PRIO.
 
-Signed-off-by: Ping Cheng <pingc@wacom.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Dmitry Torokhov <dtor@mail.ru>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+This is caused by the idle thread being set to MAX_PRIO before forking
+off init. O(1) used that to make sure idle was always preempted, CFS
+uses check_preempt_curr_idle() for that so we can savely remove this bit
+of legacy code.
+
+Reported-by: Mike Galbraith <efault@gmx.de>
+Tested-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1259754383.4003.610.camel@laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/8250_pnp.c |    2 ++
- 1 file changed, 2 insertions(+)
+ kernel/sched.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
---- a/drivers/serial/8250_pnp.c
-+++ b/drivers/serial/8250_pnp.c
-@@ -354,6 +354,8 @@ static const struct pnp_device_id pnp_de
- 	{	"FUJ02E5",		0	},
- 	/* Fujitsu P-series tablet PC device */
- 	{	"FUJ02E6",		0	},
-+	/* Fujitsu Wacom 2FGT Tablet PC device */
-+	{	"FUJ02E7",		0	},
- 	/*
- 	 * LG C1 EXPRESS DUAL (C1-PB11A3) touch screen (actually a FUJ02E6 in
- 	 * disguise)
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3177,10 +3177,6 @@ static void pull_task(struct rq *src_rq,
+ 	deactivate_task(src_rq, p, 0);
+ 	set_task_cpu(p, this_cpu);
+ 	activate_task(this_rq, p, 0);
+-	/*
+-	 * Note that idle threads have a prio of MAX_PRIO, for this test
+-	 * to be always true for them.
+-	 */
+ 	check_preempt_curr(this_rq, p, 0);
+ }
+ 
+@@ -6982,7 +6978,6 @@ void __cpuinit init_idle(struct task_str
+ 	__sched_fork(idle);
+ 	idle->se.exec_start = sched_clock();
+ 
+-	idle->prio = idle->normal_prio = MAX_PRIO;
+ 	cpumask_copy(&idle->cpus_allowed, cpumask_of(cpu));
+ 	__set_task_cpu(idle, cpu);
+ 
+@@ -7686,7 +7681,6 @@ migration_call(struct notifier_block *nf
+ 		spin_lock_irq(&rq->lock);
+ 		update_rq_clock(rq);
+ 		deactivate_task(rq, rq->idle, 0);
+-		rq->idle->static_prio = MAX_PRIO;
+ 		__setscheduler(rq, rq->idle, SCHED_NORMAL, 0);
+ 		rq->idle->sched_class = &idle_sched_class;
+ 		migrate_dead_tasks(cpu);
 
 
