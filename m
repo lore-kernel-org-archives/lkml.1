@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420Ab0AUNx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485Ab0AUNyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420Ab0AUNx7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 08:53:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276Ab0AUNxy
+	id S1754485Ab0AUNyw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 08:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125Ab0AUNyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 08:53:54 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46322 "EHLO hera.kernel.org"
+	Thu, 21 Jan 2010 08:54:46 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46366 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754361Ab0AUNxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 08:53:52 -0500
-Date: Thu, 21 Jan 2010 13:53:25 GMT
+	id S1754482Ab0AUNyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 08:54:43 -0500
+Date: Thu, 21 Jan 2010 13:54:11 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
@@ -18,49 +18,65 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Add a lock break for PREEMPT=y
-Message-ID: <tip-baa8c1102f0cd86e69c1497d61d2ee177e663663@git.kernel.org>
-Git-Commit-ID: baa8c1102f0cd86e69c1497d61d2ee177e663663
+Subject: [tip:sched/core] sched: Assume *balance is valid
+Message-ID: <tip-8f190fb3f7a405682666d3723f6ec370b5afe4da@git.kernel.org>
+Git-Commit-ID: 8f190fb3f7a405682666d3723f6ec370b5afe4da
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 21 Jan 2010 13:53:26 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 21 Jan 2010 13:54:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  baa8c1102f0cd86e69c1497d61d2ee177e663663
-Gitweb:     http://git.kernel.org/tip/baa8c1102f0cd86e69c1497d61d2ee177e663663
+Commit-ID:  8f190fb3f7a405682666d3723f6ec370b5afe4da
+Gitweb:     http://git.kernel.org/tip/8f190fb3f7a405682666d3723f6ec370b5afe4da
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Thu, 17 Dec 2009 18:10:09 +0100
+AuthorDate: Thu, 24 Dec 2009 14:18:21 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 21 Jan 2010 13:40:13 +0100
+CommitDate: Thu, 21 Jan 2010 13:40:15 +0100
 
-sched: Add a lock break for PREEMPT=y
+sched: Assume *balance is valid
 
-Since load-balancing can hold rq->locks for quite a long while, allow
-breaking out early when there is lock contention.
+Since all load_balance() callers will have !NULL balance parameters we
+can now assume so and remove a few checks.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/sched_fair.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ kernel/sched_fair.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 93fccba..65d0820 100644
+index de5ab12..0b482f5 100644
 --- a/kernel/sched_fair.c
 +++ b/kernel/sched_fair.c
-@@ -2065,6 +2065,10 @@ static int move_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
- 		 */
- 		if (idle == CPU_NEWLY_IDLE && this_rq->nr_running)
- 			break;
-+
-+		if (raw_spin_is_contended(&this_rq->lock) ||
-+				raw_spin_is_contended(&busiest->lock))
-+			break;
- #endif
- 	} while (load_moved && max_load_move > total_load_moved);
+@@ -2465,7 +2465,7 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
+ 	 * to do the newly idle load balance.
+ 	 */
+ 	if (idle != CPU_NEWLY_IDLE && local_group &&
+-	    balance_cpu != this_cpu && balance) {
++	    balance_cpu != this_cpu) {
+ 		*balance = 0;
+ 		return;
+ 	}
+@@ -2528,7 +2528,7 @@ static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
+ 		update_sg_lb_stats(sd, group, this_cpu, idle, load_idx, sd_idle,
+ 				local_group, cpus, balance, &sgs);
  
+-		if (local_group && balance && !(*balance))
++		if (local_group && !(*balance))
+ 			return;
+ 
+ 		sds->total_load += sgs.group_load;
+@@ -2720,7 +2720,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 	 * 5) The imbalance is within the specified limit.
+ 	 * 6) Any rebalance would lead to ping-pong
+ 	 */
+-	if (balance && !(*balance))
++	if (!(*balance))
+ 		goto ret;
+ 
+ 	if (!sds.busiest || sds.busiest_nr_running == 0)
