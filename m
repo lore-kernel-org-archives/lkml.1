@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792Ab0AUG3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754772Ab0AUG3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754792Ab0AUG3h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 01:29:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755Ab0AUG3d
+	id S1754772Ab0AUG3f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 01:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711Ab0AUG32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 01:29:33 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38839 "EHLO
+	Thu, 21 Jan 2010 01:29:28 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38821 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754560Ab0AUG3Y (ORCPT
+	with ESMTP id S1754528Ab0AUG3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 01:29:24 -0500
+	Thu, 21 Jan 2010 01:29:23 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 20 Jan 2010 22:28:10 -0800
+Date: Wed, 20 Jan 2010 22:28:05 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 23/36] x86: add find_fw_memmap_area
+Subject: [PATCH 18/36] x86: add find_early_area_size
 In-reply-to: <1264055303-15123-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -25,109 +25,87 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264055303-15123-24-git-send-email-yinghai@kernel.org>
+Message-id: <1264055303-15123-19-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264055303-15123-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so could move early_res up
+prepare to move bck find_e820_area_size back to e820.c
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/include/asm/early_res.h |    1 +
- arch/x86/kernel/e820.c           |    4 ++++
- arch/x86/kernel/early_res.c      |   17 +++++++++++------
- 3 files changed, 16 insertions(+), 6 deletions(-)
+ arch/x86/kernel/early_res.c |   45 ++++++++++++++++++++++++++++++------------
+ 1 files changed, 32 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/include/asm/early_res.h b/arch/x86/include/asm/early_res.h
-index 5a4d2eb..9758f3d 100644
---- a/arch/x86/include/asm/early_res.h
-+++ b/arch/x86/include/asm/early_res.h
-@@ -12,6 +12,7 @@ u64 find_early_area(u64 ei_start, u64 ei_last, u64 start, u64 end,
- 			 u64 size, u64 align);
- u64 find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
- 			 u64 *sizep, u64 align);
-+u64 find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align);
- #include <linux/range.h>
- int get_free_all_memory_range(struct range **rangep, int nodeid);
- 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index acd7be6..5c80050 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -742,6 +742,10 @@ u64 __init find_e820_area(u64 start, u64 end, u64 size, u64 align)
+diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
+index 3ae0051..aba02f2 100644
+--- a/arch/x86/kernel/early_res.c
++++ b/arch/x86/kernel/early_res.c
+@@ -476,6 +476,29 @@ out:
  	return -1ULL;
  }
  
-+u64 __init find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align)
++u64 __init find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
++			 u64 *sizep, u64 align)
 +{
-+	return find_e820_area(start, end, size, align);
-+}
- /*
-  * Find next free range after *start
-  */
-diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
-index 38a0c61..e209fc4 100644
---- a/arch/x86/kernel/early_res.c
-+++ b/arch/x86/kernel/early_res.c
-@@ -7,16 +7,14 @@
- #include <linux/bootmem.h>
- #include <linux/mm.h>
- 
--#include <asm/e820.h>
- #include <asm/early_res.h>
--#include <asm/proto.h>
- 
- /*
-  * Early reserved memory areas.
-  */
- /*
-  * need to make sure this one is bigger enough before
-- * find_e820_area could be used
-+ * find_fw_memmap_area could be used
-  */
- #define MAX_EARLY_RES_X 32
- 
-@@ -180,6 +178,13 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
- 	__reserve_early(start, end, name, 1);
- }
- 
-+u64 __init __weak find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align)
-+{
-+	panic("should have find_fw_memmap_area defined with arch");
++	u64 addr, last;
 +
++	addr = round_up(ei_start, align);
++	if (addr < start)
++		addr = round_up(start, align);
++	if (addr >= ei_last)
++		goto out;
++	*sizep = ei_last - addr;
++	while (bad_addr_size(&addr, sizep, align) && addr + *sizep <= ei_last)
++		;
++	last = addr + *sizep;
++	if (last > ei_last)
++		goto out;
++
++	return addr;
++
++out:
 +	return -1ULL;
 +}
 +
- static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
- {
- 	u64 start, end, size, mem;
-@@ -198,13 +203,13 @@ static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
- 		start = early_res[0].end;
- 	end = ex_start;
- 	if (start + size < end)
--		mem = find_e820_area(start, end, size,
-+		mem = find_fw_memmap_area(start, end, size,
- 					 sizeof(struct early_res));
- 	if (mem == -1ULL) {
- 		start = ex_end;
- 		end = max_pfn_mapped << PAGE_SHIFT;
- 		if (start + size < end)
--			mem = find_e820_area(start, end, size,
-+			mem = find_fw_memmap_area(start, end, size,
- 						 sizeof(struct early_res));
+ /*
+  * Find a free area with specified alignment in a specific range.
+  */
+@@ -513,24 +536,20 @@ u64 __init find_e820_area_size(u64 start, u64 *sizep, u64 align)
+ 
+ 	for (i = 0; i < e820.nr_map; i++) {
+ 		struct e820entry *ei = &e820.map[i];
+-		u64 addr, last;
+-		u64 ei_last;
++		u64 addr;
++		u64 ei_start, ei_last;
+ 
+ 		if (ei->type != E820_RAM)
+ 			continue;
+-		addr = round_up(ei->addr, align);
++
+ 		ei_last = ei->addr + ei->size;
+-		if (addr < start)
+-			addr = round_up(start, align);
+-		if (addr >= ei_last)
+-			continue;
+-		*sizep = ei_last - addr;
+-		while (bad_addr_size(&addr, sizep, align) &&
+-			addr + *sizep <= ei_last)
+-			;
+-		last = addr + *sizep;
+-		if (last > ei_last)
++		ei_start = ei->addr;
++		addr = find_early_area_size(ei_start, ei_last, start,
++					 sizep, align);
++
++		if (addr == -1ULL)
+ 			continue;
++
+ 		return addr;
  	}
- 	if (mem == -1ULL)
-@@ -343,7 +348,7 @@ int __init get_free_all_memory_range(struct range **rangep, int nodeid)
- 		start = MAX_DMA32_PFN << PAGE_SHIFT;
- #endif
- 	end = max_pfn_mapped << PAGE_SHIFT;
--	mem = find_e820_area(start, end, size, sizeof(struct range));
-+	mem = find_fw_memmap_area(start, end, size, sizeof(struct range));
- 	if (mem == -1ULL)
- 		panic("can not find more space for range free");
  
 -- 
 1.6.4.2
