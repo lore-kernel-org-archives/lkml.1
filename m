@@ -1,36 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512Ab0AUQRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724Ab0AUQR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512Ab0AUQRw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:17:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120Ab0AUQRv
+	id S1753724Ab0AUQR6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647Ab0AUQRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:17:51 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34498 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753051Ab0AUQRv (ORCPT
+	Thu, 21 Jan 2010 11:17:55 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:61983 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753120Ab0AUQRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 11:17:51 -0500
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier (v5)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-In-Reply-To: <20100121160729.GB12842@Krystal>
-References: <1263460096.4244.282.camel@laptop>
-	 <20100114162609.GC3487@Krystal> <1263488625.4244.333.camel@laptop>
-	 <20100114175449.GA15387@Krystal> <20100114183739.GA18435@Krystal>
-	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
-	 <20100114193355.GA23436@Krystal> <1263926259.4283.757.camel@laptop>
-	 <1263928006.4283.762.camel@laptop> <1264073212.4283.1158.camel@laptop>
-	 <20100121160729.GB12842@Krystal>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 21 Jan 2010 17:17:17 +0100
-Message-ID: <1264090637.4283.1178.camel@laptop>
+	Thu, 21 Jan 2010 11:17:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=fitffGGA5dHeMPm8i9X2bSJZLdmtfBKj0lIwOSdQfSu3zsffqjN+ZhZygM2lOXpD++
+         IQixtdTYeGp+z1Dr5riSip7clgmjKQm1X8lX/g18EoPylC713X3sKVbnz/cI64Zjg1wS
+         pi4eRr4p0UIZPeDV9kuIgjvASW9nqgNs7lWPg=
+Subject: Re: [PATCH v2] input: MXC: add mxc-keypad driver to support the
+ Keypad Port present in the mxc application processors family.
+From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>,
+       Sascha linux-arm <s.hauer@pengutronix.de>,
+       H Hartley Sweeten <hartleys@visionengravers.com>
+In-Reply-To: <1263664125.4350.18.camel@realization>
+References: <1262977099.2050.75.camel@climbing-alby>
+	 <BD79186B4FD85F4B8E60E381CAEE190902089738@mi8nycmail19.Mi8.com>
+	 <1263664125.4350.18.camel@realization>
+Content-Type: text/plain
+Date: Thu, 21 Jan 2010 17:17:48 +0100
+Message-ID: <1264090668.23419.4.camel@realization>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -38,29 +39,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-21 at 11:07 -0500, Mathieu Desnoyers wrote:
-> 
-> One efficient way to fit the requirement of sys_membarrier() would be to
-> create spin_lock_mb()/spin_unlock_mb(), which would have full memory
-> barriers rather than the acquire/release semantic. These could be used
-> within schedule() execution. On UP, they would turn into preempt off/on
-> and a compiler barrier, just like normal spin locks.
-> 
-> On architectures like x86, the atomic instructions already imply a full
-> memory barrier, so we have a direct mapping and no overhead. On
-> architecture where the spin lock only provides acquire semantic (e.g.
-> powerpc using lwsync and isync), then we would have to create an
-> alternate implementation with "sync". 
 
-There's also clear_tsk_need_resched() which is an atomic op.
+Ping on this driver proposal..
 
-The thing I'm worrying about is not making schedule() more expensive for
-a relatively rare operation like sys_membarrier(), while at the same
-time trying to not make while (1) sys_membarrier() ruin your system.
-
-On x86 there is plenty that implies a full mb before rq->curr = next,
-the thing to figure out is what is generally the cheapest place to force
-one for other architectures.
-
-Not sure where that leaves us, since I'm not too familiar with !x86.
+Thanks for reviewing!
 
