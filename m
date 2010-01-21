@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061Ab0AUQvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019Ab0AUQ6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753061Ab0AUQvw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:51:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274Ab0AUQvv
+	id S1754019Ab0AUQ6x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:58:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887Ab0AUQ6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:51:51 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39975 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650Ab0AUQvu (ORCPT
+	Thu, 21 Jan 2010 11:58:52 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:49736 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753862Ab0AUQ6w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 11:51:50 -0500
-Message-ID: <4B5885BA.7090007@s5r6.in-berlin.de>
-Date: Thu, 21 Jan 2010 17:50:02 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
+	Thu, 21 Jan 2010 11:58:52 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 21 Jan 2010 08:58:50 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: "Michael S. Tsirkin" <mst@redhat.com>
+cc: Avi Kivity <avi@redhat.com>, mtosatti@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCHv2 1/3] eventfd: allow atomic read and waitqueue remove
+In-Reply-To: <20100121162648.GA16458@redhat.com>
+Message-ID: <alpine.DEB.2.00.1001210857310.8548@makko.or.mcafeemobile.com>
+References: <20100121162648.GA16458@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-CC: Michael Breuer <mbreuer@majjas.com>, Jarek Poplawski <jarkao2@gmail.com>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-References: <20100118212516.GE3157@del.dom.local>	<4B54D50C.90608@majjas.com>	<20100118220814.GG3157@del.dom.local>	<20100118221747.GH3157@del.dom.local>	<4B54E4EF.8080602@majjas.com>	<4B554730.6090000@majjas.com>	<20100119104739.GA9088@ff.dom.local>	<4B55D40F.5080509@majjas.com>	<20100119195933.GA3060@del.dom.local>	<4B5610A9.7030902@majjas.com>	<20100119224508.GA3473@del.dom.local>	<4B5655D6.8090503@majjas.com> <20100119171013.207cac5c@nehalam> <4B587D4D.2010300@s5r6.in-berlin.de>
-In-Reply-To: <4B587D4D.2010300@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> I didn't read the start of this thread and may misunderstand the issue,
-> but I comment anyway...:
-> 
-> Documentation/DMA-API.txt says the following about (pci_)dma_sync_single
-> and friends:  "All the parameters must be the same as those passed into
-> the single mapping API."
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/DMA-API.txt;h=5aceb88b3f8b622c8c23ed288f37f42de705c904;hb=HEAD#l367
-> 
-> So, it might be considered an API bug --- but it is a documented one. :-)
+On Thu, 21 Jan 2010, Michael S. Tsirkin wrote:
 
-Disregard my comment.  I just noticed that there is more qualified
-discussion of this in the thread "[PATCH] sky2: Fix WARNING: at
-lib/dma-debug.c:902 check_sync".
--- 
-Stefan Richter
--=====-==-=- ---= =-=-=
-http://arcgraph.de/sr/
+> This is a backport of commit: 03db343a6320f780937078433fa7d8da955e6fce
+> modified in a way that introduces some code duplication on the one hand,
+> but reduces the risk of regressing existing eventfd users on the other
+> hand.
+> 
+> KVM needs a wait to atomically remove themselves from the eventfd
+> ->poll() wait queue head, in order to handle correctly their IRQfd
+> deassign operation.
+> 
+> This patch introduces such API, plus a way to read an eventfd from its
+> context.
+> 
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> ---
+> 
+> Avi, Davidel, how about only including the following part for -stable
+> then?  Reason is, I still would like to be able to use irqfd there, and
+> getting spurious interrupts 100% of times unmask is done isn't a very
+> good idea IMO ...
+
+It's the same thing. Unless there are *real* problems in KVM due to the 
+spurious ints, I still think this is .33 material.
+
+
+- Davide
+
+
