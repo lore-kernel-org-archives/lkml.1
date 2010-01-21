@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444Ab0AUNyC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986Ab0AUNyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444Ab0AUNyC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 08:54:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226Ab0AUNxx
+	id S1753986Ab0AUNyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 08:54:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969Ab0AUNyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 08:53:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46321 "EHLO hera.kernel.org"
+	Thu, 21 Jan 2010 08:54:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46342 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218Ab0AUNxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 08:53:51 -0500
-Date: Thu, 21 Jan 2010 13:53:10 GMT
+	id S1754043Ab0AUNyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 08:54:06 -0500
+Date: Thu, 21 Jan 2010 13:53:41 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
@@ -18,178 +18,187 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Remove from fwd decls
-Message-ID: <tip-230059de77a4e0f6afba98073e73bc9fd471506e@git.kernel.org>
-Git-Commit-ID: 230059de77a4e0f6afba98073e73bc9fd471506e
+Subject: [tip:sched/core] sched: Unify load_balance{,_newidle}()
+Message-ID: <tip-1af3ed3ddf27499c3f57662c4c29871e2b95e5f9@git.kernel.org>
+Git-Commit-ID: 1af3ed3ddf27499c3f57662c4c29871e2b95e5f9
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 21 Jan 2010 13:53:10 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 21 Jan 2010 13:53:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  230059de77a4e0f6afba98073e73bc9fd471506e
-Gitweb:     http://git.kernel.org/tip/230059de77a4e0f6afba98073e73bc9fd471506e
+Commit-ID:  1af3ed3ddf27499c3f57662c4c29871e2b95e5f9
+Gitweb:     http://git.kernel.org/tip/1af3ed3ddf27499c3f57662c4c29871e2b95e5f9
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Thu, 17 Dec 2009 17:47:12 +0100
+AuthorDate: Wed, 23 Dec 2009 15:10:31 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 21 Jan 2010 13:40:12 +0100
+CommitDate: Thu, 21 Jan 2010 13:40:13 +0100
 
-sched: Remove from fwd decls
+sched: Unify load_balance{,_newidle}()
 
-Move code around to get rid of fwd declarations.
+load_balance() and load_balance_newidle() look remarkably similar, one
+key point they differ in is the condition on when to active balance.
+
+So split out that logic into a separate function.
+
+One side effect is that previously load_balance_newidle() used to fail
+and return -1 under these conditions, whereas now it doesn't. I've not
+yet fully figured out the whole -1 return case for either
+load_balance{,_newidle}().
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/sched_fair.c |  127 ++++++++++++++++++++++++---------------------------
- 1 files changed, 60 insertions(+), 67 deletions(-)
+ kernel/sched_fair.c |  115 ++++++++++++++++++++++++++-------------------------
+ 1 files changed, 59 insertions(+), 56 deletions(-)
 
 diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index e48e459..93fccba 100644
+index 65d0820..1040832 100644
 --- a/kernel/sched_fair.c
 +++ b/kernel/sched_fair.c
-@@ -1814,73 +1814,6 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
-  * Fair scheduling class load-balancing methods:
-  */
+@@ -2816,6 +2816,39 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
+ /* Working cpumask for load_balance and load_balance_newidle. */
+ static DEFINE_PER_CPU(cpumask_var_t, load_balance_tmpmask);
  
--static unsigned long
--balance_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
--		unsigned long max_load_move, struct sched_domain *sd,
--		enum cpu_idle_type idle, int *all_pinned,
--		int *this_best_prio, struct cfs_rq *busiest_cfs_rq);
--
--
--#ifdef CONFIG_FAIR_GROUP_SCHED
--static unsigned long
--load_balance_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
--		  unsigned long max_load_move,
--		  struct sched_domain *sd, enum cpu_idle_type idle,
--		  int *all_pinned, int *this_best_prio)
--{
--	long rem_load_move = max_load_move;
--	int busiest_cpu = cpu_of(busiest);
--	struct task_group *tg;
--
--	rcu_read_lock();
--	update_h_load(busiest_cpu);
--
--	list_for_each_entry_rcu(tg, &task_groups, list) {
--		struct cfs_rq *busiest_cfs_rq = tg->cfs_rq[busiest_cpu];
--		unsigned long busiest_h_load = busiest_cfs_rq->h_load;
--		unsigned long busiest_weight = busiest_cfs_rq->load.weight;
--		u64 rem_load, moved_load;
--
--		/*
--		 * empty group
--		 */
--		if (!busiest_cfs_rq->task_weight)
--			continue;
--
--		rem_load = (u64)rem_load_move * busiest_weight;
--		rem_load = div_u64(rem_load, busiest_h_load + 1);
--
--		moved_load = balance_tasks(this_rq, this_cpu, busiest,
--				rem_load, sd, idle, all_pinned, this_best_prio,
--				busiest_cfs_rq);
--
--		if (!moved_load)
--			continue;
--
--		moved_load *= busiest_h_load;
--		moved_load = div_u64(moved_load, busiest_weight + 1);
--
--		rem_load_move -= moved_load;
--		if (rem_load_move < 0)
--			break;
--	}
--	rcu_read_unlock();
--
--	return max_load_move - rem_load_move;
--}
--#else
--static unsigned long
--load_balance_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
--		  unsigned long max_load_move,
--		  struct sched_domain *sd, enum cpu_idle_type idle,
--		  int *all_pinned, int *this_best_prio)
--{
--	return balance_tasks(this_rq, this_cpu, busiest,
--			max_load_move, sd, idle, all_pinned,
--			this_best_prio, &busiest->cfs);
--}
--#endif
--
- /*
-  * pull_task - move a task from a remote runqueue to the local runqueue.
-  * Both runqueues must be locked.
-@@ -2042,6 +1975,66 @@ out:
- 	return max_load_move - rem_load_move;
- }
- 
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+static unsigned long
-+load_balance_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
-+		  unsigned long max_load_move,
-+		  struct sched_domain *sd, enum cpu_idle_type idle,
-+		  int *all_pinned, int *this_best_prio)
++static int need_active_balance(struct sched_domain *sd, int sd_idle, int idle)
 +{
-+	long rem_load_move = max_load_move;
-+	int busiest_cpu = cpu_of(busiest);
-+	struct task_group *tg;
-+
-+	rcu_read_lock();
-+	update_h_load(busiest_cpu);
-+
-+	list_for_each_entry_rcu(tg, &task_groups, list) {
-+		struct cfs_rq *busiest_cfs_rq = tg->cfs_rq[busiest_cpu];
-+		unsigned long busiest_h_load = busiest_cfs_rq->h_load;
-+		unsigned long busiest_weight = busiest_cfs_rq->load.weight;
-+		u64 rem_load, moved_load;
-+
++	if (idle == CPU_NEWLY_IDLE) {
 +		/*
-+		 * empty group
++		 * The only task running in a non-idle cpu can be moved to this
++		 * cpu in an attempt to completely freeup the other CPU
++		 * package.
++		 *
++		 * The package power saving logic comes from
++		 * find_busiest_group(). If there are no imbalance, then
++		 * f_b_g() will return NULL. However when sched_mc={1,2} then
++		 * f_b_g() will select a group from which a running task may be
++		 * pulled to this cpu in order to make the other package idle.
++		 * If there is no opportunity to make a package idle and if
++		 * there are no imbalance, then f_b_g() will return NULL and no
++		 * action will be taken in load_balance_newidle().
++		 *
++		 * Under normal task pull operation due to imbalance, there
++		 * will be more than one task in the source run queue and
++		 * move_tasks() will succeed.  ld_moved will be true and this
++		 * active balance code will not be triggered.
 +		 */
-+		if (!busiest_cfs_rq->task_weight)
-+			continue;
++		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
++		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
++			return 0;
 +
-+		rem_load = (u64)rem_load_move * busiest_weight;
-+		rem_load = div_u64(rem_load, busiest_h_load + 1);
-+
-+		moved_load = balance_tasks(this_rq, this_cpu, busiest,
-+				rem_load, sd, idle, all_pinned, this_best_prio,
-+				busiest_cfs_rq);
-+
-+		if (!moved_load)
-+			continue;
-+
-+		moved_load *= busiest_h_load;
-+		moved_load = div_u64(moved_load, busiest_weight + 1);
-+
-+		rem_load_move -= moved_load;
-+		if (rem_load_move < 0)
-+			break;
++		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
++			return 0;
 +	}
-+	rcu_read_unlock();
 +
-+	return max_load_move - rem_load_move;
++	return unlikely(sd->nr_balance_failed > sd->cache_nice_tries+2);
 +}
-+#else
-+static unsigned long
-+load_balance_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
-+		  unsigned long max_load_move,
-+		  struct sched_domain *sd, enum cpu_idle_type idle,
-+		  int *all_pinned, int *this_best_prio)
-+{
-+	return balance_tasks(this_rq, this_cpu, busiest,
-+			max_load_move, sd, idle, all_pinned,
-+			this_best_prio, &busiest->cfs);
-+}
-+#endif
 +
  /*
-  * move_tasks tries to move up to max_load_move weighted load from busiest to
-  * this_rq, as part of a balancing operation within domain "sd".
+  * Check this_cpu to ensure it is balanced within domain. Attempt to move
+  * tasks if there is an imbalance.
+@@ -2902,8 +2935,7 @@ redo:
+ 		schedstat_inc(sd, lb_failed[idle]);
+ 		sd->nr_balance_failed++;
+ 
+-		if (unlikely(sd->nr_balance_failed > sd->cache_nice_tries+2)) {
+-
++		if (need_active_balance(sd, sd_idle, idle)) {
+ 			raw_spin_lock_irqsave(&busiest->lock, flags);
+ 
+ 			/* don't kick the migration_thread, if the curr
+@@ -3049,66 +3081,37 @@ redo:
+ 		int active_balance = 0;
+ 
+ 		schedstat_inc(sd, lb_failed[CPU_NEWLY_IDLE]);
+-		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
+-		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+-			return -1;
+-
+-		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
+-			return -1;
++		sd->nr_balance_failed++;
+ 
+-		if (sd->nr_balance_failed++ < 2)
+-			return -1;
++		if (need_active_balance(sd, sd_idle, CPU_NEWLY_IDLE)) {
++			double_lock_balance(this_rq, busiest);
+ 
+-		/*
+-		 * The only task running in a non-idle cpu can be moved to this
+-		 * cpu in an attempt to completely freeup the other CPU
+-		 * package. The same method used to move task in load_balance()
+-		 * have been extended for load_balance_newidle() to speedup
+-		 * consolidation at sched_mc=POWERSAVINGS_BALANCE_WAKEUP (2)
+-		 *
+-		 * The package power saving logic comes from
+-		 * find_busiest_group().  If there are no imbalance, then
+-		 * f_b_g() will return NULL.  However when sched_mc={1,2} then
+-		 * f_b_g() will select a group from which a running task may be
+-		 * pulled to this cpu in order to make the other package idle.
+-		 * If there is no opportunity to make a package idle and if
+-		 * there are no imbalance, then f_b_g() will return NULL and no
+-		 * action will be taken in load_balance_newidle().
+-		 *
+-		 * Under normal task pull operation due to imbalance, there
+-		 * will be more than one task in the source run queue and
+-		 * move_tasks() will succeed.  ld_moved will be true and this
+-		 * active balance code will not be triggered.
+-		 */
++			/*
++			 * don't kick the migration_thread, if the curr
++			 * task on busiest cpu can't be moved to this_cpu
++			 */
++			if (!cpumask_test_cpu(this_cpu,
++					      &busiest->curr->cpus_allowed)) {
++				double_unlock_balance(this_rq, busiest);
++				all_pinned = 1;
++				return ld_moved;
++			}
+ 
+-		/* Lock busiest in correct order while this_rq is held */
+-		double_lock_balance(this_rq, busiest);
++			if (!busiest->active_balance) {
++				busiest->active_balance = 1;
++				busiest->push_cpu = this_cpu;
++				active_balance = 1;
++			}
+ 
+-		/*
+-		 * don't kick the migration_thread, if the curr
+-		 * task on busiest cpu can't be moved to this_cpu
+-		 */
+-		if (!cpumask_test_cpu(this_cpu, &busiest->curr->cpus_allowed)) {
+ 			double_unlock_balance(this_rq, busiest);
+-			all_pinned = 1;
+-			return ld_moved;
+-		}
+-
+-		if (!busiest->active_balance) {
+-			busiest->active_balance = 1;
+-			busiest->push_cpu = this_cpu;
+-			active_balance = 1;
++			/*
++			 * Should not call ttwu while holding a rq->lock
++			 */
++			raw_spin_unlock(&this_rq->lock);
++			if (active_balance)
++				wake_up_process(busiest->migration_thread);
++			raw_spin_lock(&this_rq->lock);
+ 		}
+-
+-		double_unlock_balance(this_rq, busiest);
+-		/*
+-		 * Should not call ttwu while holding a rq->lock
+-		 */
+-		raw_spin_unlock(&this_rq->lock);
+-		if (active_balance)
+-			wake_up_process(busiest->migration_thread);
+-		raw_spin_lock(&this_rq->lock);
+-
+ 	} else
+ 		sd->nr_balance_failed = 0;
+ 
