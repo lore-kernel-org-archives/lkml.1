@@ -1,259 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572Ab0AUGC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752671Ab0AUGCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752572Ab0AUGC2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 01:02:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494Ab0AUGC1
+	id S1752671Ab0AUGCm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 01:02:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638Ab0AUGCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 01:02:27 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34629 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752035Ab0AUGCZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 01:02:25 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 21 Jan 2010 14:59:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       rientjes@google.com, minchan.kim@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] oom-kill: add lowmem usage aware oom kill handling
-Message-Id: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 21 Jan 2010 01:02:40 -0500
+Received: from mail.gmx.net ([213.165.64.20]:40321 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752636Ab0AUGCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 01:02:39 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19+wxBawDd+My3X/j8tIvxjrz4e22qzRAxfe3F8Z3
+	P2ISR208W4oRvN
+Subject: Re: perf top: losing events?
+From: Mike Galbraith <efault@gmx.de>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1264052528.26323.13.camel@marge.simson.net>
+References: <1264052528.26323.13.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Thu, 21 Jan 2010 07:02:36 +0100
+Message-Id: <1264053756.26323.28.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.69999999999999996
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A patch for avoiding oom-serial-killer at lowmem shortage.
-Patch is onto mmotm-2010/01/15 (depends on mm-count-lowmem-rss.patch)
-Tested on x86-64/SMP + debug module(to allocated lowmem), works well.
+Yup, definitely a booboo in there somewhere.
 
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Step 1.
 
-One cause of OOM-Killer is memory shortage in lower zones.
-(If memory is enough, lowmem_reserve_ratio works well. but..)
+oinker running, perf top -C 3 -z
 
-In lowmem-shortage oom-kill, oom-killer choses a vicitim process
-on their vm size. But this kills a process which has lowmem memory
-only if it's lucky. At last, there will be an oom-serial-killer.
 
-Now, we have per-mm lowmem usage counter. We can make use of it
-to select a good? victim.
+------------------------------------------------------------------------------------------------------------------------------
+   PerfTop:    1001 irqs/sec  kernel: 0.0% [1000Hz cycles],  (all, cpu: 3)                                                    
+------------------------------------------------------------------------------------------------------------------------------
 
-This patch does
-  - add CONSTRAINT_LOWMEM to oom's constraint type.
-  - pass constraint to __badness()
-  - change calculation based on constraint. If CONSTRAINT_LOWMEM,
-    use low_rss instead of vmsize.
+             samples  pcnt func DSO
+             _______ _____ ____ ______________
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- include/linux/oom.h |    1 
- mm/oom_kill.c       |   69 +++++++++++++++++++++++++++++++++++-----------------
- 2 files changed, 48 insertions(+), 22 deletions(-)
+             2003.00 100.0% main /root/bin/pert
 
-Index: mmotm-2.6.33-Jan15/include/linux/oom.h
-===================================================================
---- mmotm-2.6.33-Jan15.orig/include/linux/oom.h
-+++ mmotm-2.6.33-Jan15/include/linux/oom.h
-@@ -20,6 +20,7 @@ struct notifier_block;
-  */
- enum oom_constraint {
- 	CONSTRAINT_NONE,
-+	CONSTRAINT_LOWMEM,
- 	CONSTRAINT_CPUSET,
- 	CONSTRAINT_MEMORY_POLICY,
- };
-Index: mmotm-2.6.33-Jan15/mm/oom_kill.c
-===================================================================
---- mmotm-2.6.33-Jan15.orig/mm/oom_kill.c
-+++ mmotm-2.6.33-Jan15/mm/oom_kill.c
-@@ -55,6 +55,7 @@ static int has_intersects_mems_allowed(s
-  * badness - calculate a numeric value for how bad this task has been
-  * @p: task struct of which task we should calculate
-  * @uptime: current uptime in seconds
-+ * @constraint: context of badness calculation.
-  *
-  * The formula used is relatively simple and documented inline in the
-  * function. The main rationale is that we want to select a good task
-@@ -70,7 +71,8 @@ static int has_intersects_mems_allowed(s
-  *    of least surprise ... (be careful when you change it)
-  */
- 
--unsigned long badness(struct task_struct *p, unsigned long uptime)
-+unsigned long badness(struct task_struct *p, unsigned long uptime,
-+			int constraint)
- {
- 	unsigned long points, cpu_time, run_time;
- 	struct mm_struct *mm;
-@@ -89,11 +91,16 @@ unsigned long badness(struct task_struct
- 		task_unlock(p);
- 		return 0;
- 	}
--
--	/*
--	 * The memory size of the process is the basis for the badness.
--	 */
--	points = mm->total_vm;
-+	switch  (constraint) {
-+	case CONSTRAINT_LOWMEM:
-+		/* use lowmem usage as the basis for the badness */
-+		points = get_low_rss(mm);
-+		break;
-+	default:
-+		/* use virtual memory size as the basis for the badness */
-+		points = mm->total_vm;
-+		break;
-+	}
- 
- 	/*
- 	 * After this unlock we can no longer dereference local variable `mm'
-@@ -113,12 +120,16 @@ unsigned long badness(struct task_struct
- 	 * machine with an endless amount of children. In case a single
- 	 * child is eating the vast majority of memory, adding only half
- 	 * to the parents will make the child our kill candidate of choice.
-+	 *
-+	 * At lowmem shortage, ignore this part.
- 	 */
--	list_for_each_entry(child, &p->children, sibling) {
--		task_lock(child);
--		if (child->mm != mm && child->mm)
--			points += child->mm->total_vm/2 + 1;
--		task_unlock(child);
-+	if (constraint != CONSTRAINT_LOWMEM) {
-+		list_for_each_entry(child, &p->children, sibling) {
-+			task_lock(child);
-+			if (child->mm != mm && child->mm)
-+				points += child->mm->total_vm/2 + 1;
-+			task_unlock(child);
-+		}
- 	}
- 
- 	/*
-@@ -212,6 +223,9 @@ static enum oom_constraint constrained_a
- 	if (gfp_mask & __GFP_THISNODE)
- 		return CONSTRAINT_NONE;
- 
-+	if (high_zoneidx <= lowmem_zone)
-+		return CONSTRAINT_LOWMEM;
-+
- 	/*
- 	 * The nodemask here is a nodemask passed to alloc_pages(). Now,
- 	 * cpuset doesn't use this nodemask for its hardwall/softwall/hierarchy
-@@ -233,6 +247,10 @@ static enum oom_constraint constrained_a
- static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
- 				gfp_t gfp_mask, nodemask_t *nodemask)
- {
-+	int zone_idx = gfp_zone(gfp_mask);
-+
-+	if (zone_idx <= lowmem_zone)
-+		return CONSTRAINT_LOWMEM;
- 	return CONSTRAINT_NONE;
- }
- #endif
-@@ -244,7 +262,7 @@ static enum oom_constraint constrained_a
-  * (not docbooked, we don't want this one cluttering up the manual)
-  */
- static struct task_struct *select_bad_process(unsigned long *ppoints,
--						struct mem_cgroup *mem)
-+				struct mem_cgroup *mem, int constraint)
- {
- 	struct task_struct *p;
- 	struct task_struct *chosen = NULL;
-@@ -300,7 +318,7 @@ static struct task_struct *select_bad_pr
- 		if (p->signal->oom_adj == OOM_DISABLE)
- 			continue;
- 
--		points = badness(p, uptime.tv_sec);
-+		points = badness(p, uptime.tv_sec, constraint);
- 		if (points > *ppoints || !chosen) {
- 			chosen = p;
- 			*ppoints = points;
-@@ -455,7 +473,7 @@ static int oom_kill_process(struct task_
- 	}
- 
- 	printk(KERN_ERR "%s: kill process %d (%s) score %li or a child\n",
--					message, task_pid_nr(p), p->comm, points);
-+				message, task_pid_nr(p), p->comm, points);
- 
- 	/* Try to kill a child first */
- 	list_for_each_entry(c, &p->children, sibling) {
-@@ -475,7 +493,7 @@ void mem_cgroup_out_of_memory(struct mem
- 
- 	read_lock(&tasklist_lock);
- retry:
--	p = select_bad_process(&points, mem);
-+	p = select_bad_process(&points, mem, CONSTRAINT_NONE);
- 	if (PTR_ERR(p) == -1UL)
- 		goto out;
- 
-@@ -557,7 +575,7 @@ void clear_zonelist_oom(struct zonelist 
- /*
-  * Must be called with tasklist_lock held for read.
-  */
--static void __out_of_memory(gfp_t gfp_mask, int order)
-+static void __out_of_memory(gfp_t gfp_mask, int order, int constraint)
- {
- 	struct task_struct *p;
- 	unsigned long points;
-@@ -571,7 +589,7 @@ retry:
- 	 * Rambo mode: Shoot down a process and hope it solves whatever
- 	 * issues we may have.
- 	 */
--	p = select_bad_process(&points, NULL);
-+	p = select_bad_process(&points, NULL, constraint);
- 
- 	if (PTR_ERR(p) == -1UL)
- 		return;
-@@ -583,9 +601,16 @@ retry:
- 		panic("Out of memory and no killable processes...\n");
- 	}
- 
--	if (oom_kill_process(p, gfp_mask, order, points, NULL,
-+	switch (constraint) {
-+	case CONSTRAINT_LOWMEM:
-+		if (oom_kill_process(p, gfp_mask, order, points, NULL,
-+			"Out of memory (in lowmem)"))
-+			goto retry;
-+	default:
-+		if (oom_kill_process(p, gfp_mask, order, points, NULL,
- 			     "Out of memory"))
--		goto retry;
-+			goto retry;
-+	}
- }
- 
- /*
-@@ -612,7 +637,7 @@ void pagefault_out_of_memory(void)
- 		panic("out of memory from page fault. panic_on_oom is selected.\n");
- 
- 	read_lock(&tasklist_lock);
--	__out_of_memory(0, 0); /* unknown gfp_mask and order */
-+	__out_of_memory(0, 0, CONSTRAINT_NONE); /* unknown gfp_mask and order */
- 	read_unlock(&tasklist_lock);
- 
- 	/*
-@@ -663,7 +688,7 @@ void out_of_memory(struct zonelist *zone
- 		oom_kill_process(current, gfp_mask, order, 0, NULL,
- 				"No available memory (MPOL_BIND)");
- 		break;
--
-+	case CONSTRAINT_LOWMEM:
- 	case CONSTRAINT_NONE:
- 		if (sysctl_panic_on_oom) {
- 			dump_header(NULL, gfp_mask, order, NULL);
-@@ -671,7 +696,7 @@ void out_of_memory(struct zonelist *zone
- 		}
- 		/* Fall-through */
- 	case CONSTRAINT_CPUSET:
--		__out_of_memory(gfp_mask, order);
-+		__out_of_memory(gfp_mask, order, constraint);
- 		break;
- 	}
- 
+perfect (off by one is beauty mark, not wart;)
+
+Step 2.
+
+taskset -c 3 ./massive_intr 3 999
+
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  P COMMAND
+ 7133 root      20   0  7928  232  128 R   25  0.0   0:09.68 3 massive_intr
+ 7134 root      20   0  7928  232  128 R   25  0.0   0:09.68 3 massive_intr
+25932 root      20   0  7920  584  476 R   25  0.0  42:03.07 3 pert
+ 7132 root      20   0  7928  232  128 R   25  0.0   0:09.68 3 massive_intr
+
+------------------------------------------------------------------------------------------------------------------------------
+   PerfTop:     252 irqs/sec  kernel: 0.8% [1000Hz cycles],  (all, cpu: 3)
+------------------------------------------------------------------------------------------------------------------------------
+
+             samples  pcnt func DSO
+             _______ _____ ____ ______________
+
+              500.00 99.2% main /root/bin/pert
+
+
+massive_intr appeared briefly, then poof, gone (likely when it forked
+off worker-bees), leaving this.
+
+	-Mike
 
