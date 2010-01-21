@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536Ab0AUPwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631Ab0AUPxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752536Ab0AUPwv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 10:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148Ab0AUPwu
+	id S1752631Ab0AUPxi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 10:53:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323Ab0AUPxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 10:52:50 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37354 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752017Ab0AUPwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 10:52:49 -0500
-Message-ID: <4B58770A.3050107@zytor.com>
-Date: Thu, 21 Jan 2010 07:47:22 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Thu, 21 Jan 2010 10:53:37 -0500
+Received: from mtagate6.uk.ibm.com ([194.196.100.166]:41251 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751447Ab0AUPxg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 10:53:36 -0500
+Date: Thu, 21 Jan 2010 16:53:35 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
+Subject: [2.6.33-rc4] sysfs lockdep warnings on cpu hotplug
+Message-ID: <20100121155335.GB4471@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Gleb Natapov <gleb@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, riel@redhat.com,
-       cl@linux-foundation.org
-Subject: Re: [PATCH v3 04/12] Add "handle page fault" PV helper.
-References: <1262700774-1808-5-git-send-email-gleb@redhat.com> <1263490267.4244.340.camel@laptop> <20100117144411.GI31692@redhat.com> <4B541D08.9040802@zytor.com> <20100118085022.GA30698@redhat.com> <4B5510B1.9010202@zytor.com> <20100119065537.GF14345@redhat.com> <4B55E5D8.1070402@zytor.com> <20100119174438.GA19450@redhat.com> <4B5611A9.4050301@zytor.com> <20100120100254.GC5238@redhat.com> <4B5740CD.4020005@zytor.com> <4B58181B.60405@redhat.com>
-In-Reply-To: <4B58181B.60405@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21/2010 01:02 AM, Avi Kivity wrote:
->>
->> You can also just emulate the state transition -- since you know
->> you're dealing with a flat protected-mode or long-mode OS (and just
->> make that a condition of enabling the feature) you don't have to deal
->> with all the strange combinations of directions that an unrestricted
->> x86 event can take.  Since it's an exception, it is unconditional.
-> 
-> Do you mean create the stack frame manually?  I'd really like to avoid
-> that for many reasons, one of which is performance (need to do all the
-> virt-to-phys walks manually), the other is that we're certain to end up
-> with something horribly underspecified.  I'd really like to keep as
-> close as possible to the hardware.  For the alternative approach, see Xen.
-> 
+Hi Eric,
 
-I obviously didn't mean to do something which didn't look like a
-hardware-delivered exception.  That by itself provides a tight spec.
-The performance issue is real, of course.
+rumours are that you could be responsible for the following lockdep message:
 
-Obviously, the design of VT-x was before my time at Intel, so I'm not
-familiar with why the tradeoffs that were done they way they were.
+Happens on cpu hotplug on s390:
 
-	-hpa
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.33-rc4-00399-g24bc734 #1
+---------------------------------------------
+bash/2576 is trying to acquire lock:
+ (s_active){++++.+}, at: [<000000000016c506>] sysfs_addrm_finish+0x5a/0xa8
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+but task is already holding lock:
+ (s_active){++++.+}, at: [<000000000016c90c>] sysfs_get_active_two+0x64/0x88
 
+other info that might help us debug this:
+5 locks held by bash/2576:
+ #0:  (&buffer->mutex){+.+.+.}, at: [<000000000016a912>] sysfs_write_file+0x4a/0x1a8
+ #1:  (s_active){++++.+}, at: [<000000000016c90c>] sysfs_get_active_two+0x64/0x88
+ #2:  (s_active){++++.+}, at: [<000000000016c8e6>] sysfs_get_active_two+0x3e/0x88
+ #3:  (cpu_add_remove_lock){+.+.+.}, at: [<00000000003dd318>] cpu_down+0x44/0x88
+ #4:  (cpu_hotplug.lock){+.+.+.}, at: [<0000000000056eee>] cpu_hotplug_begin+0x3e/0x74
+
+stack backtrace:
+CPU: 1 Not tainted 2.6.33-rc4-00399-g24bc734 #1
+Process bash (pid: 2576, task: 000000003f0e25d0, ksp: 000000003d9339d8)
+000000003d9338b0 000000003d933830 0000000000000002 0000000000000000 
+       000000003d9338d0 000000003d933848 000000003d933848 00000000003e4996 
+       0000000000000000 0000000000000000 000000003f0e2cb8 0000000000835208 
+       000000000000000d 000000000000000c 000000003d933898 0000000000000000 
+       0000000000000000 00000000000172aa 000000003d933830 000000003d933870 
+Call Trace:
+([<00000000000171b2>] show_trace+0xee/0x144)
+ [<000000000008a1a0>] validate_chain+0xa2c/0x1100
+ [<000000000008ad84>] __lock_acquire+0x510/0xbfc
+ [<000000000008b51c>] lock_acquire+0xac/0xd4
+ [<000000000016bba8>] sysfs_deactivate+0x94/0x108
+ [<000000000016c506>] sysfs_addrm_finish+0x5a/0xa8
+ [<0000000000169f38>] sysfs_hash_and_remove+0x64/0x9c
+ [<000000000016dbae>] sysfs_remove_group+0x76/0x12c
+ [<00000000003dfaae>] smp_cpu_notify+0xae/0xc8
+ [<00000000003eb652>] notifier_call_chain+0x56/0x98
+ [<000000000007a1b2>] raw_notifier_call_chain+0x2a/0x3c
+ [<00000000003dd132>] _cpu_down+0x1aa/0x34c
+ [<00000000003dd356>] cpu_down+0x82/0x88
+ [<00000000003ddac0>] store_online+0x5c/0xc8
+ [<000000000016a9be>] sysfs_write_file+0xf6/0x1a8
+ [<00000000000ffd5c>] vfs_write+0xac/0x178
+ [<00000000000fff24>] SyS_write+0x58/0xa8
+ [<00000000000295b6>] sysc_noemu+0x10/0x16
