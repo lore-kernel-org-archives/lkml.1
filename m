@@ -1,211 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239Ab0AUBS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591Ab0AUBWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239Ab0AUBS5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 20:18:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472Ab0AUBS5
+	id S1753591Ab0AUBWV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 20:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015Ab0AUBWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 20:18:57 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58407 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751661Ab0AUBS4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 20:18:56 -0500
-Date: Thu, 21 Jan 2010 10:04:16 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: balbir@linux.vnet.ibm.com
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC] Shared page accounting for memory cgroup
-Message-Id: <20100121100416.88074a46.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <4B56BC09.2090508@linux.vnet.ibm.com>
-References: <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107083440.GS3059@balbir.in.ibm.com>
-	<20100107174814.ad6820db.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107180800.7b85ed10.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107092736.GW3059@balbir.in.ibm.com>
-	<20100108084727.429c40fc.kamezawa.hiroyu@jp.fujitsu.com>
-	<661de9471001171130p2b0ac061he6f3dab9ef46fd06@mail.gmail.com>
-	<20100118094920.151e1370.nishimura@mxp.nes.nec.co.jp>
-	<4B541B44.3090407@linux.vnet.ibm.com>
-	<20100119102208.59a16397.nishimura@mxp.nes.nec.co.jp>
-	<661de9471001181749y2fe22a15j1c01c94aa1838e99@mail.gmail.com>
-	<20100119113443.562e38ba.nishimura@mxp.nes.nec.co.jp>
-	<4B552C89.8000004@linux.vnet.ibm.com>
-	<20100120130902.865d8269.nishimura@mxp.nes.nec.co.jp>
-	<4B56BC09.2090508@linux.vnet.ibm.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 20 Jan 2010 20:22:20 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37462 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751774Ab0AUBWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 20:22:18 -0500
+Message-ID: <4B57ADB4.70002@kernel.org>
+Date: Thu, 21 Jan 2010 10:28:20 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>, Alex Elder <aelder@sgi.com>,
+       xfs@oss.sgi.com
+CC: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
+Subject: Circular locking dependency warning involing xfs on 2.6.27
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 21 Jan 2010 01:22:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010 13:47:13 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> On Wednesday 20 January 2010 09:39 AM, Daisuke Nishimura wrote:
-> > On Tue, 19 Jan 2010 09:22:41 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >> On Tuesday 19 January 2010 08:04 AM, Daisuke Nishimura wrote:
-> >>> On Tue, 19 Jan 2010 07:19:42 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >>>> On Tue, Jan 19, 2010 at 6:52 AM, Daisuke Nishimura
-> >>>> <nishimura@mxp.nes.nec.co.jp> wrote:
-> >>>> [snip]
-> >>>>>> Correct, file cache is almost always considered shared, so it has
-> >>>>>>
-> >>>>>> 1. non-private or shared usage of 10MB
-> >>>>>> 2. 10 MB of file cache
-> >>>>>>
-> >>>>>>> I don't think "non private usage" is appropriate to this value.
-> >>>>>>> Why don't you just show "sum_of_each_process_rss" ? I think it would be easier
-> >>>>>>> to understand for users.
-> >>>>>>
-> >>>>>> Here is my concern
-> >>>>>>
-> >>>>>> 1. The gap between looking at memcg stat and sum of all RSS is way
-> >>>>>> higher in user space
-> >>>>>> 2. Summing up all rss without walking the tasks atomically can and
-> >>>>>> will lead to consistency issues. Data can be stale as long as it
-> >>>>>> represents a consistent snapshot of data
-> >>>>>>
-> >>>>>> We need to differentiate between
-> >>>>>>
-> >>>>>> 1. Data snapshot (taken at a time, but valid at that point)
-> >>>>>> 2. Data taken from different sources that does not form a uniform
-> >>>>>> snapshot, because the timestamping of the each of the collected data
-> >>>>>> items is different
-> >>>>>>
-> >>>>> Hmm, I'm sorry I can't understand why you need "difference".
-> >>>>> IOW, what can users or middlewares know by the value in the above case
-> >>>>> (0MB in 01 and 10MB in 02)? I've read this thread, but I can't understande about
-> >>>>> this point... Why can this value mean some of the groups are "heavy" ?
-> >>>>>
-> >>>>
-> >>>> Consider a default cgroup that is not root and assume all applications
-> >>>> move there initially. Now with a lot of shared memory,
-> >>>> the default cgroup will be the first one to page in a lot of the
-> >>>> memory and its usage will be very high. Without the concept of
-> >>>> showing how much is non-private, how does one decide if the default
-> >>>> cgroup is using a lot of memory or sharing it? How
-> >>>> do we decide on limits of a cgroup without knowing its actual usage -
-> >>>> PSS equivalent for a region of memory for a task.
-> >>>>
-> >>> As for limit, I think we should decide it based on the actual usage because
-> >>> we account and limit the accual usage. Why we should take account of the sum of rss ?
-> >>
-> >> I am talking of non-private pages or potentially shared pages - which is
-> >> derived as follows
-> >>
-> >> sum_of_all_rss - (rss + file_mapped) (from .stat file)
-> >>
-> >> file cache is considered to be shared always
-> >>
-> >>
-> >>> I agree that we'd better not to ignore the sum of rss completely, but could you show me
-> >>> how the value 0MB/10MB can be used to caluculate the limit in 01/02 in detail ?
-> >>
-> >> In your example, usage shows that the real usage of the cgroup is 20 MB
-> >> for 01 and 10 MB for 02.
-> > right.
-> > 
-> >> Today we show that we are using 40MB instead of
-> >> 30MB (when summed).
-> > Sorry, I can't understand here.
-> > If we sum usage_in_bytes in both groups, it would be 30MB.
-> 
-> Right
-> 
-> > If we sum "actual rss(rss_file, rss_anon) via stat file" in both groups, it would be 30M.
-> > If we sum "total rss(rss_file, rss_anon) of all process via mm_counter" in both groups,
-> > it would be 40MB.
-> > 
-> 
-> mm_counter would show 40GB, memcgroup would show 30MB you are right. But
-> of the 30MB, do we say the one using 20MB is consuming more resources?
-> 
-> >> If an administrator has to make a decision to say
-> >> add more resources, the one with 20MB would be the right place w.r.t.
-> >> memory.
-> >>
-> > You mean he would add the additional resource to 00, right? Then, 
-> > the smaller "shared_usage_in_bytes" is, the more likely an administrator should
-> > add additional resources to the group ?
-> > 
-> > But when both /cgroup/memory/aa and /cgroup/memory/bb has 20MB as acutual usage,
-> > and aa has 10MB "shared"(used by multiple processes *in aa*) usage while bb has none,
-> > "shared_usage_in_bytes" is 10MB in aa and 0MB in bb(please consider there is
-> > no "shared" usage between aa and bb).
-> > Should an administrator consider bb is heavier than aa ? I don't think so.
-> > 
-> 
-> No.. but before OOM killing or considering moving in a virtual
-> environment the cgorup "aa", the real usage should be considered or
-> at-least the fact that moving "bb" would require 20MB.
-> 
-> > IOW, "shared_usage_in_bytes" doesn't have any consistent meaning about which
-> > group is unfairly "heavy".
-> > 
-> 
-> No, but it gives an idea of the sharing, which can be important for
-> making decisions and estimating the real usage. In the case of aa, one
-> can estimate private usage to be 20MB - 10MB (10MB) which is one correct
-> way of looking at the heaviness of the cgroup.
-> 
-This incosistency is the problem I worry about the most. The bigger "shared_usage_in_bytes" is,
-the more likey the group is "heavy", or the opposite ? It only confuses users.
+Hello,
 
-The "shared_usage_in_bytes" of A can be used to roughly estimate a sum of
+This is on a pretty old kernel but Carsten reports that it happens
+occassionally in a pretty large setup involving 1500+ machines (please
+feel free to fill in).  This happens pretty sporadically so reporting
+it just in case this is a yet unknown problem.  As I understand it,
+testing with newer kernel isn't out of question but it being a
+production environment, not a very easy thing.
 
-i) memory usage used by multiple processes in A.
-ii) memroy usage processes in A charges to OTHER GROUPS.
-                                ^^^^^^^^^^^^^^^^^^^^^^^
-I would say "yes, it might be usefull to decide the weight of A" if it can be used
-to estimate a sum of i) and
+Thanks.
 
-iii) memory usage processes in OTHER GROUPS charges to A.
-                                            ^^^^^^^^^^^^
+[12207.016809] =======================================================
+[12207.021881] [ INFO: possible circular locking dependency detected ]
+[12207.021881] 2.6.27.43-atlas-generic #1
+[12207.021881] -------------------------------------------------------
+[12207.231253] inspiralSensMon/8833 is trying to acquire lock:
+[12207.231253]  (iprune_mutex){--..}, at: [<ffffffff802b14df>] shrink_icache_memory+0x4b/0x23b
+[12207.231253]
+[12207.231253] but task is already holding lock:
+[12207.231253]  (&(&ip->i_iolock)->mr_lock){----}, at: [<ffffffff8038edd8>] xfs_ilock+0x44/0x79
+[12207.231253]
+[12207.231253] which lock already depends on the new lock.
+[12207.231253]
+[12207.231253]
+[12207.231253] the existing dependency chain (in reverse order) is:
+[12207.231253]
+[12207.231253] -> #1 (&(&ip->i_iolock)->mr_lock){----}:
+[12207.231253]        [<ffffffff8025cdc8>] __lock_acquire+0x12a7/0x15bc
+[12207.231253]        [<ffffffff8025d16a>] lock_acquire+0x8d/0xba
+[12207.231253]        [<ffffffff80252a29>] down_write_nested+0x2a/0x36
+[12207.231253]        [<ffffffff8038edbb>] xfs_ilock+0x27/0x79
+[12207.231253]        [<ffffffff8038ef5c>] xfs_ireclaim+0x41/0x87
+[12207.231253]        [<ffffffff803a73ef>] xfs_finish_reclaim+0x142/0x150
+[12207.231253]        [<ffffffff803a754d>] xfs_reclaim+0x77/0xfc
+[12207.231253]        [<ffffffff803b3b20>] xfs_fs_clear_inode+0xe2/0x106
+[12207.231253]        [<ffffffff802b11a4>] clear_inode+0x71/0xca
+[12207.231253]        [<ffffffff802b13e1>] dispose_list+0x5b/0x10e
+[12207.231253]        [<ffffffff802b1699>] shrink_icache_memory+0x205/0x23b
+[12207.231253]        [<ffffffff80282797>] shrink_slab+0xe3/0x158
+[12207.231253]        [<ffffffff80282c1a>] kswapd+0x40e/0x572
+[12207.231253]        [<ffffffff8024f409>] kthread+0x49/0x76
+[12207.231253]        [<ffffffff80211ab9>] child_rip+0xa/0x11
+[12207.231253]        [<ffffffffffffffff>] 0xffffffffffffffff
+[12207.231253]
+[12207.231253] -> #0 (iprune_mutex){--..}:
+[12207.231253]        [<ffffffff8025cadd>] __lock_acquire+0xfbc/0x15bc
+[12207.231253]        [<ffffffff8025d16a>] lock_acquire+0x8d/0xba
+[12207.231253]        [<ffffffff805f3a50>] mutex_lock_nested+0xe3/0x28a
+[12207.231253]        [<ffffffff802b14df>] shrink_icache_memory+0x4b/0x23b
+[12207.231253]        [<ffffffff80282797>] shrink_slab+0xe3/0x158
+[12207.231253]        [<ffffffff802832f0>] try_to_free_pages+0x227/0x313
+[12207.231253]        [<ffffffff8027dbc6>] __alloc_pages_internal+0x261/0x40c
+[12207.231253]        [<ffffffff8027f9c2>] __do_page_cache_readahead+0xf0/0x1f7
+[12207.231253]        [<ffffffff8027fe26>] ondemand_readahead+0x1cf/0x1e4
+[12207.231253]        [<ffffffff8027feb3>] page_cache_async_readahead+0x78/0x84
+[12207.231253]        [<ffffffff80279dc9>] generic_file_aio_read+0x27d/0x5d6
+[12207.231253]        [<ffffffff803b3609>] xfs_read+0x18e/0x205
+[12207.231253]        [<ffffffff803af838>] xfs_file_aio_read+0x51/0x53
+[12207.231253]        [<ffffffff8029d42b>] do_sync_read+0xe7/0x12d
+[12207.231253]        [<ffffffff8029ddb2>] vfs_read+0xab/0x134
+[12207.231253]        [<ffffffff8029deff>] sys_read+0x47/0x6f
+[12207.231253]        [<ffffffff8021055a>] system_call_fastpath+0x16/0x1b
+[12207.231253]        [<ffffffffffffffff>] 0xffffffffffffffff
+[12207.231253]
+[12207.231253] other info that might help us debug this:
+[12207.231253]
+[12207.231253] 2 locks held by inspiralSensMon/8833:
+[12207.231253]  #0:  (&(&ip->i_iolock)->mr_lock){----}, at:
+[<ffffffff8038edd8>] xfs_ilock+0x44/0x79
+[12207.231253]  #1:  (shrinker_rwsem){----}, at: [<ffffffff802826ec>] shrink_slab+0x38/0x158
+[12207.231253]
+[12207.231253] stack backtrace:
+[12207.231253] Pid: 8833, comm: inspiralSensMon Not tainted 2.6.27.43-atlas-generic #1
+[12207.231253]
+[12207.231253] Call Trace:
+[12207.231253]  [<ffffffff8025b763>] print_circular_bug_tail+0xb8/0xc3
+[12207.231253]  [<ffffffff8025cadd>] __lock_acquire+0xfbc/0x15bc
+[12207.231253]  [<ffffffff8025d16a>] lock_acquire+0x8d/0xba
+[12207.231253]  [<ffffffff802b14df>] ? shrink_icache_memory+0x4b/0x23b
+[12207.231253]  [<ffffffff805f3a50>] mutex_lock_nested+0xe3/0x28a
+[12207.231253]  [<ffffffff802b14df>] ? shrink_icache_memory+0x4b/0x23b
+[12207.231253]  [<ffffffff802b14df>] ? shrink_icache_memory+0x4b/0x23b
+[12207.231253]  [<ffffffff802b14df>] shrink_icache_memory+0x4b/0x23b
+[12207.231253]  [<ffffffff80282797>] shrink_slab+0xe3/0x158
+[12207.231253]  [<ffffffff802832f0>] try_to_free_pages+0x227/0x313
+[12207.231253]  [<ffffffff80281464>] ? isolate_pages_global+0x0/0x34
+[12207.231253]  [<ffffffff8027dbc6>] __alloc_pages_internal+0x261/0x40c
+[12207.231253]  [<ffffffff8027f9c2>] __do_page_cache_readahead+0xf0/0x1f7
+[12207.231253]  [<ffffffff8027f94d>] ? __do_page_cache_readahead+0x7b/0x1f7
+[12207.231253]  [<ffffffff8027fe26>] ondemand_readahead+0x1cf/0x1e4
+[12207.231253]  [<ffffffff8027feb3>] page_cache_async_readahead+0x78/0x84
+[12207.231253]  [<ffffffff80278095>] ? find_get_page+0x0/0xc9
+[12207.231253]  [<ffffffff80279dc9>] generic_file_aio_read+0x27d/0x5d6
+[12207.231253]  [<ffffffff8038edd8>] ? xfs_ilock+0x44/0x79
+[12207.231253]  [<ffffffff803b3609>] xfs_read+0x18e/0x205
+[12207.231253]  [<ffffffff803af838>] xfs_file_aio_read+0x51/0x53
+[12207.231253]  [<ffffffff8029d42b>] do_sync_read+0xe7/0x12d
+[12207.231253]  [<ffffffff803e399c>] ? __up_write+0x29/0x11e
+[12207.231253]  [<ffffffff8024f74a>] ? autoremove_wake_function+0x0/0x38
+[12207.231253]  [<ffffffff8025b1d2>] ? trace_hardirqs_on_caller+0xf7/0x11b
+[12207.231253]  [<ffffffff803e3a82>] ? __up_write+0x10f/0x11e
+[12207.231253]  [<ffffffff803c49b4>] ? security_file_permission+0x11/0x13
+[12207.231253]  [<ffffffff8029ddb2>] vfs_read+0xab/0x134
+[12207.231253]  [<ffffffff8029deff>] sys_read+0x47/0x6f
+[12207.231253]  [<ffffffff8021055a>] system_call_fastpath+0x16/0x1b
 
-Anyway, I wouldn't say any more about the usefullness of "shared_usage_in_bytes".
-
-But if you dare to add this interface to kernel, please and please write the documentation
-that it can be used to roughly estimate a sum of i) and ii), not sum of i) and iii), and
-can be used to decide the weight of the group only when few pages are shared between groups.
-So that users doesn't misunderstand nor misuse the interface.
-
-And I think you should answer what Kamezawa-san pointed in http://lkml.org/lkml/2010/1/17/186.
-
-
-Thanks,
-Daisuke Nishimura.
-
-> > The problem here is, "shared_usage_in_bytes" doesn't show neither one of nor the sum
-> > of the following value(*IFF* we have only one cgroup, "shared_usage_in_bytes" would
-> > mean a), but it has no use in real case).
-> > 
-> >   a) memory usage used by multiple processes inside this group.
-> >   b) memory usage used by both processes inside this and another group.
-> >   c) memory usage not used by any processes inside this group, but used by
-> >      that of in another group.
-> > 
-> > IMHO, we should take account of all the above values to determine which group
-> > is unfairly "heavy". I agree that the bigger the size of a) is, the bigger
-> > "shared_usage_in_bytes" of the group would be, but we cannot know any information about
-> > the size of b) by it, becase those usages are included in both actual usage(rss via stat)
-> 
-> (b) IMHO is a longer term goal and can be estimated from the PSS of the
-> processes within the cgroup
-> 
-> > and sum of rss(via mm_counter). To make matters warse, "shared_usage_in_bytes" has
-> > the opposite meaning about b), i.e., the more a processe in some group(foo) has actual
-> > charges in *another* group(baa), the bigger "shared_usage_in_bytes" in "foo" would be
-> > (as 00 and 01 in my example).
-> > 
-> > I would agree with you if you add interfaces to show some hints to users about above values,
-> > but "shared_usage_in_bytes" doesn't meet it at all.
-> > 
-> 
-> Not sure I follow your suggestion here.
-> 
-> Balbir
+-- 
+tejun
