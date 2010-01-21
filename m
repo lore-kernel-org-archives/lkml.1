@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945Ab0AUQlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517Ab0AUQl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945Ab0AUQlq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:41:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605Ab0AUQl3
+	id S1753517Ab0AUQl2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691Ab0AUQlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:41:29 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:38414 "EHLO
-	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752844Ab0AUQlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 21 Jan 2010 11:41:25 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:38400 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752412Ab0AUQlX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 11:41:23 -0500
 From: Borislav Petkov <bp@amd64.org>
 To: <mingo@elte.hu>, <hpa@zytor.com>, <tglx@linutronix.de>
 Cc: <andreas.herrmann3@amd.com>, <x86@kernel.org>,
        <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/7] x86, cacheinfo: Fix disabling of L3 cache indices
-Date: Thu, 21 Jan 2010 17:41:31 +0100
-Message-Id: <1264092093-13739-6-git-send-email-bp@amd64.org>
+Subject: [PATCH 3/7] x86, smp: Add wbinvd_on_all_cpus helper
+Date: Thu, 21 Jan 2010 17:41:29 +0100
+Message-Id: <1264092093-13739-4-git-send-email-bp@amd64.org>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264092093-13739-1-git-send-email-bp@amd64.org>
 References: <1264092093-13739-1-git-send-email-bp@amd64.org>
@@ -26,98 +26,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Borislav Petkov <borislav.petkov@amd.com>
 
-* Correct the masks used for writing the cache index disable indices.
-* Do not turn off L3 scrubber - it is not necessary.
-* Make sure wbinvd is executed on the same node where the L3 is.
-* Check for out-of-bounds values written to the registers.
-* Make show_cache_disable hex values unambiguous
-* Check for Erratum #388
-
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- arch/x86/kernel/cpu/intel_cacheinfo.c |   30 +++++++++++++++++-------------
- 1 files changed, 17 insertions(+), 13 deletions(-)
+ arch/x86/include/asm/smp.h |    2 ++
+ arch/x86/lib/smp.c         |    6 ++++++
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index fc6c8ef..cef4fdd 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -18,6 +18,7 @@
- #include <asm/processor.h>
- #include <linux/smp.h>
- #include <asm/k8.h>
-+#include <asm/smp.h>
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index 090146e..3c8ed3a 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -139,6 +139,7 @@ void play_dead_common(void);
+ void native_send_call_func_ipi(const struct cpumask *mask);
+ void native_send_call_func_single_ipi(int cpu);
+ void wbinvd_on_cpu(int cpu);
++int wbinvd_on_all_cpus(void);
  
- #define LVL_1_INST	1
- #define LVL_1_DATA	2
-@@ -299,8 +300,10 @@ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
- 	if (boot_cpu_data.x86 == 0x11)
- 		return;
- 
--	/* see erratum #382 */
--	if ((boot_cpu_data.x86 == 0x10) && (boot_cpu_data.x86_model < 0x8))
-+	/* see errata #382 and #388 */
-+	if ((boot_cpu_data.x86 == 0x10) &&
-+	    ((boot_cpu_data.x86_model < 0x9) ||
-+	     (boot_cpu_data.x86_mask  < 0x1)))
- 		return;
- 
- 	this_leaf->can_disable = 1;
-@@ -726,12 +729,12 @@ static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
- 		return -EINVAL;
- 
- 	pci_read_config_dword(dev, 0x1BC + index * 4, &reg);
--	return sprintf(buf, "%x\n", reg);
-+	return sprintf(buf, "0x%08x\n", reg);
+ void smp_store_cpu_info(int id);
+ #define cpu_physical_id(cpu)	per_cpu(x86_cpu_to_apicid, cpu)
+@@ -150,6 +151,7 @@ static inline int num_booting_cpus(void)
  }
+ #else /* !CONFIG_SMP */
+ #define wbinvd_on_cpu(cpu)	wbinvd()
++#define wbinvd_on_all_cpus()	wbinvd()
+ #endif /* CONFIG_SMP */
  
- #define SHOW_CACHE_DISABLE(index)					\
- static ssize_t								\
--show_cache_disable_##index(struct _cpuid4_info *this_leaf, char *buf)  	\
-+show_cache_disable_##index(struct _cpuid4_info *this_leaf, char *buf)	\
- {									\
- 	return show_cache_disable(this_leaf, buf, index);		\
+ extern unsigned disabled_cpus __cpuinitdata;
+diff --git a/arch/x86/lib/smp.c b/arch/x86/lib/smp.c
+index 408c3b7..38f92b0 100644
+--- a/arch/x86/lib/smp.c
++++ b/arch/x86/lib/smp.c
+@@ -209,3 +209,9 @@ void wbinvd_on_cpu(int cpu)
+ 	smp_call_function_single(cpu, native_wbinvd, NULL, 1);
  }
-@@ -745,7 +748,9 @@ static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
- 	int node = cpu_to_node(cpu);
- 	struct pci_dev *dev = node_to_k8_nb_misc(node);
- 	unsigned long val = 0;
--	unsigned int scrubber = 0;
+ EXPORT_SYMBOL(wbinvd_on_cpu);
 +
-+#define SUBCACHE_MASK	(3UL << 20)
-+#define SUBCACHE_INDEX	0xfff
- 
- 	if (!this_leaf->can_disable)
- 		return -EINVAL;
-@@ -759,21 +764,20 @@ static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
- 	if (strict_strtoul(buf, 10, &val) < 0)
- 		return -EINVAL;
- 
--	val |= 0xc0000000;
--
--	pci_read_config_dword(dev, 0x58, &scrubber);
--	scrubber &= ~0x1f000000;
--	pci_write_config_dword(dev, 0x58, scrubber);
-+	/* do not allow writes outside of allowed bits */
-+	if (val & ~(SUBCACHE_MASK | SUBCACHE_INDEX))
-+		return -EINVAL;
- 
--	pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
--	wbinvd();
-+	val |= BIT(30);
- 	pci_write_config_dword(dev, 0x1BC + index * 4, val);
-+	wbinvd_on_cpu(cpu);
-+	pci_write_config_dword(dev, 0x1BC + index * 4, val | BIT(31));
- 	return count;
- }
- 
- #define STORE_CACHE_DISABLE(index)					\
- static ssize_t								\
--store_cache_disable_##index(struct _cpuid4_info *this_leaf,	     	\
-+store_cache_disable_##index(struct _cpuid4_info *this_leaf,		\
- 			    const char *buf, size_t count)		\
- {									\
- 	return store_cache_disable(this_leaf, buf, count, index);	\
++int wbinvd_on_all_cpus(void)
++{
++	return on_each_cpu(native_wbinvd, NULL, 1);
++}
++EXPORT_SYMBOL(wbinvd_on_all_cpus);
 -- 
 1.6.6
 
