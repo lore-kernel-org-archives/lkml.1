@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385Ab0AUFAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751502Ab0AUFF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751385Ab0AUFAP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 00:00:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981Ab0AUFAM
+	id S1751502Ab0AUFF1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 00:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417Ab0AUFF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 00:00:12 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:57473 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933Ab0AUFAJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 00:00:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=cTuJNYBfJbl9qgKUD/1rXxHKotBkXtQlqf7KOJEZJ1BztADlnfdGywokxijUXayz79
-         rozomzazIzXWhuKv5tF5+JLee5E550k6eYHM910AAIkBA9vhJ2ttXufdNz8EDX/AUBUp
-         w8/U/nTVjWujICShhJqo1q8GltQBEF6x8OLHM=
-Message-ID: <4B57DF52.2030906@garzik.org>
-Date: Thu, 21 Jan 2010 00:00:02 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Thu, 21 Jan 2010 00:05:27 -0500
+Received: from mga01.intel.com ([192.55.52.88]:3727 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750932Ab0AUFF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 00:05:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,314,1262592000"; 
+   d="scan'208";a="533133287"
+Date: Thu, 21 Jan 2010 13:05:21 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [PATCH 5/8] vmalloc: simplify vread()/vwrite()
+Message-ID: <20100121050521.GB24236@localhost>
+References: <20100113135305.013124116@intel.com> <20100113135957.833222772@intel.com> <20100114124526.GB7518@laptop> <20100118133512.GC721@localhost> <20100118142359.GA14472@laptop> <20100119013303.GA12513@localhost> <20100119112343.04f4eff5.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: SATA_SIL on IXP425 workaround
-References: <m33a4nfvva.fsf@intrepid.localdomain>	<201001141659.19687.bzolnier@gmail.com>	<20100114192210.62593ead@lxorguk.ukuu.org.uk>	<201001142129.38781.bzolnier@gmail.com> <20100114210050.2c99c2b1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100114210050.2c99c2b1@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100119112343.04f4eff5.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/14/2010 04:00 PM, Alan Cox wrote:
->> I think that you misinterpreted the issue -- according to Krzysztof MMIO
->> works just fine, only 8/16-bit MMIO reads are a problem (please note that
->> using mixed PIO/MMIO access is still a win over pure PIO access and also
->> that sata_sil doesn't support pure non-MMIO operations currently)..
->
-> Have we got timing measurements to prove that ?
->>
->> However if it gets fixed in the upstream kernel in some other way I'll
->> simply drop the patch during the next re-base of my tree (I just collect
->> ATA stuff that looks useful/interesting to me and which otherwise may
->> become lost)..
->
-> And that's a good thing. The question was aimed at Krzysztof. Really we
-> need to keep platform specific weirdness out of core drivers or the
-> rapidly turn into a mess.
+On Mon, Jan 18, 2010 at 07:23:43PM -0700, KAMEZAWA Hiroyuki wrote:
+> On Tue, 19 Jan 2010 09:33:03 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > The whole thing looks stupid though, apparently kmap is used to avoid "the
+> > > lock". But the lock is already held. We should just use the vmap
+> > > address.
+> > 
+> > Yes. I wonder why Kame introduced kmap_atomic() in d0107eb07 -- given
+> > that he at the same time fixed the order of removing vm_struct and
+> > vmap in dd32c279983b.
+> > 
+> Hmm...I must check my thinking again before answering..
+> 
+> vmalloc/vmap is constructed by 2 layer.
+> 	- vmalloc layer....guarded by vmlist_lock.
+> 	- vmap layer   ....gurderd by purge_lock. etc.
+> 
+> Now, let's see how vmalloc() works. It does job in 2 steps.
+> vmalloc():
+>   - allocate vmalloc area to the list under vmlist_lock.
+> 	- map pages.
+> vfree()
+>   - free vmalloc area from the list under vmlist_lock.
+> 	- unmap pages under purge_lock.
+> 
+> Now. vread(), vwrite() just take vmlist_lock, doesn't take purge_lock().
+> It walks page table and find pte entry, page, kmap and access it.
+> 
+> Oh, yes. It seems it's safe without kmap. But My concern is percpu allocator.
+> 
+> It uses get_vm_area() and controls mapped pages by themselves and
+> map/unmap pages by with their own logic. vmalloc.c is just used for
+> alloc/free virtual address. 
+> 
+> Now, vread()/vwrite() just holds vmlist_lock() and walk page table
+> without no guarantee that the found page is stably mapped. So, I used kmap.
+> 
+> If I miss something, I'm very sorry to add such kmap.
 
-The lack of 8-/16-byte MMIO access is unfortunately not limited to 
-Krzysztof's platform.  Other people have reported the same problem 
-specifically with sata_sil (see the archives).
+Ah Thanks for explanation!
 
-If the driver cannot be converted to all-32-bit accesses, we will need 
-to do something like Krzysztof's patch.
+I did some audit and find that
 
-	Jeff
+- set_memory_uc(), set_memory_array_uc(), set_pages_uc(),
+  set_pages_array_uc() are called EFI code and various video drivers,
+  all of them don't touch HIGHMEM RAM
 
+- Kame: ioremap() won't allow remap of physical RAM
 
+So kmap_atomic() is safe.  Let's just settle on this patch?
 
-
+Thanks,
+Fengguang
