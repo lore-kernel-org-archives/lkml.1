@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368Ab0AUQMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753137Ab0AUQP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368Ab0AUQMh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226Ab0AUQMe
+	id S1753137Ab0AUQP7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:15:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412Ab0AUQPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:12:34 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:55495 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753205Ab0AUQMd (ORCPT
+	Thu, 21 Jan 2010 11:15:55 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39889 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752066Ab0AUQPy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 11:12:33 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArEEAEEKWEuuWOiG/2dsb2JhbACBRtduhDwE
-Date: Thu, 21 Jan 2010 11:07:29 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v5)
-Message-ID: <20100121160729.GB12842@Krystal>
-References: <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal> <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal> <20100114183739.GA18435@Krystal> <1263495132.28171.3861.camel@gandalf.stny.rr.com> <20100114193355.GA23436@Krystal> <1263926259.4283.757.camel@laptop> <1263928006.4283.762.camel@laptop> <1264073212.4283.1158.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 21 Jan 2010 11:15:54 -0500
+Message-ID: <4B587D4D.2010300@s5r6.in-berlin.de>
+Date: Thu, 21 Jan 2010 17:14:05 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: Michael Breuer <mbreuer@majjas.com>, Jarek Poplawski <jarkao2@gmail.com>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+References: <20100118212516.GE3157@del.dom.local>	<4B54D50C.90608@majjas.com>	<20100118220814.GG3157@del.dom.local>	<20100118221747.GH3157@del.dom.local>	<4B54E4EF.8080602@majjas.com>	<4B554730.6090000@majjas.com>	<20100119104739.GA9088@ff.dom.local>	<4B55D40F.5080509@majjas.com>	<20100119195933.GA3060@del.dom.local>	<4B5610A9.7030902@majjas.com>	<20100119224508.GA3473@del.dom.local>	<4B5655D6.8090503@majjas.com> <20100119171013.207cac5c@nehalam>
+In-Reply-To: <20100119171013.207cac5c@nehalam>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1264073212.4283.1158.camel@laptop>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:54:59 up 36 days, 13 min,  4 users,  load average: 0.08, 0.30,
-	0.23
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Tue, 2010-01-19 at 20:06 +0100, Peter Zijlstra wrote:
-> > 
-> > We could possibly look at placing that assignment in context_switch()
-> > between switch_mm() and switch_to(), which should provide a mb before
-> > and after I think, Ingo?
+Stephen Hemminger wrote:
+> On Tue, 19 Jan 2010 20:01:10 -0500
+> Michael Breuer <mbreuer@majjas.com> wrote:
+>> On 1/19/2010 5:45 PM, Jarek Poplawski wrote:
+[...]
+>> > --- a/drivers/net/sky2.c
+>> > +++ b/drivers/net/sky2.c
+>> > @@ -2252,12 +2252,14 @@ static struct sk_buff *receive_copy(struct sky2_port *sky2,
+>> >   	skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
+>> >   	if (likely(skb)) {
+>> >   		pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
+>> > -					    length, PCI_DMA_FROMDEVICE);
+>> > +					    pci_unmap_len(re, data_size),
+>> > +					    PCI_DMA_FROMDEVICE);
+>> >   		skb_copy_from_linear_data(re->skb, skb->data, length);
+>> >   		skb->ip_summed = re->skb->ip_summed;
+>> >   		skb->csum = re->skb->csum;
+>> >   		pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
+>> > -					       length, PCI_DMA_FROMDEVICE);
+>> > +					       pci_unmap_len(re, data_size),
+>> > +					       PCI_DMA_FROMDEVICE);
+>> >   		re->skb->ip_summed = CHECKSUM_NONE;
+>> >   		skb_put(skb, length);
+>> >   	}
+>> >    
+>> That not only compiled, but it cleared the error as well. Additionally, 
+>> I used to see a bit of a delay receiving the login prompt when first 
+>> connecting to the box by ssh. That delay is gone with this patch. I'd 
+>> guess that the warning wasn't quite as innocuous as I thought.
+>> Note: tested on 2.6.32.4.  I'll leave this up for a bit before 
+>> attempting to move back to head.
 > 
-> Right, just found out why we cannot do that, the first thing
-> context_switch() does is prepare_context_switch() which includes
-> prepare_lock_switch() which on __ARCH_WANT_UNLOCKED_CTXSW machines drops
-> the rq->lock, and we have to have rq->curr assigned by then.
+> Seems like an underlying bug in the DMA api. Maybe it just can't
+> handle operations on partial mapping.
 > 
+> Other drivers with same problem:
+>   bnx2, cassini, pcnet32, r8169, rrunner, skge, sungem, tg3, 
 
-OK.
+I didn't read the start of this thread and may misunderstand the issue,
+but I comment anyway...:
 
-One efficient way to fit the requirement of sys_membarrier() would be to
-create spin_lock_mb()/spin_unlock_mb(), which would have full memory
-barriers rather than the acquire/release semantic. These could be used
-within schedule() execution. On UP, they would turn into preempt off/on
-and a compiler barrier, just like normal spin locks.
+Documentation/DMA-API.txt says the following about (pci_)dma_sync_single
+and friends:  "All the parameters must be the same as those passed into
+the single mapping API."
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/DMA-API.txt;h=5aceb88b3f8b622c8c23ed288f37f42de705c904;hb=HEAD#l367
 
-On architectures like x86, the atomic instructions already imply a full
-memory barrier, so we have a direct mapping and no overhead. On
-architecture where the spin lock only provides acquire semantic (e.g.
-powerpc using lwsync and isync), then we would have to create an
-alternate implementation with "sync".
-
-We can even create a generic fallback with the following kind of code in
-the meantime:
-
-static inline void spin_lock_mb(spinlock_t *lock)
-{
-	spin_lock(&lock);
-	smp_mb();
-}
-
-static inline void spin_unlock_mb(spinlock_t *lock)
-{
-	smp_mb();
-	spin_unlock(&lock);
-}
-
-How does that sound ?
-
-Mathieu
-
-
+So, it might be considered an API bug --- but it is a documented one. :-)
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Stefan Richter
+-=====-==-=- ---= =-=-=
+http://arcgraph.de/sr/
