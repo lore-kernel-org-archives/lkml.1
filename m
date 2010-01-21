@@ -1,50 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751582Ab0AUPgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589Ab0AUPic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751582Ab0AUPgv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 10:36:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187Ab0AUPgv
+	id S1752589Ab0AUPic (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 10:38:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981Ab0AUPib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 10:36:51 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43834 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753137Ab0AUPgu (ORCPT
+	Thu, 21 Jan 2010 10:38:31 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:50209 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750985Ab0AUPia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 10:36:50 -0500
-Subject: Re: [PATCH] sched: cpuacct: Use bigger percpu counter batch values
- for stats counters
-From: Peter Zijlstra <peterz@infradead.org>
-To: balbir@linux.vnet.ibm.com
-Cc: Anton Blanchard <anton@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, balajirrao@gmail.com,
-       dhaval@linux.vnet.ibm.com, tglx@linutronix.de,
-       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com
-In-Reply-To: <4B5871F3.5020800@linux.vnet.ibm.com>
-References: <20090512102412.GG6351@balbir.in.ibm.com>
-	 <20090512102939.GB11714@elte.hu>
-	 <20090512193656.D647.A69D9226@jp.fujitsu.com>
-	 <20090716081010.GB3134@in.ibm.com> <20090716083948.GA2950@kryten>
-	 <20090820051038.GF21100@kryten> <20100118044142.GS12666@kryten>
-	 <20100118104213.64231c1e@mschwide.boeblingen.de.ibm.com>
-	 <20100118095527.GV12666@kryten>  <4B5871F3.5020800@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 21 Jan 2010 16:36:19 +0100
-Message-ID: <1264088179.4283.1173.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 10:38:30 -0500
+Date: Thu, 21 Jan 2010 10:38:30 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Tomas M." <tmezzadra@gmail.com>
+cc: Corbin Simpson <mostawesomedude@gmail.com>,
+       James Simmons <jsimmons@infradead.org>,
+       <dri-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Font selection with i915
+In-Reply-To: <4B57BCDA.1070705@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.1001211037220.1360-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-21 at 20:55 +0530, Balbir Singh wrote:
+On Wed, 20 Jan 2010, Tomas M. wrote:
 
-> Could we please pick up the patch for -tip?
+> since 2.6.32 you can change the resolution with video=VGA-1:640x480 boot 
+> parameter and emulate the old behaviour.
 
-OK, will queue it up if Ingo doesn't beat me to it.
+That works even with Fedora-12, which uses a 2.6.31-based kernel.  
+Thanks.
+
+Alan Stern
 
