@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755051Ab0AUU2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147Ab0AUUcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755051Ab0AUU2G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 15:28:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821Ab0AUU2E
+	id S1755147Ab0AUUcd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 15:32:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966Ab0AUUcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 15:28:04 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:45988 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754747Ab0AUU2C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 15:28:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=jO9afXLAkFnjz++AEx87/C8EL9RoCiNmleIK1xYIe+daARvV+O/X3Z5/pfR1/rGWTS
-         +jtuUVRPLvntiF6f3n/YoxoqhMXtNPzkgipP6xTv53v3PQCHVUJg0fDNKoOq6ejTeDo0
-         hXcaGb4JX2UkTC7ql7rBOFtrGcM+9vBZO0Ovg=
+	Thu, 21 Jan 2010 15:32:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:63075 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754879Ab0AUUcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 15:32:31 -0500
+Date: Thu, 21 Jan 2010 21:32:07 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+	results on s390x)
+Message-ID: <20100121203207.GA20050@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100106205633.700CC134D@magilla.sf.frob.com> <20100107100050.31724463@mschwide.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Date: Thu, 21 Jan 2010 15:27:58 -0500
-Message-ID: <bcba51a1001211227y1cbe9020k5079367f05dd17a1@mail.gmail.com>
-Subject: Current status of UML development?
-From: Dimitry Golubovsky <golubovsky@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100107100050.31724463@mschwide.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 01/07, Martin Schwidefsky wrote:
+>
+> On Wed,  6 Jan 2010 12:56:33 -0800 (PST)
+> Roland McGrath <roland@redhat.com> wrote:
+>
+> > In other circumstances with utrace, it is very possible to wind up with
+> > user_disable_single_step being called superfluously when there was no
+> > stop (and so not necessarily any context switch or other high overhead).
+> > On other machines, user_disable_single_step is pretty cheap even where
+> > user_enable_single_step is quite costly.  Given how simple and cheap it
+> > is to short-circuit the excess work on s390, I think it is worthwhile.
+>
+> We could use the same compare of the control registers as the code in
+> __switch_to. See below.
 
-I am learning/experimenting with UML internals, and am curious what is
-the current status of its development? Has UML become stable enough so
-it does not need any improvement (at least for i386), or has its
-development just ceased in favor of other virtualization techniques?
+FYI, I tested your c3311c13adc1021e986fef12609ceb395ffc5014 commit which
+does this optimization (compared to the patch you sent previously), it
+works fine.
 
-Also I am trying to find recent papers covering modern UML's principles of
-functioning (especially the skas0 mode when /proc/mm is not
-available), but most of the papers that Google returns date back to
-2001 - 2003, and often state that "each UML process gets its own host
-process" that does not seem correct these days.
+But please see another email I am going to send...
 
-Thanks for any hints.
+Oleg.
 
--- 
-Dimitry Golubovsky
-
-Anywhere on the Web
