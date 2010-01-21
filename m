@@ -1,135 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932161Ab0AUTeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968Ab0AUTjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932161Ab0AUTeW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 14:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130Ab0AUTeU
+	id S1754968Ab0AUTjy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 14:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581Ab0AUTjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 14:34:20 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:32977 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932118Ab0AUTeT (ORCPT
+	Thu, 21 Jan 2010 14:39:53 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59875 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752380Ab0AUTjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 14:34:19 -0500
-X-Authority-Analysis: v=1.0 c=1 a=LvvgB44tUwgA:10 a=7U3hwN5JcxgA:10 a=OIjbozEIWfTmjb7YNkQA:9 a=kQ4WGFup1W9nbtoZGogA:7 a=gu0YGKBbomRPw-43JY4RNGwHwlwA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: Lots of bugs with current->state = TASK_*INTERRUPTIBLE
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Andy Whitcroft <apw@canonical.com>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       linux-mips <linux-mips@linux-mips.org>
-In-Reply-To: <4B58A89A.8050405@caviumnetworks.com>
-References: <1263932978.31321.53.camel@gandalf.stny.rr.com>
-	 <4B58A89A.8050405@caviumnetworks.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 21 Jan 2010 14:34:15 -0500
-Message-ID: <1264102455.31321.293.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 14:39:52 -0500
+Date: Thu, 21 Jan 2010 14:39:51 -0500
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
+       linux-usb@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: Strange EHCI/OHCI IRQ and other PCI errors on boot with 2.6.32
+	(which 2.6.26 did not see) on Geode LX/CS5536.
+Message-ID: <20100121193951.GS24305@caffeine.csclub.uwaterloo.ca>
+References: <20100120223855.GQ24305@caffeine.csclub.uwaterloo.ca> <Pine.LNX.4.44L0.1001202043540.3608-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1001202043540.3608-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-21 at 11:18 -0800, David Daney wrote:
-> Steven Rostedt wrote:
-> > Peter Zijlstra and I were doing a look over of places that assign
-> > current->state = TASK_*INTERRUPTIBLE, by simply looking at places with:
+On Wed, Jan 20, 2010 at 08:52:03PM -0500, Alan Stern wrote:
+> You could try changing the set of drivers loaded in memory.  For 
+> example, after booting with irqpoll you can unload ehci-hcd plus some 
+> other driver, and then load ehci-hcd again.  If the IRQ storm occurs 
+> then you'll know where to look.
+> 
+> > > Does 2.6.26 fail on the new machine?
 > > 
-> >  $ git grep -A1 'state[[:space:]]*=[[:space:]]*TASK_[^R]'
+> > Yes.
 > > 
-> > and it seems there are quite a few places that looks like bugs. To be on
-> > the safe side, everything outside of a run queue lock that sets the
-> > current state to something other than TASK_RUNNING (or dead) should be
-> > using set_current_state().
-> > 
-> > 	current->state = TASK_INTERRUPTIBLE;
-> > 	schedule();
-> > 
-> > is probably OK, but it would not hurt to be consistent. Here's a few
-> > examples of likely bugs:
-> > 
-> [...]
+> > As far as I can tell some machines don't see the problem.  I am still
+> > investigating that.
 > 
-> This may be a bit off topic, but exactly which type of barrier should 
-> set_current_state() be implying?
-> 
-> On MIPS, set_mb() (which is used by set_current_state()) has a full mb().
-> 
-> Some MIPS based processors have a much lighter weight wmb().  Could 
-> wmb() be used in place of mb() here?
+> Same kernel, initramfs, and everything else?
 
-Nope, wmb() is not enough. Below is an explanation.
+Same 2.6.26 kernel, there is no initramfs involved.  Some user space
+code has been updated on this one.
 
-> 
-> If not, an explanation of the required memory ordering semantics here 
-> would be appreciated.
-> 
-> I know the documentation says:
-> 
->      set_current_state() includes a barrier so that the write of
->      current->state is correctly serialised wrt the caller's subsequent
->      test of whether to actually sleep:
-> 
->   	set_current_state(TASK_UNINTERRUPTIBLE);
->   	if (do_i_need_to_sleep())
->   		schedule();
-> 
-> 
-> Since the current CPU sees the memory accesses in order, what can be 
-> happening on other CPUs that would require a full mb()?
+> What I meant was: Is your current 2.6.26 still built using the same 
+> .config as the old 2.6.26 which used to work okay?
 
-Lets look at a hypothetical situation with:
+I haven't actually rebuilt 2.6.26.  It is the same kernel image.
 
-	add_wait_queue();
-	current->state = TASK_UNINTERRUPTIBLE;
-	smp_wmb();
-	if (!x)
-		schedule();
+I wonder if some of the cpu modules have a flaw that's making the IRQ
+line go crazy.  I wasn't normally using it before except when a cellular
+usb modem was installed.
 
+I will try booting the same release of software on my box as the one
+that works and see if it still sees a problem...
 
+So it turns out every box behaves the same, but only if I change the
+order things are loaded in.  If I load the usb driver before programming
+the FPGA on the LPC bus, then I get the IRQ flood.  If I program the
+FPGA first, then no problem.  I don't understand why since the LPC bus
+has been told not to handle IRQ 5 at all, and the FPGA has the pin tri
+stated and it is pulled up as per LPC SERIRQ spec, yet somehow it is
+driving the system mad.  So the whole problem seems to be that by
+adding udev I made usb load earlier than it used to, and then when
+I tried building USB into the kernel instead, it loads even earlier,
+and in both cases it complains.  Previously I just loaded things manually
+in the order that made sense, but I really want to go to more modern
+ways of doing things.  I guess I will have to tell udev to ignore the
+usb controller and load that one manually after the FPGA.  At least
+things make some sense now.
 
-Then somewhere we probably have:
-
-	x = 1;
-	smp_wmb();
-	wake_up(queue);
-
-
-
-	   CPU 0			   CPU 1
-	------------			-----------
-	add_wait_queue();
-	(cpu pipeline sees a load
-	 of x ahead, and preloads it)
-					x = 1;
-					smp_wmb();
-					wake_up(queue);
-					(task on CPU 0 is still at
-					 TASK_RUNNING);
-
-	current->state = TASK_INTERRUPTIBLE;
-	smp_wmb(); <<-- does not prevent early loading of x
-	if (!x)  <<-- returns true
-		schedule();
-
-Now the task on CPU 0 missed the wake up.
-
-Note, places that call schedule() are not fast paths, and probably not
-called often. Adding the overhead of smp_mb() to ensure correctness is a
-small price to pay compared to search for why you have a stuck task that
-was never woken up.
-
-Read Documentation/memory-barriers.txt, it will be worth the time you
-spend doing so.
-
--- Steve
-
-
+-- 
+Len Sorensen
