@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752290Ab0AUJFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689Ab0AUJGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752290Ab0AUJFk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 04:05:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566Ab0AUJFV
+	id S1752689Ab0AUJGf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 04:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037Ab0AUJGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 04:05:21 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60052 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752919Ab0AUJFL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 04:05:11 -0500
-Date: Thu, 21 Jan 2010 04:05:10 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: zhou peng <ailvpeng25@gmail.com>, linux-security-module@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: About ACL for IPC Object
-Message-ID: <20100121090510.GA908@infradead.org>
-References: <6fb445941001200112o2934f805l4eb4f78000e9527e@mail.gmail.com> <6fb445941001200120m3aa5e944j54a6f645ce82d76f@mail.gmail.com> <4B57C3C3.9010606@schaufler-ca.com>
+	Thu, 21 Jan 2010 04:06:32 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:56478 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751398Ab0AUJGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 04:06:30 -0500
+Date: Thu, 21 Jan 2010 10:02:36 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Mike Chan <mike@android.com>
+Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Miller@fmi.uni-stuttgart.de, tj@kernel.org,
+       venkatesh.pallipadi@intel.com, trenn@suse.de, davej@redhat.com
+Subject: Re: [PATCH 2/2] cpufreq: ondemand: Replace ignore_nice_load with
+ nice_max_freq
+Message-ID: <20100121090236.GA23891@dominikbrodowski.net>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Mike Chan <mike@android.com>, cpufreq@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Miller@fmi.uni-stuttgart.de,
+	tj@kernel.org, venkatesh.pallipadi@intel.com, trenn@suse.de,
+	davej@redhat.com
+References: <1264043737-2505-1-git-send-email-mike@android.com>
+ <1264043737-2505-2-git-send-email-mike@android.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B57C3C3.9010606@schaufler-ca.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1264043737-2505-2-git-send-email-mike@android.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 07:02:27PM -0800, Casey Schaufler wrote:
-> zhou peng wrote:
-> > Hi all,
-> >
-> > There are ACL in file system, but why there are no ACL implementation
-> > in IPC object, eg. shm, message queue, FIFO?
-> >   
-> 
-> Most people haven't noticed that IPC objects are even there, much less
-> that they have mode bits and not ACLs. Even when we were doing security
-> evaluations on Unix boxes in the 1990's they were considered insufficiently
-> interesting to justify the additional work to do ACLs.
-> 
-> If you really want ACLs on IPC objects it would make a dandy little
-> project for a summer. I would be happy to review patches.
+Hey,
 
-Or use the posix IPC mechanisms.  The Posix shared memory has ACL by
-using tmpfs as the backing store, and we could add similar support to
-Posix messages queues as they are also backed by a normal filesystem.
+On Wed, Jan 20, 2010 at 07:15:37PM -0800, Mike Chan wrote:
+> **Note: ingore_nice_load has been removed since the same functionality
+> can be achieved by setting nice_max_freq to scaling_min_freq.
 
-Adding this support to the old SYSV IPC mechanisms would be much harder
-as they do not fit into the file backed model we use everywhere else at
-all.
+Couldn't we keep "ignore_nice_load" as deprecated sysfs file (with a printk
+warning) for one or two releases, as this breaks some userspace scripts?
 
+Best,
+	Dominik
