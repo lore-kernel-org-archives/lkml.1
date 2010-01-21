@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277Ab0AUNXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933Ab0AUNeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753277Ab0AUNXZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 08:23:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866Ab0AUNXX
+	id S1753933Ab0AUNeR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 08:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030Ab0AUNeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 08:23:23 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:34569 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752860Ab0AUNXU convert rfc822-to-8bit (ORCPT
+	Thu, 21 Jan 2010 08:34:16 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49207 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753711Ab0AUNeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 08:23:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=GT7s2Kmq9yuWalq2WHFhULtmYya9tpRN1IX7t4jp+KXO7A4UNSjcYDxOW3qn3KNmG9
-         sJvuQtsI4YnqtvZh//c24ef+KY/blutl3VEWPDGEPPIjOSr/bmeXLLrKhx9sdcVHH/FT
-         7rasViMmF0/7fJmWTW6Sls0sQIgLUE5pDJgdc=
+	Thu, 21 Jan 2010 08:34:15 -0500
+Date: Thu, 21 Jan 2010 14:34:07 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Roel Kluin <roel.kluin@gmail.com>,
+       Alan Cox <alan@linux.intel.com>, Fabian Godehardt <fg@emlix.com>,
+       Daniel =?iso-8859-15?Q?Gl=F6ckner?= <dg@emlix.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 6/8] serial: imx: bit &/| confusion
+Message-ID: <20100121133407.GO7200@pengutronix.de>
+References: <20100120234759.GC32068@kroah.com> <1264031403-32239-6-git-send-email-gregkh@suse.de>
 MIME-Version: 1.0
-In-Reply-To: <20100121122839.GB26015@nokia.com>
-References: <48239d391001210326y25986d59hd10d390ef9c8ddea@mail.gmail.com>
-	 <20100121122839.GB26015@nokia.com>
-Date: Thu, 21 Jan 2010 16:23:17 +0300
-Message-ID: <48239d391001210523l5762775dm8382ad82e7b10e4a@mail.gmail.com>
-Subject: Re: MUSB crash on OMAP3 board with second load of gadget
-From: Sergey Lapin <slapinid@gmail.com>
-To: felipe.balbi@nokia.com
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1264031403-32239-6-git-send-email-gregkh@suse.de>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 14:33:29 up 101 days,  2:22, 65 users,  load average: 6.43, 6.74,
+	4.51
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 3:28 PM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
-> On Thu, Jan 21, 2010 at 12:26:49PM +0100, ext Sergey Lapin wrote:
->>
->> Hi! I have crashes in MUSB code when working with USB gadget drivers.
->> Kernel version: linux-omap master d8ebff302ff819587377b123e900e501e4135d86
->> To reproduce: (USB device cable should be attached).
->>
->> dd if=/dev/zero of=/tmp/disk bs=1k count=1024
->> mkdosfs -F 32 /tmp/disk
->> insmod g_mass_storage  file=/tmp/disk stall=0
->>
->> Wait till disk is mounted on host, then
->>
->> rmmod g_mass_storage
->> insmod g_mass_storage  file=/tmp/disk stall=0
->>
->> And here we get Oops in include/linux/list.h line 93,
->
-> I guess it's the list corruption bug, right ?
->
-> I've seen that, but couldn't get it to reproduce. Now that you said, I'll
-> try to find a fix for it.
-It seems so,  thanks a lot!
+On Wed, Jan 20, 2010 at 03:50:01PM -0800, Greg Kroah-Hartman wrote:
+> From: Roel Kluin <roel.kluin@gmail.com>
+> 
+> Since UCR1_UARTEN is defined 1, the port was always treated as enabled.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> Cc: Alan Cox <alan@linux.intel.com>
+> Acked-by: Oskar Schirmer <os@emlix.com>
+> Cc: Sascha Hauer <s.hauer@pengutronix.de>
+> Cc: Fabian Godehardt <fg@emlix.com>
+> Cc: Daniel Glöckner <dg@emlix.com>
+> Cc: Russell King <rmk@arm.linux.org.uk>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-S.
+Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
+
+> ---
+>  drivers/serial/imx.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/serial/imx.c b/drivers/serial/imx.c
+> index 18130f1..60d665a 100644
+> --- a/drivers/serial/imx.c
+> +++ b/drivers/serial/imx.c
+> @@ -1088,7 +1088,7 @@ imx_console_get_options(struct imx_port *sport, int *baud,
+>  			   int *parity, int *bits)
+>  {
+>  
+> -	if ( readl(sport->port.membase + UCR1) | UCR1_UARTEN ) {
+> +	if (readl(sport->port.membase + UCR1) & UCR1_UARTEN) {
+>  		/* ok, the port was enabled */
+>  		unsigned int ucr2, ubir,ubmr, uartclk;
+>  		unsigned int baud_raw;
+> -- 
+> 1.6.5.7
+> 
+> 
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
