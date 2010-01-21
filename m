@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528Ab0AUXwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518Ab0AUX5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528Ab0AUXwS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 18:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487Ab0AUXwR
+	id S1755518Ab0AUX5m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 18:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359Ab0AUX5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 18:52:17 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47179 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755496Ab0AUXwQ (ORCPT
+	Thu, 21 Jan 2010 18:57:42 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35046 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755102Ab0AUX5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 18:52:16 -0500
+	Thu, 21 Jan 2010 18:57:41 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 22 Jan 2010 08:48:56 +0900
+Date: Fri, 22 Jan 2010 08:54:20 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
+To: balbir@linux.vnet.ibm.com
 Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       rientjes@google.com,
+       rientjes@google.com, minchan.kim@gmail.com,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] oom-kill: add lowmem usage aware oom kill handling
-Message-Id: <20100122084856.600b2dd5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1264087124.1818.15.camel@barrios-desktop>
+Message-Id: <20100122085420.38d8adea.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4B5872EC.5040603@linux.vnet.ibm.com>
 References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
-	<1264087124.1818.15.camel@barrios-desktop>
+	<4B5872EC.5040603@linux.vnet.ibm.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -32,12 +32,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jan 2010 00:18:44 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
+On Thu, 21 Jan 2010 20:59:48 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> Hi, Kame. 
-> 
-> On Thu, 2010-01-21 at 14:59 +0900, KAMEZAWA Hiroyuki wrote:
+> On Thursday 21 January 2010 11:29 AM, KAMEZAWA Hiroyuki wrote:
 > > A patch for avoiding oom-serial-killer at lowmem shortage.
 > > Patch is onto mmotm-2010/01/15 (depends on mm-count-lowmem-rss.patch)
 > > Tested on x86-64/SMP + debug module(to allocated lowmem), works well.
@@ -54,44 +52,19 @@ Minchan Kim <minchan.kim@gmail.com> wrote:
 > > 
 > > Now, we have per-mm lowmem usage counter. We can make use of it
 > > to select a good? victim.
-> > 
-> > This patch does
-> >   - add CONSTRAINT_LOWMEM to oom's constraint type.
-> >   - pass constraint to __badness()
-> >   - change calculation based on constraint. If CONSTRAINT_LOWMEM,
-> >     use low_rss instead of vmsize.
 > 
-> As far as low memory, it would be better to consider lowmem counter.
-> But as you know, {vmsize VS rss} is debatable topic.
-> Maybe someone doesn't like this idea. 
+> Have you seen any use cases that need this change? Or is it mostly via
+> code review and to utilize the availability of lowmem rss? Do we often
+> run into lowmem shortage triggering OOM?
 > 
-About lowmem, vmsize never work well.
+  - I saw lowmem OOM killer very frequently on x86-32 box in my cusotmers.
+  - I saw lowmem OOM killer somemtimes on ia64 box in my customers.
 
-> So don't we need any test result at least?
-My test result was very artificial, so I didn't attach the result.
+I know this helps oom handling in x86-32+Highmem environments.
 
- - Before this patch, sshd was killed at first.
- - After this patch, memory consumer of low-rss was killed.
-
-> If we don't have this patch, it happens several innocent process
-> killing. but we can't prevent it by this patch. 
-> 
-I can't catch what you mean.
-
-> Sorry for bothering you.
-> 
-
-Hmm, boot option or CONFIG ? (CONFIG_OOMKILLER_EXTENSION ?)
-
-I'm now writing fork-bomb detector again and want to remove current
-"gathering child's vm_size" heuristics. I'd like to put that under
-the same config, too.
+For my _new_ customers, almost all devices are connected to 64bit PCI bus.
+So, this is not for my customers ;) But OOM-Killer should handle this case.
 
 Thanks,
 -Kame
-
-
-
-
-
 
