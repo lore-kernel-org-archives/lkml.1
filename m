@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596Ab0AUFH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751781Ab0AUFRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751596Ab0AUFH7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 00:07:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332Ab0AUFH7
+	id S1751781Ab0AUFRd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 00:17:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556Ab0AUFRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 00:07:59 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:40512 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751273Ab0AUFH6 (ORCPT
+	Thu, 21 Jan 2010 00:17:32 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:52785 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544Ab0AUFRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 00:07:58 -0500
+	Thu, 21 Jan 2010 00:17:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=ji2C3NspvrhELzPqWEWtOiX/8t+3cvxx3xFuelvQb/FZ9EdjpuBVyaLhsbuEu1fXY4
-         k952sqX+J3IrEj8+gA67zRHF/mGEhLyCOy49J5D5VvKH04SNrP7LL+v9+yPZTtXRiBjy
-         ubFfoEh/QhbfGwjR1+yZIpJaSOEz5eXlgo8bg=
+        h=from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=ac16gVEa1SoYhI78W1t/QDLq3cnjO83J4lQDKmFZGLqQe1uv8dFQcRxwuawvTyU/x+
+         HcdXWlYJcmIbcbxs7KWthNp41JhiYF5lHd4YDlEe8p8ssuOgA7UC9nM7RcSfENyUDRit
+         UTH397/q8UmvoSxvvrwr14BY4CSiJ7+V3cHnE=
+From: Don Mullis <don.mullis@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: airlied@redhat.com, andi@firstfloor.org, david@fromorbit.com,
+       dedekind@infradead.org
+Subject: [PATCH 2/2] lib: revise list_sort() comment 
+References: <87fx609i29.fsf@gmail.com>
+Date: Wed, 20 Jan 2010 21:17:27 -0800
+In-Reply-To: <87fx609i29.fsf@gmail.com> (Don Mullis's message of "Wed, 20 Jan
+	2010 20:51:26 -0800")
+Message-ID: <877hrc9guw.fsf@gmail.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Date: Thu, 21 Jan 2010 13:07:57 +0800
-Message-ID: <979dd0561001202107v4ddc1eb7xa59a7c16c452f7a2@mail.gmail.com>
-Subject: [PATCH] Flush dcache before writing into page to avoid alias
-From: anfei zhou <anfei.zhou@gmail.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux@arm.linux.org.uk, Jamie Lokier <jamie@shareable.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The cache alias problem will happen if the changes of user shared mapping
-is not flushed before copying, then user and kernel mapping may be mapped
-into two different cache line, it is impossible to guarantee the coherence
-after iov_iter_copy_from_user_atomic.  So the right steps should be:
-	flush_dcache_page(page);
-	kmap_atomic(page);
-	write to page;
-	kunmap_atomic(page);
-	flush_dcache_page(page);
-More precisely, we might create two new APIs flush_dcache_user_page and
-flush_dcache_kern_page to replace the two flush_dcache_page accordingly.
+Clarify and correct header comment of list_sort().
 
-Here is a snippet tested on omap2430 with VIPT cache, and I think it is
-not ARM-specific:
-	int val = 0x11111111;
-	fd = open("abc", O_RDWR);
-	addr = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-	*(addr+0) = 0x44444444;
-	tmp = *(addr+0);
-	*(addr+1) = 0x77777777;
-	write(fd, &val, sizeof(int));
-	close(fd);
-The results are not always 0x11111111 0x77777777 at the beginning as expected.
-
-Signed-off-by: Anfei <anfei.zhou@gmail.com>
+Signed-off-by: Don Mullis <don.mullis@gmail.com>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: Artem Bityutskiy <dedekind@infradead.org>
 ---
- fs/fuse/file.c |    3 +++
- mm/filemap.c   |    3 +++
- 2 files changed, 6 insertions(+), 0 deletions(-)
+ lib/list_sort.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/fs/fuse/file.c b/fs/fuse/file.c
-index c18913a..a9f5e13 100644
---- a/fs/fuse/file.c
-+++ b/fs/fuse/file.c
-@@ -828,6 +828,9 @@ static ssize_t fuse_fill_write_pages(struct fuse_req *req,
- 		if (!page)
- 			break;
-
-+		if (mapping_writably_mapped(mapping))
-+			flush_dcache_page(page);
-+
- 		pagefault_disable();
- 		tmp = iov_iter_copy_from_user_atomic(page, ii, offset, bytes);
- 		pagefault_enable();
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 96ac6b0..07056fb 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -2196,6 +2196,9 @@ again:
- 		if (unlikely(status))
- 			break;
-
-+		if (mapping_writably_mapped(mapping))
-+			flush_dcache_page(page);
-+
- 		pagefault_disable();
- 		copied = iov_iter_copy_from_user_atomic(page, i, offset, bytes);
- 		pagefault_enable();
--- 
-1.6.3.1
+Index: linux-2.6/lib/list_sort.c
+===================================================================
+--- linux-2.6.orig/lib/list_sort.c	2010-01-19 22:26:03.000000000 -0800
++++ linux-2.6/lib/list_sort.c	2010-01-19 22:28:19.000000000 -0800
+@@ -38,17 +38,19 @@ static void restore_back_links(struct li
+ }
+ 
+ /**
+- * list_sort - sort a list.
+- * @priv: private data, passed to @cmp
++ * list_sort - sort a list
++ * @priv: private data, opaque to list_sort(), passed to @cmp
+  * @head: the list to sort
+  * @cmp: the elements comparison function
+  *
+- * This function implements "merge sort" which has O(nlog(n)) complexity.
+- * The list is sorted in ascending order.
++ * This function implements "merge sort", which has O(nlog(n))
++ * complexity.
+  *
+- * The comparison function @cmp is supposed to return a negative value if @a is
+- * less than @b, and a positive value if @a is greater than @b. If @a and @b
+- * are equivalent, then it does not matter what this function returns.
++ * The comparison function @cmp must return a negative value if @a
++ * should sort before @b, and a positive value if @a should sort after
++ * @b. If @a and @b are equivalent, and their original relative
++ * ordering is to be preserved, @cmp should return 0; otherwise, the
++ * return value does not matter.
+  */
+ void list_sort(void *priv, struct list_head *head,
+ 		int (*cmp)(void *priv, struct list_head *a,
