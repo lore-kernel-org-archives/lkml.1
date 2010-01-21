@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570Ab0AURON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581Ab0AUROr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570Ab0AURON (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 12:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948Ab0AUROL
+	id S1754581Ab0AUROr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 12:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948Ab0AUROr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 12:14:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53637 "EHLO mx1.redhat.com"
+	Thu, 21 Jan 2010 12:14:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46560 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752726Ab0AUROJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 12:14:09 -0500
-Message-ID: <4B588B5D.8050802@redhat.com>
-Date: Thu, 21 Jan 2010 19:14:05 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, mtosatti@redhat.com,
-       kvm@vger.kernel.org,
+	id S1751673Ab0AUROq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 12:14:46 -0500
+Date: Thu, 21 Jan 2010 18:14:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCHv2 1/3] eventfd: allow atomic read and waitqueue remove
-References: <20100121162648.GA16458@redhat.com> <alpine.DEB.2.00.1001210857310.8548@makko.or.mcafeemobile.com> <4B588B29.2050100@redhat.com>
-In-Reply-To: <4B588B29.2050100@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: x86: clean up rwsem type system
+Message-ID: <20100121171437.GA16994@elte.hu>
+References: <alpine.LFD.2.00.1001121613560.17145@localhost.localdomain>
+ <4B4D1865.5000107@zytor.com>
+ <alpine.LFD.2.00.1001121659220.17145@localhost.localdomain>
+ <alpine.LFD.2.00.1001121708100.17145@localhost.localdomain>
+ <alpine.LFD.2.00.1001121755220.17145@localhost.localdomain>
+ <alpine.LFD.2.00.1001121810410.17145@localhost.localdomain>
+ <4B4EC1A5.4010701@zytor.com>
+ <20100117060517.GA26525@elte.hu>
+ <alpine.LFD.2.00.1001171023440.13231@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1001171023440.13231@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21/2010 07:13 PM, Avi Kivity wrote:
->
-> But I think we can solve this in another way in .32: we can clear the 
-> eventfd from irqfd->inject work, which is in process context.  The new 
-> stuff is only needed for lockless clearing, no?
->
 
-I meant atomic clearing, when we inject interrupts from the irqfd atomic 
-context.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+> On Sun, 17 Jan 2010, Ingo Molnar wrote:
+> > 
+> > FYI, -tip testing found that these changes break the UML build:
+> > 
+> > kernel/built-in.o: In function `__up_read':
+> > /home/mingo/tip/arch/x86/include/asm/rwsem.h:192: undefined reference to `call_rwsem_wake'
+> > kernel/built-in.o: In function `__up_write':
+> > /home/mingo/tip/arch/x86/include/asm/rwsem.h:210: undefined reference to `call_rwsem_wake'
+> > kernel/built-in.o: In function `__downgrade_write':
+> > /home/mingo/tip/arch/x86/include/asm/rwsem.h:228: undefined reference to `call_rwsem_downgrade_wake'
+> > kernel/built-in.o: In function `__down_read':
+> > /home/mingo/tip/arch/x86/include/asm/rwsem.h:112: undefined reference to `call_rwsem_down_read_failed'
+> > kernel/built-in.o: In function `__down_write_nested':
+> > /home/mingo/tip/arch/x86/include/asm/rwsem.h:154: undefined reference to `call_rwsem_down_write_failed'
+> > collect2: ld returned 1 exit status
+> 
+> I think something like this should fix it.
 
+That did the trick - thanks!
+
+	Ingo
