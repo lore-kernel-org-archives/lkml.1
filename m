@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754Ab0AUGO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894Ab0AUGPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754Ab0AUGO7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 01:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663Ab0AUGOz
+	id S1752894Ab0AUGPq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 01:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747Ab0AUGO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 01:14:55 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38540 "EHLO
+	Thu, 21 Jan 2010 01:14:59 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38539 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164Ab0AUGOx (ORCPT
+	with ESMTP id S1752073Ab0AUGOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 21 Jan 2010 01:14:53 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 20 Jan 2010 22:14:08 -0800
+Date: Wed, 20 Jan 2010 22:14:07 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 1/9] pci: add pci_bridge_release_unused_res and
- pci_bus_release_unused_bridge_res
-In-reply-to: <1264054456-12694-1-git-send-email-yinghai@kernel.org>
+Subject: [PATCH 0/9] pci: update pci bridge resources
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
@@ -25,127 +23,87 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264054456-12694-2-git-send-email-yinghai@kernel.org>
+Message-id: <1264054456-12694-1-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
-References: <1264054456-12694-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so later we could use it to release small resource before pci assign unassign res
+this patchset is trying to update pci bridge BAR when that BAR is big enough.
 
--v2: change name to release_child_resources according to Jesse
--v3: according to Linus, move release_child_resources to resource.c
-     also need to put the lock around them all to avoid recursive deep.
-     (my test case only have one level that need to be released)
--v4: seperate release_child_resources to another patch
-     according to Bjorn, change hard code 3 to PCI_BRIDGE_RESOURCE_END
--v5: remove unused in the name, and also use enum for release type according
-     to Jesse
--v6: use pci_is_root_bus instead acording to Alex.
--v7: remove the switch case in pci_bus_release_resources accord to Alex
+1. boot time:
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
----
- drivers/pci/setup-bus.c |   85 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 85 insertions(+), 0 deletions(-)
+BIOS separate IO range between several IOHs, and on some slots, BIOS assign
+the resource to the bridge, but stop assigning resource to the device under
+that bridge, because the device need big resource.
 
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 52fbd42..5b42255 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -604,6 +604,91 @@ void __ref pci_bus_assign_resources(const struct pci_bus *bus)
- }
- EXPORT_SYMBOL(pci_bus_assign_resources);
- 
-+static void pci_bridge_release_resources(struct pci_bus *bus,
-+					  unsigned long type)
-+{
-+	int idx;
-+	bool changed = false;
-+	struct pci_dev *dev;
-+	struct resource *r;
-+	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
-+				  IORESOURCE_PREFETCH;
-+
-+	dev = bus->self;
-+	for (idx = PCI_BRIDGE_RESOURCES; idx <= PCI_BRIDGE_RESOURCE_END;
-+	     idx++) {
-+		r = &dev->resource[idx];
-+		if ((r->flags & type_mask) != type)
-+			continue;
-+		if (!r->parent)
-+			continue;
-+		/*
-+		 * if there are children under that, we should release them
-+		 *  all
-+		 */
-+		release_child_resources(r);
-+		if (!release_resource(r)) {
-+			dev_printk(KERN_DEBUG, &dev->dev,
-+				 "resource %d %pR released\n", idx, r);
-+			/* keep the old size */
-+			r->end = resource_size(r) - 1;
-+			r->start = 0;
-+			r->flags = 0;
-+			changed = true;
-+		}
-+	}
-+
-+	if (changed) {
-+		if (type & IORESOURCE_PREFETCH) {
-+			/* avoiding touch the one without PREF */
-+			type = IORESOURCE_PREFETCH;
-+		}
-+		__pci_setup_bridge(bus, type);
-+	}
-+}
-+
-+enum release_type {
-+	leaf_only,
-+	whole_subtree,
-+};
-+/*
-+ * try to release pci bridge resources that is from leaf bridge,
-+ * so we can allocate big new one later
-+ */
-+static void __ref pci_bus_release_bridge_resources(struct pci_bus *bus,
-+						   unsigned long type,
-+						   enum release_type rel_type)
-+{
-+	struct pci_dev *dev;
-+	bool is_leaf_bridge = true;
-+
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		struct pci_bus *b = dev->subordinate;
-+		if (!b)
-+			continue;
-+
-+		is_leaf_bridge = false;
-+
-+		if ((dev->class >> 8) != PCI_CLASS_BRIDGE_PCI)
-+			continue;
-+
-+		if (rel_type == whole_subtree)
-+			pci_bus_release_bridge_resources(b, type,
-+						 whole_subtree);
-+	}
-+
-+	/* The root bus? */
-+	if (pci_is_root_bus(bus))
-+		return;
-+
-+	if ((bus->self->class >> 8) != PCI_CLASS_BRIDGE_PCI)
-+		return;
-+
-+	if (((rel_type == leaf_only) && is_leaf_bridge) ||
-+		    (rel_type == whole_subtree))
-+		pci_bridge_release_resources(bus, type);
-+}
-+
- static void pci_bus_dump_res(struct pci_bus *bus)
- {
-         int i;
--- 
-1.6.4.2
+so patches (first 5) are trying to
+a. pci assign unassign and record the failed device resource.
+b. clear the BIOS assigned resource of the parent bridge of fail device
+c. go back and call pci assign unsigned
+d. if it still fail, will go up more bridges. and clear and try again.
+
+v2: Jesse doesn't like it is in find_free_bus_resource...
+    try to move out of pci_bus_size_bridges loop.
+v3: add pci_setup_bridge calling after pci_bridge_release_not_used_res.
+    only clear release those res for x86.
+v4: Bjorn want to release use dev instead of bus.
+v5: Kenji pointed out it will have problem with several level bridge.
+    so let only handle leaf bridge.
+v6: address Kenji's request (new pci_bus_release...). and change applying order
+    move back release to pci_assign_unassigned_resource
+v7: change functions name pci_bus_release_unused_bridge_res according to Jesse
+v8: address Eric's concern, only overwrite leaf bridge resource that is not big
+    enough need to do it in two steps, and first step recore the failed res,
+    and don't touch bridge res that programmed by firmware. second step will
+    try to release bridge resource that is too small at first.
+v9: refresh to be applied after bjorn's patch, and remove trick about save
+    size and restore resource second try.
+v11:add pci=try=5, about more try to change more bridge
+v12:not shrink pci bridge resource
+
+2. hotplug:
+BIOS separate IO range between several IOHs, and on some slots, BIOS assign
+the resource to every bridge. (8M) but when insert one card that big resource,
+the card can not get resource. because kernel will not touch the bridge
+resource.
+
+so patches (6-9) are trying to
+a. assign resource to devices with that slot. and record fail devices
+b. if there is some failed, will clear sepcifically io port of bridge, or mmio of bridge, or mmio pref of bridge.
+c. try to assign the parent bridge of the slot.
+
+v2: address Alex's concern about pci remove/rescan feature about
+    pci_setup_bridge changes.
+v3: Kenji pointed out that pci_config_slot need to be called before
+    pci_bus_add_devices()
+v4: move out pci_is_enabled checkout of pci_setup_bridge()
+v5: change the applying sequence.
+v6: change the functions name according to Jesse
+v8: address Eric's concern, only overwrite leaf bridge resource that is not
+     big enough
+v9: refresh to be applied after bjorn's patch, and remove trick about save
+    size and restore resource second try.
+v10:alex found need to have export for pci_assign_unassigned_bridge_resources
+v11: pass check_leaf with pci_bus_release_unused_bridge_res
+
+-v13: change resource_list to resource_list_x, to save size and flags aside,
+      otherwise grandchild res will get confused with son's res as could be used
+
+-v14: default it is disabled.  could use pci=try=2 to enable it.
+-v15: seperate release_child_resources aside.
+
+-v16: refresh according to new pci/linux-next of 2009_01_15
+      change some name according to Jesse
+
+-v17: address Alex's comments
+-v18: address Alex's request again.
+      drop two patches about pciehp_realloc
+
+Thanks
+
+Yinghai
+
+
+
 
