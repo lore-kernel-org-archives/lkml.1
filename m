@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199Ab0AUEXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311Ab0AUEXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199Ab0AUEXB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:23:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090Ab0AUEWo
+	id S1754311Ab0AUEXP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088Ab0AUEW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:22:44 -0500
-Received: from kroah.org ([198.145.64.141]:60050 "EHLO coco.kroah.org"
+	Wed, 20 Jan 2010 23:22:57 -0500
+Received: from kroah.org ([198.145.64.141]:60062 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753318Ab0AUEWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:22:42 -0500
+	id S1753789Ab0AUEWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 23:22:44 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:32 2010
-Message-Id: <20100121041832.593597059@mini.kroah.org>
+Message-Id: <20100121041832.851257947@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 20 Jan 2010 20:15:22 -0800
+Date: Wed, 20 Jan 2010 20:15:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Paris <eparis@redhat.com>
-Subject: [01/30] inotify: do not reuse watch descriptors
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       InKi Dae <inki.dae@samsung.com>, Kyungmin Park <kmpark@infradead.org>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Marek Szyprowski <m.szyprowski@samsung.com>,
+       Ben Dooks <ben-linux@fluff.org>
+Subject: [03/30] revert "drivers/video/s3c-fb.c: fix clock setting for Samsung SoC Framebuffer"
 In-Reply-To: <20100121041852.GA9656@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,84 +32,83 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric Paris <eparis@redhat.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-commit 9e572cc9877ee6c43af60778f6b8d5ba0692d935 upstream.
+commit eb29a5cc0b601c458bae9df2f6c3696d75c2d383 upstream.
 
-Since commit 7e790dd5fc937bc8d2400c30a05e32a9e9eef276 ("inotify: fix
-error paths in inotify_update_watch") inotify changed the manor in which
-it gave watch descriptors back to userspace.  Previous to this commit
-inotify acted like the following:
+Fix divide by zero and broken output.  Commit 600ce1a0fa ("fix clock
+setting for Samsung SoC Framebuffer") introduced a mandatory refresh
+parameter to the platform data for the S3C framebuffer but did not
+introduce any validation code, causing existing platforms (none of which
+have refresh set) to divide by zero whenever the framebuffer is
+configured, generating warnings and unusable output.
 
-  inotify_add_watch(X, Y, Z) = 1
-  inotify_rm_watch(X, 1);
-  inotify_add_watch(X, Y, Z) = 2
+Ben Dooks noted several problems with the patch:
 
-but after this patch inotify would return watch descriptors like so:
+ - The platform data supplies the pixclk directly and should already
+   have taken care of the refresh rate.
+ - The addition of a window ID parameter doesn't help since only the
+   root framebuffer can control the pixclk.
+ - pixclk is specified in picoseconds (rather than Hz) as the patch
+   assumed.
 
-  inotify_add_watch(X, Y, Z) = 1
-  inotify_rm_watch(X, 1);
-  inotify_add_watch(X, Y, Z) = 1
+and suggests reverting the commit so do that.  Without fixing this no
+mainline user of the driver will produce output.
 
-which I saw as equivalent to opening an fd where
-
-  open(file) = 1;
-  close(1);
-  open(file) = 1;
-
-seemed perfectly reasonable.  The issue is that quite a bit of userspace
-apparently relies on the behavior in which watch descriptors will not be
-quickly reused.  KDE relies on it, I know some selinux packages rely on
-it, and I have heard complaints from other random sources such as debian
-bug 558981.
-
-Although the man page implies what we do is ok, we broke userspace so
-this patch almost reverts us to the old behavior.  It is still slightly
-racey and I have patches that would fix that, but they are rather large
-and this will fix it for all real world cases.  The race is as follows:
-
- - task1 creates a watch and blocks in idr_new_watch() before it updates
-   the hint.
- - task2 creates a watch and updates the hint.
- - task1 updates the hint with it's older wd
- - task removes the watch created by task2
- - task adds a new watch and will reuse the wd originally given to task2
-
-it requires moving some locking around the hint (last_wd) but this should
-solve it for the real world and be -stable safe.
-
-As a side effect this patch papers over a bug in the lib/idr code which
-is causing a large number WARN's to pop on people's system and many
-reports in kerneloops.org.  I'm working on the root cause of that idr
-bug seperately but this should make inotify immune to that issue.
-
-Signed-off-by: Eric Paris <eparis@redhat.com>
+[akpm@linux-foundation.org: don't revert the correct bit]
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: InKi Dae <inki.dae@samsung.com>
+Cc: Kyungmin Park <kmpark@infradead.org>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Ben Dooks <ben-linux@fluff.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/notify/inotify/inotify_user.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/s3c-fb.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
---- a/fs/notify/inotify/inotify_user.c
-+++ b/fs/notify/inotify/inotify_user.c
-@@ -558,7 +558,7 @@ retry:
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -211,21 +211,23 @@ static int s3c_fb_check_var(struct fb_va
  
- 	spin_lock(&group->inotify_data.idr_lock);
- 	ret = idr_get_new_above(&group->inotify_data.idr, &tmp_ientry->fsn_entry,
--				group->inotify_data.last_wd,
-+				group->inotify_data.last_wd+1,
- 				&tmp_ientry->wd);
- 	spin_unlock(&group->inotify_data.idr_lock);
- 	if (ret) {
-@@ -638,7 +638,7 @@ static struct fsnotify_group *inotify_ne
+ /**
+  * s3c_fb_calc_pixclk() - calculate the divider to create the pixel clock.
+- * @id: window id.
+  * @sfb: The hardware state.
+  * @pixclock: The pixel clock wanted, in picoseconds.
+  *
+  * Given the specified pixel clock, work out the necessary divider to get
+  * close to the output frequency.
+  */
+-static int s3c_fb_calc_pixclk(unsigned char id, struct s3c_fb *sfb, unsigned int pixclk)
++static int s3c_fb_calc_pixclk(struct s3c_fb *sfb, unsigned int pixclk)
+ {
+-	struct s3c_fb_pd_win *win = sfb->pdata->win[id];
+ 	unsigned long clk = clk_get_rate(sfb->bus_clk);
++	unsigned long long tmp;
+ 	unsigned int result;
  
- 	spin_lock_init(&group->inotify_data.idr_lock);
- 	idr_init(&group->inotify_data.idr);
--	group->inotify_data.last_wd = 1;
-+	group->inotify_data.last_wd = 0;
- 	group->inotify_data.user = user;
- 	group->inotify_data.fa = NULL;
+-	pixclk *= win->win_mode.refresh;
+-	result = clk / pixclk;
++	tmp = (unsigned long long)clk;
++	tmp *= pixclk;
++
++	do_div(tmp, 1000000000UL);
++	result = (unsigned int)tmp / 1000;
  
+ 	dev_dbg(sfb->dev, "pixclk=%u, clk=%lu, div=%d (%lu)\n",
+ 		pixclk, clk, result, clk / result);
+@@ -301,7 +303,7 @@ static int s3c_fb_set_par(struct fb_info
+ 	/* use window 0 as the basis for the lcd output timings */
+ 
+ 	if (win_no == 0) {
+-		clkdiv = s3c_fb_calc_pixclk(win_no, sfb, var->pixclock);
++		clkdiv = s3c_fb_calc_pixclk(sfb, var->pixclock);
+ 
+ 		data = sfb->pdata->vidcon0;
+ 		data &= ~(VIDCON0_CLKVAL_F_MASK | VIDCON0_CLKDIR);
 
 
