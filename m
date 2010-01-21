@@ -1,97 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651Ab0AUQvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061Ab0AUQvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753651Ab0AUQvX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869Ab0AUQvX
+	id S1753061Ab0AUQvw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:51:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274Ab0AUQvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:51:23 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:33345 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650Ab0AUQvW (ORCPT
+	Thu, 21 Jan 2010 11:51:51 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39975 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751650Ab0AUQvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 11:51:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=rIud9MLWJhEeU+u2ajrOOtHPbUKKuEpuCn6TUd+j8/HiXsG9EVeWmh2ggyXxg2IsfG
-         /lhNryz5oEaFTJjpPEUVRJR43JAPW3pmUhiQYjwblyoZNHJ85i3sLkTTCzvg9sc38SSM
-         Xs/eYu3Ki89UycGkKw4yzrBJ0mEj71V5gbffs=
-Message-ID: <4B5885F7.2020007@gmail.com>
-Date: Thu, 21 Jan 2010 11:51:03 -0500
-From: Chandra Nepali <edu4madh@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 21 Jan 2010 11:51:50 -0500
+Message-ID: <4B5885BA.7090007@s5r6.in-berlin.de>
+Date: Thu, 21 Jan 2010 17:50:02 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: port multiplier problem
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: Michael Breuer <mbreuer@majjas.com>, Jarek Poplawski <jarkao2@gmail.com>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+References: <20100118212516.GE3157@del.dom.local>	<4B54D50C.90608@majjas.com>	<20100118220814.GG3157@del.dom.local>	<20100118221747.GH3157@del.dom.local>	<4B54E4EF.8080602@majjas.com>	<4B554730.6090000@majjas.com>	<20100119104739.GA9088@ff.dom.local>	<4B55D40F.5080509@majjas.com>	<20100119195933.GA3060@del.dom.local>	<4B5610A9.7030902@majjas.com>	<20100119224508.GA3473@del.dom.local>	<4B5655D6.8090503@majjas.com> <20100119171013.207cac5c@nehalam> <4B587D4D.2010300@s5r6.in-berlin.de>
+In-Reply-To: <4B587D4D.2010300@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Stefan Richter wrote:
+> I didn't read the start of this thread and may misunderstand the issue,
+> but I comment anyway...:
+> 
+> Documentation/DMA-API.txt says the following about (pci_)dma_sync_single
+> and friends:  "All the parameters must be the same as those passed into
+> the single mapping API."
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/DMA-API.txt;h=5aceb88b3f8b622c8c23ed288f37f42de705c904;hb=HEAD#l367
+> 
+> So, it might be considered an API bug --- but it is a documented one. :-)
 
-I have a disk array of 12 disks. The interface card has two sil3726 port 
-multiplier for 10 disks (5 disks in each port multiplier) and 2 direct 
-sata connectors. The host controller is sil3124. It was connected to 
-suse 10.4 and working fine.
-
-There was a high voltage accident (high voltage to disk array only, not 
-computer) and because of that we replaced the power supply of this disk 
-array. Now, we are getting some problem, disks are not being 
-recognized,. So, I connected it to Fedora 12 (To correct if it is 
-because of some bugs) with driver sil24. Here are few things that I have 
-tested.
-
-1) If I connect only one disk to direct sata connector, it works fine.
-2) If I connect two disks to both direct sata connectors, it won't work.
-3) If I connect  one disk to one direct sata and one disk directly to 
-host controller, it works.
-3) If I connect one or more disk to PM, it won't work.
-4) If I connect one disk to direct sata and one to PM, it won't work.
-
-Below is the error from dmesg in case of failure:
-==================================
-aic7xxx 0000:03:04.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-scsi2 : Adaptec AIC7XXX EISA/VLB/PCI SCSI HBA DRIVER, Rev 7.0
-        <Adaptec aic7899 Ultra160 SCSI adapter>
-        aic7899: Ultra160 Wide Channel A, SCSI Id=7, 32/253 SCBs
-
-sata_sil24 0000:03:02.0: version 1.1
-sata_sil24 0000:03:02.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-scsi3 : sata_sil24
-scsi4 : sata_sil24
-scsi5 : sata_sil24
-scsi6 : sata_sil24
-ata3: SATA max UDMA/100 host m128@0xea009000 port 0xea000000 irq 18
-ata4: SATA max UDMA/100 host m128@0xea009000 port 0xea002000 irq 18
-ata5: SATA max UDMA/100 host m128@0xea009000 port 0xea004000 irq 18
-ata6: SATA max UDMA/100 host m128@0xea009000 port 0xea006000 irq 18
-aic7xxx 0000:03:04.1: PCI INT B -> GSI 18 (level, low) -> IRQ 18
-ata3: SATA link down (SStatus 0 SControl 0)
-ata4: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
-ata4.15: Port Multiplier 1.1, 0x1095:0x3726 r23, 6 ports, feat 0x1/0x9
-ata4.00: hard resetting link
-ata4.00: SATA link down (SStatus 0 SControl 10)
-ata4.01: hard resetting link
-ata4.01: SATA link down (SStatus 0 SControl 320)
-ata4.02: hard resetting link
-ata4.02: SATA link down (SStatus 0 SControl 320)
-ata4.03: hard resetting link
-ata4.03: SATA link down (SStatus 0 SControl 320)
-ata4.04: hard resetting link
-ata4.04: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata4.05: hard resetting link
-ata4.05: SATA link up 1.5 Gbps (SStatus 113 SControl 320)
-ata4.04: failed to IDENTIFY (I/O error, err_mask=0x11)
-ata4.15: hard resetting link
-ata4.15: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
-...........................
-...........................
-===================================
-
-I appreciate your help.
-
-Thanks
-Manojg
+Disregard my comment.  I just noticed that there is more qualified
+discussion of this in the thread "[PATCH] sky2: Fix WARNING: at
+lib/dma-debug.c:902 check_sync".
+-- 
+Stefan Richter
+-=====-==-=- ---= =-=-=
+http://arcgraph.de/sr/
