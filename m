@@ -1,63 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149Ab0AUKMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156Ab0AUKPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149Ab0AUKMQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 05:12:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670Ab0AUKMP
+	id S1755156Ab0AUKPM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 05:15:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073Ab0AUKPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 05:12:15 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38844 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754912Ab0AUKMP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 05:12:15 -0500
-Subject: Re: [PATCH] perf_events: improve x86 event scheduling (v5)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@google.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
-       perfmon2-devel@lists.sf.net, eranian@gmail.com
-In-Reply-To: <bd4cb8901001210208h758a546cw19fc81300164ec55@mail.gmail.com>
-References: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com>
-	 <20100118134324.GB10364@nowhere> <1263822898.4283.558.camel@laptop>
-	 <20100118142004.GD10364@nowhere> <1263825158.4283.590.camel@laptop>
-	 <20100118144556.GE10364@nowhere>
-	 <bd4cb8901001210208h758a546cw19fc81300164ec55@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 21 Jan 2010 11:11:52 +0100
-Message-ID: <1264068712.4283.1141.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 05:15:11 -0500
+Received: from smtp1.cogeco.ca ([216.221.81.28]:43304 "EHLO fipsb01.cogeco.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752175Ab0AUKPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 05:15:10 -0500
+X-SBRS: None
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnRgAHW4V0tIJkfq/2dsb2JhbAADgUOVGAe6MIcihDwEiUmBSA
+X-IronPort-AV: E=Sophos;i="4.49,316,1262581200"; 
+   d="scan'208";a="84091916"
+Date: Thu, 21 Jan 2010 05:15:09 -0500
+To: linux-kernel@vger.kernel.org
+From: SamuelJohn34450@msn.com
+Reply-to: SamuelJohn34450@msn.com
+Subject: yo
+Message-ID: <f8eddb6d3d07705e44613bad25dc4000@www.pentaxcanada.ca>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.73]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-21 at 11:08 +0100, Stephane Eranian wrote:
-> >> > Do you mean this:
-> >> >
-> >> > hw_perf_group_sched_in_begin(&x86_pmu);
-> >> >
-> >> > for_each_event(event, group) {
-> >> >         event->enable();        //do the collection here
-> >> > }
-> >> >
-> >> >
-> >> > if (hw_perf_group_sched_in_end(&x86_pmu)) {
-> >> >         rollback...
-> >> > }
-> >> >
-> >> > That requires to know in advance if we have hardware pmu
-> >> > in the list though (can be a flag in the group).
-> >>
-> 
-> I don't think this model can work without scheduling for each event.
-> 
-> Imagine the situation where you have more events than you have
-> counters. At each tick you:
+lol.. frig man check this link out..http://jtty.com/1305
 
-No it wont indeed, but it will work for where we now use
-hw_perf_group_sched_in() without having to replicate lots of code.
-
-For the cases you mention I see no other way than to try and schedule
-each event individually.
 
