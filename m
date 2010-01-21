@@ -1,74 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167Ab0AUXBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463Ab0AUXBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755167Ab0AUXBK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 18:01:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065Ab0AUXBI
+	id S1755463Ab0AUXBY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 18:01:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254Ab0AUXBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 18:01:08 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45438 "EHLO smtps.tip.net.au"
+	Thu, 21 Jan 2010 18:01:16 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37889 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754915Ab0AUXBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 18:01:06 -0500
-Date: Fri, 22 Jan 2010 10:00:59 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Tilman Schmidt <tilman@imap.cc>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: linux-next: Tree for January 21
-Message-Id: <20100122100059.9007bdb8.sfr@canb.auug.org.au>
-In-Reply-To: <20100121131339.5e86dfef.akpm@linux-foundation.org>
-References: <20100121165713.7b8a746d.sfr@canb.auug.org.au>
-	<20100121131339.5e86dfef.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__22_Jan_2010_10_00_59_+1100_z+rjg3NRLk18NkG7"
+	id S1755065Ab0AUXBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 18:01:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [PATCH 0/2] sysfs switch for disabling device run-time PM
+Date: Thu, 21 Jan 2010 23:57:46 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
+References: <201001180129.55219.rjw@sisk.pl>
+In-Reply-To: <201001180129.55219.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001212357.46483.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__22_Jan_2010_10_00_59_+1100_z+rjg3NRLk18NkG7
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi Andrew,
+The first of the following two patches adds a sysfs switch for controlling the
+run-time power management of devices and the second one documents the sysfs
+attributes in /sys/devices/.../power/ (including the new one).
 
-On Thu, 21 Jan 2010 13:13:39 -0800 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
->
-> It includes this screwed up commit:
->=20
-> :commit e303d9eadc64907535a0a104afa5871d2b83275e
-> :Author:     Tilman Schmidt <tilman@imap.cc>
-> :AuthorDate: Thu Jan 14 23:18:41 2010 +0100
-> :Commit:     Jesse Barnes <jbarnes@virtuousgeek.org>
-> :CommitDate: Fri Jan 15 10:08:07 2010 -0800
-> :
-> :    PCI/ISDN: push deprecated pci_find_device() function to last user (i=
-sdn)
->=20
-> It adds a bunch of files which are compile-time generated:
+Thanks,
+Rafael
 
-Thanks for noticing.  I will revert that commit today since it is still
-in the pci tree.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__22_Jan_2010_10_00_59_+1100_z+rjg3NRLk18NkG7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktY3KsACgkQjjKRsyhoI8z00QCfZYjh3I1Z0Z+1rJXq/2i6CH6S
-SGoAoJXh0rIkC3EAEwPwbZ4Pb7fJO6B3
-=HSzw
------END PGP SIGNATURE-----
-
---Signature=_Fri__22_Jan_2010_10_00_59_+1100_z+rjg3NRLk18NkG7--
