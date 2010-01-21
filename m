@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237Ab0AUP34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313Ab0AUPai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753237Ab0AUP34 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 10:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731Ab0AUP3z
+	id S1753313Ab0AUPai (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 10:30:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592Ab0AUPai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 10:29:55 -0500
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:44955 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752428Ab0AUP3y (ORCPT
+	Thu, 21 Jan 2010 10:30:38 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:57011 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539Ab0AUPah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 10:29:54 -0500
-Message-ID: <4B5872EC.5040603@linux.vnet.ibm.com>
-Date: Thu, 21 Jan 2010 20:59:48 +0530
+	Thu, 21 Jan 2010 10:30:37 -0500
+Message-ID: <4B587317.6060404@linux.vnet.ibm.com>
+Date: Thu, 21 Jan 2010 21:00:31 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0b1 Thunderbird/3.0
 MIME-Version: 1.0
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       rientjes@google.com, minchan.kim@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] oom-kill: add lowmem usage aware oom kill handling
-References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       kirill@shutemov.name
+Subject: Re: [PATCH mmotm] memcg use generic percpu allocator instead of private
+ one
+References: <20100120161825.15c372ac.kamezawa.hiroyu@jp.fujitsu.com> <4B56CEF0.2040406@linux.vnet.ibm.com> <20100121110759.250ed739.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100121110759.250ed739.kamezawa.hiroyu@jp.fujitsu.com>
 X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -31,28 +32,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 January 2010 11:29 AM, KAMEZAWA Hiroyuki wrote:
-> A patch for avoiding oom-serial-killer at lowmem shortage.
-> Patch is onto mmotm-2010/01/15 (depends on mm-count-lowmem-rss.patch)
-> Tested on x86-64/SMP + debug module(to allocated lowmem), works well.
+On Thursday 21 January 2010 07:37 AM, KAMEZAWA Hiroyuki wrote:
+> On Wed, 20 Jan 2010 15:07:52 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>> This includes no functional changes.
+>>>
+>>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>>
+>> Before review, could you please post parallel pagefault data on a large
+>> system, since root now uses these per cpu counters and its overhead is
+>> now dependent on these counters. Also the data read from root cgroup is
+>> also dependent on these, could you make sure that is not broken.
+>>
+> Hmm, I rewrote test program for avoidng mmap_sem. This version does fork()
+> instead of pthread_create() and meausre parallel-process page fault speed.
 > 
-> One cause of OOM-Killer is memory shortage in lower zones.
-> (If memory is enough, lowmem_reserve_ratio works well. but..)
+> [Before patch]
+> [root@bluextal memory]# /root/bin/perf stat -e page-faults,cache-misses --repeat 5 ./multi-fault-fork 8
 > 
-> In lowmem-shortage oom-kill, oom-killer choses a vicitim process
-> on their vm size. But this kills a process which has lowmem memory
-> only if it's lucky. At last, there will be an oom-serial-killer.
+>  Performance counter stats for './multi-fault-fork 8' (5 runs):
 > 
-> Now, we have per-mm lowmem usage counter. We can make use of it
-> to select a good? victim.
+>        45256919  page-faults                ( +-   0.851% )
+>       602230144  cache-misses               ( +-   0.187% )
+> 
+>    61.020533723  seconds time elapsed   ( +-   0.002% 
+> 
+> [After patch]
+> [root@bluextal memory]# /root/bin/perf stat -e page-faults,cache-misses --repeat 5 ./multi-fault-fork 8
+> 
+>  Performance counter stats for './multi-fault-fork 8' (5 runs):
+> 
+>        46007166  page-faults                ( +-   0.339% )
+>       599553505  cache-misses               ( +-   0.298% )
+> 
+>    61.020937843  seconds time elapsed   ( +-   0.004% )
+> 
+> slightly improved ? But this test program does some extreme behavior and
+> you can't see difference in real-world applications, I think.
+> So, I guess this is in error-range in famous (not small) benchmarks.
 
-Have you seen any use cases that need this change? Or is it mostly via
-code review and to utilize the availability of lowmem rss? Do we often
-run into lowmem shortage triggering OOM?
-
+Looks good, please give me a couple of days to test, I'll revert back
+with numbers and review.
 
 -- 
 Three Cheers,
