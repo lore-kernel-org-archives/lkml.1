@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965Ab0AUSmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654Ab0AUSz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754965Ab0AUSmN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 13:42:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895Ab0AUSmJ
+	id S1754654Ab0AUSz4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 13:55:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711Ab0AUSzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 13:42:09 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:61765 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753312Ab0AUSmH (ORCPT
+	Thu, 21 Jan 2010 13:55:55 -0500
+Received: from mail-pz0-f172.google.com ([209.85.222.172]:39036 "EHLO
+	mail-pz0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752240Ab0AUSzz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 13:42:07 -0500
+	Thu, 21 Jan 2010 13:55:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=EAUUHAhVouK/Yo5+9dtTMX38lLiFI7vVfe5fg6FxKhKsZzKU64pZ8acGpU7eVj2Ndr
-         RFJ1tOKHcpo661nxk9OY8xVGZpJG/Fgr5LfCMRNMS/5pKQNtWqBM3WOCdjUJtMv/6N/x
-         Vq8MqAdSQpzQE+KmreTn1byJ3qtLKtSm5a2HY=
-Date: Thu, 21 Jan 2010 19:41:58 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: alan@lxorguk.ukuu.org.uk, davem@davemloft.net,
-       shemminger@linux-foundation.org, mbreuer@majjas.com,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       mchan@broadcom.com, pcnet32@verizon.net, romieu@fr.zoreil.com,
-       mcarlson@broadcom.com
-Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
-Message-ID: <20100121184158.GA3085@del.dom.local>
-References: <20100120094103.GA6225@ff.dom.local>
- <20100120222414.57909d14@lxorguk.ukuu.org.uk>
- <20100120225322.GC3072@del.dom.local>
- <20100122002053X.fujita.tomonori@lab.ntt.co.jp>
+        b=XiGVJX2cYyXojvkMNXonRkzbJfoNCHvf1xnWKobSjhqALeq//ojc3CDGnBBLwVnI4L
+         jIuiO9CVqj82jdRu7OZ1Z2oKp/rlxVnUQKO2exkVl2nKhuouciqzMCIR/fKeDn3vp7mD
+         xES6DprHwn2J0sRT3tpSsxyFWx04kOoEVQ9vI=
+Date: Thu, 21 Jan 2010 10:55:44 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Bastien Nocera <hadess@hadess.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
+Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
+Message-ID: <20100121185544.GB11996@core.coreip.homeip.net>
+References: <1264011793.1735.3683.camel@localhost.localdomain>
+ <4B57A2D4.9030204@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100122002053X.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B57A2D4.9030204@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 22, 2010 at 12:22:10AM +0900, FUJITA Tomonori wrote:
-> On Wed, 20 Jan 2010 23:53:22 +0100
-> Jarek Poplawski <jarkao2@gmail.com> wrote:
+On Wed, Jan 20, 2010 at 06:41:56PM -0600, Robert Hancock wrote:
+> On 01/20/2010 12:23 PM, Bastien Nocera wrote:
+> >As those computers never had any i8042 controllers, and the
+> >current lookup code could potentially lock up/hang/wait for
+> >timeout for long periods of time.
+> >
+> >Fixes intermittent hangs on boot on a MacbookAir1,1
+> >
+> >Signed-off-by: Bastien Nocera<hadess@hadess.net>
 > 
-> > On Wed, Jan 20, 2010 at 10:24:14PM +0000, Alan Cox wrote:
-> > > > > Seems like an underlying bug in the DMA api. Maybe it just can't
-> > > > > handle operations on partial mapping.
-> > > > > 
-> > > > > Other drivers with same problem:
-> > > > >   bnx2, cassini, pcnet32, r8169, rrunner, skge, sungem, tg3, 
-> > > > 
-> > > > It seems using the same length (even without pci_unmap_len()) is
-> > > > crucial here, but I hope maintainers (added to CC) will take care.
-> > > 
-> > > The API needs fixing - if you've got a large mapping and you want to sync
-> > > part of it then we need to support that. Now it might well be that the
-> > > implementation on some braindead platform has to sync the entire thing,
-> > > and some implementations entire pages or cache lines.
-> > > 
-> > > You can't fix this in the drivers, they requested a service and they
-> > > don't have enough information nor is it their job to know about all the
-> > > platform specific rules.
-> > 
-> > Yes, the need to repeat some other values if there is a dedicated
-> > structure/pointer could be misleading. Btw, it seems to be a trivial
-> > overlooking since there is dma_sync_single_range() ready to use.
+> I assume this is happening because of this code in
+> drivers/input/serio/i8042-x86ia64io.h:
 > 
-> Yeah, dma_sync_single_range() enables you to do a partial sync. But
-> you must be really careful with a partial sync (as DMA-API.txt says).
+>         if (!i8042_pnp_kbd_devices && !i8042_pnp_aux_devices) {
+>                 i8042_pnp_exit();
+> #if defined(__ia64__)
+>                 return -ENODEV;
+> #else
+>                 printk(KERN_INFO "PNP: No PS/2 controller found.
+> Probing ports directly.\n");
+>                 return 0;
+> #endif
+> 
+> In other words, on x86, if PNP and/or ACPI don't indicate any PS/2
+> controller exists, we randomly bang on the ports in the expectation
+> they'll be there anyway. This seems rather misguided.
 
-Actually, we are trying to establish here (and a few more netdev@
-threads) what exactly the author was worried about. After looking at
-some implementations it seems to me this carefullness in observing
-the cache alignment and width is needed only wrt. the 'offset'. But
-then, the way the 'size' is used (or rather not used for anything
-crucial) suggests dma_sync_single_range() with zero offset seems
-completely safe. But then it's equivalent to dma_sync_single() with
-the 'size' possibly less than 'passed into the single mapping'. Which
-according to the other comment seems wrong...
+Basically, we do not trust BIOS writers on x86 ;) In the past there were
+occasions when they forgot to mention presence of KBD/AUX in DSDT and
+elsewhere which lead to non-functional keyboard/mouse. 
 
-Jarek P.
+> It would seem
+> like a better idea to fix this rather than adding yet another DMI
+> list (especially since there likely are, or will be, machines
+> without i8042 other than Macs).
+> 
+
+If they are not Macs that mean they are tested with windows and thus
+expect probes in i8042 port region so no harm done. In a few years if
+everyone uses USB only we could add a year threshold to trust ACPI/PNP
+data.
+
+-- 
+Dmitry
