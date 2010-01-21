@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813Ab0AUGag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815Ab0AUGax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813Ab0AUGag (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 01:30:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801Ab0AUGab
+	id S1754815Ab0AUGax (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 01:30:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755Ab0AUGaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 01:30:31 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:36146 "EHLO
+	Thu, 21 Jan 2010 01:30:30 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:36150 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754712Ab0AUG32 (ORCPT
+	with ESMTP id S1754695Ab0AUG33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 01:29:28 -0500
+	Thu, 21 Jan 2010 01:29:29 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 20 Jan 2010 22:28:22 -0800
+Date: Wed, 20 Jan 2010 22:28:23 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 35/36] x86: make 32bit apic flat to physflat switch like 64bit
+Subject: [PATCH 36/36] x86: use num_processors for possible cpus
 In-reply-to: <1264055303-15123-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -25,375 +25,50 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264055303-15123-36-git-send-email-yinghai@kernel.org>
+Message-id: <1264055303-15123-37-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264055303-15123-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kill def_to_bigsmp
-and move switch from default to bigsmp at default_setup_apic_routing...
-so make default_setup_apic_routing more like 64 bit
-also make the dmi relate code to be __init/__initdata
+some systems that have disable cpus entries because same
+  BIOS will support 2 sockets and 4 sockets and more at
+  same time, BIOS just leave some disable entries, but
+  those system do not support cpu hotplug. we don't need
+  treat disabled_cpus as hotplug cpus.
+so we can make nr_cpu_ids smaller and save more space
+  (pcpu data allocations), and could make some systems run
+  with logical flat instead of physical flat apic mode
+
+-v2: change to black list instead
+-v3: just remove that, and the one use possible_cpus= directly.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/include/asm/apic.h      |    3 -
- arch/x86/include/asm/mpspec.h    |    1 -
- arch/x86/kernel/acpi/boot.c      |    3 -
- arch/x86/kernel/apic/apic.c      |   15 -------
- arch/x86/kernel/apic/bigsmp_32.c |   48 +----------------------
- arch/x86/kernel/apic/probe_32.c  |   80 ++++++++++++++++++++-----------------
- arch/x86/kernel/mpparse.c        |    4 --
- arch/x86/kernel/setup.c          |    2 -
- arch/x86/kernel/smpboot.c        |    2 +-
- 9 files changed, 46 insertions(+), 112 deletions(-)
+ arch/x86/kernel/smpboot.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index b4ac2cd..d544523 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -456,9 +456,6 @@ static inline void default_wait_for_init_deassert(atomic_t *deassert)
- 	return;
- }
- 
--extern void generic_bigsmp_probe(void);
--
--
- #ifdef CONFIG_X86_LOCAL_APIC
- 
- #include <asm/smp.h>
-diff --git a/arch/x86/include/asm/mpspec.h b/arch/x86/include/asm/mpspec.h
-index d8bf23a..b4b295c 100644
---- a/arch/x86/include/asm/mpspec.h
-+++ b/arch/x86/include/asm/mpspec.h
-@@ -23,7 +23,6 @@ extern int pic_mode;
- 
- #define MAX_IRQ_SOURCES		256
- 
--extern unsigned int def_to_bigsmp;
- extern u8 apicid_2_node[];
- 
- #ifdef CONFIG_X86_NUMAQ
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index fb1035c..1f9f1fb 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -1185,9 +1185,6 @@ static void __init acpi_process_madt(void)
- 		if (!error) {
- 			acpi_lapic = 1;
- 
--#ifdef CONFIG_X86_BIGSMP
--			generic_bigsmp_probe();
--#endif
- 			/*
- 			 * Parse MADT IO-APIC entries
- 			 */
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 3f2bfb1..dfca210 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -1889,21 +1889,6 @@ void __cpuinit generic_processor_info(int apicid, int version)
- 	if (apicid > max_physical_apicid)
- 		max_physical_apicid = apicid;
- 
--#ifdef CONFIG_X86_32
--	if (num_processors > 8) {
--		switch (boot_cpu_data.x86_vendor) {
--		case X86_VENDOR_INTEL:
--			if (!APIC_XAPIC(version)) {
--				def_to_bigsmp = 0;
--				break;
--			}
--			/* If P4 and above fall through */
--		case X86_VENDOR_AMD:
--			def_to_bigsmp = 1;
--		}
--	}
--#endif
--
- #if defined(CONFIG_SMP) || defined(CONFIG_X86_64)
- 	early_per_cpu(x86_cpu_to_apicid, cpu) = apicid;
- 	early_per_cpu(x86_bios_cpu_apicid, cpu) = apicid;
-diff --git a/arch/x86/kernel/apic/bigsmp_32.c b/arch/x86/kernel/apic/bigsmp_32.c
-index cb804c5..350d60e 100644
---- a/arch/x86/kernel/apic/bigsmp_32.c
-+++ b/arch/x86/kernel/apic/bigsmp_32.c
-@@ -7,7 +7,6 @@
- #include <linux/cpumask.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
--#include <linux/dmi.h>
- #include <linux/smp.h>
- 
- #include <asm/apicdef.h>
-@@ -73,13 +72,6 @@ static void bigsmp_init_apic_ldr(void)
- 	apic_write(APIC_LDR, val);
- }
- 
--static void bigsmp_setup_apic_routing(void)
--{
--	printk(KERN_INFO
--		"Enabling APIC mode:  Physflat.  Using %d I/O APICs\n",
--		nr_ioapics);
--}
--
- static int bigsmp_apicid_to_node(int logical_apicid)
- {
- 	return apicid_2_node[hard_smp_processor_id()];
-@@ -154,52 +146,16 @@ static void bigsmp_send_IPI_all(int vector)
- 	bigsmp_send_IPI_mask(cpu_online_mask, vector);
- }
- 
--static int dmi_bigsmp; /* can be set by dmi scanners */
--
--static int hp_ht_bigsmp(const struct dmi_system_id *d)
--{
--	printk(KERN_NOTICE "%s detected: force use of apic=bigsmp\n", d->ident);
--	dmi_bigsmp = 1;
--
--	return 0;
--}
--
--
--static const struct dmi_system_id bigsmp_dmi_table[] = {
--	{ hp_ht_bigsmp, "HP ProLiant DL760 G2",
--		{	DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
--			DMI_MATCH(DMI_BIOS_VERSION, "P44-"),
--		}
--	},
--
--	{ hp_ht_bigsmp, "HP ProLiant DL740",
--		{	DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
--			DMI_MATCH(DMI_BIOS_VERSION, "P47-"),
--		}
--	},
--	{ } /* NULL entry stops DMI scanning */
--};
--
- static void bigsmp_vector_allocation_domain(int cpu, struct cpumask *retmask)
- {
- 	cpumask_clear(retmask);
- 	cpumask_set_cpu(cpu, retmask);
- }
- 
--static int probe_bigsmp(void)
--{
--	if (def_to_bigsmp)
--		dmi_bigsmp = 1;
--	else
--		dmi_check_system(bigsmp_dmi_table);
--
--	return dmi_bigsmp;
--}
--
- struct apic apic_bigsmp = {
- 
- 	.name				= "bigsmp",
--	.probe				= probe_bigsmp,
-+	.probe				= NULL,
- 	.acpi_madt_oem_check		= NULL,
- 	.apic_id_registered		= bigsmp_apic_id_registered,
- 
-@@ -217,7 +173,7 @@ struct apic apic_bigsmp = {
- 	.init_apic_ldr			= bigsmp_init_apic_ldr,
- 
- 	.ioapic_phys_id_map		= bigsmp_ioapic_phys_id_map,
--	.setup_apic_routing		= bigsmp_setup_apic_routing,
-+	.setup_apic_routing		= NULL,
- 	.multi_timer_check		= NULL,
- 	.apicid_to_node			= bigsmp_apicid_to_node,
- 	.cpu_to_logical_apicid		= bigsmp_cpu_to_logical_apicid,
-diff --git a/arch/x86/kernel/apic/probe_32.c b/arch/x86/kernel/apic/probe_32.c
-index d657558..b05e543 100644
---- a/arch/x86/kernel/apic/probe_32.c
-+++ b/arch/x86/kernel/apic/probe_32.c
-@@ -14,6 +14,8 @@
- #include <linux/ctype.h>
- #include <linux/init.h>
- #include <linux/errno.h>
-+#include <linux/dmi.h>
-+
- #include <asm/fixmap.h>
- #include <asm/mpspec.h>
- #include <asm/apicdef.h>
-@@ -52,15 +54,6 @@ static int __init print_ipi_mode(void)
- }
- late_initcall(print_ipi_mode);
- 
--static void local_default_setup_apic_routing(void)
--{
--#ifdef CONFIG_X86_IO_APIC
--	printk(KERN_INFO
--		"Enabling APIC mode:  Flat.  Using %d I/O APICs\n",
--		nr_ioapics);
--#endif
--}
--
- static void default_vector_allocation_domain(int cpu, struct cpumask *retmask)
- {
- 	/*
-@@ -76,16 +69,10 @@ static void default_vector_allocation_domain(int cpu, struct cpumask *retmask)
- 	cpumask_bits(retmask)[0] = APIC_ALL_CPUS;
- }
- 
--/* should be called last. */
--static int probe_default(void)
--{
--	return 1;
--}
--
- struct apic apic_default = {
- 
- 	.name				= "default",
--	.probe				= probe_default,
-+	.probe				= NULL,
- 	.acpi_madt_oem_check		= NULL,
- 	.apic_id_registered		= default_apic_id_registered,
- 
-@@ -103,7 +90,7 @@ struct apic apic_default = {
- 	.init_apic_ldr			= default_init_apic_ldr,
- 
- 	.ioapic_phys_id_map		= default_ioapic_phys_id_map,
--	.setup_apic_routing		= local_default_setup_apic_routing,
-+	.setup_apic_routing		= NULL,
- 	.multi_timer_check		= NULL,
- 	.apicid_to_node			= default_apicid_to_node,
- 	.cpu_to_logical_apicid		= default_cpu_to_logical_apicid,
-@@ -192,24 +179,40 @@ static int __init parse_apic(char *arg)
- }
- early_param("apic", parse_apic);
- 
--void __init generic_bigsmp_probe(void)
-+static int dmi_bigsmp __initdata; /* can be set by dmi scanners */
-+
-+static int __init hp_ht_bigsmp(const struct dmi_system_id *d)
- {
--#ifdef CONFIG_X86_BIGSMP
--	/*
--	 * This routine is used to switch to bigsmp mode when
--	 * - There is no apic= option specified by the user
--	 * - generic_apic_probe() has chosen apic_default as the sub_arch
--	 * - we find more than 8 CPUs in acpi LAPIC listing with xAPIC support
--	 */
-+	printk(KERN_NOTICE "%s detected: force use of apic=bigsmp\n", d->ident);
-+	dmi_bigsmp = 1;
- 
--	if (!cmdline_apic && apic == &apic_default) {
--		if (apic_bigsmp.probe()) {
--			apic = &apic_bigsmp;
--			printk(KERN_INFO "Overriding APIC driver with %s\n",
--			       apic->name);
-+	return 0;
-+}
-+
-+static struct dmi_system_id bigsmp_dmi_table[] __initdata = {
-+	{ hp_ht_bigsmp, "HP ProLiant DL760 G2",
-+		{	DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_BIOS_VERSION, "P44-"),
- 		}
--	}
-+	},
-+
-+	{ hp_ht_bigsmp, "HP ProLiant DL740",
-+		{	DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_BIOS_VERSION, "P47-"),
-+		}
-+	},
-+	{ } /* NULL entry stops DMI scanning */
-+};
-+
-+static inline const char *get_apic_name(struct apic *apic)
-+{
-+	if (apic == &apic_default)
-+		return "flat";
-+#ifdef CONFIG_X86_BIGSMP
-+	if (apic == &apic_bigsmp);
-+		return "physical flat";
- #endif
-+	return apic->name;
- }
- 
- void __init default_setup_apic_routing(void)
-@@ -219,13 +222,19 @@ void __init default_setup_apic_routing(void)
- 	 * make sure we go to bigsmp according to real nr_cpu_ids
- 	 */
- 	if (!cmdline_apic && apic == &apic_default) {
--		if (nr_cpu_ids > 8) {
-+		dmi_check_system(bigsmp_dmi_table);
-+		if (nr_cpu_ids > 8 || dmi_bigsmp) {
- 			apic = &apic_bigsmp;
- 			printk(KERN_INFO "Overriding APIC driver with %s\n",
--			       apic->name);
-+			       get_apic_name(apic));
- 		}
- 	}
- #endif
-+#ifdef CONFIG_X86_IO_APIC
-+	printk(KERN_INFO
-+		"Enabling APIC mode:  %s.  Using %d I/O APICs\n",
-+		get_apic_name(apic), nr_ioapics);
-+#endif
- }
- 
- void __init generic_apic_probe(void)
-@@ -233,14 +242,11 @@ void __init generic_apic_probe(void)
- 	if (!cmdline_apic) {
- 		int i;
- 		for (i = 0; apic_probe[i]; i++) {
--			if (apic_probe[i]->probe()) {
-+			if (apic_probe[i]->probe && apic_probe[i]->probe()) {
- 				apic = apic_probe[i];
- 				break;
- 			}
- 		}
--		/* Not visible without early console */
--		if (!apic_probe[i])
--			panic("Didn't find an APIC driver");
- 	}
- 	printk(KERN_INFO "Using APIC driver %s\n", apic->name);
- }
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 40b54ce..0f885c6 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -359,10 +359,6 @@ static int __init smp_read_mpc(struct mpc_table *mpc, unsigned early)
- 		x86_init.mpparse.mpc_record(1);
- 	}
- 
--#ifdef CONFIG_X86_BIGSMP
--	generic_bigsmp_probe();
--#endif
--
- 	if (apic->setup_apic_routing)
- 		apic->setup_apic_routing();
- 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 8b27c6c..cfcd354 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -184,8 +184,6 @@ static void set_mca_bus(int x)
- #endif
- }
- 
--unsigned int def_to_bigsmp;
--
- /* for MCA, but anyone else can use it if they want */
- unsigned int machine_id;
- unsigned int machine_submodel_id;
 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 96f5f40..f741c33 100644
+index f741c33..642440c 100644
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -946,7 +946,7 @@ static int __init smp_sanity_check(unsigned max_cpus)
- 	preempt_disable();
+@@ -1190,7 +1190,6 @@ early_param("possible_cpus", _setup_possible_cpus);
+  * - Ashok Raj
+  *
+  * Three ways to find out the number of additional hotplug CPUs:
+- * - If the BIOS specified disabled CPUs in ACPI/mptables use that.
+  * - The user can overwrite it with possible_cpus=NUM
+  * - Otherwise don't reserve additional CPUs.
+  * We do this because additional CPUs waste a lot of memory.
+@@ -1205,7 +1204,7 @@ __init void prefill_possible_map(void)
+ 		num_processors = 1;
  
- #if !defined(CONFIG_X86_BIGSMP) && defined(CONFIG_X86_32)
--	if (def_to_bigsmp && nr_cpu_ids > 8) {
-+	if (apic == &apic_default && nr_cpu_ids > 8) {
- 		unsigned int cpu;
- 		unsigned nr;
+ 	if (setup_possible_cpus == -1)
+-		possible = num_processors + disabled_cpus;
++		possible = num_processors;
+ 	else
+ 		possible = setup_possible_cpus;
  
 -- 
 1.6.4.2
