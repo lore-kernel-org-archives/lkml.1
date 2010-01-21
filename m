@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669Ab0AUQl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838Ab0AUQld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753669Ab0AUQl3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:41:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322Ab0AUQl1
+	id S1753838Ab0AUQld (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:41:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666Ab0AUQl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:41:27 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:38399 "EHLO
+	Thu, 21 Jan 2010 11:41:29 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:38416 "EHLO
 	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505Ab0AUQlY (ORCPT
+	with ESMTP id S1751669Ab0AUQlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 11:41:24 -0500
+	Thu, 21 Jan 2010 11:41:25 -0500
 From: Borislav Petkov <bp@amd64.org>
 To: <mingo@elte.hu>, <hpa@zytor.com>, <tglx@linutronix.de>
 Cc: <andreas.herrmann3@amd.com>, <x86@kernel.org>,
        <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/7] x86, smp: Adjust native_wbinvd for smp_call_function-helpers
-Date: Thu, 21 Jan 2010 17:41:28 +0100
-Message-Id: <1264092093-13739-3-git-send-email-bp@amd64.org>
+Subject: [PATCH 6/7] x86, cacheinfo: Add cache index disable sysfs attrs only to L3 caches
+Date: Thu, 21 Jan 2010 17:41:32 +0100
+Message-Id: <1264092093-13739-7-git-send-email-bp@amd64.org>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264092093-13739-1-git-send-email-bp@amd64.org>
 References: <1264092093-13739-1-git-send-email-bp@amd64.org>
@@ -26,117 +26,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Borislav Petkov <borislav.petkov@amd.com>
 
-Add a wbinvd_on_cpu() helper and fold the void * arg in the wbinvd macro
-definition so that native_wbinvd can be used in the smp_call_function_*
-helpers as a pointed-to function.
+The cache_disable_[01] attribute in
+
+/sys/devices/system/cpu/cpu?/cache/index[0-3]/
+
+is enabled on all cache levels although only L3 supports it. Add it only
+to the cache level that actually supports it.
 
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- arch/x86/include/asm/paravirt.h       |    3 ++-
- arch/x86/include/asm/paravirt_types.h |    2 +-
- arch/x86/include/asm/smp.h            |    3 +++
- arch/x86/include/asm/system.h         |   10 ++++++++--
- arch/x86/lib/smp.c                    |    7 +++++++
- 5 files changed, 21 insertions(+), 4 deletions(-)
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   35 ++++++++++++++++++++++++--------
+ 1 files changed, 26 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index dd59a85..ee034a6 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -117,7 +117,8 @@ static inline void halt(void)
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index cef4fdd..0ce0e8d 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -810,16 +810,24 @@ static struct _cache_attr cache_disable_0 = __ATTR(cache_disable_0, 0644,
+ static struct _cache_attr cache_disable_1 = __ATTR(cache_disable_1, 0644,
+ 		show_cache_disable_1, store_cache_disable_1);
  
- static inline void wbinvd(void)
- {
--	PVOP_VCALL0(pv_cpu_ops.wbinvd);
-+	void *uninitialized_var(dummy_ptr);
-+	PVOP_VCALL1(pv_cpu_ops.wbinvd, dummy_ptr);
- }
- 
- #define get_kernel_rpl()  (pv_info.kernel_rpl)
-diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
-index b1e70d5..79730b8 100644
---- a/arch/x86/include/asm/paravirt_types.h
-+++ b/arch/x86/include/asm/paravirt_types.h
-@@ -136,7 +136,7 @@ struct pv_cpu_ops {
- 
- 	void (*set_iopl_mask)(unsigned mask);
- 
--	void (*wbinvd)(void);
-+	void (*wbinvd)(void *);
- 	void (*io_delay)(void);
- 
- 	/* cpuid emulation, mostly so that caps bits can be disabled */
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index 1e79678..090146e 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -138,6 +138,7 @@ void play_dead_common(void);
- 
- void native_send_call_func_ipi(const struct cpumask *mask);
- void native_send_call_func_single_ipi(int cpu);
-+void wbinvd_on_cpu(int cpu);
- 
- void smp_store_cpu_info(int id);
- #define cpu_physical_id(cpu)	per_cpu(x86_cpu_to_apicid, cpu)
-@@ -147,6 +148,8 @@ static inline int num_booting_cpus(void)
- {
- 	return cpumask_weight(cpu_callout_mask);
- }
-+#else /* !CONFIG_SMP */
-+#define wbinvd_on_cpu(cpu)	wbinvd()
- #endif /* CONFIG_SMP */
- 
- extern unsigned disabled_cpus __cpuinitdata;
-diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
-index ecb544e..8c531ab 100644
---- a/arch/x86/include/asm/system.h
-+++ b/arch/x86/include/asm/system.h
-@@ -297,7 +297,7 @@ static inline void native_write_cr8(unsigned long val)
- }
- #endif
- 
--static inline void native_wbinvd(void)
-+static inline void native_wbinvd(void *dummy)
- {
- 	asm volatile("wbinvd": : :"memory");
- }
-@@ -314,7 +314,13 @@ static inline void native_wbinvd(void)
- #define read_cr4()	(native_read_cr4())
- #define read_cr4_safe()	(native_read_cr4_safe())
- #define write_cr4(x)	(native_write_cr4(x))
--#define wbinvd()	(native_wbinvd())
++#define DEFAULT_SYSFS_CACHE_ATTRS	\
++	&type.attr,			\
++	&level.attr,			\
++	&coherency_line_size.attr,	\
++	&physical_line_partition.attr,	\
++	&ways_of_associativity.attr,	\
++	&number_of_sets.attr,		\
++	&size.attr,			\
++	&shared_cpu_map.attr,		\
++	&shared_cpu_list.attr
 +
-+#define wbinvd()					\
-+	({						\
-+		void *uninitialized_var(dumb_ptr);	\
-+		native_wbinvd(dumb_ptr);		\
-+	})
+ static struct attribute *default_attrs[] = {
+-	&type.attr,
+-	&level.attr,
+-	&coherency_line_size.attr,
+-	&physical_line_partition.attr,
+-	&ways_of_associativity.attr,
+-	&number_of_sets.attr,
+-	&size.attr,
+-	&shared_cpu_map.attr,
+-	&shared_cpu_list.attr,
++	DEFAULT_SYSFS_CACHE_ATTRS,
++	NULL
++};
 +
- #ifdef CONFIG_X86_64
- #define read_cr8()	(native_read_cr8())
- #define write_cr8(x)	(native_write_cr8(x))
-diff --git a/arch/x86/lib/smp.c b/arch/x86/lib/smp.c
-index a6b1b86..408c3b7 100644
---- a/arch/x86/lib/smp.c
-+++ b/arch/x86/lib/smp.c
-@@ -2,6 +2,7 @@
- #include <linux/preempt.h>
- #include <linux/smp.h>
- #include <asm/msr.h>
-+#include <asm/system.h>
++static struct attribute *default_l3_attrs[] = {
++	DEFAULT_SYSFS_CACHE_ATTRS,
+ 	&cache_disable_0.attr,
+ 	&cache_disable_1.attr,
+ 	NULL
+@@ -912,6 +920,7 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
+ 	unsigned int cpu = sys_dev->id;
+ 	unsigned long i, j;
+ 	struct _index_kobject *this_object;
++	struct _cpuid4_info   *this_leaf;
+ 	int retval;
  
- static void __rdmsr_on_cpu(void *info)
- {
-@@ -202,3 +203,9 @@ int wrmsr_safe_regs_on_cpu(unsigned int cpu, u32 *regs)
- 	return err ? err : rv.err;
- }
- EXPORT_SYMBOL(wrmsr_safe_regs_on_cpu);
+ 	retval = cpuid4_cache_sysfs_init(cpu);
+@@ -930,6 +939,14 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
+ 		this_object = INDEX_KOBJECT_PTR(cpu, i);
+ 		this_object->cpu = cpu;
+ 		this_object->index = i;
 +
-+void wbinvd_on_cpu(int cpu)
-+{
-+	smp_call_function_single(cpu, native_wbinvd, NULL, 1);
-+}
-+EXPORT_SYMBOL(wbinvd_on_cpu);
++		this_leaf = CPUID4_INFO_IDX(cpu, i);
++
++		if (this_leaf->can_disable)
++			ktype_cache.default_attrs = default_l3_attrs;
++		else
++			ktype_cache.default_attrs = default_attrs;
++
+ 		retval = kobject_init_and_add(&(this_object->kobj),
+ 					      &ktype_cache,
+ 					      per_cpu(ici_cache_kobject, cpu),
 -- 
 1.6.6
 
