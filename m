@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720Ab0AUSdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610Ab0AUSgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754720Ab0AUSdq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 13:33:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128Ab0AUSdp
+	id S1754610Ab0AUSgr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 13:36:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194Ab0AUSgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 13:33:45 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60412 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752273Ab0AUSdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 13:33:44 -0500
-Message-ID: <4B589D0E.2010601@zytor.com>
-Date: Thu, 21 Jan 2010 10:29:34 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Thu, 21 Jan 2010 13:36:46 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:49000 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752167Ab0AUSgo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 13:36:44 -0500
+Date: Thu, 21 Jan 2010 19:36:53 +0100
+From: Borislav Petkov <bp@amd64.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, andreas.herrmann3@amd.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] x86, smp: Adjust native_wbinvd for
+ smp_call_function-helpers
+Message-ID: <20100121183653.GA14808@aftab>
+References: <1264092093-13739-1-git-send-email-bp@amd64.org>
+ <1264092093-13739-3-git-send-email-bp@amd64.org>
+ <4B5897F7.5000008@zytor.com>
 MIME-Version: 1.0
-To: Christian Hofstaedtler <ch@zeha.at>
-CC: x86@kernel.org, lenb@kernel.org, tglx@linutronix.de,
-       linux-acpi@vger.kernel.org, venkatesh.pallipadi@intel.com,
-       arjan@infradead.org, bruce.w.allan@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] x86: Unify reboot_type selection
-References: <alpine.LFD.2.00.1001200007560.4265@localhost.localdomain> <1264094323-7187-1-git-send-email-ch@zeha.at>
-In-Reply-To: <1264094323-7187-1-git-send-email-ch@zeha.at>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B5897F7.5000008@zytor.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21/2010 09:18 AM, Christian Hofstaedtler wrote:
-> Unify x86_32-only and x86_32+x86_64 reboot quirks selection functions,
-> so the code path is a bit easier to understand and gets a predefined
-> execution order.
+On Thu, Jan 21, 2010 at 10:07:51AM -0800, H. Peter Anvin wrote:
+> On 01/21/2010 08:41 AM, Borislav Petkov wrote:
+> > From: Borislav Petkov <borislav.petkov@amd.com>
+> > 
+> > Add a wbinvd_on_cpu() helper and fold the void * arg in the wbinvd macro
+> > definition so that native_wbinvd can be used in the smp_call_function_*
+> > helpers as a pointed-to function.
+> > 
+> > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+> 
+> This patch is a lot of extra uglification just to avoid a simple jump
+> stub -- and even then only with PV enabled -- for an operation which is
+> then going to perform an IPI and WBINVD.  That doesn't exactly seem like
+> the right tradeoff.
+> 
+> As such, I'm going to request that you just put a simple stub function
+> in lib/smp.c rather than this whole patchset (well, the smp.h bit
+> obviously needs to stay.)
 
->  
-> -static struct dmi_system_id __initdata reboot_dmi_table[] = {
-> +/*
-> + * This table only gets used on x86_32, so only use with
-> + * set_bios_reboot.
-> + */
-> +static struct dmi_system_id __initdata reboot_dmi_table_x86_32[] = {
->  	{	/* Handle problems with rebooting on Dell E520's */
->  		.callback = set_bios_reboot,
->  		.ident = "Dell E520",
-> @@ -270,13 +274,6 @@ static struct dmi_system_id __initdata reboot_dmi_table[] = {
->  	{ }
->  };
->  
+..and I was wrapping the wrong way: wbinvd() was going to hide the void
+* function argument while a simple stub in lib/smp.c could wrap around
+wbinvd() which is much more cleaner. Thanks.
 
-I think it would make more sense to just #ifdef off a section of a
-single table, instead of having an #ifdef for a separate table and an
-#ifdef for a table entry.
+Will redo the patchset tomorrow.
 
-I don't know how big these tables are -- this is initdata after all, so
-unless the tables are really small, we could just make set_bios_reboot a
-noop on x86-64.
+-- 
+Regards/Gruss,
+Boris.
 
-	-hpa
+-
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
