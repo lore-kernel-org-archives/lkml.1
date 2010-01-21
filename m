@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567Ab0AUE12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591Ab0AUE1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567Ab0AUE12 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208Ab0AUE0p
+	id S1754591Ab0AUE1g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558Ab0AUE11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:26:45 -0500
-Received: from kroah.org ([198.145.64.141]:60168 "EHLO coco.kroah.org"
+	Wed, 20 Jan 2010 23:27:27 -0500
+Received: from kroah.org ([198.145.64.141]:60106 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754214Ab0AUEXC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:23:02 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:35 2010
-Message-Id: <20100121041835.339511488@mini.kroah.org>
+	id S1754173Ab0AUEW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 23:22:57 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:34 2010
+Message-Id: <20100121041834.690060941@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 20 Jan 2010 20:15:43 -0800
+Date: Wed, 20 Jan 2010 20:15:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ike Panhc <ike.pan@canonical.com>, Len Brown <len.brown@intel.com>
-Subject: [22/30] asus-laptop: add Lenovo SL hotkey support
+       Jeff Mahoney <jeffm@suse.com>, Jan Kara <jack@suse.cz>
+Subject: [17/30] reiserfs: truncate blocks not used by a write
 In-Reply-To: <20100121041852.GA9656@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,73 +28,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ike Panhc <ike.pan@canonical.com>
+From: Jan Kara <jack@suse.cz>
 
-commit 14f8af311e7d3e4198cbaade84a34f86505dcb37 upstream.
+commit ec8e2f7466ca370f5e09000ca40a71759afc9ac8 upstream.
 
-Lenovo SL series laptop has a very similar DSDT with Asus laptops. We can
-easily have the extra ACPI function support with little modification in
-asus-laptop.c
+It can happen that write does not use all the blocks allocated in
+write_begin either because of some filesystem error (like ENOSPC) or
+because page with data to write has been removed from memory.  We truncate
+these blocks so that we don't have dangling blocks beyond i_size.
 
-Here is the hotkey enablement for Lenovo SL series laptop.
-
-This patch will enable the following hotkey:
- - Volumn Up
- - Volumn Down
- - Mute
- - Screen Lock (Fn+F2)
- - Battery Status (Fn+F3)
- - WLAN switch (Fn+F5)
- - Video output switch (Fn+F7)
- - Touchpad switch (Fn+F8)
- - Screen Magnifier (Fn+Space)
-
-The following function of Lenovo SL laptop is still need to be enabled:
- - Hotkey: KEY_SUSPEND (Fn+F4), KEY_SLEEP (Fn+F12), Dock Eject (Fn+F9)
- - Rfkill for bluetooth and wlan
- - LenovoCare LED
- - Hwmon for fan speed
- - Fingerprint scanner
- - Active Protection System
-
-Signed-off-by: Ike Panhc <ike.pan@canonical.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: Jeff Mahoney <jeffm@suse.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/platform/x86/asus-laptop.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ fs/reiserfs/inode.c |   17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
---- a/drivers/platform/x86/asus-laptop.c
-+++ b/drivers/platform/x86/asus-laptop.c
-@@ -221,6 +221,7 @@ static struct asus_hotk *hotk;
-  */
- static const struct acpi_device_id asus_device_ids[] = {
- 	{"ATK0100", 0},
-+	{"ATK0101", 0},
- 	{"", 0},
- };
- MODULE_DEVICE_TABLE(acpi, asus_device_ids);
-@@ -293,6 +294,11 @@ struct key_entry {
- enum { KE_KEY, KE_END };
+--- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -2531,6 +2531,12 @@ static int reiserfs_writepage(struct pag
+ 	return reiserfs_write_full_page(page, wbc);
+ }
  
- static struct key_entry asus_keymap[] = {
-+	{KE_KEY, 0x02, KEY_SCREENLOCK},
-+	{KE_KEY, 0x05, KEY_WLAN},
-+	{KE_KEY, 0x08, BTN_TOUCH},
-+	{KE_KEY, 0x17, KEY_ZOOM},
-+	{KE_KEY, 0x1f, KEY_BATTERY},
- 	{KE_KEY, 0x30, KEY_VOLUMEUP},
- 	{KE_KEY, 0x31, KEY_VOLUMEDOWN},
- 	{KE_KEY, 0x32, KEY_MUTE},
-@@ -312,6 +318,8 @@ static struct key_entry asus_keymap[] = 
- 	{KE_KEY, 0x5F, KEY_WLAN},
- 	{KE_KEY, 0x60, KEY_SWITCHVIDEOMODE},
- 	{KE_KEY, 0x61, KEY_SWITCHVIDEOMODE},
-+	{KE_KEY, 0x62, KEY_SWITCHVIDEOMODE},
-+	{KE_KEY, 0x63, KEY_SWITCHVIDEOMODE},
- 	{KE_KEY, 0x6B, BTN_TOUCH}, /* Lock Mouse */
- 	{KE_KEY, 0x82, KEY_CAMERA},
- 	{KE_KEY, 0x8A, KEY_PROG1},
++static void reiserfs_truncate_failed_write(struct inode *inode)
++{
++	truncate_inode_pages(inode->i_mapping, inode->i_size);
++	reiserfs_truncate_file(inode, 0);
++}
++
+ static int reiserfs_write_begin(struct file *file,
+ 				struct address_space *mapping,
+ 				loff_t pos, unsigned len, unsigned flags,
+@@ -2597,6 +2603,8 @@ static int reiserfs_write_begin(struct f
+ 	if (ret) {
+ 		unlock_page(page);
+ 		page_cache_release(page);
++		/* Truncate allocated blocks */
++		reiserfs_truncate_failed_write(inode);
+ 	}
+ 	return ret;
+ }
+@@ -2689,8 +2697,7 @@ static int reiserfs_write_end(struct fil
+ 	 ** transaction tracking stuff when the size changes.  So, we have
+ 	 ** to do the i_size updates here.
+ 	 */
+-	pos += copied;
+-	if (pos > inode->i_size) {
++	if (pos + copied > inode->i_size) {
+ 		struct reiserfs_transaction_handle myth;
+ 		reiserfs_write_lock(inode->i_sb);
+ 		/* If the file have grown beyond the border where it
+@@ -2708,7 +2715,7 @@ static int reiserfs_write_end(struct fil
+ 			goto journal_error;
+ 		}
+ 		reiserfs_update_inode_transaction(inode);
+-		inode->i_size = pos;
++		inode->i_size = pos + copied;
+ 		/*
+ 		 * this will just nest into our transaction.  It's important
+ 		 * to use mark_inode_dirty so the inode gets pushed around on the
+@@ -2735,6 +2742,10 @@ static int reiserfs_write_end(struct fil
+       out:
+ 	unlock_page(page);
+ 	page_cache_release(page);
++
++	if (pos + len > inode->i_size)
++		reiserfs_truncate_failed_write(inode);
++
+ 	return ret == 0 ? copied : ret;
+ 
+       journal_error:
 
 
