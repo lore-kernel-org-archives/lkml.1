@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998Ab0AUPXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099Ab0AUPZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752998Ab0AUPXW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 10:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825Ab0AUPXV
+	id S1753099Ab0AUPZs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 10:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894Ab0AUPZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 10:23:21 -0500
-Received: from sh.osrg.net ([192.16.179.4]:50575 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750922Ab0AUPXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 10:23:20 -0500
-Date: Fri, 22 Jan 2010 00:22:10 +0900
-To: jarkao2@gmail.com
-Cc: alan@lxorguk.ukuu.org.uk, davem@davemloft.net,
-       shemminger@linux-foundation.org, mbreuer@majjas.com,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       mchan@broadcom.com, pcnet32@verizon.net, romieu@fr.zoreil.com,
-       mcarlson@broadcom.com
-Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100120225322.GC3072@del.dom.local>
-References: <20100120094103.GA6225@ff.dom.local>
-	<20100120222414.57909d14@lxorguk.ukuu.org.uk>
-	<20100120225322.GC3072@del.dom.local>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 21 Jan 2010 10:25:47 -0500
+Received: from e28smtp02.in.ibm.com ([122.248.162.2]:55761 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751611Ab0AUPZr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 10:25:47 -0500
+Message-ID: <4B5871F3.5020800@linux.vnet.ibm.com>
+Date: Thu, 21 Jan 2010 20:55:39 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0b1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Anton Blanchard <anton@samba.org>
+CC: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       balajirrao@gmail.com, dhaval@linux.vnet.ibm.com, tglx@linutronix.de,
+       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com
+Subject: Re: [PATCH] sched: cpuacct: Use bigger percpu counter batch values
+ for stats counters
+References: <20090512102412.GG6351@balbir.in.ibm.com> <20090512102939.GB11714@elte.hu> <20090512193656.D647.A69D9226@jp.fujitsu.com> <20090716081010.GB3134@in.ibm.com> <20090716083948.GA2950@kryten> <20090820051038.GF21100@kryten> <20100118044142.GS12666@kryten> <20100118104213.64231c1e@mschwide.boeblingen.de.ibm.com> <20100118095527.GV12666@kryten>
+In-Reply-To: <20100118095527.GV12666@kryten>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20100122002053X.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 22 Jan 2010 00:22:14 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010 23:53:22 +0100
-Jarek Poplawski <jarkao2@gmail.com> wrote:
-
-> On Wed, Jan 20, 2010 at 10:24:14PM +0000, Alan Cox wrote:
-> > > > Seems like an underlying bug in the DMA api. Maybe it just can't
-> > > > handle operations on partial mapping.
-> > > > 
-> > > > Other drivers with same problem:
-> > > >   bnx2, cassini, pcnet32, r8169, rrunner, skge, sungem, tg3, 
-> > > 
-> > > It seems using the same length (even without pci_unmap_len()) is
-> > > crucial here, but I hope maintainers (added to CC) will take care.
-> > 
-> > The API needs fixing - if you've got a large mapping and you want to sync
-> > part of it then we need to support that. Now it might well be that the
-> > implementation on some braindead platform has to sync the entire thing,
-> > and some implementations entire pages or cache lines.
-> > 
-> > You can't fix this in the drivers, they requested a service and they
-> > don't have enough information nor is it their job to know about all the
-> > platform specific rules.
+On Monday 18 January 2010 03:25 PM, Anton Blanchard wrote:
 > 
-> Yes, the need to repeat some other values if there is a dedicated
-> structure/pointer could be misleading. Btw, it seems to be a trivial
-> overlooking since there is dma_sync_single_range() ready to use.
+> Hi Martin,
+> 
+>> For s390 the jiffies_to_cputime is a compile time constant. No need to
+>> initialize it at runtime, no? 
+> 
+> Indeed it is, I didn't look closely enough. Same with ia64 so no work to
+> do on either arch :)
+> 
+>> The patch itself trades some accuracy (larger cpu accounting value that
+>> are stored per-cpu) against runtime overhead (spinlock to transfer the
+>> value to the global variable in __percpu_counter_add). Did you
+>> calculate how big the loss in accuracy is?
+> 
+> The idea is we are already batching percpu_counter_batch jiffies, so
+> with CONFIG_VIRT_CPU_ACCOUNTING we batch the equivalent amount in
+> cputime.
+> 
 
-Yeah, dma_sync_single_range() enables you to do a partial sync. But
-you must be really careful with a partial sync (as DMA-API.txt says).
+Hi, Peter, Ingo
+
+Could we please pick up the patch for -tip?
+
+-- 
+Three Cheers,
+Balbir Singh
