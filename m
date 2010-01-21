@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420Ab0AUEX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371Ab0AUEXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420Ab0AUEX3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221Ab0AUEXG
+	id S1754371Ab0AUEXX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:23:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200Ab0AUEXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:23:06 -0500
-Received: from kroah.org ([198.145.64.141]:60163 "EHLO coco.kroah.org"
+	Wed, 20 Jan 2010 23:23:04 -0500
+Received: from kroah.org ([198.145.64.141]:60131 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754074Ab0AUEXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:23:01 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:35 2010
-Message-Id: <20100121041835.206048238@mini.kroah.org>
+	id S1754161Ab0AUEWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 23:22:55 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:34 2010
+Message-Id: <20100121041833.907239860@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 20 Jan 2010 20:15:42 -0800
+Date: Wed, 20 Jan 2010 20:15:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tai-hwa Liang <avatar@sentelic.com>, Dmitry Torokhov <dtor@mail.ru>
-Subject: [21/30] Input: pmouse - move Sentelic probe down the list
+       Tamas Vincze <tom@vincze.org>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Doug Thompson <dougthompson@xmission.com>
+Subject: [11/30] edac: i5000_edac critical fix panic out of bounds
 In-Reply-To: <20100121041852.GA9656@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,69 +30,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tai-hwa Liang <avatar@sentelic.com>
+From: Tamas Vincze <tom@vincze.org>
 
-commit 4a18b3ab6ed537b055e3fcfca64ab870b4f9acf0 upstream.
+commit 118f3e1afd5534c15f9701f33514186cfc841a27 upstream.
 
-Sentelic probes confuse IBM trackpoints so they stop responding to
-TP_READ_ID command. See:
+EDAC MC0: INTERNAL ERROR: channel-b out of range (4 >= 4)
+Kernel panic - not syncing: EDAC MC0: Uncorrected Error  (XEN) Domain 0 crashed: 'noreboot' set - not rebooting.
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=14970
+This happens because FERR_NF_FBD bit 28 is not updated on i5000.  Due to
+that, both bits 28 and 29 may be equal to one, returning channel = 3.  As
+this value is invalid, EDAC core generates the panic.
 
-Let's move FSP detection lower so it is probed after trackpoint and
-others, just before we strat probing for Intellimouse Explorer.
+Addresses http://bugzilla.kernel.org/show_bug.cgi?id=14568
 
-Signed-off-by: Tai-hwa Liang <avatar@sentelic.com>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Signed-off-by: Tamas Vincze <tom@vincze.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/input/mouse/psmouse-base.c |   28 +++++++++++++++-------------
- 1 file changed, 15 insertions(+), 13 deletions(-)
+ drivers/edac/i5000_edac.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
---- a/drivers/input/mouse/psmouse-base.c
-+++ b/drivers/input/mouse/psmouse-base.c
-@@ -667,19 +667,6 @@ static int psmouse_extensions(struct psm
- 		max_proto = PSMOUSE_IMEX;
- 	}
+--- a/drivers/edac/i5000_edac.c
++++ b/drivers/edac/i5000_edac.c
+@@ -577,7 +577,13 @@ static void i5000_process_nonfatal_error
+ 		debugf0("\tUncorrected bits= 0x%x\n", ue_errors);
  
--/*
-- * Try Finger Sensing Pad
-- */
--	if (max_proto > PSMOUSE_IMEX) {
--		if (fsp_detect(psmouse, set_properties) == 0) {
--			if (!set_properties || fsp_init(psmouse) == 0)
--				return PSMOUSE_FSP;
--/*
-- * Init failed, try basic relative protocols
-- */
--			max_proto = PSMOUSE_IMEX;
--		}
--	}
- 
- 	if (max_proto > PSMOUSE_IMEX) {
- 		if (genius_detect(psmouse, set_properties) == 0)
-@@ -696,6 +683,21 @@ static int psmouse_extensions(struct psm
- 	}
- 
- /*
-+ * Try Finger Sensing Pad. We do it here because its probe upsets
-+ * Trackpoint devices (causing TP_READ_ID command to time out).
-+ */
-+	if (max_proto > PSMOUSE_IMEX) {
-+		if (fsp_detect(psmouse, set_properties) == 0) {
-+			if (!set_properties || fsp_init(psmouse) == 0)
-+				return PSMOUSE_FSP;
-+/*
-+ * Init failed, try basic relative protocols
-+ */
-+			max_proto = PSMOUSE_IMEX;
-+		}
-+	}
+ 		branch = EXTRACT_FBDCHAN_INDX(info->ferr_nf_fbd);
+-		channel = branch;
 +
-+/*
-  * Reset to defaults in case the device got confused by extended
-  * protocol probes. Note that we follow up with full reset because
-  * some mice put themselves to sleep when they see PSMOUSE_RESET_DIS.
++		/*
++		 * According with i5000 datasheet, bit 28 has no significance
++		 * for errors M4Err-M12Err and M17Err-M21Err, on FERR_NF_FBD
++		 */
++		channel = branch & 2;
++
+ 		bank = NREC_BANK(info->nrecmema);
+ 		rank = NREC_RANK(info->nrecmema);
+ 		rdwr = NREC_RDWR(info->nrecmema);
 
 
