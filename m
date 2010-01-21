@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390Ab0AUVc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275Ab0AUVif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390Ab0AUVc3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 16:32:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911Ab0AUVc2
+	id S1755275Ab0AUVif (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 16:38:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865Ab0AUVie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 16:32:28 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:30961 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754610Ab0AUVc2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 16:32:28 -0500
-Date: Thu, 21 Jan 2010 14:32:26 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 9/9] pci: set PCI_PREF_RANGE_TYPE_64 in
-	pci_bridge_check_ranges
-Message-ID: <20100121213226.GI17684@ldl.fc.hp.com>
-References: <1264054456-12694-1-git-send-email-yinghai@kernel.org> <1264054456-12694-10-git-send-email-yinghai@kernel.org>
+	Thu, 21 Jan 2010 16:38:34 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37754 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751988Ab0AUVie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 16:38:34 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [linux-pm] [RFC][PATCH] PM: Force GFP_NOIO 
+ =?iso-8859-1?q?during=09suspend/resume?= (was: Re: Memory allocations in 
+ =?iso-8859-1?q?=2Esuspend=09became_very?= unreliable)
+Date: Thu, 21 Jan 2010 22:38:47 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20100120085053.405A.A69D9226@jp.fujitsu.com> <201001212121.50272.rjw@sisk.pl> <4B58BC31.1040406@crca.org.au>
+In-Reply-To: <4B58BC31.1040406@crca.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264054456-12694-10-git-send-email-yinghai@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001212238.47471.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Yinghai Lu <yinghai@kernel.org>:
-> make pci_bridge_check_ranges() to store the
-> PCI_PREF_RANGE_TYPE_64 in addition to IORESOURCE_MEM_64. just
-> like pci_read_bridge_bases()
+On Thursday 21 January 2010, Nigel Cunningham wrote:
+> Hi.
 > 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> ---
->  drivers/pci/setup-bus.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
+> Rafael J. Wysocki wrote:
+> > On Thursday 21 January 2010, KOSAKI Motohiro wrote:
+> >>  - Ask all drivers how much they require memory before starting suspend and
+> >>    Make enough free memory at first?
+> > 
+> > That's equivalent to reworking all drivers to allocate memory before suspend
+> > eg. with the help of PM notifiers.  Which IMHO is unrealistic.
 > 
-> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-> index a9c4f9e..8fafe73 100644
-> --- a/drivers/pci/setup-bus.c
-> +++ b/drivers/pci/setup-bus.c
-> @@ -359,8 +359,11 @@ static void pci_bridge_check_ranges(struct pci_bus *bus)
->  	}
->  	if (pmem) {
->  		b_res[2].flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH;
-> -		if ((pmem & PCI_PREF_RANGE_TYPE_MASK) == PCI_PREF_RANGE_TYPE_64)
-> +		if ((pmem & PCI_PREF_RANGE_TYPE_MASK) ==
-> +		    PCI_PREF_RANGE_TYPE_64) {
->  			b_res[2].flags |= IORESOURCE_MEM_64;
-> +			b_res[2].flags |= PCI_PREF_RANGE_TYPE_64;
-> +		}
->  	}
+> What's unrealistic about it? I can see that it would be a lot of work,
+> but unrealistic? To me, at this stage, it sounds like the ideal solution.
 
-My copy of pci_read_bridge_bases() in jbarnes's linux-next tree
-doesn't do anything like that.
+First, we'd need to audit the drivers which is quite a task by itself.
+Second, we'd need to make changes, preferably test them or find someone with
+suitable hardware to do that for us and propagate them upstream.
 
- 284 void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 285 {
- ...
- 369         if (base <= limit) {
- 370                 res->flags = (mem_base_lo & PCI_PREF_RANGE_TYPE_MASK) |
- 371                                          IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 372                 if (res->flags & PCI_PREF_RANGE_TYPE_64)
- 373                         res->flags |= IORESOURCE_MEM_64;
- 374                 res->start = base;
- 375                 res->end = limit + 0xfffff;
- 376                 dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
- 377         }
+I don't really think we have the time to do it.
 
-What's going on?
-
-/ac
+Rafael
