@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246Ab0AUKtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264Ab0AUKxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246Ab0AUKtP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 05:49:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912Ab0AUKtO
+	id S1755264Ab0AUKxX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 05:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253Ab0AUKxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 05:49:14 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:60533 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753769Ab0AUKtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 05:49:13 -0500
-Date: Thu, 21 Jan 2010 11:49:10 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: David Miller <davem@davemloft.net>
-Cc: vladislav.yasevich@hp.com, sri@us.ibm.com, linux-sctp@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 4/9] net/sctp: Eliminate useless code
-In-Reply-To: <20100121.024337.57448535.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.1001211148310.13529@ask.diku.dk>
-References: <4B574702.4040602@hp.com> <20100120.150343.236848237.davem@davemloft.net>
- <Pine.LNX.4.64.1001211121500.13529@ask.diku.dk> <20100121.024337.57448535.davem@davemloft.net>
+	Thu, 21 Jan 2010 05:53:20 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:11954 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755178Ab0AUKxT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 05:53:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=IlKEW1sJm+iwvMbV9npnb3uHtR1kx8TA4cmQVoZvI5PGVCBY17vYyO9GDNgk79q20N
+         dYSHtdDr9Y4PV0OvNOOKimuKzOg37UIiXzDAG696KuZwAvBOcsK3DuL2l96+VvRd4yOL
+         apY58knOC6xTfYFEzSFH2QWWaRxa9tJ3MXJuA=
+Date: Thu, 21 Jan 2010 11:53:14 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Andy Whitcroft <apw@canonical.com>
+Subject: Re: Lots of bugs with current->state = TASK_*INTERRUPTIBLE
+Message-ID: <20100121105311.GB5017@nowhere>
+References: <1263932978.31321.53.camel@gandalf.stny.rr.com> <Pine.LNX.4.64.1001192155490.28583@ask.diku.dk> <1263935333.4561.26.camel@frodo> <Pine.LNX.4.64.1001211145480.13529@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.1001211145480.13529@ask.diku.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jan 2010, David Miller wrote:
-
-> From: Julia Lawall <julia@diku.dk>
-> Date: Thu, 21 Jan 2010 11:22:38 +0100 (CET)
+On Thu, Jan 21, 2010 at 11:47:41AM +0100, Julia Lawall wrote:
+> What about something like the following (drivers/macintosh/adb.c):
 > 
-> > On Wed, 20 Jan 2010, David Miller wrote:
-> > 
-> >> From: Vlad Yasevich <vladislav.yasevich@hp.com>
-> >> Date: Wed, 20 Jan 2010 13:10:10 -0500
-> >> 
-> >> > 
-> >> > 
-> >> > Julia Lawall wrote:
-> >> >> From: Julia Lawall <julia@diku.dk>
-> >> >> 
-> >> >> The variable newinet is initialized twice to the same (side effect-free)
-> >> >> expression.  Drop one initialization.
-> >> >> 
-> >> >> A simplified version of the semantic match that finds this problem is:
-> >> >> (http://coccinelle.lip6.fr/)
-> >> >> 
-> >> >> // <smpl>
-> >> >> @forall@
-> >> >> idexpression *x;
-> >> >> identifier f!=ERR_PTR;
-> >> >> @@
-> >> >> 
-> >> >> x = f(...)
-> >> >> ... when != x
-> >> >> (
-> >> >> x = f(...,<+...x...+>,...)
-> >> >> |
-> >> >> * x = f(...)
-> >> >> )
-> >> >> // </smpl>
-> >> >> 
-> >> >> Signed-off-by: Julia Lawall <julia@diku.dk>
-> >> > 
-> >> > Acked-by: Vlad Yasevich <vladislav.yasevich@hp.com>
-> >> 
-> >> Julia,  just like patch #3 this one had the missing final
-> >> line of the patch corrupting it, so you'll need to resubmit.
-> > 
-> > I have generated and sent it again, but this time I don't see the problem.  
-> > If there is still a problem, perhaps you could send me back the patch you 
-> > received?
+>         add_wait_queue(&state->wait_queue, &wait);
+>         current->state = TASK_INTERRUPTIBLE;
 > 
-> You dropped Vlad' ACK in your re-submission.
+> 	for (;;) {
+> 	        req = state->completed;
+>                 if (req != NULL)
+>                         state->completed = req->next;
+>                 else if (atomic_read(&state->n_pending) == 0)
+>                         ret = -EIO;
+> 		if (req != NULL || ret != 0)
+> 			break;
 > 
-> I'll fix it up this time, but please accumulate ACK's when
-> resubmitting patches merely for the purpose of fixing some
-> technical submission problem.
+>                 if (file->f_flags & O_NONBLOCK) {
+>                         ret = -EAGAIN;
+>                         break;
+> 		}
+>                 if (signal_pending(current)) {
+>                         ret = -ERESTARTSYS;
+>                         break;
+>                 }
+>                 spin_unlock_irqrestore(&state->lock, flags);
+>                 schedule();
+>         	spin_lock_irqsave(&state->lock, flags);
+>         }
 > 
-> Thanks.
+>         current->state = TASK_RUNNING;
+>         remove_wait_queue(&state->wait_queue, &wait);
+> 
+> There is a call to schedule eventually after the first current->state 
+> assignment, but it is not right after.
 
-OK, I will keep that in mind.
 
-Is the new one better than the old one?  Because in my local copies, they 
-are the same...
 
-julia
+Looks fine as spin_unlock includes a memory barrier, IIRC.
+
