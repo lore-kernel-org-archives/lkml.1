@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444Ab0AUEZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248Ab0AUEXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444Ab0AUEZf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303Ab0AUEZV
+	id S1754248Ab0AUEXI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:23:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318Ab0AUEWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:25:21 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:62935 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753991Ab0AUEZR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:25:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=vdfHNuPDmIvKzibjesH9TBWKzwg7ZEcXMxH518q1KjoE/OXVyuE7vby/y4L6Cxe8RE
-         zxMLwCZFiIMMFwQBxcJ24+BGcNV0T+HhlhjnzV8p59JSv1ei6bTu8tvT7UBimvTiRN7W
-         9BNwNHy4vHIf6rE3gaiI91UyaMTgGIO2qW0B4=
-Message-ID: <4B57D72A.2040905@garzik.org>
-Date: Wed, 20 Jan 2010 23:25:14 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 23/64] pata_via: store UDMA masks in via_isa_bridges table
-References: <20100118171349.14623.90030.sendpatchset@localhost> <20100118171712.14623.9408.sendpatchset@localhost>
-In-Reply-To: <20100118171712.14623.9408.sendpatchset@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jan 2010 23:22:46 -0500
+Received: from kroah.org ([198.145.64.141]:60056 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753713Ab0AUEWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 23:22:43 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:32 2010
+Message-Id: <20100121041832.720573885@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Wed, 20 Jan 2010 20:15:23 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Eric Paris <eparis@redhat.com>
+Subject: [02/30] inotify: only warn once for inotify problems
+In-Reply-To: <20100121041852.GA9656@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/18/2010 12:17 PM, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
-> Subject: [PATCH] pata_via: store UDMA masks in via_isa_bridges table
->
-> * store UDMA masks in via_isa_bridges[] and while at it make "flags"
->    field to be u8 instead of u16
->
-> * convert the driver to use UDMA masks from via_isa_bridges[]
->
-> * remove no longer needed VIA_UDMA* defines
->
-> Make some minor documentation and CodingStyle fixes while at it.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
-> ---
->   drivers/ata/pata_via.c |  198 +++++++++++++++++++++++--------------------------
->   1 file changed, 93 insertions(+), 105 deletions(-)
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-applied
+------------------
+
+From: Eric Paris <eparis@redhat.com>
+
+commit 976ae32be45a736acd49215a7e4771ff91f161c3 upstream.
+
+inotify will WARN() if it finds that the idr and the fsnotify internals
+somehow got out of sync.  It was only supposed to do this once but due
+to this stupid bug it would warn every single time a problem was
+detected.
+
+Signed-off-by: Eric Paris <eparis@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ fs/notify/inotify/inotify_fsnotify.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/fs/notify/inotify/inotify_fsnotify.c
++++ b/fs/notify/inotify/inotify_fsnotify.c
+@@ -121,7 +121,7 @@ static int idr_callback(int id, void *p,
+ 	if (warned)
+ 		return 0;
+ 
+-	warned = false;
++	warned = true;
+ 	entry = p;
+ 	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
+ 
 
 
