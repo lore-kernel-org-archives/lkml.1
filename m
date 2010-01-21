@@ -1,80 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891Ab0AUAr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062Ab0AUAvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752891Ab0AUAr0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 19:47:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311Ab0AUArT
+	id S1753062Ab0AUAvy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 19:51:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294Ab0AUAvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 19:47:19 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37846 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751439Ab0AUArR (ORCPT
+	Wed, 20 Jan 2010 19:51:53 -0500
+Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:58930 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181Ab0AUAvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 19:47:17 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during suspend/resume (was: Re: [linux-pm] Memory allocations in .suspend became very unreliable)
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <201001202221.34804.rjw@sisk.pl>
-References: <20100120085053.405A.A69D9226@jp.fujitsu.com> <201001202221.34804.rjw@sisk.pl>
-Message-Id: <20100121091023.3775.A69D9226@jp.fujitsu.com>
+	Wed, 20 Jan 2010 19:51:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
+	:date:message-id:mime-version:content-type; q=dns; s=sasl; b=BL/
+	0R1gVpUenc8/P1XQsUnuCFOIxvS7pihnPmnHnNy45Taze0V5SXaNySns70sBWINE
+	wfg0E72n2WFOZcXCog/vWy64eU9FnO/WfZOE+HCn+YDqmSAYeDzHHaAZ9IqPxwSF
+	DJOV2Mhvzisry03dUNisZM8OmPMpL/f/OsR2fk/M=
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] Git 1.6.6.1
+From: Junio C Hamano <gitster@pobox.com>
+Date: Wed, 20 Jan 2010 16:51:41 -0800
+Message-ID: <7vpr54xote.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 21 Jan 2010 09:47:14 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: 271A1C8A-0627-11DF-B146-6AF7ED7EF46B-77302942!a-pb-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Hi Rafael,
-> > 
-> > Do you mean this is the unrelated issue of nVidia bug?
-> 
-> The nvidia driver _is_ buggy, but Maxim said he couldn't reproduce the
-> problem if all the allocations made by the nvidia driver during suspend
-> were changed to GFP_ATOMIC.
-> 
-> > Probably I haven't catch your point. I don't find Maxim's original bug
-> > report. Can we share the test-case and your analysis detail?
-> 
-> The Maxim's original report is here:
-> https://lists.linux-foundation.org/pipermail/linux-pm/2010-January/023982.html
-> 
-> and the message I'm referring to is at:
-> https://lists.linux-foundation.org/pipermail/linux-pm/2010-January/023990.html
+The latest maintenance release Git 1.6.6.1 is available at the
+usual places:
 
-Hmmm...
+  http://www.kernel.org/pub/software/scm/git/
 
-Usually, Increasing I/O isn't caused MM change. either subsystem change
-memory alloc/free pattern and another subsystem receive such effect ;)
-I don't think this message indicate MM fault.
+  git-1.6.6.1.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.6.1.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.6.1.tar.{gz,bz2}		(preformatted docs)
 
-And, 2.6.33 MM change is not much. if the fault is in MM change
-(note: my guess is no), The most doubtful patch is my "killing shrink_all_zones"
-patch. If old shrink_all_zones reclaimed memory much rather than required. 
-The patch fixed it. IOW, the patch can reduce available free memory to be used
-buggy .suspend of the driver. but I don't think it is MM fault.
+The RPM binary packages for a few architectures are found in:
 
-As I said, drivers can't use memory freely as their demand in suspend method.
-It's obvious. They should stop such unrealistic assumption. but How should we fix
-this?
- - Gurantee suspend I/O device at last?
- - Make much much free memory before calling .suspend method? even though
-   typical drivers don't need.
- - Ask all drivers how much they require memory before starting suspend and
-   Make enough free memory at first?
- - Or, do we have an alternative way?
+  RPMS/$arch/git-*-1.6.6.1-1.fc11.$arch.rpm	(RPM)
 
+Git v1.6.6.1 Release Notes
+==========================
 
-Probably we have multiple option. but I don't think GFP_NOIO is good
-option. It assume the system have lots non-dirty cache memory and it isn't
-guranteed.
+Fixes since v1.6.6
+------------------
 
+ * "git blame" did not work well when commit lacked the author name.
 
+ * "git branch -a name" wasn't diagnosed as an error.
 
+ * "git count-objects" did not handle packfiles that are bigger than 4G on
+   platforms with 32-bit off_t.
+
+ * "git checkout -m other" while on a branch that does not have any commit
+   segfaulted, instead of failing.
+
+ * "git fast-import" choked when fed a tag that do not point at a
+   commit.
+
+ * "git grep" finding from work tree files could have fed garbage to
+   the underlying regexec(3).
+
+ * "git grep -L" didn't show empty files (they should never match, and
+   they should always appear in -L output as unmatching).
+
+ * "git rebase -i" did not abort cleanly if it failed to launch the editor.
+
+ * "git reset --hard" did not work correctly when GIT_WORK_TREE environment
+   variable is used to point at the root of the true work tree.
+
+ * http-backend was not listed in the command list in the documentation.
+
+ * Building on FreeBSD (both 7 and 8) needs OLD_ICONV set in the Makefile
+
+ * "git checkout -m some-branch" while on an unborn branch crashed.
+
+Other minor documentation updates are included.
