@@ -1,35 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099Ab0AUPZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237Ab0AUP34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753099Ab0AUPZs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 10:25:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894Ab0AUPZr
+	id S1753237Ab0AUP34 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 10:29:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731Ab0AUP3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 10:25:47 -0500
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:55761 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751611Ab0AUPZr (ORCPT
+	Thu, 21 Jan 2010 10:29:55 -0500
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:44955 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752428Ab0AUP3y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 10:25:47 -0500
-Message-ID: <4B5871F3.5020800@linux.vnet.ibm.com>
-Date: Thu, 21 Jan 2010 20:55:39 +0530
+	Thu, 21 Jan 2010 10:29:54 -0500
+Message-ID: <4B5872EC.5040603@linux.vnet.ibm.com>
+Date: Thu, 21 Jan 2010 20:59:48 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0b1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-CC: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       balajirrao@gmail.com, dhaval@linux.vnet.ibm.com, tglx@linutronix.de,
-       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com
-Subject: Re: [PATCH] sched: cpuacct: Use bigger percpu counter batch values
- for stats counters
-References: <20090512102412.GG6351@balbir.in.ibm.com> <20090512102939.GB11714@elte.hu> <20090512193656.D647.A69D9226@jp.fujitsu.com> <20090716081010.GB3134@in.ibm.com> <20090716083948.GA2950@kryten> <20090820051038.GF21100@kryten> <20100118044142.GS12666@kryten> <20100118104213.64231c1e@mschwide.boeblingen.de.ibm.com> <20100118095527.GV12666@kryten>
-In-Reply-To: <20100118095527.GV12666@kryten>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       rientjes@google.com, minchan.kim@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] oom-kill: add lowmem usage aware oom kill handling
+References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
 X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -37,29 +31,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 January 2010 03:25 PM, Anton Blanchard wrote:
+On Thursday 21 January 2010 11:29 AM, KAMEZAWA Hiroyuki wrote:
+> A patch for avoiding oom-serial-killer at lowmem shortage.
+> Patch is onto mmotm-2010/01/15 (depends on mm-count-lowmem-rss.patch)
+> Tested on x86-64/SMP + debug module(to allocated lowmem), works well.
 > 
-> Hi Martin,
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > 
->> For s390 the jiffies_to_cputime is a compile time constant. No need to
->> initialize it at runtime, no? 
+> One cause of OOM-Killer is memory shortage in lower zones.
+> (If memory is enough, lowmem_reserve_ratio works well. but..)
 > 
-> Indeed it is, I didn't look closely enough. Same with ia64 so no work to
-> do on either arch :)
+> In lowmem-shortage oom-kill, oom-killer choses a vicitim process
+> on their vm size. But this kills a process which has lowmem memory
+> only if it's lucky. At last, there will be an oom-serial-killer.
 > 
->> The patch itself trades some accuracy (larger cpu accounting value that
->> are stored per-cpu) against runtime overhead (spinlock to transfer the
->> value to the global variable in __percpu_counter_add). Did you
->> calculate how big the loss in accuracy is?
-> 
-> The idea is we are already batching percpu_counter_batch jiffies, so
-> with CONFIG_VIRT_CPU_ACCOUNTING we batch the equivalent amount in
-> cputime.
-> 
+> Now, we have per-mm lowmem usage counter. We can make use of it
+> to select a good? victim.
 
-Hi, Peter, Ingo
+Have you seen any use cases that need this change? Or is it mostly via
+code review and to utilize the availability of lowmem rss? Do we often
+run into lowmem shortage triggering OOM?
 
-Could we please pick up the patch for -tip?
 
 -- 
 Three Cheers,
