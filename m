@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092Ab0AUQbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151Ab0AUQcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092Ab0AUQbu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:31:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925Ab0AUQbt
+	id S1754151Ab0AUQcY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934Ab0AUQcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:31:49 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:41975 "EHLO
-	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493Ab0AUQbt (ORCPT
+	Thu, 21 Jan 2010 11:32:21 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51332 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753925Ab0AUQcU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 11:31:49 -0500
-Date: Thu, 21 Jan 2010 17:31:58 +0100
-From: Borislav Petkov <bp@amd64.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, andreas.herrmann3@amd.com,
-       x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86, cacheinfo: Calculate L3 indexes
-Message-ID: <20100121163158.GC10321@aftab>
-References: <1263899279-30739-1-git-send-email-bp@amd64.org>
- <1263899279-30739-4-git-send-email-bp@amd64.org>
- <4B578E93.9040709@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B578E93.9040709@zytor.com>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Thu, 21 Jan 2010 11:32:20 -0500
+X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=7U3hwN5JcxgA:10 a=meVymXHHAAAA:8 a=6XqCWgjLSEsTxjFNj7sA:9 a=jTzW9MYidBjdB4hPehAA:7 a=QPl0TQgbXGQ7CstUh4Se0lPj5g4A:4 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier (v5)
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+In-Reply-To: <20100121162249.GA15761@Krystal>
+References: <1263488625.4244.333.camel@laptop>
+	 <20100114175449.GA15387@Krystal> <20100114183739.GA18435@Krystal>
+	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
+	 <20100114193355.GA23436@Krystal> <1263926259.4283.757.camel@laptop>
+	 <1263928006.4283.762.camel@laptop> <1264073212.4283.1158.camel@laptop>
+	 <20100121160729.GB12842@Krystal>
+	 <1264090331.31321.212.camel@gandalf.stny.rr.com>
+	 <20100121162249.GA15761@Krystal>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 21 Jan 2010 11:32:09 -0500
+Message-ID: <1264091529.31321.223.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 03:15:31PM -0800, H. Peter Anvin wrote:
-> On 01/19/2010 03:07 AM, Borislav Petkov wrote:
-> > We need to know the valid L3 indexes interval when disabling them over
-> > /sysfs. Do that when the core is brought online and add boundary checks
-> > to the sysfs .store attribute.
-> > 
-> > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-> > @@ -161,6 +162,7 @@ struct _cpuid4_info_regs {
-> >  	union _cpuid4_leaf_ecx ecx;
-> >  	unsigned long size;
-> >  	unsigned long can_disable;
-> > +	unsigned int l3_indexes;
-> >  };
-> >  
+On Thu, 2010-01-21 at 11:22 -0500, Mathieu Desnoyers wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+
+> > You may also need spin_lock_irqsave, et al. variants too.
 > 
-> Hmmm... 32, 64, 64, 32 bits... we could move up the l3_indexes variable
-> here.   However, more likely is that "size" and "can_disable" have no
-> business being unsigned long in the first place -- especially the latter
-> seems to be actually used as a boolean, and really should be "bool".
+> Yep, or we simply use the local_irq_save/restore separately. That could
+> be a good idea given that only few specialized sites are affected.
 
-good point.
+If it gets used more often, then we need to consider RT. RT modifies
+spin_lock_irqsave into a standard mutex that does not disable
+interrupts. But if something does:
 
-> Second, the preferred plural of "index" is "indices" (although both are
-> correct and present in the kernel source.)
+	local_irq_save(flags);
+	spin_lock_mb(&lock);
+	[...]
 
-done.
+Then it will break RT (if lock is to be converted).
 
--- 
-Regards/Gruss,
-Boris.
+-- Steve
 
--
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
+
