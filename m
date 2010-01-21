@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636Ab0AUNMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570Ab0AUNUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753636Ab0AUNMx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 08:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187Ab0AUNMw
+	id S1752570Ab0AUNUX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 08:20:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164Ab0AUNUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 08:12:52 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:39789 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751460Ab0AUNMv (ORCPT
+	Thu, 21 Jan 2010 08:20:23 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:58414 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752053Ab0AUNUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 08:12:51 -0500
+	Thu, 21 Jan 2010 08:20:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=mLeDvV3+WIMUh6lyJG7KZ9uT360DQSXKkORKGdfIlWW3hQ9+mjy/zmp4HGe1hiwQ0t
-         zram14bZHFl8t42Z4aeY9WaToaUy4t00FZ6MWR6AxxjbA4QNkdlXXEXS8ees+jIfM9Er
-         Ev4rA/T+j2x94+416b7eIs1Bh68DIquQXFiRw=
-Date: Thu, 21 Jan 2010 14:12:47 +0100
+        b=ebd12Rg2akQG9aQmnRWKUgx6app13hy5eSBM7pVshR+JXAcqYtl/oEZKX84AMTBZAN
+         M7GiaN7PmoaPDjQoKIN9anKQdgIJeusCe7034FiP+WV6ixQZ947+6IQ1TlE4Bkj6PfI5
+         Gn73UimW9pr3S8Kjs/53wUEFzXz3iPOjdE5gc=
+Date: Thu, 21 Jan 2010 14:20:18 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       prasad@linux.vnet.ibm.com, maneesh@in.ibm.com
-Subject: Re: [patch] HWBKPT FIX: Release the bp slot if
-	arch_validate_hwbkpt_settings() fails.
-Message-ID: <20100121131245.GG5017@nowhere>
-References: <20100121125113.152043766@mars.in.ibm.com> <20100121125516.GA32521@in.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf: Fix inconsistency between IP and callchain
+	sampling
+Message-ID: <20100121132014.GH5017@nowhere>
+References: <20100118054707.GT12666@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100121125516.GA32521@in.ibm.com>
+In-Reply-To: <20100118054707.GT12666@kryten>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 06:25:16PM +0530, Mahesh Salgaonkar wrote:
+On Mon, Jan 18, 2010 at 04:47:07PM +1100, Anton Blanchard wrote:
 > 
-> On a given architecture, when hardware breakpoint registration fails due
-> to un-supported access type (read/write/execute), we loose the bp slot since
-> register_perf_hw_breakpoint() does not release the bp slot on failure.
-> Hence, any subsequent hardware breakpoint registration starts failing
-> with 'no space left on device' error.
+> When running perf across all cpus with backtracing (-a -g), sometimes we
+> get samples without associated backtraces:
 > 
-> This patch introduces error handling in register_perf_hw_breakpoint()
-> function and releases bp slot on error.
+>     23.44%         init  [kernel]                     [k] restore
+>     11.46%         init                       eeba0c  [k] 0x00000000eeba0c
+>      6.77%      swapper  [kernel]                     [k] .perf_ctx_adjust_freq
+>      5.73%         init  [kernel]                     [k] .__trace_hcall_entry
+>      4.69%         perf  libc-2.9.so                  [.] 0x0000000006bb8c
+>                        |          
+>                        |--11.11%-- 0xfffa941bbbc
 > 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> It turns out the backtrace code has a check for the idle task and the IP
+> sampling does not. This creates problems when profiling an interrupt
+> heavy workload (in my case 10Gbit ethernet) since we get no backtraces
+> for interrupts received while idle (ie most of the workload).
+> 
+> Right now x86 and sh check that current is not NULL, which should never
+> happen so remove that too.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
 
-Thanks. I'm queuing it.
+
+I'm queuing it. Thanks.
 
