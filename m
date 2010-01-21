@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713Ab0AUACd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132Ab0AUAK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713Ab0AUACd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 19:02:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044Ab0AUACd
+	id S1754132Ab0AUAK2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 19:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708Ab0AUAK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 19:02:33 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59467 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751053Ab0AUACc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 19:02:32 -0500
-Message-ID: <4B579985.8040504@zytor.com>
-Date: Wed, 20 Jan 2010 16:02:13 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Wed, 20 Jan 2010 19:10:27 -0500
+Received: from vserver.emeraldcity.de ([91.204.170.123]:51197 "EHLO
+	smtphost.emeraldcity.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751413Ab0AUAK0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 19:10:26 -0500
+X-Spam-ASN: 
+From: Michail Bachmann <mb@emeraldcity.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: PROBLEM: kernel BUG at mm/page_alloc.c:775
+Date: Thu, 21 Jan 2010 01:10:07 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.32-trunk-686; KDE/4.3.4; i686; ; )
+Cc: Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+References: <201001092232.21841.mb@emeraldcity.de> <alpine.DEB.2.00.1001121524140.25925@router.home> <20100118120315.GD7499@csn.ul.ie>
+In-Reply-To: <20100118120315.GD7499@csn.ul.ie>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [x86] Unify semaphore_32.S and rwlock_64.S
-References: <alpine.DEB.2.00.1001191616280.28622@router.home> <4B56328E.9080108@zytor.com> <alpine.DEB.2.00.1001201333430.15175@router.home> <4B57641E.5060303@zytor.com> <alpine.DEB.2.00.1001201443340.17915@router.home> <alpine.LFD.2.00.1001201546330.13231@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1001201546330.13231@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart1463699.XHS8DYmcO1";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001210110.18569.mb@emeraldcity.de>
+X-Envelope-From: <mb@emeraldcity.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20/2010 03:57 PM, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 20 Jan 2010, Christoph Lameter wrote:
->>
->> Well 2^32 readers is a bit large anyways. If we are satisifed with 2^30
->> (only a billion) then it works with the same code.
-> 
-> Yes, that's what I would suggest. Make the constants be (for the 64-bit 
-> case)
-> 
-> 	#define RWSEM_UNLOCKED_VALUE            0x00000000
-> 	#define RWSEM_ACTIVE_BIAS               0x00000001
-> 	#define RWSEM_ACTIVE_MASK               0x3fffffff
-> 	#define RWSEM_WAITING_BIAS              (~RWSEM_ACTIVE_MASK)
-> 	#define RWSEM_ACTIVE_READ_BIAS          RWSEM_ACTIVE_BIAS
-> 	#define RWSEM_ACTIVE_WRITE_BIAS         (RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
-> 	
-> and now all the constants should be expressable as 32-bit (signed) values.
-> 
-> Side note: it might be interesting to keep the rwsem_count_t be a config 
-> option on x86-64 too, so this would _not_ necessarily always be a "x86-32" 
-> vs "x86-64" issue. A raw spinlock is 32-bit, which together with a 32-bit 
-> rwsem_count would make the resem's smaller. Does it matter? Maybe not. But 
-> we might at some point decide that it's worth limiting number of threads 
-> to 32k in certain configurations, so I'd keep my options open.
-> 
-> So make the size of the counter be a CONFIG_RWSEM_LARGE thing, rather than 
-> a 32-bit vs 64-bit thing. And just start out with making x86-64 select it, 
-> but leaving the option open to use the 32-bit version on x86-64 too?
-> 
+--nextPart1463699.XHS8DYmcO1
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I'm somewhat unhappy about that notion, mostly because it means Yet
-Another Thing To Verify[TM].  I would like to look at the relative code
-sizes of 2^31 and 2^30, however, if all it means is that *one*
-instruction in *one* asm has to be different, I'd rather leave it at 2^31.
+> On Tue, Jan 12, 2010 at 03:25:23PM -0600, Christoph Lameter wrote:
+> > On Sat, 9 Jan 2010, Michail Bachmann wrote:
+> > > [   48.505381] kernel BUG at mm/page_alloc.c:775!
+> >
+> > Somehow nodes got mixed up or the lookup tables for pages / zones are n=
+ot
+> > giving the right node numbers.
+>=20
+> Agreed. On this type of machine, I'm not sure how that could happen
+> short of struct page information being corrupted. The range should
+> always be aligned to a pageblock boundary and I cannot see how that
+> would cross a zone boundary on this machine.
+>=20
+> Does this machine pass memtest?
+I ran one pass with memtest86 without errors before posting this bug, but I=
+=20
+can let it run "all tests" for a while just to be sure it is not caused by=
+=20
+broken hw.
 
-	-hpa
+> Is there any chance the problem can be bisected?
+I will give it a try, when the memtest is done.
 
+Thanks.
+
+CU Micha
+
+--nextPart1463699.XHS8DYmcO1
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABCAAGBQJLV5tiAAoJEDOFMLjtzdvODwwP/1a82BxBKtulW8UC251hgpu+
+nTH99e4ifKpQa65PpS3KyZC/ZjeqEhygSPH/rQVemxCLwcmvMtolBbrTEMZ41XhT
+ZfC7Jk8F1tNyyo1GolUILZCdYwQK9cajc5r2pvBIjj/rIj4eiaIOVNhdYVfy/MOp
+e34ugtVkbM947vzL/9UdIRSpDyG8TRni6K3Gf9/ZJF9PcXaWbv4Zv0ZdStPXfSc9
+0wlUTUBDshgRNH+yQO5PJRTswhZ+HDD3mmGQf623AO0l/0Zf197covpCAATt+7Pd
+NfvfVLRZro7/4CXhzl6evuXKJRv73sJW/hl50o6Q/vLX8RFAxWFrCQ209gluhUmY
+lK6L/juaVNKn+Jk7OA4osw+TbJoaKvdF+0IEzLCfQ5vePAmETe9RSuYaLUyumduv
+FDKZqba6xS8AVKVnY2o6eimLHisgeu1T9CYN3Kys1RQdJSap9dvoTt+1yKVfHqyq
+b6lWY7f9dh1KtAEVguzJYxg25YQEUBSpyt5L48E7iKrM74jrBMah/1qP0nk+pPRs
+nPVsyHjP3FHZQ0MLcvCWcQeRrUWW6NCqgDyDE4Z38eyoeO5bA2ER3q5hg4GrZWqH
+8Cjo5VHbDnEC9fzH9BimO+HNC4mD3mjpIOt1Cm+I4pn1nTyfnr0tBOfqOr4rOJlg
+OePlidvPg8eNjarfIVnb
+=CZOR
+-----END PGP SIGNATURE-----
+
+--nextPart1463699.XHS8DYmcO1--
