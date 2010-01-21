@@ -1,375 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259Ab0AUWxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167Ab0AUXBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259Ab0AUWxc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 17:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103Ab0AUWxc
+	id S1755167Ab0AUXBK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 18:01:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065Ab0AUXBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 17:53:32 -0500
-Received: from kroah.org ([198.145.64.141]:60915 "EHLO coco.kroah.org"
+	Thu, 21 Jan 2010 18:01:08 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:45438 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754865Ab0AUWxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 17:53:31 -0500
-Date: Thu, 21 Jan 2010 14:52:35 -0800
-From: Greg KH <greg@kroah.com>
-To: Lennart Poettering <mzxreary@0pointer.de>
-Cc: linux-kernel@vger.kernel.org, jlee@novell.com
-Subject: [PATCH] msi-laptop: Support some MSI 3G netbook that is need load
- SCM
-Message-ID: <20100121225235.GA17369@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1754915Ab0AUXBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 18:01:06 -0500
+Date: Fri, 22 Jan 2010 10:00:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Tilman Schmidt <tilman@imap.cc>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: linux-next: Tree for January 21
+Message-Id: <20100122100059.9007bdb8.sfr@canb.auug.org.au>
+In-Reply-To: <20100121131339.5e86dfef.akpm@linux-foundation.org>
+References: <20100121165713.7b8a746d.sfr@canb.auug.org.au>
+	<20100121131339.5e86dfef.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__22_Jan_2010_10_00_59_+1100_z+rjg3NRLk18NkG7"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Fri__22_Jan_2010_10_00_59_+1100_z+rjg3NRLk18NkG7
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Here's another patch from Joey to fix the 3g keys on the latest MSI
-laptop.  If you have no objections, I'll take it through my driver tree
-along with the other 2 patches from him.
+Hi Andrew,
 
-thanks,
+On Thu, 21 Jan 2010 13:13:39 -0800 Andrew Morton <akpm@linux-foundation.org=
+> wrote:
+>
+> It includes this screwed up commit:
+>=20
+> :commit e303d9eadc64907535a0a104afa5871d2b83275e
+> :Author:     Tilman Schmidt <tilman@imap.cc>
+> :AuthorDate: Thu Jan 14 23:18:41 2010 +0100
+> :Commit:     Jesse Barnes <jbarnes@virtuousgeek.org>
+> :CommitDate: Fri Jan 15 10:08:07 2010 -0800
+> :
+> :    PCI/ISDN: push deprecated pci_find_device() function to last user (i=
+sdn)
+>=20
+> It adds a bunch of files which are compile-time generated:
 
-greg k-h
+Thanks for noticing.  I will revert that commit today since it is still
+in the pci tree.
 
------------
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-From: Lee, Chun-Yi <jlee@novell.com>
-Subject: msi-laptop: Support some MSI 3G netbook that is need load SCM
+--Signature=_Fri__22_Jan_2010_10_00_59_+1100_z+rjg3NRLk18NkG7
+Content-Type: application/pgp-signature
 
-Some MSI 3G netbook only have one fn key to control Wlan/Bluetooth/3G,
-those netbook will load the SCM (windows app) to disable the original
-Wlan/Bluetooth control by BIOS when user press fn key, then control
-Wlan/Bluetooth/3G by SCM (software control by OS). Without SCM, user
-cann't on/off 3G module on those 3G netbook.
-On Linux, msi-laptop driver will do the same thing to disable the
-original BIOS control, then might need use HAL or other userland
-application to do the software control that simulate with SCM.
-e.g. MSI N034 netbook
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Signed-off-by: Lee, Chun-Yi <jlee@novell.com>
-Cc: Lennart Poettering <mzxreary@0pointer.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+iEYEARECAAYFAktY3KsACgkQjjKRsyhoI8z00QCfZYjh3I1Z0Z+1rJXq/2i6CH6S
+SGoAoJXh0rIkC3EAEwPwbZ4Pb7fJO6B3
+=HSzw
+-----END PGP SIGNATURE-----
 
---- a/drivers/platform/x86/msi-laptop.c
-+++ b/drivers/platform/x86/msi-laptop.c
-@@ -58,6 +58,7 @@
- #include <linux/dmi.h>
- #include <linux/backlight.h>
- #include <linux/platform_device.h>
-+#include <linux/rfkill.h>
- 
- #define MSI_DRIVER_VERSION "0.5"
- 
-@@ -72,6 +73,10 @@
- #define MSI_STANDARD_EC_WLAN_MASK	(1 << 3)
- #define MSI_STANDARD_EC_3G_MASK		(1 << 4)
- 
-+/* For set SCM load flag to disable BIOS fn key */
-+#define MSI_STANDARD_EC_SCM_LOAD_ADDRESS	0x2d
-+#define MSI_STANDARD_EC_SCM_LOAD_MASK		(1 << 0)
-+
- static int force;
- module_param(force, bool, 0);
- MODULE_PARM_DESC(force, "Force driver load, ignore DMI data");
-@@ -83,6 +88,19 @@ MODULE_PARM_DESC(auto_brightness, "Enable automatic brightness control (0: disab
- static bool old_ec_model;
- static int wlan_s, bluetooth_s, threeg_s;
- 
-+/* Some MSI 3G netbook only have one fn key to control Wlan/Bluetooth/3G,
-+ * those netbook will load the SCM (windows app) to disable the original
-+ * Wlan/Bluetooth control by BIOS when user press fn key, then control
-+ * Wlan/Bluetooth/3G by SCM (software control by OS). Without SCM, user
-+ * cann't on/off 3G module on those 3G netbook.
-+ * On Linux, msi-laptop driver will do the same thing to disable the
-+ * original BIOS control, then might need use HAL or other userland
-+ * application to do the software control that simulate with SCM.
-+ * e.g. MSI N034 netbook
-+ */
-+static bool load_scm_model;
-+static struct rfkill *rfk_wlan, *rfk_bluetooth, *rfk_threeg;
-+
- /* Hardware access */
- 
- static int set_lcd_level(int level)
-@@ -139,6 +157,35 @@ static int set_auto_brightness(int enable)
- 	return ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, wdata, 2, NULL, 0, 1);
- }
- 
-+static ssize_t set_device_state(const char *buf, size_t count, u8 mask)
-+{
-+	int status;
-+	u8 wdata = 0, rdata;
-+	int result;
-+
-+	if (sscanf(buf, "%i", &status) != 1 || (status < 0 || status > 1))
-+		return -EINVAL;
-+
-+	/* read current device state */
-+	result = ec_read(MSI_STANDARD_EC_COMMAND_ADDRESS, &rdata);
-+	if (result < 0)
-+		return -EINVAL;
-+
-+	if (!!(rdata & mask) != status) {
-+		/* reverse device bit */
-+		if (rdata & mask)
-+			wdata = rdata & ~mask;
-+		else
-+			wdata = rdata | mask;
-+
-+		result = ec_write(MSI_STANDARD_EC_COMMAND_ADDRESS, wdata);
-+		if (result < 0)
-+			return -EINVAL;
-+	}
-+
-+	return count;
-+}
-+
- static int get_wireless_state(int *wlan, int *bluetooth)
- {
- 	u8 wdata = 0, rdata;
-@@ -215,6 +262,12 @@ static ssize_t show_wlan(struct device *dev,
- 	return sprintf(buf, "%i\n", enabled);
- }
- 
-+static ssize_t store_wlan(struct device *dev,
-+	struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	return set_device_state(buf, count, MSI_STANDARD_EC_WLAN_MASK);
-+}
-+
- static ssize_t show_bluetooth(struct device *dev,
- 	struct device_attribute *attr, char *buf)
- {
-@@ -233,6 +286,12 @@ static ssize_t show_bluetooth(struct device *dev,
- 	return sprintf(buf, "%i\n", enabled);
- }
- 
-+static ssize_t store_bluetooth(struct device *dev,
-+	struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	return set_device_state(buf, count, MSI_STANDARD_EC_BLUETOOTH_MASK);
-+}
-+
- static ssize_t show_threeg(struct device *dev,
- 	struct device_attribute *attr, char *buf)
- {
-@@ -250,6 +309,12 @@ static ssize_t show_threeg(struct device *dev,
- 	return sprintf(buf, "%i\n", threeg_s);
- }
- 
-+static ssize_t store_threeg(struct device *dev,
-+	struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	return set_device_state(buf, count, MSI_STANDARD_EC_3G_MASK);
-+}
-+
- static ssize_t show_lcd_level(struct device *dev,
- 	struct device_attribute *attr, char *buf)
- {
-@@ -387,6 +452,169 @@ static struct dmi_system_id __initdata msi_dmi_table[] = {
- 	{ }
- };
- 
-+static struct dmi_system_id __initdata msi_load_scm_models_dmi_table[] = {
-+	{
-+		.ident = "MSI N034",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR,
-+				"MICRO-STAR INTERNATIONAL CO., LTD"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MS-N034"),
-+			DMI_MATCH(DMI_CHASSIS_VENDOR,
-+			"MICRO-STAR INTERNATIONAL CO., LTD")
-+		},
-+		.callback = dmi_check_cb
-+	},
-+	{ }
-+};
-+
-+static int rfkill_bluetooth_set(void *data, bool blocked)
-+{
-+	/* Do something with blocked...*/
-+	/*
-+	 * blocked == false is on
-+	 * blocked == true is off
-+	 */
-+	if (blocked)
-+		set_device_state("0", 0, MSI_STANDARD_EC_BLUETOOTH_MASK);
-+	else
-+		set_device_state("1", 0, MSI_STANDARD_EC_BLUETOOTH_MASK);
-+
-+	return 0;
-+}
-+
-+static int rfkill_wlan_set(void *data, bool blocked)
-+{
-+	if (blocked)
-+		set_device_state("0", 0, MSI_STANDARD_EC_WLAN_MASK);
-+	else
-+		set_device_state("1", 0, MSI_STANDARD_EC_WLAN_MASK);
-+
-+	return 0;
-+}
-+
-+static int rfkill_threeg_set(void *data, bool blocked)
-+{
-+	if (blocked)
-+		set_device_state("0", 0, MSI_STANDARD_EC_3G_MASK);
-+	else
-+		set_device_state("1", 0, MSI_STANDARD_EC_3G_MASK);
-+
-+	return 0;
-+}
-+
-+static struct rfkill_ops rfkill_bluetooth_ops = {
-+	.set_block = rfkill_bluetooth_set
-+};
-+
-+static struct rfkill_ops rfkill_wlan_ops = {
-+	.set_block = rfkill_wlan_set
-+};
-+
-+static struct rfkill_ops rfkill_threeg_ops = {
-+	.set_block = rfkill_threeg_set
-+};
-+
-+static void rfkill_cleanup(void)
-+{
-+	if (rfk_bluetooth) {
-+		rfkill_unregister(rfk_bluetooth);
-+		rfkill_destroy(rfk_bluetooth);
-+	}
-+
-+	if (rfk_threeg) {
-+		rfkill_unregister(rfk_threeg);
-+		rfkill_destroy(rfk_threeg);
-+	}
-+
-+	if (rfk_wlan) {
-+		rfkill_unregister(rfk_wlan);
-+		rfkill_destroy(rfk_wlan);
-+	}
-+}
-+
-+static int rfkill_init(struct platform_device *sdev)
-+{
-+	/* add rfkill */
-+	int retval;
-+
-+	rfk_bluetooth = rfkill_alloc("msi-bluetooth", &sdev->dev,
-+				RFKILL_TYPE_BLUETOOTH,
-+				&rfkill_bluetooth_ops, NULL);
-+	if (!rfk_bluetooth) {
-+		retval = -ENOMEM;
-+		goto err_bluetooth;
-+	}
-+	retval = rfkill_register(rfk_bluetooth);
-+	if (retval)
-+		goto err_bluetooth;
-+
-+	rfk_wlan = rfkill_alloc("msi-wlan", &sdev->dev, RFKILL_TYPE_WLAN,
-+				&rfkill_wlan_ops, NULL);
-+	if (!rfk_wlan) {
-+		retval = -ENOMEM;
-+		goto err_wlan;
-+	}
-+	retval = rfkill_register(rfk_wlan);
-+	if (retval)
-+		goto err_wlan;
-+
-+	rfk_threeg = rfkill_alloc("msi-threeg", &sdev->dev, RFKILL_TYPE_WWAN,
-+				&rfkill_threeg_ops, NULL);
-+	if (!rfk_threeg) {
-+		retval = -ENOMEM;
-+		goto err_threeg;
-+	}
-+	retval = rfkill_register(rfk_threeg);
-+	if (retval)
-+		goto err_threeg;
-+
-+	return 0;
-+
-+err_threeg:
-+	rfkill_destroy(rfk_threeg);
-+	if (rfk_wlan)
-+		rfkill_unregister(rfk_wlan);
-+err_wlan:
-+	rfkill_destroy(rfk_wlan);
-+	if (rfk_bluetooth)
-+		rfkill_unregister(rfk_bluetooth);
-+err_bluetooth:
-+	rfkill_destroy(rfk_bluetooth);
-+
-+	return retval;
-+}
-+
-+static int load_scm_model_init(struct platform_device *sdev)
-+{
-+	u8 data;
-+	int result;
-+
-+	/* allow userland write sysfs file  */
-+	dev_attr_bluetooth.store = store_bluetooth;
-+	dev_attr_wlan.store = store_wlan;
-+	dev_attr_threeg.store = store_threeg;
-+	dev_attr_bluetooth.attr.mode |= S_IWUSR;
-+	dev_attr_wlan.attr.mode |= S_IWUSR;
-+	dev_attr_threeg.attr.mode |= S_IWUSR;
-+
-+	/* disable hardware control by fn key */
-+	result = ec_read(MSI_STANDARD_EC_SCM_LOAD_ADDRESS, &data);
-+	if (result < 0)
-+		return result;
-+
-+	result = ec_write(MSI_STANDARD_EC_SCM_LOAD_ADDRESS,
-+		data | MSI_STANDARD_EC_SCM_LOAD_MASK);
-+	if (result < 0)
-+		return result;
-+
-+	/* initial rfkill */
-+	result = rfkill_init(sdev);
-+	if (result < 0)
-+		return result;
-+
-+	return 0;
-+}
-+
- static int __init msi_init(void)
- {
- 	int ret;
-@@ -397,6 +625,9 @@ static int __init msi_init(void)
- 	if (force || dmi_check_system(msi_dmi_table))
- 		old_ec_model = 1;
- 
-+	if (!old_ec_model && dmi_check_system(msi_load_scm_models_dmi_table))
-+		load_scm_model = 1;
-+
- 	if (auto_brightness < 0 || auto_brightness > 2)
- 		return -EINVAL;
- 
-@@ -429,6 +660,11 @@ static int __init msi_init(void)
- 	if (ret)
- 		goto fail_platform_device1;
- 
-+	if (load_scm_model && (load_scm_model_init(msipf_device) < 0)) {
-+		ret = -EINVAL;
-+		goto fail_platform_device1;
-+	}
-+
- 	ret = sysfs_create_group(&msipf_device->dev.kobj, &msipf_attribute_group);
- 	if (ret)
- 		goto fail_platform_device2;
-@@ -479,6 +715,8 @@ static void __exit msi_cleanup(void)
- 	platform_driver_unregister(&msipf_driver);
- 	backlight_device_unregister(msibl_device);
- 
-+	rfkill_cleanup();
-+
- 	/* Enable automatic brightness control again */
- 	if (auto_brightness != 2)
- 		set_auto_brightness(1);
--- 
-1.6.0.2
-
+--Signature=_Fri__22_Jan_2010_10_00_59_+1100_z+rjg3NRLk18NkG7--
