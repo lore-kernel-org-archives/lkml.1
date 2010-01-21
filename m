@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151Ab0AUQcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946Ab0AUQet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151Ab0AUQcY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934Ab0AUQcV
+	id S1753946Ab0AUQet (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:34:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325Ab0AUQes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:32:21 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51332 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753925Ab0AUQcU (ORCPT
+	Thu, 21 Jan 2010 11:34:48 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:58353 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752967Ab0AUQer (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 11:32:20 -0500
-X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=7U3hwN5JcxgA:10 a=meVymXHHAAAA:8 a=6XqCWgjLSEsTxjFNj7sA:9 a=jTzW9MYidBjdB4hPehAA:7 a=QPl0TQgbXGQ7CstUh4Se0lPj5g4A:4 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier (v5)
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-In-Reply-To: <20100121162249.GA15761@Krystal>
-References: <1263488625.4244.333.camel@laptop>
-	 <20100114175449.GA15387@Krystal> <20100114183739.GA18435@Krystal>
-	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
-	 <20100114193355.GA23436@Krystal> <1263926259.4283.757.camel@laptop>
-	 <1263928006.4283.762.camel@laptop> <1264073212.4283.1158.camel@laptop>
-	 <20100121160729.GB12842@Krystal>
-	 <1264090331.31321.212.camel@gandalf.stny.rr.com>
-	 <20100121162249.GA15761@Krystal>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 21 Jan 2010 11:32:09 -0500
-Message-ID: <1264091529.31321.223.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 11:34:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=irpzJlEojTEqHxpfd3xltWg3SAtpEf1siSN1b/dK7VcUQrlA0CufVXDOdrq70f5B1s
+         YZvIwN9hp30L/Ktmu41axD54m6zn++nx10tRLBGboWHCRsKV3ROCpZqQUvOzXbNRtffY
+         WICVG7vyBe7eSP2GEAIwOK1FAyedNSAp0GsTY=
+From: Don Mullis <don.mullis@gmail.com>
+To: dedekind@infradead.org
+Cc: Dave Chinner <david@fromorbit.com>, linux-kernel@vger.kernel.org,
+       airlied@redhat.com, andi@firstfloor.org
+Subject: Re: [PATCH 1/2] lib: more scalable list_sort()
+References: <87fx609i29.fsf@gmail.com> <1264065775.3032.18.camel@localhost>
+	<20100121095434.GA25842@discord.disaster>
+	<1264074259.3032.25.camel@localhost>
+Date: Thu, 21 Jan 2010 08:34:40 -0800
+In-Reply-To: <1264074259.3032.25.camel@localhost> (Artem Bityutskiy's message
+	of "Thu, 21 Jan 2010 13:44:19 +0200")
+Message-ID: <87zl478li7.fsf@gmail.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-21 at 11:22 -0500, Mathieu Desnoyers wrote:
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
+Artem Bityutskiy <dedekind@infradead.org> writes:
 
-> > You may also need spin_lock_irqsave, et al. variants too.
-> 
-> Yep, or we simply use the local_irq_save/restore separately. That could
-> be a good idea given that only few specialized sites are affected.
+> On Thu, 2010-01-21 at 20:54 +1100, Dave Chinner wrote:
+>> On Thu, Jan 21, 2010 at 11:22:55AM +0200, Artem Bityutskiy wrote:
+>> > 
+>> > Could you please add a debugging function which would be compiled-out
+>> > normally, and which would check that on the output 'list_sort()' gives
+>> > really sorted list, and number of elements in the list stays the same.
+>> > You'd call this function before returning from list_sort(). Something
+>> > like:
+>> > 
+>> > #ifdef DEBUG_LIST_SORT
+>> > static int list_check(void *priv, struct list_head *head,
+>> >                       int (*cmp)(void *priv, struct list_head *a,
+>> >                                  struct list_head *b))
+>> > {
+>> >    /* Checking */
+>> > }
+>> > #else
+>> > #define list_check(priv, head, cmp) 0
+>> > #endif
+>> > 
+>> > This will provide more confidence in the algorithm correctness for
+>> > everyone who modifies 'list_sort()'.
+>> 
+>> I'd suggest the same method as employed in lib/sort.c - a
+>> simple userspace program that verifies correct operation is included
+>> in lib/sort.c....
+>
+> Yeah, that's also an option.
 
-If it gets used more often, then we need to consider RT. RT modifies
-spin_lock_irqsave into a standard mutex that does not disable
-interrupts. But if something does:
-
-	local_irq_save(flags);
-	spin_lock_mb(&lock);
-	[...]
-
-Then it will break RT (if lock is to be converted).
-
--- Steve
-
-
+Okay. The regression test in lib/sort.c is kernel-space, run once at
+boot. I'd like to do something similar for lib/list_sort.c, conditioned
+on DEBUG_LIST_SORT. I would extend the testing to verify stability as
+well as sort order and number of elements.
