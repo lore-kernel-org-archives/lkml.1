@@ -1,88 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261Ab0AUN6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213Ab0AUOGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754261Ab0AUN6x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 08:58:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866Ab0AUN6v
+	id S1754213Ab0AUOGf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 09:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396Ab0AUOGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 08:58:51 -0500
-Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:43769 "EHLO
-	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752705Ab0AUN6u (ORCPT
+	Thu, 21 Jan 2010 09:06:34 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:47669 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751435Ab0AUOGd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 08:58:50 -0500
-Date: Thu, 21 Jan 2010 14:58:47 +0100
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, ok@artecdesign.ee,
-       sarah.a.sharp@linux.intel.com,
-       Reinhard.Tartler@informatik.uni-erlangen.de
-Subject: Re: [PATCH] Obsolete config in kernel source (USB_HCD_DMA)
-Message-ID: <20100121135847.GA25890@stud.informatik.uni-erlangen.de>
-References: <20100120123540.GB3580@faui49.informatik.uni-erlangen.de> <4B571122.6060407@ru.mvista.com> <20100120083806.25b69d9f.rdunlap@xenotime.net>
+	Thu, 21 Jan 2010 09:06:33 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=AlIwcv7wov/HK4RucSiemoXURXYq3pyTfEJnV2HYcG57JTu2e/4Mz8t4f1fHGStmX
+	TAB4i28le6gpq0BbKmbnw==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100120083806.25b69d9f.rdunlap@xenotime.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1264070785.4283.1152.camel@laptop>
+References: <4b5430c6.0f975e0a.1bf9.ffff85fe@mx.google.com>
+	 <1264070181.4283.1149.camel@laptop>
+	 <bd4cb8901001210243y16dbbf8doe66cf24d15120443@mail.gmail.com>
+	 <1264070785.4283.1152.camel@laptop>
+Date: Thu, 21 Jan 2010 15:06:29 +0100
+Message-ID: <bd4cb8901001210606o43e8a0e3q38d08dc08e3d8248@mail.gmail.com>
+Subject: Re: [PATCH] perf_events: improve x86 event scheduling (v5)
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       davem@davemloft.net, fweisbec@gmail.com, perfmon2-devel@lists.sf.net,
+       eranian@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 08:38:06AM -0800, Randy Dunlap wrote:
-> On Wed, 20 Jan 2010 17:20:18 +0300 Sergei Shtylyov wrote:
-> >
-> >    The patch's subject should be a terse description of change, not the 
-> > substitute for the lengthy description as in your case.
-> 
-> Also please insert patches inline in the email body instead of using
-> attachments.  mutt can surely do this -- people do it all the time
-> (though I don't use mutt, so please don't ask me how).
+On Thu, Jan 21, 2010 at 11:46 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, 2010-01-21 at 11:43 +0100, Stephane Eranian wrote:
+>> On Thu, Jan 21, 2010 at 11:36 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> > On Mon, 2010-01-18 at 10:58 +0200, Stephane Eranian wrote:
+>> >>  void hw_perf_enable(void)
+>> >>  {
+>> >
+>> >
+>> >> +               cpuc->n_added = 0;
+>> >> +               perf_events_lapic_init();
+>> >
+>> > Just wondering, why do we need that lapic_init() there?
+>> >
+>> I think I picked it up from x86_pmu_enable(). I don't think
+>> you necessarily need it here. Not clear to me why it was
+>> in x86_pmu_enable() to begin with.
+>
+> Right, wondering about the same ;-)
+>
+I suspect this is because on Intel, you need to re-initialize
+the APIC LVT entry on PMU interrupt. You don't have to do this
+on AMD.
 
----
->From 2e5a8a322a6cd74ecb77eda8f0a09a0a01c6dbc6 Mon Sep 17 00:00:00 2001
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Date: Wed, 20 Jan 2010 13:32:36 +0100
-Subject: [PATCH] remove code block depending on unreferenced config item USB_HCD_DMA
+But then, this should be done when you initialize the
+PMU for the first event and on every CPU and in the Intel
+interrupt handler.
 
-The configuration Option USB_HCD_DMA is not reachable in KConfig so
-this piece of Code is effectively dead and useless. Remove it to avoid
-confusion.
 
-Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
----
- drivers/usb/host/isp1362-hcd.c |   13 -------------
- 1 files changed, 0 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/usb/host/isp1362-hcd.c b/drivers/usb/host/isp1362-hcd.c
-index 73352f3..341db2c 100644
---- a/drivers/usb/host/isp1362-hcd.c
-+++ b/drivers/usb/host/isp1362-hcd.c
-@@ -2716,24 +2716,11 @@ static int __init isp1362_probe(struct platform_device *pdev)
- 		goto err1;
- 	}
- 
--#ifdef CONFIG_USB_HCD_DMA
--	if (pdev->dev.dma_mask) {
--		struct resource *dma_res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
--
--		if (!dma_res) {
--			retval = -ENODEV;
--			goto err1;
--		}
--		isp1362_hcd->data_dma = dma_res->start;
--		isp1362_hcd->max_dma_size = resource_len(dma_res);
--	}
--#else
- 	if (pdev->dev.dma_mask) {
- 		DBG(1, "won't do DMA");
- 		retval = -ENODEV;
- 		goto err1;
- 	}
--#endif
- 
- 	if (!request_mem_region(addr->start, resource_len(addr), hcd_name)) {
- 		retval = -EBUSY;
--- 
-1.6.3.3
-
+>> I will post a new version of the patch which fixes some bugs and
+>> also implements true fast path (reuse of previous assignment). It turned
+>> out, things were a bit more complicated than what I had in v5.
+>
+> Could you post a diff against your previous version, I just picked up
+> -v5 and tidied a few things up and send it mingo wards (although it
+> appears he hasn't picked it up yet).
+>
+Will do that shortly.
