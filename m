@@ -1,90 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374Ab0AUOI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500Ab0AUOKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374Ab0AUOI4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 09:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657Ab0AUOIz
+	id S1754500Ab0AUOKF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 09:10:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004Ab0AUOKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 09:08:55 -0500
-Received: from compulab.co.il ([67.18.134.219]:57412 "EHLO compulab.co.il"
+	Thu, 21 Jan 2010 09:10:01 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:57455 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752189Ab0AUOIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 09:08:54 -0500
-Message-ID: <4B58603F.5030407@compulab.co.il>
-Date: Thu, 21 Jan 2010 16:10:07 +0200
-From: Denis Turischev <denis@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1753996Ab0AUOKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 09:10:00 -0500
+Date: Thu, 21 Jan 2010 14:09:48 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 5/7] Add /proc trigger for memory compaction
+Message-ID: <20100121140948.GJ5154@csn.ul.ie>
+References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie> <1262795169-9095-6-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.1001071352100.23894@chino.kir.corp.google.com> <20100120094813.GC5154@csn.ul.ie> <alpine.DEB.2.00.1001201241540.6440@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Wim Van Sebroeck <wim@iguana.be>, Andrey Panin <pazke@centrinvest.ru>
-Subject: SBC-FITPC2 watchdog driver fix
-References: <4A6492EB.1080709@compulab.co.il> <4AF2B7D8.1010903@compulab.co.il>
-In-Reply-To: <4AF2B7D8.1010903@compulab.co.il>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1001201241540.6440@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sbc_fitpc2_wdt: fix I/O space access technique.
+On Wed, Jan 20, 2010 at 12:48:05PM -0800, David Rientjes wrote:
+> On Wed, 20 Jan 2010, Mel Gorman wrote:
+> 
+> > > With Lee's work on mempolicy-constrained hugepage allocations, there is a 
+> > > use-case for this explicit trigger to be exported via sysfs in the 
+> > > longterm:
+> > 
+> > True, although the per-node structures are only available on NUMA making
+> > it necessary to have two interfaces. The per-node one is handy enough
+> > because it would be just
+> > 
+> > /sys/devices/system/node/nodeX/compact_node
+> > 	When written to, this node is compacted by the writing process
+> > 
+> > But there does not appear to be a "good" way of having a non-NUMA
+> > interface. /sys/devices/system/node does not exist .... Does anyone
+> > remember why !NUMA does not have a /sys/devices/system/node/node0? Is
+> > there a good reason or was there just no point?
+> > 
+> 
+> There doesn't seem to be a usecase for a fake node0 sysfs entry since it 
+> would be a duplication of procfs.
+> 
 
-The mdelay function was used between I/O access commands, that causes peak
-in CPU usage. Fix it by substitution mdelay to msleep.
+Indeed.
 
-Expand usage on fitPC2 compatible boards according to DMI identification.
+> I think it would be best to create a global /proc/sys/vm/compact trigger 
+> that would walk all "compactable" zones system-wide
 
-Signed-off-by: Denis Turischev <denis@compulab.co.il>
+Easily done.
 
-diff -Nru linux-2.6.33-rc4.orig/drivers/watchdog/Kconfig linux-2.6.33-rc4/drivers/watchdog/Kconfig
---- linux-2.6.33-rc4.orig/drivers/watchdog/Kconfig	2010-01-13 07:15:00.000000000 +0200
-+++ linux-2.6.33-rc4/drivers/watchdog/Kconfig	2010-01-20 13:47:18.000000000 +0200
-@@ -396,8 +396,8 @@
- 	tristate "Compulab SBC-FITPC2 watchdog"
- 	depends on X86
- 	---help---
--	  This is the driver for the built-in watchdog timer on the fit-PC2
--	  Single-board computer made by Compulab.
-+	  This is the driver for the built-in watchdog timer on the fit-PC2,
-+	  fit-PC2i, CM-iAM single-board computers made by Compulab.
- 
- 	  It`s possible to enable watchdog timer either from BIOS (F2) or from booted Linux.
- 	  When "Watchdog Timer Value" enabled one can set 31-255 s operational range.
-diff -Nru linux-2.6.33-rc4.orig/drivers/watchdog/sbc_fitpc2_wdt.c linux-2.6.33-rc4/drivers/watchdog/sbc_fitpc2_wdt.c
---- linux-2.6.33-rc4.orig/drivers/watchdog/sbc_fitpc2_wdt.c	2010-01-13 07:15:00.000000000 +0200
-+++ linux-2.6.33-rc4/drivers/watchdog/sbc_fitpc2_wdt.c	2010-01-20 15:28:19.000000000 +0200
-@@ -46,9 +46,9 @@
- static void wdt_send_data(unsigned char command, unsigned char data)
- {
- 	outb(command, COMMAND_PORT);
--	mdelay(100);
-+	msleep(100);
- 	outb(data, DATA_PORT);
--	mdelay(200);
-+	msleep(200);
- }
- 
- static void wdt_enable(void)
-@@ -202,11 +202,10 @@
- {
- 	int err;
- 
--	if (strcmp("SBC-FITPC2", dmi_get_system_info(DMI_BOARD_NAME))) {
--		pr_info("board name is: %s. Should be SBC-FITPC2\n",
--			dmi_get_system_info(DMI_BOARD_NAME));
-+	if (!strstr(dmi_get_system_info(DMI_BOARD_NAME), "SBC-FITPC2"))
- 		return -ENODEV;
--	}
-+
-+	pr_info("%s found\n", dmi_get_system_info(DMI_BOARD_NAME));
- 
- 	if (!request_region(COMMAND_PORT, 1, WATCHDOG_NAME)) {
- 		pr_err("I/O address 0x%04x already in use\n", COMMAND_PORT);
+> and then a per-node 
+> /sys/devices/system/node/nodeX/compact trigger for that particular node, 
+> both with permissions 0200.
+> 
 
+Will work on this as an additional patch. It should be straight-forward
+with the only care needing to be taken around memory hotplug as usual.
+
+> It would be helpful to be able to determine what is "compactable" at the 
+> same time by adding both global and per-node "compact_order" tunables that 
+> would default to HUGETLB_PAGE_ORDER. 
+
+Well, rather than having a separate tunable, writing a number to
+/proc/sys/vm/compact could indicate the order if that trigger is now
+working system-wide. Would that be suitable?
+
+> Then, the corresponding "compact" 
+> trigger would only do work if fill_contig_page_info() shows 
+> !free_blocks_suitable for either all zones (global trigger) or each zone 
+> in the node's zonelist (per-node trigger).
+> 
+
+Do you see a need for proc to act like this? I'm wondering if
+try_to_compact_pages() already does what you're looking for except no
+process is required to muck around in /proc or /sys.
+
+I somewhat saw the /proc and /sys tunables being used for either debugging or
+by a job scheduler that compacted one or more nodes before a new job started.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
