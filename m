@@ -1,52 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887Ab0AUGem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498Ab0AUG3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754887Ab0AUGem (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 01:34:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445Ab0AUG3T
+	id S1754498Ab0AUG3V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 01:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249Ab0AUG3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 01:29:19 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38548 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752750Ab0AUG3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 01:29:10 -0500
-Message-ID: <4B57F421.4070409@zytor.com>
-Date: Wed, 20 Jan 2010 22:28:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [x86] Unify semaphore_32.S and rwlock_64.S
-References: <alpine.DEB.2.00.1001191616280.28622@router.home> <4B56328E.9080108@zytor.com> <alpine.DEB.2.00.1001201333430.15175@router.home> <4B57641E.5060303@zytor.com> <alpine.DEB.2.00.1001201443340.17915@router.home> <alpine.LFD.2.00.1001201546330.13231@localhost.localdomain> <4B579985.8040504@zytor.com>
-In-Reply-To: <4B579985.8040504@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 01:29:11 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38783 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753647Ab0AUG3E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 01:29:04 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Wed, 20 Jan 2010 22:27:55 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH 08/36] x86: dynamic increase early_res array size
+In-reply-to: <1264055303-15123-1-git-send-email-yinghai@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>
+Message-id: <1264055303-15123-9-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+References: <1264055303-15123-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20/2010 04:02 PM, H. Peter Anvin wrote:
-> On 01/20/2010 03:57 PM, Linus Torvalds wrote:
->>
-> 
-> I'm somewhat unhappy about that notion, mostly because it means Yet
-> Another Thing To Verify[TM].  I would like to look at the relative code
-> sizes of 2^31 and 2^30, however, if all it means is that *one*
-> instruction in *one* asm has to be different, I'd rather leave it at 2^31.
-> 
+use early_res_count to track the num, and use find_e820 to get new buffer.
+and copy from old to new one.
 
-Well, there is no size difference within measurable limits (an
-x86-64-allyesconfig build is 60(!) bytes larger with 2^31 and the incl,
-but that's well within the good luck/bad luck with alignments threshold...)
+also clear early_res to prevent later invalid using
 
-As such, I'd personally prefer to leave it with 1:31:31:1 split, if
-nothing else because it reads a bit tidier to me, despite the minor wart
-for the incl trick.
+-v2 _check_and_double_early_res should take new start
 
-	-hpa
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+---
+ arch/x86/kernel/e820.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 53 insertions(+), 0 deletions(-)
 
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 291f6d2..949d688 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -908,6 +908,48 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
+ 	__reserve_early(start, end, name, 1);
+ }
+ 
++static void __init __check_and_double_early_res(u64 start)
++{
++	u64 end, size, mem;
++	struct early_res *new;
++
++	/* do we have enough slots left ? */
++	if ((max_early_res - early_res_count) > max(max_early_res/8, 2))
++		return;
++
++	/* double it */
++	end = max_pfn_mapped << PAGE_SHIFT;
++	size = sizeof(struct early_res) * max_early_res * 2;
++	mem = find_e820_area(start, end, size, sizeof(struct early_res));
++
++	if (mem == -1ULL)
++		panic("can not find more space for early_res array");
++
++	new = __va(mem);
++	/* save the first one for own */
++	new[0].start = mem;
++	new[0].end = mem + size;
++	new[0].overlap_ok = 0;
++	/* copy old to new */
++	if (early_res == early_res_x) {
++		memcpy(&new[1], &early_res[0],
++			 sizeof(struct early_res) * max_early_res);
++		memset(&new[max_early_res+1], 0,
++			 sizeof(struct early_res) * (max_early_res - 1));
++		early_res_count++;
++	} else {
++		memcpy(&new[1], &early_res[1],
++			 sizeof(struct early_res) * (max_early_res - 1));
++		memset(&new[max_early_res], 0,
++			 sizeof(struct early_res) * max_early_res);
++	}
++	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
++	early_res = new;
++	max_early_res *= 2;
++	printk(KERN_DEBUG "early_res array is doubled to %d at [%llx - %llx]\n",
++		max_early_res, mem, mem + size - 1);
++}
++
+ /*
+  * Most early reservations come here.
+  *
+@@ -921,6 +963,8 @@ void __init reserve_early(u64 start, u64 end, char *name)
+ 	if (start >= end)
+ 		return;
+ 
++	__check_and_double_early_res(end);
++
+ 	drop_overlaps_that_are_ok(start, end);
+ 	__reserve_early(start, end, name, 0);
+ }
+@@ -949,6 +993,10 @@ void __init early_res_to_bootmem(u64 start, u64 end)
+ 	for (i = 0; i < max_early_res && early_res[i].end; i++)
+ 		count++;
+ 
++	/* need to skip first one ?*/
++	if (early_res != early_res_x)
++		idx = 1;
++
+ 	printk(KERN_INFO "(%d/%d early reservations) ==> bootmem [%010llx - %010llx]\n",
+ 			 count - idx, max_early_res, start, end);
+ 	for (i = idx; i < count; i++) {
+@@ -966,6 +1014,11 @@ void __init early_res_to_bootmem(u64 start, u64 end)
+ 		reserve_bootmem_generic(final_start, final_end - final_start,
+ 				BOOTMEM_DEFAULT);
+ 	}
++	/* clear them */
++	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
++	early_res = NULL;
++	max_early_res = 0;
++	early_res_count = 0;
+ }
+ 
+ /* Check for already reserved areas */
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1.6.4.2
 
