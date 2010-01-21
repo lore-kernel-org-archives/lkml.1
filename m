@@ -1,67 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423Ab0AUQuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651Ab0AUQvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423Ab0AUQuV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726Ab0AUQuS
+	id S1753651Ab0AUQvX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869Ab0AUQvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:50:18 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:39804 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147Ab0AUQuQ (ORCPT
+	Thu, 21 Jan 2010 11:51:23 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:33345 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751650Ab0AUQvW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 11:50:16 -0500
+	Thu, 21 Jan 2010 11:51:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=BjsQfLI2E5eeG1I2aaEp+cGkTE5ABnnO1Q/L+XTMJADhF5V/wBO94dHHpNKTlX4nqE
-         FxEWecnhoWZ8123G4mq2NevKAxObMADvLOfuwJ0RbNkXtdAzlaGLzQ8dqwN4Q0aZL4VL
-         FzSyHD0h28KTf/0WOd31Jf963EQrudMbgAyGo=
-Message-ID: <4B5885C5.1010607@garzik.org>
-Date: Thu, 21 Jan 2010 11:50:13 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=rIud9MLWJhEeU+u2ajrOOtHPbUKKuEpuCn6TUd+j8/HiXsG9EVeWmh2ggyXxg2IsfG
+         /lhNryz5oEaFTJjpPEUVRJR43JAPW3pmUhiQYjwblyoZNHJ85i3sLkTTCzvg9sc38SSM
+         Xs/eYu3Ki89UycGkKw4yzrBJ0mEj71V5gbffs=
+Message-ID: <4B5885F7.2020007@gmail.com>
+Date: Thu, 21 Jan 2010 11:51:03 -0500
+From: Chandra Nepali <edu4madh@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/64] pata_atiixp: remove superfluous wrapper function
-References: <20100118171349.14623.90030.sendpatchset@localhost> <4B57D2E4.30203@garzik.org> <4B57D365.3040201@garzik.org> <201001211223.16924.bzolnier@gmail.com>
-In-Reply-To: <201001211223.16924.bzolnier@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: port multiplier problem
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21/2010 06:23 AM, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 21 January 2010 05:09:09 am Jeff Garzik wrote:
->> On 01/20/2010 11:07 PM, Jeff Garzik wrote:
->>> On 01/18/2010 12:14 PM, Bartlomiej Zolnierkiewicz wrote:
->>>> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
->>>> Subject: [PATCH] pata_atiixp: remove superfluous wrapper function
->>>>
->>>> Fix documentation for ->set_[pio,dma]mode methods while at it.
->>>>
->>>> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
->>>> ---
->>>> drivers/ata/pata_atiixp.c | 29 +++++++----------------------
->>>> 1 file changed, 7 insertions(+), 22 deletions(-)
->>>
->>> applied
->>
->> undone...  it broke the build, presumably because it requires something
->> in your tree that's not in libata-dev.git
->
-> Jeff, as noted in the first mail those patches are against atang tree
-> (which has many changes which are missing from your libata-dev tree)..
+Hi,
 
-Yes, hence "presumably because it requires something in your tree"
+I have a disk array of 12 disks. The interface card has two sil3726 port 
+multiplier for 10 disks (5 disks in each port multiplier) and 2 direct 
+sata connectors. The host controller is sil3124. It was connected to 
+suse 10.4 and working fine.
 
-Would you be willing to submit a push against the latest 
-libata-dev.git#upstream?
+There was a high voltage accident (high voltage to disk array only, not 
+computer) and because of that we replaced the power supply of this disk 
+array. Now, we are getting some problem, disks are not being 
+recognized,. So, I connected it to Fedora 12 (To correct if it is 
+because of some bugs) with driver sil24. Here are few things that I have 
+tested.
 
-	Jeff
+1) If I connect only one disk to direct sata connector, it works fine.
+2) If I connect two disks to both direct sata connectors, it won't work.
+3) If I connect  one disk to one direct sata and one disk directly to 
+host controller, it works.
+3) If I connect one or more disk to PM, it won't work.
+4) If I connect one disk to direct sata and one to PM, it won't work.
 
+Below is the error from dmesg in case of failure:
+==================================
+aic7xxx 0000:03:04.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+scsi2 : Adaptec AIC7XXX EISA/VLB/PCI SCSI HBA DRIVER, Rev 7.0
+        <Adaptec aic7899 Ultra160 SCSI adapter>
+        aic7899: Ultra160 Wide Channel A, SCSI Id=7, 32/253 SCBs
 
+sata_sil24 0000:03:02.0: version 1.1
+sata_sil24 0000:03:02.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+scsi3 : sata_sil24
+scsi4 : sata_sil24
+scsi5 : sata_sil24
+scsi6 : sata_sil24
+ata3: SATA max UDMA/100 host m128@0xea009000 port 0xea000000 irq 18
+ata4: SATA max UDMA/100 host m128@0xea009000 port 0xea002000 irq 18
+ata5: SATA max UDMA/100 host m128@0xea009000 port 0xea004000 irq 18
+ata6: SATA max UDMA/100 host m128@0xea009000 port 0xea006000 irq 18
+aic7xxx 0000:03:04.1: PCI INT B -> GSI 18 (level, low) -> IRQ 18
+ata3: SATA link down (SStatus 0 SControl 0)
+ata4: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
+ata4.15: Port Multiplier 1.1, 0x1095:0x3726 r23, 6 ports, feat 0x1/0x9
+ata4.00: hard resetting link
+ata4.00: SATA link down (SStatus 0 SControl 10)
+ata4.01: hard resetting link
+ata4.01: SATA link down (SStatus 0 SControl 320)
+ata4.02: hard resetting link
+ata4.02: SATA link down (SStatus 0 SControl 320)
+ata4.03: hard resetting link
+ata4.03: SATA link down (SStatus 0 SControl 320)
+ata4.04: hard resetting link
+ata4.04: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+ata4.05: hard resetting link
+ata4.05: SATA link up 1.5 Gbps (SStatus 113 SControl 320)
+ata4.04: failed to IDENTIFY (I/O error, err_mask=0x11)
+ata4.15: hard resetting link
+ata4.15: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
+...........................
+...........................
+===================================
 
+I appreciate your help.
 
+Thanks
+Manojg
