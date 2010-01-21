@@ -1,80 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481Ab0AUXNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497Ab0AUXOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481Ab0AUXNL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 18:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424Ab0AUXNK
+	id S1755497Ab0AUXOk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 18:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469Ab0AUXOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 18:13:10 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:62307 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755347Ab0AUXNI (ORCPT
+	Thu, 21 Jan 2010 18:14:39 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58904 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755424Ab0AUXOi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 18:13:08 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=FoTVUQ0QyZF/Gn5QfxD86SFR67w5bZ9OxoQKYMV3qK3g7CeUQmlnMk88+eLbua1dc
-	WQdQxJ/03zg+oSaGWkFIw==
-Date: Thu, 21 Jan 2010 15:12:58 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Haicheng Li <haicheng.li@linux.intel.com>
-cc: Ingo Molnar <mingo@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       x86@kernel.org, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: set hotpluggable nodes in nodes_possible_map
-In-Reply-To: <4B581160.2090209@linux.intel.com>
-Message-ID: <alpine.DEB.2.00.1001211500290.31073@chino.kir.corp.google.com>
-References: <4B501C4D.4080907@linux.intel.com> <alpine.DEB.2.00.1001171338170.16238@chino.kir.corp.google.com> <86802c441001172230y137b4916h7d744a96ab75873d@mail.gmail.com> <alpine.DEB.2.00.1001180231430.20677@chino.kir.corp.google.com> <4B5592B1.9030800@linux.intel.com>
- <alpine.DEB.2.00.1001191513010.24223@chino.kir.corp.google.com> <4B5731E2.4040207@linux.intel.com> <alpine.DEB.2.00.1001201152040.30528@chino.kir.corp.google.com> <4B57C2DD.3050402@linux.intel.com> <alpine.DEB.2.00.1001202252320.22343@chino.kir.corp.google.com>
- <4B5802EF.6040603@linux.intel.com> <alpine.DEB.2.00.1001202344580.29982@chino.kir.corp.google.com> <4B581160.2090209@linux.intel.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 21 Jan 2010 18:14:38 -0500
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 22/36] move round_up/down to kernel.h
+From: Andi Kleen <andi@firstfloor.org>
+References: <1264055303-15123-1-git-send-email-yinghai@kernel.org>
+	<1264055303-15123-23-git-send-email-yinghai@kernel.org>
+	<alpine.DEB.2.00.1001211446430.13130@router.home>
+Date: Fri, 22 Jan 2010 00:14:36 +0100
+In-Reply-To: <alpine.DEB.2.00.1001211446430.13130@router.home> (Christoph Lameter's message of "Thu, 21 Jan 2010 14:48:24 -0600 (CST)")
+Message-ID: <87fx5z2gpv.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jan 2010, Haicheng Li wrote:
+Christoph Lameter <cl@linux-foundation.org> writes:
 
-> > It's pointless to add another nodemask, the semantics of cpu_nodes_parsed is
-> > perfectly legitimate for hotpluggable nodes as well.  Instead of fixating on
-> > the name, look at the code that uses it.
-> 
-> I'm not meant to be rude, but it's illogical excuse. that it is now used by a
-> single function doesn't mean that it will never be used by others in future or
-> it is only useful for that single function.
-> 
+> On Wed, 20 Jan 2010, Yinghai Lu wrote:
+>
+>> + * This looks more complex than it should be. But we need to
+>> + * get the type for the ~ right in round_down (it needs to be
+>> + * as wide as the result!), and we want to evaluate the macro
+>> + * arguments just once each.
+>> + */
+>> +#define __round_mask(x,y) ((__typeof__(x))((y)-1))
+>> +#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
+>> +#define round_down(x,y) ((x) & ~__round_mask(x,y))
+>> +
+>>  #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+>>  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+>>  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+>
+> So we are back to the earlier version.
+>
+> Two functions doing the same thing. round_up and roundup.
+>
+> If they are different(are they really used that way?) then they should
+> have names that emphasize the difference.
 
-It will not be used by a single function in this context for any valid 
-purpose, hp_nodes_parsed is completely unnecessary and overkill to address 
-a problem that is a relative one-liner.  You're completely missing the 
-points that (i) no other SRAT parsing code cares about distinguishing only 
-nodes with hotpluggable memory ranges, and (ii) no other SRAT parsing code 
-even cares about distinguishing memoryless nodes with only cpus attached.  
-Thus, we can use cpu_nodes_allowed to represent _all_ nodes without online 
-memory ranges (and you can even rename it to no_mem_nodes later, if you 
-want).
 
-This discussion is becoming very annoying because you have constantly 
-proposed new patches (I think 4 now?) that are much more complex and 
-without any real consistent idea behind them.  Your latest proposal is to 
-add a nodemask because you speculate that someday it will become useful; 
-the truth of the matter is that we don't need to do anything with them 
-beyond detection so the bit gets set in nodes_possible_map.
+round_up() basically only works for power of two, but they
+should generate the same code for constants.
 
-Ingo should not need to look through what is becoming an extremely long 
-discussion for a bugfix that should be applied for rc5 because we're 
-getting _very_ late in the 2.6.33 release cycle.  Do you expect Ingo to 
-push your fix to Linus with the rationale that "maybe someday we'll use 
-this new nodemask even though it may be rc5 and nobody knows what we'd 
-ever use it for"?  Is that appropriate for -stable candidates as well?
+The only user right now is e820.c, but it uses the second
+argument with non constants, so would generate a slower
+true division with roundup() Right now it probably doesn't
+make much difference because e820 lists are small, but I saw
+a patchkit to let e820 replace bootmem and then they might
+not be anymore.
 
-You've already tested my patch that this thread was restarted with and it 
-works, so let's fix the bug.  Then, later, you can rename cpu_nodes_parsed 
-to no_mems_nodes, which I'd agree with.  You may even try to seperate the 
-hotpluggable nodes out into their own nodemask, but I trust that the x86 
-maintainers will be looking for some rationale behind that other than "it 
-may one day be useful."
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
