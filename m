@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953Ab0AURHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531Ab0AURNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753953Ab0AURHW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 12:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728Ab0AURHU
+	id S1754531Ab0AURNT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 12:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801Ab0AURNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 12:07:20 -0500
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:41148 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753657Ab0AURHS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 12:07:18 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArEEAFcXWEuuWOiG/2dsb2JhbACBRthihDwE
-Date: Thu, 21 Jan 2010 12:02:15 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v5)
-Message-ID: <20100121170215.GC15761@Krystal>
-References: <20100114183739.GA18435@Krystal> <1263495132.28171.3861.camel@gandalf.stny.rr.com> <20100114193355.GA23436@Krystal> <1263926259.4283.757.camel@laptop> <1263928006.4283.762.camel@laptop> <1264073212.4283.1158.camel@laptop> <20100121160729.GB12842@Krystal> <1264090331.31321.212.camel@gandalf.stny.rr.com> <20100121162249.GA15761@Krystal> <1264091529.31321.223.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 21 Jan 2010 12:13:18 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2072 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752631Ab0AURNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 12:13:17 -0500
+Message-ID: <4B588B29.2050100@redhat.com>
+Date: Thu, 21 Jan 2010 19:13:13 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: "Michael S. Tsirkin" <mst@redhat.com>, mtosatti@redhat.com,
+       kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCHv2 1/3] eventfd: allow atomic read and waitqueue remove
+References: <20100121162648.GA16458@redhat.com> <alpine.DEB.2.00.1001210857310.8548@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.2.00.1001210857310.8548@makko.or.mcafeemobile.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1264091529.31321.223.camel@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 12:02:08 up 36 days,  1:20,  5 users,  load average: 0.05, 0.13,
-	0.15
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> On Thu, 2010-01-21 at 11:22 -0500, Mathieu Desnoyers wrote:
-> > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> > > You may also need spin_lock_irqsave, et al. variants too.
-> > 
-> > Yep, or we simply use the local_irq_save/restore separately. That could
-> > be a good idea given that only few specialized sites are affected.
-> 
-> If it gets used more often, then we need to consider RT. RT modifies
-> spin_lock_irqsave into a standard mutex that does not disable
-> interrupts. But if something does:
-> 
-> 	local_irq_save(flags);
-> 	spin_lock_mb(&lock);
-> 	[...]
-> 
-> Then it will break RT (if lock is to be converted).
+On 01/21/2010 06:58 PM, Davide Libenzi wrote:
+> On Thu, 21 Jan 2010, Michael S. Tsirkin wrote:
+>
+>    
+>> This is a backport of commit: 03db343a6320f780937078433fa7d8da955e6fce
+>> modified in a way that introduces some code duplication on the one hand,
+>> but reduces the risk of regressing existing eventfd users on the other
+>> hand.
+>>
+>> KVM needs a wait to atomically remove themselves from the eventfd
+>> ->poll() wait queue head, in order to handle correctly their IRQfd
+>> deassign operation.
+>>
+>> This patch introduces such API, plus a way to read an eventfd from its
+>> context.
+>>
+>> Signed-off-by: Michael S. Tsirkin<mst@redhat.com>
+>> ---
+>>
+>> Avi, Davidel, how about only including the following part for -stable
+>> then?  Reason is, I still would like to be able to use irqfd there, and
+>> getting spurious interrupts 100% of times unmask is done isn't a very
+>> good idea IMO ...
+>>      
+> It's the same thing. Unless there are *real* problems in KVM due to the
+> spurious ints, I still think this is .33 material.
+>    
 
-Good point !
+I agree.
 
-Mathieu
-
-> 
-> -- Steve
-> 
-> 
+But I think we can solve this in another way in .32: we can clear the 
+eventfd from irqfd->inject work, which is in process context.  The new 
+stuff is only needed for lockless clearing, no?
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
