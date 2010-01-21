@@ -1,104 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254Ab0AULS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284Ab0AUL0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254Ab0AULS6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 06:18:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035Ab0AULS5
+	id S1755284Ab0AUL0S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 06:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193Ab0AUL0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 06:18:57 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:41565 "EHLO
+	Thu, 21 Jan 2010 06:26:17 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:48973 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754731Ab0AULS5 (ORCPT
+	with ESMTP id S1751969Ab0AUL0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 06:18:57 -0500
+	Thu, 21 Jan 2010 06:26:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ek5HnMwvgFGeGJIhnC4/+3N00sn3GXvVnwvpxLXOscOGP3+Pflwf3G68eBqtnTNFxo
-         RYSNSETMxb3k+GwCmHLswdz7W3/afe45LAWRHJZme0A7BCc2sNVmFCJCQvdquQ1UX8nQ
-         iVtmoYu/6cgomRBT63ok7VFH671smak9i+EOw=
-Date: Thu, 21 Jan 2010 12:18:52 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Luca Barbieri <luca@luca-barbieri.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: perf record -g hangs the system
-Message-ID: <20100121111850.GD5017@nowhere>
-References: <ff13bc9a1001210310x5ebc9993kbf6b302285d2d9a4@mail.gmail.com>
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=ZtVgKZaERZFrZFRFCPclbNc1c6NV+vnnpYA+t4+DaE93WKJ1a+7Alb13YfP4DV364W
+         Ym7azgGaiwiSo23YDLjW+h74KrUOSnuiXd9/HxXF2FQQl5t5Ok6JwrvGoa+sb02TC9Oz
+         Ym96YSotuctRI6MjVaf1bRETWvG0w2g7fj+GM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 05/64] pata_atiixp: remove superfluous wrapper function
+Date: Thu, 21 Jan 2010 12:23:16 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20100118171349.14623.90030.sendpatchset@localhost> <4B57D2E4.30203@garzik.org> <4B57D365.3040201@garzik.org>
+In-Reply-To: <4B57D365.3040201@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ff13bc9a1001210310x5ebc9993kbf6b302285d2d9a4@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001211223.16924.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 12:10:12PM +0100, Luca Barbieri wrote:
-> I'm experiencing a system lockup running the following command:
-> perf record -g true
+On Thursday 21 January 2010 05:09:09 am Jeff Garzik wrote:
+> On 01/20/2010 11:07 PM, Jeff Garzik wrote:
+> > On 01/18/2010 12:14 PM, Bartlomiej Zolnierkiewicz wrote:
+> >> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> >> Subject: [PATCH] pata_atiixp: remove superfluous wrapper function
+> >>
+> >> Fix documentation for ->set_[pio,dma]mode methods while at it.
+> >>
+> >> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> >> ---
+> >> drivers/ata/pata_atiixp.c | 29 +++++++----------------------
+> >> 1 file changed, 7 insertions(+), 22 deletions(-)
+> >
+> > applied
 > 
-> The system hangs and does not respond to any sysrq.
-> No messages are printed to netconsole.
-> 
-> This is with 2.6.33-rc4 on an x86-32 Core 2 dual core machine.
-> 
-> Any tips on how to debug/fix this?
+> undone...  it broke the build, presumably because it requires something 
+> in your tree that's not in libata-dev.git
 
+Jeff, as noted in the first mail those patches are against atang tree
+(which has many changes which are missing from your libata-dev tree)..
 
-
-It should be fixed in latest linus's git tree with the
-following patch:
-
-
-commit c2c5d45d46c8c0fd34291dec958670ad4816796f
-Author: Frederic Weisbecker <fweisbec@gmail.com>
-Date:   Thu Dec 31 03:52:25 2009 +0100
-
-    perf: Stop stack frame walking off kernel addresses boundaries
-    
-    While processing kernel perf callchains, an bad entry can be
-    considered as a valid stack pointer but not as a kernel address.
-    
-    In this case, we hang in an endless loop. This can happen in an
-    x86-32 kernel after processing the last entry in a kernel
-    stacktrace.
-    
-    Just stop the stack frame walking after we encounter an invalid
-    kernel address.
-    
-    This fixes a hard lockup in x86-32.
-    
-    Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-    Cc: Peter Zijlstra <peterz@infradead.org>
-    Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-    Cc: Paul Mackerras <paulus@samba.org>
-    LKML-Reference: <1262227945-27014-1-git-send-regression-fweisbec@gmail.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
-index c56bc28..6d81755 100644
---- a/arch/x86/kernel/dumpstack.c
-+++ b/arch/x86/kernel/dumpstack.c
-@@ -123,13 +123,15 @@ print_context_stack_bp(struct thread_info *tinfo,
- 	while (valid_stack_ptr(tinfo, ret_addr, sizeof(*ret_addr), end)) {
- 		unsigned long addr = *ret_addr;
- 
--		if (__kernel_text_address(addr)) {
--			ops->address(data, addr, 1);
--			frame = frame->next_frame;
--			ret_addr = &frame->return_address;
--			print_ftrace_graph_addr(addr, data, ops, tinfo, graph);
--		}
-+		if (!__kernel_text_address(addr))
-+			break;
-+
-+		ops->address(data, addr, 1);
-+		frame = frame->next_frame;
-+		ret_addr = &frame->return_address;
-+		print_ftrace_graph_addr(addr, data, ops, tinfo, graph);
- 	}
-+
- 	return (unsigned long)frame;
- }
- EXPORT_SYMBOL_GPL(print_context_stack_bp);
-
+--
+Bartlomiej Zolnierkiewicz
