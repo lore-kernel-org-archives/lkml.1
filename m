@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447Ab0AUXBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395Ab0AUXBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755447Ab0AUXBW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 18:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065Ab0AUXBR
+	id S1755395Ab0AUXBV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 18:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220Ab0AUXBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 18:01:17 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37890 "EHLO ogre.sisk.pl"
+	Thu, 21 Jan 2010 18:01:18 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37891 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755196Ab0AUXBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755218Ab0AUXBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 21 Jan 2010 18:01:14 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 2/2] PM: Document device power attributes in sysfs
-Date: Fri, 22 Jan 2010 00:00:54 +0100
+Subject: [PATCH 1/2] PM / Runtime: Add sysfs switch for disabling device run-time PM (rev. 2)
+Date: Thu, 21 Jan 2010 23:59:38 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
@@ -24,78 +24,193 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001220000.54860.rjw@sisk.pl>
+Message-Id: <201001212359.38886.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-There are sysfs attributes in /sys/devices/.../power/ that haven't
-been documented yet in Documentation/ABI/.  Document them as
-appropriate.
+Add new device sysfs attribute, power/control, allowing the user
+space to block the run-time power management of devices.  If this
+attribute is set to "on", the driver of the device won't be able to power
+manage it at run time (without breaking the rules) and the device will
+always be in the full power state (except when the entire system goes
+into a sleep state).
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- Documentation/ABI/testing/sysfs-devices-power |   53 ++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
+ drivers/base/power/power.h   |    4 +++
+ drivers/base/power/runtime.c |   43 ++++++++++++++++++++++++++++++++++++
+ drivers/base/power/sysfs.c   |   50 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm.h           |    1 
+ 4 files changed, 98 insertions(+)
 
-Index: linux-2.6/Documentation/ABI/testing/sysfs-devices-power
+Index: linux-2.6/drivers/base/power/power.h
 ===================================================================
---- /dev/null
-+++ linux-2.6/Documentation/ABI/testing/sysfs-devices-power
-@@ -0,0 +1,53 @@
-+What:		/sys/devices/.../power/
-+Date:		January 2009
-+Contact:	Rafael J. Wysocki <rjw@sisk.pl>
-+Description:
-+		The /sys/devices/.../power directory contains attributes
-+		allowing the user space to check and modify some power
-+		management related properties of given device.
+--- linux-2.6.orig/drivers/base/power/power.h
++++ linux-2.6/drivers/base/power/power.h
+@@ -2,11 +2,15 @@
+ 
+ extern void pm_runtime_init(struct device *dev);
+ extern void pm_runtime_remove(struct device *dev);
++extern void pm_runtime_allow(struct device *dev);
++extern void pm_runtime_forbid(struct device *dev);
+ 
+ #else /* !CONFIG_PM_RUNTIME */
+ 
+ static inline void pm_runtime_init(struct device *dev) {}
+ static inline void pm_runtime_remove(struct device *dev) {}
++static inline void pm_runtime_allow(struct device *dev) {}
++static inline void pm_runtime_forbid(struct device *dev) {}
+ 
+ #endif /* !CONFIG_PM_RUNTIME */
+ 
+Index: linux-2.6/drivers/base/power/sysfs.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/sysfs.c
++++ linux-2.6/drivers/base/power/sysfs.c
+@@ -7,6 +7,21 @@
+ #include "power.h"
+ 
+ /*
++ *	control - Report/change current runtime PM setting of the device
++ *
++ *	Runtime power management of a device can be blocked with the help of
++ *	this attribute.  All devices have one of the following two values for
++ *	the power/control file:
++ *
++ *	 + "auto\n" to allow the device to be power managed at run time;
++ *	 + "on\n" to prevent the device from being power managed at run time;
++ *
++ *	The default for all devices is "auto", which means that devices may be
++ *	subject to automatic power management, depending on their drivers.
++ *	Changing this attribute to "on" prevents the driver from power managing
++ *	the device at run time.  Doing that while the device is suspended causes
++ *	it to be woken up.
++ *
+  *	wakeup - Report/change current wakeup option for device
+  *
+  *	Some devices support "wakeup" events, which are hardware signals
+@@ -59,6 +74,38 @@
+ static const char enabled[] = "enabled";
+ static const char disabled[] = "disabled";
+ 
++#ifdef CONFIG_PM_RUNTIME
++static const char ctrl_auto[] = "auto";
++static const char ctrl_on[] = "on";
 +
-+What:		/sys/devices/.../power/wakeup
-+Date:		January 2009
-+Contact:	Rafael J. Wysocki <rjw@sisk.pl>
-+Description:
-+		The /sys/devices/.../power/wakeup attribute allows the user
-+		space to check if the device is enabled to wake up the system
-+		from sleep states, such as the memory sleep state (suspend to
-+		RAM) and hibernation (suspend to disk), and to enable or disable
-+		it to do that as desired.
++static ssize_t control_show(struct device *dev, struct device_attribute *attr,
++			    char *buf)
++{
++	return sprintf(buf, "%s\n",
++				dev->power.runtime_auto ? ctrl_auto : ctrl_on);
++}
 +
-+		Some devices support "wakeup" events, which are hardware signals
-+		used to activate the system from a sleep state.  Such devices
-+		have one of the following two values for the sysfs power/wakeup
-+		file:
++static ssize_t control_store(struct device * dev, struct device_attribute *attr,
++			     const char * buf, size_t n)
++{
++	char *cp;
++	int len = n;
 +
-+		+ "enabled\n" to issue the events;
-+		+ "disabled\n" not to do so;
++	cp = memchr(buf, '\n', n);
++	if (cp)
++		len = cp - buf;
++	if (len == sizeof ctrl_auto - 1 && strncmp(buf, ctrl_auto, len) == 0)
++		pm_runtime_allow(dev);
++	else if (len == sizeof ctrl_on - 1 && strncmp(buf, ctrl_on, len) == 0)
++		pm_runtime_forbid(dev);
++	else
++		return -EINVAL;
++	return n;
++}
 +
-+		In that cases the user space can change the setting represented
-+		by the contents of this file by writing either "enabled", or
-+		"disabled" to it.
++static DEVICE_ATTR(control, 0644, control_show, control_store);
++#endif
 +
-+		For the devices that are not capable of generating system wakeup
-+		events this file contains "\n".  In that cases the user space
-+		cannot modify the contents of this file and the device cannot be
-+		enabled to wake up the system.
+ static ssize_t
+ wake_show(struct device * dev, struct device_attribute *attr, char * buf)
+ {
+@@ -123,6 +170,9 @@ static DEVICE_ATTR(async, 0644, async_sh
+ #endif /* CONFIG_PM_SLEEP_ADVANCED_DEBUG */
+ 
+ static struct attribute * power_attrs[] = {
++#ifdef CONFIG_PM_RUNTIME
++	&dev_attr_control.attr,
++#endif
+ 	&dev_attr_wakeup.attr,
+ #ifdef CONFIG_PM_SLEEP_ADVANCED_DEBUG
+ 	&dev_attr_async.attr,
+Index: linux-2.6/include/linux/pm.h
+===================================================================
+--- linux-2.6.orig/include/linux/pm.h
++++ linux-2.6/include/linux/pm.h
+@@ -433,6 +433,7 @@ struct dev_pm_info {
+ 	unsigned int		request_pending:1;
+ 	unsigned int		deferred_resume:1;
+ 	unsigned int		run_wake:1;
++	unsigned int		runtime_auto:1;
+ 	enum rpm_request	request;
+ 	enum rpm_status		runtime_status;
+ 	int			runtime_error;
+Index: linux-2.6/drivers/base/power/runtime.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/runtime.c
++++ linux-2.6/drivers/base/power/runtime.c
+@@ -1011,6 +1011,48 @@ void pm_runtime_enable(struct device *de
+ EXPORT_SYMBOL_GPL(pm_runtime_enable);
+ 
+ /**
++ * pm_runtime_forbid - Block run-time PM of a device.
++ * @dev: Device to handle.
++ *
++ * Increase the device's usage count and clear its power.runtime_auto flag,
++ * so that it cannot be suspended at run time until pm_runtime_allow() is called
++ * for it.
++ */
++void pm_runtime_forbid(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	if (!dev->power.runtime_auto)
++		goto out;
 +
-+What:		/sys/devices/.../power/control
-+Date:		January 2009
-+Contact:	Rafael J. Wysocki <rjw@sisk.pl>
-+Description:
-+		The /sys/devices/.../power/control attribute allows the user
-+		space to control the run-time power management of the device.
++	dev->power.runtime_auto = false;
++	atomic_inc(&dev->power.usage_count);
++	__pm_runtime_resume(dev, false);
 +
-+		All devices have one of the following two values for the
-+		power/control file:
++ out:
++	spin_unlock_irq(&dev->power.lock);
++}
 +
-+		+ "auto\n" to allow the device to be power managed at run time;
-+		+ "on\n" to prevent the device from being power managed;
++/**
++ * pm_runtime_allow - Unblock run-time PM of a device.
++ * @dev: Device to handle.
++ *
++ * Decrease the device's usage count and set its power.runtime_auto flag.
++ */
++void pm_runtime_allow(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	if (dev->power.runtime_auto)
++		goto out;
 +
-+		The default for all devices is "auto", which means that they may
-+		be subject to automatic power management, depending on their
-+		drivers.  Changing this attribute to "on" prevents the driver
-+		from power managing the device at run time.  Doing that while
-+		the device is suspended causes it to be woken up.
-
++	dev->power.runtime_auto = true;
++	if (atomic_dec_and_test(&dev->power.usage_count))
++		__pm_runtime_idle(dev);
++
++ out:
++	spin_unlock_irq(&dev->power.lock);
++}
++
++/**
+  * pm_runtime_init - Initialize run-time PM fields in given device object.
+  * @dev: Device object to initialize.
+  */
+@@ -1028,6 +1070,7 @@ void pm_runtime_init(struct device *dev)
+ 
+ 	atomic_set(&dev->power.child_count, 0);
+ 	pm_suspend_ignore_children(dev, false);
++	dev->power.runtime_auto = true;
+ 
+ 	dev->power.request_pending = false;
+ 	dev->power.request = RPM_REQ_NONE;
