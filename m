@@ -1,110 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756Ab0AUBXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751395Ab0AUBbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756Ab0AUBXg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 20:23:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669Ab0AUBXf
+	id S1751395Ab0AUBbc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 20:31:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433Ab0AUBbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 20:23:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35917 "EHLO mx1.redhat.com"
+	Wed, 20 Jan 2010 20:31:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3725 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751082Ab0AUBXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 20:23:34 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751240Ab0AUBbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 20:31:31 -0500
+Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
+From: Bastien Nocera <hadess@hadess.net>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
+In-Reply-To: <4B57A2D4.9030204@gmail.com>
+References: <1264011793.1735.3683.camel@localhost.localdomain>
+	 <4B57A2D4.9030204@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Thu, 21 Jan 2010 01:31:25 +0000
+Message-ID: <1264037485.1735.4988.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-X-Fcc: ~/Mail/utrace
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: linux-next: add utrace tree
-In-Reply-To: Stephen Rothwell's message of  Thursday, 21 January 2010 01:38:22 +1100 <20100121013822.28781960.sfr@canb.auug.org.au>
-References: <20100119211646.GF16096@redhat.com>
-	<20100120111220.e7fb4e2c.sfr@canb.auug.org.au>
-	<20100120054950.GB27108@elte.hu>
-	<20100120061551.GB6588@in.ibm.com>
-	<20100120062834.GB12165@elte.hu>
-	<20100120072925.GA11395@elte.hu>
-	<20100121013822.28781960.sfr@canb.auug.org.au>
-X-Windows: warn your friends about it.
-Message-Id: <20100121012238.4172F1566@magilla.sf.frob.com>
-Date: Wed, 20 Jan 2010 17:22:38 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Frank, please be clear as to which branch you want included (master or
-> utrace-ptrace).  Also note that neither of those branches matches what
-> was posted in the sense that they both have lots of history and merges
-> not represented in the patches.  (I assume that they do produce the same
-> final source tree, though).
+On Wed, 2010-01-20 at 18:41 -0600, Robert Hancock wrote:
+> On 01/20/2010 12:23 PM, Bastien Nocera wrote:
+> > As those computers never had any i8042 controllers, and the
+> > current lookup code could potentially lock up/hang/wait for
+> > timeout for long periods of time.
+> >
+> > Fixes intermittent hangs on boot on a MacbookAir1,1
+> >
+> > Signed-off-by: Bastien Nocera<hadess@hadess.net>
+> 
+> I assume this is happening because of this code in 
+> drivers/input/serio/i8042-x86ia64io.h:
+> 
+>          if (!i8042_pnp_kbd_devices && !i8042_pnp_aux_devices) {
+>                  i8042_pnp_exit();
+> #if defined(__ia64__)
+>                  return -ENODEV;
+> #else
+>                  printk(KERN_INFO "PNP: No PS/2 controller found. 
+> Probing ports directly.\n");
+>                  return 0;
+> #endif
 
-Yes, the trees do match.  I certainly never expected our ancient git
-history to get merged in directly upstream.  I've made a new branch on:
-	git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git
-called:
-	next/master
-(Actually it's on master.kernel.org and the public mirror is being a little
-slow as I write this.)
+Actually, the error message is "i8042.c: No controller found". Which
+happens very early in a sub-function of i8042_init().
 
-This starts from v2.6.33-rc4 and then has commits for the 7 patches that
-Oleg posted in December.  Beyond that, we've added one follow-on patch to
-fix a bug Oleg just tracked down (Oleg will post that patch soon).  And
-I've added one more commit with a MAINTAINERS update, shown below.
+So I don't think this would solve the problem.
 
-You can also find the same stuff from the series file and patch files in:
-	http://people.redhat.com/utrace/2.6-next/
+> In other words, on x86, if PNP and/or ACPI don't indicate any PS/2 
+> controller exists, we randomly bang on the ports in the expectation 
+> they'll be there anyway. This seems rather misguided. It would seem like 
+> a better idea to fix this rather than adding yet another DMI list 
+> (especially since there likely are, or will be, machines without i8042 
+> other than Macs).
 
-If it makes things easier for linux-next to have this git branch either
-rebased or merged from a different fork point, please let me know.
+They might also have a better BIOS than the Macs and avoid hanging when
+that happens...
 
+> I can see continuing on and probing if PNP isn't present on the machine, 
+> but certainly if ACPI is enabled, I don't think we should be doing such 
+> things.
 
-Thanks,
-Roland
-
----
-[PATCH] MAINTAINERS: add utrace
-
-This updates the ptrace entry to cover utrace too.
-They are part of the same maintenance effort.
-Also add the utrace mailing list.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- MAINTAINERS |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c8f47bf..8da2a0a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4375,15 +4375,18 @@ M:	Jim Paris <jim@jtan.com>
- L:	cbe-oss-dev@ozlabs.org
- S:	Maintained
- 
--PTRACE SUPPORT
-+PTRACE AND UTRACE SUPPORT
- M:	Roland McGrath <roland@redhat.com>
- M:	Oleg Nesterov <oleg@redhat.com>
-+L:	utrace-devel@redhat.com
- S:	Maintained
- F:	include/asm-generic/syscall.h
- F:	include/linux/ptrace.h
- F:	include/linux/regset.h
- F:	include/linux/tracehook.h
--F:	kernel/ptrace.c
-+F:	include/linux/utrace.h
-+F:	kernel/ptrace*
-+F:	kernel/utrace*
- 
- PVRUSB2 VIDEO4LINUX DRIVER
- M:	Mike Isely <isely@pobox.com>
