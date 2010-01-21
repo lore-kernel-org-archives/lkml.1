@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147Ab0AUUcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751779Ab0AUUfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147Ab0AUUcd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 15:32:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966Ab0AUUcb
+	id S1751779Ab0AUUfn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 15:35:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519Ab0AUUfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 15:32:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63075 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754879Ab0AUUcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 15:32:31 -0500
-Date: Thu, 21 Jan 2010 21:32:07 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-Message-ID: <20100121203207.GA20050@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100106205633.700CC134D@magilla.sf.frob.com> <20100107100050.31724463@mschwide.boeblingen.de.ibm.com>
+	Thu, 21 Jan 2010 15:35:42 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:62655 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751512Ab0AUUfl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 15:35:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=aksXF+Wg1frqsXT1zHohj7uZ+7x4CeN8lyPFalbDdkA7Q+zlJdssBJEsxQD5rm4aC+
+         pkYCJ98nevYF0ClkSQL0RaYhkNBDUEkpMW5rtFvZ4637hVVIcJkFWYf1hCDBtke4j5O8
+         h127C3XQOEqYU8U8MzlSzADC7Hgm1nDuzkRCc=
+Date: Thu, 21 Jan 2010 22:35:35 +0200
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kernel error : 'find /proc/ -type f | xargs -n 1 head -c 10
+ >/dev/null'
+Message-ID: <20100121203535.GA5133@x200>
+References: <201001212017.00160.toralf.foerster@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20100107100050.31724463@mschwide.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201001212017.00160.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/07, Martin Schwidefsky wrote:
->
-> On Wed,  6 Jan 2010 12:56:33 -0800 (PST)
-> Roland McGrath <roland@redhat.com> wrote:
->
-> > In other circumstances with utrace, it is very possible to wind up with
-> > user_disable_single_step being called superfluously when there was no
-> > stop (and so not necessarily any context switch or other high overhead).
-> > On other machines, user_disable_single_step is pretty cheap even where
-> > user_enable_single_step is quite costly.  Given how simple and cheap it
-> > is to short-circuit the excess work on s390, I think it is worthwhile.
->
-> We could use the same compare of the control registers as the code in
-> __switch_to. See below.
+On Thu, Jan 21, 2010 at 08:16:59PM +0100, Toralf Förster wrote:
+> I was inspired by http://article.gmane.org/gmane.linux.kernel/941115 .
+> 
+> Running the command (se subject) as a normal user at a 2.6.32.4 kernel
+> gives this in /var/log/messages:
+> 
+> head: page allocation failure. order:9, mode:0xd0                                  
+> Pid: 2324, comm: head Not tainted 2.6.32.4 #1                                      
+> Call Trace:                                                                        
+> [<c106e2cc>] ? __alloc_pages_nodemask+0x4bc/0x5a0                                  
+> [<c108cf5a>] ? cache_alloc_refill+0x2ba/0x510                                      
+> [<c108d299>] ? __kmalloc+0xe9/0xf0                                                 
+> [<c10aa755>] ? seq_read+0x195/0x370                                                
 
-FYI, I tested your c3311c13adc1021e986fef12609ceb395ffc5014 commit which
-does this optimization (compared to the patch you sent previously), it
-works fine.
-
-But please see another email I am going to send...
-
-Oleg.
-
+Please, find out which file is causing this, if it's reproducible.
