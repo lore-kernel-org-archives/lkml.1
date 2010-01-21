@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650Ab0AUE3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618Ab0AUE3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650Ab0AUE3a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:29:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124Ab0AUE30
+	id S1754618Ab0AUE3u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:29:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214Ab0AUE3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:29:26 -0500
-Received: from kroah.org ([198.145.64.141]:60084 "EHLO coco.kroah.org"
+	Wed, 20 Jan 2010 23:29:36 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:52638 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754118Ab0AUEWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:22:48 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:33 2010
-Message-Id: <20100121041833.378521195@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Wed, 20 Jan 2010 20:15:28 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Cyrill Gorcunov <gorcunov@openvz.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [07/30] x86, mce: Thermal monitoring depends on APIC being enabled
-In-Reply-To: <20100121041852.GA9656@kroah.com>
+	id S1754124Ab0AUE3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 23:29:33 -0500
+Date: Wed, 20 Jan 2010 23:29:31 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patch] libata fix
+Message-ID: <20100121042931.GA17744@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-------------------
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-From: Cyrill Gorcunov <gorcunov@openvz.org>
+to receive the following updates:
 
-commit 485a2e1973fd9f98c2c6776e66ac4721882b69e0 upstream.
+ drivers/ata/libata-eh.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-Add check if APIC is not disabled since thermal
-monitoring depends on it. As only apic gets disabled
-we should not try to install "thermal monitor" vector,
-print out that thermal monitoring is enabled and etc...
+Tejun Heo (1):
+      libata: retry FS IOs even if it has failed with AC_ERR_INVALID
 
-Note that "Intel Correct Machine Check Interrupts" already
-has such a check.
-
-Also I decided to not add cpu_has_apic check into
-mcheck_intel_therm_init since even if it'll call apic_read on
-disabled apic -- it's safe here and allow us to save a few code
-bytes.
-
-Reported-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-LKML-Reference: <4B25FDC2.3020401@jp.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/x86/kernel/cpu/mcheck/therm_throt.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -274,8 +274,9 @@ void intel_init_thermal(struct cpuinfo_x
- 	int tm2 = 0;
- 	u32 l, h;
+diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
+index 0ea97c9..9f6cfac 100644
+--- a/drivers/ata/libata-eh.c
++++ b/drivers/ata/libata-eh.c
+@@ -2028,8 +2028,9 @@ static void ata_eh_link_autopsy(struct ata_link *link)
+ 			qc->err_mask &= ~(AC_ERR_DEV | AC_ERR_OTHER);
  
--	/* Thermal monitoring depends on ACPI and clock modulation*/
--	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC))
-+	/* Thermal monitoring depends on APIC, ACPI and clock modulation */
-+	if (!cpu_has_apic || !cpu_has(c, X86_FEATURE_ACPI) ||
-+		!cpu_has(c, X86_FEATURE_ACC))
- 		return;
+ 		/* determine whether the command is worth retrying */
+-		if (!(qc->err_mask & AC_ERR_INVALID) &&
+-		    ((qc->flags & ATA_QCFLAG_IO) || qc->err_mask != AC_ERR_DEV))
++		if (qc->flags & ATA_QCFLAG_IO ||
++		    (!(qc->err_mask & AC_ERR_INVALID) &&
++		     qc->err_mask != AC_ERR_DEV))
+ 			qc->flags |= ATA_QCFLAG_RETRY;
  
- 	/*
-
-
+ 		/* accumulate error info */
