@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187Ab0AUEXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395Ab0AUEXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187Ab0AUEXL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:23:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132Ab0AUEWz
+	id S1754395Ab0AUEXZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219Ab0AUEXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:22:55 -0500
-Received: from kroah.org ([198.145.64.141]:60068 "EHLO coco.kroah.org"
+	Wed, 20 Jan 2010 23:23:05 -0500
+Received: from kroah.org ([198.145.64.141]:60160 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754088Ab0AUEWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:22:45 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:33 2010
-Message-Id: <20100121041832.980540097@mini.kroah.org>
+	id S1754197Ab0AUEXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 23:23:00 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:35 2010
+Message-Id: <20100121041835.078046215@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 20 Jan 2010 20:15:25 -0800
+Date: Wed, 20 Jan 2010 20:15:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [04/30] memcg: ensure list is empty at rmdir
+       "Bryn M. Reeves" <bmr@redhat.com>
+Subject: [20/30] [SCSI] megaraid_sas: remove sysfs poll_mode_io world writeable permissions
 In-Reply-To: <20100121041852.GA9656@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,128 +28,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+From: Bryn M. Reeves <bmr@redhat.com>
 
-commit fce66477578d081f19aef5ea218664ff7758c33a upstream.
+commit bb7d3f24c71e528989501617651b669fbed798cb upstream.
 
-Current mem_cgroup_force_empty() only ensures mem->res.usage == 0 on
-success.  But this doesn't guarantee memcg's LRU is really empty, because
-there are some cases in which !PageCgrupUsed pages exist on memcg's LRU.
+/sys/bus/pci/drivers/megaraid_sas/poll_mode_io defaults to being
+world-writable, which seems bad (letting any user affect kernel driver
+behavior).
 
-For example:
-- Pages can be uncharged by its owner process while they are on LRU.
-- race between mem_cgroup_add_lru_list() and __mem_cgroup_uncharge_common().
+This turns off group and user write permissions, so that on typical
+production systems only root can write to it.
 
-So there can be a case in which the usage is zero but some of the LRUs are not empty.
-
-OTOH, mem_cgroup_del_lru_list(), which can be called asynchronously with
-rmdir, accesses the mem_cgroup, so this access can cause a problem if it
-races with rmdir because the mem_cgroup might have been freed by rmdir.
-
-Actually, I saw a bug which seems to be caused by this race.
-
-	[1530745.949906] BUG: unable to handle kernel NULL pointer dereference at 0000000000000230
-	[1530745.950651] IP: [<ffffffff810fbc11>] mem_cgroup_del_lru_list+0x30/0x80
-	[1530745.950651] PGD 3863de067 PUD 3862c7067 PMD 0
-	[1530745.950651] Oops: 0002 [#1] SMP
-	[1530745.950651] last sysfs file: /sys/devices/system/cpu/cpu7/cache/index1/shared_cpu_map
-	[1530745.950651] CPU 3
-	[1530745.950651] Modules linked in: configs ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables bridge stp nfsd nfs_acl auth_rpcgss exportfs autofs4 hidp rfcomm l2cap crc16 bluetooth lockd sunrpc ib_iser rdma_cm ib_cm iw_cm ib_sa ib_mad ib_core ib_addr iscsi_tcp bnx2i cnic uio ipv6 cxgb3i cxgb3 mdio libiscsi_tcp libiscsi scsi_transport_iscsi dm_mirror dm_multipath scsi_dh video output sbs sbshc battery ac lp kvm_intel kvm sg ide_cd_mod cdrom serio_raw tpm_tis tpm tpm_bios acpi_memhotplug button parport_pc parport rtc_cmos rtc_core rtc_lib e1000 i2c_i801 i2c_core pcspkr dm_region_hash dm_log dm_mod ata_piix libata shpchp megaraid_mbox sd_mod scsi_mod megaraid_mm ext3 jbd uhci_hcd ohci_hcd ehci_hcd [last unloaded: freq_table]
-	[1530745.950651] Pid: 19653, comm: shmem_test_02 Tainted: G   M       2.6.32-mm1-00701-g2b04386 #3 Express5800/140Rd-4 [N8100-1065]
-	[1530745.950651] RIP: 0010:[<ffffffff810fbc11>]  [<ffffffff810fbc11>] mem_cgroup_del_lru_list+0x30/0x80
-	[1530745.950651] RSP: 0018:ffff8803863ddcb8  EFLAGS: 00010002
-	[1530745.950651] RAX: 00000000000001e0 RBX: ffff8803abc02238 RCX: 00000000000001e0
-	[1530745.950651] RDX: 0000000000000000 RSI: ffff88038611a000 RDI: ffff8803abc02238
-	[1530745.950651] RBP: ffff8803863ddcc8 R08: 0000000000000002 R09: ffff8803a04c8643
-	[1530745.950651] R10: 0000000000000000 R11: ffffffff810c7333 R12: 0000000000000000
-	[1530745.950651] R13: ffff880000017f00 R14: 0000000000000092 R15: ffff8800179d0310
-	[1530745.950651] FS:  0000000000000000(0000) GS:ffff880017800000(0000) knlGS:0000000000000000
-	[1530745.950651] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-	[1530745.950651] CR2: 0000000000000230 CR3: 0000000379d87000 CR4: 00000000000006e0
-	[1530745.950651] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-	[1530745.950651] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-	[1530745.950651] Process shmem_test_02 (pid: 19653, threadinfo ffff8803863dc000, task ffff88038612a8a0)
-	[1530745.950651] Stack:
-	[1530745.950651]  ffffea00040c2fe8 0000000000000000 ffff8803863ddd98 ffffffff810c739a
-	[1530745.950651] <0> 00000000863ddd18 000000000000000c 0000000000000000 0000000000000000
-	[1530745.950651] <0> 0000000000000002 0000000000000000 ffff8803863ddd68 0000000000000046
-	[1530745.950651] Call Trace:
-	[1530745.950651]  [<ffffffff810c739a>] release_pages+0x142/0x1e7
-	[1530745.950651]  [<ffffffff810c778f>] ? pagevec_move_tail+0x6e/0x112
-	[1530745.950651]  [<ffffffff810c781e>] pagevec_move_tail+0xfd/0x112
-	[1530745.950651]  [<ffffffff810c78a9>] lru_add_drain+0x76/0x94
-	[1530745.950651]  [<ffffffff810dba0c>] exit_mmap+0x6e/0x145
-	[1530745.950651]  [<ffffffff8103f52d>] mmput+0x5e/0xcf
-	[1530745.950651]  [<ffffffff81043ea8>] exit_mm+0x11c/0x129
-	[1530745.950651]  [<ffffffff8108fb29>] ? audit_free+0x196/0x1c9
-	[1530745.950651]  [<ffffffff81045353>] do_exit+0x1f5/0x6b7
-	[1530745.950651]  [<ffffffff8106133f>] ? up_read+0x2b/0x2f
-	[1530745.950651]  [<ffffffff8137d187>] ? lockdep_sys_exit_thunk+0x35/0x67
-	[1530745.950651]  [<ffffffff81045898>] do_group_exit+0x83/0xb0
-	[1530745.950651]  [<ffffffff810458dc>] sys_exit_group+0x17/0x1b
-	[1530745.950651]  [<ffffffff81002c1b>] system_call_fastpath+0x16/0x1b
-	[1530745.950651] Code: 54 53 0f 1f 44 00 00 83 3d cc 29 7c 00 00 41 89 f4 75 63 eb 4e 48 83 7b 08 00 75 04 0f 0b eb fe 48 89 df e8 18 f3 ff ff 44 89 e2 <48> ff 4c d0 50 48 8b 05 2b 2d 7c 00 48 39 43 08 74 39 48 8b 4b
-	[1530745.950651] RIP  [<ffffffff810fbc11>] mem_cgroup_del_lru_list+0x30/0x80
-	[1530745.950651]  RSP <ffff8803863ddcb8>
-	[1530745.950651] CR2: 0000000000000230
-	[1530745.950651] ---[ end trace c3419c1bb8acc34f ]---
-	[1530745.950651] Fixing recursive fault but reboot is needed!
-
-The problem here is pages on LRU may contain pointer to stale memcg.  To
-make res->usage to be 0, all pages on memcg must be uncharged or moved to
-another(parent) memcg.  Moved page_cgroup have already removed from
-original LRU, but uncharged page_cgroup contains pointer to memcg withou
-PCG_USED bit.  (This asynchronous LRU work is for improving performance.)
-If PCG_USED bit is not set, page_cgroup will never be added to memcg's
-LRU.  So, about pages not on LRU, they never access stale pointer.  Then,
-what we have to take care of is page_cgroup _on_ LRU list.  This patch
-fixes this problem by making mem_cgroup_force_empty() visit all LRUs
-before exiting its loop and guarantee there are no pages on its LRU.
-
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Bryn M. Reeves <bmr@redhat.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/memcontrol.c |   11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ drivers/scsi/megaraid/megaraid_sas.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -2381,7 +2381,7 @@ static int mem_cgroup_force_empty(struct
- 	if (free_all)
- 		goto try_to_free;
- move_account:
--	while (mem->res.usage > 0) {
-+	do {
- 		ret = -EBUSY;
- 		if (cgroup_task_count(cgrp) || !list_empty(&cgrp->children))
- 			goto out;
-@@ -2408,8 +2408,8 @@ move_account:
- 		if (ret == -ENOMEM)
- 			goto try_to_free;
- 		cond_resched();
--	}
--	ret = 0;
-+	/* "ret" should also be checked to ensure all lists are empty. */
-+	} while (mem->res.usage > 0 || ret);
- out:
- 	css_put(&mem->css);
- 	return ret;
-@@ -2442,10 +2442,7 @@ try_to_free:
- 	}
- 	lru_add_drain();
- 	/* try move_account...there may be some *locked* pages. */
--	if (mem->res.usage)
--		goto move_account;
--	ret = 0;
--	goto out;
-+	goto move_account;
+--- a/drivers/scsi/megaraid/megaraid_sas.c
++++ b/drivers/scsi/megaraid/megaraid_sas.c
+@@ -3451,7 +3451,7 @@ out:
+ 	return retval;
  }
  
- int mem_cgroup_force_empty_write(struct cgroup *cont, unsigned int event)
+-static DRIVER_ATTR(poll_mode_io, S_IRUGO|S_IWUGO,
++static DRIVER_ATTR(poll_mode_io, S_IRUGO|S_IWUSR,
+ 		megasas_sysfs_show_poll_mode_io,
+ 		megasas_sysfs_set_poll_mode_io);
+ 
 
 
