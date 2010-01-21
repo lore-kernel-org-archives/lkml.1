@@ -1,134 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004Ab0AUQ35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080Ab0AUQal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004Ab0AUQ35 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 11:29:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968Ab0AUQ34
+	id S1754080Ab0AUQal (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 11:30:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662Ab0AUQak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 11:29:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7772 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752539Ab0AUQ3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 11:29:55 -0500
-Date: Thu, 21 Jan 2010 18:26:48 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>, davidel@xmailserver.org
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, mtosatti@redhat.com,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCHv2 1/3] eventfd: allow atomic read and waitqueue remove
-Message-ID: <20100121162648.GA16458@redhat.com>
+	Thu, 21 Jan 2010 11:30:40 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:41968 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752700Ab0AUQaj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 11:30:39 -0500
+Date: Thu, 21 Jan 2010 17:30:48 +0100
+From: Borislav Petkov <bp@amd64.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, andreas.herrmann3@amd.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86, cacheinfo: Fix disabling of L3 cache indexes
+Message-ID: <20100121163048.GB10321@aftab>
+References: <1263899279-30739-1-git-send-email-bp@amd64.org>
+ <1263899279-30739-2-git-send-email-bp@amd64.org>
+ <4B578C0E.5090709@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4B578C0E.5090709@zytor.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a backport of commit: 03db343a6320f780937078433fa7d8da955e6fce
-modified in a way that introduces some code duplication on the one hand,
-but reduces the risk of regressing existing eventfd users on the other
-hand.
+On Wed, Jan 20, 2010 at 03:04:46PM -0800, H. Peter Anvin wrote:
+> On 01/19/2010 03:07 AM, Borislav Petkov wrote:
+> >  
+> > +static void __wbinvd(void *dummy)
+> > +{
+> > +	asm volatile("wbinvd" : : : "memory");
+> > +}
+> > +
+> 
+> [...]
+> 
+> > +	smp_call_function_single(cpu, __wbinvd, NULL, 1);
+> 
+> I really don't like this combination.
+> 
+> First of all, it's an asm version of an instruction we already have
+> macros for.  This should probably just be wbinvd(), or *possibly*
+> native_wbinvd(), although that would have to be justified -- especially
+> since the preexisting code used wbinvd().
 
-KVM needs a wait to atomically remove themselves from the eventfd
-->poll() wait queue head, in order to handle correctly their IRQfd
-deassign operation.
+The preexisting code using wbinvd is a bug since wbinvd has to happen on
+a core which contains the L3 cache whose indices(!) we disable.
 
-This patch introduces such API, plus a way to read an eventfd from its
-context.
+But yeah, a wbinvd smp version is a bit problematic since
+smp_call_function_* expects a function pointer which has a void *
+argument but native_wbinvd() has no args. By the way, there's a similar
+thing in <drivers/char/agp/intel-agp.c::do_wbinvd()>
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
+> Second, it's pretty obvious that the only reason for this function at
+> all is to provide a wrapper that can be passed to smp_call_function*().
+>  It would be a lot cleaner to have a small function wbinvd_on_cpu(cpu)
+> as a wrapper for the higher-order functionality.
 
-Avi, Davidel, how about only including the following part for -stable
-then?  Reason is, I still would like to be able to use irqfd there, and
-getting spurious interrupts 100% of times unmask is done isn't a very
-good idea IMO ...
+Done, see my next patch series.
 
-
- fs/eventfd.c            |   35 +++++++++++++++++++++++++++++++++++
- include/linux/eventfd.h |    9 +++++++++
- 2 files changed, 44 insertions(+), 0 deletions(-)
-
-diff --git a/fs/eventfd.c b/fs/eventfd.c
-index 8b47e42..ea9c18a 100644
---- a/fs/eventfd.c
-+++ b/fs/eventfd.c
-@@ -135,6 +135,41 @@ static unsigned int eventfd_poll(struct file *file, poll_table *wait)
- 	return events;
- }
- 
-+static void eventfd_ctx_do_read(struct eventfd_ctx *ctx, __u64 *cnt)
-+{
-+	*cnt = (ctx->flags & EFD_SEMAPHORE) ? 1 : ctx->count;
-+	ctx->count -= *cnt;
-+}
-+
-+/**
-+ * eventfd_ctx_remove_wait_queue - Read the current counter and removes wait queue.
-+ * @ctx: [in] Pointer to eventfd context.
-+ * @wait: [in] Wait queue to be removed.
-+ * @cnt: [out] Pointer to the 64bit conter value.
-+ *
-+ * Returns zero if successful, or the following error codes:
-+ *
-+ * -EAGAIN      : The operation would have blocked.
-+ *
-+ * This is used to atomically remove a wait queue entry from the eventfd wait
-+ * queue head, and read/reset the counter value.
-+ */
-+int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx, wait_queue_t *wait,
-+				  __u64 *cnt)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&ctx->wqh.lock, flags);
-+	eventfd_ctx_do_read(ctx, cnt);
-+	__remove_wait_queue(&ctx->wqh, wait);
-+	if (*cnt != 0 && waitqueue_active(&ctx->wqh))
-+		wake_up_locked_poll(&ctx->wqh, POLLOUT);
-+	spin_unlock_irqrestore(&ctx->wqh.lock, flags);
-+
-+	return *cnt != 0 ? 0 : -EAGAIN;
-+}
-+EXPORT_SYMBOL_GPL(eventfd_ctx_remove_wait_queue);
-+
- static ssize_t eventfd_read(struct file *file, char __user *buf, size_t count,
- 			    loff_t *ppos)
- {
-diff --git a/include/linux/eventfd.h b/include/linux/eventfd.h
-index 94dd103..85eac48 100644
---- a/include/linux/eventfd.h
-+++ b/include/linux/eventfd.h
-@@ -10,6 +10,7 @@
- 
- #include <linux/fcntl.h>
- #include <linux/file.h>
-+#include <linux/wait.h>
- 
- /*
-  * CAREFUL: Check include/asm-generic/fcntl.h when defining
-@@ -34,6 +35,8 @@ struct file *eventfd_fget(int fd);
- struct eventfd_ctx *eventfd_ctx_fdget(int fd);
- struct eventfd_ctx *eventfd_ctx_fileget(struct file *file);
- int eventfd_signal(struct eventfd_ctx *ctx, int n);
-+int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx, wait_queue_t *wait,
-+				  __u64 *cnt);
- 
- #else /* CONFIG_EVENTFD */
- 
-@@ -61,6 +64,12 @@ static inline void eventfd_ctx_put(struct eventfd_ctx *ctx)
- 
- }
- 
-+static inline int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx,
-+						wait_queue_t *wait, __u64 *cnt)
-+{
-+	return -ENOSYS;
-+}
-+
- #endif
- 
- #endif /* _LINUX_EVENTFD_H */
 -- 
-1.6.6.144.g5c3af
+Regards/Gruss,
+Boris.
+
+-
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
