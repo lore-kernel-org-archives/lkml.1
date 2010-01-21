@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196Ab0AUUWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755051Ab0AUU2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196Ab0AUUWB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 15:22:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130Ab0AUUV7
+	id S1755051Ab0AUU2G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 15:28:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821Ab0AUU2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 15:21:59 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:7594 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754668Ab0AUUV6 (ORCPT
+	Thu, 21 Jan 2010 15:28:04 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:45988 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754747Ab0AUU2C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 15:21:58 -0500
-Message-ID: <4B58B759.8000002@caviumnetworks.com>
-Date: Thu, 21 Jan 2010 12:21:45 -0800
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 21 Jan 2010 15:28:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=jO9afXLAkFnjz++AEx87/C8EL9RoCiNmleIK1xYIe+daARvV+O/X3Z5/pfR1/rGWTS
+         +jtuUVRPLvntiF6f3n/YoxoqhMXtNPzkgipP6xTv53v3PQCHVUJg0fDNKoOq6ejTeDo0
+         hXcaGb4JX2UkTC7ql7rBOFtrGcM+9vBZO0Ovg=
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: LKML <linux-kernel@vger.kernel.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Andy Whitcroft <apw@canonical.com>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       linux-mips <linux-mips@linux-mips.org>
-Subject: Re: Lots of bugs with current->state = TASK_*INTERRUPTIBLE
-References: <1263932978.31321.53.camel@gandalf.stny.rr.com>	 <4B58A89A.8050405@caviumnetworks.com>	 <1264102455.31321.293.camel@gandalf.stny.rr.com>	 <4B58B1B3.6000502@caviumnetworks.com> <1264105104.31321.298.camel@gandalf.stny.rr.com>
-In-Reply-To: <1264105104.31321.298.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Jan 2010 20:21:46.0065 (UTC) FILETIME=[5A82D410:01CA9AD7]
+Date: Thu, 21 Jan 2010 15:27:58 -0500
+Message-ID: <bcba51a1001211227y1cbe9020k5079367f05dd17a1@mail.gmail.com>
+Subject: Current status of UML development?
+From: Dimitry Golubovsky <golubovsky@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>
->> This is what I thought.
->>
->> My cpu (Cavium Octeon) does not have out of order reads, so my wmb() is 
-> 
-> Can you have reads that are out of order wrt writes? Because the above
-> does not have out of order reads. It just had a read that came before a
-> write. The above code could look like:
-> 
-> (hypothetical assembly language)
-> 
-> 	ld r2, TASK_UNINTERRUPTIBLE
-> 	st r2, (current->state)
-> 	wmb
-> 	ld r1, (x)
-> 	cmp r1, 0
-> 
-> Is it possible for the CPU to do the load of r1 before storing r2? If
-> so, then the bug still exists.
-> 
+Hi,
 
-Indeed it is.  Lockless operations make my head hurt.
+I am learning/experimenting with UML internals, and am curious what is
+the current status of its development? Has UML become stable enough so
+it does not need any improvement (at least for i386), or has its
+development just ceased in favor of other virtualization techniques?
 
-Thanks for clarifying.
+Also I am trying to find recent papers covering modern UML's principles of
+functioning (especially the skas0 mode when /proc/mm is not
+available), but most of the papers that Google returns date back to
+2001 - 2003, and often state that "each UML process gets its own host
+process" that does not seem correct these days.
 
-David Daney
+Thanks for any hints.
 
+-- 
+Dimitry Golubovsky
 
-
-> -- Steve
-> 
-> 
->> in fact a full mb() from the point of view of the current CPU.  So I 
->> think I could weaken my bariers in set_current_state() and still get 
->> correct operation.  However as you say...
->>
-> 
-> 
-> 
-
+Anywhere on the Web
