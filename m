@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689Ab0AUJGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124Ab0AUJH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689Ab0AUJGf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 04:06:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037Ab0AUJGc
+	id S1753124Ab0AUJH4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 04:07:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015Ab0AUJHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 04:06:32 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:56478 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751398Ab0AUJGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 04:06:30 -0500
-Date: Thu, 21 Jan 2010 10:02:36 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Mike Chan <mike@android.com>
-Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Miller@fmi.uni-stuttgart.de, tj@kernel.org,
-       venkatesh.pallipadi@intel.com, trenn@suse.de, davej@redhat.com
-Subject: Re: [PATCH 2/2] cpufreq: ondemand: Replace ignore_nice_load with
- nice_max_freq
-Message-ID: <20100121090236.GA23891@dominikbrodowski.net>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Mike Chan <mike@android.com>, cpufreq@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Miller@fmi.uni-stuttgart.de,
-	tj@kernel.org, venkatesh.pallipadi@intel.com, trenn@suse.de,
-	davej@redhat.com
-References: <1264043737-2505-1-git-send-email-mike@android.com>
- <1264043737-2505-2-git-send-email-mike@android.com>
+	Thu, 21 Jan 2010 04:07:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:63036 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751953Ab0AUJHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 04:07:53 -0500
+Message-ID: <4B5818EA.10709@redhat.com>
+Date: Thu, 21 Jan 2010 11:05:46 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264043737-2505-2-git-send-email-mike@android.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Gleb Natapov <gleb@redhat.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, riel@redhat.com,
+       cl@linux-foundation.org
+Subject: Re: [PATCH v3 04/12] Add "handle page fault" PV helper.
+References: <4B541D08.9040802@zytor.com> <20100118085022.GA30698@redhat.com> <4B5510B1.9010202@zytor.com> <20100119065537.GF14345@redhat.com> <4B55E5D8.1070402@zytor.com> <20100119174438.GA19450@redhat.com> <4B5611A9.4050301@zytor.com> <20100120100254.GC5238@redhat.com> <4B5740CD.4020005@zytor.com> <4B58181B.60405@redhat.com> <20100121090421.GS5238@redhat.com>
+In-Reply-To: <20100121090421.GS5238@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+On 01/21/2010 11:04 AM, Gleb Natapov wrote:
+>
+>> Do you mean create the stack frame manually?  I'd really like to
+>> avoid that for many reasons, one of which is performance (need to do
+>> all the virt-to-phys walks manually), the other is that we're
+>> certain to end up with something horribly underspecified.  I'd
+>> really like to keep as close as possible to the hardware.  For the
+>> alternative approach, see Xen.
+>>
+>>      
+> That and our event injection path can't play with guest memory right now
+> since it is done from atomic context.
+>    
 
-On Wed, Jan 20, 2010 at 07:15:37PM -0800, Mike Chan wrote:
-> **Note: ingore_nice_load has been removed since the same functionality
-> can be achieved by setting nice_max_freq to scaling_min_freq.
+That's true (I'd like to fix that though, for the real mode stuff).
 
-Couldn't we keep "ignore_nice_load" as deprecated sysfs file (with a printk
-warning) for one or two releases, as this breaks some userspace scripts?
+-- 
+error compiling committee.c: too many arguments to function
 
-Best,
-	Dominik
