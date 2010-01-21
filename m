@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628Ab0AUE2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576Ab0AUE2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628Ab0AUE2N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588Ab0AUE1y
+	id S1754576Ab0AUE2e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:28:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171Ab0AUE1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:27:54 -0500
-Received: from kroah.org ([198.145.64.141]:60094 "EHLO coco.kroah.org"
+	Wed, 20 Jan 2010 23:27:53 -0500
+Received: from kroah.org ([198.145.64.141]:60130 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754120Ab0AUEWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:22:52 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:33 2010
-Message-Id: <20100121041833.512023153@mini.kroah.org>
+	id S1754160Ab0AUEWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jan 2010 23:22:55 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Jan 20 20:18:34 2010
+Message-Id: <20100121041834.071686049@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 20 Jan 2010 20:15:29 -0800
+Date: Wed, 20 Jan 2010 20:15:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>, Darren Hart <dvhltc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Ulrich Drepper <drepper@gmail.com>,
+       Mike Travis <travis@sgi.com>, Jack Steiner <steiner@sgi.com>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [08/30] futexes: Remove rw parameter from get_futex_key()
+Subject: [12/30] x86: SGI UV: Fix mapping of MMIO registers
 In-Reply-To: <20100121041852.GA9656@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,172 +29,74 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+From: Mike Travis <travis@sgi.com>
 
-commit 7485d0d3758e8e6491a5c9468114e74dc050785d upstream.
+commit fcfbb2b5facd65efa7284cc315225bfe3d1856c2 upstream.
 
-Currently, futexes have two problem:
+This fixes the problem of the initialization code not correctly
+mapping the entire MMIO space on a UV system.  A side effect is
+the map_high() interface needed to be changed to accommodate
+different address and size shifts.
 
-A) The current futex code doesn't handle private file mappings properly.
-
-get_futex_key() uses PageAnon() to distinguish file and
-anon, which can cause the following bad scenario:
-
-  1) thread-A call futex(private-mapping, FUTEX_WAIT), it
-     sleeps on file mapping object.
-  2) thread-B writes a variable and it makes it cow.
-  3) thread-B calls futex(private-mapping, FUTEX_WAKE), it
-     wakes up blocked thread on the anonymous page. (but it's nothing)
-
-B) Current futex code doesn't handle zero page properly.
-
-Read mode get_user_pages() can return zero page, but current
-futex code doesn't handle it at all. Then, zero page makes
-infinite loop internally.
-
-The solution is to use write mode get_user_page() always for
-page lookup. It prevents the lookup of both file page of private
-mappings and zero page.
-
-Performance concerns:
-
-Probaly very little, because glibc always initialize variables
-for futex before to call futex(). It means glibc users never see
-the overhead of this patch.
-
-Compatibility concerns:
-
-This patch has few compatibility issues. After this patch,
-FUTEX_WAIT require writable access to futex variables (read-only
-mappings makes EFAULT). But practically it's not a problem,
-glibc always initalizes variables for futexes explicitly - nobody
-uses read-only mappings.
-
-Reported-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Acked-by: Darren Hart <dvhltc@us.ibm.com>
+Signed-off-by: Mike Travis <travis@sgi.com>
+Reviewed-by: Mike Habeck <habeck@sgi.com>
+Cc: Jack Steiner <steiner@sgi.com>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Ulrich Drepper <drepper@gmail.com>
-LKML-Reference: <20100105162633.45A2.A69D9226@jp.fujitsu.com>
+LKML-Reference: <4B479202.7080705@sgi.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/futex.c |   27 ++++++++++++---------------
- 1 file changed, 12 insertions(+), 15 deletions(-)
+ arch/x86/kernel/apic/x2apic_uv_x.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -203,8 +203,6 @@ static void drop_futex_key_refs(union fu
-  * @uaddr:	virtual address of the futex
-  * @fshared:	0 for a PROCESS_PRIVATE futex, 1 for PROCESS_SHARED
-  * @key:	address where result is stored.
-- * @rw:		mapping needs to be read/write (values: VERIFY_READ,
-- * 		VERIFY_WRITE)
-  *
-  * Returns a negative error code or 0
-  * The key words are stored in *key on success.
-@@ -216,7 +214,7 @@ static void drop_futex_key_refs(union fu
-  * lock_page() might sleep, the caller should not hold a spinlock.
-  */
- static int
--get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, int rw)
-+get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key)
+--- a/arch/x86/kernel/apic/x2apic_uv_x.c
++++ b/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -364,13 +364,13 @@ static __init void get_lowmem_redirect(u
+ 
+ enum map_type {map_wb, map_uc};
+ 
+-static __init void map_high(char *id, unsigned long base, int shift,
+-			    int max_pnode, enum map_type map_type)
++static __init void map_high(char *id, unsigned long base, int pshift,
++			int bshift, int max_pnode, enum map_type map_type)
  {
- 	unsigned long address = (unsigned long)uaddr;
- 	struct mm_struct *mm = current->mm;
-@@ -239,7 +237,7 @@ get_futex_key(u32 __user *uaddr, int fsh
- 	 *        but access_ok() should be faster than find_vma()
- 	 */
- 	if (!fshared) {
--		if (unlikely(!access_ok(rw, uaddr, sizeof(u32))))
-+		if (unlikely(!access_ok(VERIFY_WRITE, uaddr, sizeof(u32))))
- 			return -EFAULT;
- 		key->private.mm = mm;
- 		key->private.address = address;
-@@ -248,7 +246,7 @@ get_futex_key(u32 __user *uaddr, int fsh
- 	}
+ 	unsigned long bytes, paddr;
  
- again:
--	err = get_user_pages_fast(address, 1, rw == VERIFY_WRITE, &page);
-+	err = get_user_pages_fast(address, 1, 1, &page);
- 	if (err < 0)
- 		return err;
+-	paddr = base << shift;
+-	bytes = (1UL << shift) * (max_pnode + 1);
++	paddr = base << pshift;
++	bytes = (1UL << bshift) * (max_pnode + 1);
+ 	printk(KERN_INFO "UV: Map %s_HI 0x%lx - 0x%lx\n", id, paddr,
+ 						paddr + bytes);
+ 	if (map_type == map_uc)
+@@ -386,7 +386,7 @@ static __init void map_gru_high(int max_
  
-@@ -867,7 +865,7 @@ static int futex_wake(u32 __user *uaddr,
- 	if (!bitset)
- 		return -EINVAL;
+ 	gru.v = uv_read_local_mmr(UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR);
+ 	if (gru.s.enable)
+-		map_high("GRU", gru.s.base, shift, max_pnode, map_wb);
++		map_high("GRU", gru.s.base, shift, shift, max_pnode, map_wb);
+ }
  
--	ret = get_futex_key(uaddr, fshared, &key, VERIFY_READ);
-+	ret = get_futex_key(uaddr, fshared, &key);
- 	if (unlikely(ret != 0))
- 		goto out;
+ static __init void map_mmr_high(int max_pnode)
+@@ -396,7 +396,7 @@ static __init void map_mmr_high(int max_
  
-@@ -913,10 +911,10 @@ futex_wake_op(u32 __user *uaddr1, int fs
- 	int ret, op_ret;
+ 	mmr.v = uv_read_local_mmr(UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR);
+ 	if (mmr.s.enable)
+-		map_high("MMR", mmr.s.base, shift, max_pnode, map_uc);
++		map_high("MMR", mmr.s.base, shift, shift, max_pnode, map_uc);
+ }
  
- retry:
--	ret = get_futex_key(uaddr1, fshared, &key1, VERIFY_READ);
-+	ret = get_futex_key(uaddr1, fshared, &key1);
- 	if (unlikely(ret != 0))
- 		goto out;
--	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
-+	ret = get_futex_key(uaddr2, fshared, &key2);
- 	if (unlikely(ret != 0))
- 		goto out_put_key1;
+ static __init void map_mmioh_high(int max_pnode)
+@@ -406,7 +406,8 @@ static __init void map_mmioh_high(int ma
  
-@@ -1175,11 +1173,10 @@ retry:
- 		pi_state = NULL;
- 	}
+ 	mmioh.v = uv_read_local_mmr(UVH_RH_GAM_MMIOH_OVERLAY_CONFIG_MMR);
+ 	if (mmioh.s.enable)
+-		map_high("MMIOH", mmioh.s.base, shift, max_pnode, map_uc);
++		map_high("MMIOH", mmioh.s.base, shift, mmioh.s.m_io,
++			max_pnode, map_uc);
+ }
  
--	ret = get_futex_key(uaddr1, fshared, &key1, VERIFY_READ);
-+	ret = get_futex_key(uaddr1, fshared, &key1);
- 	if (unlikely(ret != 0))
- 		goto out;
--	ret = get_futex_key(uaddr2, fshared, &key2,
--			    requeue_pi ? VERIFY_WRITE : VERIFY_READ);
-+	ret = get_futex_key(uaddr2, fshared, &key2);
- 	if (unlikely(ret != 0))
- 		goto out_put_key1;
- 
-@@ -1738,7 +1735,7 @@ static int futex_wait_setup(u32 __user *
- 	 */
- retry:
- 	q->key = FUTEX_KEY_INIT;
--	ret = get_futex_key(uaddr, fshared, &q->key, VERIFY_READ);
-+	ret = get_futex_key(uaddr, fshared, &q->key);
- 	if (unlikely(ret != 0))
- 		return ret;
- 
-@@ -1904,7 +1901,7 @@ static int futex_lock_pi(u32 __user *uad
- 	q.requeue_pi_key = NULL;
- retry:
- 	q.key = FUTEX_KEY_INIT;
--	ret = get_futex_key(uaddr, fshared, &q.key, VERIFY_WRITE);
-+	ret = get_futex_key(uaddr, fshared, &q.key);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -2023,7 +2020,7 @@ retry:
- 	if ((uval & FUTEX_TID_MASK) != task_pid_vnr(current))
- 		return -EPERM;
- 
--	ret = get_futex_key(uaddr, fshared, &key, VERIFY_WRITE);
-+	ret = get_futex_key(uaddr, fshared, &key);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -2215,7 +2212,7 @@ static int futex_wait_requeue_pi(u32 __u
- 	rt_waiter.task = NULL;
- 
- 	key2 = FUTEX_KEY_INIT;
--	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
-+	ret = get_futex_key(uaddr2, fshared, &key2);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
+ static __init void uv_rtc_init(void)
 
 
