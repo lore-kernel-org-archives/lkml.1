@@ -1,95 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768Ab0AUTRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828Ab0AUTSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768Ab0AUTRL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 14:17:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953Ab0AUTRK
+	id S1754828Ab0AUTSZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 14:18:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747Ab0AUTSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 14:17:10 -0500
-Received: from mail.gmx.net ([213.165.64.20]:55419 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753957Ab0AUTRJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 14:17:09 -0500
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX1+mF+tRz1GmJ3828gVDUWHFJhzaP4xQ2AzOzgOgyS
-	/5zmNtFl+X/bMR
-From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: kernel error : 'find /proc/ -type f | xargs -n 1 head -c 10 >/dev/null'
-Date: Thu, 21 Jan 2010 20:16:59 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32.4; KDE/4.3.3; i686; ; )
+	Thu, 21 Jan 2010 14:18:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:44584 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752644Ab0AUTSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 14:18:24 -0500
+Date: Thu, 21 Jan 2010 14:18:12 -0500
+From: Dave Jones <davej@redhat.com>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, venkatesh.pallipadi@intel.com,
+       shaohua.li@intel.com
+Subject: Re: 2.6.33-rc4-git7 -- head/6104 is trying to acquire lock:
+ (cpuidle_lock){+.+.+.}, at: [<c129e2ec>] show_current_governor+0x12/0x4e
+Message-ID: <20100121191812.GA1840@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Miles Lane <miles.lane@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Greg Kroah-Hartman <gregkh@suse.de>, venkatesh.pallipadi@intel.com,
+	shaohua.li@intel.com
+References: <a44ae5cd1001210950h34d57a5cq8b484ec4d3dbb48b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201001212017.00160.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55000000000000004
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a44ae5cd1001210950h34d57a5cq8b484ec4d3dbb48b@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was inspired by http://article.gmane.org/gmane.linux.kernel/941115 .
-
-Running the command (se subject) as a normal user at a 2.6.32.4 kernel
-gives this in /var/log/messages:
-
-2010-01-21T20:11:39.171+01:00 n22 kernel: head: page allocation failure. order:9, mode:0xd0                                  
-2010-01-21T20:11:39.171+01:00 n22 kernel: Pid: 2324, comm: head Not tainted 2.6.32.4 #1                                      
-2010-01-21T20:11:39.171+01:00 n22 kernel: Call Trace:                                                                        
-2010-01-21T20:11:39.171+01:00 n22 kernel: [<c106e2cc>] ? __alloc_pages_nodemask+0x4bc/0x5a0                                  
-2010-01-21T20:11:39.171+01:00 n22 kernel: [<c108cf5a>] ? cache_alloc_refill+0x2ba/0x510                                      
-2010-01-21T20:11:39.171+01:00 n22 kernel: [<c108d299>] ? __kmalloc+0xe9/0xf0                                                 
-2010-01-21T20:11:39.171+01:00 n22 kernel: [<c10aa755>] ? seq_read+0x195/0x370                                                
-2010-01-21T20:11:39.171+01:00 n22 kernel: [<c10aa5c0>] ? seq_read+0x0/0x370                                                  
-2010-01-21T20:11:39.171+01:00 n22 kernel: [<c10cbb6f>] ? proc_reg_read+0x5f/0x90                                             
-2010-01-21T20:11:39.171+01:00 n22 kernel: [<c10cbb10>] ? proc_reg_read+0x0/0x90                                              
-2010-01-21T20:11:39.171+01:00 n22 kernel: [<c10927c5>] ? vfs_read+0xa5/0x190                                                 
-2010-01-21T20:11:39.171+01:00 n22 kernel: [<c1092981>] ? sys_read+0x41/0x80                                                  
-2010-01-21T20:11:39.171+01:00 n22 kernel: [<c100300f>] ? sysenter_do_call+0x12/0x26                                          
-2010-01-21T20:11:39.171+01:00 n22 kernel: Mem-Info:                                                                          
-2010-01-21T20:11:39.171+01:00 n22 kernel: DMA per-cpu:                                                                       
-2010-01-21T20:11:39.172+01:00 n22 kernel: CPU    0: hi:    0, btch:   1 usd:   0                                             
-2010-01-21T20:11:39.172+01:00 n22 kernel: CPU    1: hi:    0, btch:   1 usd:   0                                             
-2010-01-21T20:11:39.172+01:00 n22 kernel: Normal per-cpu:                                                                    
-2010-01-21T20:11:39.172+01:00 n22 kernel: CPU    0: hi:  186, btch:  31 usd:   0                                             
-2010-01-21T20:11:39.172+01:00 n22 kernel: CPU    1: hi:  186, btch:  31 usd:   0                                             
-2010-01-21T20:11:39.172+01:00 n22 kernel: HighMem per-cpu:                                                                   
-2010-01-21T20:11:39.172+01:00 n22 kernel: CPU    0: hi:  186, btch:  31 usd:   0                                             
-2010-01-21T20:11:39.172+01:00 n22 kernel: CPU    1: hi:  186, btch:  31 usd:   0                                             
-2010-01-21T20:11:39.172+01:00 n22 kernel: active_anon:77374 inactive_anon:26716 isolated_anon:0                              
-2010-01-21T20:11:39.172+01:00 n22 kernel: active_file:154367 inactive_file:77664 isolated_file:0                             
-2010-01-21T20:11:39.172+01:00 n22 kernel: unevictable:0 dirty:74 writeback:432 unstable:0                                    
-2010-01-21T20:11:39.172+01:00 n22 kernel: free:107209 slab_reclaimable:41314 slab_unreclaimable:3995                         
-2010-01-21T20:11:39.172+01:00 n22 kernel: mapped:23759 shmem:19312 pagetables:882 bounce:0                                   
-2010-01-21T20:11:39.172+01:00 n22 kernel: DMA free:12296kB min:64kB low:80kB high:96kB active_anon:0kB inactive_anon:0kB active_file:772kB inactive_file:372kB unevictable:0kB 
-isolated(anon):0kB isolated(file):0kB present:15864kB mlocked:0kB dirty:0kB writeback:0kB mapped:0kB shmem:0kB slab_reclaimable:2520kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB 
-unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-2010-01-21T20:11:39.172+01:00 n22 kernel: lowmem_reserve[]: 0 865 1911 1911
-2010-01-21T20:11:39.172+01:00 n22 kernel: Normal free:282076kB min:3728kB low:4660kB high:5592kB active_anon:8kB inactive_anon:3320kB active_file:279600kB inactive_file:121612kB 
-unevictable:0kB isolated(anon):0kB isolated(file):0kB present:885944kB mlocked:0kB dirty:140kB writeback:0kB mapped:276kB shmem:16kB slab_reclaimable:162736kB slab_unreclaimable:15980kB 
-kernel_stack:900kB pagetables:3528kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-2010-01-21T20:11:39.172+01:00 n22 kernel: lowmem_reserve[]: 0 0 8369 8369
-2010-01-21T20:11:39.172+01:00 n22 kernel: HighMem free:134464kB min:512kB low:1636kB high:2764kB active_anon:309488kB inactive_anon:103544kB active_file:337096kB 
-inactive_file:188672kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:1071256kB mlocked:0kB dirty:156kB writeback:1728kB mapped:94760kB shmem:77232kB slab_reclaimable:0kB 
-slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-2010-01-21T20:11:39.172+01:00 n22 kernel: lowmem_reserve[]: 0 0 0 0
-2010-01-21T20:11:39.172+01:00 n22 kernel: DMA: 288*4kB 121*8kB 80*16kB 62*32kB 48*64kB 22*128kB 4*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 12296kB
-2010-01-21T20:11:39.172+01:00 n22 kernel: Normal: 19101*4kB 8755*8kB 3545*16kB 1846*32kB 186*64kB 34*128kB 2*256kB 2*512kB 0*1024kB 1*2048kB 0*4096kB = 282076kB
-2010-01-21T20:11:39.172+01:00 n22 kernel: HighMem: 304*4kB 260*8kB 1594*16kB 1644*32kB 571*64kB 89*128kB 18*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 134464kB
-2010-01-21T20:11:39.172+01:00 n22 kernel: 251864 total pagecache pages
-2010-01-21T20:11:39.172+01:00 n22 kernel: 505 pages in swap cache
-2010-01-21T20:11:39.172+01:00 n22 kernel: Swap cache stats: add 587, delete 82, find 189/195
-2010-01-21T20:11:39.172+01:00 n22 kernel: Free swap  = 2001148kB
-2010-01-21T20:11:39.172+01:00 n22 kernel: Total swap = 2003360kB
-2010-01-21T20:11:39.172+01:00 n22 kernel: 498176 pages RAM
-2010-01-21T20:11:39.172+01:00 n22 kernel: 270850 pages HighMem
-2010-01-21T20:11:39.172+01:00 n22 kernel: 5979 pages reserved
-2010-01-21T20:11:39.172+01:00 n22 kernel: 251238 pages shared
-2010-01-21T20:11:39.172+01:00 n22 kernel: 209073 pages non-shared
-2010-01-21T20:11:39.480+01:00 n22 kernel: ACPI: Please implement acpi_video_bus_ROM_seq_show
+On Thu, Jan 21, 2010 at 12:50:09PM -0500, Miles Lane wrote:
+ > I was scanning the first few characters of all the files in /proc and
+ > /sys.  I will attempt to determine which file(s) triggered this.
 
 
--- 
-MfG/Sincerely
-Toralf Förster
+Dropped cpufreq-list from Cc, added cpuidle maintainers.
+While they sound similar, they are unrelated.
+
+	Dave
+
+
+
+ > [15096.108361] [ INFO: possible circular locking dependency detected ]
+ > [15096.108372] 2.6.33-rc4-git7 #13
+ > [15096.108380] -------------------------------------------------------
+ > [15096.108389] head/6104 is trying to acquire lock:
+ > [15096.108398]  (cpuidle_lock){+.+.+.}, at: [<c129e2ec>]
+ > show_current_governor+0x12/0x4e
+ > [15096.108430]
+ > [15096.108432] but task is already holding lock:
+ > [15096.108441]  (s_active){++++.+}, at: [<c10f8c2e>]
+ > sysfs_get_active_two+0x21/0x34
+ > [15096.108468]
+ > [15096.108471] which lock already depends on the new lock.
+ > [15096.108474]
+ > [15096.108482]
+ > [15096.108484] the existing dependency chain (in reverse order) is:
+ > [15096.108493]
+ > [15096.108495] -> #1 (s_active){++++.+}:
+ > [15096.108513]        [<c105cfe5>] __lock_acquire+0x9f5/0xb67
+ > [15096.108533]        [<c105d1fa>] lock_acquire+0xa3/0xcd
+ > [15096.108549]        [<c10f8ab8>] sysfs_addrm_finish+0x9a/0xfe
+ > [15096.108566]        [<c10f8bb1>] sysfs_remove_dir+0x5e/0x6c
+ > [15096.108580]        [<c11651c4>] kobject_del+0xf/0x2c
+ > [15096.108595]        [<c1165213>] kobject_release+0x32/0x50
+ > [15096.108609]        [<c1165d39>] kref_put+0x39/0x42
+ > [15096.108624]        [<c116515d>] kobject_put+0x37/0x3c
+ > [15096.108640]        [<c129e1f8>] cpuidle_free_state_kobj+0x18/0x36
+ > [15096.108659]        [<c129e22a>] cpuidle_remove_state_sysfs+0x14/0x1e
+ > [15096.108676]        [<c129dae8>] cpuidle_disable_device+0x3a/0x43
+ > [15096.108693]        [<c129de48>] cpuidle_switch_governor+0x34/0x16c
+ > [15096.108710]        [<c129e08a>] cpuidle_register_governor+0x8f/0xa9
+ > [15096.108727]        [<c15191cb>] init_menu+0xd/0xf
+ > [15096.108745]        [<c1001139>] do_one_initcall+0x4c/0x159
+ > [15096.108761]        [<c14f4321>] kernel_init+0x128/0x179
+ > [15096.108780]        [<c1003742>] kernel_thread_helper+0x6/0x1a
+ > [15096.108797]
+ > [15096.108800] -> #0 (cpuidle_lock){+.+.+.}:
+ > [15096.108820]        [<c105cee7>] __lock_acquire+0x8f7/0xb67
+ > [15096.108838]        [<c105d1fa>] lock_acquire+0xa3/0xcd
+ > [15096.108856]        [<c131b1db>] __mutex_lock_common+0x39/0x44d
+ > [15096.108873]        [<c131b67e>] mutex_lock_nested+0x2b/0x33
+ > [15096.108889]        [<c129e2ec>] show_current_governor+0x12/0x4e
+ > [15096.108907]        [<c1227b0d>] sysdev_class_show+0x1a/0x1e
+ > [15096.108924]        [<c10f7d34>] sysfs_read_file+0x8e/0xf4
+ > [15096.108939]        [<c10b9ff4>] vfs_read+0x7d/0xdc
+ > [15096.108954]        [<c10ba0e7>] sys_read+0x3b/0x5d
+ > [15096.108969]        [<c10031e3>] sysenter_do_call+0x12/0x3c
+ > [15096.108986]
+ > [15096.108989] other info that might help us debug this:
+ > [15096.108992]
+ > [15096.109003] 3 locks held by head/6104:
+ > [15096.109010]  #0:  (&buffer->mutex){+.+.+.}, at: [<c10f7cca>]
+ > sysfs_read_file+0x24/0xf4
+ > [15096.109039]  #1:  (s_active){++++.+}, at: [<c10f8c23>]
+ > sysfs_get_active_two+0x16/0x34
+ > [15096.109057]  #2:  (s_active){++++.+}, at: [<c10f8c2e>]
+ > sysfs_get_active_two+0x21/0x34
+ > [15096.109057]
+ > [15096.109057] stack backtrace:
+ > [15096.109057] Pid: 6104, comm: head Not tainted 2.6.33-rc4-git7 #13
+ > [15096.109057] Call Trace:
+ > [15096.109057]  [<c131a026>] ? printk+0xf/0x11
+ > [15096.109057]  [<c105c2b4>] print_circular_bug+0x8a/0x96
+ > [15096.109057]  [<c105cee7>] __lock_acquire+0x8f7/0xb67
+ > [15096.109057]  [<c129e2ec>] ? show_current_governor+0x12/0x4e
+ > [15096.109057]  [<c105d1fa>] lock_acquire+0xa3/0xcd
+ > [15096.109057]  [<c129e2ec>] ? show_current_governor+0x12/0x4e
+ > [15096.109057]  [<c131b1db>] __mutex_lock_common+0x39/0x44d
+ > [15096.109057]  [<c129e2ec>] ? show_current_governor+0x12/0x4e
+ > [15096.109057]  [<c105d1fa>] ? lock_acquire+0xa3/0xcd
+ > [15096.109057]  [<c10f8c2e>] ? sysfs_get_active_two+0x21/0x34
+ > [15096.109057]  [<c131b67e>] mutex_lock_nested+0x2b/0x33
+ > [15096.109057]  [<c129e2ec>] ? show_current_governor+0x12/0x4e
+ > [15096.109057]  [<c129e2ec>] show_current_governor+0x12/0x4e
+ > [15096.109057]  [<c129e2da>] ? show_current_governor+0x0/0x4e
+ > [15096.109057]  [<c1227b0d>] sysdev_class_show+0x1a/0x1e
+ > [15096.109057]  [<c10f7d34>] sysfs_read_file+0x8e/0xf4
+ > [15096.109057]  [<c1146736>] ? security_file_permission+0xf/0x11
+ > [15096.109057]  [<c10f7ca6>] ? sysfs_read_file+0x0/0xf4
+ > [15096.109057]  [<c10b9ff4>] vfs_read+0x7d/0xdc
+ > [15096.109057]  [<c10ba0e7>] sys_read+0x3b/0x5d
+ > [15096.109057]  [<c10031e3>] sysenter_do_call+0x12/0x3c
+ 
