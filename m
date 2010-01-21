@@ -1,99 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376Ab0AUPgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751582Ab0AUPgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752376Ab0AUPgI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 10:36:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154Ab0AUPgG
+	id S1751582Ab0AUPgv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 10:36:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187Ab0AUPgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 10:36:06 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48780 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753167Ab0AUPgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 10:36:01 -0500
-Date: Thu, 21 Jan 2010 16:35:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [GIT PULL] scheduler fixes
-Message-ID: <20100121153546.GA28147@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Thu, 21 Jan 2010 10:36:51 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43834 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753137Ab0AUPgu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 10:36:50 -0500
+Subject: Re: [PATCH] sched: cpuacct: Use bigger percpu counter batch values
+ for stats counters
+From: Peter Zijlstra <peterz@infradead.org>
+To: balbir@linux.vnet.ibm.com
+Cc: Anton Blanchard <anton@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, balajirrao@gmail.com,
+       dhaval@linux.vnet.ibm.com, tglx@linutronix.de,
+       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com
+In-Reply-To: <4B5871F3.5020800@linux.vnet.ibm.com>
+References: <20090512102412.GG6351@balbir.in.ibm.com>
+	 <20090512102939.GB11714@elte.hu>
+	 <20090512193656.D647.A69D9226@jp.fujitsu.com>
+	 <20090716081010.GB3134@in.ibm.com> <20090716083948.GA2950@kryten>
+	 <20090820051038.GF21100@kryten> <20100118044142.GS12666@kryten>
+	 <20100118104213.64231c1e@mschwide.boeblingen.de.ibm.com>
+	 <20100118095527.GV12666@kryten>  <4B5871F3.5020800@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 21 Jan 2010 16:36:19 +0100
+Message-ID: <1264088179.4283.1173.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Thu, 2010-01-21 at 20:55 +0530, Balbir Singh wrote:
 
-Please pull the latest sched-fixes-for-linus git tree from:
+> Could we please pick up the patch for -tip?
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+OK, will queue it up if Ingo doesn't beat me to it.
 
- Thanks,
-
-	Ingo
-
------------------->
-Mike Galbraith (1):
-      sched: Fix vmark regression on big machines
-
-Yong Zhang (1):
-      sched: Reassign prev and switch_count when reacquire_kernel_lock() fail
-
-
- include/linux/topology.h |    2 +-
- kernel/sched.c           |    5 ++++-
- kernel/sched_fair.c      |    2 +-
- 3 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index 57e6357..5b81156 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -99,7 +99,7 @@ int arch_update_cpu_topology(void);
- 				| 1*SD_WAKE_AFFINE			\
- 				| 1*SD_SHARE_CPUPOWER			\
- 				| 0*SD_POWERSAVINGS_BALANCE		\
--				| 0*SD_SHARE_PKG_RESOURCES		\
-+				| 1*SD_SHARE_PKG_RESOURCES		\
- 				| 0*SD_SERIALIZE			\
- 				| 0*SD_PREFER_SIBLING			\
- 				,					\
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c535cc4..4508fe7 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5530,8 +5530,11 @@ need_resched_nonpreemptible:
- 
- 	post_schedule(rq);
- 
--	if (unlikely(reacquire_kernel_lock(current) < 0))
-+	if (unlikely(reacquire_kernel_lock(current) < 0)) {
-+		prev = rq->curr;
-+		switch_count = &prev->nivcsw;
- 		goto need_resched_nonpreemptible;
-+	}
- 
- 	preempt_enable_no_resched();
- 	if (need_resched())
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 42ac3c9..8fe7ee8 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1508,7 +1508,7 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 			 * If there's an idle sibling in this domain, make that
- 			 * the wake_affine target instead of the current cpu.
- 			 */
--			if (tmp->flags & SD_PREFER_SIBLING)
-+			if (tmp->flags & SD_SHARE_PKG_RESOURCES)
- 				target = select_idle_sibling(p, tmp, target);
- 
- 			if (target >= 0) {
