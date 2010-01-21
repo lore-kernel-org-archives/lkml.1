@@ -1,88 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751502Ab0AUFF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596Ab0AUFH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751502Ab0AUFF1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 00:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417Ab0AUFF1
+	id S1751596Ab0AUFH7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 00:07:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332Ab0AUFH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 00:05:27 -0500
-Received: from mga01.intel.com ([192.55.52.88]:3727 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750932Ab0AUFF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 00:05:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,314,1262592000"; 
-   d="scan'208";a="533133287"
-Date: Thu, 21 Jan 2010 13:05:21 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [PATCH 5/8] vmalloc: simplify vread()/vwrite()
-Message-ID: <20100121050521.GB24236@localhost>
-References: <20100113135305.013124116@intel.com> <20100113135957.833222772@intel.com> <20100114124526.GB7518@laptop> <20100118133512.GC721@localhost> <20100118142359.GA14472@laptop> <20100119013303.GA12513@localhost> <20100119112343.04f4eff5.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 21 Jan 2010 00:07:59 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:40512 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751273Ab0AUFH6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 00:07:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=ji2C3NspvrhELzPqWEWtOiX/8t+3cvxx3xFuelvQb/FZ9EdjpuBVyaLhsbuEu1fXY4
+         k952sqX+J3IrEj8+gA67zRHF/mGEhLyCOy49J5D5VvKH04SNrP7LL+v9+yPZTtXRiBjy
+         ubFfoEh/QhbfGwjR1+yZIpJaSOEz5eXlgo8bg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100119112343.04f4eff5.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Thu, 21 Jan 2010 13:07:57 +0800
+Message-ID: <979dd0561001202107v4ddc1eb7xa59a7c16c452f7a2@mail.gmail.com>
+Subject: [PATCH] Flush dcache before writing into page to avoid alias
+From: anfei zhou <anfei.zhou@gmail.com>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux@arm.linux.org.uk, Jamie Lokier <jamie@shareable.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 07:23:43PM -0700, KAMEZAWA Hiroyuki wrote:
-> On Tue, 19 Jan 2010 09:33:03 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > The whole thing looks stupid though, apparently kmap is used to avoid "the
-> > > lock". But the lock is already held. We should just use the vmap
-> > > address.
-> > 
-> > Yes. I wonder why Kame introduced kmap_atomic() in d0107eb07 -- given
-> > that he at the same time fixed the order of removing vm_struct and
-> > vmap in dd32c279983b.
-> > 
-> Hmm...I must check my thinking again before answering..
-> 
-> vmalloc/vmap is constructed by 2 layer.
-> 	- vmalloc layer....guarded by vmlist_lock.
-> 	- vmap layer   ....gurderd by purge_lock. etc.
-> 
-> Now, let's see how vmalloc() works. It does job in 2 steps.
-> vmalloc():
->   - allocate vmalloc area to the list under vmlist_lock.
-> 	- map pages.
-> vfree()
->   - free vmalloc area from the list under vmlist_lock.
-> 	- unmap pages under purge_lock.
-> 
-> Now. vread(), vwrite() just take vmlist_lock, doesn't take purge_lock().
-> It walks page table and find pte entry, page, kmap and access it.
-> 
-> Oh, yes. It seems it's safe without kmap. But My concern is percpu allocator.
-> 
-> It uses get_vm_area() and controls mapped pages by themselves and
-> map/unmap pages by with their own logic. vmalloc.c is just used for
-> alloc/free virtual address. 
-> 
-> Now, vread()/vwrite() just holds vmlist_lock() and walk page table
-> without no guarantee that the found page is stably mapped. So, I used kmap.
-> 
-> If I miss something, I'm very sorry to add such kmap.
+The cache alias problem will happen if the changes of user shared mapping
+is not flushed before copying, then user and kernel mapping may be mapped
+into two different cache line, it is impossible to guarantee the coherence
+after iov_iter_copy_from_user_atomic.  So the right steps should be:
+	flush_dcache_page(page);
+	kmap_atomic(page);
+	write to page;
+	kunmap_atomic(page);
+	flush_dcache_page(page);
+More precisely, we might create two new APIs flush_dcache_user_page and
+flush_dcache_kern_page to replace the two flush_dcache_page accordingly.
 
-Ah Thanks for explanation!
+Here is a snippet tested on omap2430 with VIPT cache, and I think it is
+not ARM-specific:
+	int val = 0x11111111;
+	fd = open("abc", O_RDWR);
+	addr = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+	*(addr+0) = 0x44444444;
+	tmp = *(addr+0);
+	*(addr+1) = 0x77777777;
+	write(fd, &val, sizeof(int));
+	close(fd);
+The results are not always 0x11111111 0x77777777 at the beginning as expected.
 
-I did some audit and find that
+Signed-off-by: Anfei <anfei.zhou@gmail.com>
+---
+ fs/fuse/file.c |    3 +++
+ mm/filemap.c   |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-- set_memory_uc(), set_memory_array_uc(), set_pages_uc(),
-  set_pages_array_uc() are called EFI code and various video drivers,
-  all of them don't touch HIGHMEM RAM
+diff --git a/fs/fuse/file.c b/fs/fuse/file.c
+index c18913a..a9f5e13 100644
+--- a/fs/fuse/file.c
++++ b/fs/fuse/file.c
+@@ -828,6 +828,9 @@ static ssize_t fuse_fill_write_pages(struct fuse_req *req,
+ 		if (!page)
+ 			break;
 
-- Kame: ioremap() won't allow remap of physical RAM
++		if (mapping_writably_mapped(mapping))
++			flush_dcache_page(page);
++
+ 		pagefault_disable();
+ 		tmp = iov_iter_copy_from_user_atomic(page, ii, offset, bytes);
+ 		pagefault_enable();
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 96ac6b0..07056fb 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2196,6 +2196,9 @@ again:
+ 		if (unlikely(status))
+ 			break;
 
-So kmap_atomic() is safe.  Let's just settle on this patch?
-
-Thanks,
-Fengguang
++		if (mapping_writably_mapped(mapping))
++			flush_dcache_page(page);
++
+ 		pagefault_disable();
+ 		copied = iov_iter_copy_from_user_atomic(page, i, offset, bytes);
+ 		pagefault_enable();
+-- 
+1.6.3.1
