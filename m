@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045Ab0AUGfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089Ab0AUGgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045Ab0AUGfw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 01:35:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151Ab0AUG3K
+	id S1755089Ab0AUGgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 01:36:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957Ab0AUGg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 01:29:10 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38787 "EHLO
+	Thu, 21 Jan 2010 01:36:26 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38802 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753735Ab0AUG3E (ORCPT
+	with ESMTP id S1754171Ab0AUG3I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 01:29:04 -0500
+	Thu, 21 Jan 2010 01:29:08 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 20 Jan 2010 22:27:56 -0800
+Date: Wed, 20 Jan 2010 22:28:00 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 09/36] x86: print bootmem free before pci_iommu_alloc and
- free_all_bootmem -v2
+Subject: [PATCH 13/36] sparsemem: put usemap for one node together
 In-reply-to: <1264055303-15123-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -26,153 +25,170 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264055303-15123-10-git-send-email-yinghai@kernel.org>
+Message-id: <1264055303-15123-14-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264055303-15123-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so we could double check if we have enough low pages later
+could save some buf instead of applying one by one
 
--v2: fix errors checkpatch.pl reported
+could help that system that is going to use early_res instead of bootmem
+less entries in early_res make search more faster on system with more memory.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/mm/init_64.c   |    2 +
- include/linux/bootmem.h |    2 +
- mm/bootmem.c            |   92 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 96 insertions(+), 0 deletions(-)
+ mm/sparse.c |   84 ++++++++++++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 66 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 1ea79ad..f9530eb 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -654,6 +654,8 @@ void __init mem_init(void)
- 	long codesize, reservedpages, datasize, initsize;
- 	unsigned long absent_pages;
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 6ce4aab..0cdaf0b 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -271,7 +271,8 @@ static unsigned long *__kmalloc_section_usemap(void)
  
-+	print_bootmem_free();
-+
- 	pci_iommu_alloc();
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+ static unsigned long * __init
+-sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
++sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
++					 unsigned long count)
+ {
+ 	unsigned long section_nr;
  
- 	/* clear_bss() already clear the empty_zero_page */
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index b10ec49..3446bed 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -55,6 +55,8 @@ extern void free_bootmem_node(pg_data_t *pgdat,
- extern void free_bootmem(unsigned long addr, unsigned long size);
- extern void free_bootmem_late(unsigned long addr, unsigned long size);
- 
-+void print_bootmem_free(void);
-+
- /*
-  * Flags for reserve_bootmem (also if CONFIG_HAVE_ARCH_BOOTMEM_NODE,
-  * the architecture-specific code should honor this).
-diff --git a/mm/bootmem.c b/mm/bootmem.c
-index 7d14868..eec89ed 100644
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -267,6 +267,98 @@ static void __init __free(bootmem_data_t *bdata,
- 			BUG();
+@@ -286,7 +287,7 @@ sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
+ 	 * this problem.
+ 	 */
+ 	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
+-	return alloc_bootmem_section(usemap_size(), section_nr);
++	return alloc_bootmem_section(usemap_size() * count, section_nr);
  }
  
-+static void __init print_all_bootmem_free_core(bootmem_data_t *bdata)
-+{
-+	int aligned;
-+	unsigned long *map;
-+	unsigned long start, end, count = 0;
-+	unsigned long free_start = -1UL, free_end = 0;
-+
-+	if (!bdata->node_bootmem_map)
-+		return;
-+
-+	start = bdata->node_min_pfn;
-+	end = bdata->node_low_pfn;
-+
-+	/*
-+	 * If the start is aligned to the machines wordsize, we might
-+	 * be able to count it in bulks of that order.
-+	 */
-+	aligned = !(start & (BITS_PER_LONG - 1));
-+
-+	printk(KERN_DEBUG "nid=%td start=0x%010lx end=0x%010lx aligned=%d\n",
-+		bdata - bootmem_node_data, start, end, aligned);
-+	map = bdata->node_bootmem_map;
-+
-+	while (start < end) {
-+		unsigned long idx, vec;
-+
-+		idx = start - bdata->node_min_pfn;
-+		vec = ~map[idx / BITS_PER_LONG];
-+
-+		if (aligned && vec == ~0UL && start + BITS_PER_LONG < end) {
-+			if (free_start == -1UL) {
-+				free_start = idx;
-+				free_end = free_start + BITS_PER_LONG;
-+			} else {
-+				if (free_end == idx) {
-+					free_end += BITS_PER_LONG;
-+				} else {
-+					/* there is gap, print old */
-+					printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
-+							free_start + bdata->node_min_pfn,
-+							free_end + bdata->node_min_pfn);
-+					free_start = idx;
-+					free_end = idx + BITS_PER_LONG;
-+				}
-+			}
-+			count += BITS_PER_LONG;
-+		} else {
-+			unsigned long off = 0;
-+
-+			while (vec && off < BITS_PER_LONG) {
-+				if (vec & 1) {
-+					if (free_start == -1UL) {
-+						free_start = idx + off;
-+						free_end = free_start + 1;
-+					} else {
-+						if (free_end == (idx + off)) {
-+							free_end++;
-+						} else {
-+							/* there is gap, print old */
-+							printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
-+								free_start + bdata->node_min_pfn,
-+								free_end + bdata->node_min_pfn);
-+							free_start = idx + off;
-+							free_end = free_start + 1;
-+						}
-+					}
-+					count++;
-+				}
-+				vec >>= 1;
-+				off++;
-+			}
-+		}
-+		start += BITS_PER_LONG;
-+	}
-+
-+	/* last one */
-+	if (free_start != -1UL)
-+		printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
-+			free_start + bdata->node_min_pfn,
-+			free_end + bdata->node_min_pfn);
-+	printk(KERN_DEBUG "  total free 0x%010lx\n", count);
-+}
-+
-+void __init print_bootmem_free(void)
-+{
-+	bootmem_data_t *bdata;
-+
-+	list_for_each_entry(bdata, &bdata_list, list) {
-+		print_all_bootmem_free_core(bdata);
-+	}
-+}
-+
- static int __init __reserve(bootmem_data_t *bdata, unsigned long sidx,
- 			unsigned long eidx, int flags)
+ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+@@ -329,7 +330,8 @@ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+ }
+ #else
+ static unsigned long * __init
+-sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
++sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
++					 unsigned long count)
  {
+ 	return NULL;
+ }
+@@ -339,27 +341,40 @@ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+ }
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
+ 
+-static unsigned long *__init sparse_early_usemap_alloc(unsigned long pnum)
++static void __init sparse_early_usemaps_alloc_node(unsigned long**usemap_map,
++				 unsigned long pnum_begin,
++				 unsigned long pnum_end,
++				 unsigned long usemap_count, int nodeid)
+ {
+-	unsigned long *usemap;
+-	struct mem_section *ms = __nr_to_section(pnum);
+-	int nid = sparse_early_nid(ms);
+-
+-	usemap = sparse_early_usemap_alloc_pgdat_section(NODE_DATA(nid));
+-	if (usemap)
+-		return usemap;
++	void *usemap;
++	unsigned long pnum;
++	int size = usemap_size();
+ 
+-	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
++	usemap = sparse_early_usemaps_alloc_pgdat_section(NODE_DATA(nodeid),
++								 usemap_count);
+ 	if (usemap) {
+-		check_usemap_section_nr(nid, usemap);
+-		return usemap;
++		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
++			if (!present_section_nr(pnum))
++				continue;
++			usemap_map[pnum] = usemap;
++			usemap += size;
++		}
++		return;
+ 	}
+ 
+-	/* Stupid: suppress gcc warning for SPARSEMEM && !NUMA */
+-	nid = 0;
++	usemap = alloc_bootmem_node(NODE_DATA(nodeid), size * usemap_count);
++	if (usemap) {
++		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
++			if (!present_section_nr(pnum))
++				continue;
++			usemap_map[pnum] = usemap;
++			usemap += size;
++			check_usemap_section_nr(nodeid, usemap_map[pnum]);
++		}
++		return;
++	}
+ 
+ 	printk(KERN_WARNING "%s: allocation failed\n", __func__);
+-	return NULL;
+ }
+ 
+ #ifndef CONFIG_SPARSEMEM_VMEMMAP
+@@ -396,6 +411,7 @@ static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
+ void __attribute__((weak)) __meminit vmemmap_populate_print_last(void)
+ {
+ }
++
+ /*
+  * Allocate the accumulated non-linear sections, allocate a mem_map
+  * for each and record the physical to section mapping.
+@@ -407,6 +423,9 @@ void __init sparse_init(void)
+ 	unsigned long *usemap;
+ 	unsigned long **usemap_map;
+ 	int size;
++	int nodeid_begin = 0;
++	unsigned long pnum_begin = 0;
++	unsigned long usemap_count;
+ 
+ 	/*
+ 	 * map is using big page (aka 2M in x86 64 bit)
+@@ -425,10 +444,39 @@ void __init sparse_init(void)
+ 		panic("can not allocate usemap_map\n");
+ 
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
++		struct mem_section *ms;
++
+ 		if (!present_section_nr(pnum))
+ 			continue;
+-		usemap_map[pnum] = sparse_early_usemap_alloc(pnum);
++		ms = __nr_to_section(pnum);
++		nodeid_begin = sparse_early_nid(ms);
++		pnum_begin = pnum;
++		break;
++	}
++	usemap_count = 1;
++	for (pnum = pnum_begin + 1; pnum < NR_MEM_SECTIONS; pnum++) {
++		struct mem_section *ms;
++		int nodeid;
++
++		if (!present_section_nr(pnum))
++			continue;
++		ms = __nr_to_section(pnum);
++		nodeid = sparse_early_nid(ms);
++		if (nodeid == nodeid_begin) {
++			usemap_count++;
++			continue;
++		}
++		/* ok, we need to take cake of from pnum_begin to pnum - 1*/
++		sparse_early_usemaps_alloc_node(usemap_map, pnum_begin, pnum,
++						 usemap_count, nodeid_begin);
++		/* new start, update count etc*/
++		nodeid_begin = nodeid;
++		pnum_begin = pnum;
++		usemap_count = 1;
+ 	}
++	/* ok, last chunk */
++	sparse_early_usemaps_alloc_node(usemap_map, pnum_begin, NR_MEM_SECTIONS,
++					 usemap_count, nodeid_begin);
+ 
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+ 		if (!present_section_nr(pnum))
 -- 
 1.6.4.2
 
