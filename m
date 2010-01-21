@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405Ab0AUEEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498Ab0AUEGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405Ab0AUEEK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jan 2010 23:04:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277Ab0AUEEJ
+	id S1753498Ab0AUEGg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jan 2010 23:06:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187Ab0AUEGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jan 2010 23:04:09 -0500
-Received: from mail-qy0-f202.google.com ([209.85.221.202]:33529 "EHLO
-	mail-qy0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751846Ab0AUEEI (ORCPT
+	Wed, 20 Jan 2010 23:06:35 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:58696 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752143Ab0AUEGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jan 2010 23:04:08 -0500
+	Wed, 20 Jan 2010 23:06:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=l6S8Ak/nizXODktjjuthst8Czp36o9weRNAao8sA1ot+aGBbBcNXT+YfxNjFqVrvkk
-         BwxG5DlglojfxErw7ZnVdNTGSWh1MysB0G4irWf19FUPJerjiHSBafIndDw8DjIdOIw8
-         YcYTV/F5tPnm/ikLIwSFMy4V1lxooo2KztfNE=
-From: Thiago Farina <tfransosi@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, WANG Cong <amwang@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       linux-fsdevel@vger.kernel.org
-Subject: [PATCH] fs/binfmt_elf.c: fix a do-while statement.
-Date: Wed, 20 Jan 2010 23:03:53 -0500
-Message-Id: <c370b092a68e66a2ac6c9d852967d843a1b574c0.1264046338.git.tfransosi@gmail.com>
-X-Mailer: git-send-email 1.6.6.243.gff6d2
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=W5cx2FJXzJxKCmRpk/KH3AD/AI9MxonbeBRiwU7zTJ5SIwQlkhqBQBwu0Rtdo8RXF7
+         922xBjDaUj/kelunqCVr/Jkyzj8jKeV6u0MCPpknlWJpOsEXTBZJIh5jSfsOWFDvdTDv
+         WjVcuXQuCUn5S6UxQPd3CFgi7v/BHBrIGAuVY=
+Message-ID: <4B57D2C7.1000007@garzik.org>
+Date: Wed, 20 Jan 2010 23:06:31 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/64] libata: fix CFA handling in ide_timing_compute()
+References: <20100118171349.14623.90030.sendpatchset@localhost> <20100118171357.14623.36435.sendpatchset@localhost>
+In-Reply-To: <20100118171357.14623.36435.sendpatchset@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-warning: do-while statement is not a compound statement
+On 01/18/2010 12:13 PM, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> Subject: [PATCH] libata: fix CFA handling in ide_timing_compute()
+>
+> Use standard cycle timing for CFA PIO5 and PIO6 modes.
+>
+> Based on commit 74638c8 for IDE subsystem.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> ---
+>   drivers/ata/libata-core.c |   17 +++++++++++------
+>   1 file changed, 11 insertions(+), 6 deletions(-)
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
----
- fs/binfmt_elf.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+applied
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index edd90c4..75d6468 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1404,9 +1404,9 @@ static void fill_auxv_note(struct memelfnote *note, struct mm_struct *mm)
- {
- 	elf_addr_t *auxv = (elf_addr_t *) mm->saved_auxv;
- 	int i = 0;
--	do
-+	do {
- 		i += 2;
--	while (auxv[i - 2] != AT_NULL);
-+	} while (auxv[i - 2] != AT_NULL);
- 	fill_note(note, "CORE", NT_AUXV, i * sizeof(elf_addr_t), auxv);
- }
- 
--- 
-1.6.6.243.gff6d2
 
