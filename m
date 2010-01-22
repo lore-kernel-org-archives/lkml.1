@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119Ab0AVXrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289Ab0AVXtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753119Ab0AVXrI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:47:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621Ab0AVXrG
+	id S1753289Ab0AVXtr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 18:49:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669Ab0AVXtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:47:06 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:38546 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752609Ab0AVXrE (ORCPT
+	Fri, 22 Jan 2010 18:49:46 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:35882 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751457Ab0AVXtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 18:47:04 -0500
+	Fri, 22 Jan 2010 18:49:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=XLq7xy/R2+BE7NU/L/GJCattYm/xffzsWJvpFYmRNwockESQRPm0DAfsc/fgsbHwLr
-         9nCnRhvA9cZpNHewgvFpkXjDP8y54bguoRqJLyS4g4nR35nN6/KkBCuSbFL6fAW9r5kR
-         NbGfg6qrkPS5U84jVzn1D+tmwEd6cqeXfdmcc=
-Date: Sat, 23 Jan 2010 00:46:56 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-Message-ID: <20100122234656.GC3105@del.dom.local>
-References: <20100120094103.GA6225@ff.dom.local>
- <4B58B217.8030001@majjas.com>
- <20100121204133.GB3085@del.dom.local>
- <4B59E7EB.3050605@majjas.com>
- <20100122215304.GA3105@del.dom.local>
- <4B5A2362.6000306@majjas.com>
- <20100122230605.GB3105@del.dom.local>
- <4B5A33D8.90501@majjas.com>
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=hLlwc1yVruMvC1regYWtzqNhKs3LfEWlNbELN2Xxqk0pMKZ0CadNanq6pUZAaYGVVN
+         6Q6hsdmsKrxfQg40Po8Y5JwWLM3S6YvXWbnfUaXyDMxjRItuP6zY/PkVPGMMwiXDiV/N
+         c5BEtYnZo562dD4YfV+J27ViBAJLs+3+ERWV0=
+Date: Fri, 22 Jan 2010 15:49:37 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] platform_driver_register: warn if probe is in .init.text
+Message-ID: <20100122234936.GA14538@core.coreip.homeip.net>
+References: <20100122173846.GA11057@suse.de>
+ <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4B5A33D8.90501@majjas.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 22, 2010 at 06:25:12PM -0500, Michael Breuer wrote:
-> On 1/22/2010 6:06 PM, Jarek Poplawski wrote:
-> >On Fri, Jan 22, 2010 at 05:14:58PM -0500, Michael Breuer wrote:
-> >>Not sure I can do that. Note that based on the log messages, there
-> >>were no errors/dropped packets involving dhcp. Moving the dhcp
-> >>server off of the affected machine is not trivial. The dhcp
-> >>correlation is based on logged messages preceding each crash. I
-> >>cannot confirm that they're related, however it's really suspicious.
-> >>If it helps, HP replaced my unmanaged switch with a managed one so I
-> >>can see whether there were any switch events logged the next time I
-> >>have a crash.
-> >>
-> >>At this point, it seems the following is required to trigger the crash:
-> >>1) Uptime of 24-36 hours
-> >>2) High RX load on server (cifs traffic is what I've triggered it with).
-> >>3) Normal DHCP traffic.
-> >Do you mean you got these crashes with the new switch too, and this
-> >switch doesn't drop DHCP at all? (Otherwise, let's try this switch
-> >first.)
-> >
-> >Jarek P.
-> Nope - just got the new switch. Crash was old switch. That said, I
-> don't think (based on the log messages) that the dhcpoffer packet
-> drop was happening prior to the crash. I also can't fathom why a
-> DHCPOFFER packet dropped after leaving the server would have any
-> bearing on the issue.
+Hi Uwe,
 
-You wrote earlier:
-> [...] Also, there is always a dhcp exchange of some sort
-> preceding the event.
+On Fri, Jan 22, 2010 at 08:49:18PM +0100, Uwe Kleine-König wrote:
+> +int platform_driver_register(struct platform_driver *drv)
+> +{
+> +	int ret = __platform_driver_register(drv);
+> +
+> +#if defined(CONFIG_HOTPLUG)
+> +	/*
+> +	 * drivers that are registered by platform_driver_register
+> +	 * should not have their probe function in .init.text.  The
+> +	 * reason is that a probe can happen after .init.text is
+> +	 * discarded which then results in an oops.  The alternatives
+> +	 * are using .devinit.text for the probe function or "register"
+> +	 * with platform_driver_probe.
+> +	 */
 
-So, I'm not sure there was "3) Normal DHCP traffic." if the switch
-could drop DHCP packets in some buggy conditions. Anyway, let's try
-the new one with really "3) Normal DHCP traffic.", I hope.
 
-Jarek P.
+What about CONFIG_MODULE case (without hotplug)? The driver may be
+compiled in (and thus probe will be discarded) but device might be
+created by a loadable module which is loaded later.
+
+> +	if (drv->probe && kernel_init_text_address((unsigned long)drv->probe))
+> +		pr_warning("oops-warning: probe function of platform driver %s"
+> +			       " lives in .init.text\n", drv->driver.name);
+> +#else
+> +	/*
+> +	 * without HOTPLUG probe functions can be discarded after the driver is
+> +	 * loaded.
+> +	 * There is a little chance for false positives, namely if the driver is
+> +	 * registered after the .init sections are discarded.
+> +	 */
+> +	if (drv->probe && !kernel_init_text_address((unsigned long)drv->probe))
+> +		pr_info("probably the probe function of platform driver %s can"
+> +				" be moved to .init.text\n", drv->driver.name);
+
+It really depends on the user's (or rather builder's) local
+configuration so how can we make this suggestion?
+
+Thanks.
+
+-- 
+Dmitry
