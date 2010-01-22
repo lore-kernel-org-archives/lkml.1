@@ -1,198 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260Ab0AVMNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379Ab0AVM0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752260Ab0AVMNL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 07:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982Ab0AVMNK
+	id S1752379Ab0AVM0f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 07:26:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033Ab0AVM0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 07:13:10 -0500
-Received: from mail.mnsspb.ru ([84.204.75.2]:37081 "EHLO mail.mnsspb.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751973Ab0AVMNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 07:13:08 -0500
-X-Greylist: delayed 860 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Jan 2010 07:13:08 EST
-From: Kirill Smelkov <kirr@mns.spb.ru>
-To: linux-kernel@vger.kernel.org
-Cc: Kirill Smelkov <kirr@mns.spb.ru>, Jiri Slaby <jirislaby@gmail.com>,
-       Alan Cox <alan@linux.intel.com>, Peter Botha <peterb@goldcircle.co.za>,
-       Denis Vlasenko <vda@ilport.com.ua>
-Subject: [RFC PATCH] mxser: make /dev/ttyMI<n> namespace contiguous
-Date: Fri, 22 Jan 2010 14:56:42 +0300
-Message-Id: <1264161402-4669-1-git-send-email-kirr@mns.spb.ru>
-X-Mailer: git-send-email 1.6.6.1.394.gdedc0
+	Fri, 22 Jan 2010 07:26:34 -0500
+Received: from casper.infradead.org ([85.118.1.10]:33595 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844Ab0AVM0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 07:26:34 -0500
+Date: Fri, 22 Jan 2010 10:26:07 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Tomasz Fujak <t.fujak@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       jamie.iles@picochip.com, will.deacon@arm.com, jpihet@mvista.com,
+       mingo@elte.hu, peterz@infradead.org, p.osciak@samsung.com,
+       m.szyprowski@samsung.com, kyungmin.park@samsung.com
+Subject: Re: [PATCH v1 1/1] Extended events (platform-specific) support in
+	perf
+Message-ID: <20100122122607.GE1244@ghostprotocols.net>
+References: <1264162139-26788-1-git-send-email-t.fujak@samsung.com> <1264162139-26788-2-git-send-email-t.fujak@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264162139-26788-2-git-send-email-t.fujak@samsung.com>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recently I've been beaten by the difference of how /dev/ttyMI* entries
-are created for two cases:
+Em Fri, Jan 22, 2010 at 01:08:59PM +0100, Tomasz Fujak escreveu:
+> Signed-off-by: Tomasz Fujak <t.fujak@samsung.com>
+> Reviewed-by: Pawel Osciak <p.osciak@samsung.com>
+> Reviewed-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Reviewed-by: Kyungmin Park <kuyngmin.park@samsung.com>
 
-    a) two CP-114 cards (each with 4 ports), and
-    b) one CP-118 card (with 8 ports on board)
-
-compare:
-
-    CP114+CP114       CP118
-
-      ttyMI0          ttyMI0
-      ttyMI1          ttyMI1
-      ttyMI2          ttyMI2
-      ttyMI3          ttyMI3
-      ttyMI8          ttyMI4
-      ttyMI9          ttyMI5
-      ttyMI10         ttyMI6
-      ttyMI11         ttyMI7
-
-i.e. in case of 8-ports board, we have contigous /dev entries for 8
-serial ports, but in case of two 4-ports board, there is a hole between
-4th and 5th ports.
-
-As I see it, the reason Moxa did things this way, is for userspace to
-have a simple rule to know /dev entry for n'th port on m'th board easily
--- they always reserve 8 /dev entries for each board
-(MXSER_PORTS_PER_BOARD) and the rule is 8*m+n.
-
-However in my situation, this creates confusion -- when my system
-starts, I'd like to know /dev entries for n'th serial port and bind
-programs to appropriate ports and pretune config files for such
-programs. Regardles of how those 8 ports are made - with one CP118
-card, or with 2 CP114 cards.
-
-Yes, on system startup, one could always create appropriate com-port
-mapping, which will contigously enumerate ports, e.g. something like
-this:
-
-    cd /dev/
-    n=0
-    for port in `ls ttyMI* | sort --key=1.6 -n`; do
-        ln -s $port com${n}
-        n=$(($n+1))
-    done
-
-and then use /dev/com<n>, but is it the right way?
-
-Maybe let's teach mxser to create continous /dev entries in the first
-place?
-
-The problem is in mxser_ioctl_special though. For MOXA_CHKPORTENABLE,
-MOXA_GETMSTATUS and MOXA_ASPP_MOX_EXT the assumed layout is always 8
-ports per board, and so userspace could get confused, if say
-CHKPORTENABLE reports 1st port on 2nd board is present, but
-open("/dev/ttyMI8") fails.
-
-Although are these ioctls ever used? I've downloaded moxa drivers and
-tools (driv_linux_smart_v1.14_build_09061611.tgz) and yes, their tools
-use special ioctls, but anyway, the tools still use /dev/ttyM instead of
-/dev/ttyMI, and e.g. GETMSTATUS is used on /dev/mxser only, so I'd say
-this userspace user is ouuuuut of date.
-
-So would be it an ABI breakage to kill these special ioctls, or change
-them in some meaningful way to make /dev/ttyMI<n> namespace continous?
-
-I'm not sure on this - that's why the patch is marked as RFC.
-
-Please advice, and thanks beforehand,
-Kirill
-
-Cc: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Cox <alan@linux.intel.com>
-Cc: Peter Botha <peterb@goldcircle.co.za>
-Cc: Denis Vlasenko <vda@ilport.com.ua>
-Signed-off-by: Kirill Smelkov <kirr@mns.spb.ru>
----
- drivers/char/mxser.c |   31 ++++++++++++++++++++++++-------
- 1 files changed, 24 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
-index 3d92306..21028b5 100644
---- a/drivers/char/mxser.c
-+++ b/drivers/char/mxser.c
-@@ -1002,13 +1002,27 @@ static int mxser_open(struct tty_struct *tty, struct file *filp)
- {
- 	struct mxser_port *info;
- 	int line;
-+	unsigned int i, nport;
-+	struct mxser_board *board=NULL;
+"Extended" seems vague, I think in this context "platform_" would be a
+better namespace specifier.
  
- 	line = tty->index;
- 	if (line == MXSER_PORTS)
- 		return 0;
- 	if (line < 0 || line > MXSER_PORTS)
- 		return -ENODEV;
--	info = &mxser_boards[line / MXSER_PORTS_PER_BOARD].ports[line % MXSER_PORTS_PER_BOARD];
-+
-+	for (nport = 0, i = 0; i < MXSER_BOARDS; i++)
-+		if (line < nport + mxser_boards[i].info->nports) {
-+			board = &mxser_boards[i];
-+			break;
-+		}
-+		else
-+			nport += mxser_boards[i].info->nports;
-+
-+	if (!board)
-+		return -ENODEV;
-+
-+	info = &board->ports[line - nport];
- 	if (!info->ioaddr)
- 		return -ENODEV;
- 
-@@ -2525,13 +2539,15 @@ static int __devinit mxser_probe(struct pci_dev *pdev,
- {
- #ifdef CONFIG_PCI
- 	struct mxser_board *brd;
--	unsigned int i, j;
-+	unsigned int i, j, nport;
- 	unsigned long ioaddress;
- 	int retval = -EINVAL;
- 
--	for (i = 0; i < MXSER_BOARDS; i++)
-+	for (nport = 0, i = 0; i < MXSER_BOARDS; i++)
- 		if (mxser_boards[i].info == NULL)
- 			break;
-+		else
-+			nport += mxser_boards[i].info->nports;
- 
- 	if (i >= MXSER_BOARDS) {
- 		dev_err(&pdev->dev, "too many boards found (maximum %d), board "
-@@ -2540,7 +2556,7 @@ static int __devinit mxser_probe(struct pci_dev *pdev,
- 	}
- 
- 	brd = &mxser_boards[i];
--	brd->idx = i * MXSER_PORTS_PER_BOARD;
-+	brd->idx = nport;
- 	dev_info(&pdev->dev, "found MOXA %s board (BusNo=%d, DevNo=%d)\n",
- 		mxser_cards[ent->driver_data].name,
- 		pdev->bus->number, PCI_SLOT(pdev->devfn));
-@@ -2649,7 +2665,7 @@ static struct pci_driver mxser_driver = {
- static int __init mxser_module_init(void)
- {
- 	struct mxser_board *brd;
--	unsigned int b, i, m;
-+	unsigned int b, i, m, nport;
- 	int retval;
- 
- 	mxvar_sdriver = alloc_tty_driver(MXSER_PORTS + 1);
-@@ -2681,7 +2697,7 @@ static int __init mxser_module_init(void)
- 	}
- 
- 	/* Start finding ISA boards here */
--	for (m = 0, b = 0; b < MXSER_BOARDS; b++) {
-+	for (nport = 0, m = 0, b = 0; b < MXSER_BOARDS; b++) {
- 		if (!ioaddr[b])
- 			continue;
- 
-@@ -2701,10 +2717,11 @@ static int __init mxser_module_init(void)
- 			continue;
- 		}
- 
--		brd->idx = m * MXSER_PORTS_PER_BOARD;
-+		brd->idx = nport;
- 		for (i = 0; i < brd->info->nports; i++)
- 			tty_register_device(mxvar_sdriver, brd->idx + i, NULL);
- 
-+		nport += brd->info->nports;
- 		m++;
- 	}
- 
--- 
-1.6.6.1.394.gdedc0
+> ---
+>  tools/perf/util/parse-events.c |  224 ++++++++++++++++++++++++++++++++++++++--
+>  1 files changed, 213 insertions(+), 11 deletions(-)
+> 
+> diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+> index 05d0c5c..3e32198 100644
+> --- a/tools/perf/util/parse-events.c
+> +++ b/tools/perf/util/parse-events.c
+> @@ -9,6 +9,9 @@
+>  #include "header.h"
+>  #include "debugfs.h"
+>  
+> +#define			EXTENDED_EVENT_PATH	\
+> +			"/sys/devices/system/cpu/perf_events/extevents"
+> +
+>  int				nr_counters;
+>  
+>  struct perf_event_attr		attrs[MAX_COUNTERS];
+> @@ -60,6 +63,10 @@ static struct event_symbol event_symbols[] = {
+>  #define PERF_EVENT_TYPE(config)	__PERF_EVENT_FIELD(config, TYPE)
+>  #define PERF_EVENT_ID(config)		__PERF_EVENT_FIELD(config, EVENT)
+>  
+> +static struct event_symbol *extended_event_symbols;
+> +static unsigned int 	extended_event_count;
+> +static int 			extended_events_initialized;
+> +
+>  static const char *hw_event_names[] = {
+>  	"cycles",
+>  	"instructions",
+> @@ -241,6 +248,157 @@ static const char *tracepoint_id_to_name(u64 config)
+>  	return buf;
+>  }
+>  
+> +static unsigned count_lines(const char *str, unsigned size)
+> +{
+> +	unsigned count = 0;
+> +
+> +	while (size--)
+> +		count += ('\n' == *str++);
+> +	return count;
+> +}
+> +
+> +#define	BYTES_PER_CHUNK 4096
+> +/* returns the number of lines read;
+> +   on fail the return is negative and no memory is allocated
+> +   otherwise the *buf contains a memory chunk of which first
+> +   *size bytes are used for file contents
+> + */
+> +static int read_file(int fd, char **buf, unsigned *size)
+> +{
+> +	unsigned bytes = BYTES_PER_CHUNK;
+> +	int lines = 0;
+> +	char *ptr = malloc(bytes);
 
+malloc can fail... Also why is that you can't process the lines one by
+one instead of reading the whole (albeit small) file at once?
+
+> +	*size = 0;
+> +	do {
+> +		int ret = read(fd, ptr + *size, bytes - *size);
+> +		if (ret < 0) {
+> +			if (EINTR == errno)
+> +				continue;
+> +			else {
+> +				free(ptr);
+> +				return -1;
+> +			}
+> +		}
+> +
+> +		if (!ret)
+> +			break;
+> +
+> +		lines += count_lines(ptr + *size, ret);
+> +		*size += ret;
+> +
+> +		if (*size == bytes) {
+> +			char *tmp = realloc(ptr, bytes <<= 1);
+> +			if (!tmp) {
+> +				free(ptr);
+> +				return -1;
+> +			}
+> +			ptr = tmp;
+> +		}
+> +	} while (1);
+> +
+> +	*buf = ptr;
+> +	return lines;
+> +}
+> +
+> +static int parse_extevent_file(struct event_symbol *symbols,
+> +			unsigned lines, char *buf)
+> +{
+> +	char *name, *description, *ptr, *end;
+> +	unsigned offset = 0, count = 0;
+> +	int items, eaten;
+> +	unsigned long long discard;
+> +
+> +/* each line format should be "0x%llx\t%s\t%lld-%lld\t%s\n" */
+> +	while (lines--) {
+> +		items = sscanf(buf + offset + 2, "%llx",
+> +				&symbols[count].config);
+> +		if (1 != items)
+> +			continue;
+> +
+> +		/* skip 0x%llx\t */
+> +		ptr = strchr(buf + offset, '\t') + 1;
+> +
+> +		name = description = NULL;
+> +
+> +		end = strchr(ptr, '\t');
+> +		if (end) {
+> +			name = strndup(ptr, end - ptr);
+> +			ptr = end + 1;
+> +		}
+> +
+> +		ptr = end;
+> +		items = sscanf(ptr, "%lld-%lld\t%n", &discard, &discard,
+> +			 &eaten);
+> +		if (2 != items)
+> +			continue;
+> +
+> +		ptr += eaten;
+> +		end = strchr(ptr, '\n');
+> +		if (end) {
+> +			description = strndup(ptr, end - ptr);
+> +			offset = end - buf + 1;
+> +		} else
+> +			break;
+> +
+> +		if (name && description) {
+> +			symbols[count].symbol = name;
+> +			symbols[count].alias = "";
+> +			++count;
+> +			/* description gets lost here */
+> +			free(description);
+> +		} else {
+> +			free(description);
+> +			free(name);
+> +		}
+
+Having "free(description);" in both cases seems funny :-)
+
+- Arnaldo
