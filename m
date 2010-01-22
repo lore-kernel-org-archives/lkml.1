@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752094Ab0AVFRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260Ab0AVFTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752094Ab0AVFRk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 00:17:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343Ab0AVFRj
+	id S1752260Ab0AVFTa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 00:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487Ab0AVFT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 00:17:39 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:44933 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845Ab0AVFRi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 00:17:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=OGxaJCguxLO2peMWBTBt2hSRvTnSQm3ADjTBjbz+iq4nkACKblWsyXSX7fZFq+itie
-         x6lljdCc76xGm6e7qe+Kj0GYvVEDKfb/sNdUuAnj8pJmWuijQoO1b2N/jax/o877mv47
-         ged39+00oawMZVymnPHaEil6LmUiLsurx/Ex4=
-MIME-Version: 1.0
-Date: Fri, 22 Jan 2010 10:47:38 +0530
-Message-ID: <aacba7e1001212117g7b367ef0x3cf078d427b184cd@mail.gmail.com>
-Subject: libATA blacklist Crucial/Micron SSD M225 models due to NCQ errors?
-From: Vishal Rao <vishalrao@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 22 Jan 2010 00:19:29 -0500
+Received: from mga11.intel.com ([192.55.52.93]:25128 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751099Ab0AVFT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 00:19:28 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,322,1262592000"; 
+   d="scan'208";a="533525969"
+Message-Id: <20100122051517.549075734@intel.com>
+User-Agent: quilt/0.48-1
+Date: Fri, 22 Jan 2010 12:59:17 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Greg Kroah-Hartman <gregkh@suse.de>, Al Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+cc: <stable@kernel.org>
+cc: Andi Kleen <andi@firstfloor.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       <linux-fsdevel@vger.kernel.org>
+Subject: [PATCH 3/4] vfs: take f_lock on modifying f_mode after open time
+References: <20100122045914.993668874@intel.com>
+Content-Disposition: inline; filename=fmode-lock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+We'll introduce FMODE_RANDOM which will be runtime modified.
+So protect all runtime modification to f_mode with f_lock to
+avoid races.
 
-(please CC me in any replies as I'm not subscribed to the list).
+CC: Al Viro <viro@zeniv.linux.org.uk>
+CC: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/file_table.c     |    2 ++
+ fs/nfsd/nfs4state.c |    2 ++
+ 2 files changed, 4 insertions(+)
 
-I wonder if it's appropriate to blacklist the Crucial.com M225 family
-of solid state disks?
+--- linux.orig/fs/file_table.c	2010-01-15 09:11:07.000000000 +0800
++++ linux/fs/file_table.c	2010-01-15 09:11:15.000000000 +0800
+@@ -392,7 +392,9 @@ retry:
+ 			continue;
+ 		if (!(f->f_mode & FMODE_WRITE))
+ 			continue;
++		spin_lock(&f->f_lock);
+ 		f->f_mode &= ~FMODE_WRITE;
++		spin_unlock(&f->f_lock);
+ 		if (file_check_writeable(f) != 0)
+ 			continue;
+ 		file_release_write(f);
+--- linux.orig/fs/nfsd/nfs4state.c	2010-01-15 09:08:22.000000000 +0800
++++ linux/fs/nfsd/nfs4state.c	2010-01-15 09:11:15.000000000 +0800
+@@ -1998,7 +1998,9 @@ nfs4_file_downgrade(struct file *filp, u
+ {
+ 	if (share_access & NFS4_SHARE_ACCESS_WRITE) {
+ 		drop_file_write_access(filp);
++		spin_lock(&filp->f_lock);
+ 		filp->f_mode = (filp->f_mode | FMODE_READ) & ~FMODE_WRITE;
++		spin_unlock(&filp->f_lock);
+ 	}
+ }
+ 
 
-Could the following line be added to drivers/ata/libata-core.c around
-line 4276 (2.6.33-rc4) right alongside the
-"OCZ CORE_SSD" blacklist entry for ATA_HORKAGE_NONCQ ?
 
-[code]
-{ "CRUCIAL_CT128M225", NULL, ATA_HORKAGE_NONCQ },
-[/code]
-
-I'm assuming the first string param matches with the ID I see in the
-logs, the second param is for firmware ID and NULL means it will match
-all?
-This is just for the 128 GB model and there are also 64 and 256 GB
-models - I hope Crucial can revise their IDs to be variant agnostic
-and just
-return something like OCZ does like say "CRUCIAL_M225".
-
-I have a 128 GB model CT128M225 and am running kernel 2.6.32 series
-that comes with Ubuntu Linux 10.04 Alpha 2.
-
-There are regular kernel dmesg error/warning messages related to
-"ata1" (my SSD) including a "failed command READ FPDMA QUEUED".
-See http://pastebin.ubuntu.com/347122/
-
-After some STFW-ing, I realised it's related to NCQ which the disk
-firmware (v1916) probably doesn't support/implement well.
-
-Solution/workaround for me is to add " libata.force=noncq " to the
-kernel boot options so I am not too worried although I though if this
-goes into the kernel (and backported to .32 series which a lot of
-vendors plan to use or long term distro support) it would
-save a lot of headache for regular users who might dump Linux distros
-for other systems.
-
-(please CC me in any replies as I'm not subscribed to the list).
-
-Thanks,
-Vishal
-
---
-"Thou shalt not follow the null pointer for at its end madness and chaos lie."
