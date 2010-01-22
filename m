@@ -1,131 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839Ab0AVJLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861Ab0AVJPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839Ab0AVJLI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:11:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681Ab0AVJLH
+	id S1752861Ab0AVJPO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:15:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708Ab0AVJPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:11:07 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49271 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752671Ab0AVJLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 04:11:02 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/fvgVvHvbfpme0AeW65MKY1mPK4xbOZnsgEUqDrV
-	2PX/dk/zBUaemO
-Subject: Re: scheduler vs hardware? (was Re: another i7  (linux) bug?)
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Luca Zini <luca.zini@gmail.com>, aagaande@gmail.com, rdelcueto@hotmail.com,
-       mingo@elte.hu, linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>
-In-Reply-To: <1264150272.4283.1361.camel@laptop>
-References: <201001211258.23499.luca.zini@gmail.com>
-	 <20100121215438.GK17684@ldl.fc.hp.com>
-	 <1264144758.8074.22.camel@marge.simson.net>
-	 <1264150272.4283.1361.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 22 Jan 2010 10:10:57 +0100
-Message-Id: <1264151457.12530.4.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57999999999999996
+	Fri, 22 Jan 2010 04:15:12 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:57676 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752402Ab0AVJPI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 04:15:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=DZkqbRavQHxdaiiXFUny3VPEijiadgaWrAGawGMAXknRtVzWzIUGlq8OTLJkrjm2N/
+         2JuRp1G9RPjvtkmaM8RmKy9BcNMayXf4dtoCX/nLKrPlIfXhx5x2+p4YJ2SMJo73NwRw
+         zEHV0m7CHxJcYoDggS90BzLUGZaSw6ij5eNIU=
+MIME-Version: 1.0
+In-Reply-To: <20100121090510.GA908@infradead.org>
+References: <6fb445941001200112o2934f805l4eb4f78000e9527e@mail.gmail.com>
+	 <6fb445941001200120m3aa5e944j54a6f645ce82d76f@mail.gmail.com>
+	 <4B57C3C3.9010606@schaufler-ca.com>
+	 <20100121090510.GA908@infradead.org>
+Date: Fri, 22 Jan 2010 17:15:05 +0800
+Message-ID: <6fb445941001220115y6b99f7b4g306ea23d3202969@mail.gmail.com>
+Subject: Re: About ACL for IPC Object
+From: zhou peng <ailvpeng25@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Casey Schaufler <casey@schaufler-ca.com>, sds@tycho.nsa.gov, jra@samba.org,
+       linux-security-module@vger.kernel.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-22 at 09:51 +0100, Peter Zijlstra wrote:
-> On Fri, 2010-01-22 at 08:19 +0100, Mike Galbraith wrote:
-> > > if I run a cpu intensive process with the lowest priority (19
-> > > from man nice) I obtain much better performance that with the
-> > > highest priority available (-20 from man nice).
-> > >
-> > > For example the same file is processed by lame in 8.7 seconds
-> > > at the lowest priority, and in 12 seconds at the highest
-> > > priority.  Before posting a bug I wold like to understand if
-> > > this is a problem related to the i7 mobile (my processor is a
-> > > i7 Q720).
-> > > 
-> > > As far as I tested on the same laptop series (dell studio 15),
-> > > with the same kernel this problem does not exists.
-> > 
-> > So you only see this on the i7.  That's odd.  Can you try 33-rc5?
-> > 
-> > Posting a reliable reproducer would be nice.  It'd also be nice to see
-> > what all is running when you see this, and where.
-> 
-> Using a sample from: http://lame.sourceforge.net/quality.php
-> 
-> My laptop does:
-> 
-> 
-> # time nice -n 19 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
+Thank you all for so many solutions.
 
-> real    0m3.273s
-> user    0m3.217s
-> sys     0m0.022s
-> 
-> 
-> # time nice -n 0 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null 
+I want to control some IPC object (shm, msg queue, semphore) can be
+accessed by which named user or named group just like file objects ACL
+do.
 
-> real    0m1.121s
-> user    0m1.102s
-> sys     0m0.013s
-> 
-> 
-> # time nice -n -20 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
+I studied the solution you all referred, The SELinux is powerful but
+may be somewhat complicated. And I am confused with Christoph
+Hellwig‘s solution using tmpfs.
 
-> real    0m1.112s
-> user    0m1.093s
-> sys     0m0.018s
-> 
-> 
-> 
-> On a Nehalem class server machine it does:
-> 
-> 
-> # time nice -n 19 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
+2010/1/21 Christoph Hellwig <hch@infradead.org>:
+> On Wed, Jan 20, 2010 at 07:02:27PM -0800, Casey Schaufler wrote:
+>> zhou peng wrote:
+>> > Hi all,
+>> >
+>> > There are ACL in file system, but why there are no ACL implementation
+>> > in IPC object, eg. shm, message queue, FIFO?
+>> >
+>>
+>> Most people haven't noticed that IPC objects are even there, much less
+>> that they have mode bits and not ACLs. Even when we were doing security
+>> evaluations on Unix boxes in the 1990's they were considered insufficiently
+>> interesting to justify the additional work to do ACLs.
+>>
+>> If you really want ACLs on IPC objects it would make a dandy little
+>> project for a summer. I would be happy to review patches.
 
-> real    0m0.932s
-> user    0m0.917s
-> sys     0m0.005s
-> 
-> 
-> # time nice -n 0 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
+Thanks. It's interesting to add ACL over IPC objects. I want to have a try.
 
-> real    0m0.927s
-> user    0m0.922s
-> sys     0m0.003s
-> 
-> 
-> # time nice -n -20 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
+>
+> Or use the posix IPC mechanisms.  The Posix shared memory has ACL by
+> using tmpfs as the backing store, and we could add similar support to
+> Posix messages queues as they are also backed by a normal filesystem.
 
-> real    0m0.919s
-> user    0m0.914s
-> sys     0m0.005s
+Christoph Hellwig, This way may be convinent. Could you give some
+detailed message. :)
+I only find /proc/ipc/shm file which contain the info of shm objs,and
+tmpfs on /dev/shm which is empty.
 
-Weird.  Here there is zip squat difference, as expected with 1 thread.
+>
+> Adding this support to the old SYSV IPC mechanisms would be much harder
+> as they do not fit into the file backed model we use everywhere else at
+> all.
 
-time nice -n 19 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
+Just like file objects, the mode bits are implment over IPC objects
+without file backed, so I think adding ACL support to IPC objects may
+be somewhat reasonable :)
 
-real    0m0.912s
-user    0m0.908s
-sys     0m0.000s
+>
+>
 
-time nice -n 0 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
 
-real    0m0.912s
-user    0m0.904s
-sys     0m0.004s
 
-time nice -n -20 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
-
-real    0m0.912s
-user    0m0.904s
-sys     0m0.004s
-
-(bah, who needs a nehalem;)
-
-	-Mike
-
+-- 
+zhoupeng
