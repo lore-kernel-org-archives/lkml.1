@@ -1,48 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885Ab0AVWA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896Ab0AVWBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754885Ab0AVWA0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 17:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880Ab0AVWAX
+	id S1754896Ab0AVWBI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 17:01:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790Ab0AVWBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 17:00:23 -0500
-Received: from www.tglx.de ([62.245.132.106]:44803 "EHLO www.tglx.de"
+	Fri, 22 Jan 2010 17:01:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56621 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754872Ab0AVWAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 17:00:22 -0500
-Date: Fri, 22 Jan 2010 23:00:15 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ivan Novick <novickivan@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: sys_rt_sigreturn calling sys_futex?
-In-Reply-To: <619ad6271001221346j19c9038bx8013e5b560d0c138@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1001222257480.2906@localhost.localdomain>
-References: <619ad6271001221346j19c9038bx8013e5b560d0c138@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753376Ab0AVWBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 17:01:05 -0500
+Date: Fri, 22 Jan 2010 22:00:39 GMT
+From: "tip-bot for Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       markh@compro.net, stable@kernel.org, venkatesh.pallipadi@intel.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       markh@compro.net, venkatesh.pallipadi@intel.com, stable@kernel.org,
+       tglx@linutronix.de
+In-Reply-To: <20100121190952.GA32523@linux-os.sc.intel.com>
+References: <20100121190952.GA32523@linux-os.sc.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Disable HPET MSI on ATI SB700/SB800
+Message-ID: <tip-9f0b0ce525f19ef408e877b1c7662b60424c7cdc@git.kernel.org>
+Git-Commit-ID: 9f0b0ce525f19ef408e877b1c7662b60424c7cdc
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 22 Jan 2010 22:00:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jan 2010, Ivan Novick wrote:
-> Hello,
-> 
-> I have a userspace app that I profiled using SystemTap.
-> 
-> It says there are frequent calls to sys_futex which come from sys_rt_sigreturn.
-> 
-> It is true, that my app has many signal handler calls due to
-> frequently set timers in the code.
-> 
-> I had a look at the source for my kernel: Suse: linux-2.6.27.39-0.3
-> but I don't see any calls to futex from inside sys_rt_sigreturn.
-> 
-> Do you know if sys_rt_sigreturn is somehow calling sys_futex?
+Commit-ID:  9f0b0ce525f19ef408e877b1c7662b60424c7cdc
+Gitweb:     http://git.kernel.org/tip/9f0b0ce525f19ef408e877b1c7662b60424c7cdc
+Author:     Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+AuthorDate: Thu, 21 Jan 2010 11:09:52 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Fri, 22 Jan 2010 13:47:01 -0800
 
-Well, it is not calling sys_futex, it is resuming the sys_futex
-syscall which was interrupted by the signal. When the signal handler
-returns it returns to the system call automatically.
+x86: Disable HPET MSI on ATI SB700/SB800
+
+HPET MSI on platforms with ATI SB700/SB800 as they seem to have some
+side-effects on floppy DMA. Do not use HPET MSI on such platforms.
+
+Original problem report from Mark Hounschell
+http://lkml.indiana.edu/hypermail/linux/kernel/0912.2/01118.html
+
+[ This patch needs to go to stable as well. But, there are some
+  conflicts that prevents the patch from going as is. I can
+  rebase/resubmit to stable once the patch goes upstream.
+  hpa: still Cc:'ing stable@ as an FYI. ]
+
+Tested-by: Mark Hounschell <markh@compro.net>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: <stable@kernel.org>
+LKML-Reference: <20100121190952.GA32523@linux-os.sc.intel.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/include/asm/hpet.h |    1 +
+ arch/x86/kernel/hpet.c      |    8 ++++++++
+ arch/x86/kernel/quirks.c    |   13 +++++++++++++
+ 3 files changed, 22 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/include/asm/hpet.h b/arch/x86/include/asm/hpet.h
+index 5d89fd2..1d5c08a 100644
+--- a/arch/x86/include/asm/hpet.h
++++ b/arch/x86/include/asm/hpet.h
+@@ -67,6 +67,7 @@ extern unsigned long hpet_address;
+ extern unsigned long force_hpet_address;
+ extern u8 hpet_blockid;
+ extern int hpet_force_user;
++extern u8 hpet_msi_disable;
+ extern int is_hpet_enabled(void);
+ extern int hpet_enable(void);
+ extern void hpet_disable(void);
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index ba6e658..ad80a1c 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -34,6 +34,8 @@
+  */
+ unsigned long				hpet_address;
+ u8					hpet_blockid; /* OS timer block num */
++u8					hpet_msi_disable;
++
+ #ifdef CONFIG_PCI_MSI
+ static unsigned long			hpet_num_timers;
+ #endif
+@@ -596,6 +598,9 @@ static void hpet_msi_capability_lookup(unsigned int start_timer)
+ 	unsigned int num_timers_used = 0;
+ 	int i;
  
-Thanks,
-
-	tglx
++	if (hpet_msi_disable)
++		return;
++
+ 	if (boot_cpu_has(X86_FEATURE_ARAT))
+ 		return;
+ 	id = hpet_readl(HPET_ID);
+@@ -928,6 +933,9 @@ static __init int hpet_late_init(void)
+ 	hpet_reserve_platform_timers(hpet_readl(HPET_ID));
+ 	hpet_print_config();
+ 
++	if (hpet_msi_disable)
++		return 0;
++
+ 	if (boot_cpu_has(X86_FEATURE_ARAT))
+ 		return 0;
+ 
+diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
+index 18093d7..12e9fea 100644
+--- a/arch/x86/kernel/quirks.c
++++ b/arch/x86/kernel/quirks.c
+@@ -491,6 +491,19 @@ void force_hpet_resume(void)
+ 		break;
+ 	}
+ }
++
++/*
++ * HPET MSI on some boards (ATI SB700/SB800) has side effect on
++ * floppy DMA. Disable HPET MSI on such platforms.
++ */
++static void force_disable_hpet_msi(struct pci_dev *unused)
++{
++	hpet_msi_disable = 1;
++}
++
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_SBX00_SMBUS,
++			 force_disable_hpet_msi);
++
+ #endif
+ 
+ #if defined(CONFIG_PCI) && defined(CONFIG_NUMA)
