@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328Ab0AVStP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335Ab0AVSto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756328Ab0AVStP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 13:49:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246Ab0AVStK
+	id S1756335Ab0AVSto (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 13:49:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230Ab0AVSsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 13:49:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:21268 "EHLO mx1.redhat.com"
+	Fri, 22 Jan 2010 13:48:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8267 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756243Ab0AVSsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 13:48:54 -0500
+	id S1756207Ab0AVSsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 13:48:08 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v8 9/9] kprobes: Add documents of jump optimization
+Subject: [PATCH -tip v8 2/9] kprobes: Introduce generic insn_slot framework
 To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
@@ -26,8 +26,8 @@ Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>
-Date: Fri, 22 Jan 2010 13:55:57 -0500
-Message-ID: <20100122185557.9022.65862.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Fri, 22 Jan 2010 13:55:05 -0500
+Message-ID: <20100122185505.9022.45624.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20100122185450.9022.87506.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20100122185450.9022.87506.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -38,10 +38,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add documentations about kprobe jump optimization to Documentation/kprobes.txt.
-
-Changes in v8:
- - Update documentation and benchmark results.
+Make insn_slot framework support various size slots.
+Current insn_slot just supports one-size instruction buffer slot. However,
+kprobes jump optimization needs larger size buffers.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -59,276 +58,218 @@ Cc: Jason Baron <jbaron@redhat.com>
 Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 ---
 
- Documentation/kprobes.txt |  191 ++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 178 insertions(+), 13 deletions(-)
+ kernel/kprobes.c |  104 ++++++++++++++++++++++++++++++++++--------------------
+ 1 files changed, 65 insertions(+), 39 deletions(-)
 
-diff --git a/Documentation/kprobes.txt b/Documentation/kprobes.txt
-index 053037a..48af218 100644
---- a/Documentation/kprobes.txt
-+++ b/Documentation/kprobes.txt
-@@ -1,6 +1,7 @@
- Title	: Kernel Probes (Kprobes)
- Authors	: Jim Keniston <jkenisto@us.ibm.com>
- 	: Prasanna S Panchamukhi <prasanna@in.ibm.com>
-+	: Masami Hiramatsu <mhiramat@redhat.com>
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index b7df302..57a2a23 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -103,26 +103,42 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
+  * stepping on the instruction on a vmalloced/kmalloced/data page
+  * is a recipe for disaster
+  */
+-#define INSNS_PER_PAGE	(PAGE_SIZE/(MAX_INSN_SIZE * sizeof(kprobe_opcode_t)))
+-
+ struct kprobe_insn_page {
+ 	struct list_head list;
+ 	kprobe_opcode_t *insns;		/* Page of instruction slots */
+-	char slot_used[INSNS_PER_PAGE];
+ 	int nused;
+ 	int ngarbage;
++	char slot_used[];
++};
++
++#define KPROBE_INSN_PAGE_SIZE(slots)			\
++	(offsetof(struct kprobe_insn_page, slot_used) +	\
++	 (sizeof(char) * (slots)))
++
++struct kprobe_insn_cache {
++	struct list_head pages;	/* list of kprobe_insn_page */
++	size_t insn_size;	/* size of instruction slot */
++	int nr_garbage;
+ };
  
- CONTENTS
++static int slots_per_page(struct kprobe_insn_cache *c)
++{
++	return PAGE_SIZE/(c->insn_size * sizeof(kprobe_opcode_t));
++}
++
+ enum kprobe_slot_state {
+ 	SLOT_CLEAN = 0,
+ 	SLOT_DIRTY = 1,
+ 	SLOT_USED = 2,
+ };
  
-@@ -14,6 +15,7 @@ CONTENTS
- 8. Kprobes Example
- 9. Jprobes Example
- 10. Kretprobes Example
-+11. Optimization Example
- Appendix A: The kprobes debugfs interface
+-static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_pages */
+-static LIST_HEAD(kprobe_insn_pages);
+-static int kprobe_garbage_slots;
+-static int collect_garbage_slots(void);
++static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_slots */
++static struct kprobe_insn_cache kprobe_insn_slots = {
++	.pages = LIST_HEAD_INIT(kprobe_insn_slots.pages),
++	.insn_size = MAX_INSN_SIZE,
++	.nr_garbage = 0,
++};
++static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c);
  
- 1. Concepts: Kprobes, Jprobes, Return Probes
-@@ -42,13 +44,13 @@ registration/unregistration of a group of *probes. These functions
- can speed up unregistration process when you have to unregister
- a lot of probes at once.
+ static int __kprobes check_safety(void)
+ {
+@@ -152,32 +168,33 @@ loop_end:
+  * __get_insn_slot() - Find a slot on an executable page for an instruction.
+  * We allocate an executable page if there's no room on existing ones.
+  */
+-static kprobe_opcode_t __kprobes *__get_insn_slot(void)
++static kprobe_opcode_t __kprobes *__get_insn_slot(struct kprobe_insn_cache *c)
+ {
+ 	struct kprobe_insn_page *kip;
  
--The next three subsections explain how the different types of
--probes work.  They explain certain things that you'll need to
--know in order to make the best use of Kprobes -- e.g., the
--difference between a pre_handler and a post_handler, and how
--to use the maxactive and nmissed fields of a kretprobe.  But
--if you're in a hurry to start using Kprobes, you can skip ahead
--to section 2.
-+The next four subsections explain how the different types of
-+probes work and how the optimization works.  They explain certain
-+things that you'll need to know in order to make the best use of
-+Kprobes -- e.g., the difference between a pre_handler and
-+a post_handler, and how to use the maxactive and nmissed fields of
-+a kretprobe.  But if you're in a hurry to start using Kprobes, you
-+can skip ahead to section 2.
+  retry:
+-	list_for_each_entry(kip, &kprobe_insn_pages, list) {
+-		if (kip->nused < INSNS_PER_PAGE) {
++	list_for_each_entry(kip, &c->pages, list) {
++		if (kip->nused < slots_per_page(c)) {
+ 			int i;
+-			for (i = 0; i < INSNS_PER_PAGE; i++) {
++			for (i = 0; i < slots_per_page(c); i++) {
+ 				if (kip->slot_used[i] == SLOT_CLEAN) {
+ 					kip->slot_used[i] = SLOT_USED;
+ 					kip->nused++;
+-					return kip->insns + (i * MAX_INSN_SIZE);
++					return kip->insns + (i * c->insn_size);
+ 				}
+ 			}
+-			/* Surprise!  No unused slots.  Fix kip->nused. */
+-			kip->nused = INSNS_PER_PAGE;
++			/* kip->nused is broken. Fix it. */
++			kip->nused = slots_per_page(c);
++			WARN_ON(1);
+ 		}
+ 	}
  
- 1.1 How Does a Kprobe Work?
+ 	/* If there are any garbage slots, collect it and try again. */
+-	if (kprobe_garbage_slots && collect_garbage_slots() == 0) {
++	if (c->nr_garbage && collect_garbage_slots(c) == 0)
+ 		goto retry;
+-	}
+-	/* All out of space.  Need to allocate a new page. Use slot 0. */
+-	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
++
++	/* All out of space.  Need to allocate a new page. */
++	kip = kmalloc(KPROBE_INSN_PAGE_SIZE(slots_per_page(c)), GFP_KERNEL);
+ 	if (!kip)
+ 		return NULL;
  
-@@ -161,13 +163,109 @@ In case probed function is entered but there is no kretprobe_instance
- object available, then in addition to incrementing the nmissed count,
- the user entry_handler invocation is also skipped.
+@@ -192,20 +209,23 @@ static kprobe_opcode_t __kprobes *__get_insn_slot(void)
+ 		return NULL;
+ 	}
+ 	INIT_LIST_HEAD(&kip->list);
+-	list_add(&kip->list, &kprobe_insn_pages);
+-	memset(kip->slot_used, SLOT_CLEAN, INSNS_PER_PAGE);
++	memset(kip->slot_used, SLOT_CLEAN, slots_per_page(c));
+ 	kip->slot_used[0] = SLOT_USED;
+ 	kip->nused = 1;
+ 	kip->ngarbage = 0;
++	list_add(&kip->list, &c->pages);
+ 	return kip->insns;
+ }
  
-+1.4 How Does the Optimization Work?
 +
-+ If you configured kernel with CONFIG_OPTPROBES=y (currently this option is
-+supported on x86/x86-64, non-preemptive kernel) and
-+"debug.kprobes_optimization" sysctl sets 1, kprobes tries to use a
-+jump instruction instead of breakpoint instruction automatically.
+ kprobe_opcode_t __kprobes *get_insn_slot(void)
+ {
+-	kprobe_opcode_t *ret;
++	kprobe_opcode_t *ret = NULL;
 +
-+1.4.1 Init a Kprobe
+ 	mutex_lock(&kprobe_insn_mutex);
+-	ret = __get_insn_slot();
++	ret = __get_insn_slot(&kprobe_insn_slots);
+ 	mutex_unlock(&kprobe_insn_mutex);
 +
-+ Before preparing optimization, Kprobes inserts original(user-defined)
-+kprobe on the specified address. So, even if the kprobe is not
-+possible to be optimized, it just uses a normal kprobe.
-+
-+1.4.2 Safety check
-+
-+ First, Kprobes gets the address of probed function and checks whether the
-+optimized region, which will be replaced by a jump instruction, does NOT
-+straddle the function boundary, because if the optimized region reaches the
-+next function, its caller causes unexpected results.
-+ Next, Kprobes decodes whole body of probed function and checks there is
-+NO indirect jump, NO instruction which will cause exception by checking
-+exception_tables (this will jump to fixup code and fixup code jumps into
-+same function body) and NO near jump which jumps into the optimized region
-+(except the 1st byte of jump), because if some jump instruction jumps
-+into the middle of another instruction, it causes unexpected results too.
-+ Kprobes also measures the length of instructions which will be replaced
-+by a jump instruction, because a jump instruction is longer than 1 byte,
-+it may replaces multiple instructions, and it checks whether those
-+instructions can be executed out-of-line.
-+
-+1.4.3 Preparing detour buffer
-+
-+ Then, Kprobes prepares "detour" buffer, which contains exception emulating
-+code (push/pop registers, call handler), copied instructions(Kprobes copies
-+instructions which will be replaced by a jump, to the detour buffer), and
-+a jump which jumps back to the original execution path.
-+
-+1.4.4 Pre-optimization
-+
-+ After preparing detour buffer, Kprobes checks that the probe is *NOT* in
-+the below cases;
-+ - The probe has either break_handler or post_handler.
-+ - Other probes are probing the instructions which will be replaced by
-+   a jump instruction.
-+ - The probe is disabled.
-+In above cases, Kprobes just doesn't start optimizating the probe.
-+
-+ If the kprobe can be optimized, Kprobes enqueues the kprobe to optimizing
-+list and kicks kprobe-optimizer workqueue to optimize it. To wait other
-+optimized probes, kprobe-optimizer will delay to work.
-+ When the optimized-kprobe is hit before optimization, its handler changes
-+IP(instruction pointer) to copied code and exits. So, the instructions which
-+were copied to detour buffer are executed on the detour buffer.
-+
-+1.4.5 Optimization
-+
-+  Kprobe-optimizer doesn't start instruction-replacing soon, it waits
-+ synchronize_sched for safety, because some processors are possible to be
-+ interrupted on the middle of instruction series (2nd or Nth instruction)
-+ which will be replaced by a jump instruction(*).
-+ As you know, synchronize_sched() can ensure that all interruptions which
-+ were executed when synchronize_sched() was called are done, only if
-+ CONFIG_PREEMPT=n. So, this version supports only the kernel with
-+ CONFIG_PREEMPT=n.(**)
-+  After that, kprobe-optimizer calls stop_machine() to replace probed-
-+ instructions with a jump instruction by using text_poke_smp().
-+
-+1.4.6 Unoptimization
-+  When unregistering, disabling kprobe or being blocked by other kprobe,
-+ an optimized-kprobe will be unoptimized. Before kprobe-optimizer runs,
-+ the kprobe is just dequeued from the optimized list. When the optimization
-+ has been done, it replaces a jump with int3 breakpoint and original code
-+ by using text_poke_smp().
-+
-+(*)Please imagine that 2nd instruction is interrupted and
-+optimizer replaces the 2nd instruction with jump *address*
-+while the interrupt handler is running. When the interrupt
-+returns to original address, there is no valid instructions
-+and it causes unexpected result.
-+
-+(**)This optimization-safety checking may be replaced with stop-machine
-+method which ksplice is done for supporting CONFIG_PREEMPT=y kernel.
-+
-+NOTE for geeks:
-+The jump optimization changes the kprobe's pre_handler behavior.
-+Without optimization, pre_handler can change kernel execution path by
-+changing regs->ip and return 1. However, after optimizing the probe,
-+that modification is ignored. Thus, if you'd like to tweak kernel
-+execution path, you need to avoid optimization. In that case, you can
-+choose either,
-+ - Set empty function to post_handler or break_handler.
-+ or
-+ - Config CONFIG_OPTPROBES=n.
-+ or
-+ - Execute 'sysctl -w debug.kprobes_optimization=n'
-+
- 2. Architectures Supported
+ 	return ret;
+ }
  
- Kprobes, jprobes, and return probes are implemented on the following
- architectures:
+@@ -221,7 +241,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
+ 		 * so as not to have to set it up again the
+ 		 * next time somebody inserts a probe.
+ 		 */
+-		if (!list_is_singular(&kprobe_insn_pages)) {
++		if (!list_is_singular(&kip->list)) {
+ 			list_del(&kip->list);
+ 			module_free(NULL, kip->insns);
+ 			kfree(kip);
+@@ -231,7 +251,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
+ 	return 0;
+ }
  
--- i386
--- x86_64 (AMD-64, EM64T)
-+- i386 (Supports jump optimization)
-+- x86_64 (AMD-64, EM64T) (Supports jump optimization)
- - ppc64
- - ia64 (Does not support probes on instruction slot1.)
- - sparc64 (Return probes not yet implemented.)
-@@ -193,6 +291,10 @@ it useful to "Compile the kernel with debug info" (CONFIG_DEBUG_INFO),
- so you can use "objdump -d -l vmlinux" to see the source-to-object
- code mapping.
+-static int __kprobes collect_garbage_slots(void)
++static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c)
+ {
+ 	struct kprobe_insn_page *kip, *next;
  
-+If you want to reduce probing overhead, set "Kprobes jump optimization
-+support" (CONFIG_OPTPROBES) to "y". You can find this option under
-+"Kprobes" line.
-+
- 4. API Reference
+@@ -239,42 +259,48 @@ static int __kprobes collect_garbage_slots(void)
+ 	if (check_safety())
+ 		return -EAGAIN;
  
- The Kprobes API includes a "register" function and an "unregister"
-@@ -387,9 +489,12 @@ the probe which has been registered.
+-	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
++	list_for_each_entry_safe(kip, next, &c->pages, list) {
+ 		int i;
+ 		if (kip->ngarbage == 0)
+ 			continue;
+ 		kip->ngarbage = 0;	/* we will collect all garbages */
+-		for (i = 0; i < INSNS_PER_PAGE; i++) {
++		for (i = 0; i < slots_per_page(c); i++) {
+ 			if (kip->slot_used[i] == SLOT_DIRTY &&
+ 			    collect_one_slot(kip, i))
+ 				break;
+ 		}
+ 	}
+-	kprobe_garbage_slots = 0;
++	c->nr_garbage = 0;
+ 	return 0;
+ }
  
- 5. Kprobes Features and Limitations
+-void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
++static void __kprobes __free_insn_slot(struct kprobe_insn_cache *c,
++				       kprobe_opcode_t *slot, int dirty)
+ {
+ 	struct kprobe_insn_page *kip;
  
--Kprobes allows multiple probes at the same address.  Currently,
--however, there cannot be multiple jprobes on the same function at
--the same time.
-+Kprobes allows multiple probes at the same address even if it is optimized.
-+Currently, however, there cannot be multiple jprobes on the same function
-+at the same time. And also, optimized kprobes can not invoke the
-+post_handler and the break_handler. So if you attempt to install the probe
-+which has the the post_handler or the break_handler at the same address of
-+an optimized kprobe, the probe will be unoptimized automatically.
+-	mutex_lock(&kprobe_insn_mutex);
+-	list_for_each_entry(kip, &kprobe_insn_pages, list) {
+-		if (kip->insns <= slot &&
+-		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
+-			int i = (slot - kip->insns) / MAX_INSN_SIZE;
++	list_for_each_entry(kip, &c->pages, list) {
++		long idx = ((long)slot - (long)kip->insns) / c->insn_size;
++		if (idx >= 0 && idx < slots_per_page(c)) {
++			WARN_ON(kip->slot_used[idx] != SLOT_USED);
+ 			if (dirty) {
+-				kip->slot_used[i] = SLOT_DIRTY;
++				kip->slot_used[idx] = SLOT_DIRTY;
+ 				kip->ngarbage++;
++				if (++c->nr_garbage > slots_per_page(c))
++					collect_garbage_slots(c);
+ 			} else
+-				collect_one_slot(kip, i);
+-			break;
++				collect_one_slot(kip, idx);
++			return;
+ 		}
+ 	}
++	/* Could not free this slot. */
++	WARN_ON(1);
++}
  
- In general, you can install a probe anywhere in the kernel.
- In particular, you can probe interrupt handlers.  Known exceptions
-@@ -453,6 +558,37 @@ reason, Kprobes doesn't support return probes (or kprobes or jprobes)
- on the x86_64 version of __switch_to(); the registration functions
- return -EINVAL.
- 
-+On x86/x86-64, since the Jump Optimization of Kprobes modifies instructions
-+widely, there are some limitations for optimization. To explain it,
-+we introduce some terminology. Image certain binary line which is
-+constructed by 2 byte instruction, 2byte instruction and 3byte instruction.
-+
-+        IA
-+         |
-+[-2][-1][0][1][2][3][4][5][6][7]
-+        [ins1][ins2][  ins3 ]
-+	[<-     DCR       ->]
-+	   [<- JTPR ->]
-+
-+ins1: 1st Instruction
-+ins2: 2nd Instruction
-+ins3: 3rd Instruction
-+IA:  Insertion Address
-+JTPR: Jump Target Prohibition Region
-+DCR: Detoured Code Region
-+
-+The instructions in DCR are copied to the out-of-line buffer
-+of the djprobe instance, because the bytes in JTPR are replaced by
-+a jump instruction. So, there are several limitations.
-+
-+a) The instructions in DCR must be relocatable.
-+b) The instructions in DCR must not include call instruction.
-+c) JTPR must not be targeted by any jump or call instruction.
-+d) DCR must not straddle the border betweeen functions.
-+
-+Anyway, these limitations are checked by in-kernel instruction decoder,
-+so you don't need to care about that.
-+
- 6. Probe Overhead
- 
- On a typical CPU in use in 2005, a kprobe hit takes 0.5 to 1.0
-@@ -476,6 +612,19 @@ k = 0.49 usec; j = 0.76; r = 0.80; kr = 0.82; jr = 1.07
- ppc64: POWER5 (gr), 1656 MHz (SMT disabled, 1 virtual CPU per physical CPU)
- k = 0.77 usec; j = 1.31; r = 1.26; kr = 1.45; jr = 1.99
- 
-+6.1 Optimized Probe Overhead
-+
-+Typically, an optimized kprobe hit takes 0.07 to 0.1 microseconds to
-+process. Here are sample overhead figures (in usec) for x86-64 architectures.
-+k = unoptimized kprobe, b = boosted(single-step skipped), o = optimized kprobe,
-+r = unoptimized kretprobe, rb = boosted kretprobe, ro = optimized kretprobe.
-+
-+i386: Intel(R) Xeon(R) E5410, 2.33GHz, 4656.90 bogomips
-+k = 0.80 usec; b = 0.33; o = 0.05; r = 1.10; rb = 0.61; ro = 0.33
-+
-+x86-64: Intel(R) Xeon(R) E5410, 2.33GHz, 4656.90 bogomips
-+k = 0.99 usec; b = 0.43; o = 0.06; r = 1.24; rb = 0.68; ro = 0.30
-+
- 7. TODO
- 
- a. SystemTap (http://sourceware.org/systemtap): Provides a simplified
-@@ -523,7 +672,8 @@ is also specified. Following columns show probe status. If the probe is on
- a virtual address that is no longer valid (module init sections, module
- virtual addresses that correspond to modules that've been unloaded),
- such probes are marked with [GONE]. If the probe is temporarily disabled,
--such probes are marked with [DISABLED].
-+such probes are marked with [DISABLED]. If the probe is optimized, it is
-+marked with [OPTIMIZED].
- 
- /sys/kernel/debug/kprobes/enabled: Turn kprobes ON/OFF forcibly.
- 
-@@ -533,3 +683,18 @@ registered probes will be disarmed, till such time a "1" is echoed to this
- file. Note that this knob just disarms and arms all kprobes and doesn't
- change each probe's disabling state. This means that disabled kprobes (marked
- [DISABLED]) will be not enabled if you turn ON all kprobes by this knob.
-+
-+
-+Appendix B: The kprobes sysctl interface
-+
-+/proc/sys/debug/kprobes-optimization: Turn kprobes optimization ON/OFF.
-+
-+When CONFIG_OPTPROBES=y, this sysctl interface appears and it provides a knob
-+to globally and forcibly turn the jump optimization ON or OFF. By default,
-+jump optimization is allowed(ON). By echoing "0" to this file or By setting
-+0 to "debug.kprobes_optimization" via sysctl, all optimized probes will be
-+unoptimized. And new probes registered after that will not be optimized.
-+Note that this knob *Changes* the optimized state. This means that optimized
-+probes (marked [OPTIMIZED]) will be unoptimized ([OPTIMIZED] tag will be
-+removed). And after the knob is turned on, it will be optimized again.
-+
+-	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
+-		collect_garbage_slots();
+-
++void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
++{
++	mutex_lock(&kprobe_insn_mutex);
++	__free_insn_slot(&kprobe_insn_slots, slot, dirty);
+ 	mutex_unlock(&kprobe_insn_mutex);
+ }
+ #endif
 
 
 -- 
