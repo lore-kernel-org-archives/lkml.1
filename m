@@ -1,282 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335Ab0AVSto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211Ab0AVSv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335Ab0AVSto (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 13:49:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230Ab0AVSsK
+	id S1756211Ab0AVSv6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 13:51:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756029Ab0AVSv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 13:48:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8267 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756207Ab0AVSsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 13:48:08 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v8 2/9] kprobes: Introduce generic insn_slot framework
-To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
-       Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Date: Fri, 22 Jan 2010 13:55:05 -0500
-Message-ID: <20100122185505.9022.45624.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <20100122185450.9022.87506.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20100122185450.9022.87506.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: StGIT/0.14.3
+	Fri, 22 Jan 2010 13:51:57 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:56115 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754210Ab0AVSv4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 13:51:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=quCAPaRiCV7EOV/470iZ5ReaY3VR5/uuTt+xraN1nq/s8kDe9+RcOsTxTZf/+7N9Bs
+         ibf9f2ZHahxbfz0lV6MMxQcvyQ39P6/Ko1q4bRNTx9glhuNYaxEH6bn/O3BjQSl+b+CP
+         FUFb8BbG+ffAc1LXPGpsV/wWTscqi3kXkzOEU=
+Message-ID: <4B59F501.6010607@gmail.com>
+Date: Fri, 22 Jan 2010 19:57:05 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mach-pnx4008/dma.c: clean up duplication in pnx4008_dma_split_{head,ll}_entry()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make insn_slot framework support various size slots.
-Current insn_slot just supports one-size instruction buffer slot. However,
-kprobes jump optimization needs larger size buffers.
+It appears unnecessary to duplicate these loops.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Anders Kaseorg <andersk@ksplice.com>
-Cc: Tim Abbott <tabbott@ksplice.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
+ arch/arm/mach-pnx4008/dma.c |  198 +++++++++++++++----------------------------
+ 1 files changed, 67 insertions(+), 131 deletions(-)
 
- kernel/kprobes.c |  104 ++++++++++++++++++++++++++++++++++--------------------
- 1 files changed, 65 insertions(+), 39 deletions(-)
-
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index b7df302..57a2a23 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -103,26 +103,42 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
-  * stepping on the instruction on a vmalloced/kmalloced/data page
-  * is a recipe for disaster
-  */
--#define INSNS_PER_PAGE	(PAGE_SIZE/(MAX_INSN_SIZE * sizeof(kprobe_opcode_t)))
+diff --git a/arch/arm/mach-pnx4008/dma.c b/arch/arm/mach-pnx4008/dma.c
+index 425f718..d9302d3 100644
+--- a/arch/arm/mach-pnx4008/dma.c
++++ b/arch/arm/mach-pnx4008/dma.c
+@@ -731,78 +731,46 @@ void pnx4008_dma_split_head_entry(struct pnx4008_dma_config * config,
+ 	}
+ 	if (num_entries != 0) {
+ 		struct pnx4008_dma_ll *ll = NULL;
++		struct pnx4008_dma_ll *ll_old;
++		unsigned long ll_dma_old;
+ 		config->ch_ctrl &= ~0x7ff;
+ 		config->ch_ctrl |= new_len;
+-		if (!config->is_ll) {
+-			config->is_ll = 1;
+-			while (num_entries) {
+-				if (!ll) {
+-					config->ll =
+-					    pnx4008_alloc_ll_entry(&config->
+-								   ll_dma);
+-					ll = config->ll;
+-				} else {
+-					ll->next =
+-					    pnx4008_alloc_ll_entry(&ll->
+-								   next_dma);
+-					ll = ll->next;
+-				}
 -
- struct kprobe_insn_page {
- 	struct list_head list;
- 	kprobe_opcode_t *insns;		/* Page of instruction slots */
--	char slot_used[INSNS_PER_PAGE];
- 	int nused;
- 	int ngarbage;
-+	char slot_used[];
-+};
-+
-+#define KPROBE_INSN_PAGE_SIZE(slots)			\
-+	(offsetof(struct kprobe_insn_page, slot_used) +	\
-+	 (sizeof(char) * (slots)))
-+
-+struct kprobe_insn_cache {
-+	struct list_head pages;	/* list of kprobe_insn_page */
-+	size_t insn_size;	/* size of instruction slot */
-+	int nr_garbage;
- };
- 
-+static int slots_per_page(struct kprobe_insn_cache *c)
-+{
-+	return PAGE_SIZE/(c->insn_size * sizeof(kprobe_opcode_t));
-+}
-+
- enum kprobe_slot_state {
- 	SLOT_CLEAN = 0,
- 	SLOT_DIRTY = 1,
- 	SLOT_USED = 2,
- };
- 
--static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_pages */
--static LIST_HEAD(kprobe_insn_pages);
--static int kprobe_garbage_slots;
--static int collect_garbage_slots(void);
-+static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_slots */
-+static struct kprobe_insn_cache kprobe_insn_slots = {
-+	.pages = LIST_HEAD_INIT(kprobe_insn_slots.pages),
-+	.insn_size = MAX_INSN_SIZE,
-+	.nr_garbage = 0,
-+};
-+static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c);
- 
- static int __kprobes check_safety(void)
- {
-@@ -152,32 +168,33 @@ loop_end:
-  * __get_insn_slot() - Find a slot on an executable page for an instruction.
-  * We allocate an executable page if there's no room on existing ones.
-  */
--static kprobe_opcode_t __kprobes *__get_insn_slot(void)
-+static kprobe_opcode_t __kprobes *__get_insn_slot(struct kprobe_insn_cache *c)
- {
- 	struct kprobe_insn_page *kip;
- 
-  retry:
--	list_for_each_entry(kip, &kprobe_insn_pages, list) {
--		if (kip->nused < INSNS_PER_PAGE) {
-+	list_for_each_entry(kip, &c->pages, list) {
-+		if (kip->nused < slots_per_page(c)) {
- 			int i;
--			for (i = 0; i < INSNS_PER_PAGE; i++) {
-+			for (i = 0; i < slots_per_page(c); i++) {
- 				if (kip->slot_used[i] == SLOT_CLEAN) {
- 					kip->slot_used[i] = SLOT_USED;
- 					kip->nused++;
--					return kip->insns + (i * MAX_INSN_SIZE);
-+					return kip->insns + (i * c->insn_size);
- 				}
+-				if (ctrl->si)
+-					ll->src_addr =
+-					    config->src_addr +
+-					    src_width * new_len * count;
+-				else
+-					ll->src_addr = config->src_addr;
+-				if (ctrl->di)
+-					ll->dest_addr =
+-					    config->dest_addr +
+-					    dest_width * new_len * count;
+-				else
+-					ll->dest_addr = config->dest_addr;
+-				ll->ch_ctrl = config->ch_ctrl & 0x7fffffff;
+-				ll->next_dma = 0;
+-				ll->next = NULL;
+-				num_entries--;
+-				count++;
+-			}
+-		} else {
+-			struct pnx4008_dma_ll *ll_old = config->ll;
+-			unsigned long ll_dma_old = config->ll_dma;
+-			while (num_entries) {
+-				if (!ll) {
+-					config->ll =
+-					    pnx4008_alloc_ll_entry(&config->
+-								   ll_dma);
+-					ll = config->ll;
+-				} else {
+-					ll->next =
+-					    pnx4008_alloc_ll_entry(&ll->
+-								   next_dma);
+-					ll = ll->next;
+-				}
+-
+-				if (ctrl->si)
+-					ll->src_addr =
+-					    config->src_addr +
+-					    src_width * new_len * count;
+-				else
+-					ll->src_addr = config->src_addr;
+-				if (ctrl->di)
+-					ll->dest_addr =
+-					    config->dest_addr +
+-					    dest_width * new_len * count;
+-				else
+-					ll->dest_addr = config->dest_addr;
+-				ll->ch_ctrl = config->ch_ctrl & 0x7fffffff;
+-				ll->next_dma = 0;
+-				ll->next = NULL;
+-				num_entries--;
+-				count++;
++		if (config->is_ll) {
++			ll_old = config->ll;
++			config->ll_dma;
++		}
++		while (num_entries) {
++			if (!ll) {
++				config->ll = pnx4008_alloc_ll_entry(
++						&config->ll_dma);
++				ll = config->ll;
++			} else {
++				ll->next = pnx4008_alloc_ll_entry(
++						&ll-> next_dma);
++				ll = ll->next;
  			}
--			/* Surprise!  No unused slots.  Fix kip->nused. */
--			kip->nused = INSNS_PER_PAGE;
-+			/* kip->nused is broken. Fix it. */
-+			kip->nused = slots_per_page(c);
-+			WARN_ON(1);
++
++			if (ctrl->si)
++				ll->src_addr = config->src_addr +
++					src_width * new_len * count;
++			else
++				ll->src_addr = config->src_addr;
++			if (ctrl->di)
++				ll->dest_addr = config->dest_addr +
++					dest_width * new_len * count;
++			else
++				ll->dest_addr = config->dest_addr;
++			ll->ch_ctrl = config->ch_ctrl & 0x7fffffff;
++			ll->next_dma = 0;
++			ll->next = NULL;
++			num_entries--;
++			count++;
++		}
++		if (config->is_ll) {
+ 			ll->next_dma = ll_dma_old;
+ 			ll->next = ll_old;
  		}
++		config->is_ll = 1;
+ 		/* adjust last length/tc */
+ 		ll->ch_ctrl = config->ch_ctrl & (~0x7ff);
+ 		ll->ch_ctrl |= old_len - new_len * (count - 1);
+@@ -853,75 +821,43 @@ void pnx4008_dma_split_ll_entry(struct pnx4008_dma_ll * cur_ll,
  	}
- 
- 	/* If there are any garbage slots, collect it and try again. */
--	if (kprobe_garbage_slots && collect_garbage_slots() == 0) {
-+	if (c->nr_garbage && collect_garbage_slots(c) == 0)
- 		goto retry;
--	}
--	/* All out of space.  Need to allocate a new page. Use slot 0. */
--	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
-+
-+	/* All out of space.  Need to allocate a new page. */
-+	kip = kmalloc(KPROBE_INSN_PAGE_SIZE(slots_per_page(c)), GFP_KERNEL);
- 	if (!kip)
- 		return NULL;
- 
-@@ -192,20 +209,23 @@ static kprobe_opcode_t __kprobes *__get_insn_slot(void)
- 		return NULL;
- 	}
- 	INIT_LIST_HEAD(&kip->list);
--	list_add(&kip->list, &kprobe_insn_pages);
--	memset(kip->slot_used, SLOT_CLEAN, INSNS_PER_PAGE);
-+	memset(kip->slot_used, SLOT_CLEAN, slots_per_page(c));
- 	kip->slot_used[0] = SLOT_USED;
- 	kip->nused = 1;
- 	kip->ngarbage = 0;
-+	list_add(&kip->list, &c->pages);
- 	return kip->insns;
- }
- 
-+
- kprobe_opcode_t __kprobes *get_insn_slot(void)
- {
--	kprobe_opcode_t *ret;
-+	kprobe_opcode_t *ret = NULL;
-+
- 	mutex_lock(&kprobe_insn_mutex);
--	ret = __get_insn_slot();
-+	ret = __get_insn_slot(&kprobe_insn_slots);
- 	mutex_unlock(&kprobe_insn_mutex);
-+
- 	return ret;
- }
- 
-@@ -221,7 +241,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
- 		 * so as not to have to set it up again the
- 		 * next time somebody inserts a probe.
- 		 */
--		if (!list_is_singular(&kprobe_insn_pages)) {
-+		if (!list_is_singular(&kip->list)) {
- 			list_del(&kip->list);
- 			module_free(NULL, kip->insns);
- 			kfree(kip);
-@@ -231,7 +251,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
- 	return 0;
- }
- 
--static int __kprobes collect_garbage_slots(void)
-+static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c)
- {
- 	struct kprobe_insn_page *kip, *next;
- 
-@@ -239,42 +259,48 @@ static int __kprobes collect_garbage_slots(void)
- 	if (check_safety())
- 		return -EAGAIN;
- 
--	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
-+	list_for_each_entry_safe(kip, next, &c->pages, list) {
- 		int i;
- 		if (kip->ngarbage == 0)
- 			continue;
- 		kip->ngarbage = 0;	/* we will collect all garbages */
--		for (i = 0; i < INSNS_PER_PAGE; i++) {
-+		for (i = 0; i < slots_per_page(c); i++) {
- 			if (kip->slot_used[i] == SLOT_DIRTY &&
- 			    collect_one_slot(kip, i))
- 				break;
- 		}
- 	}
--	kprobe_garbage_slots = 0;
-+	c->nr_garbage = 0;
- 	return 0;
- }
- 
--void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
-+static void __kprobes __free_insn_slot(struct kprobe_insn_cache *c,
-+				       kprobe_opcode_t *slot, int dirty)
- {
- 	struct kprobe_insn_page *kip;
- 
--	mutex_lock(&kprobe_insn_mutex);
--	list_for_each_entry(kip, &kprobe_insn_pages, list) {
--		if (kip->insns <= slot &&
--		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
--			int i = (slot - kip->insns) / MAX_INSN_SIZE;
-+	list_for_each_entry(kip, &c->pages, list) {
-+		long idx = ((long)slot - (long)kip->insns) / c->insn_size;
-+		if (idx >= 0 && idx < slots_per_page(c)) {
-+			WARN_ON(kip->slot_used[idx] != SLOT_USED);
- 			if (dirty) {
--				kip->slot_used[i] = SLOT_DIRTY;
-+				kip->slot_used[idx] = SLOT_DIRTY;
- 				kip->ngarbage++;
-+				if (++c->nr_garbage > slots_per_page(c))
-+					collect_garbage_slots(c);
- 			} else
--				collect_one_slot(kip, i);
--			break;
-+				collect_one_slot(kip, idx);
-+			return;
- 		}
- 	}
-+	/* Could not free this slot. */
-+	WARN_ON(1);
-+}
- 
--	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
--		collect_garbage_slots();
+ 	if (num_entries != 0) {
+ 		struct pnx4008_dma_ll *ll = NULL;
++		struct pnx4008_dma_ll *ll_old;
++		unsigned long ll_dma_old;
+ 		cur_ll->ch_ctrl &= ~0x7ff;
+ 		cur_ll->ch_ctrl |= new_len;
+-		if (!cur_ll->next) {
+-			while (num_entries) {
+-				if (!ll) {
+-					cur_ll->next =
+-					    pnx4008_alloc_ll_entry(&cur_ll->
+-								   next_dma);
+-					ll = cur_ll->next;
+-				} else {
+-					ll->next =
+-					    pnx4008_alloc_ll_entry(&ll->
+-								   next_dma);
+-					ll = ll->next;
+-				}
 -
-+void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
-+{
-+	mutex_lock(&kprobe_insn_mutex);
-+	__free_insn_slot(&kprobe_insn_slots, slot, dirty);
- 	mutex_unlock(&kprobe_insn_mutex);
- }
- #endif
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+-				if (ctrl->si)
+-					ll->src_addr =
+-					    cur_ll->src_addr +
+-					    src_width * new_len * count;
+-				else
+-					ll->src_addr = cur_ll->src_addr;
+-				if (ctrl->di)
+-					ll->dest_addr =
+-					    cur_ll->dest_addr +
+-					    dest_width * new_len * count;
+-				else
+-					ll->dest_addr = cur_ll->dest_addr;
+-				ll->ch_ctrl = cur_ll->ch_ctrl & 0x7fffffff;
+-				ll->next_dma = 0;
+-				ll->next = NULL;
+-				num_entries--;
+-				count++;
+-			}
+-		} else {
+-			struct pnx4008_dma_ll *ll_old = cur_ll->next;
+-			unsigned long ll_dma_old = cur_ll->next_dma;
+-			while (num_entries) {
+-				if (!ll) {
+-					cur_ll->next =
+-					    pnx4008_alloc_ll_entry(&cur_ll->
+-								   next_dma);
+-					ll = cur_ll->next;
+-				} else {
+-					ll->next =
+-					    pnx4008_alloc_ll_entry(&ll->
+-								   next_dma);
+-					ll = ll->next;
+-				}
+-
+-				if (ctrl->si)
+-					ll->src_addr =
+-					    cur_ll->src_addr +
+-					    src_width * new_len * count;
+-				else
+-					ll->src_addr = cur_ll->src_addr;
+-				if (ctrl->di)
+-					ll->dest_addr =
+-					    cur_ll->dest_addr +
+-					    dest_width * new_len * count;
+-				else
+-					ll->dest_addr = cur_ll->dest_addr;
+-				ll->ch_ctrl = cur_ll->ch_ctrl & 0x7fffffff;
+-				ll->next_dma = 0;
+-				ll->next = NULL;
+-				num_entries--;
+-				count++;
++
++		if (cur_ll->next) {
++			ll_old = cur_ll->next;
++			ll_dma_old = cur_ll->next_dma;
++		}
++		while (num_entries) {
++			if (!ll) {
++				cur_ll->next = pnx4008_alloc_ll_entry(
++						&cur_ll->next_dma);
++				ll = cur_ll->next;
++			} else {
++				ll->next = pnx4008_alloc_ll_entry(
++						&ll->next_dma);
++				ll = ll->next;
+ 			}
+ 
++			if (ctrl->si)
++				ll->src_addr = cur_ll->src_addr +
++					src_width * new_len * count;
++			else
++				ll->src_addr = cur_ll->src_addr;
++			if (ctrl->di)
++				ll->dest_addr = cur_ll->dest_addr +
++				    dest_width * new_len * count;
++			else
++				ll->dest_addr = cur_ll->dest_addr;
++			ll->ch_ctrl = cur_ll->ch_ctrl & 0x7fffffff;
++			ll->next_dma = 0;
++			ll->next = NULL;
++			num_entries--;
++			count++;
++		}
++		if (cur_ll->next) {
+ 			ll->next_dma = ll_dma_old;
+ 			ll->next = ll_old;
+ 		}
