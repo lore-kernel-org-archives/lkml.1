@@ -1,114 +1,295 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751435Ab0AVFwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751450Ab0AVGHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751435Ab0AVFwY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 00:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325Ab0AVFwX
+	id S1751450Ab0AVGHW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 01:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099Ab0AVGHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 00:52:23 -0500
-Received: from mga11.intel.com ([192.55.52.93]:11708 "EHLO mga11.intel.com"
+	Fri, 22 Jan 2010 01:07:21 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:47858 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846Ab0AVFwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 00:52:23 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,322,1262592000"; 
-   d="scan'208";a="533534828"
-Date: Fri, 22 Jan 2010 13:52:17 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Xiaotian Feng <xtfeng@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chen Liqin <liqin.chen@sunplusct.com>, Lennox Wu <lennox.wu@gmail.com>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yinghai Lu <yinghai@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       "Zheng, Shaohui" <shaohui.zheng@intel.com>
-Subject: Re: [PATCH 1/3] resources: introduce generic page_is_ram()
-Message-ID: <20100122055217.GA8358@localhost>
-References: <20100122032102.137106635@intel.com> <20100122033004.193166010@intel.com> <7b6bb4a51001212115j741e91c4p61f3f1d6e2ec1de4@mail.gmail.com> <20100122053711.GB3761@localhost> <7b6bb4a51001212150h32f62e53ga230b381ce5da126@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <7b6bb4a51001212150h32f62e53ga230b381ce5da126@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750932Ab0AVGHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 01:07:20 -0500
+Date: Fri, 22 Jan 2010 17:07:12 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for January 22
+Message-Id: <20100122170712.d310d449.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__22_Jan_2010_17_07_12_+1100_SIgKOQah7gUX=src"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 09:50:01PM -0800, Xiaotian Feng wrote:
-> On Fri, Jan 22, 2010 at 1:37 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > On Thu, Jan 21, 2010 at 10:15:50PM -0700, Xiaotian Feng wrote:
-> >> On Fri, Jan 22, 2010 at 11:21 AM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >> > It's based on walk_system_ram_range(), for archs that don't have
-> >> > their own page_is_ram().
-> >> >
-> >> > The static verions in MIPS and SCORE are also made global.
-> >> >
-> >> > CC: Chen Liqin <liqin.chen@sunplusct.com>
-> >> > CC: Lennox Wu <lennox.wu@gmail.com>
-> >> > CC: Ralf Baechle <ralf@linux-mips.org>
-> >> > CC: Américo Wang <xiyou.wangcong@gmail.com>
-> >> > CC: linux-mips@linux-mips.org
-> >> > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >> > CC: Yinghai Lu <yinghai@kernel.org>
-> >> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> >> > ---
-> >> >  arch/mips/mm/init.c    |    2 +-
-> >> >  arch/score/mm/init.c   |    2 +-
-> >> >  include/linux/ioport.h |    2 ++
-> >> >  kernel/resource.c      |   11 +++++++++++
-> >> >  4 files changed, 15 insertions(+), 2 deletions(-)
-> >> >
-> >> > --- linux-mm.orig/kernel/resource.c     2010-01-22 11:20:34.000000000 +0800
-> >> > +++ linux-mm/kernel/resource.c  2010-01-22 11:20:35.000000000 +0800
-> >> > @@ -327,6 +327,17 @@ int walk_system_ram_range(unsigned long
-> >> >
-> >> >  #endif
-> >> >
-> >> > +#define PAGE_IS_RAM    24
-> >> > +static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
-> >> > +{
-> >> > +       return PAGE_IS_RAM;
-> >> > +}
-> >> > +int __attribute__((weak)) page_is_ram(unsigned long pfn)
-> >> > +{
-> >> > +       return PAGE_IS_RAM == walk_system_ram_range(pfn, 1, NULL, __is_ram);
-> >> > +}
-> >> > +#undef PAGE_IS_RAM
-> >> > +
-> >>
-> >> I'm not sure, but any build test for powerpc/mips/score?
-> >
-> > Sorry, no build tests yet:
-> >
-> >        /bin/sh: score-linux-gcc: command not found
-> >
-> > I just make the mips/score page_is_ram() non-static and assume that
-> > will make it compile.
-> >
-> >> walk_system_ram_range is defined when CONFIG_ARCH_HAS_WALK_MEMORY is not set.
-> >> Is it safe when CONFIG_ARCH_HAS_WALK_MEMORY is set for some powerpc archs?
-> >
-> > Good question. Grep shows that CONFIG_ARCH_HAS_WALK_MEMORY is only
-> > defined for powerpc, and it has its own page_is_ram() as well as
-> > walk_system_ram_range().
-> >
-> > walk_system_ram_range() must be defined somewhere because it is
-> > expected to be generic routine: exported and called from both
-> > in-kernel and out-of-tree code.
-> >
-> 
-> Yes, powerpc has its own walk_system_ram_range() and page_is_ram() ;-)
-> 
-> Would it be better if moving the weak attribute page_is_ram() into #if
-> !defined(CONFIG_ARCH_HAS_WALK_MEMORY) ?
+--Signature=_Fri__22_Jan_2010_17_07_12_+1100_SIgKOQah7gUX=src
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Only several archs defined page_is_ram(), so that would not be feasible
-for doing a _generic_ page_is_ram().
+Hi all,
 
-Thanks,
-Fengguang
+Changes since 20100121:
+
+The spi tree lost its build failure but gained another so I used the
+version from next-20100120.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 156 trees (counting Linus' and 23 trees of patches pending
+for Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/for-linus
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging mtd-current/master
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in arch/arm/Makefile
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging samsung/next-samsung
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+CONFLICT (content): Merge conflict in Documentation/ioctl/ioctl-number.txt
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging logfs/master
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+CONFLICT (add/add): Merge conflict in fs/9p/cache.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+CONFLICT (content): Merge conflict in fs/gfs2/ops_inode.c
+Applying: logfs: fixup for write_inode API change
+Merging pci/linux-next
+[master b7354d2] Revert "PCI/ISDN: push deprecated pci_find_device() functi=
+on to last user (isdn)"
+Merging hid/for-next
+Merging quilt/i2c
+Merging bjdooks-i2c/next-i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (add/add): Merge conflict in drivers/media/dvb/mantis/mantis_input=
+.c
+Merging kbuild/for-next
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging tmio-mmc/linux-next
+CONFLICT (content): Merge conflict in drivers/mfd/asic3.c
+CONFLICT (content): Merge conflict in drivers/mfd/t7l66xb.c
+CONFLICT (content): Merge conflict in drivers/mfd/tc6387xb.c
+CONFLICT (content): Merge conflict in drivers/mfd/tc6393xb.c
+CONFLICT (add/add): Merge conflict in drivers/mfd/tmio_core.c
+CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.c
+CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.h
+CONFLICT (content): Merge conflict in include/linux/mfd/tmio.h
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/wm8350-irq.c
+CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.c
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_fsnotify.c
+CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_user.c
+CONFLICT (content): Merge conflict in include/linux/fs.h
+CONFLICT (content): Merge conflict in include/linux/fsnotify.h
+Merging irda/for-next
+CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in include/linux/Kbuild
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Merging devicetree/next-devicetree
+Merging spi/next-spi
+$ git reset --hard HEAD^
+Merging refs/next/20100120/spi
+Merging limits/writable_limits
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+Merging omap_dss2/for-next
+Merging tip/auto-latest
+Merging edac-amd/for-next
+Merging oprofile/for-next
+Merging percpu/for-next
+Applying: slab: update for percpu API change
+Merging workqueues/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging sysctl/master
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/base/memory.c
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+CONFLICT (delete/modify): drivers/staging/sm7xx/smtc2d.c deleted in quilt/s=
+taging and modified in HEAD. Version HEAD of drivers/staging/sm7xx/smtc2d.c=
+ left in tree.
+CONFLICT (delete/modify): drivers/staging/sm7xx/smtc2d.h deleted in quilt/s=
+taging and modified in HEAD. Version HEAD of drivers/staging/sm7xx/smtc2d.h=
+ left in tree.
+$ git rm -f drivers/staging/sm7xx/smtc2d.c drivers/staging/sm7xx/smtc2d.h
+Merging scsi-post-merge/master
+
+--Signature=_Fri__22_Jan_2010_17_07_12_+1100_SIgKOQah7gUX=src
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktZQJAACgkQjjKRsyhoI8wDSQCcDIGY1jcohBXVJBEG5ixoMdW0
+sZgAnjSotWWjKFt7aFzE158TQib78N2I
+=OV8G
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__22_Jan_2010_17_07_12_+1100_SIgKOQah7gUX=src--
