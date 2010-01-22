@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724Ab0AVJ1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741Ab0AVJ1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753724Ab0AVJ1R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517Ab0AVJ0B
+	id S1753741Ab0AVJ1o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727Ab0AVJ1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:26:01 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53984 "EHLO
+	Fri, 22 Jan 2010 04:27:43 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53997 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753481Ab0AVJZ5 (ORCPT
+	with ESMTP id S1753509Ab0AVJ0A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 04:25:57 -0500
+	Fri, 22 Jan 2010 04:26:00 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 22 Jan 2010 01:24:42 -0800
+Date: Fri, 22 Jan 2010 01:24:45 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 33/38] sparseirq: use radix_tree instead of ptrs array
+Subject: [PATCH 36/38] x86: according to nr_cpu_ids to decide if need to leave
+ logical flat
 In-reply-to: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -25,128 +26,120 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264152287-13866-34-git-send-email-yinghai@kernel.org>
+Message-id: <1264152287-13866-37-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use radix_tree irq_desc_tree instead of irq_desc_ptrs.
+should use nr_cpu_ids instead of num_processor, in case we have hotplug cpus.
 
--v2: according to Eric and cyrill to use radix_tree_lookup_slot and radix_tree_replace_slot
+if current only have 8 cpus is up, but if we will have more cpus that
+will be hot added later, we should use physical flat at first.
+
+nr_cpu_ids is the total cpus that could be supported.
+
+-v2: per linus, chenage default_setup_apic_routing to _init, and call it for uni_processor
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- kernel/irq/handle.c |   49 +++++++++++++++++++++++++------------------------
- 1 files changed, 25 insertions(+), 24 deletions(-)
+ arch/x86/kernel/apic/apic.c     |    2 --
+ arch/x86/kernel/apic/probe_32.c |   20 ++++++++++++++++++--
+ arch/x86/kernel/apic/probe_64.c |    6 +++++-
+ arch/x86/kernel/smpboot.c       |    2 --
+ 4 files changed, 23 insertions(+), 7 deletions(-)
 
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index 266f798..76d5a67 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -19,6 +19,7 @@
- #include <linux/kernel_stat.h>
- #include <linux/rculist.h>
- #include <linux/hash.h>
-+#include <linux/radix-tree.h>
- #include <trace/events/irq.h>
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 3987e44..3f2bfb1 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -1641,9 +1641,7 @@ int __init APIC_init_uniprocessor(void)
+ #endif
  
- #include "internals.h"
-@@ -127,7 +128,26 @@ static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
-  */
- DEFINE_RAW_SPINLOCK(sparse_irq_lock);
+ 	enable_IR_x2apic();
+-#ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+-#endif
  
--static struct irq_desc **irq_desc_ptrs __read_mostly;
-+static RADIX_TREE(irq_desc_tree, GFP_ATOMIC);
-+
-+static void set_irq_desc(unsigned int irq, struct irq_desc *desc)
-+{
-+	radix_tree_insert(&irq_desc_tree, irq, desc);
-+}
-+
-+struct irq_desc *irq_to_desc(unsigned int irq)
-+{
-+	return radix_tree_lookup(&irq_desc_tree, irq);
-+}
-+
-+void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
-+{
-+	void **ptr;
-+
-+	ptr = radix_tree_lookup_slot(&irq_desc_tree, irq);
-+	if (ptr)
-+		radix_tree_replace_slot(ptr, desc);
-+}
+ 	verify_local_APIC();
+ 	connect_bsp_APIC();
+diff --git a/arch/x86/kernel/apic/probe_32.c b/arch/x86/kernel/apic/probe_32.c
+index 1a6559f..d657558 100644
+--- a/arch/x86/kernel/apic/probe_32.c
++++ b/arch/x86/kernel/apic/probe_32.c
+@@ -52,7 +52,7 @@ static int __init print_ipi_mode(void)
+ }
+ late_initcall(print_ipi_mode);
  
- static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
- 	[0 ... NR_IRQS_LEGACY-1] = {
-@@ -159,9 +179,6 @@ int __init early_irq_init(void)
- 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
- 	node = first_online_node;
+-void default_setup_apic_routing(void)
++static void local_default_setup_apic_routing(void)
+ {
+ #ifdef CONFIG_X86_IO_APIC
+ 	printk(KERN_INFO
+@@ -103,7 +103,7 @@ struct apic apic_default = {
+ 	.init_apic_ldr			= default_init_apic_ldr,
  
--	/* allocate irq_desc_ptrs array based on nr_irqs */
--	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
--
- 	/* allocate based on nr_cpu_ids */
- 	kstat_irqs_legacy = kzalloc_node(NR_IRQS_LEGACY * nr_cpu_ids *
- 					  sizeof(int), GFP_NOWAIT, node);
-@@ -175,28 +192,12 @@ int __init early_irq_init(void)
- 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
- 		alloc_desc_masks(&desc[i], node, true);
- 		init_desc_masks(&desc[i]);
--		irq_desc_ptrs[i] = desc + i;
-+		set_irq_desc(i, &desc[i]);
- 	}
- 
--	for (i = legacy_count; i < nr_irqs; i++)
--		irq_desc_ptrs[i] = NULL;
--
- 	return arch_early_irq_init();
+ 	.ioapic_phys_id_map		= default_ioapic_phys_id_map,
+-	.setup_apic_routing		= default_setup_apic_routing,
++	.setup_apic_routing		= local_default_setup_apic_routing,
+ 	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= default_apicid_to_node,
+ 	.cpu_to_logical_apicid		= default_cpu_to_logical_apicid,
+@@ -212,6 +212,22 @@ void __init generic_bigsmp_probe(void)
+ #endif
  }
  
--struct irq_desc *irq_to_desc(unsigned int irq)
--{
--	if (irq_desc_ptrs && irq < nr_irqs)
--		return irq_desc_ptrs[irq];
--
--	return NULL;
--}
--
--void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
--{
--	irq_desc_ptrs[irq] = desc;
--}
--
- struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
++void __init default_setup_apic_routing(void)
++{
++#ifdef CONFIG_X86_BIGSMP
++	/*
++	 * make sure we go to bigsmp according to real nr_cpu_ids
++	 */
++	if (!cmdline_apic && apic == &apic_default) {
++		if (nr_cpu_ids > 8) {
++			apic = &apic_bigsmp;
++			printk(KERN_INFO "Overriding APIC driver with %s\n",
++			       apic->name);
++		}
++	}
++#endif
++}
++
+ void __init generic_apic_probe(void)
  {
- 	struct irq_desc *desc;
-@@ -208,14 +209,14 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
- 		return NULL;
+ 	if (!cmdline_apic) {
+diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
+index 450fe20..7dce6f9 100644
+--- a/arch/x86/kernel/apic/probe_64.c
++++ b/arch/x86/kernel/apic/probe_64.c
+@@ -67,7 +67,11 @@ void __init default_setup_apic_routing(void)
  	}
+ #endif
  
--	desc = irq_desc_ptrs[irq];
-+	desc = irq_to_desc(irq);
- 	if (desc)
- 		return desc;
+-	if (apic == &apic_flat && num_processors > 8)
++	/*
++	 * not just num_processors, we could have hotplug cpus plugged
++	 * in later
++	 */
++	if (apic == &apic_flat && nr_cpu_ids > 8)
+ 			apic = &apic_physflat;
  
- 	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
+ 	printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index eff2fe1..96f5f40 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1083,9 +1083,7 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 	set_cpu_sibling_map(0);
  
- 	/* We have to check it to avoid races with another CPU */
--	desc = irq_desc_ptrs[irq];
-+	desc = irq_to_desc(irq);
- 	if (desc)
- 		goto out_unlock;
+ 	enable_IR_x2apic();
+-#ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+-#endif
  
-@@ -228,7 +229,7 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
- 	}
- 	init_one_irq_desc(irq, desc, node);
- 
--	irq_desc_ptrs[irq] = desc;
-+	set_irq_desc(irq, desc);
- 
- out_unlock:
- 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
+ 	if (smp_sanity_check(max_cpus) < 0) {
+ 		printk(KERN_INFO "SMP disabled\n");
 -- 
 1.6.4.2
 
