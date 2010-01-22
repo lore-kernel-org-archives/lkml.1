@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775Ab0AVCAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788Ab0AVCEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775Ab0AVCAT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 21:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640Ab0AVCAR
+	id S1755788Ab0AVCEO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 21:04:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630Ab0AVCEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 21:00:17 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:58922 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752517Ab0AVCAQ convert rfc822-to-8bit (ORCPT
+	Thu, 21 Jan 2010 21:04:09 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:62082 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754818Ab0AVCEI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 21:00:16 -0500
+	Thu, 21 Jan 2010 21:04:08 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=S1wcvtO6vOV9Hnda23GxOvLgUWwwRAerFr43cntiUXYo840XTuhhTdkVXNpsXcxtZr
-         M22V4ogo50ESCYVTq43Aihj9PpPEc55pLbE8TxKbUPpnwSUiWZCM9EnyZh/BgxufEhqd
-         +dqngKceVe9lBDIvKU1JxwHFIv1dr2b0b7LJ0=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UFYIi411AQbZqrZRYex2Z/vqXo2WuYmywXNDRy6VyVh3Yc0FrhrCL7Kxmh5tYyBjI5
+         gsC1FApumeJ8bqpPuEcVMLgPf2hTeSTGz+GNfBvpJwxv79vNu+dy3yOJaxO8i6R7xjc2
+         P1Ly7tcnWiCBUdY3BWPfa1I1/38d+8Ostv+tc=
+Date: Fri, 22 Jan 2010 03:04:05 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [RFC PATCH 02/10] ftrace: Ensure tracing has really stopped
+	before leaving unregister_ftrace_graph
+Message-ID: <20100122020403.GA8140@nowhere>
+References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com> <1264122982-1553-3-git-send-regression-fweisbec@gmail.com> <1264125108.31321.304.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-In-Reply-To: <22d9728d1001211705i4cf90df2ha730061ea01972b6@mail.gmail.com>
-References: <22d9728d1001211705i4cf90df2ha730061ea01972b6@mail.gmail.com>
-Date: Fri, 22 Jan 2010 10:00:15 +0800
-Message-ID: <5c7d4fb81001211800k2bf2025bqea45a78292da2199@mail.gmail.com>
-Subject: Re: Hi all, bug or design flaw?
-From: Shu Wu <superwushu@gmail.com>
-To: Stepan Chatalyan <kehcho@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264125108.31321.304.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey, buddy, this is not the right place to raise a user-space
-question. But as for your question, you'd better to learn what the "."
-means. "#!/bin/bash" is used to indicate in shell when executed, while
-to be just a comment in the latter.
+On Thu, Jan 21, 2010 at 08:51:48PM -0500, Steven Rostedt wrote:
+> On Fri, 2010-01-22 at 02:16 +0100, Frederic Weisbecker wrote:
+> > When we run under dynamic tracing, we know that after calling
+> > unregister_ftrace_graph(), tracing has really stopped because of
+> > the hot patching and use of stop_machine().
+> 
+> This is incorrect. Even after unregister_ftrace_graph() with
+> stop_machine(), we still have no guarantee that a call back is not being
+> called. This is the reason I use sub tracing instead of NULLs. The call
+> to the trace function could have been loaded in a register and then
+> preempted. Even after stop_machine() that trace function can be called.
+> This is also the reason that I never let modules add hooks to the
+> function tracer (although I can easily make a wrapper to do so).
 
-2010/1/22 Stepan Chatalyan <kehcho@gmail.com>:
-> Hi there,
->
-> I'm Stepan G. Chatalyan, and i think that I discovered a bug or design
-> flaw... and I don't know that it is provide from kernel...
->
-> Let's see:
->
-> (1) I mount /tmp with noexec,nosuid,nodev options
->
-> /dev/hda6 on /tmp type ext3 (rw,noexec,nosuid,nodev,relatime)
->
-> (2) I went to 'cd /tmp'`and I created a bash script, or another script
-> (perl, python, etc)... and chmod +x createdfile
-> script cointain:
->
-> #!/bin/bash
-> echo "Probe..."
->
-> (3) I tried to execut it with "./createdfile"
-> [kehcho@kehcho] [/tmp]$ ./createdfile
-> -bash: ./createdfile: /bin/bash: bad interpreter: Permission denied
->
-> (4) I tried to execute it, but pass to bash ". /tmp/createdfile"
->
-> [kehcho@tornadowt] [/tmp]$ . /tmp/createdfile
-> Probe...
->
-> It is a kernel bug or I just report a another one?
->
-> BB
->
-> --
-> Regards
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+
+
+Ah, you are utterly right! I forgot about all that. And looks like
+nothing can easily help this.
+
+I just dream about a magic synchronize_trace().
+
+ 
+> > 
+> > But in static tracing case, we only set stub callbacks. This is
+> > not sufficient on archs that have weak memory ordering to assume
+> > the older callbacks won't be called right after we leave
+> > unregister_ftrace_graph().
+> > 
+> > Insert a read/write memory barrier in the end of
+> > unregister_ftrace_graph() so that the code that follow can safely
+> > assume tracing has really stopped. This can avoid its older tracing
+> > callbacks to perform checks about various states like ensuring
+> > needed buffers have been allocated, etc...
+> 
+> There's no guarantee, even with a smp_mb() that a trace function will
+> not be called after being unregistered.
+
+
+
+Yeah, indeed...
+
