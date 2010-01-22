@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982Ab0AVHTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752008Ab0AVHYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751982Ab0AVHTY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 02:19:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950Ab0AVHTY
+	id S1752008Ab0AVHYP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 02:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934Ab0AVHYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 02:19:24 -0500
-Received: from mail.gmx.net ([213.165.64.20]:44204 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751729Ab0AVHTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 02:19:23 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+WwKFqt+GWTDTbZfQu52KvuMJZgKuaDrKQA6Ot+G
-	CoLx18p2Jn+Oev
-Subject: Re: scheduler vs hardware? (was Re: another i7  (linux) bug?)
-From: Mike Galbraith <efault@gmx.de>
-To: Luca Zini <luca.zini@gmail.com>
-Cc: aagaande@gmail.com, rdelcueto@hotmail.com, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>
-In-Reply-To: <20100121215438.GK17684@ldl.fc.hp.com>
-References: <201001211258.23499.luca.zini@gmail.com>
-	 <20100121215438.GK17684@ldl.fc.hp.com>
-Content-Type: text/plain
-Date: Fri, 22 Jan 2010 08:19:18 +0100
-Message-Id: <1264144758.8074.22.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.66000000000000003
+	Fri, 22 Jan 2010 02:24:15 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:34921 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751943Ab0AVHYO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 02:24:14 -0500
+Date: Fri, 22 Jan 2010 12:54:02 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mel Gorman <mel@csn.ul.ie>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 0/7] UBP, XOL and Uprobes [ Summary of Comments
+	and actions to be taken ]
+Message-ID: <20100122072402.GA7440@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com> <20100122070232.GA2975@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100122070232.GA2975@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> if I run a cpu intensive process with the lowest priority (19
-> from man nice) I obtain much better performance that with the
-> highest priority available (-20 from man nice).
->
-> For example the same file is processed by lame in 8.7 seconds
-> at the lowest priority, and in 12 seconds at the highest
-> priority.  Before posting a bug I wold like to understand if
-> this is a problem related to the i7 mobile (my processor is a
-> i7 Q720).
+On Fri, Jan 22, 2010 at 12:32:32PM +0530, Srikar Dronamraju wrote:
+> Here is a summary of the Comments and actions that need to be taken for
+> the current uprobes patchset. Please let me know if I missed or
+> misunderstood any of your comments.  
 > 
-> As far as I tested on the same laptop series (dell studio 15),
-> with the same kernel this problem does not exists.
+> 1. Uprobes depends on trap signal.
+> 	Uprobes depends on trap signal rather than hooking to the global
+> die notifier. It was suggested that we hook to the global die notifier.
+> 
+> 	In the next version of patches, Uprobes will use the global die
+> 	notifier and look at the per-task count of the probes in use to
+> 	see if it has to be consumed.
+> 
+> 	However this would reduce the ability of uprobe handlers to
+> 	sleep. Since we are dealing with userspace, sleeping in handlers
+> 	would have been a good feature. We are looking at ways to get
+> 	around this limitation.
 
-So you only see this on the i7.  That's odd.  Can you try 33-rc5?
+We could set a TIF_ flag in the notifier to indicate a breakpoint hit
+and process it in task context before the task heads into userspace.
 
-Posting a reliable reproducer would be nice.  It'd also be nice to see
-what all is running when you see this, and where.
-
-	-Mike
-
+Ananth
