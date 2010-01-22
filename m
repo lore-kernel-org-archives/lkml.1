@@ -1,51 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329Ab0AVPLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385Ab0AVPL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329Ab0AVPLg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 10:11:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282Ab0AVPLd
+	id S1755385Ab0AVPL7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 10:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094Ab0AVPLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 10:11:33 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:53249 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754957Ab0AVPLc (ORCPT
+	Fri, 22 Jan 2010 10:11:06 -0500
+Received: from smtp.mujha-vel.cz ([81.30.225.246]:45345 "EHLO
+	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754341Ab0AVPLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 10:11:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=cCbApbpKrvahGEb2u+NDPvqaHOGhFHa6FSALiIasdwzNsw7AKrSysbE1RbikvQbOd+
-         5PhFowwWi2Fbv0dwy1P3+RsqGy5MYLpEIDhMCU6d54qGPu1p3t9FmXRpV3KlRPrq1AKC
-         7WQkGWhaLuPASFfVFM0tFyvBle6pn9CP+jV/k=
-Message-ID: <4B59C01E.90804@gmail.com>
-Date: Fri, 22 Jan 2010 16:11:26 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Antti Palosaari <crope@iki.fi>
-CC: mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, add IR support for digivox
- mini II
-References: <1263412807-23350-1-git-send-email-jslaby@suse.cz> <4B4F6BE5.2040102@iki.fi>
+	Fri, 22 Jan 2010 10:11:00 -0500
+From: Jiri Slaby <jslaby@suse.cz>
+To: crope@iki.fi
+Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
+Subject: [PATCH 1/4] media: dvb/af9015, implement eeprom hashing
+Date: Fri, 22 Jan 2010 16:10:52 +0100
+Message-Id: <1264173055-14787-1-git-send-email-jslaby@suse.cz>
+X-Mailer: git-send-email 1.6.5.7
 In-Reply-To: <4B4F6BE5.2040102@iki.fi>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+References: <4B4F6BE5.2040102@iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/14/2010 08:09 PM, Antti Palosaari wrote:
-> Device ID 15a4:9016 is reference design ID and it is used by vary many
-> devices. Also manufacturer string "Afatech" is chipset default one. This
-> leads MSI remote in question configured for many devices using default /
-> reference values which I don't like good idea. Strings and other USB
-> settings are stored to the device eeprom.
+This will be useful for matching of IR tables later.
 
-What do you think about the following patches?
+We read the eeprom anyway for dumping. Switch the dumping to
+print_hex_dump_bytes and compute hash above that by
+hash = 0;
+for (u32 VAL) in (eeprom):
+  hash *= GOLDEN_RATIO_PRIME_32
+  hash += VAL; // while preserving endinaness
 
-thanks,
+The computation is moved earlier to the flow, namely from
+af9015_af9013_frontend_attach to af9015_read_config, so that
+we can access the sum in af9015_read_config already.
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Antti Palosaari <crope@iki.fi>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: linux-media@vger.kernel.org
+---
+ drivers/media/dvb/dvb-usb/af9015.c |   65 +++++++++++++++++++++++------------
+ drivers/media/dvb/dvb-usb/af9015.h |    1 +
+ 2 files changed, 44 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/media/dvb/dvb-usb/af9015.c b/drivers/media/dvb/dvb-usb/af9015.c
+index a365c05..616b3ba 100644
+--- a/drivers/media/dvb/dvb-usb/af9015.c
++++ b/drivers/media/dvb/dvb-usb/af9015.c
+@@ -21,6 +21,8 @@
+  *
+  */
+ 
++#include <linux/hash.h>
++
+ #include "af9015.h"
+ #include "af9013.h"
+ #include "mt2060.h"
+@@ -553,26 +555,45 @@ exit:
+ 	return ret;
+ }
+ 
+-/* dump eeprom */
+-static int af9015_eeprom_dump(struct dvb_usb_device *d)
++/* hash (and dump) eeprom */
++static int af9015_eeprom_hash(struct usb_device *udev)
+ {
+-	u8 reg, val;
++	static const unsigned int eeprom_size = 256;
++	unsigned int reg;
++	int ret;
++	u8 val, *eeprom;
++	struct req_t req = {READ_I2C, AF9015_I2C_EEPROM, 0, 0, 1, 1, &val};
+ 
+-	for (reg = 0; ; reg++) {
+-		if (reg % 16 == 0) {
+-			if (reg)
+-				deb_info(KERN_CONT "\n");
+-			deb_info(KERN_DEBUG "%02x:", reg);
+-		}
+-		if (af9015_read_reg_i2c(d, AF9015_I2C_EEPROM, reg, &val) == 0)
+-			deb_info(KERN_CONT " %02x", val);
+-		else
+-			deb_info(KERN_CONT " --");
+-		if (reg == 0xff)
+-			break;
++	eeprom = kmalloc(eeprom_size, GFP_KERNEL);
++	if (eeprom == NULL)
++		return -ENOMEM;
++
++	for (reg = 0; reg < eeprom_size; reg++) {
++		req.addr = reg;
++		ret = af9015_rw_udev(udev, &req);
++		if (ret)
++			goto free;
++		eeprom[reg] = val;
+ 	}
+-	deb_info(KERN_CONT "\n");
+-	return 0;
++
++	if (dvb_usb_af9015_debug & 0x01)
++		print_hex_dump_bytes("", DUMP_PREFIX_OFFSET, eeprom,
++				eeprom_size);
++
++	BUG_ON(eeprom_size % 4);
++
++	af9015_config.eeprom_sum = 0;
++	for (reg = 0; reg < eeprom_size / sizeof(u32); reg++) {
++		af9015_config.eeprom_sum *= GOLDEN_RATIO_PRIME_32;
++		af9015_config.eeprom_sum += le32_to_cpu(((u32 *)eeprom)[reg]);
++	}
++
++	deb_info("%s: eeprom sum=%.8x\n", __func__, af9015_config.eeprom_sum);
++
++	ret = 0;
++free:
++	kfree(eeprom);
++	return ret;
+ }
+ 
+ static int af9015_download_ir_table(struct dvb_usb_device *d)
+@@ -728,6 +749,11 @@ static int af9015_read_config(struct usb_device *udev)
+ 	}
+ 	if (ret)
+ 		goto error;
++
++	ret = af9015_eeprom_hash(udev);
++	if (ret)
++		goto error;
++
+ 	deb_info("%s: IR mode:%d\n", __func__, val);
+ 	for (i = 0; i < af9015_properties_count; i++) {
+ 		if (val == AF9015_IR_MODE_DISABLED) {
+@@ -1125,11 +1151,6 @@ static int af9015_af9013_frontend_attach(struct dvb_usb_adapter *adap)
+ 
+ 		deb_info("%s: init I2C\n", __func__);
+ 		ret = af9015_i2c_init(adap->dev);
+-
+-		/* dump eeprom (debug) */
+-		ret = af9015_eeprom_dump(adap->dev);
+-		if (ret)
+-			return ret;
+ 	} else {
+ 		/* select I2C adapter */
+ 		i2c_adap = &state->i2c_adap;
+diff --git a/drivers/media/dvb/dvb-usb/af9015.h b/drivers/media/dvb/dvb-usb/af9015.h
+index 931c851..ef36b18 100644
+--- a/drivers/media/dvb/dvb-usb/af9015.h
++++ b/drivers/media/dvb/dvb-usb/af9015.h
+@@ -107,6 +107,7 @@ struct af9015_config {
+ 	u16 mt2060_if1[2];
+ 	u16 firmware_size;
+ 	u16 firmware_checksum;
++	u32 eeprom_sum;
+ 	u8  *ir_table;
+ 	u16 ir_table_size;
+ };
 -- 
-js
+1.6.5.7
+
