@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012Ab0AVEzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927Ab0AVEz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012Ab0AVEzn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 23:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002Ab0AVEzJ
+	id S1753927Ab0AVEz4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 23:55:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636Ab0AVEzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 23:55:09 -0500
-Received: from mail.perches.com ([173.55.12.10]:1353 "EHLO mail.perches.com"
+	Thu, 21 Jan 2010 23:55:01 -0500
+Received: from mail.perches.com ([173.55.12.10]:1354 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753117Ab0AVExB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753066Ab0AVExB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 21 Jan 2010 23:53:01 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
        Stephen Hemminger <shemminger@vyatta.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 19/24] drivers/block/floppy.c: convert int 1/0 to bool true/false
-Date: Thu, 21 Jan 2010 20:52:49 -0800
-Message-Id: <08d4cfe6c3fa9e61e36758b720facb00adc88251.1264133863.git.joe@perches.com>
+Subject: [PATCH 20/24] drivers/block/floppy.c: Move leading && and || to preceding line
+Date: Thu, 21 Jan 2010 20:52:50 -0800
+Message-Id: <c229618c860089d2f83426cc843d2e90276dd287.1264133863.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
 In-Reply-To: <cover.1264133863.git.joe@perches.com>
 References: <cover.1264133863.git.joe@perches.com>
@@ -25,262 +25,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Various functions use int where bool is appropriate
-lock_fdc, wait_til_done, poll_drive, user_reset_fdc
-
-Convert to bool
-
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/block/floppy.c |   60 ++++++++++++++++++++++++------------------------
- 1 files changed, 30 insertions(+), 30 deletions(-)
+ drivers/block/floppy.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index de5dc29..ab62fa8 100644
+index ab62fa8..5e3286d 100644
 --- a/drivers/block/floppy.c
 +++ b/drivers/block/floppy.c
-@@ -862,7 +862,7 @@ static void set_fdc(int drive)
+@@ -639,8 +639,8 @@ static const char *timeout_message;
+ static void is_alive(const char *message)
+ {
+ 	/* this routine checks whether the floppy driver is "alive" */
+-	if (test_bit(0, &fdc_busy) && command_status < 2
+-	    && !timer_pending(&fd_timeout)) {
++	if (test_bit(0, &fdc_busy) && command_status < 2 &&
++	    !timer_pending(&fd_timeout)) {
+ 		DPRINT("timeout handler died: %s\n", message);
+ 	}
  }
- 
- /* locks the driver */
--static int _lock_fdc(int drive, int interruptible, int line)
-+static int _lock_fdc(int drive, bool interruptible, int line)
- {
- 	if (!usage_count) {
- 		pr_err("Trying to lock fdc while usage count=0 at line %d\n",
-@@ -2021,7 +2021,7 @@ static struct cont_t intr_cont = {
- 	.done		= (done_f)empty
- };
- 
--static int wait_til_done(void (*handler)(void), int interruptible)
-+static int wait_til_done(void (*handler)(void), bool interruptible)
- {
- 	int ret;
- 
-@@ -2247,7 +2247,7 @@ static int do_format(int drive, struct format_descr *tmp_format_req)
- {
- 	int ret;
- 
--	if (lock_fdc(drive, 1))
-+	if (lock_fdc(drive, true))
- 		return -EINTR;
- 
- 	set_floppy(drive);
-@@ -2264,7 +2264,7 @@ static int do_format(int drive, struct format_descr *tmp_format_req)
- 	format_errors = 0;
- 	cont = &format_cont;
- 	errors = &format_errors;
--	ret = wait_til_done(redo_format, 1);
-+	ret = wait_til_done(redo_format, true);
- 	if (ret == -EINTR)
- 		return -EINTR;
- 	process_fd_request();
-@@ -2980,7 +2980,7 @@ static void do_fd_request(struct request_queue *q)
- 		is_alive("do fd request, old request running");
- 		return;
+@@ -1769,8 +1769,8 @@ irqreturn_t floppy_interrupt(int irq, void *dev_id)
+ 			if (do_print)
+ 				print_result("sensei", inr);
+ 			max_sensei--;
+-		} while ((ST0 & 0x83) != UNIT(current_drive) && inr == 2
+-			 && max_sensei);
++		} while ((ST0 & 0x83) != UNIT(current_drive) &&
++			 inr == 2 && max_sensei);
  	}
--	lock_fdc(MAXTIMEOUT, 0);
-+	lock_fdc(MAXTIMEOUT, false);
- 	process_fd_request();
- 	is_alive("do fd request");
- }
-@@ -2992,7 +2992,7 @@ static struct cont_t poll_cont = {
- 	.done		= generic_done
- };
- 
--static int poll_drive(int interruptible, int flag)
-+static int poll_drive(bool interruptible, int flag)
- {
- 	/* no auto-sense, just clear dcl */
- 	raw_cmd = &default_raw_cmd;
-@@ -3023,7 +3023,7 @@ static struct cont_t reset_cont = {
- 	.done		= generic_done
- };
- 
--static int user_reset_fdc(int drive, int arg, int interruptible)
-+static int user_reset_fdc(int drive, int arg, bool interruptible)
- {
- 	int ret;
- 
-@@ -3265,7 +3265,7 @@ static int raw_cmd_ioctl(int cmd, void __user *param)
- 
- 	raw_cmd = my_raw_cmd;
- 	cont = &raw_cmd_cont;
--	ret = wait_til_done(floppy_start, 1);
-+	ret = wait_til_done(floppy_start, true);
- 	debug_dcl(DP->flags, "calling disk change from raw_cmd ioctl\n");
- 
- 	if (ret != -EINTR && FDCS->reset)
-@@ -3305,7 +3305,7 @@ static inline int set_geometry(unsigned int cmd, struct floppy_struct *g,
- 		if (!capable(CAP_SYS_ADMIN))
- 			return -EPERM;
- 		mutex_lock(&open_lock);
--		if (lock_fdc(drive, 1)) {
-+		if (lock_fdc(drive, true)) {
- 			mutex_unlock(&open_lock);
- 			return -EINTR;
- 		}
-@@ -3325,12 +3325,12 @@ static inline int set_geometry(unsigned int cmd, struct floppy_struct *g,
- 	} else {
- 		int oldStretch;
- 
--		if (lock_fdc(drive, 1))
-+		if (lock_fdc(drive, true))
- 			return -EINTR;
- 		if (cmd != FDDEFPRM) {
- 			/* notice a disk change immediately, else
- 			 * we lose our settings immediately*/
--			if (poll_drive(1, FD_RAW_NEED_DISK) == -EINTR)
-+			if (poll_drive(true, FD_RAW_NEED_DISK) == -EINTR)
- 				return -EINTR;
- 		}
- 		oldStretch = g->stretch;
-@@ -3411,9 +3411,9 @@ static int get_floppy_geometry(int drive, int type, struct floppy_struct **g)
- 	if (type)
- 		*g = &floppy_type[type];
- 	else {
--		if (lock_fdc(drive, 0))
-+		if (lock_fdc(drive, false))
- 			return -EINTR;
--		if (poll_drive(0, 0) == -EINTR)
-+		if (poll_drive(false, 0) == -EINTR)
- 			return -EINTR;
- 		process_fd_request();
- 		*g = current_type[drive];
-@@ -3497,7 +3497,7 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
- 		if (UDRS->fd_ref != 1)
- 			/* somebody else has this drive open */
- 			return -EBUSY;
--		if (lock_fdc(drive, 1))
-+		if (lock_fdc(drive, true))
- 			return -EINTR;
- 
- 		/* do the actual eject. Fails on
-@@ -3509,7 +3509,7 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
- 		process_fd_request();
- 		return ret;
- 	case FDCLRPRM:
--		if (lock_fdc(drive, 1))
-+		if (lock_fdc(drive, true))
- 			return -EINTR;
- 		current_type[drive] = NULL;
- 		floppy_sizes[drive] = MAX_DISK_SIZE << 1;
-@@ -3532,9 +3532,9 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
- 		UDP->flags &= ~FTD_MSG;
- 		return 0;
- 	case FDFMTBEG:
--		if (lock_fdc(drive, 1))
-+		if (lock_fdc(drive, true))
- 			return -EINTR;
--		if (poll_drive(1, FD_RAW_NEED_DISK) == -EINTR)
-+		if (poll_drive(true, FD_RAW_NEED_DISK) == -EINTR)
- 			return -EINTR;
- 		ret = UDRS->flags;
- 		process_fd_request();
-@@ -3549,7 +3549,7 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
- 		return do_format(drive, &inparam.f);
- 	case FDFMTEND:
- 	case FDFLUSH:
--		if (lock_fdc(drive, 1))
-+		if (lock_fdc(drive, true))
- 			return -EINTR;
- 		return invalidate_drive(bdev);
- 	case FDSETEMSGTRESH:
-@@ -3572,9 +3572,9 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
- 		outparam = (const char *)UDP;
- 		break;
- 	case FDPOLLDRVSTAT:
--		if (lock_fdc(drive, 1))
-+		if (lock_fdc(drive, true))
- 			return -EINTR;
--		if (poll_drive(1, FD_RAW_NEED_DISK) == -EINTR)
-+		if (poll_drive(true, FD_RAW_NEED_DISK) == -EINTR)
- 			return -EINTR;
- 		process_fd_request();
- 		/* fall through */
-@@ -3582,7 +3582,7 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
- 		outparam = (const char *)UDRS;
- 		break;
- 	case FDRESET:
--		return user_reset_fdc(drive, (int)param, 1);
-+		return user_reset_fdc(drive, (int)param, true);
- 	case FDGETFDCSTAT:
- 		outparam = (const char *)UFDCS;
- 		break;
-@@ -3595,7 +3595,7 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
- 	case FDRAWCMD:
- 		if (type)
- 			return -EINVAL;
--		if (lock_fdc(drive, 1))
-+		if (lock_fdc(drive, true))
- 			return -EINTR;
- 		set_floppy(drive);
- 		i = raw_cmd_ioctl(cmd, (void __user *)param);
-@@ -3604,7 +3604,7 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
- 		process_fd_request();
- 		return i;
- 	case FDTWADDLE:
--		if (lock_fdc(drive, 1))
-+		if (lock_fdc(drive, true))
- 			return -EINTR;
- 		twaddle();
- 		process_fd_request();
-@@ -3803,8 +3803,8 @@ static int check_floppy_change(struct gendisk *disk)
- 		return 1;
- 
- 	if (time_after(jiffies, UDRS->last_checked + UDP->checkfreq)) {
--		lock_fdc(drive, 0);
--		poll_drive(0, 0);
-+		lock_fdc(drive, false);
-+		poll_drive(false, 0);
- 		process_fd_request();
- 	}
- 
-@@ -3887,7 +3887,7 @@ static int floppy_revalidate(struct gendisk *disk)
- 			pr_info("VFS: revalidate called on non-open device.\n");
- 			return -EFAULT;
- 		}
--		lock_fdc(drive, 0);
-+		lock_fdc(drive, false);
- 		cf = (test_bit(FD_DISK_CHANGED_BIT, &UDRS->flags) ||
- 		      test_bit(FD_VERIFY_BIT, &UDRS->flags));
- 		if (!(cf || test_bit(drive, &fake_change) || NO_GEOM)) {
-@@ -3907,7 +3907,7 @@ static int floppy_revalidate(struct gendisk *disk)
- 			res = __floppy_read_block_0(opened_bdev[drive]);
- 		} else {
- 			if (cf)
--				poll_drive(0, FD_RAW_NEED_DISK);
-+				poll_drive(false, FD_RAW_NEED_DISK);
- 			process_fd_request();
- 		}
- 	}
-@@ -4164,7 +4164,7 @@ static int floppy_resume(struct device *dev)
- 
- 	for (fdc = 0; fdc < N_FDC; fdc++)
- 		if (FDCS->address != -1)
--			user_reset_fdc(-1, FD_RESET_ALWAYS, 0);
-+			user_reset_fdc(-1, FD_RESET_ALWAYS, false);
- 
- 	return 0;
- }
-@@ -4311,7 +4311,7 @@ static int __init floppy_init(void)
- 		if (FDCS->address == -1)
- 			continue;
- 		FDCS->rawcmd = 2;
--		if (user_reset_fdc(-1, FD_RESET_ALWAYS, 0)) {
-+		if (user_reset_fdc(-1, FD_RESET_ALWAYS, false)) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
- 			floppy_release_regions(fdc);
- 			FDCS->address = -1;
-@@ -4334,7 +4334,7 @@ static int __init floppy_init(void)
- 		 * properly, so force a reset for the standard FDC clones,
- 		 * to avoid interrupt garbage.
- 		 */
--		user_reset_fdc(-1, FD_RESET_ALWAYS, 0);
-+		user_reset_fdc(-1, FD_RESET_ALWAYS, false);
- 	}
- 	fdc = 0;
- 	del_timer(&fd_timeout);
+ 	if (!handler) {
+ 		FDCS->reset = 1;
 -- 
 1.6.6.rc0.57.gad7a
 
