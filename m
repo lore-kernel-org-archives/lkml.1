@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737Ab0AVBda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752Ab0AVBeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755737Ab0AVBda (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 20:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755698Ab0AVBda
+	id S1755752Ab0AVBeQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 20:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712Ab0AVBeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 20:33:30 -0500
-Received: from mga02.intel.com ([134.134.136.20]:49850 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754676Ab0AVBd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 20:33:29 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,321,1262592000"; 
-   d="scan'208";a="589372188"
-Subject: Re: 2.6.33-rc4-git7 -- head/6104 is trying to acquire lock:
- (cpuidle_lock){+.+.+.}, at: [<c129e2ec>] show_current_governor+0x12/0x4e
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Dave Jones <davej@redhat.com>
-In-Reply-To: <20100121191812.GA1840@redhat.com>
-References: <a44ae5cd1001210950h34d57a5cq8b484ec4d3dbb48b@mail.gmail.com>
-	 <20100121191812.GA1840@redhat.com>
-Content-Type: text/plain
-Date: Thu, 21 Jan 2010 17:33:25 -0800
-Message-Id: <1264124005.16916.301.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 20:34:14 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49124 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755698Ab0AVBeN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 20:34:13 -0500
+Date: Thu, 21 Jan 2010 17:32:47 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Frank Ch. Eigler" <fche@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+In-Reply-To: <20100122012516.GE22003@redhat.com>
+Message-ID: <alpine.LFD.2.00.1001211729080.13231@localhost.localdomain>
+References: <20100120054950.GB27108@elte.hu> <20100120061551.GB6588@in.ibm.com> <20100120062834.GB12165@elte.hu> <20100120072925.GA11395@elte.hu> <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au>
+ <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org> <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> <20100122012516.GE22003@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-21 at 11:18 -0800, Dave Jones wrote:
-> On Thu, Jan 21, 2010 at 12:50:09PM -0500, Miles Lane wrote:
->  > I was scanning the first few characters of all the files in /proc and
->  > /sys.  I will attempt to determine which file(s) triggered this.
+
+
+On Thu, 21 Jan 2010, Frank Ch. Eigler wrote:
 > 
-> 
-> Dropped cpufreq-list from Cc, added cpuidle maintainers.
-> While they sound similar, they are unrelated.
+> To the extent the discussion is colored by the new features enabled
+> from this refactoring, well, there is Oleg's list which may or may not
+> have mentioned enabling systemtap's user-space probing.
 
-Thanks for reporting the problem. I am able to reproduce this locally.
-Will followup once I have some time to poke at it a bit more.
+Let's face it, system tap isn't going to be merged, so why even bring it 
+up? Every kernel developer I have _ever_ seen agrees that all the new 
+tracing is a million times superior. I'm sure there are system tap people 
+who disagree, but quite frankly, I don't see it being merged considering 
+how little the system tap people ever did for the kernel.
 
-Thanks,
-Venki
+So if things like system tap and "security models that go behind the 
+kernel by tying into utrace" are the reasons for utrace, color me utterly 
+uninterested. In fact, color me actively hostile. I think that's the worst 
+possible situation that we'd ever be in as kernel people (namely exactly 
+the "do things in kernel space by hiding behind utrace without having 
+kernel people involved")
 
-
-
+		Linus
