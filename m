@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884Ab0AVQxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529Ab0AVRBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884Ab0AVQxN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 11:53:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482Ab0AVQxM
+	id S1755529Ab0AVRBx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 12:01:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045Ab0AVRBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 11:53:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:57085 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710Ab0AVQxH (ORCPT
+	Fri, 22 Jan 2010 12:01:52 -0500
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:58251 "EHLO
+	TX2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754936Ab0AVRBv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 11:53:07 -0500
-Subject: Re: [PATCH 00/12] perf lock: New subcommand "perf lock", for
- analyzing lock statistics
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Tom Zanussi <tzanussi@gmail.com>, Steven Rostedt <srostedt@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-In-Reply-To: <1264178909.4283.1543.camel@laptop>
-References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	 <20100122164248.GA2651@redhat.com>  <1264178909.4283.1543.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 22 Jan 2010 17:52:49 +0100
-Message-ID: <1264179169.4283.1545.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jan 2010 12:01:51 -0500
+X-SpamScore: -14
+X-BigFish: VPS-14(zzab9bh1432R98dNzz1202hzz5a6ciz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KWNRAP-02-6R2-02
+X-M-MSG: 
+Date: Fri, 22 Jan 2010 18:01:37 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Thiago Farina <tfransosi@gmail.com>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH] lib/dma-debug.c: mark file-local struct symbol static.
+Message-ID: <20100122170137.GK8665@amd.com>
+References: <d9a890882c693c1e1d046e034fb8cfb130eafe31.1263858860.git.tfransosi@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <d9a890882c693c1e1d046e034fb8cfb130eafe31.1263858860.git.tfransosi@gmail.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 22 Jan 2010 17:01:37.0967 (UTC) FILETIME=[8F8A3BF0:01CA9B84]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-22 at 17:48 +0100, Peter Zijlstra wrote:
-> On Fri, 2010-01-22 at 11:42 -0500, Jason Baron wrote:
-> > On Fri, Jan 22, 2010 at 10:39:01PM +0900, Hitoshi Mitake wrote:
-> > > Adding new subcommand "perf lock" to perf.
-> > > 
-> > 
-> > looks like a really intresting patch! Does this patch mean that we can
-> > potentially remove CONFIG_LOCK_STAT, now that the functionality is
-> > available via 'perf'? Another desire for me has been to able to run
-> > lockstat on production box. This has not been possible before without
-> > incurring the performance penalty of lockdep. however, with 'perf' tools
-> > ability to be turned on an off, perhaps there is (or we can build) a
-> > mode for lockdep that is lower overhead for this usecase?
+On Mon, Jan 18, 2010 at 06:57:33PM -0500, Thiago Farina wrote:
+> warning: symbol 'filter_fops' was not declared. Should it be static?
 > 
-> boot with: prove_locking=0
+> Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+> ---
+>  lib/dma-debug.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> This patch still needs all the hooks and bits from lockdep, no way you
-> want all that in a prodction kernel.
+> diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+> index 7d2f0b3..ba8b670 100644
+> --- a/lib/dma-debug.c
+> +++ b/lib/dma-debug.c
+> @@ -587,7 +587,7 @@ out_unlock:
+>  	return count;
+>  }
+>  
+> -const struct file_operations filter_fops = {
+> +static const struct file_operations filter_fops = {
+>  	.read  = filter_read,
+>  	.write = filter_write,
+>  };
 
-Also, I suspect lockstat to still be lots faster, since it doesn't need
-to transfer gobs of data but builds the histogram in-kernel.
+Applied to dma-debug/fixes. Thanks.
 
-Having the ability to do in-kernel histrograms with perf is something
-I've thought about but not yet managed to think of a nice way of doing
-it.
+	Joerg
 
