@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653Ab0AVVpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676Ab0AVVqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653Ab0AVVpX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 16:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485Ab0AVVpW
+	id S1754676Ab0AVVqr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 16:46:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572Ab0AVVqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 16:45:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:51314 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754462Ab0AVVpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 16:45:20 -0500
-Date: Fri, 22 Jan 2010 16:44:24 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Oleg Nesterov <oleg@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100122214424.GH22003@redhat.com>
-References: <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org> <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain> <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <1264191376.4283.1590.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264191376.4283.1590.camel@laptop>
-User-Agent: Mutt/1.4.2.2i
+	Fri, 22 Jan 2010 16:46:46 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:56038 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754303Ab0AVVqq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 16:46:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=dZYgEHNkS8UoNpS/+uvSJ9722KYnZw0G1ZNe17zvP2ZznfY5V5aTU+gcQtjzlh68EJ
+         UFHG/kxlrsfNj0qeuQu2YYck492QLiVkaN5QfREWcoqIH1hfZ7h0oeKRrMBaqj8xM2B3
+         LrGmbv+Os2TUAZcU4+2L6UfkddnfkZPyv2YQ0=
+MIME-Version: 1.0
+Date: Fri, 22 Jan 2010 13:46:45 -0800
+Message-ID: <619ad6271001221346j19c9038bx8013e5b560d0c138@mail.gmail.com>
+Subject: sys_rt_sigreturn calling sys_futex?
+From: Ivan Novick <novickivan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+Hello,
 
-On Fri, Jan 22, 2010 at 09:16:16PM +0100, Peter Zijlstra wrote:
-> [...]
-> > So then there's uprobes, which is another potential utrace "killer
-> > app"
+I have a userspace app that I profiled using SystemTap.
 
-> That's bollocks, uprobes is an utter and total mis-match for utrace.
-> Probing userspace is primarily about DSOs which is files and vma's,
-> not tasks. [...]
+It says there are frequent calls to sys_futex which come from sys_rt_sigreturn.
 
-Your experience with user-space probing apparently differs from ours.
-In fact there exists plenty of interest and utility in probing given
-processes only, if for no other reason then to avoid disrupting others
-running on the machine.
+It is true, that my app has many signal handler calls due to
+frequently set timers in the code.
 
-Nearly always, it is better to build a multiprocess probing widget
-from multiply-applied single-process ones, rather than to build
-single-process probing from grossly-filtered systemwide/VMA ones.
-(If the lower level infrastructure provides both options, groovy.)
+I had a look at the source for my kernel: Suse: linux-2.6.27.39-0.3
+but I don't see any calls to futex from inside sys_rt_sigreturn.
 
-- FChE
+Do you know if sys_rt_sigreturn is somehow calling sys_futex?
+
+And if so, does this imply that ultra-frequent signal handling can
+create a bottleneck between many processes in the sys_rt_sigreturn
+system call trying to access a futex?
+
+Thank you and regards,
+Ivan Novick
