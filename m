@@ -1,368 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259Ab0AVPLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329Ab0AVPLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259Ab0AVPLU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 10:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117Ab0AVPLH
+	id S1755329Ab0AVPLg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 10:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282Ab0AVPLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 10:11:07 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:45353 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681Ab0AVPLA (ORCPT
+	Fri, 22 Jan 2010 10:11:33 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:53249 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754957Ab0AVPLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 10:11:00 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: crope@iki.fi
-Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
-Subject: [PATCH 2/4] media: dvb/af9015, factor out remote setting
-Date: Fri, 22 Jan 2010 16:10:53 +0100
-Message-Id: <1264173055-14787-2-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.5.7
+	Fri, 22 Jan 2010 10:11:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=cCbApbpKrvahGEb2u+NDPvqaHOGhFHa6FSALiIasdwzNsw7AKrSysbE1RbikvQbOd+
+         5PhFowwWi2Fbv0dwy1P3+RsqGy5MYLpEIDhMCU6d54qGPu1p3t9FmXRpV3KlRPrq1AKC
+         7WQkGWhaLuPASFfVFM0tFyvBle6pn9CP+jV/k=
+Message-ID: <4B59C01E.90804@gmail.com>
+Date: Fri, 22 Jan 2010 16:11:26 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Antti Palosaari <crope@iki.fi>
+CC: mchehab@infradead.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, add IR support for digivox
+ mini II
+References: <1263412807-23350-1-git-send-email-jslaby@suse.cz> <4B4F6BE5.2040102@iki.fi>
 In-Reply-To: <4B4F6BE5.2040102@iki.fi>
-References: <4B4F6BE5.2040102@iki.fi>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is just a code shuffle without functional changes. For easier
-review of later changes, i.e. preparation.
+On 01/14/2010 08:09 PM, Antti Palosaari wrote:
+> Device ID 15a4:9016 is reference design ID and it is used by vary many
+> devices. Also manufacturer string "Afatech" is chipset default one. This
+> leads MSI remote in question configured for many devices using default /
+> reference values which I don't like good idea. Strings and other USB
+> settings are stored to the device eeprom.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Antti Palosaari <crope@iki.fi>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: linux-media@vger.kernel.org
----
- drivers/media/dvb/dvb-usb/af9015.c |  305 ++++++++++++++++++-----------------
- 1 files changed, 157 insertions(+), 148 deletions(-)
+What do you think about the following patches?
 
-diff --git a/drivers/media/dvb/dvb-usb/af9015.c b/drivers/media/dvb/dvb-usb/af9015.c
-index 616b3ba..adba90d 100644
---- a/drivers/media/dvb/dvb-usb/af9015.c
-+++ b/drivers/media/dvb/dvb-usb/af9015.c
-@@ -732,12 +732,166 @@ error:
- 	return ret;
- }
- 
-+static void af9015_set_remote_config(struct usb_device *udev,
-+		struct dvb_usb_device_properties *props)
-+{
-+	if (dvb_usb_af9015_remote) {
-+		/* load remote defined as module param */
-+		switch (dvb_usb_af9015_remote) {
-+		case AF9015_REMOTE_A_LINK_DTU_M:
-+			props->rc_key_map =
-+			  af9015_rc_keys_a_link;
-+			props->rc_key_map_size =
-+			  ARRAY_SIZE(af9015_rc_keys_a_link);
-+			af9015_config.ir_table = af9015_ir_table_a_link;
-+			af9015_config.ir_table_size =
-+			  ARRAY_SIZE(af9015_ir_table_a_link);
-+			break;
-+		case AF9015_REMOTE_MSI_DIGIVOX_MINI_II_V3:
-+			props->rc_key_map =
-+			  af9015_rc_keys_msi;
-+			props->rc_key_map_size =
-+			  ARRAY_SIZE(af9015_rc_keys_msi);
-+			af9015_config.ir_table = af9015_ir_table_msi;
-+			af9015_config.ir_table_size =
-+			  ARRAY_SIZE(af9015_ir_table_msi);
-+			break;
-+		case AF9015_REMOTE_MYGICTV_U718:
-+			props->rc_key_map =
-+			  af9015_rc_keys_mygictv;
-+			props->rc_key_map_size =
-+			  ARRAY_SIZE(af9015_rc_keys_mygictv);
-+			af9015_config.ir_table =
-+			  af9015_ir_table_mygictv;
-+			af9015_config.ir_table_size =
-+			  ARRAY_SIZE(af9015_ir_table_mygictv);
-+			break;
-+		case AF9015_REMOTE_DIGITTRADE_DVB_T:
-+			props->rc_key_map =
-+			  af9015_rc_keys_digittrade;
-+			props->rc_key_map_size =
-+			  ARRAY_SIZE(af9015_rc_keys_digittrade);
-+			af9015_config.ir_table =
-+			  af9015_ir_table_digittrade;
-+			af9015_config.ir_table_size =
-+			  ARRAY_SIZE(af9015_ir_table_digittrade);
-+			break;
-+		case AF9015_REMOTE_AVERMEDIA_KS:
-+			props->rc_key_map =
-+			  af9015_rc_keys_avermedia;
-+			props->rc_key_map_size =
-+			  ARRAY_SIZE(af9015_rc_keys_avermedia);
-+			af9015_config.ir_table =
-+			  af9015_ir_table_avermedia_ks;
-+			af9015_config.ir_table_size =
-+			  ARRAY_SIZE(af9015_ir_table_avermedia_ks);
-+			break;
-+		}
-+	} else {
-+		switch (le16_to_cpu(udev->descriptor.idVendor)) {
-+		case USB_VID_LEADTEK:
-+			props->rc_key_map =
-+			  af9015_rc_keys_leadtek;
-+			props->rc_key_map_size =
-+			  ARRAY_SIZE(af9015_rc_keys_leadtek);
-+			af9015_config.ir_table =
-+			  af9015_ir_table_leadtek;
-+			af9015_config.ir_table_size =
-+			  ARRAY_SIZE(af9015_ir_table_leadtek);
-+			break;
-+		case USB_VID_VISIONPLUS:
-+			props->rc_key_map =
-+			  af9015_rc_keys_twinhan;
-+			props->rc_key_map_size =
-+			  ARRAY_SIZE(af9015_rc_keys_twinhan);
-+			af9015_config.ir_table =
-+			  af9015_ir_table_twinhan;
-+			af9015_config.ir_table_size =
-+			  ARRAY_SIZE(af9015_ir_table_twinhan);
-+			break;
-+		case USB_VID_KWORLD_2:
-+			/* TODO: use correct rc keys */
-+			props->rc_key_map =
-+			  af9015_rc_keys_twinhan;
-+			props->rc_key_map_size =
-+			  ARRAY_SIZE(af9015_rc_keys_twinhan);
-+			af9015_config.ir_table = af9015_ir_table_kworld;
-+			af9015_config.ir_table_size =
-+			  ARRAY_SIZE(af9015_ir_table_kworld);
-+			break;
-+		/* Check USB manufacturer and product strings and try
-+		   to determine correct remote in case of chip vendor
-+		   reference IDs are used. */
-+		case USB_VID_AFATECH:
-+		{
-+			char manufacturer[10];
-+			memset(manufacturer, 0, sizeof(manufacturer));
-+			usb_string(udev, udev->descriptor.iManufacturer,
-+				manufacturer, sizeof(manufacturer));
-+			if (!strcmp("Geniatech", manufacturer)) {
-+				/* iManufacturer 1 Geniatech
-+				   iProduct      2 AF9015 */
-+				props->rc_key_map =
-+				  af9015_rc_keys_mygictv;
-+				props->rc_key_map_size =
-+				  ARRAY_SIZE(af9015_rc_keys_mygictv);
-+				af9015_config.ir_table =
-+				  af9015_ir_table_mygictv;
-+				af9015_config.ir_table_size =
-+				  ARRAY_SIZE(af9015_ir_table_mygictv);
-+			} else if (!strcmp("MSI", manufacturer)) {
-+				/* iManufacturer 1 MSI
-+				   iProduct      2 MSI K-VOX */
-+				props->rc_key_map =
-+				  af9015_rc_keys_msi;
-+				props->rc_key_map_size =
-+				  ARRAY_SIZE(af9015_rc_keys_msi);
-+				af9015_config.ir_table =
-+				  af9015_ir_table_msi;
-+				af9015_config.ir_table_size =
-+				  ARRAY_SIZE(af9015_ir_table_msi);
-+			} else if (udev->descriptor.idProduct ==
-+				cpu_to_le16(USB_PID_TREKSTOR_DVBT)) {
-+				props->rc_key_map =
-+				  af9015_rc_keys_trekstor;
-+				props->rc_key_map_size =
-+				  ARRAY_SIZE(af9015_rc_keys_trekstor);
-+				af9015_config.ir_table =
-+				  af9015_ir_table_trekstor;
-+				af9015_config.ir_table_size =
-+				  ARRAY_SIZE(af9015_ir_table_trekstor);
-+			}
-+			break;
-+		}
-+		case USB_VID_AVERMEDIA:
-+			props->rc_key_map =
-+			  af9015_rc_keys_avermedia;
-+			props->rc_key_map_size =
-+			  ARRAY_SIZE(af9015_rc_keys_avermedia);
-+			af9015_config.ir_table =
-+			  af9015_ir_table_avermedia;
-+			af9015_config.ir_table_size =
-+			  ARRAY_SIZE(af9015_ir_table_avermedia);
-+			break;
-+		case USB_VID_MSI_2:
-+			props->rc_key_map =
-+			  af9015_rc_keys_msi_digivox_iii;
-+			props->rc_key_map_size =
-+			  ARRAY_SIZE(af9015_rc_keys_msi_digivox_iii);
-+			af9015_config.ir_table =
-+			  af9015_ir_table_msi_digivox_iii;
-+			af9015_config.ir_table_size =
-+			  ARRAY_SIZE(af9015_ir_table_msi_digivox_iii);
-+			break;
-+		}
-+	}
-+}
-+
- static int af9015_read_config(struct usb_device *udev)
- {
- 	int ret;
- 	u8 val, i, offset = 0;
- 	struct req_t req = {READ_I2C, AF9015_I2C_EEPROM, 0, 0, 1, 1, &val};
--	char manufacturer[10];
- 
- 	/* IR remote controller */
- 	req.addr = AF9015_EEPROM_IR_MODE;
-@@ -759,153 +913,8 @@ static int af9015_read_config(struct usb_device *udev)
- 		if (val == AF9015_IR_MODE_DISABLED) {
- 			af9015_properties[i].rc_key_map = NULL;
- 			af9015_properties[i].rc_key_map_size  = 0;
--		} else if (dvb_usb_af9015_remote) {
--			/* load remote defined as module param */
--			switch (dvb_usb_af9015_remote) {
--			case AF9015_REMOTE_A_LINK_DTU_M:
--				af9015_properties[i].rc_key_map =
--				  af9015_rc_keys_a_link;
--				af9015_properties[i].rc_key_map_size =
--				  ARRAY_SIZE(af9015_rc_keys_a_link);
--				af9015_config.ir_table = af9015_ir_table_a_link;
--				af9015_config.ir_table_size =
--				  ARRAY_SIZE(af9015_ir_table_a_link);
--				break;
--			case AF9015_REMOTE_MSI_DIGIVOX_MINI_II_V3:
--				af9015_properties[i].rc_key_map =
--				  af9015_rc_keys_msi;
--				af9015_properties[i].rc_key_map_size =
--				  ARRAY_SIZE(af9015_rc_keys_msi);
--				af9015_config.ir_table = af9015_ir_table_msi;
--				af9015_config.ir_table_size =
--				  ARRAY_SIZE(af9015_ir_table_msi);
--				break;
--			case AF9015_REMOTE_MYGICTV_U718:
--				af9015_properties[i].rc_key_map =
--				  af9015_rc_keys_mygictv;
--				af9015_properties[i].rc_key_map_size =
--				  ARRAY_SIZE(af9015_rc_keys_mygictv);
--				af9015_config.ir_table =
--				  af9015_ir_table_mygictv;
--				af9015_config.ir_table_size =
--				  ARRAY_SIZE(af9015_ir_table_mygictv);
--				break;
--			case AF9015_REMOTE_DIGITTRADE_DVB_T:
--				af9015_properties[i].rc_key_map =
--				  af9015_rc_keys_digittrade;
--				af9015_properties[i].rc_key_map_size =
--				  ARRAY_SIZE(af9015_rc_keys_digittrade);
--				af9015_config.ir_table =
--				  af9015_ir_table_digittrade;
--				af9015_config.ir_table_size =
--				  ARRAY_SIZE(af9015_ir_table_digittrade);
--				break;
--			case AF9015_REMOTE_AVERMEDIA_KS:
--				af9015_properties[i].rc_key_map =
--				  af9015_rc_keys_avermedia;
--				af9015_properties[i].rc_key_map_size =
--				  ARRAY_SIZE(af9015_rc_keys_avermedia);
--				af9015_config.ir_table =
--				  af9015_ir_table_avermedia_ks;
--				af9015_config.ir_table_size =
--				  ARRAY_SIZE(af9015_ir_table_avermedia_ks);
--				break;
--			}
--		} else {
--			switch (le16_to_cpu(udev->descriptor.idVendor)) {
--			case USB_VID_LEADTEK:
--				af9015_properties[i].rc_key_map =
--				  af9015_rc_keys_leadtek;
--				af9015_properties[i].rc_key_map_size =
--				  ARRAY_SIZE(af9015_rc_keys_leadtek);
--				af9015_config.ir_table =
--				  af9015_ir_table_leadtek;
--				af9015_config.ir_table_size =
--				  ARRAY_SIZE(af9015_ir_table_leadtek);
--				break;
--			case USB_VID_VISIONPLUS:
--				af9015_properties[i].rc_key_map =
--				  af9015_rc_keys_twinhan;
--				af9015_properties[i].rc_key_map_size =
--				  ARRAY_SIZE(af9015_rc_keys_twinhan);
--				af9015_config.ir_table =
--				  af9015_ir_table_twinhan;
--				af9015_config.ir_table_size =
--				  ARRAY_SIZE(af9015_ir_table_twinhan);
--				break;
--			case USB_VID_KWORLD_2:
--				/* TODO: use correct rc keys */
--				af9015_properties[i].rc_key_map =
--				  af9015_rc_keys_twinhan;
--				af9015_properties[i].rc_key_map_size =
--				  ARRAY_SIZE(af9015_rc_keys_twinhan);
--				af9015_config.ir_table = af9015_ir_table_kworld;
--				af9015_config.ir_table_size =
--				  ARRAY_SIZE(af9015_ir_table_kworld);
--				break;
--			/* Check USB manufacturer and product strings and try
--			   to determine correct remote in case of chip vendor
--			   reference IDs are used. */
--			case USB_VID_AFATECH:
--				memset(manufacturer, 0, sizeof(manufacturer));
--				usb_string(udev, udev->descriptor.iManufacturer,
--					manufacturer, sizeof(manufacturer));
--				if (!strcmp("Geniatech", manufacturer)) {
--					/* iManufacturer 1 Geniatech
--					   iProduct      2 AF9015 */
--					af9015_properties[i].rc_key_map =
--					  af9015_rc_keys_mygictv;
--					af9015_properties[i].rc_key_map_size =
--					  ARRAY_SIZE(af9015_rc_keys_mygictv);
--					af9015_config.ir_table =
--					  af9015_ir_table_mygictv;
--					af9015_config.ir_table_size =
--					  ARRAY_SIZE(af9015_ir_table_mygictv);
--				} else if (!strcmp("MSI", manufacturer)) {
--					/* iManufacturer 1 MSI
--					   iProduct      2 MSI K-VOX */
--					af9015_properties[i].rc_key_map =
--					  af9015_rc_keys_msi;
--					af9015_properties[i].rc_key_map_size =
--					  ARRAY_SIZE(af9015_rc_keys_msi);
--					af9015_config.ir_table =
--					  af9015_ir_table_msi;
--					af9015_config.ir_table_size =
--					  ARRAY_SIZE(af9015_ir_table_msi);
--				} else if (udev->descriptor.idProduct ==
--					cpu_to_le16(USB_PID_TREKSTOR_DVBT)) {
--					af9015_properties[i].rc_key_map =
--					  af9015_rc_keys_trekstor;
--					af9015_properties[i].rc_key_map_size =
--					  ARRAY_SIZE(af9015_rc_keys_trekstor);
--					af9015_config.ir_table =
--					  af9015_ir_table_trekstor;
--					af9015_config.ir_table_size =
--					  ARRAY_SIZE(af9015_ir_table_trekstor);
--				}
--				break;
--			case USB_VID_AVERMEDIA:
--				af9015_properties[i].rc_key_map =
--				  af9015_rc_keys_avermedia;
--				af9015_properties[i].rc_key_map_size =
--				  ARRAY_SIZE(af9015_rc_keys_avermedia);
--				af9015_config.ir_table =
--				  af9015_ir_table_avermedia;
--				af9015_config.ir_table_size =
--				  ARRAY_SIZE(af9015_ir_table_avermedia);
--				break;
--			case USB_VID_MSI_2:
--				af9015_properties[i].rc_key_map =
--				  af9015_rc_keys_msi_digivox_iii;
--				af9015_properties[i].rc_key_map_size =
--				  ARRAY_SIZE(af9015_rc_keys_msi_digivox_iii);
--				af9015_config.ir_table =
--				  af9015_ir_table_msi_digivox_iii;
--				af9015_config.ir_table_size =
--				  ARRAY_SIZE(af9015_ir_table_msi_digivox_iii);
--				break;
--			}
--		}
-+		} else
-+			af9015_set_remote_config(udev, &af9015_properties[i]);
- 	}
- 
- 	/* TS mode - one or two receivers */
+thanks,
 -- 
-1.6.5.7
-
+js
