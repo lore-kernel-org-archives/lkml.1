@@ -1,110 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667Ab0AVNmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753595Ab0AVNnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753667Ab0AVNmK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 08:42:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861Ab0AVNl4
+	id S1753595Ab0AVNnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 08:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009Ab0AVNnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 08:41:56 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:62786 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752009Ab0AVNjV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 08:39:21 -0500
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 04/12] lockdep: Add file and line to initialize sequence of spinlock
-Date: Fri, 22 Jan 2010 22:39:05 +0900
-Message-Id: <1264167553-6510-5-git-send-email-mitake@dcl.info.waseda.ac.jp>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	Fri, 22 Jan 2010 08:43:17 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:45363 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751822Ab0AVNnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 08:43:16 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] ftrace: unify arch_syscall_addr() implementations
+Date: Fri, 22 Jan 2010 08:43:46 -0500
+Message-Id: <1264167826-20913-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-spinlock has two way to be initialized.
-1: the macros DEFINE_{SPIN,RW}LOCK for statically defined locks
-2: the functions {spin_,rw}lock_init() for locks on dynamically allocated memory
+Every arch_syscall_addr() implementation thus far is the same, so unify
+them as a default weak in common code so more arches don't have to waste
+time copying & pasting this simple function.  The Blackfin version is
+going to be exactly the same.
 
-This patch modifies these two initialize sequences
-for adding __FILE__ and __LINE__ to lockdep_map.
-
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- include/linux/spinlock.h       |    6 ++++--
- include/linux/spinlock_types.h |    6 +++++-
- lib/spinlock_debug.c           |    6 ++++--
- 3 files changed, 13 insertions(+), 5 deletions(-)
+note: only thing that needs double checking is s390 and sparc where they
+declared the sys_call_table as an array of ints.  considering this table
+is supposed to be an array of function pointers, this seems like more of
+a typo to me ...
 
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index 8608821..f8b8363 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -90,12 +90,14 @@
+also, does the arch_syscall_addr() even really need to be weak ?  or can
+we assume that everyone is going to be sane and do it the same way ...
+
+ Documentation/trace/ftrace-design.txt |    6 +++++-
+ arch/s390/kernel/ftrace.c             |   10 ----------
+ arch/sh/kernel/ftrace.c               |    9 ---------
+ arch/sparc/kernel/ftrace.c            |   11 -----------
+ arch/x86/kernel/ftrace.c              |   10 ----------
+ include/linux/ftrace.h                |    6 ++++++
+ kernel/trace/trace_syscalls.c         |    6 ++++++
+ 7 files changed, 17 insertions(+), 41 deletions(-)
+
+diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
+index 6a5a579..1a67b8c 100644
+--- a/Documentation/trace/ftrace-design.txt
++++ b/Documentation/trace/ftrace-design.txt
+@@ -240,8 +240,12 @@ You need very few things to get the syscalls tracing in an arch.
  
- #ifdef CONFIG_DEBUG_SPINLOCK
-   extern void __raw_spin_lock_init(raw_spinlock_t *lock, const char *name,
--				   struct lock_class_key *key);
-+				   struct lock_class_key *key,
-+				   const char *file, unsigned int line);
- # define raw_spin_lock_init(lock)				\
- do {								\
- 	static struct lock_class_key __key;			\
- 								\
--	__raw_spin_lock_init((lock), #lock, &__key);		\
-+	__raw_spin_lock_init((lock), #lock, &__key,		\
-+			     __FILE__, __LINE__);		\
- } while (0)
- 
- #else
-diff --git a/include/linux/spinlock_types.h b/include/linux/spinlock_types.h
-index 851b778..6f2d558 100644
---- a/include/linux/spinlock_types.h
-+++ b/include/linux/spinlock_types.h
-@@ -36,7 +36,11 @@ typedef struct raw_spinlock {
- #define SPINLOCK_OWNER_INIT	((void *)-1L)
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
--# define SPIN_DEP_MAP_INIT(lockname)	.dep_map = { .name = #lockname }
-+# define SPIN_DEP_MAP_INIT(lockname)	.dep_map = {	\
-+		.name = #lockname,			\
-+		.file = __FILE__,			\
-+		.line = __LINE__,			\
-+	}
- #else
- # define SPIN_DEP_MAP_INIT(lockname)
+ - Have a NR_syscalls variable in <asm/unistd.h> that provides the number
+   of syscalls supported by the arch.
++- Implement <asm/syscall.h>.
+ - Implement arch_syscall_addr() that resolves a syscall address from a
+-  syscall number.
++  syscall number.  For the simple arches where your syscall table is an
++  array of longs named "sys_call_table", there is a default implementation
++  in kernel/trace/trace_syscalls.c.  If your arch needs something weird,
++  then you'll have to define the function yourself.
+ - Support the TIF_SYSCALL_TRACEPOINT thread flags
+ - Put the trace_sys_enter() and trace_sys_exit() tracepoints calls from ptrace
+   in the ptrace syscalls tracing path.
+diff --git a/arch/s390/kernel/ftrace.c b/arch/s390/kernel/ftrace.c
+index 5a82bc6..9e69449 100644
+--- a/arch/s390/kernel/ftrace.c
++++ b/arch/s390/kernel/ftrace.c
+@@ -200,13 +200,3 @@ out:
+ 	return parent;
+ }
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+-
+-#ifdef CONFIG_FTRACE_SYSCALLS
+-
+-extern unsigned int sys_call_table[];
+-
+-unsigned long __init arch_syscall_addr(int nr)
+-{
+-	return (unsigned long)sys_call_table[nr];
+-}
+-#endif
+diff --git a/arch/sh/kernel/ftrace.c b/arch/sh/kernel/ftrace.c
+index a48cded..30e1319 100644
+--- a/arch/sh/kernel/ftrace.c
++++ b/arch/sh/kernel/ftrace.c
+@@ -399,12 +399,3 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 	}
+ }
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+-
+-#ifdef CONFIG_FTRACE_SYSCALLS
+-extern unsigned long *sys_call_table;
+-
+-unsigned long __init arch_syscall_addr(int nr)
+-{
+-	return (unsigned long)sys_call_table[nr];
+-}
+-#endif /* CONFIG_FTRACE_SYSCALLS */
+diff --git a/arch/sparc/kernel/ftrace.c b/arch/sparc/kernel/ftrace.c
+index 29973da..9103a56 100644
+--- a/arch/sparc/kernel/ftrace.c
++++ b/arch/sparc/kernel/ftrace.c
+@@ -91,14 +91,3 @@ int __init ftrace_dyn_arch_init(void *data)
+ 	return 0;
+ }
  #endif
-diff --git a/lib/spinlock_debug.c b/lib/spinlock_debug.c
-index 4755b98..81fa789 100644
---- a/lib/spinlock_debug.c
-+++ b/lib/spinlock_debug.c
-@@ -14,14 +14,16 @@
- #include <linux/module.h>
+-
+-#ifdef CONFIG_FTRACE_SYSCALLS
+-
+-extern unsigned int sys_call_table[];
+-
+-unsigned long __init arch_syscall_addr(int nr)
+-{
+-	return (unsigned long)sys_call_table[nr];
+-}
+-
+-#endif
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 3096892..0d93a94 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -484,13 +484,3 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr,
+ 	}
+ }
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+-
+-#ifdef CONFIG_FTRACE_SYSCALLS
+-
+-extern unsigned long *sys_call_table;
+-
+-unsigned long __init arch_syscall_addr(int nr)
+-{
+-	return (unsigned long)(&sys_call_table)[nr];
+-}
+-#endif
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 0b4f97d..1cbb36f 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -511,4 +511,10 @@ static inline void trace_hw_branch_oops(void) {}
  
- void __raw_spin_lock_init(raw_spinlock_t *lock, const char *name,
--			  struct lock_class_key *key)
-+			  struct lock_class_key *key,
-+			  const char *file, unsigned int line)
+ #endif /* CONFIG_HW_BRANCH_TRACER */
+ 
++#ifdef CONFIG_FTRACE_SYSCALLS
++
++unsigned long arch_syscall_addr(int nr);
++
++#endif /* CONFIG_FTRACE_SYSCALLS */
++
+ #endif /* _LINUX_FTRACE_H */
+diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+index 75289f3..671c670 100644
+--- a/kernel/trace/trace_syscalls.c
++++ b/kernel/trace/trace_syscalls.c
+@@ -394,6 +394,12 @@ int init_syscall_trace(struct ftrace_event_call *call)
+ 	return 0;
+ }
+ 
++unsigned long __init __weak arch_syscall_addr(int nr)
++{
++	extern const unsigned long sys_call_table[];
++	return sys_call_table[nr];
++}
++
+ int __init init_ftrace_syscalls(void)
  {
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- 	/*
- 	 * Make sure we are not reinitializing a held lock:
- 	 */
- 	debug_check_no_locks_freed((void *)lock, sizeof(*lock));
--	lockdep_init_map(&lock->dep_map, name, key, 0);
-+	__lockdep_init_map(&lock->dep_map, name, key, 0,
-+			   file, line);
- #endif
- 	lock->raw_lock = (arch_spinlock_t)__ARCH_SPIN_LOCK_UNLOCKED;
- 	lock->magic = SPINLOCK_MAGIC;
+ 	struct syscall_metadata *meta;
 -- 
-1.6.5.2
+1.6.6.1
 
