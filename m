@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610Ab0AVJ0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704Ab0AVJ0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753610Ab0AVJ0T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441Ab0AVJ0M
+	id S1753704Ab0AVJ0z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:26:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540Ab0AVJ0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:26:12 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:46249 "EHLO
+	Fri, 22 Jan 2010 04:26:04 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:46227 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753477Ab0AVJ0F (ORCPT
+	with ESMTP id S1753477Ab0AVJZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 04:26:05 -0500
+	Fri, 22 Jan 2010 04:25:57 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 22 Jan 2010 01:24:47 -0800
+Date: Fri, 22 Jan 2010 01:24:41 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 38/38] x86: use num_processors for possible cpus
+Subject: [PATCH 32/38] sparseirq: change irq_desc_ptrs to static
 In-reply-to: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -25,51 +25,88 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264152287-13866-39-git-send-email-yinghai@kernel.org>
+Message-id: <1264152287-13866-33-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-some systems that have disable cpus entries because same
-  BIOS will support 2 sockets and 4 sockets and more at
-  same time, BIOS just leave some disable entries, but
-  those system do not support cpu hotplug. we don't need
-  treat disabled_cpus as hotplug cpus.
-so we can make nr_cpu_ids smaller and save more space
-  (pcpu data allocations), and could make some systems run
-  with logical flat instead of physical flat apic mode
+add replace_irq_desc()
 
--v2: change to black list instead
--v3: just remove that, and the one use possible_cpus= directly.
+-v2: remove unneeded boundary check in replace_irq_desc
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/kernel/smpboot.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ kernel/irq/handle.c       |    7 ++++++-
+ kernel/irq/internals.h    |    6 +-----
+ kernel/irq/numa_migrate.c |    4 ++--
+ 3 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index f741c33..642440c 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1190,7 +1190,6 @@ early_param("possible_cpus", _setup_possible_cpus);
-  * - Ashok Raj
-  *
-  * Three ways to find out the number of additional hotplug CPUs:
-- * - If the BIOS specified disabled CPUs in ACPI/mptables use that.
-  * - The user can overwrite it with possible_cpus=NUM
-  * - Otherwise don't reserve additional CPUs.
-  * We do this because additional CPUs waste a lot of memory.
-@@ -1205,7 +1204,7 @@ __init void prefill_possible_map(void)
- 		num_processors = 1;
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 0e823c0..266f798 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -127,7 +127,7 @@ static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
+  */
+ DEFINE_RAW_SPINLOCK(sparse_irq_lock);
  
- 	if (setup_possible_cpus == -1)
--		possible = num_processors + disabled_cpus;
-+		possible = num_processors;
- 	else
- 		possible = setup_possible_cpus;
+-struct irq_desc **irq_desc_ptrs __read_mostly;
++static struct irq_desc **irq_desc_ptrs __read_mostly;
  
+ static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
+ 	[0 ... NR_IRQS_LEGACY-1] = {
+@@ -192,6 +192,11 @@ struct irq_desc *irq_to_desc(unsigned int irq)
+ 	return NULL;
+ }
+ 
++void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
++{
++	irq_desc_ptrs[irq] = desc;
++}
++
+ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ {
+ 	struct irq_desc *desc;
+diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
+index b2821f0..c63f3bc 100644
+--- a/kernel/irq/internals.h
++++ b/kernel/irq/internals.h
+@@ -21,11 +21,7 @@ extern void clear_kstat_irqs(struct irq_desc *desc);
+ extern raw_spinlock_t sparse_irq_lock;
+ 
+ #ifdef CONFIG_SPARSE_IRQ
+-/* irq_desc_ptrs allocated at boot time */
+-extern struct irq_desc **irq_desc_ptrs;
+-#else
+-/* irq_desc_ptrs is a fixed size array */
+-extern struct irq_desc *irq_desc_ptrs[NR_IRQS];
++void replace_irq_desc(unsigned int irq, struct irq_desc *desc);
+ #endif
+ 
+ #ifdef CONFIG_PROC_FS
+diff --git a/kernel/irq/numa_migrate.c b/kernel/irq/numa_migrate.c
+index 26bac9d..963559d 100644
+--- a/kernel/irq/numa_migrate.c
++++ b/kernel/irq/numa_migrate.c
+@@ -70,7 +70,7 @@ static struct irq_desc *__real_move_irq_desc(struct irq_desc *old_desc,
+ 	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
+ 
+ 	/* We have to check it to avoid races with another CPU */
+-	desc = irq_desc_ptrs[irq];
++	desc = irq_to_desc(irq);
+ 
+ 	if (desc && old_desc != desc)
+ 		goto out_unlock;
+@@ -90,7 +90,7 @@ static struct irq_desc *__real_move_irq_desc(struct irq_desc *old_desc,
+ 		goto out_unlock;
+ 	}
+ 
+-	irq_desc_ptrs[irq] = desc;
++	replace_irq_desc(irq, desc);
+ 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
+ 
+ 	/* free the old one */
 -- 
 1.6.4.2
 
