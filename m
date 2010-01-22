@@ -1,261 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752710Ab0AVTDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327Ab0AVTL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752710Ab0AVTDX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 14:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248Ab0AVTDW
+	id S1752327Ab0AVTL6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 14:11:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898Ab0AVTL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 14:03:22 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:42494 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752030Ab0AVTDV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 14:03:21 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArsEAOl+WUuuWOiG/2dsb2JhbACBRdgIgimCEwSDIQ
-Date: Fri, 22 Jan 2010 13:58:16 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip v8 0/9] kprobes: Kprobes jump optimization support
-Message-ID: <20100122185816.GB25202@Krystal>
-References: <20100122185450.9022.87506.stgit@dhcp-100-2-132.bos.redhat.com>
+	Fri, 22 Jan 2010 14:11:57 -0500
+Received: from fom01.emnet.dk ([89.249.14.84]:61124 "EHLO fom01.emnet.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752234Ab0AVTL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 14:11:56 -0500
+X-AuditID: 59f90e54-b7bd7ae000001243-f4-4b59f878c526
+Subject: Re: option driver freezing entire system
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Oliver Neukum <oliver@neukum.org>, smurf@smurf.noris.de,
+       LKML Mailinglist <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LRH.2.00.1001181656500.15694@twin.jikos.cz>
+References: <1263577116.27788.131.camel@localhost>
+	 <201001151855.46217.oliver@neukum.org>
+	 <1263580615.27788.134.camel@localhost>
+	 <alpine.LRH.2.00.1001181656500.15694@twin.jikos.cz>
+Content-Type: text/plain
+Date: Fri, 22 Jan 2010 20:11:49 +0100
+Message-Id: <1264187509.12168.30.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20100122185450.9022.87506.stgit@dhcp-100-2-132.bos.redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 13:55:48 up 37 days,  3:14,  5 users,  load average: 0.42, 1.52,
-	1.07
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Hi,
+On Mon, 2010-01-18 at 16:57 +0100, Jiri Kosina wrote:
+> On Fri, 15 Jan 2010, Kasper Sandberg wrote:
 > 
-> Here are the patchset of the kprobes jump optimization v8
-> (a.k.a. Djprobe). This version is just moving onto
-> 2.6.33-rc4-tip. Ingo, I assume its a good timing to
-> push this code onto -tip tree (maybe developing branch?),
-> since people can test it with perf-probe.
+> > > Please recompile your kernel with lockdep. This should improve
+> > > debugging.
+> > 
+> > It is a debian unstable .32 kernel i run now, and grepping for lockdep
+> > reveals:
+> > CONFIG_LOCKDEP_SUPPORT=y
+> > only, is there anything more i should have? (never used lockdep before)
 > 
-> I've decided to make a separated series of patches of
-> jump optimization with text_poke_smp() which is
-> 'officially' supported on Intel's processors.
-> So, this version of patches are just updated against
-> the latest tip/master, no other updates are included.
-> 
-> I know that int3-bypassing method (text_poke_fixup())
-> is currently unofficially believed as safe. But we
-> need to get more official answers from x86 vendors.
-> Moreover, we need to tweak entry_*.S for preventing
-> recursive NMI, because int3 inside NMI handler will
-> unblock NMI blocking. I'd like to push it after this
-> series of patches are merged.
-> 
-> Anyway, thanks Mathieu and Peter, for helping me to
-> implement it and organizing discussion points about
-> int3-bypass XMC!
-> 
-> These patches can be applied on the latest -tip.
-> 
-> Changes in v8:
->  - Update patches against the latest tip/master.
->  - Drop text_poke_fixup() related patches.
->  - Update benchmark results and add jprobes and kprobe(post-handler)
->    results.
-> 
-> And kprobe stress test didn't found any regressions - from kprobes,
-> under kvm/x86.
-> 
-> TODO:
->  - Support NMI-safe int3-bypassing text_poke.
+> CONFIG_PROVE_LOCKING could be helpful here. (be aware of the fact that 
+> this will make your system noticeably slower).
 
-Please have a look at:
+Sorry, i was just away a few days. I shall enable this setting tomorow
+and test, though it may take a few days for it to crash.
 
-"x86 NMI-safe INT3 and Page Fault"
-http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commit;h=90516e3c718e0502f6f2eb616fad4447645ca47d
-
-and
-
-"x86_64 page fault NMI-safe"
-http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commit;h=ad1bf11a68c35a44edd8d686a0842896f408e17c
-
-That turns this TODO into the "done" section ;)
-
-I've been using these patches in the lttng tree for 1-2 years.
-
-Thanks,
-
-Mathieu
-
-
->  - Support preemptive kernel (by stack unwinding and checking address).
-> 
-> 
-> Jump Optimized Kprobes
-> ======================
-> o Concept
->  Kprobes uses the int3 breakpoint instruction on x86 for instrumenting
-> probes into running kernel. Jump optimization allows kprobes to replace
-> breakpoint with a jump instruction for reducing probing overhead drastically.
-> 
-> o Performance
->  An optimized kprobe 5 times faster than a kprobe.
-> 
->  Optimizing probes gains its performance. Usually, a kprobe hit takes
-> 0.5 to 1.0 microseconds to process. On the other hand, a jump optimized
-> probe hit takes less than 0.1 microseconds (actual number depends on the
-> processor). Here is a sample overheads.
-> 
-> Intel(R) Xeon(R) CPU E5410  @ 2.33GHz
-> (without debugging options, with text_poke_smp patch, 2.6.33-rc4-tip+)
-> 
-> 			x86-32  x86-64
-> kprobe:			0.80us  0.99us
-> kprobe+booster:		0.33us  0.43us
-> kprobe+optimized:	0.05us  0.06us
-> kprobe(post-handler):	0.81us	1.00us
-> 
-> kretprobe :		1.10us  1.24us
-> kretprobe+booster:	0.61us  0.68us
-> kretprobe+optimized:	0.33us  0.30us
-> 
-> jprobe:			1.37us	1.67us
-> jprobe+booster:		0.80us	1.10us
-> 
-> (booster skips single-stepping, kprobe with post handler
->  isn't boosted/optimized, and jprobe isn't optimized.)
-> 
->  Note that jump optimization also consumes more memory, but not so much.
-> It just uses ~200 bytes, so, even if you use ~10,000 probes, it just 
-> consumes a few MB.
-> 
-> 
-> o Usage
->  Set CONFIG_OPTPROBES=y when building a kernel, then all *probes will be
-> optimized if possible.
-> 
->  Kprobes decodes probed function and checks whether the target instructions
-> can be optimized(replaced with a jump) safely. If it can't be, Kprobes just
-> doesn't optimize it.
-> 
-> 
-> o Optimization
->   Before preparing optimization, Kprobes inserts original(user-defined)
->  kprobe on the specified address. So, even if the kprobe is not
->  possible to be optimized, it just uses a normal kprobe.
-> 
->  - Safety check
->   First, Kprobes gets the address of probed function and checks whether the
->  optimized region, which will be replaced by a jump instruction, does NOT
->  straddle the function boundary, because if the optimized region reaches the
->  next function, its caller causes unexpected results.
->   Next, Kprobes decodes whole body of probed function and checks there is
->  NO indirect jump, NO instruction which will cause exception by checking
->  exception_tables (this will jump to fixup code and fixup code jumps into
->  same function body) and NO near jump which jumps into the optimized region
->  (except the 1st byte of jump), because if some jump instruction jumps
->  into the middle of another instruction, it causes unexpected results too.
->   Kprobes also measures the length of instructions which will be replaced
->  by a jump instruction, because a jump instruction is longer than 1 byte,
->  it may replaces multiple instructions, and it checks whether those
->  instructions can be executed out-of-line.
-> 
->  - Preparing detour code
->   Then, Kprobes prepares "detour" buffer, which contains exception emulating
->  code (push/pop registers, call handler), copied instructions(Kprobes copies
->  instructions which will be replaced by a jump, to the detour buffer), and
->  a jump which jumps back to the original execution path.
-> 
->  - Pre-optimization
->   After preparing detour code, Kprobes enqueues the kprobe to optimizing list
->  and kicks kprobe-optimizer workqueue to optimize it. To wait other optimized
->  probes, kprobe-optimizer will delay to work.
->   When the optimized-kprobe is hit before optimization, its handler
->  changes IP(instruction pointer) to copied code and exits. So, those
->  copied instructions are executed on the detour buffer.
-> 
->  - Optimization
->   Kprobe-optimizer doesn't start instruction-replacing soon, it waits
->  synchronize_sched for safety, because some processors are possible to be
->  interrupted on the middle of instruction series (2nd or Nth instruction)
->  which will be replaced by a jump instruction(*).
->  As you know, synchronize_sched() can ensure that all interruptions which
->  were executed when synchronize_sched() was called are done, only if
->  CONFIG_PREEMPT=n. So, this version supports only the kernel with
->  CONFIG_PREEMPT=n.(**)
->   After that, kprobe-optimizer calls stop_machine() to replace probed-
->  instructions with a jump instruction by using text_poke_smp().
-> 
->  - Unoptimization
->   When unregistering, disabling kprobe or being blocked by other kprobe,
->  an optimized-kprobe will be unoptimized. Before kprobe-optimizer runs,
->  the kprobe just be dequeued from the optimized list. When the optimization
->  has been done, it replaces a jump with int3 breakpoint and original code
->  by using text_poke_smp().
-> 
-> (*)Please imagine that 2nd instruction is interrupted and
-> optimizer replaces the 2nd instruction with jump *address*
-> while the interrupt handler is running. When the interrupt
-> returns to original address, there is no valid instructions
-> and it causes unexpected result.
-> 
-> (**)This optimization-safety checking may be replaced with stop-machine
-> method which ksplice is done for supporting CONFIG_PREEMPT=y kernel.
-> 
-> 
-> Thank you,
-> 
-> ---
-> 
-> Masami Hiramatsu (9):
->       kprobes: Add documents of jump optimization
->       kprobes/x86: Support kprobes jump optimization on x86
->       x86: Add text_poke_smp for SMP cross modifying code
->       kprobes/x86: Cleanup save/restore registers
->       kprobes/x86: Boost probes when reentering
->       kprobes: Jump optimization sysctl interface
->       kprobes: Introduce kprobes jump optimization
->       kprobes: Introduce generic insn_slot framework
->       kprobes/x86: Cleanup RELATIVEJUMP_INSTRUCTION to RELATIVEJUMP_OPCODE
-> 
-> 
->  Documentation/kprobes.txt          |  191 ++++++++++-
->  arch/Kconfig                       |   13 +
->  arch/x86/Kconfig                   |    1 
->  arch/x86/include/asm/alternative.h |    4 
->  arch/x86/include/asm/kprobes.h     |   31 ++
->  arch/x86/kernel/alternative.c      |   60 +++
->  arch/x86/kernel/kprobes.c          |  596 ++++++++++++++++++++++++++++------
->  include/linux/kprobes.h            |   44 +++
->  kernel/kprobes.c                   |  626 +++++++++++++++++++++++++++++++-----
->  kernel/sysctl.c                    |   12 +
->  10 files changed, 1373 insertions(+), 205 deletions(-)
-> 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
 > 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
