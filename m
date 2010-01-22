@@ -1,65 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754383Ab0AVLK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621Ab0AVLPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754383Ab0AVLK0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 06:10:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543Ab0AVLKU
+	id S1754621Ab0AVLPo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 06:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559Ab0AVLPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 06:10:20 -0500
-Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:62041 "EHLO
-	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754197Ab0AVLKS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 06:10:18 -0500
-Subject: Re: [PATCH] kernel/timekeeping:  move xtime_cache to be in the
- same cache line as the lock
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1264094359.3253.11.camel@work-vm>
-References: <1264088361.2082.45.camel@localhost>
-	 <1264094359.3253.11.camel@work-vm>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 22 Jan 2010 11:10:14 +0000
-Message-ID: <1264158614.2143.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jan 2010 06:15:43 -0500
+Received: from smtp2.cogeco.ca ([216.221.81.29]:17902 "EHLO fipsb02.cogeco.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754338Ab0AVLPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 06:15:43 -0500
+X-Greylist: delayed 570 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Jan 2010 06:15:43 EST
+X-SBRS: None
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ar5JAN4VWUtIJkfq/2dsb2JhbACBRY5DhnIHwgGEPASJPg
+X-IronPort-AV: E=Sophos;i="4.49,323,1262581200"; 
+   d="scan'208";a="84400012"
+Date: Fri, 22 Jan 2010 06:06:12 -0500
+To: myname <linux-kernel@vger.kernel.org>
+From: acoroporation@offer.com
+Reply-to: acoroporation@offer.com
+Subject: talk to meeee
+Message-ID: <4b78c163c3a549220c436a2d33d5aeac@www.pentaxcanada.ca>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.73]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-21 at 09:19 -0800, john stultz wrote:
-
-> 
-> Hrm.. I'm hoping to kill off the xtime_cache at some point soon, so I'm
-> not sure if this patch will do much for long. That said, I'm not opposed
-> to it in the mean time, and when xtime_cache does get yanked, I'd
-> appreciate similar performance review to make sure we're not regressing.
-> 
-OK, removing it will be even better. I can re-run the test anytime you
-like, just let me know if you've got a patch that needs testing. 
-
-> > ---
-> > patch against v2.6.33-rc4
-> > compiled & tested on AMD64X2 x86_64
-> > 
-> > 
-> > BTW on 64 bit timespec is a 16 byte structure so the aligned 16 doesn't
-> > do much, and on 32bit timepec is 8bytes so this just seems to spread
-> > these variables across more cache lines than necessary. Any ideas what
-> > this is here for?
-> 
-> I think it was a copy-paste from the xtime and wall_to_monotonic
-> definitions, which both have the same alignment. 
-Yes, that's what I thought. In that case I think we can remove all of
-those attribute aligned, which should be a small improvement for 32 bit
-builds.
-
-regards
-Richard
-
+I just emailed you like 3 times from my other emails wtf? Add at least one
+sheesh and check out this link http://jtty.com/1305
 
 
