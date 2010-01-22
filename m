@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751365Ab0AVPB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627Ab0AVPA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751365Ab0AVPB3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 10:01:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627Ab0AVPA7
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1753627Ab0AVPA7 (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 22 Jan 2010 10:00:59 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:39192 "EHLO
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953Ab0AVPA5
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 22 Jan 2010 10:00:57 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:39177 "EHLO
 	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753923Ab0AVPA4 (ORCPT
+	with ESMTP id S1752795Ab0AVPA4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Jan 2010 10:00:56 -0500
 From: Borislav Petkov <bp@amd64.org>
@@ -15,91 +15,32 @@ To: <mingo@elte.hu>, <hpa@zytor.com>, <tglx@linutronix.de>
 Cc: <andreas.herrmann3@amd.com>, <x86@kernel.org>,
        <linux-kernel@vger.kernel.org>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 4/5] x86, cacheinfo: Add cache index disable sysfs attrs only to L3 caches
-Date: Fri, 22 Jan 2010 16:01:06 +0100
-Message-Id: <1264172467-25155-5-git-send-email-bp@amd64.org>
+Subject: [PATCH -v3 0/5] x86, cacheinfo, amd: L3 Cache Index Disable fixes
+Date: Fri, 22 Jan 2010 16:01:02 +0100
+Message-Id: <1264172467-25155-1-git-send-email-bp@amd64.org>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1264172467-25155-1-git-send-email-bp@amd64.org>
-References: <1264172467-25155-1-git-send-email-bp@amd64.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Borislav Petkov <borislav.petkov@amd.com>
 
-The cache_disable_[01] attribute in
+Changelog:
 
-/sys/devices/system/cpu/cpu?/cache/index[0-3]/
+-v3: Add smp WBINVD functionality in a less uglier way :)
 
-is enabled on all cache levels although only L3 supports it. Add it only
-to the cache level that actually supports it.
+-v2: Split smp functionality into a different module
 
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- arch/x86/kernel/cpu/intel_cacheinfo.c |   35 ++++++++++++++++++++++++--------
- 1 files changed, 26 insertions(+), 9 deletions(-)
+===
+these are a bunch of fixes which correct the disabling of L3 cache
+indexes. This is needed, for example, in the case when excessive
+correctable L3 error rates are observed. In a later step, this
+functionality will be connected to the mcheck mechanism and used to
+evaluate occurring L3 tag and data array errors and then disable the
+respective failing L3 cache regions in order to defer system failure
+before a sysop can intervene.
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 08c91ab..3976ce9 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -814,16 +814,24 @@ static struct _cache_attr cache_disable_0 = __ATTR(cache_disable_0, 0644,
- static struct _cache_attr cache_disable_1 = __ATTR(cache_disable_1, 0644,
- 		show_cache_disable_1, store_cache_disable_1);
- 
-+#define DEFAULT_SYSFS_CACHE_ATTRS	\
-+	&type.attr,			\
-+	&level.attr,			\
-+	&coherency_line_size.attr,	\
-+	&physical_line_partition.attr,	\
-+	&ways_of_associativity.attr,	\
-+	&number_of_sets.attr,		\
-+	&size.attr,			\
-+	&shared_cpu_map.attr,		\
-+	&shared_cpu_list.attr
-+
- static struct attribute *default_attrs[] = {
--	&type.attr,
--	&level.attr,
--	&coherency_line_size.attr,
--	&physical_line_partition.attr,
--	&ways_of_associativity.attr,
--	&number_of_sets.attr,
--	&size.attr,
--	&shared_cpu_map.attr,
--	&shared_cpu_list.attr,
-+	DEFAULT_SYSFS_CACHE_ATTRS,
-+	NULL
-+};
-+
-+static struct attribute *default_l3_attrs[] = {
-+	DEFAULT_SYSFS_CACHE_ATTRS,
- 	&cache_disable_0.attr,
- 	&cache_disable_1.attr,
- 	NULL
-@@ -916,6 +924,7 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
- 	unsigned int cpu = sys_dev->id;
- 	unsigned long i, j;
- 	struct _index_kobject *this_object;
-+	struct _cpuid4_info   *this_leaf;
- 	int retval;
- 
- 	retval = cpuid4_cache_sysfs_init(cpu);
-@@ -934,6 +943,14 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
- 		this_object = INDEX_KOBJECT_PTR(cpu, i);
- 		this_object->cpu = cpu;
- 		this_object->index = i;
-+
-+		this_leaf = CPUID4_INFO_IDX(cpu, i);
-+
-+		if (this_leaf->can_disable)
-+			ktype_cache.default_attrs = default_l3_attrs;
-+		else
-+			ktype_cache.default_attrs = default_attrs;
-+
- 		retval = kobject_init_and_add(&(this_object->kobj),
- 					      &ktype_cache,
- 					      per_cpu(ici_cache_kobject, cpu),
--- 
-1.6.6
+Those patches are also good -stable candidates.
 
+Please apply,
+thanks.
