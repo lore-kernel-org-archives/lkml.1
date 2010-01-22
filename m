@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870Ab0AVKr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248Ab0AVKsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752870Ab0AVKr4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 05:47:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705Ab0AVKr4
+	id S1753248Ab0AVKsS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 05:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004Ab0AVKsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 05:47:56 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56018 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752282Ab0AVKrz (ORCPT
+	Fri, 22 Jan 2010 05:48:17 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:35219 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752915Ab0AVKsP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 05:47:55 -0500
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 00/24] drivers/block/floppy.c cleanups
-From: Andi Kleen <andi@firstfloor.org>
-References: <cover.1264133863.git.joe@perches.com>
-Date: Fri, 22 Jan 2010 11:47:53 +0100
-In-Reply-To: <cover.1264133863.git.joe@perches.com> (Joe Perches's message of "Thu, 21 Jan 2010 20:52:30 -0800")
-Message-ID: <87fx5yh0va.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 22 Jan 2010 05:48:15 -0500
+Subject: Re: [RFC] [PATCH 0/7] UBP, XOL and Uprobes [ Summary of Comments
+ and actions to be taken ]
+From: Peter Zijlstra <peterz@infradead.org>
+To: ananth@in.ibm.com
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mel Gorman <mel@csn.ul.ie>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100122072402.GA7440@in.ibm.com>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100122070232.GA2975@linux.vnet.ibm.com>
+	 <20100122072402.GA7440@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 22 Jan 2010 11:47:37 +0100
+Message-ID: <1264157257.4283.1529.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches <joe@perches.com> writes:
+On Fri, 2010-01-22 at 12:54 +0530, Ananth N Mavinakayanahalli wrote:
+> On Fri, Jan 22, 2010 at 12:32:32PM +0530, Srikar Dronamraju wrote:
+> > Here is a summary of the Comments and actions that need to be taken for
+> > the current uprobes patchset. Please let me know if I missed or
+> > misunderstood any of your comments.  
+> > 
+> > 1. Uprobes depends on trap signal.
+> > 	Uprobes depends on trap signal rather than hooking to the global
+> > die notifier. It was suggested that we hook to the global die notifier.
+> > 
+> > 	In the next version of patches, Uprobes will use the global die
+> > 	notifier and look at the per-task count of the probes in use to
+> > 	see if it has to be consumed.
+> > 
+> > 	However this would reduce the ability of uprobe handlers to
+> > 	sleep. Since we are dealing with userspace, sleeping in handlers
+> > 	would have been a good feature. We are looking at ways to get
+> > 	around this limitation.
+> 
+> We could set a TIF_ flag in the notifier to indicate a breakpoint hit
+> and process it in task context before the task heads into userspace.
 
-> Since Stephen Hemminger is a bit too busy to do much with this
-> I've broken up the first large patch into multiple pieces and
-> brought the rest up to current.
+Make that optional, not everybody might want that. Either provide a
+simple trampoline or use a flag to indicate the callback be called from
+process context on registration.
 
-Philosophically I'm not sure it's that great an idea to make bad code
-look better without actually fixing/rewriting it. It's like putting
-lipstick on a pig.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
