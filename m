@@ -1,103 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195Ab0AVPBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149Ab0AVPLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195Ab0AVPBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 10:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159Ab0AVPA6
+	id S1755149Ab0AVPLH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 10:11:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002Ab0AVPLB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 10:00:58 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:39179 "EHLO
-	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753555Ab0AVPA4 (ORCPT
+	Fri, 22 Jan 2010 10:11:01 -0500
+Received: from smtp.mujha-vel.cz ([81.30.225.246]:45363 "EHLO
+	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754911Ab0AVPK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 10:00:56 -0500
-From: Borislav Petkov <bp@amd64.org>
-To: <mingo@elte.hu>, <hpa@zytor.com>, <tglx@linutronix.de>
-Cc: <andreas.herrmann3@amd.com>, <x86@kernel.org>,
-       <linux-kernel@vger.kernel.org>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 1/5] x86, lib: Add wbinvd smp helpers
-Date: Fri, 22 Jan 2010 16:01:03 +0100
-Message-Id: <1264172467-25155-2-git-send-email-bp@amd64.org>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1264172467-25155-1-git-send-email-bp@amd64.org>
-References: <1264172467-25155-1-git-send-email-bp@amd64.org>
+	Fri, 22 Jan 2010 10:10:59 -0500
+From: Jiri Slaby <jslaby@suse.cz>
+To: crope@iki.fi
+Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
+Subject: [PATCH 4/4] media: dvb/af9015, add hashes support
+Date: Fri, 22 Jan 2010 16:10:55 +0100
+Message-Id: <1264173055-14787-4-git-send-email-jslaby@suse.cz>
+X-Mailer: git-send-email 1.6.5.7
+In-Reply-To: <4B4F6BE5.2040102@iki.fi>
+References: <4B4F6BE5.2040102@iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Borislav Petkov <borislav.petkov@amd.com>
+So as a final patch, add support for hash and one hash entry
+for MSI digi vox mini II:
+iManufacturer 1 Afatech
+iProduct      2 DVB-T 2
+iSerial       3 010101010600001
 
-Add wbinvd_on_cpu and wbinvd_on_all_cpus stubs for executing wbinvd on a
-particular CPU.
+It is now handled with proper IR and key map tables.
 
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Antti Palosaari <crope@iki.fi>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: linux-media@vger.kernel.org
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 ---
- arch/x86/include/asm/smp.h |    5 +++++
- arch/x86/lib/Makefile      |    1 +
- arch/x86/lib/smp.c         |   19 +++++++++++++++++++
- 3 files changed, 25 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/lib/smp.c
+ drivers/media/dvb/dvb-usb/af9015.c |   14 ++++++++++++--
+ 1 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index 1e79678..82e675b 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -135,6 +135,8 @@ int native_cpu_disable(void);
- void native_cpu_die(unsigned int cpu);
- void native_play_dead(void);
- void play_dead_common(void);
-+void wbinvd_on_cpu(int cpu);
-+int wbinvd_on_all_cpus(void);
+diff --git a/drivers/media/dvb/dvb-usb/af9015.c b/drivers/media/dvb/dvb-usb/af9015.c
+index 796f9d5..650c913 100644
+--- a/drivers/media/dvb/dvb-usb/af9015.c
++++ b/drivers/media/dvb/dvb-usb/af9015.c
+@@ -788,6 +788,13 @@ static const struct af9015_setup af9015_setup_usbids[] = {
+ 	{ }
+ };
  
- void native_send_call_func_ipi(const struct cpumask *mask);
- void native_send_call_func_single_ipi(int cpu);
-@@ -147,6 +149,9 @@ static inline int num_booting_cpus(void)
++static const struct af9015_setup af9015_setup_hashes[] = {
++	{ 0xb8feb708,
++		af9015_rc_keys_msi, ARRAY_SIZE(af9015_rc_keys_msi),
++		af9015_ir_table_msi, ARRAY_SIZE(af9015_ir_table_msi) },
++	{ }
++};
++
+ static void af9015_set_remote_config(struct usb_device *udev,
+ 		struct dvb_usb_device_properties *props)
  {
- 	return cpumask_weight(cpu_callout_mask);
- }
-+#else /* !CONFIG_SMP */
-+#define wbinvd_on_cpu(cpu)     wbinvd()
-+#define wbinvd_on_all_cpus()   wbinvd()
- #endif /* CONFIG_SMP */
+@@ -800,7 +807,10 @@ static void af9015_set_remote_config(struct usb_device *udev,
+ 	} else {
+ 		u16 vendor = le16_to_cpu(udev->descriptor.idVendor);
  
- extern unsigned disabled_cpus __cpuinitdata;
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index cffd754..171cb14 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -15,6 +15,7 @@ $(obj)/inat.o: $(obj)/inat-tables.c
- clean-files := inat-tables.c
+-		if (vendor == USB_VID_AFATECH) {
++		table = af9015_setup_match(af9015_config.eeprom_sum,
++				af9015_setup_hashes);
++
++		if (!table && vendor == USB_VID_AFATECH) {
+ 			/* Check USB manufacturer and product strings and try
+ 			   to determine correct remote in case of chip vendor
+ 			   reference IDs are used.
+@@ -831,7 +841,7 @@ static void af9015_set_remote_config(struct usb_device *udev,
+ 					ARRAY_SIZE(af9015_ir_table_trekstor)
+ 				};
+ 			}
+-		} else
++		} else if (!table)
+ 			table = af9015_setup_match(vendor, af9015_setup_usbids);
+ 	}
  
- obj-$(CONFIG_SMP) += msr-smp.o
-+obj-$(CONFIG_SMP) += smp.o
- 
- lib-y := delay.o
- lib-y += thunk_$(BITS).o
-diff --git a/arch/x86/lib/smp.c b/arch/x86/lib/smp.c
-new file mode 100644
-index 0000000..a3c6688
---- /dev/null
-+++ b/arch/x86/lib/smp.c
-@@ -0,0 +1,19 @@
-+#include <linux/smp.h>
-+#include <linux/module.h>
-+
-+static void __wbinvd(void *dummy)
-+{
-+	wbinvd();
-+}
-+
-+void wbinvd_on_cpu(int cpu)
-+{
-+	smp_call_function_single(cpu, __wbinvd, NULL, 1);
-+}
-+EXPORT_SYMBOL(wbinvd_on_cpu);
-+
-+int wbinvd_on_all_cpus(void)
-+{
-+	return on_each_cpu(__wbinvd, NULL, 1);
-+}
-+EXPORT_SYMBOL(wbinvd_on_all_cpus);
 -- 
-1.6.6
+1.6.5.7
 
