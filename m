@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493Ab0AVAqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625Ab0AVAxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493Ab0AVAqk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 19:46:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221Ab0AVAqi
+	id S1754625Ab0AVAxM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 19:53:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471Ab0AVAxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 19:46:38 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:58886 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754113Ab0AVAqi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 19:46:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=twtxEV4ZMzXRZekrrhbErmpTHjqqvdxngEBtYYZHbeIdYJngio26WkwsfJdtsCp6/1
-         hYgJAHQS+9y8dqSZExoml15rp6d7pimPvCXcxWkk4RNmGidwQ+8f9VE0qLk2wcHeiE/C
-         rRQ/zAIdYMDjcrzpwMf6pchNrn+uEgUUbO+20=
-Message-ID: <4B58F5F6.9090001@gmail.com>
-Date: Fri, 22 Jan 2010 09:48:54 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jgarzik@pobox.com, Reinhard.Tartler@informatik.uni-erlangen.de,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH #upstream-fixes] libata-sff: remove CONFIG_NO_ATA_LEGACY
-References: <20100120142943.GE3580@faui49.informatik.uni-erlangen.de>	<4B579C4A.3040907@gmail.com> <20100121120405.1085b6d3@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100121120405.1085b6d3@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 19:53:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:44033 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754435Ab0AVAxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 19:53:09 -0500
+Date: Thu, 21 Jan 2010 19:51:47 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100122005147.GD22003@redhat.com>
+References: <20100119211646.GF16096@redhat.com> <20100120111220.e7fb4e2c.sfr@canb.auug.org.au> <20100120054950.GB27108@elte.hu> <20100120061551.GB6588@in.ibm.com> <20100120062834.GB12165@elte.hu> <20100120072925.GA11395@elte.hu> <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100121163145.7e958c3f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc'ing David Howells, who BTW is on vacation till Feb) Hi!
+Hi -
 
-On 01/21/2010 09:04 PM, Alan Cox wrote:
-> On Thu, 21 Jan 2010 09:14:02 +0900
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
->> CONFIG_NO_ATA_LEGACY isn't used by anyone.  Drop it.
->>
->> Reported-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
->> Signed-off-by: Tejun Heo <tj@kernel.org>
-> 
-> Not unless this is cleared with the FRV maintainers who were using
-> it and I believe may still need it.
-> 
-> Mr Howells ?
+On Thu, Jan 21, 2010 at 04:31:45PM -0800, Andrew Morton wrote:
+> [...]
+> > Someone please sell this to us.
+> Here's what Oleg said last time I asked this: [...]
 
-David, the patch in question is,
+I wonder if Roland/Oleg are being too modest in their current role as
+ptrace maintainers.  Considering that *they* think of utrace as a
+means toward proper refactoring of ptrace, how much further burden of
+proof should they shoulder?  To what extent are other subsystem
+maintainers required to "sell" reworkings of their areas, when there
+appear to be no drawbacks and at least arguable benefits?
 
-  http://lkml.org/lkml/2010/1/20/396
-
-Does FRV still need it?
-
-Thanks.
-
--- 
-tejun
+- FChE
