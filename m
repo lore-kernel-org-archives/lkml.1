@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582Ab0AVOzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647Ab0AVOzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754582Ab0AVOzS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 09:55:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377Ab0AVOzP
+	id S1754647Ab0AVOzW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 09:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280Ab0AVOzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 09:55:15 -0500
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:16137 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681Ab0AVOzM (ORCPT
+	Fri, 22 Jan 2010 09:55:14 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:59463
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752377Ab0AVOzL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 09:55:12 -0500
-X-SpamScore: 5
-X-BigFish: VPS5(z1039ozab9bh936eMzz1202hzzz32i87h6bh43j61h)
-X-Spam-TCS-SCL: 0:0
+	Fri, 22 Jan 2010 09:55:11 -0500
+X-SpamScore: -2
+X-BigFish: VPS-2(zzab9bh936eMzz1202hzzz32i6bh87h43j64h)
+X-Spam-TCS-SCL: 3:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KWNLFL-02-1LI-02
+X-WSS-ID: 0KWNLFJ-02-1LE-02
 X-M-MSG: 
 From: Robert Richter <robert.richter@amd.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -22,13 +22,13 @@ To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
 CC: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 12/12] perf/core, x86: make event constraint handler generic
-Date: Fri, 22 Jan 2010 15:22:07 +0100
-Message-ID: <1264170127-17402-13-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 05/12] perf/core, x86: reduce number of CONFIG_X86_LOCAL_APIC macros
+Date: Fri, 22 Jan 2010 15:22:00 +0100
+Message-ID: <1264170127-17402-6-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264170127-17402-1-git-send-email-robert.richter@amd.com>
 References: <1264170127-17402-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 22 Jan 2010 14:54:55.0768 (UTC) FILETIME=[DC46B980:01CA9B72]
+X-OriginalArrivalTime: 22 Jan 2010 14:54:55.0393 (UTC) FILETIME=[DC0D8110:01CA9B72]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: unknown
@@ -36,92 +36,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the handler for event constraints that was
-implemented for Intel pmus general for all models. Now, an event
-constraint table can be implemented and used also for AMD models.
+The function reserve_pmc_hardware() and release_pmc_hardware() were
+hard to read. This patch improves readablity of the code by removing
+most of the CONFIG_X86_LOCAL_APIC macros.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/kernel/cpu/perf_event.c |   43 +++++++++++++++-----------------------
- 1 files changed, 17 insertions(+), 26 deletions(-)
+ arch/x86/kernel/cpu/perf_event.c |   15 +++++++++------
+ 1 files changed, 9 insertions(+), 6 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index b893ee7..ac2d3a7 100644
+index c49221b..5c6244b 100644
 --- a/arch/x86/kernel/cpu/perf_event.c
 +++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -1387,47 +1387,38 @@ static int fixed_mode_idx(struct hw_perf_event *hwc)
- }
+@@ -711,9 +711,10 @@ again:
+ static atomic_t active_events;
+ static DEFINE_MUTEX(pmc_reserve_mutex);
  
- /*
-- * generic counter allocator: get next free counter
-+ * generic counter allocator
-  */
- static int
- gen_get_event_idx(struct cpu_hw_events *cpuc, struct hw_perf_event *hwc)
- {
--	int idx;
--
--again:
--	idx = find_first_zero_bit(cpuc->used_mask, x86_pmu.num_counters);
--	if (idx == x86_pmu.num_counters)
--		return -1;
--	if (test_and_set_bit(idx, cpuc->used_mask))
--		goto again;
--	return idx;
--}
--
--/*
-- * intel-specific counter allocator: check event constraints
-- */
--static inline int
--__intel_get_event_idx(struct cpu_hw_events *cpuc, struct hw_perf_event *hwc)
--{
- 	const struct event_constraint *event_constraint;
--	int i, code;
-+	int idx, code;
- 
- 	if (!x86_pmu.event_constraints)
--		goto skip;
-+		goto get_next_free;
- 
- 	code = hwc->config & ARCH_PERFMON_EVENTSEL_EVENT;
- 
-+	/* check event constraints */
- 	for_each_event_constraint(event_constraint, x86_pmu.event_constraints) {
- 		if (code == event_constraint->code) {
--			for_each_bit(i, event_constraint->idxmsk, X86_PMC_IDX_MAX) {
--				if (!test_and_set_bit(i, cpuc->used_mask))
--					return i;
-+			for_each_bit(idx, event_constraint->idxmsk, X86_PMC_IDX_MAX) {
-+				if (!test_and_set_bit(idx, cpuc->used_mask))
-+					return idx;
- 			}
- 			return -1;
- 		}
- 	}
--skip:
--	return gen_get_event_idx(cpuc, hwc);
++#ifdef CONFIG_X86_LOCAL_APIC
 +
-+get_next_free:
-+	/* get next free counter */
-+	idx = find_first_zero_bit(cpuc->used_mask, x86_pmu.num_counters);
-+	if (idx == x86_pmu.num_counters)
-+		return -1;
-+	if (test_and_set_bit(idx, cpuc->used_mask))
-+		goto get_next_free;
-+	return idx;
+ static bool reserve_pmc_hardware(void)
+ {
+-#ifdef CONFIG_X86_LOCAL_APIC
+ 	int i;
+ 
+ 	if (nmi_watchdog == NMI_LOCAL_APIC)
+@@ -728,11 +729,9 @@ static bool reserve_pmc_hardware(void)
+ 		if (!reserve_evntsel_nmi(x86_pmu.eventsel + i))
+ 			goto eventsel_fail;
+ 	}
+-#endif
+ 
+ 	return true;
+ 
+-#ifdef CONFIG_X86_LOCAL_APIC
+ eventsel_fail:
+ 	for (i--; i >= 0; i--)
+ 		release_evntsel_nmi(x86_pmu.eventsel + i);
+@@ -747,12 +746,10 @@ perfctr_fail:
+ 		enable_lapic_nmi_watchdog();
+ 
+ 	return false;
+-#endif
  }
  
- static int
-@@ -1465,7 +1456,7 @@ intel_get_event_idx(struct cpu_hw_events *cpuc, struct hw_perf_event *hwc)
- 		/* Try to get the previous generic event again */
- 		if (idx == -1 || test_and_set_bit(idx, cpuc->used_mask)) {
- try_generic:
--			idx = __intel_get_event_idx(cpuc, hwc);
-+			idx = gen_get_event_idx(cpuc, hwc);
- 			if (idx == -1)
- 				return -EAGAIN;
+ static void release_pmc_hardware(void)
+ {
+-#ifdef CONFIG_X86_LOCAL_APIC
+ 	int i;
  
+ 	for (i = 0; i < x86_pmu.num_counters; i++) {
+@@ -762,9 +759,15 @@ static void release_pmc_hardware(void)
+ 
+ 	if (nmi_watchdog == NMI_LOCAL_APIC)
+ 		enable_lapic_nmi_watchdog();
+-#endif
+ }
+ 
++#else
++
++static bool reserve_pmc_hardware(void) { return true; }
++static void release_pmc_hardware(void) {}
++
++#endif
++
+ static inline bool bts_available(void)
+ {
+ 	return x86_pmu.enable_bts != NULL;
 -- 
 1.6.6
 
