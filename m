@@ -1,149 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537Ab0AVVRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588Ab0AVVSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537Ab0AVVRp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 16:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458Ab0AVVRo
+	id S1754588Ab0AVVSt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 16:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329Ab0AVVSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 16:17:44 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:39639 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754452Ab0AVVRn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 16:17:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=qvzCd45Jn7uQhZDTMwvTerCaak4wlm5W1yN52F0mCTuU7e/JMf3RBCZjJ97TXHefIe
-         TFKd1pP/0/jf1Z/LfdeI78AtCLmgPCE353GLpGxYYrG3vFiWON0U39nqHBSPRtrQg4NL
-         Ed7V+zsaWUEVZ2uA31wJocbv/K/TlhXAz8cRg=
-Message-ID: <4B5A172C.2010609@gmail.com>
-Date: Fri, 22 Jan 2010 22:22:52 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Fri, 22 Jan 2010 16:18:48 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41037 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932123Ab0AVVSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 16:18:46 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: [Update][PATCH] MM / PM: Force GFP_NOIO during suspend/hibernation and resume
+Date: Fri, 22 Jan 2010 22:19:15 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <201001212121.50272.rjw@sisk.pl> <20100122103830.6C09.A69D9226@jp.fujitsu.com> <1264155067.15930.4.camel@maxim-laptop>
+In-Reply-To: <1264155067.15930.4.camel@maxim-laptop>
 MIME-Version: 1.0
-To: Leo Chen <leochen@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
-       linux-mtd@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] mtd: hot spin and code duplication in nand_bcm_umi_bch_read_oobEcc()
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001222219.15958.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the branch where pagesize equalled NAND_DATA_ACCESS_SIZE, NumToRead
-wasn't decremented in the `while (numToRead > 11)' loop.
-Also the first and last while loops were duplicated in both branches.
+On Friday 22 January 2010, Maxim Levitsky wrote:
+> On Fri, 2010-01-22 at 10:42 +0900, KOSAKI Motohiro wrote: 
+> > > > > Probably we have multiple option. but I don't think GFP_NOIO is good
+> > > > > option. It assume the system have lots non-dirty cache memory and it isn't
+> > > > > guranteed.
+> > > > 
+> > > > Basically nothing is guaranteed in this case.  However, does it actually make
+> > > > things _worse_?  
+> > > 
+> > > Hmm..
+> > > Do you mean we don't need to prevent accidental suspend failure?
+> > > Perhaps, I did misunderstand your intention. If you think your patch solve
+> > > this this issue, I still disagree. but If you think your patch mitigate
+> > > the pain of this issue, I agree it. I don't have any reason to oppose your
+> > > first patch.
+> > 
+> > One question. Have anyone tested Rafael's $subject patch? 
+> > Please post test result. if the issue disapper by the patch, we can
+> > suppose the slowness is caused by i/o layer.
+> 
+> I did.
+> 
+> As far as I could see, patch does solve the problem I described.
+> 
+> Does it affect speed of suspend? I can't say for sure. It seems to be
+> the same.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Thanks for testing.
+
+Below is a slightly different version of that patch.  Can you please give it a
+try?
+
+Rafael
+
 ---
- drivers/mtd/nand/nand_bcm_umi.h |   71 ++++++++++++++-------------------------
- 1 files changed, 25 insertions(+), 46 deletions(-)
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: MM / PM: Force GFP_NOIO during suspend/hibernation and resume
 
-diff --git a/drivers/mtd/nand/nand_bcm_umi.h b/drivers/mtd/nand/nand_bcm_umi.h
-index 7cec2cd..198b304 100644
---- a/drivers/mtd/nand/nand_bcm_umi.h
-+++ b/drivers/mtd/nand/nand_bcm_umi.h
-@@ -167,18 +167,27 @@ static inline void nand_bcm_umi_bch_read_oobEcc(uint32_t pageSize,
- 	int numToRead = 16;	/* There are 16 bytes per sector in the OOB */
+There are quite a few GFP_KERNEL memory allocations made during
+suspend/hibernation and resume that may cause the system to hang,
+because the I/O operations they depend on cannot be completed due to
+the underlying devices being suspended.
+
+Mitigate this problem by clearing the __GFP_IO and __GFP_FS bits in
+gfp_allowed_mask before suspend/hibernation and restoring the
+original values of these bits in gfp_allowed_mask durig the
+subsequent resume.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
+---
+ kernel/power/hibernate.c |    6 ++++++
+ kernel/power/power.h     |    3 +++
+ kernel/power/suspend.c   |    2 ++
+ mm/Makefile              |    1 +
+ mm/pm.c                  |   28 ++++++++++++++++++++++++++++
+ 5 files changed, 40 insertions(+)
+
+Index: linux-2.6/kernel/power/hibernate.c
+===================================================================
+--- linux-2.6.orig/kernel/power/hibernate.c
++++ linux-2.6/kernel/power/hibernate.c
+@@ -334,6 +334,7 @@ int hibernation_snapshot(int platform_mo
+ 		goto Close;
  
- 	/* ECC is already paused when this function is called */
-+	if (pageSize != NAND_DATA_ACCESS_SIZE) {
-+		/* skip BI */
-+#if defined(__KERNEL__) && !defined(STANDALONE)
-+		*oobp++ = REG_NAND_DATA8;
-+#else
-+		REG_NAND_DATA8;
-+#endif
-+		numToRead--;
-+	}
+ 	suspend_console();
++	mm_force_noio_allocations();
+ 	error = dpm_suspend_start(PMSG_FREEZE);
+ 	if (error)
+ 		goto Recover_platform;
+@@ -351,6 +352,7 @@ int hibernation_snapshot(int platform_mo
  
--	if (pageSize == NAND_DATA_ACCESS_SIZE) {
--		while (numToRead > numEccBytes) {
--			/* skip free oob region */
-+	while (numToRead > numEccBytes) {
-+		/* skip free oob region */
- #if defined(__KERNEL__) && !defined(STANDALONE)
--			*oobp++ = REG_NAND_DATA8;
-+		*oobp++ = REG_NAND_DATA8;
- #else
--			REG_NAND_DATA8;
-+		REG_NAND_DATA8;
- #endif
--			numToRead--;
--		}
-+		numToRead--;
-+	}
+ 	dpm_resume_end(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
++	mm_allow_io_allocations();
+ 	resume_console();
+  Close:
+ 	platform_end(platform_mode);
+@@ -448,11 +450,13 @@ int hibernation_restore(int platform_mod
  
-+	if (pageSize == NAND_DATA_ACCESS_SIZE) {
- 		/* read ECC bytes before BI */
- 		nand_bcm_umi_bch_resume_read_ecc_calc();
- 
-@@ -190,6 +199,7 @@ static inline void nand_bcm_umi_bch_read_oobEcc(uint32_t pageSize,
- #else
- 			eccCalc[eccPos++] = REG_NAND_DATA8;
- #endif
-+			numToRead--;
- 		}
- 
- 		nand_bcm_umi_bch_pause_read_ecc_calc();
-@@ -204,49 +214,18 @@ static inline void nand_bcm_umi_bch_read_oobEcc(uint32_t pageSize,
- 			numToRead--;
- 		}
- 
--		/* read ECC bytes */
--		nand_bcm_umi_bch_resume_read_ecc_calc();
--		while (numToRead) {
--#if defined(__KERNEL__) && !defined(STANDALONE)
--			*oobp = REG_NAND_DATA8;
--			eccCalc[eccPos++] = *oobp;
--			oobp++;
--#else
--			eccCalc[eccPos++] = REG_NAND_DATA8;
--#endif
--			numToRead--;
--		}
--	} else {
--		/* skip BI */
-+	}
-+	/* read ECC bytes */
-+	nand_bcm_umi_bch_resume_read_ecc_calc();
-+	while (numToRead) {
- #if defined(__KERNEL__) && !defined(STANDALONE)
--		*oobp++ = REG_NAND_DATA8;
-+		*oobp = REG_NAND_DATA8;
-+		eccCalc[eccPos++] = *oobp;
-+		oobp++;
- #else
--		REG_NAND_DATA8;
-+		eccCalc[eccPos++] = REG_NAND_DATA8;
- #endif
- 		numToRead--;
--
--		while (numToRead > numEccBytes) {
--			/* skip free oob region */
--#if defined(__KERNEL__) && !defined(STANDALONE)
--			*oobp++ = REG_NAND_DATA8;
--#else
--			REG_NAND_DATA8;
--#endif
--			numToRead--;
--		}
--
--		/* read ECC bytes */
--		nand_bcm_umi_bch_resume_read_ecc_calc();
--		while (numToRead) {
--#if defined(__KERNEL__) && !defined(STANDALONE)
--			*oobp = REG_NAND_DATA8;
--			eccCalc[eccPos++] = *oobp;
--			oobp++;
--#else
--			eccCalc[eccPos++] = REG_NAND_DATA8;
--#endif
--			numToRead--;
--		}
+ 	pm_prepare_console();
+ 	suspend_console();
++	mm_force_noio_allocations();
+ 	error = dpm_suspend_start(PMSG_QUIESCE);
+ 	if (!error) {
+ 		error = resume_target_kernel(platform_mode);
+ 		dpm_resume_end(PMSG_RECOVER);
  	}
- }
++	mm_allow_io_allocations();
+ 	resume_console();
+ 	pm_restore_console();
+ 	return error;
+@@ -481,6 +485,7 @@ int hibernation_platform_enter(void)
  
+ 	entering_platform_hibernation = true;
+ 	suspend_console();
++	mm_force_noio_allocations();
+ 	error = dpm_suspend_start(PMSG_HIBERNATE);
+ 	if (error) {
+ 		if (hibernation_ops->recover)
+@@ -518,6 +523,7 @@ int hibernation_platform_enter(void)
+  Resume_devices:
+ 	entering_platform_hibernation = false;
+ 	dpm_resume_end(PMSG_RESTORE);
++	mm_allow_io_allocations();
+ 	resume_console();
+ 
+  Close:
+Index: linux-2.6/kernel/power/power.h
+===================================================================
+--- linux-2.6.orig/kernel/power/power.h
++++ linux-2.6/kernel/power/power.h
+@@ -187,6 +187,9 @@ static inline void suspend_test_finish(c
+ #ifdef CONFIG_PM_SLEEP
+ /* kernel/power/main.c */
+ extern int pm_notifier_call_chain(unsigned long val);
++/* mm/pm.c */
++extern void mm_force_noio_allocations(void);
++extern void mm_allow_io_allocations(void);
+ #endif
+ 
+ #ifdef CONFIG_HIGHMEM
+Index: linux-2.6/kernel/power/suspend.c
+===================================================================
+--- linux-2.6.orig/kernel/power/suspend.c
++++ linux-2.6/kernel/power/suspend.c
+@@ -208,6 +208,7 @@ int suspend_devices_and_enter(suspend_st
+ 			goto Close;
+ 	}
+ 	suspend_console();
++	mm_force_noio_allocations();
+ 	suspend_test_start();
+ 	error = dpm_suspend_start(PMSG_SUSPEND);
+ 	if (error) {
+@@ -224,6 +225,7 @@ int suspend_devices_and_enter(suspend_st
+ 	suspend_test_start();
+ 	dpm_resume_end(PMSG_RESUME);
+ 	suspend_test_finish("resume devices");
++	mm_allow_io_allocations();
+ 	resume_console();
+  Close:
+ 	if (suspend_ops->end)
+Index: linux-2.6/mm/Makefile
+===================================================================
+--- linux-2.6.orig/mm/Makefile
++++ linux-2.6/mm/Makefile
+@@ -40,3 +40,4 @@ obj-$(CONFIG_MEMORY_FAILURE) += memory-f
+ obj-$(CONFIG_HWPOISON_INJECT) += hwpoison-inject.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
++obj-$(CONFIG_PM_SLEEP) += pm.o
+Index: linux-2.6/mm/pm.c
+===================================================================
+--- /dev/null
++++ linux-2.6/mm/pm.c
+@@ -0,0 +1,28 @@
++#include <linux/gfp.h>
++
++static gfp_t saved_gfp_allowed_mask;
++
++#define GFP_IOFS (__GFP_IO | __GFP_FS)
++
++/**
++ * mm_force_noio_allocations - Modify gfp_allowed_mask to disable IO allocations
++ *
++ * Change gfp_allowed_mask by unsetting __GFP_IO and __GFP_FS in it and save the
++ * old value.
++ */
++void mm_force_noio_allocations(void)
++{
++	saved_gfp_allowed_mask = gfp_allowed_mask;
++	gfp_allowed_mask &= ~GFP_IOFS;
++}
++
++/**
++ * mm_allow_io_allocations - Modify gfp_allowed_mask to allow IO allocations
++ *
++ * If the saved value of gfp_allowed_mask has __GFP_IO set, modify the current
++ * gfp_allowed_mask by setting this bit and anlogously for __GFP_FS.
++ */
++void mm_allow_io_allocations(void)
++{
++	gfp_allowed_mask |= saved_gfp_allowed_mask & GFP_IOFS;
++}
