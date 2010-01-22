@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148Ab0AVQf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075Ab0AVQhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753148Ab0AVQf1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 11:35:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743Ab0AVQf0
+	id S1753075Ab0AVQhH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 11:37:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554Ab0AVQhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 11:35:26 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37346 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752497Ab0AVQfY (ORCPT
+	Fri, 22 Jan 2010 11:37:05 -0500
+Received: from mtagate4.uk.ibm.com ([194.196.100.164]:50939 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852Ab0AVQhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 11:35:24 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/2] perf symbols: Fix inverted logic for showing kallsyms as the source of symbols
-Date: Fri, 22 Jan 2010 14:35:01 -0200
-Message-Id: <1264178102-4203-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
+	Fri, 22 Jan 2010 11:37:03 -0500
+Date: Fri, 22 Jan 2010 17:37:00 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH] ftrace: unify arch_syscall_addr() implementations
+Message-ID: <20100122163700.GD6412@osiris.boeblingen.de.ibm.com>
+References: <1264167826-20913-1-git-send-email-vapier@gentoo.org>
+ <1264170977.31321.382.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264170977.31321.382.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Fri, Jan 22, 2010 at 09:36:17AM -0500, Steven Rostedt wrote:
+> [ Added Heiko Carstens and Paul Mundt to Cc ]
+> 
+> On Fri, 2010-01-22 at 08:43 -0500, Mike Frysinger wrote:
+> > Every arch_syscall_addr() implementation thus far is the same, so unify
+> > them as a default weak in common code so more arches don't have to waste
+> > time copying & pasting this simple function.  The Blackfin version is
+> > going to be exactly the same.
+> > 
+> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> > ---
+> > note: only thing that needs double checking is s390 and sparc where they
+> > declared the sys_call_table as an array of ints.  considering this table
+> > is supposed to be an array of function pointers, this seems like more of
+> > a typo to me ...
+> 
+> I would not be too sure. s390 is very strange, and I would definitely
+> want to get an Ack from the arch maintainers first.
 
-Only if we parsed /proc/kallsyms (or a copy found in the buildid cache)
-we should set the dso long name to "[kernel.kallsyms]".
-
-Reported-by: Mike Galbraith <efault@gmx.de>
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/symbol.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 6f30fe1..1270cf8 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -1671,7 +1671,7 @@ do_kallsyms:
- out_try_fixup:
- 	if (err > 0) {
- out_fixup:
--		if (kallsyms_filename == NULL)
-+		if (kallsyms_filename != NULL)
- 			dso__set_long_name(self, strdup("[kernel.kallsyms]"));
- 		map__fixup_start(map);
- 		map__fixup_end(map);
--- 
-1.6.2.5
-
+It's not a typo. The syscall table on s390 contains always 32 bit pointers
+since we know that the address of the function to be called is (way) below
+4GB. So this saves us a few bytes.
+In addition this makes syscall patching done by some security modules a
+bit more difficult, since they would need to store a 64 bit pointer.
+That's because we make sure that module addresses are always above 4GB.
