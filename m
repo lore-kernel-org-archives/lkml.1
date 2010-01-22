@@ -1,70 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828Ab0AVCPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839Ab0AVCQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755828Ab0AVCPn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 21:15:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800Ab0AVCPm
+	id S1755839Ab0AVCQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 21:16:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755818Ab0AVCQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 21:15:42 -0500
-Received: from keil-draco.com ([216.193.185.50]:50118 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755778Ab0AVCPl (ORCPT
+	Thu, 21 Jan 2010 21:16:58 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:39210 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752270Ab0AVCQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 21:15:41 -0500
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Shu Wu <superwushu@gmail.com>
-Subject: Re: Hi all, bug or design flaw?
-Date: Thu, 21 Jan 2010 21:15:30 -0500
-User-Agent: KMail/1.12.4 (Linux/2.6.31-17-generic; KDE/4.3.4; x86_64; ; )
-Cc: Stepan Chatalyan <kehcho@gmail.com>, linux-kernel@vger.kernel.org
-References: <22d9728d1001211705i4cf90df2ha730061ea01972b6@mail.gmail.com> <5c7d4fb81001211800k2bf2025bqea45a78292da2199@mail.gmail.com>
-In-Reply-To: <5c7d4fb81001211800k2bf2025bqea45a78292da2199@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 21 Jan 2010 21:16:57 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, robert.richter@amd.com,
+       oprofile-list@lists.sf.net
+Subject: Re: [PATCH] Add Xeon 7500 series support to oprofile
+In-Reply-To: Your message of "Thu, 21 Jan 2010 23:26:27 +0100."
+             <20100121222627.GA22897@basil.fritz.box>
+From: Valdis.Kletnieks@vt.edu
+References: <20100121222627.GA22897@basil.fritz.box>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1264126458_4668P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001212115.31055.dhazelton@enter.net>
+Date: Thu, 21 Jan 2010 21:14:18 -0500
+Message-ID: <28939.1264126458@localhost>
+X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=zidane.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020209.4B5909FC.016C,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 January 2010 09:00:15 pm Shu Wu wrote:
-> Hey, buddy, this is not the right place to raise a user-space
-> question. But as for your question, you'd better to learn what the "."
-> means. "#!/bin/bash" is used to indicate in shell when executed, while
-> to be just a comment in the latter.
+--==_Exmh_1264126458_4668P
+Content-Type: text/plain; charset=us-ascii
+
+On Thu, 21 Jan 2010 23:26:27 +0100, Andi Kleen said:
+> Add Xeon 7500 series support to oprofile
 > 
-> 2010/1/22 Stepan Chatalyan <kehcho@gmail.com>:
-> > Hi there,
-> >
-> > I'm Stepan G. Chatalyan, and i think that I discovered a bug or design
-> > flaw... and I don't know that it is provide from kernel...
-> >
-> > Let's see:
-> >
-> > (1) I mount /tmp with noexec,nosuid,nodev options
-> >
-> > /dev/hda6 on /tmp type ext3 (rw,noexec,nosuid,nodev,relatime)
-> >
-> > (2) I went to 'cd /tmp'`and I created a bash script, or another script
-> > (perl, python, etc)... and chmod +x createdfile
-> > script cointain:
-> >
-> > #!/bin/bash
-> > echo "Probe..."
-> >
-> > (3) I tried to execut it with "./createdfile"
-> > [kehcho@kehcho] [/tmp]$ ./createdfile
-> > -bash: ./createdfile: /bin/bash: bad interpreter: Permission denied
-> >
-> > (4) I tried to execute it, but pass to bash ". /tmp/createdfile"
-> >
-> > [kehcho@tornadowt] [/tmp]$ . /tmp/createdfile
-> > Probe...
-> >
-> > It is a kernel bug or I just report a another one?
+> Straight forward: it's the same as Core i7, so just detect
+> the model number. No user space changes needed.
+> 
+> Very simple patch, so it could be still merged for .33?
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  arch/x86/oprofile/nmi_int.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> Index: linux/arch/x86/oprofile/nmi_int.c
+> ===================================================================
+> --- linux.orig/arch/x86/oprofile/nmi_int.c
+> +++ linux/arch/x86/oprofile/nmi_int.c
+> @@ -598,6 +598,7 @@ static int __init ppro_init(char **cpu_t
+>  	case 15: case 23:
+>  		*cpu_type = "i386/core_2";
+>  		break;
+> +	case 0x2e:
+>  	case 26:
+>  		spec = &op_arch_perfmon_spec;
+>  		*cpu_type = "i386/core_i7";
 
-This is not a bug at all. I'll just repeat Shu Wu's statement - learn what "." 
-actually does. Note: it is *NOT* the same as $(...) or `...` - and it is not 
-the same as directly executing a script.
 
-DRH
+I'll bite - why a hex constant rather than the decimal values nearby?
+
+Also, should we do something about *cpu_type so it isn't confusing on a 7500
+reporting itself as a i7?
+
+
+--==_Exmh_1264126458_4668P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLWQn6cC3lWbTT17ARAhSKAKDn96SZuqDi+viTPAckG8/Y+77pBwCgneEL
+1QQMO+8wXxdX839l25bs7Ys=
+=sT68
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1264126458_4668P--
+
