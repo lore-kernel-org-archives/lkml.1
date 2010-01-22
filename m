@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915Ab0AVREN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928Ab0AVRFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915Ab0AVREN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 12:04:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130Ab0AVREM
+	id S1755928Ab0AVRFK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 12:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904Ab0AVRFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 12:04:12 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:46525 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755055Ab0AVREJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 12:04:09 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Eric Miao <eric.miao@marvell.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH] RFC: make struct platform_driver.id_table const
-Date: Fri, 22 Jan 2010 18:03:57 +0100
-Message-Id: <1264179837-22999-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.6
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Fri, 22 Jan 2010 12:05:09 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:45192 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755130Ab0AVRFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 12:05:08 -0500
+Date: Fri, 22 Jan 2010 09:04:41 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>, Joe Perches <joe@perches.com>,
+       linux-kernel@vger.kernel.org, Marcin Slusarz <marcin.slusarz@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 00/24] drivers/block/floppy.c cleanups
+Message-ID: <20100122090441.10716815@nehalam>
+In-Reply-To: <20100122114653.4afd606d@lxorguk.ukuu.org.uk>
+References: <cover.1264133863.git.joe@perches.com>
+	<87fx5yh0va.fsf@basil.nowhere.org>
+	<20100122114653.4afd606d@lxorguk.ukuu.org.uk>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a warning on several pxa based machines:
+On Fri, 22 Jan 2010 11:46:53 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-	arch/arm/mach-pxa/ssp.c:475: warning: initialization discards qualifiers from pointer target type
+> > Philosophically I'm not sure it's that great an idea to make bad code
+> > look better without actually fixing/rewriting it. It's like putting
+> > lipstick on a pig.
+> 
+> Unpacking the mess and sorting out the whacky macros is more like
+> removing all muck from the mechanism so you can see what needs to be done.
+> 
+> So I disagree - its a useful first step only
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Eric Miao <eric.miao@marvell.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/base/platform.c         |    2 +-
- include/linux/platform_device.h |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+I had a reason in motivating this. For some cases, customers use floppy as
+a configuration storage, and there were a number of strange errors
+showing up occasionally in recent kernels. But the driver is such
+an old crufty mess, it wasn't worth investigating further.
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 58efaf2..962246c 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -578,7 +578,7 @@ static int platform_uevent(struct device *dev, struct kobj_uevent_env *env)
- }
- 
- static const struct platform_device_id *platform_match_id(
--			struct platform_device_id *id,
-+			const struct platform_device_id *id,
- 			struct platform_device *pdev)
- {
- 	while (id->name[0]) {
-diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
-index 71ff887..3a6201e 100644
---- a/include/linux/platform_device.h
-+++ b/include/linux/platform_device.h
-@@ -21,7 +21,7 @@ struct platform_device {
- 	u32		num_resources;
- 	struct resource	* resource;
- 
--	struct platform_device_id	*id_entry;
-+	const struct platform_device_id	*id_entry;
- 
- 	/* arch specific additions */
- 	struct pdev_archdata	archdata;
-@@ -62,7 +62,7 @@ struct platform_driver {
- 	int (*suspend)(struct platform_device *, pm_message_t state);
- 	int (*resume)(struct platform_device *);
- 	struct device_driver driver;
--	struct platform_device_id *id_table;
-+	const struct platform_device_id *id_table;
- };
- 
- extern int platform_driver_register(struct platform_driver *);
+Making the code clearer gets rid of that excuse.
+
 -- 
-1.6.6
-
