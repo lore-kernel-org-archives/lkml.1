@@ -1,32 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991Ab0AVRS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998Ab0AVRTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991Ab0AVRS4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 12:18:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266Ab0AVRSx
+	id S1755998Ab0AVRTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 12:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755148Ab0AVRSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 12:18:53 -0500
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:55971 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755975Ab0AVRSn (ORCPT
+	Fri, 22 Jan 2010 12:18:30 -0500
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:54661 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754251Ab0AVRS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 12:18:43 -0500
-X-SpamScore: -2
-X-BigFish: VPS-2(zzab9bh936eMzz1202hzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KWNS2G-01-CVG-02
+	Fri, 22 Jan 2010 12:18:29 -0500
+X-SpamScore: -7
+X-BigFish: VPS-7(z78cMzab9bh936eMzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KWNS2F-01-CV9-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@redhat.com>
 CC: x86@kernel.org, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>,
-       stable@kernel.org
-Subject: [PATCH 3/5] x86/amd-iommu: Fix IOMMU-API initialization for iommu=pt
-Date: Fri, 22 Jan 2010 18:18:11 +0100
-Message-ID: <1264180693-27197-4-git-send-email-joerg.roedel@amd.com>
+       iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 2/5] x86/amd-iommu: Fix NULL pointer dereference in __detach_device()
+Date: Fri, 22 Jan 2010 18:18:10 +0100
+Message-ID: <1264180693-27197-3-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264180693-27197-1-git-send-email-joerg.roedel@amd.com>
 References: <1264180693-27197-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 22 Jan 2010 17:18:15.0735 (UTC) FILETIME=[E2418C70:01CA9B86]
+X-OriginalArrivalTime: 22 Jan 2010 17:18:15.0704 (UTC) FILETIME=[E23CD180:01CA9B86]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: unknown
@@ -34,73 +33,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves the initialization of the iommu-api out of
-the dma-ops initialization code. This ensures that the
-iommu-api is initialized even with iommu=pt.
+In the __detach_device function the reference count for a
+device-domain binding may become zero. This results in the
+device being removed from the domain and dev_data->domain
+will be NULL. This is bad because this pointer is
+dereferenced when trying to unlock the domain->lock. This
+patch fixes the issue by keeping the domain in a seperate
+variable.
 
-Cc: stable@kernel.org
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/amd_iommu_proto.h |    1 +
- arch/x86/kernel/amd_iommu.c            |    8 ++++++--
- arch/x86/kernel/amd_iommu_init.c       |    3 +++
- 3 files changed, 10 insertions(+), 2 deletions(-)
+ arch/x86/kernel/amd_iommu.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/amd_iommu_proto.h b/arch/x86/include/asm/amd_iommu_proto.h
-index 4d817f9..d2544f1 100644
---- a/arch/x86/include/asm/amd_iommu_proto.h
-+++ b/arch/x86/include/asm/amd_iommu_proto.h
-@@ -31,6 +31,7 @@ extern void amd_iommu_reset_cmd_buffer(struct amd_iommu *iommu);
- extern int amd_iommu_init_devices(void);
- extern void amd_iommu_uninit_devices(void);
- extern void amd_iommu_init_notifier(void);
-+extern void amd_iommu_init_api(void);
- #ifndef CONFIG_AMD_IOMMU_STATS
- 
- static inline void amd_iommu_stats_init(void) { }
 diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 4478a48..751ce73 100644
+index c2ccbd7..4478a48 100644
 --- a/arch/x86/kernel/amd_iommu.c
 +++ b/arch/x86/kernel/amd_iommu.c
-@@ -2221,6 +2221,12 @@ static struct dma_map_ops amd_iommu_dma_ops = {
- /*
-  * The function which clues the AMD IOMMU driver into dma_ops.
-  */
-+
-+void __init amd_iommu_init_api(void)
-+{
-+	register_iommu(&amd_iommu_ops);
-+}
-+
- int __init amd_iommu_init_dma_ops(void)
+@@ -1489,11 +1489,14 @@ static void __detach_device(struct device *dev)
  {
- 	struct amd_iommu *iommu;
-@@ -2256,8 +2262,6 @@ int __init amd_iommu_init_dma_ops(void)
- 	/* Make the driver finally visible to the drivers */
- 	dma_ops = &amd_iommu_dma_ops;
+ 	struct iommu_dev_data *dev_data = get_dev_data(dev);
+ 	struct iommu_dev_data *alias_data;
++	struct protection_domain *domain;
+ 	unsigned long flags;
  
--	register_iommu(&amd_iommu_ops);
--
- 	amd_iommu_stats_init();
+ 	BUG_ON(!dev_data->domain);
  
- 	return 0;
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index fb490ce..9dc91b4 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -1292,9 +1292,12 @@ static int __init amd_iommu_init(void)
- 		ret = amd_iommu_init_passthrough();
- 	else
- 		ret = amd_iommu_init_dma_ops();
+-	spin_lock_irqsave(&dev_data->domain->lock, flags);
++	domain = dev_data->domain;
 +
- 	if (ret)
- 		goto free;
++	spin_lock_irqsave(&domain->lock, flags);
  
-+	amd_iommu_init_api();
-+
- 	amd_iommu_init_notifier();
+ 	if (dev_data->alias != dev) {
+ 		alias_data = get_dev_data(dev_data->alias);
+@@ -1504,7 +1507,7 @@ static void __detach_device(struct device *dev)
+ 	if (atomic_dec_and_test(&dev_data->bind))
+ 		do_detach(dev);
  
- 	enable_iommus();
+-	spin_unlock_irqrestore(&dev_data->domain->lock, flags);
++	spin_unlock_irqrestore(&domain->lock, flags);
+ 
+ 	/*
+ 	 * If we run in passthrough mode the device must be assigned to the
 -- 
 1.6.6
 
