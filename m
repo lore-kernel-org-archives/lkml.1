@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754587Ab0AVKPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648Ab0AVKZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754587Ab0AVKPf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 05:15:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528Ab0AVKPe
+	id S1754648Ab0AVKZv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 05:25:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615Ab0AVKZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 05:15:34 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33812 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752786Ab0AVKPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 05:15:33 -0500
-Message-ID: <4B597A7B.4050906@zytor.com>
-Date: Fri, 22 Jan 2010 02:14:19 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Fri, 22 Jan 2010 05:25:50 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:58642 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754494Ab0AVKZu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 05:25:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :x-operating-system:user-agent;
+        b=n+T+4V4yILmKh6YGOXJy95Cyz6iAH9Kn4SL3YUemr0awDNkS1kZeeoqpoHv/EqlF07
+         eiE82eAOAmPaVmjNhEWEADTm+JfKgIQvno8q1dgEFkhYL7BrRumK4AFFBKQfy0Wm1aq2
+         ARgPI45fDChgc4InAwU3vm8S1TODQQ5lRa0Do=
+Date: Fri, 22 Jan 2010 18:25:41 +0800
+From: Li Hong <lihong.hi@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: [PATCH] perf: Replace the extended ASCII copyright char to normal
+ ASCII sequence
+Message-ID: <20100122102541.GA21430@xhl>
+Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Haicheng Li <haicheng.li@linux.intel.com>
-CC: David Rientjes <rientjes@google.com>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       x86@kernel.org, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86/mm/srat_64.c: make node_possible_map include hotpluggable
- node
-References: <4B501C4D.4080907@linux.intel.com> <alpine.DEB.2.00.1001171338170.16238@chino.kir.corp.google.com> <86802c441001172230y137b4916h7d744a96ab75873d@mail.gmail.com> <alpine.DEB.2.00.1001180231430.20677@chino.kir.corp.google.com> <4B5592B1.9030800@linux.intel.com> <alpine.DEB.2.00.1001191513010.24223@chino.kir.corp.google.com> <4B5731E2.4040207@linux.intel.com> <alpine.DEB.2.00.1001201152040.30528@chino.kir.corp.google.com> <4B57C2DD.3050402@linux.intel.com> <alpine.DEB.2.00.1001202252320.22343@chino.kir.corp.google.com> <4B5802EF.6040603@linux.intel.com> <alpine.DEB.2.00.1001202344580.29982@chino.kir.corp.google.com> <4B581160.2090209@linux.intel.com> <alpine.DEB.2.00.1001211500290.31073@chino.kir.corp.google.com> <4B592437.9060508@linux.intel.com> <4B5954C6.6010102@zytor.com> <4B596539.1050207@linux.intel.com>
-In-Reply-To: <4B596539.1050207@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-Operating-System: Linux xhl 2.6.31-14-generic
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/22/2010 12:43 AM, Haicheng Li wrote:
-> H. Peter Anvin wrote:
->> I have to say I agree with David Rientjes that we need the minimal patch
->> for upstream and stable.  If you need the additional bitmask in the
->> future it should be added later.
->>
->> Haicheng, would you be willing to prepare a minimal patch so we can
->> close the issue in the release trees as quickly as possible?
-> 
-> Peter,
-> 
-> Okay, let's close it. then please take the patch pasted below, which is
-> the one without additional bitmask added.
-> 
+A copyright extended ASCII char (0xa9) in kernel/perf_event.c makes my utf-8
+compatible vim think it is a binary file. It is better to either use a utf-8
+sequence 0xc20xa9 or just normal copyright ASCII chars '(C)'.
 
-As David asked, OK to add your Tested-by: line?
+Signed-off-by: Li Hong <lihong.hi@gmail.com>
+Cc: Paul Mackerras <paulus@au1.ibm.com>
+---
+ kernel/perf_event.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	-hpa
-
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index d27746b..4b8fbd9 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -4,7 +4,7 @@
+  *  Copyright (C) 2008 Thomas Gleixner <tglx@linutronix.de>
+  *  Copyright (C) 2008-2009 Red Hat, Inc., Ingo Molnar
+  *  Copyright (C) 2008-2009 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
+- *  Copyright  ©  2009 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
++ *  Copyright (C) 2009 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
+  *
+  * For licensing details see kernel-base/COPYING
+  */
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1.6.3.3
+
 
