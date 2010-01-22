@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876Ab0AVCgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899Ab0AVCvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876Ab0AVCgy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 21:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859Ab0AVCgx
+	id S1755899Ab0AVCvI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 21:51:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888Ab0AVCvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 21:36:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49217 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755702Ab0AVCgw (ORCPT
+	Thu, 21 Jan 2010 21:51:07 -0500
+Received: from mail-fx0-f223.google.com ([209.85.220.223]:61075 "EHLO
+	mail-fx0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755887Ab0AVCvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 21:36:52 -0500
-Date: Thu, 21 Jan 2010 18:35:26 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Frank Ch. Eigler" <fche@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-In-Reply-To: <20100122022255.GF22003@redhat.com>
-Message-ID: <alpine.LFD.2.00.1001211826060.13231@localhost.localdomain>
-References: <20100120062834.GB12165@elte.hu> <20100120072925.GA11395@elte.hu> <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org>
- <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> <20100122012516.GE22003@redhat.com> <alpine.LFD.2.00.1001211729080.13231@localhost.localdomain> <20100122022255.GF22003@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 21 Jan 2010 21:51:05 -0500
+X-Greylist: delayed 445 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Jan 2010 21:51:04 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=i+y3/7OXqi90dCsc/apyAGhyQzHOXwg7cH4dGTjFIyHQ7iw2ca1eHzLBlEeROg+mlt
+         psVJxbQYTAZnNe7oLxBX6/5nQBmA21+FztcG+EcTkKrsSRFOYqX+ivo8Y2BS4Vj0IHt3
+         Ii6oDw8hzM2PZUPD+6G9ijwpqKuc0Q1G928is=
+Date: Fri, 22 Jan 2010 03:43:34 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Subject: Re: [RFC PATCH 03/10] ftrace: Drop the ftrace_profile_enabled
+	checks in tracing hot path
+Message-ID: <20100122024332.GB8140@nowhere>
+References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com> <1264122982-1553-4-git-send-regression-fweisbec@gmail.com> <1264125917.31321.312.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264125917.31321.312.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 21 Jan 2010, Frank Ch. Eigler wrote:
+On Thu, Jan 21, 2010 at 09:05:17PM -0500, Steven Rostedt wrote:
+> On Fri, 2010-01-22 at 02:16 +0100, Frederic Weisbecker wrote:
+> > Every time we enter the function profiler tracing callbacks, we first
+> > check if the function profiling is enabled.
+> > 
+> > This check is useless because we register the function graph
+> > callbacks only after the hashlist has been initialized.
 > 
-> Less passionate analysis would identify a long history of contribution
-> by the the greater affiliated team, including via merged code and by
-> and passing on requirements and experiences.
+> Unfortunately, since the previous patch is incorrect, it makes this one
+> buggy too.
+> 
+> If you remove the check to ftrace_profile_enabled, the call to the
+> profiled code could have been preempted and pending to be called.
+> 
+> Stop machine may remove all calls to the tracing, but it only affects
+> new hits. Pending hits may still exist.
+> 
+> If you remove this check, and the user re-enables the profiling, then
+> all PER_CPU hashs will be reset. If in the process of this happening,
+> the task with the pending trace wakes up, it may access the PER_CPU list
+> and corrupt it.
 
-The reason I'm so passionate is that I dislike the turn the discussion was 
-taking, as if "utrace" was somehow _good_ because it allowed various other 
-interfaces to hide behind it. And I'm not at all convinced that is true. 
 
-And I really didn't want to single out system tap, I very much feel the 
-same way abotu some seccomp-replacement "security model that the kernel 
-doesn't even need to know about" thing.
+Indeed.
 
-So don't take the systemtap part to be the important part, it's the bigger 
-issue of "I'd much rather have explicit interfaces than have generic hooks 
-that people can then use in any random way".
 
-I realize that my argument is very anti-thetical to the normal CS teaching 
-of "general-purpose is good". I often feel that very specific code with 
-very clearly defined (and limited) applicability is a good thing - I'd 
-rather have just a very specific ptrace layer that does nothing but 
-ptrace, than a "generic plugin layer that can be layered under ptrace and 
-other things".
 
-In one case, you know exactly what the users are, and what the semantics 
-are going to be. In the other, you don't. 
+> Now for the reason I Cc'd Paul and Mathieu...
+> 
+> If we had a synchronize_sched() like function that would wait and return
+> when all preempted tasks have been scheduled again and went to either
+> userspace or called schedule directly, then we could actually do this.
+> 
+> After unregistering the function graph trace, you call this
+> "synchronize_tasks()" and it will guarantee that all currently preempted
+> tasks have either went to userspace or have called schedule() directly.
+> Then it would be safe to remove this check.
 
-So I really want to see a very big and immediate upside from utrace. 
-Because to me, the "it's a generic layer with any application you want to 
-throw at it" is a _downside_.
 
-			Linus
+
+Good point!
+
+I fear that would require heavy hooks in the scheduler though...
+
