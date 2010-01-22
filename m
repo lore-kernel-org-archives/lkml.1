@@ -1,115 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881Ab0AVCat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876Ab0AVCgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881Ab0AVCat (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 21:30:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867Ab0AVCar
+	id S1755876Ab0AVCgy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 21:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859Ab0AVCgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 21:30:47 -0500
-Received: from mail-yw0-f198.google.com ([209.85.211.198]:33781 "EHLO
-	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755857Ab0AVCao (ORCPT
+	Thu, 21 Jan 2010 21:36:53 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49217 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755702Ab0AVCgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 21:30:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=mLI+bTkts6kpyZaxfghID4aqpbgR1N3NfKjY8SwZwe+EvYgaJ2wcBj8EC9ChG6rc3+
-         VDeWe+hiFb07/PjvaP6E3PvUAAmaygEuOxsXrzBHKpzopbFndQ/39iReU7oEw/fAa4FG
-         ENnf3OrCaZhC3gtO4hWFY2Zpi7m2GveU93FXo=
-Message-ID: <4B590E19.5080903@gmail.com>
-Date: Thu, 21 Jan 2010 18:31:53 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+	Thu, 21 Jan 2010 21:36:52 -0500
+Date: Thu, 21 Jan 2010 18:35:26 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Frank Ch. Eigler" <fche@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+In-Reply-To: <20100122022255.GF22003@redhat.com>
+Message-ID: <alpine.LFD.2.00.1001211826060.13231@localhost.localdomain>
+References: <20100120062834.GB12165@elte.hu> <20100120072925.GA11395@elte.hu> <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org>
+ <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> <20100122012516.GE22003@redhat.com> <alpine.LFD.2.00.1001211729080.13231@localhost.localdomain> <20100122022255.GF22003@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Bastien Nocera <hadess@hadess.net>
-CC: Robert Hancock <hancockrwd@gmail.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
-Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
-References: <1264011793.1735.3683.camel@localhost.localdomain>	 <4B57A2D4.9030204@gmail.com>	 <20100121185544.GB11996@core.coreip.homeip.net>	 <51f3faa71001211339t4652700ct34659c37479cd67e@mail.gmail.com>	 <4B58CBEE.5020301@gmail.com>	 <51f3faa71001211629n1b556649t32c184e49dc32dfb@mail.gmail.com>	 <4B58FD48.9020209@gmail.com> <1264126146.28766.0.camel@localhost.localdomain>
-In-Reply-To: <1264126146.28766.0.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21/10 18:09, Bastien Nocera wrote:
-> On Thu, 2010-01-21 at 17:20 -0800, Justin P. Mattock wrote:
->> On 01/21/10 16:29, Robert Hancock wrote:
-> <snip>
->>> cat /sys/bus/pnp/devices/*/id
->>>
->>> and see if any of these are present?
->>>
->>> PNP0303
->>> PNP030b
->>> FJC6000
->>> FJC6001
->>> PNP0f03
->>> PNP0f0b
->>> PNP0f0e
->>> PNP0f12
->>> PNP0f13
->>> PNP0f19
->>> PNP0f1c
->>> SYN0801
->>>
->>
->>
->> both macbook pro, and iMac9,1
->> have:
->> PNP0a08
->> PNP0a03
->
-> # cat /sys/bus/pnp/devices/*/id
-> PNP0a08
-> PNP0a03
-> PNP0c02
-> APP0001
-> PNP0200
-> INT0800
-> PNP0103
-> PNP0c01
-> PNP0c04
-> PNP0c02
-> PNP0b00
->
-> On a MacbookAir1,1
->
->
-
-duh!! I only did one device
-here's the two machines I have:
-
-iMac9,1
-
-PNP0a08
-PNP0a03
-PNP0c02
-APP0001
-PNP0200
-PNP0103
-PNP0c01
-PNP0c04
-PNP0c02
-PNP0b00
 
 
-MacBookPro2,2
+On Thu, 21 Jan 2010, Frank Ch. Eigler wrote:
+> 
+> Less passionate analysis would identify a long history of contribution
+> by the the greater affiliated team, including via merged code and by
+> and passing on requirements and experiences.
 
-PNP0a08
-PNP0a03
-PNP0c02
-APP0001
-PNP0200
-INT0800
-PNP0103
-PNP0c01
-PNP0c04
-PNP0c02
-PNP0b00
+The reason I'm so passionate is that I dislike the turn the discussion was 
+taking, as if "utrace" was somehow _good_ because it allowed various other 
+interfaces to hide behind it. And I'm not at all convinced that is true. 
 
-Justin P. Mattock
+And I really didn't want to single out system tap, I very much feel the 
+same way abotu some seccomp-replacement "security model that the kernel 
+doesn't even need to know about" thing.
 
+So don't take the systemtap part to be the important part, it's the bigger 
+issue of "I'd much rather have explicit interfaces than have generic hooks 
+that people can then use in any random way".
+
+I realize that my argument is very anti-thetical to the normal CS teaching 
+of "general-purpose is good". I often feel that very specific code with 
+very clearly defined (and limited) applicability is a good thing - I'd 
+rather have just a very specific ptrace layer that does nothing but 
+ptrace, than a "generic plugin layer that can be layered under ptrace and 
+other things".
+
+In one case, you know exactly what the users are, and what the semantics 
+are going to be. In the other, you don't. 
+
+So I really want to see a very big and immediate upside from utrace. 
+Because to me, the "it's a generic layer with any application you want to 
+throw at it" is a _downside_.
+
+			Linus
