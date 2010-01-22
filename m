@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704Ab0AVJ0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724Ab0AVJ1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753704Ab0AVJ0z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:26:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540Ab0AVJ0E
+	id S1753724Ab0AVJ1R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517Ab0AVJ0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:26:04 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:46227 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753477Ab0AVJZ5 (ORCPT
+	Fri, 22 Jan 2010 04:26:01 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53984 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753481Ab0AVJZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Jan 2010 04:25:57 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 22 Jan 2010 01:24:41 -0800
+Date: Fri, 22 Jan 2010 01:24:42 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 32/38] sparseirq: change irq_desc_ptrs to static
+Subject: [PATCH 33/38] sparseirq: use radix_tree instead of ptrs array
 In-reply-to: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -25,88 +25,128 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264152287-13866-33-git-send-email-yinghai@kernel.org>
+Message-id: <1264152287-13866-34-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add replace_irq_desc()
+use radix_tree irq_desc_tree instead of irq_desc_ptrs.
 
--v2: remove unneeded boundary check in replace_irq_desc
+-v2: according to Eric and cyrill to use radix_tree_lookup_slot and radix_tree_replace_slot
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- kernel/irq/handle.c       |    7 ++++++-
- kernel/irq/internals.h    |    6 +-----
- kernel/irq/numa_migrate.c |    4 ++--
- 3 files changed, 9 insertions(+), 8 deletions(-)
+ kernel/irq/handle.c |   49 +++++++++++++++++++++++++------------------------
+ 1 files changed, 25 insertions(+), 24 deletions(-)
 
 diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index 0e823c0..266f798 100644
+index 266f798..76d5a67 100644
 --- a/kernel/irq/handle.c
 +++ b/kernel/irq/handle.c
-@@ -127,7 +127,7 @@ static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
+@@ -19,6 +19,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/rculist.h>
+ #include <linux/hash.h>
++#include <linux/radix-tree.h>
+ #include <trace/events/irq.h>
+ 
+ #include "internals.h"
+@@ -127,7 +128,26 @@ static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
   */
  DEFINE_RAW_SPINLOCK(sparse_irq_lock);
  
--struct irq_desc **irq_desc_ptrs __read_mostly;
-+static struct irq_desc **irq_desc_ptrs __read_mostly;
+-static struct irq_desc **irq_desc_ptrs __read_mostly;
++static RADIX_TREE(irq_desc_tree, GFP_ATOMIC);
++
++static void set_irq_desc(unsigned int irq, struct irq_desc *desc)
++{
++	radix_tree_insert(&irq_desc_tree, irq, desc);
++}
++
++struct irq_desc *irq_to_desc(unsigned int irq)
++{
++	return radix_tree_lookup(&irq_desc_tree, irq);
++}
++
++void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
++{
++	void **ptr;
++
++	ptr = radix_tree_lookup_slot(&irq_desc_tree, irq);
++	if (ptr)
++		radix_tree_replace_slot(ptr, desc);
++}
  
  static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
  	[0 ... NR_IRQS_LEGACY-1] = {
-@@ -192,6 +192,11 @@ struct irq_desc *irq_to_desc(unsigned int irq)
- 	return NULL;
+@@ -159,9 +179,6 @@ int __init early_irq_init(void)
+ 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
+ 	node = first_online_node;
+ 
+-	/* allocate irq_desc_ptrs array based on nr_irqs */
+-	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
+-
+ 	/* allocate based on nr_cpu_ids */
+ 	kstat_irqs_legacy = kzalloc_node(NR_IRQS_LEGACY * nr_cpu_ids *
+ 					  sizeof(int), GFP_NOWAIT, node);
+@@ -175,28 +192,12 @@ int __init early_irq_init(void)
+ 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+ 		alloc_desc_masks(&desc[i], node, true);
+ 		init_desc_masks(&desc[i]);
+-		irq_desc_ptrs[i] = desc + i;
++		set_irq_desc(i, &desc[i]);
+ 	}
+ 
+-	for (i = legacy_count; i < nr_irqs; i++)
+-		irq_desc_ptrs[i] = NULL;
+-
+ 	return arch_early_irq_init();
  }
  
-+void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
-+{
-+	irq_desc_ptrs[irq] = desc;
-+}
-+
+-struct irq_desc *irq_to_desc(unsigned int irq)
+-{
+-	if (irq_desc_ptrs && irq < nr_irqs)
+-		return irq_desc_ptrs[irq];
+-
+-	return NULL;
+-}
+-
+-void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
+-{
+-	irq_desc_ptrs[irq] = desc;
+-}
+-
  struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
  {
  	struct irq_desc *desc;
-diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
-index b2821f0..c63f3bc 100644
---- a/kernel/irq/internals.h
-+++ b/kernel/irq/internals.h
-@@ -21,11 +21,7 @@ extern void clear_kstat_irqs(struct irq_desc *desc);
- extern raw_spinlock_t sparse_irq_lock;
+@@ -208,14 +209,14 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ 		return NULL;
+ 	}
  
- #ifdef CONFIG_SPARSE_IRQ
--/* irq_desc_ptrs allocated at boot time */
--extern struct irq_desc **irq_desc_ptrs;
--#else
--/* irq_desc_ptrs is a fixed size array */
--extern struct irq_desc *irq_desc_ptrs[NR_IRQS];
-+void replace_irq_desc(unsigned int irq, struct irq_desc *desc);
- #endif
+-	desc = irq_desc_ptrs[irq];
++	desc = irq_to_desc(irq);
+ 	if (desc)
+ 		return desc;
  
- #ifdef CONFIG_PROC_FS
-diff --git a/kernel/irq/numa_migrate.c b/kernel/irq/numa_migrate.c
-index 26bac9d..963559d 100644
---- a/kernel/irq/numa_migrate.c
-+++ b/kernel/irq/numa_migrate.c
-@@ -70,7 +70,7 @@ static struct irq_desc *__real_move_irq_desc(struct irq_desc *old_desc,
  	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
  
  	/* We have to check it to avoid races with another CPU */
 -	desc = irq_desc_ptrs[irq];
 +	desc = irq_to_desc(irq);
+ 	if (desc)
+ 		goto out_unlock;
  
- 	if (desc && old_desc != desc)
- 		goto out_unlock;
-@@ -90,7 +90,7 @@ static struct irq_desc *__real_move_irq_desc(struct irq_desc *old_desc,
- 		goto out_unlock;
+@@ -228,7 +229,7 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
  	}
+ 	init_one_irq_desc(irq, desc, node);
  
 -	irq_desc_ptrs[irq] = desc;
-+	replace_irq_desc(irq, desc);
- 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
++	set_irq_desc(irq, desc);
  
- 	/* free the old one */
+ out_unlock:
+ 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
 -- 
 1.6.4.2
 
