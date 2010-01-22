@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762Ab0AVLWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693Ab0AVL2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762Ab0AVLWo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 06:22:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726Ab0AVLWm
+	id S1754693Ab0AVL2N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 06:28:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642Ab0AVL2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 06:22:42 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52341 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753084Ab0AVLWl (ORCPT
+	Fri, 22 Jan 2010 06:28:13 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39029 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753788Ab0AVL2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 06:22:41 -0500
-Date: Fri, 22 Jan 2010 09:22:31 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] perf tools: fix dc8d6ab typo prohibiting perf top
-	symbol annotation
-Message-ID: <20100122112231.GC1244@ghostprotocols.net>
-References: <1264142379.8074.3.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264142379.8074.3.camel@marge.simson.net>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 22 Jan 2010 06:28:10 -0500
+Date: Fri, 22 Jan 2010 11:30:21 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stepan Chatalyan <kehcho@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Hi all, bug or design flaw?
+Message-ID: <20100122113021.2c850509@lxorguk.ukuu.org.uk>
+In-Reply-To: <22d9728d1001211705i4cf90df2ha730061ea01972b6@mail.gmail.com>
+References: <22d9728d1001211705i4cf90df2ha730061ea01972b6@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Jan 22, 2010 at 07:39:39AM +0100, Mike Galbraith escreveu:
-> 
-> perf tools: fix dc8d6ab typo prohibiting perf top symbol annotation
-> 
-> Signed-off-by: Mike Galbraith <efault@gmx.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> LKML-Reference: <new-submission>
-> 
-> diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-> index 6f30fe1..af2e224 100644
-> --- a/tools/perf/util/symbol.c
-> +++ b/tools/perf/util/symbol.c
-> @@ -1669,7 +1669,7 @@ do_kallsyms:
->  	free(kallsyms_allocated_filename);
->  
->  out_try_fixup:
-> -	if (err > 0) {
-> +	if (err <= 0) {
->  out_fixup:
->  		if (kallsyms_filename == NULL)
->  			dso__set_long_name(self, strdup("[kernel.kallsyms]"));
+> (3) I tried to execut it with "./createdfile"
+> [kehcho@kehcho] [/tmp]$ ./createdfile
+> -bash: ./createdfile: /bin/bash: bad interpreter: Permission denied
 
-Strange, we need to fixup the map only if we found some symbol, so all
-the routines there return the number of symbols found or -1 for errors,
-investigating perf top symbol annotation now...
+The kernel noexec blocks execution of binaries from the file system. It's
+not really a 'security' model so much as a useful historic way of
+stopping people running wrong things by accident, and over NFS and the
+like of stopping people trying to run binaries for the wrong machine
 
-- Arnaldo
+> (4) I tried to execute it, but pass to bash ". /tmp/createdfile"
+> 
+> [kehcho@tornadowt] [/tmp]$ . /tmp/createdfile
+> Probe...
+> 
+> It is a kernel bug or I just report a another one?
+
+Then bash loads the file and interprets the commands - not the kernel.
+
+Data is data - there is no real distinction between "instructions" to
+execute and "data files" in computing.
+
+The "nosuid" bit is different. Only the kernel has the power to grant
+suid status so while you could run a noexec program by hand loading it
+you couldn't make it run setuid that way.
