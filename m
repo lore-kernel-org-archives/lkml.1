@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398Ab0AVON0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526Ab0AVOTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754398Ab0AVON0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 09:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934Ab0AVONZ
+	id S1754526Ab0AVOTP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 09:19:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787Ab0AVOTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 09:13:25 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49564 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751783Ab0AVONY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 09:13:24 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18AMg1CydUA9lS3prw/rFzSUSYKpKbfbJjRjuXpkW
-	D3+yIZXta0tAKL
-Subject: Re: [patch] perf tools: fix dc8d6ab typo prohibiting perf top
- symbol annotation
-From: Mike Galbraith <efault@gmx.de>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20100122114537.GD1244@ghostprotocols.net>
-References: <1264142379.8074.3.camel@marge.simson.net>
-	 <20100122112231.GC1244@ghostprotocols.net>
-	 <20100122114537.GD1244@ghostprotocols.net>
-Content-Type: text/plain
-Date: Fri, 22 Jan 2010 15:13:20 +0100
-Message-Id: <1264169600.16546.44.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53000000000000003
+	Fri, 22 Jan 2010 09:19:14 -0500
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:61418 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377Ab0AVOTN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 09:19:13 -0500
+Date: Fri, 22 Jan 2010 15:18:21 +0100
+From: Michal Nazarewicz <m.nazarewicz@samsung.com>
+Subject: [PATCH] USB: g_multi: fix CONFIG_USB_G_MULTI_RNDIS usage
+In-reply-to: <1259574940-25345-1-git-send-email-m.nazarewicz@samsung.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>
+Cc: Michal Nazarewicz <m.nazarewicz@samsung.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Marek Szyprowski <m.szyprowski@samsung.com>,
+       Kyungmin Park <kyungmin.park@samsung.com>
+Message-id: <1264169901-12475-1-git-send-email-m.nazarewicz@samsung.com>
+MIME-version: 1.0
+X-Mailer: git-send-email 1.6.5
+Content-type: TEXT/PLAIN
+Content-transfer-encoding: 7BIT
+References: <1259574940-25345-1-git-send-email-m.nazarewicz@samsung.com>
+ <20091128103429.705670b2.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-22 at 09:45 -0200, Arnaldo Carvalho de Melo wrote:
+g_multi used CONFIG_USB_ETH_RNDIS to check if RNDIS option was requested
+where it should check for CONFIG_USB_G_MULTI_RNDIS.  As a result, RNDIS
+was never present in g_multi regardless of configuration.
 
-> So the sequence is, right now, without Kirill's patch to autofind the
-> right vmlinux: one needs to specify a --vmlinux /path/to/vmlinux, and
-> that, dc8d6ab, made the only file to be considered.
+This fixes changes made in commit 396cda90d228d0851f3d64c7c85a1ecf6b8ae1e8.
 
-ala perf top -k /lib/modules/2.6.33-tip-smpx/build/vmlinux
+Signed-off-by: Michal Nazarewicz <m.nazarewicz@samsung.com>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ drivers/usb/gadget/multi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> This means that if dso__load_vmlinux for this specified file fails, we
-> won't have kernel symbols, and in my test it failed because the buildid
-> for the running kernel (/sys/kernel/notesr) didn't match the one in the
-> specified vmlinux file...
+ Sorry about previous mail, it has a typo in title.
+ It seems I must sleep more...
 
-(gdb) s
-1602            if (symbol_conf.vmlinux_name != NULL) {
-(gdb) s
-1603                    err = dso__load_vmlinux(self, map, session,
-(gdb) print symbol_conf.vmlinux_name
-$1 = 0x7fffffffe21e "/lib/modules/2.6.33-tip-smpx/build/vmlinux"
-(gdb) s
-dso__load_vmlinux (self=0xecf480, map=0xecf590, session=0xecf2f0,
-    vmlinux=0x7fffffffe21e "/lib/modules/2.6.33-tip-smpx/build/vmlinux", filter=0x4341ea <symbol_filter>)
-    at util/symbol.c:1543
-1543    {
-(gdb) fin
-Run till exit from #0  dso__load_vmlinux (self=0xecf480, map=0xecf590, session=0xecf2f0,
-    vmlinux=0x7fffffffe21e "/lib/modules/2.6.33-tip-smpx/build/vmlinux", filter=0x4341ea <symbol_filter>)
-    at util/symbol.c:1543
-0x000000000044e61f in dso__load_kernel_sym (self=0xecf480, map=0xecf590, session=0xecf2f0, filter=0x4341ea <symbol_filter>)
-    at util/symbol.c:1603
-1603                    err = dso__load_vmlinux(self, map, session,
-Value returned is $2 = 15008
-(gdb)
-
-Not failing here, but we jump down to out_try_fixup, and since
-kallsyms_filename is NULL, change name to [kernel.kallsyms], and
-TheBadThing follows, which made me think this was supposed to be an
-error path.  Jumping to that conclusion made the bad thing go away :)
-
-	-Mike
+diff --git a/drivers/usb/gadget/multi.c b/drivers/usb/gadget/multi.c
+index 4295601..76496f5 100644
+--- a/drivers/usb/gadget/multi.c
++++ b/drivers/usb/gadget/multi.c
+@@ -29,7 +29,7 @@
+ #if defined USB_ETH_RNDIS
+ #  undef USB_ETH_RNDIS
+ #endif
+-#ifdef CONFIG_USB_ETH_RNDIS
++#ifdef CONFIG_USB_G_MULTI_RNDIS
+ #  define USB_ETH_RNDIS y
+ #endif
+ 
+-- 
+1.6.5
 
