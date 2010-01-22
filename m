@@ -1,81 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928Ab0AVDH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924Ab0AVDNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755928Ab0AVDH1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 22:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920Ab0AVDH0
+	id S1755924Ab0AVDNF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 22:13:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585Ab0AVDNB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 22:07:26 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:48278 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755917Ab0AVDHY convert rfc822-to-8bit (ORCPT
+	Thu, 21 Jan 2010 22:13:01 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37084 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755478Ab0AVDNA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 22:07:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=iiP+tgPY+JKruxeAXQLDjhoDDeBxlc59QqUVzq+UfebK5kmW4kQrLo1bHRntO82ggy
-         4AmZHZBeO8M8xcJN0aG4AH2LNO5FfM5uOkj6No8s8d0N8Rsc9RbOYP5wdAZrp9IsGGp5
-         bEX71hZWSe8PRd9xXlk7K0WtFQrF+E4VnVBtY=
-MIME-Version: 1.0
-In-Reply-To: <20100120152652.GA3595@hack>
-References: <de04351e1001200320y2e763680gc7e3b20319c6386e@mail.gmail.com>
-	 <20100120152652.GA3595@hack>
-Date: Fri, 22 Jan 2010 11:07:23 +0800
-Message-ID: <de04351e1001211907m4ff30a24ubf338fbd0bd1d086@mail.gmail.com>
-Subject: Re: nfs-error-RPC: multiple fragments per record not supported
-From: jin zhencheng <zhenchengjin@gmail.com>
-To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       zhenchengjin@163.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 21 Jan 2010 22:13:00 -0500
+X-Authority-Analysis: v=1.0 c=1 a=6AAhZGXoe_sA:10 a=7U3hwN5JcxgA:10 a=meVymXHHAAAA:8 a=kq5xjdUIGCl-Xw0Hkc0A:9 a=3onnBbwQr0NkiaHueeYA:7 a=2zgsIPtjzREbbOebHvh7tjBZW4gA:4 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [RFC PATCH 03/10] ftrace: Drop the ftrace_profile_enabled
+ checks in tracing hot path
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <20100122022858.GA2604@Krystal>
+References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com>
+	 <1264122982-1553-4-git-send-regression-fweisbec@gmail.com>
+	 <1264125917.31321.312.camel@gandalf.stny.rr.com>
+	 <20100122022858.GA2604@Krystal>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 21 Jan 2010 22:12:58 -0500
+Message-ID: <1264129978.31321.333.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have tried  'ethtool -K eth0 tso off' ,but my system also have  the
-same errors
+On Thu, 2010-01-21 at 21:28 -0500, Mathieu Desnoyers wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
 
-do someone know how to resolve  ?
+> > Now for the reason I Cc'd Paul and Mathieu...
+> > 
+> > If we had a synchronize_sched() like function that would wait and return
+> > when all preempted tasks have been scheduled again and went to either
+> > userspace or called schedule directly, then we could actually do this.
+> > 
+> > After unregistering the function graph trace, you call this
+> > "synchronize_tasks()" and it will guarantee that all currently preempted
+> > tasks have either went to userspace or have called schedule() directly.
+> > Then it would be safe to remove this check.
+> 
+> OK, so basically you need to know when you reach a quiescent state, but
+> preemption is enabled and there is no RCU read lock taken around these
+> code paths, am I correct ?
+> 
+> With tracepoints, life is easy because I disable preemption around the
+> calls, so I can use synchronize_sched() to know when quiescent state is
+> reached.
+> 
+> I recommend looking at kernel/kprobes.c:check_safety(). It uses
+> thaw_processes() and synchronize_sched() for this purpose. Basically, it
+> rely on the "refrigeration" points to detect such quiescent state. This
+> trick should do the job for the function graph tracer too.
+> 
+> I'm adding Masami in CC. He is the one who implemented check_safety(),
+> and I remember discussing it with him in the past.
 
-RPC: multiple fragments per record not supported
-RPC: multiple fragments per record not supported
-RPC: fragment too large: 0x318c87ee
-RPC: multiple fragments per record not supported
+Hmm, interesting. Maybe something like that might work. But what if
+CONFIG_PREEMPT is enabled but CONFIG_FREEZER is not?
+
+-- Steve
 
 
-
-On Wed, Jan 20, 2010 at 11:26 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
-> On Wed, Jan 20, 2010 at 07:20:34PM +0800, jin zhencheng wrote:
->>I use kernel 2.6.26.2
->>
->>I use  29 clients,
->>
->>every client mount parameters as this: mount -t nfs -o
->>rw,noatime,v3,rsize=32768,wsize=32768,hard,intr,tcp,nolock
->>
->>my system have many errors lke these :
->>
->>RPC: multiple fragments per record not supported
->>RPC: multiple fragments per record not supported
->>RPC: fragment too large: 0x318c87ee
->>RPC: multiple fragments per record not supported
->>RPC: fragment too large: 0x78bdeedb
->>RPC: multiple fragments per record not supported
->>RPC: fragment too large: 0x75cf8a33
->>RPC: fragment too large: 0x44764ada
->>RPC: multiple fragments per record not supported
->>RPC: fragment too large: 0x0a08e7c0
->>RPC: multiple fragments per record not supported
->>RPC: multiple fragments per record not supported
->>RPC: fragment too large: 0x5b4e13a1
->>RPC: fragment too large: 0x08351a9f
->>
->
-> Does 'ethtool -K eth0 tso off' help?
->
-> --
-> Live like a child, think like the god.
->
->
