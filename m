@@ -1,100 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117Ab0AVPNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305Ab0AVPQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755117Ab0AVPNQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 10:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341Ab0AVPNO
+	id S1755305Ab0AVPQp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 10:16:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882Ab0AVPQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 10:13:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:14116 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753833Ab0AVPNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 10:13:05 -0500
-Date: Fri, 22 Jan 2010 16:13:02 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: netdev@vger.kernel.org
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org
-Subject: [RFC, PATCH net-next-2.6] net: introduce a macro to traverse through
- uc_list easily
-Message-ID: <20100122151301.GC2609@psychotron.redhat.com>
+	Fri, 22 Jan 2010 10:16:45 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44471 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752674Ab0AVPQo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 10:16:44 -0500
+Message-ID: <ea36dc1ede8240f85a69215be964c61a.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <1264168844.2789.4.camel@barrios-desktop>
+References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
+    <20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>
+    <1264168844.2789.4.camel@barrios-desktop>
+Date: Sat, 23 Jan 2010 00:16:40 +0900 (JST)
+Subject: Re: [PATCH v2] oom-kill: add lowmem usage aware oom kill handling
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Minchan Kim" <minchan.kim@gmail.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       rientjes@google.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm thinking how to convert mc_list into list_head in the smoothest way.
-It's almost impossible to convert it at once in all drivers (It's used in almost
-all of them). From the mc_list of structures (either old or new list), only one
-member is needed in drivers' code - addr.
+Minchan Kim wrote:
+> On Fri, 2010-01-22 at 15:23 +0900, KAMEZAWA Hiroyuki wrote:
+>> updated. thank you for review.
 
-Therefore that would be good to introduce a macro that can be used to traverse
-through addresses in the list without caller knowing anything about the type of
-the list. I think this kind of an abstraction is appropriate on this place.
-Also during the phase of changing, the macro can use the original list and once
-all drivers are using this macro, the list itself (so as the macro) can be
-converted into list_head.
+>>  	CONSTRAINT_MEMORY_POLICY,
+>>  };
+>
+> <snip>
+>> @@ -475,7 +511,7 @@ void mem_cgroup_out_of_memory(struct mem
+>>
+>>  	read_lock(&tasklist_lock);
+>>  retry:
+>> -	p = select_bad_process(&points, mem);
+>> +	p = select_bad_process(&points, mem, CONSTRAINT_NONE);
+>
+> Why do you fix this with only CONSTRAINT_NONE?
+> I think we can know CONSTRAINT_LOWMEM with gfp_mask in here.
+>
+memcg is just for accounting anon/file pages. Then, it's never
+cause lowmem oom problem (any memory is ok for memcg).
 
-This patch shows the macro on uc_list (previously converted into list_head).
 
-What do you think about this? Please comment.
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+> Any problem?
+>
+> Otherwise, Looks good to me. :)
+>
+> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+>
+Thank you.
 
-diff --git a/drivers/net/niu.c b/drivers/net/niu.c
-index 0e260cf..85d490b 100644
---- a/drivers/net/niu.c
-+++ b/drivers/net/niu.c
-@@ -22,7 +22,6 @@
- #include <linux/log2.h>
- #include <linux/jiffies.h>
- #include <linux/crc32.h>
--#include <linux/list.h>
- 
- #include <linux/io.h>
- 
-@@ -6359,7 +6358,7 @@ static void niu_set_rx_mode(struct net_device *dev)
- 	struct niu *np = netdev_priv(dev);
- 	int i, alt_cnt, err;
- 	struct dev_addr_list *addr;
--	struct netdev_hw_addr *ha;
-+	unsigned char *ha;
- 	unsigned long flags;
- 	u16 hash[16] = { 0, };
- 
-@@ -6381,8 +6380,8 @@ static void niu_set_rx_mode(struct net_device *dev)
- 	if (alt_cnt) {
- 		int index = 0;
- 
--		list_for_each_entry(ha, &dev->uc.list, list) {
--			err = niu_set_alt_mac(np, index, ha->addr);
-+		netdev_for_each_uc_addr(ha, dev) {
-+			err = niu_set_alt_mac(np, index, ha);
- 			if (err)
- 				printk(KERN_WARNING PFX "%s: Error %d "
- 				       "adding alt mac %d\n",
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 727d265..c11d117 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -263,6 +263,19 @@ struct netdev_hw_addr_list {
- 	int			count;
- };
- 
-+#define netdev_hw_addr_get_by_addr(a) \
-+	container_of((void *) a, struct netdev_hw_addr, addr)
-+
-+#define netdev_for_each_addr(a, head)						\
-+	for (a = list_entry((head)->next, struct netdev_hw_addr, list)->addr;	\
-+	     prefetch(netdev_hw_addr_get_by_addr(a)->list.next),		\
-+	     &netdev_hw_addr_get_by_addr(a)->list != (head);			\
-+	     a = list_entry(netdev_hw_addr_get_by_addr(a)->list.next,		\
-+			    struct netdev_hw_addr, list)->addr)
-+
-+#define netdev_for_each_uc_addr(a, dev)	\
-+	netdev_for_each_addr(a, &dev->uc.list)
-+
- struct hh_cache {
- 	struct hh_cache *hh_next;	/* Next entry			     */
- 	atomic_t	hh_refcnt;	/* number of users                   */
+-Kame
+
+> --
+> Kind regards,
+> Minchan Kim
+>
+>
+
+
