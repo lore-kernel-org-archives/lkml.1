@@ -1,59 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121Ab0AVUUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055Ab0AVU2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121Ab0AVUUH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 15:20:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060Ab0AVUUG
+	id S1754055Ab0AVU2R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 15:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859Ab0AVU2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 15:20:06 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:41502 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986Ab0AVUUE (ORCPT
+	Fri, 22 Jan 2010 15:28:16 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40328 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753658Ab0AVU2P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 15:20:04 -0500
-X-Greylist: delayed 369 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Jan 2010 15:20:04 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=P8LMW31Iyh+0su0rgMcGye4qYn/1qVrW1ISnxR/+aDDAtS92msvTM/NKKR5kqSJahD
-         OCHyXrSvsx5oC94jZFzviHKmuWBeq6kBDSV+GY/E9iA+/vjMK7+BuYTFE3fk9j1d47NH
-         PB03BuCXE7WPeLetad4sfbqwDv2iOieTK5vDY=
-From: mturquette@gmail.com
-To: sameo@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       Mike Turquette <mturquette@ti.com>
-Subject: [PATCH] MFD: TWL4030: program remap_sleep correctly
-Date: Fri, 22 Jan 2010 14:12:58 -0600
-Message-Id: <1264191178-12877-1-git-send-email-mturquette@ti.com>
-X-Mailer: git-send-email 1.6.3.2
+	Fri, 22 Jan 2010 15:28:15 -0500
+Subject: Re: [PATCH]  perf_events: improve x86 event scheduling (v6
+ incremental)
+From: Peter Zijlstra <peterz@infradead.org>
+To: eranian@google.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       davem@davemloft.net, fweisbec@gmail.com, perfmon2-devel@lists.sf.net,
+       eranian@gmail.com
+In-Reply-To: <4b588464.1818d00a.4456.383b@mx.google.com>
+References: <4b588464.1818d00a.4456.383b@mx.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 22 Jan 2010 21:27:54 +0100
+Message-ID: <1264192074.4283.1602.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Turquette <mturquette@ti.com>
+On Thu, 2010-01-21 at 17:39 +0200, Stephane Eranian wrote:
+> @@ -1395,40 +1430,28 @@ void hw_perf_enable(void)
+>                  * apply assignment obtained either from
+>                  * hw_perf_group_sched_in() or x86_pmu_enable()
+>                  *
+> -                * step1: save events moving to new counters
+> -                * step2: reprogram moved events into new counters
+> +                * We either re-enable or re-program and re-enable.
+> +                * All events are disabled by the time we come here.
+> +                * That means their state has been saved already.
+>                  */
 
-Variable remap was incorrectly referencing remap_off for the remap_sleep
-case when configuring TWL4030 power scripts.
+I'm not seeing how it is true.
 
-Signed-off-by: Mike Turquette <mturquette@ti.com>
----
- drivers/mfd/twl4030-power.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Suppose a core2 with counter0 active counting a non-restricted event,
+say cpu_cycles. Then we do:
 
-Applies to MFD master branch, for .33 fixes
+perf_disable()
+  hw_perf_disable()
+    intel_pmu_disable_all
+      wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, 0);
 
-diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
-index 0815292..5b045ff 100644
---- a/drivers/mfd/twl4030-power.c
-+++ b/drivers/mfd/twl4030-power.c
-@@ -405,7 +405,7 @@ static int __init twl4030_configure_resource(struct twl4030_resconfig *rconfig)
- 
- 	if (rconfig->remap_sleep != TWL4030_RESCONFIG_UNDEF) {
- 		remap &= ~SLEEP_STATE_MASK;
--		remap |= rconfig->remap_off << SLEEP_STATE_SHIFT;
-+		remap |= rconfig->remap_sleep << SLEEP_STATE_SHIFT;
- 	}
- 
- 	err = twl_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
--- 
-1.6.3.2
+->enable(MEM_LOAD_RETIRED) /* constrained to counter0 */
+  x86_pmu_enable()
+    collect_events()
+    x86_schedule_events()
+    n_added = 1
+
+    /* also slightly confused about this */
+    if (hwc->idx != -1)
+      x86_perf_event_set_period()
+
+perf_enable()
+  hw_perf_enable()
+
+    /* and here we'll assign the new event to counter0
+     * except we never disabled it... */
+
+    intel_pmu_enable_all()
+      wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, intel_ctrl)
+
+Or am I missing something?
+
+>                 for(i=0; i < cpuc->n_events; i++) {
+>  
+>                         event = cpuc->event_list[i];
+>                         hwc = &event->hw;
+>  
+> -                       if (hwc->idx == -1 || hwc->idx == cpuc->assign[i])
+> -                               continue;
+> -
+> -                       x86_pmu.disable(hwc, hwc->idx);
+> -
+> -                       clear_bit(hwc->idx, cpuc->active_mask);
+> -                       barrier();
+> -                       cpuc->events[hwc->idx] = NULL;
+> -
+> -                       x86_perf_event_update(event, hwc, hwc->idx);
+> -
+> -                       hwc->idx = -1;
+> -               }
+> -
+> -               for(i=0; i < cpuc->n_events; i++) {
+> -
+> -                       event = cpuc->event_list[i];
+> -                       hwc = &event->hw;
+> -
+> -                       if (hwc->idx == -1) {
+> -                               x86_assign_hw_event(event, hwc, cpuc->assign[i]);
+> +                       /*
+> +                        * we can avoid reprogramming counter if:
+> +                        * - assigned same counter as last time
+> +                        * - running on same CPU as last time
+> +                        * - no other event has used the counter since
+> +                        */
+> +                       if (!match_prev_assignment(hwc, cpuc, i)) {
+> +                               x86_assign_hw_event(event, cpuc, cpuc->assign[i]);
+>                                 x86_perf_event_set_period(event, hwc, hwc->idx);
+>                         }
+>                         /*
+>                          * need to mark as active because x86_pmu_disable()
+> -                        * clear active_mask and eventsp[] yet it preserves
+> +                        * clear active_mask and events[] yet it preserves
+>                          * idx
+>                          */
+>                         set_bit(hwc->idx, cpuc->active_mask); 
 
