@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640Ab0AVKnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870Ab0AVKr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752640Ab0AVKnZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 05:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654Ab0AVKnY
+	id S1752870Ab0AVKr4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 05:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705Ab0AVKr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 05:43:24 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56008 "EHLO
+	Fri, 22 Jan 2010 05:47:56 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:56018 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751611Ab0AVKnY (ORCPT
+	with ESMTP id S1752282Ab0AVKrz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 05:43:24 -0500
-To: Don Mullis <don.mullis@gmail.com>
-Cc: linux-kernel@vger.kernel.org, airlied@redhat.com, david@fromorbit.com,
-       dedekind@infradead.org
-Subject: Re: [PATCH 1/2] lib: more scalable list_sort()
+	Fri, 22 Jan 2010 05:47:55 -0500
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Marcin Slusarz <marcin.slusarz@gmail.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 00/24] drivers/block/floppy.c cleanups
 From: Andi Kleen <andi@firstfloor.org>
-References: <87fx609i29.fsf@gmail.com> <20100121175914.GA8910@basil.fritz.box>
-	<87vdeu96bo.fsf@gmail.com>
-Date: Fri, 22 Jan 2010 11:43:21 +0100
-In-Reply-To: <87vdeu96bo.fsf@gmail.com> (Don Mullis's message of "Thu, 21 Jan 2010 19:17:15 -0800")
-Message-ID: <87k4vah12u.fsf@basil.nowhere.org>
+References: <cover.1264133863.git.joe@perches.com>
+Date: Fri, 22 Jan 2010 11:47:53 +0100
+In-Reply-To: <cover.1264133863.git.joe@perches.com> (Joe Perches's message of "Thu, 21 Jan 2010 20:52:30 -0800")
+Message-ID: <87fx5yh0va.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,30 +28,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don Mullis <don.mullis@gmail.com> writes:
->
-> Being just a dumb library routine, list_sort() has no idea what context
-> it's been called in, how long a list a particular client could pass in,
-> nor how expensive the client's cmp() callback might be.
->
-> The cmp() callback already passes back a client-private pointer.
-> Hanging off of this could be a count of calls, or timing information,
-> maintained by the client.  Whenever some threshold is reached, the
-> client's cmp() could do whatever good CPU-sharing citizenship required.
+Joe Perches <joe@perches.com> writes:
 
-need_resched() does all the timing/thresholding (it checks the 
-reschedule flag set by the timer interrupt). You just have to call it.
-But preferable not in the inner loop, but in a outer one. It's
-not hyper-expensive, but it's not free either.
+> Since Stephen Hemminger is a bit too busy to do much with this
+> I've broken up the first large patch into multiple pieces and
+> brought the rest up to current.
 
-The drawback is that if it's called the context always has to
-allow sleeping, so it might need to be optional.
-
-Anyways a better fix might be simply to ensure in the caller
-that lists never get as long that they become a scheduling
-hazard. But you indicated that ubifs would pass very long lists?
-Perhaps ubifs (and other calls who might have that problem) simply
-needs to be fixed.
+Philosophically I'm not sure it's that great an idea to make bad code
+look better without actually fixing/rewriting it. It's like putting
+lipstick on a pig.
 
 -Andi
 
