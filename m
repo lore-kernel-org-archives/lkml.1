@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753Ab0AVOzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582Ab0AVOzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754753Ab0AVOzd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 09:55:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178Ab0AVOz2
+	id S1754582Ab0AVOzS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 09:55:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377Ab0AVOzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 09:55:28 -0500
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:3693 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754654Ab0AVOzW (ORCPT
+	Fri, 22 Jan 2010 09:55:15 -0500
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:16137 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681Ab0AVOzM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 09:55:22 -0500
-X-SpamScore: -4
-X-BigFish: VPS-4(zzab9bh936eMzz1202hzzz32i6bh87h63h)
-X-Spam-TCS-SCL: 2:0
+	Fri, 22 Jan 2010 09:55:12 -0500
+X-SpamScore: 5
+X-BigFish: VPS5(z1039ozab9bh936eMzz1202hzzz32i87h6bh43j61h)
+X-Spam-TCS-SCL: 0:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KWNLFH-02-1L7-02
+X-WSS-ID: 0KWNLFL-02-1LI-02
 X-M-MSG: 
 From: Robert Richter <robert.richter@amd.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -22,70 +22,106 @@ To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
 CC: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 03/12] perf/core, x86: remove duplicate perf_event_mask variable
-Date: Fri, 22 Jan 2010 15:21:58 +0100
-Message-ID: <1264170127-17402-4-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 12/12] perf/core, x86: make event constraint handler generic
+Date: Fri, 22 Jan 2010 15:22:07 +0100
+Message-ID: <1264170127-17402-13-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264170127-17402-1-git-send-email-robert.richter@amd.com>
 References: <1264170127-17402-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 22 Jan 2010 14:54:55.0314 (UTC) FILETIME=[DC017320:01CA9B72]
+X-OriginalArrivalTime: 22 Jan 2010 14:54:55.0768 (UTC) FILETIME=[DC46B980:01CA9B72]
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Reverse-DNS: ausb3extmailp02.amd.com
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The same information is stored also in x86_pmu.intel_ctrl. This patch
-removes perf_event_mask and instead uses x86_pmu.intel_ctrl directly.
+This patch makes the handler for event constraints that was
+implemented for Intel pmus general for all models. Now, an event
+constraint table can be implemented and used also for AMD models.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/kernel/cpu/perf_event.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ arch/x86/kernel/cpu/perf_event.c |   43 +++++++++++++++-----------------------
+ 1 files changed, 17 insertions(+), 26 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index c3f920a..4291f86 100644
+index b893ee7..ac2d3a7 100644
 --- a/arch/x86/kernel/cpu/perf_event.c
 +++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -27,8 +27,6 @@
- #include <asm/stacktrace.h>
- #include <asm/nmi.h>
- 
--static u64 perf_event_mask __read_mostly;
--
- /* The maximal number of PEBS events: */
- #define MAX_PEBS_EVENTS	4
- 
-@@ -2197,7 +2195,7 @@ void __init init_hw_perf_events(void)
- 		     x86_pmu.num_counters, X86_PMC_MAX_GENERIC);
- 		x86_pmu.num_counters = X86_PMC_MAX_GENERIC;
- 	}
--	perf_event_mask = (1 << x86_pmu.num_counters) - 1;
-+	x86_pmu.intel_ctrl = (1 << x86_pmu.num_counters) - 1;
- 	perf_max_events = x86_pmu.num_counters;
- 
- 	if (x86_pmu.num_counters_fixed > X86_PMC_MAX_FIXED) {
-@@ -2206,9 +2204,8 @@ void __init init_hw_perf_events(void)
- 		x86_pmu.num_counters_fixed = X86_PMC_MAX_FIXED;
- 	}
- 
--	perf_event_mask |=
-+	x86_pmu.intel_ctrl |=
- 		((1LL << x86_pmu.num_counters_fixed)-1) << X86_PMC_IDX_FIXED;
--	x86_pmu.intel_ctrl = perf_event_mask;
- 
- 	perf_events_lapic_init();
- 	register_die_notifier(&perf_event_nmi_notifier);
-@@ -2219,7 +2216,7 @@ void __init init_hw_perf_events(void)
- 	pr_info("... value mask:             %016Lx\n", x86_pmu.cntval_mask);
- 	pr_info("... max period:             %016Lx\n", x86_pmu.max_period);
- 	pr_info("... fixed-purpose events:   %d\n",     x86_pmu.num_counters_fixed);
--	pr_info("... event mask:             %016Lx\n", perf_event_mask);
-+	pr_info("... event mask:             %016Lx\n", x86_pmu.intel_ctrl);
+@@ -1387,47 +1387,38 @@ static int fixed_mode_idx(struct hw_perf_event *hwc)
  }
  
- static inline void x86_pmu_read(struct perf_event *event)
+ /*
+- * generic counter allocator: get next free counter
++ * generic counter allocator
+  */
+ static int
+ gen_get_event_idx(struct cpu_hw_events *cpuc, struct hw_perf_event *hwc)
+ {
+-	int idx;
+-
+-again:
+-	idx = find_first_zero_bit(cpuc->used_mask, x86_pmu.num_counters);
+-	if (idx == x86_pmu.num_counters)
+-		return -1;
+-	if (test_and_set_bit(idx, cpuc->used_mask))
+-		goto again;
+-	return idx;
+-}
+-
+-/*
+- * intel-specific counter allocator: check event constraints
+- */
+-static inline int
+-__intel_get_event_idx(struct cpu_hw_events *cpuc, struct hw_perf_event *hwc)
+-{
+ 	const struct event_constraint *event_constraint;
+-	int i, code;
++	int idx, code;
+ 
+ 	if (!x86_pmu.event_constraints)
+-		goto skip;
++		goto get_next_free;
+ 
+ 	code = hwc->config & ARCH_PERFMON_EVENTSEL_EVENT;
+ 
++	/* check event constraints */
+ 	for_each_event_constraint(event_constraint, x86_pmu.event_constraints) {
+ 		if (code == event_constraint->code) {
+-			for_each_bit(i, event_constraint->idxmsk, X86_PMC_IDX_MAX) {
+-				if (!test_and_set_bit(i, cpuc->used_mask))
+-					return i;
++			for_each_bit(idx, event_constraint->idxmsk, X86_PMC_IDX_MAX) {
++				if (!test_and_set_bit(idx, cpuc->used_mask))
++					return idx;
+ 			}
+ 			return -1;
+ 		}
+ 	}
+-skip:
+-	return gen_get_event_idx(cpuc, hwc);
++
++get_next_free:
++	/* get next free counter */
++	idx = find_first_zero_bit(cpuc->used_mask, x86_pmu.num_counters);
++	if (idx == x86_pmu.num_counters)
++		return -1;
++	if (test_and_set_bit(idx, cpuc->used_mask))
++		goto get_next_free;
++	return idx;
+ }
+ 
+ static int
+@@ -1465,7 +1456,7 @@ intel_get_event_idx(struct cpu_hw_events *cpuc, struct hw_perf_event *hwc)
+ 		/* Try to get the previous generic event again */
+ 		if (idx == -1 || test_and_set_bit(idx, cpuc->used_mask)) {
+ try_generic:
+-			idx = __intel_get_event_idx(cpuc, hwc);
++			idx = gen_get_event_idx(cpuc, hwc);
+ 			if (idx == -1)
+ 				return -EAGAIN;
+ 
 -- 
 1.6.6
 
