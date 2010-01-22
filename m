@@ -1,126 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476Ab0AVAaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742Ab0AVAbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476Ab0AVAaA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 19:30:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395Ab0AVA37
+	id S1752742Ab0AVAbG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 19:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599Ab0AVAbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 19:29:59 -0500
-Received: from mail-iw0-f196.google.com ([209.85.223.196]:60487 "EHLO
-	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732Ab0AVA36 convert rfc822-to-8bit (ORCPT
+	Thu, 21 Jan 2010 19:31:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49649 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752262Ab0AVAbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 19:29:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=i9G5gk6LsaHrKEYQ/SJ/typRvbhNz4IarARo5e9WTj3eN/am35+WgTg7g14LF6GE2E
-         X/AW4oW/Er48CGZ/rqh6pAEjxhDERPjIO/q9z2Qt8mK7rYmdgbEv4Cnipe2rxcESwPG1
-         kYHE03dRGdINz7PT4UR5F7+/F0MTNG1SZ+fgc=
-MIME-Version: 1.0
-In-Reply-To: <4B58CBEE.5020301@gmail.com>
-References: <1264011793.1735.3683.camel@localhost.localdomain>
-	 <4B57A2D4.9030204@gmail.com>
-	 <20100121185544.GB11996@core.coreip.homeip.net>
-	 <51f3faa71001211339t4652700ct34659c37479cd67e@mail.gmail.com>
-	 <4B58CBEE.5020301@gmail.com>
-Date: Thu, 21 Jan 2010 18:29:56 -0600
-Message-ID: <51f3faa71001211629n1b556649t32c184e49dc32dfb@mail.gmail.com>
-Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
-From: Robert Hancock <hancockrwd@gmail.com>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Bastien Nocera <hadess@hadess.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 21 Jan 2010 19:31:03 -0500
+Date: Thu, 21 Jan 2010 16:30:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: linux-next: add utrace tree
+Message-Id: <20100121163004.8779bd69.akpm@linux-foundation.org>
+In-Reply-To: <20100122111747.3c224dfd.sfr@canb.auug.org.au>
+References: <20100119211646.GF16096@redhat.com>
+	<20100120111220.e7fb4e2c.sfr@canb.auug.org.au>
+	<20100120054950.GB27108@elte.hu>
+	<20100120061551.GB6588@in.ibm.com>
+	<20100120062834.GB12165@elte.hu>
+	<20100120072925.GA11395@elte.hu>
+	<20100121013822.28781960.sfr@canb.auug.org.au>
+	<20100122111747.3c224dfd.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 3:49 PM, Justin P. Mattock
-<justinmattock@gmail.com> wrote:
-> On 01/21/10 13:39, Robert Hancock wrote:
->>
->> On Thu, Jan 21, 2010 at 12:55 PM, Dmitry Torokhov
->> <dmitry.torokhov@gmail.com>  wrote:
->>>
->>> On Wed, Jan 20, 2010 at 06:41:56PM -0600, Robert Hancock wrote:
->>>>
->>>> On 01/20/2010 12:23 PM, Bastien Nocera wrote:
->>>>>
->>>>> As those computers never had any i8042 controllers, and the
->>>>> current lookup code could potentially lock up/hang/wait for
->>>>> timeout for long periods of time.
->>>>>
->>>>> Fixes intermittent hangs on boot on a MacbookAir1,1
->>>>>
->>>>> Signed-off-by: Bastien Nocera<hadess@hadess.net>
->>>>
->>>> I assume this is happening because of this code in
->>>> drivers/input/serio/i8042-x86ia64io.h:
->>>>
->>>>         if (!i8042_pnp_kbd_devices&&  !i8042_pnp_aux_devices) {
->>>>                 i8042_pnp_exit();
->>>> #if defined(__ia64__)
->>>>                 return -ENODEV;
->>>> #else
->>>>                 printk(KERN_INFO "PNP: No PS/2 controller found.
->>>> Probing ports directly.\n");
->>>>                 return 0;
->>>> #endif
->>>>
->>>> In other words, on x86, if PNP and/or ACPI don't indicate any PS/2
->>>> controller exists, we randomly bang on the ports in the expectation
->>>> they'll be there anyway. This seems rather misguided.
->>>
->>> Basically, we do not trust BIOS writers on x86 ;) In the past there were
->>> occasions when they forgot to mention presence of KBD/AUX in DSDT and
->>> elsewhere which lead to non-functional keyboard/mouse.
->>
->> Are we certain about that? Any pointers to reports?
->>
->>>
->>>> It would seem
->>>> like a better idea to fix this rather than adding yet another DMI
->>>> list (especially since there likely are, or will be, machines
->>>> without i8042 other than Macs).
->>>>
->>>
->>> If they are not Macs that mean they are tested with windows and thus
->>> expect probes in i8042 port region so no harm done. In a few years if
->>> everyone uses USB only we could add a year threshold to trust ACPI/PNP
->>> data.
->>
->> Macs will be tested with Windows too, so obviously it manages to avoid
->> this problem somehow, and I very much doubt it has an Apple-specific
->> check..
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
-> I've an iMac, and a macbook over here,
-> if you guys need me to test out a patch for this let me know.
+On Fri, 22 Jan 2010 11:17:47 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Can you (and probably Bastien or whoever had the problematic machine)
-check the output of:
+> Any thoughts?
 
-cat /sys/bus/pnp/devices/*/id
+I'm nearly a week behind again and am trying to avoid thinking.
 
-and see if any of these are present?
+I've had a (n old) version of utrace in -mm for ages and it didn't
+break anything.
 
-PNP0303
-PNP030b
-FJC6000
-FJC6001
-PNP0f03
-PNP0f0b
-PNP0f0e
-PNP0f12
-PNP0f13
-PNP0f19
-PNP0f1c
-SYN0801
+I still don't think I've seen a really compelling reason for merging
+it.  At least, I wouldn't be able to explain why we did it.  But
+presumably there _are_ such reasons, because it was a lot of development work.
+
+Someone please sell this to us.
