@@ -1,83 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435Ab0AVBS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497Ab0AVBTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435Ab0AVBS5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 20:18:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463Ab0AVBSx
+	id S1755497Ab0AVBTQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 20:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657Ab0AVBTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 20:18:53 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:53143 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754246Ab0AVBQ1 (ORCPT
+	Thu, 21 Jan 2010 20:19:10 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:58130 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463Ab0AVBTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 20:16:27 -0500
+	Thu, 21 Jan 2010 20:19:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Pqi8suvsFFACIGbWaq++90vIxFfSs7f55NWiIzE6p5SzuKZA/1abwvPyPqvpw+c6em
-         6iuoq1OLMuI+Mv1Sk14muq/USMCTj+1BYebigHAJIminXMlnj7bzgwhKMbmH58I3QYK5
-         hNFv6wueBFilwdV8psM/9GnCVuxWlM7D/sp08=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: [RFC PATCH 02/10] ftrace: Ensure tracing has really stopped before leaving unregister_ftrace_graph
-Date: Fri, 22 Jan 2010 02:16:14 +0100
-Message-Id: <1264122982-1553-3-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com>
-References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ATlR6vnkWGqh1ua8g6eD0cwOfo8oIuyaGQlMM7a10mqtZoPwtP91FpC0gixpTPm7lK
+         AZQliPTV/CyCeguUf/Vmoc3r6dIYuDD1itU2aUiwddxDrWzq2/x69j+tLar7cfnbWxSN
+         QS0ERzYSypr8XZJBLh7OFMzs86FBeQn89cyz0=
+Message-ID: <4B58FD48.9020209@gmail.com>
+Date: Thu, 21 Jan 2010 17:20:08 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Robert Hancock <hancockrwd@gmail.com>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Bastien Nocera <hadess@hadess.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
+Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
+References: <1264011793.1735.3683.camel@localhost.localdomain>	 <4B57A2D4.9030204@gmail.com>	 <20100121185544.GB11996@core.coreip.homeip.net>	 <51f3faa71001211339t4652700ct34659c37479cd67e@mail.gmail.com>	 <4B58CBEE.5020301@gmail.com> <51f3faa71001211629n1b556649t32c184e49dc32dfb@mail.gmail.com>
+In-Reply-To: <51f3faa71001211629n1b556649t32c184e49dc32dfb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we run under dynamic tracing, we know that after calling
-unregister_ftrace_graph(), tracing has really stopped because of
-the hot patching and use of stop_machine().
+On 01/21/10 16:29, Robert Hancock wrote:
+> On Thu, Jan 21, 2010 at 3:49 PM, Justin P. Mattock
+> <justinmattock@gmail.com>  wrote:
+>> On 01/21/10 13:39, Robert Hancock wrote:
+>>>
+>>> On Thu, Jan 21, 2010 at 12:55 PM, Dmitry Torokhov
+>>> <dmitry.torokhov@gmail.com>    wrote:
+>>>>
+>>>> On Wed, Jan 20, 2010 at 06:41:56PM -0600, Robert Hancock wrote:
+>>>>>
+>>>>> On 01/20/2010 12:23 PM, Bastien Nocera wrote:
+>>>>>>
+>>>>>> As those computers never had any i8042 controllers, and the
+>>>>>> current lookup code could potentially lock up/hang/wait for
+>>>>>> timeout for long periods of time.
+>>>>>>
+>>>>>> Fixes intermittent hangs on boot on a MacbookAir1,1
+>>>>>>
+>>>>>> Signed-off-by: Bastien Nocera<hadess@hadess.net>
+>>>>>
+>>>>> I assume this is happening because of this code in
+>>>>> drivers/input/serio/i8042-x86ia64io.h:
+>>>>>
+>>>>>          if (!i8042_pnp_kbd_devices&&    !i8042_pnp_aux_devices) {
+>>>>>                  i8042_pnp_exit();
+>>>>> #if defined(__ia64__)
+>>>>>                  return -ENODEV;
+>>>>> #else
+>>>>>                  printk(KERN_INFO "PNP: No PS/2 controller found.
+>>>>> Probing ports directly.\n");
+>>>>>                  return 0;
+>>>>> #endif
+>>>>>
+>>>>> In other words, on x86, if PNP and/or ACPI don't indicate any PS/2
+>>>>> controller exists, we randomly bang on the ports in the expectation
+>>>>> they'll be there anyway. This seems rather misguided.
+>>>>
+>>>> Basically, we do not trust BIOS writers on x86 ;) In the past there were
+>>>> occasions when they forgot to mention presence of KBD/AUX in DSDT and
+>>>> elsewhere which lead to non-functional keyboard/mouse.
+>>>
+>>> Are we certain about that? Any pointers to reports?
+>>>
+>>>>
+>>>>> It would seem
+>>>>> like a better idea to fix this rather than adding yet another DMI
+>>>>> list (especially since there likely are, or will be, machines
+>>>>> without i8042 other than Macs).
+>>>>>
+>>>>
+>>>> If they are not Macs that mean they are tested with windows and thus
+>>>> expect probes in i8042 port region so no harm done. In a few years if
+>>>> everyone uses USB only we could add a year threshold to trust ACPI/PNP
+>>>> data.
+>>>
+>>> Macs will be tested with Windows too, so obviously it manages to avoid
+>>> this problem somehow, and I very much doubt it has an Apple-specific
+>>> check..
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>
+>>
+>> I've an iMac, and a macbook over here,
+>> if you guys need me to test out a patch for this let me know.
+>
+> Can you (and probably Bastien or whoever had the problematic machine)
+> check the output of:
+>
+> cat /sys/bus/pnp/devices/*/id
+>
+> and see if any of these are present?
+>
+> PNP0303
+> PNP030b
+> FJC6000
+> FJC6001
+> PNP0f03
+> PNP0f0b
+> PNP0f0e
+> PNP0f12
+> PNP0f13
+> PNP0f19
+> PNP0f1c
+> SYN0801
+>
 
-But in static tracing case, we only set stub callbacks. This is
-not sufficient on archs that have weak memory ordering to assume
-the older callbacks won't be called right after we leave
-unregister_ftrace_graph().
 
-Insert a read/write memory barrier in the end of
-unregister_ftrace_graph() so that the code that follow can safely
-assume tracing has really stopped. This can avoid its older tracing
-callbacks to perform checks about various states like ensuring
-needed buffers have been allocated, etc...
+both macbook pro, and iMac9,1
+have:
+PNP0a08
+PNP0a03
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
----
- kernel/trace/ftrace.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index c050ce3..94117ec 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -3128,6 +3128,18 @@ void unregister_ftrace_graph(void)
- 
-  out:
- 	mutex_unlock(&ftrace_lock);
-+
-+	/*
-+	 * In dynamic tracing case, tracing is really stopped here.
-+	 * Otherwise we need to ensure ftrace_graph_return
-+	 * and ftrace_graph_entry are seen uptodate, so that code
-+	 * that follows unregister_ftrace_graph can safely assume
-+	 * tracing has stopped. This avoid wasteful checks of tracing
-+	 * states inside tracing callbacks.
-+	 */
-+#ifndef CONFIG_DYNAMIC_FTRACE
-+	smp_mb();
-+#endif
- }
- 
- /* Allocate a return stack for newly created task */
--- 
-1.6.2.3
-
+Justin P. Mattock
