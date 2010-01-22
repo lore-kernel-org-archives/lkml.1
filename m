@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899Ab0AVCvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932173Ab0AVCxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755899Ab0AVCvI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 21:51:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888Ab0AVCvH
+	id S932173Ab0AVCxz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 21:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889Ab0AVCxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 21:51:07 -0500
-Received: from mail-fx0-f223.google.com ([209.85.220.223]:61075 "EHLO
-	mail-fx0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755887Ab0AVCvF (ORCPT
+	Thu, 21 Jan 2010 21:53:54 -0500
+Received: from bungle.evilgeniuses.org.uk ([195.10.223.155]:50066 "EHLO
+	bungle.evilgeniuses.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753305Ab0AVCxy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 21:51:05 -0500
-X-Greylist: delayed 445 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Jan 2010 21:51:04 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=i+y3/7OXqi90dCsc/apyAGhyQzHOXwg7cH4dGTjFIyHQ7iw2ca1eHzLBlEeROg+mlt
-         psVJxbQYTAZnNe7oLxBX6/5nQBmA21+FztcG+EcTkKrsSRFOYqX+ivo8Y2BS4Vj0IHt3
-         Ii6oDw8hzM2PZUPD+6G9ijwpqKuc0Q1G928is=
-Date: Fri, 22 Jan 2010 03:43:34 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Subject: Re: [RFC PATCH 03/10] ftrace: Drop the ftrace_profile_enabled
-	checks in tracing hot path
-Message-ID: <20100122024332.GB8140@nowhere>
-References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com> <1264122982-1553-4-git-send-regression-fweisbec@gmail.com> <1264125917.31321.312.camel@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264125917.31321.312.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 21 Jan 2010 21:53:54 -0500
+Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
+From: Bastien Nocera <hadess@hadess.net>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
+In-Reply-To: <51f3faa71001211830s1744809eu3d3c5b7753656822@mail.gmail.com>
+References: <1264011793.1735.3683.camel@localhost.localdomain>
+	 <4B57A2D4.9030204@gmail.com>
+	 <20100121185544.GB11996@core.coreip.homeip.net>
+	 <51f3faa71001211339t4652700ct34659c37479cd67e@mail.gmail.com>
+	 <4B58CBEE.5020301@gmail.com>
+	 <51f3faa71001211629n1b556649t32c184e49dc32dfb@mail.gmail.com>
+	 <4B58FD48.9020209@gmail.com>
+	 <1264126146.28766.0.camel@localhost.localdomain>
+	 <51f3faa71001211830s1744809eu3d3c5b7753656822@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 22 Jan 2010 02:53:52 +0000
+Message-ID: <1264128832.29434.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 09:05:17PM -0500, Steven Rostedt wrote:
-> On Fri, 2010-01-22 at 02:16 +0100, Frederic Weisbecker wrote:
-> > Every time we enter the function profiler tracing callbacks, we first
-> > check if the function profiling is enabled.
-> > 
-> > This check is useless because we register the function graph
-> > callbacks only after the hashlist has been initialized.
-> 
-> Unfortunately, since the previous patch is incorrect, it makes this one
-> buggy too.
-> 
-> If you remove the check to ftrace_profile_enabled, the call to the
-> profiled code could have been preempted and pending to be called.
-> 
-> Stop machine may remove all calls to the tracing, but it only affects
-> new hits. Pending hits may still exist.
-> 
-> If you remove this check, and the user re-enables the profiling, then
-> all PER_CPU hashs will be reset. If in the process of this happening,
-> the task with the pending trace wakes up, it may access the PER_CPU list
-> and corrupt it.
+On Thu, 2010-01-21 at 20:30 -0600, Robert Hancock wrote:
+<snip>
+> So it doesn't report any keyboard or mouse controller. You're sure
+> that "PNP: No PS/2 controller found" message doesn't show up?
 
+Probably wrong kernel I was testing. I get, on an older kernel:
+PNP: No PS/2 controller found. Probing ports directly.
 
-Indeed.
+So it would poke at it directly, which might cause hangs. The symptoms
+is that, sometimes, the machine will hang on boot until I press the
+power button, when it would continue.
 
-
-
-> Now for the reason I Cc'd Paul and Mathieu...
-> 
-> If we had a synchronize_sched() like function that would wait and return
-> when all preempted tasks have been scheduled again and went to either
-> userspace or called schedule directly, then we could actually do this.
-> 
-> After unregistering the function graph trace, you call this
-> "synchronize_tasks()" and it will guarantee that all currently preempted
-> tasks have either went to userspace or have called schedule() directly.
-> Then it would be safe to remove this check.
-
-
-
-Good point!
-
-I fear that would require heavy hooks in the scheduler though...
+Let me know if you know another way to blacklist the i8042 probing on
+those machines...
 
