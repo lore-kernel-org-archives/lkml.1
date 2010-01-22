@@ -1,268 +1,396 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852Ab0AVLtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774Ab0AVLxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754852Ab0AVLtZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 06:49:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827Ab0AVLtZ
+	id S1753774Ab0AVLxq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 06:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952Ab0AVLxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 06:49:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25552 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754787Ab0AVLtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 06:49:24 -0500
-Date: Fri, 22 Jan 2010 06:45:28 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       Steve French <sfrench@samba.org>
-Subject: Re: [PATCH UPDATED 38/40] cifs: use workqueue instead of slow-work
-Message-ID: <20100122064528.0223d708@tlielax.poochiereds.net>
-In-Reply-To: <4B59889D.7050903@kernel.org>
-References: <1263776272-382-1-git-send-email-tj@kernel.org>
-	<1263776272-382-39-git-send-email-tj@kernel.org>
-	<20100119072000.247ac894@tlielax.poochiereds.net>
-	<4B564B12.7020909@kernel.org>
-	<20100119195641.7b6a17e4@tlielax.poochiereds.net>
-	<4B565B26.3060709@kernel.org>
-	<4B59889D.7050903@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jan 2010 06:53:45 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:34062 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768Ab0AVLxo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 06:53:44 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:from:date:to:reply-to:cc:subject:x-system-of-record;
+	b=Za5gwWv+LUN2XD5A++qYCS9+w8OMW9VNocbuS3jD+UyxXP9Ut/XMx5yEUXN1bQ25Q
+	/tZpFs8tQU+krh/Yd/TEA==
+Message-ID: <4b5991c4.0c58560a.44d3.ffffeedc@mx.google.com>
+From: Stephane Eranian <eranian@google.com>
+Date: Fri, 22 Jan 2010 12:43:01 +0200
+To: linux-kernel@vger.kernel.org
+Reply-to: eranian@google.com
+Cc: peterz@infradead.org, mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
+       fweisbec@gmail.com, robert.richter@amd.com, perfmon2-devel@lists.sf.net,
+       eranian@gmail.com, eranian@google.com
+Subject: [PATCH]  perf_events: AMD event scheduling (v1)
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jan 2010 20:14:37 +0900
-Tejun Heo <tj@kernel.org> wrote:
+	
+	This patch adds correct AMD Northbridge event scheduling.
+	It must be applied on top of my v5 + v6 incremental event
+	scheduling patch.
 
-> Workqueue can now handle high concurrency.  Use system_single_wq
-> instead of slow-work.
-> 
-> * Updated is_valid_oplock_break() to not call cifs_oplock_break_put()
->   as advised by Steve French.  It might cause deadlock.  Instead,
->   reference is increased after queueing succeeded and
->   cifs_oplock_break() briefly grabs GlobalSMBSeslock before putting
->   the cfile to make sure it doesn't put before the matching get is
->   finished.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Steve French <sfrench@samba.org>
-> ---
-> Another approach would be to put from a different work which would be
-> cleaner but need more code.  How does this one look to you?
-> 
-> Thanks.
-> 
->  fs/cifs/Kconfig    |    1 -
->  fs/cifs/cifsfs.c   |    6 +-----
->  fs/cifs/cifsglob.h |    8 +++++---
->  fs/cifs/dir.c      |    2 +-
->  fs/cifs/file.c     |   30 +++++++++++++-----------------
->  fs/cifs/misc.c     |   20 ++++++++++++--------
->  6 files changed, 32 insertions(+), 35 deletions(-)
-> 
-> Index: work/fs/cifs/cifsfs.c
-> ===================================================================
-> --- work.orig/fs/cifs/cifsfs.c
-> +++ work/fs/cifs/cifsfs.c
-> @@ -1038,15 +1038,10 @@ init_cifs(void)
->  	if (rc)
->  		goto out_unregister_key_type;
->  #endif
-> -	rc = slow_work_register_user(THIS_MODULE);
-> -	if (rc)
-> -		goto out_unregister_resolver_key;
->  
->  	return 0;
->  
-> - out_unregister_resolver_key:
->  #ifdef CONFIG_CIFS_DFS_UPCALL
-> -	unregister_key_type(&key_type_dns_resolver);
->   out_unregister_key_type:
->  #endif
->  #ifdef CONFIG_CIFS_UPCALL
-> @@ -1069,6 +1064,7 @@ static void __exit
->  exit_cifs(void)
->  {
->  	cFYI(DBG2, ("exit_cifs"));
-> +	flush_workqueue(system_single_wq);
->  	cifs_proc_clean();
->  #ifdef CONFIG_CIFS_DFS_UPCALL
->  	cifs_dfs_release_automount_timer();
-> Index: work/fs/cifs/cifsglob.h
-> ===================================================================
-> --- work.orig/fs/cifs/cifsglob.h
-> +++ work/fs/cifs/cifsglob.h
-> @@ -18,7 +18,7 @@
->   */
->  #include <linux/in.h>
->  #include <linux/in6.h>
-> -#include <linux/slow-work.h>
-> +#include <linux/workqueue.h>
->  #include "cifs_fs_sb.h"
->  #include "cifsacl.h"
->  /*
-> @@ -356,7 +356,7 @@ struct cifsFileInfo {
->  	atomic_t count;		/* reference count */
->  	struct mutex fh_mutex; /* prevents reopen race after dead ses*/
->  	struct cifs_search_info srch_inf;
-> -	struct slow_work oplock_break; /* slow_work job for oplock breaks */
-> +	struct work_struct oplock_break; /* work for oplock breaks */
->  };
->  
->  /* Take a reference on the file private data */
-> @@ -723,4 +723,6 @@ GLOBAL_EXTERN unsigned int cifs_min_rcv;
->  GLOBAL_EXTERN unsigned int cifs_min_small;  /* min size of small buf pool */
->  GLOBAL_EXTERN unsigned int cifs_max_pending; /* MAX requests at once to server*/
->  
-> -extern const struct slow_work_ops cifs_oplock_break_ops;
-> +void cifs_oplock_break(struct work_struct *work);
-> +void cifs_oplock_break_get(struct cifsFileInfo *cfile);
-> +void cifs_oplock_break_put(struct cifsFileInfo *cfile);
-> Index: work/fs/cifs/dir.c
-> ===================================================================
-> --- work.orig/fs/cifs/dir.c
-> +++ work/fs/cifs/dir.c
-> @@ -157,7 +157,7 @@ cifs_new_fileinfo(struct inode *newinode
->  	mutex_init(&pCifsFile->lock_mutex);
->  	INIT_LIST_HEAD(&pCifsFile->llist);
->  	atomic_set(&pCifsFile->count, 1);
-> -	slow_work_init(&pCifsFile->oplock_break, &cifs_oplock_break_ops);
-> +	INIT_WORK(&pCifsFile->oplock_break, cifs_oplock_break);
->  
->  	write_lock(&GlobalSMBSeslock);
->  	list_add(&pCifsFile->tlist, &cifs_sb->tcon->openFileList);
-> Index: work/fs/cifs/file.c
-> ===================================================================
-> --- work.orig/fs/cifs/file.c
-> +++ work/fs/cifs/file.c
-> @@ -2276,8 +2276,7 @@ out:
->  	return rc;
->  }
->  
-> -static void
-> -cifs_oplock_break(struct slow_work *work)
-> +void cifs_oplock_break(struct work_struct *work)
->  {
->  	struct cifsFileInfo *cfile = container_of(work, struct cifsFileInfo,
->  						  oplock_break);
-> @@ -2316,33 +2315,30 @@ cifs_oplock_break(struct slow_work *work
->  				 LOCKING_ANDX_OPLOCK_RELEASE, false);
->  		cFYI(1, ("Oplock release rc = %d", rc));
->  	}
-> +
-> +	/*
-> +	 * We might have kicked in before is_valid_oplock_break()
-> +	 * finished grabbing reference for us.  Make sure it's done by
-> +	 * waiting for GlobalSMSSeslock.
-> +	 */
-> +	write_lock(&GlobalSMBSeslock);
-> +	write_unlock(&GlobalSMBSeslock);
-> +
+	AMD Northbridge (NB) events measure L3 and Hypertransport
+	activities.  There is a documented restriction on how NB
+	events can be programmed (refer to BKDG section 3.12).
 
-^^^^
-When I backported this before, I put this at the beginning of the
-function, not just before the put. I think that this is actually ok
-though. We may end up running the function without holding the
-references, but the objects we're concerned about can't be freed until
-is_valid_oplock_break drops the spinlock.
+	No two cores can use the same counter to measure NB events.
+	This patch implements this restriction by maintaining a per
+	Northbridge counter allocation table. All cores attached to
+	the same NB compete to allocate NB events. Given that you have
+	4 counters, this means that at most 1 NB event can be measured by
+	all cores. The better alternative is to measure all NB events
+	from a single core. Both approaches are possible using this patch.
+	If there is more NB events than there are counters, some NB events
+	will not be scheduled, e.g., 2 NB events on each core on a 4-core
+	package.
 
-> +	cifs_oplock_break_put(cfile);
->  }
->  
-> -static int
-> -cifs_oplock_break_get(struct slow_work *work)
-> +void cifs_oplock_break_get(struct cifsFileInfo *cfile)
->  {
-> -	struct cifsFileInfo *cfile = container_of(work, struct cifsFileInfo,
-> -						  oplock_break);
->  	mntget(cfile->mnt);
->  	cifsFileInfo_get(cfile);
-> -	return 0;
->  }
->  
-> -static void
-> -cifs_oplock_break_put(struct slow_work *work)
-> +void cifs_oplock_break_put(struct cifsFileInfo *cfile)
->  {
-> -	struct cifsFileInfo *cfile = container_of(work, struct cifsFileInfo,
-> -						  oplock_break);
->  	mntput(cfile->mnt);
->  	cifsFileInfo_put(cfile);
->  }
->  
-> -const struct slow_work_ops cifs_oplock_break_ops = {
-> -	.get_ref	= cifs_oplock_break_get,
-> -	.put_ref	= cifs_oplock_break_put,
-> -	.execute	= cifs_oplock_break,
-> -};
-> -
->  const struct address_space_operations cifs_addr_ops = {
->  	.readpage = cifs_readpage,
->  	.readpages = cifs_readpages,
-> Index: work/fs/cifs/misc.c
-> ===================================================================
-> --- work.orig/fs/cifs/misc.c
-> +++ work/fs/cifs/misc.c
-> @@ -499,7 +499,6 @@ is_valid_oplock_break(struct smb_hdr *bu
->  	struct cifsTconInfo *tcon;
->  	struct cifsInodeInfo *pCifsInode;
->  	struct cifsFileInfo *netfile;
-> -	int rc;
->  
->  	cFYI(1, ("Checking for oplock break or dnotify response"));
->  	if ((pSMB->hdr.Command == SMB_COM_NT_TRANSACT) &&
-> @@ -584,13 +583,18 @@ is_valid_oplock_break(struct smb_hdr *bu
->  				pCifsInode->clientCanCacheAll = false;
->  				if (pSMB->OplockLevel == 0)
->  					pCifsInode->clientCanCacheRead = false;
-> -				rc = slow_work_enqueue(&netfile->oplock_break);
-> -				if (rc) {
-> -					cERROR(1, ("failed to enqueue oplock "
-> -						   "break: %d\n", rc));
-> -				} else {
-> -					netfile->oplock_break_cancelled = false;
-> -				}
-> +
-> +				/*
-> +				 * cifs_oplock_break_put() can't be called
-> +				 * from here.  Get reference after queueing
-> +				 * succeeded.  cifs_oplock_break() will
-> +				 * synchronize using GlobalSMSSeslock.
-> +				 */
-> +				if (queue_work(system_single_wq,
-> +					       &netfile->oplock_break))
-> +					cifs_oplock_break_get(netfile);
-> +				netfile->oplock_break_cancelled = false;
-> +
+	The patch also takes care of hotplug CPU.
 
-I think we want to move the setting of netfile->oplock_break_cancelled
-inside of the if above it.
+	Signed-off-by: Stephane Eranian <eranian@google.com>
 
-If the work is already queued, I don't think we want to set the flag to
-false. Doing so might be problematic if we somehow end up processing
-this oplock break after a previous oplock break/reconnect/reopen
-sequence, but while the initial oplock break is still running.
+--
+ arch/x86/kernel/cpu/perf_event.c |  252 ++++++++++++++++++++++++++++++++++++++-
+ kernel/perf_event.c              |    5 
+ 2 files changed, 254 insertions(+), 3 deletions(-)
 
->  				read_unlock(&GlobalSMBSeslock);
->  				read_unlock(&cifs_tcp_ses_lock);
->  				return true;
-> Index: work/fs/cifs/Kconfig
-> ===================================================================
-> --- work.orig/fs/cifs/Kconfig
-> +++ work/fs/cifs/Kconfig
-> @@ -2,7 +2,6 @@ config CIFS
->  	tristate "CIFS support (advanced network filesystem, SMBFS successor)"
->  	depends on INET
->  	select NLS
-> -	select SLOW_WORK
->  	help
->  	  This is the client VFS module for the Common Internet File System
->  	  (CIFS) protocol which is the successor to the Server Message Block
-
-
--- 
-Jeff Layton <jlayton@redhat.com>
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index a961b1f..a97a744 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -69,6 +69,12 @@ struct debug_store {
+ 	u64	pebs_event_reset[MAX_PEBS_EVENTS];
+ };
+ 
++struct amd_nb {
++        int nb_id; /* Northbridge id */
++	int refcnt; /* refernce count */
++	struct perf_event *owners[X86_PMC_IDX_MAX];
++};
++
+ #define BITS_TO_U64(nr) DIV_ROUND_UP(nr, BITS_PER_BYTE * sizeof(u64))
+ 
+ struct event_constraint {
+@@ -89,6 +95,7 @@ struct cpu_hw_events {
+ 	int			assign[X86_PMC_IDX_MAX]; /* event to counter assignment */
+ 	u64			tags[X86_PMC_IDX_MAX];
+ 	struct perf_event	*event_list[X86_PMC_IDX_MAX]; /* in enabled order */
++	struct amd_nb		*amd_nb;
+ };
+ 
+ #define EVENT_CONSTRAINT(c, n, m) { \
+@@ -134,6 +141,8 @@ struct x86_pmu {
+ 
+ static struct x86_pmu x86_pmu __read_mostly;
+ 
++static raw_spinlock_t amd_nb_lock;
++
+ static DEFINE_PER_CPU(struct cpu_hw_events, cpu_hw_events) = {
+ 	.enabled = 1,
+ };
+@@ -2199,12 +2208,144 @@ static void intel_get_event_constraints(struct cpu_hw_events *cpuc,
+ 	bitmap_fill((unsigned long *)idxmsk, x86_pmu.num_events);
+ }
+ 
++/*
++ * AMD64 events are detected based on their event codes.
++ */
++static inline int amd_is_nb_event(struct hw_perf_event *hwc)
++{
++	u64 val = hwc->config;
++        /* event code : bits [35-32] | [7-0] */
++        val = (val >> 24) | ( val & 0xff);
++        return val >= 0x0e0;
++}
++
++static void amd_put_event_constraints(struct cpu_hw_events *cpuc,
++			       struct perf_event *event)
++{
++	struct hw_perf_event *hwc = &event->hw;
++	struct perf_event *old;
++	struct amd_nb *nb;
++	int i;
++
++	/*
++	 * only care about NB events
++	 */
++	if(!amd_is_nb_event(hwc))
++		return;
++
++	/*
++	 * NB not initialized
++	 */
++	nb = cpuc->amd_nb;
++	if (!nb)
++		return;
++
++	if (hwc->idx == -1)
++		return;
++
++	/*
++	 * need to scan whole list because event may not have
++	 * been assigned during scheduling
++	 */
++	for(i=0; i < x86_pmu.num_events; i++) {
++		if (nb->owners[i] == event) {
++			old = cmpxchg(nb->owners+i, event, NULL);
++			WARN_ON(old != event);
++			return;
++		}
++	}
++}
++
++/*
++ * AMD64 Northbridge events need special treatment because
++ * counter access needs to be synchronized across all cores
++ * of a package. Refer to BKDG section 3.12
++ *
++ * NB events are events measuring L3 cache, Hypertransport
++ * traffic. They are identified by an event code  >= 0xe0.
++ *
++ * No two cores can be measuring NB events using the same
++ * counter. In other words, for NB events, it is as if there
++ * was only one set of counters per package (or cores sharing
++ * the same NB). Thus, we need to maintain a per-NB * allocation
++ * table. The available slot is propagated using the bitmask.
++ * We provide only one choice for each NB events based on
++ * the fact that only NB events have restrictions. Consequently,
++ * if a counter is available, there is a guarantee the NB event
++ * will be assigned to it. If no slot is available, an empty
++ * bitmask is returned and scheduling fails.
++ *
++ * Note that all cores attached the same NB compete for the same
++ * counters to host NB events, this is why we use atomic ops.
++ *
++ * Given that resources are allocated (cmpxchg), they must be
++ * eventually freed for others to use. This is accomplished by
++ * calling amd_put_event_constraints().
++ *
++ * Non NB events are not impacted by this restriction.
++ */
+ static void amd_get_event_constraints(struct cpu_hw_events *cpuc,
+ 				      struct perf_event *event,
+ 				      u64 *idxmsk)
+ {
+-	/* no constraints, means supports all generic counters */
+-	bitmap_fill((unsigned long *)idxmsk, x86_pmu.num_events);
++	struct hw_perf_event *hwc = &event->hw;
++	struct amd_nb *nb = cpuc->amd_nb;
++	struct perf_event *old = NULL;
++	int max = x86_pmu.num_events;
++	int i, j, k = -1;
++
++	/*
++	 * clean up vector
++	 */
++	bitmap_zero((unsigned long *)idxmsk, X86_PMC_IDX_MAX);
++
++	/*
++	 * if not NB event or no NB, then no constraints
++	 */
++	if (!amd_is_nb_event(hwc) || !nb) {
++		bitmap_fill((unsigned long *)idxmsk, x86_pmu.num_events);
++		return;
++	}
++	/*
++	 * detect if already present, if so reuse
++	 *
++	 * cannot merge with actual allocation
++	 * because of possible holes
++	 *
++	 * event can already be present yet not assigned (in hwc->idx)
++	 * because of successive calls to x86_schedule_events() from
++	 * hw_perf_group_sched_in() without hw_perf_enable()
++	 */
++	for(i=0; i < max; i++) {
++		/*
++		 * keep track of first free slot
++		 */
++		if (k == -1 && !nb->owners[i])
++			k = i;
++
++		/* already present, reuse */
++		if (nb->owners[i] == event)
++			goto skip;
++	}
++	/*
++	 * not present, so grab a new slot
++	 *
++	 * try to alllcate same counter as before if
++	 * event has already been assigned once. Otherwise,
++	 * try to use free counter k obtained during the 1st
++	 * pass above.
++	 */
++	i = j = hwc->idx != -1 ? hwc->idx : (k == -1 ? 0 : k);
++	do {
++		old = cmpxchg(nb->owners+i, NULL, event);
++		if (!old)
++			break;
++		if (++i == x86_pmu.num_events)
++			i = 0;
++	} while (i != j);
++skip:
++	if (!old)
++		set_bit(i, (unsigned long *)idxmsk);
+ }
+ 
+ static int x86_event_sched_in(struct perf_event *event,
+@@ -2394,7 +2535,8 @@ static __initconst struct x86_pmu amd_pmu = {
+ 	.apic			= 1,
+ 	/* use highest bit to detect overflow */
+ 	.max_period		= (1ULL << 47) - 1,
+-	.get_event_constraints	= amd_get_event_constraints
++	.get_event_constraints	= amd_get_event_constraints,
++	.put_event_constraints	= amd_put_event_constraints
+ };
+ 
+ static __init int p6_pmu_init(void)
+@@ -2501,6 +2643,87 @@ static __init int intel_pmu_init(void)
+ 	return 0;
+ }
+ 
++static struct amd_nb *amd_alloc_nb(int cpu, int nb_id)
++{
++        struct amd_nb *nb;
++
++        nb= vmalloc_node(sizeof(struct amd_nb), cpu_to_node(cpu));
++        if (!nb)
++                return NULL;
++
++        memset(nb, 0, sizeof(*nb));
++        nb->nb_id = nb_id;
++        return nb;
++}
++
++static void amd_pmu_cpu_online(int cpu)
++{
++	struct cpu_hw_events *cpu1, *cpu2;
++	struct amd_nb *nb = NULL;
++	int i, nb_id;
++
++	if (boot_cpu_data.x86_max_cores < 2)
++		return;
++
++	/*
++	 * function may be called too early in the
++	 * boot process, in which case nb_id is bogus
++	 *
++	 * for BSP, there is an explicit call from
++	 * amd_pmu_init()
++	 */
++	nb_id = amd_get_nb_id(cpu);
++	if (nb_id == BAD_APICID)
++		return;
++
++	cpu1 = &per_cpu(cpu_hw_events, cpu);
++	cpu1->amd_nb = NULL;
++
++	raw_spin_lock(&amd_nb_lock);
++
++	for_each_online_cpu(i) {
++		cpu2 = &per_cpu(cpu_hw_events, i);
++		nb = cpu2->amd_nb;
++		if (!nb)
++			continue;
++		if (nb->nb_id == nb_id)
++			goto found;
++	}
++
++	nb = amd_alloc_nb(cpu, nb_id);
++	if (!nb) {
++		pr_err("perf_events: failed to allocate NB storage for CPU%d\n", cpu);
++		raw_spin_unlock(&amd_nb_lock);
++		return;
++	}
++found:
++	nb->refcnt++;
++	cpu1->amd_nb = nb;
++
++	raw_spin_unlock(&amd_nb_lock);
++
++	pr_info("CPU%d NB%d ref=%d\n", cpu, nb_id, nb->refcnt);
++}
++
++static void amd_pmu_cpu_offline(int cpu)
++{
++	struct cpu_hw_events *cpuhw;
++
++	if (boot_cpu_data.x86_max_cores < 2)
++		return;
++
++	cpuhw = &per_cpu(cpu_hw_events, cpu);
++
++	raw_spin_lock(&amd_nb_lock);
++
++	if (--cpuhw->amd_nb->refcnt == 0)
++		vfree(cpuhw->amd_nb);
++
++	cpuhw->amd_nb = NULL;
++
++	raw_spin_unlock(&amd_nb_lock);
++}
++
+ static __init int amd_pmu_init(void)
+ {
+ 	/* Performance-monitoring supported from K7 and later: */
+@@ -2513,6 +2736,8 @@ static __init int amd_pmu_init(void)
+ 	memcpy(hw_cache_event_ids, amd_hw_cache_event_ids,
+ 	       sizeof(hw_cache_event_ids));
+ 
++	/* initialize BSP */
++	amd_pmu_cpu_online(smp_processor_id());
+ 	return 0;
+ }
+ 
+@@ -2842,4 +3067,25 @@ struct perf_callchain_entry *perf_callchain(struct pt_regs *regs)
+ void hw_perf_event_setup_online(int cpu)
+ {
+ 	init_debug_store_on_cpu(cpu);
++
++	switch (boot_cpu_data.x86_vendor) {
++	case X86_VENDOR_AMD:
++		amd_pmu_cpu_online(cpu);
++		break;
++	default:
++		return;
++	}
++}
++
++void hw_perf_event_setup_offline(int cpu)
++{
++	init_debug_store_on_cpu(cpu);
++
++	switch (boot_cpu_data.x86_vendor) {
++	case X86_VENDOR_AMD:
++		amd_pmu_cpu_offline(cpu);
++		break;
++	default:
++		return;
++	}
+ }
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 27f69a0..20f212e 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -98,6 +98,7 @@ void __weak hw_perf_enable(void)		{ barrier(); }
+ 
+ void __weak hw_perf_event_setup(int cpu)	{ barrier(); }
+ void __weak hw_perf_event_setup_online(int cpu)	{ barrier(); }
++void __weak hw_perf_event_setup_offline(int cpu){ barrier(); }
+ 
+ int __weak
+ hw_perf_group_sched_in(struct perf_event *group_leader,
+@@ -5251,6 +5252,10 @@ perf_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)
+ 		perf_event_exit_cpu(cpu);
+ 		break;
+ 
++        case CPU_DEAD:
++                hw_perf_event_setup_offline(cpu);
++                break;
++
+ 	default:
+ 		break;
+ 	}
