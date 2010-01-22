@@ -1,129 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833Ab0AVDas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952Ab0AVDbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833Ab0AVDas (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 22:30:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932161Ab0AVDaj
+	id S1755952Ab0AVDbQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 22:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816Ab0AVDae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 22:30:39 -0500
-Received: from mga03.intel.com ([143.182.124.21]:51569 "EHLO mga03.intel.com"
+	Thu, 21 Jan 2010 22:30:34 -0500
+Received: from mga09.intel.com ([134.134.136.24]:12184 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755781Ab0AVDag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 22:30:36 -0500
+	id S1755720Ab0AVDae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 22:30:34 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="235568028"
-Message-Id: <20100122033004.335813103@intel.com>
+X-IronPort-AV: E=Sophos;i="4.49,322,1262592000"; 
+   d="scan'208";a="589397793"
+Message-Id: <20100122033004.470767217@intel.com>
 User-Agent: quilt/0.48-1
-Date: Fri, 22 Jan 2010 11:21:04 +0800
+Date: Fri, 22 Jan 2010 11:21:05 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Yinghai Lu <yinghai@kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yinghai Lu <yinghai@kernel.org>, Wu Fengguang <fengguang.wu@intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>
 To: Ingo Molnar <mingo@redhat.com>
 To: "H. Peter Anvin" <hpa@zytor.com>
 cc: x86@kernel.org
-Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>
-cc: Andi Kleen <andi@firstfloor.org>, shaohui.zheng@intel.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [PATCH 2/3] x86: remove bios data range from e820
+Cc: LKML <linux-kernel@vger.kernel.org>
+cc: shaohui.zheng@intel.com
+Subject: [PATCH 3/3] x86: use the generic page_is_ram()
 References: <20100122032102.137106635@intel.com>
-Content-Disposition: inline; filename=remove_bios_begin_end.patch
+Content-Disposition: inline; filename=x86-page-is-ram.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yinghai Lu <yinghai@kernel.org>
+The generic resource based page_is_ram() works better with memory
+hotplug/hotremove. So switch the x86 e820map based code to it.
 
-To prepare move page_is_ram() as generic one.
-
-Tested-by: Wu Fengguang <fengguang.wu@intel.com>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+CC: Andi Kleen <andi@firstfloor.org> 
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> 
+CC: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- arch/x86/kernel/e820.c  |    8 ++++++++
- arch/x86/kernel/setup.c |   19 ++++++++++++++++++-
- arch/x86/mm/ioremap.c   |   16 ----------------
- 3 files changed, 26 insertions(+), 17 deletions(-)
+ arch/x86/include/asm/page_types.h |    1 -
+ arch/x86/mm/ioremap.c             |   21 ---------------------
+ 2 files changed, 22 deletions(-)
 
---- linux-mm.orig/arch/x86/kernel/setup.c	2010-01-22 11:20:33.000000000 +0800
-+++ linux-mm/arch/x86/kernel/setup.c	2010-01-22 11:20:37.000000000 +0800
-@@ -659,6 +659,23 @@ static struct dmi_system_id __initdata b
- 	{}
- };
+--- linux-mm.orig/arch/x86/include/asm/page_types.h	2010-01-22 11:20:29.000000000 +0800
++++ linux-mm/arch/x86/include/asm/page_types.h	2010-01-22 11:20:39.000000000 +0800
+@@ -40,7 +40,6 @@
  
-+static void __init trim_bios_range(void)
-+{
-+	/*
-+	 * A special case is the first 4Kb of memory;
-+	 * This is a BIOS owned area, not kernel ram, but generally
-+	 * not listed as such in the E820 table.
-+	 */
-+	e820_update_range(0, PAGE_SIZE, E820_RAM, E820_RESERVED);
-+	/*
-+	 * special case: Some BIOSen report the PC BIOS
-+	 * area (640->1Mb) as ram even though it is not.
-+	 * take them out.
-+	 */
-+	e820_remove_range(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_RAM, 1);
-+	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
-+}
-+
+ #ifndef __ASSEMBLY__
+ 
+-extern int page_is_ram(unsigned long pagenr);
+ extern int devmem_is_allowed(unsigned long pagenr);
+ 
+ extern unsigned long max_low_pfn_mapped;
+--- linux-mm.orig/arch/x86/mm/ioremap.c	2010-01-22 11:20:37.000000000 +0800
++++ linux-mm/arch/x86/mm/ioremap.c	2010-01-22 11:20:39.000000000 +0800
+@@ -24,27 +24,6 @@
+ 
+ #include "physaddr.h"
+ 
+-int page_is_ram(unsigned long pagenr)
+-{
+-	resource_size_t addr, end;
+-	int i;
+-
+-	for (i = 0; i < e820.nr_map; i++) {
+-		/*
+-		 * Not usable memory:
+-		 */
+-		if (e820.map[i].type != E820_RAM)
+-			continue;
+-		addr = (e820.map[i].addr + PAGE_SIZE-1) >> PAGE_SHIFT;
+-		end = (e820.map[i].addr + e820.map[i].size) >> PAGE_SHIFT;
+-
+-
+-		if ((pagenr >= addr) && (pagenr < end))
+-			return 1;
+-	}
+-	return 0;
+-}
+-
  /*
-  * Determine if we were loaded by an EFI loader.  If so, then we have also been
-  * passed the efi memmap, systab, etc., so we should use these data structures
-@@ -822,7 +839,7 @@ void __init setup_arch(char **cmdline_p)
- 	insert_resource(&iomem_resource, &data_resource);
- 	insert_resource(&iomem_resource, &bss_resource);
- 
--
-+	trim_bios_range();
- #ifdef CONFIG_X86_32
- 	if (ppro_with_ram_bug()) {
- 		e820_update_range(0x70000000ULL, 0x40000ULL, E820_RAM,
---- linux-mm.orig/arch/x86/kernel/e820.c	2010-01-22 11:20:33.000000000 +0800
-+++ linux-mm/arch/x86/kernel/e820.c	2010-01-22 11:20:37.000000000 +0800
-@@ -517,11 +517,19 @@ u64 __init e820_remove_range(u64 start, 
- 			     int checktype)
- {
- 	int i;
-+	u64 end;
- 	u64 real_removed_size = 0;
- 
- 	if (size > (ULLONG_MAX - start))
- 		size = ULLONG_MAX - start;
- 
-+	end = start + size;
-+	printk(KERN_DEBUG "e820 remove range: %016Lx - %016Lx ",
-+		       (unsigned long long) start,
-+		       (unsigned long long) end);
-+	e820_print_type(old_type);
-+	printk(KERN_CONT "\n");
-+
- 	for (i = 0; i < e820.nr_map; i++) {
- 		struct e820entry *ei = &e820.map[i];
- 		u64 final_start, final_end;
---- linux-mm.orig/arch/x86/mm/ioremap.c	2010-01-22 11:20:33.000000000 +0800
-+++ linux-mm/arch/x86/mm/ioremap.c	2010-01-22 11:20:37.000000000 +0800
-@@ -29,22 +29,6 @@ int page_is_ram(unsigned long pagenr)
- 	resource_size_t addr, end;
- 	int i;
- 
--	/*
--	 * A special case is the first 4Kb of memory;
--	 * This is a BIOS owned area, not kernel ram, but generally
--	 * not listed as such in the E820 table.
--	 */
--	if (pagenr == 0)
--		return 0;
--
--	/*
--	 * Second special case: Some BIOSen report the PC BIOS
--	 * area (640->1Mb) as ram even though it is not.
--	 */
--	if (pagenr >= (BIOS_BEGIN >> PAGE_SHIFT) &&
--		    pagenr < (BIOS_END >> PAGE_SHIFT))
--		return 0;
--
- 	for (i = 0; i < e820.nr_map; i++) {
- 		/*
- 		 * Not usable memory:
+  * Fix up the linear direct mapping of the kernel to avoid cache attribute
+  * conflicts.
 
 
