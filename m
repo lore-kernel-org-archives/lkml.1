@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764Ab0AVJDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688Ab0AVJDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764Ab0AVJDi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:03:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713Ab0AVJD0
+	id S1752688Ab0AVJDV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528Ab0AVJDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:03:26 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53462 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506Ab0AVJDJ (ORCPT
+	Fri, 22 Jan 2010 04:03:10 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45859 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752517Ab0AVJDG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 04:03:09 -0500
+	Fri, 22 Jan 2010 04:03:06 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 22 Jan 2010 01:02:21 -0800
+Date: Fri, 22 Jan 2010 01:02:22 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 2/9] pci: add failed_list to record failed one for
- pci_bus_assign_resources
+Subject: [PATCH 3/9] pci: reject mmio range start from 0 on pci_bridge read
 In-reply-to: <1264150948-9052-1-git-send-email-yinghai@kernel.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -25,129 +24,84 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264150948-9052-3-git-send-email-yinghai@kernel.org>
+Message-id: <1264150948-9052-4-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264150948-9052-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so later we can try to assign resource those failed devices again.
+only need to set the value to resource.
+also could keep the old setting in resource for prevent shrink bridge
+resources.
 
--v2: store start, end, flags aside. so could keep res cleared when assign
-     failed. and make following assignment of its children do not go wild
--v3: update comments
--v4: remove one comment
+-v2: change to "bar reading" to "reg reading"
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Reviewed-by: Alex Chiang <achiang@hp.com>
 ---
- drivers/pci/setup-bus.c |   61 +++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 57 insertions(+), 4 deletions(-)
+ drivers/pci/probe.c |   18 +++++++++++++++---
+ 1 files changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 7371a54..7e87ea8 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -27,7 +27,52 @@
- #include <linux/slab.h>
- #include "pci.h"
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 11824d7..8cd4fb3 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -316,13 +316,17 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 		limit |= (io_limit_hi << 16);
+ 	}
  
--static void pbus_assign_resources_sorted(const struct pci_bus *bus)
-+struct resource_list_x {
-+	struct resource_list_x *next;
-+	struct resource *res;
-+	struct pci_dev *dev;
-+	resource_size_t start;
-+	resource_size_t end;
-+	unsigned long flags;
-+};
-+
-+static void add_to_failed_list(struct resource_list_x *head,
-+				 struct pci_dev *dev, struct resource *res)
-+{
-+	struct resource_list_x *list = head;
-+	struct resource_list_x *ln = list->next;
-+	struct resource_list_x *tmp;
-+
-+	tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
-+	if (!tmp) {
-+		pr_warning("add_to_failed_list: kmalloc() failed!\n");
-+		return;
-+	}
-+
-+	tmp->next = ln;
-+	tmp->res = res;
-+	tmp->dev = dev;
-+	tmp->start = res->start;
-+	tmp->end = res->end;
-+	tmp->flags = res->flags;
-+	list->next = tmp;
-+}
-+
-+static void free_failed_list(struct resource_list_x *head)
-+{
-+	struct resource_list_x *list, *tmp;
-+
-+	for (list = head->next; list;) {
-+		tmp = list;
-+		list = list->next;
-+		kfree(tmp);
-+	}
-+
-+	head->next = NULL;
-+}
-+
-+static void pbus_assign_resources_sorted(const struct pci_bus *bus,
-+					 struct resource_list_x *fail_head)
- {
- 	struct pci_dev *dev;
- 	struct resource *res;
-@@ -58,6 +103,8 @@ static void pbus_assign_resources_sorted(const struct pci_bus *bus)
- 		res = list->res;
- 		idx = res - &list->dev->resource[0];
- 		if (pci_assign_resource(list->dev, idx)) {
-+			if (fail_head && !pci_is_root_bus(list->dev->bus))
-+				add_to_failed_list(fail_head, list->dev, res);
- 			res->start = 0;
- 			res->end = 0;
- 			res->flags = 0;
-@@ -572,19 +619,20 @@ void __ref pci_bus_size_bridges(struct pci_bus *bus)
- }
- EXPORT_SYMBOL(pci_bus_size_bridges);
+-	if (base <= limit) {
++	if (base && base <= limit) {
+ 		res->flags = (io_base_lo & PCI_IO_RANGE_TYPE_MASK) | IORESOURCE_IO;
+ 		if (!res->start)
+ 			res->start = base;
+ 		if (!res->end)
+ 			res->end = limit + 0xfff;
+ 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
++	} else {
++		dev_printk(KERN_DEBUG, &dev->dev,
++			 "  bridge window [io  %04lx - %04lx] reg reading\n",
++				 base, limit);
+ 	}
  
--void __ref pci_bus_assign_resources(const struct pci_bus *bus)
-+static void __ref __pci_bus_assign_resources(const struct pci_bus *bus,
-+					 struct resource_list_x *fail_head)
- {
- 	struct pci_bus *b;
- 	struct pci_dev *dev;
+ 	res = child->resource[1];
+@@ -330,11 +334,15 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 	pci_read_config_word(dev, PCI_MEMORY_LIMIT, &mem_limit_lo);
+ 	base = (mem_base_lo & PCI_MEMORY_RANGE_MASK) << 16;
+ 	limit = (mem_limit_lo & PCI_MEMORY_RANGE_MASK) << 16;
+-	if (base <= limit) {
++	if (base && base <= limit) {
+ 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
+ 		res->start = base;
+ 		res->end = limit + 0xfffff;
+ 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
++	} else {
++		dev_printk(KERN_DEBUG, &dev->dev,
++			"  bridge window [mem 0x%08lx - 0x%08lx] reg reading\n",
++					 base, limit + 0xfffff);
+ 	}
  
--	pbus_assign_resources_sorted(bus);
-+	pbus_assign_resources_sorted(bus, fail_head);
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		b = dev->subordinate;
- 		if (!b)
- 			continue;
- 
--		pci_bus_assign_resources(b);
-+		__pci_bus_assign_resources(b, fail_head);
- 
- 		switch (dev->class >> 8) {
- 		case PCI_CLASS_BRIDGE_PCI:
-@@ -602,6 +650,11 @@ void __ref pci_bus_assign_resources(const struct pci_bus *bus)
+ 	res = child->resource[2];
+@@ -366,7 +374,7 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ #endif
  		}
  	}
+-	if (base <= limit) {
++	if (base && base <= limit) {
+ 		res->flags = (mem_base_lo & PCI_PREF_RANGE_TYPE_MASK) |
+ 					 IORESOURCE_MEM | IORESOURCE_PREFETCH;
+ 		if (res->flags & PCI_PREF_RANGE_TYPE_64)
+@@ -374,6 +382,10 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 		res->start = base;
+ 		res->end = limit + 0xfffff;
+ 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
++	} else {
++		dev_printk(KERN_DEBUG, &dev->dev,
++		     "  bridge window [mem 0x%08lx - %08lx pref] reg reading\n",
++					 base, limit + 0xfffff);
+ 	}
  }
-+
-+void __ref pci_bus_assign_resources(const struct pci_bus *bus)
-+{
-+	__pci_bus_assign_resources(bus, NULL);
-+}
- EXPORT_SYMBOL(pci_bus_assign_resources);
  
- static void pci_bridge_release_resources(struct pci_bus *bus,
 -- 
 1.6.4.2
 
