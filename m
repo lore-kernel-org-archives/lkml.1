@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062Ab0AVHZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106Ab0AVH0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752062Ab0AVHZi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 02:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973Ab0AVHZi
+	id S1752106Ab0AVH0K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 02:26:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999Ab0AVH0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 02:25:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:6851 "EHLO mx1.redhat.com"
+	Fri, 22 Jan 2010 02:26:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51107 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751678Ab0AVHZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 02:25:37 -0500
-Date: Fri, 22 Jan 2010 09:25:10 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Avi Kivity <avi@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, riel@redhat.com,
-       cl@linux-foundation.org
-Subject: Re: [PATCH v3 04/12] Add "handle page fault" PV helper.
-Message-ID: <20100122072510.GD2076@redhat.com>
-References: <20100118085022.GA30698@redhat.com>
- <4B5510B1.9010202@zytor.com>
- <20100119065537.GF14345@redhat.com>
- <4B55E5D8.1070402@zytor.com>
- <20100119174438.GA19450@redhat.com>
- <4B5611A9.4050301@zytor.com>
- <20100120100254.GC5238@redhat.com>
- <4B5740CD.4020005@zytor.com>
- <4B58181B.60405@redhat.com>
- <4B58770A.3050107@zytor.com>
+	id S1752027Ab0AVH0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 02:26:08 -0500
+Date: Fri, 22 Jan 2010 08:25:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Anton Blanchard <anton@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH] perf: Fix inconsistency between IP and callchain sampling
+Message-ID: <20100122072547.GB9599@elte.hu>
+References: <20100118054707.GT12666@kryten>
+ <20100118104305.GA5256@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B58770A.3050107@zytor.com>
+In-Reply-To: <20100118104305.GA5256@nowhere>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 07:47:22AM -0800, H. Peter Anvin wrote:
-> On 01/21/2010 01:02 AM, Avi Kivity wrote:
-> >>
-> >> You can also just emulate the state transition -- since you know
-> >> you're dealing with a flat protected-mode or long-mode OS (and just
-> >> make that a condition of enabling the feature) you don't have to deal
-> >> with all the strange combinations of directions that an unrestricted
-> >> x86 event can take.  Since it's an exception, it is unconditional.
-> > 
-> > Do you mean create the stack frame manually?  I'd really like to avoid
-> > that for many reasons, one of which is performance (need to do all the
-> > virt-to-phys walks manually), the other is that we're certain to end up
-> > with something horribly underspecified.  I'd really like to keep as
-> > close as possible to the hardware.  For the alternative approach, see Xen.
-> > 
-> 
-> I obviously didn't mean to do something which didn't look like a
-> hardware-delivered exception.  That by itself provides a tight spec.
-> The performance issue is real, of course.
-> 
-> Obviously, the design of VT-x was before my time at Intel, so I'm not
-> familiar with why the tradeoffs that were done they way they were.
-> 
-Is it so out of question to reserver exception below 32 for PV use?
 
---
-			Gleb.
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> Concerning interrupts that happen in idle, I think we should filter these if 
+> exclude_idle = 1. That looks more something a user may want: if we don't 
+> want to profile idle, neither do we want to encumber with interrupts that 
+> occur inside. On the opposite, if someone wants a finegrained profile, let's 
+> get idle and its interrupts.
+> 
+> What do you guys think about that?
+
+Another, related thing i'd _love_ to see implemented is per IRQ level 
+filtering of both samples and statistics.
+
+This would allow two nice things:
+
+ - the reporting of IRQ (and softirq/tasklet) contexts as separate entites by
+   perf report
+
+ - a 'no IRQ related noise' mode for perf task perf stat, like the
+   user/kernel/hypervisor bits already do, just extended to irqs as well. This 
+   would make 'perf stat --repeat 10 /bin/true' _much_ less noisy, and could 
+   be used even more to assess the performance impact of kernel patches. 
+   Currently IRQs that hit task execution get added to the task's overhead, 
+   which makes the numbers both skewed and noisier.
+
+(The do_IRQ() callbacks are needed because most PMUs cannot stop counters when 
+we enter/exit IRQ/softirq state, so we have to turn counter off/on on irq 
+entries.)
+
+	Ingo
