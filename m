@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743Ab0AVEwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436Ab0AVExL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743Ab0AVEwu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 23:52:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633Ab0AVEwt
+	id S1753436Ab0AVExL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 23:53:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905Ab0AVExF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 23:52:49 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63386 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332Ab0AVEwt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 23:52:49 -0500
-X-Authority-Analysis: v=1.0 c=1 a=6AAhZGXoe_sA:10 a=7U3hwN5JcxgA:10 a=meVymXHHAAAA:8 a=8XtF-aBpUg5W8ulMzP8A:9 a=-vpHyHQ_YFpYmlBPbfoA:7 a=xTKq9JNZAfH2sdX08QxBcnQB9NQA:4 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC PATCH 03/10] ftrace: Drop the ftrace_profile_enabled
- checks in tracing hot path
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-In-Reply-To: <20100122040959.GA11827@Krystal>
-References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com>
-	 <1264122982-1553-4-git-send-regression-fweisbec@gmail.com>
-	 <1264125917.31321.312.camel@gandalf.stny.rr.com>
-	 <20100122022858.GA2604@Krystal>
-	 <1264129978.31321.333.camel@gandalf.stny.rr.com>
-	 <20100122040959.GA11827@Krystal>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 21 Jan 2010 23:52:46 -0500
-Message-ID: <1264135966.31321.375.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 23:53:05 -0500
+Received: from mail.perches.com ([173.55.12.10]:1350 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752850Ab0AVEw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 23:52:59 -0500
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 10/24] drivers/block/floppy.c: Indent a comment
+Date: Thu, 21 Jan 2010 20:52:40 -0800
+Message-Id: <a566b72140b2087bdd90598d475409af179371ef.1264133863.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
+In-Reply-To: <cover.1264133863.git.joe@perches.com>
+References: <cover.1264133863.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-21 at 23:09 -0500, Mathieu Desnoyers wrote:
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/block/floppy.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> > Hmm, interesting. Maybe something like that might work. But what if
-> > CONFIG_PREEMPT is enabled but CONFIG_FREEZER is not?
-> 
-> Then you may want to make the function tracer depend on CONFIG_FREEZER,
-> but maybe Masami has other ideas ?
-
-egad no! This is just to help add guarantees to those that use the
-function tracer that when the tracing is disabled, it is guaranteed that
-no more tracing will be called by the function tracer. Currently,
-nothing relies on this. But we may add cases that might need this.
-
-In fact, only those that need this requirement would need to do this
-trick. Anyway, we could make those depend on CONFIG_FREEZER, but that
-just seems to be a strange dependency.
-
--- Steve
-
+diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+index 4a43373..0813c10 100644
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -4262,7 +4262,7 @@ static int __init floppy_init(void)
+ 		FDCS->dtr = -1;
+ 		FDCS->dor = 0x4;
+ #if defined(__sparc__) || defined(__mc68000__)
+-		/*sparcs/sun3x don't have a DOR reset which we can fall back on to */
++	/*sparcs/sun3x don't have a DOR reset which we can fall back on to */
+ #ifdef __mc68000__
+ 		if (MACH_IS_SUN3X)
+ #endif
+-- 
+1.6.6.rc0.57.gad7a
 
