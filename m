@@ -1,189 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262Ab0AVOHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240Ab0AVOLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262Ab0AVOHr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 09:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083Ab0AVOHq
+	id S1754240Ab0AVOLn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 09:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792Ab0AVOLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 09:07:46 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:42652 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753953Ab0AVOHp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 09:07:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=aadhYVaXN4xnaB8P9cGa7VbaF/iwuFzkGO9f2VXqNI0GWxXMWIKO1TdV2/KfQ+c2tH
-         V2KjwSBzdJZ2HUG0TppugNJpKyTG6lgCfbWPOrHc2+dXV73NNn54Nbi0eghB+Hqc5mf5
-         Rl8dP0krG7NJKn49CQffXvb712fjKEuWD7o9I=
+	Fri, 22 Jan 2010 09:11:43 -0500
+Received: from mr2.cc.emory.edu ([170.140.52.91]:40943 "EHLO mr2.cc.emory.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752039Ab0AVOLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 09:11:42 -0500
 MIME-Version: 1.0
-In-Reply-To: <48239d391001220238r151c4dfbjd8f6e7863718dad8@mail.gmail.com>
-References: <48239d391001210326y25986d59hd10d390ef9c8ddea@mail.gmail.com>
-	 <20100121122839.GB26015@nokia.com>
-	 <48239d391001210523l5762775dm8382ad82e7b10e4a@mail.gmail.com>
-	 <48239d391001210816n7dd469acr920be41e98129cb4@mail.gmail.com>
-	 <20100121162437.GC3628@gandalf>
-	 <48239d391001210932w5523cc4ajc3b5459966ab395e@mail.gmail.com>
-	 <48239d391001220238r151c4dfbjd8f6e7863718dad8@mail.gmail.com>
-Date: Fri, 22 Jan 2010 17:07:42 +0300
-Message-ID: <48239d391001220607j666e7759y7e8ac393792bdab3@mail.gmail.com>
-Subject: Re: MUSB crash on OMAP3 board with second load of gadget
-From: Sergey Lapin <slapinid@gmail.com>
-To: me@felipebalbi.com
-Cc: felipe.balbi@nokia.com,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <51f3faa71001191859l3c323a8ev6b7c0cced2c59e92@mail.gmail.com>
+References: <Pine.LNX.4.64.0912221105010.5876@stg.biology.emory.edu> 
+	<4B31C8EE.3030003@kernel.org> <d2d378040912232302u4b550dap687fcadced237935@mail.gmail.com> 
+	<4B331771.3090309@kernel.org> <d2d378041001161334r6fe3ee65w39cf98a6c2d1d399@mail.gmail.com> 
+	<4B5666B4.6000804@kernel.org> <51f3faa71001191859l3c323a8ev6b7c0cced2c59e92@mail.gmail.com>
+From: =?UTF-8?Q?Cengiz_G=C3=BCnay?= <cgunay@emory.edu>
+Date: Fri, 22 Jan 2010 09:11:18 -0500
+Message-ID: <d2d378041001220611ieb9d715of8d727f8f93ca9f@mail.gmail.com>
+Subject: Re: sata_nv times out for BD-ROM iHOS104-08
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Content-Type: multipart/mixed; boundary=000e0cd1066adef002047dc165fd
+X-Emory-MailScanner-Information: Please contact the ISP for more information
+X-Emory-MailScanner-ID: o0MEBcHd030232
+X-Emory-MailScanner: Found to be clean
+X-Emory-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-4.399, required 6, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -2.60)
+X-Emory-MailScanner-From: cgunay@emory.edu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-0 at 1:38 PM, Sergey Lapin <slapinid@gmail.com> wrote:
-> Hi,
->
->> [  580.082427] [<c0030ac4>] (__irq_svc+0x44/0xa8) from [<c00420dc>]
->> (omap3_enter_idle+0x124/0x158)
->> [  580.091186] [<c00420dc>] (omap3_enter_idle+0x124/0x158) from
->> [<c022d708>] (cpuidle_idle_call+0xa4/0x180)
->> [  580.100738] [<c022d708>] (cpuidle_idle_call+0xa4/0x180) from
->> [<c00324dc>] (cpu_idle+0x48/0x98)
->> [  580.109436] [<c00324dc>] (cpu_idle+0x48/0x98) from [<c0008934>]
->> (start_kernel+0x268/0x2c8)
->> [  580.117767] [<c0008934>] (start_kernel+0x268/0x2c8) from
->> [<80008034>] (0x80008034)
->> [  580.125366] Code: c03a876b e92d4013 e5903004 e1a04000 (e593c000)
->> [  580.131652] ---[ end trace 42b8f4f7e396999c ]---
->> [  580.136291] Kernel panic - not syncing: Fatal exception in interrupt
->>
->
-> I've managed to debug that in my case,
-> drivers/usb/musb/musb_gadget_ep0.c:
-> musb_read_setup():
->        /* clean up any leftover transfers */
->        r = next_ep0_request(musb);
-> in this place we have somewhat corrupted usb_request. Any ideas why?
->
-> By the way, crash is not reproduced if cable is removed before module unloading
-> (and all USB activity processed).
->
-> S.
->
+--000e0cd1066adef002047dc165fd
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Is this panic looks like list corruption bug which was mentioned earlier?
-with my new test script I get these panic messages with the same frequency
-as 6b6b6b6b ones.
+Hello, Tejun & Robert,
 
-If I understand right, 6b6b6b6b = slab corruption, and 00200200 =
-LIST_POISON2, which means list corruption.
+On Tue, Jan 19, 2010 at 9:59 PM, Robert Hancock <hancockrwd@gmail.com> wrot=
+e:
+>>> 2009/12/24 Tejun Heo <tj@kernel.org>:
+>> Hmm.... it worked? =C2=A0Does kernel parameter sata_nv.adma_enabled=3D0 =
+make
+>> any difference? =C2=A0Can you please attach boot log with the kernel
+>> parameter specified?
+>
+> Think you meant maybe sata_nv.swncq=3D0 instead - this is an MCP51
+> controller so it doesn't support ADMA. I don't imagine SWNCQ would
+> make any difference with an ATAPI device, but wouldn't hurt to try.
 
-[  275.079284] Unable to handle kernel paging request at virtual
-address 00200200
-[  275.086578] pgd = c0004000
-[  275.089294] [00200200] *pgd=00000000
-[  275.092895] Internal error: Oops: 5 [#1] PREEMPT
-[  275.097534] last sysfs file: /sys/module/musb_hdrc/parameters/debug
-[  275.103851] Modules linked in: g_mass_storage [last unloaded: g_mass_storage]
-[  275.111053] CPU: 0    Not tainted  (2.6.33-rc5-07242-gb226820-dirty #14)
-[  275.117828] PC is at list_del+0xc/0x90
-[  275.121582] LR is at musb_g_giveback+0x20/0x118
-[  275.126159] pc : [<c01b71cc>]    lr : [<c021daa4>]    psr: 200001d3
-[  275.126159] sp : c03f7db0  ip : 00074df4  fp : c7832048
-[  275.137725] r10: fa0ab000  r9 : fa0ab100  r8 : fa0ab100
-[  275.142974] r7 : 00000001  r6 : c7832064  r5 : 00000000  r4 : c718c618
-[  275.149536] r3 : 00200200  r2 : 00000000  r1 : c718c600  r0 : c718c618
-[  275.156097] Flags: nzCv  IRQs off  FIQs off  Mode SVC_32  ISA ARM
-Segment kernel
-[  275.163635] Control: 10c5387d  Table: 8725c019  DAC: 00000017
-[  275.169403] Process swapper (pid: 0, stack limit = 0xc03f62e8)
-[  275.175292] Stack: (0xc03f7db0 to 0xc03f8000)
-[  275.179687] 7da0:                                     c718c618
-c718c600 c718c600 c021daa4
-[  275.187896] 7dc0: c7832048 c02f10dc c03affcf c03f7ddc c718c618
-c718c600 00000000 c7832000
-[  275.196136] 7de0: 00000001 c021c3c4 00000006 00000100 00000000
-00000040 c03f6000 06800099
-[  275.204376] 7e00: 00000100 00000040 00000000 00000000 000000f0
-c7832000 00000008 00000099
-[  275.212615] 7e20: 00000000 00000000 00000000 c021b4f0 00000008
-00000001 00000000 00000000
-[  275.220855] 7e40: c7832000 60000153 0000005c c03f6000 0000005c
-c021b628 c78bdc80 c78bdc80
-[  275.229095] 7e60: 0000005c c0090d58 c78bdc80 c04099cc 0000005c
-00000104 00000103 c03f6000
-[  275.237304] 7e80: 00000002 c0092e1c 0000005c c03f7f40 00000000
-c0030070 ffffffff fa200000
-[  275.245544] 7ea0: 00000000 c0030ac4 00000000 00000003 00000000
-c0436700 0000005c c03f6000
-[  275.253784] 7ec0: 00000000 00000002 00000001 0000000a 00000002
-00000000 00074c9f c03f7ef0
-[  275.262023] 7ee0: c0063e28 c0063e40 20000153 ffffffff c78bdc80
-c78bdc80 0000005c 00000000
-[  275.270263] 7f00: c78bdc80 0000005c 00000000 00000003 00000002
-00000001 c03f6000 0000001f
-[  275.278472] 7f20: 00000000 c006401c 0000005c c0030074 ffffffff
-fa200000 00000003 c0030ac4
-[  275.286743] 7f40: 002e19b8 00000000 002e19b8 00000000 c04316b4
-00000003 00000003 c04316b4
-[  275.294982] 7f60: 800273e0 411fc082 0000001f 00000000 00000000
-c03f7f88 c00420ec c00420f8
-[  275.303222] 7f80: 60000053 ffffffff 00000000 002e19b8 386d712e
-178b0dd5 386d712e 175cf41d
-[  275.311462] 7fa0: c03fbd50 c03fbe20 c0430cdc c03fbd50 c0476b48
-c022d93c c03f6000 c0430cdc
-[  275.319702] 7fc0: c0029014 c03f9c10 800273e0 c00324dc c045c9c0
-c0008934 c000848c 00000000
-[  275.327911] 7fe0: 00000000 c0029018 00000000 10c53c7d c0430df0
-80008034 00000000 00000000
-[  275.336181] [<c01b71cc>] (list_del+0xc/0x90) from [<c021daa4>]
-(musb_g_giveback+0x20/0x118)
-[  275.344573] [<c021daa4>] (musb_g_giveback+0x20/0x118) from
-[<c021c3c4>] (musb_g_ep0_irq+0x358/0x940)
-[  275.353790] [<c021c3c4>] (musb_g_ep0_irq+0x358/0x940) from
-[<c021b4f0>] (musb_interrupt+0x2fc/0x3d4)
-[  275.362976] [<c021b4f0>] (musb_interrupt+0x2fc/0x3d4) from
-[<c021b628>] (generic_interrupt+0x60/0x94)
-[  275.372283] [<c021b628>] (generic_interrupt+0x60/0x94) from
-[<c0090d58>] (handle_IRQ_event+0xa4/0x1e0)
-[  275.381652] [<c0090d58>] (handle_IRQ_event+0xa4/0x1e0) from
-[<c0092e1c>] (handle_level_irq+0xc0/0x150)
-[  275.391052] [<c0092e1c>] (handle_level_irq+0xc0/0x150) from
-[<c0030070>] (asm_do_IRQ+0x70/0x90)
-[  275.399810] [<c0030070>] (asm_do_IRQ+0x70/0x90) from [<c0030ac4>]
-(__irq_svc+0x44/0xa8)
-[  275.407867] Exception stack(0xc03f7ea8 to 0xc03f7ef0)
-[  275.412933] 7ea0:                   00000000 00000003 00000000
-c0436700 0000005c c03f6000
-[  275.421173] 7ec0: 00000000 00000002 00000001 0000000a 00000002
-00000000 00074c9f c03f7ef0
-[  275.429412] 7ee0: c0063e28 c0063e40 20000153 ffffffff
-[  275.434509] [<c0030ac4>] (__irq_svc+0x44/0xa8) from [<c0063e40>]
-(__do_softirq+0x54/0x1e8)
-[  275.442840] [<c0063e40>] (__do_softirq+0x54/0x1e8) from
-[<c006401c>] (irq_exit+0x48/0x9c)
-[  275.451080] [<c006401c>] (irq_exit+0x48/0x9c) from [<c0030074>]
-(asm_do_IRQ+0x74/0x90)
-[  275.459045] [<c0030074>] (asm_do_IRQ+0x74/0x90) from [<c0030ac4>]
-(__irq_svc+0x44/0xa8)
-[  275.467102] Exception stack(0xc03f7f40 to 0xc03f7f88)
-[  275.472198] 7f40: 002e19b8 00000000 002e19b8 00000000 c04316b4
-00000003 00000003 c04316b4
-[  275.480438] 7f60: 800273e0 411fc082 0000001f 00000000 00000000
-c03f7f88 c00420ec c00420f8
-[  275.488647] 7f80: 60000053 ffffffff
-[  275.492187] [<c0030ac4>] (__irq_svc+0x44/0xa8) from [<c00420f8>]
-(omap3_enter_idle+0x124/0x15c)
-[  275.500976] [<c00420f8>] (omap3_enter_idle+0x124/0x15c) from
-[<c022d93c>] (cpuidle_idle_call+0xa4/0x180)
-[  275.510528] [<c022d93c>] (cpuidle_idle_call+0xa4/0x180) from
-[<c00324dc>] (cpu_idle+0x48/0x98)
-[  275.519195] [<c00324dc>] (cpu_idle+0x48/0x98) from [<c0008934>]
-(start_kernel+0x268/0x2c8)
-[  275.527526] [<c0008934>] (start_kernel+0x268/0x2c8) from
-[<80008034>] (0x80008034)
-[  275.535156] Code: c03a8a50 e92d4013 e5903004 e1a04000 (e593c000)
-[  275.541381] ---[ end trace f41fd6e0efe3feba ]---
-[  275.546020] Kernel panic - not syncing: Fatal exception in interrupt
+Thanks for following this up. I tried both of your suggested kernel
+parameters (attached). Neither solved my problem, but also it looks
+like I couldn't turn off the SWNCQ mode. Even though I set it to zero,
+sata_nv still shows that it uses it. Although the order of my devices
+changed, so I assume it did something.
+
+I hope this helps shed some light! I will also try the kernel patch --
+not sure if that is suited for the problem I'm having?
+
+-Cengiz
+
+
+
+--=20
+Cengiz Gunay
+--
+Postdoctoral Fellow
+Prinz Lab, Dept. of Biology, Emory University
+1510 Clifton Rd., Room 2172, Atlanta, GA 30322, U.S.A.
+cgunay@emory.edu  cengique@users.sf.net         cengique@yahoo.com
+Lab: +1-404-727-9381    Home/Cell: +1-678-559-8694
+http://userwww.service.emory.edu/~cgunay
+ICQ# 21104923, cengique@{jabber.org,Skype}
+--
+
+--000e0cd1066adef002047dc165fd
+Content-Type: text/x-log; charset=US-ASCII; name="dmesg-sata_nv-adma_disabled.log"
+Content-Disposition: attachment; filename="dmesg-sata_nv-adma_disabled.log"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g4r1qlii0
+
+IEJJT1MtZTgyMDogMDAwMDAwMDA3ZmVmMzAwMCAtIDAwMDAwMDAwN2ZmMDAwMDAgKEFDUEkgZGF0
+YSkKICAjMCBbMDAwMDAwMDAwMCAtIDAwMDAwMDEwMDBdICAgQklPUyBkYXRhIHBhZ2UgPT0+IFsw
+MDAwMDAwMDAwIC0gMDAwMDAwMTAwMF0KS2VybmVsIGNvbW1hbmQgbGluZTogQk9PVF9JTUFHRT0v
+Ym9vdC92bWxpbnV6LTIuNi4zMiByb290PS9kZXYvbWFwcGVyL252aWRpYV9jZWViYWlpYjEgcm8g
+c2luZ2xlIHNhdGFfbnYuYWRtYV9lbmFibGVkPTAKTWVtb3J5OiAyMDUyMjY0ay8yMDk2MDY0ayBh
+dmFpbGFibGUgKDIzMTlrIGtlcm5lbCBjb2RlLCA0MjEzMmsgcmVzZXJ2ZWQsIDkxMmsgZGF0YSwg
+NDA0ayBpbml0LCAxMTg2NzYwayBoaWdobWVtKQogICAgICAuZGF0YSA6IDB4YzEyNDNlNDEgLSAw
+eGMxMzI4MTI4ICAgKCA5MTIga0IpCmxpYmF0YSB2ZXJzaW9uIDMuMDAgbG9hZGVkLgpzYXRhX252
+IDAwMDA6MDA6MGUuMDogdmVyc2lvbiAzLjUKc2F0YV9udiAwMDAwOjAwOjBlLjA6IFBDSSBJTlQg
+QSAtPiBMaW5rW0FQU0ldIC0+IEdTSSAyMSAobGV2ZWwsIGxvdykgLT4gSVJRIDIxCnNhdGFfbnYg
+MDAwMDowMDowZS4wOiBVc2luZyBTV05DUSBtb2RlCnNhdGFfbnYgMDAwMDowMDowZS4wOiBzZXR0
+aW5nIGxhdGVuY3kgdGltZXIgdG8gNjQKc2NzaTAgOiBzYXRhX252CnNjc2kxIDogc2F0YV9udgph
+dGExOiBTQVRBIG1heCBVRE1BLzEzMyBjbWQgMHg5ZjAgY3RsIDB4YmYwIGJtZG1hIDB4ZDQwMCBp
+cnEgMjEKYXRhMjogU0FUQSBtYXggVURNQS8xMzMgY21kIDB4OTcwIGN0bCAweGI3MCBibWRtYSAw
+eGQ0MDggaXJxIDIxCnNhdGFfbnYgMDAwMDowMDowZi4wOiBQQ0kgSU5UIEEgLT4gTGlua1tBUFNK
+XSAtPiBHU0kgMjAgKGxldmVsLCBsb3cpIC0+IElSUSAyMApzYXRhX252IDAwMDA6MDA6MGYuMDog
+VXNpbmcgU1dOQ1EgbW9kZQpzYXRhX252IDAwMDA6MDA6MGYuMDogc2V0dGluZyBsYXRlbmN5IHRp
+bWVyIHRvIDY0CnNjc2kyIDogc2F0YV9udgpzY3NpMyA6IHNhdGFfbnYKYXRhMzogU0FUQSBtYXgg
+VURNQS8xMzMgY21kIDB4OWUwIGN0bCAweGJlMCBibWRtYSAweGU4MDAgaXJxIDIwCmF0YTQ6IFNB
+VEEgbWF4IFVETUEvMTMzIGNtZCAweDk2MCBjdGwgMHhiNjAgYm1kbWEgMHhlODA4IGlycSAyMAph
+dGEzOiBTQVRBIGxpbmsgZG93biAoU1N0YXR1cyAwIFNDb250cm9sIDMwMCkKYXRhMTogU0FUQSBs
+aW5rIHVwIDMuMCBHYnBzIChTU3RhdHVzIDEyMyBTQ29udHJvbCAzMDApCmF0YTEuMDA6IEFUQS03
+OiBTQU1TVU5HIFNQMjUwNEMsIFZUMTAwLTQxLCBtYXggVURNQTcKYXRhMS4wMDogNDg4Mzk3MTY4
+IHNlY3RvcnMsIG11bHRpIDE2OiBMQkE0OCBOQ1EgKGRlcHRoIDMxLzMyKQphdGExLjAwOiBjb25m
+aWd1cmVkIGZvciBVRE1BLzEzMwphdGEyOiBTQVRBIGxpbmsgdXAgMy4wIEdicHMgKFNTdGF0dXMg
+MTIzIFNDb250cm9sIDMwMCkKYXRhMi4wMDogQVRBLTc6IFNUMzI1MDYyMEFTLCAzLkFBQywgbWF4
+IFVETUEvMTMzCmF0YTIuMDA6IDQ4ODM5NzE2OCBzZWN0b3JzLCBtdWx0aSAxNjogTEJBNDggTkNR
+IChkZXB0aCAzMS8zMikKYXRhMi4wMDogY29uZmlndXJlZCBmb3IgVURNQS8xMzMKYXRhNDogU0FU
+QSBsaW5rIHVwIDEuNSBHYnBzIChTU3RhdHVzIDExMyBTQ29udHJvbCAzMDApCmF0YTQuMDA6IEFU
+QVBJOiBBVEFQSSAgIGlIT1MxMDQsIFdMMDgsIG1heCBVRE1BLzEwMAphdGE0LjAwOiBjb25maWd1
+cmVkIGZvciBVRE1BLzEwMAphdGE0LjAwOiBxYyB0aW1lb3V0IChjbWQgMHhhMCkKYXRhNC4wMDog
+VEVTVF9VTklUX1JFQURZIGZhaWxlZCAoZXJyX21hc2s9MHg1KQphdGE0OiBTQVRBIGxpbmsgdXAg
+MS41IEdicHMgKFNTdGF0dXMgMTEzIFNDb250cm9sIDMwMCkKYXRhNC4wMDogY29uZmlndXJlZCBm
+b3IgVURNQS8xMDAKYXRhNC4wMDogcWMgdGltZW91dCAoY21kIDB4YTApCmF0YTQuMDA6IFRFU1Rf
+VU5JVF9SRUFEWSBmYWlsZWQgKGVycl9tYXNrPTB4NSkKYXRhNDogbGltaXRpbmcgU0FUQSBsaW5r
+IHNwZWVkIHRvIDEuNSBHYnBzCmF0YTQuMDA6IGxpbWl0aW5nIHNwZWVkIHRvIFVETUEvMTAwOlBJ
+TzMKYXRhNDogU0FUQSBsaW5rIHVwIDEuNSBHYnBzIChTU3RhdHVzIDExMyBTQ29udHJvbCAzMDAp
+CmF0YTQuMDA6IGNvbmZpZ3VyZWQgZm9yIFVETUEvMTAwCmF0YTQuMDA6IHFjIHRpbWVvdXQgKGNt
+ZCAweGEwKQphdGE0LjAwOiBURVNUX1VOSVRfUkVBRFkgZmFpbGVkIChlcnJfbWFzaz0weDUpCmF0
+YTQuMDA6IGRpc2FibGVkCmF0YTQ6IGhhcmQgcmVzZXR0aW5nIGxpbmsKYXRhNDogbnY6IHNraXBw
+aW5nIGhhcmRyZXNldCBvbiBvY2N1cGllZCBwb3J0CmF0YTQ6IFNBVEEgbGluayB1cCAxLjUgR2Jw
+cyAoU1N0YXR1cyAxMTMgU0NvbnRyb2wgMzAwKQphdGE0OiBFSCBjb21wbGV0ZQpzZCAwOjA6MDow
+OiBbc2RhXSA0ODgzOTcxNjggNTEyLWJ5dGUgbG9naWNhbCBibG9ja3M6ICgyNTAgR0IvMjMyIEdp
+QikKc2QgMDowOjA6MDogW3NkYV0gV3JpdGUgUHJvdGVjdCBpcyBvZmYKc2QgMDowOjA6MDogW3Nk
+YV0gTW9kZSBTZW5zZTogMDAgM2EgMDAgMDAKc2QgMDowOjA6MDogW3NkYV0gV3JpdGUgY2FjaGU6
+IGVuYWJsZWQsIHJlYWQgY2FjaGU6IGVuYWJsZWQsIGRvZXNuJ3Qgc3VwcG9ydCBEUE8gb3IgRlVB
+ClBNOiBBZGRpbmcgaW5mbyBmb3IgTm8gQnVzOnNkYQogc2RhOgpzZCAxOjA6MDowOiBbc2RiXSA0
+ODgzOTcxNjggNTEyLWJ5dGUgbG9naWNhbCBibG9ja3M6ICgyNTAgR0IvMjMyIEdpQikKc2QgMTow
+OjA6MDogW3NkYl0gV3JpdGUgUHJvdGVjdCBpcyBvZmYKc2QgMTowOjA6MDogW3NkYl0gTW9kZSBT
+ZW5zZTogMDAgM2EgMDAgMDAKc2QgMTowOjA6MDogW3NkYl0gV3JpdGUgY2FjaGU6IGVuYWJsZWQs
+IHJlYWQgY2FjaGU6IGVuYWJsZWQsIGRvZXNuJ3Qgc3VwcG9ydCBEUE8gb3IgRlVBClBNOiBBZGRp
+bmcgaW5mbyBmb3IgTm8gQnVzOnNkYgogc2RiOgpQTTogQWRkaW5nIGluZm8gZm9yIE5vIEJ1czpz
+ZGMKUE06IEFkZGluZyBpbmZvIGZvciBObyBCdXM6c2RkCnNkIDU6MDowOjA6IFtzZGddIDM5ODEz
+MTIgNTEyLWJ5dGUgbG9naWNhbCBibG9ja3M6ICgyLjAzIEdCLzEuODkgR2lCKQpQTTogQWRkaW5n
+IGluZm8gZm9yIE5vIEJ1czpzZGUKUE06IEFkZGluZyBpbmZvIGZvciBObyBCdXM6c2RmCnNkIDU6
+MDowOjA6IFtzZGddIFdyaXRlIFByb3RlY3QgaXMgb2ZmCnNkIDU6MDowOjA6IFtzZGddIE1vZGUg
+U2Vuc2U6IDQzIDAwIDAwIDAwCnNkIDU6MDowOjA6IFtzZGddIEFzc3VtaW5nIGRyaXZlIGNhY2hl
+OiB3cml0ZSB0aHJvdWdoClBNOiBBZGRpbmcgaW5mbyBmb3IgTm8gQnVzOnNkZwpzZCA0OjA6MDow
+OiBbc2RjXSBBdHRhY2hlZCBTQ1NJIHJlbW92YWJsZSBkaXNrCnNkIDQ6MDowOjE6IFtzZGRdIEF0
+dGFjaGVkIFNDU0kgcmVtb3ZhYmxlIGRpc2sKc2QgNDowOjA6MjogW3NkZV0gQXR0YWNoZWQgU0NT
+SSByZW1vdmFibGUgZGlzawpzZCA0OjA6MDozOiBbc2RmXSBBdHRhY2hlZCBTQ1NJIHJlbW92YWJs
+ZSBkaXNrCnNkIDU6MDowOjA6IFtzZGddIEFzc3VtaW5nIGRyaXZlIGNhY2hlOiB3cml0ZSB0aHJv
+dWdoCiBzZGc6IHNkZzEKUE06IEFkZGluZyBpbmZvIGZvciBObyBCdXM6c2RnMQpzZCA1OjA6MDow
+OiBbc2RnXSBBc3N1bWluZyBkcml2ZSBjYWNoZTogd3JpdGUgdGhyb3VnaApzZCA1OjA6MDowOiBb
+c2RnXSBBdHRhY2hlZCBTQ1NJIHJlbW92YWJsZSBkaXNrCiBzZGExIHNkYTIgc2RhMyA8IHVua25v
+d24gcGFydGl0aW9uIHRhYmxlCnNkIDE6MDowOjA6IFtzZGJdIEF0dGFjaGVkIFNDU0kgZGlzawpQ
+TTogQWRkaW5nIGluZm8gZm9yIE5vIEJ1czpzZGExClBNOiBBZGRpbmcgaW5mbyBmb3IgTm8gQnVz
+OnNkYTIKUE06IEFkZGluZyBpbmZvIGZvciBObyBCdXM6c2RhMwpzZCAwOjA6MDowOiBbc2RhXSBB
+dHRhY2hlZCBTQ1NJIGRpc2sKRVhUMy1mczogbW91bnRlZCBmaWxlc3lzdGVtIHdpdGggd3JpdGVi
+YWNrIGRhdGEgbW9kZS4KaGRhOiB0YXNrX25vX2RhdGFfaW50cjogc3RhdHVzPTB4NDEgeyBEcml2
+ZVJlYWR5IEVycm9yIH0KaGRhOiB0YXNrX25vX2RhdGFfaW50cjogZXJyb3I9MHgwNCB7IEFib3J0
+ZWRDb21tYW5kIH0KaGRhOiB0YXNrX25vX2RhdGFfaW50cjogc3RhdHVzPTB4NDEgeyBEcml2ZVJl
+YWR5IEVycm9yIH0KaGRhOiB0YXNrX25vX2RhdGFfaW50cjogZXJyb3I9MHgwNCB7IEFib3J0ZWRD
+b21tYW5kIH0KRVhUMy1mczogbW91bnRlZCBmaWxlc3lzdGVtIHdpdGggd3JpdGViYWNrIGRhdGEg
+bW9kZS4K
+--000e0cd1066adef002047dc165fd
+Content-Type: text/x-log; charset=US-ASCII; name="dmesg-sata_nv-swncq-disabled.log"
+Content-Disposition: attachment; filename="dmesg-sata_nv-swncq-disabled.log"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g4r1rh861
+
+IEJJT1MtZTgyMDogMDAwMDAwMDA3ZmVmMzAwMCAtIDAwMDAwMDAwN2ZmMDAwMDAgKEFDUEkgZGF0
+YSkKICAjMCBbMDAwMDAwMDAwMCAtIDAwMDAwMDEwMDBdICAgQklPUyBkYXRhIHBhZ2UgPT0+IFsw
+MDAwMDAwMDAwIC0gMDAwMDAwMTAwMF0KS2VybmVsIGNvbW1hbmQgbGluZTogQk9PVF9JTUFHRT0v
+Ym9vdC92bWxpbnV6LTIuNi4zMiByb290PS9kZXYvbWFwcGVyL252aWRpYV9jZWViYWlpYjEgcm8g
+c2luZ2xlIHNhdGFfbnYuc3duY3E9MApNZW1vcnk6IDIwNTIyNjRrLzIwOTYwNjRrIGF2YWlsYWJs
+ZSAoMjMxOWsga2VybmVsIGNvZGUsIDQyMTMyayByZXNlcnZlZCwgOTEyayBkYXRhLCA0MDRrIGlu
+aXQsIDExODY3NjBrIGhpZ2htZW0pCiAgICAgIC5kYXRhIDogMHhjMTI0M2U0MSAtIDB4YzEzMjgx
+MjggICAoIDkxMiBrQikKbGliYXRhIHZlcnNpb24gMy4wMCBsb2FkZWQuCnNhdGFfbnYgMDAwMDow
+MDowZS4wOiB2ZXJzaW9uIDMuNQpzYXRhX252IDAwMDA6MDA6MGUuMDogUENJIElOVCBBIC0+IExp
+bmtbQVBTSV0gLT4gR1NJIDIxIChsZXZlbCwgbG93KSAtPiBJUlEgMjEKc2F0YV9udiAwMDAwOjAw
+OjBlLjA6IFVzaW5nIFNXTkNRIG1vZGUKc2F0YV9udiAwMDAwOjAwOjBlLjA6IHNldHRpbmcgbGF0
+ZW5jeSB0aW1lciB0byA2NApzY3NpMSA6IHNhdGFfbnYKc2NzaTIgOiBzYXRhX252CmF0YTE6IFNB
+VEEgbWF4IFVETUEvMTMzIGNtZCAweDlmMCBjdGwgMHhiZjAgYm1kbWEgMHhkNDAwIGlycSAyMQph
+dGEyOiBTQVRBIG1heCBVRE1BLzEzMyBjbWQgMHg5NzAgY3RsIDB4YjcwIGJtZG1hIDB4ZDQwOCBp
+cnEgMjEKc2F0YV9udiAwMDAwOjAwOjBmLjA6IFBDSSBJTlQgQSAtPiBMaW5rW0FQU0pdIC0+IEdT
+SSAyMCAobGV2ZWwsIGxvdykgLT4gSVJRIDIwCnNhdGFfbnYgMDAwMDowMDowZi4wOiBVc2luZyBT
+V05DUSBtb2RlCnNhdGFfbnYgMDAwMDowMDowZi4wOiBzZXR0aW5nIGxhdGVuY3kgdGltZXIgdG8g
+NjQKc2NzaTMgOiBzYXRhX252CnNjc2k0IDogc2F0YV9udgphdGEzOiBTQVRBIG1heCBVRE1BLzEz
+MyBjbWQgMHg5ZTAgY3RsIDB4YmUwIGJtZG1hIDB4ZTgwMCBpcnEgMjAKYXRhNDogU0FUQSBtYXgg
+VURNQS8xMzMgY21kIDB4OTYwIGN0bCAweGI2MCBibWRtYSAweGU4MDggaXJxIDIwCmF0YTM6IFNB
+VEEgbGluayBkb3duIChTU3RhdHVzIDAgU0NvbnRyb2wgMzAwKQphdGExOiBTQVRBIGxpbmsgdXAg
+My4wIEdicHMgKFNTdGF0dXMgMTIzIFNDb250cm9sIDMwMCkKYXRhMS4wMDogQVRBLTc6IFNBTVNV
+TkcgU1AyNTA0QywgVlQxMDAtNDEsIG1heCBVRE1BNwphdGExLjAwOiA0ODgzOTcxNjggc2VjdG9y
+cywgbXVsdGkgMTY6IExCQTQ4IE5DUSAoZGVwdGggMzEvMzIpCmF0YTEuMDA6IGNvbmZpZ3VyZWQg
+Zm9yIFVETUEvMTMzCmF0YTI6IFNBVEEgbGluayB1cCAzLjAgR2JwcyAoU1N0YXR1cyAxMjMgU0Nv
+bnRyb2wgMzAwKQphdGEyLjAwOiBBVEEtNzogU1QzMjUwNjIwQVMsIDMuQUFDLCBtYXggVURNQS8x
+MzMKYXRhMi4wMDogNDg4Mzk3MTY4IHNlY3RvcnMsIG11bHRpIDE2OiBMQkE0OCBOQ1EgKGRlcHRo
+IDMxLzMyKQphdGEyLjAwOiBjb25maWd1cmVkIGZvciBVRE1BLzEzMwphdGE0OiBTQVRBIGxpbmsg
+dXAgMS41IEdicHMgKFNTdGF0dXMgMTEzIFNDb250cm9sIDMwMCkKYXRhNC4wMDogQVRBUEk6IEFU
+QVBJICAgaUhPUzEwNCwgV0wwOCwgbWF4IFVETUEvMTAwCmF0YTQuMDA6IGNvbmZpZ3VyZWQgZm9y
+IFVETUEvMTAwCnNkIDE6MDowOjA6IFtzZGFdIDQ4ODM5NzE2OCA1MTItYnl0ZSBsb2dpY2FsIGJs
+b2NrczogKDI1MCBHQi8yMzIgR2lCKQpzZCAxOjA6MDowOiBbc2RhXSBXcml0ZSBQcm90ZWN0IGlz
+IG9mZgpzZCAxOjA6MDowOiBbc2RhXSBNb2RlIFNlbnNlOiAwMCAzYSAwMCAwMApzZCAxOjA6MDow
+OiBbc2RhXSBXcml0ZSBjYWNoZTogZW5hYmxlZCwgcmVhZCBjYWNoZTogZW5hYmxlZCwgZG9lc24n
+dCBzdXBwb3J0IERQTyBvciBGVUEKUE06IEFkZGluZyBpbmZvIGZvciBObyBCdXM6c2RhCiBzZGE6
+CnNkIDI6MDowOjA6IFtzZGJdIDQ4ODM5NzE2OCA1MTItYnl0ZSBsb2dpY2FsIGJsb2NrczogKDI1
+MCBHQi8yMzIgR2lCKQpzZCAyOjA6MDowOiBbc2RiXSBXcml0ZSBQcm90ZWN0IGlzIG9mZgpzZCAy
+OjA6MDowOiBbc2RiXSBNb2RlIFNlbnNlOiAwMCAzYSAwMCAwMApzZCAyOjA6MDowOiBbc2RiXSBX
+cml0ZSBjYWNoZTogZW5hYmxlZCwgcmVhZCBjYWNoZTogZW5hYmxlZCwgZG9lc24ndCBzdXBwb3J0
+IERQTyBvciBGVUEKUE06IEFkZGluZyBpbmZvIGZvciBObyBCdXM6c2RiCiBzZGI6ClBNOiBBZGRp
+bmcgaW5mbyBmb3IgTm8gQnVzOnNkYwpQTTogQWRkaW5nIGluZm8gZm9yIE5vIEJ1czpzZGQKIHNk
+YTEgc2RhMiBzZGEzIDwKUE06IEFkZGluZyBpbmZvIGZvciBObyBCdXM6c2RlClBNOiBBZGRpbmcg
+aW5mbyBmb3IgTm8gQnVzOnNkZgpzZCAwOjA6MDowOiBbc2RjXSBBdHRhY2hlZCBTQ1NJIHJlbW92
+YWJsZSBkaXNrCnNkIDA6MDowOjE6IFtzZGRdIEF0dGFjaGVkIFNDU0kgcmVtb3ZhYmxlIGRpc2sK
+c2QgMDowOjA6MjogW3NkZV0gQXR0YWNoZWQgU0NTSSByZW1vdmFibGUgZGlzawpzZCAwOjA6MDoz
+OiBbc2RmXSBBdHRhY2hlZCBTQ1NJIHJlbW92YWJsZSBkaXNrClBNOiBBZGRpbmcgaW5mbyBmb3Ig
+Tm8gQnVzOnNkYTEKUE06IEFkZGluZyBpbmZvIGZvciBObyBCdXM6c2RhMgpQTTogQWRkaW5nIGlu
+Zm8gZm9yIE5vIEJ1czpzZGEzCnNkIDE6MDowOjA6IFtzZGFdIEF0dGFjaGVkIFNDU0kgZGlzawpz
+ZCAyOjA6MDowOiBbc2RiXSBBdHRhY2hlZCBTQ1NJIGRpc2sKYXRhNC4wMDogcWMgdGltZW91dCAo
+Y21kIDB4YTApCmF0YTQuMDA6IFRFU1RfVU5JVF9SRUFEWSBmYWlsZWQgKGVycl9tYXNrPTB4NSkK
+YXRhNDogU0FUQSBsaW5rIHVwIDEuNSBHYnBzIChTU3RhdHVzIDExMyBTQ29udHJvbCAzMDApCmF0
+YTQuMDA6IGNvbmZpZ3VyZWQgZm9yIFVETUEvMTAwCnNkIDU6MDowOjA6IFtzZGddIDM5ODEzMTIg
+NTEyLWJ5dGUgbG9naWNhbCBibG9ja3M6ICgyLjAzIEdCLzEuODkgR2lCKQpzZCA1OjA6MDowOiBb
+c2RnXSBXcml0ZSBQcm90ZWN0IGlzIG9mZgpzZCA1OjA6MDowOiBbc2RnXSBNb2RlIFNlbnNlOiA0
+MyAwMCAwMCAwMApzZCA1OjA6MDowOiBbc2RnXSBBc3N1bWluZyBkcml2ZSBjYWNoZTogd3JpdGUg
+dGhyb3VnaApQTTogQWRkaW5nIGluZm8gZm9yIE5vIEJ1czpzZGcKc2QgNTowOjA6MDogW3NkZ10g
+QXNzdW1pbmcgZHJpdmUgY2FjaGU6IHdyaXRlIHRocm91Z2gKIHNkZzogc2RnMQpQTTogQWRkaW5n
+IGluZm8gZm9yIE5vIEJ1czpzZGcxCnNkIDU6MDowOjA6IFtzZGddIEFzc3VtaW5nIGRyaXZlIGNh
+Y2hlOiB3cml0ZSB0aHJvdWdoCnNkIDU6MDowOjA6IFtzZGddIEF0dGFjaGVkIFNDU0kgcmVtb3Zh
+YmxlIGRpc2sKYXRhNC4wMDogcWMgdGltZW91dCAoY21kIDB4YTApCmF0YTQuMDA6IFRFU1RfVU5J
+VF9SRUFEWSBmYWlsZWQgKGVycl9tYXNrPTB4NSkKYXRhNDogbGltaXRpbmcgU0FUQSBsaW5rIHNw
+ZWVkIHRvIDEuNSBHYnBzCmF0YTQuMDA6IGxpbWl0aW5nIHNwZWVkIHRvIFVETUEvMTAwOlBJTzMK
+YXRhNDogU0FUQSBsaW5rIHVwIDEuNSBHYnBzIChTU3RhdHVzIDExMyBTQ29udHJvbCAzMDApCmF0
+YTQuMDA6IGNvbmZpZ3VyZWQgZm9yIFVETUEvMTAwCmF0YTQuMDA6IHFjIHRpbWVvdXQgKGNtZCAw
+eGEwKQphdGE0LjAwOiBURVNUX1VOSVRfUkVBRFkgZmFpbGVkIChlcnJfbWFzaz0weDUpCmF0YTQu
+MDA6IGRpc2FibGVkCmF0YTQ6IGhhcmQgcmVzZXR0aW5nIGxpbmsKYXRhNDogbnY6IHNraXBwaW5n
+IGhhcmRyZXNldCBvbiBvY2N1cGllZCBwb3J0CmF0YTQ6IFNBVEEgbGluayB1cCAxLjUgR2JwcyAo
+U1N0YXR1cyAxMTMgU0NvbnRyb2wgMzAwKQphdGE0OiBFSCBjb21wbGV0ZQpFWFQzLWZzOiBtb3Vu
+dGVkIGZpbGVzeXN0ZW0gd2l0aCB3cml0ZWJhY2sgZGF0YSBtb2RlLgpoZGE6IHRhc2tfbm9fZGF0
+YV9pbnRyOiBzdGF0dXM9MHg0MSB7IERyaXZlUmVhZHkgRXJyb3IgfQpoZGE6IHRhc2tfbm9fZGF0
+YV9pbnRyOiBlcnJvcj0weDA0IHsgQWJvcnRlZENvbW1hbmQgfQpoZGE6IHRhc2tfbm9fZGF0YV9p
+bnRyOiBzdGF0dXM9MHg0MSB7IERyaXZlUmVhZHkgRXJyb3IgfQpoZGE6IHRhc2tfbm9fZGF0YV9p
+bnRyOiBlcnJvcj0weDA0IHsgQWJvcnRlZENvbW1hbmQgfQpFWFQzLWZzOiBtb3VudGVkIGZpbGVz
+eXN0ZW0gd2l0aCB3cml0ZWJhY2sgZGF0YSBtb2RlLgo=
+--000e0cd1066adef002047dc165fd--
