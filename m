@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512Ab0AVBvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443Ab0AVBxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512Ab0AVBvw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 20:51:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723Ab0AVBvv
+	id S1755443Ab0AVBxr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 20:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517Ab0AVBxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 20:51:51 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:48639 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912Ab0AVBvv (ORCPT
+	Thu, 21 Jan 2010 20:53:45 -0500
+Received: from mga05.intel.com ([192.55.52.89]:35143 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932156Ab0AVBxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 20:51:51 -0500
-X-Authority-Analysis: v=1.0 c=1 a=JS5V5-kzzowA:10 a=7U3hwN5JcxgA:10 a=t3w-cV6e7KteTzMpuqsA:9 a=tOs8TZeX2MzoEjPUMegA:7 a=1sme-inuxpBvxkztisvG7Bel0W0A:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC PATCH 02/10] ftrace: Ensure tracing has really stopped
- before leaving unregister_ftrace_graph
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
-In-Reply-To: <1264122982-1553-3-git-send-regression-fweisbec@gmail.com>
-References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com>
-	 <1264122982-1553-3-git-send-regression-fweisbec@gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 21 Jan 2010 20:51:48 -0500
-Message-ID: <1264125108.31321.304.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 20:53:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,321,1262592000"; 
+   d="scan'208";a="533465484"
+Date: Fri, 22 Jan 2010 09:47:50 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, austin.zhang@intel.com
+Subject: [PATCH -tip] perf report: Fix segmentation fault when running with
+	'-g none'
+Message-ID: <20100122014750.GA4111@ywang-moblin2.bj.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-22 at 02:16 +0100, Frederic Weisbecker wrote:
-> When we run under dynamic tracing, we know that after calling
-> unregister_ftrace_graph(), tracing has really stopped because of
-> the hot patching and use of stop_machine().
+Segmentation fault occurs when running perf report with '-g none':
 
-This is incorrect. Even after unregister_ftrace_graph() with
-stop_machine(), we still have no guarantee that a call back is not being
-called. This is the reason I use sub tracing instead of NULLs. The call
-to the trace function could have been loaded in a register and then
-preempted. Even after stop_machine() that trace function can be called.
-This is also the reason that I never let modules add hooks to the
-function tracer (although I can easily make a wrapper to do so).
+Starting program: /root/perf report -g none
 
-> 
-> But in static tracing case, we only set stub callbacks. This is
-> not sufficient on archs that have weak memory ordering to assume
-> the older callbacks won't be called right after we leave
-> unregister_ftrace_graph().
-> 
-> Insert a read/write memory barrier in the end of
-> unregister_ftrace_graph() so that the code that follow can safely
-> assume tracing has really stopped. This can avoid its older tracing
-> callbacks to perform checks about various states like ensuring
-> needed buffers have been allocated, etc...
+Program received signal SIGSEGV, Segmentation fault.
+0x00000000 in ?? ()
+(gdb) bt
+#0  0x00000000 in ?? ()
+#1  0x0808fbb9 in perf_session__insert_output_hist_entry (
+    min_callchain_hits=<value optimized out>, he=<value optimized out>,
+    root=<value optimized out>) at util/hist.c:169
+#2  perf_session__output_resort (min_callchain_hits=<value optimized out>,
+    he=<value optimized out>, root=<value optimized out>) at util/hist.c:204
+#3  0x080575e9 in __cmd_report () at builtin-report.c:228
+#4  cmd_report () at builtin-report.c:385
+#5  0x0804b528 in run_builtin (p=0x8146b88, argc=3, argv=0xbffff818)
+    at perf.c:263
+#6  0x0804bd0b in handle_internal_command (argv=<value optimized out>,
+    argc=<value optimized out>) at perf.c:328
+#7  run_argv (argv=<value optimized out>, argc=<value optimized out>)
+    at perf.c:372
+#8  main (argv=<value optimized out>, argc=<value optimized out>) at perf.c:456
 
-There's no guarantee, even with a smp_mb() that a trace function will
-not be called after being unregistered.
+Reported-by: Austin Zhang <austin.zhang@intel.com>
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
 
--- Steve
+---
+ tools/perfbuiltin-report.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 4c3d699..cfc655d 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -279,7 +279,7 @@ parse_callchain_opt(const struct option *opt __used, const char *arg,
+ 
+ 	else if (!strncmp(tok, "none", strlen(arg))) {
+ 		callchain_param.mode = CHAIN_NONE;
+-		symbol_conf.use_callchain = true;
++		symbol_conf.use_callchain = false;
+ 
+ 		return 0;
+ 	}
