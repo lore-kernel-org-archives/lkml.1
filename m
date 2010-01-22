@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688Ab0AVJDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727Ab0AVJDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688Ab0AVJDV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528Ab0AVJDK
+	id S1752727Ab0AVJDg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:03:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726Ab0AVJD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:03:10 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45859 "EHLO
+	Fri, 22 Jan 2010 04:03:28 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45892 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752517Ab0AVJDG (ORCPT
+	with ESMTP id S1752596Ab0AVJDK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 04:03:06 -0500
+	Fri, 22 Jan 2010 04:03:10 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 22 Jan 2010 01:02:22 -0800
+Date: Fri, 22 Jan 2010 01:02:28 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 3/9] pci: reject mmio range start from 0 on pci_bridge read
+Subject: [PATCH 9/9] pci: set PCI_PREF_RANGE_TYPE_64 in pci_bridge_check_ranges
 In-reply-to: <1264150948-9052-1-git-send-email-yinghai@kernel.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -24,84 +24,38 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264150948-9052-4-git-send-email-yinghai@kernel.org>
+Message-id: <1264150948-9052-10-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264150948-9052-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-only need to set the value to resource.
-also could keep the old setting in resource for prevent shrink bridge
-resources.
-
--v2: change to "bar reading" to "reg reading"
+make pci_bridge_check_ranges() to store the PCI_PREF_RANGE_TYPE_64 in addition
+to IORESOURCE_MEM_64. just like pci_read_bridge_bases()
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- drivers/pci/probe.c |   18 +++++++++++++++---
- 1 files changed, 15 insertions(+), 3 deletions(-)
+ drivers/pci/setup-bus.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 11824d7..8cd4fb3 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -316,13 +316,17 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 		limit |= (io_limit_hi << 16);
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index ed545f6..743ed8c 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -354,8 +354,11 @@ static void pci_bridge_check_ranges(struct pci_bus *bus)
+ 	}
+ 	if (pmem) {
+ 		b_res[2].flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH;
+-		if ((pmem & PCI_PREF_RANGE_TYPE_MASK) == PCI_PREF_RANGE_TYPE_64)
++		if ((pmem & PCI_PREF_RANGE_TYPE_MASK) ==
++		    PCI_PREF_RANGE_TYPE_64) {
+ 			b_res[2].flags |= IORESOURCE_MEM_64;
++			b_res[2].flags |= PCI_PREF_RANGE_TYPE_64;
++		}
  	}
  
--	if (base <= limit) {
-+	if (base && base <= limit) {
- 		res->flags = (io_base_lo & PCI_IO_RANGE_TYPE_MASK) | IORESOURCE_IO;
- 		if (!res->start)
- 			res->start = base;
- 		if (!res->end)
- 			res->end = limit + 0xfff;
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
-+	} else {
-+		dev_printk(KERN_DEBUG, &dev->dev,
-+			 "  bridge window [io  %04lx - %04lx] reg reading\n",
-+				 base, limit);
- 	}
- 
- 	res = child->resource[1];
-@@ -330,11 +334,15 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 	pci_read_config_word(dev, PCI_MEMORY_LIMIT, &mem_limit_lo);
- 	base = (mem_base_lo & PCI_MEMORY_RANGE_MASK) << 16;
- 	limit = (mem_limit_lo & PCI_MEMORY_RANGE_MASK) << 16;
--	if (base <= limit) {
-+	if (base && base <= limit) {
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
-+	} else {
-+		dev_printk(KERN_DEBUG, &dev->dev,
-+			"  bridge window [mem 0x%08lx - 0x%08lx] reg reading\n",
-+					 base, limit + 0xfffff);
- 	}
- 
- 	res = child->resource[2];
-@@ -366,7 +374,7 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- #endif
- 		}
- 	}
--	if (base <= limit) {
-+	if (base && base <= limit) {
- 		res->flags = (mem_base_lo & PCI_PREF_RANGE_TYPE_MASK) |
- 					 IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 		if (res->flags & PCI_PREF_RANGE_TYPE_64)
-@@ -374,6 +382,10 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 		res->start = base;
- 		res->end = limit + 0xfffff;
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
-+	} else {
-+		dev_printk(KERN_DEBUG, &dev->dev,
-+		     "  bridge window [mem 0x%08lx - %08lx pref] reg reading\n",
-+					 base, limit + 0xfffff);
- 	}
- }
- 
+ 	/* double check if bridge does support 64 bit pref */
 -- 
 1.6.4.2
 
