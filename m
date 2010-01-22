@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752578Ab0AVTPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863Ab0AVT2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752578Ab0AVTPk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 14:15:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669Ab0AVTPi
+	id S1752863Ab0AVT2g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 14:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734Ab0AVT2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 14:15:38 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:57768 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932123Ab0AVTPh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 14:15:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:in-reply-to
-         :user-agent:mime-version:content-type:content-transfer-encoding;
-        b=CQjSZEYYqzPd81QKUvilgshTbHnRKLmX8Z+5DZNkF9/qFDqutdUAVXxFRPTY444/K3
-         1of5qH2mMcgQhW3BdOV2sce4wAjCqJVNCJ4gfayY91zEyVul+rwokPnXO5WGG8vqu43f
-         COrjizMzGi7oJtuez3zGApK61V7DnolvsZ5po=
-Date: Fri, 22 Jan 2010 22:45:15 +0330
-From: Ali Gholami Rudi <aligrudi@gmail.com>
-To: astarikovskiy@suse.de, ali@rudi.ir
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org
-Subject: Re: kacpi_notify_wq and kacpid_wq use a lot of cpu
-Message-ID: <4b59f943.YZS7qMjt5K3V8Wa3UVeL40l8@lilem.mirepesht>
-References: <4b59efdb.E0ClbTr8sKopLDl5JyKeEOdy@lilem.mirepesht>
- <4B59F40E.2090102@suse.de>
-In-Reply-To: <4B59F40E.2090102@suse.de>
-User-Agent: Heirloom mailx 12.4 7/29/08
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 22 Jan 2010 14:28:35 -0500
+Received: from mail.perches.com ([173.55.12.10]:1424 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751780Ab0AVT2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 14:28:34 -0500
+Subject: Re: [PATCH 24/38] move round_up/down to kernel.h
+From: Joe Perches <joe@perches.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.1001220851210.2704@router.home>
+References: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
+	 <1264152287-13866-25-git-send-email-yinghai@kernel.org>
+	 <alpine.DEB.2.00.1001220851210.2704@router.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 22 Jan 2010 11:28:32 -0800
+Message-ID: <1264188512.32383.118.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Starikovskiy <astarikovskiy@suse.de> wrote:
-> > Sometimes kacpi_notify_wq and kacpid_wq workqueues use a lot of cpu.
-> > 
-> > I'm using yesterday's tip.  At times kacpi_notify_wq uses 30-50% of
-> > my cpu and kacpid_wq uses 3-5%:
-> > 
-> > # uptime
-> >  12:49:54 up  4:16,  1 user,  load average: 0.52, 0.55, 0.40
-> > # ps -e | grep kacpi
-> >   189 ?        00:00:52 kacpid
-> >   190 ?        00:10:26 kacpi_notify
-> >   191 ?        00:00:00 kacpi_hotplug
-> > 
-> > This sometimes happens after a few hours of uptime; so this is
-> > very hard to bisect (by the way, I think the same thing causes
-> > the fans to work fullspeed sometimes when I reboot the machine).
-> > I tried this patch to find out which of the callers of
-> > acpi_os_execute() is the culprit:
-> > 
-> > Is there something I can do to trace the problem? dmesg and lspci
-> > are attached.
->
-> Please open new bug at bugzilla.kernel.org, for ACPI. 
+On Fri, 2010-01-22 at 08:52 -0600, Christoph Lameter wrote:
+> On Fri, 22 Jan 2010, Yinghai Lu wrote:
+> > +#define __round_mask(x,y) ((__typeof__(x))((y)-1))
+> > +#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
+> > +#define round_down(x,y) ((x) & ~__round_mask(x,y))
+> s/round/round_power2/
 
-http://bugzilla.kernel.org/show_bug.cgi?id=15106
+s/round/round_power_of_2/
+BUILD_BUG_ON_NOT_POWER_OF_2
 
-> It would help if you provide name of your machine (make?)
 
-This is a hp-compaq 610 laptop.
-
-> and acpidump output.
-
-Attached to the bugzilla report.
-
-> Do you know the kernel, there this problem did not occur (is it a regression)?
-
-The oldest kernel I tried on this machine was something after 2.6.32
-and it had the same problem.
-
-Thanks,
-Ali
 
