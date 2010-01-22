@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924Ab0AVDNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934Ab0AVDRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924Ab0AVDNF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 22:13:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585Ab0AVDNB
+	id S1755934Ab0AVDRW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 22:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890Ab0AVDRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 22:13:01 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37084 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755478Ab0AVDNA (ORCPT
+	Thu, 21 Jan 2010 22:17:20 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:37771 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755880Ab0AVDRT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 22:13:00 -0500
-X-Authority-Analysis: v=1.0 c=1 a=6AAhZGXoe_sA:10 a=7U3hwN5JcxgA:10 a=meVymXHHAAAA:8 a=kq5xjdUIGCl-Xw0Hkc0A:9 a=3onnBbwQr0NkiaHueeYA:7 a=2zgsIPtjzREbbOebHvh7tjBZW4gA:4 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC PATCH 03/10] ftrace: Drop the ftrace_profile_enabled
- checks in tracing hot path
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-In-Reply-To: <20100122022858.GA2604@Krystal>
-References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com>
-	 <1264122982-1553-4-git-send-regression-fweisbec@gmail.com>
-	 <1264125917.31321.312.camel@gandalf.stny.rr.com>
-	 <20100122022858.GA2604@Krystal>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 21 Jan 2010 22:12:58 -0500
-Message-ID: <1264129978.31321.333.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jan 2010 22:17:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=IjsUTRBJPo19RBS2EgOl4DcoBbTeqsOw6r54a6NCRMSRltHd0PdjAcXGBapdkcnY+M
+         /RQfwDjoy9xiibCrnhVF4ULXqoT4RN0V/wmkZX8fBild78jG/EK9levqzrKTEPx0FJwP
+         PEf+GKsllbeLrNXRfU9oeSdK2NGKKphFk3+0c=
+From: Don Mullis <don.mullis@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, airlied@redhat.com, david@fromorbit.com,
+       dedekind@infradead.org
+Subject: Re: [PATCH 1/2] lib: more scalable list_sort()
+References: <87fx609i29.fsf@gmail.com> <20100121175914.GA8910@basil.fritz.box>
+Date: Thu, 21 Jan 2010 19:17:15 -0800
+In-Reply-To: <20100121175914.GA8910@basil.fritz.box> (Andi Kleen's message of
+	"Thu, 21 Jan 2010 18:59:14 +0100")
+Message-ID: <87vdeu96bo.fsf@gmail.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-21 at 21:28 -0500, Mathieu Desnoyers wrote:
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
+Andi Kleen <andi@firstfloor.org> writes:
 
-> > Now for the reason I Cc'd Paul and Mathieu...
-> > 
-> > If we had a synchronize_sched() like function that would wait and return
-> > when all preempted tasks have been scheduled again and went to either
-> > userspace or called schedule directly, then we could actually do this.
-> > 
-> > After unregistering the function graph trace, you call this
-> > "synchronize_tasks()" and it will guarantee that all currently preempted
-> > tasks have either went to userspace or have called schedule() directly.
-> > Then it would be safe to remove this check.
-> 
-> OK, so basically you need to know when you reach a quiescent state, but
-> preemption is enabled and there is no RCU read lock taken around these
-> code paths, am I correct ?
-> 
-> With tracepoints, life is easy because I disable preemption around the
-> calls, so I can use synchronize_sched() to know when quiescent state is
-> reached.
-> 
-> I recommend looking at kernel/kprobes.c:check_safety(). It uses
-> thaw_processes() and synchronize_sched() for this purpose. Basically, it
-> rely on the "refrigeration" points to detect such quiescent state. This
-> trick should do the job for the function graph tracer too.
-> 
-> I'm adding Masami in CC. He is the one who implemented check_safety(),
-> and I remember discussing it with him in the past.
+> On Wed, Jan 20, 2010 at 08:51:26PM -0800, Don Mullis wrote:
+>> The use of list_sort() by UBIFS looks like it could generate long
+>> lists; this alternative implementation scales better, reaching ~3x
+>> performance gain as list length approaches the L2 cache size.
+>
+> If this can really be called with long lists 
+> the function likely needs (optional) need_resched()s
+> Otherwise it could ruin scheduling latencies.
+>
+> -Andi
 
-Hmm, interesting. Maybe something like that might work. But what if
-CONFIG_PREEMPT is enabled but CONFIG_FREEZER is not?
+Being just a dumb library routine, list_sort() has no idea what context
+it's been called in, how long a list a particular client could pass in,
+nor how expensive the client's cmp() callback might be.
 
--- Steve
+The cmp() callback already passes back a client-private pointer.
+Hanging off of this could be a count of calls, or timing information,
+maintained by the client.  Whenever some threshold is reached, the
+client's cmp() could do whatever good CPU-sharing citizenship required.
 
+This doesn't address the final O(n) pass over the list to restore the
+back links.  So the cost of that pass would dictate the upper limit on
+list length for a client already using the cmp() call-counting/timing
+trick to break up the earlier compare-and-merge passes.
 
+If that's not good enough, a more complicated solution would be
+required.  But I'm hoping we don't need to go there yet.
