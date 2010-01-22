@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306Ab0AVJZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085Ab0AVJdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753306Ab0AVJZn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:25:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252Ab0AVJZj
+	id S1754085Ab0AVJdT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362Ab0AVJdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:25:39 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:46133 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753177Ab0AVJZg (ORCPT
+	Fri, 22 Jan 2010 04:33:16 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53925 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753297Ab0AVJZm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 04:25:36 -0500
+	Fri, 22 Jan 2010 04:25:42 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 22 Jan 2010 01:24:17 -0800
+Date: Fri, 22 Jan 2010 01:24:29 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 08/38] x86: call early_res_to_bootmem one time
+Subject: [PATCH 20/38] x86: add find_early_area_size
 In-reply-to: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -25,185 +25,88 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264152287-13866-9-git-send-email-yinghai@kernel.org>
+Message-id: <1264152287-13866-21-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-simplify setup_node_mem, do use bootmem from other node.
-instead just find_e820_area in early_node_mem.
-
-so we can keep the boundary between early_res and boot mem more clear.
-and only call civertion one time instead of for all nodes.
+prepare to move bck find_e820_area_size back to e820.c
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/kernel/setup.c |    1 +
- arch/x86/mm/init_32.c   |    1 -
- arch/x86/mm/init_64.c   |    3 +-
- arch/x86/mm/numa_64.c   |   62 +++++++++++++++-------------------------------
- 4 files changed, 22 insertions(+), 45 deletions(-)
+ arch/x86/kernel/early_res.c |   45 ++++++++++++++++++++++++++++++------------
+ 1 files changed, 32 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index f7b8b98..3ab0bf4 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -942,6 +942,7 @@ void __init setup_arch(char **cmdline_p)
- #endif
- 
- 	initmem_init(0, max_pfn, acpi, k8);
-+	early_res_to_bootmem(0, max_low_pfn<<PAGE_SHIFT);
- 
- #ifdef CONFIG_X86_64
- 	/*
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 9a0c258..2dccde0 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -764,7 +764,6 @@ static unsigned long __init setup_node_bootmem(int nodeid,
- 	printk(KERN_INFO "  node %d bootmap %08lx - %08lx\n",
- 		 nodeid, bootmap, bootmap + bootmap_size);
- 	free_bootmem_with_active_regions(nodeid, end_pfn);
--	early_res_to_bootmem(start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT);
- 
- 	return bootmap + bootmap_size;
- }
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 5198b9b..1ea79ad 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -578,13 +578,12 @@ void __init initmem_init(unsigned long start_pfn, unsigned long end_pfn,
- 				 PAGE_SIZE);
- 	if (bootmap == -1L)
- 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
-+	reserve_early(bootmap, bootmap + bootmap_size, "BOOTMAP");
- 	/* don't touch min_low_pfn */
- 	bootmap_size = init_bootmem_node(NODE_DATA(0), bootmap >> PAGE_SHIFT,
- 					 0, end_pfn);
- 	e820_register_active_regions(0, start_pfn, end_pfn);
- 	free_bootmem_with_active_regions(0, end_pfn);
--	early_res_to_bootmem(0, end_pfn<<PAGE_SHIFT);
--	reserve_bootmem(bootmap, bootmap_size, BOOTMEM_DEFAULT);
- }
- #endif
- 
-diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
-index 83bbc70..3232148 100644
---- a/arch/x86/mm/numa_64.c
-+++ b/arch/x86/mm/numa_64.c
-@@ -164,18 +164,21 @@ static void * __init early_node_mem(int nodeid, unsigned long start,
- 				    unsigned long align)
- {
- 	unsigned long mem = find_e820_area(start, end, size, align);
--	void *ptr;
- 
- 	if (mem != -1L)
- 		return __va(mem);
- 
--	ptr = __alloc_bootmem_nopanic(size, align, __pa(MAX_DMA_ADDRESS));
--	if (ptr == NULL) {
--		printk(KERN_ERR "Cannot find %lu bytes in node %d\n",
-+
-+	start = __pa(MAX_DMA_ADDRESS);
-+	end = max_low_pfn_mapped << PAGE_SHIFT;
-+	mem = find_e820_area(start, end, size, align);
-+	if (mem != -1L)
-+		return __va(mem);
-+
-+	printk(KERN_ERR "Cannot find %lu bytes in node %d\n",
- 		       size, nodeid);
--		return NULL;
--	}
--	return ptr;
-+
-+	return NULL;
+diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
+index 3ae0051..aba02f2 100644
+--- a/arch/x86/kernel/early_res.c
++++ b/arch/x86/kernel/early_res.c
+@@ -476,6 +476,29 @@ out:
+ 	return -1ULL;
  }
  
- /* Initialize bootmem allocator for a node */
-@@ -211,8 +214,12 @@ setup_node_bootmem(int nodeid, unsigned long start, unsigned long end)
- 	if (node_data[nodeid] == NULL)
- 		return;
- 	nodedata_phys = __pa(node_data[nodeid]);
-+	reserve_early(nodedata_phys, nodedata_phys + pgdat_size, "NODE_DATA");
- 	printk(KERN_INFO "  NODE_DATA [%016lx - %016lx]\n", nodedata_phys,
- 		nodedata_phys + pgdat_size - 1);
-+	nid = phys_to_nid(nodedata_phys);
-+	if (nid != nodeid)
-+		printk(KERN_INFO "    NODE_DATA(%d) on node %d\n", nodeid, nid);
++u64 __init find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
++			 u64 *sizep, u64 align)
++{
++	u64 addr, last;
++
++	addr = round_up(ei_start, align);
++	if (addr < start)
++		addr = round_up(start, align);
++	if (addr >= ei_last)
++		goto out;
++	*sizep = ei_last - addr;
++	while (bad_addr_size(&addr, sizep, align) && addr + *sizep <= ei_last)
++		;
++	last = addr + *sizep;
++	if (last > ei_last)
++		goto out;
++
++	return addr;
++
++out:
++	return -1ULL;
++}
++
+ /*
+  * Find a free area with specified alignment in a specific range.
+  */
+@@ -513,24 +536,20 @@ u64 __init find_e820_area_size(u64 start, u64 *sizep, u64 align)
  
- 	memset(NODE_DATA(nodeid), 0, sizeof(pg_data_t));
- 	NODE_DATA(nodeid)->bdata = &bootmem_node_data[nodeid];
-@@ -227,11 +234,7 @@ setup_node_bootmem(int nodeid, unsigned long start, unsigned long end)
- 	 * of alloc_bootmem, that could clash with reserved range
- 	 */
- 	bootmap_pages = bootmem_bootmap_pages(last_pfn - start_pfn);
--	nid = phys_to_nid(nodedata_phys);
--	if (nid == nodeid)
--		bootmap_start = roundup(nodedata_phys + pgdat_size, PAGE_SIZE);
--	else
--		bootmap_start = roundup(start, PAGE_SIZE);
-+	bootmap_start = roundup(nodedata_phys + pgdat_size, PAGE_SIZE);
- 	/*
- 	 * SMP_CACHE_BYTES could be enough, but init_bootmem_node like
- 	 * to use that to align to PAGE_SIZE
-@@ -239,18 +242,13 @@ setup_node_bootmem(int nodeid, unsigned long start, unsigned long end)
- 	bootmap = early_node_mem(nodeid, bootmap_start, end,
- 				 bootmap_pages<<PAGE_SHIFT, PAGE_SIZE);
- 	if (bootmap == NULL)  {
--		if (nodedata_phys < start || nodedata_phys >= end) {
--			/*
--			 * only need to free it if it is from other node
--			 * bootmem
--			 */
--			if (nid != nodeid)
--				free_bootmem(nodedata_phys, pgdat_size);
--		}
-+		free_early(nodedata_phys, nodedata_phys + pgdat_size);
- 		node_data[nodeid] = NULL;
- 		return;
+ 	for (i = 0; i < e820.nr_map; i++) {
+ 		struct e820entry *ei = &e820.map[i];
+-		u64 addr, last;
+-		u64 ei_last;
++		u64 addr;
++		u64 ei_start, ei_last;
+ 
+ 		if (ei->type != E820_RAM)
+ 			continue;
+-		addr = round_up(ei->addr, align);
++
+ 		ei_last = ei->addr + ei->size;
+-		if (addr < start)
+-			addr = round_up(start, align);
+-		if (addr >= ei_last)
+-			continue;
+-		*sizep = ei_last - addr;
+-		while (bad_addr_size(&addr, sizep, align) &&
+-			addr + *sizep <= ei_last)
+-			;
+-		last = addr + *sizep;
+-		if (last > ei_last)
++		ei_start = ei->addr;
++		addr = find_early_area_size(ei_start, ei_last, start,
++					 sizep, align);
++
++		if (addr == -1ULL)
+ 			continue;
++
+ 		return addr;
  	}
- 	bootmap_start = __pa(bootmap);
-+	reserve_early(bootmap_start, bootmap_start+(bootmap_pages<<PAGE_SHIFT),
-+			"BOOTMAP");
  
- 	bootmap_size = init_bootmem_node(NODE_DATA(nodeid),
- 					 bootmap_start >> PAGE_SHIFT,
-@@ -259,31 +257,11 @@ setup_node_bootmem(int nodeid, unsigned long start, unsigned long end)
- 	printk(KERN_INFO "  bootmap [%016lx -  %016lx] pages %lx\n",
- 		 bootmap_start, bootmap_start + bootmap_size - 1,
- 		 bootmap_pages);
--
--	free_bootmem_with_active_regions(nodeid, end);
--
--	/*
--	 * convert early reserve to bootmem reserve earlier
--	 * otherwise early_node_mem could use early reserved mem
--	 * on previous node
--	 */
--	early_res_to_bootmem(start, end);
--
--	/*
--	 * in some case early_node_mem could use alloc_bootmem
--	 * to get range on other node, don't reserve that again
--	 */
--	if (nid != nodeid)
--		printk(KERN_INFO "    NODE_DATA(%d) on node %d\n", nodeid, nid);
--	else
--		reserve_bootmem_node(NODE_DATA(nodeid), nodedata_phys,
--					pgdat_size, BOOTMEM_DEFAULT);
- 	nid = phys_to_nid(bootmap_start);
- 	if (nid != nodeid)
- 		printk(KERN_INFO "    bootmap(%d) on node %d\n", nodeid, nid);
--	else
--		reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start,
--				 bootmap_pages<<PAGE_SHIFT, BOOTMEM_DEFAULT);
-+
-+	free_bootmem_with_active_regions(nodeid, end);
- 
- 	node_set_online(nodeid);
- }
 -- 
 1.6.4.2
 
