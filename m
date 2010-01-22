@@ -1,139 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759Ab0AVC3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787Ab0AVCaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755759Ab0AVC3I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 21:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702Ab0AVC3H
+	id S1755787Ab0AVCaj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 21:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630Ab0AVCai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 21:29:07 -0500
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:56117 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751433Ab0AVC3F (ORCPT
+	Thu, 21 Jan 2010 21:30:38 -0500
+Received: from mail-iw0-f196.google.com ([209.85.223.196]:33213 "EHLO
+	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755167Ab0AVCah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 21:29:05 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuAEAAOYWEuuWOiG/2dsb2JhbACBRtgXhDwE
-Date: Thu, 21 Jan 2010 21:28:58 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [RFC PATCH 03/10] ftrace: Drop the ftrace_profile_enabled
-	checks in tracing hot path
-Message-ID: <20100122022858.GA2604@Krystal>
-References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com> <1264122982-1553-4-git-send-regression-fweisbec@gmail.com> <1264125917.31321.312.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1264125917.31321.312.camel@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 21:22:19 up 36 days, 10:40,  4 users,  load average: 0.06, 0.10,
-	0.09
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 21 Jan 2010 21:30:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=UYTieTGqjOGcIYWw7SNIE6yAviRtumlMOlPJE8k5wl3JiTPB4BW1mwEOGUt+blu/YN
+         C4dUsan+GJFaYf/UTlV2RdYgVqAlTzY+DlhNdNdoE3qD6XCTpB4IYiwodHMzS+dM99P4
+         rtCnbvWaMxD1qxLIri/iskVa+I/87vkVWZtWo=
+MIME-Version: 1.0
+In-Reply-To: <1264126146.28766.0.camel@localhost.localdomain>
+References: <1264011793.1735.3683.camel@localhost.localdomain>
+	 <4B57A2D4.9030204@gmail.com>
+	 <20100121185544.GB11996@core.coreip.homeip.net>
+	 <51f3faa71001211339t4652700ct34659c37479cd67e@mail.gmail.com>
+	 <4B58CBEE.5020301@gmail.com>
+	 <51f3faa71001211629n1b556649t32c184e49dc32dfb@mail.gmail.com>
+	 <4B58FD48.9020209@gmail.com>
+	 <1264126146.28766.0.camel@localhost.localdomain>
+Date: Thu, 21 Jan 2010 20:30:36 -0600
+Message-ID: <51f3faa71001211830s1744809eu3d3c5b7753656822@mail.gmail.com>
+Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
+From: Robert Hancock <hancockrwd@gmail.com>
+To: Bastien Nocera <hadess@hadess.net>
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> On Fri, 2010-01-22 at 02:16 +0100, Frederic Weisbecker wrote:
-> > Every time we enter the function profiler tracing callbacks, we first
-> > check if the function profiling is enabled.
-> > 
-> > This check is useless because we register the function graph
-> > callbacks only after the hashlist has been initialized.
-> 
-> Unfortunately, since the previous patch is incorrect, it makes this one
-> buggy too.
-> 
-> If you remove the check to ftrace_profile_enabled, the call to the
-> profiled code could have been preempted and pending to be called.
-> 
-> Stop machine may remove all calls to the tracing, but it only affects
-> new hits. Pending hits may still exist.
-> 
-> If you remove this check, and the user re-enables the profiling, then
-> all PER_CPU hashs will be reset. If in the process of this happening,
-> the task with the pending trace wakes up, it may access the PER_CPU list
-> and corrupt it.
-> 
-> Now for the reason I Cc'd Paul and Mathieu...
-> 
-> If we had a synchronize_sched() like function that would wait and return
-> when all preempted tasks have been scheduled again and went to either
-> userspace or called schedule directly, then we could actually do this.
-> 
-> After unregistering the function graph trace, you call this
-> "synchronize_tasks()" and it will guarantee that all currently preempted
-> tasks have either went to userspace or have called schedule() directly.
-> Then it would be safe to remove this check.
+On Thu, Jan 21, 2010 at 8:09 PM, Bastien Nocera <hadess@hadess.net> wrote:
+> On Thu, 2010-01-21 at 17:20 -0800, Justin P. Mattock wrote:
+>> On 01/21/10 16:29, Robert Hancock wrote:
+> <snip>
+>> > cat /sys/bus/pnp/devices/*/id
+>> >
+>> > and see if any of these are present?
+>> >
+>> > PNP0303
+>> > PNP030b
+>> > FJC6000
+>> > FJC6001
+>> > PNP0f03
+>> > PNP0f0b
+>> > PNP0f0e
+>> > PNP0f12
+>> > PNP0f13
+>> > PNP0f19
+>> > PNP0f1c
+>> > SYN0801
+>> >
+>>
+>>
+>> both macbook pro, and iMac9,1
+>> have:
+>> PNP0a08
+>> PNP0a03
+>
+> # cat /sys/bus/pnp/devices/*/id
+> PNP0a08
+> PNP0a03
+> PNP0c02
+> APP0001
+> PNP0200
+> INT0800
+> PNP0103
+> PNP0c01
+> PNP0c04
+> PNP0c02
+> PNP0b00
+>
+> On a MacbookAir1,1
 
-OK, so basically you need to know when you reach a quiescent state, but
-preemption is enabled and there is no RCU read lock taken around these
-code paths, am I correct ?
-
-With tracepoints, life is easy because I disable preemption around the
-calls, so I can use synchronize_sched() to know when quiescent state is
-reached.
-
-I recommend looking at kernel/kprobes.c:check_safety(). It uses
-thaw_processes() and synchronize_sched() for this purpose. Basically, it
-rely on the "refrigeration" points to detect such quiescent state. This
-trick should do the job for the function graph tracer too.
-
-I'm adding Masami in CC. He is the one who implemented check_safety(),
-and I remember discussing it with him in the past.
-
-Thanks,
-
-Mathieu
-
-> 
-> -- Steve
-> 
-> > 
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > Cc: Steven Rostedt <rostedt@goodmis.org>
-> > Cc: Li Zefan <lizf@cn.fujitsu.com>
-> > Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-> > ---
-> >  kernel/trace/ftrace.c |    7 ++-----
-> >  1 files changed, 2 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> > index 94117ec..f258f67 100644
-> > --- a/kernel/trace/ftrace.c
-> > +++ b/kernel/trace/ftrace.c
-> > @@ -381,13 +381,10 @@ function_profile_call(unsigned long ip, unsigned long parent_ip)
-> >  	struct func_node *rec;
-> >  	unsigned long flags;
-> >  
-> > -	if (!ftrace_profile_enabled)
-> > -		return;
-> > -
-> >  	local_irq_save(flags);
-> >  
-> >  	hlist = &__get_cpu_var(func_hlist_cpu);
-> > -	if (!hlist->hash || !ftrace_profile_enabled)
-> > +	if (!hlist->hash)
-> >  		goto out;
-> >  
-> >  	rec = function_find_hlist_node(hlist, ip);
-> > @@ -418,7 +415,7 @@ static void profile_graph_return(struct ftrace_graph_ret *trace)
-> >  
-> >  	local_irq_save(flags);
-> >  	hlist = &__get_cpu_var(func_hlist_cpu);
-> > -	if (!hlist->hash || !ftrace_profile_enabled)
-> > +	if (!hlist->hash)
-> >  		goto out;
-> >  
-> >  	calltime = trace->rettime - trace->calltime;
-> 
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+So it doesn't report any keyboard or mouse controller. You're sure
+that "PNP: No PS/2 controller found" message doesn't show up?
