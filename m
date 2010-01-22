@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150Ab0AVJZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564Ab0AVJ0F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753150Ab0AVJZZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104Ab0AVJZV
+	id S1753564Ab0AVJ0F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:26:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500Ab0AVJ0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:25:21 -0500
-Received: from mail.gmx.net ([213.165.64.20]:55368 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752789Ab0AVJZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 04:25:19 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19Oj2RgVvNOS0AnSI5bbM1c7HZh/ABlovoTCXjG/x
-	XoKgp8ZFsJnDQv
-Subject: Re: scheduler vs hardware? (was Re: another i7  (linux) bug?)
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Luca Zini <luca.zini@gmail.com>, aagaande@gmail.com, rdelcueto@hotmail.com,
-       mingo@elte.hu, linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>
-In-Reply-To: <1264150272.4283.1361.camel@laptop>
-References: <201001211258.23499.luca.zini@gmail.com>
-	 <20100121215438.GK17684@ldl.fc.hp.com>
-	 <1264144758.8074.22.camel@marge.simson.net>
-	 <1264150272.4283.1361.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 22 Jan 2010 10:25:14 +0100
-Message-Id: <1264152314.12530.8.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.68000000000000005
+	Fri, 22 Jan 2010 04:26:00 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53990 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753487Ab0AVJZ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 04:25:58 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Fri, 22 Jan 2010 01:24:43 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH 34/38] x86: remove arch_probe_nr_irqs
+In-reply-to: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>
+Message-id: <1264152287-13866-35-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+References: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-22 at 09:51 +0100, Peter Zijlstra wrote:
+so keep nr_irqs == NR_IRQS
 
-> My laptop does:
-> 
-> 
-> # time nice -n 19 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+---
+ arch/x86/kernel/apic/io_apic.c |   22 ----------------------
+ 1 files changed, 0 insertions(+), 22 deletions(-)
 
-> real    0m3.273s
-> user    0m3.217s
-> sys     0m0.022s
-> 
-> 
-> # time nice -n 0 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
-
-> real    0m1.121s
-> user    0m1.102s
-> sys     0m0.013s
-
-I don't see any way that can be scheduler (knocks wood).  Could it be
-cpufreq?  IIRC there is or was an ignore nice gizmo in there.
-
-	-Mike 
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 0cc7022..76b4b65 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3822,28 +3822,6 @@ void __init probe_nr_irqs_gsi(void)
+ 	printk(KERN_DEBUG "nr_irqs_gsi: %d\n", nr_irqs_gsi);
+ }
+ 
+-#ifdef CONFIG_SPARSE_IRQ
+-int __init arch_probe_nr_irqs(void)
+-{
+-	int nr;
+-
+-	if (nr_irqs > (NR_VECTORS * nr_cpu_ids))
+-		nr_irqs = NR_VECTORS * nr_cpu_ids;
+-
+-	nr = nr_irqs_gsi + 8 * nr_cpu_ids;
+-#if defined(CONFIG_PCI_MSI) || defined(CONFIG_HT_IRQ)
+-	/*
+-	 * for MSI and HT dyn irq
+-	 */
+-	nr += nr_irqs_gsi * 64;
+-#endif
+-	if (nr < nr_irqs)
+-		nr_irqs = nr;
+-
+-	return 0;
+-}
+-#endif
+-
+ static int __io_apic_set_pci_routing(struct device *dev, int irq,
+ 				struct io_apic_irq_attr *irq_attr)
+ {
+-- 
+1.6.4.2
 
