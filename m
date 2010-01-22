@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409Ab0AVJiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587Ab0AVKCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754409Ab0AVJiP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:38:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253Ab0AVJiC
+	id S1753587Ab0AVKCv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 05:02:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917Ab0AVKCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:38:02 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53855 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753118Ab0AVJZX (ORCPT
+	Fri, 22 Jan 2010 05:02:50 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:41726 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713Ab0AVKCs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 04:25:23 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN
-Date: Fri, 22 Jan 2010 01:24:11 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 02/38] x86: check range in update range
-In-reply-to: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264152287-13866-3-git-send-email-yinghai@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-References: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
+	Fri, 22 Jan 2010 05:02:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=lLsUWuL8CZkNggJRsDK5bHGzON60BzjBVrTqAX5ZdG+kl2Rrr8aZ94wjIgjYmkGVqU
+         p1psWrEyJrxfHWuBb0o24Om3t2lJKySuBfdFu2qItyKH8Ns9hPVg+3ulfQ6+m6EaWNZY
+         gK2D45VOIBMxZ+h/co+YTjigomnV7cqQvmB0o=
+MIME-Version: 1.0
+In-Reply-To: <6fb445941001220115y6b99f7b4g306ea23d3202969@mail.gmail.com>
+References: <6fb445941001200112o2934f805l4eb4f78000e9527e@mail.gmail.com>
+	 <6fb445941001200120m3aa5e944j54a6f645ce82d76f@mail.gmail.com>
+	 <4B57C3C3.9010606@schaufler-ca.com>
+	 <20100121090510.GA908@infradead.org>
+	 <6fb445941001220115y6b99f7b4g306ea23d3202969@mail.gmail.com>
+Date: Fri, 22 Jan 2010 18:02:47 +0800
+Message-ID: <2375c9f91001220202m724e2ee2p2213b81a043ebd33@mail.gmail.com>
+Subject: Re: About ACL for IPC Object
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: zhou peng <ailvpeng25@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, sds@tycho.nsa.gov,
+       jra@samba.org, linux-security-module@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fend off wrong range
+(Top-posting fixed.)
 
-so later could use it with 32bit amd_bus/intel_bus, and it could have cap_resource.
+On Fri, Jan 22, 2010 at 5:15 PM, zhou peng <ailvpeng25@gmail.com> wrote:
+>
+> 2010/1/21 Christoph Hellwig <hch@infradead.org>:
+>> On Wed, Jan 20, 2010 at 07:02:27PM -0800, Casey Schaufler wrote:
+>>> zhou peng wrote:
+>>> > Hi all,
+>>> >
+>>> > There are ACL in file system, but why there are no ACL implementation
+>>> > in IPC object, eg. shm, message queue, FIFO?
+>>> >
+>>>
+>>> Most people haven't noticed that IPC objects are even there, much less
+>>> that they have mode bits and not ACLs. Even when we were doing security
+>>> evaluations on Unix boxes in the 1990's they were considered insufficiently
+>>> interesting to justify the additional work to do ACLs.
+>>>
+>>> If you really want ACLs on IPC objects it would make a dandy little
+>>> project for a summer. I would be happy to review patches.
+>
+> Thanks. It's interesting to add ACL over IPC objects. I want to have a try.
+>
+>>
+>> Or use the posix IPC mechanisms.  The Posix shared memory has ACL by
+>> using tmpfs as the backing store, and we could add similar support to
+>> Posix messages queues as they are also backed by a normal filesystem.
+>
+> Christoph Hellwig, This way may be convinent. Could you give some
+> detailed message. :)
+> I only find /proc/ipc/shm file which contain the info of shm objs,and
+> tmpfs on /dev/shm which is empty.
+>
+>>
+>> Adding this support to the old SYSV IPC mechanisms would be much harder
+>> as they do not fit into the file backed model we use everywhere else at
+>> all.
+>
+> Just like file objects, the mode bits are implment over IPC objects
+> without file backed, so I think adding ACL support to IPC objects may
+> be somewhat reasonable :)
+>
+> Thank you all for so many solutions.
+>
+> I want to control some IPC object (shm, msg queue, semphore) can be
+> accessed by which named user or named group just like file objects ACL
+> do.
+>
+> I studied the solution you all referred, The SELinux is powerful but
+> may be somewhat complicated. And I am confused with Christoph
+> Hellwig‘s solution using tmpfs.
 
--v2: update comments
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
----
- kernel/range.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/range.c b/kernel/range.c
-index 46a10c8..71e0021 100644
---- a/kernel/range.c
-+++ b/kernel/range.c
-@@ -13,6 +13,9 @@
- 
- int add_range(struct range *range, int az, int nr_range, u64 start, u64 end)
- {
-+	if (start > end)
-+		return nr_range;
-+
- 	/* Out of slots: */
- 	if (nr_range >= az)
- 		return nr_range;
-@@ -30,6 +33,9 @@ int add_range_with_merge(struct range *range, int az, int nr_range,
- {
- 	int i;
- 
-+	if (start > end)
-+		return nr_range;
-+
- 	/* Try to merge it with old one: */
- 	for (i = 0; i < nr_range; i++) {
- 		u64 final_start, final_end;
-@@ -59,6 +65,9 @@ void subtract_range(struct range *range, int az, u64 start, u64 end)
- {
- 	int i, j;
- 
-+	if (start > end)
-+		return;
-+
- 	for (j = 0; j < az; j++) {
- 		if (!range[j].end)
- 			continue;
--- 
-1.6.4.2
-
+Well, only posix semphores and posix share memory use tmpfs, I think,
+posix msg queues use "mqueue" instead.
