@@ -1,127 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318Ab0AVXAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351Ab0AVXDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318Ab0AVXAw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:00:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196Ab0AVXAv
+	id S1755351Ab0AVXDk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 18:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127Ab0AVXDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:00:51 -0500
-Received: from liberdade.minaslivre.org ([72.232.254.139]:43690 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753045Ab0AVXAu (ORCPT
+	Fri, 22 Jan 2010 18:03:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52614 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754502Ab0AVXDj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 18:00:50 -0500
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: linux-acpi@vger.kernel.org
-Cc: don@syst.com.br, len.brown@intel.com, linux-kernel@vger.kernel.org,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: [PATCH] classmate-laptop: use a single MODULE_DEVICE_TABLE to get correct aliases
-Date: Fri, 22 Jan 2010 20:57:33 -0200
-Message-Id: <1264201053-14161-1-git-send-email-cascardo@holoscopio.com>
-X-Mailer: git-send-email 1.6.6
+	Fri, 22 Jan 2010 18:03:39 -0500
+Date: Fri, 22 Jan 2010 15:03:25 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Harry Edmon <harry@atmos.washington.edu>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: 2.6.32.2 - WARNING: at lib/kref.c:43 kref_get+0x,23/0x2b()
+Message-Id: <20100122150325.6ad12428.akpm@linux-foundation.org>
+In-Reply-To: <4B4F5A00.4060604@atmos.washington.edu>
+References: <4B4F5A00.4060604@atmos.washington.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of a MODULE_DEVICE_TABLE for every acpi_driver ids table, we
-create a table containing all ids to export to get a module alias for
-each one.
+(cc linux-nfs)
 
-This will fix automatic loading of the driver when one of the ACPI
-devices is not present (like the accelerometer, which is not present in
-some models).
+On Thu, 14 Jan 2010 09:53:04 -0800
+Harry Edmon <harry@atmos.washington.edu> wrote:
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
----
- drivers/platform/x86/classmate-laptop.c |   31 +++++++++++++++++++++----------
- 1 files changed, 21 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/platform/x86/classmate-laptop.c b/drivers/platform/x86/classmate-laptop.c
-index ed90082..8cb20e4 100644
---- a/drivers/platform/x86/classmate-laptop.c
-+++ b/drivers/platform/x86/classmate-laptop.c
-@@ -34,6 +34,11 @@ struct cmpc_accel {
- #define CMPC_ACCEL_SENSITIVITY_DEFAULT		5
- 
- 
-+#define CMPC_ACCEL_HID		"ACCE0000"
-+#define CMPC_TABLET_HID		"TBLT0000"
-+#define CMPC_BL_HID		"IPML200"
-+#define CMPC_KEYS_HID		"FnBT0000"
-+
- /*
-  * Generic input device code.
-  */
-@@ -282,10 +287,9 @@ static int cmpc_accel_remove(struct acpi_device *acpi, int type)
- }
- 
- static const struct acpi_device_id cmpc_accel_device_ids[] = {
--	{"ACCE0000", 0},
-+	{CMPC_ACCEL_HID, 0},
- 	{"", 0}
- };
--MODULE_DEVICE_TABLE(acpi, cmpc_accel_device_ids);
- 
- static struct acpi_driver cmpc_accel_acpi_driver = {
- 	.owner = THIS_MODULE,
-@@ -366,10 +370,9 @@ static int cmpc_tablet_resume(struct acpi_device *acpi)
- }
- 
- static const struct acpi_device_id cmpc_tablet_device_ids[] = {
--	{"TBLT0000", 0},
-+	{CMPC_TABLET_HID, 0},
- 	{"", 0}
- };
--MODULE_DEVICE_TABLE(acpi, cmpc_tablet_device_ids);
- 
- static struct acpi_driver cmpc_tablet_acpi_driver = {
- 	.owner = THIS_MODULE,
-@@ -477,17 +480,16 @@ static int cmpc_bl_remove(struct acpi_device *acpi, int type)
- 	return 0;
- }
- 
--static const struct acpi_device_id cmpc_device_ids[] = {
--	{"IPML200", 0},
-+static const struct acpi_device_id cmpc_bl_device_ids[] = {
-+	{CMPC_BL_HID, 0},
- 	{"", 0}
- };
--MODULE_DEVICE_TABLE(acpi, cmpc_device_ids);
- 
- static struct acpi_driver cmpc_bl_acpi_driver = {
- 	.owner = THIS_MODULE,
- 	.name = "cmpc",
- 	.class = "cmpc",
--	.ids = cmpc_device_ids,
-+	.ids = cmpc_bl_device_ids,
- 	.ops = {
- 		.add = cmpc_bl_add,
- 		.remove = cmpc_bl_remove
-@@ -540,10 +542,9 @@ static int cmpc_keys_remove(struct acpi_device *acpi, int type)
- }
- 
- static const struct acpi_device_id cmpc_keys_device_ids[] = {
--	{"FnBT0000", 0},
-+	{CMPC_KEYS_HID, 0},
- 	{"", 0}
- };
--MODULE_DEVICE_TABLE(acpi, cmpc_keys_device_ids);
- 
- static struct acpi_driver cmpc_keys_acpi_driver = {
- 	.owner = THIS_MODULE,
-@@ -607,3 +608,13 @@ static void cmpc_exit(void)
- 
- module_init(cmpc_init);
- module_exit(cmpc_exit);
-+
-+static const struct acpi_device_id cmpc_device_ids[] = {
-+	{CMPC_ACCEL_HID, 0},
-+	{CMPC_TABLET_HID, 0},
-+	{CMPC_BL_HID, 0},
-+	{CMPC_KEYS_HID, 0},
-+	{"", 0}
-+};
-+
-+MODULE_DEVICE_TABLE(acpi, cmpc_device_ids);
--- 
-1.6.6
-
+> I have a single quad-core Xeon machine running 2.6.32.2 that keeps 
+> giving me "WARNING: at lib/kref.c:43 kref_get+0x,23/0x2b()".  This 
+> machine is mainaly used as a NFS server.  I have attached the kern.log 
+> and my config file.   Any ideas?
+> -- 
+> 
+>  Dr. Harry Edmon			E-MAIL: harry@atmos.washington.edu
+>  206-543-0547 FAX: 206-543-0308		harry@washington.edu, harry@uw.edu
+>  Director of IT, College of the Environment and
+>  Director of Computing, Dept of Atmospheric Sciences
+>  University of Washington, Box 351640, Seattle, WA 98195-1640
+> 
+> 
