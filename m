@@ -1,216 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588Ab0AVVSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480Ab0AVVXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588Ab0AVVSt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 16:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329Ab0AVVSs
+	id S1754480Ab0AVVXy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 16:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337Ab0AVVXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 16:18:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41037 "EHLO ogre.sisk.pl"
+	Fri, 22 Jan 2010 16:23:53 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41048 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932123Ab0AVVSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 16:18:46 -0500
+	id S1754217Ab0AVVXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 16:23:51 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [Update][PATCH] MM / PM: Force GFP_NOIO during suspend/hibernation and resume
-Date: Fri, 22 Jan 2010 22:19:15 +0100
+To: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before suspending devices
+Date: Fri, 22 Jan 2010 22:24:37 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <201001212121.50272.rjw@sisk.pl> <20100122103830.6C09.A69D9226@jp.fujitsu.com> <1264155067.15930.4.camel@maxim-laptop>
-In-Reply-To: <1264155067.15930.4.camel@maxim-laptop>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <alpine.LFD.2.00.1001221841490.2266@localhost> <201001222148.23945.rjw@sisk.pl>
+In-Reply-To: <201001222148.23945.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001222219.15958.rjw@sisk.pl>
+Message-Id: <201001222224.37748.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 January 2010, Maxim Levitsky wrote:
-> On Fri, 2010-01-22 at 10:42 +0900, KOSAKI Motohiro wrote: 
-> > > > > Probably we have multiple option. but I don't think GFP_NOIO is good
-> > > > > option. It assume the system have lots non-dirty cache memory and it isn't
-> > > > > guranteed.
-> > > > 
-> > > > Basically nothing is guaranteed in this case.  However, does it actually make
-> > > > things _worse_?  
-> > > 
-> > > Hmm..
-> > > Do you mean we don't need to prevent accidental suspend failure?
-> > > Perhaps, I did misunderstand your intention. If you think your patch solve
-> > > this this issue, I still disagree. but If you think your patch mitigate
-> > > the pain of this issue, I agree it. I don't have any reason to oppose your
-> > > first patch.
+On Friday 22 January 2010, Rafael J. Wysocki wrote:
+> On Friday 22 January 2010, Sebastian Ott wrote:
+> > hi Rafael,
 > > 
-> > One question. Have anyone tested Rafael's $subject patch? 
-> > Please post test result. if the issue disapper by the patch, we can
-> > suppose the slowness is caused by i/o layer.
+> > on s390 we have a reproduceable testcase where, after all devices were
+> > suspended, a memory allocation results in disk IO. I know that this is
+> > similar to the current discussion about magically changing the gpf mask,
+> > but in our case the related allocation is triggered not by a device driver
+> > but directly by hibernation_snapshot. The call chain looks like this:
+> > 
+> > STACK:
+> >  0 schedule+1796 [0x5a7af0]
+> >  1 io_schedule+98 [0x5a82ce]
+> >  2 sync_page_killable+4 [0x1ec424]
+> >  3 __wait_on_bit+204 [0x5a8bc4]
+> >  4 add_to_page_cache_locked+2 [0x1ec766]
+> >  5 shrink_page_list+2372 [0x1fc5b0]
+> >  6 shrink_list+2496 [0x1fd02c]
+> >  7 shrink_zone+932 [0x1fd3e0]
+> >  8 try_to_free_pages+668 [0x1fe4bc]
+> >  9 __alloc_pages_nodemask+1346 [0x1f5056]
+> > 10 __get_free_pages+76 [0x1f52dc]
+> > 11 __build_sched_domains+60 [0x144f98]
+> > 12 partition_sched_domains+696 [0x145dcc]
+> > 13 update_sched_domains+100 [0x146104]
+> > 14 notifier_call_chain+166 [0x5ae112]
+> > 15 raw_notifier_call_chain+44 [0x1800c4]
+> > 16 _cpu_down+586 [0x59f212]
+> > 17 disable_nonboot_cpus+354 [0x155ad2]
+> > 18 hibernation_snapshot+324 [0x1a7938]
+> > 19 hibernate+304 [0x1a7bcc]
+> > 20 state_store+130 [0x1a645e]
+> > 21 sysfs_write_file+264 [0x2b551c]
+> > 22 vfs_write+190 [0x23f98a]
+> > 23 sys_write+100 [0x23fb50]
+> > 24 sysc_noemu+16 [0x118ff6]
+> > 
+> > a possible fix would be to call disable_nonboot_cpus before suspending the
+> > devices..
 > 
-> I did.
-> 
-> As far as I could see, patch does solve the problem I described.
-> 
-> Does it affect speed of suspend? I can't say for sure. It seems to be
-> the same.
+> This is going against the changes attempting to speed-up suspend and resume,
+> such as the asynchronous suspend/resume patchset, so I don't agree with it.
 
-Thanks for testing.
+In fact there's more to it.
 
-Below is a slightly different version of that patch.  Can you please give it a
-try?
+enable_nonboot_cpus() has to be called before suspend_ops->wake() (and
+analogously for hibernation), because of some ACPI-related ordering constraints
+(calling them in the reverse orther leads to _serious_ problems during resume).
+
+In turn, suspend_ops->wake() should be called before we resume devices, for
+similar reasons.
+
+So, your patch really would break things.
 
 Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: MM / PM: Force GFP_NOIO during suspend/hibernation and resume
-
-There are quite a few GFP_KERNEL memory allocations made during
-suspend/hibernation and resume that may cause the system to hang,
-because the I/O operations they depend on cannot be completed due to
-the underlying devices being suspended.
-
-Mitigate this problem by clearing the __GFP_IO and __GFP_FS bits in
-gfp_allowed_mask before suspend/hibernation and restoring the
-original values of these bits in gfp_allowed_mask durig the
-subsequent resume.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- kernel/power/hibernate.c |    6 ++++++
- kernel/power/power.h     |    3 +++
- kernel/power/suspend.c   |    2 ++
- mm/Makefile              |    1 +
- mm/pm.c                  |   28 ++++++++++++++++++++++++++++
- 5 files changed, 40 insertions(+)
-
-Index: linux-2.6/kernel/power/hibernate.c
-===================================================================
---- linux-2.6.orig/kernel/power/hibernate.c
-+++ linux-2.6/kernel/power/hibernate.c
-@@ -334,6 +334,7 @@ int hibernation_snapshot(int platform_mo
- 		goto Close;
- 
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	error = dpm_suspend_start(PMSG_FREEZE);
- 	if (error)
- 		goto Recover_platform;
-@@ -351,6 +352,7 @@ int hibernation_snapshot(int platform_mo
- 
- 	dpm_resume_end(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-+	mm_allow_io_allocations();
- 	resume_console();
-  Close:
- 	platform_end(platform_mode);
-@@ -448,11 +450,13 @@ int hibernation_restore(int platform_mod
- 
- 	pm_prepare_console();
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	error = dpm_suspend_start(PMSG_QUIESCE);
- 	if (!error) {
- 		error = resume_target_kernel(platform_mode);
- 		dpm_resume_end(PMSG_RECOVER);
- 	}
-+	mm_allow_io_allocations();
- 	resume_console();
- 	pm_restore_console();
- 	return error;
-@@ -481,6 +485,7 @@ int hibernation_platform_enter(void)
- 
- 	entering_platform_hibernation = true;
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	error = dpm_suspend_start(PMSG_HIBERNATE);
- 	if (error) {
- 		if (hibernation_ops->recover)
-@@ -518,6 +523,7 @@ int hibernation_platform_enter(void)
-  Resume_devices:
- 	entering_platform_hibernation = false;
- 	dpm_resume_end(PMSG_RESTORE);
-+	mm_allow_io_allocations();
- 	resume_console();
- 
-  Close:
-Index: linux-2.6/kernel/power/power.h
-===================================================================
---- linux-2.6.orig/kernel/power/power.h
-+++ linux-2.6/kernel/power/power.h
-@@ -187,6 +187,9 @@ static inline void suspend_test_finish(c
- #ifdef CONFIG_PM_SLEEP
- /* kernel/power/main.c */
- extern int pm_notifier_call_chain(unsigned long val);
-+/* mm/pm.c */
-+extern void mm_force_noio_allocations(void);
-+extern void mm_allow_io_allocations(void);
- #endif
- 
- #ifdef CONFIG_HIGHMEM
-Index: linux-2.6/kernel/power/suspend.c
-===================================================================
---- linux-2.6.orig/kernel/power/suspend.c
-+++ linux-2.6/kernel/power/suspend.c
-@@ -208,6 +208,7 @@ int suspend_devices_and_enter(suspend_st
- 			goto Close;
- 	}
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	suspend_test_start();
- 	error = dpm_suspend_start(PMSG_SUSPEND);
- 	if (error) {
-@@ -224,6 +225,7 @@ int suspend_devices_and_enter(suspend_st
- 	suspend_test_start();
- 	dpm_resume_end(PMSG_RESUME);
- 	suspend_test_finish("resume devices");
-+	mm_allow_io_allocations();
- 	resume_console();
-  Close:
- 	if (suspend_ops->end)
-Index: linux-2.6/mm/Makefile
-===================================================================
---- linux-2.6.orig/mm/Makefile
-+++ linux-2.6/mm/Makefile
-@@ -40,3 +40,4 @@ obj-$(CONFIG_MEMORY_FAILURE) += memory-f
- obj-$(CONFIG_HWPOISON_INJECT) += hwpoison-inject.o
- obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
- obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
-+obj-$(CONFIG_PM_SLEEP) += pm.o
-Index: linux-2.6/mm/pm.c
-===================================================================
---- /dev/null
-+++ linux-2.6/mm/pm.c
-@@ -0,0 +1,28 @@
-+#include <linux/gfp.h>
-+
-+static gfp_t saved_gfp_allowed_mask;
-+
-+#define GFP_IOFS (__GFP_IO | __GFP_FS)
-+
-+/**
-+ * mm_force_noio_allocations - Modify gfp_allowed_mask to disable IO allocations
-+ *
-+ * Change gfp_allowed_mask by unsetting __GFP_IO and __GFP_FS in it and save the
-+ * old value.
-+ */
-+void mm_force_noio_allocations(void)
-+{
-+	saved_gfp_allowed_mask = gfp_allowed_mask;
-+	gfp_allowed_mask &= ~GFP_IOFS;
-+}
-+
-+/**
-+ * mm_allow_io_allocations - Modify gfp_allowed_mask to allow IO allocations
-+ *
-+ * If the saved value of gfp_allowed_mask has __GFP_IO set, modify the current
-+ * gfp_allowed_mask by setting this bit and anlogously for __GFP_FS.
-+ */
-+void mm_allow_io_allocations(void)
-+{
-+	gfp_allowed_mask |= saved_gfp_allowed_mask & GFP_IOFS;
-+}
