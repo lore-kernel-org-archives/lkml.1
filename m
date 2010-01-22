@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833Ab0AVQIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491Ab0AVQMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833Ab0AVQIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 11:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449Ab0AVQIQ
+	id S1755491Ab0AVQMy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 11:12:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291Ab0AVQMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 11:08:16 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:46302 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755020Ab0AVQIP (ORCPT
+	Fri, 22 Jan 2010 11:12:53 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:51384 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755030Ab0AVQMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 11:08:15 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=gsXONqgOFJ7Qds56koIZ1sfCVU6RpbpQb90fqAXAs/KfW0pg4lc+QqPckiQwn+rVk
-	2ZqFGDmj4kztB8W9RTH5Q==
-MIME-Version: 1.0
-In-Reply-To: <20100122155535.887853503@chello.nl>
-References: <20100122155044.391857484@chello.nl>
-	 <20100122155535.887853503@chello.nl>
-Date: Fri, 22 Jan 2010 17:08:11 +0100
-Message-ID: <bd4cb8901001220808n6f731d79m7195eea8e16f57d4@mail.gmail.com>
-Subject: Re: [PATCH 08/10] perf_event: Optimize the constraint searching bits
-From: Stephane Eranian <eranian@google.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: fweisbec@gmail.com, paulus@samba.org, mingo@elte.hu, davem@davemloft.net,
-       robert.richter@amd.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-X-System-Of-Record: true
+	Fri, 22 Jan 2010 11:12:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=N9fGQ4cxh4rSQAWX6mDhTreSRO2i89Q6J6HFwvkmIR4i39UYVVnaFC+RpuOATJmYeQ
+         C+NkHSUEZO///T0z/LtBgkggKKkSeSgjx1AM1654x+trjWdtuNE+HLMpHxZx6V/QkrOc
+         RdlVvAzz0PRM292IWemxrhMDNQ6VfMAh3G0cM=
+Subject: [PATCH 0/2] Smartmedia/xD support
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 22 Jan 2010 18:12:45 +0200
+Message-ID: <1264176765.24012.59.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o0MG8u54001079
 
-On Fri, Jan 22, 2010 at 4:50 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:> Instead of copying bitmasks around, pass pointers to the constraint structure.>The reason I changed that is because of the AMD situation where constraintsare dynamically generated. So we need to get some storage from somwhere.See my AMD NB patch,
+Hello,
 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>> LKML-Reference: <new-submission>> --->  arch/x86/kernel/cpu/perf_event.c |   81 ++++++++++++++++++--------------------->  1 file changed, 38 insertions(+), 43 deletions(-)>> Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c> ===================================================================> --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c> +++ linux-2.6/arch/x86/kernel/cpu/perf_event.c> @@ -135,12 +138,14 @@ struct x86_pmu {>        u64             intel_ctrl;>        void            (*enable_bts)(u64 config);>        void            (*disable_bts)(void);> -       void            (*get_event_constraints)(struct cpu_hw_events *cpuc,> -                                                struct perf_event *event,> -                                                unsigned long *idxmsk);> +> +       struct event_constraint *> +                       (*get_event_constraints)(struct cpu_hw_events *cpuc,> +                                                struct perf_event *event);> +>        void            (*put_event_constraints)(struct cpu_hw_events *cpuc,>                                                 struct perf_event *event);> -       const struct event_constraint *event_constraints;> +       struct event_constraint *event_constraints;>  };>>  static struct x86_pmu x86_pmu __read_mostly;> @@ -1244,18 +1249,16 @@ static inline int is_x86_event(struct pe>  static int x86_schedule_events(struct cpu_hw_events *cpuc, int n, int *assign)>  {>        int i, j , w, num;> -       int weight, wmax;> -       unsigned long *c;> -       unsigned long constraints[X86_PMC_IDX_MAX][BITS_TO_LONGS(X86_PMC_IDX_MAX)];> +       int weight, wmax;> +       struct event_constraint *c, *constraints[X86_PMC_IDX_MAX];>        unsigned long used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];>        struct hw_perf_event *hwc;>>        bitmap_zero(used_mask, X86_PMC_IDX_MAX);>>        for (i = 0; i < n; i++) {> -               x86_pmu.get_event_constraints(cpuc,> -                                             cpuc->event_list[i],> -                                             constraints[i]);> +               constraints[i] => +                 x86_pmu.get_event_constraints(cpuc, cpuc->event_list[i]);>        }>>        /*> @@ -1270,7 +1273,7 @@ static int x86_schedule_events(struct cp>                        break;>>                /* constraint still honored */> -               if (!test_bit(hwc->idx, c))> +               if (!test_bit(hwc->idx, c->idxmsk))>                        break;>>                /* not already used */> @@ -1323,11 +1326,11 @@ static int x86_schedule_events(struct cp>                        c = constraints[i];>                        hwc = &cpuc->event_list[i]->hw;>> -                       weight = bitmap_weight(c, X86_PMC_IDX_MAX);> +                       weight = bitmap_weight(c->idxmsk, X86_PMC_IDX_MAX);>                        if (weight != w)>                                continue;>> -                       for_each_bit(j, c, X86_PMC_IDX_MAX) {> +                       for_each_bit(j, c->idxmsk, X86_PMC_IDX_MAX) {>                                if (!test_bit(j, used_mask))>                                        break;>                        }> @@ -2165,11 +2167,13 @@ perf_event_nmi_handler(struct notifier_b>        return NOTIFY_STOP;>  }>> +static struct event_constraint unconstrained;> +>  static struct event_constraint bts_constraint =>        EVENT_CONSTRAINT(0, 1ULL << X86_PMC_IDX_FIXED_BTS, 0);>> -static int intel_special_constraints(struct perf_event *event,> -                                    unsigned long *idxmsk)> +static struct event_constraint *> +intel_special_constraints(struct perf_event *event)>  {>        unsigned int hw_event;>> @@ -2179,46 +2183,34 @@ static int intel_special_constraints(str>                      x86_pmu.event_map(PERF_COUNT_HW_BRANCH_INSTRUCTIONS)) &&>                     (event->hw.sample_period == 1))) {>> -               bitmap_copy((unsigned long *)idxmsk,> -                           (unsigned long *)bts_constraint.idxmsk,> -                           X86_PMC_IDX_MAX);> -               return 1;> +               return &bts_constraint;>        }> -       return 0;> +       return NULL;>  }>> -static void intel_get_event_constraints(struct cpu_hw_events *cpuc,> -                                       struct perf_event *event,> -                                       unsigned long *idxmsk)> +static struct event_constraint *> +intel_get_event_constraints(struct cpu_hw_events *cpuc, struct perf_event *event)>  {> -       const struct event_constraint *c;> +       struct event_constraint *c;>> -       /*> -        * cleanup bitmask> -        */> -       bitmap_zero(idxmsk, X86_PMC_IDX_MAX);> -> -       if (intel_special_constraints(event, idxmsk))> -               return;> +       c = intel_special_constraints(event);> +       if (c)> +               return c;>>        if (x86_pmu.event_constraints) {>                for_each_event_constraint(c, x86_pmu.event_constraints) {> -                       if ((event->hw.config & c->cmask) == c->code) {> -                               bitmap_copy(idxmsk, c->idxmsk, X86_PMC_IDX_MAX);> -                               return;> -                       }> +                       if ((event->hw.config & c->cmask) == c->code)> +                               return c;>                }>        }> -       /* no constraints, means supports all generic counters */> -       bitmap_fill((unsigned long *)idxmsk, x86_pmu.num_events);> +> +       return &unconstrained;>  }>> -static void amd_get_event_constraints(struct cpu_hw_events *cpuc,> -                                     struct perf_event *event,> -                                     unsigned long *idxmsk)> +static struct event_constraint *> +amd_get_event_constraints(struct cpu_hw_events *cpuc, struct perf_event *event)>  {> -       /* no constraints, means supports all generic counters */> -       bitmap_fill(idxmsk, x86_pmu.num_events);> +       return &unconstrained;>  }>>  static int x86_event_sched_in(struct perf_event *event,> @@ -2586,6 +2578,9 @@ void __init init_hw_perf_events(void)>        perf_events_lapic_init();>        register_die_notifier(&perf_event_nmi_notifier);>> +       unconstrained = (struct event_constraint)> +               EVENT_CONSTRAINT(0, (1ULL << x86_pmu.num_events) - 1, 0);> +>        pr_info("... version:                %d\n",     x86_pmu.version);>        pr_info("... bit width:              %d\n",     x86_pmu.event_bits);>        pr_info("... generic registers:      %d\n",     x86_pmu.num_events);>> -->>
+This is final patch series that depends on two former series and consist
+of two patches.
+
+First adds a driver for my xD card reader. Patch is almost unchanged
+from previous submission.
+I fixed few problems with suspend/resume. Device just works now.
+
+Second patch, is a new SmartMedia/xD FTL support.
+This version reverts many things I did in last version.
+Driver again doesn't use mtd badblock handling.
+Due to all kinds of problems I deciced it will be better to do it here.
+
+I added support for 256 byte nand devices, thus now the FTL covers
+everything. This is tested with nandsim.
+
+I added lots of error checking. Driver is now very carefull and not
+erase happy as it was. I decided that repairing the card should be done
+by fsck like utility and not the driver.
+
+Driver does some checks for device fails, by rereading the CIS.
+
+Everything works now, and I think ready for use.
+
+Best regards,
+Maxim Levitsky
 
 
--- Stephane Eranian  | EMEA Software EngineeringGoogle France | 38 avenue de l'Opéra | 75002 ParisTel : +33 (0) 1 42 68 53 00This email may be confidential or privileged. If you received thiscommunication by mistake, pleasedon't forward it to anyone else, please erase all copies andattachments, and please let me know thatit went to the wrong person. Thanks���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
