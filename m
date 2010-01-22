@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842Ab0AVCYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848Ab0AVCZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842Ab0AVCYZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 21:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630Ab0AVCYY
+	id S1755848Ab0AVCZO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 21:25:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802Ab0AVCZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 21:24:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19199 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755560Ab0AVCYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 21:24:23 -0500
-Date: Thu, 21 Jan 2010 21:22:55 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100122022255.GF22003@redhat.com>
-References: <20100120062834.GB12165@elte.hu> <20100120072925.GA11395@elte.hu> <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org> <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> <20100122012516.GE22003@redhat.com> <alpine.LFD.2.00.1001211729080.13231@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001211729080.13231@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 21 Jan 2010 21:25:13 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:18021 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374Ab0AVCZL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jan 2010 21:25:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=qCPrpPRJpUlFCNr1NtN/19JefRXP6auM1iWMSMkAcrMRXDYns3LNEZf9v8M0na2chx
+         gmK/rfY4BMGez09ct50/T9oR9CjEHityUDw7B5o1F3+Ar5Ujbg9RCQJGna4PPi2tk0tA
+         0Uod0wnyzWtUwayO7V9WDe6D5pDjaPVx3BOrE=
+MIME-Version: 1.0
+In-Reply-To: <5c7d4fb81001211800k2bf2025bqea45a78292da2199@mail.gmail.com>
+References: <22d9728d1001211705i4cf90df2ha730061ea01972b6@mail.gmail.com>
+	 <5c7d4fb81001211800k2bf2025bqea45a78292da2199@mail.gmail.com>
+Date: Fri, 22 Jan 2010 10:25:07 +0800
+Message-ID: <2375c9f91001211825q2059327dy32a1093f31a69b62@mail.gmail.com>
+Subject: Re: Hi all, bug or design flaw?
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Shu Wu <superwushu@gmail.com>
+Cc: Stepan Chatalyan <kehcho@gmail.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+On Fri, Jan 22, 2010 at 10:00 AM, Shu Wu <superwushu@gmail.com> wrote:
+> Hey, buddy, this is not the right place to raise a user-space
+> question. But as for your question, you'd better to learn what the "."
+> means. "#!/bin/bash" is used to indicate in shell when executed, while
+> to be just a comment in the latter.
+>
 
-On Thu, Jan 21, 2010 at 05:32:47PM -0800, Linus Torvalds wrote:
-> [...]
-> > To the extent the discussion is colored by the new features enabled
-> > from this refactoring, well, there is Oleg's list which may or may not
-> > have mentioned enabling systemtap's user-space probing.
-> 
-> Let's face it, system tap isn't going to be merged, so why even bring it 
-> up?
-
-It was certainly not meant to derail the discussion about the merits
-of utrace as a useful cleanup API in its own right, but rather to be
-an example of what kinds of things become straightforward in its
-presence.  You may be aware of nascent efforts to bring the same
-uprobes infrastructure to perf.
-
-> Every kernel developer I have _ever_ seen agrees that all the new
-> tracing is a million times superior. [...]
-
-And that is fine.  We believe there is plenty of space in the problem
-domain for different approaches.
-
-> ... considering how little the system tap people ever did for the kernel.
-
-Less passionate analysis would identify a long history of contribution
-by the the greater affiliated team, including via merged code and by
-and passing on requirements and experiences.  We have been trying to
-share as much as you have been willing to take.  While systemtap's
-current codebase may not (and need not) have a future inside the
-kernel, chances are good that improvements in common infrastructure
-will allow systemtap to shrink and change enough that the question
-becomes moot.
-
-
-- FChE
+"." equals to "source", which means sourcing a file, it is the shell
+which he is using does this, which is always available by executing
+"echo $0" from command line. Yes, shebang is used when executing.
