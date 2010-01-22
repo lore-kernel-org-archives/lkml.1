@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978Ab0AVQnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203Ab0AVQnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978Ab0AVQnd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 11:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456Ab0AVQnc
+	id S1755203Ab0AVQnv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 11:43:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052Ab0AVQnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 11:43:32 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33888 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753797Ab0AVQnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 11:43:32 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19gloNgufZgPkqdjEZHmFjn+tnaTu+2usH8Rx6lnA
-	a4P2O/kw2PWY9B
-Subject: Re: [PATCH 1/2] perf symbols: Fix inverted logic for showing
- kallsyms as the source of symbols
-From: Mike Galbraith <efault@gmx.de>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
+	Fri, 22 Jan 2010 11:43:50 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:45163 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754456Ab0AVQnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 11:43:49 -0500
+Date: Fri, 22 Jan 2010 11:42:48 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1264178102-4203-1-git-send-email-acme@infradead.org>
-References: <1264178102-4203-1-git-send-email-acme@infradead.org>
-Content-Type: text/plain
-Date: Fri, 22 Jan 2010 17:43:28 +0100
-Message-Id: <1264178608.5935.0.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.69999999999999996
+       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 00/12] perf lock: New subcommand "perf lock", for
+	analyzing lock statistics
+Message-ID: <20100122164248.GA2651@redhat.com>
+References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-22 at 14:35 -0200, Arnaldo Carvalho de Melo wrote:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Fri, Jan 22, 2010 at 10:39:01PM +0900, Hitoshi Mitake wrote:
+> Adding new subcommand "perf lock" to perf.
 > 
-> Only if we parsed /proc/kallsyms (or a copy found in the buildid cache)
-> we should set the dso long name to "[kernel.kallsyms]".
 
-Yup, works just as well as my busted one :)
+looks like a really intresting patch! Does this patch mean that we can
+potentially remove CONFIG_LOCK_STAT, now that the functionality is
+available via 'perf'? Another desire for me has been to able to run
+lockstat on production box. This has not been possible before without
+incurring the performance penalty of lockdep. however, with 'perf' tools
+ability to be turned on an off, perhaps there is (or we can build) a
+mode for lockdep that is lower overhead for this usecase?
 
-	-Mike
+thanks,
 
+-Jason
