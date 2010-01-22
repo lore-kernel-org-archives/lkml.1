@@ -1,168 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751554Ab0AVNkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695Ab0AVNk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751554Ab0AVNkp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 08:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464Ab0AVNkk
+	id S1753695Ab0AVNk7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 08:40:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555Ab0AVNkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 08:40:40 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:62794 "EHLO
+	Fri, 22 Jan 2010 08:40:39 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:62810 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752243Ab0AVNjW (ORCPT
+	with ESMTP id S1750973Ab0AVNjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Jan 2010 08:39:22 -0500
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org,
        Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 08/12] lockdep: Add file and line to initialize sequence of mutex
-Date: Fri, 22 Jan 2010 22:39:09 +0900
-Message-Id: <1264167553-6510-9-git-send-email-mitake@dcl.info.waseda.ac.jp>
+       =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 12/12] Revert "perf record: Intercept all events"
+Date: Fri, 22 Jan 2010 22:39:13 +0900
+Message-Id: <1264167553-6510-13-git-send-email-mitake@dcl.info.waseda.ac.jp>
 X-Mailer: git-send-email 1.6.5.2
 In-Reply-To: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Like other ones of this patch series, this patch adds
-__FILE__ and __LINE__ to lockdep_map of mutex.
+This reverts commit f5a2c3dce03621b55f84496f58adc2d1a87ca16f.
+
+This patch is required for making "perf lock rec" work.
+The commit f5a2c3dce0 changes write_event() of builtin-record.c .
+And changed write_event() sometimes doesn't stop with perf lock rec.
+
+I'm researching what makes write_event() loop infinity,
+and noticed that there are some events with event_t->header.size == 0.
+But the detail of the problem,
+like kind of these events, isn't clear...
+
+If you know something related to this problem,
+could you tell me, Arnaldo?
 
 Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- include/linux/mutex-debug.h |    2 +-
- include/linux/mutex.h       |   12 +++++++++---
- kernel/mutex-debug.c        |    5 +++--
- kernel/mutex-debug.h        |    3 ++-
- kernel/mutex.c              |    5 +++--
- kernel/mutex.h              |    2 +-
- 6 files changed, 19 insertions(+), 10 deletions(-)
+ tools/perf/builtin-record.c |   28 ++++++++++------------------
+ 1 files changed, 10 insertions(+), 18 deletions(-)
 
-diff --git a/include/linux/mutex-debug.h b/include/linux/mutex-debug.h
-index 731d77d..f86bf4e 100644
---- a/include/linux/mutex-debug.h
-+++ b/include/linux/mutex-debug.h
-@@ -15,7 +15,7 @@
- do {									\
- 	static struct lock_class_key __key;				\
- 									\
--	__mutex_init((mutex), #mutex, &__key);				\
-+	__mutex_init((mutex), #mutex, &__key, __FILE__, __LINE__);	\
- } while (0)
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 7bb9ca1..614fa9a 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -113,24 +113,16 @@ static void write_output(void *buf, size_t size)
  
- extern void mutex_destroy(struct mutex *lock);
-diff --git a/include/linux/mutex.h b/include/linux/mutex.h
-index 878cab4..ce9082a 100644
---- a/include/linux/mutex.h
-+++ b/include/linux/mutex.h
-@@ -82,14 +82,19 @@ struct mutex_waiter {
- do {							\
- 	static struct lock_class_key __key;		\
- 							\
--	__mutex_init((mutex), #mutex, &__key);		\
-+	__mutex_init((mutex), #mutex, &__key,		\
-+		     __FILE__, __LINE__);		\
- } while (0)
- # define mutex_destroy(mutex)				do { } while (0)
- #endif
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- # define __DEP_MAP_MUTEX_INITIALIZER(lockname) \
--		, .dep_map = { .name = #lockname }
-+		, .dep_map = {		       \
-+			.file = __FILE__,      \
-+			.line = __LINE__,      \
-+			.name = #lockname,     \
-+		}
- #else
- # define __DEP_MAP_MUTEX_INITIALIZER(lockname)
- #endif
-@@ -105,7 +110,8 @@ do {							\
- 	struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
- 
- extern void __mutex_init(struct mutex *lock, const char *name,
--			 struct lock_class_key *key);
-+			 struct lock_class_key *key,
-+			 const char *file, unsigned int line);
- 
- /**
-  * mutex_is_locked - is the mutex locked
-diff --git a/kernel/mutex-debug.c b/kernel/mutex-debug.c
-index ec815a9..4a1321b 100644
---- a/kernel/mutex-debug.c
-+++ b/kernel/mutex-debug.c
-@@ -81,14 +81,15 @@ void debug_mutex_unlock(struct mutex *lock)
- }
- 
- void debug_mutex_init(struct mutex *lock, const char *name,
--		      struct lock_class_key *key)
-+		      struct lock_class_key *key,
-+		      const char *file, unsigned int line)
+ static void write_event(event_t *buf, size_t size)
  {
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- 	/*
- 	 * Make sure we are not reinitializing a held lock:
- 	 */
- 	debug_check_no_locks_freed((void *)lock, sizeof(*lock));
--	lockdep_init_map(&lock->dep_map, name, key, 0);
-+	__lockdep_init_map(&lock->dep_map, name, key, 0, file, line);
- #endif
- 	lock->magic = lock;
+-	size_t processed_size = buf->header.size;
+-	event_t *ev = buf;
+-
+-	do {
+-		/*
+-		* Add it to the list of DSOs, so that when we finish this
+-		 * record session we can pick the available build-ids.
+-		 */
+-		if (ev->header.type == PERF_RECORD_MMAP) {
+-			struct list_head *head = &dsos__user;
+-			if (ev->header.misc == 1)
+-				head = &dsos__kernel;
+-			__dsos__findnew(head, ev->mmap.filename);
+-		}
+-
+-		ev = ((void *)ev) + ev->header.size;
+-		processed_size += ev->header.size;
+-	} while (processed_size < size);
++	/*
++	* Add it to the list of DSOs, so that when we finish this
++	 * record session we can pick the available build-ids.
++	 */
++	if (buf->header.type == PERF_RECORD_MMAP) {
++		struct list_head *head = &dsos__user;
++		if (buf->mmap.header.misc == 1)
++			head = &dsos__kernel;
++		__dsos__findnew(head, buf->mmap.filename);
++	}
+ 
+ 	write_output(buf, size);
  }
-diff --git a/kernel/mutex-debug.h b/kernel/mutex-debug.h
-index 57d527a..154a909 100644
---- a/kernel/mutex-debug.h
-+++ b/kernel/mutex-debug.h
-@@ -25,7 +25,8 @@ extern void mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter,
- 				struct thread_info *ti);
- extern void debug_mutex_unlock(struct mutex *lock);
- extern void debug_mutex_init(struct mutex *lock, const char *name,
--			     struct lock_class_key *key);
-+			     struct lock_class_key *key,
-+			     const char *file, unsigned int line);
- 
- static inline void mutex_set_owner(struct mutex *lock)
- {
-diff --git a/kernel/mutex.c b/kernel/mutex.c
-index 632f04c..80e3876 100644
---- a/kernel/mutex.c
-+++ b/kernel/mutex.c
-@@ -46,14 +46,15 @@
-  * It is not allowed to initialize an already locked mutex.
-  */
- void
--__mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
-+__mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key,
-+	     const char *file, unsigned int line)
- {
- 	atomic_set(&lock->count, 1);
- 	spin_lock_init(&lock->wait_lock);
- 	INIT_LIST_HEAD(&lock->wait_list);
- 	mutex_clear_owner(lock);
- 
--	debug_mutex_init(lock, name, key);
-+	debug_mutex_init(lock, name, key, file, line);
- }
- 
- EXPORT_SYMBOL(__mutex_init);
-diff --git a/kernel/mutex.h b/kernel/mutex.h
-index 67578ca..81914e6 100644
---- a/kernel/mutex.h
-+++ b/kernel/mutex.h
-@@ -40,7 +40,7 @@ static inline void mutex_clear_owner(struct mutex *lock)
- #define debug_mutex_free_waiter(waiter)			do { } while (0)
- #define debug_mutex_add_waiter(lock, waiter, ti)	do { } while (0)
- #define debug_mutex_unlock(lock)			do { } while (0)
--#define debug_mutex_init(lock, name, key)		do { } while (0)
-+#define debug_mutex_init(lock, name, key, file, line)	do { } while (0)
- 
- static inline void
- debug_mutex_lock_common(struct mutex *lock, struct mutex_waiter *waiter)
 -- 
 1.6.5.2
 
