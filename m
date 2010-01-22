@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221Ab0AVHxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288Ab0AVHyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752221Ab0AVHxP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 02:53:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167Ab0AVHxP
+	id S1752288Ab0AVHyu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 02:54:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175Ab0AVHyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 02:53:15 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51945 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752153Ab0AVHxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 02:53:14 -0500
-Message-ID: <4B595904.4000202@zytor.com>
-Date: Thu, 21 Jan 2010 23:51:32 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Fri, 22 Jan 2010 02:54:50 -0500
+Received: from msa103.auone-net.jp ([61.117.18.163]:36271 "EHLO
+	msa103.auone-net.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752073Ab0AVHyt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 02:54:49 -0500
+Date: Fri, 22 Jan 2010 16:54:46 +0900
+From: Kusanagi Kouichi <slash@ac.auone-net.jp>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] cx25840: Fix composite detection.
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chen Liqin <liqin.chen@sunplusct.com>, Lennox Wu <lennox.wu@gmail.com>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
-       linux-mips@linux-mips.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yinghai Lu <yinghai@kernel.org>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       shaohui.zheng@intel.com
-Subject: Re: [PATCH 1/3] resources: introduce generic page_is_ram()
-References: <20100122032102.137106635@intel.com> <20100122033004.193166010@intel.com>
-In-Reply-To: <20100122033004.193166010@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <20100122075447.B553714C03D@msa103.auone-net.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21/2010 07:21 PM, Wu Fengguang wrote:
-> --- linux-mm.orig/kernel/resource.c	2010-01-22 11:20:34.000000000 +0800
-> +++ linux-mm/kernel/resource.c	2010-01-22 11:20:35.000000000 +0800
-> @@ -327,6 +327,17 @@ int walk_system_ram_range(unsigned long 
->  
->  #endif
->  
-> +#define PAGE_IS_RAM	24
-> +static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
-> +{
-> +	return PAGE_IS_RAM;
-> +}
-> +int __attribute__((weak)) page_is_ram(unsigned long pfn)
-> +{
-> +	return PAGE_IS_RAM == walk_system_ram_range(pfn, 1, NULL, __is_ram);
-> +}
-> +#undef PAGE_IS_RAM
-> +
+If CX25840_VIN1_CH1 and the like is used, input is not detected as composite.
+Their value is 0x800000XX and CX25840_COMPONENT_ON is 0x80000200. So
 
-Stylistic nitpick:
+   739			else if ((vid_input & CX25840_COMPONENT_ON) == 0)
 
-The use of the magic number "24" here is pretty ugly; it seems to imply
-that there is something peculiar with this number and that it is trying
-to avoid an overlap, whereas in fact any number but 0 and -1 would do.
+this condition never be true.
 
-I would rather see just returning 1 and do:
+Signed-off-by: Kusanagi Kouichi <slash@ac.auone-net.jp>
+---
+ drivers/media/video/cx25840/cx25840-core.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-	return walk_system_ram_range(pfn, 1, NULL, __is_ram) == 1;
-
-(walk_system_ram_range() returning -1 on error, and 0 means continue.)
-
-Note also that we don't write "constant == expression"; although some
-schools teach it as a way to avoid the "=" versus "==" beginner C
-mistake, it makes the code less intuitive to read.
-
-Other than that, the patchset looks good; if Ingo doesn't beat me to it
-I'll put it in tomorrow (need sleep right now.)
-
-	-hpa
-
+diff --git a/drivers/media/video/cx25840/cx25840-core.c b/drivers/media/video/cx25840/cx25840-core.c
+index 385ecd5..764c811 100644
+--- a/drivers/media/video/cx25840/cx25840-core.c
++++ b/drivers/media/video/cx25840/cx25840-core.c
+@@ -734,10 +734,8 @@ static int set_input(struct i2c_client *client, enum cx25840_video_input vid_inp
+ 		v4l_dbg(1, cx25840_debug, client, "vid_input 0x%x\n",
+ 			vid_input);
+ 		reg = vid_input & 0xff;
+-		if ((vid_input & CX25840_SVIDEO_ON) == CX25840_SVIDEO_ON)
+-			is_composite = 0;
+-		else if ((vid_input & CX25840_COMPONENT_ON) == 0)
+-			is_composite = 1;
++		is_composite = !is_component &&
++			((vid_input & CX25840_SVIDEO_ON) != CX25840_SVIDEO_ON);
+ 
+ 		v4l_dbg(1, cx25840_debug, client, "mux cfg 0x%x comp=%d\n",
+ 			reg, is_composite);
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1.6.6
+
