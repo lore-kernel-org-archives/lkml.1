@@ -1,87 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752197Ab0AVEKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658Ab0AVENv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752197Ab0AVEKJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 23:10:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211Ab0AVEKI
+	id S1751658Ab0AVENv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 23:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441Ab0AVENv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 23:10:08 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:41004 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751094Ab0AVEKH (ORCPT
+	Thu, 21 Jan 2010 23:13:51 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46997 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751161Ab0AVENu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jan 2010 23:10:07 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar4EAPeyWEuuWOiG/2dsb2JhbACBRthChDwE
-Date: Thu, 21 Jan 2010 23:09:59 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [RFC PATCH 03/10] ftrace: Drop the ftrace_profile_enabled
-	checks in tracing hot path
-Message-ID: <20100122040959.GA11827@Krystal>
-References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com> <1264122982-1553-4-git-send-regression-fweisbec@gmail.com> <1264125917.31321.312.camel@gandalf.stny.rr.com> <20100122022858.GA2604@Krystal> <1264129978.31321.333.camel@gandalf.stny.rr.com>
+	Thu, 21 Jan 2010 23:13:50 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 22 Jan 2010 13:10:17 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chen Liqin <liqin.chen@sunplusct.com>, Lennox Wu <lennox.wu@gmail.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>,
+       linux-mips@linux-mips.org, Yinghai Lu <yinghai@kernel.org>,
+       x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, shaohui.zheng@intel.com
+Subject: Re: [PATCH 1/3] resources: introduce generic page_is_ram()
+Message-Id: <20100122131017.544dd91b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100122033004.193166010@intel.com>
+References: <20100122032102.137106635@intel.com>
+	<20100122033004.193166010@intel.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1264129978.31321.333.camel@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 23:09:23 up 36 days, 12:27,  4 users,  load average: 0.18, 0.13,
-	0.09
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> On Thu, 2010-01-21 at 21:28 -0500, Mathieu Desnoyers wrote:
-> > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> > > Now for the reason I Cc'd Paul and Mathieu...
-> > > 
-> > > If we had a synchronize_sched() like function that would wait and return
-> > > when all preempted tasks have been scheduled again and went to either
-> > > userspace or called schedule directly, then we could actually do this.
-> > > 
-> > > After unregistering the function graph trace, you call this
-> > > "synchronize_tasks()" and it will guarantee that all currently preempted
-> > > tasks have either went to userspace or have called schedule() directly.
-> > > Then it would be safe to remove this check.
-> > 
-> > OK, so basically you need to know when you reach a quiescent state, but
-> > preemption is enabled and there is no RCU read lock taken around these
-> > code paths, am I correct ?
-> > 
-> > With tracepoints, life is easy because I disable preemption around the
-> > calls, so I can use synchronize_sched() to know when quiescent state is
-> > reached.
-> > 
-> > I recommend looking at kernel/kprobes.c:check_safety(). It uses
-> > thaw_processes() and synchronize_sched() for this purpose. Basically, it
-> > rely on the "refrigeration" points to detect such quiescent state. This
-> > trick should do the job for the function graph tracer too.
-> > 
-> > I'm adding Masami in CC. He is the one who implemented check_safety(),
-> > and I remember discussing it with him in the past.
-> 
-> Hmm, interesting. Maybe something like that might work. But what if
-> CONFIG_PREEMPT is enabled but CONFIG_FREEZER is not?
+On Fri, 22 Jan 2010 11:21:03 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-Then you may want to make the function tracer depend on CONFIG_FREEZER,
-but maybe Masami has other ideas ?
-
-Mathieu
-
+> It's based on walk_system_ram_range(), for archs that don't have
+> their own page_is_ram().
 > 
-> -- Steve
+> The static verions in MIPS and SCORE are also made global.
+> 
+> CC: Chen Liqin <liqin.chen@sunplusct.com>
+> CC: Lennox Wu <lennox.wu@gmail.com>
+> CC: Ralf Baechle <ralf@linux-mips.org>
+> CC: Am辿rico Wang <xiyou.wangcong@gmail.com>
+> CC: linux-mips@linux-mips.org
+> CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> 
+> CC: Yinghai Lu <yinghai@kernel.org>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Maybe adding comment like this is good for reviewers..
+
+"This page_is_ram() returns true if specified address is registered
+ as System RAM in io_resource list."
+
+AFAIK, this "System RAM" information has been used for kdump to grab valid
+memory area and seems good for the kernel itself.
+
+Thanks,
+-Kame
+
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  arch/mips/mm/init.c    |    2 +-
+>  arch/score/mm/init.c   |    2 +-
+>  include/linux/ioport.h |    2 ++
+>  kernel/resource.c      |   11 +++++++++++
+>  4 files changed, 15 insertions(+), 2 deletions(-)
+> 
+> --- linux-mm.orig/kernel/resource.c	2010-01-22 11:20:34.000000000 +0800
+> +++ linux-mm/kernel/resource.c	2010-01-22 11:20:35.000000000 +0800
+> @@ -327,6 +327,17 @@ int walk_system_ram_range(unsigned long 
+>  
+>  #endif
+>  
+> +#define PAGE_IS_RAM	24
+> +static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
+> +{
+> +	return PAGE_IS_RAM;
+> +}
+> +int __attribute__((weak)) page_is_ram(unsigned long pfn)
+> +{
+> +	return PAGE_IS_RAM == walk_system_ram_range(pfn, 1, NULL, __is_ram);
+> +}
+> +#undef PAGE_IS_RAM
+> +
+>  /*
+>   * Find empty slot in the resource tree given range and alignment.
+>   */
+> --- linux-mm.orig/include/linux/ioport.h	2010-01-22 11:20:34.000000000 +0800
+> +++ linux-mm/include/linux/ioport.h	2010-01-22 11:20:35.000000000 +0800
+> @@ -191,5 +191,7 @@ extern int
+>  walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+>  		void *arg, int (*func)(unsigned long, unsigned long, void *));
+>  
+> +extern int page_is_ram(unsigned long pfn);
+> +
+>  #endif /* __ASSEMBLY__ */
+>  #endif	/* _LINUX_IOPORT_H */
+> --- linux-mm.orig/arch/score/mm/init.c	2010-01-22 11:20:34.000000000 +0800
+> +++ linux-mm/arch/score/mm/init.c	2010-01-22 11:20:35.000000000 +0800
+> @@ -59,7 +59,7 @@ static unsigned long setup_zero_page(voi
+>  }
+>  
+>  #ifndef CONFIG_NEED_MULTIPLE_NODES
+> -static int __init page_is_ram(unsigned long pagenr)
+> +int page_is_ram(unsigned long pagenr)
+>  {
+>  	if (pagenr >= min_low_pfn && pagenr < max_low_pfn)
+>  		return 1;
+> --- linux-mm.orig/arch/mips/mm/init.c	2010-01-22 11:20:34.000000000 +0800
+> +++ linux-mm/arch/mips/mm/init.c	2010-01-22 11:20:35.000000000 +0800
+> @@ -298,7 +298,7 @@ void __init fixrange_init(unsigned long 
+>  }
+>  
+>  #ifndef CONFIG_NEED_MULTIPLE_NODES
+> -static int __init page_is_ram(unsigned long pagenr)
+> +int page_is_ram(unsigned long pagenr)
+>  {
+>  	int i;
+>  
+> 
 > 
 > 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
