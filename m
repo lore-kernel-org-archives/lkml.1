@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051Ab0AVRrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048Ab0AVRto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051Ab0AVRrO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 12:47:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043Ab0AVRrI
+	id S1756048Ab0AVRto (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 12:49:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355Ab0AVRto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 12:47:08 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52683 "EHLO mail.zytor.com"
+	Fri, 22 Jan 2010 12:49:44 -0500
+Received: from mga11.intel.com ([192.55.52.93]:13723 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754964Ab0AVRrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 12:47:02 -0500
-Message-ID: <4B59E47D.8010702@zytor.com>
-Date: Fri, 22 Jan 2010 09:46:37 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Bastien Nocera <hadess@hadess.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com,
-       vojtech@suse.cz
-Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
-References: <1264011793.1735.3683.camel@localhost.localdomain>	 <4B57A2D4.9030204@gmail.com>	 <20100121185544.GB11996@core.coreip.homeip.net>	 <51f3faa71001211339t4652700ct34659c37479cd67e@mail.gmail.com>	 <20100121221701.GA15293@core.coreip.homeip.net> <51f3faa71001211626y1e65f81ambfa4ad19af5aa5ff@mail.gmail.com>
-In-Reply-To: <51f3faa71001211626y1e65f81ambfa4ad19af5aa5ff@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1754280Ab0AVRtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 12:49:43 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,324,1262592000"; 
+   d="scan'208";a="533701478"
+From: Mark Allyn <mark.a.allyn@intel.com>
+To: linux-kernel@vger.kernel.org, greg@kroah.com, alan@linux.intel.com,
+       charles.f.johnson@intel.com
+Cc: Mark Allyn <mark.a.allyn@intel.com>
+Subject: Introduction to rar_register patch set of 5 patches
+Date: Fri, 22 Jan 2010 09:53:30 -0800
+Message-Id: <1264182811-28933-1-git-send-email-mark.a.allyn@intel.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21/2010 04:26 PM, Robert Hancock wrote:
->>
->> This is from the changelog when this was introduced:
->>
->> -------------------------------------------------------------------------
->> 2005/02/25 21:21:03+01:00 vojtech
->> input: After testing on real world hardware, it's obvious we can't trust
->>       ACPIPnP nor PnPBIOS to properly report the existence of a keyboard
->>       and mouse port in all cases. Some BIOSes hide the ports if no mouse
->>       or keyboard is connected, causing trouble with eg. KVM switches.
-> 
-> If it's just that case (which isn't certain given Vojtech's report),
-> then I think it's reasonable to ignore that by default. If the BIOS
-> decided to hide the controller then our default behavior should be to
-> believe it, with the ability to override that if necessary, not the
-> other way around.
-> 
+The following five patches are for the Restricted Access Region
+Register (rar_register) driver.
 
-You think it's reasonable to have the keyboard not work because
-someone's KVM switch was in the wrong position when the system booted?
-Sorry, that's not how the world works.  It's sad that someone had the
-bright idea that things should work that way, but that is definitely a
-regression I wouldn't want to deal with.
+This driver is for the Intel MID platform.
 
-The only thing that I could think of as a reasonable limit would be to
-not probe these ports if we are booted from EFI/UEFI.  That would cover
-the ia64 case, too.  However, I'm hardly confident that we wouldn't have
-the same class of problems even there.
+Restricted access regions are regions of memory that can be
+locked so that the x86 processor cannot access them. However,
+peripheral devices with DMA can access them.
 
-	-hpa
+Restricted access regions are used to protect sensitive 
+information from access by unauthorized software running
+on the x86 processor.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+The scenario is that encrypted information is presented to
+an encryption/decryption device. That device in turn does
+decryption of the information and places into one of the
+restricted access regions. Another device can then access
+and use the decrypted information. The x86 processor, however,
+cannot see that data.
 
+The rar_register driver provides address information for the
+individual restricted access regions to other device driver
+that need to use the regions. 
+
+The rar_register also locks restricted access regions upon
+request by other device drivers. 
+
+The rar_register device does not interact with user space
+processes at all. It only ineracts with other device driver.
+
+There are five patches. They are:
+
+Patch 1 of 5 for rar_register; renaming to rar_register
+	This renames the current rar resigter driver to
+	the name rar_register. This is to differentiate
+	it from the rar_handler driver, which will be
+	submitted later.
+Patch 2 of 5 for rar_register - renaming directory to rar_register
+	This renames the directory in which the driver files
+	are located; again for clarity.
+Patch 3 of 5 for rar_register - provide better explanation in Kconfig
+	This patch provides a better explanation of what this
+	driver is for in the Kconfig file
+Patch 4 of 5 for rar_register - fix checkpatch errors and debug header
+	This patch cleans up checkpatch errors and warnings as well as
+	fixes bugs in the rar_register.h header file
+Patch 5 of 5 for rar_register - fix checkpatch errors and debug program file
+	This patch cleans up checkpatch errors and warnings as well as
+	fixes bugs in the rar_register.c program file
+
+Please note that patches 1, 2, and 3 are for 'housekeeping'. They do nothing
+to correct any checkpatch errors/warnings in the driver.
+
+Patches 4 and 5 clean up checkpatch issues in the rar_register.h and
+rar_register.c file respectively.
+
+After patch 5 is applied, there should be no checkpatch issues in the entire
+driver directory
+
+
+Please note that I did a test build of this patch set after patch 3 and after
+patch 5 of this set.
+
+If there are issues with either patch 4 or patch 5, you can still submit 
+patches 1, 2, and 3 and expect a clean build.
+
+These patches were applied against the kernel next that I pulled as of Wednesday, 
+January 21, 2010.
+
+Mark Allyn
+mark.a.allyn@intel.com
