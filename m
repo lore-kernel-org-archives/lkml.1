@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117Ab0AVNlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767Ab0AVNlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753117Ab0AVNlZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 08:41:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861Ab0AVNlW
+	id S1753767Ab0AVNlc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 08:41:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813Ab0AVNlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 08:41:22 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:62793 "EHLO
+	Fri, 22 Jan 2010 08:41:25 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:62790 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106Ab0AVNjW (ORCPT
+	with ESMTP id S1750931Ab0AVNjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Jan 2010 08:39:22 -0500
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
@@ -16,10 +16,11 @@ Cc: linux-kernel@vger.kernel.org,
        Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 09/12] lockdep: Fix the way to initialize class_mutex for information of file and line
-Date: Fri, 22 Jan 2010 22:39:10 +0900
-Message-Id: <1264167553-6510-10-git-send-email-mitake@dcl.info.waseda.ac.jp>
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 07/12] lockdep:  Add file and line to initialize sequence of rwsem (x86)
+Date: Fri, 22 Jan 2010 22:39:08 +0900
+Message-Id: <1264167553-6510-8-git-send-email-mitake@dcl.info.waseda.ac.jp>
 X-Mailer: git-send-email 1.6.5.2
 In-Reply-To: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
@@ -27,34 +28,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds __FILE__ and __LINE__ to arguments passed for
-__mutex_init() called in __class_register().
-This affects to lockdep_map of class_mutex of struct class_private,
-and these will be used to make trace lock events more human friendly.
+This patch adds __FILE__ and __LINE__ to lockdep_map of rw_semaphore.
+This patch only affects to x86 architecture dependent rwsem.
+
+If this patch is accepted, I'll prepare and send the patch
+adds __FILE__ and __LINE__ to rw_semaphore of other architectures
+which provides architecture dependent rwsem.h .
 
 Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/base/class.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/rwsem.h |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index 161746d..cc0630f 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -162,7 +162,8 @@ int __class_register(struct class *cls, struct lock_class_key *key)
- 	klist_init(&cp->class_devices, klist_class_dev_get, klist_class_dev_put);
- 	INIT_LIST_HEAD(&cp->class_interfaces);
- 	kset_init(&cp->class_dirs);
--	__mutex_init(&cp->class_mutex, "struct class mutex", key);
-+	__mutex_init(&cp->class_mutex, "struct class mutex", key,
-+		     __FILE__, __LINE__);
- 	error = kobject_set_name(&cp->class_subsys.kobj, "%s", cls->name);
- 	if (error) {
- 		kfree(cp);
+diff --git a/arch/x86/include/asm/rwsem.h b/arch/x86/include/asm/rwsem.h
+index ca7517d..24cbe3a 100644
+--- a/arch/x86/include/asm/rwsem.h
++++ b/arch/x86/include/asm/rwsem.h
+@@ -74,7 +74,12 @@ struct rw_semaphore {
+ };
+ 
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+-# define __RWSEM_DEP_MAP_INIT(lockname) , .dep_map = { .name = #lockname }
++# define __RWSEM_DEP_MAP_INIT(lockname)			\
++	, .dep_map = {					\
++		.file = __FILE__,			\
++		.line = __LINE__,			\
++		.name = #lockname,			\
++	}
+ #else
+ # define __RWSEM_DEP_MAP_INIT(lockname)
+ #endif
+@@ -96,7 +101,7 @@ extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
+ do {								\
+ 	static struct lock_class_key __key;			\
+ 								\
+-	__init_rwsem((sem), #sem, &__key);			\
++	__init_rwsem((sem), #sem, &__key, __FILE__, __LINE__);	\
+ } while (0)
+ 
+ /*
 -- 
 1.6.5.2
 
