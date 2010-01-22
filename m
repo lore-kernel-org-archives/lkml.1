@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951Ab0AVPBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046Ab0AVPBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951Ab0AVPBB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 10:01:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953Ab0AVPA7
+	id S1755046Ab0AVPBI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 10:01:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889Ab0AVPBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 10:00:59 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:39187 "EHLO
+	Fri, 22 Jan 2010 10:01:00 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:39206 "EHLO
 	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753905Ab0AVPA4 (ORCPT
+	with ESMTP id S1754085Ab0AVPA5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 10:00:56 -0500
+	Fri, 22 Jan 2010 10:00:57 -0500
 From: Borislav Petkov <bp@amd64.org>
 To: <mingo@elte.hu>, <hpa@zytor.com>, <tglx@linutronix.de>
 Cc: <andreas.herrmann3@amd.com>, <x86@kernel.org>,
        <linux-kernel@vger.kernel.org>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 3/5] x86, cacheinfo: Fix disabling of L3 cache indices
-Date: Fri, 22 Jan 2010 16:01:05 +0100
-Message-Id: <1264172467-25155-4-git-send-email-bp@amd64.org>
+Subject: [PATCH 5/5] x86, cacheinfo: Calculate L3 indices
+Date: Fri, 22 Jan 2010 16:01:07 +0100
+Message-Id: <1264172467-25155-6-git-send-email-bp@amd64.org>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264172467-25155-1-git-send-email-bp@amd64.org>
 References: <1264172467-25155-1-git-send-email-bp@amd64.org>
@@ -27,102 +27,89 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Borislav Petkov <borislav.petkov@amd.com>
 
-* Correct the masks used for writing the cache index disable indices.
-* Do not turn off L3 scrubber - it is not necessary.
-* Make sure wbinvd is executed on the same node where the L3 is.
-* Check for out-of-bounds values written to the registers.
-* Make show_cache_disable hex values unambiguous
-* Check for Erratum #388
+We need to know the valid L3 indices interval when disabling them over
+/sysfs. Do that when the core is brought online and add boundary checks
+to the sysfs .store attribute.
 
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- arch/x86/kernel/cpu/intel_cacheinfo.c |   34 ++++++++++++++++++++------------
- 1 files changed, 21 insertions(+), 13 deletions(-)
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   35 +++++++++++++++++++++++++++++---
+ 1 files changed, 31 insertions(+), 4 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index fc6c8ef..08c91ab 100644
+index 3976ce9..589b705 100644
 --- a/arch/x86/kernel/cpu/intel_cacheinfo.c
 +++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -18,6 +18,7 @@
- #include <asm/processor.h>
- #include <linux/smp.h>
- #include <asm/k8.h>
-+#include <asm/smp.h>
+@@ -151,7 +151,8 @@ struct _cpuid4_info {
+ 	union _cpuid4_leaf_ebx ebx;
+ 	union _cpuid4_leaf_ecx ecx;
+ 	unsigned long size;
+-	unsigned long can_disable;
++	bool can_disable;
++	unsigned int l3_indices;
+ 	DECLARE_BITMAP(shared_cpu_map, NR_CPUS);
+ };
  
- #define LVL_1_INST	1
- #define LVL_1_DATA	2
-@@ -299,8 +300,10 @@ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
- 	if (boot_cpu_data.x86 == 0x11)
- 		return;
+@@ -161,7 +162,8 @@ struct _cpuid4_info_regs {
+ 	union _cpuid4_leaf_ebx ebx;
+ 	union _cpuid4_leaf_ecx ecx;
+ 	unsigned long size;
+-	unsigned long can_disable;
++	bool can_disable;
++	unsigned int l3_indices;
+ };
  
--	/* see erratum #382 */
--	if ((boot_cpu_data.x86 == 0x10) && (boot_cpu_data.x86_model < 0x8))
-+	/* see errata #382 and #388 */
-+	if ((boot_cpu_data.x86 == 0x10) &&
-+	    ((boot_cpu_data.x86_model < 0x9) ||
-+	     (boot_cpu_data.x86_mask  < 0x1)))
- 		return;
- 
- 	this_leaf->can_disable = 1;
-@@ -726,12 +729,12 @@ static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
- 		return -EINVAL;
- 
- 	pci_read_config_dword(dev, 0x1BC + index * 4, &reg);
--	return sprintf(buf, "%x\n", reg);
-+	return sprintf(buf, "0x%08x\n", reg);
+ unsigned short			num_cache_leaves;
+@@ -291,6 +293,29 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 		(ebx->split.ways_of_associativity + 1) - 1;
  }
  
- #define SHOW_CACHE_DISABLE(index)					\
- static ssize_t								\
--show_cache_disable_##index(struct _cpuid4_info *this_leaf, char *buf)  	\
-+show_cache_disable_##index(struct _cpuid4_info *this_leaf, char *buf)	\
- {									\
- 	return show_cache_disable(this_leaf, buf, index);		\
- }
-@@ -745,7 +748,9 @@ static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
- 	int node = cpu_to_node(cpu);
- 	struct pci_dev *dev = node_to_k8_nb_misc(node);
- 	unsigned long val = 0;
--	unsigned int scrubber = 0;
-+
-+#define SUBCACHE_MASK	(3UL << 20)
-+#define SUBCACHE_INDEX	0xfff
- 
- 	if (!this_leaf->can_disable)
- 		return -EINVAL;
-@@ -759,21 +764,24 @@ static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
- 	if (strict_strtoul(buf, 10, &val) < 0)
- 		return -EINVAL;
- 
--	val |= 0xc0000000;
--
--	pci_read_config_dword(dev, 0x58, &scrubber);
--	scrubber &= ~0x1f000000;
--	pci_write_config_dword(dev, 0x58, scrubber);
-+	/* do not allow writes outside of allowed bits */
-+	if (val & ~(SUBCACHE_MASK | SUBCACHE_INDEX))
-+		return -EINVAL;
- 
--	pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
--	wbinvd();
-+	val |= BIT(30);
- 	pci_write_config_dword(dev, 0x1BC + index * 4, val);
++static unsigned int __cpuinit amd_calc_l3_indices(void)
++{
 +	/*
-+	 * We need to WBINVD on a core on the node containing the L3 cache which
-+	 * indices we disable therefore a simple wbinvd() is not sufficient.
++	 * We're called over smp_call_function_single() and therefore
++	 * are on the correct cpu.
 +	 */
-+	wbinvd_on_cpu(cpu);
-+	pci_write_config_dword(dev, 0x1BC + index * 4, val | BIT(31));
- 	return count;
++	int cpu = smp_processor_id();
++	int node = cpu_to_node(cpu);
++	struct pci_dev *dev = node_to_k8_nb_misc(node);
++	unsigned int sc0, sc1, sc2, sc3;
++	u32 val;
++
++	pci_read_config_dword(dev, 0x1C4, &val);
++
++	/* calculate subcache sizes */
++	sc0 = !(val & BIT(0));
++	sc1 = !(val & BIT(4));
++	sc2 = !(val & BIT(8))  + !(val & BIT(9));
++	sc3 = !(val & BIT(12)) + !(val & BIT(13));
++
++	return (max(max(max(sc0, sc1), sc2), sc3) << 10) - 1;
++}
++
+ static void __cpuinit
+ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
+ {
+@@ -306,7 +331,8 @@ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
+ 	     (boot_cpu_data.x86_mask  < 0x1)))
+ 		return;
+ 
+-	this_leaf->can_disable = 1;
++	this_leaf->can_disable = true;
++	this_leaf->l3_indices  = amd_calc_l3_indices();
  }
  
- #define STORE_CACHE_DISABLE(index)					\
- static ssize_t								\
--store_cache_disable_##index(struct _cpuid4_info *this_leaf,	     	\
-+store_cache_disable_##index(struct _cpuid4_info *this_leaf,		\
- 			    const char *buf, size_t count)		\
- {									\
- 	return store_cache_disable(this_leaf, buf, count, index);	\
+ static int
+@@ -765,7 +791,8 @@ static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
+ 		return -EINVAL;
+ 
+ 	/* do not allow writes outside of allowed bits */
+-	if (val & ~(SUBCACHE_MASK | SUBCACHE_INDEX))
++	if ((val & ~(SUBCACHE_MASK | SUBCACHE_INDEX)) ||
++	    ((val & SUBCACHE_INDEX) > this_leaf->l3_indices))
+ 		return -EINVAL;
+ 
+ 	val |= BIT(30);
 -- 
 1.6.6
 
