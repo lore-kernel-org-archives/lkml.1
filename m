@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041Ab0AVRqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051Ab0AVRrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756041Ab0AVRqg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 12:46:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957Ab0AVRqf
+	id S1756051Ab0AVRrO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 12:47:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043Ab0AVRrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 12:46:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30055 "EHLO mx1.redhat.com"
+	Fri, 22 Jan 2010 12:47:08 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52683 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754370Ab0AVRqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 12:46:35 -0500
-Date: Fri, 22 Jan 2010 18:45:41 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, Fr??d??ric@redhat.com,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Peter Zijlstra <peterz@infradead.org>, Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Linus <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100122174541.GA8945@redhat.com>
-References: <20100120054950.GB27108@elte.hu> <20100120061551.GB6588@in.ibm.com> <20100120062834.GB12165@elte.hu> <20100120072925.GA11395@elte.hu> <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org> <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org>
+	id S1754964Ab0AVRrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 12:47:02 -0500
+Message-ID: <4B59E47D.8010702@zytor.com>
+Date: Fri, 22 Jan 2010 09:46:37 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100121170541.7425ff10.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Robert Hancock <hancockrwd@gmail.com>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Bastien Nocera <hadess@hadess.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com,
+       vojtech@suse.cz
+Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
+References: <1264011793.1735.3683.camel@localhost.localdomain>	 <4B57A2D4.9030204@gmail.com>	 <20100121185544.GB11996@core.coreip.homeip.net>	 <51f3faa71001211339t4652700ct34659c37479cd67e@mail.gmail.com>	 <20100121221701.GA15293@core.coreip.homeip.net> <51f3faa71001211626y1e65f81ambfa4ad19af5aa5ff@mail.gmail.com>
+In-Reply-To: <51f3faa71001211626y1e65f81ambfa4ad19af5aa5ff@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21, Andrew Morton wrote:
->
-> ptrace is a nasty, complex part of the kernel which has a long history
-> of problems, but it's all been pretty quiet in there for the the past few
-> years.
+On 01/21/2010 04:26 PM, Robert Hancock wrote:
+>>
+>> This is from the changelog when this was introduced:
+>>
+>> -------------------------------------------------------------------------
+>> 2005/02/25 21:21:03+01:00 vojtech
+>> input: After testing on real world hardware, it's obvious we can't trust
+>>       ACPIPnP nor PnPBIOS to properly report the existence of a keyboard
+>>       and mouse port in all cases. Some BIOSes hide the ports if no mouse
+>>       or keyboard is connected, causing trouble with eg. KVM switches.
+> 
+> If it's just that case (which isn't certain given Vojtech's report),
+> then I think it's reasonable to ignore that by default. If the BIOS
+> decided to hide the controller then our default behavior should be to
+> believe it, with the ability to override that if necessary, not the
+> other way around.
+> 
 
-Well, yes, I'd say ptrace is "frozen". Nobody add new features/improvements,
-only bugfixes.
+You think it's reasonable to have the keyboard not work because
+someone's KVM switch was in the wrong position when the system booted?
+Sorry, that's not how the world works.  It's sad that someone had the
+bright idea that things should work that way, but that is definitely a
+regression I wouldn't want to deal with.
 
-> This leads one to expect that a rip-out-n-rewrite is a
-> high-risk prospect.  So, quite reasonably, one looks for a good reason
-> for taking such risk.
+The only thing that I could think of as a reasonable limit would be to
+not probe these ports if we are booted from EFI/UEFI.  That would cover
+the ia64 case, too.  However, I'm hardly confident that we wouldn't have
+the same class of problems even there.
 
-As it was already said, utrace was not created to just replace the current
-ptrace.
+	-hpa
 
-However, speaking of ptrace, imho even ptrace-utrace is more flexible and
-allows to improve this api easily.
-
-Just for example, even attach and detach are not trivial to use from
-user-space when it comes to multithread tracees. A one-liner patch for
-ptrace-utrace can implement PTRACE_DETACH which doesn't need TASK_TRACED,
-it is easy to avoid the initial SIGSTOP from attach (which doesn't always
-work but strace/gdb relies on it).
-
-Of course, I do not profess this is not posible with the current
-implementation. But this will need more changes, and these changes will
-touch the code outside of ptrace.c. And in fact I think that any
-enhancements in this area will lead to rewrite of the current ptrace
-code.
-
-I must admit that personally I think the current ptrace api is unfixable,
-we need the new one in the long term. It would be nice to just kill ptrace,
-but this is not possible and that is why ptrace-utrace exists. And, if
-nothing more, utrace allows to have both old and new ones without any
-changes outside of ptrace/utrace code.
-
-Oleg.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
