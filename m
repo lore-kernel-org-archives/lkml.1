@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262Ab0AVE4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717Ab0AVE4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262Ab0AVE4J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jan 2010 23:56:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239Ab0AVEzz
+	id S1754717Ab0AVE4k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jan 2010 23:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087Ab0AVE4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jan 2010 23:55:55 -0500
-Received: from mail.perches.com ([173.55.12.10]:1363 "EHLO mail.perches.com"
+	Thu, 21 Jan 2010 23:56:25 -0500
+Received: from mail.perches.com ([173.55.12.10]:1346 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753030Ab0AVExA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752765Ab0AVExA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 21 Jan 2010 23:53:00 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
        Stephen Hemminger <shemminger@vyatta.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 17/24] drivers/block/floppy.c: remove [_]COPYIN [_]COPYOUT and ECALL macros
-Date: Thu, 21 Jan 2010 20:52:47 -0800
-Message-Id: <3a9e4acc52f1a16abb1d5d9ba1713bd995690d4a.1264133863.git.joe@perches.com>
+Subject: [PATCH 14/24] drivers/block/floppy.c: Add debug_dcl(...) macro
+Date: Thu, 21 Jan 2010 20:52:44 -0800
+Message-Id: <2334164fc86e25839f15e6d6492d557ecac6585e.1264133863.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
 In-Reply-To: <cover.1264133863.git.joe@perches.com>
 References: <cover.1264133863.git.joe@perches.com>
@@ -25,62 +25,185 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove these obfuscating macros with hidden returns
+Converted #ifdef DCL_DEBUG if (test) DPRINTK(...); #endif
+to debug_dcl(test, ...);
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/block/floppy.c |   17 ++++++-----------
- 1 files changed, 6 insertions(+), 11 deletions(-)
+ drivers/block/floppy.c |   83 ++++++++++++++++++------------------------------
+ 1 files changed, 31 insertions(+), 52 deletions(-)
 
 diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 822e4ee..a1eb5fe 100644
+index de7b222..f90bc22 100644
 --- a/drivers/block/floppy.c
 +++ b/drivers/block/floppy.c
-@@ -520,7 +520,6 @@ static DECLARE_WAIT_QUEUE_HEAD(command_done);
+@@ -152,6 +152,15 @@
+ #define DEBUGT 2
+ #define DCL_DEBUG		/* debug disk change line */
  
- #define NO_SIGNAL (!interruptible || !signal_pending(current))
- #define CALL(x)		if ((x) == -EINTR) return -EINTR
--#define ECALL(x)	if ((ret = (x))) return ret;
- #define _WAIT(x,i)	CALL(ret=wait_til_done((x),i))
- #define WAIT(x)		_WAIT((x),interruptible)
- #define IWAIT(x)	_WAIT((x),1)
-@@ -3061,14 +3060,6 @@ static inline int fd_copyin(void __user *param, void *address,
- 	return copy_from_user(address, param, size) ? -EFAULT : 0;
- }
++#ifdef DCL_DEBUG
++#define debug_dcl(test, fmt, args...) \
++	do { if ((test) & FD_DEBUG) DPRINT(fmt, ##args); } while (0)
++#else
++#define debug_dcl(test, fmt, args...) \
++	do { if (0) DPRINT(fmt, ##args); } while (0)
++#endif
++
++
+ /* do print messages for unexpected interrupts */
+ static int print_unex = 1;
+ #include <linux/module.h>
+@@ -748,14 +757,12 @@ static int disk_change(int drive)
+ 	}
+ #endif
  
--#define _COPYOUT(x)	(copy_to_user((void __user *)param, &(x), sizeof(x)) \
--			 ? -EFAULT : 0)
--#define _COPYIN(x)	(copy_from_user(&(x), (void __user *)param, sizeof(x)) \
--			 ? -EFAULT : 0)
--
--#define COPYOUT(x)	ECALL(_COPYOUT(x))
--#define COPYIN(x)	ECALL(_COPYIN(x))
--
- static inline const char *drive_name(int type, int drive)
+-#ifdef DCL_DEBUG
+-	if (UDP->flags & FD_DEBUG) {
+-		DPRINT("checking disk change line for drive %d\n", drive);
+-		DPRINT("jiffies=%lu\n", jiffies);
+-		DPRINT("disk change line=%x\n", fd_inb(FD_DIR) & 0x80);
+-		DPRINT("flags=%lx\n", UDRS->flags);
+-	}
+-#endif
++	debug_dcl(UDP->flags,
++		  "checking disk change line for drive %d\n", drive);
++	debug_dcl(UDP->flags, "jiffies=%lu\n", jiffies);
++	debug_dcl(UDP->flags, "disk change line=%x\n", fd_inb(FD_DIR) & 0x80);
++	debug_dcl(UDP->flags, "flags=%lx\n", UDRS->flags);
++
+ 	if (UDP->flags & FD_BROKEN_DCL)
+ 		return UTESTF(FD_DISK_CHANGED);
+ 	if ((fd_inb(FD_DIR) ^ UDP->flags) & 0x80) {
+@@ -804,10 +811,8 @@ static int set_dor(int fdc, char mask, char data)
+ 		unit = olddor & 0x3;
+ 		if (is_selected(olddor, unit) && !is_selected(newdor, unit)) {
+ 			drive = REVDRIVE(fdc, unit);
+-#ifdef DCL_DEBUG
+-			if (UDP->flags & FD_DEBUG)
+-				DPRINT("calling disk change from set_dor\n");
+-#endif
++			debug_dcl(UDP->flags,
++				  "calling disk change from set_dor\n");
+ 			disk_change(drive);
+ 		}
+ 		FDCS->dor = newdor;
+@@ -1020,10 +1025,7 @@ static void cancel_activity(void)
+  * transfer */
+ static void fd_watchdog(void)
  {
- 	struct floppy_struct *floppy;
-@@ -3145,7 +3136,9 @@ static inline int raw_cmd_copyout(int cmd, char __user *param,
- 	int ret;
+-#ifdef DCL_DEBUG
+-	if (DP->flags & FD_DEBUG)
+-		DPRINT("calling disk change from watchdog\n");
+-#endif
++	debug_dcl(DP->flags, "calling disk change from watchdog\n");
  
- 	while (ptr) {
--		COPYOUT(*ptr);
-+		ret = copy_to_user((void __user *)param, ptr, sizeof(*ptr));
-+		if (ret)
-+			return -EFAULT;
- 		param += sizeof(struct floppy_raw_cmd);
- 		if ((ptr->flags & FD_RAW_READ) && ptr->buffer_length) {
- 			if (ptr->length >= 0 &&
-@@ -3195,7 +3188,9 @@ static inline int raw_cmd_copyin(int cmd, char __user *param,
- 		if (!ptr)
- 			return -ENOMEM;
- 		*rcmd = ptr;
--		COPYIN(*ptr);
-+		ret = copy_from_user(ptr, (void __user *)param, sizeof(*ptr));
-+		if (ret)
-+			return -EFAULT;
- 		ptr->next = NULL;
- 		ptr->buffer_length = 0;
- 		param += sizeof(struct floppy_raw_cmd);
+ 	if (disk_change(current_drive)) {
+ 		DPRINT("disk removed during i/o\n");
+@@ -1582,12 +1584,9 @@ static void seek_interrupt(void)
+ 		return;
+ 	}
+ 	if (DRS->track >= 0 && DRS->track != ST1 && !blind_seek) {
+-#ifdef DCL_DEBUG
+-		if (DP->flags & FD_DEBUG) {
+-			DPRINT("clearing NEWCHANGE flag because of effective seek\n");
+-			DPRINT("jiffies=%lu\n", jiffies);
+-		}
+-#endif
++		debug_dcl(DP->flags,
++			  "clearing NEWCHANGE flag because of effective seek\n");
++		debug_dcl(DP->flags, "jiffies=%lu\n", jiffies);
+ 		CLEARF(FD_DISK_NEWCHANGE);	/* effective seek */
+ 		DRS->select_date = jiffies;
+ 	}
+@@ -1607,12 +1606,9 @@ static void check_wp(void)
+ 		}
+ 		CLEARF(FD_VERIFY);
+ 		CLEARF(FD_NEED_TWADDLE);
+-#ifdef DCL_DEBUG
+-		if (DP->flags & FD_DEBUG) {
+-			DPRINT("checking whether disk is write protected\n");
+-			DPRINT("wp=%x\n", ST3 & 0x40);
+-		}
+-#endif
++		debug_dcl(DP->flags,
++			  "checking whether disk is write protected\n");
++		debug_dcl(DP->flags, "wp=%x\n", ST3 & 0x40);
+ 		if (!(ST3 & 0x40))
+ 			SETF(FD_DISK_WRITABLE);
+ 		else
+@@ -1626,10 +1622,7 @@ static void seek_floppy(void)
+ 
+ 	blind_seek = 0;
+ 
+-#ifdef DCL_DEBUG
+-	if (DP->flags & FD_DEBUG)
+-		DPRINT("calling disk change from seek\n");
+-#endif
++	debug_dcl(DP->flags, "calling disk change from seek\n");
+ 
+ 	if (!TESTF(FD_DISK_NEWCHANGE) &&
+ 	    disk_change(current_drive) && (raw_cmd->flags & FD_RAW_NEED_DISK)) {
+@@ -1705,10 +1698,8 @@ static void recal_interrupt(void)
+ 			 * not to move at recalibration is to
+ 			 * be already at track 0.) Clear the
+ 			 * new change flag */
+-#ifdef DCL_DEBUG
+-			if (DP->flags & FD_DEBUG)
+-				DPRINT("clearing NEWCHANGE flag because of second recalibrate\n");
+-#endif
++			debug_dcl(DP->flags,
++				  "clearing NEWCHANGE flag because of second recalibrate\n");
+ 
+ 			CLEARF(FD_DISK_NEWCHANGE);
+ 			DRS->select_date = jiffies;
+@@ -1968,10 +1959,7 @@ static void floppy_ready(void)
+ 	if (fdc_dtr())
+ 		return;
+ 
+-#ifdef DCL_DEBUG
+-	if (DP->flags & FD_DEBUG)
+-		DPRINT("calling disk change from floppy_ready\n");
+-#endif
++	debug_dcl(DP->flags, "calling disk change from floppy_ready\n");
+ 	if (!(raw_cmd->flags & FD_RAW_NO_MOTOR) &&
+ 	    disk_change(current_drive) && !DP->select_delay)
+ 		twaddle();	/* this clears the dcl on certain
+@@ -2002,10 +1990,7 @@ static void floppy_start(void)
+ 	reschedule_timeout(current_reqD, "floppy start", 0);
+ 
+ 	scandrives();
+-#ifdef DCL_DEBUG
+-	if (DP->flags & FD_DEBUG)
+-		DPRINT("setting NEWCHANGE in floppy_start\n");
+-#endif
++	debug_dcl(DP->flags, "setting NEWCHANGE in floppy_start\n");
+ 	SETF(FD_DISK_NEWCHANGE);
+ 	floppy_ready();
+ }
+@@ -3024,10 +3009,7 @@ static int poll_drive(int interruptible, int flag)
+ 	raw_cmd->track = 0;
+ 	raw_cmd->cmd_count = 0;
+ 	cont = &poll_cont;
+-#ifdef DCL_DEBUG
+-	if (DP->flags & FD_DEBUG)
+-		DPRINT("setting NEWCHANGE in poll_drive\n");
+-#endif
++	debug_dcl(DP->flags, "setting NEWCHANGE in poll_drive\n");
+ 	SETF(FD_DISK_NEWCHANGE);
+ 	WAIT(floppy_ready);
+ 	return ret;
+@@ -3290,10 +3272,7 @@ static int raw_cmd_ioctl(int cmd, void __user *param)
+ 	raw_cmd = my_raw_cmd;
+ 	cont = &raw_cmd_cont;
+ 	ret = wait_til_done(floppy_start, 1);
+-#ifdef DCL_DEBUG
+-	if (DP->flags & FD_DEBUG)
+-		DPRINT("calling disk change from raw_cmd ioctl\n");
+-#endif
++	debug_dcl(DP->flags, "calling disk change from raw_cmd ioctl\n");
+ 
+ 	if (ret != -EINTR && FDCS->reset)
+ 		ret = -EIO;
 -- 
 1.6.6.rc0.57.gad7a
 
