@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430Ab0AVP7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456Ab0AVP7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430Ab0AVP7Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 10:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865Ab0AVP7X
+	id S1755456Ab0AVP7c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 10:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435Ab0AVP73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 10:59:23 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:33864 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754538Ab0AVP7W (ORCPT
+	Fri, 22 Jan 2010 10:59:29 -0500
+Received: from casper.infradead.org ([85.118.1.10]:38252 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752861Ab0AVP72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 10:59:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=GDTPKZtQ078tBwEvghO/nTPxZwAE5wjEaI6guJz/zTqAfu/ZK2/GduVlAqp80jB83m
-         UDfBGRP9p7oYFXhXDAoD++JepIeI1smp+GrfvkSdW90glpshAopdp+sLJa9x9eZhVpf2
-         bYjtDq30wTEd2aAvC49mfp0TobfGD77r1o6IU=
-Subject: [PATCH 3/6] MTD: nand: fix bug that prevented write of more that
- one page by ->write_oob
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1264175781.24012.42.camel@maxim-laptop>
-References: <1264175781.24012.42.camel@maxim-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 22 Jan 2010 17:59:15 +0200
-Message-ID: <1264175955.24012.45.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jan 2010 10:59:28 -0500
+Message-Id: <20100122155536.056430539@chello.nl>
+References: <20100122155044.391857484@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Fri, 22 Jan 2010 16:50:54 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: eranian@google.com, fweisbec@gmail.com, paulus@samba.org, mingo@elte.hu,
+       davem@davemloft.net, robert.richter@amd.com
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 10/10] perf_event: Optimize the fast path a little more
+Content-Disposition: inline; filename=perf-opt-num.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From ed559063edac36892098915c8e4747ad74203b91 Mon Sep 17 00:00:00 2001
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Date: Fri, 22 Jan 2010 16:41:33 +0200
-Subject: [PATCH 3/6] MTD: nand: fix bug that prevented write of more that one page by ->write_oob
+Remove num from the fast path and save a few ops.
 
-Although nand_do_write_ops intends to allow such mode, it fails do do so
-Probably this was never tested
-
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
 ---
- drivers/mtd/nand/nand_base.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
+ arch/x86/kernel/cpu/perf_event.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
-index 8ff36be..29e986e 100644
---- a/drivers/mtd/nand/nand_base.c
-+++ b/drivers/mtd/nand/nand_base.c
-@@ -1879,11 +1879,9 @@ static int nand_write_page(struct mtd_info *mtd, struct nand_chip *chip,
-  * @oob:	oob data buffer
-  * @ops:	oob ops structure
-  */
--static uint8_t *nand_fill_oob(struct nand_chip *chip, uint8_t *oob,
--				  struct mtd_oob_ops *ops)
-+static uint8_t *nand_fill_oob(struct nand_chip *chip, uint8_t *oob, size_t len,
-+						struct mtd_oob_ops *ops)
+Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
++++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
+@@ -1248,9 +1248,9 @@ static inline int is_x86_event(struct pe
+ 
+ static int x86_schedule_events(struct cpu_hw_events *cpuc, int n, int *assign)
  {
--	size_t len = ops->ooblen;
--
- 	switch(ops->mode) {
+-	int i, j, w, num, wmax;
+ 	struct event_constraint *c, *constraints[X86_PMC_IDX_MAX];
+ 	unsigned long used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
++	int i, j, w, wmax, num = 0;
+ 	struct hw_perf_event *hwc;
  
- 	case MTD_OOB_PLACE:
-@@ -1938,6 +1936,7 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
- 	int chipnr, realpage, page, blockmask, column;
- 	struct nand_chip *chip = mtd->priv;
- 	uint32_t writelen = ops->len;
-+	uint32_t oobwritelen = ops->ooblen;
- 	uint8_t *oob = ops->oobbuf;
- 	uint8_t *buf = ops->datbuf;
- 	int ret, subpage;
-@@ -1994,8 +1993,11 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
- 			wbuf = chip->buffers->databuf;
- 		}
+ 	bitmap_zero(used_mask, X86_PMC_IDX_MAX);
+@@ -1263,7 +1263,7 @@ static int x86_schedule_events(struct cp
+ 	/*
+ 	 * fastpath, try to reuse previous register
+ 	 */
+-	for (i = 0, num = n; i < n; i++, num--) {
++	for (i = 0; i < n; i++) {
+ 		hwc = &cpuc->event_list[i]->hw;
+ 		c = constraints[i];
  
--		if (unlikely(oob))
--			oob = nand_fill_oob(chip, oob, ops);
-+		if (unlikely(oob)) {
-+			size_t len = min(oobwritelen, mtd->oobsize);
-+			oob = nand_fill_oob(chip, oob, len, ops);
-+			oobwritelen -= len;
-+		}
+@@ -1291,7 +1291,7 @@ static int x86_schedule_events(struct cp
+ 		if (assign)
+ 			assign[i] = hwc->idx;
+ 	}
+-	if (!num)
++	if (i == n)
+ 		goto done;
  
- 		ret = chip->write_page(mtd, chip, wbuf, page, cached,
- 				       (ops->mode == MTD_OOB_RAW));
-@@ -2169,7 +2171,7 @@ static int nand_do_write_oob(struct mtd_info *mtd, loff_t to,
- 		chip->pagebuf = -1;
- 
- 	memset(chip->oob_poi, 0xff, mtd->oobsize);
--	nand_fill_oob(chip, ops->oobbuf, ops);
-+	nand_fill_oob(chip, ops->oobbuf, ops->ooblen, ops);
- 	status = chip->ecc.write_oob(mtd, chip, page & chip->pagemask);
- 	memset(chip->oob_poi, 0xff, mtd->oobsize);
- 
+ 	/*
+
 -- 
-1.6.3.3
-
-
 
