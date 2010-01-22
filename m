@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899Ab0AVJan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997Ab0AVJcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899Ab0AVJan (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:30:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712Ab0AVJ3m
+	id S1753997Ab0AVJcA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:32:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836Ab0AVJbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:29:42 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:46209 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753372Ab0AVJZv (ORCPT
+	Fri, 22 Jan 2010 04:31:50 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53947 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753344Ab0AVJZr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 04:25:51 -0500
+	Fri, 22 Jan 2010 04:25:47 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 22 Jan 2010 01:24:36 -0800
+Date: Fri, 22 Jan 2010 01:24:33 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 27/38] x86: print out for RAM buffer
+Subject: [PATCH 24/38] move round_up/down to kernel.h
 In-reply-to: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -25,35 +25,61 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264152287-13866-28-git-send-email-yinghai@kernel.org>
+Message-id: <1264152287-13866-25-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so could check that early in bootlog
+prepare to early_res moving up
 
-Acked-by: Yinghai Lu <yinghai@kernel.org>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/kernel/e820.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/proto.h |   10 ----------
+ include/linux/kernel.h       |   10 ++++++++++
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index c5c52da..62235e7 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -1127,6 +1127,9 @@ void __init e820_reserve_resources_late(void)
- 			end = MAX_RESOURCE_SIZE;
- 		if (start >= end)
- 			continue;
-+		printk(KERN_DEBUG "reserve RAM buffer: %016Lx - %016Lx ",
-+			       (unsigned long long) start,
-+			       (unsigned long long) end);
- 		reserve_region_with_split(&iomem_resource, start, end,
- 					  "RAM buffer");
- 	}
+diff --git a/arch/x86/include/asm/proto.h b/arch/x86/include/asm/proto.h
+index 4009f65..6f414ed 100644
+--- a/arch/x86/include/asm/proto.h
++++ b/arch/x86/include/asm/proto.h
+@@ -23,14 +23,4 @@ extern int reboot_force;
+ 
+ long do_arch_prctl(struct task_struct *task, int code, unsigned long addr);
+ 
+-/*
+- * This looks more complex than it should be. But we need to
+- * get the type for the ~ right in round_down (it needs to be
+- * as wide as the result!), and we want to evaluate the macro
+- * arguments just once each.
+- */
+-#define __round_mask(x,y) ((__typeof__(x))((y)-1))
+-#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
+-#define round_down(x,y) ((x) & ~__round_mask(x,y))
+-
+ #endif /* _ASM_X86_PROTO_H */
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 1221d23..8a6e583 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -44,6 +44,16 @@ extern const char linux_proc_banner[];
+ 
+ #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+ 
++/*
++ * This looks more complex than it should be. But we need to
++ * get the type for the ~ right in round_down (it needs to be
++ * as wide as the result!), and we want to evaluate the macro
++ * arguments just once each.
++ */
++#define __round_mask(x,y) ((__typeof__(x))((y)-1))
++#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
++#define round_down(x,y) ((x) & ~__round_mask(x,y))
++
+ #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+ #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+ #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
 -- 
 1.6.4.2
 
