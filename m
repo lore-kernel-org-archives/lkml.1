@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991Ab0AVKfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628Ab0AVKiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991Ab0AVKfi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 05:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347Ab0AVKfh
+	id S1754628Ab0AVKiY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 05:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431Ab0AVKiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 05:35:37 -0500
-Received: from mga10.intel.com ([192.55.52.92]:5269 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932146Ab0AVKfg (ORCPT
+	Fri, 22 Jan 2010 05:38:23 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:64429 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554Ab0AVKiV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 05:35:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,323,1262592000"; 
-   d="scan'208";a="533597358"
-Message-ID: <4B597F71.6040405@linux.intel.com>
-Date: Fri, 22 Jan 2010 18:35:29 +0800
-From: Haicheng Li <haicheng.li@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Fri, 22 Jan 2010 05:38:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=a3bI8oPis2SyRudXPOms1gCP9XkdPaJGpaOW3o1i8NSdL7Obsp2Vz1DKX7TIJPG6Wy
+         T3RL4XxrC0yu/tcJeCYWsUeNGXZJHSGSdVtuMBTqOe3AN5rdj6PugW8ojB3RyXOLHpA7
+         Bg51OBqzGsypJtyC+dmXRLQdOiGNAiiunHKh4=
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: David Rientjes <rientjes@google.com>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       x86@kernel.org, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86/mm/srat_64.c: make node_possible_map include hotpluggable
- node
-References: <4B501C4D.4080907@linux.intel.com> <alpine.DEB.2.00.1001171338170.16238@chino.kir.corp.google.com> <86802c441001172230y137b4916h7d744a96ab75873d@mail.gmail.com> <alpine.DEB.2.00.1001180231430.20677@chino.kir.corp.google.com> <4B5592B1.9030800@linux.intel.com> <alpine.DEB.2.00.1001191513010.24223@chino.kir.corp.google.com> <4B5731E2.4040207@linux.intel.com> <alpine.DEB.2.00.1001201152040.30528@chino.kir.corp.google.com> <4B57C2DD.3050402@linux.intel.com> <alpine.DEB.2.00.1001202252320.22343@chino.kir.corp.google.com> <4B5802EF.6040603@linux.intel.com> <alpine.DEB.2.00.1001202344580.29982@chino.kir.corp.google.com> <4B581160.2090209@linux.intel.com> <alpine.DEB.2.00.1001211500290.31073@chino.kir.corp.google.com> <4B592437.9060508@linux.intel.com> <4B5954C6.6010102@zytor.com> <4B596539.1050207@linux.intel.com> <4B597A7B.4050906@zytor.com>
-In-Reply-To: <4B597A7B.4050906@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <48239d391001210932w5523cc4ajc3b5459966ab395e@mail.gmail.com>
+References: <48239d391001210326y25986d59hd10d390ef9c8ddea@mail.gmail.com>
+	 <20100121122839.GB26015@nokia.com>
+	 <48239d391001210523l5762775dm8382ad82e7b10e4a@mail.gmail.com>
+	 <48239d391001210816n7dd469acr920be41e98129cb4@mail.gmail.com>
+	 <20100121162437.GC3628@gandalf>
+	 <48239d391001210932w5523cc4ajc3b5459966ab395e@mail.gmail.com>
+Date: Fri, 22 Jan 2010 13:38:19 +0300
+Message-ID: <48239d391001220238r151c4dfbjd8f6e7863718dad8@mail.gmail.com>
+Subject: Re: MUSB crash on OMAP3 board with second load of gadget
+From: Sergey Lapin <slapinid@gmail.com>
+To: me@felipebalbi.com
+Cc: felipe.balbi@nokia.com,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 01/22/2010 12:43 AM, Haicheng Li wrote:
->> H. Peter Anvin wrote:
->>> I have to say I agree with David Rientjes that we need the minimal patch
->>> for upstream and stable.  If you need the additional bitmask in the
->>> future it should be added later.
->>>
->>> Haicheng, would you be willing to prepare a minimal patch so we can
->>> close the issue in the release trees as quickly as possible?
->> Peter,
->>
->> Okay, let's close it. then please take the patch pasted below, which is
->> the one without additional bitmask added.
->>
-> 
-> As David asked, OK to add your Tested-by: line?
-Sure,
-Tested-by: Haicheng Li <haicheng.li@linux.intel.com>
+Hi,
 
-Thanks.
--haicheng
+> [  580.082427] [<c0030ac4>] (__irq_svc+0x44/0xa8) from [<c00420dc>]
+> (omap3_enter_idle+0x124/0x158)
+> [  580.091186] [<c00420dc>] (omap3_enter_idle+0x124/0x158) from
+> [<c022d708>] (cpuidle_idle_call+0xa4/0x180)
+> [  580.100738] [<c022d708>] (cpuidle_idle_call+0xa4/0x180) from
+> [<c00324dc>] (cpu_idle+0x48/0x98)
+> [  580.109436] [<c00324dc>] (cpu_idle+0x48/0x98) from [<c0008934>]
+> (start_kernel+0x268/0x2c8)
+> [  580.117767] [<c0008934>] (start_kernel+0x268/0x2c8) from
+> [<80008034>] (0x80008034)
+> [  580.125366] Code: c03a876b e92d4013 e5903004 e1a04000 (e593c000)
+> [  580.131652] ---[ end trace 42b8f4f7e396999c ]---
+> [  580.136291] Kernel panic - not syncing: Fatal exception in interrupt
+>
+
+I've managed to debug that in my case,
+drivers/usb/musb/musb_gadget_ep0.c:
+musb_read_setup():
+        /* clean up any leftover transfers */
+        r = next_ep0_request(musb);
+in this place we have somewhat corrupted usb_request. Any ideas why?
+
+By the way, crash is not reproduced if cable is removed before module unloading
+(and all USB activity processed).
+
+S.
