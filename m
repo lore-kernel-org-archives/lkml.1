@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627Ab0AVVnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653Ab0AVVpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627Ab0AVVnf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 16:43:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499Ab0AVVne
+	id S1754653Ab0AVVpX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 16:45:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485Ab0AVVpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 16:43:34 -0500
-Received: from mga01.intel.com ([192.55.52.88]:14783 "EHLO mga01.intel.com"
+	Fri, 22 Jan 2010 16:45:22 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51314 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485Ab0AVVne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 16:43:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,324,1262592000"; 
-   d="scan'208";a="533763082"
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: [RFC PATCH] net: NETDEV WATCHDOG should print something every time
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com
-Date: Fri, 22 Jan 2010 13:43:33 -0800
-Message-ID: <20100122214333.14389.86017.stgit@jbrandeb-ich9b.jf.intel.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1754462Ab0AVVpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 16:45:20 -0500
+Date: Fri, 22 Jan 2010 16:44:24 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100122214424.GH22003@redhat.com>
+References: <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org> <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain> <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <1264191376.4283.1590.camel@laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264191376.4283.1590.camel@laptop>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 5337407c changed NETDEV WATCHDOG messages into a message
-that will only print once per driver load.  This removed a significant amount
-of information from an admin who might be missing that his system was having
-NETDEV WATCHDOGs, esp since there is no other global counter available to
-count these events.
+Hi -
 
-simply check the __warned flag and print a simple version of the message
-without the full stack dump if the (kerneloops related) WARN_ON_ONCE has
-already logged the hardware type and one hang.
+On Fri, Jan 22, 2010 at 09:16:16PM +0100, Peter Zijlstra wrote:
+> [...]
+> > So then there's uprobes, which is another potential utrace "killer
+> > app"
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-CC: Arjan <arjan@linux.intel.com>
----
+> That's bollocks, uprobes is an utter and total mis-match for utrace.
+> Probing userspace is primarily about DSOs which is files and vma's,
+> not tasks. [...]
 
- include/asm-generic/bug.h |    5 +++++
- net/sched/sch_generic.c   |    9 +++++++--
- 2 files changed, 12 insertions(+), 2 deletions(-)
+Your experience with user-space probing apparently differs from ours.
+In fact there exists plenty of interest and utility in probing given
+processes only, if for no other reason then to avoid disrupting others
+running on the machine.
 
-diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
-index 18c435d..ad810a0 100644
---- a/include/asm-generic/bug.h
-+++ b/include/asm-generic/bug.h
-@@ -132,6 +132,11 @@ extern void warn_slowpath_null(const char *file, const int line);
- 	unlikely(__ret_warn_once);				\
- })
- 
-+#define WARNED_ALREADY() ({					\
-+	static bool __warned;					\
-+	unlikely(__warned);					\
-+})
-+
- #define WARN_ON_RATELIMIT(condition, state)			\
- 		WARN_ON((condition) && __ratelimit(state))
- 
-diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
-index 5173c1e..28fb14f 100644
---- a/net/sched/sch_generic.c
-+++ b/net/sched/sch_generic.c
-@@ -251,8 +251,13 @@ static void dev_watchdog(unsigned long arg)
- 
- 			if (some_queue_timedout) {
- 				char drivername[64];
--				WARN_ONCE(1, KERN_INFO "NETDEV WATCHDOG: %s (%s): transmit queue %u timed out\n",
--				       dev->name, netdev_drivername(dev, drivername, 64), i);
-+				/* FIXME: is there a way to const char string[] = "NETDEV WATCHDOG..." */
-+				if (!WARNED_ALREADY())
-+					WARN_ONCE(1, KERN_INFO "NETDEV WATCHDOG: %s (%s): transmit queue %u timed out\n",
-+						  dev->name, netdev_drivername(dev, drivername, 64), i);
-+				else
-+					printk(KERN_INFO "NETDEV WATCHDOG: %s (%s): transmit queue %u timed out\n",
-+					       dev->name, netdev_drivername(dev, drivername, 64), i);
- 				dev->netdev_ops->ndo_tx_timeout(dev);
- 			}
- 			if (!mod_timer(&dev->watchdog_timer,
+Nearly always, it is better to build a multiprocess probing widget
+from multiply-applied single-process ones, rather than to build
+single-process probing from grossly-filtered systemwide/VMA ones.
+(If the lower level infrastructure provides both options, groovy.)
 
+- FChE
