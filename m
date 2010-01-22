@@ -1,42 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944Ab0AVUQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000Ab0AVUQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944Ab0AVUQd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 15:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651Ab0AVUQc
+	id S1754000Ab0AVUQh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 15:16:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946Ab0AVUQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 15:16:32 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38712 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932116Ab0AVUQb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 15:16:31 -0500
-Subject: Re: linux-next: add utrace tree
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20100122200129.GG22003@redhat.com>
-References: <20100120062834.GB12165@elte.hu>
-	 <20100120072925.GA11395@elte.hu>
-	 <20100121013822.28781960.sfr@canb.auug.org.au>
-	 <20100122111747.3c224dfd.sfr@canb.auug.org.au>
-	 <20100121163004.8779bd69.akpm@linux-foundation.org>
-	 <20100121163145.7e958c3f.akpm@linux-foundation.org>
-	 <20100122005147.GD22003@redhat.com>
-	 <20100121170541.7425ff10.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
-	 <20100122182827.GA13185@redhat.com>  <20100122200129.GG22003@redhat.com>
+	Fri, 22 Jan 2010 15:16:35 -0500
+Received: from mail.perches.com ([173.55.12.10]:1439 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753651Ab0AVUQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 15:16:34 -0500
+Subject: Re: [PATCH] get_maintainer.pl: teach git log to use --no-color
+From: Joe Perches <joe@perches.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1264163484.2143.13.camel@localhost>
+References: <1264163484.2143.13.camel@localhost>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 22 Jan 2010 21:16:16 +0100
-Message-ID: <1264191376.4283.1590.camel@laptop>
+Date: Fri, 22 Jan 2010 12:16:33 -0800
+Message-ID: <1264191393.32383.128.camel@Joe-Laptop.home>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -44,18 +26,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-22 at 15:01 -0500, Frank Ch. Eigler wrote:
-> So then there's uprobes, which is another potential utrace "killer
-> app"
+lOn Fri, 2010-01-22 at 12:31 +0000, Richard Kennedy wrote:
+> diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+> index 090f248..2cae27a 100755
+> --- a/scripts/get_maintainer.pl
+> +++ b/scripts/get_maintainer.pl
+> @@ -74,7 +74,7 @@ my %VCS_cmds;
+>  my %VCS_cmds_git = (
+>      "execute_cmd" => \&git_execute_cmd,
+>      "available" => '(which("git") ne "") && (-d ".git")',
+> -    "find_signers_cmd" => "git log --since=\$email_git_since -- \$file",
+> +    "find_signers_cmd" => "git log --no-color --since=\$email_git_since -- \$file",
+>      "find_commit_signers_cmd" => "git log -1 \$commit",
+>      "blame_range_cmd" => "git blame -l -L \$diff_start,+\$diff_length \$file",
+>      "blame_file_cmd" => "git blame -l \$file",
 
-That's bollocks, uprobes is an utter and total mis-match for utrace.
-Probing userspace is primarily about DSOs which is files and vma's, not
-tasks.
+Actually, I take back my ack.
 
-You might maybe want a utrace interface to that, but that is largely
-non-interesting.
+The line immediately below your change also needs --no-color
 
-IOW, we don't need utrace to make sensible use of uprobes.
+Can you make that change and resubmit please?
 
-(And when I speak of uprobes I mean the thing formerly called UBP)
+cheers, Joe
 
