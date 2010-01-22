@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151Ab0AVS3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164Ab0AVSeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756151Ab0AVS3z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 13:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113Ab0AVS3y
+	id S1756164Ab0AVSeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 13:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144Ab0AVSeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 13:29:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17493 "EHLO mx1.redhat.com"
+	Fri, 22 Jan 2010 13:34:18 -0500
+Received: from kroah.org ([198.145.64.141]:53711 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756107Ab0AVS3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 13:29:53 -0500
-Date: Fri, 22 Jan 2010 19:28:27 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100122182827.GA13185@redhat.com>
-References: <20100120061551.GB6588@in.ibm.com> <20100120062834.GB12165@elte.hu> <20100120072925.GA11395@elte.hu> <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org> <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
+	id S1756055Ab0AVSeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 13:34:18 -0500
+Date: Fri, 22 Jan 2010 10:33:22 -0800
+From: Greg KH <greg@kroah.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Mark Allyn <mark.a.allyn@intel.com>, linux-kernel@vger.kernel.org,
+       alan@linux.intel.com, charles.f.johnson@intel.com
+Subject: Re: Introduction to rar_register patch set of 5 patches
+Message-ID: <20100122183322.GA9512@kroah.com>
+References: <1264182811-28933-1-git-send-email-mark.a.allyn@intel.com>
+ <20100122102308.bb17fd1a.rdunlap@xenotime.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100122102308.bb17fd1a.rdunlap@xenotime.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21, Linus Torvalds wrote:
->
-> On Thu, 21 Jan 2010, Andrew Morton wrote:
-> >
-> > ptrace is a nasty, complex part of the kernel which has a long history
-> > of problems, but it's all been pretty quiet in there for the the past few
-> > years.
->
-> More importantly, we're not ever going to get rid of it.
+On Fri, Jan 22, 2010 at 10:23:08AM -0800, Randy Dunlap wrote:
+> On Fri, 22 Jan 2010 09:53:30 -0800 Mark Allyn wrote:
+> 
+> > The following five patches are for the Restricted Access Region
+> > Register (rar_register) driver.
+> > 
+> > This driver is for the Intel MID platform.
+> 
+> Hi Mark,
+> 
+> Please read and try to follow Documentation/SubmittingPatches.
+> 
+> E.g.:
+> 
+> "The canonical patch subject line is:
+> 
+>     Subject: [PATCH 001/123] subsystem: summary phrase"
+> 
+> so your patch 1 should be more like:
+> 
+> [PATCH 1/5] rar_register: rename rar_driver to rar_register
+> 
+> and then that one patch's description should be at the top of that
+> email's body, not in the patch introduction/cover email.
+> 
+> As it stands, these 5 patch descriptions need to be moved
+> to each patch's patch description...
 
-Unfortunately, you are right. The current ptrace (as it is visible from
-user-space) should stay forever.
+I agree, I can not apply these as-is.
 
-> Quite frankly, judging my all past history we have ever seen in kernel
-> interfaces, new an non-portable interfaces simply are never used. The
-> whole question whether they are nicer or not is entirely immaterial.
+Mark, please redo the patches.
 
-I have to admit this point looks very reasonable to me. Except, can't
-resist, ptrace itself is hardly portable.
+Hint, we do have tools that make this much easier, like quilt and git,
+you might take the time to learn to use them so that future patch
+submissions are not bungled as badly as these have been.
 
-> I'm personally very dubious that there are any merits to utrace that
-> outweigh the very clear disadvantages: just another layer that adds a new
-> level of abstraction to the only interface that people actually _use_,
-> namely ptrace.
+thanks,
 
-Of course they can't use other interfaces, we don't have them. And
-without the new abstraction layer we will never have, I think.
-
-Oleg.
-
+greg k-h
