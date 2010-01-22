@@ -1,163 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385Ab0AVPL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117Ab0AVPNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385Ab0AVPL7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 10:11:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094Ab0AVPLG
+	id S1755117Ab0AVPNQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 10:13:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341Ab0AVPNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 10:11:06 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:45345 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754341Ab0AVPLA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 10:11:00 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: crope@iki.fi
-Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
-Subject: [PATCH 1/4] media: dvb/af9015, implement eeprom hashing
-Date: Fri, 22 Jan 2010 16:10:52 +0100
-Message-Id: <1264173055-14787-1-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.5.7
-In-Reply-To: <4B4F6BE5.2040102@iki.fi>
-References: <4B4F6BE5.2040102@iki.fi>
+	Fri, 22 Jan 2010 10:13:14 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14116 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753833Ab0AVPNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 10:13:05 -0500
+Date: Fri, 22 Jan 2010 16:13:02 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: netdev@vger.kernel.org
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: [RFC, PATCH net-next-2.6] net: introduce a macro to traverse through
+ uc_list easily
+Message-ID: <20100122151301.GC2609@psychotron.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will be useful for matching of IR tables later.
+I'm thinking how to convert mc_list into list_head in the smoothest way.
+It's almost impossible to convert it at once in all drivers (It's used in almost
+all of them). From the mc_list of structures (either old or new list), only one
+member is needed in drivers' code - addr.
 
-We read the eeprom anyway for dumping. Switch the dumping to
-print_hex_dump_bytes and compute hash above that by
-hash = 0;
-for (u32 VAL) in (eeprom):
-  hash *= GOLDEN_RATIO_PRIME_32
-  hash += VAL; // while preserving endinaness
+Therefore that would be good to introduce a macro that can be used to traverse
+through addresses in the list without caller knowing anything about the type of
+the list. I think this kind of an abstraction is appropriate on this place.
+Also during the phase of changing, the macro can use the original list and once
+all drivers are using this macro, the list itself (so as the macro) can be
+converted into list_head.
 
-The computation is moved earlier to the flow, namely from
-af9015_af9013_frontend_attach to af9015_read_config, so that
-we can access the sum in af9015_read_config already.
+This patch shows the macro on uc_list (previously converted into list_head).
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Antti Palosaari <crope@iki.fi>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: linux-media@vger.kernel.org
----
- drivers/media/dvb/dvb-usb/af9015.c |   65 +++++++++++++++++++++++------------
- drivers/media/dvb/dvb-usb/af9015.h |    1 +
- 2 files changed, 44 insertions(+), 22 deletions(-)
+What do you think about this? Please comment.
 
-diff --git a/drivers/media/dvb/dvb-usb/af9015.c b/drivers/media/dvb/dvb-usb/af9015.c
-index a365c05..616b3ba 100644
---- a/drivers/media/dvb/dvb-usb/af9015.c
-+++ b/drivers/media/dvb/dvb-usb/af9015.c
-@@ -21,6 +21,8 @@
-  *
-  */
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+
+diff --git a/drivers/net/niu.c b/drivers/net/niu.c
+index 0e260cf..85d490b 100644
+--- a/drivers/net/niu.c
++++ b/drivers/net/niu.c
+@@ -22,7 +22,6 @@
+ #include <linux/log2.h>
+ #include <linux/jiffies.h>
+ #include <linux/crc32.h>
+-#include <linux/list.h>
  
-+#include <linux/hash.h>
-+
- #include "af9015.h"
- #include "af9013.h"
- #include "mt2060.h"
-@@ -553,26 +555,45 @@ exit:
- 	return ret;
- }
+ #include <linux/io.h>
  
--/* dump eeprom */
--static int af9015_eeprom_dump(struct dvb_usb_device *d)
-+/* hash (and dump) eeprom */
-+static int af9015_eeprom_hash(struct usb_device *udev)
- {
--	u8 reg, val;
-+	static const unsigned int eeprom_size = 256;
-+	unsigned int reg;
-+	int ret;
-+	u8 val, *eeprom;
-+	struct req_t req = {READ_I2C, AF9015_I2C_EEPROM, 0, 0, 1, 1, &val};
+@@ -6359,7 +6358,7 @@ static void niu_set_rx_mode(struct net_device *dev)
+ 	struct niu *np = netdev_priv(dev);
+ 	int i, alt_cnt, err;
+ 	struct dev_addr_list *addr;
+-	struct netdev_hw_addr *ha;
++	unsigned char *ha;
+ 	unsigned long flags;
+ 	u16 hash[16] = { 0, };
  
--	for (reg = 0; ; reg++) {
--		if (reg % 16 == 0) {
--			if (reg)
--				deb_info(KERN_CONT "\n");
--			deb_info(KERN_DEBUG "%02x:", reg);
--		}
--		if (af9015_read_reg_i2c(d, AF9015_I2C_EEPROM, reg, &val) == 0)
--			deb_info(KERN_CONT " %02x", val);
--		else
--			deb_info(KERN_CONT " --");
--		if (reg == 0xff)
--			break;
-+	eeprom = kmalloc(eeprom_size, GFP_KERNEL);
-+	if (eeprom == NULL)
-+		return -ENOMEM;
-+
-+	for (reg = 0; reg < eeprom_size; reg++) {
-+		req.addr = reg;
-+		ret = af9015_rw_udev(udev, &req);
-+		if (ret)
-+			goto free;
-+		eeprom[reg] = val;
- 	}
--	deb_info(KERN_CONT "\n");
--	return 0;
-+
-+	if (dvb_usb_af9015_debug & 0x01)
-+		print_hex_dump_bytes("", DUMP_PREFIX_OFFSET, eeprom,
-+				eeprom_size);
-+
-+	BUG_ON(eeprom_size % 4);
-+
-+	af9015_config.eeprom_sum = 0;
-+	for (reg = 0; reg < eeprom_size / sizeof(u32); reg++) {
-+		af9015_config.eeprom_sum *= GOLDEN_RATIO_PRIME_32;
-+		af9015_config.eeprom_sum += le32_to_cpu(((u32 *)eeprom)[reg]);
-+	}
-+
-+	deb_info("%s: eeprom sum=%.8x\n", __func__, af9015_config.eeprom_sum);
-+
-+	ret = 0;
-+free:
-+	kfree(eeprom);
-+	return ret;
- }
+@@ -6381,8 +6380,8 @@ static void niu_set_rx_mode(struct net_device *dev)
+ 	if (alt_cnt) {
+ 		int index = 0;
  
- static int af9015_download_ir_table(struct dvb_usb_device *d)
-@@ -728,6 +749,11 @@ static int af9015_read_config(struct usb_device *udev)
- 	}
- 	if (ret)
- 		goto error;
-+
-+	ret = af9015_eeprom_hash(udev);
-+	if (ret)
-+		goto error;
-+
- 	deb_info("%s: IR mode:%d\n", __func__, val);
- 	for (i = 0; i < af9015_properties_count; i++) {
- 		if (val == AF9015_IR_MODE_DISABLED) {
-@@ -1125,11 +1151,6 @@ static int af9015_af9013_frontend_attach(struct dvb_usb_adapter *adap)
- 
- 		deb_info("%s: init I2C\n", __func__);
- 		ret = af9015_i2c_init(adap->dev);
--
--		/* dump eeprom (debug) */
--		ret = af9015_eeprom_dump(adap->dev);
--		if (ret)
--			return ret;
- 	} else {
- 		/* select I2C adapter */
- 		i2c_adap = &state->i2c_adap;
-diff --git a/drivers/media/dvb/dvb-usb/af9015.h b/drivers/media/dvb/dvb-usb/af9015.h
-index 931c851..ef36b18 100644
---- a/drivers/media/dvb/dvb-usb/af9015.h
-+++ b/drivers/media/dvb/dvb-usb/af9015.h
-@@ -107,6 +107,7 @@ struct af9015_config {
- 	u16 mt2060_if1[2];
- 	u16 firmware_size;
- 	u16 firmware_checksum;
-+	u32 eeprom_sum;
- 	u8  *ir_table;
- 	u16 ir_table_size;
+-		list_for_each_entry(ha, &dev->uc.list, list) {
+-			err = niu_set_alt_mac(np, index, ha->addr);
++		netdev_for_each_uc_addr(ha, dev) {
++			err = niu_set_alt_mac(np, index, ha);
+ 			if (err)
+ 				printk(KERN_WARNING PFX "%s: Error %d "
+ 				       "adding alt mac %d\n",
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 727d265..c11d117 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -263,6 +263,19 @@ struct netdev_hw_addr_list {
+ 	int			count;
  };
--- 
-1.6.5.7
-
+ 
++#define netdev_hw_addr_get_by_addr(a) \
++	container_of((void *) a, struct netdev_hw_addr, addr)
++
++#define netdev_for_each_addr(a, head)						\
++	for (a = list_entry((head)->next, struct netdev_hw_addr, list)->addr;	\
++	     prefetch(netdev_hw_addr_get_by_addr(a)->list.next),		\
++	     &netdev_hw_addr_get_by_addr(a)->list != (head);			\
++	     a = list_entry(netdev_hw_addr_get_by_addr(a)->list.next,		\
++			    struct netdev_hw_addr, list)->addr)
++
++#define netdev_for_each_uc_addr(a, dev)	\
++	netdev_for_each_addr(a, &dev->uc.list)
++
+ struct hh_cache {
+ 	struct hh_cache *hh_next;	/* Next entry			     */
+ 	atomic_t	hh_refcnt;	/* number of users                   */
