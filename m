@@ -1,164 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923Ab0AVWE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909Ab0AVWOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923Ab0AVWE1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 17:04:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871Ab0AVWE0
+	id S1754909Ab0AVWOY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 17:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613Ab0AVWOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 17:04:26 -0500
-Received: from mms1.broadcom.com ([216.31.210.17]:3505 "EHLO mms1.broadcom.com"
+	Fri, 22 Jan 2010 17:14:22 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:34158 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754857Ab0AVWEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 17:04:25 -0500
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Date: Fri, 22 Jan 2010 14:04:10 -0800
-From: "Leo (Hao) Chen" <leochen@broadcom.com>
-To: "Roel Kluin" <roel.kluin@gmail.com>
-cc: "Scott Branden" <sbranden@broadcom.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mtd: hot spin and code duplication in
- nand_bcm_umi_bch_read_oobEcc()
-Message-ID: <20100122220410.GN12439@broadcom.com>
-References: <4B5A172C.2010609@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <4B5A172C.2010609@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-WSS-ID: 6744FF5620S238709-01-01
-Content-Type: text/plain;
- charset=us-ascii
+	id S1753169Ab0AVWOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 17:14:22 -0500
+Date: Fri, 22 Jan 2010 17:13:48 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100122221348.GA4263@redhat.com>
+References: <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org> <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain> <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for identifying the NumToRead bug.
-Tested on board. Works.
+Hi -
 
-Acked-by: Leo Chen <leochen@broadcom.com>
-
-On Fri, Jan 22, 2010 at 01:22:52PM -0800, Roel Kluin wrote:
-> In the branch where pagesize equalled NAND_DATA_ACCESS_SIZE, NumToRead
-> wasn't decremented in the `while (numToRead > 11)' loop.
-> Also the first and last while loops were duplicated in both branches.
+On Fri, Jan 22, 2010 at 01:59:11PM -0800, Linus Torvalds wrote:
+> [...]
+> > Finally, I don't know how to address the logic of "if a feature
+> > requires utrace, that's a bad argument for utrace" and at the same
+> > time "you need to show a killer app for utrace".  What could possibly
+> > satisfy both of those constraints?  Please advise.
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
->  drivers/mtd/nand/nand_bcm_umi.h |   71 ++++++++++++++-------------------------
->  1 files changed, 25 insertions(+), 46 deletions(-)
-> 
-> diff --git a/drivers/mtd/nand/nand_bcm_umi.h b/drivers/mtd/nand/nand_bcm_umi.h
-> index 7cec2cd..198b304 100644
-> --- a/drivers/mtd/nand/nand_bcm_umi.h
-> +++ b/drivers/mtd/nand/nand_bcm_umi.h
-> @@ -167,18 +167,27 @@ static inline void nand_bcm_umi_bch_read_oobEcc(uint32_t pageSize,
->  	int numToRead = 16;	/* There are 16 bytes per sector in the OOB */
->  
->  	/* ECC is already paused when this function is called */
-> +	if (pageSize != NAND_DATA_ACCESS_SIZE) {
-> +		/* skip BI */
-> +#if defined(__KERNEL__) && !defined(STANDALONE)
-> +		*oobp++ = REG_NAND_DATA8;
-> +#else
-> +		REG_NAND_DATA8;
-> +#endif
-> +		numToRead--;
-> +	}
->  
-> -	if (pageSize == NAND_DATA_ACCESS_SIZE) {
-> -		while (numToRead > numEccBytes) {
-> -			/* skip free oob region */
-> +	while (numToRead > numEccBytes) {
-> +		/* skip free oob region */
->  #if defined(__KERNEL__) && !defined(STANDALONE)
-> -			*oobp++ = REG_NAND_DATA8;
-> +		*oobp++ = REG_NAND_DATA8;
->  #else
-> -			REG_NAND_DATA8;
-> +		REG_NAND_DATA8;
->  #endif
-> -			numToRead--;
-> -		}
-> +		numToRead--;
-> +	}
->  
-> +	if (pageSize == NAND_DATA_ACCESS_SIZE) {
->  		/* read ECC bytes before BI */
->  		nand_bcm_umi_bch_resume_read_ecc_calc();
->  
-> @@ -190,6 +199,7 @@ static inline void nand_bcm_umi_bch_read_oobEcc(uint32_t pageSize,
->  #else
->  			eccCalc[eccPos++] = REG_NAND_DATA8;
->  #endif
-> +			numToRead--;
->  		}
->  
->  		nand_bcm_umi_bch_pause_read_ecc_calc();
-> @@ -204,49 +214,18 @@ static inline void nand_bcm_umi_bch_read_oobEcc(uint32_t pageSize,
->  			numToRead--;
->  		}
->  
-> -		/* read ECC bytes */
-> -		nand_bcm_umi_bch_resume_read_ecc_calc();
-> -		while (numToRead) {
-> -#if defined(__KERNEL__) && !defined(STANDALONE)
-> -			*oobp = REG_NAND_DATA8;
-> -			eccCalc[eccPos++] = *oobp;
-> -			oobp++;
-> -#else
-> -			eccCalc[eccPos++] = REG_NAND_DATA8;
-> -#endif
-> -			numToRead--;
-> -		}
-> -	} else {
-> -		/* skip BI */
-> +	}
-> +	/* read ECC bytes */
-> +	nand_bcm_umi_bch_resume_read_ecc_calc();
-> +	while (numToRead) {
->  #if defined(__KERNEL__) && !defined(STANDALONE)
-> -		*oobp++ = REG_NAND_DATA8;
-> +		*oobp = REG_NAND_DATA8;
-> +		eccCalc[eccPos++] = *oobp;
-> +		oobp++;
->  #else
-> -		REG_NAND_DATA8;
-> +		eccCalc[eccPos++] = REG_NAND_DATA8;
->  #endif
->  		numToRead--;
-> -
-> -		while (numToRead > numEccBytes) {
-> -			/* skip free oob region */
-> -#if defined(__KERNEL__) && !defined(STANDALONE)
-> -			*oobp++ = REG_NAND_DATA8;
-> -#else
-> -			REG_NAND_DATA8;
-> -#endif
-> -			numToRead--;
-> -		}
-> -
-> -		/* read ECC bytes */
-> -		nand_bcm_umi_bch_resume_read_ecc_calc();
-> -		while (numToRead) {
-> -#if defined(__KERNEL__) && !defined(STANDALONE)
-> -			*oobp = REG_NAND_DATA8;
-> -			eccCalc[eccPos++] = *oobp;
-> -			oobp++;
-> -#else
-> -			eccCalc[eccPos++] = REG_NAND_DATA8;
-> -#endif
-> -			numToRead--;
-> -		}
->  	}
->  }
->  
-> 
+> The point is, the feature needs to be a killer feature. And I have yet to 
+> hear _any_ such killer feature, especially from a kernel maintenance 
+> standpoint.
 
--- 
 
-Leo Hao Chen
+> The "better ptrace than ptrace" is irrelevant. Sure, we all know ptrace 
+> isn't a wonderful feature. But it's there, and a debugger is going to have 
+> support for it anyway, so what's the _advantage_ of a "better ptrace 
+> interface"? There is absolutely _zero_ advantage, there's just "yet 
+> another interface". We can't get rid of the old one _anyway_.
 
-------------------------
-Life is short, run long.
+The point is that the intermediate api will allow (and, as the part
+you clipped out about utrace-gdbstub said, *already has allowed*)
+alternative plausible interfaces that coexist just fine.
 
+
+> And the seccomp replacement just sounds horrible. Using some tracing 
+> interface to implement security models sounds like the worst idea ever.
+
+So all this is about *naming* utrace?  It was never built "for
+tracing", but for (efficient/multiplexed) *control*.  That wasn't even
+its original name -- one of your lieutenants asked roland to change it
+to utrace.
+
+
+> And like it or not, over the last almost-decade, _not_ having to
+> have to work with system tap has been a feature, not a problem, for
+> the kernel community.
+
+I don't have a problem with that.  We have apprx. never imposed
+anything on developers who didn't want to use it.  There are plenty
+who have and will.
+
+
+- FChE
