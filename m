@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813Ab0AVVxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868Ab0AVWAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813Ab0AVVxS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 16:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449Ab0AVVxR
+	id S1754868Ab0AVWAA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 17:00:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664Ab0AVV77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 16:53:17 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:34523 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116Ab0AVVxQ (ORCPT
+	Fri, 22 Jan 2010 16:59:59 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52217 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932123Ab0AVV76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 16:53:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=d5U+5UFVGVhUpJCHFTtgfyxNNw5w7p8MhSukM9UEsIyz5jEa6SujlJNuDsDFcpg0dM
-         NszuX3tbhVztda3n/7kqsEIjYj6C6fxdMSo/OmHoxm/AvxV/15JZq8MuD9r69AcvzbGS
-         xs2wbNmZPdjLFIx6reYyH/aMExeBj9RrAKqXk=
-Date: Fri, 22 Jan 2010 22:53:04 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-Message-ID: <20100122215304.GA3105@del.dom.local>
-References: <20100120094103.GA6225@ff.dom.local>
- <4B58B217.8030001@majjas.com>
- <20100121204133.GB3085@del.dom.local>
- <4B59E7EB.3050605@majjas.com>
+	Fri, 22 Jan 2010 16:59:58 -0500
+Date: Fri, 22 Jan 2010 13:59:11 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Frank Ch. Eigler" <fche@redhat.com>
+cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+In-Reply-To: <20100122200129.GG22003@redhat.com>
+Message-ID: <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
+References: <20100120062834.GB12165@elte.hu> <20100120072925.GA11395@elte.hu> <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org>
+ <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain> <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B59E7EB.3050605@majjas.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 22, 2010 at 01:01:15PM -0500, Michael Breuer wrote:
-> Kernel 2.6.32.4 (git) with the following patches applied:
-> 
-> af_packet.c (tpacket_snd version 3)
-> sky2.c pskb_may_pull
-> sky2 fix WARNING at lib/dma-debug.c check_sync
 
-I guess, you meant the "sky2.c receive_copy" patch which you tested
-earlier, or at least you managed to crash DMAR with that patch
-before crashing it with Stephen's "lib/dma-debug.c check_sync" patch,
-right?
 
-> Running with CONFIG_DMAR=n, system is stable.
-> Running with the exact same source but CONFIG_DMAR=y I get the
-> WARNING (see below) after about 36 hours of uptime (has varied from
-> about 24 to about 48):
-> Smolt profile: http://smolt.fedoraproject.org/show?uuid=pub_bb05c701-1e47-4b3c-9fab-54f520f39d79+
-> I'm also attaching dmesg.old (dmesg from the crash).
+On Fri, 22 Jan 2010, Frank Ch. Eigler wrote:
 > 
-> Subsequent to this the system watchdog reboots the system (it's hung).
-> 
-> Of interest: each and every time this has happened the system was
-> under heavy RX load (win7 backup to a cifs share hosted on this
-> server). Also, there is always a dhcp exchange of some sort
-> preceding the event.
-> 
-> It is possible that the event is re creatable without DMAR enabled,
-> but I have been unsuccessful in doing so.
+> Finally, I don't know how to address the logic of "if a feature
+> requires utrace, that's a bad argument for utrace" and at the same
+> time "you need to show a killer app for utrace".  What could possibly
+> satisfy both of those constraints?  Please advise.
 
-It would be nice to check now if it's re-creatable without the dhcp
-exchange yet, or at least dhcp through the switch and the router,
-because I suspect there might be something more than a simple drop
-on the switch that affects sky2 stability.
+The point is, the feature needs to be a killer feature. And I have yet to 
+hear _any_ such killer feature, especially from a kernel maintenance 
+standpoint.
 
-Jarek P.
+The "better ptrace than ptrace" is irrelevant. Sure, we all know ptrace 
+isn't a wonderful feature. But it's there, and a debugger is going to have 
+support for it anyway, so what's the _advantage_ of a "better ptrace 
+interface"? There is absolutely _zero_ advantage, there's just "yet 
+another interface". We can't get rid of the old one _anyway_.
+
+And the seccomp replacement just sounds horrible. Using some tracing 
+interface to implement security models sounds like the worst idea ever.
+
+And like it or not, over the last almost-decade, _not_ having to have to 
+work with system tap has been a feature, not a problem, for the kernel 
+community.
+
+So what's the killer feature?
+
+			Linus
