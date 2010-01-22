@@ -1,174 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750822Ab0AVIvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764Ab0AVJDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750822Ab0AVIvo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 03:51:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493Ab0AVIvn
+	id S1752764Ab0AVJDi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:03:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713Ab0AVJD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 03:51:43 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51789 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822Ab0AVIvi (ORCPT
+	Fri, 22 Jan 2010 04:03:26 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53462 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752506Ab0AVJDJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 03:51:38 -0500
-Subject: Re: scheduler vs hardware? (was Re: another i7  (linux) bug?)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Luca Zini <luca.zini@gmail.com>, aagaande@gmail.com, rdelcueto@hotmail.com,
-       mingo@elte.hu, linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>
-In-Reply-To: <1264144758.8074.22.camel@marge.simson.net>
-References: <201001211258.23499.luca.zini@gmail.com>
-	 <20100121215438.GK17684@ldl.fc.hp.com>
-	 <1264144758.8074.22.camel@marge.simson.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 22 Jan 2010 09:51:12 +0100
-Message-ID: <1264150272.4283.1361.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jan 2010 04:03:09 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Fri, 22 Jan 2010 01:02:21 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH 2/9] pci: add failed_list to record failed one for
+ pci_bus_assign_resources
+In-reply-to: <1264150948-9052-1-git-send-email-yinghai@kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>
+Message-id: <1264150948-9052-3-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+References: <1264150948-9052-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-22 at 08:19 +0100, Mike Galbraith wrote:
-> > if I run a cpu intensive process with the lowest priority (19
-> > from man nice) I obtain much better performance that with the
-> > highest priority available (-20 from man nice).
-> >
-> > For example the same file is processed by lame in 8.7 seconds
-> > at the lowest priority, and in 12 seconds at the highest
-> > priority.  Before posting a bug I wold like to understand if
-> > this is a problem related to the i7 mobile (my processor is a
-> > i7 Q720).
-> > 
-> > As far as I tested on the same laptop series (dell studio 15),
-> > with the same kernel this problem does not exists.
-> 
-> So you only see this on the i7.  That's odd.  Can you try 33-rc5?
-> 
-> Posting a reliable reproducer would be nice.  It'd also be nice to see
-> what all is running when you see this, and where.
+so later we can try to assign resource those failed devices again.
 
-Using a sample from: http://lame.sourceforge.net/quality.php
+-v2: store start, end, flags aside. so could keep res cleared when assign
+     failed. and make following assignment of its children do not go wild
+-v3: update comments
+-v4: remove one comment
 
-My laptop does:
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Reviewed-by: Alex Chiang <achiang@hp.com>
+---
+ drivers/pci/setup-bus.c |   61 +++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 57 insertions(+), 4 deletions(-)
 
-
-# time nice -n 19 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
-LAME 3.98.2 64bits (http://www.mp3dev.org/)
-Using polyphase lowpass filter, transition band: 19383 Hz - 19916 Hz
-Encoding youcantdothat.wav to <stdout>
-Encoding as 44.1 kHz j-stereo MPEG-1 Layer III VBR(q=0)
-    Frame          |  CPU time/estim | REAL time/estim | play/CPU |    ETA
-  1147/1147  (100%)|    0:03/    0:03|    0:03/    0:03|   9.3341x|    0:00
- 32 [   1] *
-256 [1009] %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-320 [ 137] %%%%%%%%%
-----------------------------------------------------------------------------
-   kbps        LR    MS  %     long switch short %
-  263.4       99.1   0.9        90.5   5.5   4.0
-
-real    0m3.273s
-user    0m3.217s
-sys     0m0.022s
-
-
-# time nice -n 0 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null 
-LAME 3.98.2 64bits (http://www.mp3dev.org/)
-Using polyphase lowpass filter, transition band: 19383 Hz - 19916 Hz
-Encoding youcantdothat.wav to <stdout>
-Encoding as 44.1 kHz j-stereo MPEG-1 Layer III VBR(q=0)
-    Frame          |  CPU time/estim | REAL time/estim | play/CPU |    ETA
-  1147/1147  (100%)|    0:01/    0:01|    0:01/    0:01|   27.239x|    0:00
- 32 [   1] *
-256 [1009] %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-320 [ 137] %%%%%%%%%
-----------------------------------------------------------------------------
-   kbps        LR    MS  %     long switch short %
-  263.4       99.1   0.9        90.5   5.5   4.0
-
-real    0m1.121s
-user    0m1.102s
-sys     0m0.013s
-
-
-# time nice -n -20 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
-LAME 3.98.2 64bits (http://www.mp3dev.org/)
-Using polyphase lowpass filter, transition band: 19383 Hz - 19916 Hz
-Encoding youcantdothat.wav to <stdout>
-Encoding as 44.1 kHz j-stereo MPEG-1 Layer III VBR(q=0)
-    Frame          |  CPU time/estim | REAL time/estim | play/CPU |    ETA
-  1147/1147  (100%)|    0:01/    0:01|    0:01/    0:01|   27.239x|    0:00
- 32 [   1] *
-256 [1009] %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-320 [ 137] %%%%%%%%%
-----------------------------------------------------------------------------
-   kbps        LR    MS  %     long switch short %
-  263.4       99.1   0.9        90.5   5.5   4.0
-
-real    0m1.112s
-user    0m1.093s
-sys     0m0.018s
-
-
-
-On a Nehalem class server machine it does:
-
-
-# time nice -n 19 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
-LAME 3.98.2 64bits (http://www.mp3dev.org/)
-Using polyphase lowpass filter, transition band: 19383 Hz - 19916 Hz
-Encoding youcantdothat.wav to <stdout>
-Encoding as 44.1 kHz j-stereo MPEG-1 Layer III VBR(q=0)
-    Frame          |  CPU time/estim | REAL time/estim | play/CPU |    ETA
-  1147/1147  (100%)|    0:00/    0:00|    0:00/    0:00|   32.926x|    0:00
- 32 [   1] *
-256 [1009] %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-320 [ 137] %%%%%%%%%
-----------------------------------------------------------------------------
-   kbps        LR    MS  %     long switch short %
-  263.4       99.1   0.9        90.5   5.5   4.0
-
-real    0m0.932s
-user    0m0.917s
-sys     0m0.005s
-
-
-# time nice -n 0 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
-LAME 3.98.2 64bits (http://www.mp3dev.org/)
-Using polyphase lowpass filter, transition band: 19383 Hz - 19916 Hz
-Encoding youcantdothat.wav to <stdout>
-Encoding as 44.1 kHz j-stereo MPEG-1 Layer III VBR(q=0)
-    Frame          |  CPU time/estim | REAL time/estim | play/CPU |    ETA
-  1147/1147  (100%)|    0:00/    0:00|    0:00/    0:00|   32.568x|    0:00
- 32 [   1] *
-256 [1009] %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-320 [ 137] %%%%%%%%%
-----------------------------------------------------------------------------
-   kbps        LR    MS  %     long switch short %
-  263.4       99.1   0.9        90.5   5.5   4.0
-
-real    0m0.927s
-user    0m0.922s
-sys     0m0.003s
-
-
-# time nice -n -20 lame -b 256 -V0 -h youcantdothat.wav - > /dev/null
-LAME 3.98.2 64bits (http://www.mp3dev.org/)
-Using polyphase lowpass filter, transition band: 19383 Hz - 19916 Hz
-Encoding youcantdothat.wav to <stdout>
-Encoding as 44.1 kHz j-stereo MPEG-1 Layer III VBR(q=0)
-    Frame          |  CPU time/estim | REAL time/estim | play/CPU |    ETA
-  1147/1147  (100%)|    0:00/    0:00|    0:00/    0:00|   32.926x|    0:00
- 32 [   1] *
-256 [1009] %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-320 [ 137] %%%%%%%%%
-----------------------------------------------------------------------------
-   kbps        LR    MS  %     long switch short %
-  263.4       99.1   0.9        90.5   5.5   4.0
-
-real    0m0.919s
-user    0m0.914s
-sys     0m0.005s
-
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 7371a54..7e87ea8 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -27,7 +27,52 @@
+ #include <linux/slab.h>
+ #include "pci.h"
+ 
+-static void pbus_assign_resources_sorted(const struct pci_bus *bus)
++struct resource_list_x {
++	struct resource_list_x *next;
++	struct resource *res;
++	struct pci_dev *dev;
++	resource_size_t start;
++	resource_size_t end;
++	unsigned long flags;
++};
++
++static void add_to_failed_list(struct resource_list_x *head,
++				 struct pci_dev *dev, struct resource *res)
++{
++	struct resource_list_x *list = head;
++	struct resource_list_x *ln = list->next;
++	struct resource_list_x *tmp;
++
++	tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
++	if (!tmp) {
++		pr_warning("add_to_failed_list: kmalloc() failed!\n");
++		return;
++	}
++
++	tmp->next = ln;
++	tmp->res = res;
++	tmp->dev = dev;
++	tmp->start = res->start;
++	tmp->end = res->end;
++	tmp->flags = res->flags;
++	list->next = tmp;
++}
++
++static void free_failed_list(struct resource_list_x *head)
++{
++	struct resource_list_x *list, *tmp;
++
++	for (list = head->next; list;) {
++		tmp = list;
++		list = list->next;
++		kfree(tmp);
++	}
++
++	head->next = NULL;
++}
++
++static void pbus_assign_resources_sorted(const struct pci_bus *bus,
++					 struct resource_list_x *fail_head)
+ {
+ 	struct pci_dev *dev;
+ 	struct resource *res;
+@@ -58,6 +103,8 @@ static void pbus_assign_resources_sorted(const struct pci_bus *bus)
+ 		res = list->res;
+ 		idx = res - &list->dev->resource[0];
+ 		if (pci_assign_resource(list->dev, idx)) {
++			if (fail_head && !pci_is_root_bus(list->dev->bus))
++				add_to_failed_list(fail_head, list->dev, res);
+ 			res->start = 0;
+ 			res->end = 0;
+ 			res->flags = 0;
+@@ -572,19 +619,20 @@ void __ref pci_bus_size_bridges(struct pci_bus *bus)
+ }
+ EXPORT_SYMBOL(pci_bus_size_bridges);
+ 
+-void __ref pci_bus_assign_resources(const struct pci_bus *bus)
++static void __ref __pci_bus_assign_resources(const struct pci_bus *bus,
++					 struct resource_list_x *fail_head)
+ {
+ 	struct pci_bus *b;
+ 	struct pci_dev *dev;
+ 
+-	pbus_assign_resources_sorted(bus);
++	pbus_assign_resources_sorted(bus, fail_head);
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		b = dev->subordinate;
+ 		if (!b)
+ 			continue;
+ 
+-		pci_bus_assign_resources(b);
++		__pci_bus_assign_resources(b, fail_head);
+ 
+ 		switch (dev->class >> 8) {
+ 		case PCI_CLASS_BRIDGE_PCI:
+@@ -602,6 +650,11 @@ void __ref pci_bus_assign_resources(const struct pci_bus *bus)
+ 		}
+ 	}
+ }
++
++void __ref pci_bus_assign_resources(const struct pci_bus *bus)
++{
++	__pci_bus_assign_resources(bus, NULL);
++}
+ EXPORT_SYMBOL(pci_bus_assign_resources);
+ 
+ static void pci_bridge_release_resources(struct pci_bus *bus,
+-- 
+1.6.4.2
 
