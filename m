@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764Ab0AVJ2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798Ab0AVJ2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764Ab0AVJ2K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 04:28:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524Ab0AVJ2A
+	id S1753798Ab0AVJ2M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 04:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678Ab0AVJ2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 04:28:00 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:46241 "EHLO
+	Fri, 22 Jan 2010 04:28:04 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:46224 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753497Ab0AVJZ7 (ORCPT
+	with ESMTP id S1753376Ab0AVJZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 04:25:59 -0500
+	Fri, 22 Jan 2010 04:25:57 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 22 Jan 2010 01:24:44 -0800
+Date: Fri, 22 Jan 2010 01:24:40 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 35/38] use nr_cpus= to set nr_cpu_ids early
+Subject: [PATCH 31/38] radix: move radix init early
 In-reply-to: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -25,106 +25,40 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1264152287-13866-36-git-send-email-yinghai@kernel.org>
+Message-id: <1264152287-13866-32-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on x86, before prefill_possible_map(), nr_cpu_ids will be NR_CPUS aka CONFIG_NR_CPUS
-
-add nr_cpus= to set nr_cpu_ids. so we can simulate cpus <=8 are installed on
-normal config.
-
--v2: accordging to Christoph, acpi_numa_init should use nr_cpu_ids in stead of
-     NR_CPUS.
+prepare to use it in early_irq_init()
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
 ---
- arch/ia64/kernel/acpi.c   |    4 ++--
- arch/x86/kernel/smpboot.c |    7 ++++---
- drivers/acpi/numa.c       |    4 ++--
- init/main.c               |   14 ++++++++++++++
- 4 files changed, 22 insertions(+), 7 deletions(-)
+ init/main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
-index 40574ae..605a08b 100644
---- a/arch/ia64/kernel/acpi.c
-+++ b/arch/ia64/kernel/acpi.c
-@@ -881,8 +881,8 @@ __init void prefill_possible_map(void)
- 
- 	possible = available_cpus + additional_cpus;
- 
--	if (possible > NR_CPUS)
--		possible = NR_CPUS;
-+	if (possible > nr_cpu_ids)
-+		possible = nr_cpu_ids;
- 
- 	printk(KERN_INFO "SMP: Allowing %d CPUs, %d hotplug CPUs\n",
- 		possible, max((possible - available_cpus), 0));
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 678d0b8..eff2fe1 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1213,11 +1213,12 @@ __init void prefill_possible_map(void)
- 
- 	total_cpus = max_t(int, possible, num_processors + disabled_cpus);
- 
--	if (possible > CONFIG_NR_CPUS) {
-+	/* nr_cpu_ids could be reduced via nr_cpus= */
-+	if (possible > nr_cpu_ids) {
- 		printk(KERN_WARNING
- 			"%d Processors exceeds NR_CPUS limit of %d\n",
--			possible, CONFIG_NR_CPUS);
--		possible = CONFIG_NR_CPUS;
-+			possible, nr_cpu_ids);
-+		possible = nr_cpu_ids;
- 	}
- 
- 	printk(KERN_INFO "SMP: Allowing %d CPUs, %d hotplug CPUs\n",
-diff --git a/drivers/acpi/numa.c b/drivers/acpi/numa.c
-index 7ad48df..b872546 100644
---- a/drivers/acpi/numa.c
-+++ b/drivers/acpi/numa.c
-@@ -279,9 +279,9 @@ int __init acpi_numa_init(void)
- 	/* SRAT: Static Resource Affinity Table */
- 	if (!acpi_table_parse(ACPI_SIG_SRAT, acpi_parse_srat)) {
- 		acpi_table_parse_srat(ACPI_SRAT_TYPE_X2APIC_CPU_AFFINITY,
--				      acpi_parse_x2apic_affinity, NR_CPUS);
-+				     acpi_parse_x2apic_affinity, nr_cpu_ids);
- 		acpi_table_parse_srat(ACPI_SRAT_TYPE_CPU_AFFINITY,
--				      acpi_parse_processor_affinity, NR_CPUS);
-+				     acpi_parse_processor_affinity, nr_cpu_ids);
- 		ret = acpi_table_parse_srat(ACPI_SRAT_TYPE_MEMORY_AFFINITY,
- 					    acpi_parse_memory_affinity,
- 					    NR_NODE_MEMBLKS);
 diff --git a/init/main.c b/init/main.c
-index 8451878..05b5283 100644
+index dac44a9..8451878 100644
 --- a/init/main.c
 +++ b/init/main.c
-@@ -149,6 +149,20 @@ static int __init nosmp(char *str)
- 
- early_param("nosmp", nosmp);
- 
-+/* this is hard limit */
-+static int __init nrcpus(char *str)
-+{
-+	int nr_cpus;
-+
-+	get_option(&str, &nr_cpus);
-+	if (nr_cpus > 0 && nr_cpus < nr_cpu_ids)
-+		nr_cpu_ids = nr_cpus;
-+
-+	return 0;
-+}
-+
-+early_param("nr_cpus", nrcpus);
-+
- static int __init maxcpus(char *str)
- {
- 	get_option(&str, &setup_max_cpus);
+@@ -584,6 +584,7 @@ asmlinkage void __init start_kernel(void)
+ 		local_irq_disable();
+ 	}
+ 	rcu_init();
++	radix_tree_init();
+ 	/* init some links before init_ISA_irqs() */
+ 	early_irq_init();
+ 	init_IRQ();
+@@ -659,7 +660,6 @@ asmlinkage void __init start_kernel(void)
+ 	key_init();
+ 	security_init();
+ 	vfs_caches_init(totalram_pages);
+-	radix_tree_init();
+ 	signals_init();
+ 	/* rootfs populating might need page-writeback */
+ 	page_writeback_init();
 -- 
 1.6.4.2
 
