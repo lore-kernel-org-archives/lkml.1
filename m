@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518Ab0AVQFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833Ab0AVQIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755518Ab0AVQFJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 11:05:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797Ab0AVQFH
+	id S1755833Ab0AVQIS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 11:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449Ab0AVQIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 11:05:07 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:46399 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753237Ab0AVQFF (ORCPT
+	Fri, 22 Jan 2010 11:08:16 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:46302 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755020Ab0AVQIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 11:05:05 -0500
-Message-ID: <4B59CB32.5080901@nortel.com>
-Date: Fri, 22 Jan 2010 09:58:42 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Fri, 22 Jan 2010 11:08:15 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=gsXONqgOFJ7Qds56koIZ1sfCVU6RpbpQb90fqAXAs/KfW0pg4lc+QqPckiQwn+rVk
+	2ZqFGDmj4kztB8W9RTH5Q==
 MIME-Version: 1.0
-To: Luca Zini <luca.zini@gmail.com>
-CC: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <peterz@infradead.org>,
-       aagaande@gmail.com, rdelcueto@hotmail.com, mingo@elte.hu,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>
-Subject: Re: scheduler vs hardware? (was Re: another i7  (linux) bug?)
-References: <201001211258.23499.luca.zini@gmail.com> <1264152314.12530.8.camel@marge.simson.net> <1264152860.4283.1442.camel@laptop> <201001221222.28516.luca.zini@gmail.com>
-In-Reply-To: <201001221222.28516.luca.zini@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jan 2010 16:04:20.0813 (UTC) FILETIME=[8ED627D0:01CA9B7C]
+In-Reply-To: <20100122155535.887853503@chello.nl>
+References: <20100122155044.391857484@chello.nl>
+	 <20100122155535.887853503@chello.nl>
+Date: Fri, 22 Jan 2010 17:08:11 +0100
+Message-ID: <bd4cb8901001220808n6f731d79m7195eea8e16f57d4@mail.gmail.com>
+Subject: Re: [PATCH 08/10] perf_event: Optimize the constraint searching bits
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: fweisbec@gmail.com, paulus@samba.org, mingo@elte.hu, davem@davemloft.net,
+       robert.richter@amd.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o0MG8u54001079
+
+On Fri, Jan 22, 2010 at 4:50 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:> Instead of copying bitmasks around, pass pointers to the constraint structure.>The reason I changed that is because of the AMD situation where constraintsare dynamically generated. So we need to get some storage from somwhere.See my AMD NB patch,
+
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>> LKML-Reference: <new-submission>> --->  arch/x86/kernel/cpu/perf_event.c |   81 ++++++++++++++++++--------------------->  1 file changed, 38 insertions(+), 43 deletions(-)>> Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c> ===================================================================> --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c> +++ linux-2.6/arch/x86/kernel/cpu/perf_event.c> @@ -135,12 +138,14 @@ struct x86_pmu {>        u64             intel_ctrl;>        void            (*enable_bts)(u64 config);>        void            (*disable_bts)(void);> -       void            (*get_event_constraints)(struct cpu_hw_events *cpuc,> -                                                struct perf_event *event,> -                                                unsigned long *idxmsk);> +> +       struct event_constraint *> +                       (*get_event_constraints)(struct cpu_hw_events *cpuc,> +                                                struct perf_event *event);> +>        void            (*put_event_constraints)(struct cpu_hw_events *cpuc,>                                                 struct perf_event *event);> -       const struct event_constraint *event_constraints;> +       struct event_constraint *event_constraints;>  };>>  static struct x86_pmu x86_pmu __read_mostly;> @@ -1244,18 +1249,16 @@ static inline int is_x86_event(struct pe>  static int x86_schedule_events(struct cpu_hw_events *cpuc, int n, int *assign)>  {>        int i, j , w, num;> -       int weight, wmax;> -       unsigned long *c;> -       unsigned long constraints[X86_PMC_IDX_MAX][BITS_TO_LONGS(X86_PMC_IDX_MAX)];> +       int weight, wmax;> +       struct event_constraint *c, *constraints[X86_PMC_IDX_MAX];>        unsigned long used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];>        struct hw_perf_event *hwc;>>        bitmap_zero(used_mask, X86_PMC_IDX_MAX);>>        for (i = 0; i < n; i++) {> -               x86_pmu.get_event_constraints(cpuc,> -                                             cpuc->event_list[i],> -                                             constraints[i]);> +               constraints[i] => +                 x86_pmu.get_event_constraints(cpuc, cpuc->event_list[i]);>        }>>        /*> @@ -1270,7 +1273,7 @@ static int x86_schedule_events(struct cp>                        break;>>                /* constraint still honored */> -               if (!test_bit(hwc->idx, c))> +               if (!test_bit(hwc->idx, c->idxmsk))>                        break;>>                /* not already used */> @@ -1323,11 +1326,11 @@ static int x86_schedule_events(struct cp>                        c = constraints[i];>                        hwc = &cpuc->event_list[i]->hw;>> -                       weight = bitmap_weight(c, X86_PMC_IDX_MAX);> +                       weight = bitmap_weight(c->idxmsk, X86_PMC_IDX_MAX);>                        if (weight != w)>                                continue;>> -                       for_each_bit(j, c, X86_PMC_IDX_MAX) {> +                       for_each_bit(j, c->idxmsk, X86_PMC_IDX_MAX) {>                                if (!test_bit(j, used_mask))>                                        break;>                        }> @@ -2165,11 +2167,13 @@ perf_event_nmi_handler(struct notifier_b>        return NOTIFY_STOP;>  }>> +static struct event_constraint unconstrained;> +>  static struct event_constraint bts_constraint =>        EVENT_CONSTRAINT(0, 1ULL << X86_PMC_IDX_FIXED_BTS, 0);>> -static int intel_special_constraints(struct perf_event *event,> -                                    unsigned long *idxmsk)> +static struct event_constraint *> +intel_special_constraints(struct perf_event *event)>  {>        unsigned int hw_event;>> @@ -2179,46 +2183,34 @@ static int intel_special_constraints(str>                      x86_pmu.event_map(PERF_COUNT_HW_BRANCH_INSTRUCTIONS)) &&>                     (event->hw.sample_period == 1))) {>> -               bitmap_copy((unsigned long *)idxmsk,> -                           (unsigned long *)bts_constraint.idxmsk,> -                           X86_PMC_IDX_MAX);> -               return 1;> +               return &bts_constraint;>        }> -       return 0;> +       return NULL;>  }>> -static void intel_get_event_constraints(struct cpu_hw_events *cpuc,> -                                       struct perf_event *event,> -                                       unsigned long *idxmsk)> +static struct event_constraint *> +intel_get_event_constraints(struct cpu_hw_events *cpuc, struct perf_event *event)>  {> -       const struct event_constraint *c;> +       struct event_constraint *c;>> -       /*> -        * cleanup bitmask> -        */> -       bitmap_zero(idxmsk, X86_PMC_IDX_MAX);> -> -       if (intel_special_constraints(event, idxmsk))> -               return;> +       c = intel_special_constraints(event);> +       if (c)> +               return c;>>        if (x86_pmu.event_constraints) {>                for_each_event_constraint(c, x86_pmu.event_constraints) {> -                       if ((event->hw.config & c->cmask) == c->code) {> -                               bitmap_copy(idxmsk, c->idxmsk, X86_PMC_IDX_MAX);> -                               return;> -                       }> +                       if ((event->hw.config & c->cmask) == c->code)> +                               return c;>                }>        }> -       /* no constraints, means supports all generic counters */> -       bitmap_fill((unsigned long *)idxmsk, x86_pmu.num_events);> +> +       return &unconstrained;>  }>> -static void amd_get_event_constraints(struct cpu_hw_events *cpuc,> -                                     struct perf_event *event,> -                                     unsigned long *idxmsk)> +static struct event_constraint *> +amd_get_event_constraints(struct cpu_hw_events *cpuc, struct perf_event *event)>  {> -       /* no constraints, means supports all generic counters */> -       bitmap_fill(idxmsk, x86_pmu.num_events);> +       return &unconstrained;>  }>>  static int x86_event_sched_in(struct perf_event *event,> @@ -2586,6 +2578,9 @@ void __init init_hw_perf_events(void)>        perf_events_lapic_init();>        register_die_notifier(&perf_event_nmi_notifier);>> +       unconstrained = (struct event_constraint)> +               EVENT_CONSTRAINT(0, (1ULL << x86_pmu.num_events) - 1, 0);> +>        pr_info("... version:                %d\n",     x86_pmu.version);>        pr_info("... bit width:              %d\n",     x86_pmu.event_bits);>        pr_info("... generic registers:      %d\n",     x86_pmu.num_events);>> -->>
 
 
-On 01/22/2010 05:22 AM, Luca Zini wrote:
-
-> with nice set to 19 a processor 3 reach the maximum speed,  with nice
-set to
-> -20 its maximum value is 300-400 mhz under the maximum value.
-
-I wonder if at lower nice levels the timing on something changes,
-forcing multiple cores to be active just often enough to keep the i7
-from doing the turbo boost thing, whereas with higher nice levels
-everything is serialized allowing the boost to be enabled.
-
-Chris
+-- Stephane Eranian  | EMEA Software EngineeringGoogle France | 38 avenue de l'Opéra | 75002 ParisTel : +33 (0) 1 42 68 53 00This email may be confidential or privileged. If you received thiscommunication by mistake, pleasedon't forward it to anyone else, please erase all copies andattachments, and please let me know thatit went to the wrong person. Thanks���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
