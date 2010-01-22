@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605Ab0AVNkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751554Ab0AVNkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605Ab0AVNkk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 08:40:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306Ab0AVNkh
+	id S1751554Ab0AVNkp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 08:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464Ab0AVNkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 08:40:37 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:62800 "EHLO
+	Fri, 22 Jan 2010 08:40:40 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:62794 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752645Ab0AVNjW (ORCPT
+	with ESMTP id S1752243Ab0AVNjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Jan 2010 08:39:22 -0500
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
@@ -17,9 +17,9 @@ Cc: linux-kernel@vger.kernel.org,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 10/12] perf lock: Enhance information of lock trace events
-Date: Fri, 22 Jan 2010 22:39:11 +0900
-Message-Id: <1264167553-6510-11-git-send-email-mitake@dcl.info.waseda.ac.jp>
+Subject: [PATCH 08/12] lockdep: Add file and line to initialize sequence of mutex
+Date: Fri, 22 Jan 2010 22:39:09 +0900
+Message-Id: <1264167553-6510-9-git-send-email-mitake@dcl.info.waseda.ac.jp>
 X-Mailer: git-send-email 1.6.5.2
 In-Reply-To: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
@@ -27,121 +27,142 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now lock trace events have address and __FILE__ and __LINE__ of their lockdep_map.
+Like other ones of this patch series, this patch adds
+__FILE__ and __LINE__ to lockdep_map of mutex.
 
 Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- include/trace/events/lock.h |   49 ++++++++++++++++++++++++++++++++++--------
- 1 files changed, 39 insertions(+), 10 deletions(-)
+ include/linux/mutex-debug.h |    2 +-
+ include/linux/mutex.h       |   12 +++++++++---
+ kernel/mutex-debug.c        |    5 +++--
+ kernel/mutex-debug.h        |    3 ++-
+ kernel/mutex.c              |    5 +++--
+ kernel/mutex.h              |    2 +-
+ 6 files changed, 19 insertions(+), 10 deletions(-)
 
-diff --git a/include/trace/events/lock.h b/include/trace/events/lock.h
-index a870ba1..3eef226 100644
---- a/include/trace/events/lock.h
-+++ b/include/trace/events/lock.h
-@@ -20,16 +20,23 @@ TRACE_EVENT(lock_acquire,
- 	TP_STRUCT__entry(
- 		__field(unsigned int, flags)
- 		__string(name, lock->name)
-+		__field(void *, lockdep_addr)
-+		__string(file, lock->file)
-+		__field(unsigned int, line)
- 	),
+diff --git a/include/linux/mutex-debug.h b/include/linux/mutex-debug.h
+index 731d77d..f86bf4e 100644
+--- a/include/linux/mutex-debug.h
++++ b/include/linux/mutex-debug.h
+@@ -15,7 +15,7 @@
+ do {									\
+ 	static struct lock_class_key __key;				\
+ 									\
+-	__mutex_init((mutex), #mutex, &__key);				\
++	__mutex_init((mutex), #mutex, &__key, __FILE__, __LINE__);	\
+ } while (0)
  
- 	TP_fast_assign(
- 		__entry->flags = (trylock ? 1 : 0) | (read ? 2 : 0);
- 		__assign_str(name, lock->name);
-+		__entry->lockdep_addr = lock;
-+		__assign_str(file, lock->file);
-+		__entry->line = lock->line;
- 	),
- 
--	TP_printk("%s%s%s", (__entry->flags & 1) ? "try " : "",
-+	TP_printk("%p %s%s%s %s:%u", __entry->lockdep_addr,
-+		  (__entry->flags & 1) ? "try " : "",
- 		  (__entry->flags & 2) ? "read " : "",
--		  __get_str(name))
-+		  __get_str(name), __get_str(file), __entry->line)
- );
- 
- TRACE_EVENT(lock_release,
-@@ -40,13 +47,21 @@ TRACE_EVENT(lock_release,
- 
- 	TP_STRUCT__entry(
- 		__string(name, lock->name)
-+		__field(void *, lockdep_addr)
-+		__string(file, lock->file)
-+		__field(unsigned int, line)
- 	),
- 
- 	TP_fast_assign(
- 		__assign_str(name, lock->name);
-+		__entry->lockdep_addr = lock;
-+		__assign_str(file, lock->file);
-+		__entry->line = lock->line;
- 	),
- 
--	TP_printk("%s", __get_str(name))
-+	TP_printk("%p %s %s:%u",
-+		  __entry->lockdep_addr, __get_str(name),
-+		  __get_str(file), __entry->line)
- );
- 
- #ifdef CONFIG_LOCK_STAT
-@@ -59,13 +74,21 @@ TRACE_EVENT(lock_contended,
- 
- 	TP_STRUCT__entry(
- 		__string(name, lock->name)
-+		__field(void *, lockdep_addr)
-+		__string(file, lock->file)
-+		__field(unsigned int, line)
- 	),
- 
- 	TP_fast_assign(
- 		__assign_str(name, lock->name);
-+		__entry->lockdep_addr = lock;
-+		__assign_str(file, lock->file);
-+		__entry->line = lock->line;
- 	),
- 
--	TP_printk("%s", __get_str(name))
-+	TP_printk("%p %s %s:%u",
-+		  __entry->lockdep_addr, __get_str(name),
-+		  __get_str(file), __entry->line)
- );
- 
- TRACE_EVENT(lock_acquired,
-@@ -75,16 +98,22 @@ TRACE_EVENT(lock_acquired,
- 
- 	TP_STRUCT__entry(
- 		__string(name, lock->name)
--		__field(unsigned long, wait_usec)
--		__field(unsigned long, wait_nsec_rem)
-+		__field(s64, wait_nsec)
-+		__field(void *, lockdep_addr)
-+		__string(file, lock->file)
-+		__field(unsigned int, line)
- 	),
-+
- 	TP_fast_assign(
- 		__assign_str(name, lock->name);
--		__entry->wait_nsec_rem = do_div(waittime, NSEC_PER_USEC);
--		__entry->wait_usec = (unsigned long) waittime;
-+		__entry->wait_nsec = waittime;
-+		__entry->lockdep_addr = lock;
-+		__assign_str(file, lock->file);
-+		__entry->line = lock->line;
- 	),
--	TP_printk("%s (%lu.%03lu us)", __get_str(name), __entry->wait_usec,
--				       __entry->wait_nsec_rem)
-+	TP_printk("%p %s %s:%u (%llu ns)", __entry->lockdep_addr,
-+		  __get_str(name), __get_str(file), __entry->line,
-+		  __entry->wait_nsec)
- );
- 
+ extern void mutex_destroy(struct mutex *lock);
+diff --git a/include/linux/mutex.h b/include/linux/mutex.h
+index 878cab4..ce9082a 100644
+--- a/include/linux/mutex.h
++++ b/include/linux/mutex.h
+@@ -82,14 +82,19 @@ struct mutex_waiter {
+ do {							\
+ 	static struct lock_class_key __key;		\
+ 							\
+-	__mutex_init((mutex), #mutex, &__key);		\
++	__mutex_init((mutex), #mutex, &__key,		\
++		     __FILE__, __LINE__);		\
+ } while (0)
+ # define mutex_destroy(mutex)				do { } while (0)
  #endif
+ 
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ # define __DEP_MAP_MUTEX_INITIALIZER(lockname) \
+-		, .dep_map = { .name = #lockname }
++		, .dep_map = {		       \
++			.file = __FILE__,      \
++			.line = __LINE__,      \
++			.name = #lockname,     \
++		}
+ #else
+ # define __DEP_MAP_MUTEX_INITIALIZER(lockname)
+ #endif
+@@ -105,7 +110,8 @@ do {							\
+ 	struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
+ 
+ extern void __mutex_init(struct mutex *lock, const char *name,
+-			 struct lock_class_key *key);
++			 struct lock_class_key *key,
++			 const char *file, unsigned int line);
+ 
+ /**
+  * mutex_is_locked - is the mutex locked
+diff --git a/kernel/mutex-debug.c b/kernel/mutex-debug.c
+index ec815a9..4a1321b 100644
+--- a/kernel/mutex-debug.c
++++ b/kernel/mutex-debug.c
+@@ -81,14 +81,15 @@ void debug_mutex_unlock(struct mutex *lock)
+ }
+ 
+ void debug_mutex_init(struct mutex *lock, const char *name,
+-		      struct lock_class_key *key)
++		      struct lock_class_key *key,
++		      const char *file, unsigned int line)
+ {
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ 	/*
+ 	 * Make sure we are not reinitializing a held lock:
+ 	 */
+ 	debug_check_no_locks_freed((void *)lock, sizeof(*lock));
+-	lockdep_init_map(&lock->dep_map, name, key, 0);
++	__lockdep_init_map(&lock->dep_map, name, key, 0, file, line);
+ #endif
+ 	lock->magic = lock;
+ }
+diff --git a/kernel/mutex-debug.h b/kernel/mutex-debug.h
+index 57d527a..154a909 100644
+--- a/kernel/mutex-debug.h
++++ b/kernel/mutex-debug.h
+@@ -25,7 +25,8 @@ extern void mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter,
+ 				struct thread_info *ti);
+ extern void debug_mutex_unlock(struct mutex *lock);
+ extern void debug_mutex_init(struct mutex *lock, const char *name,
+-			     struct lock_class_key *key);
++			     struct lock_class_key *key,
++			     const char *file, unsigned int line);
+ 
+ static inline void mutex_set_owner(struct mutex *lock)
+ {
+diff --git a/kernel/mutex.c b/kernel/mutex.c
+index 632f04c..80e3876 100644
+--- a/kernel/mutex.c
++++ b/kernel/mutex.c
+@@ -46,14 +46,15 @@
+  * It is not allowed to initialize an already locked mutex.
+  */
+ void
+-__mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
++__mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key,
++	     const char *file, unsigned int line)
+ {
+ 	atomic_set(&lock->count, 1);
+ 	spin_lock_init(&lock->wait_lock);
+ 	INIT_LIST_HEAD(&lock->wait_list);
+ 	mutex_clear_owner(lock);
+ 
+-	debug_mutex_init(lock, name, key);
++	debug_mutex_init(lock, name, key, file, line);
+ }
+ 
+ EXPORT_SYMBOL(__mutex_init);
+diff --git a/kernel/mutex.h b/kernel/mutex.h
+index 67578ca..81914e6 100644
+--- a/kernel/mutex.h
++++ b/kernel/mutex.h
+@@ -40,7 +40,7 @@ static inline void mutex_clear_owner(struct mutex *lock)
+ #define debug_mutex_free_waiter(waiter)			do { } while (0)
+ #define debug_mutex_add_waiter(lock, waiter, ti)	do { } while (0)
+ #define debug_mutex_unlock(lock)			do { } while (0)
+-#define debug_mutex_init(lock, name, key)		do { } while (0)
++#define debug_mutex_init(lock, name, key, file, line)	do { } while (0)
+ 
+ static inline void
+ debug_mutex_lock_common(struct mutex *lock, struct mutex_waiter *waiter)
 -- 
 1.6.5.2
 
