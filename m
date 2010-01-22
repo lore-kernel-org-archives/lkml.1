@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017Ab0AVRTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954Ab0AVRZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756017Ab0AVRTe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 12:19:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755148Ab0AVRTc
+	id S1755954Ab0AVRZp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 12:25:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266Ab0AVRZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 12:19:32 -0500
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:16999 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755980Ab0AVRT3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 12:19:29 -0500
-X-SpamScore: -1
-X-BigFish: VPS-1(zzab9bh936eMzz1202hzz5a6ciz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KWNS2H-01-CVJ-02
-X-M-MSG: 
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@redhat.com>
-CC: x86@kernel.org, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, Thiago Farina <tfransosi@gmail.com>,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 5/5] lib/dma-debug.c: mark file-local struct symbol static.
-Date: Fri, 22 Jan 2010 18:18:13 +0100
-Message-ID: <1264180693-27197-6-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1264180693-27197-1-git-send-email-joerg.roedel@amd.com>
-References: <1264180693-27197-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 22 Jan 2010 17:18:15.0876 (UTC) FILETIME=[E2571040:01CA9B86]
+	Fri, 22 Jan 2010 12:25:44 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50126 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755220Ab0AVRZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 12:25:44 -0500
+Message-ID: <4B59DF4C.7040608@zytor.com>
+Date: Fri, 22 Jan 2010 09:24:28 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: unknown
+To: Borislav Petkov <bp@amd64.org>
+CC: mingo@elte.hu, tglx@linutronix.de, andreas.herrmann3@amd.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org,
+       Borislav Petkov <borislav.petkov@amd.com>
+Subject: Re: [PATCH -v3 0/5] x86, cacheinfo, amd: L3 Cache Index Disable fixes
+References: <1264172467-25155-1-git-send-email-bp@amd64.org>
+In-Reply-To: <1264172467-25155-1-git-send-email-bp@amd64.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thiago Farina <tfransosi@gmail.com>
+On 01/22/2010 07:01 AM, Borislav Petkov wrote:
+> these are a bunch of fixes which correct the disabling of L3 cache
+> indexes. This is needed, for example, in the case when excessive
+> correctable L3 error rates are observed. In a later step, this
+> functionality will be connected to the mcheck mechanism and used to
+> evaluate occurring L3 tag and data array errors and then disable the
+> respective failing L3 cache regions in order to defer system failure
+> before a sysop can intervene.
+> 
+> Those patches are also good -stable candidates.
 
-warning: symbol 'filter_fops' was not declared. Should it be static?
+Hmmm... I'm not sure I see a strong justification for a late -rc push
+into Linus/stable push for for these... I think you would have to
+explicitly make the case if you want them to be considered as such.
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- lib/dma-debug.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+	-hpa
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 7399744..e039958 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -587,7 +587,7 @@ out_unlock:
- 	return count;
- }
- 
--const struct file_operations filter_fops = {
-+static const struct file_operations filter_fops = {
- 	.read  = filter_read,
- 	.write = filter_write,
- };
 -- 
-1.6.6
-
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
