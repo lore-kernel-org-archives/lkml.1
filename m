@@ -1,106 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743Ab0AVNMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789Ab0AVNYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743Ab0AVNMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 08:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701Ab0AVNMR
+	id S1752789Ab0AVNYs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 08:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009Ab0AVNYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 08:12:17 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:54392 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751476Ab0AVNMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 08:12:16 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>
-Subject: [PATCH] ftrace: cover new frame pointer semantics
-Date: Fri, 22 Jan 2010 08:12:47 -0500
-Message-Id: <1264165967-18938-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.6.1
+	Fri, 22 Jan 2010 08:24:47 -0500
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:50431 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450Ab0AVNYo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 08:24:44 -0500
+X-SpamScore: -13
+X-BigFish: VPS-13(z21eWz1402Ifb6Ia9c5izz1202hzzz32i6bh43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KWNH8W-02-EXA-02
+X-M-MSG: 
+Date: Fri, 22 Jan 2010 14:24:32 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>
+CC: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Lockdep warning and kernel panic with e1000e on 2.6.33-rc4
+Message-ID: <20100122132432.GI8665@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 22 Jan 2010 13:24:33.0455 (UTC) FILETIME=[3C536BF0:01CA9B66]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the graph tracer examples to cover the new frame pointer semantics
-(in terms of passing it along).  Move the HAVE_FUNCTION_GRAPH_FP_TEST docs
-out of the Kconfig, into the right place, and expand on the details.
+Hi,
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- Documentation/trace/ftrace-design.txt |   26 +++++++++++++++++++++++---
- kernel/trace/Kconfig                  |    4 +---
- 2 files changed, 24 insertions(+), 6 deletions(-)
+I just tried to unbind a device from the e1000e driver and got the following
+output from lockdep and the kernel panic from a NULL pointer dereference. The
+kernel running on the machine is 2.6.33-rc4 + kvm patches (which shouldn't
+matter):
 
-diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
-index 239f14b..6a5a579 100644
---- a/Documentation/trace/ftrace-design.txt
-+++ b/Documentation/trace/ftrace-design.txt
-@@ -1,5 +1,6 @@
- 		function tracer guts
- 		====================
-+		By Mike Frysinger
- 
- Introduction
- ------------
-@@ -173,14 +174,16 @@ void ftrace_graph_caller(void)
- 
- 	unsigned long *frompc = &...;
- 	unsigned long selfpc = <return address> - MCOUNT_INSN_SIZE;
--	prepare_ftrace_return(frompc, selfpc);
-+	/* passing frame pointer up is optional -- see below */
-+	prepare_ftrace_return(frompc, selfpc, frame_pointer);
- 
- 	/* restore all state needed by the ABI */
- }
- #endif
- 
--For information on how to implement prepare_ftrace_return(), simply look at
--the x86 version.  The only architecture-specific piece in it is the setup of
-+For information on how to implement prepare_ftrace_return(), simply look at the
-+x86 version (the frame pointer passing is optional; see the next section for
-+more information).  The only architecture-specific piece in it is the setup of
- the fault recovery table (the asm(...) code).  The rest should be the same
- across architectures.
- 
-@@ -205,6 +208,23 @@ void return_to_handler(void)
- #endif
- 
- 
-+HAVE_FUNCTION_GRAPH_FP_TEST
-+---------------------------
-+
-+An arch may pass in a unique value (frame pointer) to both the entering and
-+exiting of a function.  On exit, the value is compared and if it does not
-+match, then it will panic the kernel.  This is largely a sanity check for bad
-+code generation with gcc.  If gcc for your port sanely updates the frame
-+pointer under different opitmization levels, then ignore this option.
-+
-+However, adding support for it isn't terribly difficult.  In your assembly code
-+that calls prepare_ftrace_return(), pass the frame pointer as the 3rd argument.
-+Then in the C version of that function, do what the x86 port does and pass it
-+along to ftrace_push_return_trace() instead of a stub value of 0.
-+
-+Similarly, when you call ftrace_return_to_handler(), pass it the frame pointer.
-+
-+
- HAVE_FTRACE_NMI_ENTER
- ---------------------
- 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 6c22d8a..60e2ce0 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -27,9 +27,7 @@ config HAVE_FUNCTION_GRAPH_TRACER
- config HAVE_FUNCTION_GRAPH_FP_TEST
- 	bool
- 	help
--	 An arch may pass in a unique value (frame pointer) to both the
--	 entering and exiting of a function. On exit, the value is compared
--	 and if it does not match, then it will panic the kernel.
-+	  See Documentation/trace/ftrace-design.txt
- 
- config HAVE_FUNCTION_TRACE_MCOUNT_TEST
- 	bool
--- 
-1.6.6.1
+[  157.282671] =============================================
+[  157.283400] [ INFO: possible recursive locking detected ]
+[  157.283400] 2.6.33-rc4 #76
+[  157.283400] ---------------------------------------------
+[  157.283400] bash/3686 is trying to acquire lock:
+[  157.283400]  (s_active){++++.+}, at: [<ffffffff811543f8>] sysfs_hash_and_remove+0x53/0x6a
+[  157.283400] 
+[  157.283400] but task is already holding lock:
+[  157.283400]  (s_active){++++.+}, at: [<ffffffff811563fd>] sysfs_get_active_two+0x24/0x4b
+[  157.283400] 
+[  157.283400] other info that might help us debug this:
+[  157.283400] 3 locks held by bash/3686:
+[  157.283400]  #0:  (&buffer->mutex){+.+.+.}, at: [<ffffffff81154d4d>] sysfs_write_file+0x3e/0x12b
+[  157.283400]  #1:  (s_active){++++.+}, at: [<ffffffff811563fd>] sysfs_get_active_two+0x24/0x4b
+[  157.283400]  #2:  (s_active){++++.+}, at: [<ffffffff8115640a>] sysfs_get_active_two+0x31/0x4b
+[  157.283400] 
+[  157.283400] stack backtrace:
+[  157.283400] Pid: 3686, comm: bash Not tainted 2.6.33-rc4 #76
+[  157.283400] Call Trace:
+[  157.283400]  [<ffffffff81071576>] __lock_acquire+0xcf1/0xd86
+[  157.283400]  [<ffffffff8106ff39>] ? debug_check_no_locks_freed+0x120/0x12f
+[  157.283400]  [<ffffffff8106faff>] ? trace_hardirqs_on_caller+0x11f/0x14a
+[  157.283400]  [<ffffffff810716cf>] lock_acquire+0xc4/0xe1
+[  157.283400]  [<ffffffff811543f8>] ? sysfs_hash_and_remove+0x53/0x6a
+[  157.283400]  [<ffffffff8115612a>] sysfs_addrm_finish+0xcd/0x135
+[  157.283400]  [<ffffffff811543f8>] ? sysfs_hash_and_remove+0x53/0x6a
+[  157.283400]  [<ffffffff8165ec51>] ? __mutex_lock_common+0x324/0x335
+[  157.283400]  [<ffffffff8165ed20>] ? mutex_lock_nested+0x3c/0x41
+[  157.283400]  [<ffffffff811543f8>] sysfs_hash_and_remove+0x53/0x6a
+[  157.283400]  [<ffffffff811565eb>] sysfs_remove_link+0x21/0x23
+[  157.283400]  [<ffffffff8135209f>] __device_release_driver+0x2d/0xce
+[  157.283400]  [<ffffffff81352215>] device_release_driver+0x23/0x30
+[  157.283400]  [<ffffffff81351a7e>] driver_unbind+0x5c/0x9e
+[  157.283400]  [<ffffffff81350f36>] drv_attr_store+0x2c/0x2e
+[  157.283400]  [<ffffffff81154e05>] sysfs_write_file+0xf6/0x12b
+[  157.283400]  [<ffffffff810fe635>] vfs_write+0xb0/0x10a
+[  157.283400]  [<ffffffff810fe75d>] sys_write+0x4c/0x75
+[  157.283400]  [<ffffffff81002c1b>] system_call_fastpath+0x16/0x1b
+[  157.506592] e1000e 0000:02:00.0: PCI INT A disabled
+[  157.511796] BUG: unable to handle kernel NULL pointer dereference at 0000000000000024
+[  157.512464] IP: [<ffffffff81212b7c>] do_raw_spin_unlock+0xc/0x8b
+[  157.512464] PGD 835651067 PUD 835a98067 PMD 0 
+[  157.512464] Oops: 0000 [#1] SMP 
+[  157.512464] last sysfs file: /sys/bus/pci/drivers/e1000e/unbind
+[  157.512464] CPU 19 
+[  157.512464] Pid: 3686, comm: bash Not tainted 2.6.33-rc4 #76 Dinar/Dinar
+[  157.512464] RIP: 0010:[<ffffffff81212b7c>]  [<ffffffff81212b7c>] do_raw_spin_unlock+0xc/0x8b
+[  157.512464] RSP: 0018:ffff88043675dcf8  EFLAGS: 00010092
+[  157.512464] RAX: ffff880435116540 RBX: 0000000000000020 RCX: 0000000000000000
+[  157.512464] RDX: ffffffff81023c47 RSI: 0000000000000001 RDI: 0000000000000020
+[  157.512464] RBP: ffff88043675dd08 R08: 0000000000000086 R09: 0000000000000000
+[  157.512464] R10: ffff88043675ddc8 R11: ffff88043675dd08 R12: 0000000000000082
+[  157.512464] R13: 0000000000000082 R14: 0000000000000282 R15: 0000000000000005
+[  157.512464] FS:  00007f5ddd27f6f0(0000) GS:ffff88063f440000(0000) knlGS:0000000000000000
+[  157.512464] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  157.512464] CR2: 0000000000000024 CR3: 0000000835601000 CR4: 00000000000006e0
+[  157.512464] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  157.512464] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[  157.512464] Process bash (pid: 3686, threadinfo ffff88043675c000, task ffff880435116540)
+[  157.512464] Stack:
+[  157.512464]  0000000000000282 0000000000000020 ffff88043675dd28 ffffffff816600ab
+[  157.512464] <0> ffff880c35829600 ffff8808365dd088 ffff88043675dd58 ffffffff81023c47
+[  157.512464] <0> 0000000000000005 ffff8808365dd088 0000000000000200 ffff880c359e75c0
+[  157.512464] Call Trace:
+[  157.512464]  [<ffffffff816600ab>] _raw_spin_unlock_irqrestore+0x2c/0x4c
+[  157.512464]  [<ffffffff81023c47>] detach_device+0x90/0xc7
+[  157.512464]  [<ffffffff81025687>] device_change_notifier+0x8e/0x127
+[  157.512464]  [<ffffffff81662dda>] notifier_call_chain+0x38/0x60
+[  157.512464]  [<ffffffff81063aba>] __blocking_notifier_call_chain+0x52/0x6f
+[  157.512464]  [<ffffffff81063aeb>] blocking_notifier_call_chain+0x14/0x16
+[  157.512464]  [<ffffffff8135213b>] __device_release_driver+0xc9/0xce
+[  157.512464]  [<ffffffff81352215>] device_release_driver+0x23/0x30
+[  157.512464]  [<ffffffff81351a7e>] driver_unbind+0x5c/0x9e
+[  157.512464]  [<ffffffff81350f36>] drv_attr_store+0x2c/0x2e
+[  157.512464]  [<ffffffff81154e05>] sysfs_write_file+0xf6/0x12b
+[  157.512464]  [<ffffffff810fe635>] vfs_write+0xb0/0x10a
+[  157.512464]  [<ffffffff810fe75d>] sys_write+0x4c/0x75
+[  157.512464]  [<ffffffff81002c1b>] system_call_fastpath+0x16/0x1b
+[  157.512464] Code: c0 4c 89 e6 48 c7 c7 9e 2a ac 81 31 c0 e8 c8 a7 44 00 e8 d8 a5 44 00 5f 5b 41 5c 41 5d c9 c3 55 48 89 e5 53 48 89 fb 48 83 ec 08 <81> 7f 04 ad 4e ad de 74 0c 48 c7 c6 4a 2a ac 81 e8 35 ff ff ff 
+[  157.512464] RIP  [<ffffffff81212b7c>] do_raw_spin_unlock+0xc/0x8b
+[  157.512464]  RSP <ffff88043675dcf8>
+[  157.512464] CR2: 0000000000000024
+[  157.512464] ---[ end trace a773b332cbda2d29 ]---
+
+lspci of the affected card looks as follows:
+
+evelt:~# lspci -n -vv -s 02:00.0
+02:00.0 0200: 8086:10d3
+        Subsystem: 8086:a01f
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 64 bytes
+        Interrupt: pin A routed to IRQ 32
+        Region 0: Memory at ce020000 (32-bit, non-prefetchable) [size=128K]
+        Region 1: Memory at ce080000 (32-bit, non-prefetchable) [size=512K]
+        Region 2: I/O ports at 3000 [size=32]
+        Region 3: Memory at ce000000 (32-bit, non-prefetchable) [size=16K]
+        [virtual] Expansion ROM at c8200000 [disabled] [size=256K]
+        Capabilities: [c8] Power Management version 2
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [d0] MSI: Enable- Count=1/1 Maskable- 64bit+
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [e0] Express (v1) Endpoint, MSI 00
+                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
+                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
+                DevCtl: Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+                        MaxPayload 128 bytes, MaxReadReq 512 bytes
+                DevSta: CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+                LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <128ns, L1 <64us
+                        ClockPM- Surprise- LLActRep- BwNot-
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+        Capabilities: [a0] MSI-X: Enable+ Count=5 Masked-
+                Vector table: BAR=3 offset=00000000
+                PBA: BAR=3 offset=00002000
+        Capabilities: [100] Advanced Error Reporting
+                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+                UESvrt: DLP+ SDES- TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
+                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
+                CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
+                AERCap: First Error Pointer: 00, GenCap- CGenEn- ChkCap- ChkEn-
+        Capabilities: [140] Device Serial Number 00-1b-21-ff-ff-46-60-4a
+        Kernel driver in use: e1000e
+
+Please let me know if you need more information.
+
+	Joerg
+
 
