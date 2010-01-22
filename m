@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251Ab0AVSs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271Ab0AVSsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756251Ab0AVSs0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 13:48:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235Ab0AVSsK
+	id S1756271Ab0AVSsj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 13:48:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262Ab0AVSsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 13:48:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42104 "EHLO mx1.redhat.com"
+	Fri, 22 Jan 2010 13:48:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:6690 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756217Ab0AVSsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 13:48:07 -0500
+	id S1756242Ab0AVSsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 13:48:16 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v8 4/9] kprobes: Jump optimization sysctl interface
+Subject: [PATCH -tip v8 5/9] kprobes/x86: Boost probes when reentering
 To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
@@ -26,8 +26,8 @@ Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>
-Date: Fri, 22 Jan 2010 13:55:20 -0500
-Message-ID: <20100122185520.9022.3016.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Fri, 22 Jan 2010 13:55:27 -0500
+Message-ID: <20100122185527.9022.79430.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20100122185450.9022.87506.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20100122185450.9022.87506.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -38,15 +38,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add /proc/sys/debug/kprobes-optimization sysctl which enables and disables
-kprobes jump optimization on the fly for debugging.
-
-Changes in v7:
- - Remove ctl_name = CTL_UNNUMBERED for upstream compatibility.
-
-Changes in v6:
-- Update comments and coding style.
-
+Integrate prepare_singlestep() into setup_singlestep() to boost up reenter
+probes, if possible.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -64,198 +57,104 @@ Cc: Jason Baron <jbaron@redhat.com>
 Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 ---
 
- include/linux/kprobes.h |    8 ++++
- kernel/kprobes.c        |   89 +++++++++++++++++++++++++++++++++++++++++++++--
- kernel/sysctl.c         |   12 ++++++
- 3 files changed, 106 insertions(+), 3 deletions(-)
+ arch/x86/kernel/kprobes.c |   48 ++++++++++++++++++++++++---------------------
+ 1 files changed, 26 insertions(+), 22 deletions(-)
 
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index aed1f95..e7d1b2e 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -283,6 +283,14 @@ extern int arch_within_optimized_kprobe(struct optimized_kprobe *op,
- 					unsigned long addr);
- 
- extern void opt_pre_handler(struct kprobe *p, struct pt_regs *regs);
-+
-+#ifdef CONFIG_SYSCTL
-+extern int sysctl_kprobes_optimization;
-+extern int proc_kprobes_optimization_handler(struct ctl_table *table,
-+					     int write, void __user *buffer,
-+					     size_t *length, loff_t *ppos);
-+#endif
-+
- #endif /* CONFIG_OPTPROBES */
- 
- /* Get the kprobe at this addr (if any) - called with preemption disabled */
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 759bb8e..7f30d2f 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -42,6 +42,7 @@
- #include <linux/freezer.h>
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-+#include <linux/sysctl.h>
- #include <linux/kdebug.h>
- #include <linux/memory.h>
- #include <linux/cpu.h>
-@@ -383,6 +384,9 @@ static inline void copy_kprobe(struct kprobe *old_p, struct kprobe *p)
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index 7039e6e..57de6ca 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -403,18 +403,6 @@ static void __kprobes restore_btf(void)
+ 		update_debugctlmsr(current->thread.debugctlmsr);
  }
  
- #ifdef CONFIG_OPTPROBES
-+/* NOTE: change this value only with kprobe_mutex held */
-+static bool kprobes_allow_optimization;
-+
- /*
-  * Call all pre_handler on the list, but ignores its return value.
-  * This must be called from arch-dep optimized caller.
-@@ -447,7 +451,7 @@ static __kprobes void kprobe_optimizer(struct work_struct *work)
- 	/* Lock modules while optimizing kprobes */
- 	mutex_lock(&module_mutex);
- 	mutex_lock(&kprobe_mutex);
--	if (kprobes_all_disarmed)
-+	if (kprobes_all_disarmed || !kprobes_allow_optimization)
- 		goto end;
+-static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+-{
+-	clear_btf();
+-	regs->flags |= X86_EFLAGS_TF;
+-	regs->flags &= ~X86_EFLAGS_IF;
+-	/* single step inline if the instruction is an int3 */
+-	if (p->opcode == BREAKPOINT_INSTRUCTION)
+-		regs->ip = (unsigned long)p->addr;
+-	else
+-		regs->ip = (unsigned long)p->ainsn.insn;
+-}
+-
+ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+ 				      struct pt_regs *regs)
+ {
+@@ -427,19 +415,38 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+ }
  
- 	/*
-@@ -490,7 +494,7 @@ static __kprobes void optimize_kprobe(struct kprobe *p)
- 	struct optimized_kprobe *op;
- 
- 	/* Check if the kprobe is disabled or not ready for optimization. */
--	if (!kprobe_optready(p) ||
-+	if (!kprobe_optready(p) || !kprobes_allow_optimization ||
- 	    (kprobe_disabled(p) || kprobes_all_disarmed))
+ static void __kprobes setup_singlestep(struct kprobe *p, struct pt_regs *regs,
+-				       struct kprobe_ctlblk *kcb)
++				       struct kprobe_ctlblk *kcb, int reenter)
+ {
+ #if !defined(CONFIG_PREEMPT) || defined(CONFIG_FREEZER)
+ 	if (p->ainsn.boostable == 1 && !p->post_handler) {
+ 		/* Boost up -- we can execute copied instructions directly */
+-		reset_current_kprobe();
++		if (!reenter)
++			reset_current_kprobe();
++		/*
++		 * Reentering boosted probe doesn't reset current_kprobe,
++		 * nor set current_kprobe, because it doesn't use single
++		 * stepping.
++		 */
+ 		regs->ip = (unsigned long)p->ainsn.insn;
+ 		preempt_enable_no_resched();
  		return;
- 
-@@ -606,6 +610,81 @@ static __kprobes void try_to_optimize_kprobe(struct kprobe *p)
- 	init_aggr_kprobe(ap, p);
- 	optimize_kprobe(ap);
- }
-+
-+#ifdef CONFIG_SYSCTL
-+static void __kprobes optimize_all_kprobes(void)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe *p;
-+	unsigned int i;
-+
-+	/* If optimization is already allowed, just return */
-+	if (kprobes_allow_optimization)
-+		return;
-+
-+	kprobes_allow_optimization = true;
-+	mutex_lock(&text_mutex);
-+	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
-+		head = &kprobe_table[i];
-+		hlist_for_each_entry_rcu(p, node, head, hlist)
-+			if (!kprobe_disabled(p))
-+				optimize_kprobe(p);
-+	}
-+	mutex_unlock(&text_mutex);
-+	printk(KERN_INFO "Kprobes globally optimized\n");
-+}
-+
-+static void __kprobes unoptimize_all_kprobes(void)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe *p;
-+	unsigned int i;
-+
-+	/* If optimization is already prohibited, just return */
-+	if (!kprobes_allow_optimization)
-+		return;
-+
-+	kprobes_allow_optimization = false;
-+	printk(KERN_INFO "Kprobes globally unoptimized\n");
-+	get_online_cpus();	/* For avoiding text_mutex deadlock */
-+	mutex_lock(&text_mutex);
-+	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
-+		head = &kprobe_table[i];
-+		hlist_for_each_entry_rcu(p, node, head, hlist) {
-+			if (!kprobe_disabled(p))
-+				unoptimize_kprobe(p);
-+		}
-+	}
-+
-+	mutex_unlock(&text_mutex);
-+	put_online_cpus();
-+	/* Allow all currently running kprobes to complete */
-+	synchronize_sched();
-+}
-+
-+int sysctl_kprobes_optimization;
-+int proc_kprobes_optimization_handler(struct ctl_table *table, int write,
-+				      void __user *buffer, size_t *length,
-+				      loff_t *ppos)
-+{
-+	int ret;
-+
-+	mutex_lock(&kprobe_mutex);
-+	sysctl_kprobes_optimization = kprobes_allow_optimization ? 1 : 0;
-+	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
-+
-+	if (sysctl_kprobes_optimization)
-+		optimize_all_kprobes();
-+	else
-+		unoptimize_all_kprobes();
-+	mutex_unlock(&kprobe_mutex);
-+
-+	return ret;
-+}
-+#endif /* CONFIG_SYSCTL */
-+
- #else /* !CONFIG_OPTPROBES */
- #define get_optimized_kprobe(addr)		(NULL)
- #define optimize_kprobe(p)			do {} while (0)
-@@ -1621,10 +1700,14 @@ static int __init init_kprobes(void)
- 		}
  	}
- 
--#if defined(CONFIG_OPTPROBES) && defined(__ARCH_WANT_KPROBES_INSN_SLOT)
-+#if defined(CONFIG_OPTPROBES)
-+#if defined(__ARCH_WANT_KPROBES_INSN_SLOT)
- 	/* Init kprobe_optinsn_slots */
- 	kprobe_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
  #endif
-+	/* By default, kprobes can be optimized */
-+	kprobes_allow_optimization = true;
-+#endif
+-	prepare_singlestep(p, regs);
+-	kcb->kprobe_status = KPROBE_HIT_SS;
++	if (reenter) {
++		save_previous_kprobe(kcb);
++		set_current_kprobe(p, regs, kcb);
++		kcb->kprobe_status = KPROBE_REENTER;
++	} else
++		kcb->kprobe_status = KPROBE_HIT_SS;
++	/* Prepare real single stepping */
++	clear_btf();
++	regs->flags |= X86_EFLAGS_TF;
++	regs->flags &= ~X86_EFLAGS_IF;
++	/* single step inline if the instruction is an int3 */
++	if (p->opcode == BREAKPOINT_INSTRUCTION)
++		regs->ip = (unsigned long)p->addr;
++	else
++		regs->ip = (unsigned long)p->ainsn.insn;
+ }
  
- 	/* By default, kprobes are armed */
- 	kprobes_all_disarmed = false;
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 9b459f0..7480e80 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -50,6 +50,7 @@
- #include <linux/ftrace.h>
- #include <linux/slow-work.h>
- #include <linux/perf_event.h>
-+#include <linux/kprobes.h>
- 
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-@@ -1459,6 +1460,17 @@ static struct ctl_table debug_table[] = {
- 		.proc_handler	= proc_dointvec
- 	},
- #endif
-+#if defined(CONFIG_OPTPROBES)
-+	{
-+		.procname	= "kprobes-optimization",
-+		.data		= &sysctl_kprobes_optimization,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_kprobes_optimization_handler,
-+		.extra1		= &zero,
-+		.extra2		= &one,
-+	},
-+#endif
- 	{ }
- };
- 
+ /*
+@@ -453,11 +460,8 @@ static int __kprobes reenter_kprobe(struct kprobe *p, struct pt_regs *regs,
+ 	switch (kcb->kprobe_status) {
+ 	case KPROBE_HIT_SSDONE:
+ 	case KPROBE_HIT_ACTIVE:
+-		save_previous_kprobe(kcb);
+-		set_current_kprobe(p, regs, kcb);
+ 		kprobes_inc_nmissed_count(p);
+-		prepare_singlestep(p, regs);
+-		kcb->kprobe_status = KPROBE_REENTER;
++		setup_singlestep(p, regs, kcb, 1);
+ 		break;
+ 	case KPROBE_HIT_SS:
+ 		/* A probe has been hit in the codepath leading up to, or just
+@@ -532,13 +536,13 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
+ 			 * more here.
+ 			 */
+ 			if (!p->pre_handler || !p->pre_handler(p, regs))
+-				setup_singlestep(p, regs, kcb);
++				setup_singlestep(p, regs, kcb, 0);
+ 			return 1;
+ 		}
+ 	} else if (kprobe_running()) {
+ 		p = __get_cpu_var(current_kprobe);
+ 		if (p->break_handler && p->break_handler(p, regs)) {
+-			setup_singlestep(p, regs, kcb);
++			setup_singlestep(p, regs, kcb, 0);
+ 			return 1;
+ 		}
+ 	} /* else: not a kprobe fault; let the kernel handle it */
 
 
 -- 
