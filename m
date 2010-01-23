@@ -1,131 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044Ab0AWAVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069Ab0AWAVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044Ab0AWAVm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279Ab0AWATB
+	id S1756069Ab0AWAVy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:21:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832Ab0AWAVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:19:01 -0500
-Received: from kroah.org ([198.145.64.141]:35082 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754724Ab0AWAS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:18:57 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:12 2010
-Message-Id: <20100123001112.769683534@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Fri, 22 Jan 2010 16:10:04 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zhao Yakui <yakui.zhao@intel.com>, Eric Anholt <eric@anholt.net>
-Subject: [20/29] drm/i915: Read the response after issuing DDC bus switch command
-In-Reply-To: <20100123001145.GA7391@kroah.com>
+	Fri, 22 Jan 2010 19:21:40 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:45172 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753388Ab0AWAVh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:21:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=IuTDvFLJ6dYacS/Lyz81ljN8tXMh1lZWMxdUVn1SNDPhp6Yuj948dQ0xVuW5V63p6i
+         QPLDdOPxr+sM3imm47bLcb3LW5iQm5C5p1m9ndWcwg5iIS/roP3x185/XyggWF2fndpe
+         X9o2QcsiBlBj/gDL5cUYJ+MYtfbo6f8n6ceyI=
+Subject: [PATCH 2/8] blktrans: track open and close calls.
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1264205925.31827.3.camel@maxim-laptop>
+References: <1264205925.31827.3.camel@maxim-laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 23 Jan 2010 02:21:32 +0200
+Message-ID: <1264206092.31827.6.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+>From 1ed89e9f7355284eaebbacb1d083e3bbd54aa3bc Mon Sep 17 00:00:00 2001
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Date: Sat, 23 Jan 2010 02:03:13 +0200
+Subject: [PATCH 2/8] blktrans: track open and close calls.
 
-------------------
+This patch adds tracking for open and close calls.
+Now trans ->open and ->release are never called twise in a row
+->release is also called once before mtd device disappers
 
-From: Zhao Yakui <yakui.zhao@intel.com>
+Proper locking will be added in follow up patch
 
-commit 6a304caf0bf9c429fc261f260b86cabf5bde2cbb upstream.
-
-For some SDVO cards based on conexant chip, we can't read the EDID if
-we don't read the response after issuing SDVO DDC bus switch
-command.
-
->From the SDVO spec once when another I2C transaction is finished after
-completing the I2C transaction of issuing the bus switch command, it
-will be switched back to the SDVO internal state again. So we can't
-initiate a new I2C transaction to read the response after issuing the
-DDC bus switch command. Instead we should issue DDC bus switch command
-and read the response in the same I2C transaction.
-
-https://bugs.freedesktop.org/show_bug.cgi?id=23842
-https://bugs.freedesktop.org/show_bug.cgi?id=24458
-https://bugs.freedesktop.org/show_bug.cgi?id=24522
-https://bugs.freedesktop.org/show_bug.cgi?id=24282
-
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Tested-by: Sebastien Caty <sebastien.caty@mrnf.gouv.qc.ca>
-Signed-off-by: Eric Anholt <eric@anholt.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/gpu/drm/i915/intel_sdvo.c |   57 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 53 insertions(+), 4 deletions(-)
+ drivers/mtd/mtd_blkdevs.c    |   19 +++++++++++++++++++
+ include/linux/mtd/blktrans.h |    1 +
+ 2 files changed, 20 insertions(+), 0 deletions(-)
 
---- a/drivers/gpu/drm/i915/intel_sdvo.c
-+++ b/drivers/gpu/drm/i915/intel_sdvo.c
-@@ -472,14 +472,63 @@ static int intel_sdvo_get_pixel_multipli
- }
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index 3d9802e..c2d97a0 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -128,6 +128,9 @@ static int blktrans_open(struct block_device *bdev, fmode_t mode)
+ 	if (!get_mtd_device(NULL, dev->mtd->index))
+ 		goto out;
  
- /**
-- * Don't check status code from this as it switches the bus back to the
-- * SDVO chips which defeats the purpose of doing a bus switch in the first
-- * place.
-+ * Try to read the response after issuie the DDC switch command. But it
-+ * is noted that we must do the action of reading response and issuing DDC
-+ * switch command in one I2C transaction. Otherwise when we try to start
-+ * another I2C transaction after issuing the DDC bus switch, it will be
-+ * switched to the internal SDVO register.
-  */
- static void intel_sdvo_set_control_bus_switch(struct intel_output *intel_output,
- 					      u8 target)
- {
--	intel_sdvo_write_cmd(intel_output, SDVO_CMD_SET_CONTROL_BUS_SWITCH, &target, 1);
-+	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
-+	u8 out_buf[2], cmd_buf[2], ret_value[2], ret;
-+	struct i2c_msg msgs[] = {
-+		{
-+			.addr = sdvo_priv->slave_addr >> 1,
-+			.flags = 0,
-+			.len = 2,
-+			.buf = out_buf,
-+		},
-+		/* the following two are to read the response */
-+		{
-+			.addr = sdvo_priv->slave_addr >> 1,
-+			.flags = 0,
-+			.len = 1,
-+			.buf = cmd_buf,
-+		},
-+		{
-+			.addr = sdvo_priv->slave_addr >> 1,
-+			.flags = I2C_M_RD,
-+			.len = 1,
-+			.buf = ret_value,
-+		},
-+	};
++	if (dev->open++)
++ 		goto out;
 +
-+	intel_sdvo_debug_write(intel_output, SDVO_CMD_SET_CONTROL_BUS_SWITCH,
-+					&target, 1);
-+	/* write the DDC switch command argument */
-+	intel_sdvo_write_byte(intel_output, SDVO_I2C_ARG_0, target);
-+
-+	out_buf[0] = SDVO_I2C_OPCODE;
-+	out_buf[1] = SDVO_CMD_SET_CONTROL_BUS_SWITCH;
-+	cmd_buf[0] = SDVO_I2C_CMD_STATUS;
-+	cmd_buf[1] = 0;
-+	ret_value[0] = 0;
-+	ret_value[1] = 0;
-+
-+	ret = i2c_transfer(intel_output->i2c_bus, msgs, 3);
-+	if (ret != 3) {
-+		/* failure in I2C transfer */
-+		DRM_DEBUG_KMS("I2c transfer returned %d\n", ret);
-+		return;
-+	}
-+	if (ret_value[0] != SDVO_CMD_STATUS_SUCCESS) {
-+		DRM_DEBUG_KMS("DDC switch command returns response %d\n",
-+					ret_value[0]);
-+		return;
-+	}
-+	return;
- }
+ 	if (!try_module_get(tr->owner))
+ 		goto out_tr;
  
- static bool intel_sdvo_set_target_input(struct intel_output *intel_output, bool target_0, bool target_1)
+@@ -153,6 +156,10 @@ static int blktrans_release(struct gendisk *disk, fmode_t mode)
+ 	struct mtd_blktrans_ops *tr = dev->tr;
+ 	int ret = 0;
+ 
++	dev->open--;
++	if (dev->open)
++		return 0;
++
+ 	if (tr->release)
+ 		ret = tr->release(dev);
+ 
+@@ -304,6 +311,7 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
+ 	if (new->readonly)
+ 		set_disk_ro(gd, 1);
+ 
++	new->open = 0;
+ 	add_disk(gd);
+ 
+ 	return 0;
+@@ -332,6 +340,17 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
+ 
+ 	/* Stop the thread */
+ 	kthread_stop(old->thread);
++
++	if (old->open) {
++		if (old->tr->release)
++			old->tr->release(old);
++		put_mtd_device(old->mtd);
++	}
++
++	/* From now on, no calls into trans can be made */
++	/* Mtd device will be gone real soon now */
++	old->mtd = NULL;
++
+  
+ 	blk_cleanup_queue(old->rq);
+ 	return 0;
+diff --git a/include/linux/mtd/blktrans.h b/include/linux/mtd/blktrans.h
+index a4b3928..507f7b2 100644
+--- a/include/linux/mtd/blktrans.h
++++ b/include/linux/mtd/blktrans.h
+@@ -24,6 +24,7 @@ struct mtd_blktrans_dev {
+ 	int devnum;
+ 	unsigned long size;
+ 	int readonly;
++	int open;
+ 	struct gendisk *disk;
+ 	struct task_struct *thread;
+ 	struct request_queue *rq;
+-- 
+1.6.3.3
+
 
 
