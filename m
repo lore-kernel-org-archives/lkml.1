@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906Ab0AWCpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638Ab0AWDWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906Ab0AWCpU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 21:45:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885Ab0AWCpT
+	id S1753638Ab0AWDWN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 22:22:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403Ab0AWDWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 21:45:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57171
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751976Ab0AWCpR (ORCPT
+	Fri, 22 Jan 2010 22:22:13 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:40020 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752230Ab0AWDWM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 21:45:17 -0500
-Date: Fri, 22 Jan 2010 18:45:28 -0800 (PST)
-Message-Id: <20100122.184528.55590107.davem@davemloft.net>
-To: jesse.brandeburg@intel.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] net: NETDEV WATCHDOG should print something every
- time
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100122214333.14389.86017.stgit@jbrandeb-ich9b.jf.intel.com>
-References: <20100122214333.14389.86017.stgit@jbrandeb-ich9b.jf.intel.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jan 2010 22:22:12 -0500
+Date: Fri, 22 Jan 2010 22:22:11 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 1/2] PM / Runtime: Add sysfs switch for disabling device
+ run-time PM (rev. 2)
+In-Reply-To: <201001222156.25529.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.1001222202400.23929-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 22 Jan 2010 13:43:33 -0800
+On Fri, 22 Jan 2010, Rafael J. Wysocki wrote:
 
-> commit 5337407c changed NETDEV WATCHDOG messages into a message
-> that will only print once per driver load.  This removed a significant amount
-> of information from an admin who might be missing that his system was having
-> NETDEV WATCHDOGs, esp since there is no other global counter available to
-> count these events.
+> > For example, we disable runtime PM for most USB devices by default.  
+> > But a few drivers may know that their devices are able to handle it, so 
+> > they want to change the default setting when they are bound.
+> 
+> Runtime PM is disabled for all devices by default unless the driver enables
+> it.  The setting in power/control is to override the driver's choice, so that
+> it can be disabled even if the driver tries to enable it.
+> 
+> IOW, the user space is the owner of the power.runtime_auto flag and I don't
+> think we should allow drivers to modify it.
 
-It's not once per driver load, it's once globally.
+After more thought, I changed my mind about this.  The ability to 
+override the driver's choice means that the user should be able to 
+enable runtime PM even if the driver tries to disable it, as well as 
+the other way 'round.
 
-Once per driver load would be in fact what I would actually
-consider more reasonable, so put the boolean state into
-struct netdev, and test it to decide whether to do the
-WARN_ON() print.
+In other words, it's not productive to say the user is the owner of the
+runtime_auto flag.  What we _really_ want is to put the user in charge
+of whether or not a device is subject to runtime PM.
 
-Doing a message every time is way overboard and is going to
-spam some people's systems to the point where they can't
-even diagnose the problem, so I'm not accepting a patch
-which does that.
+First of all, note that if the driver doesn't support runtime PM then
+it makes no difference what value runtime_auto has.  The issue is moot.
+
+So suppose the driver does support runtime PM.  In this case, it's
+irrelevant that runtime PM starts out disabled by default when the
+device structure is initialized.  The bus subsystem and driver will
+reinitialize the settings in the way they think best.
+
+But if the driver decides to disable runtime PM and pm_runtime_forbid()
+isn't EXPORTed, then the driver will be forced to implement its
+decision by leaving disable_depth > 0 -- which means there's nothing
+the user can do.  The power/control attribute won't help.  On the other
+hand, if the driver decides to disable runtime PM and it can do so by
+calling pm_runtime_forbid(), then the user can override the decision.
+
+Alan Stern
+
