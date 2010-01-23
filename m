@@ -1,131 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832Ab0AWAk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401Ab0AWAnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755832Ab0AWAk1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369Ab0AWAk0
+	id S1756401Ab0AWAnK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:43:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100Ab0AWAnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:40:26 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:17004 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754337Ab0AWAkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:40:25 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=aRJoCdRURnkItRCr6Ks6T15wl/nJijUgmffgxPGOGPEjuVM8ssiu3hSUkDDV0YAPx
-	ZEHj/lZdxLTugR3f0AKAA==
-Date: Fri, 22 Jan 2010 16:40:17 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Roman Jarosz <kedgedev@gmail.com>
-cc: linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: OOM-Killer kills too much with 2.6.32.2
-In-Reply-To: <op.u6ixswy6asvm2a@kedge>
-Message-ID: <alpine.DEB.2.00.1001221623480.12712@chino.kir.corp.google.com>
-References: <op.u6ixswy6asvm2a@kedge>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 22 Jan 2010 19:43:01 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52381 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753104Ab0AWAnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:43:01 -0500
+Date: Sat, 23 Jan 2010 00:42:35 GMT
+From: tip-bot for Borislav Petkov <borislav.petkov@amd.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, borislav.petkov@amd.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, borislav.petkov@amd.com
+In-Reply-To: <1264172467-25155-2-git-send-email-bp@amd64.org>
+References: <1264172467-25155-2-git-send-email-bp@amd64.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/cpu] x86, lib: Add wbinvd smp helpers
+Message-ID: <tip-a7b480e7f30b3813353ec009f10f2ac7a6669f3b@git.kernel.org>
+Git-Commit-ID: a7b480e7f30b3813353ec009f10f2ac7a6669f3b
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 23 Jan 2010 00:42:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jan 2010, Roman Jarosz wrote:
+Commit-ID:  a7b480e7f30b3813353ec009f10f2ac7a6669f3b
+Gitweb:     http://git.kernel.org/tip/a7b480e7f30b3813353ec009f10f2ac7a6669f3b
+Author:     Borislav Petkov <borislav.petkov@amd.com>
+AuthorDate: Fri, 22 Jan 2010 16:01:03 +0100
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Fri, 22 Jan 2010 16:05:42 -0800
 
-> Hi,
-> 
-> since kernel 2.6.32.2 (also tried 2.6.32.3) I get a lot of oom-killer kills
-> when I do hard disk intensive tasks (mainly in VirtualBox which is running
-> Windows XP) and IMHO it kills processes even if I have a lot of free memory.
-> 
-> Is this a known bug? I have self compiled kernel so I can try patches.
-> 
-> Regards
-> Roman Jarosz
-> 
-> PS. Please CC me.
-> 
-> Jan  7 12:39:27 kedge kernel: X invoked oom-killer: gfp_mask=0x0, order=0,
-> oom_adj=0
+x86, lib: Add wbinvd smp helpers
 
-The gfp_mask of 0x0 and order of 0 indicate these are triggered by 
-pagefaults that end up returning VM_FAULT_OOM.  Prior to 2.6.29, the 
-current task (X in all cases from your log) would have been SIGKILLed; we 
-now call the oom killer instead of kill a memory hogging task so that the 
-fault is retried with more success.  If you've upgraded from a 2.6.29 or 
-later kernel and are only now experiencing these errors, it may indicate a 
-regression in VM that we need to investigate (and, if so, you may want to 
-try merging f50de2d38 from 2.6.33 to see if it helps keep more ZONE_NORMAL 
-memory available so that such drastic measures aren't necessary).
+Add wbinvd_on_cpu and wbinvd_on_all_cpus stubs for executing wbinvd on a
+particular CPU.
 
-> Jan  7 12:39:27 kedge kernel: Pid: 1954, comm: X Not tainted 2.6.32.2 #1
-> Jan  7 12:39:27 kedge kernel: Call Trace:
-> Jan  7 12:39:27 kedge kernel: [<ffffffff8107b17d>] ? 0xffffffff8107b17d
-> Jan  7 12:39:27 kedge kernel: [<ffffffff8107b463>] ? 0xffffffff8107b463
-> Jan  7 12:39:27 kedge kernel: [<ffffffff8107b5d7>] ? 0xffffffff8107b5d7
-> Jan  7 12:39:27 kedge kernel: [<ffffffff815581df>] ? 0xffffffff815581df
+[ hpa: renamed lib/smp.c to lib/cache-smp.c ]
+[ hpa: wbinvd_on_all_cpus() returns int, but wbinvd() returns
+  void.  Thus, the former cannot be a macro for the latter,
+  replace with an inline function. ]
 
-Can you find out what these symbols are?
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+LKML-Reference: <1264172467-25155-2-git-send-email-bp@amd64.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/include/asm/smp.h |    9 +++++++++
+ arch/x86/lib/Makefile      |    2 +-
+ arch/x86/lib/cache-smp.c   |   19 +++++++++++++++++++
+ 3 files changed, 29 insertions(+), 1 deletions(-)
 
-> Jan  7 12:39:27 kedge kernel: Mem-Info:
-> Jan  7 12:39:27 kedge kernel: DMA per-cpu:
-> Jan  7 12:39:27 kedge kernel: CPU    0: hi:    0, btch:   1 usd:   0
-> Jan  7 12:39:27 kedge kernel: CPU    1: hi:    0, btch:   1 usd:   0
-> Jan  7 12:39:27 kedge kernel: DMA32 per-cpu:
-> Jan  7 12:39:27 kedge kernel: CPU    0: hi:  186, btch:  31 usd: 158
-> Jan  7 12:39:27 kedge kernel: CPU    1: hi:  186, btch:  31 usd: 134
-> Jan  7 12:39:27 kedge kernel: Normal per-cpu:
-> Jan  7 12:39:27 kedge kernel: CPU    0: hi:  186, btch:  31 usd: 200
-> Jan  7 12:39:27 kedge kernel: CPU    1: hi:  186, btch:  31 usd:  67
-> Jan  7 12:39:27 kedge kernel: active_anon:420176 inactive_anon:150891
-> isolated_anon:0
-> Jan  7 12:39:27 kedge kernel: active_file:163989 inactive_file:204935
-> isolated_file:32
-> Jan  7 12:39:27 kedge kernel: unevictable:0 dirty:74867 writeback:5410
-> unstable:0
-> Jan  7 12:39:27 kedge kernel: free:6848 slab_reclaimable:12678
-> slab_unreclaimable:12867
-> Jan  7 12:39:27 kedge kernel: mapped:72453 shmem:82598 pagetables:7517
-> bounce:0
-> Jan  7 12:39:27 kedge kernel: DMA free:15776kB min:28kB low:32kB high:40kB
-> active_anon:12kB inactive_anon:52kB active_file:4kB inactive_file:80kB
-> unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15344kB
-> mlocked:0kB dirty:0kB writeback:0kB mapped:4kB shmem:4kB slab_reclaimable:0kB
-> slab_unreclaimable:20kB kernel_stack:0kB pagetables:0kB unstable:0kB
-> bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> Jan  7 12:39:27 kedge kernel: lowmem_reserve[]: 0 2990 3937 3937
-
-Although this appears that there is an abundance of memory available, its 
-inaccessible because of the lowmem_reserve: 3937 pages are reserved for 
-these types of allocations in ZONE_DMA, so assuming 4K page sizes:
-
-	15776kB (free) - (4kB * 3937 lowmem_reserve) <= 28kB (min).
-
-> Jan  7 12:39:27 kedge kernel: DMA32 free:9712kB min:6084kB low:7604kB
-> high:9124kB active_anon:1469976kB inactive_anon:370840kB active_file:445776kB
-> inactive_file:565080kB unevictable:0kB isolated(anon):0kB isolated(file):128kB
-> present:3062688kB mlocked:0kB dirty:212584kB writeback:14288kB mapped:165804kB
-> shmem:190264kB slab_reclaimable:30104kB slab_unreclaimable:34300kB
-> kernel_stack:840kB pagetables:14756kB unstable:0kB bounce:0kB
-> writeback_tmp:0kB pages_scanned:32 all_unreclaimable? no
-> Jan  7 12:39:27 kedge kernel: lowmem_reserve[]: 0 0 946 946
-
-Same:
-
-	9712kB - (4kB * 946) <= 6084kB.
-
-> Jan  7 12:39:27 kedge kernel: Normal free:1904kB min:1924kB low:2404kB
-> high:2884kB active_anon:210716kB inactive_anon:232672kB active_file:210176kB
-> inactive_file:254580kB unevictable:0kB isolated(anon):0kB isolated(file):0kB
-> present:969600kB mlocked:0kB dirty:86784kB writeback:7452kB mapped:124004kB
-> shmem:140124kB slab_reclaimable:20608kB slab_unreclaimable:17148kB
-> kernel_stack:1792kB pagetables:15312kB unstable:0kB bounce:0kB
-> writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-
-This shows ZONE_NORMAL is depleted, but we'll need to know where the 
-regression started since 2.6.29 to find out why indirect reclaim isn't 
-keeping a sufficient amount free anymore for your I/O bound task.
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index 1e79678..4cfc908 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -135,6 +135,8 @@ int native_cpu_disable(void);
+ void native_cpu_die(unsigned int cpu);
+ void native_play_dead(void);
+ void play_dead_common(void);
++void wbinvd_on_cpu(int cpu);
++int wbinvd_on_all_cpus(void);
+ 
+ void native_send_call_func_ipi(const struct cpumask *mask);
+ void native_send_call_func_single_ipi(int cpu);
+@@ -147,6 +149,13 @@ static inline int num_booting_cpus(void)
+ {
+ 	return cpumask_weight(cpu_callout_mask);
+ }
++#else /* !CONFIG_SMP */
++#define wbinvd_on_cpu(cpu)     wbinvd()
++static inline int wbinvd_on_all_cpus(void)
++{
++	wbinvd();
++	return 0;
++}
+ #endif /* CONFIG_SMP */
+ 
+ extern unsigned disabled_cpus __cpuinitdata;
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index cffd754..d85e0e4 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -14,7 +14,7 @@ $(obj)/inat.o: $(obj)/inat-tables.c
+ 
+ clean-files := inat-tables.c
+ 
+-obj-$(CONFIG_SMP) += msr-smp.o
++obj-$(CONFIG_SMP) += msr-smp.o cache-smp.o
+ 
+ lib-y := delay.o
+ lib-y += thunk_$(BITS).o
+diff --git a/arch/x86/lib/cache-smp.c b/arch/x86/lib/cache-smp.c
+new file mode 100644
+index 0000000..a3c6688
+--- /dev/null
++++ b/arch/x86/lib/cache-smp.c
+@@ -0,0 +1,19 @@
++#include <linux/smp.h>
++#include <linux/module.h>
++
++static void __wbinvd(void *dummy)
++{
++	wbinvd();
++}
++
++void wbinvd_on_cpu(int cpu)
++{
++	smp_call_function_single(cpu, __wbinvd, NULL, 1);
++}
++EXPORT_SYMBOL(wbinvd_on_cpu);
++
++int wbinvd_on_all_cpus(void)
++{
++	return on_each_cpu(__wbinvd, NULL, 1);
++}
++EXPORT_SYMBOL(wbinvd_on_all_cpus);
