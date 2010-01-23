@@ -1,408 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776Ab0AWGCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084Ab0AWGE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753776Ab0AWGCO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 01:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617Ab0AWGCN
+	id S1754084Ab0AWGE4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 01:04:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068Ab0AWGEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 01:02:13 -0500
-Received: from mail-iw0-f197.google.com ([209.85.223.197]:34538 "EHLO
-	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750789Ab0AWGCM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 01:02:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=tYXPZAO19oxfLrF7dvmQrZLQUpKVY/k/rdxu7PNiZ0PmWhuhnFWnsas3lAYC/ZnmD7
-         bN9LKN2Uc8apiqNrhaNPMz33IGT4f/6pYhQXCp0O7VZxsg+bGmB8opL3SiYXPgERNYFE
-         CgZWcHvzhz1kHsIbhne5aTybsIWH4dL+/0VZU=
-Message-ID: <4B5A90DE.5030708@gmail.com>
-Date: Sat, 23 Jan 2010 01:02:06 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Sat, 23 Jan 2010 01:04:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46556 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932068Ab0AWGEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jan 2010 01:04:50 -0500
+Date: Sat, 23 Jan 2010 07:04:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       systemtap@sources.redhat.com, dle-develop@lists.sourceforge.net
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100123060401.GB19399@elte.hu>
+References: <20100121013822.28781960.sfr@canb.auug.org.au>
+ <20100122111747.3c224dfd.sfr@canb.auug.org.au>
+ <20100121163004.8779bd69.akpm@linux-foundation.org>
+ <20100121163145.7e958c3f.akpm@linux-foundation.org>
+ <20100122005147.GD22003@redhat.com>
+ <20100121170541.7425ff10.akpm@linux-foundation.org>
+ <20100122012516.GE22003@redhat.com>
+ <alpine.LFD.2.00.1001211729080.13231@localhost.localdomain>
+ <20100122022255.GF22003@redhat.com>
+ <alpine.LFD.2.00.1001211826060.13231@localhost.localdomain>
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH v4 4/7] tcp: input header length, prediction, and timestamp
- bugs
-References: <4B5A88C4.7050205@gmail.com>
-In-Reply-To: <4B5A88C4.7050205@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------080302080607070006070604"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1001211826060.13231@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080302080607070006070604
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Fix incorrect header prediction flags documentation.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Relieve register pressure in (the i386) fast path by accessing skb->len
-directly, instead of carrying a rarely used len parameter.
+> On Thu, 21 Jan 2010, Frank Ch. Eigler wrote:
+> 
+> > Less passionate analysis would identify a long history of contribution by 
+> > the the greater affiliated team, including via merged code and by and 
+> > passing on requirements and experiences.
+> 
+> The reason I'm so passionate is that I dislike the turn the discussion was 
+> taking, as if "utrace" was somehow _good_ because it allowed various other 
+> interfaces to hide behind it. And I'm not at all convinced that is true.
+> 
+> And I really didn't want to single out system tap, I very much feel the same 
+> way abotu some seccomp-replacement "security model that the kernel doesn't 
+> even need to know about" thing.
+> 
+> So don't take the systemtap part to be the important part, it's the bigger 
+> issue of "I'd much rather have explicit interfaces than have generic hooks 
+> that people can then use in any random way".
+> 
+> I realize that my argument is very anti-thetical to the normal CS teaching 
+> of "general-purpose is good". I often feel that very specific code with very 
+> clearly defined (and limited) applicability is a good thing - I'd rather 
+> have just a very specific ptrace layer that does nothing but ptrace, than a 
+> "generic plugin layer that can be layered under ptrace and other things".
 
-Eliminate unused len parameters in two other functions.
+( I think to a certain degree it mirrors the STEAMS hooks situation from a 
+  decade ago - and while there were big flamewars back then we never regretted 
+  not taking the STREAMS opaque hooks upstream. )
 
-Don't use output calculated tp->tcp_header_len for input decisions.
-While the output header is usually the same as the input (same options
-in both directions), that's a poor assumption. In particular, Sack will
-be different. Newer options are not guaranteed.
+> In one case, you know exactly what the users are, and what the semantics are 
+> going to be. In the other, you don't.
+> 
+> So I really want to see a very big and immediate upside from utrace. Because 
+> to me, the "it's a generic layer with any application you want to throw at 
+> it" is a _downside_.
 
-Moreover, in the fast path, that only saved a shift or two. The other
-efficiencies in this patch more than make up the difference.
+One component of the whole utrace/systemtap codebase that i think would make 
+sense upstreaming in the near term is the concept of user-space probes. We are 
+actively looking into it from a 'perf probe' angle, and PeterZ suggested a few 
+ideas already. Allowing apps to transparently improve the standard set of 
+events is a plus. (From a pure Linux point of view it's probably more 
+important than any kernel-only instrumentation.)
 
-Instead, use tp->rx_opt.tstamp_ok to accurately predict header length.
+Also, if any systemtap person is interested in helping us create a more 
+generic filter engine out of the current ftrace filter engine (which is really 
+a precursor of a safe, sandboxed in-kernel script engine), that would be 
+excellent as well. Right now we support simple C-syntax expressions like:
 
-Likewise, use tp->rx_opt.tstamp_ok for received MSS calculations.
+   perf record -R -f -e irq:irq_handler_entry --filter 'irq==18 || irq==19'
 
-Don't use "sizeof(struct tcphdr) + TCPOLEN_TSTAMP_ALIGNED" to guess that
-the timestamp is present. This may have been OK in the days with fewer
-possible options, but various combinations of newer options may yield
-the same header length. (This bug is in 3 places.)
+More could be done - a simple C-like set of function perhaps - some minimal 
+per probe local variable state, etc. (perhaps even looping as well, with a 
+limit on number of predicament executions per filter invocation.)
 
-Instead, use tp->rx_opt.saw_tstamp to determine a timestamp is present.
+( _Such_ a facility, could then perhaps be used to allow applications access 
+  to safe syscall sandboxing techniques: i.e. a programmable seccomp concept 
+  in essence, controlled via ASCII space filter expressions [broken down into
+  predicaments for fast execution], syscall driven and inherited by child 
+  tasks so that security restrictions percolate down automatically.
 
-There's no need to test buffer length against header length, already
-checked by tcp_v[4,6]_rcv(). Straighten code for minor efficiency gain.
+  IMHO that would be a superior concept for security modules too: there's no 
+  reason why all the current somewhat opaque security hooks couldnt be 
+  expressed in terms of more generic filter expressions, via a facility that
+  can be used both for security and for instrumentation. That's all what 
+  SELinux boils down to in the end: user-space injected policy rules. )
 
-Stand-alone patch, originally developed for TCPCT.
+The opaque hookery all around the core kernel just to push everything outside 
+of mainline is one of the biggest downsides of utrace/systemtap - and neither 
+uprobes nor the concept of user-defined scripting around existing events is 
+affected much by that.
 
-Requires:
-   net: tcp_header_len_th and tcp_option_len_th
-   tcp: harmonize tcp_vx_rcv header length assumptions
+So lots of work is left and all that work is going to be rather utilitarian 
+with little downside: specific functionality with an immediately visible 
+upside, with no need for opaque hooks.
 
-Signed-off-by: William.Allen.Simpson@gmail.com
-CC: Andi Kleen <andi@firstfloor.org>
----
-  include/linux/tcp.h      |    6 ++-
-  include/net/tcp.h        |   15 +++++--
-  net/ipv4/tcp_input.c     |   94 ++++++++++++++++++----------------------------
-  net/ipv4/tcp_ipv4.c      |    4 +-
-  net/ipv4/tcp_minisocks.c |    3 +-
-  net/ipv4/tcp_probe.c     |    2 +-
-  net/ipv6/tcp_ipv6.c      |    4 +-
-  7 files changed, 58 insertions(+), 70 deletions(-)
-
---------------080302080607070006070604
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="len_th+2d4+2.6.33-rc5.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="len_th+2d4+2.6.33-rc5.patch"
-
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 74728f7..2987ee8 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -301,7 +301,11 @@ struct tcp_sock {
- 
- /*
-  *	Header prediction flags
-- *	0x5?10 << 16 + snd_wnd in net byte order
-+ *	S << 28 + TCP_FLAG_ACK + snd_wnd, in net byte order
-+ *		(PSH flag is ignored)
-+ *		S is 5 (no options), or 8 (timestamp aligned)
-+ *	otherwise, 0 to turn it off -- for instance, when there are
-+ *	holes in receive space.
-  */
- 	__be32	pred_flags;
- 
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 34f5cc2..6b0d7e9 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -310,13 +310,11 @@ extern int			tcp_ioctl(struct sock *sk,
- 
- extern int			tcp_rcv_state_process(struct sock *sk, 
- 						      struct sk_buff *skb,
--						      struct tcphdr *th,
--						      unsigned len);
-+						      struct tcphdr *th);
- 
- extern int			tcp_rcv_established(struct sock *sk, 
- 						    struct sk_buff *skb,
--						    struct tcphdr *th, 
--						    unsigned len);
-+						    struct tcphdr *th);
- 
- extern void			tcp_rcv_space_adjust(struct sock *sk);
- 
-@@ -533,9 +531,16 @@ static inline u32 __tcp_set_rto(const struct tcp_sock *tp)
- 	return (tp->srtt >> 3) + tp->rttvar;
- }
- 
-+static inline u16 __tcp_fast_path_header_length(const struct tcp_sock *tp)
-+{
-+	return tp->rx_opt.tstamp_ok
-+		? sizeof(struct tcphdr) + TCPOLEN_TSTAMP_ALIGNED
-+		: sizeof(struct tcphdr);
-+}
-+
- static inline void __tcp_fast_path_on(struct tcp_sock *tp, u32 snd_wnd)
- {
--	tp->pred_flags = htonl((tp->tcp_header_len << 26) |
-+	tp->pred_flags = htonl((__tcp_fast_path_header_length(tp) << (28 - 2)) |
- 			       ntohl(TCP_FLAG_ACK) |
- 			       snd_wnd);
- }
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 28e0296..8e0f6ae 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -152,7 +152,7 @@ static void tcp_measure_rcv_mss(struct sock *sk, const struct sk_buff *skb)
- 			 * tcp header plus fixed timestamp option length.
- 			 * Resulting "len" is MSS free of SACK jitter.
- 			 */
--			len -= tcp_sk(sk)->tcp_header_len;
-+			len -= __tcp_fast_path_header_length(tcp_sk(sk));
- 			icsk->icsk_ack.last_seg_size = len;
- 			if (len == lss) {
- 				icsk->icsk_ack.rcv_mss = len;
-@@ -5206,7 +5206,7 @@ discard:
-  *	tcp_data_queue when everything is OK.
-  */
- int tcp_rcv_established(struct sock *sk, struct sk_buff *skb,
--			struct tcphdr *th, unsigned len)
-+			struct tcphdr *th)
- {
- 	struct tcp_sock *tp = tcp_sk(sk);
- 	int res;
-@@ -5225,31 +5225,15 @@ int tcp_rcv_established(struct sock *sk, struct sk_buff *skb,
- 	 *	extra cost of the net_bh soft interrupt processing...
- 	 *	We do checksum and copy also but from device to kernel.
- 	 */
--
--	tp->rx_opt.saw_tstamp = 0;
--
--	/*	pred_flags is 0xS?10 << 16 + snd_wnd
--	 *	if header_prediction is to be made
--	 *	'S' will always be tp->tcp_header_len >> 2
--	 *	'?' will be 0 for the fast path, otherwise pred_flags is 0 to
--	 *  turn it off	(when there are holes in the receive
--	 *	 space for instance)
--	 *	PSH flag is ignored.
--	 */
--
- 	if ((tcp_flag_word(th) & TCP_HP_BITS) == tp->pred_flags &&
- 	    TCP_SKB_CB(skb)->seq == tp->rcv_nxt &&
- 	    !after(TCP_SKB_CB(skb)->ack_seq, tp->snd_nxt)) {
--		int tcp_header_len = tp->tcp_header_len;
--
--		/* Timestamp header prediction: tcp_header_len
--		 * is automatically equal to th->doff*4 due to pred_flags
--		 * match.
--		 */
-+		int tcp_header_len = tcp_header_len_th(th);
- 
--		/* Check timestamp */
--		if (tcp_header_len == sizeof(struct tcphdr) + TCPOLEN_TSTAMP_ALIGNED) {
--			/* No? Slow path! */
-+		/* Timestamp header prediction */
-+		if (tcp_header_len != sizeof(*th) + TCPOLEN_TSTAMP_ALIGNED) {
-+			tp->rx_opt.saw_tstamp = 0; /* false */
-+		} else {
- 			if (!tcp_parse_aligned_timestamp(tp, th))
- 				goto slow_path;
- 
-@@ -5264,35 +5248,12 @@ int tcp_rcv_established(struct sock *sk, struct sk_buff *skb,
- 			 */
- 		}
- 
--		if (len <= tcp_header_len) {
--			/* Bulk data transfer: sender */
--			if (len == tcp_header_len) {
--				/* Predicted packet is in window by definition.
--				 * seq == rcv_nxt and rcv_wup <= rcv_nxt.
--				 * Hence, check seq<=rcv_wup reduces to:
--				 */
--				if (tcp_header_len ==
--				    (sizeof(struct tcphdr) + TCPOLEN_TSTAMP_ALIGNED) &&
--				    tp->rcv_nxt == tp->rcv_wup)
--					tcp_store_ts_recent(tp);
--
--				/* We know that such packets are checksummed
--				 * on entry.
--				 */
--				tcp_ack(sk, skb, 0);
--				__kfree_skb(skb);
--				tcp_data_snd_check(sk);
--				return 0;
--			} else { /* Header too small */
--				TCP_INC_STATS_BH(sock_net(sk), TCP_MIB_INERRS);
--				goto discard;
--			}
--		} else {
-+		if (tcp_header_len < skb->len) {
- 			int eaten = 0;
- 			int copied_early = 0;
- 
- 			if (tp->copied_seq == tp->rcv_nxt &&
--			    len - tcp_header_len <= tp->ucopy.len) {
-+			    skb->len - tcp_header_len <= tp->ucopy.len) {
- #ifdef CONFIG_NET_DMA
- 				if (tcp_dma_try_early_copy(sk, skb, tcp_header_len)) {
- 					copied_early = 1;
-@@ -5311,9 +5272,7 @@ int tcp_rcv_established(struct sock *sk, struct sk_buff *skb,
- 					 * seq == rcv_nxt and rcv_wup <= rcv_nxt.
- 					 * Hence, check seq<=rcv_wup reduces to:
- 					 */
--					if (tcp_header_len ==
--					    (sizeof(struct tcphdr) +
--					     TCPOLEN_TSTAMP_ALIGNED) &&
-+					if (tp->rx_opt.saw_tstamp &&
- 					    tp->rcv_nxt == tp->rcv_wup)
- 						tcp_store_ts_recent(tp);
- 
-@@ -5334,8 +5293,7 @@ int tcp_rcv_established(struct sock *sk, struct sk_buff *skb,
- 				 * seq == rcv_nxt and rcv_wup <= rcv_nxt.
- 				 * Hence, check seq<=rcv_wup reduces to:
- 				 */
--				if (tcp_header_len ==
--				    (sizeof(struct tcphdr) + TCPOLEN_TSTAMP_ALIGNED) &&
-+				if (tp->rx_opt.saw_tstamp &&
- 				    tp->rcv_nxt == tp->rcv_wup)
- 					tcp_store_ts_recent(tp);
- 
-@@ -5376,11 +5334,33 @@ no_ack:
- 			else
- 				sk->sk_data_ready(sk, 0);
- 			return 0;
-+		} else {
-+			/* Bulk data transfer: sender
-+			 *
-+			 * tcp_header_len > skb->len never happens,
-+			 * already checked by tcp_v[4,6]_rcv()
-+			 *
-+			 * Predicted packet is in window by definition.
-+			 * seq == rcv_nxt and rcv_wup <= rcv_nxt.
-+			 * Hence, check seq<=rcv_wup reduces to:
-+			 */
-+			if (tp->rx_opt.saw_tstamp &&
-+			    tp->rcv_nxt == tp->rcv_wup)
-+				tcp_store_ts_recent(tp);
-+
-+			/* We know that such packets are checksummed
-+			 * on entry.
-+			 */
-+			tcp_ack(sk, skb, 0);
-+			__kfree_skb(skb);
-+			tcp_data_snd_check(sk);
-+			return 0;
- 		}
- 	}
- 
- slow_path:
--	if (len < (th->doff << 2) || tcp_checksum_complete_user(sk, skb))
-+	/* Assumes header and options unchanged since checksum_init() */
-+	if (tcp_checksum_complete_user(sk, skb))
- 		goto csum_error;
- 
- 	/*
-@@ -5416,7 +5396,7 @@ discard:
- }
- 
- static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
--					 struct tcphdr *th, unsigned len)
-+					 struct tcphdr *th)
- {
- 	u8 *hash_location;
- 	struct inet_connection_sock *icsk = inet_csk(sk);
-@@ -5693,7 +5673,7 @@ reset_and_undo:
-  */
- 
- int tcp_rcv_state_process(struct sock *sk, struct sk_buff *skb,
--			  struct tcphdr *th, unsigned len)
-+			  struct tcphdr *th)
- {
- 	struct tcp_sock *tp = tcp_sk(sk);
- 	struct inet_connection_sock *icsk = inet_csk(sk);
-@@ -5740,7 +5720,7 @@ int tcp_rcv_state_process(struct sock *sk, struct sk_buff *skb,
- 		goto discard;
- 
- 	case TCP_SYN_SENT:
--		queued = tcp_rcv_synsent_state_process(sk, skb, th, len);
-+		queued = tcp_rcv_synsent_state_process(sk, skb, th);
- 		if (queued >= 0)
- 			return queued;
- 
-diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index 0a76e41..f999e06 100644
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -1551,7 +1551,7 @@ int tcp_v4_do_rcv(struct sock *sk, struct sk_buff *skb)
- 
- 	if (sk->sk_state == TCP_ESTABLISHED) { /* Fast path */
- 		TCP_CHECK_TIMER(sk);
--		if (tcp_rcv_established(sk, skb, tcp_hdr(skb), skb->len)) {
-+		if (tcp_rcv_established(sk, skb, tcp_hdr(skb))) {
- 			rsk = sk;
- 			goto reset;
- 		}
-@@ -1578,7 +1578,7 @@ int tcp_v4_do_rcv(struct sock *sk, struct sk_buff *skb)
- 	}
- 
- 	TCP_CHECK_TIMER(sk);
--	if (tcp_rcv_state_process(sk, skb, tcp_hdr(skb), skb->len)) {
-+	if (tcp_rcv_state_process(sk, skb, tcp_hdr(skb))) {
- 		rsk = sk;
- 		goto reset;
- 	}
-diff --git a/net/ipv4/tcp_minisocks.c b/net/ipv4/tcp_minisocks.c
-index f206ee5..37b7536 100644
---- a/net/ipv4/tcp_minisocks.c
-+++ b/net/ipv4/tcp_minisocks.c
-@@ -718,8 +718,7 @@ int tcp_child_process(struct sock *parent, struct sock *child,
- 	int state = child->sk_state;
- 
- 	if (!sock_owned_by_user(child)) {
--		ret = tcp_rcv_state_process(child, skb, tcp_hdr(skb),
--					    skb->len);
-+		ret = tcp_rcv_state_process(child, skb, tcp_hdr(skb));
- 		/* Wakeup parent, send SIGIO */
- 		if (state == TCP_SYN_RECV && child->sk_state != state)
- 			parent->sk_data_ready(parent, 0);
-diff --git a/net/ipv4/tcp_probe.c b/net/ipv4/tcp_probe.c
-index bb110c5..7bcd3ba 100644
---- a/net/ipv4/tcp_probe.c
-+++ b/net/ipv4/tcp_probe.c
-@@ -88,7 +88,7 @@ static inline int tcp_probe_avail(void)
-  * Note: arguments must match tcp_rcv_established()!
-  */
- static int jtcp_rcv_established(struct sock *sk, struct sk_buff *skb,
--			       struct tcphdr *th, unsigned len)
-+			       struct tcphdr *th)
- {
- 	const struct tcp_sock *tp = tcp_sk(sk);
- 	const struct inet_sock *inet = inet_sk(sk);
-diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
-index b76939a..3d08a4d 100644
---- a/net/ipv6/tcp_ipv6.c
-+++ b/net/ipv6/tcp_ipv6.c
-@@ -1586,7 +1586,7 @@ static int tcp_v6_do_rcv(struct sock *sk, struct sk_buff *skb)
- 
- 	if (sk->sk_state == TCP_ESTABLISHED) { /* Fast path */
- 		TCP_CHECK_TIMER(sk);
--		if (tcp_rcv_established(sk, skb, tcp_hdr(skb), skb->len))
-+		if (tcp_rcv_established(sk, skb, tcp_hdr(skb)))
- 			goto reset;
- 		TCP_CHECK_TIMER(sk);
- 		if (opt_skb)
-@@ -1618,7 +1618,7 @@ static int tcp_v6_do_rcv(struct sock *sk, struct sk_buff *skb)
- 	}
- 
- 	TCP_CHECK_TIMER(sk);
--	if (tcp_rcv_state_process(sk, skb, tcp_hdr(skb), skb->len))
-+	if (tcp_rcv_state_process(sk, skb, tcp_hdr(skb)))
- 		goto reset;
- 	TCP_CHECK_TIMER(sk);
- 	if (opt_skb)
--- 
-1.6.3.3
-
-
---------------080302080607070006070604--
+	Ingo
