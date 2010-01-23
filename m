@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588Ab0AWBi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572Ab0AWBrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755588Ab0AWBi3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 20:38:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304Ab0AWBi2
+	id S1755572Ab0AWBrp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 20:47:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140Ab0AWBro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 20:38:28 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51169
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754323Ab0AWBi1 (ORCPT
+	Fri, 22 Jan 2010 20:47:44 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52597 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753934Ab0AWBrn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 20:38:27 -0500
-Date: Fri, 22 Jan 2010 17:38:38 -0800 (PST)
-Message-Id: <20100122.173838.159363288.davem@davemloft.net>
-To: heiko.carstens@de.ibm.com
-Cc: rostedt@goodmis.org, vapier@gentoo.org, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, mingo@redhat.com, brueckner@linux.vnet.ibm.com,
-       lethal@linux-sh.org
-Subject: Re: [PATCH] ftrace: unify arch_syscall_addr() implementations
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100122163700.GD6412@osiris.boeblingen.de.ibm.com>
-References: <1264167826-20913-1-git-send-email-vapier@gentoo.org>
-	<1264170977.31321.382.camel@gandalf.stny.rr.com>
-	<20100122163700.GD6412@osiris.boeblingen.de.ibm.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jan 2010 20:47:43 -0500
+Date: Fri, 22 Jan 2010 17:47:36 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: =?ISO-8859-15?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>,
+       linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 1/2] string: simplify stricmp()
+In-Reply-To: <20100122162740.11410ac4.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.1001221743521.13231@localhost.localdomain>
+References: <cover.1263675077.git.andre.goddard@gmail.com> <16ee7c5e218e89f22a28247e4bd3877355f5ae5c.1263675077.git.andre.goddard@gmail.com> <20100122162740.11410ac4.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-Date: Fri, 22 Jan 2010 17:37:00 +0100
 
-> On Fri, Jan 22, 2010 at 09:36:17AM -0500, Steven Rostedt wrote:
->> I would not be too sure. s390 is very strange, and I would definitely
->> want to get an Ack from the arch maintainers first.
+
+On Fri, 22 Jan 2010, Andrew Morton wrote:
 > 
-> It's not a typo. The syscall table on s390 contains always 32 bit pointers
-> since we know that the address of the function to be called is (way) below
-> 4GB. So this saves us a few bytes.
-> In addition this makes syscall patching done by some security modules a
-> bit more difficult, since they would need to store a 64 bit pointer.
-> That's because we make sure that module addresses are always above 4GB.
+> hm, that function seems a little broken.
+> 
+> If it reaches the end of s1 or s2 it will return (c1 - c2).  If however
+> it detects a difference due to other than end-of-string, it returns
+> (tolower(c1) - tolower(c2)).
+> 
+> IOW, perhaps it should be performing tolower() in the
+> I-reached-end-of-string case.
 
-Sparc64 is the same way.
+No, it doesn't matter. It's like strcmp - it returns "positive, negative 
+or zero" depending on whether the string compared bigger than, smaller 
+than or equal.
+
+So "(int)c1 - (int)c2" is just a way to do that. And if the string ends 
+and c1 or c2 is NUL, there's no point in doing the "tolower()", because it 
+doesn't matter what the other character is: the sign is all that matters 
+(or, if they are equally long, and both c1 and c2 are zero, then 0).
+
+> I wonder what strnicmp() is _supposed_ to return..
+
+Same as strncmp.
+
+We could make it always return -1/0/+1 (many libraries do that - then the 
+return value is guaranteed to also fit in a 'char', not just an 'int'), 
+but it really shouldn't matter for any correct caller.
+
+		Linus
