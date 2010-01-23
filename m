@@ -1,98 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328Ab0AWAZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090Ab0AWAZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756328Ab0AWAZP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:25:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317Ab0AWAZK
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:25:10 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:37950 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756149Ab0AWAZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1756090Ab0AWAZH (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 22 Jan 2010 19:25:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=kX5IWtUDda7B9NMfnECPknUA5j6xH0ImU9uqViF9fEIkLOQ7Luoj16H7KW0RTjcG2I
-         qlAeQInhvfvpBqMTGxvj11ss90j8GM4NWNRR0yYRMr1mFlGHPom2yAOVPZ06v85ppBMd
-         BocSDnoEisIOtTr/Iexp05eGEtE7hTET8/yy8=
-Subject: [PATCH 6/8] blktrans: flush all requests before we remove the
- device
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1264205925.31827.3.camel@maxim-laptop>
-References: <1264205925.31827.3.camel@maxim-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 23 Jan 2010 02:24:58 +0200
-Message-ID: <1264206298.31827.10.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317Ab0AWASy
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 22 Jan 2010 19:18:54 -0500
+Received: from kroah.org ([198.145.64.141]:35060 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754284Ab0AWASv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:18:51 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:11 2010
+Message-Id: <20100123001111.887606828@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 22 Jan 2010 16:09:57 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [13/29] USB: EHCI: fix handling of unusual interrupt intervals
+In-Reply-To: <20100123001145.GA7391@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 6d5a70a18bea40bfc354e73d7fde5042465fc534 Mon Sep 17 00:00:00 2001
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Date: Sat, 23 Jan 2010 02:09:11 +0200
-Subject: [PATCH 6/8] blktrans: flush all requests before we remove the device
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-Flush all requests, so we can be sure we don't deadlock the system later
-when we remove the disk queue.
+------------------
 
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+
+commit 1b9a38bfa6e664ff02511314f5586d711c83cc91 upstream.
+
+This patch (as1320) fixes two problems related to interrupt-URB
+scheduling in ehci-hcd.
+
+	URBs with an interval of 2 or 4 microframes aren't handled.
+	For the time being, the patch reduces to interval to 1 uframe.
+
+	URBs are constrained to have an interval no larger than 1024
+	frames by usb_submit_urb().  But some EHCI controllers allow
+	use of a schedule as short as 256 frames; for these
+	controllers we may have to decrease the interval to the
+	actual schedule length.
+
+The second problem isn't very significant since few devices expose
+interrupt endpoints with an interval larger than 256 frames.  But the
+first problem is critical; it will prevent the kernel from working
+with devices having interrupt intervals of 2 or 4 uframes.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Glynn Farrow <farrowg@sg.ibm.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- drivers/mtd/mtd_blkdevs.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ drivers/usb/host/ehci-q.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
-index f165115..33bdef1 100644
---- a/drivers/mtd/mtd_blkdevs.c
-+++ b/drivers/mtd/mtd_blkdevs.c
-@@ -115,7 +115,13 @@ static int mtd_blktrans_thread(void *arg)
- static void mtd_blktrans_request(struct request_queue *rq)
- {
- 	struct mtd_blktrans_dev *dev = rq->queuedata;
--	wake_up_process(dev->thread);
-+	struct request *req = NULL;
-+
-+	if (dev->deleted)
-+		while ((req = blk_fetch_request(rq)) != NULL)
-+			__blk_end_request_all(req, -ENODEV);
-+	else
-+		wake_up_process(dev->thread);
- }
+--- a/drivers/usb/host/ehci-q.c
++++ b/drivers/usb/host/ehci-q.c
+@@ -827,9 +827,10 @@ qh_make (
+ 				 * But interval 1 scheduling is simpler, and
+ 				 * includes high bandwidth.
+ 				 */
+-				dbg ("intr period %d uframes, NYET!",
+-						urb->interval);
+-				goto done;
++				urb->interval = 1;
++			} else if (qh->period > ehci->periodic_size) {
++				qh->period = ehci->periodic_size;
++				urb->interval = qh->period << 3;
+ 			}
+ 		} else {
+ 			int		think_time;
+@@ -852,6 +853,10 @@ qh_make (
+ 					usb_calc_bus_time (urb->dev->speed,
+ 					is_input, 0, max_packet (maxp)));
+ 			qh->period = urb->interval;
++			if (qh->period > ehci->periodic_size) {
++				qh->period = ehci->periodic_size;
++				urb->interval = qh->period;
++			}
+ 		}
+ 	}
  
-
-@@ -359,6 +365,8 @@ error1:
- 
- int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
- {
-+	unsigned long flags;
-+
- 	if (mutex_trylock(&mtd_table_mutex)) {
- 		mutex_unlock(&mtd_table_mutex);
- 		BUG();
-@@ -369,7 +377,11 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
- 	/* stop new requests to arrive */
- 	del_gendisk(old->disk);
- 
-+	/* flush current requests */
-+	spin_lock_irqsave(&old->queue_lock, flags);
- 	old->deleted = 1;
-+	blk_start_queue(old->rq);
-+	spin_unlock_irqrestore(&old->queue_lock, flags);
- 
- 	/* Stop the thread */
- 	kthread_stop(old->thread);
--- 
-1.6.3.3
-
 
 
