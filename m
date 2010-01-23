@@ -1,166 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279Ab0AWAYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756299Ab0AWAYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279Ab0AWAYJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:24:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263Ab0AWAX7
+	id S1756299Ab0AWAYM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:24:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270Ab0AWAYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:23:59 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:43320 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755415Ab0AWAX5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:23:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=IZ3mMai7vV2z38VUDU7RyYrfGNVnkFP8yTSbL+N6Cxy6NWFafxtpGKtN1IgMR0ySFP
-         k+bRL6MHRBCaYn5E0v7yojtGqBL6x+do2efG3vsT0TJPm0URVNykvgyuGB0FQj4WjFx2
-         gvTcPAgWFGhNumk+e1sCwWdpEhZ3xq+Whp0Mw=
-Subject: [PATCH 4/8] MTD: create lockless versions of {get,put}_mtd_device
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1264205925.31827.3.camel@maxim-laptop>
-References: <1264205925.31827.3.camel@maxim-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 23 Jan 2010 02:23:52 +0200
-Message-ID: <1264206232.31827.8.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jan 2010 19:24:01 -0500
+Received: from kroah.org ([198.145.64.141]:35068 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755388Ab0AWASy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:18:54 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:12 2010
+Message-Id: <20100123001112.274799336@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 22 Jan 2010 16:10:00 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Sarah Sharp <sarah.a.sharp@linux.intel.com>,
+       David Vrabel <david.vrabel@csr.com>
+Subject: [16/29] USB: add speed values for USB 3.0 and wireless controllers
+In-Reply-To: <20100123001145.GA7391@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From b7c27159b5540b0951f6b030ffca895f34a3b3d3 Mon Sep 17 00:00:00 2001
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Date: Sat, 23 Jan 2010 02:04:44 +0200
-Subject: [PATCH 4/8] MTD: create lockless versions of {get,put}_mtd_device
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-This will be used to resolve deadlock in block translation layer.
+------------------
 
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+From: Greg Kroah-Hartman <gregkh@suse.de>
+
+commit b132b04e193908a94d95065d0628f8fb0159cc55 upstream.
+
+These controllers say "unknown" for their speed in sysfs, which
+obviously isn't correct.
+
+Reported-by: Kurt Garloff <garloff@novell.com>
+Cc: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+Cc: David Vrabel <david.vrabel@csr.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- drivers/mtd/mtdcore.c   |   60 ++++++++++++++++++++++++++++++----------------
- include/linux/mtd/mtd.h |    3 +-
- 2 files changed, 41 insertions(+), 22 deletions(-)
+ drivers/usb/core/sysfs.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index c356c0a..3bdb7e8 100644
---- a/drivers/mtd/mtdcore.c
-+++ b/drivers/mtd/mtdcore.c
-@@ -453,27 +453,38 @@ struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num)
- 			ret = NULL;
+--- a/drivers/usb/core/sysfs.c
++++ b/drivers/usb/core/sysfs.c
+@@ -115,6 +115,12 @@ show_speed(struct device *dev, struct de
+ 	case USB_SPEED_HIGH:
+ 		speed = "480";
+ 		break;
++	case USB_SPEED_VARIABLE:
++		speed = "480";
++		break;
++	case USB_SPEED_SUPER:
++		speed = "5000";
++		break;
+ 	default:
+ 		speed = "unknown";
  	}
- 
--	if (!ret)
--		goto out_unlock;
--
--	if (!try_module_get(ret->owner))
--		goto out_unlock;
--
--	if (ret->get_device) {
--		err = ret->get_device(ret);
--		if (err)
--			goto out_put;
-+	if (!ret) {
-+		ret = ERR_PTR(err);
-+		goto out;
- 	}
- 
--	ret->usecount++;
-+	err = __get_mtd_device(ret);
-+	if (err)
-+		ret = ERR_PTR(err);
-+out:
- 	mutex_unlock(&mtd_table_mutex);
- 	return ret;
-+}
- 
--out_put:
--	module_put(ret->owner);
--out_unlock:
--	mutex_unlock(&mtd_table_mutex);
--	return ERR_PTR(err);
-+
-+int __get_mtd_device(struct mtd_info *mtd)
-+{
-+	int err;
-+
-+	if (!try_module_get(mtd->owner))
-+		return -ENODEV;
-+
-+	if (mtd->get_device) {
-+
-+		err = mtd->get_device(mtd);
-+
-+		if (err) {
-+			module_put(mtd->owner);
-+			return err;
-+		}
-+	}
-+	mtd->usecount++;
-+	return 0;
- }
- 
- /**
-@@ -524,14 +535,19 @@ out_unlock:
- 
- void put_mtd_device(struct mtd_info *mtd)
- {
--	int c;
--
- 	mutex_lock(&mtd_table_mutex);
--	c = --mtd->usecount;
-+	__put_mtd_device(mtd);
-+	mutex_unlock(&mtd_table_mutex);
-+
-+}
-+
-+void __put_mtd_device(struct mtd_info *mtd)
-+{
-+	--mtd->usecount;
-+	BUG_ON(mtd->usecount < 0);
-+
- 	if (mtd->put_device)
- 		mtd->put_device(mtd);
--	mutex_unlock(&mtd_table_mutex);
--	BUG_ON(c < 0);
- 
- 	module_put(mtd->owner);
- }
-@@ -569,7 +585,9 @@ EXPORT_SYMBOL_GPL(add_mtd_device);
- EXPORT_SYMBOL_GPL(del_mtd_device);
- EXPORT_SYMBOL_GPL(get_mtd_device);
- EXPORT_SYMBOL_GPL(get_mtd_device_nm);
-+EXPORT_SYMBOL_GPL(__get_mtd_device);
- EXPORT_SYMBOL_GPL(put_mtd_device);
-+EXPORT_SYMBOL_GPL(__put_mtd_device);
- EXPORT_SYMBOL_GPL(register_mtd_user);
- EXPORT_SYMBOL_GPL(unregister_mtd_user);
- EXPORT_SYMBOL_GPL(default_mtd_writev);
-diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
-index 0f32a9b..662d747 100644
---- a/include/linux/mtd/mtd.h
-+++ b/include/linux/mtd/mtd.h
-@@ -290,8 +290,9 @@ extern int add_mtd_device(struct mtd_info *mtd);
- extern int del_mtd_device (struct mtd_info *mtd);
- 
- extern struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num);
-+extern int __get_mtd_device(struct mtd_info *mtd);
-+extern void __put_mtd_device(struct mtd_info *mtd);
- extern struct mtd_info *get_mtd_device_nm(const char *name);
--
- extern void put_mtd_device(struct mtd_info *mtd);
- 
-
--- 
-1.6.3.3
-
 
 
