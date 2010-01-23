@@ -1,37 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206Ab0AWLw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255Ab0AWMEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206Ab0AWLw6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 06:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884Ab0AWLw5
+	id S1755255Ab0AWMEJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 07:04:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189Ab0AWMEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 06:52:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28374 "EHLO mx1.redhat.com"
+	Sat, 23 Jan 2010 07:04:07 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62274 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752151Ab0AWLw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 06:52:56 -0500
-Date: Sat, 23 Jan 2010 06:51:49 -0500
+	id S1753614Ab0AWMEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jan 2010 07:04:04 -0500
+Date: Sat, 23 Jan 2010 07:03:01 -0500
 From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Kyle Moffett <kyle@moffetthome.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>,
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
+       systemtap@sources.redhat.com, dle-develop@lists.sourceforge.net,
        Andrew Morton <akpm@linux-foundation.org>,
        Stephen Rothwell <sfr@canb.auug.org.au>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
        "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: linux-next: add utrace tree
-Message-ID: <20100123115149.GB7828@redhat.com>
-References: <20100121170541.7425ff10.akpm@linux-foundation.org> <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain> <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <20100123110121.1ce89bb9@lxorguk.ukuu.org.uk>
+Message-ID: <20100123120301.GD7828@redhat.com>
+References: <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org> <20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> <20100122012516.GE22003@redhat.com> <alpine.LFD.2.00.1001211729080.13231@localhost.localdomain> <20100122022255.GF22003@redhat.com> <alpine.LFD.2.00.1001211826060.13231@localhost.localdomain> <20100123060401.GB19399@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100123110121.1ce89bb9@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100123060401.GB19399@elte.hu>
 User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,17 +40,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi -
 
-On Sat, Jan 23, 2010 at 11:01:21AM +0000, Alan Cox wrote:
-> [...]
-> What I don't understand is why [libgdb?] doesn't solve 99% of your problem.
-> ptrace is not perfect but most of the real ptrace limitations actually
-> come about because either the CPU can't do something or because the
-> supporting logic would be too expensive - things like having extra
-> private debugger pages.
+On Sat, Jan 23, 2010 at 07:04:01AM +0100, Ingo Molnar wrote:
 
-At least one reason is that ptrace is single-usage-only, so for
-example you cannot concurrently debug & strace the same program.
-OTOH, utrace is designed to permit clean nesting/sharing semantics for
-concurrent debugger-type tools operating on the same processes.
+> [...]  Also, if any systemtap person is interested in helping us
+> create a more generic filter engine out of the current ftrace filter
+> engine (which is really a precursor of a safe, sandboxed in-kernel
+> script engine), that would be excellent as well. [...]
+
+Thank you for the invitation.
+
+> More could be done - a simple C-like set of function perhaps - some minimal 
+> per probe local variable state, etc. (perhaps even looping as well, with a 
+> limit on number of predicament executions per filter invocation.)
+
+Yes, at some point when such bytecode intepreter gets rich enough, one
+may not need the translated-to-C means of running scripts.
+
+
+> ( _Such_ a facility, could then perhaps be used to allow applications access 
+>   to safe syscall sandboxing techniques: i.e. a programmable seccomp concept 
+>   in essence, controlled via ASCII space filter expressions [...]
+>   IMHO that would be a superior concept for security modules too [...]
+>
+> [...]  specific functionality with an immediately visible upside,
+> with no need for opaque hooks.
+
+This OTOH seem like rather a stretch.  If one claims that "opaque
+hooks" are bad, so instead have hooks that jump not to auditable C
+code but an bytecode interpreter?  And have the bytecodes be uploaded
+from userspace?  How is this supposed to produce "transparency" from
+the kernel/hook point of view?
 
 - FChE
