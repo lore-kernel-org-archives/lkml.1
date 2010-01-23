@@ -1,212 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429Ab0AWAHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838Ab0AWALP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429Ab0AWAHu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:07:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344Ab0AWAHt
+	id S1754838Ab0AWALP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:11:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688Ab0AWALO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:07:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41310 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754335Ab0AWAHs (ORCPT
+	Fri, 22 Jan 2010 19:11:14 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:46564 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954Ab0AWALN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:07:48 -0500
-Date: Fri, 22 Jan 2010 16:07:40 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?Q?Fran=E7ois?= Figarola 
-	<francois.figarola@i-consult.fr>
-Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       linux-raid@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [BUG] kernel 2.6.32.x hangs during boot process
-Message-Id: <20100122160740.6c16c22d.akpm@linux-foundation.org>
-In-Reply-To: <d2deb3241001160158r4baed1e1t7e8f6642de018b4c@mail.gmail.com>
-References: <d2deb3241001160158r4baed1e1t7e8f6642de018b4c@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Jan 2010 19:11:13 -0500
+Message-ID: <4B5A3DD5.3020904@bx.jp.nec.com>
+Date: Fri, 22 Jan 2010 19:07:49 -0500
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: lwoodman@redhat.com, linux-mm@kvack.org, mingo@elte.hu, tzanussi@gmail.com,
+       riel@redhat.com, rostedt@goodmis.org, akpm@linux-foundation.org,
+       fweisbec@gmail.com, Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Subject: [RFC PATCH -tip 1/2 v2] add tracepoints for pagecache
+References: <4B5A3D00.8080901@bx.jp.nec.com>
+In-Reply-To: <4B5A3D00.8080901@bx.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc's added)
+This patch adds several tracepoints to track pagecach behavior.
+These trecepoints would help us monitor pagecache usage with high resolution.
 
-On Sat, 16 Jan 2010 10:58:30 +0100
-Fran__ois Figarola  <francois.figarola@i-consult.fr> wrote:
+Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com> 
+---
+ include/trace/events/filemap.h |   83 +++++++++++++++++++++++++++++++++++++++++
+ mm/filemap.c                   |    5 ++
+ mm/truncate.c                  |    2 
+ mm/vmscan.c                    |    3 +
+ 4 files changed, 93 insertions(+)
 
-> Dear all,
-> 
-> First, I apologize por my poor english...
-> 
-> Since I've tried to boot 2.6.32.x kernel, my system hangs during the
-> boot process, and I think it could be related to the problem reported
-> earlier by Megastorage (http://lkml.org/lkml/2010/1/10/92).
-> 
-> The hardware is a Dell PowerEdge 2950 which runs fine with the
-> 2.6.31.x kernel series (actually running with the latest 2.6.31.11),
-> and the system is debian etch.
-> 
-> Here is the trace of the bug I've got (using netconsole) with a
-> 2.6.32.3 kernel :
-> 
-> BUG: Dentry ffff880667690000{i=41a46,n=sleep} still in use (8)
-> [unmount of ext3 dm-4]
-> ------------[ cut here ]------------
-> kernel BUG at fs/dcache.c:670!
+Index: linux-2.6-tip/include/trace/events/filemap.h
+===================================================================
+--- /dev/null
++++ linux-2.6-tip/include/trace/events/filemap.h
+@@ -0,0 +1,83 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM filemap
++
++#if !defined(_TRACE_FILEMAP_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_FILEMAP_H
++
++#include <linux/fs.h>
++#include <linux/tracepoint.h>
++
++TRACE_EVENT(find_get_page,
++
++	TP_PROTO(struct address_space *mapping, pgoff_t offset,
++		struct page *page),
++
++	TP_ARGS(mapping, offset, page),
++
++	TP_STRUCT__entry(
++		__field(dev_t, s_dev)
++		__field(ino_t, i_ino)
++		__field(pgoff_t, offset)
++		__field(struct page *, page)
++		),
++
++	TP_fast_assign(
++		__entry->s_dev = mapping->host ? mapping->host->i_sb->s_dev : 0;
++		__entry->i_ino = mapping->host ? mapping->host->i_ino : 0;
++		__entry->offset = offset;
++		__entry->page = page;
++		),
++
++	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu %s", MAJOR(__entry->s_dev),
++		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset,
++		__entry->page == NULL ? "page_not_found" : "page_found")
++);
++
++TRACE_EVENT(add_to_page_cache,
++
++	TP_PROTO(struct address_space *mapping, pgoff_t offset),
++
++	TP_ARGS(mapping, offset),
++
++	TP_STRUCT__entry(
++		__field(dev_t, s_dev)
++		__field(ino_t, i_ino)
++		__field(pgoff_t, offset)
++		),
++
++	TP_fast_assign(
++		__entry->s_dev = mapping->host->i_sb->s_dev;
++		__entry->i_ino = mapping->host->i_ino;
++		__entry->offset = offset;
++		),
++
++	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu", MAJOR(__entry->s_dev),
++		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset)
++);
++
++TRACE_EVENT(remove_from_page_cache,
++
++	TP_PROTO(struct address_space *mapping, pgoff_t offset),
++
++	TP_ARGS(mapping, offset),
++
++	TP_STRUCT__entry(
++		__field(dev_t, s_dev)
++		__field(ino_t, i_ino)
++		__field(pgoff_t, offset)
++		),
++
++	TP_fast_assign(
++		__entry->s_dev = mapping->host->i_sb->s_dev;
++		__entry->i_ino = mapping->host->i_ino;
++		__entry->offset = offset;
++		),
++
++	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu", MAJOR(__entry->s_dev),
++		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset)
++);
++
++#endif /* _TRACE_FILEMAP_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+Index: linux-2.6-tip/mm/filemap.c
+===================================================================
+--- linux-2.6-tip.orig/mm/filemap.c
++++ linux-2.6-tip/mm/filemap.c
+@@ -34,6 +34,8 @@
+ #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+ #include <linux/memcontrol.h>
+ #include <linux/mm_inline.h> /* for page_is_file_cache() */
++#define CREATE_TRACE_POINTS
++#include <trace/events/filemap.h>
+ #include "internal.h"
+ 
+ /*
+@@ -149,6 +151,7 @@ void remove_from_page_cache(struct page 
+ 	spin_lock_irq(&mapping->tree_lock);
+ 	__remove_from_page_cache(page);
+ 	spin_unlock_irq(&mapping->tree_lock);
++	trace_remove_from_page_cache(mapping, page->index);
+ 	mem_cgroup_uncharge_cache_page(page);
+ }
+ 
+@@ -419,6 +422,7 @@ int add_to_page_cache_locked(struct page
+ 			if (PageSwapBacked(page))
+ 				__inc_zone_page_state(page, NR_SHMEM);
+ 			spin_unlock_irq(&mapping->tree_lock);
++			trace_add_to_page_cache(mapping, offset);
+ 		} else {
+ 			page->mapping = NULL;
+ 			spin_unlock_irq(&mapping->tree_lock);
+@@ -642,6 +646,7 @@ repeat:
+ 	}
+ 	rcu_read_unlock();
+ 
++	trace_find_get_page(mapping, offset, page);
+ 	return page;
+ }
+ EXPORT_SYMBOL(find_get_page);
+Index: linux-2.6-tip/mm/truncate.c
+===================================================================
+--- linux-2.6-tip.orig/mm/truncate.c
++++ linux-2.6-tip/mm/truncate.c
+@@ -20,6 +20,7 @@
+ 				   do_invalidatepage */
+ #include "internal.h"
+ 
++#include <trace/events/filemap.h>
+ 
+ /**
+  * do_invalidatepage - invalidate part or all of a page
+@@ -388,6 +389,7 @@ invalidate_complete_page2(struct address
+ 	BUG_ON(page_has_private(page));
+ 	__remove_from_page_cache(page);
+ 	spin_unlock_irq(&mapping->tree_lock);
++	trace_remove_from_page_cache(mapping, page->index);
+ 	mem_cgroup_uncharge_cache_page(page);
+ 	page_cache_release(page);	/* pagecache ref */
+ 	return 1;
+Index: linux-2.6-tip/mm/vmscan.c
+===================================================================
+--- linux-2.6-tip.orig/mm/vmscan.c
++++ linux-2.6-tip/mm/vmscan.c
+@@ -48,6 +48,8 @@
+ 
+ #include "internal.h"
+ 
++#include <trace/events/filemap.h>
++
+ struct scan_control {
+ 	/* Incremented by the number of inactive pages that were scanned */
+ 	unsigned long nr_scanned;
+@@ -477,6 +479,7 @@ static int __remove_mapping(struct addre
+ 	} else {
+ 		__remove_from_page_cache(page);
+ 		spin_unlock_irq(&mapping->tree_lock);
++		trace_remove_from_page_cache(mapping, page->index);
+ 		mem_cgroup_uncharge_cache_page(page);
+ 	}
+ 
 
-That's
 
-			if (atomic_read(&dentry->d_count) != 0) {
-				printk(KERN_ERR
-				       "BUG: Dentry %p{i=%lx,n=%s}"
-				       " still in use (%d)"
-				       " [unmount of %s %s]\n",
-				       dentry,
-				       dentry->d_inode ?
-				       dentry->d_inode->i_ino : 0UL,
-				       dentry->d_name.name,
-				       atomic_read(&dentry->d_count),
-				       dentry->d_sb->s_type->name,
-				       dentry->d_sb->s_id);
-				BUG();
-			}
-
-I'm a bit surprised that the system is doing a dm suspemd/resume during
-the boot process.
-
-I assume it's a DM bug, dunno.
-
-> invalid opcode: 0000 [#1] SMP
-> last sysfs file: /sys/block/dm-2/removable
-> CPU 0
-> Modules linked in: i5k_amb hwmon button processor thermal fan [last
-> unloaded: scsi_wait_scan]
-> Pid: 3311, comm: kpartx Not tainted 2.6.32.3 #2 PowerEdge 2950
-> RIP: 0010:[<ffffffff810f95f0>] __[<ffffffff810f95f0>]
-> shrink_dcache_for_umount_subtree+0x280/0x290
-> RSP: 0018:ffff88066670dcf8 __EFLAGS: 00010296
-> RAX: 000000000000005c RBX: ffff8806677696c0 RCX: 0000000000000096
-> RDX: 0000000000006767 RSI: 0000000000000046 RDI: 0000000000000246
-> RBP: ffff880667690000 R08: 0000000000000000 R09: ffff8806670d1628
-> R10: 0000000000000000 R11: 0000000000000000 R12: ffff880667690060
-> R13: 0000000000000007 R14: ffff8806654d1a88 R15: 0000000000dec0b0
-> FS: __00007f176e96b770(0000) GS:ffff880028200000(0000) knlGS:0000000000000000
-> CS: __0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 00007fff0a2e0080 CR3: 0000000666607000 CR4: 00000000000006f0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process kpartx (pid: 3311, threadinfo ffff88066670c000, task ffff8806652997d0)
-> Stack:
-> ffff880665b8b178 ffff880665b8af18 ffffffff81619600 0000000000000001
-> <0> ffff880667408e00 ffffffff810f9629 ffff880665b8af18 ffffffff810e8049
-> <0> ffff8806651333f8 ffff880667408e00 ffffffff8185fc00 ffffffff810e8159
-> Call Trace:
-> [<ffffffff810f9629>] ? shrink_dcache_for_umount+0x29/0x50
-> [<ffffffff810e8049>] ? generic_shutdown_super+0x19/0x100
-> [<ffffffff810e8159>] ? kill_block_super+0x29/0x50
-> [<ffffffff810e8238>] ? deactivate_locked_super+0x58/0x80
-> [<ffffffff81112842>] ? thaw_bdev+0xd2/0x110
-> [<ffffffff814b0c67>] ? dm_resume+0xf7/0x160
-> [<ffffffff814b5f00>] ? dev_suspend+0x0/0x220
-> [<ffffffff814b60b1>] ? dev_suspend+0x1b1/0x220
-> [<ffffffff814b6c7b>] ? ctl_ioctl+0x1eb/0x260
-> [<ffffffff810c0b1b>] ? handle_mm_fault+0x63b/0x990
-> [<ffffffff814b6cfe>] ? dm_ctl_ioctl+0xe/0x20
-> [<ffffffff8104991a>] ? finish_task_switch+0x3a/0xc0
-> [<ffffffff810f4e9f>] ? vfs_ioctl+0x2f/0xb0
-> [<ffffffff810f53bb>] ? do_vfs_ioctl+0x3fb/0x580
-> [<ffffffff815fb101>] ? thread_return+0x3e/0x64d
-> [<ffffffff810f55e1>] ? sys_ioctl+0xa1/0xb0
-> [<ffffffff8100bf02>] ? system_call_fastpath+0x16/0x1b
-> Code: 4d 38 48 8b 45 10 48 85 c0 74 04 48 8b 50 40 48 8d 86 60 02 00
-> 00 48 c7 c7 a8 66 76 81 48 89 04 24 48 89 ee 31 c0 e8 a9 11 50 00 <0f>
-> 0b eb fe 0f 0b eb fe 0f 1f 84 00 00 00 00 00 53 48 89 fb 48
-> RIP __[<ffffffff810f95f0>] shrink_dcache_for_umount_subtree+0x280/0x290
-> RSP <ffff88066670dcf8>
-> ---[ end trace 3cc1cb65fcc6a8ca ]---
-> 
-> another trace with same behavior on a new compiled kernel with more
-> debug options;
-> but I can't see any difference :
-> 
-> BUG: Dentry ffff880667556738{i=41a46,n=sleep} still in use (8)
-> [unmount of ext3 dm-4]
-> ------------[ cut here ]------------
-> kernel BUG at fs/dcache.c:670!
-> invalid opcode: 0000 [#1] SMP
-> last sysfs file: /sys/block/dm-3/removable
-> CPU 1
-> Modules linked in: i5k_amb(+) button hwmon processor thermal fan [last
-> unloaded: scsi_wait_scan]
-> Pid: 3315, comm: kpartx Not tainted 2.6.32.3 #3 PowerEdge 2950
-> RIP: 0010:[<ffffffff810f95f0>] __[<ffffffff810f95f0>]
-> shrink_dcache_for_umount_subtree+0x280/0x290
-> RSP: 0018:ffff880667089cf8 __EFLAGS: 00010296
-> RAX: 000000000000005c RBX: ffff880667790a60 RCX: 0000000000000096
-> RDX: 0000000000006767 RSI: 0000000000000046 RDI: 0000000000000246
-> RBP: ffff880667556738 R08: 0000000000000000 R09: ffff88066604b420
-> R10: 0000000000000000 R11: 0000000000000000 R12: ffff880667556798
-> R13: 0000000000000007 R14: ffff880665842360 R15: 0000000000b3c0b0
-> FS: __00007f7b1006c770(0000) GS:ffff880028240000(0000) knlGS:0000000000000000
-> CS: __0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 00007f6e67f1c350 CR3: 0000000664ff1000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process kpartx (pid: 3315, threadinfo ffff880667088000, task ffff880664f55f40)
-> Stack:
-> ffff880667058af0 ffff880667058890 ffffffff81619600 0000000000000001
-> <0> ffff880667408e00 ffffffff810f9629 ffff880667058890 ffffffff810e8049
-> <0> ffff88067f83e758 ffff880667408e00 ffffffff8185fc00 ffffffff810e8159
-> Call Trace:
-> [<ffffffff810f9629>] ? shrink_dcache_for_umount+0x29/0x50
-> [<ffffffff810e8049>] ? generic_shutdown_super+0x19/0x100
-> [<ffffffff810e8159>] ? kill_block_super+0x29/0x50
-> [<ffffffff810e8238>] ? deactivate_locked_super+0x58/0x80
-> [<ffffffff81112842>] ? thaw_bdev+0xd2/0x110
-> [<ffffffff814b0c67>] ? dm_resume+0xf7/0x160
-> [<ffffffff814b5f00>] ? dev_suspend+0x0/0x220
-> [<ffffffff814b60b1>] ? dev_suspend+0x1b1/0x220
-> [<ffffffff814b6c7b>] ? ctl_ioctl+0x1eb/0x260
-> [<ffffffff810c0b1b>] ? handle_mm_fault+0x63b/0x990
-> [<ffffffff814b6cfe>] ? dm_ctl_ioctl+0xe/0x20
-> [<ffffffff8104991a>] ? finish_task_switch+0x3a/0xc0
-> [<ffffffff810f4e9f>] ? vfs_ioctl+0x2f/0xb0
-> [<ffffffff810f53bb>] ? do_vfs_ioctl+0x3fb/0x580
-> [<ffffffff815fb101>] ? thread_return+0x3e/0x64d
-> [<ffffffff810f55e1>] ? sys_ioctl+0xa1/0xb0
-> [<ffffffff8100bf02>] ? system_call_fastpath+0x16/0x1b
-> Code: 4d 38 48 8b 45 10 48 85 c0 74 04 48 8b 50 40 48 8d 86 60 02 00
-> 00 48 c7 c7 a8 66 76 81 48 89 04 24 48 89 ee 31 c0 e8 a9 11 50 00 <0f>
-> 0b eb fe 0f 0b eb fe 0f 1f 84 00 00 00 00 00 53 48 89 fb 48
-> RIP __[<ffffffff810f95f0>] shrink_dcache_for_umount_subtree+0x280/0x290
-> RSP <ffff880667089cf8>
-> ---[ end trace a9fb3c2286e56cbd ]---
-> 
-> 
-> I think the problem should be related with lvm or device mapper because
-> I could start perfectly a 2.6.32.2 kernel on another PowerEdge 2950
-> without any kind of lvm or dm configured...
-> but I'm really not expert with kernel debug.
-> 
-> Here is the fstab of the buggy system :
-> 
-> # /etc/fstab: static file system information.
-> #
-> # <file system> <mount point> __ <type> __<options> __ __ __ <dump> __<pass>
-> proc __ __ __ __ __ __/proc __ __ __ __ __ proc __ __defaults __ __ __ __0 __ __ __ 0
-> /dev/dm-4 __ __ __ / __ __ __ __ __ __ __ ext3 __ __errors=remount-ro 0 __ __ __ 1
-> /dev/dm-1 __ __ __ /boot __ __ __ __ __ ext3 __ __defaults __ __ __ __0 __ __ __ 2
-> /dev/dm-7 __ __ __ /home __ __ __ __ __ ext3 __ __defaults __ __ __ __0 __ __ __ 2
-> /dev/dm-5 __ __ __ /usr __ __ __ __ __ __ext3 __ __defaults __ __ __ __0 __ __ __ 2
-> /dev/dm-6 __ __ __ /var __ __ __ __ __ __ext3 __ __defaults __ __ __ __0 __ __ __ 2
-> /dev/dm-2 __ __ __ none __ __ __ __ __ __swap __ __sw __ __ __ __ __ __ __0 __ __ __ 0
-> /dev/hda __ __ __ __/media/cdrom0 __ udf,iso9660 user,noauto __ __ 0 __ __ __ 0
-> debugfs /sys/kernel/debug debugfs noauto 0 0
-> 
-> I hope it can help, and try to give us more informations if necessary.
-> 
-> Fran__ois.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
