@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572Ab0AWBrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475Ab0AWBvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572Ab0AWBrp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 20:47:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140Ab0AWBro
+	id S1755475Ab0AWBvk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 20:51:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310Ab0AWBvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 20:47:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52597 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753934Ab0AWBrn (ORCPT
+	Fri, 22 Jan 2010 20:51:39 -0500
+Received: from exchange.solarflare.com ([216.237.3.220]:6629 "EHLO
+	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754120Ab0AWBvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 20:47:43 -0500
-Date: Fri, 22 Jan 2010 17:47:36 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: =?ISO-8859-15?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>,
-       linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 1/2] string: simplify stricmp()
-In-Reply-To: <20100122162740.11410ac4.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.1001221743521.13231@localhost.localdomain>
-References: <cover.1263675077.git.andre.goddard@gmail.com> <16ee7c5e218e89f22a28247e4bd3877355f5ae5c.1263675077.git.andre.goddard@gmail.com> <20100122162740.11410ac4.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 22 Jan 2010 20:51:39 -0500
+Subject: Re: [RFC PATCH] net: NETDEV WATCHDOG should print something every
+ time
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20100122214333.14389.86017.stgit@jbrandeb-ich9b.jf.intel.com>
+References: <20100122214333.14389.86017.stgit@jbrandeb-ich9b.jf.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Solarflare Communications
+Date: Sat, 23 Jan 2010 01:51:32 +0000
+Message-ID: <1264211492.373.16.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Jan 2010 01:51:42.0406 (UTC) FILETIME=[9C767E60:01CA9BCE]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17146.005
+X-TM-AS-Result: No--17.571700-0.000000-31
+X-TM-AS-User-Approved-Sender: Yes
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 22 Jan 2010, Andrew Morton wrote:
+On Fri, 2010-01-22 at 13:43 -0800, Jesse Brandeburg wrote:
+> commit 5337407c changed NETDEV WATCHDOG messages into a message
+> that will only print once per driver load.  This removed a significant amount
+> of information from an admin who might be missing that his system was having
+> NETDEV WATCHDOGs, esp since there is no other global counter available to
+> count these events.
 > 
-> hm, that function seems a little broken.
-> 
-> If it reaches the end of s1 or s2 it will return (c1 - c2).  If however
-> it detects a difference due to other than end-of-string, it returns
-> (tolower(c1) - tolower(c2)).
-> 
-> IOW, perhaps it should be performing tolower() in the
-> I-reached-end-of-string case.
+> simply check the __warned flag and print a simple version of the message
+> without the full stack dump if the (kerneloops related) WARN_ON_ONCE has
+> already logged the hardware type and one hang.
+[...]
+> diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
+> index 18c435d..ad810a0 100644
+> --- a/include/asm-generic/bug.h
+> +++ b/include/asm-generic/bug.h
+> @@ -132,6 +132,11 @@ extern void warn_slowpath_null(const char *file, const int line);
+>  	unlikely(__ret_warn_once);				\
+>  })
+>  
+> +#define WARNED_ALREADY() ({					\
+> +	static bool __warned;					\
+> +	unlikely(__warned);					\
+> +})
 
-No, it doesn't matter. It's like strcmp - it returns "positive, negative 
-or zero" depending on whether the string compared bigger than, smaller 
-than or equal.
+It is indeed unlikely that __warned will be true, given there is no
+statement to set it...
 
-So "(int)c1 - (int)c2" is just a way to do that. And if the string ends 
-and c1 or c2 is NUL, there's no point in doing the "tolower()", because it 
-doesn't matter what the other character is: the sign is all that matters 
-(or, if they are equally long, and both c1 and c2 are zero, then 0).
+I think this could be a generic macro:
 
-> I wonder what strnicmp() is _supposed_ to return..
+#define first_time() ({						\
+	static bool __been_here;				\
+	__been_here++;						\
+})
 
-Same as strncmp.
+>  #define WARN_ON_RATELIMIT(condition, state)			\
+>  		WARN_ON((condition) && __ratelimit(state))
+>  
+> diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+> index 5173c1e..28fb14f 100644
+> --- a/net/sched/sch_generic.c
+> +++ b/net/sched/sch_generic.c
+> @@ -251,8 +251,13 @@ static void dev_watchdog(unsigned long arg)
+>  
+>  			if (some_queue_timedout) {
+>  				char drivername[64];
+> -				WARN_ONCE(1, KERN_INFO "NETDEV WATCHDOG: %s (%s): transmit queue %u timed out\n",
+> -				       dev->name, netdev_drivername(dev, drivername, 64), i);
+> +				/* FIXME: is there a way to const char string[] = "NETDEV WATCHDOG..." */
+[...]
 
-We could make it always return -1/0/+1 (many libraries do that - then the 
-return value is guaranteed to also fit in a 'char', not just an 'int'), 
-but it really shouldn't matter for any correct caller.
+Maybe you could, you know, just write that declaration... though a
+'static' in front wouldn't hurt.
 
-		Linus
+Ben.
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
+
