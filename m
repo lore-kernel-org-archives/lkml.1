@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436Ab0AWA0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756443Ab0AWA06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756436Ab0AWA0p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426Ab0AWA0l
+	id S1756443Ab0AWA06 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:26:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756070Ab0AWA0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:26:41 -0500
-Received: from mga14.intel.com ([143.182.124.37]:22411 "EHLO mga14.intel.com"
+	Fri, 22 Jan 2010 19:26:11 -0500
+Received: from kroah.org ([198.145.64.141]:35041 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754333Ab0AWA01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:26:27 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="235917452"
-Subject: x86, irq: update the vector domain for legacy irqs handled by
- io-apic
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 22 Jan 2010 16:25:17 -0800
-Message-Id: <1264206317.2874.9.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S1755149Ab0AWASt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:18:49 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:11 2010
+Message-Id: <20100123001111.635592616@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 22 Jan 2010 16:09:55 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [11/29] USB: fix bitmask merge error
+In-Reply-To: <20100123001145.GA7391@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the recent change of not reserving IRQ0_VECTOR..IRQ15_VECTOR's on all
-cpu's, we start with irq 0..15 getting directed to (and handled on) cpu-0.
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-In the logical flat mode, once the AP's are online (and before irqbalance
-comes into picture), kernel intends to handle these IRQ's on any cpu (as the
-logical flat mode allows to specify multiple cpu's for the irq destination and
-the chipset based routing can deliver to the interrupt to any one of
-the specified cpu's). This was broken with our recent change, which was ending
-up using only cpu 0 as the destination, even when the kernel was specifying to
-use all online cpu's for the logical flat mode case.
+------------------
 
-Fix this by updating vector allocation domain (cfg->domain) for legacy irqs,
-when the IO-APIC handles them.
+From: Alan Stern <stern@rowland.harvard.edu>
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+commit a91b593edd4b3e8aa91f671b763b27b8119eb49d upstream.
+
+This patch adds a mask bit which was mistakenly omitted from the
+as1311 patch (usb-storage: add BAD_SENSE flag).
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
+ drivers/usb/storage/usb.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 0cc7022..a18bab0 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -1428,6 +1428,14 @@ static void setup_IO_APIC_irq(int apic_id, int pin, unsigned int irq, struct irq
- 
- 	cfg = desc->chip_data;
- 
-+	/*
-+ 	 * For legacy irqs, cfg->domain starts with cpu 0 for legacy
-+ 	 * controllers like 8259. Now that IO-APIC can handle this irq, update
-+ 	 * the cfg->domain.
-+ 	 */
-+	if (irq < nr_legacy_irqs && cpumask_test_cpu(0, cfg->domain))
-+		apic->vector_allocation_domain(0, cfg->domain);
-+
- 	if (assign_irq_vector(irq, cfg, apic->target_cpus()))
- 		return;
- 
+--- a/drivers/usb/storage/usb.c
++++ b/drivers/usb/storage/usb.c
+@@ -430,7 +430,8 @@ static void adjust_quirks(struct us_data
+ 	u16 vid = le16_to_cpu(us->pusb_dev->descriptor.idVendor);
+ 	u16 pid = le16_to_cpu(us->pusb_dev->descriptor.idProduct);
+ 	unsigned f = 0;
+-	unsigned int mask = (US_FL_SANE_SENSE | US_FL_FIX_CAPACITY |
++	unsigned int mask = (US_FL_SANE_SENSE | US_FL_BAD_SENSE |
++			US_FL_FIX_CAPACITY |
+ 			US_FL_CAPACITY_HEURISTICS | US_FL_IGNORE_DEVICE |
+ 			US_FL_NOT_LOCKABLE | US_FL_MAX_SECTORS_64 |
+ 			US_FL_CAPACITY_OK | US_FL_IGNORE_RESIDUE |
 
 
