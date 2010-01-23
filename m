@@ -1,96 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388Ab0AWAZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328Ab0AWAZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756388Ab0AWAZn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:25:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764Ab0AWAZB
+	id S1756328Ab0AWAZP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:25:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317Ab0AWAZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:25:01 -0500
-Received: from kroah.org ([198.145.64.141]:35057 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755264Ab0AWASu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:18:50 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:11 2010
-Message-Id: <20100123001111.761679863@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Fri, 22 Jan 2010 16:09:56 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Oliver Neukum <oliver@neukum.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [12/29] USB: Dont use GFP_KERNEL while we cannot reset a storage device
-In-Reply-To: <20100123001145.GA7391@kroah.com>
+	Fri, 22 Jan 2010 19:25:10 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:37950 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756149Ab0AWAZH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:25:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=kX5IWtUDda7B9NMfnECPknUA5j6xH0ImU9uqViF9fEIkLOQ7Luoj16H7KW0RTjcG2I
+         qlAeQInhvfvpBqMTGxvj11ss90j8GM4NWNRR0yYRMr1mFlGHPom2yAOVPZ06v85ppBMd
+         BocSDnoEisIOtTr/Iexp05eGEtE7hTET8/yy8=
+Subject: [PATCH 6/8] blktrans: flush all requests before we remove the
+ device
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1264205925.31827.3.camel@maxim-laptop>
+References: <1264205925.31827.3.camel@maxim-laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 23 Jan 2010 02:24:58 +0200
+Message-ID: <1264206298.31827.10.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+>From 6d5a70a18bea40bfc354e73d7fde5042465fc534 Mon Sep 17 00:00:00 2001
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Date: Sat, 23 Jan 2010 02:09:11 +0200
+Subject: [PATCH 6/8] blktrans: flush all requests before we remove the device
 
-------------------
+Flush all requests, so we can be sure we don't deadlock the system later
+when we remove the disk queue.
 
-From: Oliver Neukum <oliver@neukum.org>
-
-commit acbe2febe71abb2360b008e9ab3ee5c44169f78c upstream.
-
-Memory allocations with GFP_KERNEL can cause IO to a storage
-device which can fail resulting in a need to reset the device.
-Therefore GFP_KERNEL cannot be safely used between usb_lock_device()
-and usb_unlock_device(). Replace by GFP_NOIO.
-
-Signed-off-by: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/usb/core/devices.c |    2 +-
- drivers/usb/core/message.c |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/mtd/mtd_blkdevs.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
---- a/drivers/usb/core/devices.c
-+++ b/drivers/usb/core/devices.c
-@@ -494,7 +494,7 @@ static ssize_t usb_device_dump(char __us
- 		return 0;
- 	/* allocate 2^1 pages = 8K (on i386);
- 	 * should be more than enough for one device */
--	pages_start = (char *)__get_free_pages(GFP_KERNEL, 1);
-+	pages_start = (char *)__get_free_pages(GFP_NOIO, 1);
- 	if (!pages_start)
- 		return -ENOMEM;
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index f165115..33bdef1 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -115,7 +115,13 @@ static int mtd_blktrans_thread(void *arg)
+ static void mtd_blktrans_request(struct request_queue *rq)
+ {
+ 	struct mtd_blktrans_dev *dev = rq->queuedata;
+-	wake_up_process(dev->thread);
++	struct request *req = NULL;
++
++	if (dev->deleted)
++		while ((req = blk_fetch_request(rq)) != NULL)
++			__blk_end_request_all(req, -ENODEV);
++	else
++		wake_up_process(dev->thread);
+ }
  
---- a/drivers/usb/core/message.c
-+++ b/drivers/usb/core/message.c
-@@ -911,11 +911,11 @@ char *usb_cache_string(struct usb_device
- 	if (index <= 0)
- 		return NULL;
+
+@@ -359,6 +365,8 @@ error1:
  
--	buf = kmalloc(MAX_USB_STRING_SIZE, GFP_KERNEL);
-+	buf = kmalloc(MAX_USB_STRING_SIZE, GFP_NOIO);
- 	if (buf) {
- 		len = usb_string(udev, index, buf, MAX_USB_STRING_SIZE);
- 		if (len > 0) {
--			smallbuf = kmalloc(++len, GFP_KERNEL);
-+			smallbuf = kmalloc(++len, GFP_NOIO);
- 			if (!smallbuf)
- 				return buf;
- 			memcpy(smallbuf, buf, len);
-@@ -1682,7 +1682,7 @@ int usb_set_configuration(struct usb_dev
- 	if (cp) {
- 		nintf = cp->desc.bNumInterfaces;
- 		new_interfaces = kmalloc(nintf * sizeof(*new_interfaces),
--				GFP_KERNEL);
-+				GFP_NOIO);
- 		if (!new_interfaces) {
- 			dev_err(&dev->dev, "Out of memory\n");
- 			return -ENOMEM;
-@@ -1691,7 +1691,7 @@ int usb_set_configuration(struct usb_dev
- 		for (; n < nintf; ++n) {
- 			new_interfaces[n] = kzalloc(
- 					sizeof(struct usb_interface),
--					GFP_KERNEL);
-+					GFP_NOIO);
- 			if (!new_interfaces[n]) {
- 				dev_err(&dev->dev, "Out of memory\n");
- 				ret = -ENOMEM;
+ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
+ {
++	unsigned long flags;
++
+ 	if (mutex_trylock(&mtd_table_mutex)) {
+ 		mutex_unlock(&mtd_table_mutex);
+ 		BUG();
+@@ -369,7 +377,11 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
+ 	/* stop new requests to arrive */
+ 	del_gendisk(old->disk);
+ 
++	/* flush current requests */
++	spin_lock_irqsave(&old->queue_lock, flags);
+ 	old->deleted = 1;
++	blk_start_queue(old->rq);
++	spin_unlock_irqrestore(&old->queue_lock, flags);
+ 
+ 	/* Stop the thread */
+ 	kthread_stop(old->thread);
+-- 
+1.6.3.3
+
 
 
