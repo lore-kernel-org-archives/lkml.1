@@ -1,140 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690Ab0AWCKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887Ab0AWCO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755690Ab0AWCKK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 21:10:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401Ab0AWCKI
+	id S1755887Ab0AWCO5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 21:14:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441Ab0AWCO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 21:10:08 -0500
-Received: from rgmadvisors.com ([207.71.26.250]:33653 "EHLO
-	mail.rgmadvisors.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754368Ab0AWCKH (ORCPT
+	Fri, 22 Jan 2010 21:14:56 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:58683 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755394Ab0AWCOz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 21:10:07 -0500
-X-Greylist: delayed 1523 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Jan 2010 21:10:07 EST
-Date: Fri, 22 Jan 2010 19:44:25 -0600
-From: Shawn Bohrer <sbohrer@rgmadvisors.com>
-To: linux-kernel@vger.kernel.org
-Cc: Nathaniel Bauernfeind <nbauernfeind@rgmadvisors.com>
-Subject: Strange delays and CPU usage reading mmapped file
-Message-ID: <20100123014424.GA2497@BohrerMBP.gateway.2wire.net>
+	Fri, 22 Jan 2010 21:14:55 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <201001211232.53116.trenn@suse.de>
+References: <1264043737-2505-1-git-send-email-mike@android.com>
+	 <1264043737-2505-2-git-send-email-mike@android.com>
+	 <201001211232.53116.trenn@suse.de>
+Date: Fri, 22 Jan 2010 18:14:54 -0800
+Message-ID: <8bb80c381001221814r2dd3fd7ao5b15bb042cc3f963@mail.gmail.com>
+Subject: Re: [PATCH 2/2] cpufreq: ondemand: Replace ignore_nice_load with 
+	nice_max_freq
+From: Mike Chan <mike@android.com>
+To: Thomas Renninger <trenn@suse.de>
+Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Miller@fmi.uni-stuttgart.de, tj@kernel.org,
+       venkatesh.pallipadi@intel.com, davej@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+2010/1/21 Thomas Renninger <trenn@suse.de>:
+> Hi,
+>
+> On Thursday 21 January 2010 04:15:37 Mike Chan wrote:
+> ..
+>> **Note: ingore_nice_load has been removed since the same functionality
+>> can be achieved by setting nice_max_freq to scaling_min_freq.
+> This breaks userspace tools.
+> Why not keep ignore_nice_load and set nice_max_freq to min/max internally.
+> You could mark it deprecated by printk_once("Don't use this file it's
+> deprecated, use nice_max_freq instead").
+>
+>> Signed-off-by: Mike Chan <mike@android.com>
+>> ---
+>>  drivers/cpufreq/cpufreq_ondemand.c |   96 +++++++++++++++++++++++-------------
+>>  1 files changed, 62 insertions(+), 34 deletions(-)
+> Whatabout cpufreq_conservative.c?
+> Does something similar make sense there, too?
+> ...
 
-I'm seeing some strange delays and high CPU usage when reading from a
-memory mapped file.  It appears there is some threshold of number of
-pages read, that triggers the problem and that threshold varies
-depending on the machine.  I'm hoping someone can help explain what is
-happening here.  See the simple example program at the end.
+Yes, the conservative governor could benefit from this. I suppose once
+there is an accepted version for ondemand we can look at porting or
+applying something similar.
 
+>> -static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
+>> +static ssize_t store_nice_max_freq(struct kobject *a, struct attribute *b,
+>>                                     const char *buf, size_t count)
+>>  {
+>>       unsigned int input;
+>> @@ -330,15 +330,12 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
+>>       if (ret != 1)
+>>               return -EINVAL;
+>>
+>> -     if (input > 1)
+>> -             input = 1;
+>
+>> -
+>>       mutex_lock(&dbs_mutex);
+>> -     if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
+>> +     if (input == dbs_tuners_ins.nice_max_freq) { /* nothing to do */
+>>               mutex_unlock(&dbs_mutex);
+>>               return count;
+>>       }
+>> -     dbs_tuners_ins.ignore_nice = input;
+>> +     dbs_tuners_ins.nice_max_freq = input;
+> What happens if userspace provides a wrong value?
+> Sanity checking is ugly at this place, though.
+> Only idea I have is to iterate over all cpuinfo.{min,max}_freq
+>
+> ...
 
-$ gcc mmap_read.c -o mmap_read
-$ dd if=/dev/urandom of=testfile bs=4096 count=35000
-$ /usr/bin/time ./mmap_read testfile 5000
-Pages Touched: 35000
-0.54user 0.17system 0:05.68elapsed 12%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+0outputs (0major+35122minor)pagefaults 0swaps
+I think we are ok here, as speed change uses __cpufreq_driver_target
+which will choose the highest at or below, or lowest at or above speed
+respectively for speed X.
 
-Which is what I would expect, but if I increase the number of pages:
+>>  };
+>> @@ -412,7 +409,7 @@ static ssize_t store_##file_name##_old                                    \
+>>  }
+>>  write_one_old(sampling_rate);
+>>  write_one_old(up_threshold);
+>> -write_one_old(ignore_nice_load);
+>> +write_one_old(nice_max_freq);
+> This is the depracated
+> /sys/devices/system/cpu/cpuX/cpufreq/ondemand
+> interface. If this should be a global variable for all cores
+> here:
+> /sys/devices/system/cpu/cpufreq/ondemand
+> you don't need it. If this should be configurable per core
+> you don't need the other and should add this one not marked
+> old and place it outside this paragraph:
+> /*** delete after deprecation time ***/
+>
 
-$ dd if=/dev/urandom of=testfile bs=4096 count=40000
-$ /usr/bin/time ./mmap_read testfile 5000
-Pages Touched: 40000
-5.00user 0.05system 0:10.06elapsed 50%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+0outputs (0major+40122minor)pagefaults 0swaps
+Although ideally this should probably be per-core setting, since you
+still specify min/max_scaling_freq per-core with cpufreq. However it
+looks like all of the ondemand tune ables are moving to global, for
+initial simplicity I'll try putting it in global as well.
 
-The user time jumps to 5.00s and I get 50% CPU usage.  I've run this
-on a couple of machines with the same result, but the number of pages
-required to trigger the problem seems to vary.  The specs of this
-machine are:
+Thanks for the feedback, I'll send out a new version.
 
-$ uname -a
-Linux BohrerMBP 2.6.31.12-174.2.3.fc12.x86_64 #1 SMP Mon Jan 18 19:52:07 UTC 2010 x86_64 x86_64 x86_64 GNU/Linux
-
-$ cat /proc/cpuinfo | grep "model name"
-model name      : Intel(R) Core(TM)2 Duo CPU     T9400  @ 2.53GHz
-model name      : Intel(R) Core(TM)2 Duo CPU     T9400  @ 2.53GHz
-
-$ free
-             total       used       free     shared    buffers     cached
-Mem:       4035088     849936    3185152          0      44268     420356
--/+ buffers/cache:     385312    3649776
-Swap:      4244472          0    4244472
-
-
-
-The example program used:
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/epoll.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-int main(int argc, char *argv[])
-{
-	struct stat sb;
-	off_t len;
-	char *p;
-	int sum, i, cnt;
-	int fd;
-	int epfd = epoll_create(1);
-
-	if (argc < 3){
-		fprintf(stderr, "usage: %s <file> <iterations>\n", argv[0]);
-		return 1;
-	}
-
-	fd = open(argv[1], O_RDONLY);
-	if (fd == -1) {
-		perror("open");
-		return 1;
-	}
-
-	if (fstat(fd, &sb) == -1) {
-		perror ("fstat");
-		return 1;
-	}
-
-	if (!S_ISREG(sb.st_mode)) {
-		fprintf(stderr, "%s is not a file\n", argv[1]);
-		return 1;
-	}
-
-	p = mmap(0, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	if (p == MAP_FAILED) {
-		perror("mmap");
-		return 1;
-	}
-
-	if (close(fd) == -1) {
-		perror("close");
-		return 1;
-	}
-
-	cnt = atoi(argv[2]);
-	for (i = 0; i < cnt; ++i) {
-		for (len =0; len < sb.st_size; len += 4096) {
-			sum += p[len];
-		}
-                /* Sleep 1ms */
-		epoll_wait(epfd, 0, 1, 1);
-	}
-	printf("Pages Touched: %d\n", len/4096);
-
-	if (munmap(p, sb.st_size) == -1) {
-		perror("munmap");
-		return 1;
-	}
-
-	return 0;
-}
+>>  write_one_old(powersave_bias);
+>>
+>>  #define define_one_rw_old(object, _name)       \
+>> @@ -421,7 +418,7 @@ __ATTR(_name, 0644, show_##_name##_old, store_##_name##_old)
+>>
+>>  define_one_rw_old(sampling_rate_old, sampling_rate);
+>>  define_one_rw_old(up_threshold_old, up_threshold);
+>> -define_one_rw_old(ignore_nice_load_old, ignore_nice_load);
+>> +define_one_rw_old(nice_max_freq_old, nice_max_freq);
+> same here.
+>>  define_one_rw_old(powersave_bias_old, powersave_bias);
+>>
+>>  static struct attribute *dbs_attributes_old[] = {
+>> @@ -429,7 +426,7 @@ static struct attribute *dbs_attributes_old[] = {
+>>         &sampling_rate_min_old.attr,
+>>         &sampling_rate_old.attr,
+>>         &up_threshold_old.attr,
+>> -       &ignore_nice_load_old.attr,
+>> +       &nice_max_freq_old.attr,
+> and here.
+>>         &powersave_bias_old.attr,
+>>         NULL
+>>  };
+> ...
+>> @@ -477,12 +473,13 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+>>        */
+>>
+>>       /* Get Absolute Load - in terms of freq */
+>> -     max_load_freq = 0;
+>> +     max_load_freq = max_ignore_nice_load_freq = 0;
+>>
+>>       for_each_cpu(j, policy->cpus) {
+>>               struct cpu_dbs_info_s *j_dbs_info;
+>>               cputime64_t cur_wall_time, cur_idle_time;
+>> -             unsigned int idle_time, wall_time;
+>> +             unsigned int idle_time,  wall_time;
+> not needed whitespace.
+>
+>> +             unsigned long cur_nice_jiffies;
+>>               unsigned int load, load_freq;
+>>               int freq_avg;
+>>
+> ...
+>> @@ -512,27 +513,47 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+>>                                       cputime64_to_jiffies64(cur_nice);
+>>
+>>                       j_dbs_info->prev_cpu_nice = kstat_cpu(j).cpustat.nice;
+>> -                     idle_time += jiffies_to_usecs(cur_nice_jiffies);
+>> +                     nice_idle_time += jiffies_to_usecs(cur_nice_jiffies);
+>> +
+>> +                     if (wall_time < nice_idle_time)
+>> +                             continue;
+> Can wall_time and nice_idle_time ever be both zero?
+>> +                     load = 100 * (wall_time - nice_idle_time) / wall_time;
+> Then you divide through zero here.
+>> +                     load_freq = load * freq_avg;
+>> +                     if (load_freq > max_ignore_nice_load_freq)
+>> +                             max_ignore_nice_load_freq = load_freq;
+>>               }
+>>
+>> -             if (unlikely(!wall_time || wall_time < idle_time))
+>> +             if (unlikely(!wall_time || wall_time < idle_time +
+>> +                                     jiffies_to_usecs(cur_nice_jiffies)))
+>>                       continue;
+>>
+> ...
+>
