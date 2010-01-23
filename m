@@ -1,179 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887Ab0AWCO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472Ab0AWC2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755887Ab0AWCO5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 21:14:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441Ab0AWCO4
+	id S1755472Ab0AWC2f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 21:28:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776Ab0AWC2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 21:14:56 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:58683 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755394Ab0AWCOz convert rfc822-to-8bit (ORCPT
+	Fri, 22 Jan 2010 21:28:34 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:49234 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754333Ab0AWC2d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 21:14:55 -0500
-MIME-Version: 1.0
-In-Reply-To: <201001211232.53116.trenn@suse.de>
-References: <1264043737-2505-1-git-send-email-mike@android.com>
-	 <1264043737-2505-2-git-send-email-mike@android.com>
-	 <201001211232.53116.trenn@suse.de>
-Date: Fri, 22 Jan 2010 18:14:54 -0800
-Message-ID: <8bb80c381001221814r2dd3fd7ao5b15bb042cc3f963@mail.gmail.com>
-Subject: Re: [PATCH 2/2] cpufreq: ondemand: Replace ignore_nice_load with 
-	nice_max_freq
-From: Mike Chan <mike@android.com>
-To: Thomas Renninger <trenn@suse.de>
-Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Miller@fmi.uni-stuttgart.de, tj@kernel.org,
-       venkatesh.pallipadi@intel.com, davej@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 22 Jan 2010 21:28:33 -0500
+X-Authority-Analysis: v=1.0 c=1 a=nUI_7skzWQEA:10 a=7U3hwN5JcxgA:10 a=nrACCIEEAAAA:8 a=y46wjULSnjFbcZMvZzIA:9 a=-k2Ycoy9qvuZt3UIWS0A:7 a=0-XFll6t__qMn66e9YU6wrosQUcA:4 a=XzDCobDXv4jD0wz8:21 a=7FwgF1RLiYh_hIlz:21
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [RFC PATCH -tip 1/2 v2] add tracepoints for pagecache
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, lwoodman@redhat.com, linux-mm@kvack.org,
+       mingo@elte.hu, tzanussi@gmail.com, riel@redhat.com,
+       akpm@linux-foundation.org, fweisbec@gmail.com,
+       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+In-Reply-To: <4B5A3DD5.3020904@bx.jp.nec.com>
+References: <4B5A3D00.8080901@bx.jp.nec.com>
+	 <4B5A3DD5.3020904@bx.jp.nec.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Fri, 22 Jan 2010 21:28:29 -0500
+Message-ID: <1264213709.31321.401.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/21 Thomas Renninger <trenn@suse.de>:
-> Hi,
->
-> On Thursday 21 January 2010 04:15:37 Mike Chan wrote:
-> ..
->> **Note: ingore_nice_load has been removed since the same functionality
->> can be achieved by setting nice_max_freq to scaling_min_freq.
-> This breaks userspace tools.
-> Why not keep ignore_nice_load and set nice_max_freq to min/max internally.
-> You could mark it deprecated by printk_once("Don't use this file it's
-> deprecated, use nice_max_freq instead").
->
->> Signed-off-by: Mike Chan <mike@android.com>
->> ---
->>  drivers/cpufreq/cpufreq_ondemand.c |   96 +++++++++++++++++++++++-------------
->>  1 files changed, 62 insertions(+), 34 deletions(-)
-> Whatabout cpufreq_conservative.c?
-> Does something similar make sense there, too?
-> ...
+On Fri, 2010-01-22 at 19:07 -0500, Keiichi KII wrote:
+> This patch adds several tracepoints to track pagecach behavior.
+> These trecepoints would help us monitor pagecache usage with high resolution.
+> 
+> Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+> Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com> 
+> ---
+>  include/trace/events/filemap.h |   83 +++++++++++++++++++++++++++++++++++++++++
+>  mm/filemap.c                   |    5 ++
+>  mm/truncate.c                  |    2 
+>  mm/vmscan.c                    |    3 +
+>  4 files changed, 93 insertions(+)
+> 
+> Index: linux-2.6-tip/include/trace/events/filemap.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6-tip/include/trace/events/filemap.h
+> @@ -0,0 +1,83 @@
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM filemap
+> +
+> +#if !defined(_TRACE_FILEMAP_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_FILEMAP_H
+> +
+> +#include <linux/fs.h>
+> +#include <linux/tracepoint.h>
+> +
+> +TRACE_EVENT(find_get_page,
+> +
+> +	TP_PROTO(struct address_space *mapping, pgoff_t offset,
+> +		struct page *page),
+> +
+> +	TP_ARGS(mapping, offset, page),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(dev_t, s_dev)
+> +		__field(ino_t, i_ino)
+> +		__field(pgoff_t, offset)
+> +		__field(struct page *, page)
+> +		),
+> +
+> +	TP_fast_assign(
+> +		__entry->s_dev = mapping->host ? mapping->host->i_sb->s_dev : 0;
+> +		__entry->i_ino = mapping->host ? mapping->host->i_ino : 0;
+> +		__entry->offset = offset;
+> +		__entry->page = page;
+> +		),
+> +
+> +	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu %s", MAJOR(__entry->s_dev),
+> +		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset,
+> +		__entry->page == NULL ? "page_not_found" : "page_found")
+> +);
+> +
+> +TRACE_EVENT(add_to_page_cache,
+> +
+> +	TP_PROTO(struct address_space *mapping, pgoff_t offset),
+> +
+> +	TP_ARGS(mapping, offset),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(dev_t, s_dev)
+> +		__field(ino_t, i_ino)
+> +		__field(pgoff_t, offset)
+> +		),
+> +
+> +	TP_fast_assign(
+> +		__entry->s_dev = mapping->host->i_sb->s_dev;
+> +		__entry->i_ino = mapping->host->i_ino;
+> +		__entry->offset = offset;
+> +		),
+> +
+> +	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu", MAJOR(__entry->s_dev),
+> +		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset)
+> +);
+> +
+> +TRACE_EVENT(remove_from_page_cache,
+> +
+> +	TP_PROTO(struct address_space *mapping, pgoff_t offset),
+> +
+> +	TP_ARGS(mapping, offset),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(dev_t, s_dev)
+> +		__field(ino_t, i_ino)
+> +		__field(pgoff_t, offset)
+> +		),
+> +
+> +	TP_fast_assign(
+> +		__entry->s_dev = mapping->host->i_sb->s_dev;
+> +		__entry->i_ino = mapping->host->i_ino;
+> +		__entry->offset = offset;
+> +		),
+> +
+> +	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu", MAJOR(__entry->s_dev),
+> +		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset)
+> +);
+> +
 
-Yes, the conservative governor could benefit from this. I suppose once
-there is an accepted version for ondemand we can look at porting or
-applying something similar.
+The above qualify in converting to templates or DECLACE_TRACE_CLASS, and
+DEFINE_EVENT, That is, rename the above TRACE_EVENT into
+DECLARE_TRACE_CLASS, and then have the other one be a DEFINE_EVENT().
+See the trace/event/sched.h for examples.
 
->> -static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
->> +static ssize_t store_nice_max_freq(struct kobject *a, struct attribute *b,
->>                                     const char *buf, size_t count)
->>  {
->>       unsigned int input;
->> @@ -330,15 +330,12 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
->>       if (ret != 1)
->>               return -EINVAL;
->>
->> -     if (input > 1)
->> -             input = 1;
->
->> -
->>       mutex_lock(&dbs_mutex);
->> -     if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
->> +     if (input == dbs_tuners_ins.nice_max_freq) { /* nothing to do */
->>               mutex_unlock(&dbs_mutex);
->>               return count;
->>       }
->> -     dbs_tuners_ins.ignore_nice = input;
->> +     dbs_tuners_ins.nice_max_freq = input;
-> What happens if userspace provides a wrong value?
-> Sanity checking is ugly at this place, though.
-> Only idea I have is to iterate over all cpuinfo.{min,max}_freq
->
-> ...
+The TRACE_EVENT can add a bit of code, so use DECLARE_TRACE_CLASS when
+possible and it will save on the size overhead.
 
-I think we are ok here, as speed change uses __cpufreq_driver_target
-which will choose the highest at or below, or lowest at or above speed
-respectively for speed X.
+-- Steve
 
->>  };
->> @@ -412,7 +409,7 @@ static ssize_t store_##file_name##_old                                    \
->>  }
->>  write_one_old(sampling_rate);
->>  write_one_old(up_threshold);
->> -write_one_old(ignore_nice_load);
->> +write_one_old(nice_max_freq);
-> This is the depracated
-> /sys/devices/system/cpu/cpuX/cpufreq/ondemand
-> interface. If this should be a global variable for all cores
-> here:
-> /sys/devices/system/cpu/cpufreq/ondemand
-> you don't need it. If this should be configurable per core
-> you don't need the other and should add this one not marked
-> old and place it outside this paragraph:
-> /*** delete after deprecation time ***/
->
+> +#endif /* _TRACE_FILEMAP_H */
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> Index: linux-2.6-tip/mm/filemap.c
+> ===================================================================
+> --- linux-2.6-tip.orig/mm/filemap.c
+> +++ linux-2.6-tip/mm/filemap.c
+> @@ -34,6 +34,8 @@
+>  #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+>  #include <linux/memcontrol.h>
+>  #include <linux/mm_inline.h> /* for page_is_file_cache() */
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/filemap.h>
+>  #include "internal.h"
+>  
+>  /*
+> @@ -149,6 +151,7 @@ void remove_from_page_cache(struct page 
+>  	spin_lock_irq(&mapping->tree_lock);
+>  	__remove_from_page_cache(page);
+>  	spin_unlock_irq(&mapping->tree_lock);
+> +	trace_remove_from_page_cache(mapping, page->index);
+>  	mem_cgroup_uncharge_cache_page(page);
+>  }
+>  
+> @@ -419,6 +422,7 @@ int add_to_page_cache_locked(struct page
+>  			if (PageSwapBacked(page))
+>  				__inc_zone_page_state(page, NR_SHMEM);
+>  			spin_unlock_irq(&mapping->tree_lock);
+> +			trace_add_to_page_cache(mapping, offset);
+>  		} else {
+>  			page->mapping = NULL;
+>  			spin_unlock_irq(&mapping->tree_lock);
+> @@ -642,6 +646,7 @@ repeat:
+>  	}
+>  	rcu_read_unlock();
+>  
+> +	trace_find_get_page(mapping, offset, page);
+>  	return page;
+>  }
+>  EXPORT_SYMBOL(find_get_page);
+> Index: linux-2.6-tip/mm/truncate.c
+> ===================================================================
+> --- linux-2.6-tip.orig/mm/truncate.c
+> +++ linux-2.6-tip/mm/truncate.c
+> @@ -20,6 +20,7 @@
+>  				   do_invalidatepage */
+>  #include "internal.h"
+>  
+> +#include <trace/events/filemap.h>
+>  
+>  /**
+>   * do_invalidatepage - invalidate part or all of a page
+> @@ -388,6 +389,7 @@ invalidate_complete_page2(struct address
+>  	BUG_ON(page_has_private(page));
+>  	__remove_from_page_cache(page);
+>  	spin_unlock_irq(&mapping->tree_lock);
+> +	trace_remove_from_page_cache(mapping, page->index);
+>  	mem_cgroup_uncharge_cache_page(page);
+>  	page_cache_release(page);	/* pagecache ref */
+>  	return 1;
+> Index: linux-2.6-tip/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6-tip.orig/mm/vmscan.c
+> +++ linux-2.6-tip/mm/vmscan.c
+> @@ -48,6 +48,8 @@
+>  
+>  #include "internal.h"
+>  
+> +#include <trace/events/filemap.h>
+> +
+>  struct scan_control {
+>  	/* Incremented by the number of inactive pages that were scanned */
+>  	unsigned long nr_scanned;
+> @@ -477,6 +479,7 @@ static int __remove_mapping(struct addre
+>  	} else {
+>  		__remove_from_page_cache(page);
+>  		spin_unlock_irq(&mapping->tree_lock);
+> +		trace_remove_from_page_cache(mapping, page->index);
+>  		mem_cgroup_uncharge_cache_page(page);
+>  	}
+>  
+> 
+> 
 
-Although ideally this should probably be per-core setting, since you
-still specify min/max_scaling_freq per-core with cpufreq. However it
-looks like all of the ondemand tune ables are moving to global, for
-initial simplicity I'll try putting it in global as well.
 
-Thanks for the feedback, I'll send out a new version.
-
->>  write_one_old(powersave_bias);
->>
->>  #define define_one_rw_old(object, _name)       \
->> @@ -421,7 +418,7 @@ __ATTR(_name, 0644, show_##_name##_old, store_##_name##_old)
->>
->>  define_one_rw_old(sampling_rate_old, sampling_rate);
->>  define_one_rw_old(up_threshold_old, up_threshold);
->> -define_one_rw_old(ignore_nice_load_old, ignore_nice_load);
->> +define_one_rw_old(nice_max_freq_old, nice_max_freq);
-> same here.
->>  define_one_rw_old(powersave_bias_old, powersave_bias);
->>
->>  static struct attribute *dbs_attributes_old[] = {
->> @@ -429,7 +426,7 @@ static struct attribute *dbs_attributes_old[] = {
->>         &sampling_rate_min_old.attr,
->>         &sampling_rate_old.attr,
->>         &up_threshold_old.attr,
->> -       &ignore_nice_load_old.attr,
->> +       &nice_max_freq_old.attr,
-> and here.
->>         &powersave_bias_old.attr,
->>         NULL
->>  };
-> ...
->> @@ -477,12 +473,13 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
->>        */
->>
->>       /* Get Absolute Load - in terms of freq */
->> -     max_load_freq = 0;
->> +     max_load_freq = max_ignore_nice_load_freq = 0;
->>
->>       for_each_cpu(j, policy->cpus) {
->>               struct cpu_dbs_info_s *j_dbs_info;
->>               cputime64_t cur_wall_time, cur_idle_time;
->> -             unsigned int idle_time, wall_time;
->> +             unsigned int idle_time,  wall_time;
-> not needed whitespace.
->
->> +             unsigned long cur_nice_jiffies;
->>               unsigned int load, load_freq;
->>               int freq_avg;
->>
-> ...
->> @@ -512,27 +513,47 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
->>                                       cputime64_to_jiffies64(cur_nice);
->>
->>                       j_dbs_info->prev_cpu_nice = kstat_cpu(j).cpustat.nice;
->> -                     idle_time += jiffies_to_usecs(cur_nice_jiffies);
->> +                     nice_idle_time += jiffies_to_usecs(cur_nice_jiffies);
->> +
->> +                     if (wall_time < nice_idle_time)
->> +                             continue;
-> Can wall_time and nice_idle_time ever be both zero?
->> +                     load = 100 * (wall_time - nice_idle_time) / wall_time;
-> Then you divide through zero here.
->> +                     load_freq = load * freq_avg;
->> +                     if (load_freq > max_ignore_nice_load_freq)
->> +                             max_ignore_nice_load_freq = load_freq;
->>               }
->>
->> -             if (unlikely(!wall_time || wall_time < idle_time))
->> +             if (unlikely(!wall_time || wall_time < idle_time +
->> +                                     jiffies_to_usecs(cur_nice_jiffies)))
->>                       continue;
->>
-> ...
->
