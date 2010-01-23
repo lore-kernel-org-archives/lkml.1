@@ -1,277 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895Ab0AWALa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992Ab0AWALu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895Ab0AWALa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:11:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497Ab0AWAL2
+	id S1754992Ab0AWALu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:11:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401Ab0AWALs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:11:28 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:46578 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753193Ab0AWAL1 (ORCPT
+	Fri, 22 Jan 2010 19:11:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35085 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751628Ab0AWALq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:11:27 -0500
-Message-ID: <4B5A3E19.6060502@bx.jp.nec.com>
-Date: Fri, 22 Jan 2010 19:08:57 -0500
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Fri, 22 Jan 2010 19:11:46 -0500
+Date: Fri, 22 Jan 2010 16:11:03 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Frank Ch. Eigler" <fche@redhat.com>
+cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+In-Reply-To: <20100122221348.GA4263@redhat.com>
+Message-ID: <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
+References: <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org> <20100122005147.GD22003@redhat.com>
+ <20100121170541.7425ff10.akpm@linux-foundation.org> <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain> <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
+ <20100122221348.GA4263@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: lwoodman@redhat.com, linux-mm@kvack.org, mingo@elte.hu, tzanussi@gmail.com,
-       riel@redhat.com, rostedt@goodmis.org, akpm@linux-foundation.org,
-       fweisbec@gmail.com, Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
-       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-Subject: [RFC PATCH -tip 2/2 v2] add a scripts for pagecache usage per process
-References: <4B5A3D00.8080901@bx.jp.nec.com>
-In-Reply-To: <4B5A3D00.8080901@bx.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The scripts are implemented based on the trace stream scripting support.
-And the scripts implement the following.
- - how many pagecaches each process has per each file
- - how many pages are cached per each file
- - how many pagecaches each process shares
-
-To monitor pagecache usage per a process, run "pagecache-usage-record" to
-record perf data for "pagecache-usage.pl" and run "pagecache-usage-report"
-to display.
-
-The below outputs show execution sample.
-
-[file list]
-        device      inode   caches
-  --------------------------------
-         253:0    1051413      130
-         253:0    1051399        2
-         253:0    1051414       44
-         253:0    1051417      154
-
-[process list]
-o postmaster-2330
-                            cached    added  removed      indirect
-        device      inode    pages    pages    pages removed pages
-  ----------------------------------------------------------------
-         253:0    1051399        0        2        0             0
-         253:0    1051417      154        0        0             0
-         253:0    1051413      130        0        0             0
-         253:0    1051414       44        0        0             0
-  ----------------------------------------------------------------
-  total:                       337        2        0             0
-
->From the output, we can know some information like:
-
-- if "added pages" > "cached pages" on process list then
-    It means repeating add/remove pagecache many times.
-  => Bad case for pagecache usage
-
-- if "added pages" <= "cached pages" on process list then
-    It means no unnecessary I/O operations.
-  => Good case for pagecache usage.
-
-- if "caches" on file list > 
-         sum "cached pages" per each file on process list then
-    It means there are unneccessary pagecaches in the memory. 
-  => Bad case for pagecache usage
-
-Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
-Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
----
- tools/perf/scripts/perl/bin/pagecache-usage-record |    7 
- tools/perf/scripts/perl/bin/pagecache-usage-report |    6 
- tools/perf/scripts/perl/pagecache-usage.pl         |  160 +++++++++++++++++++++
- 3 files changed, 173 insertions(+)
-
-Index: linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-usage-record
-===================================================================
---- /dev/null
-+++ linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-usage-record
-@@ -0,0 +1,7 @@
-+#!/bin/bash
-+perf record -c 1 -f -a -M -R -e filemap:add_to_page_cache -e filemap:find_get_page -e filemap:remove_from_page_cache
-+
-+
-+
-+
-+
-Index: linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-usage-report
-===================================================================
---- /dev/null
-+++ linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-usage-report
-@@ -0,0 +1,6 @@
-+#!/bin/bash
-+# description: pagecache usage per process
-+perf trace -s ~/libexec/perf-core/scripts/perl/pagecache-usage.pl
-+
-+
-+
-Index: linux-2.6-tip/tools/perf/scripts/perl/pagecache-usage.pl
-===================================================================
---- /dev/null
-+++ linux-2.6-tip/tools/perf/scripts/perl/pagecache-usage.pl
-@@ -0,0 +1,160 @@
-+# perf trace event handlers, generated by perf trace -g perl
-+# Licensed under the terms of the GNU GPL License version 2
-+
-+# The common_* event handler fields are the most useful fields common to
-+# all events.  They don't necessarily correspond to the 'common_*' fields
-+# in the format files.  Those fields not available as handler params can
-+# be retrieved using Perl functions of the form common_*($context).
-+# See Context.pm for the list of available functions.
-+
-+use lib "$ENV{'PERF_EXEC_PATH'}/scripts/perl/Perf-Trace-Util/lib";
-+use lib "./Perf-Trace-Util/lib";
-+use Perf::Trace::Core;
-+use Perf::Trace::Context;
-+use Perf::Trace::Util;
-+use List::Util qw/sum/;
-+my %files;
-+my %processes;
-+my %records;
-+
-+sub trace_end
-+{
-+	print_pagecache_usage_per_file();
-+	print "\n";
-+	print_pagecache_usage_per_process();
-+	print_unhandled();
-+}
-+
-+sub filemap::remove_from_page_cache
-+{
-+	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	    $common_pid, $common_comm,
-+	    $s_dev, $i_ino, $offset) = @_;
-+	my $f = \%{$files{$s_dev}{$i_ino}};
-+	my $r = \%{$records{$common_comm."-".$common_pid}{$f}};
-+
-+	delete $$f{$offset};
-+	$$r{inode} = $i_ino;
-+	$$r{dev} = $s_dev;
-+	if (exists $$r{added}{$offset}) {
-+	    $$r{removed}++;
-+	} else {
-+	    $$r{indirect_removed}++;
-+	}
-+}
-+
-+sub filemap::add_to_page_cache
-+{
-+	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	    $common_pid, $common_comm,
-+	    $s_dev, $i_ino, $offset) = @_;
-+	my $f = \%{$files{$s_dev}{$i_ino}};
-+	my $r = \%{$records{$common_comm."-".$common_pid}{$f}};
-+
-+	$$f{$offset}++;
-+	$$r{added}{$offset}++;
-+	$$r{inode} = $i_ino;
-+	$$r{dev} = $s_dev;
-+}
-+
-+sub filemap::find_get_page
-+{
-+	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	    $common_pid, $common_comm,
-+	    $s_dev, $i_ino, $offset, $page) = @_;
-+	my $f = \%{$files{$s_dev}{$i_ino}};
-+	my $r = \%{$records{$common_comm."-".$common_pid}{$f}};
-+
-+	if ($page != 0) {
-+	    $$f{$offset}++;
-+	    $$r{cached}++;
-+	    $$r{inode} = $i_ino;
-+	    $$r{dev} = $s_dev;
-+	}
-+}
-+
-+my %unhandled;
-+
-+sub trace_unhandled
-+{
-+	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	    $common_pid, $common_comm) = @_;
-+
-+	$unhandled{$event_name}++;
-+}
-+
-+sub print_unhandled
-+{
-+	if ((scalar keys %unhandled) == 0) {
-+	    print "unhandled events nothing\n";
-+	    return;
-+	}
-+
-+	print "\nunhandled events:\n\n";
-+
-+	printf("%-40s  %10s\n", "event", "count");
-+	printf("%-40s  %10s\n", "----------------------------------------",
-+	       "-----------");
-+
-+	foreach my $event_name (keys %unhandled) {
-+	    printf("%-40s  %10d\n", $event_name, $unhandled{$event_name});
-+	}
-+}
-+
-+sub minor
-+{
-+	my $dev = shift;
-+	return $dev & ((1 << 20) - 1);
-+}
-+
-+sub major
-+{
-+	my $dev = shift;
-+	return $dev >> 20;
-+}
-+
-+sub print_pagecache_usage_per_file
-+{
-+	print "[file list]\n";
-+	printf("  %12s %10s %8s\n", "", "", "cached");
-+	printf("  %12s %10s %8s\n", "device", "inode", "pages");
-+	printf("  %s\n", '-' x 32);
-+	while(my($dev, $file) = each(%files)) {
-+	    while(my($inode, $r) = each(%$file)) {
-+		my $count = values %$r;
-+		next if $count == 0;
-+		printf("  %12s %10d %8d\n",
-+		       major($dev).":".minor($dev), $inode, $count);
-+	    }
-+	}
-+}
-+
-+sub print_pagecache_usage_per_process
-+{
-+	print "[process list]\n";
-+	while(my ($pid, $v) = each(%records)) {
-+	    my ($sum_cached, $sum_added, $sum_removed, $sum_indirect_removed);
-+
-+	    print "o $pid\n";
-+	    printf("  %12s %10s %8s %8s %8s %13s\n", "", "",
-+		   "cached", "added", "removed", "indirect");
-+	    printf("  %12s %10s %8s %8s %8s %13s\n", "device", "inode",
-+		   "pages", "pages", "pages", "removed pages");
-+	    printf("  %s\n", '-' x 64);
-+	    while(my ($file, $r) = each(%$v)) {
-+		my $added_num = List::Util::sum(values %{$$r{added}});
-+		$sum_cached += $$r{cached};
-+		$sum_added += $added_num;
-+		$sum_removed += $$r{removed};
-+		$sum_indirect_removed += $$r{indirect_removed};
-+		printf("  %12s %10d %8d %8d %8d %13d\n",
-+		       major($$r{dev}).":".minor($$r{dev}), $$r{inode},
-+		       $$r{cached}, $added_num, $$r{removed},
-+		       $$r{indirect_removed});
-+	    }
-+	    printf("  %s\n", '-' x 64);
-+	    printf("  total: %5s %10s %8d %8d %8d %13d\n", "", "", $sum_cached,
-+		   $sum_added, $sum_removed, $sum_indirect_removed);
-+	    print "\n";
-+	}
-+}
 
 
+On Fri, 22 Jan 2010, Frank Ch. Eigler wrote:
+> 
+> The point is that the intermediate api will allow (and, as the part
+> you clipped out about utrace-gdbstub said, *already has allowed*)
+> alternative plausible interfaces that coexist just fine.
 
+And my point is that multiple interfaces are BAD. 
+
+There is one interface we _have_ to have: the traditional ptrace one. That 
+one we can't get away from.
+
+"Multiple interfaces" on its own is just confusion with no upside. 
+
+You need a _reason_ to have other interfaces. They need to have that 
+killer feature. Just being "different" is not a feature at all.
+
+> So all this is about *naming* utrace?  It was never built "for
+> tracing", but for (efficient/multiplexed) *control*.  That wasn't even
+> its original name -- one of your lieutenants asked roland to change it
+> to utrace.
+
+No. It's not about naming. It's about the downside of having amorphous 
+interfaces that apparently don't even have rules, and are then used to 
+implement random crap.
+
+Yes, the SNL skit about "It's a dessert topping _and_ a floor wax" was 
+funny, but it was funny exactly because it was crazy.
+
+The fact that you can do crazy things is not a good thing. You need to 
+find the "goodness" somewhere else, and that's what I'm trying to tell 
+you.
+
+You just seem to have trouble listening. 
+
+			Linus
