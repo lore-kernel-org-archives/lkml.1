@@ -1,510 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222Ab0AWGO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754342Ab0AWGVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222Ab0AWGO4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 01:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617Ab0AWGOz
+	id S1754342Ab0AWGVQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 01:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827Ab0AWGVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 01:14:55 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:41035 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750758Ab0AWGOy (ORCPT
+	Sat, 23 Jan 2010 01:21:15 -0500
+Received: from mail-pz0-f190.google.com ([209.85.222.190]:64110 "EHLO
+	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750758Ab0AWGVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 01:14:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=VJC5lUf78/OvGfv4Hsq2lxCja/BHuo+WU0voKeo6OYWEGapciQfSjLwU72g0MOo0G8
-         uKSHiRNvzae9m0OMi2XFu9thql+fyNLX6MgI6jF0fN/hrvJKloHvnaSLLjgfm52KsSyq
-         VCI8dJ2p0L4RVAtf5qrRhxLmlwXK6jHwpgs8M=
-Message-ID: <4B5A93DB.3090305@gmail.com>
-Date: Sat, 23 Jan 2010 01:14:51 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Sat, 23 Jan 2010 01:21:14 -0500
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 6/7] TCPCT part 2f: cleanup tcp_parse_options
-References: <4B5A88C4.7050205@gmail.com>
-In-Reply-To: <4B5A88C4.7050205@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------070900030804000606040606"
+In-Reply-To: <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
+References: <20100121013822.28781960.sfr@canb.auug.org.au> 
+	<20100122005147.GD22003@redhat.com> <20100121170541.7425ff10.akpm@linux-foundation.org> 
+	<alpine.LFD.2.00.1001211724500.13231@localhost.localdomain> 
+	<20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> 
+	<alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> 
+	<20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> 
+	<alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
+From: Kyle Moffett <kyle@moffetthome.net>
+Date: Sat, 23 Jan 2010 01:20:53 -0500
+Message-ID: <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
+Subject: Re: linux-next: add utrace tree
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Fr??d??ric Weisbecker" <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070900030804000606040606
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, Jan 22, 2010 at 19:22, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> There are cases where we really _want_ to have common code. We want to
+> have a common VFS interface because we want to show _one_ interface to
+> user space across a gazillion different filesystems. We want to have a
+> common driver layer (as far as possible) because - again - we expose a
+> metric shitload of drivers, and we want to have one unified interface to
+> them.
 
-Split switch, shift cases to the left, fix most lines beyond column 80.
+So... Everybody agrees that ptrace() is horrible and a royal pain to
+use, let alone use correctly and without bugs.  Everybody also agrees
+that ptrace() needs to stay around for a long time to avoid breaking
+all the existing users.
 
-Prepare (future) error return.
+Now how do we get from here to a moderately portable API for
+interrogating, controlling, and intercepting process state?
+Essentially it would need to support all of the things that a powerful
+debugger would want to do, including modifying registers and memory,
+substituting syscall return values, etc.  I believe that "utrace" is
+the kernel side of that API.
 
-Requires:
-   TCPCT part 1g: Responder Cookie => Initiator
-   net: tcp_header_len_th and tcp_option_len_th
+The killer app for this will be the ability to delete thousands of
+lines of code from GDB, strace, and all the various other tools that
+have to painfully work around the major interface gotchas of ptrace(),
+while at the same time making their handling of complex processes much
+more robust.
 
-Signed-off-by: William.Allen.Simpson@gmail.com
----
-  include/net/tcp.h        |    3 +-
-  net/ipv4/syncookies.c    |    5 +-
-  net/ipv4/tcp_input.c     |  217 ++++++++++++++++++++++++++--------------------
-  net/ipv4/tcp_ipv4.c      |   10 ++-
-  net/ipv4/tcp_minisocks.c |   14 ++-
-  net/ipv6/syncookies.c    |    5 +-
-  net/ipv6/tcp_ipv6.c      |    6 +-
-  7 files changed, 154 insertions(+), 106 deletions(-)
+The *second* killer app for this is to make it much easier for people
+to write new userspace debugging tools.  I love the various
+crash-catching tools that different distributions or applications
+provide, but they all basically have to trap the SIGSEGV and hope
+they're still sensible enough to fork() and exec() a gdb process.
 
---------------070900030804000606040606
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="TCPCT+2f3+2.6.33-rc5.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="TCPCT+2f3+2.6.33-rc5.patch"
+Furthermore, I would love to be able to write debugging tools for
+scripting languages that allow me to step across Perl, C, PHP,
+assembly code, etc, all within the same process.  In theory that's all
+possible today, but given how much of a *pain* ptrace() is to use
+correctly, nobody bothers.
 
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 6b0d7e9..420e872 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -403,7 +403,8 @@ extern int			tcp_recvmsg(struct kiocb *iocb, struct sock *sk,
- 					    size_t len, int nonblock, 
- 					    int flags, int *addr_len);
- 
--extern void			tcp_parse_options(struct sk_buff *skb,
-+extern int			tcp_parse_options(struct sk_buff *skb,
-+						  const struct tcphdr *th,
- 						  struct tcp_options_received *opt_rx,
- 						  u8 **hvpp,
- 						  int estab);
-diff --git a/net/ipv4/syncookies.c b/net/ipv4/syncookies.c
-index 66fd80e..3bed530 100644
---- a/net/ipv4/syncookies.c
-+++ b/net/ipv4/syncookies.c
-@@ -254,6 +254,7 @@ struct sock *cookie_v4_check(struct sock *sk, struct sk_buff *skb,
- 			     struct ip_options *opt)
- {
- 	struct tcp_options_received tcp_opt;
-+	int parsed;
- 	u8 *hash_location;
- 	struct inet_request_sock *ireq;
- 	struct tcp_request_sock *treq;
-@@ -279,7 +280,9 @@ struct sock *cookie_v4_check(struct sock *sk, struct sk_buff *skb,
- 
- 	/* check for timestamp cookie support */
- 	memset(&tcp_opt, 0, sizeof(tcp_opt));
--	tcp_parse_options(skb, &tcp_opt, &hash_location, 0);
-+	parsed = tcp_parse_options(skb, th, &tcp_opt, &hash_location, 0);
-+	if (parsed < 0)
-+		goto out;
- 
- 	if (tcp_opt.saw_tstamp)
- 		cookie_check_timestamp(&tcp_opt);
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 165040e..d3c6c7a 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -3726,15 +3726,14 @@ old_ack:
-  * But, this can also be called on packets in the established flow when
-  * the fast version below fails.
-  */
--void tcp_parse_options(struct sk_buff *skb, struct tcp_options_received *opt_rx,
--		       u8 **hvpp, int estab)
-+int tcp_parse_options(struct sk_buff *skb, const struct tcphdr *th,
-+		      struct tcp_options_received *opt_rx, u8 **hvpp, int estab)
- {
--	unsigned char *ptr;
--	struct tcphdr *th = tcp_hdr(skb);
--	int length = (th->doff * 4) - sizeof(struct tcphdr);
-+	unsigned char *ptr = (unsigned char *)(th + 1);
-+	int length = tcp_option_len_th(th);
- 
--	ptr = (unsigned char *)(th + 1);
--	opt_rx->saw_tstamp = 0;
-+	opt_rx->cookie_plus = 0;
-+	opt_rx->saw_tstamp = 0; /* false */
- 
- 	while (length > 0) {
- 		int opcode = *ptr++;
-@@ -3742,106 +3741,130 @@ void tcp_parse_options(struct sk_buff *skb, struct tcp_options_received *opt_rx,
- 
- 		switch (opcode) {
- 		case TCPOPT_EOL:
--			return;
-+			return 0;
- 		case TCPOPT_NOP:	/* Ref: RFC 793 section 3.1 */
- 			length--;
- 			continue;
- 		default:
--			opsize = *ptr++;
--			if (opsize < 2) /* "silly options" */
--				return;
--			if (opsize > length)
--				return;	/* don't parse partial options */
--			switch (opcode) {
--			case TCPOPT_MSS:
--				if (opsize == TCPOLEN_MSS && th->syn && !estab) {
--					u16 in_mss = get_unaligned_be16(ptr);
--					if (in_mss) {
--						if (opt_rx->user_mss &&
--						    opt_rx->user_mss < in_mss)
--							in_mss = opt_rx->user_mss;
--						opt_rx->mss_clamp = in_mss;
--					}
--				}
--				break;
--			case TCPOPT_WINDOW:
--				if (opsize == TCPOLEN_WINDOW && th->syn &&
--				    !estab && sysctl_tcp_window_scaling) {
--					__u8 snd_wscale = *(__u8 *)ptr;
--					opt_rx->wscale_ok = 1;
--					if (snd_wscale > 14) {
--						if (net_ratelimit())
--							printk(KERN_INFO "tcp_parse_options: Illegal window "
--							       "scaling value %d >14 received.\n",
--							       snd_wscale);
--						snd_wscale = 14;
--					}
--					opt_rx->snd_wscale = snd_wscale;
--				}
--				break;
--			case TCPOPT_TIMESTAMP:
--				if ((opsize == TCPOLEN_TIMESTAMP) &&
--				    ((estab && opt_rx->tstamp_ok) ||
--				     (!estab && sysctl_tcp_timestamps))) {
--					opt_rx->saw_tstamp = 1;
--					opt_rx->rcv_tsval = get_unaligned_be32(ptr);
--					opt_rx->rcv_tsecr = get_unaligned_be32(ptr + 4);
--				}
--				break;
--			case TCPOPT_SACK_PERM:
--				if (opsize == TCPOLEN_SACK_PERM && th->syn &&
--				    !estab && sysctl_tcp_sack) {
--					opt_rx->sack_ok = 1;
--					tcp_sack_reset(opt_rx);
-+			/* fallthru */
-+			break;
-+		};
-+
-+		opsize = *ptr++;
-+		if (opsize < 2 || opsize > length) {
-+			/* don't parse partial options */
-+			return 0;
-+		}
-+
-+		switch (opcode) {
-+		case TCPOPT_MSS:
-+			if (opsize == TCPOLEN_MSS && th->syn && !estab) {
-+				u16 in_mss = get_unaligned_be16(ptr);
-+				if (in_mss) {
-+					if (opt_rx->user_mss &&
-+					    opt_rx->user_mss < in_mss)
-+						in_mss = opt_rx->user_mss;
-+					opt_rx->mss_clamp = in_mss;
- 				}
--				break;
-+			}
-+			break;
- 
--			case TCPOPT_SACK:
--				if ((opsize >= (TCPOLEN_SACK_BASE + TCPOLEN_SACK_PERBLOCK)) &&
--				   !((opsize - TCPOLEN_SACK_BASE) % TCPOLEN_SACK_PERBLOCK) &&
--				   opt_rx->sack_ok) {
--					TCP_SKB_CB(skb)->sacked = (ptr - 2) - (unsigned char *)th;
-+		case TCPOPT_WINDOW:
-+			if (opsize == TCPOLEN_WINDOW && th->syn &&
-+			    !estab && sysctl_tcp_window_scaling) {
-+				__u8 snd_wscale = *(__u8 *)ptr;
-+				opt_rx->wscale_ok = 1;
-+				if (snd_wscale > 14) {
-+					if (net_ratelimit())
-+						printk(KERN_INFO
-+						       "tcp_parse_options: "
-+						       "window scaling value "
-+						       "%d > 14 received.\n",
-+						       snd_wscale);
-+					snd_wscale = 14;
- 				}
--				break;
-+				opt_rx->snd_wscale = snd_wscale;
-+			}
-+			break;
-+
-+		case TCPOPT_SACK_PERM:
-+			if (opsize == TCPOLEN_SACK_PERM && th->syn &&
-+			    !estab && sysctl_tcp_sack) {
-+				opt_rx->sack_ok = 1;
-+				tcp_sack_reset(opt_rx);
-+			}
-+			break;
-+
-+		case TCPOPT_SACK:
-+			if ((opsize >= (TCPOLEN_SACK_BASE + TCPOLEN_SACK_PERBLOCK)) &&
-+			    !((opsize - TCPOLEN_SACK_BASE) % TCPOLEN_SACK_PERBLOCK) &&
-+			    opt_rx->sack_ok) {
-+				TCP_SKB_CB(skb)->sacked = (ptr - 2)
-+							- (unsigned char *)th;
-+			}
-+			break;
-+
-+		case TCPOPT_TIMESTAMP:
-+			if ((opsize == TCPOLEN_TIMESTAMP) &&
-+			    ((estab && opt_rx->tstamp_ok) ||
-+			     (!estab && sysctl_tcp_timestamps))) {
-+				opt_rx->saw_tstamp = 1;
-+				opt_rx->rcv_tsval = get_unaligned_be32(ptr);
-+				opt_rx->rcv_tsecr = get_unaligned_be32(ptr + 4);
-+			}
-+			break;
- #ifdef CONFIG_TCP_MD5SIG
--			case TCPOPT_MD5SIG:
--				/*
--				 * The MD5 Hash has already been
--				 * checked (see tcp_v{4,6}_do_rcv()).
--				 */
--				break;
-+		case TCPOPT_MD5SIG:
-+			/*
-+			 * The MD5 Hash has already been
-+			 * checked (see tcp_v{4,6}_do_rcv()).
-+			 */
-+			break;
- #endif
--			case TCPOPT_COOKIE:
--				/* This option is variable length.
--				 */
--				switch (opsize) {
--				case TCPOLEN_COOKIE_BASE:
--					/* not yet implemented */
--					break;
--				case TCPOLEN_COOKIE_PAIR:
--					/* not yet implemented */
--					break;
--				case TCPOLEN_COOKIE_MIN+0:
--				case TCPOLEN_COOKIE_MIN+2:
--				case TCPOLEN_COOKIE_MIN+4:
--				case TCPOLEN_COOKIE_MIN+6:
--				case TCPOLEN_COOKIE_MAX:
--					/* 16-bit multiple */
-+		case TCPOPT_COOKIE:
-+			/* This option is variable length.
-+			 */
-+			switch (opsize) {
-+			case TCPOLEN_COOKIE_BASE:
-+				/* not yet implemented */
-+				break;
-+			case TCPOLEN_COOKIE_PAIR:
-+				/* not yet implemented */
-+				break;
-+			case TCPOLEN_COOKIE_MIN+0:
-+			case TCPOLEN_COOKIE_MIN+2:
-+			case TCPOLEN_COOKIE_MIN+4:
-+			case TCPOLEN_COOKIE_MIN+6:
-+			case TCPOLEN_COOKIE_MAX:
-+				/* 16-bit multiple */
-+				if (th->syn && opt_rx->saw_tstamp &&
-+				    opt_rx->cookie_plus == 0) {
- 					opt_rx->cookie_plus = opsize;
- 					*hvpp = ptr;
--				default:
--					/* ignore option */
--					break;
--				};
-+				}
-+				break;
-+			default:
-+				/* ignore option */
- 				break;
- 			};
-+			break;
- 
--			ptr += opsize-2;
--			length -= opsize;
--		}
-+		default:
-+			/* skip unrecognized options */
-+			break;
-+		};
-+
-+		ptr += opsize - 2;
-+		length -= opsize;
- 	}
-+	return 0;
- }
- 
-+/*
-+ * Returns:
-+ *	1 on success
-+ *	0 on failure
-+ */
- static int tcp_parse_aligned_timestamp(struct tcp_sock *tp, struct tcphdr *th)
- {
- 	__be32 *ptr = (__be32 *)(th + 1);
-@@ -3875,8 +3898,7 @@ static int tcp_fast_parse_options(struct sk_buff *skb, struct tcphdr *th,
- 		if (tcp_parse_aligned_timestamp(tp, th))
- 			return 1;
- 	}
--	tcp_parse_options(skb, &tp->rx_opt, hvpp, 1);
--	return 1;
-+	return tcp_parse_options(skb, th, &tp->rx_opt, hvpp, 1);
- }
- 
- #ifdef CONFIG_TCP_MD5SIG
-@@ -5127,10 +5149,13 @@ static int tcp_validate_incoming(struct sock *sk, struct sk_buff *skb,
- {
- 	u8 *hash_location;
- 	struct tcp_sock *tp = tcp_sk(sk);
-+	int parsed = tcp_fast_parse_options(skb, th, tp, &hash_location);
-+
-+	if (parsed < 0)
-+		goto discard;
- 
- 	/* RFC1323: H1. Apply PAWS check first. */
--	if (tcp_fast_parse_options(skb, th, tp, &hash_location) &&
--	    tp->rx_opt.saw_tstamp &&
-+	if (tp->rx_opt.saw_tstamp &&
- 	    tcp_paws_discard(sk, skb)) {
- 		if (!th->rst) {
- 			NET_INC_STATS_BH(sock_net(sk), LINUX_MIB_PAWSESTABREJECTED);
-@@ -5410,8 +5435,10 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 	struct tcp_cookie_values *cvp = tp->cookie_values;
- 	int saved_clamp = tp->rx_opt.mss_clamp;
- 	int queued = 0;
-+	int parsed = tcp_parse_options(skb, th, &tp->rx_opt, &hash_location, 0);
- 
--	tcp_parse_options(skb, &tp->rx_opt, &hash_location, 0);
-+	if (parsed < 0)
-+		goto discard;
- 
- 	if (th->ack) {
- 		/* rfc793:
-diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index f999e06..3f0813f 100644
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -1215,6 +1215,7 @@ int tcp_v4_conn_request(struct sock *sk, struct sk_buff *skb)
- {
- 	struct tcp_extend_values tmp_ext;
- 	struct tcp_options_received tmp_opt;
-+	int parsed;
- 	u8 *hash_location;
- 	struct request_sock *req;
- 	struct inet_request_sock *ireq;
-@@ -1265,7 +1266,10 @@ int tcp_v4_conn_request(struct sock *sk, struct sk_buff *skb)
- 	tcp_clear_options(&tmp_opt);
- 	tmp_opt.mss_clamp = TCP_MSS_DEFAULT;
- 	tmp_opt.user_mss  = tp->rx_opt.user_mss;
--	tcp_parse_options(skb, &tmp_opt, &hash_location, 0);
-+	parsed = tcp_parse_options(skb, tcp_hdr(skb), &tmp_opt, &hash_location,
-+				   0);
-+	if (parsed < 0)
-+		goto drop_and_free;
- 
- 	if (tmp_opt.cookie_plus > 0 &&
- 	    tmp_opt.saw_tstamp &&
-@@ -1278,7 +1282,7 @@ int tcp_v4_conn_request(struct sock *sk, struct sk_buff *skb)
- 		int l = tmp_opt.cookie_plus - TCPOLEN_COOKIE_BASE;
- 
- 		if (tcp_cookie_generator(&tmp_ext.cookie_bakery[0]) != 0)
--			goto drop_and_release;
-+			goto drop_and_free;
- 
- 		/* Secret recipe starts with IP addresses */
- 		*mess++ ^= daddr;
-@@ -1299,7 +1303,7 @@ int tcp_v4_conn_request(struct sock *sk, struct sk_buff *skb)
- 		tmp_ext.cookie_out_never = 1; /* true */
- 		tmp_ext.cookie_plus = 0;
- 	} else {
--		goto drop_and_release;
-+		goto drop_and_free;
- 	}
- 	tmp_ext.cookie_in_always = tp->rx_opt.cookie_in_always;
- 
-diff --git a/net/ipv4/tcp_minisocks.c b/net/ipv4/tcp_minisocks.c
-index 37b7536..0d42635 100644
---- a/net/ipv4/tcp_minisocks.c
-+++ b/net/ipv4/tcp_minisocks.c
-@@ -97,9 +97,12 @@ tcp_timewait_state_process(struct inet_timewait_sock *tw, struct sk_buff *skb,
- 
- 	tmp_opt.saw_tstamp = 0;
- 	if (th->doff > (sizeof(*th) >> 2) && tcptw->tw_ts_recent_stamp) {
--		tcp_parse_options(skb, &tmp_opt, &hash_location, 0);
-+		int parsed = tcp_parse_options(skb, th, &tmp_opt,
-+					       &hash_location, 0);
- 
--		if (tmp_opt.saw_tstamp) {
-+		if (parsed < 0) {
-+			paws_reject = 1; /* true */
-+		} else if (tmp_opt.saw_tstamp) {
- 			tmp_opt.ts_recent	= tcptw->tw_ts_recent;
- 			tmp_opt.ts_recent_stamp	= tcptw->tw_ts_recent_stamp;
- 			paws_reject = tcp_paws_reject(&tmp_opt, th->rst);
-@@ -528,9 +531,12 @@ struct sock *tcp_check_req(struct sock *sk, struct sk_buff *skb,
- 
- 	tmp_opt.saw_tstamp = 0;
- 	if (th->doff > (sizeof(struct tcphdr)>>2)) {
--		tcp_parse_options(skb, &tmp_opt, &hash_location, 0);
-+		int parsed = tcp_parse_options(skb, th, &tmp_opt,
-+					       &hash_location, 0);
- 
--		if (tmp_opt.saw_tstamp) {
-+		if (parsed < 0) {
-+			paws_reject = 1; /* true */
-+		} else if (tmp_opt.saw_tstamp) {
- 			tmp_opt.ts_recent = req->ts_recent;
- 			/* We do not store true stamp, but it is not required,
- 			 * it can be estimated (approximately)
-diff --git a/net/ipv6/syncookies.c b/net/ipv6/syncookies.c
-index 7208a06..3072500 100644
---- a/net/ipv6/syncookies.c
-+++ b/net/ipv6/syncookies.c
-@@ -160,6 +160,7 @@ static inline int cookie_check(struct sk_buff *skb, __u32 cookie)
- struct sock *cookie_v6_check(struct sock *sk, struct sk_buff *skb)
- {
- 	struct tcp_options_received tcp_opt;
-+	int parsed;
- 	u8 *hash_location;
- 	struct inet_request_sock *ireq;
- 	struct inet6_request_sock *ireq6;
-@@ -187,7 +188,9 @@ struct sock *cookie_v6_check(struct sock *sk, struct sk_buff *skb)
- 
- 	/* check for timestamp cookie support */
- 	memset(&tcp_opt, 0, sizeof(tcp_opt));
--	tcp_parse_options(skb, &tcp_opt, &hash_location, 0);
-+	parsed = tcp_parse_options(skb, th, &tcp_opt, &hash_location, 0);
-+	if (parsed < 0)
-+		goto out;
- 
- 	if (tcp_opt.saw_tstamp)
- 		cookie_check_timestamp(&tcp_opt);
-diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
-index 3d08a4d..e15e4f6 100644
---- a/net/ipv6/tcp_ipv6.c
-+++ b/net/ipv6/tcp_ipv6.c
-@@ -1164,6 +1164,7 @@ static int tcp_v6_conn_request(struct sock *sk, struct sk_buff *skb)
- {
- 	struct tcp_extend_values tmp_ext;
- 	struct tcp_options_received tmp_opt;
-+	int parsed;
- 	u8 *hash_location;
- 	struct request_sock *req;
- 	struct inet6_request_sock *treq;
-@@ -1207,7 +1208,10 @@ static int tcp_v6_conn_request(struct sock *sk, struct sk_buff *skb)
- 	tcp_clear_options(&tmp_opt);
- 	tmp_opt.mss_clamp = IPV6_MIN_MTU - sizeof(struct tcphdr) - sizeof(struct ipv6hdr);
- 	tmp_opt.user_mss = tp->rx_opt.user_mss;
--	tcp_parse_options(skb, &tmp_opt, &hash_location, 0);
-+	parsed = tcp_parse_options(skb, tcp_hdr(skb), &tmp_opt, &hash_location,
-+				   0);
-+	if (parsed < 0)
-+		goto drop_and_free;
- 
- 	if (tmp_opt.cookie_plus > 0 &&
- 	    tmp_opt.saw_tstamp &&
--- 
-1.6.3.3
+Now, with all that said, "utrace" does not provide any of the
+userspace side APIs today... but I think it is a necessary refactoring
+if we want to provide a new ideal process-introspection interface
+without breaking all the ptrace() users.
 
+Think of the "utrace" interface as very much like the LSM interface.
+Just like with LSMs, there is a lot of active research in debugging
+and tracing tools, and nobody can even remotely agree what the hell
+they want out of the hooks.  In theory you could add one hook for
+every place each security module needs one... but then your fast-path
+is littered with always-false test-and-jump statements.  What "utrace"
+provides is the one single test in each fast path that then searches
+for and executes the appropriate slow path(s) for that process.
 
---------------070900030804000606040606--
+I personally would be very happy to see "utrace" merged.
+
+Cheers,
+Kyle Moffett
