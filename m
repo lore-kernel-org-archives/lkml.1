@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297Ab0AWUl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391Ab0AWUlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753297Ab0AWUl3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 15:41:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097Ab0AWUlN
+	id S1753391Ab0AWUlh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 15:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979Ab0AWUl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 15:41:13 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50520 "EHLO
+	Sat, 23 Jan 2010 15:41:27 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50511 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669Ab0AWUfy (ORCPT
+	with ESMTP id S1751449Ab0AWUfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 15:35:54 -0500
+	Sat, 23 Jan 2010 15:35:53 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org,
-       Kalle Jokiniemi <ext-kalle.jokiniemi@nokia.com>,
-       Tony Lindgren <tony@atomide.com>, Paul Walmsley <paul@pwsan.com>,
-       Richard Woodruff <r-woodruff2@ti.com>,
-       chandra shekhar <x0044955@ti.com>,
-       Jason P Marini <jason.marini@gmail.com>,
-       Syed Mohammed Khasim <x0khasim@ti.com>,
-       Jarkko Nikula <jarkko.nikula@nokia.com>,
-       Juha Yrjola <juha.yrjola@solidboot.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 17/29] move i2c_omap's probe function to .devinit.text
-Date: Sat, 23 Jan 2010 21:35:25 +0100
-Message-Id: <1264278937-19675-17-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Russell King <rmk+kernel@arm.linux.org.uk>,
+       Ben Dooks <ben-linux@fluff.org>,
+       Arnaud Patard <arnaud.patard@rtp-net.org>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Antonino Daplas <adaplas@pol.net>, Vincent Sanders <vince@simtec.co.uk>
+Subject: [PATCH 19/29] move s3c241xfb's probe function to .devinit.text
+Date: Sat, 23 Jan 2010 21:35:27 +0100
+Message-Id: <1264278937-19675-19-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -40,44 +36,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to omap_i2c_probe is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+Pointers to s3c2410fb_probe and s3c2412fb_probe are passed to the core
+via platform_driver_register and so the functions must not disappear
+when the .init sections are discarded.  Otherwise (if also having
+HOTPLUG=y) unbinding and binding a device to one of the drivers via
+sysfs will result in an oops as does a device being registered late.
 
 An alternative to this patch is using platform_driver_probe instead of
 platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Kalle Jokiniemi <ext-kalle.jokiniemi@nokia.com>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Paul Walmsley <paul@pwsan.com>
-Cc: Richard Woodruff <r-woodruff2@ti.com>
-Cc: chandra shekhar <x0044955@ti.com>
-Cc: Jason P Marini <jason.marini@gmail.com>
-Cc: Syed Mohammed Khasim  <x0khasim@ti.com>
-Cc: Jarkko Nikula <jarkko.nikula@nokia.com>
-Cc: Juha Yrjola <juha.yrjola@solidboot.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Ben Dooks <ben-linux@fluff.org>
+Cc: Arnaud Patard <arnaud.patard@rtp-net.org>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Antonino Daplas <adaplas@pol.net>
+Cc: Vincent Sanders <vince@simtec.co.uk>
 ---
- drivers/i2c/busses/i2c-omap.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/s3c2410fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
-index 0037e31..bd86a85 100644
---- a/drivers/i2c/busses/i2c-omap.c
-+++ b/drivers/i2c/busses/i2c-omap.c
-@@ -849,7 +849,7 @@ static const struct i2c_algorithm omap_i2c_algo = {
- 	.functionality	= omap_i2c_func,
- };
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index aac6612..2b094de 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -1004,12 +1004,12 @@ dealloc_fb:
+ 	return ret;
+ }
  
--static int __init
-+static int __devinit
- omap_i2c_probe(struct platform_device *pdev)
+-static int __init s3c2410fb_probe(struct platform_device *pdev)
++static int __devinit s3c2410fb_probe(struct platform_device *pdev)
  {
- 	struct omap_i2c_dev	*dev;
+ 	return s3c24xxfb_probe(pdev, DRV_S3C2410);
+ }
+ 
+-static int __init s3c2412fb_probe(struct platform_device *pdev)
++static int __devinit s3c2412fb_probe(struct platform_device *pdev)
+ {
+ 	return s3c24xxfb_probe(pdev, DRV_S3C2412);
+ }
 -- 
 1.6.6
 
