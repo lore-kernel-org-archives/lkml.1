@@ -1,114 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300Ab0AWMxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350Ab0AWM4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755300Ab0AWMxy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 07:53:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155Ab0AWMxx
+	id S1755350Ab0AWM4O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 07:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033Ab0AWM4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 07:53:53 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:50528 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755026Ab0AWMxw (ORCPT
+	Sat, 23 Jan 2010 07:56:13 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:47355 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751671Ab0AWM4L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 07:53:52 -0500
+	Sat, 23 Jan 2010 07:56:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=f9AuNOBW9gRVX4fuAFy26sYxCwnwkdyxVPStWfmEsuD35SdHSz+1GZibmTiNrXj6Fh
-         lsV7byYqCnzrQwjX503zolGX2gMgu0lZ5zxBYsZevXNF0eOJbJVY1/w22G55epfAcDoO
-         HkJ5AfhbqCf2m+rvod7udwlEgYOg/NNU8C7eQ=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=EEznFUWMwzGcfLLc6JpSMqXJlA7nNVJOvQghBOgoiWct+evMm4+Bua2zPykvD2jrIk
+         54wbK1vpn3q5HudF+OY9AUPiBpr738BLNps2u7LzYYaSbeEsWMEuUxcJd8i69nZTSXvV
+         fZRF5aA9GPunSKNgLJgVgJ5Mip5SojqkDd+Nc=
+Message-ID: <4B5AF1E5.1070304@gmail.com>
+Date: Sat, 23 Jan 2010 13:56:05 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
 MIME-Version: 1.0
-In-Reply-To: <20100121230331.GA29796@kroah.com>
-References: <20100120171901.b2e06465.sfr@canb.auug.org.au>
-	 <b9df5fa11001202022q22c2d81cs5b90f694be37c1f4@mail.gmail.com>
-	 <20100121230331.GA29796@kroah.com>
-Date: Sat, 23 Jan 2010 18:53:51 +0600
-Message-ID: <b9df5fa11001230453k4a874ebamff02b64f7d6fcd84@mail.gmail.com>
-Subject: Re: linux-next: tty tree build warning
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Michael H. Warfield" <mhw@wittsend.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+CC: akpm@linux-foundation.org, mm-commits@vger.kernel.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, zhenyuw@linux.intel.com,
+       yakui.zhao@intel.com
+Subject: i915: gpu wedged [was: mmotm 2010-01-15-15-34 uploaded]
+References: <201001152359.o0FNxVne006113@imap1.linux-foundation.org>
+In-Reply-To: <201001152359.o0FNxVne006113@imap1.linux-foundation.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/22/10, Greg KH <greg@kroah.com> wrote:
-> On Thu, Jan 21, 2010 at 10:22:19AM +0600, Rakib Mullick wrote:
->  > On 1/20/10, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> That sounds right.  Care to send a patch?
->
-Please - checkout the following one - is it okay or not. Notice if it
-requires any adjustment.
+On 01/16/2010 12:34 AM, akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2010-01-15-15-34 has been uploaded to
 
- Patch is created using 2.6.33-rc5. Needs to apply the patch
-named 'ip2-remove-ifdef-module-from-ip2main.c.patch'
-(http://lkml.org/lkml/2009/12/1/90)
-currently in gregkh-2.6 tree to compile cleanly.
-
----
-
- char,ip2: Add module parameter.
-
-Stephen Rothwell found the following warning (x86_64 allmodconfig):
-
-drivers/char/ip2/ip2main.c:511: warning: 'ip2_setup' defined but not used
-
-This patch adds module parameter to fix the above warning.
+So I've decided to switch to KMS on this kernel with
+00:02.0 VGA compatible controller [0300]: Intel Corporation 82G33/G31
+Express Integrated Graphics Controller [8086:29c2] (rev 02) (prog-if 00
+[VGA controller])
+        Subsystem: Intel Corporation 82G33/G31 Express Integrated
+Graphics Controller [8086:29c2]
+        Flags: bus master, fast devsel, latency 0, IRQ 26
+        Memory at ffa80000 (32-bit, non-prefetchable) [size=512K]
+        I/O ports at ec00 [size=8]
+        Memory at d0000000 (32-bit, prefetchable) [size=256M]
+        Memory at ff900000 (32-bit, non-prefetchable) [size=1M]
+        Expansion ROM at <unassigned> [disabled]
+        Capabilities: [90] MSI: Enable+ Count=1/1 Maskable- 64bit-
+        Capabilities: [d0] Power Management version 2
+        Kernel driver in use: i915
 
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
----
+with this X driver:
+(II) Module intel: vendor="X.Org Foundation"
+        compiled for 1.7.4, module version = 2.10.0
+        Module class: X.Org Video Driver
+        ABI class: X.Org Video Driver, version 6.0
 
---- linus/drivers/char/ip2/ip2main.c	2010-01-16 13:36:44.000000000 +0600
-+++ rakib/drivers/char/ip2/ip2main.c	2010-01-23 11:23:55.000000000 +0600
-@@ -208,6 +208,7 @@ static int DumpFifoBuffer( char __user *
 
- static void ip2_init_board(int, const struct firmware *);
- static unsigned short find_eisa_board(int);
-+static int ip2_setup(char *str);
+on X.Org X Server 1.7.4 and after some time I get:
+(WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
+error
+(EE) intel(0): Failed to submit batch buffer, expect rendering
+corruption or even a frozen display: Input/output er
+ror.
+(WW) intel(0): i830_uxa_pixmap_swap_bo_with_image: bo map failed
+(WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
+error
+(WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
+error
+(WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
+error
+(EE) intel(0): Failed to submit batch buffer, expect rendering
+corruption or even a frozen display: Input/output er
+ror.
+(EE) intel(0): Failed to submit batch buffer, expect rendering
+corruption or even a frozen display: Input/output er
 
- /***************/
- /* Static Data */
-@@ -285,7 +286,10 @@ MODULE_AUTHOR("Doug McNash");
- MODULE_DESCRIPTION("Computone IntelliPort Plus Driver");
- MODULE_LICENSE("GPL");
 
-+#define	MAX_CMD_STR	50
-+
- static int poll_only;
-+static char cmd[MAX_CMD_STR];
+and kernel says:
+[drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
+render error detected, EIR: 0x00000000
+[drm:i915_do_wait_request] *ERROR* i915_do_wait_request returns -5
+(awaiting 153151 at 153150)
+[drm:i915_gem_execbuffer] *ERROR* i915_gem_do_execbuffer returns -5
 
- static int Eisa_irq;
- static int Eisa_slot;
-@@ -309,6 +313,8 @@ module_param_array(io, int, NULL, 0);
- MODULE_PARM_DESC(io, "I/O ports for IntelliPort Cards");
- module_param(poll_only, bool, 0);
- MODULE_PARM_DESC(poll_only, "Do not use card interrupts");
-+module_param_string(ip2, cmd, MAX_CMD_STR, 0);
-+MODULE_PARM_DESC(ip2, "Contains module parameter passed with 'ip2='");
 
- /* for sysfs class support */
- static struct class *ip2_class;
-@@ -541,12 +547,19 @@ static int __init ip2_loadmain(void)
- 	int rc = -1;
- 	struct pci_dev *pdev = NULL;
- 	const struct firmware *fw = NULL;
-+	char *str;
-+
-+	str = cmd;
+>From <debugfs>/dri/0/i915_wedged, the GPU is wedged.
 
- 	if (poll_only) {
- 		/* Hard lock the interrupts to zero */
- 		irq[0] = irq[1] = irq[2] = irq[3] = poll_only = 0;
- 	}
-
-+	/* Check module parameter with 'ip2=' has been passed or not */
-+	if (!poll_only && (!strncmp(str, "ip2=", 4)))
-+		ip2_setup(str);
-+
- 	ip2trace(ITRC_NO_PORT, ITRC_INIT, ITRC_ENTER, 0);
-
- 	/* process command line arguments to modprobe or
+regards,
+-- 
+js
