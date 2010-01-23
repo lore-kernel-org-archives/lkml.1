@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752331Ab0AWUgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515Ab0AWUgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752331Ab0AWUgW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 15:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121Ab0AWUgJ
+	id S1752515Ab0AWUgd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 15:36:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360Ab0AWUg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 15:36:09 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50549 "EHLO
+	Sat, 23 Jan 2010 15:36:27 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50659 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229Ab0AWUf5 (ORCPT
+	with ESMTP id S1752288Ab0AWUgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 15:35:57 -0500
+	Sat, 23 Jan 2010 15:36:22 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 23/29] move sharpsl-pm's probe function to .devinit.text
-Date: Sat, 23 Jan 2010 21:35:31 +0100
-Message-Id: <1264278937-19675-23-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Avuton Olrich <avuton@gmail.com>, Antonino Daplas <adaplas@gmail.com>
+Subject: [PATCH 04/29] move cfag12864bfb's probe function to .devinit.text
+Date: Sat, 23 Jan 2010 21:35:12 +0100
+Message-Id: <1264278937-19675-4-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -33,7 +32,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to sharpsl_pm_probe is passed to the core via
+A pointer to cfag12864bfb_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -44,27 +43,27 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Acked-by: Eric Miao <eric.miao@marvell.com>
+Acked-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Avuton Olrich <avuton@gmail.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
 ---
- arch/arm/mach-pxa/sharpsl_pm.c |    2 +-
+ drivers/auxdisplay/cfag12864bfb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/sharpsl_pm.c b/arch/arm/mach-pxa/sharpsl_pm.c
-index 67229a1..463d874 100644
---- a/arch/arm/mach-pxa/sharpsl_pm.c
-+++ b/arch/arm/mach-pxa/sharpsl_pm.c
-@@ -900,7 +900,7 @@ static struct platform_suspend_ops sharpsl_pm_ops = {
+diff --git a/drivers/auxdisplay/cfag12864bfb.c b/drivers/auxdisplay/cfag12864bfb.c
+index fe3a865..b0ca5a4 100644
+--- a/drivers/auxdisplay/cfag12864bfb.c
++++ b/drivers/auxdisplay/cfag12864bfb.c
+@@ -81,7 +81,7 @@ static struct fb_ops cfag12864bfb_ops = {
+ 	.fb_mmap = cfag12864bfb_mmap,
  };
- #endif
  
--static int __init sharpsl_pm_probe(struct platform_device *pdev)
-+static int __devinit sharpsl_pm_probe(struct platform_device *pdev)
+-static int __init cfag12864bfb_probe(struct platform_device *device)
++static int __devinit cfag12864bfb_probe(struct platform_device *device)
  {
- 	int ret;
- 
+ 	int ret = -EINVAL;
+  	struct fb_info *info = framebuffer_alloc(0, &device->dev);
 -- 
 1.6.6
 
