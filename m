@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132Ab0AWAWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011Ab0AWAXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132Ab0AWAWl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524Ab0AWAWh
+	id S1756011Ab0AWAXA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755927Ab0AWAWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:22:37 -0500
-Received: from kroah.org ([198.145.64.141]:35088 "EHLO coco.kroah.org"
+	Fri, 22 Jan 2010 19:22:40 -0500
+Received: from kroah.org ([198.145.64.141]:35075 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755282Ab0AWAS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:18:59 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:13 2010
-Message-Id: <20100123001113.021738616@mini.kroah.org>
+	id S1755414Ab0AWASz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:18:55 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:12 2010
+Message-Id: <20100123001112.517695294@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 22 Jan 2010 16:10:06 -0800
+Date: Fri, 22 Jan 2010 16:10:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Mike Snitzer <snitzer@redhat.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: [22/29] block: bdev_stack_limits wrapper
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>,
+       =?ISO-8859-15?q?Fran=C3=A7ois=20Valenduc?= 
+	<francois.valenduc@tvcablenet.be>
+Subject: [18/29] ACPI: EC: Add wait for irq storm
 In-Reply-To: <20100123001145.GA7391@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,65 +31,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Martin K. Petersen <martin.petersen@oracle.com>
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
 
-commit 17be8c245054b9c7786545af3ba3ca4e54cd4ad9 upstream.
+commit 54070101f86ca9a6e9ba243c999d144721ec3db7 upstream.
 
-DM does not want to know about partition offsets.  Add a partition-aware
-wrapper that DM can use when stacking block devices.
+Merge of poll and irq modes accelerated EC transaction, so
+that keyboard starts to suffer again. Add msleep(1) into
+transaction path for the storm to allow keyboard controller
+to do its job.
 
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Acked-by: Mike Snitzer <snitzer@redhat.com>
-Reviewed-by: Alasdair G Kergon <agk@redhat.com>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Reference: http://bugzilla.kernel.org/show_bug.cgi?id=14747
+
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: François Valenduc <francois.valenduc@tvcablenet.be>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- block/blk-settings.c   |   22 ++++++++++++++++++++++
- include/linux/blkdev.h |    2 ++
- 2 files changed, 24 insertions(+)
+ drivers/acpi/ec.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/block/blk-settings.c
-+++ b/block/blk-settings.c
-@@ -560,6 +560,28 @@ int blk_stack_limits(struct queue_limits
- EXPORT_SYMBOL(blk_stack_limits);
- 
- /**
-+ * bdev_stack_limits - adjust queue limits for stacked drivers
-+ * @t:	the stacking driver limits (top device)
-+ * @bdev:  the component block_device (bottom)
-+ * @start:  first data sector within component device
-+ *
-+ * Description:
-+ *    Merges queue limits for a top device and a block_device.  Returns
-+ *    0 if alignment didn't change.  Returns -1 if adding the bottom
-+ *    device caused misalignment.
-+ */
-+int bdev_stack_limits(struct queue_limits *t, struct block_device *bdev,
-+		      sector_t start)
-+{
-+	struct request_queue *bq = bdev_get_queue(bdev);
-+
-+	start += get_start_sect(bdev);
-+
-+	return blk_stack_limits(t, &bq->limits, start << 9);
-+}
-+EXPORT_SYMBOL(bdev_stack_limits);
-+
-+/**
-  * disk_stack_limits - adjust queue limits for stacked drivers
-  * @disk:  MD/DM gendisk (top)
-  * @bdev:  the underlying block device (bottom)
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -942,6 +942,8 @@ extern void blk_queue_io_opt(struct requ
- extern void blk_set_default_limits(struct queue_limits *lim);
- extern int blk_stack_limits(struct queue_limits *t, struct queue_limits *b,
- 			    sector_t offset);
-+extern int bdev_stack_limits(struct queue_limits *t, struct block_device *bdev,
-+			    sector_t offset);
- extern void disk_stack_limits(struct gendisk *disk, struct block_device *bdev,
- 			      sector_t offset);
- extern void blk_queue_stack_limits(struct request_queue *t, struct request_queue *b);
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -259,7 +259,6 @@ static int acpi_ec_transaction_unlocked(
+ 		clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
+ 	spin_unlock_irqrestore(&ec->curr_lock, tmp);
+ 	ret = ec_poll(ec);
+-	pr_debug(PREFIX "transaction end\n");
+ 	spin_lock_irqsave(&ec->curr_lock, tmp);
+ 	ec->curr = NULL;
+ 	spin_unlock_irqrestore(&ec->curr_lock, tmp);
+@@ -316,6 +315,7 @@ static int acpi_ec_transaction(struct ac
+ 	/* check if we received SCI during transaction */
+ 	ec_check_sci_sync(ec, acpi_ec_read_status(ec));
+ 	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
++		msleep(1);
+ 		/* it is safe to enable GPE outside of transaction */
+ 		acpi_enable_gpe(NULL, ec->gpe);
+ 	} else if (t->irq_count > ACPI_EC_STORM_THRESHOLD) {
+@@ -323,6 +323,7 @@ static int acpi_ec_transaction(struct ac
+ 			"transactions will use polling mode\n");
+ 		set_bit(EC_FLAGS_GPE_STORM, &ec->flags);
+ 	}
++	pr_debug(PREFIX "transaction end\n");
+ end:
+ 	if (ec->global_lock)
+ 		acpi_release_global_lock(glk);
 
 
