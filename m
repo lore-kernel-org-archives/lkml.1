@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751650Ab0AWUZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751863Ab0AWUf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751650Ab0AWUZe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 15:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288Ab0AWUZd
+	id S1751863Ab0AWUf5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 15:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737Ab0AWUfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 15:25:33 -0500
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:45423 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043Ab0AWUZd (ORCPT
+	Sat, 23 Jan 2010 15:35:53 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50450 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932159Ab0AWUft (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 15:25:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=GAYDcHvbhnv9sIGbq0wZ+0QTQNAhPh5gtSPNo2DVqAMubT/L0TwVM1qDJUJYNZccPQ
-         WaPDUjOKosIlJYCxlLsKFdWVqKdo38fsHCsrO5yYoDHfCBN64ZFuuYp/aHevKKe1hzQx
-         zs8C/D7DrjQORjBzRQBtlN24f0UdBEj+fNqRo=
-MIME-Version: 1.0
-In-Reply-To: <201001232116.27003.rjw@sisk.pl>
-References: <b4e196fa1001221721y19ae3a50wa21a6b54627b3852@mail.gmail.com>
-	 <b4e196fa1001230322u558f7af5j5f27844088895a0@mail.gmail.com>
-	 <20100123152421.GA15855@suse.de> <201001232116.27003.rjw@sisk.pl>
-Date: Sat, 23 Jan 2010 15:25:30 -0500
-Message-ID: <6041d2001001231225n303062f9hf6683f14551d2ff@mail.gmail.com>
-Subject: Re: [REGRESSION] clockevents patch causes hang on power off
-From: Marc Dionne <marc.c.dionne@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, Nathan Williams <ngwilliams@gmail.com>,
-       "Ozan ??a??layan" <ozan@pardus.org.tr>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Sat, 23 Jan 2010 15:35:49 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Antonino Daplas <adaplas@pol.net>,
        Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH 05/29] move cobalt-lcd's probe function to .devinit.text
+Date: Sat, 23 Jan 2010 21:35:13 +0100
+Message-Id: <1264278937-19675-5-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 23, 2010 at 3:16 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday 23 January 2010, Greg KH wrote:
->> On Sat, Jan 23, 2010 at 10:22:10PM +1100, Nathan Williams wrote:
->> > 2010/1/23 Ozan ??a??layan <ozan@pardus.org.tr>:
->> > > Nathan Williams wrote:
->> > >> I'm having trouble with my PC crashing just as it's attempting to power off.
->> > >> I managed to git bisect to this commit:
->> > >>
->> > >
->> > > http://bugzilla.kernel.org/show_bug.cgi?id=15037
->> > > http://patchwork.kernel.org/patch/71537/
->> > >
->> >
->> > Thanks. The patch works for me.
->>
->> What's the plan on getting that patch into Linus's tree for .33?
->
-> Well, I guess please send it to Linus with the appropriate CC list.
->
-> This is a regression that we need to address ASAP, the patch is known, no
-> one has objected, so the thing is pretty much clear.
->
-> Rafael
+A pointer to cobalt_lcdfb_probe is passed to the core via
+platform_driver_register and so the function must not disappear when the
+.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+unbinding and binding a device to the driver via sysfs will result in an
+oops as does a device being registered late.
 
-I notice that it's been in tip timers/urgent and timers-for-linus for
-a few days, in a slightly different form.
+An alternative to this patch is using platform_driver_probe instead of
+platform_driver_register plus removing the pointer to the probe function
+from the struct platform_driver.
 
-Marc
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Antonino Daplas <adaplas@pol.net>
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ drivers/video/cobalt_lcdfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/cobalt_lcdfb.c b/drivers/video/cobalt_lcdfb.c
+index 108b89e..5eb61b5 100644
+--- a/drivers/video/cobalt_lcdfb.c
++++ b/drivers/video/cobalt_lcdfb.c
+@@ -287,7 +287,7 @@ static struct fb_ops cobalt_lcd_fbops = {
+ 	.fb_cursor	= cobalt_lcdfb_cursor,
+ };
+ 
+-static int __init cobalt_lcdfb_probe(struct platform_device *dev)
++static int __devinit cobalt_lcdfb_probe(struct platform_device *dev)
+ {
+ 	struct fb_info *info;
+ 	struct resource *res;
+-- 
+1.6.6
+
