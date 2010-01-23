@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463Ab0AWHVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630Ab0AWHbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463Ab0AWHVO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 02:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702Ab0AWHVN
+	id S1753630Ab0AWHbp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 02:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380Ab0AWHbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 02:21:13 -0500
-Received: from snt0-omc4-s12.snt0.hotmail.com ([65.55.90.215]:28484 "EHLO
-	snt0-omc4-s12.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752122Ab0AWHVM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 02:21:12 -0500
-Message-ID: <SNT125-W12BC46C506A5BB777A06B5C3610@phx.gbl>
-X-Originating-IP: [96.253.143.208]
-From: Yuhong Bao <yuhongbao_386@hotmail.com>
-To: <venkatesh.pallipadi@intel.com>, <markh@compro.net>
-CC: <dmarkh@cfl.rr.com>, <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, <alain@knaff.lu>,
-       <linux-kernel@vger.kernel.org>, <andreas.herrmann3@amd.com>
-Subject: RE: [PATCH] x86: Disable HPET MSI on ATI SB700/SB800
-Date: Fri, 22 Jan 2010 23:21:06 -0800
-Importance: Normal
-In-Reply-To: <20100121190952.GA32523@linux-os.sc.intel.com>
-References: <87bphpd4rt.fsf@basil.nowhere.org> <4B32565E.6000501@compro.net>
- <20091223191806.GA3336@linux-os.sc.intel.com> <4B3270FE.5090607@compro.net>
- <1261600243.16916.56.camel@localhost.localdomain>
- <4B476E8D.1030308@compro.net>
- <1263255557.16916.132.camel@local,<20100121190952.GA32523@linux-os.sc.intel.com>
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
+	Sat, 23 Jan 2010 02:31:44 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:52175 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673Ab0AWHbn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jan 2010 02:31:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=F0qtGPUCfpfGmEGabh38JkTOagABMDmLXZ8Fk484BgMQ3XcZv2ZZZCcu+wJcZGtc4W
+         UuaiO9qdR7PKR/V+yvgswHjUe6rmRqaNgQUpMpWFvuaSSX0X1pW8XzDoT6FeOQvStZKc
+         MERJn2HL9lBbRjiZytKN2X90emHqV2RIw+nDE=
 MIME-Version: 1.0
-X-OriginalArrivalTime: 23 Jan 2010 07:21:06.0472 (UTC) FILETIME=[A0C3A280:01CA9BFC]
+Date: Fri, 22 Jan 2010 23:31:43 -0800
+Message-ID: <cf70f0211001222331y17af1f56oe7d4e61c1d38d7d3@mail.gmail.com>
+Subject: measureing kernel & application boottime's
+From: Shivdas Gujare <shivdas.tech@gmail.com>
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Tim/all,
 
-> HPET MSI on platforms with ATI SB700/SB800 as they seem to have some
-> side-effects on floppy DMA. Do not use HPET MSI on such platforms.
-I think somebody from AMD should review the situation.Clearly something is happening inside their southbridge.CCing Andreas Herrmann from AMD.
-Yuhong Bao 		 	   		  
-_________________________________________________________________
-Hotmail: Trusted email with Microsoft’s powerful SPAM protection.
-http://clk.atdmt.com/GBL/go/196390706/direct/01/
+I am trying to measure kernel boottime along with measuring
+application process start time on ARM V6 platform.
+Because of few reasons, I have to stick to kernel 2.6.25(can't upgrade
+it to latest).
+
+While measuring application process times, I use "cat /proc/uptime"
+when I start a process (I am not sure, if this is the best way to
+measure time , please suggest if any).
+For kernel, I use CONFIG_PRINTK_TIME macro. my application loads a
+kernel module.
+So, my question is how "/proc/uptime" relates to PRINTK_TIME timestamps?
+
+I see, "uptime" uses
+        do_posix_clock_monotonic_gettime(&uptime);
+        monotonic_to_bootbased(&uptime);
+
+while PRINTK_TIME does only, "cpu_clock(printk_cpu); "
+but I am not able to understand practical difference between above two logics.
+
+So, how do I correlate the time information from kernel dmesg , when
+kernel module is loaded by my application(i.e. uptime measures just
+before starting an application which loads kernel module).
+
+Also, Is there any best method to measure application start time
+(except bootchart, can't use it)?
+Thanks for all your help.
+
+
+Thanks and Regards,
+Shivdas Gujare
