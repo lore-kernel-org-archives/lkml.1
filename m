@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015Ab0AVXzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236Ab0AWAHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015Ab0AVXzZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:55:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379Ab0AVXzY
+	id S1754236Ab0AWAHA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:07:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621Ab0AWAG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:55:24 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:53430 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214Ab0AVXzX (ORCPT
+	Fri, 22 Jan 2010 19:06:59 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:48137 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753057Ab0AWAG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 18:55:23 -0500
-Subject: Re: [RFC] [PATCH 0/7] UBP, XOL and Uprobes [ Summary of Comments
-	and actions to be taken ]
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Avi Kivity <avi@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1264183574.4283.1558.camel@laptop>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100122070232.GA2975@linux.vnet.ibm.com>
-	 <1264183574.4283.1558.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 22 Jan 2010 15:55:11 -0800
-Message-Id: <1264204511.5150.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	Fri, 22 Jan 2010 19:06:57 -0500
+Message-ID: <4B5A3D00.8080901@bx.jp.nec.com>
+Date: Fri, 22 Jan 2010 19:04:16 -0500
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: lwoodman@redhat.com, linux-mm@kvack.org, mingo@elte.hu, tzanussi@gmail.com,
+       riel@redhat.com, rostedt@goodmis.org, akpm@linux-foundation.org,
+       fweisbec@gmail.com, Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Subject: [RFC PATCH -tip 0/2 v2] pagecache tracepoints proposal
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Fri, 2010-01-22 at 19:06 +0100, Peter Zijlstra wrote:
-> On Fri, 2010-01-22 at 12:32 +0530, Srikar Dronamraju wrote:
-> 
-> > 2. XOL vma vs Emulation vs Single Stepping Inline vs using Protection
-> > Rings.
-> > 	XOL VMA is an additional process address vma.  This is
-> > 	opposition to add an additional vma without user actually
-> > 	requesting for the same.
-> > 
-> > 	XOL vma and single stepping inline are the two architecture
-> > 	independent implementations. While other implementations are
-> > 	more architecture specific. Single stepping inline wouldnt go
-> > 	well with multithreaded process.
-> > 
-> > 	Even though XOL vma has its own issues, we will go with it since
-> > 	other implementations seem to have more complications.
-> > 
-> > 	we would look forward to implementing boosters later. 
-> > 	Later on, if we come across another techniques with lesser
-> > 	side-effects than the XOL vma, we would switch to using them.
-> 
-> How about modifying glibc to reserve like 64 bytes on the TLS structure
-> it has and storing the ins and possible boost jmp there? Since each
-> thread can only have a single trap at any one time that should be
-> enough.
+This is v2 of a patchset to add some tracepoints for pagecache.
 
-We once implemented something similar, but using an area just beyond the
-top of the stack instead of TLS.  We figured it would never pass muster
-because we have to temporarily map the page executable (and undo it
-after the single-step), and this felt like a big security hole.  I'd
-think we'd have the same concern with TLS.
+I would propose several tracepoints for tracing pagecache behaviors and
+a script for these.
+By using both the tracepoints and the script, we can monitor pagecache usage
+with high resolution. Example output of the script looks like:
 
-Jim
+[file list]
+                            cached
+        device      inode    pages
+  --------------------------------
+         253:0    1051413      130
+         253:0    1051399        2
+         253:0    1051414       44
+         253:0    1051417      154
+
+o postmaster-2330
+                            cached    added  removed      indirect
+        device      inode    pages    pages    pages removed pages
+  ----------------------------------------------------------------
+         253:0    1051399        0        2        0             0
+         253:0    1051417      154        0        0             0
+         253:0    1051413      130        0        0             0
+         253:0    1051414       44        0        0             0
+  ----------------------------------------------------------------
+  total:                       337        2        0             0
+
+We can now know system-wide pagecache usage by /proc/meminfo.
+But we have no method to get higher resolution information like per file or
+per process usage than system-wide one.
+A process may share some pagecache or add a pagecache to the memory or
+remove a pagecache from the memory.
+If a pagecache miss hit ratio rises, maybe it leads to extra I/O and
+affects system performance.
+
+So, by using the tracepoints we can get the following information.
+ 1. how many pagecaches each process has per each file
+ 2. how many pages are cached per each file
+ 3. how many pagecaches each process shares
+ 4. how often each process adds/removes pagecache
+ 5. how long a pagecache stays in the memory
+ 6. pagecache hit rate per file
+
+Especially, the monitoring pagecache usage per each file would help us tune
+some applications like database.
+
+Changelog since v1
+o Add a script based on "perf trace stream scripting support".
+
+Any comments are welcome.
+--
+Keiichi Kii <k-keiichi@bx.jp.nec.com>
+
 
