@@ -1,33 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751255Ab0AWFRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752085Ab0AWFXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751255Ab0AWFRj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 00:17:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806Ab0AWFRi
+	id S1752085Ab0AWFXx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 00:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119Ab0AWFXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 00:17:38 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42062 "EHLO mx2.mail.elte.hu"
+	Sat, 23 Jan 2010 00:23:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49981 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797Ab0AWFRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 00:17:37 -0500
-Date: Sat, 23 Jan 2010 06:17:17 +0100
+	id S1751486Ab0AWFXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jan 2010 00:23:51 -0500
+Date: Sat, 23 Jan 2010 06:22:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, tglx@linutronix.de,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-tip-commits@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ozan ??a??layan <ozan@pardus.org.tr>, Yinghai Lu <yinghai@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       a.p.zijlstra@chello.nl, stable@kernel.org,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [tip:x86/mce] x86, mce: Rename cpu_specific_poll to
- mce_cpu_specific_poll
-Message-ID: <20100123051717.GA26471@elte.hu>
-References: <20100121221711.GA8242@basil.fritz.box>
- <tip-f91c4d2649531cc36e10c6bc0f92d0f99116b209@git.kernel.org>
+Subject: Re: RFC: deprecate CONFIG_X86_CPU_DEBUG and schedule it for rapid
+ removal
+Message-ID: <20100123052257.GA19399@elte.hu>
+References: <4B4E1633.8010700@pardus.org.tr>
+ <201001162312.34189.rjw@sisk.pl>
+ <4B52D6E2.8000904@pardus.org.tr>
+ <201001171444.14551.rjw@sisk.pl>
+ <4B53B8DD.9000809@zytor.com>
+ <20100122165356.55cf88aa.akpm@linux-foundation.org>
+ <alpine.LFD.2.00.1001221755320.13231@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <tip-f91c4d2649531cc36e10c6bc0f92d0f99116b209@git.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.1001221755320.13231@localhost.localdomain>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
@@ -41,46 +46,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* tip-bot for H. Peter Anvin <hpa@zytor.com> wrote:
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> Commit-ID:  f91c4d2649531cc36e10c6bc0f92d0f99116b209
-> Gitweb:     http://git.kernel.org/tip/f91c4d2649531cc36e10c6bc0f92d0f99116b209
-> Author:     H. Peter Anvin <hpa@zytor.com>
-> AuthorDate: Thu, 21 Jan 2010 18:31:54 -0800
-> Committer:  H. Peter Anvin <hpa@zytor.com>
-> CommitDate: Thu, 21 Jan 2010 18:31:54 -0800
+> On Fri, 22 Jan 2010, Andrew Morton wrote:
+> > 
+> > We know that enabling this feature will cause some machines to hang,
+> > and that this problem has existed for six months.
+> > 
+> > Would it not be better to fix that problem (perhaps just with the
+> > revert) so that 2.6.33, 2.6.32.x and earlier can be fixed?  Then we can
+> > nuke the feature in 2.6.34.
 > 
-> x86, mce: Rename cpu_specific_poll to mce_cpu_specific_poll
+> Another way of looking at is "we know it's been broken for six months, and 
+> clearly nobody really ever enabled it in any distro, and even getting a bug 
+> report on it took forever. So why keep it around at all"?
 > 
-> cpu_specific_poll is a global variable, and it should have a global
-> namespace name.  Since it is MCE-specific (it takes a struct mce *),
-> rename it mce_cpu_specific_poll.
+> So I'd personally rather just remove it outright than deprecate it or even 
+> try to fix it. Since clearly absolutely nobody depends on it.
 > 
-> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> Cc: Andi Kleen <andi@firstfloor.org>
-> LKML-Reference: <20100121221711.GA8242@basil.fritz.box>
+> The usual reason for deprecating a feature is to give people time to move 
+> away from it, but since clearly nobody uses it...
 
-FYI, this commit triggered a -tip test failure:
-
- arch/x86/kernel/cpu/mcheck/mce-xeon75xx.c: In function 'xeon75xx_mce_init':
- arch/x86/kernel/cpu/mcheck/mce-xeon75xx.c:340: error: implicit declaration of function 'pci_match_id'
-
-I'm excluding it from tip:master.
-
-But the bigger problem with this commit is structure of it - or the lack 
-thereof.
-
-It just blindly goes into the direction the MCE code has been going for some 
-time, minimally enabling the hardware, ignoring both the new EDAC design and 
-the new performance monitoring related design i outlined some time ago.
-
-Newly introduced MCE code in the x86 tree should be integrated much better 
-into existing higher level facilities, not just limp along ignoring life 
-outside of its little box. This will have to be addressed before we can 
-reintroduce this commit, even if this trivial build failure is addressed.
-
-I've Cc:-ed a few more interested parties.
-
-Thanks,
+Excellent - that makes it all even simpler to handle.
 
 	Ingo
