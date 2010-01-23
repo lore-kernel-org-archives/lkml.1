@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323Ab0AWOne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665Ab0AWOrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323Ab0AWOne (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 09:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657Ab0AWOnc
+	id S1755665Ab0AWOrM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 09:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205Ab0AWOrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 09:43:32 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:8474 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932068Ab0AWOnc (ORCPT
+	Sat, 23 Jan 2010 09:47:11 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:37205 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751559Ab0AWOrK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 09:43:32 -0500
+	Sat, 23 Jan 2010 09:47:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=n1dwp5d3PFQDE6OdBmIWhDhVEcCYwgPhtrbjsg+uDKp75xYBzH0aR2eT2mw9e538uE
-         Wy69TcCAk5DOgNwBMPaQSdqsYQav7nSZzp/WglGvw2iZ1euWh7l9Jsml+mETUpHrtPdi
-         tPIPrY4MVW6m/bVqYDPMGzgYnsi4fsxpstjK4=
-Message-ID: <4B5B0B10.2000009@gmail.com>
-Date: Sat, 23 Jan 2010 15:43:28 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Rakib Mullick <rakib.mullick@gmail.com>
-CC: Greg KH <greg@kroah.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Michael H. Warfield" <mhw@wittsend.com>
-Subject: Re: linux-next: tty tree build warning
-References: <20100120171901.b2e06465.sfr@canb.auug.org.au>	 <b9df5fa11001202022q22c2d81cs5b90f694be37c1f4@mail.gmail.com>	 <20100121230331.GA29796@kroah.com> <b9df5fa11001230453k4a874ebamff02b64f7d6fcd84@mail.gmail.com>
-In-Reply-To: <b9df5fa11001230453k4a874ebamff02b64f7d6fcd84@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=mRs32yrzuQWRppBFLXMo6c57e/3t/a/kuubqOAFfXdAjv3HE91szYsAXRsjINNqBqp
+         YRCOPOoU5DDkO+Arlb7Q/hnxMC1wH/Lm88X2PopEB0jmjdAc16cSPFiPdUf+Zp51Ev2i
+         YscXJBesWxavzRQG+t8+T2a4kDHMo+036smyM=
+From: Thiago Farina <tfransosi@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 1/1] kernel/exit.c: fix shadows sparse warning.
+Date: Sat, 23 Jan 2010 09:46:33 -0500
+Message-Id: <9695506b784c54436f40b4c21ce2d7e6965b7aee.1264257828.git.tfransosi@gmail.com>
+X-Mailer: git-send-email 1.6.6.1.383.g5a9f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/23/2010 01:53 PM, Rakib Mullick wrote:
-> @@ -309,6 +313,8 @@ module_param_array(io, int, NULL, 0);
->  MODULE_PARM_DESC(io, "I/O ports for IntelliPort Cards");
->  module_param(poll_only, bool, 0);
->  MODULE_PARM_DESC(poll_only, "Do not use card interrupts");
-> +module_param_string(ip2, cmd, MAX_CMD_STR, 0);
-> +MODULE_PARM_DESC(ip2, "Contains module parameter passed with 'ip2='");
+kernel/exit.c:1183:26: warning: symbol 'status' shadows an earlier one
+kernel/exit.c:1173:21: originally declared here
 
-Why not just param_array(int) instead of whole parsing in ip2_setup?
+Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+---
+ kernel/exit.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 546774a..2e72b3f 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -1180,7 +1180,7 @@ static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
+ 
+ 	if (unlikely(wo->wo_flags & WNOWAIT)) {
+ 		int exit_code = p->exit_code;
+-		int why, status;
++		int why;
+ 
+ 		get_task_struct(p);
+ 		read_unlock(&tasklist_lock);
 -- 
-js
+1.6.6.1.383.g5a9f
+
