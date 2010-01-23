@@ -1,381 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550Ab0AWGuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751512Ab0AWGwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754550Ab0AWGuE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 01:50:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254Ab0AWGuB
+	id S1751512Ab0AWGwO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 01:52:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122Ab0AWGwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 01:50:01 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:34507 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751963Ab0AWGuA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 01:50:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=SxQJubHe3XtdpjZT0yKhg4ur36D5rSkc0M2cwK53lvqBzkHDAa77NCncmNW34WxDlj
-         jeWWsJrdgbzQQtya4om5G6cOtIZKQvZuwUuDCsfNDZkg+Sq5P1YU3w0G4mxUVxs4J8B9
-         gU3V/suDctaFTm47TsCQb7fS+xKm6ROwSWXJ8=
-Message-ID: <4B5A9C14.70704@gmail.com>
-Date: Sat, 23 Jan 2010 01:49:56 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Sat, 23 Jan 2010 01:52:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40634 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751082Ab0AWGwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jan 2010 01:52:10 -0500
+Date: Sat, 23 Jan 2010 06:51:38 GMT
+From: tip-bot for David Rientjes <rientjes@google.com>
+Cc: linux-kernel@vger.kernel.org, haicheng.li@linux.intel.com, hpa@zytor.com,
+       mingo@redhat.com, stable@kernel.org, tglx@linutronix.de,
+       rientjes@google.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, haicheng.li@linux.intel.com,
+       linux-kernel@vger.kernel.org, stable@kernel.org, tglx@linutronix.de,
+       rientjes@google.com
+In-Reply-To: <alpine.DEB.2.00.1001201152040.30528@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1001201152040.30528@chino.kir.corp.google.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Set hotpluggable nodes in nodes_possible_map
+Message-ID: <tip-3a5fc0e40cb467e692737bc798bc99773c81e1e2@git.kernel.org>
+Git-Commit-ID: 3a5fc0e40cb467e692737bc798bc99773c81e1e2
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v5 7/7] TCPCT part 2g: parse cookie pair and 64-bit timestamp
-References: <4B5A88C4.7050205@gmail.com>
-In-Reply-To: <4B5A88C4.7050205@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------020001070402070100060000"
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 23 Jan 2010 06:51:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020001070402070100060000
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Commit-ID:  3a5fc0e40cb467e692737bc798bc99773c81e1e2
+Gitweb:     http://git.kernel.org/tip/3a5fc0e40cb467e692737bc798bc99773c81e1e2
+Author:     David Rientjes <rientjes@google.com>
+AuthorDate: Wed, 20 Jan 2010 12:10:47 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 23 Jan 2010 06:21:57 +0100
 
-Parse cookie pair extended option (previously defined).
+x86: Set hotpluggable nodes in nodes_possible_map
 
-Define and parse 64-bit timestamp extended option (and minor cleanup).
-However, only 32-bits are used at this time (permitted by specification).
+nodes_possible_map does not currently include nodes that have SRAT
+entries that are all ACPI_SRAT_MEM_HOT_PLUGGABLE since the bit is
+cleared in nodes_parsed if it does not have an online address range.
 
-Every bit is sacred.  Use as few bits as possible in the tcp_sock
-structure, at the expense of performance.
+Unequivocally setting the bit in nodes_parsed is insufficient since
+existing code, such as acpi_get_nodes(), assumes all nodes in the map
+have online address ranges.  In fact, all code using nodes_parsed
+assumes such nodes represent an address range of online memory.
 
-[v5 fixed trivial error]
+nodes_possible_map is created by unioning nodes_parsed and
+cpu_nodes_parsed; the former represents nodes with online memory and
+the latter represents memoryless nodes.  We now set the bit for
+hotpluggable nodes in cpu_nodes_parsed so that it also gets set in
+nodes_possible_map.
 
-Requires:
-   net: tcp_header_len_th and tcp_option_len_th
-   TCPCT part 2f: cleanup tcp_parse_options
+[ hpa: Haicheng Li points out that this makes the naming of the
+  variable cpu_nodes_parsed somewhat counterintuitive.  However, leave
+  it as is in the interest of keeping the pure bug fix patch small. ]
 
-Signed-off-by: William.Allen.Simpson@gmail.com
+Signed-off-by: David Rientjes <rientjes@google.com>
+Tested-by: Haicheng Li <haicheng.li@linux.intel.com>
+LKML-Reference: <alpine.DEB.2.00.1001201152040.30528@chino.kir.corp.google.com>
+Cc: <stable@kernel.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
-  include/linux/tcp.h  |   10 ++++-
-  include/net/tcp.h    |   45 ++++++++++---------
-  net/ipv4/tcp_input.c |  119 ++++++++++++++++++++++++++++++++++++++++++++++----
-  3 files changed, 142 insertions(+), 32 deletions(-)
+ arch/x86/mm/srat_64.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
---------------020001070402070100060000
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="TCPCT+2g5+2.6.33-rc5.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="TCPCT+2g5+2.6.33-rc5.patch"
-
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 2987ee8..b71be6c 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -260,13 +260,21 @@ struct tcp_options_received {
- 	u8	num_sacks;	/* Number of SACK blocks		*/
- 	u16	user_mss;	/* mss requested by user in ioctl	*/
- 	u16	mss_clamp;	/* Maximal mss, negotiated at connection setup */
-+
-+	/* When the options are extended beyond the maximum 40 bytes,
-+	 * then this holds the additional data offset (in 32-bit words).
-+	 */
-+	u16	extended:12,	/* Up to 3,315 = 13 (40/3) by 255	*/
-+		saw_tstamp64:1,	/* Seen on recent packet		*/
-+		tstamp64_ok:1,	/* Verified with cookie pair		*/
-+		__unused:2;
- };
- 
- static inline void tcp_clear_options(struct tcp_options_received *rx_opt)
- {
- 	rx_opt->tstamp_ok = rx_opt->sack_ok = 0;
- 	rx_opt->wscale_ok = rx_opt->snd_wscale = 0;
--	rx_opt->cookie_plus = 0;
-+	rx_opt->tstamp64_ok = 0;
- }
- 
- /* This is the max number of SACKS that we'll generate and process. It's safe
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 420e872..157c97b 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -156,9 +156,8 @@ extern void tcp_time_wait(struct sock *sk, int state, int timeo);
- /*
-  *	TCP option
-  */
-- 
--#define TCPOPT_NOP		1	/* Padding */
- #define TCPOPT_EOL		0	/* End of options */
-+#define TCPOPT_NOP		1	/* Padding */
- #define TCPOPT_MSS		2	/* Segment size negotiating */
- #define TCPOPT_WINDOW		3	/* Window scaling */
- #define TCPOPT_SACK_PERM        4       /* SACK Permitted */
-@@ -166,30 +165,32 @@ extern void tcp_time_wait(struct sock *sk, int state, int timeo);
- #define TCPOPT_TIMESTAMP	8	/* Better RTT estimations/PAWS */
- #define TCPOPT_MD5SIG		19	/* MD5 Signature (RFC2385) */
- #define TCPOPT_COOKIE		253	/* Cookie extension (experimental) */
--
--/*
-- *     TCP option lengths
-- */
--
--#define TCPOLEN_MSS            4
--#define TCPOLEN_WINDOW         3
--#define TCPOLEN_SACK_PERM      2
--#define TCPOLEN_TIMESTAMP      10
--#define TCPOLEN_MD5SIG         18
--#define TCPOLEN_COOKIE_BASE    2	/* Cookie-less header extension */
--#define TCPOLEN_COOKIE_PAIR    3	/* Cookie pair header extension */
--#define TCPOLEN_COOKIE_MIN     (TCPOLEN_COOKIE_BASE+TCP_COOKIE_MIN)
--#define TCPOLEN_COOKIE_MAX     (TCPOLEN_COOKIE_BASE+TCP_COOKIE_MAX)
--
--/* But this is what stacks really send out. */
--#define TCPOLEN_TSTAMP_ALIGNED		12
-+#define TCPOPT_TSTAMP64		254	/* 64-bit extension (experimental) */
-+
-+/*	TCP option lengths (same order as above) */
-+#define TCPOLEN_MSS		4
-+#define TCPOLEN_WINDOW		3
-+#define TCPOLEN_SACK_PERM	2
-+#define TCPOLEN_SACK_BASE	2
-+#define TCPOLEN_SACK_PERBLOCK	8
-+#define TCPOLEN_TIMESTAMP	10
-+#define TCPOLEN_MD5SIG		18
-+#define TCPOLEN_COOKIE_BASE	2	/* Cookie-less header extension */
-+#define TCPOLEN_COOKIE_PAIR	3	/* Cookie pair header extension */
-+#define TCPOLEN_COOKIE_MIN	(TCPOLEN_COOKIE_BASE+TCP_COOKIE_MIN)
-+#define TCPOLEN_COOKIE_MAX	(TCPOLEN_COOKIE_BASE+TCP_COOKIE_MAX)
-+#define TCPOLEN_TSTAMP64	3
-+
-+/*	TCP options 32-bit aligned (same order as above) */
-+#define TCPOLEN_MSS_ALIGNED		4
- #define TCPOLEN_WSCALE_ALIGNED		4
- #define TCPOLEN_SACKPERM_ALIGNED	4
--#define TCPOLEN_SACK_BASE		2
- #define TCPOLEN_SACK_BASE_ALIGNED	4
--#define TCPOLEN_SACK_PERBLOCK		8
-+#define TCPOLEN_TSTAMP_ALIGNED		12
- #define TCPOLEN_MD5SIG_ALIGNED		20
--#define TCPOLEN_MSS_ALIGNED		4
-+
-+/*	TCP option extensions (same order as above) */
-+#define TCPOEXT_TSTAMP64		16
- 
- /* Flags in tp->nonagle */
- #define TCP_NAGLE_OFF		1	/* Nagle's algo is disabled */
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index d3c6c7a..df38cef 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -3722,9 +3722,71 @@ old_ack:
- 	return 0;
- }
- 
-+/* Process option extension data.
-+ *
-+ * Extension data in nonlinear skb is Not Yet Implemented!!!
-+ *
-+ * Returns:
-+ *	0 on success
-+ *	- on failure
-+ */
-+int tcp_parse_extension(struct sk_buff *skb, const struct tcphdr *th,
-+			struct tcp_options_received *opt_rx, u8 **hvpp)
-+{
-+	__be32 *tsp = (__be32 *)th + th->doff;
-+	int remainder = skb_headlen(skb);
-+
-+	if (unlikely(th->syn)) {
-+		/* Extended options are ignored on SYN or SYNACK, just as other
-+		 * malformed or unrecognized options.  Leave the data in place.
-+		 */
-+		opt_rx->extended = 0;
-+		return 0;
-+	}
-+
-+	/* Adjust end_seq, set in tcp_v[4,6]_rcv() */
-+	TCP_SKB_CB(skb)->end_seq -= (opt_rx->extended * 4);
-+
-+	/* If present, always first, aligned */
-+	if (opt_rx->saw_tstamp64) {
-+		if (unlikely(remainder < TCPOEXT_TSTAMP64)) {
-+			/* insufficient data */
-+			opt_rx->saw_tstamp64 = 0 /* false */;
-+			opt_rx->saw_tstamp = 0 /* false */;
-+		} else {
-+			/* 64-bits not yet implemented */
-+			tsp++;
-+			opt_rx->rcv_tsval = ntohl(*tsp);
-+			tsp += 2;
-+			opt_rx->rcv_tsecr = ntohl(*tsp);
-+			tsp++;
-+		}
-+		remainder -= TCPOEXT_TSTAMP64;
-+	}
-+
-+	/* If present, TCPOLEN_COOKIE_PAIR makes this an odd value */
-+	if (opt_rx->cookie_plus & 0x1) {
-+		int cookie_size = opt_rx->cookie_plus - TCPOLEN_COOKIE_PAIR;
-+
-+		if (unlikely(remainder < cookie_size)) {
-+			/* insufficient data */
-+			opt_rx->cookie_plus = 0;
-+		} else {
-+			*hvpp = (u8 *)tsp;
-+			tsp += (cookie_size / 4);
-+		}
-+		remainder -= cookie_size;
-+	}
-+	return (remainder < 0) ? remainder : 0;
-+}
-+
- /* Look for tcp options. Normally only called on SYN and SYNACK packets.
-  * But, this can also be called on packets in the established flow when
-  * the fast version below fails.
-+ *
-+ * Returns:
-+ *	0 on success
-+ *	- on failure
-  */
- int tcp_parse_options(struct sk_buff *skb, const struct tcphdr *th,
- 		      struct tcp_options_received *opt_rx, u8 **hvpp, int estab)
-@@ -3733,6 +3795,8 @@ int tcp_parse_options(struct sk_buff *skb, const struct tcphdr *th,
- 	int length = tcp_option_len_th(th);
- 
- 	opt_rx->cookie_plus = 0;
-+	opt_rx->extended = 0;
-+	opt_rx->saw_tstamp64 = 0; /* false */
- 	opt_rx->saw_tstamp = 0; /* false */
- 
- 	while (length > 0) {
-@@ -3741,6 +3805,9 @@ int tcp_parse_options(struct sk_buff *skb, const struct tcphdr *th,
- 
- 		switch (opcode) {
- 		case TCPOPT_EOL:
-+			if (opt_rx->extended > 0)
-+				return tcp_parse_extension(skb, th, opt_rx,
-+							   hvpp);
- 			return 0;
- 		case TCPOPT_NOP:	/* Ref: RFC 793 section 3.1 */
- 			length--;
-@@ -3753,6 +3820,9 @@ int tcp_parse_options(struct sk_buff *skb, const struct tcphdr *th,
- 		opsize = *ptr++;
- 		if (opsize < 2 || opsize > length) {
- 			/* don't parse partial options */
-+			if (opt_rx->extended > 0)
-+				return tcp_parse_extension(skb, th, opt_rx,
-+							   hvpp);
- 			return 0;
- 		}
- 
-@@ -3829,7 +3899,16 @@ int tcp_parse_options(struct sk_buff *skb, const struct tcphdr *th,
- 				/* not yet implemented */
- 				break;
- 			case TCPOLEN_COOKIE_PAIR:
--				/* not yet implemented */
-+				if (*ptr >= (TCPOLEN_COOKIE_MIN / 4) &&
-+				    *ptr <= (TCPOLEN_COOKIE_MAX / 4) &&
-+				    !th->syn && opt_rx->saw_tstamp &&
-+				    opt_rx->cookie_plus == 0 &&
-+				    (opt_rx->extended == 0 ||
-+				     (opt_rx->extended == (TCPOEXT_TSTAMP64 / 4) &&
-+				      opt_rx->saw_tstamp64))) {
-+					opt_rx->cookie_plus = opsize + *ptr * 4;
-+				}
-+				opt_rx->extended += *ptr;
- 				break;
- 			case TCPOLEN_COOKIE_MIN+0:
- 			case TCPOLEN_COOKIE_MIN+2:
-@@ -3849,6 +3928,18 @@ int tcp_parse_options(struct sk_buff *skb, const struct tcphdr *th,
- 			};
- 			break;
- 
-+		case TCPOPT_TSTAMP64:
-+			if (opsize == TCPOLEN_TSTAMP64) {
-+				if (*ptr == (TCPOEXT_TSTAMP64 / 4) &&
-+				    !th->syn && !opt_rx->saw_tstamp &&
-+				    opt_rx->extended == 0) {
-+					opt_rx->saw_tstamp64 = 1; /* true */
-+					opt_rx->saw_tstamp = 1; /* true */
-+				}
-+				opt_rx->extended += *ptr;
-+			}
-+			break;
-+
- 		default:
- 			/* skip unrecognized options */
- 			break;
-@@ -3857,6 +3948,8 @@ int tcp_parse_options(struct sk_buff *skb, const struct tcphdr *th,
- 		ptr += opsize - 2;
- 		length -= opsize;
+diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+index a271241..28c6876 100644
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -229,9 +229,11 @@ update_nodes_add(int node, unsigned long start, unsigned long end)
+ 			printk(KERN_ERR "SRAT: Hotplug zone not continuous. Partly ignored\n");
  	}
-+	if (opt_rx->extended > 0)
-+		return tcp_parse_extension(skb, th, opt_rx, hvpp);
- 	return 0;
- }
  
-@@ -3883,6 +3976,11 @@ static int tcp_parse_aligned_timestamp(struct tcp_sock *tp, struct tcphdr *th)
- 
- /* Fast parse options. This hopes to only see timestamps.
-  * If it is wrong it falls back on tcp_parse_options().
-+ *
-+ * Returns:
-+ *	1 on success, fast
-+ *	0 on success, slow
-+ *	- on failure
-  */
- static int tcp_fast_parse_options(struct sk_buff *skb, struct tcphdr *th,
- 				  struct tcp_sock *tp, u8 **hvpp)
-@@ -3892,11 +3990,14 @@ static int tcp_fast_parse_options(struct sk_buff *skb, struct tcphdr *th,
- 	 */
- 	if (th->doff == (sizeof(*th) / 4)) {
- 		tp->rx_opt.saw_tstamp = 0;
-+		tp->rx_opt.extended = 0;
- 		return 0;
--	} else if (tp->rx_opt.tstamp_ok &&
--		   th->doff == ((sizeof(*th) + TCPOLEN_TSTAMP_ALIGNED) / 4)) {
--		if (tcp_parse_aligned_timestamp(tp, th))
--			return 1;
+-	if (changed)
++	if (changed) {
++		node_set(node, cpu_nodes_parsed);
+ 		printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n",
+ 				 nd->start, nd->end);
 +	}
-+	if (th->doff == ((sizeof(*th) + TCPOLEN_TSTAMP_ALIGNED) / 4) &&
-+	    tp->rx_opt.tstamp_ok &&
-+	    tcp_parse_aligned_timestamp(tp, th)) {
-+		tp->rx_opt.extended = 0;
-+		return 1;
- 	}
- 	return tcp_parse_options(skb, th, &tp->rx_opt, hvpp, 1);
  }
-@@ -3907,8 +4008,8 @@ static int tcp_fast_parse_options(struct sk_buff *skb, struct tcphdr *th,
-  */
- u8 *tcp_parse_md5sig_option(struct tcphdr *th)
- {
--	int length = (th->doff << 2) - sizeof (*th);
- 	u8 *ptr = (u8*)(th + 1);
-+	int length = tcp_option_len_th(th);
  
- 	/* If the TCP option is too short, we can short cut */
- 	if (length < TCPOLEN_MD5SIG)
-@@ -4373,7 +4474,7 @@ static void tcp_data_queue(struct sock *sk, struct sk_buff *skb)
- 	if (TCP_SKB_CB(skb)->seq == TCP_SKB_CB(skb)->end_seq)
- 		goto drop;
- 
--	__skb_pull(skb, th->doff * 4);
-+	__skb_pull(skb, (th->doff + tp->rx_opt.extended) * 4);
- 
- 	TCP_ECN_accept_cwr(tp, skb);
- 
-@@ -5034,8 +5135,8 @@ static void tcp_urg(struct sock *sk, struct sk_buff *skb, struct tcphdr *th)
- 
- 	/* Do we wait for any urgent data? - normally not... */
- 	if (tp->urg_data == TCP_URG_NOTYET) {
--		u32 ptr = tp->urg_seq - ntohl(th->seq) + (th->doff * 4) -
--			  th->syn;
-+		u32 ptr = ((th->doff + tp->rx_opt.extended) * 4)
-+			+ tp->urg_seq - ntohl(th->seq) - th->syn;
- 
- 		/* Is the urgent pointer pointing into this packet? */
- 		if (ptr < skb->len) {
--- 
-1.6.3.3
-
-
---------------020001070402070100060000--
+ /* Callback for parsing of the Proximity Domain <-> Memory Area mappings */
