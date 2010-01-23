@@ -1,95 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475Ab0AWBvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755727Ab0AWBwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475Ab0AWBvk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 20:51:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310Ab0AWBvj
+	id S1755727Ab0AWBwv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 20:52:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755418Ab0AWBwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 20:51:39 -0500
-Received: from exchange.solarflare.com ([216.237.3.220]:6629 "EHLO
-	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754120Ab0AWBvj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 20:51:39 -0500
-Subject: Re: [RFC PATCH] net: NETDEV WATCHDOG should print something every
- time
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20100122214333.14389.86017.stgit@jbrandeb-ich9b.jf.intel.com>
-References: <20100122214333.14389.86017.stgit@jbrandeb-ich9b.jf.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Solarflare Communications
-Date: Sat, 23 Jan 2010 01:51:32 +0000
-Message-ID: <1264211492.373.16.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	Fri, 22 Jan 2010 20:52:50 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35716 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932123Ab0AWBwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 20:52:49 -0500
+Message-ID: <4B5A5631.7020706@zytor.com>
+Date: Fri, 22 Jan 2010 17:51:45 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, a.p.zijlstra@chello.nl,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>, mingo@elte.hu,
+       Yinghai Lu <yinghai@kernel.org>, stable@kernel.org
+Subject: Re: [stable] RFC: deprecate CONFIG_X86_CPU_DEBUG and schedule it
+ for rapid removal
+References: <4B4E1633.8010700@pardus.org.tr> <201001162312.34189.rjw@sisk.pl> <4B52D6E2.8000904@pardus.org.tr> <201001171444.14551.rjw@sisk.pl> <4B53B8DD.9000809@zytor.com> <20100122165356.55cf88aa.akpm@linux-foundation.org> <4B5A4B44.3010002@zytor.com> <20100123012002.GA8655@kroah.com>
+In-Reply-To: <20100123012002.GA8655@kroah.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Jan 2010 01:51:42.0406 (UTC) FILETIME=[9C767E60:01CA9BCE]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17146.005
-X-TM-AS-Result: No--17.571700-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-22 at 13:43 -0800, Jesse Brandeburg wrote:
-> commit 5337407c changed NETDEV WATCHDOG messages into a message
-> that will only print once per driver load.  This removed a significant amount
-> of information from an admin who might be missing that his system was having
-> NETDEV WATCHDOGs, esp since there is no other global counter available to
-> count these events.
+On 01/22/2010 05:20 PM, Greg KH wrote:
+> On Fri, Jan 22, 2010 at 05:05:08PM -0800, H. Peter Anvin wrote:
+>> On 01/22/2010 04:53 PM, Andrew Morton wrote:
+>>>
+>>> Would it not be better to fix that problem (perhaps just with the
+>>> revert) so that 2.6.33, 2.6.32.x and earlier can be fixed?  Then we can
+>>> nuke the feature in 2.6.34.
+>>>
+>>> Alternatively, we can nuke the feature from 2.6.33 and 2.6.32.x and
+>>> earlier right now.  Where "nuke" might mean "make it difficult to
+>>> enable".
+>>>
+>>> Whatever.  Bottom line is that it'd be nice to do something to fix up
+>>> 2.6.33 and earlier.
+>>>
+>>
+>> I would be all for nuking the feature immediately.  The easiest way to
+>> nuke the feature quickly is to make it a noninteractive Kconfig feature.
+>>
+>> All in favor?
 > 
-> simply check the __warned flag and print a simple version of the message
-> without the full stack dump if the (kerneloops related) WARN_ON_ONCE has
-> already logged the hardware type and one hang.
-[...]
-> diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
-> index 18c435d..ad810a0 100644
-> --- a/include/asm-generic/bug.h
-> +++ b/include/asm-generic/bug.h
-> @@ -132,6 +132,11 @@ extern void warn_slowpath_null(const char *file, const int line);
->  	unlikely(__ret_warn_once);				\
->  })
->  
-> +#define WARNED_ALREADY() ({					\
-> +	static bool __warned;					\
-> +	unlikely(__warned);					\
-> +})
+> /me raises his hand.
+> 
+> A Kconfig change would be nice to have.
+> 
 
-It is indeed unlikely that __warned will be true, given there is no
-statement to set it...
+I take that as an Acked-by: ...
 
-I think this could be a generic macro:
-
-#define first_time() ({						\
-	static bool __been_here;				\
-	__been_here++;						\
-})
-
->  #define WARN_ON_RATELIMIT(condition, state)			\
->  		WARN_ON((condition) && __ratelimit(state))
->  
-> diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
-> index 5173c1e..28fb14f 100644
-> --- a/net/sched/sch_generic.c
-> +++ b/net/sched/sch_generic.c
-> @@ -251,8 +251,13 @@ static void dev_watchdog(unsigned long arg)
->  
->  			if (some_queue_timedout) {
->  				char drivername[64];
-> -				WARN_ONCE(1, KERN_INFO "NETDEV WATCHDOG: %s (%s): transmit queue %u timed out\n",
-> -				       dev->name, netdev_drivername(dev, drivername, 64), i);
-> +				/* FIXME: is there a way to const char string[] = "NETDEV WATCHDOG..." */
-[...]
-
-Maybe you could, you know, just write that declaration... though a
-'static' in front wouldn't hurt.
-
-Ben.
-
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
-
+	-hpa
