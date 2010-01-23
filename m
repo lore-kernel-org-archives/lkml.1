@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565Ab0AWXmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498Ab0AWXmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565Ab0AWXmk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 18:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239Ab0AWXmJ
+	id S1753498Ab0AWXmg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 18:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164Ab0AWXmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 18:42:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43514 "EHLO ogre.sisk.pl"
+	Sat, 23 Jan 2010 18:42:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43511 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752888Ab0AWXmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 18:42:01 -0500
+	id S1752846Ab0AWXmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jan 2010 18:42:00 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/8] PM: Start asynchronous resume threads upfront
-Date: Sun, 24 Jan 2010 00:38:56 +0100
+Subject: [PATCH 1/8] PM: Add parent information to timing messages
+Date: Sun, 24 Jan 2010 00:34:36 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
 Cc: Alan Stern <stern@rowland.harvard.edu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -31,129 +31,35 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001240038.56372.rjw@sisk.pl>
+Message-Id: <201001240034.36423.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-It has been shown by testing that total device resume time can be
-reduced significantly (by as much as 50% or more) if the async
-threads executing some devices' resume routines are all started
-before the main resume thread starts to handle the "synchronous"
-devices.
-
-This is a consequence of the fact that the slowest devices tend to be
-located at the end of dpm_list, so their resume routines are started
-very late.  Consequently, they have to wait for all the preceding
-"synchronous" devices before their resume routines can be started
-by the main resume thread, even if they are "asynchronous".  By
-starting their async threads upfront we effectively move those
-devices towards the beginning of dpm_list, without breaking their
-ordering with respect to their parents and children.  As a result,
-their resume routines are started much earlier and we are able to
-save much more device resume time this way.
+Add parent information to the messages printed by the suspend/resume
+core when initcall_debug is set.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/main.c |   43 ++++++++++++++++++++++++-------------------
- 1 file changed, 24 insertions(+), 19 deletions(-)
+ drivers/base/power/main.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/main.c
 +++ linux-2.6/drivers/base/power/main.c
-@@ -495,12 +495,12 @@ static int legacy_resume(struct device *
- }
+@@ -271,8 +271,9 @@ static int pm_noirq_op(struct device *de
+ 	ktime_t calltime, delta, rettime;
  
- /**
-- * __device_resume - Execute "resume" callbacks for given device.
-+ * device_resume - Execute "resume" callbacks for given device.
-  * @dev: Device to handle.
-  * @state: PM transition of the system being carried out.
-  * @async: If true, the device is being resumed asynchronously.
-  */
--static int __device_resume(struct device *dev, pm_message_t state, bool async)
-+static int device_resume(struct device *dev, pm_message_t state, bool async)
- {
- 	int error = 0;
+ 	if (initcall_debug) {
+-		pr_info("calling  %s_i+ @ %i\n",
+-				dev_name(dev), task_pid_nr(current));
++		pr_info("calling  %s+ @ %i, parent: %s\n",
++				dev_name(dev), task_pid_nr(current),
++				dev->parent ? dev_name(dev->parent) : "none");
+ 		calltime = ktime_get();
+ 	}
  
-@@ -510,6 +510,8 @@ static int __device_resume(struct device
- 	dpm_wait(dev->parent, async);
- 	down(&dev->sem);
- 
-+	dev->power.status = DPM_RESUMING;
-+
- 	if (dev->bus) {
- 		if (dev->bus->pm) {
- 			pm_dev_dbg(dev, state, "");
-@@ -553,24 +555,16 @@ static void async_resume(void *data, asy
- 	struct device *dev = (struct device *)data;
- 	int error;
- 
--	error = __device_resume(dev, pm_transition, true);
-+	error = device_resume(dev, pm_transition, true);
- 	if (error)
- 		pm_dev_err(dev, pm_transition, " async", error);
- 	put_device(dev);
- }
- 
--static int device_resume(struct device *dev)
-+static bool is_async(struct device *dev)
- {
--	INIT_COMPLETION(dev->power.completion);
--
--	if (pm_async_enabled && dev->power.async_suspend
--	    && !pm_trace_is_enabled()) {
--		get_device(dev);
--		async_schedule(async_resume, dev);
--		return 0;
--	}
--
--	return __device_resume(dev, pm_transition, false);
-+	return dev->power.async_suspend && pm_async_enabled
-+		&& !pm_trace_is_enabled();
- }
- 
- /**
-@@ -583,22 +577,33 @@ static int device_resume(struct device *
- static void dpm_resume(pm_message_t state)
- {
- 	struct list_head list;
-+	struct device *dev;
- 	ktime_t starttime = ktime_get();
- 
- 	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
- 	pm_transition = state;
--	while (!list_empty(&dpm_list)) {
--		struct device *dev = to_device(dpm_list.next);
- 
-+	list_for_each_entry(dev, &dpm_list, power.entry) {
-+		if (dev->power.status < DPM_OFF)
-+			continue;
-+
-+		INIT_COMPLETION(dev->power.completion);
-+		if (is_async(dev)) {
-+			get_device(dev);
-+			async_schedule(async_resume, dev);
-+		}
-+	}
-+
-+	while (!list_empty(&dpm_list)) {
-+		dev = to_device(dpm_list.next);
- 		get_device(dev);
--		if (dev->power.status >= DPM_OFF) {
-+		if (dev->power.status >= DPM_OFF && !is_async(dev)) {
- 			int error;
- 
--			dev->power.status = DPM_RESUMING;
- 			mutex_unlock(&dpm_list_mtx);
- 
--			error = device_resume(dev);
-+			error = device_resume(dev, state, false);
- 
- 			mutex_lock(&dpm_list_mtx);
- 			if (error)
 
