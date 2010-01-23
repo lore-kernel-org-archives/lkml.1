@@ -1,68 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142Ab0AWAOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522Ab0AWASk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142Ab0AWAOe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:14:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104Ab0AWAOd
+	id S1754522Ab0AWASk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:18:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706Ab0AWASk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:14:33 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:55047 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669Ab0AWAOc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:14:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=i407IPIiE3qlrs7rAxggK1SidEgtzGTkPmtp7w3MrBXu8mfoxpALVGhy82MKe0P3o7
-         cCF/yf7K8Qm1k881hB39ehz/MO0uf0XT9Z+DMKRyFnEdhXLiHeHo1DiB+Z9APuuwxq9o
-         ID4E1n0CP9GQW2T/8wYmt1x/Zm2Vux/1Toqco=
-Date: Fri, 22 Jan 2010 16:14:15 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Jonathan Cameron <kernel@jic23.retrosnub.co.uk>,
-       Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Manuel Stahl <manuel.stahl@iis.fraunhofer.de>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
-       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
-       "Getz, Robin" <Robin.Getz@analog.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
-       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
-       Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [RFC] Staging:IIO: New ABI
-Message-ID: <20100123001414.GB14538@core.coreip.homeip.net>
-References: <4B571DA4.6070603@cam.ac.uk>
- <20100120153748.GA29401@kroah.com>
- <4B573501.9090001@jic23.retrosnub.co.uk>
- <20100122204718.GA15759@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100122204718.GA15759@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Fri, 22 Jan 2010 19:18:40 -0500
+Received: from kroah.org ([198.145.64.141]:34995 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753104Ab0AWASj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:18:39 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:10 2010
+Message-Id: <20100123001110.365773434@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 22 Jan 2010 16:09:45 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Tejun Heo <tj@kernel.org>, Takashi Iwai <tiwai@suse.de>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [01/29] x86, msr/cpuid: Register enough minors for the MSR and CPUID drivers
+In-Reply-To: <20100123001145.GA7391@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 22, 2010 at 12:47:18PM -0800, Greg KH wrote:
-> On Wed, Jan 20, 2010 at 04:53:21PM +0000, Jonathan Cameron wrote:
-> > I am not aware of these. Could you direct me to the current api? Also note that these
-> > aren't the actual alarms, merely a means of enabling the relevant event on the related
-> > event character device. 
-> 
-> Hm, I thought we had an accelerator interface somewhere...
-> 
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-Nope. And I am also interested in this since I am sittign on a bunch of
-accelerometers, magnetometers, etc drivers that are trying to plug into
-input sysbsystem and quite unsure what to do with them.
+------------------
 
-It was OK whch HDAPS and friends when they were using input for
-secondary, toyish purposes, but these new drivers trying to use input
-devnts as primary API and I am unsure if it is the best solution.
-Accelerometer might be used as an input device but not always an input
-device.
+From: H. Peter Anvin <hpa@zytor.com>
 
--- 
-Dmitry
+commit 0b962d473af32ec334df271b54ff4973cb2b4c73 upstream.
+
+register_chrdev() hardcodes registering 256 minors, presumably to
+avoid breaking old drivers.  However, we need to register enough
+minors so that we have all possible CPUs.
+
+checkpatch warns on this patch, but the patch is correct: NR_CPUS here
+is a static *upper bound* on the *maximum CPU index* (not *number of
+CPUs!*) and that is what we want.
+
+Reported-and-tested-by: Russ Anderson <rja@sgi.com>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+LKML-Reference: <tip-*@git.kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/x86/kernel/cpuid.c |    5 +++--
+ arch/x86/kernel/msr.c   |    4 ++--
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+--- a/arch/x86/kernel/cpuid.c
++++ b/arch/x86/kernel/cpuid.c
+@@ -192,7 +192,8 @@ static int __init cpuid_init(void)
+ 	int i, err = 0;
+ 	i = 0;
+ 
+-	if (register_chrdev(CPUID_MAJOR, "cpu/cpuid", &cpuid_fops)) {
++	if (__register_chrdev(CPUID_MAJOR, 0, NR_CPUS,
++			      "cpu/cpuid", &cpuid_fops)) {
+ 		printk(KERN_ERR "cpuid: unable to get major %d for cpuid\n",
+ 		       CPUID_MAJOR);
+ 		err = -EBUSY;
+@@ -221,7 +222,7 @@ out_class:
+ 	}
+ 	class_destroy(cpuid_class);
+ out_chrdev:
+-	unregister_chrdev(CPUID_MAJOR, "cpu/cpuid");
++	__unregister_chrdev(CPUID_MAJOR, 0, NR_CPUS, "cpu/cpuid");
+ out:
+ 	return err;
+ }
+--- a/arch/x86/kernel/msr.c
++++ b/arch/x86/kernel/msr.c
+@@ -251,7 +251,7 @@ static int __init msr_init(void)
+ 	int i, err = 0;
+ 	i = 0;
+ 
+-	if (register_chrdev(MSR_MAJOR, "cpu/msr", &msr_fops)) {
++	if (__register_chrdev(MSR_MAJOR, 0, NR_CPUS, "cpu/msr", &msr_fops)) {
+ 		printk(KERN_ERR "msr: unable to get major %d for msr\n",
+ 		       MSR_MAJOR);
+ 		err = -EBUSY;
+@@ -279,7 +279,7 @@ out_class:
+ 		msr_device_destroy(i);
+ 	class_destroy(msr_class);
+ out_chrdev:
+-	unregister_chrdev(MSR_MAJOR, "cpu/msr");
++	__unregister_chrdev(MSR_MAJOR, 0, NR_CPUS, "cpu/msr");
+ out:
+ 	return err;
+ }
+
+
