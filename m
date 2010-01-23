@@ -1,78 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952Ab0AWAXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314Ab0AWAYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952Ab0AWAXn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242Ab0AWAXj
+	id S1756314Ab0AWAYN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:24:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388Ab0AWAYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:23:39 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53223 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756244Ab0AWAXe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:23:34 -0500
-Date: Fri, 22 Jan 2010 16:22:22 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Frank Ch. Eigler" <fche@redhat.com>
-cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-In-Reply-To: <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
-References: <20100121013822.28781960.sfr@canb.auug.org.au> <20100122111747.3c224dfd.sfr@canb.auug.org.au> <20100121163004.8779bd69.akpm@linux-foundation.org> <20100121163145.7e958c3f.akpm@linux-foundation.org> <20100122005147.GD22003@redhat.com>
- <20100121170541.7425ff10.akpm@linux-foundation.org> <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain> <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
- <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 22 Jan 2010 19:24:06 -0500
+Received: from kroah.org ([198.145.64.141]:35066 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755331Ab0AWASy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:18:54 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:12 2010
+Message-Id: <20100123001112.141623063@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 22 Jan 2010 16:09:59 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Rickard Bellini <rickard.bellini@ericsson.com>
+Subject: [15/29] USB: add missing delay during remote wakeup
+In-Reply-To: <20100123001145.GA7391@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
+
+------------------
+
+From: Alan Stern <stern@rowland.harvard.edu>
+
+commit 49d0f078f494b9d81e820a13dd8093a9bfb0b6b1 upstream.
+
+This patch (as1330) fixes a bug in khbud's handling of remote
+wakeups.  When a device sends a remote-wakeup request, the parent hub
+(or the host controller driver, for directly attached devices) begins
+the resume sequence and notifies khubd when the sequence finishes.  At
+this point the port's SUSPEND feature is automatically turned off.
+
+However the device needs an additional 10-ms resume-recovery time
+(TRSMRCY in the USB spec).  Khubd does not wait for this delay if the
+SUSPEND feature is off, and as a result some devices fail to behave
+properly following a remote wakeup.  This patch adds the missing
+delay to the remote-wakeup path.
+
+It also extends the resume-signalling delay used by ehci-hcd and
+uhci-hcd from 20 ms (the value in the spec) to 25 ms (the value we use
+for non-remote-wakeup resumes).  The extra time appears to help some
+devices.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Cc: Rickard Bellini <rickard.bellini@ericsson.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/core/hub.c      |    3 +++
+ drivers/usb/host/ehci-hcd.c |    5 +++--
+ drivers/usb/host/uhci-hub.c |    2 +-
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -3286,6 +3286,9 @@ static void hub_events(void)
+ 					USB_PORT_FEAT_C_SUSPEND);
+ 				udev = hdev->children[i-1];
+ 				if (udev) {
++					/* TRSMRCY = 10 msec */
++					msleep(10);
++
+ 					usb_lock_device(udev);
+ 					ret = remote_wakeup(hdev->
+ 							children[i-1]);
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -785,9 +785,10 @@ static irqreturn_t ehci_irq (struct usb_
+ 
+ 			/* start 20 msec resume signaling from this port,
+ 			 * and make khubd collect PORT_STAT_C_SUSPEND to
+-			 * stop that signaling.
++			 * stop that signaling.  Use 5 ms extra for safety,
++			 * like usb_port_resume() does.
+ 			 */
+-			ehci->reset_done [i] = jiffies + msecs_to_jiffies (20);
++			ehci->reset_done[i] = jiffies + msecs_to_jiffies(25);
+ 			ehci_dbg (ehci, "port %d remote wakeup\n", i + 1);
+ 			mod_timer(&hcd->rh_timer, ehci->reset_done[i]);
+ 		}
+--- a/drivers/usb/host/uhci-hub.c
++++ b/drivers/usb/host/uhci-hub.c
+@@ -167,7 +167,7 @@ static void uhci_check_ports(struct uhci
+ 				/* Port received a wakeup request */
+ 				set_bit(port, &uhci->resuming_ports);
+ 				uhci->ports_timeout = jiffies +
+-						msecs_to_jiffies(20);
++						msecs_to_jiffies(25);
+ 
+ 				/* Make sure we see the port again
+ 				 * after the resuming period is over. */
 
 
-On Fri, 22 Jan 2010, Linus Torvalds wrote:
->
-> No. It's not about naming. It's about the downside of having amorphous 
-> interfaces that apparently don't even have rules, and are then used to 
-> implement random crap.
-> 
-> Yes, the SNL skit about "It's a dessert topping _and_ a floor wax" was 
-> funny, but it was funny exactly because it was crazy.
-
-Put yet another way: I'd _much_ rather have two totally separate pieces 
-that don't depend on each other, and do different things.
-
-So to take a very practical example: I'd much rather have 'seccomp' and 
-'ptrace' that have _nothing_ what-so-ever to do with each other, than have 
-some intermediate layer that then needs to make both of those happy, and 
-that both have to interact with.
-
-There are cases where we really _want_ to have common code. We want to 
-have a common VFS interface because we want to show _one_ interface to 
-user space across a gazillion different filesystems. We want to have a 
-common driver layer (as far as possible) because - again - we expose a 
-metric shitload of drivers, and we want to have one unified interface to 
-them.
-
-But going the other way: trying to share code when the interfaces are 
-fundamentally _different_ is generally not at all such a great idea. It 
-ends up tying two conceptually totally separate things together, and 
-suddenly people who work on feature X aneed to modify infrastructure that 
-affects feature Y, and it turns ou that details A, B and C are all totally 
-different for the two features and the middle layer has two conflicting 
-things it needs to work with.
-
-This is why when somebody brought up "you could do a seccomp-like thing on 
-top of utrace" that my reaction was and is just totally negative. It shows 
-all the wrong kinds of tying things together.
-
-			Linus
