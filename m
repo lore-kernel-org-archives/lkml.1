@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529Ab0AWA32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932157Ab0AWA3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756529Ab0AWA32 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756519Ab0AWA3Y
+	id S932157Ab0AWA3f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756513Ab0AWA30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:29:24 -0500
-Received: from kroah.org ([198.145.64.141]:35028 "EHLO coco.kroah.org"
+	Fri, 22 Jan 2010 19:29:26 -0500
+Received: from kroah.org ([198.145.64.141]:35015 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753104Ab0AWASo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:18:44 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:11 2010
-Message-Id: <20100123001111.003565766@mini.kroah.org>
+	id S1754603Ab0AWASm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:18:42 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:10 2010
+Message-Id: <20100123001110.739975837@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 22 Jan 2010 16:09:50 -0800
+Date: Fri, 22 Jan 2010 16:09:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dan Carpenter <error27@gmail.com>,
-       Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-Subject: [06/29] ecryptfs: use after free
+       "K. Y. Srinivasan" <ksrinivasan@novell.com>,
+       Hank Janssen <hjanssen@microsoft.com>,
+       Haiyang Zhang <haiyangz@microsoft.com>
+Subject: [04/29] Staging: hv: fix smp problems in the hyperv core code
 In-Reply-To: <20100123001145.GA7391@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,47 +30,246 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dan Carpenter <error27@gmail.com>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-commit ece550f51ba175c14ec3ec047815927d7386ea1f upstream.
+commit 7692fd4d441afac728cb83fdd33349d5ba07406c upstream.
 
-The "full_alg_name" variable is used on a couple error paths, so we
-shouldn't free it until the end.
+This fixes a number of SMP problems that were in the hyperv core code.
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
-Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+Patch originally written by K. Y. Srinivasan <ksrinivasan@novell.com>
+but forward ported to the latest in-kernel code and tweaked slightly by
+me.
+
+Novell, Inc. hereby disclaims all copyright in any derivative work
+copyright associated with this patch.
+
+Signed-off-by: K. Y. Srinivasan <ksrinivasan@novell.com>
+Cc: Hank Janssen <hjanssen@microsoft.com>
+Cc: Haiyang Zhang <haiyangz@microsoft.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ecryptfs/crypto.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/staging/hv/Hv.c    |   50 ++++++++++++++++++++++-----------------------
+ drivers/staging/hv/Hv.h    |    6 ++---
+ drivers/staging/hv/Vmbus.c |   12 ++++++----
+ 3 files changed, 35 insertions(+), 33 deletions(-)
 
---- a/fs/ecryptfs/crypto.c
-+++ b/fs/ecryptfs/crypto.c
-@@ -1748,7 +1748,7 @@ ecryptfs_process_key_cipher(struct crypt
- 			    char *cipher_name, size_t *key_size)
+--- a/drivers/staging/hv/Hv.c
++++ b/drivers/staging/hv/Hv.c
+@@ -386,7 +386,7 @@ u16 HvSignalEvent(void)
+  * retrieve the initialized message and event pages.  Otherwise, we create and
+  * initialize the message and event pages.
+  */
+-int HvSynicInit(u32 irqVector)
++void HvSynicInit(void *irqarg)
  {
- 	char dummy_key[ECRYPTFS_MAX_KEY_BYTES];
--	char *full_alg_name;
-+	char *full_alg_name = NULL;
- 	int rc;
+ 	u64 version;
+ 	union hv_synic_simp simp;
+@@ -394,13 +394,14 @@ int HvSynicInit(u32 irqVector)
+ 	union hv_synic_sint sharedSint;
+ 	union hv_synic_scontrol sctrl;
+ 	u64 guestID;
+-	int ret = 0;
++	u32 irqVector = *((u32 *)(irqarg));
++	int cpu = smp_processor_id();
  
- 	*key_tfm = NULL;
-@@ -1763,7 +1763,6 @@ ecryptfs_process_key_cipher(struct crypt
- 	if (rc)
- 		goto out;
- 	*key_tfm = crypto_alloc_blkcipher(full_alg_name, 0, CRYPTO_ALG_ASYNC);
--	kfree(full_alg_name);
- 	if (IS_ERR(*key_tfm)) {
- 		rc = PTR_ERR(*key_tfm);
- 		printk(KERN_ERR "Unable to allocate crypto cipher with name "
-@@ -1786,6 +1785,7 @@ ecryptfs_process_key_cipher(struct crypt
- 		goto out;
+ 	DPRINT_ENTER(VMBUS);
+ 
+ 	if (!gHvContext.HypercallPage) {
+ 		DPRINT_EXIT(VMBUS);
+-		return ret;
++		return;
  	}
- out:
-+	kfree(full_alg_name);
- 	return rc;
+ 
+ 	/* Check the version */
+@@ -425,27 +426,27 @@ int HvSynicInit(u32 irqVector)
+ 		 */
+ 		rdmsrl(HV_X64_MSR_GUEST_OS_ID, guestID);
+ 		if (guestID == HV_LINUX_GUEST_ID) {
+-			gHvContext.synICMessagePage[0] =
++			gHvContext.synICMessagePage[cpu] =
+ 				phys_to_virt(simp.BaseSimpGpa << PAGE_SHIFT);
+-			gHvContext.synICEventPage[0] =
++			gHvContext.synICEventPage[cpu] =
+ 				phys_to_virt(siefp.BaseSiefpGpa << PAGE_SHIFT);
+ 		} else {
+ 			DPRINT_ERR(VMBUS, "unknown guest id!!");
+ 			goto Cleanup;
+ 		}
+ 		DPRINT_DBG(VMBUS, "MAPPED: Simp: %p, Sifep: %p",
+-			   gHvContext.synICMessagePage[0],
+-			   gHvContext.synICEventPage[0]);
++			   gHvContext.synICMessagePage[cpu],
++			   gHvContext.synICEventPage[cpu]);
+ 	} else {
+-		gHvContext.synICMessagePage[0] = osd_PageAlloc(1);
+-		if (gHvContext.synICMessagePage[0] == NULL) {
++		gHvContext.synICMessagePage[cpu] = (void *)get_zeroed_page(GFP_ATOMIC);
++		if (gHvContext.synICMessagePage[cpu] == NULL) {
+ 			DPRINT_ERR(VMBUS,
+ 				   "unable to allocate SYNIC message page!!");
+ 			goto Cleanup;
+ 		}
+ 
+-		gHvContext.synICEventPage[0] = osd_PageAlloc(1);
+-		if (gHvContext.synICEventPage[0] == NULL) {
++		gHvContext.synICEventPage[cpu] = (void *)get_zeroed_page(GFP_ATOMIC);
++		if (gHvContext.synICEventPage[cpu] == NULL) {
+ 			DPRINT_ERR(VMBUS,
+ 				   "unable to allocate SYNIC event page!!");
+ 			goto Cleanup;
+@@ -454,7 +455,7 @@ int HvSynicInit(u32 irqVector)
+ 		/* Setup the Synic's message page */
+ 		rdmsrl(HV_X64_MSR_SIMP, simp.AsUINT64);
+ 		simp.SimpEnabled = 1;
+-		simp.BaseSimpGpa = virt_to_phys(gHvContext.synICMessagePage[0])
++		simp.BaseSimpGpa = virt_to_phys(gHvContext.synICMessagePage[cpu])
+ 					>> PAGE_SHIFT;
+ 
+ 		DPRINT_DBG(VMBUS, "HV_X64_MSR_SIMP msr set to: %llx",
+@@ -465,7 +466,7 @@ int HvSynicInit(u32 irqVector)
+ 		/* Setup the Synic's event page */
+ 		rdmsrl(HV_X64_MSR_SIEFP, siefp.AsUINT64);
+ 		siefp.SiefpEnabled = 1;
+-		siefp.BaseSiefpGpa = virt_to_phys(gHvContext.synICEventPage[0])
++		siefp.BaseSiefpGpa = virt_to_phys(gHvContext.synICEventPage[cpu])
+ 					>> PAGE_SHIFT;
+ 
+ 		DPRINT_DBG(VMBUS, "HV_X64_MSR_SIEFP msr set to: %llx",
+@@ -501,32 +502,30 @@ int HvSynicInit(u32 irqVector)
+ 
+ 	DPRINT_EXIT(VMBUS);
+ 
+-	return ret;
++	return;
+ 
+ Cleanup:
+-	ret = -1;
+-
+ 	if (gHvContext.GuestId == HV_LINUX_GUEST_ID) {
+-		if (gHvContext.synICEventPage[0])
+-			osd_PageFree(gHvContext.synICEventPage[0], 1);
++		if (gHvContext.synICEventPage[cpu])
++			osd_PageFree(gHvContext.synICEventPage[cpu], 1);
+ 
+-		if (gHvContext.synICMessagePage[0])
+-			osd_PageFree(gHvContext.synICMessagePage[0], 1);
++		if (gHvContext.synICMessagePage[cpu])
++			osd_PageFree(gHvContext.synICMessagePage[cpu], 1);
+ 	}
+ 
+ 	DPRINT_EXIT(VMBUS);
+-
+-	return ret;
++	return;
  }
  
+ /**
+  * HvSynicCleanup - Cleanup routine for HvSynicInit().
+  */
+-void HvSynicCleanup(void)
++void HvSynicCleanup(void *arg)
+ {
+ 	union hv_synic_sint sharedSint;
+ 	union hv_synic_simp simp;
+ 	union hv_synic_siefp siefp;
++	int cpu = smp_processor_id();
+ 
+ 	DPRINT_ENTER(VMBUS);
+ 
+@@ -539,6 +538,7 @@ void HvSynicCleanup(void)
+ 
+ 	sharedSint.Masked = 1;
+ 
++	/* Need to correctly cleanup in the case of SMP!!! */
+ 	/* Disable the interrupt */
+ 	wrmsrl(HV_X64_MSR_SINT0 + VMBUS_MESSAGE_SINT, sharedSint.AsUINT64);
+ 
+@@ -560,8 +560,8 @@ void HvSynicCleanup(void)
+ 
+ 		wrmsrl(HV_X64_MSR_SIEFP, siefp.AsUINT64);
+ 
+-		osd_PageFree(gHvContext.synICMessagePage[0], 1);
+-		osd_PageFree(gHvContext.synICEventPage[0], 1);
++		osd_PageFree(gHvContext.synICMessagePage[cpu], 1);
++		osd_PageFree(gHvContext.synICEventPage[cpu], 1);
+ 	}
+ 
+ 	DPRINT_EXIT(VMBUS);
+--- a/drivers/staging/hv/Hv.h
++++ b/drivers/staging/hv/Hv.h
+@@ -93,7 +93,7 @@ static const struct hv_guid VMBUS_SERVIC
+ 	},
+ };
+ 
+-#define MAX_NUM_CPUS	1
++#define MAX_NUM_CPUS	32
+ 
+ 
+ struct hv_input_signal_event_buffer {
+@@ -137,8 +137,8 @@ extern u16 HvPostMessage(union hv_connec
+ 
+ extern u16 HvSignalEvent(void);
+ 
+-extern int HvSynicInit(u32 irqVector);
++extern void HvSynicInit(void *irqarg);
+ 
+-extern void HvSynicCleanup(void);
++extern void HvSynicCleanup(void *arg);
+ 
+ #endif /* __HV_H__ */
+--- a/drivers/staging/hv/Vmbus.c
++++ b/drivers/staging/hv/Vmbus.c
+@@ -129,7 +129,7 @@ static int VmbusOnDeviceAdd(struct hv_de
+ 
+ 	/* strcpy(dev->name, "vmbus"); */
+ 	/* SynIC setup... */
+-	ret = HvSynicInit(*irqvector);
++	on_each_cpu(HvSynicInit, (void *)irqvector, 1);
+ 
+ 	/* Connect to VMBus in the root partition */
+ 	ret = VmbusConnect();
+@@ -150,7 +150,7 @@ static int VmbusOnDeviceRemove(struct hv
+ 	DPRINT_ENTER(VMBUS);
+ 	VmbusChannelReleaseUnattachedChannels();
+ 	VmbusDisconnect();
+-	HvSynicCleanup();
++	on_each_cpu(HvSynicCleanup, NULL, 1);
+ 	DPRINT_EXIT(VMBUS);
+ 
+ 	return ret;
+@@ -173,7 +173,8 @@ static void VmbusOnCleanup(struct hv_dri
+  */
+ static void VmbusOnMsgDPC(struct hv_driver *drv)
+ {
+-	void *page_addr = gHvContext.synICMessagePage[0];
++	int cpu = smp_processor_id();
++	void *page_addr = gHvContext.synICMessagePage[cpu];
+ 	struct hv_message *msg = (struct hv_message *)page_addr +
+ 				  VMBUS_MESSAGE_SINT;
+ 	struct hv_message *copied;
+@@ -230,11 +231,12 @@ static void VmbusOnEventDPC(struct hv_dr
+ static int VmbusOnISR(struct hv_driver *drv)
+ {
+ 	int ret = 0;
++	int cpu = smp_processor_id();
+ 	void *page_addr;
+ 	struct hv_message *msg;
+ 	union hv_synic_event_flags *event;
+ 
+-	page_addr = gHvContext.synICMessagePage[0];
++	page_addr = gHvContext.synICMessagePage[cpu];
+ 	msg = (struct hv_message *)page_addr + VMBUS_MESSAGE_SINT;
+ 
+ 	DPRINT_ENTER(VMBUS);
+@@ -248,7 +250,7 @@ static int VmbusOnISR(struct hv_driver *
+ 	}
+ 
+ 	/* TODO: Check if there are events to be process */
+-	page_addr = gHvContext.synICEventPage[0];
++	page_addr = gHvContext.synICEventPage[cpu];
+ 	event = (union hv_synic_event_flags *)page_addr + VMBUS_MESSAGE_SINT;
+ 
+ 	/* Since we are a child, we only need to check bit 0 */
 
 
