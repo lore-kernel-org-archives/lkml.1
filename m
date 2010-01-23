@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007Ab0AWRca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066Ab0AWSAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756007Ab0AWRca (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 12:32:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752Ab0AWRc3
+	id S1756066Ab0AWSAJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 13:00:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755618Ab0AWSAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 12:32:29 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:50560 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751491Ab0AWRc2 (ORCPT
+	Sat, 23 Jan 2010 13:00:08 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:38945 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864Ab0AWSAH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 12:32:28 -0500
-Message-ID: <4B5B32AF.1010509@cox.net>
-Date: Sat, 23 Jan 2010 12:32:31 -0500
-From: James Kosin <james.kosin.04@cnu.edu>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Sat, 23 Jan 2010 13:00:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=DV70IBQow5goG7jzeQkQTb66dd+iGk8UmsREmdRQHmjN7JZy7JBcz4ywnGxqm8nw5c
+         8NY+wr/poibRVg6Qle1TG2dFiStQx3loevSbrtkFTv52g2sW5iCUYu77+m1Y3bId4zgM
+         p718idoeaVhwzrroOt7fMuhUd8K2XFQ/kPo3Q=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: joe@perches.com
-Subject: Re: [PATCH 23/24] drivers/block/floppy.c: Add function is_ready_state
-References: <e5jMK-25X-3@gated-at.bofh.it> <e5jMM-25X-51@gated-at.bofh.it>
-In-Reply-To: <e5jMM-25X-51@gated-at.bofh.it>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Sat, 23 Jan 2010 23:22:29 +0530
+Message-ID: <3f9a31f41001230952g6321c47bq9baf5dcfdfaf5b59@mail.gmail.com>
+Subject: Status of Andigilog asc7621 driver submitted by George Joseph on 
+	2008-05-29
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: George Joseph <George.joseph@fairview5.com>, lm-sensors@lm-sensors.org,
+       Jean Delvare <khali@linux-fr.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/22/2010 12:00 AM, Joe Perches wrote:
-> Used a couple of times, might simplify the code a bit.
->
-> Signed-off-by: Joe Perches<joe@perches.com>
-> ---
->   drivers/block/floppy.c |   19 +++++++++++++++----
->   1 files changed, 15 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-> index 2f6ed78..fd56b26 100644
-> --- a/drivers/block/floppy.c
-> +++ b/drivers/block/floppy.c
-> @@ -782,6 +782,12 @@ static inline int is_selected(int dor, int unit)
->   	return ((dor&  (0x10<<  unit))&&  (dor&  3) == unit);
->   }
->
-> +static bool is_ready_state(int status)
-> +{
-> +	int state = status&  (STATUS_READY | STATUS_DIR | STATUS_DMA);
-> +	return state == STATUS_READY;
-> +}
-> +
+Andigilog asc7621 driver submitted by George Joseph on 2008-05-29,
+This chip is used by various Intel Motherboards.
 
-This should probably be simplified to:
+Is it still under review and testing :
 
-static bool is_ready_state(int status)
-{
-	return ((state & STATUS_READY) == STATUS_READY);
-}
+http://lists.lm-sensors.org/pipermail/lm-sensors/2008-May/023257.html
 
-James
+http://www.spinics.net/lists/lm-sensors/msg26915.html
+
+http://www.spinics.net/lists/lm-sensors/msg26916.html
+
+http://www.lm-sensors.org/wiki/Devices
+
+Thank you,
+--
+JSR
