@@ -1,126 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534Ab0AWAoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932181Ab0AWA4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534Ab0AWAoL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:44:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232Ab0AWAoJ
+	id S932181Ab0AWA4O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416Ab0AWA4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:44:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52445 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756502Ab0AWAoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:44:07 -0500
-Date: Sat, 23 Jan 2010 00:43:38 GMT
-From: tip-bot for Borislav Petkov <borislav.petkov@amd.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, borislav.petkov@amd.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, borislav.petkov@amd.com
-In-Reply-To: <1264172467-25155-6-git-send-email-bp@amd64.org>
-References: <1264172467-25155-6-git-send-email-bp@amd64.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/cpu] x86, cacheinfo: Calculate L3 indices
-Message-ID: <tip-048a8774ca43488d78605031f11cc206d7a2682a@git.kernel.org>
-Git-Commit-ID: 048a8774ca43488d78605031f11cc206d7a2682a
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 23 Jan 2010 00:43:38 +0000 (UTC)
+	Fri, 22 Jan 2010 19:56:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57160 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753503Ab0AWA4N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:56:13 -0500
+Date: Fri, 22 Jan 2010 16:53:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ozan =?UTF-8?Q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       mingo@elte.hu, a.p.zijlstra@chello.nl, stable@kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: RFC: deprecate CONFIG_X86_CPU_DEBUG and schedule it for rapid
+ removal
+Message-Id: <20100122165356.55cf88aa.akpm@linux-foundation.org>
+In-Reply-To: <4B53B8DD.9000809@zytor.com>
+References: <4B4E1633.8010700@pardus.org.tr>
+	<201001162312.34189.rjw@sisk.pl>
+	<4B52D6E2.8000904@pardus.org.tr>
+	<201001171444.14551.rjw@sisk.pl>
+	<4B53B8DD.9000809@zytor.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  048a8774ca43488d78605031f11cc206d7a2682a
-Gitweb:     http://git.kernel.org/tip/048a8774ca43488d78605031f11cc206d7a2682a
-Author:     Borislav Petkov <borislav.petkov@amd.com>
-AuthorDate: Fri, 22 Jan 2010 16:01:07 +0100
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Fri, 22 Jan 2010 16:06:31 -0800
+On Sun, 17 Jan 2010 17:26:53 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-x86, cacheinfo: Calculate L3 indices
+> CONFIG_X86_CPU_DEBUG really seems to be causing more problems than it
+> ever solved.  This is an RFC for immediately deprecating it, and
+> schedule it for removal in the 2.6.34 cycle.
+> 
+> If this was a high value feature, it would be different -- but it's not
+> even close.
+> 
+> Posting this as an RFC just on the offchance someone actually depends on
+> this.
+> 
 
-We need to know the valid L3 indices interval when disabling them over
-/sysfs. Do that when the core is brought online and add boundary checks
-to the sysfs .store attribute.
+We know that enabling this feature will cause some machines to hang,
+and that this problem has existed for six months.
 
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-LKML-Reference: <1264172467-25155-6-git-send-email-bp@amd64.org>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/cpu/intel_cacheinfo.c |   35 +++++++++++++++++++++++++++++---
- 1 files changed, 31 insertions(+), 4 deletions(-)
+Would it not be better to fix that problem (perhaps just with the
+revert) so that 2.6.33, 2.6.32.x and earlier can be fixed?  Then we can
+nuke the feature in 2.6.34.
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 3976ce9..589b705 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -151,7 +151,8 @@ struct _cpuid4_info {
- 	union _cpuid4_leaf_ebx ebx;
- 	union _cpuid4_leaf_ecx ecx;
- 	unsigned long size;
--	unsigned long can_disable;
-+	bool can_disable;
-+	unsigned int l3_indices;
- 	DECLARE_BITMAP(shared_cpu_map, NR_CPUS);
- };
- 
-@@ -161,7 +162,8 @@ struct _cpuid4_info_regs {
- 	union _cpuid4_leaf_ebx ebx;
- 	union _cpuid4_leaf_ecx ecx;
- 	unsigned long size;
--	unsigned long can_disable;
-+	bool can_disable;
-+	unsigned int l3_indices;
- };
- 
- unsigned short			num_cache_leaves;
-@@ -291,6 +293,29 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 		(ebx->split.ways_of_associativity + 1) - 1;
- }
- 
-+static unsigned int __cpuinit amd_calc_l3_indices(void)
-+{
-+	/*
-+	 * We're called over smp_call_function_single() and therefore
-+	 * are on the correct cpu.
-+	 */
-+	int cpu = smp_processor_id();
-+	int node = cpu_to_node(cpu);
-+	struct pci_dev *dev = node_to_k8_nb_misc(node);
-+	unsigned int sc0, sc1, sc2, sc3;
-+	u32 val;
-+
-+	pci_read_config_dword(dev, 0x1C4, &val);
-+
-+	/* calculate subcache sizes */
-+	sc0 = !(val & BIT(0));
-+	sc1 = !(val & BIT(4));
-+	sc2 = !(val & BIT(8))  + !(val & BIT(9));
-+	sc3 = !(val & BIT(12)) + !(val & BIT(13));
-+
-+	return (max(max(max(sc0, sc1), sc2), sc3) << 10) - 1;
-+}
-+
- static void __cpuinit
- amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
- {
-@@ -306,7 +331,8 @@ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
- 	     (boot_cpu_data.x86_mask  < 0x1)))
- 		return;
- 
--	this_leaf->can_disable = 1;
-+	this_leaf->can_disable = true;
-+	this_leaf->l3_indices  = amd_calc_l3_indices();
- }
- 
- static int
-@@ -765,7 +791,8 @@ static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
- 		return -EINVAL;
- 
- 	/* do not allow writes outside of allowed bits */
--	if (val & ~(SUBCACHE_MASK | SUBCACHE_INDEX))
-+	if ((val & ~(SUBCACHE_MASK | SUBCACHE_INDEX)) ||
-+	    ((val & SUBCACHE_INDEX) > this_leaf->l3_indices))
- 		return -EINVAL;
- 
- 	val |= BIT(30);
+Alternatively, we can nuke the feature from 2.6.33 and 2.6.32.x and
+earlier right now.  Where "nuke" might mean "make it difficult to
+enable".
+
+Whatever.  Bottom line is that it'd be nice to do something to fix up
+2.6.33 and earlier.
+
