@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665Ab0AWOrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760Ab0AWOsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665Ab0AWOrM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 09:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205Ab0AWOrL
+	id S1755760Ab0AWOsh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 09:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756Ab0AWOsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 09:47:11 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:37205 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559Ab0AWOrK (ORCPT
+	Sat, 23 Jan 2010 09:48:36 -0500
+Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:42613 "EHLO
+	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752675Ab0AWOsf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 09:47:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=mRs32yrzuQWRppBFLXMo6c57e/3t/a/kuubqOAFfXdAjv3HE91szYsAXRsjINNqBqp
-         YRCOPOoU5DDkO+Arlb7Q/hnxMC1wH/Lm88X2PopEB0jmjdAc16cSPFiPdUf+Zp51Ev2i
-         YscXJBesWxavzRQG+t8+T2a4kDHMo+036smyM=
-From: Thiago Farina <tfransosi@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 1/1] kernel/exit.c: fix shadows sparse warning.
-Date: Sat, 23 Jan 2010 09:46:33 -0500
-Message-Id: <9695506b784c54436f40b4c21ce2d7e6965b7aee.1264257828.git.tfransosi@gmail.com>
-X-Mailer: git-send-email 1.6.6.1.383.g5a9f
+	Sat, 23 Jan 2010 09:48:35 -0500
+Subject: Re: [PATCH] get_maintainer.pl: teach git log to use --no-color --
+ UPDATED
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1264191393.32383.128.camel@Joe-Laptop.home>
+References: <1264163484.2143.13.camel@localhost>
+	 <1264191393.32383.128.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 23 Jan 2010 14:48:33 +0000
+Message-ID: <1264258113.2860.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel/exit.c:1183:26: warning: symbol 'status' shadows an earlier one
-kernel/exit.c:1173:21: originally declared here
+When git has been set to always use color in .gitconfig then I get the
+warning message
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
----
- kernel/exit.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+        Bad divisor in main::vcs_assign: 0
+    
+This is caused by vcs_file_signoffs not matching any commits due to the
+pattern not understand the colour codes. Fix this by telling git log to
+never use colour.
 
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 546774a..2e72b3f 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1180,7 +1180,7 @@ static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
- 
- 	if (unlikely(wo->wo_flags & WNOWAIT)) {
- 		int exit_code = p->exit_code;
--		int why, status;
-+		int why;
- 
- 		get_task_struct(p);
- 		read_unlock(&tasklist_lock);
--- 
-1.6.6.1.383.g5a9f
+Updated to fix both calls to 'git log' as requested by Joe Perches
+<joe@perches.com>
+
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+
+----
+patch against 2.6.33-rc5
+git --version 1.6.6
+
+Hi Joe, 
+will this do? 
+
+regards
+Richard
+
+
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+index 090f248..2f3230d 100755
+--- a/scripts/get_maintainer.pl
++++ b/scripts/get_maintainer.pl
+@@ -74,8 +74,8 @@ my %VCS_cmds;
+ my %VCS_cmds_git = (
+     "execute_cmd" => \&git_execute_cmd,
+     "available" => '(which("git") ne "") && (-d ".git")',
+-    "find_signers_cmd" => "git log --since=\$email_git_since -- \$file",
+-    "find_commit_signers_cmd" => "git log -1 \$commit",
++    "find_signers_cmd" => "git log --no-color --since=\$email_git_since -- \$file",
++    "find_commit_signers_cmd" => "git log --no-color -1 \$commit",
+     "blame_range_cmd" => "git blame -l -L \$diff_start,+\$diff_length \$file",
+     "blame_file_cmd" => "git blame -l \$file",
+     "commit_pattern" => "^commit [0-9a-f]{40,40}",
+
 
