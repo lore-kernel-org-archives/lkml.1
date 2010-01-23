@@ -1,57 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712Ab0AWCBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690Ab0AWCKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755712Ab0AWCBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 21:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369Ab0AWCBz
+	id S1755690Ab0AWCKK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 21:10:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401Ab0AWCKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 21:01:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55952 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753122Ab0AWCBy (ORCPT
+	Fri, 22 Jan 2010 21:10:08 -0500
+Received: from rgmadvisors.com ([207.71.26.250]:33653 "EHLO
+	mail.rgmadvisors.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754368Ab0AWCKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 21:01:54 -0500
-Date: Fri, 22 Jan 2010 17:59:44 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       =?UTF-8?Q?Ozan_=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
-       Yinghai Lu <yinghai@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       mingo@elte.hu, a.p.zijlstra@chello.nl, stable@kernel.org,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: RFC: deprecate CONFIG_X86_CPU_DEBUG and schedule it for rapid
- removal
-In-Reply-To: <20100122165356.55cf88aa.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.1001221755320.13231@localhost.localdomain>
-References: <4B4E1633.8010700@pardus.org.tr> <201001162312.34189.rjw@sisk.pl> <4B52D6E2.8000904@pardus.org.tr> <201001171444.14551.rjw@sisk.pl> <4B53B8DD.9000809@zytor.com> <20100122165356.55cf88aa.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 22 Jan 2010 21:10:07 -0500
+X-Greylist: delayed 1523 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Jan 2010 21:10:07 EST
+Date: Fri, 22 Jan 2010 19:44:25 -0600
+From: Shawn Bohrer <sbohrer@rgmadvisors.com>
+To: linux-kernel@vger.kernel.org
+Cc: Nathaniel Bauernfeind <nbauernfeind@rgmadvisors.com>
+Subject: Strange delays and CPU usage reading mmapped file
+Message-ID: <20100123014424.GA2497@BohrerMBP.gateway.2wire.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
+
+I'm seeing some strange delays and high CPU usage when reading from a
+memory mapped file.  It appears there is some threshold of number of
+pages read, that triggers the problem and that threshold varies
+depending on the machine.  I'm hoping someone can help explain what is
+happening here.  See the simple example program at the end.
 
 
-On Fri, 22 Jan 2010, Andrew Morton wrote:
-> 
-> We know that enabling this feature will cause some machines to hang,
-> and that this problem has existed for six months.
-> 
-> Would it not be better to fix that problem (perhaps just with the
-> revert) so that 2.6.33, 2.6.32.x and earlier can be fixed?  Then we can
-> nuke the feature in 2.6.34.
+$ gcc mmap_read.c -o mmap_read
+$ dd if=/dev/urandom of=testfile bs=4096 count=35000
+$ /usr/bin/time ./mmap_read testfile 5000
+Pages Touched: 35000
+0.54user 0.17system 0:05.68elapsed 12%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+35122minor)pagefaults 0swaps
 
-Another way of looking at is "we know it's been broken for six months, and 
-clearly nobody really ever enabled it in any distro, and even getting a 
-bug report on it took forever. So why keep it around at all"?
+Which is what I would expect, but if I increase the number of pages:
 
-So I'd personally rather just remove it outright than deprecate it or even 
-try to fix it. Since clearly absolutely nobody depends on it.
+$ dd if=/dev/urandom of=testfile bs=4096 count=40000
+$ /usr/bin/time ./mmap_read testfile 5000
+Pages Touched: 40000
+5.00user 0.05system 0:10.06elapsed 50%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+40122minor)pagefaults 0swaps
 
-The usual reason for deprecating a feature is to give people time to move 
-away from it, but since clearly nobody uses it...
+The user time jumps to 5.00s and I get 50% CPU usage.  I've run this
+on a couple of machines with the same result, but the number of pages
+required to trigger the problem seems to vary.  The specs of this
+machine are:
 
-		Linus
+$ uname -a
+Linux BohrerMBP 2.6.31.12-174.2.3.fc12.x86_64 #1 SMP Mon Jan 18 19:52:07 UTC 2010 x86_64 x86_64 x86_64 GNU/Linux
+
+$ cat /proc/cpuinfo | grep "model name"
+model name      : Intel(R) Core(TM)2 Duo CPU     T9400  @ 2.53GHz
+model name      : Intel(R) Core(TM)2 Duo CPU     T9400  @ 2.53GHz
+
+$ free
+             total       used       free     shared    buffers     cached
+Mem:       4035088     849936    3185152          0      44268     420356
+-/+ buffers/cache:     385312    3649776
+Swap:      4244472          0    4244472
+
+
+
+The example program used:
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/epoll.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int main(int argc, char *argv[])
+{
+	struct stat sb;
+	off_t len;
+	char *p;
+	int sum, i, cnt;
+	int fd;
+	int epfd = epoll_create(1);
+
+	if (argc < 3){
+		fprintf(stderr, "usage: %s <file> <iterations>\n", argv[0]);
+		return 1;
+	}
+
+	fd = open(argv[1], O_RDONLY);
+	if (fd == -1) {
+		perror("open");
+		return 1;
+	}
+
+	if (fstat(fd, &sb) == -1) {
+		perror ("fstat");
+		return 1;
+	}
+
+	if (!S_ISREG(sb.st_mode)) {
+		fprintf(stderr, "%s is not a file\n", argv[1]);
+		return 1;
+	}
+
+	p = mmap(0, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	if (p == MAP_FAILED) {
+		perror("mmap");
+		return 1;
+	}
+
+	if (close(fd) == -1) {
+		perror("close");
+		return 1;
+	}
+
+	cnt = atoi(argv[2]);
+	for (i = 0; i < cnt; ++i) {
+		for (len =0; len < sb.st_size; len += 4096) {
+			sum += p[len];
+		}
+                /* Sleep 1ms */
+		epoll_wait(epfd, 0, 1, 1);
+	}
+	printf("Pages Touched: %d\n", len/4096);
+
+	if (munmap(p, sb.st_size) == -1) {
+		perror("munmap");
+		return 1;
+	}
+
+	return 0;
+}
