@@ -1,47 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128Ab0AWI1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077Ab0AWI3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128Ab0AWI1x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 03:27:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047Ab0AWI1w
+	id S1754077Ab0AWI3V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 03:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181Ab0AWI3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 03:27:52 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60754
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753758Ab0AWI1w (ORCPT
+	Sat, 23 Jan 2010 03:29:20 -0500
+Received: from bld-mail14.adl6.internode.on.net ([150.101.137.99]:50770 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751086Ab0AWI3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 03:27:52 -0500
-Date: Sat, 23 Jan 2010 00:28:03 -0800 (PST)
-Message-Id: <20100123.002803.135008520.davem@davemloft.net>
-To: vapier@gentoo.org
-Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org, fweisbec@gmail.com,
-       mingo@redhat.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org
-Subject: Re: [PATCH v2] ftrace: unify arch_syscall_addr() implementations
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1264230643-29434-1-git-send-email-vapier@gentoo.org>
-References: <1264167826-20913-1-git-send-email-vapier@gentoo.org>
-	<1264230643-29434-1-git-send-email-vapier@gentoo.org>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 23 Jan 2010 03:29:20 -0500
+Date: Sat, 23 Jan 2010 19:28:39 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Don Mullis <don.mullis@gmail.com>, linux-kernel@vger.kernel.org,
+       airlied@redhat.com, dedekind@infradead.org
+Subject: Re: [PATCH 1/2] lib: more scalable list_sort()
+Message-ID: <20100123082839.GB25842@discord.disaster>
+References: <87fx609i29.fsf@gmail.com> <20100121175914.GA8910@basil.fritz.box> <87vdeu96bo.fsf@gmail.com> <87k4vah12u.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87k4vah12u.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier@gentoo.org>
-Date: Sat, 23 Jan 2010 02:10:43 -0500
-
-> Most implementations of arch_syscall_addr() are the same, so create a
-> default weak version in common code.  New arch ports don't have to waste
-> time copying & pasting this simple function.  The Blackfin version is
-> going to be exactly the same for example.
+On Fri, Jan 22, 2010 at 11:43:21AM +0100, Andi Kleen wrote:
+> Don Mullis <don.mullis@gmail.com> writes:
+> >
+> > Being just a dumb library routine, list_sort() has no idea what context
+> > it's been called in, how long a list a particular client could pass in,
+> > nor how expensive the client's cmp() callback might be.
+> >
+> > The cmp() callback already passes back a client-private pointer.
+> > Hanging off of this could be a count of calls, or timing information,
+> > maintained by the client.  Whenever some threshold is reached, the
+> > client's cmp() could do whatever good CPU-sharing citizenship required.
 > 
-> The s390/sparc versions need to be different, so document why.
+> need_resched() does all the timing/thresholding (it checks the 
+> reschedule flag set by the timer interrupt). You just have to call it.
+> But preferable not in the inner loop, but in a outer one. It's
+> not hyper-expensive, but it's not free either.
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> The drawback is that if it's called the context always has to
+> allow sleeping, so it might need to be optional.
+> 
+> Anyways a better fix might be simply to ensure in the caller
+> that lists never get as long that they become a scheduling
+> hazard. But you indicated that ubifs would pass very long lists?
+> Perhaps ubifs (and other calls who might have that problem) simply
+> needs to be fixed.
 
-You can just have the extern declaration match whatever the
-arch needs (long or int) in the generic ftrace.c code and
-then unconditionally do the (unsigned long) case.
+Burning CPU time to save on IO is a very valid tradeoff in
+filesystem design - burning a few hundred millieseconds of CPU
+time can result in savcwinge tens of seconds of IO time. Hence
+passing big long lists to be sorted is not an indication of broken
+design, it's an indication of understanding CPU time vs IO time
+tradeoffs during design...
 
-That way even s390/sparc can use the generic implementation.
+For example, the use I have for list sort (sorting delayed write
+buffers in ascending block order before Io submission) will result
+in XFS asking for lists in the order of tens to hundreds of
+thousands of items to be sorted. The code I already is showing wall
+clock time reductions of 30-40% for stuff like kernel tarball
+extraction or creation of millions of small files. This is because
+the number of buffers being issued for IO is far larger than we
+should sanely hold in the elevator request queues, but pre-sorting
+them results in the elevator getting a near 100% merge efficiency of
+delayed write buffers instead of near zero.  Hence we get much, much
+better IO patterns out of the filesystem and things go faster.
+
+Hence I think scalability and minimising scheduling latency for
+list_sort() is definitely important. I was kind of planning to address
+this when the problem was a performance limiting factor, but Don
+has made a pre-emptive strike. ;)
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
