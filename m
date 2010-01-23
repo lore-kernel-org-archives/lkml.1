@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849Ab0AWSRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998Ab0AWST7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849Ab0AWSRr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 13:17:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228Ab0AWSRr
+	id S1755998Ab0AWST7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 13:19:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887Ab0AWST6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 13:17:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:42956 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190Ab0AWSRq (ORCPT
+	Sat, 23 Jan 2010 13:19:58 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:57091 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752352Ab0AWST5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 13:17:46 -0500
+	Sat, 23 Jan 2010 13:19:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=XKOAcUHQXyZ+xPyFyQvKRgJ8ZvI6Kqtzub8pnDJqSTIM+XusTssSEJf3UjkHMcFyj4
-         NBxD2ORLLNMbjVsVY3LgQc15VbunOJxZqyGagvxpa8vJToy5v8tDpiB7Ju1FvWwkpgTc
-         wxehFZNSSQch9JLb6kNTs1G6hGw5Sw2o96SVU=
-Message-ID: <4B5B3D41.8010909@gmail.com>
-Date: Sat, 23 Jan 2010 19:17:37 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=F4jRraYsgbT9LlAA0FuUj2Of3P59kE09uE48V3ouacdNGDsipjZtsCvivuvknSWaIm
+         s9yPjlWbUJkE77ahPcwUxBESbdGcJ4xUqrxon37UhYX2AfkH5dW+IZVrllb5z9/1iPIW
+         wmil7M7LVogX0+DWYsLFJGk2ZE3+ilO11Mivw=
+Date: Sat, 23 Jan 2010 19:18:17 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org,
+       nouveau@lists.freedesktop.org
+Subject: Re: 2.6.33 vs. NVIDIA GForce GT 220
+Message-ID: <20100123181817.GA2909@joi.lan>
+References: <20100112134335.GA21783@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org, mm-commits@vger.kernel.org, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, zhenyuw@linux.intel.com,
-       yakui.zhao@intel.com
-Subject: Re: i915: gpu wedged [was: mmotm 2010-01-15-15-34 uploaded]
-References: <201001152359.o0FNxVne006113@imap1.linux-foundation.org> <4B5AF1E5.1070304@gmail.com>
-In-Reply-To: <4B5AF1E5.1070304@gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100112134335.GA21783@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/23/2010 01:56 PM, Jiri Slaby wrote:
-> and kernel says:
-> [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
-> render error detected, EIR: 0x00000000
-> [drm:i915_do_wait_request] *ERROR* i915_do_wait_request returns -5
-> (awaiting 153151 at 153150)
-> [drm:i915_gem_execbuffer] *ERROR* i915_gem_do_execbuffer returns -5
+On Tue, Jan 12, 2010 at 02:43:35PM +0100, Pavel Machek wrote:
+> Hi!
+> 
+> I tried enabling staging nvidia driver on GT220, but apparently driver
+> does not know about it. Unfortunately, I have one of those cards here.
+> 
+> (I wonder... is there better mailing list? MAINTAINERS only lists
+> linux-fbdev....)
 
-And it happens pretty regularly when accessing digitalnitelevize.cz with
-firefox 3.6. Maybe some kind of flash crud triggers it?
-
--- 
-js
+CC'ing proper mailing list
