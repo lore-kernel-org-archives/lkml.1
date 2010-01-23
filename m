@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195Ab0AWUgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699Ab0AWUha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752195Ab0AWUgR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 15:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642Ab0AWUgL
+	id S1752699Ab0AWUha (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 15:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136Ab0AWUgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 15:36:11 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50546 "EHLO
+	Sat, 23 Jan 2010 15:36:08 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50550 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966Ab0AWUf5 (ORCPT
+	with ESMTP id S1751974Ab0AWUf5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 23 Jan 2010 15:35:57 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Antonino Daplas <adaplas@pol.net>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 01/29] move acornfb's probe function to .devinit.text
-Date: Sat, 23 Jan 2010 21:35:09 +0100
-Message-Id: <1264278937-19675-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>,
+       James Simmons <jsimmons@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Antonino Daplas <adaplas@pol.net>
+Subject: [PATCH 26/29] move vesafb's probe function to .devinit.text
+Date: Sat, 23 Jan 2010 21:35:34 +0100
+Message-Id: <1264278937-19675-26-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -34,7 +34,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to acornfb_probe is passed to the core via
+A pointer to vesafb_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -45,27 +45,27 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Antonino Daplas <adaplas@pol.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: Helge Deller <deller@gmx.de>
+Cc: James Simmons <jsimmons@infradead.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Antonino Daplas <adaplas@pol.net>
 ---
- drivers/video/acornfb.c |    2 +-
+ drivers/video/vesafb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
-index 0bcc59e..43d7d50 100644
---- a/drivers/video/acornfb.c
-+++ b/drivers/video/acornfb.c
-@@ -1221,7 +1221,7 @@ free_unused_pages(unsigned int virtual_start, unsigned int virtual_end)
- 	printk("acornfb: freed %dK memory\n", mb_freed);
+diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
+index bd37ee1..ef4128c 100644
+--- a/drivers/video/vesafb.c
++++ b/drivers/video/vesafb.c
+@@ -226,7 +226,7 @@ static int __init vesafb_setup(char *options)
+ 	return 0;
  }
  
--static int __init acornfb_probe(struct platform_device *dev)
-+static int __devinit acornfb_probe(struct platform_device *dev)
+-static int __init vesafb_probe(struct platform_device *dev)
++static int __devinit vesafb_probe(struct platform_device *dev)
  {
- 	unsigned long size;
- 	u_int h_sync, v_sync;
+ 	struct fb_info *info;
+ 	int i, err;
 -- 
 1.6.6
 
