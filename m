@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487Ab0AWNc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613Ab0AWNy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487Ab0AWNc0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 08:32:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277Ab0AWNcZ
+	id S1755613Ab0AWNy0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 08:54:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436Ab0AWNyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 08:32:25 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:58055 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649Ab0AWNcW (ORCPT
+	Sat, 23 Jan 2010 08:54:25 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59630 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755295Ab0AWNyY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 08:32:22 -0500
-From: Karsten Keil <isdn@linux-pingi.de>
-Reply-To: isdn@linux-pingi.de
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH 31/31] CAPI: Officially claim char major 191
-Date: Sat, 23 Jan 2010 14:32:09 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.27.39-0.2-default; KDE/4.3.1; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jan Kiszka <jan.kiszka@web.de>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       i4ldeveloper@listserv.isdn4linux.de, isdn4linux@listserv.isdn4linux.de,
-       netdev@vger.kernel.org, Alan Cox <alan@linux.intel.com>
-References: <cover.1264201406.git.jan.kiszka@web.de> <20100123122430.5a078b4a@lxorguk.ukuu.org.uk> <1264250892.3469.52.camel@violet>
-In-Reply-To: <1264250892.3469.52.camel@violet>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-3"
+	Sat, 23 Jan 2010 08:54:24 -0500
+Date: Sat, 23 Jan 2010 13:56:27 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>,
+       linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
+       isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
+Subject: Re: [PATCH 30/31] CAPI: Remove experimental tag from middleware
+ feature
+Message-ID: <20100123135627.23b2f9e0@lxorguk.ukuu.org.uk>
+In-Reply-To: <4B5AF60B.3070100@web.de>
+References: <cover.1264201406.git.jan.kiszka@web.de>
+	<9dd553d458def04edc7790f0320ffdf1f8909aa5.1264201408.git.jan.kiszka@web.de>
+	<20100123122327.7d2622f4@lxorguk.ukuu.org.uk>
+	<4B5AF60B.3070100@web.de>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001231432.09918.isdn@linux-pingi.de>
-X-Provags-ID: V01U2FsdGVkX1+M9a2HpZZcI7kprTd4XJ4wHuWMpviL9s6vXnD
- CpJkMqFRzqTen/ji74rwfKEHVFwOtOiVEf73geniTGFgPIHoEA
- +NYBxQi2oOtbhxRiJ+4K3S8hY5M7z1K
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Samstag, 23. Januar 2010 13:48:12 Marcel Holtmann wrote:
-> Hi Alan,
-> 
-> > > I found no trace of this mysterious "pcl181" device, neither in-tree
-> > > nor out there in the wild. At the same time, the in-tree CAPI
-> > > middleware is using major 191 for many years now and obviously without
-> > > any conflict. Let's officially claim this major number.
-> >
-> > This is not the way it should have been done but whoever needs spanking
-> > got away with it years ago. Given that this seems the best way forward.
-> >
-> > With LANANA hat on
-> 
-> actually in the days of udev, the capifs is not really needed anymore.
-> The right choice would be to remove it. I haven't been enabling it since
-> years.
-> 
-So far I understand, the pppd capiplugin is the only user of it, so it could 
-be disabled for most users without any problems, as long they are not using
-PPP connections via CAPI.
+On Sat, 23 Jan 2010 14:13:47 +0100
+Jan Kiszka <jan.kiszka@web.de> wrote:
 
-I never understand capifs very well, I think that it can be dropped because of 
-udev, but maybe need some adjustment in user space as well (make sure that
-udev did create the node before  open it).
+> Alan Cox wrote:
+> > On Sun, 10 Jan 2010 14:12:41 +0100
+> > Jan Kiszka <jan.kiszka@web.de> wrote:
+> > 
+> >> Despite all its bugs, the middleware support of our CAPI stack was
+> >> already in use for many, many moons. And after going through its code,
+> >> fixing all issues I found, I feel it deserves to officially become a
+> >> non-experimental feature.
+> > 
+> > Slightly NAK this - I'm really glad to see the work getting done, but
+> > until it uses krefs properly for the tty references I'd say it is
+> > experimental still.
+> > 
+> > I'd like to help you sort out the tty krefs stuff, using tty_port and so
+> > on and get that wart fixed too.
+> 
+> Will look into to this. Some good starting point or reference driver for me?
 
-I f I remember correctly, here was some proposal  to replace the /dev/capi/ 
-nodes with  devpts, this would remove the complete capi_tty device major
-as well.
+Most of the drivers at least use tty_port and the tty_port ref counting
+helpers. The most full use of the new interfaces is probably the latest
+USB serial code and the drivers/mmc/card/sdio_uart.c code, which uses all
+the new facilities to the full to kick all the nasty open/close/hangup
+locking and logic out of the low level drivers.
 
-Karsten
