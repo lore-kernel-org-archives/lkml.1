@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751681Ab0AWUYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751650Ab0AWUZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751681Ab0AWUYM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 15:24:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494Ab0AWUYM
+	id S1751650Ab0AWUZe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 15:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288Ab0AWUZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 15:24:12 -0500
-Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:33360 "EHLO
-	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229Ab0AWUYL (ORCPT
+	Sat, 23 Jan 2010 15:25:33 -0500
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:45423 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043Ab0AWUZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 15:24:11 -0500
-From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-To: Chris Mason <chris.mason@oracle.com>
-Subject: Re: [btrfs] kernel BUG at include/linux/spinlock.h:376!
-Date: Sat, 23 Jan 2010 21:23:56 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.33-rc3-00033-g03b7675; KDE/4.3.90; x86_64; ; )
-Cc: linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <201001072229.33976.johannes.hirte@fem.tu-ilmenau.de> <20100114193708.GD23810@think>
-In-Reply-To: <20100114193708.GD23810@think>
+	Sat, 23 Jan 2010 15:25:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=GAYDcHvbhnv9sIGbq0wZ+0QTQNAhPh5gtSPNo2DVqAMubT/L0TwVM1qDJUJYNZccPQ
+         WaPDUjOKosIlJYCxlLsKFdWVqKdo38fsHCsrO5yYoDHfCBN64ZFuuYp/aHevKKe1hzQx
+         zs8C/D7DrjQORjBzRQBtlN24f0UdBEj+fNqRo=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001232123.58602.johannes.hirte@fem.tu-ilmenau.de>
+In-Reply-To: <201001232116.27003.rjw@sisk.pl>
+References: <b4e196fa1001221721y19ae3a50wa21a6b54627b3852@mail.gmail.com>
+	 <b4e196fa1001230322u558f7af5j5f27844088895a0@mail.gmail.com>
+	 <20100123152421.GA15855@suse.de> <201001232116.27003.rjw@sisk.pl>
+Date: Sat, 23 Jan 2010 15:25:30 -0500
+Message-ID: <6041d2001001231225n303062f9hf6683f14551d2ff@mail.gmail.com>
+Subject: Re: [REGRESSION] clockevents patch causes hang on power off
+From: Marc Dionne <marc.c.dionne@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, Nathan Williams <ngwilliams@gmail.com>,
+       "Ozan ??a??layan" <ozan@pardus.org.tr>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 14 Januar 2010 20:37:08 schrieb Chris Mason:
-> On Thu, Jan 07, 2010 at 10:29:32PM +0100, Johannes Hirte wrote:
-> > One of my btrfs filesystems gives the following bug message on access:
-> > 
-> > Jan  6 23:08:12 datengrab kernel: ------------[ cut here ]------------
-> > Jan  6 23:08:12 datengrab kernel: kernel BUG at
-> > include/linux/spinlock.h:376! Jan  6 23:08:12 datengrab kernel: invalid
-> > opcode: 0000 [#1] SMP
-> > Jan  6 23:08:12 datengrab kernel: last sysfs file:
-> > /sys/devices/pci0000:00/0000:00:18.3/temp1_input
-> > Jan  6 23:08:12 datengrab kernel: CPU 1
-> > Jan  6 23:08:12 datengrab kernel: Pid: 2837, comm: btrfs-endio-wri Not
-> > tainted 2.6.33-rc3-00033-g03b7675 #12 TYAN Tiger K8W Dual AMD Opteron,
-> > S2875/To Be Filled
-> > By O.E.M.
-> > Jan  6 23:08:12 datengrab kernel: RIP: 0010:[<ffffffff8118f7ea>] 
-> > [<ffffffff8118f7ea>] btrfs_assert_tree_locked+0x16/0x1c
-> 
-> Well, we really should have this tree block locked, but
-> btrfs_mark_extent_written is doing some special things.  Is the trace
-> always the same?
+On Sat, Jan 23, 2010 at 3:16 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Saturday 23 January 2010, Greg KH wrote:
+>> On Sat, Jan 23, 2010 at 10:22:10PM +1100, Nathan Williams wrote:
+>> > 2010/1/23 Ozan ??a??layan <ozan@pardus.org.tr>:
+>> > > Nathan Williams wrote:
+>> > >> I'm having trouble with my PC crashing just as it's attempting to power off.
+>> > >> I managed to git bisect to this commit:
+>> > >>
+>> > >
+>> > > http://bugzilla.kernel.org/show_bug.cgi?id=15037
+>> > > http://patchwork.kernel.org/patch/71537/
+>> > >
+>> >
+>> > Thanks. The patch works for me.
+>>
+>> What's the plan on getting that patch into Linus's tree for .33?
+>
+> Well, I guess please send it to Linus with the appropriate CC list.
+>
+> This is a regression that we need to address ASAP, the patch is known, no
+> one has objected, so the thing is pretty much clear.
+>
+> Rafael
 
-Sorry for the long delay. Yes the trace was always the same. I can't test 
-patches, since I'm not working on the corrupted FS anymore. The bug only 
-occurred on the corrupted filesystem. But as I've seen, Yan Zheng has tracked 
-it down (commit 6c7d54ac87f338c479d9729e8392eca3f76e11e1). 
+I notice that it's been in tip timers/urgent and timers-for-linus for
+a few days, in a slightly different form.
 
-I still suspect that the FS corruption was caused by this bug. It didn't 
-happened again. If so, I'll report.
-
-regards,
-  Johannes
+Marc
