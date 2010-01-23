@@ -1,221 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360Ab0AWAYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123Ab0AWASu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756360Ab0AWAYc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:24:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755746Ab0AWAY2
+	id S1755123Ab0AWASu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:18:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614Ab0AWASn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:24:28 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:43320 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756031Ab0AWAY0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:24:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=i5FZu3ffYhENxr42LvF9KOUBWngFufQr3IWFuAKAa3qu1flLEpXFSRByeZ/LeqQLUv
-         7yDzRJmTpWPhqqFMaCF5OFbKp8f8IXwL2H7rsf82xVy31/pgRK9pjDjnusJf3Iyx2IJ6
-         U6Q6SqOJkD9Cta/BBjAPNdYex0VoFWRr3dxHU=
-Subject: [PATCH 5/8] blktrans: add proper locking
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1264205925.31827.3.camel@maxim-laptop>
-References: <1264205925.31827.3.camel@maxim-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 23 Jan 2010 02:24:22 +0200
-Message-ID: <1264206262.31827.9.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jan 2010 19:18:43 -0500
+Received: from kroah.org ([198.145.64.141]:35008 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753104Ab0AWASl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:18:41 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:10 2010
+Message-Id: <20100123001110.617642203@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 22 Jan 2010 16:09:47 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Eugeni Dodonov <eugeni@mandriva.com>
+Subject: [03/29] Staging: asus_oled: fix oops in 2.6.32.2
+In-Reply-To: <20100123001145.GA7391@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 695c50a575ba7e004931e234f4706766be507289 Mon Sep 17 00:00:00 2001
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Date: Sat, 23 Jan 2010 02:07:53 +0200
-Subject: [PATCH 5/8] blktrans: add proper locking
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-First, use lockless versions of get/put_mtd_device
-We don't care what happened to mtd table, because we have a pointer
-to mtd device. It guaranteed to exist till we do final put_mtd_device
+------------------
 
-Also add locking to prevent all kinds or races
+From: Eugeni Dodonov <eugeni@mandriva.com>
 
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+commit 20633bf0141c5e93e3396770d5eb7d200ee4068a upstream.
+
+After updating to 2.6.32 kernel, I started experiencing Oopses caused by
+the asus_oled module. After quick investigation, I wrapped this simple
+patch which fixes an Oops in by asus_oled module on 2.6.32.2 kernel,
+caused by incorrect usage of strict_strtoul function call within
+set_enabled and set_disabled functions. This can be triggered by simple
+running the userspace client for asus_old (e.g., 'asusoled -e' or
+'asusoled -d').
+
+Signed-off-by: Eugeni Dodonov <eugeni@mandriva.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- drivers/mtd/mtd_blkdevs.c |   83 ++++++++++++++++++++++++++++----------------
- 1 files changed, 53 insertions(+), 30 deletions(-)
+ drivers/staging/asus_oled/asus_oled.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
-index c95e1ff..f165115 100644
---- a/drivers/mtd/mtd_blkdevs.c
-+++ b/drivers/mtd/mtd_blkdevs.c
-@@ -123,34 +123,34 @@ static int blktrans_open(struct block_device *bdev, fmode_t mode)
+--- a/drivers/staging/asus_oled/asus_oled.c
++++ b/drivers/staging/asus_oled/asus_oled.c
+@@ -194,9 +194,11 @@ static ssize_t set_enabled(struct device
  {
- 	struct mtd_blktrans_dev *dev = bdev->bd_disk->private_data;
- 	struct mtd_blktrans_ops *tr = dev->tr;
--	int ret = -ENODEV;
--
--	if (!get_mtd_device(NULL, dev->mtd->index))
--		goto out;
-+	int ret = 0;
+ 	struct usb_interface *intf = to_usb_interface(dev);
+ 	struct asus_oled_dev *odev = usb_get_intfdata(intf);
+-	int temp = strict_strtoul(buf, 10, NULL);
++	unsigned long value;
++	if (strict_strtoul(buf, 10, &value))
++		return -EINVAL;
  
-+	mutex_lock(&dev->lock);
- 	if (dev->open++)
- 		goto out;
+-	enable_oled(odev, temp);
++	enable_oled(odev, value);
  
- 	if (dev->deleted)
- 		goto out;
- 
--
-+	ret = -ENODEV;
- 	if (!try_module_get(tr->owner))
--		goto out_tr;
-+		goto out;
-+
-+	if (__get_mtd_device(dev->mtd)) {
-+		module_put(tr->owner);
-+		goto out;
-+	}
- 
--	/* FIXME: Locking. A hot pluggable device can go away
--	   (del_mtd_device can be called for it) without its module
--	   being unloaded. */
--	dev->mtd->usecount++;
- 
- 	ret = 0;
- 	if (tr->open && (ret = tr->open(dev))) {
--		dev->mtd->usecount--;
--		put_mtd_device(dev->mtd);
--	out_tr:
- 		module_put(tr->owner);
-+		__put_mtd_device(dev->mtd);
-+		goto out;
-+
- 	}
-  out:
-+	mutex_unlock(&dev->lock);
- 	return ret;
+ 	return count;
  }
- 
-@@ -160,18 +160,11 @@ static int blktrans_release(struct gendisk *disk, fmode_t mode)
- 	struct mtd_blktrans_ops *tr = dev->tr;
- 	int ret = 0;
- 
-+	mutex_lock(&dev->lock);
- 	dev->open--;
- 	if (dev->open)
- 		return 0;
- 
--	if (tr->release)
--		ret = tr->release(dev);
--
--	if (!ret) {
--		dev->mtd->usecount--;
--		put_mtd_device(dev->mtd);
--		module_put(tr->owner);
--	}
- 
- 	/* Free the private data */
- 	if (dev->deleted) {
-@@ -181,33 +174,59 @@ static int blktrans_release(struct gendisk *disk, fmode_t mode)
- 		return 0;
- 	}
- 
-+	ret = tr->release ? tr->release(dev) : 0;
-+	module_put(tr->owner);
-+
-+	if (dev->mtd)
-+		__put_mtd_device(dev->mtd);
-+out:
-+	mutex_unlock(&dev->lock);
- 	return ret;
- }
- 
- static int blktrans_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+@@ -207,10 +209,12 @@ static ssize_t class_set_enabled(struct 
  {
- 	struct mtd_blktrans_dev *dev = bdev->bd_disk->private_data;
-+	int error;
-+
-+	mutex_lock(&dev->lock);
+ 	struct asus_oled_dev *odev =
+ 		(struct asus_oled_dev *) dev_get_drvdata(device);
++	unsigned long value;
  
-+	error = -ENODEV;
-+	if (dev->deleted)
-+		goto out;
-+
-+	error = -ENOTTY;
- 	if (dev->tr->getgeo)
--		return dev->tr->getgeo(dev, geo);
--	return -ENOTTY;
-+		error = dev->tr->getgeo(dev, geo);
-+out:
-+	mutex_unlock(&dev->lock);
-+	return error;
+-	int temp = strict_strtoul(buf, 10, NULL);
++	if (strict_strtoul(buf, 10, &value))
++		return -EINVAL;
+ 
+-	enable_oled(odev, temp);
++	enable_oled(odev, value);
+ 
+ 	return count;
  }
- 
- static int blktrans_ioctl(struct block_device *bdev, fmode_t mode,
- 			      unsigned int cmd, unsigned long arg)
- {
- 	struct mtd_blktrans_dev *dev = bdev->bd_disk->private_data;
--	struct mtd_blktrans_ops *tr = dev->tr;
-+	int error = -ENODEV;
-+
-+	mutex_lock(&dev->lock);
-+
-+	if (dev->deleted)
-+		goto out;
-+
-+	error = -ENOTTY;
- 
- 	switch (cmd) {
- 	case BLKFLSBUF:
--		if (tr->flush)
--			return tr->flush(dev);
--		/* The core code did the work, we had nothing to do. */
--		return 0;
-+		if (dev->tr->flush)
-+			error = dev->tr->flush(dev);
-+		break;
- 	default:
--		return -ENOTTY;
-+		break;
- 	}
-+out:
-+	mutex_unlock(&dev->lock);
-+	return error;
- }
- 
- static const struct block_device_operations mtd_blktrans_ops = {
-@@ -355,15 +374,19 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
- 	/* Stop the thread */
- 	kthread_stop(old->thread);
- 
-+	/* Tell trans driver to release the device */
-+	mutex_lock(&old->lock);
-+
- 	if (old->open) {
- 		if (old->tr->release)
- 			old->tr->release(old);
--		put_mtd_device(old->mtd);
-+		__put_mtd_device(old->mtd);
- 	}
- 
- 	/* From now on, no calls into trans can be made */
- 	/* Mtd device will be gone real soon now */
- 	old->mtd = NULL;
-+	mutex_unlock(&old->lock);
- 
-  
- 	blk_cleanup_queue(old->rq);
--- 
-1.6.3.3
-
 
 
