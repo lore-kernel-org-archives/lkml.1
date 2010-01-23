@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752032Ab0AWUf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084Ab0AWUgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752032Ab0AWUf7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 15:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897Ab0AWUf6
+	id S1752084Ab0AWUgI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 15:36:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039Ab0AWUf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 15:35:58 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50461 "EHLO
+	Sat, 23 Jan 2010 15:35:59 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50514 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932171Ab0AWUft (ORCPT
+	with ESMTP id S1751566Ab0AWUfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 15:35:49 -0500
+	Sat, 23 Jan 2010 15:35:53 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
+Cc: linux-kernel@vger.kernel.org, "Stanley.Miao" <stanley.miao@windriver.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Subject: [PATCH 25/29] move snirm_53c710's probe function to .devinit.text
-Date: Sat, 23 Jan 2010 21:35:33 +0100
-Message-Id: <1264278937-19675-25-git-send-email-u.kleine-koenig@pengutronix.de>
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: [PATCH 16/29] move omap_hdq's probe function to .devinit.text
+Date: Sat, 23 Jan 2010 21:35:24 +0100
+Message-Id: <1264278937-19675-16-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -35,7 +34,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to snirm710_probe is passed to the core via
+A pointer to omap_hdq_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -46,28 +45,37 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Stanley.Miao <stanley.miao@windriver.com>
+Acked-by: Evgeniy Polyakov <zbr@ioremap.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Madhusudhan Chikkature <madhu.cr@ti.com>
+Cc: Felipe Balbi <felipe.balbi@nokia.com>
 ---
- drivers/scsi/sni_53c710.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/w1/masters/omap_hdq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/sni_53c710.c b/drivers/scsi/sni_53c710.c
-index 37b3359..56cf0bb 100644
---- a/drivers/scsi/sni_53c710.c
-+++ b/drivers/scsi/sni_53c710.c
-@@ -64,7 +64,7 @@ static struct scsi_host_template snirm710_template = {
- 	.module		= THIS_MODULE,
+diff --git a/drivers/w1/masters/omap_hdq.c b/drivers/w1/masters/omap_hdq.c
+index 0d92969..22977d3 100644
+--- a/drivers/w1/masters/omap_hdq.c
++++ b/drivers/w1/masters/omap_hdq.c
+@@ -72,7 +72,7 @@ struct hdq_data {
+ 	int			init_trans;
  };
  
--static int __init snirm710_probe(struct platform_device *dev)
-+static int __devinit snirm710_probe(struct platform_device *dev)
+-static int __init omap_hdq_probe(struct platform_device *pdev);
++static int __devinit omap_hdq_probe(struct platform_device *pdev);
+ static int omap_hdq_remove(struct platform_device *pdev);
+ 
+ static struct platform_driver omap_hdq_driver = {
+@@ -558,7 +558,7 @@ static void omap_w1_write_byte(void *_hdq, u8 byte)
+ 	return;
+ }
+ 
+-static int __init omap_hdq_probe(struct platform_device *pdev)
++static int __devinit omap_hdq_probe(struct platform_device *pdev)
  {
- 	unsigned long base;
- 	struct NCR_700_Host_Parameters *hostdata;
+ 	struct hdq_data *hdq_data;
+ 	struct resource *res;
 -- 
 1.6.6
 
