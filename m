@@ -1,97 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028Ab0AWQce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007Ab0AWRca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028Ab0AWQce (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 11:32:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799Ab0AWQcc
+	id S1756007Ab0AWRca (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 12:32:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752Ab0AWRc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 11:32:32 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:50452 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932068Ab0AWQca (ORCPT
+	Sat, 23 Jan 2010 12:32:29 -0500
+Received: from mail-iw0-f186.google.com ([209.85.223.186]:50560 "EHLO
+	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751491Ab0AWRc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 11:32:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=cB4CXB8qLhd0G/M+JTkwJHRWe+IdXBDwrHmATryb72xFupasbaa4khF6aVtMAxkzx2
-         n1jIZI7t86MRRC9gMYlj5TnMqrmoysDvw83Bwu5T1jpWmnoSJj/CLMPtJ6T0KMIgkyRr
-         NC9DmgyzfuJgh1kuJkfiEZ09+66dQit7YBaTY=
-Date: Sat, 23 Jan 2010 17:32:23 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@amd64.org>,
-       tglx@linutronix.de, andreas.herrmann3@amd.com, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -v3 0/5] x86, cacheinfo, amd: L3 Cache Index Disable
- fixes
-Message-ID: <20100123163223.GA30859@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-	Borislav Petkov <bp@amd64.org>, tglx@linutronix.de,
-	andreas.herrmann3@amd.com, x86@kernel.org,
-	linux-kernel@vger.kernel.org
-References: <1264172467-25155-1-git-send-email-bp@amd64.org>
- <4B59DF4C.7040608@zytor.com>
- <20100122174049.GC19425@aftab>
- <4B59E507.9060403@zytor.com>
- <20100123065953.GB15774@elte.hu>
- <20100123081132.GB7098@liondog.tnic>
- <20100123090135.GB20056@elte.hu>
+	Sat, 23 Jan 2010 12:32:28 -0500
+Message-ID: <4B5B32AF.1010509@cox.net>
+Date: Sat, 23 Jan 2010 12:32:31 -0500
+From: James Kosin <james.kosin.04@cnu.edu>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20100123090135.GB20056@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: linux-kernel@vger.kernel.org
+CC: joe@perches.com
+Subject: Re: [PATCH 23/24] drivers/block/floppy.c: Add function is_ready_state
+References: <e5jMK-25X-3@gated-at.bofh.it> <e5jMM-25X-51@gated-at.bofh.it>
+In-Reply-To: <e5jMM-25X-51@gated-at.bofh.it>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 23, 2010 at 10:01:35AM +0100, Ingo Molnar wrote:
-> 
-> * Borislav Petkov <petkovbb@googlemail.com> wrote:
-> 
-> > On Sat, Jan 23, 2010 at 07:59:53AM +0100, Ingo Molnar wrote:
-> > > 
-> > > * H. Peter Anvin <hpa@zytor.com> wrote:
-> > > 
-> > > > On 01/22/2010 09:40 AM, Borislav Petkov wrote:
-> > > > >>>
-> > > > >>> Those patches are also good -stable candidates.
-> > > > >>
-> > > > >> Hmmm... I'm not sure I see a strong justification for a late -rc push
-> > > > >> into Linus/stable push for for these... I think you would have to
-> > > > >> explicitly make the case if you want them to be considered as such.
-> > > > > 
-> > > > > Well, on the one hand, they fix real bugs in the L3 cache index disable 
-> > > > > code and since they're bugfixes, they are eligible late -rc candidates.
-> > > > 
-> > > > Bugfixes are *early* -rc candidates.  Regression fixes are *late* -rc 
-> > > > candidates, at least that seems to be the policy Linus currently implements.  
-> > > > -stable seems to use slightly less strict criteria (the whole point is that 
-> > > > -final needs to be a stabilization point, backported fixes/drivers can then 
-> > > > come onto a stable base) which is why you seem some patches which are 
-> > > > "straight to .1".
-> > > 
-> > > Yes.
-> > 
-> > Ok, thanks for the clarification - my only trouble was that the current
-> > code is b0rked as is and those fixes are needed. However, backporting
-> > them at a later point seems much more riskfree and I will do so later.
-> > 
-> > Thanks.
-> 
-> Well, if there's a crasher in there, then a minimal fix to address just that 
-> is preferred for .33 - and that can be tagged for -stable immediately.
+On 1/22/2010 12:00 AM, Joe Perches wrote:
+> Used a couple of times, might simplify the code a bit.
+>
+> Signed-off-by: Joe Perches<joe@perches.com>
+> ---
+>   drivers/block/floppy.c |   19 +++++++++++++++----
+>   1 files changed, 15 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+> index 2f6ed78..fd56b26 100644
+> --- a/drivers/block/floppy.c
+> +++ b/drivers/block/floppy.c
+> @@ -782,6 +782,12 @@ static inline int is_selected(int dor, int unit)
+>   	return ((dor&  (0x10<<  unit))&&  (dor&  3) == unit);
+>   }
+>
+> +static bool is_ready_state(int status)
+> +{
+> +	int state = status&  (STATUS_READY | STATUS_DIR | STATUS_DMA);
+> +	return state == STATUS_READY;
+> +}
+> +
 
-As I said earlier, I don't believe we have machines in the wild to
-practically support the feature yet so we should be OK without a fix.
-Let me verify that next week and get back to you with a minimal fix in
-case we have any affected configurations.
+This should probably be simplified to:
 
-Thanks.
+static bool is_ready_state(int status)
+{
+	return ((state & STATUS_READY) == STATUS_READY);
+}
 
--- 
-Regards/Gruss,
-    Boris.
+James
