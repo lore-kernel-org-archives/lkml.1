@@ -1,99 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350Ab0AWM4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444Ab0AWNNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350Ab0AWM4O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 07:56:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033Ab0AWM4N
+	id S1755444Ab0AWNNr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 08:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204Ab0AWNNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 07:56:13 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:47355 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751671Ab0AWM4L (ORCPT
+	Sat, 23 Jan 2010 08:13:46 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:60347 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754526Ab0AWNNp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 07:56:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=EEznFUWMwzGcfLLc6JpSMqXJlA7nNVJOvQghBOgoiWct+evMm4+Bua2zPykvD2jrIk
-         54wbK1vpn3q5HudF+OY9AUPiBpr738BLNps2u7LzYYaSbeEsWMEuUxcJd8i69nZTSXvV
-         fZRF5aA9GPunSKNgLJgVgJ5Mip5SojqkDd+Nc=
-Message-ID: <4B5AF1E5.1070304@gmail.com>
-Date: Sat, 23 Jan 2010 13:56:05 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
+	Sat, 23 Jan 2010 08:13:45 -0500
+Message-ID: <4B5AF5FF.6050702@web.de>
+Date: Sat, 23 Jan 2010 14:13:35 +0100
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org, mm-commits@vger.kernel.org, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, zhenyuw@linux.intel.com,
-       yakui.zhao@intel.com
-Subject: i915: gpu wedged [was: mmotm 2010-01-15-15-34 uploaded]
-References: <201001152359.o0FNxVne006113@imap1.linux-foundation.org>
-In-Reply-To: <201001152359.o0FNxVne006113@imap1.linux-foundation.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+To: Marcel Holtmann <marcel@holtmann.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
+       Karsten Keil <isdn@linux-pingi.de>, linux-kernel@vger.kernel.org,
+       i4ldeveloper@listserv.isdn4linux.de, isdn4linux@listserv.isdn4linux.de,
+       netdev@vger.kernel.org, Alan Cox <alan@linux.intel.com>
+Subject: Re: [PATCH 31/31] CAPI: Officially claim char major 191
+References: <cover.1264201406.git.jan.kiszka@web.de>	 <445e1bf881b6f8b6a5886d6eee70f6435a5619d6.1264201408.git.jan.kiszka@web.de>	 <20100123122430.5a078b4a@lxorguk.ukuu.org.uk> <1264250892.3469.52.camel@violet>
+In-Reply-To: <1264250892.3469.52.camel@violet>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig64C0F6C8F6B9EEC14775D2D7"
+X-Provags-ID: V01U2FsdGVkX18OR7n4IZcoj+G5YgChhKCz2hwQK4ZC8ZKsQaT+
+	OzsL/49ZY9nU9V40UqGi60j79tfvL/zY7xPCDExy+Pz32Vyv5V
+	vZCZpPK3U=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/16/2010 12:34 AM, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2010-01-15-15-34 has been uploaded to
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig64C0F6C8F6B9EEC14775D2D7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-So I've decided to switch to KMS on this kernel with
-00:02.0 VGA compatible controller [0300]: Intel Corporation 82G33/G31
-Express Integrated Graphics Controller [8086:29c2] (rev 02) (prog-if 00
-[VGA controller])
-        Subsystem: Intel Corporation 82G33/G31 Express Integrated
-Graphics Controller [8086:29c2]
-        Flags: bus master, fast devsel, latency 0, IRQ 26
-        Memory at ffa80000 (32-bit, non-prefetchable) [size=512K]
-        I/O ports at ec00 [size=8]
-        Memory at d0000000 (32-bit, prefetchable) [size=256M]
-        Memory at ff900000 (32-bit, non-prefetchable) [size=1M]
-        Expansion ROM at <unassigned> [disabled]
-        Capabilities: [90] MSI: Enable+ Count=1/1 Maskable- 64bit-
-        Capabilities: [d0] Power Management version 2
-        Kernel driver in use: i915
+Marcel Holtmann wrote:
+> Hi Alan,
+>=20
+>>> I found no trace of this mysterious "pcl181" device, neither in-tree =
+nor
+>>> out there in the wild. At the same time, the in-tree CAPI middleware =
+is
+>>> using major 191 for many years now and obviously without any conflict=
+=2E
+>>> Let's officially claim this major number.
+>> This is not the way it should have been done but whoever needs spankin=
+g
+>> got away with it years ago. Given that this seems the best way forward=
+=2E
+>>
+>> With LANANA hat on
+>=20
+> actually in the days of udev, the capifs is not really needed anymore.
+> The right choice would be to remove it. I haven't been enabling it sinc=
+e
+> years.
 
+First of all, the capifs story is orthogonal to the major claim.
 
-with this X driver:
-(II) Module intel: vendor="X.Org Foundation"
-        compiled for 1.7.4, module version = 2.10.0
-        Module class: X.Org Video Driver
-        ABI class: X.Org Video Driver, version 6.0
-
-
-on X.Org X Server 1.7.4 and after some time I get:
-(WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
-error
-(EE) intel(0): Failed to submit batch buffer, expect rendering
-corruption or even a frozen display: Input/output er
-ror.
-(WW) intel(0): i830_uxa_pixmap_swap_bo_with_image: bo map failed
-(WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
-error
-(WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
-error
-(WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
-error
-(EE) intel(0): Failed to submit batch buffer, expect rendering
-corruption or even a frozen display: Input/output er
-ror.
-(EE) intel(0): Failed to submit batch buffer, expect rendering
-corruption or even a frozen display: Input/output er
+But basically you are right, capifs is likely not needed anymore. The
+only user visible change - and that was holding me back to suggest its
+removal - is the time when the NCCI minor ttys show up under /dev/capi/
+(or wherever you direct them to). If I didn't miss something about udev,
+it will make all possible minors pop up once the major is registered.
+However, I'm not sure if there is some userland actually relying on this.=
 
 
-and kernel says:
-[drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
-render error detected, EIR: 0x00000000
-[drm:i915_do_wait_request] *ERROR* i915_do_wait_request returns -5
-(awaiting 153151 at 153150)
-[drm:i915_gem_execbuffer] *ERROR* i915_gem_do_execbuffer returns -5
+Jan
 
 
->From <debugfs>/dri/0/i915_wedged, the GPU is wedged.
+--------------enig64C0F6C8F6B9EEC14775D2D7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-regards,
--- 
-js
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEUEARECAAYFAkta9gMACgkQitSsb3rl5xQJzwCg5XSeY79DUfnbksivaf+P11oV
+VLIAmKF9AZx5eLoFAW8ztsiUpiiQwvE=
+=XSl9
+-----END PGP SIGNATURE-----
+
+--------------enig64C0F6C8F6B9EEC14775D2D7--
