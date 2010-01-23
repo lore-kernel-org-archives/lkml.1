@@ -1,85 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752112Ab0AWVC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982Ab0AWVQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752112Ab0AWVC2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 16:02:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548Ab0AWVC0
+	id S1751982Ab0AWVQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 16:16:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755Ab0AWVQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 16:02:26 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33618 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848Ab0AWVC0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 16:02:26 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-arm-kernel@lists.infradead.org
-Cc: Tony Lindgren <tony@atomide.com>, Russell King <linux@arm.linux.org.uk>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       "Zebediah C. McClure" <zmc@lurian.net>,
-       Alistair Buxton <a.j.buxton@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] omap: define _toggle_gpio_edge_triggering only for OMAP1
-Date: Sat, 23 Jan 2010 22:01:40 +0100
-Message-Id: <1264280500-22878-2-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.6
+	Sat, 23 Jan 2010 16:16:28 -0500
+Received: from mail.issp.bas.bg ([195.96.236.10]:34623 "EHLO mail.issp.bas.bg"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751669Ab0AWVQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jan 2010 16:16:28 -0500
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [BUG] agpgart-amd64 not initialized in 2.6.33-rc5 if iommu=allowed in kernel command line
+Date: Sat, 23 Jan 2010 23:14:55 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.33-rc5; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001232314.55425.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The only usage of _toggle_gpio_edge_triggering is in an
-CONFIG_ARCH_OMAP1 is defined, too.
+Hi,
 
-This fixes a compiler warning:
+If I start the kernel without command line parameters (4GB RAM)
+iommu-swiotlb is used due to quirk in VIA K8T800Pro Host Bridge.
+In that case all is OK.
 
-	arch/arm/plat-omap/gpio.c:758: warning: '_toggle_gpio_edge_triggering' defined but not used
+If I put in the kernel command line: iommu=allowed (+other parameters)
+I have iommu-gart used but no AGP. dmesg output:
 
-when compiling for ARCH_OMAP2, ARCH_OMAP3 or ARCH_OMAP4.
+[drm:mga_do_agp_dma_bootstrap] *ERROR* Unable to acquire AGP: -19
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- arch/arm/plat-omap/gpio.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+For debugging I patched the kernel (mostly prink(), shown at the end)
+producing the output in the dmesg:
 
-diff --git a/arch/arm/plat-omap/gpio.c b/arch/arm/plat-omap/gpio.c
-index d17620c..d2422c7 100644
---- a/arch/arm/plat-omap/gpio.c
-+++ b/arch/arm/plat-omap/gpio.c
-@@ -750,6 +750,7 @@ static inline void set_24xx_gpio_triggering(struct gpio_bank *bank, int gpio,
- }
- #endif
- 
-+#ifdef CONFIG_ARCH_OMAP1
- /*
-  * This only applies to chips that can't do both rising and falling edge
-  * detection at once.  For all other chips, this function is a noop.
-@@ -760,11 +761,9 @@ static void _toggle_gpio_edge_triggering(struct gpio_bank *bank, int gpio)
- 	u32 l = 0;
- 
- 	switch (bank->method) {
--#ifdef CONFIG_ARCH_OMAP1
- 	case METHOD_MPUIO:
- 		reg += OMAP_MPUIO_GPIO_INT_EDGE;
- 		break;
--#endif
- #ifdef CONFIG_ARCH_OMAP15XX
- 	case METHOD_GPIO_1510:
- 		reg += OMAP1510_GPIO_INT_CONTROL;
-@@ -787,6 +786,7 @@ static void _toggle_gpio_edge_triggering(struct gpio_bank *bank, int gpio)
- 
- 	__raw_writel(l, reg);
- }
-+#endif
- 
- static int _set_gpio_triggering(struct gpio_bank *bank, int gpio, int trigger)
+no command line
+MDM: agp_amd64_init entered
+MDM: agp_off: false
+MDM: agp_bridges_found: 0
+MDM: gart_iommu_aperture: 0
+MDM: agp_amd64_probe entered
+
+command line: iommu=allowed:
+MDM: gart_iommu_init
+MDM: before: no_agp = 0
+MDM: 	agp_amd64_init entered
+MDM: 	agp_off: false
+MDM: 	agp_bridges_found: 0
+MDM: after: no_agp = 1
+MDM: agp_amd64_init() < 0: 1
+MDM: agp_copy_info() < 0: -1
+MDM: 	agp_amd64_init entered
+MDM: 	agp_off: false
+MDM: 	agp_bridges_found: 0
+
+One see in the last case ( iommu=allowed) agp_amd64_init()
+is executed twice, but agp_amd64_probe() is not executed at all
+(agp_bridges_found is incremented only in agp_amd64_probe())
+
+Is this expected behavior?
+
+Thanks,
+
+Marin Mitov
+
+The testing patch:
+--- ./drivers/char/agp/amd64-agp.c.orig	2010-01-23 18:46:46.000000000 +0200
++++ ./drivers/char/agp/amd64-agp.c	2010-01-23 22:09:44.000000000 +0200
+@@ -498,7 +498,7 @@
+ 	struct agp_bridge_data *bridge;
+ 	u8 cap_ptr;
+ 	int err;
+-
++	printk(KERN_DEBUG "MDM: agp_amd64_probe entered\n");
+ 	cap_ptr = pci_find_capability(pdev, PCI_CAP_ID_AGP);
+ 	if (!cap_ptr)
+ 		return -ENODEV;
+@@ -725,13 +725,14 @@
+ int __init agp_amd64_init(void)
  {
--- 
-1.6.6
+ 	int err = 0;
+-
++	printk(KERN_DEBUG "MDM: agp_amd64_init entered\n");
+ 	if (agp_off)
+ 		return -EINVAL;
+-
++	printk(KERN_DEBUG "MDM: agp_off: false\n");
++	printk(KERN_DEBUG "MDM: agp_bridges_found: %d\n", agp_bridges_found);
+ 	if (gart_iommu_aperture)
+ 		return agp_bridges_found ? 0 : -ENODEV;
+-
++	printk(KERN_DEBUG "MDM: gart_iommu_aperture: %d\n", gart_iommu_aperture);
+ 	err = pci_register_driver(&agp_amd64_pci_driver);
+ 	if (err < 0)
+ 		return err;
+--- ./arch/x86/kernel/pci-gart_64.c.orig	2010-01-23 17:07:42.000000000 +0200
++++ ./arch/x86/kernel/pci-gart_64.c	2010-01-23 17:47:22.000000000 +0200
+@@ -734,20 +734,25 @@
+ 	unsigned long start_pfn, end_pfn;
+ 	unsigned long scratch;
+ 	long i;
++	int tmp1 = -1, tmp2 = -1;
+ 
+ 	if (cache_k8_northbridges() < 0 || num_k8_northbridges == 0)
+ 		return 0;
+ 
++	printk(KERN_DEBUG "MDM: gart_iommu_init\n");
+ #ifndef CONFIG_AGP_AMD64
+ 	no_agp = 1;
+ #else
+ 	/* Makefile puts PCI initialization via subsys_initcall first. */
+ 	/* Add other K8 AGP bridge drivers here */
++	printk(KERN_DEBUG "MDM: before: no_agp = %d\n", no_agp);
+ 	no_agp = no_agp ||
+-		(agp_amd64_init() < 0) ||
+-		(agp_copy_info(agp_bridge, &info) < 0);
++		(tmp1 = (agp_amd64_init() < 0)) ||
++		(tmp2 = (agp_copy_info(agp_bridge, &info) < 0));
+ #endif
+-
++	printk(KERN_DEBUG "MDM: after: no_agp = %d\n", no_agp);
++	printk(KERN_DEBUG "MDM: agp_amd64_init() < 0: %d\n", tmp1);
++	printk(KERN_DEBUG "MDM: agp_copy_info() < 0: %d\n", tmp2); 
+ 	if (no_iommu ||
+ 	    (!force_iommu && max_pfn <= MAX_DMA32_PFN) ||
+ 	    !gart_iommu_aperture ||
+
 
