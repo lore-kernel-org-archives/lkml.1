@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360Ab0AWVcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227Ab0AWVf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360Ab0AWVcF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 16:32:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908Ab0AWVcD
+	id S1752227Ab0AWVf5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 16:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995Ab0AWVf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 16:32:03 -0500
-Received: from ppp-157-144.adsl.restena.lu ([158.64.157.144]:42379 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751660Ab0AWVcB (ORCPT
+	Sat, 23 Jan 2010 16:35:56 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:59252 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332Ab0AWVf4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 16:32:01 -0500
-Date: Sat, 23 Jan 2010 22:31:32 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.33-rc5 regression] NULL pointer dereference in
- vlan_skb_recv - probably introduced by commit
- 9793241fe92f7d9303fb221e43fc598eb065f267
-Message-ID: <20100123223132.0e62d8cb@neptune.home>
-In-Reply-To: <20100123165657.187c11e4@neptune.home>
-References: <20100123165657.187c11e4@neptune.home>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 23 Jan 2010 16:35:56 -0500
+Date: Sat, 23 Jan 2010 13:35:39 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: dhowells@redhat.com, adkulkar@umail.iu.edu
+Subject: NFS_FSCACHE still depends on EXPERIMENTAL?
+Message-ID: <alpine.DEB.2.01.1001231314480.3483@bogon.housecafe.de>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX19eCiE9n0GEfY9soEz6C/gGvdGnT2KD1noHVqm
+ 9NMPKITwBHECmMM5gay/bPzv72HEU9XBtWiL0FevD6PQM73e7r
+ HjbyX92FXxv07AdjeKmjQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Above part of code did change between 2.6.32 and 2.6.33-rc5 with
-> commit 9793241fe92f7d9303fb221e43fc598eb065f267 (vlan: Precise RX
-> stats accounting)
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9793241fe92f7d9303fb221e43fc598eb065f267
+Hi,
 
-Reverting just that commit gets the system running correctly.
+there's currently an open Ubuntu bug[0], with the intent to compile 
+NFS_FSCACHE (and possibly AFS_FSCACHE, 9P_FSCACHE) into the standard 
+Ubuntu kernel. However, since *_FSCACHE still depends on EXPERIMENTAL, 
+this won't happen.
 
-Bruno
+I'd like to know if the EXPERIMENTAL tag is still needed for these 
+options and if so, what would be needed to remove this tag. Removing this 
+tag would allow Ubuntu to include these features into its kernel, possibly 
+allowing an even greater userbase to test these features, hopefully providing 
+feedback.
+
+Thanks,
+Christian.
+
+[0] https://bugs.launchpad.net/ubuntu/+source/linux/+bug/440522/comments/5
+-- 
+BOFH excuse #259:
+
+Someone's tie is caught in the printer, and if anything else gets printed, he'll be in it too.
