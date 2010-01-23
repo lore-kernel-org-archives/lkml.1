@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707Ab0AWXmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669Ab0AWXmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753707Ab0AWXmp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 18:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306Ab0AWXmN
+	id S1753669Ab0AWXmn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 18:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162Ab0AWXmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 18:42:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43515 "EHLO ogre.sisk.pl"
+	Sat, 23 Jan 2010 18:42:11 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43519 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753078Ab0AWXmC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753100Ab0AWXmC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 23 Jan 2010 18:42:02 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/8] PM: Add a switch for disabling/enabling asynchronous suspend/resume
-Date: Sun, 24 Jan 2010 00:36:26 +0100
+Subject: [PATCH 8/8] PM: Allow SCSI devices to suspend/resume asynchronously
+Date: Sun, 24 Jan 2010 00:41:30 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
 Cc: Alan Stern <stern@rowland.harvard.edu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -31,144 +31,79 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001240036.27069.rjw@sisk.pl>
+Message-Id: <201001240041.30899.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Add sysfs attribute /sys/power/pm_async allowing the user space to
-disable/enable asynchronous suspend/resume of devices.
+Set power.async_suspend for all SCSI devices, targets and hosts, so
+that they can be suspended and resumed in parallel with the main
+suspend/resume thread and possibly with other devices they don't
+depend on in a known way (i.e. devices which are not their parents or
+children).
+
+The power.async_suspend flag is also set for devices that don't have
+suspend or resume callbacks, because otherwise they would make the
+main suspend/resume thread wait for their "asynchronous" children
+(during suspend) or parents (during resume), effectively negating the
+possible gains from executing these devices' suspend and resume
+callbacks asynchronously.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- Documentation/ABI/testing/sysfs-power |   13 +++++++++++++
- drivers/base/power/main.c             |    7 ++++---
- drivers/base/power/power.h            |    6 +++---
- kernel/power/main.c                   |   31 ++++++++++++++++++++++++++++++-
- 4 files changed, 50 insertions(+), 7 deletions(-)
+ drivers/scsi/hosts.c      |    4 ++++
+ drivers/scsi/scsi_sysfs.c |    4 ++++
+ 2 files changed, 8 insertions(+)
 
-Index: linux-2.6/kernel/power/main.c
+Index: linux-2.6/drivers/scsi/hosts.c
 ===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -44,6 +44,32 @@ int pm_notifier_call_chain(unsigned long
- 			== NOTIFY_BAD) ? -EINVAL : 0;
- }
+--- linux-2.6.orig/drivers/scsi/hosts.c
++++ linux-2.6/drivers/scsi/hosts.c
+@@ -215,6 +215,8 @@ int scsi_add_host_with_dma(struct Scsi_H
+ 		shost->shost_gendev.parent = dev ? dev : &platform_bus;
+ 	shost->dma_dev = dma_dev;
  
-+/* If set, devices may be suspended and resumed asynchronously. */
-+int pm_async_enabled = 1;
++	device_enable_async_suspend(&shost->shost_gendev);
 +
-+static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			     char *buf)
-+{
-+	return sprintf(buf, "%d\n", pm_async_enabled);
-+}
-+
-+static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			      const char *buf, size_t n)
-+{
-+	unsigned long val;
-+
-+	if (strict_strtoul(buf, 10, &val))
-+		return -EINVAL;
-+
-+	if (val > 1)
-+		return -EINVAL;
-+
-+	pm_async_enabled = val;
-+	return n;
-+}
-+
-+power_attr(pm_async);
-+
- #ifdef CONFIG_PM_DEBUG
- int pm_test_level = TEST_NONE;
+ 	error = device_add(&shost->shost_gendev);
+ 	if (error)
+ 		goto out;
+@@ -222,6 +224,8 @@ int scsi_add_host_with_dma(struct Scsi_H
+ 	scsi_host_set_state(shost, SHOST_RUNNING);
+ 	get_device(shost->shost_gendev.parent);
  
-@@ -208,9 +234,12 @@ static struct attribute * g[] = {
- #ifdef CONFIG_PM_TRACE
- 	&pm_trace_attr.attr,
- #endif
--#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
-+#ifdef CONFIG_PM_SLEEP
-+	&pm_async_attr.attr,
-+#ifdef CONFIG_PM_DEBUG
- 	&pm_test_attr.attr,
- #endif
-+#endif
- 	NULL,
- };
- 
-Index: linux-2.6/drivers/base/power/power.h
++	device_enable_async_suspend(&shost->shost_dev);
++
+ 	error = device_add(&shost->shost_dev);
+ 	if (error)
+ 		goto out_del_gendev;
+Index: linux-2.6/drivers/scsi/scsi_sysfs.c
 ===================================================================
---- linux-2.6.orig/drivers/base/power/power.h
-+++ linux-2.6/drivers/base/power/power.h
-@@ -12,10 +12,10 @@ static inline void pm_runtime_remove(str
- 
- #ifdef CONFIG_PM_SLEEP
- 
--/*
-- * main.c
-- */
-+/* kernel/power/main.c */
-+extern int pm_async_enabled;
- 
-+/* drivers/base/power/main.c */
- extern struct list_head dpm_list;	/* The active device list */
- 
- static inline struct device *to_device(struct list_head *entry)
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -201,7 +201,7 @@ static void dpm_wait(struct device *dev,
- 	if (!dev)
- 		return;
- 
--	if (async || dev->power.async_suspend)
-+	if (async || (pm_async_enabled && dev->power.async_suspend))
- 		wait_for_completion(&dev->power.completion);
- }
- 
-@@ -563,7 +563,8 @@ static int device_resume(struct device *
- {
- 	INIT_COMPLETION(dev->power.completion);
- 
--	if (dev->power.async_suspend && !pm_trace_is_enabled()) {
-+	if (pm_async_enabled && dev->power.async_suspend
-+	    && !pm_trace_is_enabled()) {
- 		get_device(dev);
- 		async_schedule(async_resume, dev);
+--- linux-2.6.orig/drivers/scsi/scsi_sysfs.c
++++ linux-2.6/drivers/scsi/scsi_sysfs.c
+@@ -847,6 +847,8 @@ static int scsi_target_add(struct scsi_t
+ 	if (starget->state != STARGET_CREATED)
  		return 0;
-@@ -867,7 +868,7 @@ static int device_suspend(struct device 
- {
- 	INIT_COMPLETION(dev->power.completion);
  
--	if (dev->power.async_suspend) {
-+	if (pm_async_enabled && dev->power.async_suspend) {
- 		get_device(dev);
- 		async_schedule(async_suspend, dev);
- 		return 0;
-Index: linux-2.6/Documentation/ABI/testing/sysfs-power
-===================================================================
---- linux-2.6.orig/Documentation/ABI/testing/sysfs-power
-+++ linux-2.6/Documentation/ABI/testing/sysfs-power
-@@ -101,3 +101,16 @@ Description:
- 
- 		CAUTION: Using it will cause your machine's real-time (CMOS)
- 		clock to be set to a random invalid time after a resume.
++	device_enable_async_suspend(&starget->dev);
 +
-+What:		/sys/power/pm_async
-+Date:		January 2009
-+Contact:	Rafael J. Wysocki <rjw@sisk.pl>
-+Description:
-+		The /sys/power/pm_async file controls the switch allowing the
-+		user space to enable or disable asynchronous suspend and resume
-+		of devices.  If enabled, this feature will cause some device
-+		drivers' suspend and resume callbacks to be executed in parallel
-+		with each other and with the main suspend thread.  It is enabled
-+		if this file contains "1", which is the default.  It may be
-+		disabled by writing "0" to this file, in which case all devices
-+		will be suspended and resumed synchronously.
+ 	error = device_add(&starget->dev);
+ 	if (error) {
+ 		dev_err(&starget->dev, "target device_add failed, error %d\n", error);
+@@ -886,11 +888,13 @@ int scsi_sysfs_add_sdev(struct scsi_devi
+ 		return error;
+ 
+ 	transport_configure_device(&starget->dev);
++	device_enable_async_suspend(&sdev->sdev_gendev);
+ 	error = device_add(&sdev->sdev_gendev);
+ 	if (error) {
+ 		printk(KERN_INFO "error 1\n");
+ 		goto out_remove;
+ 	}
++	device_enable_async_suspend(&sdev->sdev_dev);
+ 	error = device_add(&sdev->sdev_dev);
+ 	if (error) {
+ 		printk(KERN_INFO "error 2\n");
 
