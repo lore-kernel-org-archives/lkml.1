@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438Ab0AWUmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751433Ab0AWUmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438Ab0AWUmU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 15:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433Ab0AWUfw
+	id S1751433Ab0AWUmj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 15:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015Ab0AWUma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 15:35:52 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50455 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932166Ab0AWUft (ORCPT
+	Sat, 23 Jan 2010 15:42:30 -0500
+Received: from mail-iw0-f186.google.com ([209.85.223.186]:51271 "EHLO
+	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753415Ab0AWUmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 15:35:49 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Frans Pop <elendil@planet.nl>,
-       Antonino Daplas <adaplas@gmail.com>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 27/29] move vfb's probe function to .devinit.text
-Date: Sat, 23 Jan 2010 21:35:35 +0100
-Message-Id: <1264278937-19675-27-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	Sat, 23 Jan 2010 15:42:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=BHawuzsMZGbk+NSFRgDWGNM1ukCXWoiqACbuxWGsYb6RUcmiVnjI/86PZ8XyvbpuHG
+         uebU8YTqBbSGikhFqdmCC74IvMwQbt4q1twpYpeR/XgHqTXJM3UZ3V1RsMQsHxNf6UUC
+         xlKkVNPmj3MZau7FZKssj4lBjhQxZITU8yYuQ=
+Message-ID: <4B5B5F22.50503@gmail.com>
+Date: Sat, 23 Jan 2010 14:42:10 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: High pitch noise when ACPI processor module is loaded.
+References: <alpine.DEB.2.00.1001231046080.1064@p34.internal.lan> <201001232112.57601.rjw@sisk.pl>
+In-Reply-To: <201001232112.57601.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to vfb_probe is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+On 01/23/2010 02:12 PM, Rafael J. Wysocki wrote:
+> Messages about ACPI should be CCed to linux-acpi@vger.kernel.org (added).
+>
+> On Saturday 23 January 2010, Justin Piszcz wrote:
+>> Hi,
+>>
+>> Linux:
+>> When I do not load the ACPI processor module, there is no high pitch
+>> noise.  When I load the ACPI processor module (so I can utilize Turbo
+>> Boost), Linux makes the system emit a high pitch noise.
+>>
+>> Windows:
+>> The same system, running Windows 7 does not emit any noise.
+>>
+>> Is there something wrong with the ACPI processor module or its
+>> implementation on i5/i7 CPUs?
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe function
-from the struct platform_driver.
+May not be anything "wrong", but some systems do have an issue with the 
+voltage regulator circuitry where it can make noise with certain 
+combinations of power draw and wakeup rates (causing rapid current draw 
+fluctuations) where some of the components can resonate and make noise.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Frans Pop <elendil@planet.nl>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- drivers/video/vfb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
-index 050d432..b8ab995 100644
---- a/drivers/video/vfb.c
-+++ b/drivers/video/vfb.c
-@@ -479,7 +479,7 @@ static int __init vfb_setup(char *options)
-      *  Initialisation
-      */
- 
--static int __init vfb_probe(struct platform_device *dev)
-+static int __devinit vfb_probe(struct platform_device *dev)
- {
- 	struct fb_info *info;
- 	int retval = -ENOMEM;
--- 
-1.6.6
-
+What does powertop report for this system? It might show some useful info.
