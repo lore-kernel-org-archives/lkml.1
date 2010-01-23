@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227Ab0AWVf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752393Ab0AWVgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752227Ab0AWVf5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 16:35:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995Ab0AWVf4
+	id S1752393Ab0AWVgi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 16:36:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029Ab0AWVgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 16:35:56 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:59252 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332Ab0AWVf4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 16:35:56 -0500
-Date: Sat, 23 Jan 2010 13:35:39 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: dhowells@redhat.com, adkulkar@umail.iu.edu
-Subject: NFS_FSCACHE still depends on EXPERIMENTAL?
-Message-ID: <alpine.DEB.2.01.1001231314480.3483@bogon.housecafe.de>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+	Sat, 23 Jan 2010 16:36:37 -0500
+Received: from fanny.its.uu.se ([130.238.4.241]:2256 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752002Ab0AWVgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jan 2010 16:36:36 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX19eCiE9n0GEfY9soEz6C/gGvdGnT2KD1noHVqm
- 9NMPKITwBHECmMM5gay/bPzv72HEU9XBtWiL0FevD6PQM73e7r
- HjbyX92FXxv07AdjeKmjQ==
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19291.27613.146510.938088@pilspetsen.it.uu.se>
+Date: Sat, 23 Jan 2010 22:36:29 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.33-rc5] futex_lock_pi() key refcnt fix
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This fixes a futex key reference count bug in futex_lock_pi(),
+where a key's reference count is incremented twice but decremented
+only once, causing the backing object to not be released.
 
-there's currently an open Ubuntu bug[0], with the intent to compile 
-NFS_FSCACHE (and possibly AFS_FSCACHE, 9P_FSCACHE) into the standard 
-Ubuntu kernel. However, since *_FSCACHE still depends on EXPERIMENTAL, 
-this won't happen.
+If the futex is created in a temporary file in an ext3 file system,
+this bug causes the file's inode to become an "undead" orphan,
+which causes an oops from a BUG_ON() in ext3_put_super() when the
+file system is unmounted. glibc's test suite is known to trigger this,
+see <http://bugzilla.kernel.org/show_bug.cgi?id=14256>.
 
-I'd like to know if the EXPERIMENTAL tag is still needed for these 
-options and if so, what would be needed to remove this tag. Removing this 
-tag would allow Ubuntu to include these features into its kernel, possibly 
-allowing an even greater userbase to test these features, hopefully providing 
-feedback.
+The bug is a regression from 2.6.28-git3, namely Peter Zijlstra's
+38d47c1b7075bd7ec3881141bb3629da58f88dab "[PATCH] futex: rely on
+get_user_pages() for shared futexes". That commit made get_futex_key()
+also increment the reference count of the futex key, and updated its
+callers to decrement the key's reference count before returning.
+Unfortunately the normal exit path in futex_lock_pi() wasn't corrected:
+the reference count is incremented by get_futex_key() and queue_lock(),
+but the normal exit path only decrements once, via unqueue_me_pi().
+The fix is to put_futex_key() after unqueue_me_pi(), since 2.6.31
+this is easily done by 'goto out_put_key' rather than 'goto out'.
 
-Thanks,
-Christian.
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+Cc: <stable@kernel.org>
+---
+This patch also works for backports to 2.6.32 and 2.6.31,
+but 2.6.30 and 2.6.29 need a "put_futex_key(fshared, &q.key);"
+after "unqueue_me_pi(&q);" instead. I can supply patches
+for these older kernels if necessary.
 
-[0] https://bugs.launchpad.net/ubuntu/+source/linux/+bug/440522/comments/5
--- 
-BOFH excuse #259:
+ kernel/futex.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Someone's tie is caught in the printer, and if anything else gets printed, he'll be in it too.
+diff -rupN linux-2.6.33-rc5/kernel/futex.c linux-2.6.33-rc5.futex_lock_pi-key-refcnt-fix/kernel/futex.c
+--- linux-2.6.33-rc5/kernel/futex.c	2010-01-22 01:21:57.000000000 +0100
++++ linux-2.6.33-rc5.futex_lock_pi-key-refcnt-fix/kernel/futex.c	2010-01-23 21:00:14.000000000 +0100
+@@ -1971,7 +1971,7 @@ retry_private:
+ 	/* Unqueue and drop the lock */
+ 	unqueue_me_pi(&q);
+ 
+-	goto out;
++	goto out_put_key;
+ 
+ out_unlock_put_key:
+ 	queue_unlock(&q, hb);
