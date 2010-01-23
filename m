@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540Ab0AWA3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089Ab0AWAcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756540Ab0AWA3r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756479Ab0AWA3Z
+	id S1756089Ab0AWAcP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:32:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369Ab0AWAcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:29:25 -0500
-Received: from kroah.org ([198.145.64.141]:35020 "EHLO coco.kroah.org"
+	Fri, 22 Jan 2010 19:32:12 -0500
+Received: from kroah.org ([198.145.64.141]:35028 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754711Ab0AWASn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:18:43 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:10 2010
-Message-Id: <20100123001110.875409458@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Fri, 22 Jan 2010 16:09:49 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Tavis Ormandy <taviso@google.com>,
-       Jeff Dike <jdike@addtoit.com>, Julien Tinnes <jln@google.com>,
-       Matt Mackall <mpm@selenic.com>
-Subject: [05/29] tty: fix race in tty_fasync
-In-Reply-To: <20100123001145.GA7391@kroah.com>
+	id S1754353Ab0AWAcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:32:09 -0500
+Date: Fri, 22 Jan 2010 16:31:12 -0800
+From: Greg KH <greg@kroah.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jonathan Cameron <kernel@jic23.retrosnub.co.uk>,
+       Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Manuel Stahl <manuel.stahl@iis.fraunhofer.de>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
+       "Getz, Robin" <Robin.Getz@analog.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
+       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
+       Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [RFC] Staging:IIO: New ABI
+Message-ID: <20100123003112.GA7836@kroah.com>
+References: <4B571DA4.6070603@cam.ac.uk>
+ <20100120153748.GA29401@kroah.com>
+ <4B573501.9090001@jic23.retrosnub.co.uk>
+ <20100122204718.GA15759@kroah.com>
+ <20100123001414.GB14538@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100123001414.GB14538@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+On Fri, Jan 22, 2010 at 04:14:15PM -0800, Dmitry Torokhov wrote:
+> On Fri, Jan 22, 2010 at 12:47:18PM -0800, Greg KH wrote:
+> > On Wed, Jan 20, 2010 at 04:53:21PM +0000, Jonathan Cameron wrote:
+> > > I am not aware of these. Could you direct me to the current api? Also note that these
+> > > aren't the actual alarms, merely a means of enabling the relevant event on the related
+> > > event character device. 
+> > 
+> > Hm, I thought we had an accelerator interface somewhere...
+> > 
+> 
+> Nope. And I am also interested in this since I am sittign on a bunch of
+> accelerometers, magnetometers, etc drivers that are trying to plug into
+> input sysbsystem and quite unsure what to do with them.
+> 
+> It was OK whch HDAPS and friends when they were using input for
+> secondary, toyish purposes, but these new drivers trying to use input
+> devnts as primary API and I am unsure if it is the best solution.
+> Accelerometer might be used as an input device but not always an input
+> device.
 
-------------------
+Yeah, I see it using a joystick interface, which might be acceptable for
+"toy" devices like you say.
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+But for "real" ones, we should do something else.
 
-commit 703625118069f9f8960d356676662d3db5a9d116 upstream.
+Maybe, for devices that are going to be used by x.org, like the "toy"
+ones, we stick with the current input interface, but for others, we use
+a "real" interface, probably through hwmon, so that users can get the
+real data out in a consistant manner.
 
-We need to keep the lock held over the call to __f_setown() to
-prevent a PID race.
+thanks,
 
-Thanks to Al Viro for pointing out the problem, and to Travis for
-making us look here in the first place.
-
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tavis Ormandy <taviso@google.com>
-Cc: Jeff Dike <jdike@addtoit.com>
-Cc: Julien Tinnes <jln@google.com>
-Cc: Matt Mackall <mpm@selenic.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/char/tty_io.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1930,8 +1930,8 @@ static int tty_fasync(int fd, struct fil
- 			pid = task_pid(current);
- 			type = PIDTYPE_PID;
- 		}
--		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
- 		retval = __f_setown(filp, pid, type, 0);
-+		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
- 		if (retval)
- 			goto out;
- 	} else {
-
-
+greg k-h
