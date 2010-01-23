@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314Ab0AWAYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161Ab0AWAWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756314Ab0AWAYN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 19:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388Ab0AWAYG
+	id S1756161Ab0AWAWn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 19:22:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078Ab0AWAS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 19:24:06 -0500
-Received: from kroah.org ([198.145.64.141]:35066 "EHLO coco.kroah.org"
+	Fri, 22 Jan 2010 19:18:56 -0500
+Received: from kroah.org ([198.145.64.141]:35064 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755331Ab0AWASy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 19:18:54 -0500
+	id S1755100Ab0AWASw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jan 2010 19:18:52 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jan 22 16:11:12 2010
-Message-Id: <20100123001112.141623063@mini.kroah.org>
+Message-Id: <20100123001112.013952569@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 22 Jan 2010 16:09:59 -0800
+Date: Fri, 22 Jan 2010 16:09:58 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Rickard Bellini <rickard.bellini@ericsson.com>
-Subject: [15/29] USB: add missing delay during remote wakeup
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [14/29] USB: EHCI & UHCI: fix race between root-hub suspend and port resume
 In-Reply-To: <20100123001145.GA7391@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,72 +30,85 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 49d0f078f494b9d81e820a13dd8093a9bfb0b6b1 upstream.
+commit cec3a53c7fe794237b582e8e77fc0e48465e65ee upstream.
 
-This patch (as1330) fixes a bug in khbud's handling of remote
-wakeups.  When a device sends a remote-wakeup request, the parent hub
-(or the host controller driver, for directly attached devices) begins
-the resume sequence and notifies khubd when the sequence finishes.  At
-this point the port's SUSPEND feature is automatically turned off.
+This patch (as1321) fixes a problem with EHCI and UHCI root-hub
+suspends: If the suspend occurs while a port is trying to resume, the
+resume doesn't finish and simply gets lost.  When remote wakeup is
+enabled, this is undesirable behavior.
 
-However the device needs an additional 10-ms resume-recovery time
-(TRSMRCY in the USB spec).  Khubd does not wait for this delay if the
-SUSPEND feature is off, and as a result some devices fail to behave
-properly following a remote wakeup.  This patch adds the missing
-delay to the remote-wakeup path.
-
-It also extends the resume-signalling delay used by ehci-hcd and
-uhci-hcd from 20 ms (the value in the spec) to 25 ms (the value we use
-for non-remote-wakeup resumes).  The extra time appears to help some
-devices.
+The patch checks first to see if any port resumes are in progress, and
+if they are then it fails the root-hub suspend with -EBUSY.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Cc: Rickard Bellini <rickard.bellini@ericsson.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/hub.c      |    3 +++
- drivers/usb/host/ehci-hcd.c |    5 +++--
- drivers/usb/host/uhci-hub.c |    2 +-
- 3 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/usb/host/ehci-hub.c |   20 +++++++++++++++++++-
+ drivers/usb/host/uhci-hcd.c |   15 ++++++++++++++-
+ 2 files changed, 33 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -3286,6 +3286,9 @@ static void hub_events(void)
- 					USB_PORT_FEAT_C_SUSPEND);
- 				udev = hdev->children[i-1];
- 				if (udev) {
-+					/* TRSMRCY = 10 msec */
-+					msleep(10);
+--- a/drivers/usb/host/ehci-hub.c
++++ b/drivers/usb/host/ehci-hub.c
+@@ -120,9 +120,26 @@ static int ehci_bus_suspend (struct usb_
+ 	del_timer_sync(&ehci->watchdog);
+ 	del_timer_sync(&ehci->iaa_watchdog);
+ 
+-	port = HCS_N_PORTS (ehci->hcs_params);
+ 	spin_lock_irq (&ehci->lock);
+ 
++	/* Once the controller is stopped, port resumes that are already
++	 * in progress won't complete.  Hence if remote wakeup is enabled
++	 * for the root hub and any ports are in the middle of a resume or
++	 * remote wakeup, we must fail the suspend.
++	 */
++	if (hcd->self.root_hub->do_remote_wakeup) {
++		port = HCS_N_PORTS(ehci->hcs_params);
++		while (port--) {
++			if (ehci->reset_done[port] != 0) {
++				spin_unlock_irq(&ehci->lock);
++				ehci_dbg(ehci, "suspend failed because "
++						"port %d is resuming\n",
++						port + 1);
++				return -EBUSY;
++			}
++		}
++	}
 +
- 					usb_lock_device(udev);
- 					ret = remote_wakeup(hdev->
- 							children[i-1]);
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -785,9 +785,10 @@ static irqreturn_t ehci_irq (struct usb_
- 
- 			/* start 20 msec resume signaling from this port,
- 			 * and make khubd collect PORT_STAT_C_SUSPEND to
--			 * stop that signaling.
-+			 * stop that signaling.  Use 5 ms extra for safety,
-+			 * like usb_port_resume() does.
- 			 */
--			ehci->reset_done [i] = jiffies + msecs_to_jiffies (20);
-+			ehci->reset_done[i] = jiffies + msecs_to_jiffies(25);
- 			ehci_dbg (ehci, "port %d remote wakeup\n", i + 1);
- 			mod_timer(&hcd->rh_timer, ehci->reset_done[i]);
- 		}
---- a/drivers/usb/host/uhci-hub.c
-+++ b/drivers/usb/host/uhci-hub.c
-@@ -167,7 +167,7 @@ static void uhci_check_ports(struct uhci
- 				/* Port received a wakeup request */
- 				set_bit(port, &uhci->resuming_ports);
- 				uhci->ports_timeout = jiffies +
--						msecs_to_jiffies(20);
-+						msecs_to_jiffies(25);
- 
- 				/* Make sure we see the port again
- 				 * after the resuming period is over. */
+ 	/* stop schedules, clean any completed work */
+ 	if (HC_IS_RUNNING(hcd->state)) {
+ 		ehci_quiesce (ehci);
+@@ -138,6 +155,7 @@ static int ehci_bus_suspend (struct usb_
+ 	 */
+ 	ehci->bus_suspended = 0;
+ 	ehci->owned_ports = 0;
++	port = HCS_N_PORTS(ehci->hcs_params);
+ 	while (port--) {
+ 		u32 __iomem	*reg = &ehci->regs->port_status [port];
+ 		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
+--- a/drivers/usb/host/uhci-hcd.c
++++ b/drivers/usb/host/uhci-hcd.c
+@@ -749,7 +749,20 @@ static int uhci_rh_suspend(struct usb_hc
+ 	spin_lock_irq(&uhci->lock);
+ 	if (!test_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags))
+ 		rc = -ESHUTDOWN;
+-	else if (!uhci->dead)
++	else if (uhci->dead)
++		;		/* Dead controllers tell no tales */
++
++	/* Once the controller is stopped, port resumes that are already
++	 * in progress won't complete.  Hence if remote wakeup is enabled
++	 * for the root hub and any ports are in the middle of a resume or
++	 * remote wakeup, we must fail the suspend.
++	 */
++	else if (hcd->self.root_hub->do_remote_wakeup &&
++			uhci->resuming_ports) {
++		dev_dbg(uhci_dev(uhci), "suspend failed because a port "
++				"is resuming\n");
++		rc = -EBUSY;
++	} else
+ 		suspend_rh(uhci, UHCI_RH_SUSPENDED);
+ 	spin_unlock_irq(&uhci->lock);
+ 	return rc;
 
 
