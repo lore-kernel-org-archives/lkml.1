@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136Ab0AWLAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531Ab0AWLWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754136Ab0AWLAX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 06:00:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384Ab0AWLAW
+	id S1754531Ab0AWLWO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 06:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222Ab0AWLWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 06:00:22 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53292 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750941Ab0AWLAU (ORCPT
+	Sat, 23 Jan 2010 06:22:12 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:57903 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570Ab0AWLWM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 06:00:20 -0500
-Date: Sat, 23 Jan 2010 11:01:21 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Kyle Moffett <kyle@moffetthome.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Fr??d??ric Weisbecker" <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100123110121.1ce89bb9@lxorguk.ukuu.org.uk>
-In-Reply-To: <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
-References: <20100121013822.28781960.sfr@canb.auug.org.au>
-	<20100122005147.GD22003@redhat.com>
-	<20100121170541.7425ff10.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
-	<20100122182827.GA13185@redhat.com>
-	<20100122200129.GG22003@redhat.com>
-	<alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
-	<20100122221348.GA4263@redhat.com>
-	<alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
-	<alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
-	<f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 23 Jan 2010 06:22:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=cWFIvU4gwXgOezSzETBAzPpuoeKDbGwW9s+oQcNT//yw2C5LHe3gOBL7Fc5ksuZRKM
+         ju/5sBJdfKA22KJqKo77XZfAjadthdZeUe+reu0NYD5FwvkYqMuJ37QieqzGPeYX9KuP
+         k0x3wb7j64SXSEHXU9gpXgqPqFHSXN44aZLeE=
+MIME-Version: 1.0
+In-Reply-To: <4B5AD2C3.4020409@pardus.org.tr>
+References: <b4e196fa1001221721y19ae3a50wa21a6b54627b3852@mail.gmail.com>
+	 <4B5AD2C3.4020409@pardus.org.tr>
+Date: Sat, 23 Jan 2010 22:22:10 +1100
+Message-ID: <b4e196fa1001230322u558f7af5j5f27844088895a0@mail.gmail.com>
+Subject: Re: [REGRESSION] clockevents patch causes hang on power off
+From: Nathan Williams <ngwilliams@gmail.com>
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The killer app for this will be the ability to delete thousands of
-> lines of code from GDB, strace, and all the various other tools that
-> have to painfully work around the major interface gotchas of ptrace(),
-> while at the same time making their handling of complex processes much
-> more robust.
+2010/1/23 Ozan Çağlayan <ozan@pardus.org.tr>:
+> Nathan Williams wrote:
+>> I'm having trouble with my PC crashing just as it's attempting to power off.
+>> I managed to git bisect to this commit:
+>>
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=15037
+> http://patchwork.kernel.org/patch/71537/
+>
 
-Years ago (and it really must be years ago because this was about the
-time I started hacking on Linux stuff !) there was a proposal to extract
-and sanitize the arch specific stuff in binutils and in gdb etc into
-sensible libraries that could be used by other apps.
-
-What I don't understand is why that doesn't solve 99% of your problem.
-ptrace is not perfect but most of the real ptrace limitations actually
-come about because either the CPU can't do something or because the
-supporting logic would be too expensive - things like having extra
-private debugger pages.
-
-Yes ptrace needs a lot of icky support code, but it's already been
-written...
-
-Alan
+Thanks. The patch works for me.
