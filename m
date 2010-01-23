@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467Ab0AWO1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323Ab0AWOne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753467Ab0AWO1e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 09:27:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864Ab0AWO1d
+	id S1755323Ab0AWOne (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 09:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657Ab0AWOnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 09:27:33 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:44256 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751082Ab0AWO1c (ORCPT
+	Sat, 23 Jan 2010 09:43:32 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:8474 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932068Ab0AWOnc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 09:27:32 -0500
-Subject: Re: [PATCH 31/31] CAPI: Officially claim char major 191
-From: Marcel Holtmann <marcel@holtmann.org>
-To: isdn@linux-pingi.de
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jan Kiszka <jan.kiszka@web.de>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       i4ldeveloper@listserv.isdn4linux.de, isdn4linux@listserv.isdn4linux.de,
-       netdev@vger.kernel.org, Alan Cox <alan@linux.intel.com>
-In-Reply-To: <201001231432.09918.isdn@linux-pingi.de>
-References: <cover.1264201406.git.jan.kiszka@web.de>
-	 <20100123122430.5a078b4a@lxorguk.ukuu.org.uk>
-	 <1264250892.3469.52.camel@violet>  <201001231432.09918.isdn@linux-pingi.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 23 Jan 2010 15:28:28 +0100
-Message-ID: <1264256908.3469.58.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Sat, 23 Jan 2010 09:43:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=n1dwp5d3PFQDE6OdBmIWhDhVEcCYwgPhtrbjsg+uDKp75xYBzH0aR2eT2mw9e538uE
+         Wy69TcCAk5DOgNwBMPaQSdqsYQav7nSZzp/WglGvw2iZ1euWh7l9Jsml+mETUpHrtPdi
+         tPIPrY4MVW6m/bVqYDPMGzgYnsi4fsxpstjK4=
+Message-ID: <4B5B0B10.2000009@gmail.com>
+Date: Sat, 23 Jan 2010 15:43:28 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Rakib Mullick <rakib.mullick@gmail.com>
+CC: Greg KH <greg@kroah.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Michael H. Warfield" <mhw@wittsend.com>
+Subject: Re: linux-next: tty tree build warning
+References: <20100120171901.b2e06465.sfr@canb.auug.org.au>	 <b9df5fa11001202022q22c2d81cs5b90f694be37c1f4@mail.gmail.com>	 <20100121230331.GA29796@kroah.com> <b9df5fa11001230453k4a874ebamff02b64f7d6fcd84@mail.gmail.com>
+In-Reply-To: <b9df5fa11001230453k4a874ebamff02b64f7d6fcd84@mail.gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Karsten,
+On 01/23/2010 01:53 PM, Rakib Mullick wrote:
+> @@ -309,6 +313,8 @@ module_param_array(io, int, NULL, 0);
+>  MODULE_PARM_DESC(io, "I/O ports for IntelliPort Cards");
+>  module_param(poll_only, bool, 0);
+>  MODULE_PARM_DESC(poll_only, "Do not use card interrupts");
+> +module_param_string(ip2, cmd, MAX_CMD_STR, 0);
+> +MODULE_PARM_DESC(ip2, "Contains module parameter passed with 'ip2='");
 
-> > > > I found no trace of this mysterious "pcl181" device, neither in-tree
-> > > > nor out there in the wild. At the same time, the in-tree CAPI
-> > > > middleware is using major 191 for many years now and obviously without
-> > > > any conflict. Let's officially claim this major number.
-> > >
-> > > This is not the way it should have been done but whoever needs spanking
-> > > got away with it years ago. Given that this seems the best way forward.
-> > >
-> > > With LANANA hat on
-> > 
-> > actually in the days of udev, the capifs is not really needed anymore.
-> > The right choice would be to remove it. I haven't been enabling it since
-> > years.
-> > 
-> So far I understand, the pppd capiplugin is the only user of it, so it could 
-> be disabled for most users without any problems, as long they are not using
-> PPP connections via CAPI.
+Why not just param_array(int) instead of whole parsing in ip2_setup?
 
-PPP connection via CAPI works just fine without capifs. You just need
-udev to create the device nodes.
-
-> I never understand capifs very well, I think that it can be dropped because of 
-> udev, but maybe need some adjustment in user space as well (make sure that
-> udev did create the node before  open it).
-
-I am pretty sure that I send a patch for that a long long time ago. I
-haven been using CAPI + PPP without capifs.
-
-> I f I remember correctly, here was some proposal  to replace the /dev/capi/ 
-> nodes with  devpts, this would remove the complete capi_tty device major
-> as well.
-
-Don't remember anything like this. However extending the kernel code
-with a CAPI PPP channel type would be better actually.
-
-Regards
-
-Marcel
-
-
+-- 
+js
