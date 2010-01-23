@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932142Ab0AWTOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752223Ab0AWTkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932142Ab0AWTOe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 14:14:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756151Ab0AWTOb
+	id S1752223Ab0AWTkJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 14:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722Ab0AWTkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 14:14:31 -0500
-Received: from vms173019pub.verizon.net ([206.46.173.19]:34808 "EHLO
-	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756057Ab0AWTOa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 14:14:30 -0500
-Date: Sat, 23 Jan 2010 14:14:11 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: stable@kernel.org
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       "Justin P. Mattock" <justinmattock@gmail.com>,
-       Xiaotian Feng <dfeng@redhat.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2.6.32.stable] ACPI: don't cond_resched if irq is disabled
-Message-id: <alpine.LFD.2.00.1001231411540.5156@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 23 Jan 2010 14:40:07 -0500
+Received: from ns.penguin.cz ([84.21.108.25]:56334 "EHLO ns.penguin.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751325Ab0AWTkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jan 2010 14:40:02 -0500
+Subject: Re: sharp c-3000 aka spitz: fix warn_on introduced in 2.6.32-rc1
+From: Stanislav Brabec <utx@penguin.cz>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, thommycheck@gmail.com,
+       dbaryshkov@gmail.com, dtor@mail.ru, arminlitzel@web.de,
+       kernel list <linux-kernel@vger.kernel.org>, Cyril Hrubis <metan@ucw.cz>,
+       Dirk@opfer-online.de, lenz@cs.wisc.edu, rpurdie@rpsys.net,
+       omegamoon@gmail.com, linux-input@vger.kernel.org,
+       zaurus-devel@www.linuxtogo.org,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <f17812d71001062333y2e49fa21scf91718da9ae3091@mail.gmail.com>
+References: <20100106071026.GD1382@ucw.cz>
+	 <f17812d71001052317h2bf25fady6bd729b35ef6db63@mail.gmail.com>
+	 <20100107065230.GA1303@ucw.cz>
+	 <f17812d71001062333y2e49fa21scf91718da9ae3091@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-2"
+Date: Sat, 23 Jan 2010 20:41:09 +0100
+Message-Id: <1264275669.9100.11.camel@utx.utx.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xiaotian Feng <dfeng@redhat.com>
+Eric Miao wrote:
+> >
+> > I don't get it; what is pxa27x_keypad used on? It looks like
+> > matrix-keypad subset.
 
-upstream c084ca704a3661bf77690a05bc6bd2c305d87c34
+> pxa27x has its own specific keypad controller. And since we now
+> use enable_irq_wake, and the keypad controller has only one
+> such IRQ_KEYPAD, will have to setup the keypad GPIO wakeup
+> as a whole.
 
-commit 8bd108d adds preemption point after each opcode parse, then
-a sleeping function called from invalid context bug was founded
-during suspend/resume stage. this was fixed in commit abe1dfa by
-don't cond_resched when irq_disabled. But recent commit 138d156 changes
-the behaviour to don't cond_resched when in_atomic. This makes the
-sleeping function called from invalid context bug happen again, which
-is reported in http://lkml.org/lkml/2009/12/1/371.
+Looking deeper into it, the problem seems to be elsewhere:
+I just added debug message to start and end of set_irq_wake().
 
-This patch also fixes http://bugzilla.kernel.org/show_bug.cgi?id=14483
+And here is what I got during suspend:
 
-Reported-and-bisected-by: Larry Finger <Larry.Finger@lwfinger.net>
-Reported-and-bisected-by: Justin P. Mattock <justinmattock@gmail.com>
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-Acked-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- include/acpi/platform/aclinux.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+set_irq_wake() started IRQ: 191 to 1, desc->wake_depth: 0
+set_irq_wake() done IRQ: 191 to 1, desc->wake_depth: 0
+set_irq_wake() started IRQ: 108 to 1, desc->wake_depth: 0
+set_irq_wake() done IRQ: 108 to 1, desc->wake_depth: 1
+set_irq_wake() started IRQ: 113 to 1, desc->wake_depth: 0
+set_irq_wake() done IRQ: 113 to 1, desc->wake_depth: 0
+set_irq_wake() started IRQ: 187 to 1, desc->wake_depth: 0
+set_irq_wake() done IRQ: 187 to 1, desc->wake_depth: 0
+set_irq_wake() started IRQ: 130 to 1, desc->wake_depth: 0
+set_irq_wake() done IRQ: 130 to 1, desc->wake_depth: 0
+set_irq_wake() started IRQ: 132 to 1, desc->wake_depth: 0
+set_irq_wake() done IRQ: 132 to 1, desc->wake_depth: 0
+set_irq_wake() started IRQ: 134 to 1, desc->wake_depth: 0
+set_irq_wake() done IRQ: 134 to 1, desc->wake_depth: 0
+set_irq_wake() started IRQ: 135 to 1, desc->wake_depth: 0
+set_irq_wake() done IRQ: 135 to 1, desc->wake_depth: 0
+set_irq_wake() started IRQ: 31 to 1, desc->wake_depth: 0
+set_irq_wake() done IRQ: 31 to 1, desc->wake_depth: 1
 
-diff --git a/include/acpi/platform/aclinux.h b/include/acpi/platform/aclinux.h
-index 9d7febd..0946997 100644
---- a/include/acpi/platform/aclinux.h
-+++ b/include/acpi/platform/aclinux.h
-@@ -152,7 +152,7 @@ static inline void *acpi_os_acquire_object(acpi_cache_t * cache)
- #include <linux/hardirq.h>
- #define ACPI_PREEMPTION_POINT() \
- 	do { \
--		if (!in_atomic_preempt_off()) \
-+		if (!in_atomic_preempt_off() && !irqs_disabled()) \
- 			cond_resched(); \
- 	} while (0)
- 
--- 
-1.6.6.1.383.g5a9f
+I think that if (desc->wake_depth == 0) when set_irq_wake(foo, 1) is
+done, then something went wrong. And it is not surprise, that it reports
+Unbalanced IRQ on resume.
+
+Note that other people (Cyril Hrubi¹) with a bit different .config
+report success with gpio keys driver turned on.
+
+My config:
+http://www.penguin.cz/~utx/zaurus/feed/images/spitz/config-2.6.33-rc4-spitz
+
+OT: Serial console resume did not work properly even with
+no_console_suspend and my patch:
+[PATCH 4/8] serial-core: resume serial hardware with no_console_suspend
+
+
+________________________________________________________________________
+Stanislav Brabec
+http://www.penguin.cz/~utx/zaurus
 
