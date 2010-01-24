@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859Ab0AXWlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538Ab0AXWgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859Ab0AXWlU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 17:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020Ab0AXWlQ
+	id S1754538Ab0AXWgz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 17:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652Ab0AXWgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 17:41:16 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45871 "EHLO ogre.sisk.pl"
+	Sun, 24 Jan 2010 17:36:16 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45809 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754620Ab0AXWhP convert rfc822-to-8bit (ORCPT
+	id S1754726Ab0AXWgI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 17:37:15 -0500
+	Sun, 24 Jan 2010 17:36:08 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Chris Wilson" <chris@chris-wilson.co.uk>,
-       "tomas m" <tmezzadra@gmail.com>
+       "Nico" <segfault2@hotmail.com>
 References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera>
 In-Reply-To: <pYFNu11z2aM.A.pJH.CZMXLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <q60Z28d_9yH.A.r3H.XZMXLB@chimera>
-Subject: [Bug #15004] i915: *ERROR* Execbuf while wedged
+Message-ID: <q60Z28d_9yH.A.mc.oZMXLB@chimera>
+Subject: [Bug #14898] ksoftirqd problem
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 24 Jan 2010 23:23:11 +0100 (CET)
+Date: Sun, 24 Jan 2010 23:23:03 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,9 +35,10 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15004
-Subject		: i915: *ERROR* Execbuf while wedged
-Submitter	: tomas m <tmezzadra@gmail.com>
-Date		: 2010-01-07 18:53 (18 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14898
+Subject		: ksoftirqd problem
+Submitter	: Nico <segfault2@hotmail.com>
+Date		: 2009-12-13 19:05 (43 days old)
+References	: http://marc.info/?l=linux-kernel&m=126073114325690&w=4
 
 
