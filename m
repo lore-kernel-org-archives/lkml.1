@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800Ab0AXMWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831Ab0AXNVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800Ab0AXMWz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 07:22:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587Ab0AXMWy
+	id S1753831Ab0AXNVA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 08:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587Ab0AXNU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 07:22:54 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:61718 "EHLO poutre.nerim.net"
+	Sun, 24 Jan 2010 08:20:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23431 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753524Ab0AXMWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 07:22:54 -0500
-Date: Sun, 24 Jan 2010 13:22:45 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Cc: George Joseph <George.joseph@fairview5.com>, lm-sensors@lm-sensors.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Hans de Goede <j.w.r.degoede@hhs.nl>
-Subject: Re: Status of Andigilog asc7621 driver submitted by George Joseph
- on   2008-05-29
-Message-ID: <20100124132245.092835ca@hyperion.delvare>
-In-Reply-To: <3f9a31f41001240414x4c706181s64392c79be4c4141@mail.gmail.com>
-References: <3f9a31f41001230952g6321c47bq9baf5dcfdfaf5b59@mail.gmail.com>
-	<20100124103019.6c6f23a6@hyperion.delvare>
-	<3f9a31f41001240414x4c706181s64392c79be4c4141@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	id S1751323Ab0AXNU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 08:20:58 -0500
+Date: Sun, 24 Jan 2010 08:20:09 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: tytso@mit.edu, Linus Torvalds <torvalds@linux-foundation.org>,
+       Kyle Moffett <kyle@moffetthome.net>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100124132009.GB4263@redhat.com>
+References: <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain> <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <20100124102513.GB4382@thunk.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100124102513.GB4382@thunk.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jan 2010 17:44:11 +0530, Jaswinder Singh Rajput wrote:
-> Hello Jean,
-> 
-> On Sun, Jan 24, 2010 at 3:00 PM, Jean Delvare <khali@linux-fr.org> wrote:
-> > On Sat, 23 Jan 2010 23:22:29 +0530, Jaswinder Singh Rajput wrote:
-> >> Andigilog asc7621 driver submitted by George Joseph on 2008-05-29,
-> >> This chip is used by various Intel Motherboards.
-> >>
-> >> Is it still under review and testing :
-> >>
-> >> http://lists.lm-sensors.org/pipermail/lm-sensors/2008-May/023257.html
-> >>
-> >> http://www.spinics.net/lists/lm-sensors/msg26915.html
-> >>
-> >> http://www.spinics.net/lists/lm-sensors/msg26916.html
-> >>
-> >> http://www.lm-sensors.org/wiki/Devices
-> >
-> > I've updated the wiki entry to point to the latest version of the
-> > driver. I've also included a complete list of known requests so far,
-> > which can be used to get in touch with potential testers.
-> >
-> 
-> Thanks for updating the wiki.
-> 
-> Latest asc7621 driver is giving compilation errors with latest kernel
-> git. Do you also also have plans to update the driver so that we can
-> use the asc7621 driver.
-> 
-> I am ready for testing and debugging it.
+Hi -
 
-No, I don't have any plan. I already have too much on my plate, adding
-anything would be unreasonable.
+On Sun, Jan 24, 2010 at 05:25:13AM -0500, tytso@mit.edu wrote:
+> [...]
+> > > The killer app for this will be the ability to delete thousands of
+> > > lines of code from GDB, strace, and all the various other tools that
+> > > have to painfully work around the major interface gotchas of ptrace(),
+> > > while at the same time making their handling of complex processes much
+> > > more robust.
+> > 
+> > No. There is absolutely _no_ reason to believe that gdb et al would ever 
+> > delete the ptrace interfaces anyway. 
+> 
+> More to the point, gdb *couldn't* use utrace, because utrace only
+> exports a kernel API; not a syscall interface.
 
-The only way I would start working on this is if someone would offer me
-one of these motherboards which use the chip in question.
+Yes, this might explain why Kyle wrote:
 
--- 
-Jean Delvare
+> > > [...] I believe that "utrace" is the kernel side of that
+> > > API. [...]
+
+> And if the Red Hat Toolchain folks are thinking about encouraging
+> gdb to start creating out-of-tree kernel modules [...]  the Red Hat
+> Toolchain group needs to be smacked upside the head...
+
+Those keeping up will note that an ordinary in-tree, non-modular,
+non-root-only, already-works-with-standard-gdb,
+potentially-better-than-ptrace debugger interface has already been
+prototyped & posted on lkml as an RFC.
+
+
+- FChE
