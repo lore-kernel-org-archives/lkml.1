@@ -1,130 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932Ab0AXXWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633Ab0AXXZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751932Ab0AXXWR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 18:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797Ab0AXXWQ
+	id S1752633Ab0AXXZL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 18:25:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726Ab0AXXZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 18:22:16 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:44387 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750745Ab0AXXWQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 18:22:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=KZVt894LGUm3pRV6HP6RpZm42rA0eXvhdAL+eUBeCV3lpIGmDdOADcS74Ym1jCcVh7
-         FD8bT6jSBWzLzqK/NbNqGqHFON99+K1x7VYAW0dqu0RHN5/TnZ50MqItf674eQ9oEGSD
-         6nTAFYQLBGnc1qWRtan4BV2qr3zfnTU0lK2Ws=
-From: Thiago Farina <tfransosi@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH] tools/perf/perf.c: Clean up trivial style issues.
-Date: Sun, 24 Jan 2010 18:21:46 -0500
-Message-Id: <6da2dcba6dce85a338cfe948591db4da4957257b.1264374841.git.tfransosi@gmail.com>
-X-Mailer: git-send-email 1.6.6.1.436.gaba7d
+	Sun, 24 Jan 2010 18:25:08 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49506 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750758Ab0AXXZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 18:25:07 -0500
+X-Authenticated: #4463548
+X-Provags-ID: V01U2FsdGVkX1/4JLdN78j4AEKHQ2Rn5XmPXq1WzJNcY/ZDhw8L/q
+	fXL0ZT0Z3o30Io
+Date: Mon, 25 Jan 2010 01:21:37 +0200 (EET)
+From: Dimitrios Apostolou <jimis@gmx.net>
+X-X-Sender: jimis@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #15040] High cpu temperature with 2.6.32
+In-Reply-To: <q60Z28d_9yH.A.bxH.PZMXLB@chimera>
+Message-ID: <alpine.LNX.2.00.1001250115420.6323@localhost.localdomain>
+References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera> <q60Z28d_9yH.A.bxH.PZMXLB@chimera>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.56999999999999995
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Checked with:
-./../scripts/checkpatch.pl --terse --file perf.c
+I will let you know when this bug is fixed in a regular kernel release. I 
+just tested 2.6.32.5 and the bug persists. BTW, Arjan, I think this bug 
+will be biting other people too, see the following thread: 
+http://bugs.archlinux.org/task/17771
 
-perf.c:51: ERROR: open brace '{' following function declarations go on the next line
-perf.c:73: ERROR: "foo*** bar" should be "foo ***bar"
-perf.c:112: ERROR: space prohibited before that close parenthesis ')'
-perf.c:127: ERROR: space prohibited before that close parenthesis ')'
-perf.c:171: ERROR: "foo** bar" should be "foo **bar"
-perf.c:213: ERROR: "(foo*)" should be "(foo *)"
-perf.c:216: ERROR: "(foo*)" should be "(foo *)"
-perf.c:217: ERROR: space required before that '*' (ctx:OxV)
-perf.c:452: ERROR: do not initialise statics to 0 or NULL
-perf.c:453: ERROR: do not initialise statics to 0 or NULL
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
----
- tools/perf/perf.c |   21 +++++++++++----------
- 1 files changed, 11 insertions(+), 10 deletions(-)
+Dimitris
 
-diff --git a/tools/perf/perf.c b/tools/perf/perf.c
-index 873e55f..948a8f5 100644
---- a/tools/perf/perf.c
-+++ b/tools/perf/perf.c
-@@ -48,7 +48,8 @@ int check_pager_config(const char *cmd)
- 	return c.val;
- }
- 
--static void commit_pager_choice(void) {
-+static void commit_pager_choice(void)
-+{
- 	switch (use_pager) {
- 	case 0:
- 		setenv("PERF_PAGER", "cat", 1);
-@@ -70,7 +71,7 @@ static void set_debugfs_path(void)
- 		 "tracing/events");
- }
- 
--static int handle_options(const char*** argv, int* argc, int* envchanged)
-+static int handle_options(const char ***argv, int *argc, int *envchanged)
- {
- 	int handled = 0;
- 
-@@ -109,7 +110,7 @@ static int handle_options(const char*** argv, int* argc, int* envchanged)
- 				*envchanged = 1;
- 		} else if (!strcmp(cmd, "--perf-dir")) {
- 			if (*argc < 2) {
--				fprintf(stderr, "No directory given for --perf-dir.\n" );
-+				fprintf(stderr, "No directory given for --perf-dir.\n");
- 				usage(perf_usage_string);
- 			}
- 			setenv(PERF_DIR_ENVIRONMENT, (*argv)[1], 1);
-@@ -124,7 +125,7 @@ static int handle_options(const char*** argv, int* argc, int* envchanged)
- 				*envchanged = 1;
- 		} else if (!strcmp(cmd, "--work-tree")) {
- 			if (*argc < 2) {
--				fprintf(stderr, "No directory given for --work-tree.\n" );
-+				fprintf(stderr, "No directory given for --work-tree.\n");
- 				usage(perf_usage_string);
- 			}
- 			setenv(PERF_WORK_TREE_ENVIRONMENT, (*argv)[1], 1);
-@@ -168,7 +169,7 @@ static int handle_alias(int *argcp, const char ***argv)
- {
- 	int envchanged = 0, ret = 0, saved_errno = errno;
- 	int count, option_count;
--	const char** new_argv;
-+	const char **new_argv;
- 	const char *alias_command;
- 	char *alias_string;
- 
-@@ -210,11 +211,11 @@ static int handle_alias(int *argcp, const char ***argv)
- 		if (!strcmp(alias_command, new_argv[0]))
- 			die("recursive alias: %s", alias_command);
- 
--		new_argv = realloc(new_argv, sizeof(char*) *
-+		new_argv = realloc(new_argv, sizeof(char *) *
- 				    (count + *argcp + 1));
- 		/* insert after command name */
--		memcpy(new_argv + count, *argv + 1, sizeof(char*) * *argcp);
--		new_argv[count+*argcp] = NULL;
-+		memcpy(new_argv + count, *argv + 1, sizeof(char *) * *argcp);
-+		new_argv[count + *argcp] = NULL;
- 
- 		*argv = new_argv;
- 		*argcp += count - 1;
-@@ -449,8 +450,8 @@ int main(int argc, const char **argv)
- 	setup_path();
- 
- 	while (1) {
--		static int done_help = 0;
--		static int was_alias = 0;
-+		static int done_help;
-+		static int was_alias;
- 
- 		was_alias = run_argv(&argc, &argv);
- 		if (errno != ENOENT)
--- 
-1.6.6.1.436.gaba7d
 
+On Sun, 24 Jan 2010, Rafael J. Wysocki wrote:
+
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let me know (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15040
+> Subject		: High cpu temperature with 2.6.32
+> Submitter	: Dimitrios Apostolou <jimis@gmx.net>
+> Date		: 2010-01-06 17:39 (19 days old)
+> References	: http://marc.info/?l=linux-kernel&m=126279952723036&w=4
+> Handled-By	: Arjan van de Ven <arjan@infradead.org>
+> Patch		: http://patchwork.kernel.org/patch/71962/
+>
+>
