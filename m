@@ -1,127 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838Ab0AXHYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908Ab0AXH2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752838Ab0AXHYX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 02:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717Ab0AXHYX
+	id S1752908Ab0AXH2V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 02:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790Ab0AXH2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 02:24:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34652 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752141Ab0AXHYW (ORCPT
+	Sun, 24 Jan 2010 02:28:19 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:38395 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752663Ab0AXH2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 02:24:22 -0500
-Date: Sat, 23 Jan 2010 23:21:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk, Xiaotian Feng <dfeng@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [stable] [00/29] 2.6.32.6 stable review
-Message-Id: <20100123232152.4b88d1e3.akpm@linux-foundation.org>
-In-Reply-To: <20100123001145.GA7391@kroah.com>
-References: <20100123001145.GA7391@kroah.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jan 2010 02:28:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=A/ZN965SuPoA3DziE7oUw2qivU/RVitgIi+foiYAynW54iN3lPrLQF1DzzWRAtyH8O
+         QBYOgiIRNhO3KOiHUQe8bQwBlCCyK0utApdOs+NT+vfITLHXUVd310cEvPqYDHF7uQBu
+         q/AMMzoF5zRFxQCPGZOAxOqjISqLcuWibJBAA=
+Date: Sun, 24 Jan 2010 15:30:22 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Bruno =?utf-8?Q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6.33-rc5 regression] NULL pointer dereference in
+	vlan_skb_recv - probably introduced by commit
+	9793241fe92f7d9303fb221e43fc598eb065f267
+Message-ID: <20100124073022.GB11037@hack>
+References: <20100123165657.187c11e4@neptune.home> <20100124071252.GA11037@hack> <20100124071728.GA3993@x200>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100124071728.GA3993@x200>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jan 2010 16:11:45 -0800 Greg KH <gregkh@suse.de> wrote:
+On Sun, Jan 24, 2010 at 09:17:28AM +0200, Alexey Dobriyan wrote:
+>On Sun, Jan 24, 2010 at 03:12:52PM +0800, Américo Wang wrote:
+>> On Sat, Jan 23, 2010 at 04:56:57PM +0100, Bruno Prémont wrote:
+>> >Today I tried out 2.6.33-rc5 but always got crashing system:
+>> >
+>> >[   26.390576] BUG: unable to handle kernel NULL pointer dereference at (null)
+>> >[   26.396369] IP: [<df856b89>] vlan_skb_recv+0x89/0x280 [8021q]
+>> 
+>> 
+>> What does 'addr2line -e vmlinux 0xdf856b89' say?
+>
+>EIP is in module, so it will say nothing.
 
-> This is the start of the stable review cycle for the 2.6.32.6 release.
-> There are 29 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
-> 
-> Responses should be made by Monday, January 24, 00:00:00 UTC.
-> Anything received after that time might be too late.
+Oh, ok, then '-e net/8021q/vlan_dev.o'.
 
-2.6.32.6 will still contain the regression described in (for example)
-
-http://bugzilla.kernel.org/show_bug.cgi?id=15117 
-http://bugzilla.kernel.org/show_bug.cgi?id=15005
-
-It's fixed with the below revert which has been in -mm (and only in
--mm) for ten days.
-
-I don't what's going on - perhaps we're waiting for Thomas, and he's
-otherwise engaged.  There's a fix in the lkml thread "Re: [RFC PATCH
-0/4] clockevents: fix clockevent_devices list corruption after cpu
-hotplug" to which Thomas replied
-
-    I just applied your patch, but kept the cpuweight check.  This
-    is the least intrusive solution for now.  The logic needs an
-    overhaul, but thats neither rc4 nor stable material"
-
-but no such patch is present in linux-next.
-
-
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-Revert
-
-: commit bb6eddf7676e1c1f3e637aa93c5224488d99036f
-: Author:     Thomas Gleixner <tglx@linutronix.de>
-: AuthorDate: Thu Dec 10 15:35:10 2009 +0100
-: Commit:     Thomas Gleixner <tglx@linutronix.de>
-: CommitDate: Fri Dec 11 10:28:08 2009 +0100
-: 
-:     clockevents: Prevent clockevent_devices list corruption on cpu hotplug
-
-due to the regression reported in
-http://bugzilla.kernel.org/show_bug.cgi?id=15005
-
-Cc: Xiaotian Feng <dfeng@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Reported-by: Martin Bammer <mrb74@gmx.at>
-Cc: <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- kernel/time/clockevents.c |   18 +++---------------
- 1 file changed, 3 insertions(+), 15 deletions(-)
-
-diff -puN kernel/time/clockevents.c~revert-clockevents-prevent-clockevent_devices-list-corruption-on-cpu-hotplug kernel/time/clockevents.c
---- a/kernel/time/clockevents.c~revert-clockevents-prevent-clockevent_devices-list-corruption-on-cpu-hotplug
-+++ a/kernel/time/clockevents.c
-@@ -238,9 +238,8 @@ void clockevents_exchange_device(struct 
-  */
- void clockevents_notify(unsigned long reason, void *arg)
- {
--	struct clock_event_device *dev, *tmp;
-+	struct list_head *node, *tmp;
- 	unsigned long flags;
--	int cpu;
+-- 
+Live like a child, think like the god.
  
- 	raw_spin_lock_irqsave(&clockevents_lock, flags);
- 	clockevents_do_notify(reason, arg);
-@@ -251,19 +250,8 @@ void clockevents_notify(unsigned long re
- 		 * Unregister the clock event devices which were
- 		 * released from the users in the notify chain.
- 		 */
--		list_for_each_entry_safe(dev, tmp, &clockevents_released, list)
--			list_del(&dev->list);
--		/*
--		 * Now check whether the CPU has left unused per cpu devices
--		 */
--		cpu = *((int *)arg);
--		list_for_each_entry_safe(dev, tmp, &clockevent_devices, list) {
--			if (cpumask_test_cpu(cpu, dev->cpumask) &&
--			    cpumask_weight(dev->cpumask) == 1) {
--				BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
--				list_del(&dev->list);
--			}
--		}
-+		list_for_each_safe(node, tmp, &clockevents_released)
-+			list_del(node);
- 		break;
- 	default:
- 		break;
-_
-
