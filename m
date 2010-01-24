@@ -1,59 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653Ab0AXNnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752690Ab0AXNrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653Ab0AXNnK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 08:43:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650Ab0AXNnJ
+	id S1752690Ab0AXNrL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 08:47:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112Ab0AXNrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 08:43:09 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:56593 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932102Ab0AXNnI (ORCPT
+	Sun, 24 Jan 2010 08:47:11 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39566 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751512Ab0AXNrK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 08:43:08 -0500
-Message-ID: <4B5C4E5E.2010507@gmail.com>
-Date: Sun, 24 Jan 2010 14:42:54 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Sun, 24 Jan 2010 08:47:10 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 24 Jan 2010 14:47:02 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: core: add_descriptor size check
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.e2742c96fc3ed717@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-CC: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.33-rc5 regression] NULL pointer dereference in vlan_skb_recv
- - probably introduced by commit 9793241fe92f7d9303fb221e43fc598eb065f267
-References: <20100123165657.187c11e4@neptune.home> <20100123223132.0e62d8cb@neptune.home>
-In-Reply-To: <20100123223132.0e62d8cb@neptune.home>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 24 Jan 2010 14:42:58 +0100 (CET)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 23/01/2010 22:31, Bruno Prémont a écrit :
->> Above part of code did change between 2.6.32 and 2.6.33-rc5 with
->> commit 9793241fe92f7d9303fb221e43fc598eb065f267 (vlan: Precise RX
->> stats accounting)
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9793241fe92f7d9303fb221e43fc598eb065f267
-> 
-> Reverting just that commit gets the system running correctly.
-> 
-> Bruno
+Presently, firewire-core only checks whether descriptors that are to be
+added by userspace drivers to the local node's config ROM do not exceed
+a size of 256 quadlets.  However, the sum of the bare minimum ROM plus
+all descriptors (from firewire-core, from firewire-net, from userspace)
+must not exceed 256 quadlets.
 
-I have no idea how this patch can break vlan networking.
+Otherwise, the bounds of a statically allocated buffer will be
+overwritten.  If the kernel survives that, firewire-core will
+subsequently be unable to parse the local node's config ROM.
 
-Your disassembly and .config seems to show your machine is not SMP
+(Note, userspace drivers can add descriptors only through device files
+of local nodes.  These are usually only accessible by root, unlike
+device files of remote nodes which may be accessible to lesser
+privileged users.)
 
-Maybe something is broken on UP and alloc_percpu() ?
+Therefore add a test which takes the actual present and required ROM
+size into account for all descriptors of kernelspace and userspace
+drivers.
 
-Could you add a debug in vlan_dev_init()
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/core-card.c |   41 ++++++++++++++++++++++++-----------
+ 1 file changed, 28 insertions(+), 13 deletions(-)
 
+Index: linux/drivers/firewire/core-card.c
+===================================================================
+--- linux.orig/drivers/firewire/core-card.c
++++ linux/drivers/firewire/core-card.c
+@@ -57,6 +57,8 @@ static LIST_HEAD(descriptor_list);
+ static int descriptor_count;
+ 
+ static __be32 tmp_config_rom[256];
++/* ROM header, bus info block, root dir header, capabilities = 7 quadlets */
++static size_t config_rom_length = 1 + 4 + 1 + 1;
+ 
+ #define BIB_CRC(v)		((v) <<  0)
+ #define BIB_CRC_LENGTH(v)	((v) << 16)
+@@ -73,7 +75,7 @@ static __be32 tmp_config_rom[256];
+ #define BIB_CMC			((1) << 30)
+ #define BIB_IMC			((1) << 31)
+ 
+-static size_t generate_config_rom(struct fw_card *card, __be32 *config_rom)
++static void generate_config_rom(struct fw_card *card, __be32 *config_rom)
+ {
+ 	struct fw_descriptor *desc;
+ 	int i, j, k, length;
+@@ -130,23 +132,30 @@ static size_t generate_config_rom(struct
+ 	for (i = 0; i < j; i += length + 1)
+ 		length = fw_compute_block_crc(config_rom + i);
+ 
+-	return j;
++	WARN_ON(j != config_rom_length);
+ }
+ 
+ static void update_config_roms(void)
+ {
+ 	struct fw_card *card;
+-	size_t length;
+ 
+ 	list_for_each_entry (card, &card_list, link) {
+-		length = generate_config_rom(card, tmp_config_rom);
+-		card->driver->set_config_rom(card, tmp_config_rom, length);
++		generate_config_rom(card, tmp_config_rom);
++		card->driver->set_config_rom(card, tmp_config_rom,
++					     config_rom_length);
+ 	}
+ }
+ 
++static size_t required_space(struct fw_descriptor *desc)
++{
++	/* descriptor + entry into root dir + optional immediate entry */
++	return desc->length + 1 + (desc->immediate > 0 ? 1 : 0);
++}
++
+ int fw_core_add_descriptor(struct fw_descriptor *desc)
+ {
+ 	size_t i;
++	int ret;
+ 
+ 	/*
+ 	 * Check descriptor is valid; the length of all blocks in the
+@@ -162,15 +171,21 @@ int fw_core_add_descriptor(struct fw_des
+ 
+ 	mutex_lock(&card_mutex);
+ 
+-	list_add_tail(&desc->link, &descriptor_list);
+-	descriptor_count++;
+-	if (desc->immediate > 0)
++	if (config_rom_length + required_space(desc) > 256) {
++		ret = -EBUSY;
++	} else {
++		list_add_tail(&desc->link, &descriptor_list);
++		config_rom_length += required_space(desc);
+ 		descriptor_count++;
+-	update_config_roms();
++		if (desc->immediate > 0)
++			descriptor_count++;
++		update_config_roms();
++		ret = 0;
++	}
+ 
+ 	mutex_unlock(&card_mutex);
+ 
+-	return 0;
++	return ret;
+ }
+ EXPORT_SYMBOL(fw_core_add_descriptor);
+ 
+@@ -179,6 +194,7 @@ void fw_core_remove_descriptor(struct fw
+ 	mutex_lock(&card_mutex);
+ 
+ 	list_del(&desc->link);
++	config_rom_length -= required_space(desc);
+ 	descriptor_count--;
+ 	if (desc->immediate > 0)
+ 		descriptor_count--;
+@@ -428,7 +444,6 @@ EXPORT_SYMBOL(fw_card_initialize);
+ int fw_card_add(struct fw_card *card,
+ 		u32 max_receive, u32 link_speed, u64 guid)
+ {
+-	size_t length;
+ 	int ret;
+ 
+ 	card->max_receive = max_receive;
+@@ -437,8 +452,8 @@ int fw_card_add(struct fw_card *card,
+ 
+ 	mutex_lock(&card_mutex);
+ 
+-	length = generate_config_rom(card, tmp_config_rom);
+-	ret = card->driver->enable(card, tmp_config_rom, length);
++	generate_config_rom(card, tmp_config_rom);
++	ret = card->driver->enable(card, tmp_config_rom, config_rom_length);
+ 	if (ret == 0)
+ 		list_add_tail(&card->link, &card_list);
+ 
 
- 	vlan_dev_info(dev)->vlan_rx_stats = alloc_percpu(struct vlan_rx_stats);
-	if (!vlan_dev_info(dev)->vlan_rx_stats)
- 	return -ENOMEM;
-+	pr_err("vlan_dev_init() rx_stats=%p\n", vlan_dev_info(dev)->vlan_rx_stats);
+-- 
+Stefan Richter
+-=====-==-=- ---= ==---
+http://arcgraph.de/sr/
 
-
-This make sure vlan_dev_init() is called and percpu allocation is properly done.
-
-Thanks
