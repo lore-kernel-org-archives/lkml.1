@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187Ab0AXXod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358Ab0AXXww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753187Ab0AXXod (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 18:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878Ab0AXXoc
+	id S1753358Ab0AXXww (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 18:52:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806Ab0AXXwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 18:44:32 -0500
-Received: from mail.kapsi.fi ([217.30.184.167]:52951 "EHLO mail.kapsi.fi"
+	Sun, 24 Jan 2010 18:52:50 -0500
+Received: from mail.kapsi.fi ([217.30.184.167]:51214 "EHLO mail.kapsi.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797Ab0AXXob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 18:44:31 -0500
-Message-ID: <4B5CDB53.6030009@iki.fi>
-Date: Mon, 25 Jan 2010 01:44:19 +0200
+	id S1751275Ab0AXXwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 18:52:49 -0500
+Message-ID: <4B5CDD4A.5060800@iki.fi>
+Date: Mon, 25 Jan 2010 01:52:42 +0200
 From: Antti Palosaari <crope@iki.fi>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Jiri Slaby <jslaby@suse.cz>
-CC: mchehab@infradead.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org,
        Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
-Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
-References: <1264007972-6261-1-git-send-email-jslaby@suse.cz>
-In-Reply-To: <1264007972-6261-1-git-send-email-jslaby@suse.cz>
+Subject: Re: [PATCH 1/4] media: dvb/af9015, implement eeprom hashing
+References: <4B4F6BE5.2040102@iki.fi> <1264173055-14787-1-git-send-email-jslaby@suse.cz> <4B5C7258.1010605@iki.fi> <4B5C76B8.4090700@gmail.com>
+In-Reply-To: <4B5C76B8.4090700@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-SA-Exim-Connect-IP: 82.128.185.8
@@ -29,28 +29,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20/2010 07:19 PM, Jiri Slaby wrote:
-> When both remote controller and receiver intfs are handled by
-> af9015, .probe do nothing for remote intf, but when .disconnect
-> is called for both of them it touches intfdata every time. For
-> remote it crashes obviously (as intfdata are unset).
+On 01/24/2010 06:35 PM, Jiri Slaby wrote:
+> On 01/24/2010 05:16 PM, Antti Palosaari wrote:
+>>> +    af9015_config.eeprom_sum = 0;
+>>> +    for (reg = 0; reg<   eeprom_size / sizeof(u32); reg++) {
+>>> +        af9015_config.eeprom_sum *= GOLDEN_RATIO_PRIME_32;
+>>> +        af9015_config.eeprom_sum += le32_to_cpu(((u32 *)eeprom)[reg]);
+>>> +    }
+>>> +
+>>> +    deb_info("%s: eeprom sum=%.8x\n", __func__,
+>>> af9015_config.eeprom_sum);
+>>
+>> Does this sum contain all 256 bytes from EEPROM? 256/4 is 64.
 >
-> Altough there is test against data being NULL, it is not enough.
-> It is because someone before us does not set intf drvdata to
-> NULL. (In this case the hid layer.) But we cannot rely on intf
-> being NULL anyway.
->
-> Fix that by checking bInterfaceNumber in af9015_usb_device_exit
-> and do actually nothing if it is not 0.
+> Yes it does. It is computed as a hashed sum of 32-bit numbers (4 bytes)
+> -- speed (does not matter) and larger space of hashes. Hence the
+> division by 4. The cast does the trick: ((u32 *)eeprom)[reg] -- reg
+> index is on a 4-byte basis.
 
-I was a little bit surprised when saw this error, why it haven't 
-detected earlier. When I initially added interface check for .probe it 
-was surely needed, it was creating two instances without that check in 
-that time. When I now test this patch with debugs enabled I don't see 
-.probe and .disconnect be called for this HID interface (interface 1) at 
-all and thus checks not needed. I have Fedora Kernel 2.6.31.12 running 
-with latest v4l-dvb. Is there now some kind of check added recently 
-which blocks .probe and disconnect from HID interface?
+
+OK, true. Anyhow, I don't know if this hashing formula is good enough - 
+changing it later could be really pain. I compared it to the one used 
+for em28xx driver and it was different. Could someone with better 
+knowledge check that?
+
+Generally it is good and ready for submission.
+
+Acked-by: Antti Palosaari <crope@iki.fi>
 
 regards
 Antti
