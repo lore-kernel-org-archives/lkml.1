@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938Ab0AXUum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752636Ab0AXU7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938Ab0AXUum (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 15:50:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803Ab0AXUul
+	id S1752636Ab0AXU7Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 15:59:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058Ab0AXU7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 15:50:41 -0500
-Received: from e28smtp09.in.ibm.com ([122.248.162.9]:43920 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752792Ab0AXUuk (ORCPT
+	Sun, 24 Jan 2010 15:59:14 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:40251 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752213Ab0AXU7M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 15:50:40 -0500
-Message-ID: <4B5CB29A.9010804@linux.vnet.ibm.com>
-Date: Mon, 25 Jan 2010 02:20:34 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0b1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Thiago Farina <tfransosi@gmail.com>
-CC: Pavel Emelyanov <xemul@openvz.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] mm/memcontrol.c: fix "integer as NULL pointer" warning.
-References: <1264349038-1766-1-git-send-email-tfransosi@gmail.com> <1264349038-1766-4-git-send-email-tfransosi@gmail.com>
-In-Reply-To: <1264349038-1766-4-git-send-email-tfransosi@gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jan 2010 15:59:12 -0500
+Date: Sun, 24 Jan 2010 21:59:06 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Don Mullis <don.mullis@gmail.com>,
+       linux-kernel@vger.kernel.org, airlied@redhat.com,
+       dedekind@infradead.org
+Subject: Re: [PATCH 1/2] lib: more scalable list_sort()
+Message-ID: <20100124205906.GC29555@one.firstfloor.org>
+References: <87fx609i29.fsf@gmail.com> <20100121175914.GA8910@basil.fritz.box> <87vdeu96bo.fsf@gmail.com> <87k4vah12u.fsf@basil.nowhere.org> <20100123082839.GB25842@discord.disaster> <20100123113551.GB29555@one.firstfloor.org> <20100123160537.GG25842@discord.disaster>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100123160537.GG25842@discord.disaster>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 24 January 2010 09:33 PM, Thiago Farina wrote:
-> mm/memcontrol.c:2548:32: warning: Using plain integer as NULL pointer
+> Similarly, adding cond_resched() to list_sort means you can stop
+> worrying about the scheduling latency impact of sorting long lists.
+> I fail to see why you're making such a big deal out of this.....
 
-Looks good to me
+It's not easy to add it to a low level library function like list_sort()
+because you would need to ensure that all callers are allowed to sleep.
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Or even if all callers currently allow it future ones might not.
+
+So it would need a new flag or so if needed, completely changing 
+the interface.
+
+-Andi
 
 -- 
-Three Cheers,
-Balbir Singh
+ak@linux.intel.com -- Speaking for myself only.
