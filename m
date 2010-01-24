@@ -1,47 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752214Ab0AXSyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452Ab0AXSzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752214Ab0AXSyR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 13:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727Ab0AXSyO
+	id S1752452Ab0AXSzs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 13:55:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856Ab0AXSzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 13:54:14 -0500
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:59843 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751676Ab0AXSyN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 13:54:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=aSRYwLKaJbTTALvuRppp3ZDl+hzY4v7EO+rp572TnemnNTJctU9befefbrXLjNd611
-         cJjm69wYXM4/XIpyyW9oZ+1Tzsr1v7hW5ruQnXF8Hm36+83EstDIMk9/lzwQg6VbeEed
-         IVLD77zaqr+c1ZJVblG+E/S0Zo59zhCTbk6XY=
+	Sun, 24 Jan 2010 13:55:46 -0500
+Received: from smtp.rozsnyo.com ([77.93.220.61]:39432 "EHLO smtp.rozsnyo.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751678Ab0AXSzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 13:55:45 -0500
+X-Greylist: delayed 368 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jan 2010 13:55:45 EST
+Message-ID: <4B5C963D.8040802@rozsnyo.com>
+Date: Sun, 24 Jan 2010 19:49:33 +0100
+From: =?UTF-8?B?IkluZy4gRGFuaWVsIFJvenNuecOzIg==?= <daniel@rozsnyo.com>
+Organization: REAS
+User-Agent: Thunderbird 2.0.0.23 (X11/20091216)
 MIME-Version: 1.0
-In-Reply-To: <1264353324.5592.1.camel@wall-e>
-References: <1264349038-1766-1-git-send-email-tfransosi@gmail.com>
-	 <1264353324.5592.1.camel@wall-e>
-Date: Sun, 24 Jan 2010 16:54:11 -0200
-Message-ID: <a4c8a6d01001241054q74199217sf94aac668a8454e9@mail.gmail.com>
-Subject: Re: [PATCH 1/4] kernel/kfifo.c: fix "interger as NULL pointer" 
-	warning.
-From: Thiago Farina <tfransosi@gmail.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@linux.intel.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+To: linux-kernel@vger.kernel.org
+Subject: bio too big - in nested raid setup
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 24, 2010 at 3:15 PM, Stefani Seibold <stefani@seibold.net> wrote:
-> Am Sonntag, den 24.01.2010, 11:03 -0500 schrieb Thiago Farina:
->> kernel/kfifo.c:83:35: warning: Using plain integer as NULL pointer
->>
->
-> I don't know where you get this kind of warning. But passing 0 for a
-> NULL pointer is ANSI C standard.
+Hello,
+   I am having troubles with nested RAID - when one array is added to 
+the other, the "bio too big device md0" messages are appearing:
 
-This is a sparse warning. Got with: make C=1.
+bio too big device md0 (144 > 8)
+bio too big device md0 (248 > 8)
+bio too big device md0 (32 > 8)
+
+   From internet searches I've found no solution or error like mine, 
+just a note about data corruption when this is happening.
+
+Description:
+
+   My setup is the following - one 2TB and four 500GB drives. The goal 
+is to have a mirror of the 2TB drive to a linear array of the other four 
+drives.
+
+   So.. the state without the error above is this:
+
+# cat /proc/mdstat
+Personalities : [linear] [raid0] [raid1] [raid10] [raid6] [raid5] [raid4]
+md1 : active linear sdb1[0] sde1[3] sdd1[2] sdc1[1]
+       1953535988 blocks super 1.1 0k rounding
+
+md0 : active raid1 sda2[0]
+       1953447680 blocks [2/1] [U_]
+       bitmap: 233/233 pages [932KB], 4096KB chunk
+
+unused devices: <none>
+
+   With these block request sizes:
+
+# cat /sys/block/md{0,1}/queue/max_{,hw_}sectors_kb
+127
+127
+127
+127
+
+   Now, I add the four drive array to the mirror - and the system starts 
+showing the bio error at any significant disk activity..  (probably 
+writes only). The reboot/shutdown process is full of these errors.
+
+   The step which messes up the system (ignore re-added, it happened the 
+very first time I've constructed the 4 drive array a hour ago):
+
+# mdadm /dev/md0 --add /dev/md1
+mdadm: re-added /dev/md1
+
+# cat /sys/block/md{0,1}/queue/max_{,hw_}sectors_kb
+4
+4
+127
+127
+
+The dmesg is just showing this:
+
+md: bind<md1>
+RAID1 conf printout:
+  --- wd:1 rd:2
+  disk 0, wo:0, o:1, dev:sda2
+  disk 1, wo:1, o:1, dev:md1
+md: recovery of RAID array md0
+md: minimum _guaranteed_  speed: 1000 KB/sec/disk.
+md: using maximum available idle IO bandwidth (but not more than 200000 
+KB/sec) for recovery.
+md: using 128k window, over a total of 1953447680 blocks.
+
+
+   And as soon as a write occures to the array:
+
+bio too big device md0 (40 > 8)
+
+   The removal of md1 from md0 does not help the situation, I need to 
+reboot the machine.
+
+   The md0 array bears LVM and inside it a root / swap / portage / 
+distfiles and home logical volumes.
+
+   My system is:
+
+# uname -a
+Linux desktop 2.6.32-gentoo-r1 #2 SMP PREEMPT Sun Jan 24 12:06:13 CET 
+2010 i686 Intel(R) Xeon(R) CPU X3220 @ 2.40GHz GenuineIntel GNU/Linux
+
+
+Thanks for any help,
+
+Daniel
+
