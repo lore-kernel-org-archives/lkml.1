@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503Ab0AXXlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187Ab0AXXod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753503Ab0AXXlm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 18:41:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959Ab0AXXlT
+	id S1753187Ab0AXXod (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 18:44:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878Ab0AXXoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 18:41:19 -0500
-Received: from ip-85-161-27-212.eurotel.cz ([85.161.27.212]:34002 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751669Ab0AXXlS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 18:41:18 -0500
-Date: Wed, 20 Jan 2010 13:55:55 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Mark Allyn <mark.a.allyn@intel.com>
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com, alan@linux.intel.com,
-       charles.f.johnson@intel.com
-Subject: Re: [PATCH] Add Linux Driver for Intel Langwell Watchdog
-Message-ID: <20100120125555.GD1420@ucw.cz>
-References: <1263849859-23265-1-git-send-email-mark.a.allyn@intel.com>
+	Sun, 24 Jan 2010 18:44:32 -0500
+Received: from mail.kapsi.fi ([217.30.184.167]:52951 "EHLO mail.kapsi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750797Ab0AXXob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 18:44:31 -0500
+Message-ID: <4B5CDB53.6030009@iki.fi>
+Date: Mon, 25 Jan 2010 01:44:19 +0200
+From: Antti Palosaari <crope@iki.fi>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263849859-23265-1-git-send-email-mark.a.allyn@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jiri Slaby <jslaby@suse.cz>
+CC: mchehab@infradead.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
+Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
+References: <1264007972-6261-1-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1264007972-6261-1-git-send-email-jslaby@suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 82.128.185.8
+X-SA-Exim-Mail-From: crope@iki.fi
+X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +++ b/drivers/watchdog/Kconfig
-> @@ -448,6 +448,13 @@ config IBMASR
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called ibmasr.
->  
-> +config LANGWELL_WATCHDOG
-> +	tristate "Intel Langwell Watchdog for Mobil Platforms"
+On 01/20/2010 07:19 PM, Jiri Slaby wrote:
+> When both remote controller and receiver intfs are handled by
+> af9015, .probe do nothing for remote intf, but when .disconnect
+> is called for both of them it touches intfdata every time. For
+> remote it crashes obviously (as intfdata are unset).
+>
+> Altough there is test against data being NULL, it is not enough.
+> It is because someone before us does not set intf drvdata to
+> NULL. (In this case the hid layer.) But we cannot rely on intf
+> being NULL anyway.
+>
+> Fix that by checking bInterfaceNumber in af9015_usb_device_exit
+> and do actually nothing if it is not 0.
 
-typo?
+I was a little bit surprised when saw this error, why it haven't 
+detected earlier. When I initially added interface check for .probe it 
+was surely needed, it was creating two instances without that check in 
+that time. When I now test this patch with debugs enabled I don't see 
+.probe and .disconnect be called for this HID interface (interface 1) at 
+all and thus checks not needed. I have Fedora Kernel 2.6.31.12 running 
+with latest v4l-dvb. Is there now some kind of check added recently 
+which blocks .probe and disconnect from HID interface?
 
+regards
+Antti
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+http://palosaari.fi/
