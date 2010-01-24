@@ -1,17 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633Ab0AXWf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775Ab0AXWpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633Ab0AXWf3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 17:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283Ab0AXWfH
+	id S1754775Ab0AXWpu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 17:45:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705Ab0AXWpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 17:35:07 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45747 "EHLO ogre.sisk.pl"
+	Sun, 24 Jan 2010 17:45:35 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45763 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754346Ab0AXWfA convert rfc822-to-8bit (ORCPT
+	id S1754615Ab0AXWfd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 17:35:00 -0500
+	Sun, 24 Jan 2010 17:35:33 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Justin P. Mattock" <justinmattock@gmail.com>
+       "Gautham R Shenoy" <ego@in.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Mike Galbraith" <efault@gmx.de>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera>
 In-Reply-To: <pYFNu11z2aM.A.pJH.CZMXLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +22,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <q60Z28d_9yH.A.wCC.jbMXLB@chimera>
-Subject: [Bug #14487] PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
+Message-ID: <q60Z28d_9yH.A.r7B.WbMXLB@chimera>
+Subject: [Bug #14621] specjbb2005 and aim7 regression with 2.6.32-rc kernels
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 24 Jan 2010 23:22:51 +0100 (CET)
+Date: Sun, 24 Jan 2010 23:22:52 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +38,10 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14487
-Subject		: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
-Submitter	: Justin P. Mattock <justinmattock@gmail.com>
-Date		: 2009-10-23 16:45 (94 days old)
-References	: http://lkml.org/lkml/2009/10/23/252
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14621
+Subject		: specjbb2005 and aim7 regression with 2.6.32-rc kernels
+Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Date		: 2009-11-06 7:38 (80 days old)
+References	: http://marc.info/?l=linux-kernel&m=125749310413174&w=4
 
 
