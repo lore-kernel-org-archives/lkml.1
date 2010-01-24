@@ -1,75 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976Ab0AXQLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971Ab0AXQQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976Ab0AXQLp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 11:11:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949Ab0AXQLo
+	id S1753971Ab0AXQQg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 11:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907Ab0AXQQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 11:11:44 -0500
-Received: from mail-qy0-f182.google.com ([209.85.221.182]:40828 "EHLO
-	mail-qy0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753910Ab0AXQLn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 11:11:43 -0500
-X-Greylist: delayed 363 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jan 2010 11:11:42 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=VQVSWb4ImtImoUUhtFgF1IxlcemQmgLMwJPLWQL6TDV7wkN8YGl1q2yR8XO14LA5ya
-         3cpCeCAO+WV7vj/dNZ9FGbSv+CWgAbVhCo7hHMmGDMZqjjc0IB7ABUtMgTRH52aaghbW
-         TVsk/5P8Ds37gqhsMaemGa/15TeT+YRqW8ZUI=
-From: Thiago Farina <tfransosi@gmail.com>
-To: tfransosi@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] kernel/test_kprobes.c: fix "integer as NULL pointer" warning.
-Date: Sun, 24 Jan 2010 11:03:49 -0500
-Message-Id: <1264349038-1766-2-git-send-email-tfransosi@gmail.com>
-X-Mailer: git-send-email 1.6.6.1.383.g5a9f
-In-Reply-To: <1264349038-1766-1-git-send-email-tfransosi@gmail.com>
-References: <1264349038-1766-1-git-send-email-tfransosi@gmail.com>
+	Sun, 24 Jan 2010 11:16:34 -0500
+Received: from mail.kapsi.fi ([217.30.184.167]:53883 "EHLO mail.kapsi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753887Ab0AXQQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 11:16:33 -0500
+Message-ID: <4B5C7258.1010605@iki.fi>
+Date: Sun, 24 Jan 2010 18:16:24 +0200
+From: Antti Palosaari <crope@iki.fi>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Jiri Slaby <jslaby@suse.cz>
+CC: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
+Subject: Re: [PATCH 1/4] media: dvb/af9015, implement eeprom hashing
+References: <4B4F6BE5.2040102@iki.fi> <1264173055-14787-1-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1264173055-14787-1-git-send-email-jslaby@suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 82.128.185.8
+X-SA-Exim-Mail-From: crope@iki.fi
+X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel/test_kprobes.c:118:19: warning: Using plain integer as NULL pointer
-kernel/test_kprobes.c:213:22: warning: Using plain integer as NULL pointer
-kernel/test_kprobes.c:326:22: warning: Using plain integer as NULL pointer
+Hei,
+Comments below.
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
----
- kernel/test_kprobes.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+On 01/22/2010 05:10 PM, Jiri Slaby wrote:
+> We read the eeprom anyway for dumping. Switch the dumping to
+> print_hex_dump_bytes and compute hash above that by
+> hash = 0;
+> for (u32 VAL) in (eeprom):
+>    hash *= GOLDEN_RATIO_PRIME_32
+>    hash += VAL; // while preserving endinaness
+>
+> The computation is moved earlier to the flow, namely from
+> af9015_af9013_frontend_attach to af9015_read_config, so that
+> we can access the sum in af9015_read_config already.
+>
+> Signed-off-by: Jiri Slaby<jslaby@suse.cz>
+> Cc: Antti Palosaari<crope@iki.fi>
+> Cc: Mauro Carvalho Chehab<mchehab@redhat.com>
+> Cc: linux-media@vger.kernel.org
+> ---
+>   drivers/media/dvb/dvb-usb/af9015.c |   65 +++++++++++++++++++++++------------
+>   drivers/media/dvb/dvb-usb/af9015.h |    1 +
+>   2 files changed, 44 insertions(+), 22 deletions(-)
+>
+> diff --git a/drivers/media/dvb/dvb-usb/af9015.c b/drivers/media/dvb/dvb-usb/af9015.c
+> index a365c05..616b3ba 100644
+> --- a/drivers/media/dvb/dvb-usb/af9015.c
+> +++ b/drivers/media/dvb/dvb-usb/af9015.c
+> @@ -21,6 +21,8 @@
+>    *
+>    */
+>
+> +#include<linux/hash.h>
+> +
+>   #include "af9015.h"
+>   #include "af9013.h"
+>   #include "mt2060.h"
+> @@ -553,26 +555,45 @@ exit:
+>   	return ret;
+>   }
+>
+> -/* dump eeprom */
+> -static int af9015_eeprom_dump(struct dvb_usb_device *d)
+> +/* hash (and dump) eeprom */
+> +static int af9015_eeprom_hash(struct usb_device *udev)
+>   {
+> -	u8 reg, val;
+> +	static const unsigned int eeprom_size = 256;
+> +	unsigned int reg;
+> +	int ret;
+> +	u8 val, *eeprom;
+> +	struct req_t req = {READ_I2C, AF9015_I2C_EEPROM, 0, 0, 1, 1,&val};
+>
+> -	for (reg = 0; ; reg++) {
+> -		if (reg % 16 == 0) {
+> -			if (reg)
+> -				deb_info(KERN_CONT "\n");
+> -			deb_info(KERN_DEBUG "%02x:", reg);
+> -		}
+> -		if (af9015_read_reg_i2c(d, AF9015_I2C_EEPROM, reg,&val) == 0)
+> -			deb_info(KERN_CONT " %02x", val);
+> -		else
+> -			deb_info(KERN_CONT " --");
+> -		if (reg == 0xff)
+> -			break;
+> +	eeprom = kmalloc(eeprom_size, GFP_KERNEL);
+> +	if (eeprom == NULL)
+> +		return -ENOMEM;
+> +
+> +	for (reg = 0; reg<  eeprom_size; reg++) {
+> +		req.addr = reg;
+> +		ret = af9015_rw_udev(udev,&req);
+> +		if (ret)
+> +			goto free;
+> +		eeprom[reg] = val;
+>   	}
+> -	deb_info(KERN_CONT "\n");
+> -	return 0;
+> +
+> +	if (dvb_usb_af9015_debug&  0x01)
+> +		print_hex_dump_bytes("", DUMP_PREFIX_OFFSET, eeprom,
+> +				eeprom_size);
+> +
+> +	BUG_ON(eeprom_size % 4);
+> +
+> +	af9015_config.eeprom_sum = 0;
+> +	for (reg = 0; reg<  eeprom_size / sizeof(u32); reg++) {
+> +		af9015_config.eeprom_sum *= GOLDEN_RATIO_PRIME_32;
+> +		af9015_config.eeprom_sum += le32_to_cpu(((u32 *)eeprom)[reg]);
+> +	}
+> +
+> +	deb_info("%s: eeprom sum=%.8x\n", __func__, af9015_config.eeprom_sum);
 
-diff --git a/kernel/test_kprobes.c b/kernel/test_kprobes.c
-index 4f10451..9a43351 100644
---- a/kernel/test_kprobes.c
-+++ b/kernel/test_kprobes.c
-@@ -115,7 +115,7 @@ static int test_kprobes(void)
- 	int ret;
- 	struct kprobe *kps[2] = {&kp, &kp2};
- 
--	kp.addr = 0; /* addr should be cleard for reusing kprobe. */
-+	kp.addr = NULL; /* addr should be cleard for reusing kprobe. */
- 	ret = register_kprobes(kps, 2);
- 	if (ret < 0) {
- 		printk(KERN_ERR "Kprobe smoke test failed: "
-@@ -210,7 +210,7 @@ static int test_jprobes(void)
- 	int ret;
- 	struct jprobe *jps[2] = {&jp, &jp2};
- 
--	jp.kp.addr = 0; /* addr should be cleard for reusing kprobe. */
-+	jp.kp.addr = NULL; /* addr should be cleard for reusing kprobe. */
- 	ret = register_jprobes(jps, 2);
- 	if (ret < 0) {
- 		printk(KERN_ERR "Kprobe smoke test failed: "
-@@ -323,7 +323,7 @@ static int test_kretprobes(void)
- 	int ret;
- 	struct kretprobe *rps[2] = {&rp, &rp2};
- 
--	rp.kp.addr = 0; /* addr should be cleard for reusing kprobe. */
-+	rp.kp.addr = NULL; /* addr should be cleard for reusing kprobe. */
- 	ret = register_kretprobes(rps, 2);
- 	if (ret < 0) {
- 		printk(KERN_ERR "Kprobe smoke test failed: "
+Does this sum contain all 256 bytes from EEPROM? 256/4 is 64.
+
+regards
+Antti
 -- 
-1.6.6.1.383.g5a9f
-
+http://palosaari.fi/
