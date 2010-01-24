@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751566Ab0AXXII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064Ab0AXXIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751566Ab0AXXII (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 18:08:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229Ab0AXXIB
+	id S1752064Ab0AXXIn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 18:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466Ab0AXXIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 18:08:01 -0500
-Received: from authsmtp-0-6.virt.iitsp.net ([66.197.169.119]:59261 "EHLO
-	authsmtp-0-6.virt.iitsp.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751181Ab0AXXIA (ORCPT
+	Sun, 24 Jan 2010 18:08:42 -0500
+Received: from mail-iw0-f183.google.com ([209.85.223.183]:51429 "EHLO
+	mail-iw0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211Ab0AXXIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 18:08:00 -0500
-X-Greylist: delayed 563 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jan 2010 18:08:00 EST
-Message-ID: <4B5CCFC5.1090002@lbsd.net>
-Date: Sun, 24 Jan 2010 22:55:01 +0000
-From: Nigel Kukard <nkukard@lbsd.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091201 IceDove/3.0
+	Sun, 24 Jan 2010 18:08:41 -0500
+X-Greylist: delayed 455 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jan 2010 18:08:41 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=wMgIm1eTvb6iOv6tJ3k8y4HPt/p6sfoEsmCBxDpIjFZ8cEWpqz7W9fbxISchrCPsv3
+         VpR1WP0/GT2Eb/VF3IsbNJNHGuUXRLuTwtfTdLpQKubn1Fk4WnmRdvUwYQKRKNAvyMIa
+         1R31IEQV58DSnsOlp3JsN3lqIhdRIThgqUuLQ=
+Message-ID: <4B5CD17F.6070606@gmail.com>
+Date: Sun, 24 Jan 2010 15:02:23 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #15132] OOPS's with large initramfs
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <hE3x9c-4KZM.A.xDF.8JMXLB@chimera>
-In-Reply-To: <hE3x9c-4KZM.A.xDF.8JMXLB@chimera>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3FA52EE8BCCF4DFA703FCAA9"
+Subject: Re: [Bug #14487] PANIC: early exception 08 rip 246:10 error ffffffff810251b5
+ cr2 0
+References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera> <q60Z28d_9yH.A.wCC.jbMXLB@chimera>
+In-Reply-To: <q60Z28d_9yH.A.wCC.jbMXLB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3FA52EE8BCCF4DFA703FCAA9
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Verified. I have tested this as far back as 2.6.30 with the same problem
-with "very" large initramfs's.
-
+On 01/24/10 14:22, Rafael J. Wysocki wrote:
 > This message has been generated automatically as a part of a report
-> of recent regressions.
+> of regressions introduced between 2.6.31 and 2.6.32.
 >
 > The following bug entry is on the current list of known regressions
-> from 2.6.32.  Please verify if it still should be listed and let me kno=
-w
-> (either way).
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let me know (either way).
 >
 >
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D15132
-> Subject		: OOPS's with large initramfs
-> Submitter	: Nigel Kukard <nkukard@lbsd.net>
-> Date		: 2010-01-16 11:12 (9 days old)
-> References	: http://marc.info/?l=3Dlinux-kernel&m=3D126364100321603&w=3D=
-4
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14487
+> Subject		: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
+> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
+> Date		: 2009-10-23 16:45 (94 days old)
+> References	: http://lkml.org/lkml/2009/10/23/252
 >
 >
->  =20
+>
 
+yeah I'm still seeing this during boot.
+As of looking at this, been tied up with another
+issue and totally forgot. next week I'll be away
+for a week, and during that period I can try and look at this
+since I might be hanging around at times.
+(and wont be side tracked with the other issue I was looking at);
 
---=20
-Regards
-Nigel Kukard, PhD CompSc
-Linux Based Systems Design (Pty) Ltd
+So yeah please keep it open, and hopefully somebody
+see's what is happening and maybe has a solution, or
+by chance maybe I can figure something.
 
-Support: 086 747 7600 (premium 24/7/365)
-Fax: 086 601 7884
-
-Quote: The best language to use is the language that was designed for
-what you want to use it for.
-
-*** The attachment to my email signature.asc is a digital PGP
-signature, if your mail client supports digital signatures it will
-allow you to verify I am the sender of this email and that it has not
-been tampered with along the way ***
-
-
-
---------------enig3FA52EE8BCCF4DFA703FCAA9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAktcz8UACgkQKoUGSidwLE7JtwCgkfRpB78U0i0s7MN7OTjdR0Te
-J4IAn3xbpDdglEiKyGHO9TOa5+3G298X
-=+UJ9
------END PGP SIGNATURE-----
-
---------------enig3FA52EE8BCCF4DFA703FCAA9--
+Justin P. Mattock
