@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223Ab0AXWRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208Ab0AXWXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223Ab0AXWRA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 17:17:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185Ab0AXWQu
+	id S1754208Ab0AXWXc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 17:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494Ab0AXWXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 17:16:50 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45502 "EHLO ogre.sisk.pl"
+	Sun, 24 Jan 2010 17:23:18 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45497 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754164Ab0AXWQq convert rfc822-to-8bit (ORCPT
+	id S1754124Ab0AXWQo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 17:16:46 -0500
+	Sun, 24 Jan 2010 17:16:44 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Grant Wilson" <grant.wilson@zen.co.uk>
+       "David" <david@unsolicited.net>
 References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
 In-Reply-To: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <hE3x9c-4KZM.A.OyG.CLMXLB@chimera>
-Subject: [Bug #14937] WARNING: at kernel/lockdep.c:2830
+Message-ID: <hE3x9c-4KZM.A.V3G.JLMXLB@chimera>
+Subject: [Bug #14924] Weird hard hangs when rendering 'some' web-sites in Firefox
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 24 Jan 2010 23:04:33 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +35,10 @@ from 2.6.32.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14937
-Subject		: WARNING: at kernel/lockdep.c:2830
-Submitter	: Grant Wilson <grant.wilson@zen.co.uk>
-Date		: 2009-12-27 13:35 (29 days old)
-References	: http://marc.info/?l=linux-kernel&m=126192220404829&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14924
+Subject		: Weird hard hangs when rendering 'some' web-sites in Firefox
+Submitter	: David <david@unsolicited.net>
+Date		: 2009-12-21 21:53 (35 days old)
+References	: http://marc.info/?l=linux-kernel&m=126143375823340&w=4
 
 
