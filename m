@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453Ab0AXTnO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727Ab0AXTxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753453Ab0AXTnO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 14:43:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695Ab0AXTnN
+	id S1753727Ab0AXTxO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 14:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389Ab0AXTxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 14:43:13 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:49729 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593Ab0AXTnN (ORCPT
+	Sun, 24 Jan 2010 14:53:12 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42379 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027Ab0AXTxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 14:43:13 -0500
-Message-ID: <4B5CA2CA.4040307@gmail.com>
-Date: Sun, 24 Jan 2010 20:43:06 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Sun, 24 Jan 2010 14:53:11 -0500
+Date: Sun, 24 Jan 2010 19:53:09 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Dmitry Monakhov <dmonakhov@openvz.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fs: fix filesystem_sync vs write race on rw=>ro remount
+Message-ID: <20100124195309.GX19799@ZenIV.linux.org.uk>
+References: <87sk9vd92c.fsf@openvz.org>
 MIME-Version: 1.0
-To: =?UTF-8?B?QnJ1bm8gUHLDqW1vbnQ=?= <bonbons@linux-vserver.org>,
-       "David S. Miller" <davem@davemloft.net>
-CC: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] vlan: fix vlan_skb_recv()
-References: <20100123165657.187c11e4@neptune.home>	<20100123223132.0e62d8cb@neptune.home>	<4B5C4E5E.2010507@gmail.com>	<20100124160228.366f4e72@neptune.home>	<20100124162549.2b39b222@neptune.home>	<4B5C74BF.5060604@gmail.com> <20100124201808.2bbbf0b0@neptune.home>
-In-Reply-To: <20100124201808.2bbbf0b0@neptune.home>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 24 Jan 2010 20:43:08 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87sk9vd92c.fsf@openvz.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 24/01/2010 20:18, Bruno Prémont a écrit :
-> Yep, works fine and RX stats look right as well.
+On Sun, Jan 24, 2010 at 02:41:15PM +0300, Dmitry Monakhov wrote:
+> Currently on rw=>ro remount we have following race
+> | mount /mnt -oremount,ro | write-task |
+> |-------------------------+------------|
+> |                         | open(RDWR) |
+> | shrink_dcache_sb(sb);   |            |
+> | sync_filesystem(sb);    |            |
+> |                         | write()    |
+> |                         | close()    |
+> | fs_may_remount_ro(sb)   |            |
+> | sb->s_flags = new_flags |            |
+> Later writeback or sync() will result in error due to MS_RDONLY flag
+> In case of ext4 this result in jbd2_start failure on writeback
+> ext4_da_writepages: jbd2_start: 1024 pages, ino 1431; err -30 
+> In fact all others are affected by this error but it is not visible
+> because the skip s_flags check on writeback. For example ext3 check
+> (s_flags & MS_RDONLY) only if page has no buffers during journal start.
 > 
-> So
-> Reported-By: Bruno Prémont <bonbons@linux-vserver.org>
-> Tested-By: Bruno Prémont <bonbons@linux-vserver.org>
-> 
-> Thanks,
+> In order to prevent the race we have to block new writers before
+> fs_may_remount_ro() and sync_filesystem(). Let's introduce new
+> sb->s_flags MS_RO_REMOUNT flag for this purpose. But suddenly we have
+> no available space in MS_XXX bits, let's share this bit with MS_REMOUNT.
+> This is possible because MS_REMOUNT used only for passing arguments
+> from flags to sys_mount() and never used in sb->s_flags.
 
-Thanks very much Bruno, here is the official patch submission then.
-
-[PATCH] vlan: fix vlan_skb_recv()
-
-Bruno Prémont found commit 9793241fe92f7d930
-(vlan: Precise RX stats accounting) added a regression for non
-hw accelerated vlans.
-
-[   26.390576] BUG: unable to handle kernel NULL pointer dereference at (null)
-[   26.396369] IP: [<df856b89>] vlan_skb_recv+0x89/0x280 [8021q]
-
-vlan_dev_info() was used with original device, instead of
-skb->dev. Also spotted by Américo Wang.
-
-Reported-By: Bruno Prémont <bonbons@linux-vserver.org>
-Tested-By: Bruno Prémont <bonbons@linux-vserver.org>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
----
- net/8021q/vlan_dev.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/net/8021q/vlan_dev.c b/net/8021q/vlan_dev.c
-index b788978..c1b92ca 100644
---- a/net/8021q/vlan_dev.c
-+++ b/net/8021q/vlan_dev.c
-@@ -163,7 +163,7 @@ int vlan_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 		goto err_unlock;
- 	}
- 
--	rx_stats = per_cpu_ptr(vlan_dev_info(dev)->vlan_rx_stats,
-+	rx_stats = per_cpu_ptr(vlan_dev_info(skb->dev)->vlan_rx_stats,
- 			       smp_processor_id());
- 	rx_stats->rx_packets++;
- 	rx_stats->rx_bytes += skb->len;
+It's not a solution.  You get an _attempted_ remount ro making writes
+fail, even if it's going to be unsuccessful.  No go...
