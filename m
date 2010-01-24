@@ -1,68 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058Ab0AYWTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078Ab0AYWUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058Ab0AYWTs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 17:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033Ab0AYWTq
+	id S1754078Ab0AYWUX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 17:20:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380Ab0AYWUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 17:19:46 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36429 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754008Ab0AYWTp (ORCPT
+	Mon, 25 Jan 2010 17:20:20 -0500
+Received: from toroondcbque01.bellnexxia.net ([207.236.237.45]:60414 "EHLO
+	toroondcbque01-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751022Ab0AYWUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 17:19:45 -0500
-Message-ID: <4B5E1868.6090204@bx.jp.nec.com>
-Date: Mon, 25 Jan 2010 17:17:12 -0500
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	Mon, 25 Jan 2010 17:20:17 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=8qcy-dKej-IA:10 a=8I21vqF3_c_zk8k_11cA:9 a=gZxQnfXzWRmv5tZu3zcA:7 a=7R8-rI0cft_HeGSUFLHzVD1Qs38A:4 a=gameN5viIUkA:10 a=MSl-tDqOz04A:10
+Message-ID: <20100124030922.PF1IH.16047.root@toroondcbfep03>
+Date: Sun, 24 Jan 2010 3:09:22 -0500
+From: FBI <fameefurlane@bellnet.ca>
+Reply-To: usa.funds@discuz.org
+Subject: 
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: linux-kernel@vger.kernel.org, lwoodman@redhat.com, linux-mm@kvack.org,
-       mingo@elte.hu, tzanussi@gmail.com, riel@redhat.com,
-       akpm@linux-foundation.org, fweisbec@gmail.com,
-       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
-       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-Subject: Re: [RFC PATCH -tip 1/2 v2] add tracepoints for pagecache
-References: <4B5A3D00.8080901@bx.jp.nec.com>	 <4B5A3DD5.3020904@bx.jp.nec.com> <1264213709.31321.401.camel@gandalf.stny.rr.com>
-In-Reply-To: <1264213709.31321.401.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+X-Originating-IP: from 41.220.75.3 by webmail.en.bellnet.ca; Sun, 24 Jan 2010 3:09:22 -0500
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(2010年01月22日 21:28), Steven Rostedt wrote:
->> +TRACE_EVENT(remove_from_page_cache,
->> +
->> +	TP_PROTO(struct address_space *mapping, pgoff_t offset),
->> +
->> +	TP_ARGS(mapping, offset),
->> +
->> +	TP_STRUCT__entry(
->> +		__field(dev_t, s_dev)
->> +		__field(ino_t, i_ino)
->> +		__field(pgoff_t, offset)
->> +		),
->> +
->> +	TP_fast_assign(
->> +		__entry->s_dev = mapping->host->i_sb->s_dev;
->> +		__entry->i_ino = mapping->host->i_ino;
->> +		__entry->offset = offset;
->> +		),
->> +
->> +	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu", MAJOR(__entry->s_dev),
->> +		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset)
->> +);
->> +
-> 
-> The above qualify in converting to templates or DECLACE_TRACE_CLASS, and
-> DEFINE_EVENT, That is, rename the above TRACE_EVENT into
-> DECLARE_TRACE_CLASS, and then have the other one be a DEFINE_EVENT().
-> See the trace/event/sched.h for examples.
-> 
-> The TRACE_EVENT can add a bit of code, so use DECLARE_TRACE_CLASS when
-> possible and it will save on the size overhead.
-
-Thank you for your information. I'll fix it next time.
-
-Thanks,
-Keiichi
+ If you know you had been scam before this is an help agent to you This is to let you know that all of you who hod lost money to scammers in africa and usa i let you know that there is an quick opportunity for you all. mostly lottery. my name is FBI brad i assure you that i will do all i can to get it back to you in 3 days okay About your lost money.. an opportunity to get your money back I believe what scam means. i am global scam fither in CA 93535.we have all the global scam computer to trace all scammer name and location okay to cut this short..if you had sent money to africa you have a chance to take 1 of them to courth because 1 of them had been caught.. if you lost money or win deaf lottery contact us quick or chat at yahoo messanger agentmartins70 reply back to this email   scamt60@gmail.com
