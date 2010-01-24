@@ -1,152 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222Ab0AWXzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753078Ab0AXAQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222Ab0AWXzg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jan 2010 18:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595Ab0AWXzg
+	id S1753078Ab0AXAQA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jan 2010 19:16:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732Ab0AXAP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jan 2010 18:55:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43602 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022Ab0AWXzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jan 2010 18:55:35 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] PM / i915: Skip kernel VT switch during suspend/resume if KMS is used
-Date: Sun, 24 Jan 2010 00:55:59 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net, Eric Anholt <eric@anholt.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sat, 23 Jan 2010 19:15:59 -0500
+Received: from balrog.mythic-beasts.com ([93.93.130.6]:32840 "EHLO
+	balrog.mythic-beasts.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752716Ab0AXAP6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jan 2010 19:15:58 -0500
+X-Greylist: delayed 1152 seconds by postgrey-1.27 at vger.kernel.org; Sat, 23 Jan 2010 19:15:58 EST
+Date: Sun, 24 Jan 2010 00:04:58 +0000 (GMT)
+Message-Id: <20100124.000458.506212773266927716.mrs@deli>
+To: linux-kernel@vger.kernel.org
+Subject: futex() on vdso makes process unkillable
+From: Mark Seaborn <mrs@mythic-beasts.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001240055.59479.rjw@sisk.pl>
+X-Mythic-Sender-Verify: + host 93.93.130.6 accepted RCPT TO with '250 Accepted'
+X-BlackCat-Spam-Score: -12
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+I was experimenting with futexes and was a little surprised to
+discover that futex() works on read-only pages.  This creates quite a
+high bandwidth side channel that allows two processes to communicate
+if, for example, they share a library.  (Mind you, this is not much
+different from file locks, which also work on read-only file
+descriptors.)
 
-If a non-KMS graphics driver is used, the kernel carries out a VT
-switch during suspend/resume to avoid possible problems with freezing
-X at a wrong time and to cause X to repaint everything after resume.
+I also found a couple of differences between 2.6.24 (from Ubuntu
+hardy) and 2.6.31 (from Ubuntu karmic).  The first is a definite bug
+in 2.6.31:
 
-This is not necessary any more if the KMS is used, so skip the kernel
-VT switch during suspend/resume for i915 in the KMS mode.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
+1) On 2.6.31 i686, using futex() on the vdso causes the process to get
+stuck, consuming CPU in an unkillable state.  Both FUTEX_WAIT and
+FUTEX_WAKE cause the problem.  The problem doesn't occur on 2.6.24.
+(BTW, I was testing to see whether futex() on the vdso allows any two
+processes to communicate.  This appears not to be the case on 2.6.24.)
 
-Hi,
+A test program is below.
 
-I've been testing this patch for over a week and haven't seen a single problem
-related to it during this time.
 
-Are there any objections to it?
+2) Suppose a file is mapped into two processes with MAP_PRIVATE.  Can
+the resulting mappings be used to communicate via futex()?  i.e. Does
+futex() consider the mappings to be the same?
 
-Rafael
+On 2.6.24, the futex wakeup is not transferred; pages must be mapped
+with MAP_SHARED for futex to work.  On 2.6.31, the futex wakeup *is*
+transferred; futex works with either MAP_SHARED or MAP_PRIVATE.
 
----
- drivers/gpu/drm/i915/i915_drv.c |    4 ++++
- include/linux/suspend.h         |    9 +++++++++
- kernel/power/suspend.c          |   16 +++++++++++++---
- 3 files changed, 26 insertions(+), 3 deletions(-)
+2.6.24's behaviour seems more correct, because the mappings are
+logically different, even if the underlying memory pages are the same
+before copy-on-write is triggered.  Is 2.6.31's behaviour a
+regression, or is the kernel's behaviour here supposed to be
+undefined?
 
-Index: linux-2.6/include/linux/suspend.h
-===================================================================
---- linux-2.6.orig/include/linux/suspend.h
-+++ linux-2.6/include/linux/suspend.h
-@@ -116,6 +116,13 @@ struct platform_suspend_ops {
- };
- 
- #ifdef CONFIG_SUSPEND
-+extern bool vt_switch_enabled;
-+
-+static inline void disable_suspend_vt_switch(void)
-+{
-+	vt_switch_enabled = false;
-+}
-+
- /**
-  * suspend_set_ops - set platform dependent suspend operations
-  * @ops: The new suspend operations to set.
-@@ -143,6 +150,8 @@ extern void arch_suspend_enable_irqs(voi
- 
- extern int pm_suspend(suspend_state_t state);
- #else /* !CONFIG_SUSPEND */
-+static inline void disable_suspend_vt_switch(void) {}
-+
- #define suspend_valid_only_mem	NULL
- 
- static inline void suspend_set_ops(struct platform_suspend_ops *ops) {}
-Index: linux-2.6/kernel/power/suspend.c
-===================================================================
---- linux-2.6.orig/kernel/power/suspend.c
-+++ linux-2.6/kernel/power/suspend.c
-@@ -18,6 +18,13 @@
- 
- #include "power.h"
- 
-+/*
-+ * If set, switch to a new VT before suspend and switch back to the original
-+ * one during resume.
-+ */
-+bool vt_switch_enabled = true;
-+EXPORT_SYMBOL_GPL(vt_switch_enabled);
-+
- const char *const pm_states[PM_SUSPEND_MAX] = {
- 	[PM_SUSPEND_STANDBY]	= "standby",
- 	[PM_SUSPEND_MEM]	= "mem",
-@@ -82,7 +89,8 @@ static int suspend_prepare(void)
- 	if (!suspend_ops || !suspend_ops->enter)
- 		return -EPERM;
- 
--	pm_prepare_console();
-+	if (vt_switch_enabled)
-+		pm_prepare_console();
- 
- 	error = pm_notifier_call_chain(PM_SUSPEND_PREPARE);
- 	if (error)
-@@ -100,7 +108,8 @@ static int suspend_prepare(void)
- 	usermodehelper_enable();
-  Finish:
- 	pm_notifier_call_chain(PM_POST_SUSPEND);
--	pm_restore_console();
-+	if (vt_switch_enabled)
-+		pm_restore_console();
- 	return error;
- }
- 
-@@ -238,7 +247,8 @@ static void suspend_finish(void)
- 	suspend_thaw_processes();
- 	usermodehelper_enable();
- 	pm_notifier_call_chain(PM_POST_SUSPEND);
--	pm_restore_console();
-+	if (vt_switch_enabled)
-+		pm_restore_console();
- }
- 
- /**
-Index: linux-2.6/drivers/gpu/drm/i915/i915_drv.c
-===================================================================
---- linux-2.6.orig/drivers/gpu/drm/i915/i915_drv.c
-+++ linux-2.6/drivers/gpu/drm/i915/i915_drv.c
-@@ -28,6 +28,7 @@
-  */
- 
- #include <linux/device.h>
-+#include <linux/suspend.h>
- #include "drmP.h"
- #include "drm.h"
- #include "i915_drm.h"
-@@ -549,6 +550,9 @@ static int __init i915_init(void)
- 		driver.driver_features &= ~DRIVER_MODESET;
- #endif
- 
-+	if (driver.driver_features & DRIVER_MODESET)
-+		disable_suspend_vt_switch();
-+
- 	return drm_init(&driver);
- }
- 
+Cheers,
+Mark
+
+
+/* Test futex() on the vdso, which the kernel maps on process startup. */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <elf.h>
+#include <linux/futex.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+
+
+#if __WORDSIZE == 32
+#  define Elf(name) Elf32_##name
+#elif __WORDSIZE == 64
+#  define Elf(name) Elf64_##name
+#endif
+
+void *find_vdso(char **argv)
+{
+  /* Find auxv. */
+  char **p = argv;
+  /* Skip past argv. */
+  while(*p)
+    p++;
+  p++;
+  /* Skip past env. */
+  while(*p)
+    p++;
+  p++;
+  Elf(auxv_t) *auxv = (void *) p;
+  for(; auxv->a_type; auxv++)
+    if(auxv->a_type == AT_SYSINFO_EHDR)
+      return (void *) auxv->a_un.a_val;
+  fprintf(stderr, "vdso not found\n");
+  exit(1);
+}
+
+int main(int argc, char **argv)
+{
+  int *vdso = find_vdso(argv);
+  fprintf(stderr, "vdso found at %p\n", vdso);
+  if(syscall(__NR_futex, vdso, FUTEX_WAKE, 1) < 0)
+    perror("futex/WAKE");
+  if(syscall(__NR_futex, vdso, FUTEX_WAIT, *vdso, NULL) < 0)
+    perror("futex/WAIT");
+  return 0;
+}
