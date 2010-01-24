@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358Ab0AXXww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605Ab0AXXyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358Ab0AXXww (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 18:52:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806Ab0AXXwu
+	id S1753605Ab0AXXyM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 18:54:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976Ab0AXXyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 18:52:50 -0500
-Received: from mail.kapsi.fi ([217.30.184.167]:51214 "EHLO mail.kapsi.fi"
+	Sun, 24 Jan 2010 18:54:10 -0500
+Received: from mail.kapsi.fi ([217.30.184.167]:41267 "EHLO mail.kapsi.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275Ab0AXXwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 18:52:49 -0500
-Message-ID: <4B5CDD4A.5060800@iki.fi>
-Date: Mon, 25 Jan 2010 01:52:42 +0200
+	id S1750967Ab0AXXyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 18:54:06 -0500
+Message-ID: <4B5CDD97.9080505@iki.fi>
+Date: Mon, 25 Jan 2010 01:53:59 +0200
 From: Antti Palosaari <crope@iki.fi>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org,
+To: Jiri Slaby <jslaby@suse.cz>
+CC: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
        Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
-Subject: Re: [PATCH 1/4] media: dvb/af9015, implement eeprom hashing
-References: <4B4F6BE5.2040102@iki.fi> <1264173055-14787-1-git-send-email-jslaby@suse.cz> <4B5C7258.1010605@iki.fi> <4B5C76B8.4090700@gmail.com>
-In-Reply-To: <4B5C76B8.4090700@gmail.com>
+Subject: Re: [PATCH 2/4] media: dvb/af9015, factor out remote setting
+References: <4B4F6BE5.2040102@iki.fi> <1264173055-14787-2-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1264173055-14787-2-git-send-email-jslaby@suse.cz>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-SA-Exim-Connect-IP: 82.128.185.8
@@ -29,35 +29,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/24/2010 06:35 PM, Jiri Slaby wrote:
-> On 01/24/2010 05:16 PM, Antti Palosaari wrote:
->>> +    af9015_config.eeprom_sum = 0;
->>> +    for (reg = 0; reg<   eeprom_size / sizeof(u32); reg++) {
->>> +        af9015_config.eeprom_sum *= GOLDEN_RATIO_PRIME_32;
->>> +        af9015_config.eeprom_sum += le32_to_cpu(((u32 *)eeprom)[reg]);
->>> +    }
->>> +
->>> +    deb_info("%s: eeprom sum=%.8x\n", __func__,
->>> af9015_config.eeprom_sum);
->>
->> Does this sum contain all 256 bytes from EEPROM? 256/4 is 64.
+On 01/22/2010 05:10 PM, Jiri Slaby wrote:
+> This is just a code shuffle without functional changes. For easier
+> review of later changes, i.e. preparation.
 >
-> Yes it does. It is computed as a hashed sum of 32-bit numbers (4 bytes)
-> -- speed (does not matter) and larger space of hashes. Hence the
-> division by 4. The cast does the trick: ((u32 *)eeprom)[reg] -- reg
-> index is on a 4-byte basis.
-
-
-OK, true. Anyhow, I don't know if this hashing formula is good enough - 
-changing it later could be really pain. I compared it to the one used 
-for em28xx driver and it was different. Could someone with better 
-knowledge check that?
-
-Generally it is good and ready for submission.
+> Signed-off-by: Jiri Slaby<jslaby@suse.cz>
+> Cc: Antti Palosaari<crope@iki.fi>
+> Cc: Mauro Carvalho Chehab<mchehab@redhat.com>
+> Cc: linux-media@vger.kernel.org
 
 Acked-by: Antti Palosaari <crope@iki.fi>
 
-regards
-Antti
 -- 
 http://palosaari.fi/
