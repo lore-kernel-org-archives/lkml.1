@@ -1,44 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539Ab0AXX31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752416Ab0AXXeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752539Ab0AXX31 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 18:29:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229Ab0AXX30
+	id S1752416Ab0AXXeQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 18:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558Ab0AXXeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 18:29:26 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53545 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190Ab0AXX30 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 18:29:26 -0500
-Date: Sun, 24 Jan 2010 23:29:12 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Soeren Sandmann <sandmann@daimi.au.dk>
-Subject: Re: [Bug #14625] Commit d451564 breaks ARM
-Message-ID: <20100124232912.GA10805@flint.arm.linux.org.uk>
-References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera> <q60Z28d_9yH.A.5sB.QbMXLB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <q60Z28d_9yH.A.5sB.QbMXLB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 24 Jan 2010 18:34:15 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54631 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751086Ab0AXXeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 18:34:11 -0500
+Date: Mon, 25 Jan 2010 10:33:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: The Ambient Light Sensors for-next tree
+Message-Id: <20100125103357.076abef7.sfr@canb.auug.org.au>
+In-Reply-To: <4B59C372.9090204@cam.ac.uk>
+References: <4B59C372.9090204@cam.ac.uk>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__25_Jan_2010_10_33_57_+1100_o_G7KtsaLEi_=CNT"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 24, 2010 at 11:22:52PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.31 and 2.6.32.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> be listed and let me know (either way).
+--Signature=_Mon__25_Jan_2010_10_33_57_+1100_o_G7KtsaLEi_=CNT
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Fixed by 4ff1fa2.
+Hi Jonathan,
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+On Fri, 22 Jan 2010 15:25:38 +0000 Jonathan Cameron <jic23@cam.ac.uk> wrote:
+>
+> The ambient light sensors (ALS) patches have been on lkml for a while and
+> the core has now been thoroughly reviewed.  The actual drivers
+> will follow shortly as most are moves from elsewhere in the kernel tree.
+>=20
+> Zhang Rui <rui.zhang@intel.com> is acting as the principle maintainer,
+> whilst I'm handling the git tree and assisting with the more
+> embedded devices.
+>=20
+> To that end there is a git tree at:
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/jic23/als.git for-next
+>=20
+> and we were wondering if you could add this tree to linux-next?
+> I've verified it applies cleanly on top of the current linux-next tree
+> so it should merge fine *crosses fingers*
+
+I have added the als tree to linux-next from today with you and Zhang Rui
+listed as contacts for any problems.  I have cc'd this email to the more
+general community so that people are aware of its inclusion.
+
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgment of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window.=20
+
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+	Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and=20
+     * destined for the current or next Linux merge window.
+
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
+
+--=20
+Cheers,
+Stephen Rothwell=20
+sfr@canb.auug.org.au
+
+Legal Stuff:
+By participating in linux-next, your subsystem tree contributions are
+public and will be included in the linux-next trees.  You may be sent
+e-mail messages indicating errors or other issues when the
+patches/commits from your subsystem tree are merged and tested in
+linux-next.  These messages may also be cross-posted to the linux-next
+mailing list, the linux-kernel mailing list, etc.  The linux-next tree
+project and IBM (my employer) make no warranties regarding the linux-next
+project, the testing procedures, the results, the e-mails, etc.  If you
+don't agree to these ground rules, let me know and I'll remove your tree
+from participation in linux-next.
+
+--Signature=_Mon__25_Jan_2010_10_33_57_+1100_o_G7KtsaLEi_=CNT
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktc2OUACgkQjjKRsyhoI8z2KQCdFutZFy8T75QjmYizy1Rm7EJ5
+MokAnjaJtJbPyjApGDyln2ZtrN/sVglA
+=aL6e
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__25_Jan_2010_10_33_57_+1100_o_G7KtsaLEi_=CNT--
