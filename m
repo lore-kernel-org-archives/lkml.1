@@ -1,104 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750877Ab0AXSC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892Ab0AXSa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750877Ab0AXSC1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 13:02:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817Ab0AXSCV
+	id S1751892Ab0AXSa6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 13:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678Ab0AXSa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 13:02:21 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:6952 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667Ab0AXSCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 13:02:20 -0500
-Date: Sun, 24 Jan 2010 13:01:21 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: tytso@mit.edu, Ingo Molnar <mingo@elte.hu>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100124180121.GA12744@redhat.com>
-References: <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <20100123112333.GA15455@elte.hu> <20100123114729.GA7828@redhat.com> <20100123194820.GM21263@thunk.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100123194820.GM21263@thunk.org>
-User-Agent: Mutt/1.4.2.2i
+	Sun, 24 Jan 2010 13:30:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53835 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751027Ab0AXSaz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 13:30:55 -0500
+Date: Sun, 24 Jan 2010 10:30:22 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Borislav Petkov <petkovbb@googlemail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alex Deucher <alexdeucher@gmail.com>,
+       Jerome Glisse <glisse@freedesktop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: Linux 2.6.33-rc5
+In-Reply-To: <20100124111946.GA4170@liondog.tnic>
+Message-ID: <alpine.LFD.2.00.1001241018500.3574@localhost.localdomain>
+References: <alpine.LFD.2.00.1001211535360.13231@localhost.localdomain> <20100124111946.GA4170@liondog.tnic>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
-
-tytso wrote:
-> [...]
-
-Let me see if I can paraphrase those of your concerns that were substantive:
-
-1) That if utrace is merged, and systemtap keeps on using it, there may be
-   some sort of chilling effect on kernel developers that would impede
-   utrace's future development.
-
-This might sound plausible to an outsider, but luckily we're not stuck
-with having to speculate: one can examine history.  Systemtap has been
-around, working roughly the same way, for about *five years*.
-
-Systemtap modules use more than a handful of mainstream
-module-accessible kernel services.  During all this time, how many
-examples have there been when when systemtap developers have pleaded
-with lkml to avoid changing some prior interface?  How many of those
-successfully?  (That last one is a trick question, since both numbers
-are really close to *zero*.)  How much real impediment to change has
-our mere existence caused?
 
 
-2) That systemtap is not portable to all kernel versions.
+On Sun, 24 Jan 2010, Borislav Petkov wrote:
+> 
+> 1. After suspend, the right monitor shows very funny colors, as if it is
+> on crack, in contrast to the left one which looks fine:
+> 
+> http://userweb.kernel.org/~bp/right_monitor.jpg
+> http://userweb.kernel.org/~bp/left_monitor.jpg
 
-Problems do periodically occur.  However, one can again refer to
-historical facts to assess whether in fact they warrant long term
-grudges.  In every release note, we list the range of kernel versions
-we test against.  We may have one of the broadest ranges of support,
-2.6.9 through to many current -rc*s and non-linus trees.  We have
-several mechanisms which let us easily adapt to most changes.  It may
-interest readers to find out that the number of systemtap changes we
-have had to add on account of kernel changes is on the order of a *few
-per year*.  The usual turnaround, once reported, is on the order of a
-*few days*.
+Ok, at a guess, it looks like something isn't restoring the palette 
+registers for the second output. You didn't say what GPU you have, but 
+judging by your CC list, it's a radeon. You might want to let the Radeon 
+KMS people know exactly what your setup is etc.
 
+> 2. During suspend I get this juicy lockdep warning:
 
-3) That systemtap users will complain to kernel developers if
-   systemtap becomes incompatible.
+I'm pretty sure that this is not actually a new problem, it's a new 
+warning for an old problem, see commit 846f99749 ("sysfs: Add lockdep 
+annotations for the sysfs active reference"). So I'm not considering it a 
+regression, even though I do agree that the messages look scary and very 
+annoying.
 
-Let's go to the historical record again.  How many such complaints
-have actually been seen in inappropriate fora such as lkml?  How
-difficult were they to diagnose / redirect to the proper venue?  Have
-they constituted a "loss of face" for kernel developers?
+I'm not at all convinced that we are going to be able to fix the problems 
+that this made visible in time for 2.6.33. The sysfs-related lock chains 
+easily get rather involved, although it is always possible that this 
+particular one might be easily fixable (ie if radeon is able to call the 
+final kref_put outside any locks - or whatever it is that ends up 
+generating a dependency from struct_mutex for the sysfs active ref).
 
+Or maybe I'm misreading the lockdep chain. Eric Biederman added to cc.
 
-4) That systemtap is almost but not quite as evil as nvidia.
-
-It seems factors like ...
-
-- always being completely open source project
-- keeping in regular contact with lkml and other constituencies
-- not being related to essential hardware enablement, so users
-  not wanting it don't have to touch it
-- the compile-to-C approach being technologically necessary since
-  there was no alternative plausible way at the time (and still now)
-- repeatedly offering infrastructure code with non-stap uses
-
-... all add up to a mere nudge away from entirely "evil".  If so, I
-wonder if your sort of grossly bimodal view of ethical virtue is going
-to foster the right sorts of change in the linux kernel community.
-
-
-- FChE
+		Linus
