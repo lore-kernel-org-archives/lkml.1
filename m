@@ -1,82 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348Ab0AXIUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296Ab0AXJaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753348Ab0AXIUN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 03:20:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165Ab0AXIUM
+	id S1753296Ab0AXJaa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 04:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734Ab0AXJa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 03:20:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34799 "EHLO hera.kernel.org"
+	Sun, 24 Jan 2010 04:30:29 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:59232 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752994Ab0AXIUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 03:20:11 -0500
-Message-ID: <4B5C03EE.3000007@kernel.org>
-Date: Sun, 24 Jan 2010 17:25:18 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Jeff Layton <jlayton@redhat.com>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       Steve French <sfrench@samba.org>
-Subject: Re: [PATCH UPDATED 38/40] cifs: use workqueue instead of slow-work
-References: <1263776272-382-1-git-send-email-tj@kernel.org>	<1263776272-382-39-git-send-email-tj@kernel.org>	<20100119072000.247ac894@tlielax.poochiereds.net>	<4B564B12.7020909@kernel.org>	<20100119195641.7b6a17e4@tlielax.poochiereds.net>	<4B565B26.3060709@kernel.org>	<4B59889D.7050903@kernel.org> <20100122064528.0223d708@tlielax.poochiereds.net>
-In-Reply-To: <20100122064528.0223d708@tlielax.poochiereds.net>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752867Ab0AXJaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 04:30:25 -0500
+Date: Sun, 24 Jan 2010 10:30:19 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: George Joseph <George.joseph@fairview5.com>, lm-sensors@lm-sensors.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Status of Andigilog asc7621 driver submitted by George Joseph
+ on   2008-05-29
+Message-ID: <20100124103019.6c6f23a6@hyperion.delvare>
+In-Reply-To: <3f9a31f41001230952g6321c47bq9baf5dcfdfaf5b59@mail.gmail.com>
+References: <3f9a31f41001230952g6321c47bq9baf5dcfdfaf5b59@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 24 Jan 2010 08:19:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 01/22/2010 08:45 PM, Jeff Layton wrote:
->> @@ -584,13 +583,18 @@ is_valid_oplock_break(struct smb_hdr *bu
->>  				pCifsInode->clientCanCacheAll = false;
->>  				if (pSMB->OplockLevel == 0)
->>  					pCifsInode->clientCanCacheRead = false;
->> -				rc = slow_work_enqueue(&netfile->oplock_break);
->> -				if (rc) {
->> -					cERROR(1, ("failed to enqueue oplock "
->> -						   "break: %d\n", rc));
->> -				} else {
->> -					netfile->oplock_break_cancelled = false;
->> -				}
->> +
->> +				/*
->> +				 * cifs_oplock_break_put() can't be called
->> +				 * from here.  Get reference after queueing
->> +				 * succeeded.  cifs_oplock_break() will
->> +				 * synchronize using GlobalSMSSeslock.
->> +				 */
->> +				if (queue_work(system_single_wq,
->> +					       &netfile->oplock_break))
->> +					cifs_oplock_break_get(netfile);
->> +				netfile->oplock_break_cancelled = false;
->> +
+On Sat, 23 Jan 2010 23:22:29 +0530, Jaswinder Singh Rajput wrote:
+> Andigilog asc7621 driver submitted by George Joseph on 2008-05-29,
+> This chip is used by various Intel Motherboards.
 > 
-> I think we want to move the setting of netfile->oplock_break_cancelled
-> inside of the if above it.
+> Is it still under review and testing :
 > 
-> If the work is already queued, I don't think we want to set the flag to
-> false. Doing so might be problematic if we somehow end up processing
-> this oplock break after a previous oplock break/reconnect/reopen
-> sequence, but while the initial oplock break is still running.
+> http://lists.lm-sensors.org/pipermail/lm-sensors/2008-May/023257.html
+> 
+> http://www.spinics.net/lists/lm-sensors/msg26915.html
+> 
+> http://www.spinics.net/lists/lm-sensors/msg26916.html
+> 
+> http://www.lm-sensors.org/wiki/Devices
 
-Hmmm.... I can surely do that but that would be different from the
-original code.  slow_work_enqueue() doesn't distinguish between
-successful enqueue and the one which got ignored because the work was
-already queued.  With conversion to queue_work(), there's no failure
-case there so setting oplock_break_cancelled always is equivalent to
-the original code.  Even if changing it is the right thing to do, it
-should probably be done with a separate patch as it changes the logic.
-Are you sure it needs to be changed?
-
-Thanks.
+I've updated the wiki entry to point to the latest version of the
+driver. I've also included a complete list of known requests so far,
+which can be used to get in touch with potential testers.
 
 -- 
-tejun
+Jean Delvare
