@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556Ab0AXWgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756Ab0AXWhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556Ab0AXWgY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 17:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314Ab0AXWgU
+	id S1754756Ab0AXWhA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 17:37:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754733Ab0AXWgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 17:36:20 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45828 "EHLO ogre.sisk.pl"
+	Sun, 24 Jan 2010 17:36:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45823 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753762Ab0AXWgS convert rfc822-to-8bit (ORCPT
+	id S1753539Ab0AXWgR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 17:36:18 -0500
+	Sun, 24 Jan 2010 17:36:17 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alexander Beregalov" <a.beregalov@gmail.com>,
-       "Evgeniy Polyakov" <zbr@ioremap.net>
+       "Rich Ercolani" <rercola@acm.jhu.edu>
 References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera>
 In-Reply-To: <pYFNu11z2aM.A.pJH.CZMXLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <q60Z28d_9yH.A.ev.vZMXLB@chimera>
-Subject: [Bug #14894] pohmelfs: NULL pointer dereference
+Message-ID: <q60Z28d_9yH.A.25.8ZMXLB@chimera>
+Subject: [Bug #14868] flood of "don't try to register things with the same name in the same directory." on upgrade to 2.6.32
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 24 Jan 2010 23:23:02 +0100 (CET)
+Date: Sun, 24 Jan 2010 23:22:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,11 +35,9 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14894
-Subject		: pohmelfs: NULL pointer dereference
-Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
-Date		: 2009-12-02 1:11 (54 days old)
-References	: http://marc.info/?l=linux-kernel&m=125971633107940&w=4
-Handled-By	: Evgeniy Polyakov <zbr@ioremap.net>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14868
+Subject		: flood of "don't try to register things with the same name in the same directory." on upgrade to 2.6.32
+Submitter	: Rich Ercolani <rercola@acm.jhu.edu>
+Date		: 2009-12-24 02:44 (32 days old)
 
 
