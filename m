@@ -1,36 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879Ab0AXP4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862Ab0AXQEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879Ab0AXP4P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 10:56:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847Ab0AXP4O
+	id S1753862Ab0AXQEO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 11:04:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827Ab0AXQEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 10:56:14 -0500
-Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:35989 "HELO
-	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753415Ab0AXP4O (ORCPT
+	Sun, 24 Jan 2010 11:04:13 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:4733 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752386Ab0AXQEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 10:56:14 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:Subject:Message-ID:From:To:Cc:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=NCe1E0zkj7ApodUdfyU490nj9bTnZMuhzI5mWxU4aTQ0f+dGznYgll8+hQHtWBA2Ivx9MxZbMl3vQyjpXpCYv8HRQnAmHV4jm4nKFw4njeZ2NhIHzQUpQug7zBnzXf8a;
-Date: Sun, 24 Jan 2010 07:56:38 -0800
-Subject: Re: [PATCH 1/2] PM / Runtime: Add sysfs switch for disabling device
- run-time PM (rev. 2)
-Message-ID: <59qes3i0orxy6yfyqhf7q34x.1264348598355@email.android.com>
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset=utf-8
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.209.15.60 authed with jbarnes@virtuousgeek.org}
+	Sun, 24 Jan 2010 11:04:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=uBQJuL6Z5NSsLmUiZO0KPbVGo1u3eMdmwCkHr3meb0SbGe/ghrBmfL9ugouiwJD0gg
+         KnGUWcqn8sAkcxSz1vMZm0yBdyx39aGqNg6l8yR83ZF9f7xrQYzOB2dYi93zhNibhBXq
+         DzLUulSTde9VZPVBCJX6DqG14aupObaR0Gr4Q=
+From: Thiago Farina <tfransosi@gmail.com>
+To: tfransosi@gmail.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@linux.intel.com>,
+       Stefani Seibold <stefani@seibold.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] kernel/kfifo.c: fix "interger as NULL pointer" warning.
+Date: Sun, 24 Jan 2010 11:03:48 -0500
+Message-Id: <1264349038-1766-1-git-send-email-tfransosi@gmail.com>
+X-Mailer: git-send-email 1.6.6.1.383.g5a9f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o0OFv354022824
 
+kernel/kfifo.c:83:35: warning: Using plain integer as NULL pointer
 
+Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+---
+ kernel/kfifo.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->On Saturday 23 January 2010, Alan Stern wrote:>> On Sat, 23 Jan 2010, Rafael J. Wysocki wrote:>> >> > Hmm, OK.>> > >> > Of course, if the driver decides to leave disable_depth > 0, the user still>> > won't be able to do anything about that, but if I understand correctly, you>> > want drivers to have the option to use pm_runtime_forbid() initially, right>> > after pm_runtime_enable(), so that the user space can turn the runtime PM>> > on if desired via sysfs.>> > >> > That makes sense.  I have a usage case for that myself. :-)>> > >> > Updated patch is appended.>> >> It looks good.>> >> Acked-by: Alan Stern <stern@rowland.harvard.edu>>>Thanks!>>Rafael>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+diff --git a/kernel/kfifo.c b/kernel/kfifo.c
+index 32c5c15..6fe4a56 100644
+--- a/kernel/kfifo.c
++++ b/kernel/kfifo.c
+@@ -80,7 +80,7 @@ int kfifo_alloc(struct kfifo *fifo, unsigned int size, gfp_t gfp_mask)
+ 
+ 	buffer = kmalloc(size, gfp_mask);
+ 	if (!buffer) {
+-		_kfifo_init(fifo, 0, 0);
++		_kfifo_init(fifo, NULL, 0);
+ 		return -ENOMEM;
+ 	}
+ 
+-- 
+1.6.6.1.383.g5a9f
+
