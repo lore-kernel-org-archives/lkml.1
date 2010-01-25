@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252Ab0AYUqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752902Ab0AYUqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252Ab0AYUqL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 15:46:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130Ab0AYUqK
+	id S1752902Ab0AYUqg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 15:46:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211Ab0AYUqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 15:46:10 -0500
-Received: from lucidpixels.com ([75.144.35.66]:36793 "EHLO lucidpixels.com"
+	Mon, 25 Jan 2010 15:46:35 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:51874 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752273Ab0AYUqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 15:46:09 -0500
-Date: Mon, 25 Jan 2010 15:46:06 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Ian Campbell <ijc@hellion.org.uk>
-cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
-Subject: Re: High pitch noise when ACPI processor module is loaded.
-In-Reply-To: <1264414241.16526.84480.camel@zakaz.uk.xensource.com>
-Message-ID: <alpine.DEB.2.00.1001251543450.4578@p34.internal.lan>
-References: <alpine.DEB.2.00.1001231046080.1064@p34.internal.lan>  <9883.1264397678@localhost>  <alpine.DEB.2.00.1001250424540.4502@p34.internal.lan> <1264414241.16526.84480.camel@zakaz.uk.xensource.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1751190Ab0AYUqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 15:46:34 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: [Bug #14922] 2.6.32 seemed to have broken nVidia MCP7A sata controller
+Date: Mon, 25 Jan 2010 21:47:25 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Mike Cui <cuicui@gmail.com>
+References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera> <q60Z28d_9yH.A.aX.kZMXLB@chimera> <51f3faa71001241825yec6e37br8032b7a3730ce840@mail.gmail.com>
+In-Reply-To: <51f3faa71001241825yec6e37br8032b7a3730ce840@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001252147.25868.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 25 January 2010, Robert Hancock wrote:
+> On Sun, Jan 24, 2010 at 4:23 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.31 and 2.6.32.
+> >
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> > be listed and let me know (either way).
+> >
+> >
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14922
+> > Subject         : 2.6.32 seemed to have broken nVidia MCP7A sata controller
+> > Submitter       : Mike Cui <cuicui@gmail.com>
+> > Date            : 2009-12-19 6:13 (37 days old)
+> > References      : http://marc.info/?l=linux-ide&m=126120323407742&w=4
+> > Handled-By      : Jeff Garzik <jeff@garzik.org>
+> >                  Robert Hancock <hancockrwd@gmail.com>
+> 
+> It's a confirmed regression. Waiting on some lspci -nn output from the
+> reporter. However, for now, disabling auto-activate optimization on
+> all NVIDIA AHCIs may be the easiest option.
 
+Thanks for the update.
 
-On Mon, 25 Jan 2010, Ian Campbell wrote:
-
-> On Mon, 2010-01-25 at 04:26 -0500, Justin Piszcz wrote:
->> So the question remains, is it possible to utilize turbo boost (in Linux)
->> without the high pitch noise from the ACPI processor module?
->
-> I have to use the max_cstate=2 option to processor.ko in order to not
-> have a similar high pitch noise. I suppose you might get away higher
-> values of max_cstate depending on your hardware. Battery life doesn't
-> seem to be too adversely impacted.
-
-Hello,
-
-I tried this, but then the max speed bin is only 3.2GHz instead of 3.6GHz,
-it does solve the problem but limits the CPU quite a bit, see below:
-
-  CPU   GHz    TSC    %c0    %c1    %c3    %c6   %pc3   %pc6   %pc7
-    0   3.20   2.93   0.33  99.67   0.00   0.00   0.00   0.00   0.00
-    1   3.20   2.93   0.09  99.91   0.00   0.00   0.00   0.00   0.00
-    2   3.20   2.93 100.00   0.00   0.00   0.00   0.00   0.00   0.00
-    3   3.20   2.93   0.95  99.05   0.00   0.00   0.00   0.00   0.00
-    4   3.20   2.93   0.08  99.92   0.00   0.00   0.00   0.00   0.00
-    5   3.20   2.93   0.02  99.98   0.00   0.00   0.00   0.00   0.00
-    6   3.20   2.93   0.06  99.94   0.00   0.00   0.00   0.00   0.00
-    7   3.20   2.93   0.01  99.99   0.00   0.00   0.00   0.00   0.00
-
---
-
-It would be nice if it were possible to find out what is causing it exactly
-in the acpi cpufreq module, as this problem does not occur in Windows 7 and
-I can achieve 3.6GHz in Windows 7 w/out any high pitch noise.
-
-Justin.
-
+Rafael
