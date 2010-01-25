@@ -1,84 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752216Ab0AYHeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268Ab0AYHhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752216Ab0AYHeQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 02:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048Ab0AYHeP
+	id S1752268Ab0AYHhK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 02:37:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088Ab0AYHhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 02:34:15 -0500
-Received: from smtp4-g21.free.fr ([212.27.42.4]:50057 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029Ab0AYHeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 02:34:14 -0500
-From: Arnaud Boulan <arnaud.boulan@libertysurf.fr>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [Bug #14933] OOM killer unexpectedly called
-Date: Mon, 25 Jan 2010 08:34:00 +0100
-User-Agent: KMail/1.9.10
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera> <q60Z28d_9yH.A.LQ.iZMXLB@chimera> <20100125111948.493B.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20100125111948.493B.A69D9226@jp.fujitsu.com>
+	Mon, 25 Jan 2010 02:37:09 -0500
+Received: from static-122-103-239-153.ng-fam.svips.gol.ne.jp ([122.103.239.153]:62209
+	"EHLO priv.dyadic.cynic.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752033Ab0AYHhI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 02:37:08 -0500
+X-Greylist: delayed 556 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jan 2010 02:37:08 EST
+Date: Mon, 25 Jan 2010 16:27:49 +0900
+From: Curt Sampson <cjs@starling-software.com>
+To: linux-kernel@vger.kernel.org
+Subject: Problems Receiving UDP Broadcasts on Some Versions of Linux
+Message-ID: <20100125072749.GG21419@analytic.cynic.net>
+Mail-Followup-To: Curt Sampson <cjs@starling-software.com>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201001250834.01084.arnaud.boulan@libertysurf.fr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 January 2010 03:37:25 KOSAKI Motohiro wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
-> >
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let me know (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14933
-> > Subject		: OOM killer unexpectedly called
-> > Submitter	: A. Boulan <arnaud.boulan@libertysurf.fr>
-> > Date		: 2009-12-24 23:42 (32 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=126169821317492&w=4
->
-> Boulan, Can you please help our debugging?
-> can you disable following config option at once?
->
-> 1. CONFIG_DRM_I915
-> 2. CONFIG_RELAY
-> 3. CONFIG_MSPEC
-> 4. VIDEOBUF_DMA_SG
->
-> I mean
->   - if anyone return VM_FAULT_OOM, this issue occur.
->   - very few subsys can return VM_FAULT_OOM in their own fault handler.
->   - I hope investigate this is core mm issue or not.
->     (unfortunatelly, I haven't find any dubious recent mm change..)
->
->
-> Thanks.
+I'm posting this here because it smells as if it may be something
+a where a kernel network code developer might just say, "oh yeah,
+obviously your problem is this."
 
-Hello,
+I'm not subscribed to this list, so please cc me on any replies. (The
+Mail-followup-to header may do this automatically for you.)
 
-Sorry for the lack of input about this issue. I currently only have remote 
-access to the machine for which i had this problem, and i'm not confident 
-with rebooting into potentially broken kernels. That's why i haven't done any 
-more tests yet..
-I will try to reproduce the issue on another machine first, and if i that does 
-not work i will find a way to test as you suggest.
+The short summary is that on two very similar servers on the same
+network, an application that listens for broadcast UDP packets on a
+given port works fine on the Ubuntu 8.04/Linux 2.6.24-26-server box but
+does not receive the packets on the Ubuntu 9.04/Linux 2.6.28-17-server
+box. I have confirmed that tcpdump sees identical packets being received
+on both hosts.
 
-Also, I have seen in the lkml archives that someone else seems to have the 
-same problem:
-  OOM-Killer kills too much with 2.6.32.2
-  From: Roman Jarosz 
-  Date:  Thu Jan 14 2010 - 08:13:36 EST
+Did something change between these two kernel revisions that I need to
+listen differently?
 
-As i can't have his email from the web archives, could you plase CC: him on 
-this thread? Maybe he could also help with some tests.
+Full details, including sample code, are available at:
 
-Regards,
+  http://stackoverflow.com/questions/2130563/udp-broadcast-reception-problems-with-ubuntu-9-04-but-not-8-04
 
-Arnaud
+Thanks for any help you can give me. Even if you're not sure, but have
+clues I should consider following up, feel free to e-mail me. I'm
+also happy to take pointers to kernel code I should read, if there's
+enlightenment there.
+
+cjs
+-- 
+Curt Sampson         <cjs@cynic.net>         +81 90 7737 2974
+             http://www.starling-software.com
+The power of accurate observation is commonly called cynicism
+by those who have not got it.    --George Bernard Shaw
