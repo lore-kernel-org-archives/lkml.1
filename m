@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881Ab0AYGn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098Ab0AYGqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752881Ab0AYGn5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 01:43:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566Ab0AYGn4
+	id S1753098Ab0AYGqM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 01:46:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094Ab0AYGqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 01:43:56 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59147 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751104Ab0AYGn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 01:43:56 -0500
-Message-ID: <4B5D3D37.4090107@cn.fujitsu.com>
-Date: Mon, 25 Jan 2010 14:41:59 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 25 Jan 2010 01:46:10 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:50981 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695Ab0AYGqJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 01:46:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=I+uqkl88bUOdCsaBiLKi5saq0Ppw2hIZZA06Z5XZWE/eW235wBYjOUjTsvWwRFT60H
+         i/T2q1ikZ8ORUlIBFD9IC1dr0k+nmyooKPu/NHRnyr/Y+0VJn1imkHRdBw/q8FuqzI5d
+         krCuRgzwGXuUnfrkPfbofypKwbOBI5wF/oxNM=
+Date: Sun, 24 Jan 2010 22:46:03 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tobias Klauser <tklauser@distanz.ch>, John Linn <john.linn@xilinx.com>
+Subject: Re: linux-next: input tree build failure
+Message-ID: <20100125064602.GA22833@core.coreip.homeip.net>
+References: <20100125165219.cd0b869d.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [RFC PATCH 06/10] ftrace: Release the function hlist if we don't
- need it anymore
-References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com> <1264122982-1553-7-git-send-regression-fweisbec@gmail.com>
-In-Reply-To: <1264122982-1553-7-git-send-regression-fweisbec@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100125165219.cd0b869d.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> After we disable the function profiler, the function hashlist
-> stays in memory. This is wasteful as nobody needs it anymore,
-> until the next use if any.
+On Mon, Jan 25, 2010 at 04:52:19PM +1100, Stephen Rothwell wrote:
+> Hi Dmitry,
 > 
-> Release it when we disable the function profiler instead of
-> resetting it in the next use.
+> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
 > 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Li Zefan <lizf@cn.fujitsu.com>
-> Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
->  kernel/trace/ftrace.c          |    1 +
->  kernel/trace/functions_hlist.c |   61 +++++++++++++++++-----------------------
->  kernel/trace/functions_hlist.h |    1 +
->  3 files changed, 28 insertions(+), 35 deletions(-)
+> drivers/input/serio/xilinx_ps2.c: In function 'xps2_of_probe':
+> drivers/input/serio/xilinx_ps2.c:273: error: incompatible type for argument 1 of 'resource_size'
+> include/linux/ioport.h:132: note: expected 'const struct resource *' but argument is of type 'struct resource'
+> drivers/input/serio/xilinx_ps2.c: In function 'xps2_of_remove':
+> drivers/input/serio/xilinx_ps2.c:347: error: incompatible type for argument 1 of 'resource_size'
+> include/linux/ioport.h:132: note: expected 'const struct resource *' but argument is of type 'struct resource'
 > 
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index dfd8f7c..0ded01c 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -509,6 +509,7 @@ ftrace_profile_write(struct file *filp, const char __user *ubuf,
+> Please at least build test this stuff ...
+> 
+> Caused by commit cc7bbfa322b48be82b1c86a104433d4ac349da79 ("Input:
+> xilinx_ps2 - use resource_size").
+> 
+> I have reverted that commit for today.
+> 
 
->			/*
->			 * unregister_ftrace_profiler calls stop_machine
->			 * so this acts like an synchronize_sched.
->			 */
->  			unregister_ftrace_profiler();
+Argh, sorry about that. I adjusted the commit; John, Tobias, please
+verify (next branch in my tree).
 
-unluckily, when !CONFIG_DYNAMIC_FTRACE, it does not call stop_machine()
-nor synchronize_sched(), bug here?
+Thanks.
 
-> +			function_hlist_release();
-
-
+-- 
+Dmitry
