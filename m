@@ -1,144 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193Ab0AYEqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252Ab0AYE7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193Ab0AYEqf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 23:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857Ab0AYEqe
+	id S1753252Ab0AYE7Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 23:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273Ab0AYE7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 23:46:34 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:35186 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202Ab0AYEqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 23:46:32 -0500
-Date: Sun, 24 Jan 2010 20:46:06 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, "David S. Miller" <davem@davemloft.net>
-Cc: Tino Keitel <tino.keitel@gmx.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] sky2: revert config space change
-Message-ID: <20100124204606.2760d34e@nehalam>
-In-Reply-To: <201001242135.29309.rjw@sisk.pl>
-References: <20100115091053.GA5477@mac.home>
-	<20100119105105.184c3f01@nehalam>
-	<20100119193745.GA5797@x61.home>
-	<201001242135.29309.rjw@sisk.pl>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jan 2010 23:59:20 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:47466 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752031Ab0AYE7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 23:59:19 -0500
+Date: Mon, 25 Jan 2010 10:29:08 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kyle Moffett <kyle@moffetthome.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100125045908.GB4895@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20100121170541.7425ff10.akpm@linux-foundation.org> <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain> <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <20100123112333.GA15455@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100123112333.GA15455@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Obviously, this register had some other impact that is causing
-the regression.  Either it is masking some other access or needs
-to be reset in some path.
+On Sat, Jan 23, 2010 at 12:23:33PM +0100, Ingo Molnar wrote:
+> 
+> * Kyle Moffett <kyle@moffetthome.net> wrote:
+> 
+> > On Fri, Jan 22, 2010 at 19:22, Linus Torvalds
+> > <torvalds@linux-foundation.org> wrote:
+ 
+...
 
-Either, way it is best to just revert the change for 2.6.33
+> In that sense it might be better to fix/enhance ptrace, if there's interest. 
+> I've written a handful of ptrace extensions in the past (none of them went 
+> upstream tho), it can be done in a useful manner and the code is pretty 
+> hackable. There are basic problems left to be solved: for example why is there 
+> still no 'memory block copy' call, why are we _still_ limited to one word per 
+> system call PTRACE_PEEK* memory copies? It's ridiculous. SparcLinux has 
+> PTRACE_WRITE*/READ* support that implements this, but none of the other 
+> architectures have it so it's essentially unused.
+> 
+> Or another possible direction would be to extend the perf events syscall with 
+> interception capabilities. It's far more performant at extracting application 
+> state without scheduling than any ptrace method - and interception/injection 
+> would be a natural next step - if there's interest.
 
+This certainly is now a chicken and egg problem. Everybody agrees that
+Linux needs something better than ptrace; legacy ptrace will continue to
+live, so will utilities written to it (strace, etc).
 
-This reverts commit 166a0fd4c788ec7f10ca8194ec6d526afa12db75.
----
- drivers/net/sky2.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+But should that limit what Linux can offer? What's the way out?
 
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index f8f50f7..64b441c 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -644,6 +644,7 @@ static void sky2_phy_power_up(struct sky2_hw *hw, unsigned port)
- {
- 	u32 reg1;
- 
-+	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_ON);
- 	reg1 = sky2_pci_read32(hw, PCI_DEV_REG1);
- 	reg1 &= ~phy_power[port];
- 
-@@ -651,6 +652,7 @@ static void sky2_phy_power_up(struct sky2_hw *hw, unsigned port)
- 		reg1 |= coma_mode[port];
- 
- 	sky2_pci_write32(hw, PCI_DEV_REG1, reg1);
-+	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
- 	sky2_pci_read32(hw, PCI_DEV_REG1);
- 
- 	if (hw->chip_id == CHIP_ID_YUKON_FE)
-@@ -707,9 +709,11 @@ static void sky2_phy_power_down(struct sky2_hw *hw, unsigned port)
- 		gm_phy_write(hw, port, PHY_MARV_CTRL, PHY_CT_PDOWN);
- 	}
- 
-+	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_ON);
- 	reg1 = sky2_pci_read32(hw, PCI_DEV_REG1);
- 	reg1 |= phy_power[port];		/* set PHY to PowerDown/COMA Mode */
- 	sky2_pci_write32(hw, PCI_DEV_REG1, reg1);
-+	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
- }
- 
- /* Force a renegotiation */
-@@ -2149,7 +2153,9 @@ static void sky2_qlink_intr(struct sky2_hw *hw)
- 
- 	/* reset PHY Link Detect */
- 	phy = sky2_pci_read16(hw, PSM_CONFIG_REG4);
-+	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_ON);
- 	sky2_pci_write16(hw, PSM_CONFIG_REG4, phy | 1);
-+	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
- 
- 	sky2_link_up(sky2);
- }
-@@ -2640,6 +2646,7 @@ static void sky2_hw_intr(struct sky2_hw *hw)
- 	if (status & (Y2_IS_MST_ERR | Y2_IS_IRQ_STAT)) {
- 		u16 pci_err;
- 
-+		sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_ON);
- 		pci_err = sky2_pci_read16(hw, PCI_STATUS);
- 		if (net_ratelimit())
- 			dev_err(&pdev->dev, "PCI hardware error (0x%x)\n",
-@@ -2647,12 +2654,14 @@ static void sky2_hw_intr(struct sky2_hw *hw)
- 
- 		sky2_pci_write16(hw, PCI_STATUS,
- 				      pci_err | PCI_STATUS_ERROR_BITS);
-+		sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
- 	}
- 
- 	if (status & Y2_IS_PCI_EXP) {
- 		/* PCI-Express uncorrectable Error occurred */
- 		u32 err;
- 
-+		sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_ON);
- 		err = sky2_read32(hw, Y2_CFG_AER + PCI_ERR_UNCOR_STATUS);
- 		sky2_write32(hw, Y2_CFG_AER + PCI_ERR_UNCOR_STATUS,
- 			     0xfffffffful);
-@@ -2660,6 +2669,7 @@ static void sky2_hw_intr(struct sky2_hw *hw)
- 			dev_err(&pdev->dev, "PCI Express error (0x%x)\n", err);
- 
- 		sky2_read32(hw, Y2_CFG_AER + PCI_ERR_UNCOR_STATUS);
-+		sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
- 	}
- 
- 	if (status & Y2_HWE_L1_MASK)
-@@ -3038,6 +3048,7 @@ static void sky2_reset(struct sky2_hw *hw)
- 	}
- 
- 	sky2_power_on(hw);
-+	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
- 
- 	for (i = 0; i < hw->ports; i++) {
- 		sky2_write8(hw, SK_REG(i, GMAC_LINK_CTRL), GMLC_RST_SET);
-@@ -3074,6 +3085,7 @@ static void sky2_reset(struct sky2_hw *hw)
- 		reg <<= PSM_CONFIG_REG4_TIMER_PHY_LINK_DETECT_BASE;
- 
- 		/* reset PHY Link Detect */
-+		sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_ON);
- 		sky2_pci_write16(hw, PSM_CONFIG_REG4,
- 				 reg | PSM_CONFIG_REG4_RST_PHY_LINK_DETECT);
- 		sky2_pci_write16(hw, PSM_CONFIG_REG4, reg);
-@@ -3091,6 +3103,7 @@ static void sky2_reset(struct sky2_hw *hw)
- 			/* restore the PCIe Link Control register */
- 			sky2_pci_write16(hw, cap + PCI_EXP_LNKCTL, reg);
- 		}
-+		sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
- 
- 		/* re-enable PEX PM in PEX PHY debug reg. 8 (clear bit 12) */
- 		sky2_write32(hw, Y2_PEX_PHY_DATA, PEX_DB_ACCESS | (0x08UL << 16));
--- 
-1.6.3.3
+- Enhance ptrace: At least one ptrace maintainer (Roland) had publically
+  stated he doesn't prefer enhancing legacy ptrace -- that its already a
+  beast to maintain, and adding more complexity to it does it no good.
 
+- Extend perf; would perf then use utrace underneath? Or would one have
+  to redo some of what utrace already does for thread level control?
+
+- Give utrace a syscall and make it the primary way for users to
+  interact with the layer. There are benefits to this if there is
+  agreement on the utrace layer itself, maybe with less fexibility than
+  what it currently offers? If yes, what should it look like?
+
+Any new debug facility will have to incorporate some or most learnings
+from what utrace tried to address. It would be sad to just dump utrace
+and redo everything from scratch or band-aid existing interfaces.
+
+Ananth
