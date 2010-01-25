@@ -1,131 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136Ab0AYPV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784Ab0AYPY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754136Ab0AYPV4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 10:21:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986Ab0AYPVw
+	id S1753784Ab0AYPY1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 10:24:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461Ab0AYPY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 10:21:52 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:62688 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754124Ab0AYPVq convert rfc822-to-8bit (ORCPT
+	Mon, 25 Jan 2010 10:24:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:44757 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752260Ab0AYPYZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 10:21:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JlmChUXkFZAVHsLUFSs8PDGYpg32nj79vAIY3NWcQwPFD9K3oA4SA2JO2yPPyKMAnT
-         L4g4u3ro0RgahNGGs4yAJa/SwUeMXEuX+OitZAjln4bqeXC4lxF4FrhWl/9sKPoMPvXd
-         Z9xYiOI3znbcBpSk8AiBv8BynYGT5P7Z21Qc4=
+	Mon, 25 Jan 2010 10:24:25 -0500
+Message-ID: <4B5DB78D.2090408@redhat.com>
+Date: Mon, 25 Jan 2010 10:23:57 -0500
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc13 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <2375c9f91001220202m724e2ee2p2213b81a043ebd33@mail.gmail.com>
-References: <6fb445941001200112o2934f805l4eb4f78000e9527e@mail.gmail.com>
-	 <6fb445941001200120m3aa5e944j54a6f645ce82d76f@mail.gmail.com>
-	 <4B57C3C3.9010606@schaufler-ca.com>
-	 <20100121090510.GA908@infradead.org>
-	 <6fb445941001220115y6b99f7b4g306ea23d3202969@mail.gmail.com>
-	 <2375c9f91001220202m724e2ee2p2213b81a043ebd33@mail.gmail.com>
-Date: Mon, 25 Jan 2010 23:21:44 +0800
-Message-ID: <6fb445941001250721p73795fe2i9196bd3c77dd0fce@mail.gmail.com>
-Subject: Re: About ACL for IPC Object
-From: zhou peng <ailvpeng25@gmail.com>
-To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, sds@tycho.nsa.gov,
-       jra@samba.org, linux-security-module@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+CC: Nick Piggin <npiggin@suse.de>, Dave Chinner <david@fromorbit.com>,
+       Jan Kara <jack@suse.cz>, Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
        linux-fsdevel@vger.kernel.org
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+Subject: Re: IO error semantics
+References: <4B4EB5B9.4020809@hitachi.com> <4B4EDE5C.8040600@hitachi.com> <4B4EEE86.7080807@hitachi.com> <20100114141803.GB3146@quack.suse.cz> <20100118051847.GA8678@laptop> <20100118060518.GA9151@laptop> <20100118122437.GF7264@discord.disaster> <20100118140039.GA13909@laptop> <D65C918F-8CCD-4626-BA84-FD0410A5E81F@cam.ac.uk>
+In-Reply-To: <D65C918F-8CCD-4626-BA84-FD0410A5E81F@cam.ac.uk>
+Content-Type: text/plain; charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have tested posix sem,posix shm and posix msg queue for ACL on
-fedora 12 with kernel 2.6.32.
-
-Posix sem and posix shm using tmpfs monted by default support ACL well .
-Posix msg queue use mqueue fs mounted by manual but it seem not
-surpoort ACL well. It failed for setting named ACL item:
-{
- $ mkdir /dev/mqueue
- $ mount -o rw, acl -t mqueue none /dev/mqueue
- $cd /dev/mqueue
- "/mq" msg queue object created and used by processes properly
-
- $getfacl mq
-   #file: mq
-   #owner:root
-   #group:root
-   user:rw-
-   group::---
-   other::---
-
- $setfacl -m u:testuser:rw mq                                   /* failed here*/
- $setfacl: mq :Operation not supported
- but mqueue fs works well for setting owner user and owner group items.
-}
-
-I am not sure whether mqueue don't support acl or I make mistake.
-
-2010/1/22 Américo Wang <xiyou.wangcong@gmail.com>:
-> (Top-posting fixed.)
+On 01/18/2010 06:33 PM, Anton Altaparmakov wrote:
+> Hi,
 >
-> On Fri, Jan 22, 2010 at 5:15 PM, zhou peng <ailvpeng25@gmail.com> wrote:
->>
->> 2010/1/21 Christoph Hellwig <hch@infradead.org>:
->>> On Wed, Jan 20, 2010 at 07:02:27PM -0800, Casey Schaufler wrote:
->>>> zhou peng wrote:
->>>> > Hi all,
->>>> >
->>>> > There are ACL in file system, but why there are no ACL implementation
->>>> > in IPC object, eg. shm, message queue, FIFO?
->>>> >
->>>>
->>>> Most people haven't noticed that IPC objects are even there, much less
->>>> that they have mode bits and not ACLs. Even when we were doing security
->>>> evaluations on Unix boxes in the 1990's they were considered insufficiently
->>>> interesting to justify the additional work to do ACLs.
->>>>
->>>> If you really want ACLs on IPC objects it would make a dandy little
->>>> project for a summer. I would be happy to review patches.
->>
->> Thanks. It's interesting to add ACL over IPC objects. I want to have a try.
->>
->>>
->>> Or use the posix IPC mechanisms.  The Posix shared memory has ACL by
->>> using tmpfs as the backing store, and we could add similar support to
->>> Posix messages queues as they are also backed by a normal filesystem.
->>
->> Christoph Hellwig, This way may be convinent. Could you give some
->> detailed message. :)
->> I only find /proc/ipc/shm file which contain the info of shm objs,and
->> tmpfs on /dev/shm which is empty.
->>
->>>
->>> Adding this support to the old SYSV IPC mechanisms would be much harder
->>> as they do not fit into the file backed model we use everywhere else at
->>> all.
->>
->> Just like file objects, the mode bits are implment over IPC objects
->> without file backed, so I think adding ACL support to IPC objects may
->> be somewhat reasonable :)
->>
->> Thank you all for so many solutions.
->>
->> I want to control some IPC object (shm, msg queue, semphore) can be
->> accessed by which named user or named group just like file objects ACL
->> do.
->>
->> I studied the solution you all referred, The SELinux is powerful but
->> may be somewhat complicated. And I am confused with Christoph
->> Hellwig‘s solution using tmpfs.
+> On 18 Jan 2010, at 14:00, Nick Piggin wrote:
+>    
+>> For write errors, you could also do block re-allocation, which would be fun.
+>>      
+> Yes it would.  (-:
 >
-> Well, only posix semphores and posix share memory use tmpfs, I think,
-> posix msg queues use "mqueue" instead.
+> FWIW, Windows does this with Microsoft's NTFS driver.  When a write fails due to a bad block, the block is marked as bad (recorded in the bad cluster list and marked as allocated in the in-use bitmap so no-one tries to allocate it), a new block is allocated, inode metadata is updated to reflect the change in the logical to physical block map of the file the block belongs to, and the write is then re-tried to its new location.
 >
+> I have never bothered implementing it in NTFS on Linux partially because there doesn't seem any obvious way to do it inside the file system.  I think the VFS and/or the block layer would have to offer help there in some way.  What I mean for example is that if ->writepage fails then the failure is only detected inside the asynchronous i/o completion handler at which point the page is not locked any more, it is marked as being under writeback, and we are in IRQ context (or something) and thus it is not easy to see how we can from there get to doing all the above needed actions that require memory allocations, disk i/o, etc...  I suppose a separate thread could do it where we just schedule the work to be done.  But problem with that is that that work later on might fail so we can't simply pretend the block was written successfully yet we do not want to report an error or the upper layers would pick it up even though we hopefully will correct it in due course...
+>
+> Best regards,
+>
+> 	Anton
+>    
+
+For permanent write errors, I would expect any modern drive to do a 
+sector remapping internally. We should never need to track this kind of 
+information for any modern device that I know of (S-ATA, SAS, SSD's and 
+raid arrays should all handle this).
+
+Would not seem to be worth the complexity.
+
+Also keep in mind that retrying IO errors is not always a good thing - 
+devices retry failed IO multiple times internally. Adding additional 
+retry loops up the stack only makes our unavoidable IO error take much 
+longer to hit!
+
+Ric
 
 
-
--- 
-zhoupeng
