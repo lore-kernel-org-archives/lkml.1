@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536Ab0AYOXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591Ab0AYO1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536Ab0AYOXf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 09:23:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790Ab0AYOXe
+	id S1753591Ab0AYO1q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 09:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428Ab0AYO1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 09:23:34 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:46525 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753423Ab0AYOXd (ORCPT
+	Mon, 25 Jan 2010 09:27:45 -0500
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:28646
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753346Ab0AYO1o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 09:23:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=sqQ1CGY6Jk/Z62iMWZiX/2S3upFKBOw7YrsLj8ErS/oyA8pwpV+cCXhNTgLaOhYVKY
-         DF5IlQPtZ195nKb9Y/l7UWH4vK0ksu33OpQhdKktgbv36W3/Vla+ICV91u0K/eRiWpoF
-         EluvGaZVkFvfqKb+jsSd+pASSAdyCQrrp+l1E=
+	Mon, 25 Jan 2010 09:27:44 -0500
+X-SpamScore: -22
+X-BigFish: VPS-22(zz1432R98dN936eM62a3Lzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KWT45L-02-1PE-02
+X-M-MSG: 
+Date: Mon, 25 Jan 2010 15:27:21 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, x86@kernel.org, oprofile-list@lists.sf.net
+Subject: Re: [PATCH] Add Xeon 7500 series support to oprofile
+Message-ID: <20100125142721.GG2014@erda.amd.com>
+References: <20100121222627.GA22897@basil.fritz.box>
 MIME-Version: 1.0
-In-Reply-To: <20100122164248.GA2651@redhat.com>
-References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	 <20100122164248.GA2651@redhat.com>
-Date: Mon, 25 Jan 2010 23:15:33 +0900
-X-Google-Sender-Auth: aa44257e972fb78e
-Message-ID: <a6b9f31a1001250615y6e4501b3k17074bcc4ce26c7c@mail.gmail.com>
-Subject: Re: [PATCH 00/12] perf lock: New subcommand "perf lock", for 
-	analyzing lock statistics
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20100121222627.GA22897@basil.fritz.box>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 25 Jan 2010 14:27:22.0214 (UTC) FILETIME=[81EBA860:01CA9DCA]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jason, thanks for your reply!
+On 21.01.10 23:26:27, Andi Kleen wrote:
+> Add Xeon 7500 series support to oprofile
+> 
+> Straight forward: it's the same as Core i7, so just detect
+> the model number. No user space changes needed.
+> 
+> Very simple patch, so it could be still merged for .33?
 
-On Sat, Jan 23, 2010 at 01:42, Jason Baron <jbaron@redhat.com> wrote:
-> On Fri, Jan 22, 2010 at 10:39:01PM +0900, Hitoshi Mitake wrote:
->> Adding new subcommand "perf lock" to perf.
->>
->
-> looks like a really intresting patch! Does this patch mean that we can
-> potentially remove CONFIG_LOCK_STAT, now that the functionality is
-> available via 'perf'? Another desire for me has been to able to run
-> lockstat on production box. This has not been possible before without
-> incurring the performance penalty of lockdep. however, with 'perf' tools
-> ability to be turned on an off, perhaps there is (or we can build) a
-> mode for lockdep that is lower overhead for this usecase?
->
+Patch applied to oprofile/urgent. I will try to merge it for .33.
 
-As Peter told, this patch series depends on lockdep.
-But, checking dependency and tracing lock events are
-essentially different things. So I think dividing these is possible.
+I would like to see a follow on patch that changes all x86_model
+values to hex that have the extended model bit set. This would make
+the code more readable since the spec is also using bit values for
+this.
 
-But, perf depends on debugfs.
-I don't know about production box well,
-does your production box turns on debugfs?
-It seems that debugfs is not a thing for production box...
+Thanks.
 
-And I'm interesting in in-kernel histogram of locks.
-Is there requirement of it?
-I have some ideas (not done yet, completely).
+-Robert
 
-Thanks,
-	Hitoshi
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
