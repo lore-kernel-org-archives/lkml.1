@@ -1,101 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750853Ab0AYPML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136Ab0AYPR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750853Ab0AYPML (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 10:12:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956Ab0AYPMH
+	id S1753136Ab0AYPR4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 10:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699Ab0AYPRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 10:12:07 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34779 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751079Ab0AYPMG (ORCPT
+	Mon, 25 Jan 2010 10:17:55 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:45505 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752632Ab0AYPRy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 10:12:06 -0500
-X-Authority-Analysis: v=1.0 c=1 a=yYHeZbYeH2cA:10 a=7U3hwN5JcxgA:10 a=t7bN9XTwOkWIhFUyazwA:9 a=2irqs-MymA6yLsAaCicA:7 a=3aZJd6cbtwP7retiYS8c_Vv5n4YA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH RFC tip/core/rcu] accelerate grace period if last
- non-dynticked CPU
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-In-Reply-To: <20100125034816.GA14043@linux.vnet.ibm.com>
-References: <20100125034816.GA14043@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Mon, 25 Jan 2010 10:12:03 -0500
-Message-ID: <1264432323.31321.412.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Jan 2010 10:17:54 -0500
+Date: Mon, 25 Jan 2010 10:17:26 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+Cc: linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [btrfs] kernel BUG at include/linux/spinlock.h:376!
+Message-ID: <20100125151726.GA331@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>,
+	linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <201001072229.33976.johannes.hirte@fem.tu-ilmenau.de>
+ <20100114193708.GD23810@think>
+ <201001232123.58602.johannes.hirte@fem.tu-ilmenau.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001232123.58602.johannes.hirte@fem.tu-ilmenau.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4B5DB61C.00FC:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-24 at 19:48 -0800, Paul E. McKenney wrote:
+On Sat, Jan 23, 2010 at 09:23:56PM +0100, Johannes Hirte wrote:
+> Am Donnerstag 14 Januar 2010 20:37:08 schrieb Chris Mason:
+> > On Thu, Jan 07, 2010 at 10:29:32PM +0100, Johannes Hirte wrote:
+> > > One of my btrfs filesystems gives the following bug message on access:
+> > > 
+> > > Jan  6 23:08:12 datengrab kernel: ------------[ cut here ]------------
+> > > Jan  6 23:08:12 datengrab kernel: kernel BUG at
+> > > include/linux/spinlock.h:376! Jan  6 23:08:12 datengrab kernel: invalid
+> > > opcode: 0000 [#1] SMP
+> > > Jan  6 23:08:12 datengrab kernel: last sysfs file:
+> > > /sys/devices/pci0000:00/0000:00:18.3/temp1_input
+> > > Jan  6 23:08:12 datengrab kernel: CPU 1
+> > > Jan  6 23:08:12 datengrab kernel: Pid: 2837, comm: btrfs-endio-wri Not
+> > > tainted 2.6.33-rc3-00033-g03b7675 #12 TYAN Tiger K8W Dual AMD Opteron,
+> > > S2875/To Be Filled
+> > > By O.E.M.
+> > > Jan  6 23:08:12 datengrab kernel: RIP: 0010:[<ffffffff8118f7ea>] 
+> > > [<ffffffff8118f7ea>] btrfs_assert_tree_locked+0x16/0x1c
+> > 
+> > Well, we really should have this tree block locked, but
+> > btrfs_mark_extent_written is doing some special things.  Is the trace
+> > always the same?
+> 
+> Sorry for the long delay. Yes the trace was always the same. I can't test 
+> patches, since I'm not working on the corrupted FS anymore. The bug only 
+> occurred on the corrupted filesystem. But as I've seen, Yan Zheng has tracked 
+> it down (commit 6c7d54ac87f338c479d9729e8392eca3f76e11e1). 
+> 
+> I still suspect that the FS corruption was caused by this bug. It didn't 
+> happened again. If so, I'll report.
 
-> +/*
-> + * Check to see if any future RCU-related work will need to be done
-> + * by the current CPU, even if none need be done immediately, returning
-> + * 1 if so.  This function is part of the RCU implementation; it is -not-
-> + * an exported member of the RCU API.
-> + *
-> + * Because we are not supporting preemptible RCU, attempt to accelerate
-> + * any current grace periods so that RCU no longer needs this CPU, but
-> + * only if all other CPUs are already in dynticks-idle mode.  This will
-> + * allow the CPU cores to be powered down immediately, as opposed to after
-> + * waiting many milliseconds for grace periods to elapse.
-> + */
-> +int rcu_needs_cpu(int cpu)
-> +{
-> +	int c = 1;
-> +	int i;
-> +	int thatcpu;
-> +
-> +	/* Don't bother unless we are the last non-dyntick-idle CPU. */
-> +	for_each_cpu(thatcpu, nohz_cpu_mask)
-> +		if (thatcpu != cpu)
-> +			return rcu_needs_cpu_quick_check(cpu);
-> +
-> +	/* Try to push remaining RCU-sched and RCU-bh callbacks through. */
-> +	for (i = 0; i < RCU_NEEDS_CPU_FLUSHES && c; i++) {
-> +		c = 0;
-> +		if (per_cpu(rcu_sched_data, cpu).nxtlist) {
-> +			c = 1;
-> +			rcu_sched_qs(cpu);
-> +			force_quiescent_state(&rcu_sched_state, 0);
-> +			__rcu_process_callbacks(&rcu_sched_state,
-> +						&per_cpu(rcu_sched_data, cpu));
+Right, we should have it fixed now, thanks for the report.
 
-> +		}
-> +		if (per_cpu(rcu_bh_data, cpu).nxtlist) {
-> +			c = 1;
-> +			rcu_bh_qs(cpu);
-> +			force_quiescent_state(&rcu_bh_state, 0);
-> +			__rcu_process_callbacks(&rcu_bh_state,
-> +						&per_cpu(rcu_bh_data, cpu));
-> +		}
-> +	}
-> +
-> +	/* If RCU callbacks are still pending, RCU still needs this CPU. */
-> +	return c;
-
-What happens if the last loop pushes out all callbacks? Then we would be
-returning 1 when we could really be returning 0. Wouldn't a better
-answer be:
-
-	return per_cpu(rcu_sched_data, cpu).nxtlist ||
-		per_cpu(rcu_bh_data, cpu).nxtlist;
-
--- Steve
-
-
-> +}
-> +
-> +#endif
-
+-chris
 
