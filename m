@@ -1,60 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004Ab0AYGKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180Ab0AYGM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752004Ab0AYGKW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 01:10:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589Ab0AYGKU
+	id S1752180Ab0AYGM3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 01:12:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537Ab0AYGM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 01:10:20 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44536 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272Ab0AYGKT (ORCPT
+	Mon, 25 Jan 2010 01:12:28 -0500
+Received: from toroondcbmts08.bellnexxia.net ([207.236.237.42]:42764 "EHLO
+	toroondcbmts08-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751084Ab0AYGM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 01:10:19 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Thiago Farina <tfransosi@gmail.com>
-Subject: Re: [PATCH 1/1] kernel/exit.c: fix shadows sparse warning.
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <9695506b784c54436f40b4c21ce2d7e6965b7aee.1264257828.git.tfransosi@gmail.com>
-References: <9695506b784c54436f40b4c21ce2d7e6965b7aee.1264257828.git.tfransosi@gmail.com>
-Message-Id: <20100125150956.BDAF.A69D9226@jp.fujitsu.com>
+	Mon, 25 Jan 2010 01:12:27 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=0y2ISyEma3kA:10 a=HmCT5iXHAAAA:8 a=hDeWHms_M7WvrEdhkOgA:9
+ a=jDNBX_UWWLU3asGP32tTWXNmt8QA:4 a=UzpfeuTUgaAA:10 a=Nr7Pmq0tdocA:10
+Message-ID: <20100125011307.ZBLDA.20797.root@toroondcbfep01>
+Date: Mon, 25 Jan 2010 0:13:07 -0600
+From: FONDAZIONE Di VITTORIO & ECOWAS <rcrrhq@bellnet.ca>
+Reply-To: rev.mustaphayusuf@btinternet.com
+Subject: 
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 25 Jan 2010 15:10:12 +0900 (JST)
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+X-Originating-IP: from 41.220.75.16 by webmail.en.bellnet.ca; Mon, 25 Jan 2010 1:13:07 -0500
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> kernel/exit.c:1183:26: warning: symbol 'status' shadows an earlier one
-> kernel/exit.c:1173:21: originally declared here
-> 
-> Signed-off-by: Thiago Farina <tfransosi@gmail.com>
-> ---
->  kernel/exit.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/exit.c b/kernel/exit.c
-> index 546774a..2e72b3f 100644
-> --- a/kernel/exit.c
-> +++ b/kernel/exit.c
-> @@ -1180,7 +1180,7 @@ static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
->  
->  	if (unlikely(wo->wo_flags & WNOWAIT)) {
->  		int exit_code = p->exit_code;
-> -		int why, status;
-> +		int why;
->  
->  		get_task_struct(p);
->  		read_unlock(&tasklist_lock);
-
-Looks good to me.
-
-
-
-
+$1,000,000 is been awarded to you in the 2010 Online Promotion,send us your Names/Tel/Country,email:rev.mustaphayusuf@btinternet.com
