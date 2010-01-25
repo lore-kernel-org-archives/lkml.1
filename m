@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490Ab0AYBsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557Ab0AYCNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752490Ab0AYBsr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 20:48:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986Ab0AYBsq
+	id S1752557Ab0AYCNx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 21:13:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009Ab0AYCNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 20:48:46 -0500
-Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:42952 "EHLO
-	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751821Ab0AYBsp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 20:48:45 -0500
-Message-ID: <4B5CF87A.20101@blueyonder.co.uk>
-Date: Mon, 25 Jan 2010 01:48:42 +0000
-From: Sid Boyce <sboyce@blueyonder.co.uk>
-Reply-To: sboyce@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: HDA Intel Audio hang on boot
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <omZ8aBZReyD.A.jbH.QNlSLB@chimera> <4B4A9D8F.9030300@blueyonder.co.uk> <4B4FC3B0.9070207@blueyonder.co.uk>
-In-Reply-To: <4B4FC3B0.9070207@blueyonder.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jan 2010 21:13:52 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:37299 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751665Ab0AYCNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 21:13:51 -0500
+Date: Mon, 25 Jan 2010 13:13:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: pcmcia tree build failure
+Message-Id: <20100125131343.9934da5f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__25_Jan_2010_13_13_43_+1100_AWIerRkYbhIM3Rd3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15/01/10 01:24, Sid Boyce wrote:
-This is the only outstanding bug. No problems up 2.6.32-git1, but I get
-a solid lock-up on 2.6.32-git2 through 2.6.33-rc5 if the on-board audio
-is not disabled in the BIOS.
-Regards
-Sid.
+--Signature=_Mon__25_Jan_2010_13_13_43_+1100_AWIerRkYbhIM3Rd3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> tindog:~ # uname -r
-> 2.6.33-rc4-smp
-> On 2.6.32-git1 which boots, hwinfo shows:-
->   oss.card_id = 'HDA NVidia'
->   oss.card_id = 'HDA NVidia'
->   oss.card_id = 'HDA NVidia'
->   alsa.card_id = 'HDA NVidia'
->   alsa.card_id = 'HDA NVidia'
->   alsa.card_id = 'HDA NVidia'
->   alsa.card_id = 'HDA NVidia'
->   info.product = 'HDA NVidia ALSA hardware specific Device'
->   alsa.card_id = 'HDA NVidia'
->   info.product = 'HDA NVidia ALSA Control Device'
->   alsa.card_id = 'HDA NVidia'
->   info.product = 'HDA NVidia Sound Card'
->   sound.card_id = 'HDA NVidia'
->   info.linux.driver = 'HDA Intel'
->     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
->        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->        HDA Intel: module = snd_hda_intel
-> irq:0 22 (   490413) "sata_nv" "HDA Intel"
->        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->        HDA Intel: module = snd_hda_intel
->        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->        HDA Intel: module = snd_hda_intel
->   E: DRIVER=HDA Intel
->   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
-> low) -> IRQ 22
->   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
->   Driver: "HDA Intel"
-> 
-> Regards
-> Sid.
-> 
+Hi Dominik,
 
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
+drivers/built-in.o:(.toc1+0xd118): undefined reference to `pcmcia_dev_list_=
+lock'
 
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+Caused by commit fc53c3482805cb3281dbeb0bd29dd892aaa53303 ("pcmcia:
+simplify locking").
 
+I have used the pcmcia tree from next-20100122 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__25_Jan_2010_13_13_43_+1100_AWIerRkYbhIM3Rd3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktc/lcACgkQjjKRsyhoI8zzGQCZAQTv94/evtKbp92FXE4dsFgg
+qlcAoLBe3ep6OofXOHbbiISiz7/YCDin
+=J/Hz
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__25_Jan_2010_13_13_43_+1100_AWIerRkYbhIM3Rd3--
