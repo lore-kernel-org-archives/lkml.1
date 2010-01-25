@@ -1,92 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106Ab0AYNMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326Ab0AYNTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106Ab0AYNMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 08:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398Ab0AYNMa
+	id S1753326Ab0AYNTW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 08:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890Ab0AYNTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 08:12:30 -0500
-Received: from mail.lippert-at.com ([62.80.22.186]:30552 "EHLO
-	domex.lippertembedded.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750853Ab0AYNM3 (ORCPT
+	Mon, 25 Jan 2010 08:19:21 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34376 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746Ab0AYNTU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 08:12:29 -0500
-Message-ID: <4B5D98ED.6090301@LiPPERTEmbedded.de>
-Date: Mon, 25 Jan 2010 14:13:17 +0100
-From: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Mon, 25 Jan 2010 08:19:20 -0500
+Date: Mon, 25 Jan 2010 14:19:15 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, tglx@linutronix.de,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       linux-tip-commits@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Aristeu Rozanski <aris@redhat.com>, Doug Thompson <norsk5@yahoo.com>,
+       Huang Ying <ying.huang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [tip:x86/mce] x86, mce: Rename cpu_specific_poll to
+	mce_cpu_specific_poll
+Message-ID: <20100125131915.GA7801@basil.fritz.box>
+References: <20100121221711.GA8242@basil.fritz.box> <tip-f91c4d2649531cc36e10c6bc0f92d0f99116b209@git.kernel.org> <20100123051717.GA26471@elte.hu> <20100123075851.GA7098@liondog.tnic> <20100123090003.GA20056@elte.hu> <20100124100815.GA2895@liondog.tnic>
 MIME-Version: 1.0
-To: Andres Salomon <dilinger@collabora.co.uk>
-CC: Jordan Crouse <jordan.crouse@amd.com>, linux-geode@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] cs5535-clockevt: free timer in IRQ setup error path
-References: <4B4C4B86.7090509@LiPPERTEmbedded.de> <20100118103430.6480d1a8@mycelium.queued.net>
-In-Reply-To: <20100118103430.6480d1a8@mycelium.queued.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jan 2010 13:13:20.0280 (UTC) FILETIME=[2A525180:01CA9DC0]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100124100815.GA2895@liondog.tnic>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cs5535-clockevt: free timer in IRQ setup error path
+Hi,
 
-Due to a hardware limitation cs5535_mfgpt_free_timer() cannot actually release
-the timer hardware, but it will at least free the now unreferenced struct
-associated with it so calling it is the cleaner thing to do.
+> Because this is one thing that has been bugging us for a long time. We
+> don't have a centralized smart utility with lots of small subcommands
+> like perf or git, if you like, which can dump you the whole or parts
 
-Signed-off-by: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
----
+PC configuration is all in dmidecode, CPU/node information in lscpu
+these days (part of utils-linux)
 
-Hi Andres,
+The dmidecode information could be perhaps presented nicer, but 
+I don't think we need any fundamental new tools.
 
-> > cs5535_mfgpt_init() doesn't free up the timer in the error path
+> 1. We need to notify userspace, as you've said earlier, and not scan
+> the syslog all the time. And EDAC, although decoding the correctable
 
-> Yeah, we can't really free the timer, unfortunately.
-> It actually might not be a bad idea to reverse the code so that the
-> IRQ allocation happens first, since we can clean that up if mfgpt
-> allocation fails.
+mcelog never scanned the syslog all the time. This is just
+EDAC misdesign.
 
-The problem is that cs5535_mfgpt_setup_irq() depends on the return value of cs5535_mfgpt_alloc_timer(), because it needs to know the timer nr both to read out the previous IRQ (if any) and to setup the IRQ. (And setup_irq() in turn depends on cs5535_mfgpt_setup_irq() for getting the actual IRQ number.) I guess for reversing the order we'd have to split both cs5535_mfgpt_alloc_timer() and cs5535_mfgpt_setup_irq() into two parts, one to do all checking and detecting and a second run to actually touch the hardware. But I don't fancy the mess this is likely to result in ...
+But yes syslog is exactly the wrong interface for these kinds of errors.
 
-For now all I'm able to provide is this small patch that inserts the missing cs5535_mfgpt_free_timer() calls. This at least plugs the (really minor) mem leak - better than nothing.
+> 2. Also another very good point you had is go into maintenance mode by
+> throttling or even suspend all uspace processes and start a restricted
+> maintenance shell after an MCE happens. This should be done based on the
 
-Maybe cs5535_mfgpt_free_timer() can be made more intelligent to set mfgpt->avail again if the hardware isn't actually in a non-reversible state yet, but I don't know what this depends on and I lack the time to explore this further.
+When you have a unrecoverable MCE this is not safe because you
+can't write anything to disk (and usually the system is unstable
+and will crash soon) because there are uncontained errors somewhere
+in the hardware. The most important thing to do in this situation
+is to *NOT* write anything to disk (and that is the reason
+why the hardware raised the unrecoverable MCE in the first place)
+Having a shell without being able to write to disk doesn't make sense.
 
-Fortunately not freeing the timers only affects users who manually want to try several IRQs by repeatedly doing "modprobe cs5535-clockevt irq=..." and who after 3-6 failed attempts will have to reboot to get another batch of free timers. Once the module was loaded successfully it cannot be unloaded anyway.
+When you have a recoverable MCE with contained errors this is not needed, 
+because it, well, just recovers.
 
-Best regards,
-Jens
+> 3. All the hw events like correctable ECCs should be thresholded so that
+> all errors exceeding a preset threshold (below that is normal operation
 
---- linux-2.6.33-rc5/drivers/clocksource/cs5535-clockevt.c
-+++ timer_freed_on_error/drivers/clocksource/cs5535-clockevt.c
-@@ -154,14 +154,14 @@
- 	if (cs5535_mfgpt_setup_irq(timer, MFGPT_CMP2, &timer_irq)) {
- 		printk(KERN_ERR DRV_NAME ": Could not set up IRQ %d\n",
- 				timer_irq);
--		return -EIO;
-+		goto err_timer;
- 	}
- 
- 	/* And register it with the kernel */
- 	ret = setup_irq(timer_irq, &mfgptirq);
- 	if (ret) {
- 		printk(KERN_ERR DRV_NAME ": Unable to set up the interrupt.\n");
--		goto err;
-+		goto err_irq;
- 	}
- 
- 	/* Set the clock scale and enable the event mode for CMP2 */
-@@ -184,8 +184,10 @@
- 
- 	return 0;
- 
--err:
-+err_irq:
- 	cs5535_mfgpt_release_irq(cs5535_event_clock, MFGPT_CMP2, &timer_irq);
-+err_timer:
-+	cs5535_mfgpt_free_timer(cs5535_event_clock);
- 	printk(KERN_ERR DRV_NAME ": Unable to set up the MFGPT clock source\n");
- 	return -EIO;
- }
-_
+Agreed. Corrected errors without thresholds are useless (that is one 
+of the main reasons why syslog is a bad idea for them)
 
+See also my plumbers presentation on the topic:
+
+http://halobates.de/plumbers-error.pdf
+
+One key part is that for most interesting reactions to thresholds
+you need user space, kernel space is too limited.
+
+My current direction was implementing this in mcelog which
+maintains threshold counters and already does a couple of direct (user 
+based) threshold reactions, like offlining cores and pages and reporting
+short user friendly error summaries when thresholds are exceeded.
+
+Longer term I hope to move to a more generic (user) error infrastructure
+that handles more kinds of errors. This needs some infrastructure
+work, but not too much.
+
+> 
+> The current decoding needs more loving too since now it says something
+> like the following:
+
+Yes, see the slide set above on thoughts how a good error looks like.
+
+The big problem with EDAC currently is that it neither gives
+the information actually needed (like mainboard labels), but gives
+a lot of irrelevant low level information. And since it's kernel
+based it cannot do most of the interesting reactions. And it doesn't
+have a usable interface to add user events.
+
+And yes having all that crap in syslog is completely useless, unless
+you're debugging code.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
