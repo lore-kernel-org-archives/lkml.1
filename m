@@ -1,42 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752282Ab0AYBsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490Ab0AYBsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752282Ab0AYBsP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 20:48:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967Ab0AYBsO
+	id S1752490Ab0AYBsr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 20:48:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986Ab0AYBsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 20:48:14 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60949 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450Ab0AYBsN (ORCPT
+	Sun, 24 Jan 2010 20:48:46 -0500
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:42952 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751821Ab0AYBsp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 20:48:13 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Roman Jarosz" <kedgedev@gmail.com>
-Subject: Re: OOM-Killer kills too much with 2.6.32.2
-Cc: kosaki.motohiro@jp.fujitsu.com, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <op.u6ixswy6asvm2a@kedge>
-References: <op.u6ixswy6asvm2a@kedge>
-Message-Id: <20100125104728.4935.A69D9226@jp.fujitsu.com>
+	Sun, 24 Jan 2010 20:48:45 -0500
+Message-ID: <4B5CF87A.20101@blueyonder.co.uk>
+Date: Mon, 25 Jan 2010 01:48:42 +0000
+From: Sid Boyce <sboyce@blueyonder.co.uk>
+Reply-To: sboyce@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 25 Jan 2010 10:48:08 +0900 (JST)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: HDA Intel Audio hang on boot
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <omZ8aBZReyD.A.jbH.QNlSLB@chimera> <4B4A9D8F.9030300@blueyonder.co.uk> <4B4FC3B0.9070207@blueyonder.co.uk>
+In-Reply-To: <4B4FC3B0.9070207@blueyonder.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi,
+On 15/01/10 01:24, Sid Boyce wrote:
+This is the only outstanding bug. No problems up 2.6.32-git1, but I get
+a solid lock-up on 2.6.32-git2 through 2.6.33-rc5 if the on-board audio
+is not disabled in the BIOS.
+Regards
+Sid.
+
+> tindog:~ # uname -r
+> 2.6.33-rc4-smp
+> On 2.6.32-git1 which boots, hwinfo shows:-
+>   oss.card_id = 'HDA NVidia'
+>   oss.card_id = 'HDA NVidia'
+>   oss.card_id = 'HDA NVidia'
+>   alsa.card_id = 'HDA NVidia'
+>   alsa.card_id = 'HDA NVidia'
+>   alsa.card_id = 'HDA NVidia'
+>   alsa.card_id = 'HDA NVidia'
+>   info.product = 'HDA NVidia ALSA hardware specific Device'
+>   alsa.card_id = 'HDA NVidia'
+>   info.product = 'HDA NVidia ALSA Control Device'
+>   alsa.card_id = 'HDA NVidia'
+>   info.product = 'HDA NVidia Sound Card'
+>   sound.card_id = 'HDA NVidia'
+>   info.linux.driver = 'HDA Intel'
+>     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
+>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>        HDA Intel: module = snd_hda_intel
+> irq:0 22 (   490413) "sata_nv" "HDA Intel"
+>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>        HDA Intel: module = snd_hda_intel
+>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>        HDA Intel: module = snd_hda_intel
+>   E: DRIVER=HDA Intel
+>   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
+> low) -> IRQ 22
+>   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
+>   Driver: "HDA Intel"
 > 
-> since kernel 2.6.32.2 (also tried 2.6.32.3) I get a lot of oom-killer  
-> kills when I do hard disk intensive tasks (mainly in VirtualBox which is  
-> running Windows XP) and IMHO it kills processes even if I have a lot of  
-> free memory.
+> Regards
+> Sid.
 > 
-> Is this a known bug? I have self compiled kernel so I can try patches.
-
-Can you please post your .config?
 
 
+
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
