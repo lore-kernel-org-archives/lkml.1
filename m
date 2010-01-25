@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269Ab0AYLdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752592Ab0AYLfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752269Ab0AYLdN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 06:33:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872Ab0AYLdM
+	id S1752592Ab0AYLfs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 06:35:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064Ab0AYLfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 06:33:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:59093 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826Ab0AYLdL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 06:33:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=MbbTHngw7sWTTlocbRFZ+Eg1h7X0BEW/y2ztfCKliYmPNNJsmbiuVRPOfZjdJx5eCU
-         1nyHTmtUZTktfMbdWWOTa1YVJReoA87325O1HJy5BXRJ+104c3SByqjnrD6q7JeD5Nkh
-         sYKiwSQNjLuPyNC90kRbnD9O5fsQ/qox8qFrg=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1001250831110.2906@localhost.localdomain>
-References: <bug-15076-6666@http.bugzilla.kernel.org/>
-	 <201001221017.o0MAHQmu015858@demeter.kernel.org>
-	 <alpine.LFD.2.00.1001250831110.2906@localhost.localdomain>
-Date: Mon, 25 Jan 2010 12:33:09 +0100
-Message-ID: <c2673ca61001250333p33305d3fma638d73c0d448e17@mail.gmail.com>
-Subject: Re: [Bug 15076] System panic under load with clockevents_program_event
-From: okias <d.okias@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, bugzilla-daemon@bugzilla.kernel.org,
-       x86@kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Mon, 25 Jan 2010 06:35:48 -0500
+Received: from mail.gmx.net ([213.165.64.20]:53430 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751335Ab0AYLfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 06:35:47 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/y2Xhp5JnynYCg0EGmLdqBhd27T4gbk0CiG/GxF4
+	H/tCcXxvFLdZQq
+Subject: Re: netperf ~50% regression with 2.6.33-rc1, bisect to 1b9508f
+From: Mike Galbraith <efault@gmx.de>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1264413826.3642.88.camel@minggr.sh.intel.com>
+References: <1264413826.3642.88.camel@minggr.sh.intel.com>
+Content-Type: text/plain
+Date: Mon, 25 Jan 2010 12:35:42 +0100
+Message-Id: <1264419342.5888.42.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.56000000000000005
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Okey, I try without highmem soon.
+On Mon, 2010-01-25 at 18:03 +0800, Lin Ming wrote:
 
-2010/1/25, Thomas Gleixner <tglx@linutronix.de>:
-> Switched to email. Please reply to all instead of using the bugzilla
-> interface.
->
->> --- Comment #4 from okias <d.okias@gmail.com>  2010-01-22 10:17:25 ---
->> and it's regression. Now I work on 2.6.32.3 and no problem.
->
-> That's a really weird one. The system is 50 min up and running and out
-> of the blue it crashes in clockevents_program_event(). This function
-> has been called a couple of thousand times before that point.
->
-> The only way to crash there is when *dev is pointing into nirwana. dev
-> comes from
->
-> int tick_program_event(ktime_t expires, int force)
-> {
->         struct clock_event_device *dev =
-> __get_cpu_var(tick_cpu_device).evtdev;
->
-> according to the callchain. At this point nothing fiddles with
-> tick_cpu_device.evtdev, so I suspect some really nasty memory
-> corruption going on.
->
-> okias, can you please disable highmem support and verify whether the
-> problem persists ?
->
-> Thanks,
->
-> 	tglx
->
+> With above commit, the idle balance was rate limited, so CPU 15(server,
+> waiting data from client) is idle at most time.
+> 
+> CPU0(client) executes as below,
+> 
+> try_to_wake_up
+>    check_preempt_curr_idle
+>       resched_task
+>          smp_send_reschedule
+> 
+> This causes a lot of rescheduling IPI.
+> 
+> This commit can't be reverted due to conflict, so I just add below code
+> to disable "Rate-limit newidle" and the performance was recovered.
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 18cceee..588fdef 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4421,9 +4421,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+>  
+>  	this_rq->idle_stamp = this_rq->clock;
+>  
+> -	if (this_rq->avg_idle < sysctl_sched_migration_cost)
+> -		return;
+> -
+>  	for_each_domain(this_cpu, sd) {
+>  		unsigned long interval;
+>  
+
+Heh, so you should see the same thing with newidle disabled, as it was
+in .31 and many kernels prior.  Do you?
+
+So.  Rummaging around doing absolutely _nothing_ useful, there being
+zero movable tasks in this load, prevents us switching to the idle
+thread before the scheduling task is requeued.  Oh joy.
+
+Hm.... <imagines Peter's reaction to a busy wait> :)  OTOH, that's what
+it's _doing_ with above patch.
+
+	-Mike
 
 
--- 
-Jabber/XMPP: okias@isgeek.info
-SIP VoIP: sip:17474537254@proxy01.sipphone.com
+
