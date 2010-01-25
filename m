@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468Ab0AYGcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583Ab0AYGgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752468Ab0AYGcu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 01:32:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200Ab0AYGcr
+	id S1752583Ab0AYGgb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 01:36:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829Ab0AYGga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 01:32:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:31202 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752166Ab0AYGcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 01:32:46 -0500
-Subject: Re: [Bug #15017] kexec regression, radeon/kms irq related
- (bisected)
-From: Dave Airlie <airlied@redhat.com>
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>
-In-Reply-To: <a728f9f91001241926m4c19aedbvda295fe3c7daade@mail.gmail.com>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
-	 <hE3x9c-4KZM.A.kWG.mKMXLB@chimera>
-	 <a728f9f91001241926m4c19aedbvda295fe3c7daade@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 25 Jan 2010 16:28:18 +1000
-Message-ID: <1264400898.8478.1.camel@localhost>
+	Mon, 25 Jan 2010 01:36:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33647
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751437Ab0AYGg3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 01:36:29 -0500
+Date: Sun, 24 Jan 2010 22:36:40 -0800 (PST)
+Message-Id: <20100124.223640.119299590.davem@davemloft.net>
+To: shemminger@vyatta.com
+Cc: rjw@sisk.pl, tino.keitel@gmx.de, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sky2: revert config space change
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100124204606.2760d34e@nehalam>
+References: <20100119193745.GA5797@x61.home>
+	<201001242135.29309.rjw@sisk.pl>
+	<20100124204606.2760d34e@nehalam>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-24 at 22:26 -0500, Alex Deucher wrote:
-> On Sun, Jan 24, 2010 at 5:04 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.32.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15017
-> > Subject         : kexec regression, radeon/kms irq related (bisected)
-> > Submitter       : Markus Trippelsdorf <markus@trippelsdorf.de>
-> > Date            : 2010-01-09 18:49 (16 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d8f60cfc93452d0554f6a701aa8e3236cbee4636
-> >
-> >
-> >
+From: Stephen Hemminger <shemminger@vyatta.com>
+Date: Sun, 24 Jan 2010 20:46:06 -0800
+
+> Obviously, this register had some other impact that is causing
+> the regression.  Either it is masking some other access or needs
+> to be reset in some path.
 > 
-> That bug has patches which fix the issue attached and queued for 2.6.33.
+> Either, way it is best to just revert the change for 2.6.33
+> 
+> 
+> This reverts commit 166a0fd4c788ec7f10ca8194ec6d526afa12db75.
 
-Just sent to Linus.
-
-Dave.
-
-
+I'll apply this, thanks Stephen.
