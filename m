@@ -1,112 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855Ab0AYQQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886Ab0AYQY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753855Ab0AYQQA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 11:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226Ab0AYQP7
+	id S1753886Ab0AYQY5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 11:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446Ab0AYQYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 11:15:59 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:45928 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752765Ab0AYQP5 convert rfc822-to-8bit (ORCPT
+	Mon, 25 Jan 2010 11:24:55 -0500
+Received: from mail-pz0-f190.google.com ([209.85.222.190]:41496 "EHLO
+	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752849Ab0AYQYx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 11:15:57 -0500
+	Mon, 25 Jan 2010 11:24:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UezCRY0jFQPXzR7e3ygGAohCBYLRtE+jnADTIWjARB2IMjx2alij93/rLsvEGX7JFM
-         Gxhvyumq5X1QTaktPYNmzW60Umbb5VP1OHip3Tvph8U9+u6lHvEEqI8m2foYzqsXV59b
-         W6NCdvs3TNjf0BohxXjv4tIzgKx48kKJDRK0Q=
-MIME-Version: 1.0
-In-Reply-To: <4B5DB78D.2090408@redhat.com>
-References: <4B4EB5B9.4020809@hitachi.com> <4B4EDE5C.8040600@hitachi.com>
-	 <4B4EEE86.7080807@hitachi.com> <20100114141803.GB3146@quack.suse.cz>
-	 <20100118051847.GA8678@laptop> <20100118060518.GA9151@laptop>
-	 <20100118122437.GF7264@discord.disaster>
-	 <20100118140039.GA13909@laptop>
-	 <D65C918F-8CCD-4626-BA84-FD0410A5E81F@cam.ac.uk>
-	 <4B5DB78D.2090408@redhat.com>
-Date: Mon, 25 Jan 2010 11:15:50 -0500
-Message-ID: <87f94c371001250815t92cbce9t95df5c274745dae9@mail.gmail.com>
-Subject: Re: IO error semantics
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Anton Altaparmakov <aia21@cam.ac.uk>, Nick Piggin <npiggin@suse.de>,
-       Dave Chinner <david@fromorbit.com>, Jan Kara <jack@suse.cz>,
-       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=nQRMSQcgIni5y3DUgBAik0Z/8F0mhJ/cq8iEiY+hZZKfe0nNoVxroNDdKhAICHFMt6
+         L7dKKoehRrPuQLLqQzdCXtID+UgTIj6J591mvcQXFdjqRY/qruBaKHghso1XMax8/RZ3
+         YruLUp5dlOD3h9nPcEsAoPcVkltw5eO9VbgPk=
+Date: Tue, 26 Jan 2010 00:26:47 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: zhou peng <ailvpeng25@gmail.com>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, sds@tycho.nsa.gov,
+       jra@samba.org, linux-security-module@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
        linux-fsdevel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Subject: Re: About ACL for IPC Object
+Message-ID: <20100125162647.GC3749@hack>
+References: <6fb445941001200112o2934f805l4eb4f78000e9527e@mail.gmail.com> <6fb445941001200120m3aa5e944j54a6f645ce82d76f@mail.gmail.com> <4B57C3C3.9010606@schaufler-ca.com> <20100121090510.GA908@infradead.org> <6fb445941001220115y6b99f7b4g306ea23d3202969@mail.gmail.com> <2375c9f91001220202m724e2ee2p2213b81a043ebd33@mail.gmail.com> <6fb445941001250721p73795fe2i9196bd3c77dd0fce@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6fb445941001250721p73795fe2i9196bd3c77dd0fce@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 10:23 AM, Ric Wheeler <rwheeler@redhat.com> wrote:
-> On 01/18/2010 06:33 PM, Anton Altaparmakov wrote:
->>
->> Hi,
->>
->> On 18 Jan 2010, at 14:00, Nick Piggin wrote:
->>
->>>
->>> For write errors, you could also do block re-allocation, which would be
->>> fun.
->>>
->>
->> Yes it would.  (-:
->>
->> FWIW, Windows does this with Microsoft's NTFS driver.  When a write fails
->> due to a bad block, the block is marked as bad (recorded in the bad cluster
->> list and marked as allocated in the in-use bitmap so no-one tries to
->> allocate it), a new block is allocated, inode metadata is updated to reflect
->> the change in the logical to physical block map of the file the block
->> belongs to, and the write is then re-tried to its new location.
->>
->> I have never bothered implementing it in NTFS on Linux partially because
->> there doesn't seem any obvious way to do it inside the file system.  I think
->> the VFS and/or the block layer would have to offer help there in some way.
->>  What I mean for example is that if ->writepage fails then the failure is
->> only detected inside the asynchronous i/o completion handler at which point
->> the page is not locked any more, it is marked as being under writeback, and
->> we are in IRQ context (or something) and thus it is not easy to see how we
->> can from there get to doing all the above needed actions that require memory
->> allocations, disk i/o, etc...  I suppose a separate thread could do it where
->> we just schedule the work to be done.  But problem with that is that that
->> work later on might fail so we can't simply pretend the block was written
->> successfully yet we do not want to report an error or the upper layers would
->> pick it up even though we hopefully will correct it in due course...
->>
->> Best regards,
->>
->>        Anton
->>
+On Mon, Jan 25, 2010 at 11:21:44PM +0800, zhou peng wrote:
+>I have tested posix sem,posix shm and posix msg queue for ACL on
+>fedora 12 with kernel 2.6.32.
 >
-> For permanent write errors, I would expect any modern drive to do a sector
-> remapping internally. We should never need to track this kind of information
-> for any modern device that I know of (S-ATA, SAS, SSD's and raid arrays
-> should all handle this).
+>Posix sem and posix shm using tmpfs monted by default support ACL well .
+>Posix msg queue use mqueue fs mounted by manual but it seem not
+>surpoort ACL well. It failed for setting named ACL item:
+>{
+> $ mkdir /dev/mqueue
+> $ mount -o rw, acl -t mqueue none /dev/mqueue
+> $cd /dev/mqueue
+> "/mq" msg queue object created and used by processes properly
 >
-> Would not seem to be worth the complexity.
+> $getfacl mq
+>   #file: mq
+>   #owner:root
+>   #group:root
+>   user:rw-
+>   group::---
+>   other::---
 >
-> Also keep in mind that retrying IO errors is not always a good thing -
-> devices retry failed IO multiple times internally. Adding additional retry
-> loops up the stack only makes our unavoidable IO error take much longer to
-> hit!
+> $setfacl -m u:testuser:rw mq                                   /* failed here*/
+> $setfacl: mq :Operation not supported
+> but mqueue fs works well for setting owner user and owner group items.
+>}
 >
-> Ric
+>I am not sure whether mqueue don't support acl or I make mistake.
+>
 
-I thought write errors returned by modern drives (last 15 years) in
-general were caused by bad cables, controllers, power supplies, etc.
+A quick look at the source code shows mqueue doesn't support ACL.
 
-When a media error is returned on write it indicated the spare sector
-area of the drive was full.
 
-Thus a media write error is a major error.  I would think, if
-anything, we should turn the filesystem readonly upon a write media
-error.  Not try to hide such a major problem.
-
-Greg
+-- 
+Live like a child, think like the god.
+ 
