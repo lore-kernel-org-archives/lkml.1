@@ -1,62 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941Ab0AYWTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978Ab0AYWTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752941Ab0AYWTI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 17:19:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380Ab0AYWTF
+	id S1753978Ab0AYWTc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 17:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458Ab0AYWTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 17:19:05 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60046 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751759Ab0AYWTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 17:19:02 -0500
-Message-ID: <4B5E18C0.7060402@zytor.com>
-Date: Mon, 25 Jan 2010 14:18:40 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Mon, 25 Jan 2010 17:19:31 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36411 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753309Ab0AYWTa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 17:19:30 -0500
+Message-ID: <4B5E1855.4090809@bx.jp.nec.com>
+Date: Mon, 25 Jan 2010 17:16:53 -0500
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Vojtech Pavlik <vojtech@suse.cz>, Robert Hancock <hancockrwd@gmail.com>,
-       Bastien Nocera <hadess@hadess.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
-Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
-References: <1264011793.1735.3683.camel@localhost.localdomain> <4B57A2D4.9030204@gmail.com> <20100121185544.GB11996@core.coreip.homeip.net> <51f3faa71001211339t4652700ct34659c37479cd67e@mail.gmail.com> <20100121221701.GA15293@core.coreip.homeip.net> <20100125163433.GB31957@suse.cz> <4B5E0DFA.8080705@zytor.com> <20100125221520.GA30307@core.coreip.homeip.net>
-In-Reply-To: <20100125221520.GA30307@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Tom Zanussi <tzanussi@gmail.com>
+CC: linux-kernel@vger.kernel.org, lwoodman@redhat.com, linux-mm@kvack.org,
+       mingo@elte.hu, riel@redhat.com, rostedt@goodmis.org,
+       akpm@linux-foundation.org, fweisbec@gmail.com,
+       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Subject: Re: [RFC PATCH -tip 2/2 v2] add a scripts for pagecache usage per
+ process
+References: <4B5A3D00.8080901@bx.jp.nec.com>	 <4B5A3E19.6060502@bx.jp.nec.com> <1264234865.6595.75.camel@tropicana>
+In-Reply-To: <1264234865.6595.75.camel@tropicana>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/25/2010 02:15 PM, Dmitry Torokhov wrote:
-> On Mon, Jan 25, 2010 at 01:32:42PM -0800, H. Peter Anvin wrote:
->> On 01/25/2010 08:34 AM, Vojtech Pavlik wrote:
->>>
->>> Thus I believe that the right fix here is to figure out why the accesses
->>> to the ports 0x60/0x64 take a long time or forever on a Mac. Is it just
->>> that the kernel is timing out waiting for the i8042? Or is it something
->>> more sinister?
->>>
->>
->> In the A20 code in the setup code, I look for 0xFF coming back and
->> terminate the "wait for ready" loop much sooner than for other values.
->> 0xFF is a *possible* status value, but not a very *likely* one
->> (especially for repeated reads), as it would represent:
->>
->> parity error + receive timeout + transmit timeout + keyboard lock +
->> command + selftest OK + input full + output full.
+(2010年01月23日 03:21), Tom Zanussi wrote:
+> Hi,
+> 
+> On Fri, 2010-01-22 at 19:08 -0500, Keiichi KII wrote:
+>> The scripts are implemented based on the trace stream scripting support.
+>> And the scripts implement the following.
+>>  - how many pagecaches each process has per each file
+>>  - how many pages are cached per each file
+>>  - how many pagecaches each process shares
 >>
 > 
-> You allow up to 32 0xFFs while i8042 driver does maximum 16 reads of
-> whatever - if OBF is still raised we assume i8042 is not there. Does
-> that mean that reads from 0x60 is what hurts on Macs?
+> Nice, it looks like a very useful script - I gave it a quick try and it
+> seems to work well...
 > 
-> Bastien, could you try modifying drivers/input/serio/i8042.c::
-> i8042_flush() to not call i8042_read_data() when str is 0xff and see if
-> it helps with lockups?
+> The only problem I see, nothing to do with your script and nothing you
+> can do anything about at the moment, is that the record step generates a
+> huge amount of data, which of course makes the event processing take
+> awhile.  A lot of it appears to be due to perf itself - being able to
+> filter out the perf-generated events in the kernel would make a big
+> difference, I think; you normally don't want to see those anyway...
+
+Yes, right. I don't want to process the data of perf itself.
+I will try to find any way to solve this problem. 
+
+> BTW, I see that you did your first version in Python - not that you'd
+> want to redo it again, but just FYI I now have working Python support
+> that I'll be posting soon - I still have some small details to hammer
+> out, but if you have any other scripts in the pipeline, in a couple days
+> you'll be able to use Python instead if you want.
+
+It will help me create some scripts. I will use Python support if it is posted.
+
+>> To monitor pagecache usage per a process, run "pagecache-usage-record" to
+>> record perf data for "pagecache-usage.pl" and run "pagecache-usage-report"
+>> to display.
+> 
+> Another way of course would be to use 'perf trace record/report' and the
+> script name as shown by perf trace -l:
+> 
+> $ perf trace record pagecache-usage
+> $ perf trace report pagecache-usage
+
+Thank you for your information.
+I will use this way.
+
+>> Index: linux-2.6-tip/tools/perf/scripts/perl/pagecache-usage.pl
+>> ===================================================================
+>> --- /dev/null
+>> +++ linux-2.6-tip/tools/perf/scripts/perl/pagecache-usage.pl
+>> @@ -0,0 +1,160 @@
+>> +# perf trace event handlers, generated by perf trace -g perl
+> 
+> You might want to get rid of this and add a short description and your
+> name, if you want to take credit for it. ;-)
+> 
+>> +# Licensed under the terms of the GNU GPL License version 2
+>> +
+> 
+>> +# The common_* event handler fields are the most useful fields common to
+>> +# all events.  They don't necessarily correspond to the 'common_*' fields
+>> +# in the format files.  Those fields not available as handler params can
+>> +# be retrieved using Perl functions of the form common_*($context).
+>> +# See Context.pm for the list of available functions.
+>> +
+> 
+> You can get rid of this part too - it's just meant to be helpful
+> information generated when starting a script.
 > 
 
-We should never read from port 0x60 unless bit 1 in port 0x64 is set.
-Do we do that?
+I'll remove unnecessary comments and add a short description next time.
 
-	-hpa
+>> +my %unhandled;
+>> +
+>> +sub trace_unhandled
+>> +{
+>> +	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
+>> +	    $common_pid, $common_comm) = @_;
+>> +
+>> +	$unhandled{$event_name}++;
+>> +}
+>> +
+>> +sub print_unhandled
+>> +{
+>> +	if ((scalar keys %unhandled) == 0) {
+>> +	    print "unhandled events nothing\n";
+> 
+> This is kind of distracting - it's not too useful to know that you don't
+> have unhandled events, but if you do have some, it is useful to print
+> those as you do below - it points out that some event type are being
+> unnecessarily recorded or the script is being run on the wrong trace
+> data.
 
+I don't have unhandled events to monitor pagecache usage as you say.
+So I will remove these code.
+
+Thanks,
+Keiichi
