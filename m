@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687Ab0AYVla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902Ab0AYVnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753687Ab0AYVla (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 16:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617Ab0AYVlW
+	id S1753902Ab0AYVnS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 16:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260Ab0AYVlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 16:41:22 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:44437 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753536Ab0AYVlP (ORCPT
+	Mon, 25 Jan 2010 16:41:13 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:13727 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752039Ab0AYVlJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 16:41:15 -0500
-Subject: [PATCH 07/12] ACPI: processor: driver doesn't need to evaluate _PDC
+	Mon, 25 Jan 2010 16:41:09 -0500
+Subject: [PATCH 06/12] ACPI: processor: remove early _PDC optin quirks
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
-Cc: Tony Luck <tony.luck@intel.com>, linux-acpi@vger.kernel.org,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Date: Mon, 25 Jan 2010 14:41:14 -0700
-Message-ID: <20100125214113.28510.72436.stgit@bob.kio>
+Date: Mon, 25 Jan 2010 14:41:08 -0700
+Message-ID: <20100125214108.28510.57323.stgit@bob.kio>
 In-Reply-To: <20100125213221.28510.74078.stgit@bob.kio>
 References: <20100125213221.28510.74078.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -28,109 +27,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that the early _PDC evaluation path knows how to correctly
-evaluate _PDC on only physically present processors, there's no
-need for the processor driver to evaluate it later when it loads.
+Now that we check for physically present processors before blindly
+evaluating _PDC, we no longer need to maintain a DMI opt-in table
+nor a kernel param.
 
-To cover the hotplug case, push _PDC evaluation down into the
-hotplug paths.
-
-Cc: x86@kernel.org
 Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- arch/ia64/kernel/acpi.c         |    3 +++
- arch/x86/kernel/acpi/boot.c     |    3 +++
- drivers/acpi/processor_core.c   |    7 -------
- drivers/acpi/processor_driver.c |    3 ---
- 4 files changed, 6 insertions(+), 10 deletions(-)
+ Documentation/kernel-parameters.txt |    4 ----
+ drivers/acpi/processor_core.c       |   37 -----------------------------------
+ 2 files changed, 0 insertions(+), 41 deletions(-)
 
-diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
-index 40574ae..394742a 100644
---- a/arch/ia64/kernel/acpi.c
-+++ b/arch/ia64/kernel/acpi.c
-@@ -44,6 +44,7 @@
- #include <linux/efi.h>
- #include <linux/mmzone.h>
- #include <linux/nodemask.h>
-+#include <acpi/processor.h>
- #include <asm/io.h>
- #include <asm/iosapic.h>
- #include <asm/machvec.h>
-@@ -936,6 +937,8 @@ int acpi_map_lsapic(acpi_handle handle, int *pcpu)
- 	cpu_set(cpu, cpu_present_map);
- 	ia64_cpu_to_sapicid[cpu] = physid;
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 826b6e1..736d456 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -199,10 +199,6 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			acpi_display_output=video
+ 			See above.
  
-+	acpi_processor_set_pdc(handle);
-+
- 	*pcpu = cpu;
- 	return (0);
- }
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index fb1035c..baa2280 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -481,6 +481,7 @@ int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
-  *  ACPI based hotplug support for CPU
-  */
- #ifdef CONFIG_ACPI_HOTPLUG_CPU
-+#include <acpi/processor.h>
- 
- static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
- {
-@@ -539,6 +540,8 @@ static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
- 		goto free_new_map;
- 	}
- 
-+	acpi_processor_set_pdc(handle);
-+
- 	cpu = cpumask_first(new_map);
- 
- 	*pcpu = cpu;
+-	acpi_early_pdc_eval	[HW,ACPI] Evaluate processor _PDC methods
+-				early. Needed on some platforms to properly
+-				initialize the EC.
+-
+ 	acpi_irq_balance [HW,ACPI]
+ 			ACPI will balance active IRQs
+ 			default in APIC mode
 diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-index 05874ba..1fc06c6 100644
+index e8b1246..05874ba 100644
 --- a/drivers/acpi/processor_core.c
 +++ b/drivers/acpi/processor_core.c
-@@ -317,8 +317,6 @@ acpi_processor_eval_pdc(acpi_handle handle, struct acpi_object_list *pdc_in)
- 	return status;
+@@ -341,36 +341,6 @@ void acpi_processor_set_pdc(acpi_handle handle)
  }
+ EXPORT_SYMBOL_GPL(acpi_processor_set_pdc);
  
--static int early_pdc_done;
+-static int early_pdc_optin;
+-static int set_early_pdc_optin(const struct dmi_system_id *id)
+-{
+-	early_pdc_optin = 1;
+-	return 0;
+-}
 -
- void acpi_processor_set_pdc(acpi_handle handle)
+-static int param_early_pdc_optin(char *s)
+-{
+-	early_pdc_optin = 1;
+-	return 1;
+-}
+-__setup("acpi_early_pdc_eval", param_early_pdc_optin);
+-
+-static struct dmi_system_id __cpuinitdata early_pdc_optin_table[] = {
+-	{
+-	set_early_pdc_optin, "HP Envy", {
+-	DMI_MATCH(DMI_BIOS_VENDOR, "Hewlett-Packard"),
+-	DMI_MATCH(DMI_PRODUCT_NAME, "HP Envy") }, NULL},
+-	{
+-	set_early_pdc_optin, "HP Pavilion dv6", {
+-	DMI_MATCH(DMI_BIOS_VENDOR, "Hewlett-Packard"),
+-	DMI_MATCH(DMI_PRODUCT_NAME, "HP Pavilion dv6") }, NULL},
+-	{
+-	set_early_pdc_optin, "HP Pavilion dv7", {
+-	DMI_MATCH(DMI_BIOS_VENDOR, "Hewlett-Packard"),
+-	DMI_MATCH(DMI_PRODUCT_NAME, "HP Pavilion dv7") }, NULL},
+-	{},
+-};
+-
+ static acpi_status
+ early_init_pdc(acpi_handle handle, u32 lvl, void *context, void **rv)
  {
- 	struct acpi_object_list *obj_list;
-@@ -326,9 +324,6 @@ void acpi_processor_set_pdc(acpi_handle handle)
- 	if (arch_has_acpi_pdc() == false)
- 		return;
+@@ -396,13 +366,6 @@ void acpi_early_processor_set_pdc(void)
+ 	 */
+ 	dmi_check_system(processor_idle_dmi_table);
  
--	if (early_pdc_done)
+-	/*
+-	 * Allow systems to opt-in to early _PDC evaluation.
+-	 */
+-	dmi_check_system(early_pdc_optin_table);
+-	if (!early_pdc_optin)
 -		return;
 -
- 	obj_list = acpi_processor_alloc_pdc();
- 	if (!obj_list)
- 		return;
-@@ -369,6 +364,4 @@ void acpi_early_processor_set_pdc(void)
  	acpi_walk_namespace(ACPI_TYPE_PROCESSOR, ACPI_ROOT_OBJECT,
  			    ACPI_UINT32_MAX,
  			    early_init_pdc, NULL, NULL, NULL);
--
--	early_pdc_done = 1;
- }
-diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-index 777d046..7e8e1ba 100644
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -606,9 +606,6 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
- 		goto err_remove_fs;
- 	}
- 
--	/* _PDC call should be done before doing anything else (if reqd.). */
--	acpi_processor_set_pdc(pr->handle);
--
- #ifdef CONFIG_CPU_FREQ
- 	acpi_processor_ppc_has_changed(pr, 0);
- #endif
 
