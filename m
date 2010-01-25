@@ -1,60 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111Ab0AYPVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136Ab0AYPV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111Ab0AYPVd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 10:21:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858Ab0AYPV3
+	id S1754136Ab0AYPV4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 10:21:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986Ab0AYPVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 10:21:29 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43045 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753924Ab0AYPV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 10:21:26 -0500
-Message-ID: <4B5DB7E5.3070907@kernel.org>
-Date: Tue, 26 Jan 2010 00:25:25 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Mon, 25 Jan 2010 10:21:52 -0500
+Received: from mail-iw0-f186.google.com ([209.85.223.186]:62688 "EHLO
+	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754124Ab0AYPVq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 10:21:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=JlmChUXkFZAVHsLUFSs8PDGYpg32nj79vAIY3NWcQwPFD9K3oA4SA2JO2yPPyKMAnT
+         L4g4u3ro0RgahNGGs4yAJa/SwUeMXEuX+OitZAjln4bqeXC4lxF4FrhWl/9sKPoMPvXd
+         Z9xYiOI3znbcBpSk8AiBv8BynYGT5P7Z21Qc4=
 MIME-Version: 1.0
-To: Jeff Layton <jlayton@redhat.com>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       Steve French <sfrench@samba.org>
-Subject: Re: [PATCH UPDATED 38/40] cifs: use workqueue instead of slow-work
-References: <1263776272-382-1-git-send-email-tj@kernel.org>	<1263776272-382-39-git-send-email-tj@kernel.org>	<20100119072000.247ac894@tlielax.poochiereds.net>	<4B564B12.7020909@kernel.org>	<20100119195641.7b6a17e4@tlielax.poochiereds.net>	<4B565B26.3060709@kernel.org>	<4B59889D.7050903@kernel.org>	<20100122064528.0223d708@tlielax.poochiereds.net>	<4B5C03EE.3000007@kernel.org> <20100124071334.0f12276e@tlielax.poochiereds.net>
-In-Reply-To: <20100124071334.0f12276e@tlielax.poochiereds.net>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 25 Jan 2010 15:19:08 +0000 (UTC)
+In-Reply-To: <2375c9f91001220202m724e2ee2p2213b81a043ebd33@mail.gmail.com>
+References: <6fb445941001200112o2934f805l4eb4f78000e9527e@mail.gmail.com>
+	 <6fb445941001200120m3aa5e944j54a6f645ce82d76f@mail.gmail.com>
+	 <4B57C3C3.9010606@schaufler-ca.com>
+	 <20100121090510.GA908@infradead.org>
+	 <6fb445941001220115y6b99f7b4g306ea23d3202969@mail.gmail.com>
+	 <2375c9f91001220202m724e2ee2p2213b81a043ebd33@mail.gmail.com>
+Date: Mon, 25 Jan 2010 23:21:44 +0800
+Message-ID: <6fb445941001250721p73795fe2i9196bd3c77dd0fce@mail.gmail.com>
+Subject: Re: About ACL for IPC Object
+From: zhou peng <ailvpeng25@gmail.com>
+To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, sds@tycho.nsa.gov,
+       jra@samba.org, linux-security-module@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+I have tested posix sem,posix shm and posix msg queue for ACL on
+fedora 12 with kernel 2.6.32.
 
-On 01/24/2010 09:13 PM, Jeff Layton wrote:
->> Are you sure it needs to be changed?
+Posix sem and posix shm using tmpfs monted by default support ACL well .
+Posix msg queue use mqueue fs mounted by manual but it seem not
+surpoort ACL well. It failed for setting named ACL item:
+{
+ $ mkdir /dev/mqueue
+ $ mount -o rw, acl -t mqueue none /dev/mqueue
+ $cd /dev/mqueue
+ "/mq" msg queue object created and used by processes properly
+
+ $getfacl mq
+   #file: mq
+   #owner:root
+   #group:root
+   user:rw-
+   group::---
+   other::---
+
+ $setfacl -m u:testuser:rw mq                                   /* failed here*/
+ $setfacl: mq :Operation not supported
+ but mqueue fs works well for setting owner user and owner group items.
+}
+
+I am not sure whether mqueue don't support acl or I make mistake.
+
+2010/1/22 Américo Wang <xiyou.wangcong@gmail.com>:
+> (Top-posting fixed.)
+>
+> On Fri, Jan 22, 2010 at 5:15 PM, zhou peng <ailvpeng25@gmail.com> wrote:
 >>
-> 
-> I'm pretty sure we do. This flag only gets set to true if there's a
-> reconnection event. If there is one, then any oplock break queued up
-> before that happened is now invalid and shouldn't be sent.
-> 
-> It's a fairly minor point however. Even if we send the oplock break,
-> it's very unlikely to be treated as valid by the server as I don't
-> think the file would have a chance to be reopened prior to that.
-> 
-> If this is the way that the code works now, then let's go ahead with
-> your version and I'll plan to queue up a separate patch to change that
-> behavior after your changes go in.
+>> 2010/1/21 Christoph Hellwig <hch@infradead.org>:
+>>> On Wed, Jan 20, 2010 at 07:02:27PM -0800, Casey Schaufler wrote:
+>>>> zhou peng wrote:
+>>>> > Hi all,
+>>>> >
+>>>> > There are ACL in file system, but why there are no ACL implementation
+>>>> > in IPC object, eg. shm, message queue, FIFO?
+>>>> >
+>>>>
+>>>> Most people haven't noticed that IPC objects are even there, much less
+>>>> that they have mode bits and not ACLs. Even when we were doing security
+>>>> evaluations on Unix boxes in the 1990's they were considered insufficiently
+>>>> interesting to justify the additional work to do ACLs.
+>>>>
+>>>> If you really want ACLs on IPC objects it would make a dandy little
+>>>> project for a summer. I would be happy to review patches.
+>>
+>> Thanks. It's interesting to add ACL over IPC objects. I want to have a try.
+>>
+>>>
+>>> Or use the posix IPC mechanisms.  The Posix shared memory has ACL by
+>>> using tmpfs as the backing store, and we could add similar support to
+>>> Posix messages queues as they are also backed by a normal filesystem.
+>>
+>> Christoph Hellwig, This way may be convinent. Could you give some
+>> detailed message. :)
+>> I only find /proc/ipc/shm file which contain the info of shm objs,and
+>> tmpfs on /dev/shm which is empty.
+>>
+>>>
+>>> Adding this support to the old SYSV IPC mechanisms would be much harder
+>>> as they do not fit into the file backed model we use everywhere else at
+>>> all.
+>>
+>> Just like file objects, the mode bits are implment over IPC objects
+>> without file backed, so I think adding ACL support to IPC objects may
+>> be somewhat reasonable :)
+>>
+>> Thank you all for so many solutions.
+>>
+>> I want to control some IPC object (shm, msg queue, semphore) can be
+>> accessed by which named user or named group just like file objects ACL
+>> do.
+>>
+>> I studied the solution you all referred, The SELinux is powerful but
+>> may be somewhat complicated. And I am confused with Christoph
+>> Hellwig‘s solution using tmpfs.
+>
+> Well, only posix semphores and posix share memory use tmpfs, I think,
+> posix msg queues use "mqueue" instead.
+>
 
-Yeap, that sounds good to me or I just can queue a separate patch to
-do that along with this one so that you don't have to remember
-queueing it later.
 
-Thanks.
 
 -- 
-tejun
+zhoupeng
