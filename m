@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273Ab0AYREY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306Ab0AYRHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754273Ab0AYREY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 12:04:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156Ab0AYREX
+	id S1754306Ab0AYRHI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 12:07:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297Ab0AYRHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 12:04:23 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52707 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754122Ab0AYREW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 12:04:22 -0500
-Date: Mon, 25 Jan 2010 12:02:54 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
+	Mon, 25 Jan 2010 12:07:07 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:54723 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754239Ab0AYRHC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 12:07:02 -0500
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Kyle Moffett <kyle@moffetthome.net>, tytso@mit.edu,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100125170254.GB22862@redhat.com>
-References: <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <20100123112333.GA15455@elte.hu> <20100123114729.GA7828@redhat.com> <20100123194820.GM21263@thunk.org> <f73f7ab81001241742t1f827ddetd958e1949787020f@mail.gmail.com> <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 25 Jan 2010 19:05:45 +0200
+Message-Id: <20100125170545.2270.32616.sendpatchset@localhost.localdomain>
+Subject: [GIT PULL] UBI changes for 2.6.33-rc5
+X-OriginalArrivalTime: 25 Jan 2010 17:05:53.0230 (UTC) FILETIME=[A6ED86E0:01CA9DE0]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+Hi Linus,
 
-On Mon, Jan 25, 2010 at 08:52:41AM -0800, Linus Torvalds wrote:
+please pull 3 small UBI fixes.
 
-> [...]  If somebody extended ptrace in good ways, that's a totally
-> different thing. But I think utrace has been over-designed, possibly
-> as a result of others coming in and saying "hey, I'd like to use
-> that too for xyz". [...]
+The following changes since commit 74d2e4f8d79ae0c4b6ec027958d5b18058662eea:
+  Linus Torvalds (1):
+        Linux 2.6.33-rc3
 
-Earlier, you said that you haven't followed utrace "at all".  Upon
-what real information do you infer that it has been over-designed?
+are available in the git repository at:
+
+  git://git.infradead.org/ubi-2.6.git linux-next
+
+Artem Bityutskiy (2):
+      UBI: add more checks to chdev open
+      UBI: fix memory leak in update path
+
+Peter Horton (1):
+      UBI: initialise update marker
+
+ drivers/mtd/ubi/kapi.c |   15 +++++++--------
+ drivers/mtd/ubi/upd.c  |    1 +
+ drivers/mtd/ubi/vtbl.c |    1 +
+ 3 files changed, 9 insertions(+), 8 deletions(-)
 
 
-- FChE
+Thanks,
+Artem.
