@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752147Ab0AYH2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752216Ab0AYHeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752147Ab0AYH2B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 02:28:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031Ab0AYH2A
+	id S1752216Ab0AYHeQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 02:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048Ab0AYHeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 02:28:00 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48205 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823Ab0AYH2A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 02:28:00 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mark Seaborn <mrs@mythic-beasts.com>
-Subject: Re: futex() on vdso makes process unkillable
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Darren Hart <dvhltc@us.ibm.com>
-In-Reply-To: <20100125120459.4944.A69D9226@jp.fujitsu.com>
-References: <20100124.000458.506212773266927716.mrs@deli> <20100125120459.4944.A69D9226@jp.fujitsu.com>
-Message-Id: <20100125162733.BDB8.A69D9226@jp.fujitsu.com>
+	Mon, 25 Jan 2010 02:34:15 -0500
+Received: from smtp4-g21.free.fr ([212.27.42.4]:50057 "EHLO smtp4-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752029Ab0AYHeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 02:34:14 -0500
+From: Arnaud Boulan <arnaud.boulan@libertysurf.fr>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [Bug #14933] OOM killer unexpectedly called
+Date: Mon, 25 Jan 2010 08:34:00 +0100
+User-Agent: KMail/1.9.10
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera> <q60Z28d_9yH.A.LQ.iZMXLB@chimera> <20100125111948.493B.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20100125111948.493B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 25 Jan 2010 16:27:56 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <201001250834.01084.arnaud.boulan@libertysurf.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Monday 25 January 2010 03:37:25 KOSAKI Motohiro wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.31 and 2.6.32.
+> >
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> > be listed and let me know (either way).
+> >
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14933
+> > Subject		: OOM killer unexpectedly called
+> > Submitter	: A. Boulan <arnaud.boulan@libertysurf.fr>
+> > Date		: 2009-12-24 23:42 (32 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=126169821317492&w=4
+>
+> Boulan, Can you please help our debugging?
+> can you disable following config option at once?
+>
+> 1. CONFIG_DRM_I915
+> 2. CONFIG_RELAY
+> 3. CONFIG_MSPEC
+> 4. VIDEOBUF_DMA_SG
+>
+> I mean
+>   - if anyone return VM_FAULT_OOM, this issue occur.
+>   - very few subsys can return VM_FAULT_OOM in their own fault handler.
+>   - I hope investigate this is core mm issue or not.
+>     (unfortunatelly, I haven't find any dubious recent mm change..)
+>
+>
+> Thanks.
 
-> CC to futex folks.
-> 
-> > I was experimenting with futexes and was a little surprised to
-> > discover that futex() works on read-only pages.  This creates quite a
-> > high bandwidth side channel that allows two processes to communicate
-> > if, for example, they share a library.  (Mind you, this is not much
-> > different from file locks, which also work on read-only file
-> > descriptors.)
-> > 
-> > I also found a couple of differences between 2.6.24 (from Ubuntu
-> > hardy) and 2.6.31 (from Ubuntu karmic).  The first is a definite bug
-> > in 2.6.31:
-> > 
-> > 1) On 2.6.31 i686, using futex() on the vdso causes the process to get
-> > stuck, consuming CPU in an unkillable state.  Both FUTEX_WAIT and
-> > FUTEX_WAKE cause the problem.  The problem doesn't occur on 2.6.24.
-> > (BTW, I was testing to see whether futex() on the vdso allows any two
-> > processes to communicate.  This appears not to be the case on 2.6.24.)
-> > 
-> > A test program is below.
-> > 
-> > 
-> > 2) Suppose a file is mapped into two processes with MAP_PRIVATE.  Can
-> > the resulting mappings be used to communicate via futex()?  i.e. Does
-> > futex() consider the mappings to be the same?
-> > 
-> > On 2.6.24, the futex wakeup is not transferred; pages must be mapped
-> > with MAP_SHARED for futex to work.  On 2.6.31, the futex wakeup *is*
-> > transferred; futex works with either MAP_SHARED or MAP_PRIVATE.
-> > 
-> > 2.6.24's behaviour seems more correct, because the mappings are
-> > logically different, even if the underlying memory pages are the same
-> > before copy-on-write is triggered.  Is 2.6.31's behaviour a
-> > regression, or is the kernel's behaviour here supposed to be
-> > undefined?
+Hello,
 
-Futex should work both file anon anon. however I personally think 
-vdso is not file nor anon. it is special mappings. nobody defined
-futex spec on special mappings. (yes, undefined).
+Sorry for the lack of input about this issue. I currently only have remote 
+access to the machine for which i had this problem, and i'm not confident 
+with rebooting into potentially broken kernels. That's why i haven't done any 
+more tests yet..
+I will try to reproduce the issue on another machine first, and if i that does 
+not work i will find a way to test as you suggest.
 
-Personally, I think EINVAL or EFAULT are best result of vdso futexing, like as
-futexing againt kernel address. but I guess another person have another thinking.
+Also, I have seen in the lkml archives that someone else seems to have the 
+same problem:
+  OOM-Killer kills too much with 2.6.32.2
+  From: Roman Jarosz 
+  Date:  Thu Jan 14 2010 - 08:13:36 EST
 
-I'd like to hear futex folks's opinion.
+As i can't have his email from the web archives, could you plase CC: him on 
+this thread? Maybe he could also help with some tests.
 
+Regards,
 
-Thanks.
-
-
+Arnaud
