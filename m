@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628Ab0AYSIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659Ab0AYSKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628Ab0AYSIJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 13:08:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510Ab0AYSIH
+	id S1754659Ab0AYSKD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 13:10:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182Ab0AYSKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 13:08:07 -0500
-Received: from mail.kapsi.fi ([217.30.184.167]:38443 "EHLO mail.kapsi.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674Ab0AYSIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 13:08:06 -0500
-Message-ID: <4B5DDDFB.5020907@iki.fi>
-Date: Mon, 25 Jan 2010 20:07:55 +0200
-From: Antti Palosaari <crope@iki.fi>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	Mon, 25 Jan 2010 13:10:00 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:51269 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752674Ab0AYSKA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 13:10:00 -0500
+Date: Mon, 25 Jan 2010 21:09:57 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] OF GPIO integration for I2C/SPI GPIO chips
+Message-ID: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
-Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
-References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com>
-In-Reply-To: <4B5D6098.7010700@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 82.128.185.8
-X-SA-Exim-Mail-From: crope@iki.fi
-X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/25/2010 11:12 AM, Jiri Slaby wrote:
-> On 01/25/2010 12:44 AM, Antti Palosaari wrote:
->> When I now test this patch with debugs enabled I don't see
->> .probe and .disconnect be called for this HID interface (interface 1) at
->> all and thus checks not needed.
->
-> What happens if you disable the HID layer? Or at least if you add an
-> ignore quirk for the device in usbhid?
+Hi all,
 
-Looks like Fedora doesn't have usbhid compiled as module. I looked 
-hid-quirks.c file and there was only one af9015 device blacklisted 
-15a4:9016. I have 15a4:9015, 15a4:9016 and 13d3:3237 devices and no 
-difference.
+Currently it's a burden to make I2C or SPI GPIO chips work with the
+OF GPIO infrastructure. I've posted several approaches to solve the
+issue before, and others have tried too. Here is another try.
 
-How can I disable HID layer?
+This patch set is used to make things much easier, and completely
+seamless for GPIO chips that don't need any platform data (e.g.
+mcu_mpc8349emitx) or that have OF bindings already (e.g. pca953x).
 
-> I forbid usbhid to attach to the device, as the remote kills X with HID
-> driver. With dvb-usb-remote it works just fine (with remote=2 for af9015
-> or the 4 patches I've sent).
+Thanks,
 
-In my understanding the cause of the remote problem is chipset bug which 
-sets USB2.0 polling interval to 4096ms. Therefore HID remote does not 
-work at all or starts repeating. It is possible to implement remote as 
-polling from the driver which works very well. But HID problem still 
-remains. I have some hacks in my mind to test to kill HID. One is to 
-configure HID wrongly to see if it stops outputting characters. Other 
-way is try to read remote codes directly from the chip memory.
-
-But all in all, your patch does not break anything, it is safe to add. 
-It could be still nice to know if there is better alternatives. And 
-there is surely few other devices having HID remote - are those also 
-affected.
-
-regards
-Antti
 -- 
-http://palosaari.fi/
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
