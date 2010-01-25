@@ -1,107 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535Ab0AYUDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616Ab0AYUEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752535Ab0AYUDP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 15:03:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299Ab0AYUDO
+	id S1752616Ab0AYUEj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 15:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468Ab0AYUEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 15:03:14 -0500
-Received: from smtp109.biz.mail.mud.yahoo.com ([68.142.201.178]:20791 "HELO
-	smtp109.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752207Ab0AYUDN (ORCPT
+	Mon, 25 Jan 2010 15:04:38 -0500
+Received: from mailrelay009.isp.belgacom.be ([195.238.6.176]:57644 "EHLO
+	mailrelay009.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932131Ab0AYUEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 15:03:13 -0500
-X-Yahoo-SMTP: qGLgp.mswBDSnFfWmYVMF5Rmg6NJ
-X-YMail-OSG: KQxhn7QVM1kinnMoqHHZhClocyiu8X_O3jXqT0ilO.o6VuTsvTAC5xMPxkqd8yx3DhxiVHnbBTLIFeteT80HgZNqTONw.eeKymci3Gup.WVPDtfS0djfk6Bd9ZyQ1i84vmh8KygC57CCD0NulnMZOVz7whMnTVDZYt2o41vM153XsTRP2PeMB_550.vbs9aREf4Qke1J6lUl0oRV_0QQGup_U_ZtB6GvNUA948V_GJyynciQylzzWVFRjpTXKmvMMRGrNtyl3q8bBufwMe9fQip5NaF0Shb_Q3sMXQevPOWfpvPSmQrJwHcpMjZZQEDVfd69Ky51sT.ulvfcYt7jE6o764ItbLF.BhsSiSpTIxbyVvbpFJinZl3ZM3xD_tSkobWWMPad
-X-Yahoo-Newman-Property: ymail-3
-From: Steven King <sfking@fdwdc.com>
-Organization: fdwdc.com
-To: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [PATCH v2] m68knommu: driver for Freescale Coldfire I2C controller.
-Date: Mon, 25 Jan 2010 11:56:30 -0800
-User-Agent: KMail/1.9.9
-Cc: Jean Delvare <khali@linux-fr.org>, gerg@snapgear.com,
-       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
-       uclinux-dev@uclinux.org
-References: <201001101600.41932.sfking@fdwdc.com> <201001111024.05506.sfking@fdwdc.com> <20100124151519.GB28675@fluff.org.uk>
-In-Reply-To: <20100124151519.GB28675@fluff.org.uk>
+	Mon, 25 Jan 2010 15:04:36 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAIeHXUtbsswT/2dsb2JhbADbFAmEMAQ
+Date: Mon, 25 Jan 2010 21:04:33 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Denis Turischev <denis@compulab.co.il>, Peter Huewe <PeterHuewe@gmx.de>
+Subject: [WATCHDOG] v2.6.33-rc5 fixes
+Message-ID: <20100125200433.GT3804@infomag.iguana.be>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001251156.31110.sfking@fdwdc.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 24 January 2010 07:15:19 you wrote:
-> On Mon, Jan 11, 2010 at 10:24:05AM -0800, Steven King wrote:
-> > Changes for this version:
-> > 	rename drivers/i2c/busses/i2c-mcf.c to drivers/i2c/busses/i2c-coldfire.c
-> > 	use I2C_COLDFIRE in drivers/i2c/busses/{Kconfig,Makefile}
-> >
-> > ------
-> >
-> > Add support for the I2C controller used on Freescale/Motorola Coldfire
-> > MCUs.
-> >
-> > Signed-off-by: Steven King <sfking@fdwdc.com>
->
-> The commit messsage should go first, the changelog and other stuff
-> that won't go in should go beflore the --- line.
+Hi Linus,
 
-My bad, I think I was paying more attention to making sure this mailer didn't 
-line wrap on me.  I can repost if you want.
+Please pull from 'master' branch of
+	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+or if master.kernel.org hasn't synced up yet:
+	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
 
-> > +static irqreturn_t mcfi2c_irq_handler(int this_irq, void *dev_id)
-> > +{
-> > +	struct mcfi2c *mcfi2c = dev_id;
-> > +
-> > +	/* clear interrupt */
-> > +	mcfi2c_wr_sr(mcfi2c, 0);
-> > +	complete(&mcfi2c->completion);
-> > +
-> > +	return IRQ_HANDLED;
-> > +}
->
-> I'm interested in why you don't just handle the interrupt here and
-> wake the thread once all the data is handled?
+This will update the following files:
 
-No particular reason; when I started working on this I looked at how some of 
-the other drivers in drivers/i2c/busses were implemented, found one whose 
-workings I could understand without knowing anything about that particular 
-SoC (which one I don't remember) and used it as a model to adapt the i2c code 
-I use with other Freescale/Motorola MCUs that don't run linux (there is very 
-little difference in the i2c controller on an 8-bit hc08, 16 bit hc11/12, 
-32bit Coldfire v1 and the Coldfire v2[+] that are currently supported).  So 
-other than having easy to understand (for me atleast) code that shared a lot 
-of similarity with the code I use for the some of the other  systems I code 
-for, no real reason.  That and I find statefull irq handlers disconcerting.
+ drivers/watchdog/Kconfig          |    4 ++--
+ drivers/watchdog/ixp2000_wdt.c    |    1 +
+ drivers/watchdog/sbc_fitpc2_wdt.c |   11 +++++------
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-> > +	status = request_irq(mcfi2c->irq, mcfi2c_irq_handler, IRQF_DISABLED,
-> > +			     pdev->name, mcfi2c);
->
-> do you really need IRQF_DISABLED here? your irq handler hardly does
-> anything.
+with these Changes:
 
-Yes, without it, I was getting a spurious interrupt (been there, done that).
+Author: Denis Turischev <denis@compulab.co.il>
+Date:   Thu Jan 21 16:10:07 2010 +0200
 
-> > +	if (status) {
-> > +		dev_dbg(&pdev->dev, "request_irq failed\n");
-> > +		goto fail2;
-> > +	}
-> > +
-> > +	mcfi2c->clk = clk_get(&pdev->dev, "i2c_clk");
->
-> hmm, think the default device clock should be findable by clk_get(dev,
-> NULL).
+    [WATCHDOG] sbc_fitpc2_wdt: fix I/O space access technique.
+    
+    The mdelay function was used between I/O access commands, that causes peak
+    in CPU usage. Fix it by substitution mdelay to msleep.
+    
+    Expand usage on fitPC2 compatible boards according to DMI identification.
+    
+    Signed-off-by: Denis Turischev <denis@compulab.co.il>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
 
-Interesting.   Again, I had looked at the existing code in drivers/i2c/busses 
-to see what the other drivers were doing and most were passing an id string.
+Author: Peter Huewe <PeterHuewe@gmx.de>
+Date:   Thu Jan 7 03:35:49 2010 +0100
 
-Its a trivial change so its no big deal, but I'm curious, absent anything in 
-Documentation, if the bulk of the existing code isn't documentation for the 
-correct use of an api, then what is?
+    [WATCHDOG] ixp2000: Fix build failure caused by missing include
+    
+    This patch fixes a build failure[1] caused by the missing include of
+    timer.h and thus fixes the build failure.
+    
+    Notably the build failure existed since October 2009! [2]
+    
+    References:
+    [1] http://kisskb.ellerman.id.au/kisskb/buildresult/1983339/
+    [2] http://kisskb.ellerman.id.au/kisskb/buildresult/1351737/
+    
+    Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
 
--- 
-Steven King -- sfking at fdwdc dot com
+The Changes can also be looked at on:
+	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
+
+For completeness, I added the overal diff below.
+
+Greetings,
+Wim.
+
+================================================================================
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index 088f32f..050ee14 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -396,8 +396,8 @@ config SBC_FITPC2_WATCHDOG
+ 	tristate "Compulab SBC-FITPC2 watchdog"
+ 	depends on X86
+ 	---help---
+-	  This is the driver for the built-in watchdog timer on the fit-PC2
+-	  Single-board computer made by Compulab.
++	  This is the driver for the built-in watchdog timer on the fit-PC2,
++	  fit-PC2i, CM-iAM single-board computers made by Compulab.
+ 
+ 	  It`s possible to enable watchdog timer either from BIOS (F2) or from booted Linux.
+ 	  When "Watchdog Timer Value" enabled one can set 31-255 s operational range.
+diff --git a/drivers/watchdog/ixp2000_wdt.c b/drivers/watchdog/ixp2000_wdt.c
+index 4f4b35a..3c79dc5 100644
+--- a/drivers/watchdog/ixp2000_wdt.c
++++ b/drivers/watchdog/ixp2000_wdt.c
+@@ -19,6 +19,7 @@
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/types.h>
++#include <linux/timer.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+ #include <linux/miscdevice.h>
+diff --git a/drivers/watchdog/sbc_fitpc2_wdt.c b/drivers/watchdog/sbc_fitpc2_wdt.c
+index 91430a8..e6763d2 100644
+--- a/drivers/watchdog/sbc_fitpc2_wdt.c
++++ b/drivers/watchdog/sbc_fitpc2_wdt.c
+@@ -46,9 +46,9 @@ static DEFINE_SPINLOCK(wdt_lock);
+ static void wdt_send_data(unsigned char command, unsigned char data)
+ {
+ 	outb(command, COMMAND_PORT);
+-	mdelay(100);
++	msleep(100);
+ 	outb(data, DATA_PORT);
+-	mdelay(200);
++	msleep(200);
+ }
+ 
+ static void wdt_enable(void)
+@@ -202,11 +202,10 @@ static int __init fitpc2_wdt_init(void)
+ {
+ 	int err;
+ 
+-	if (strcmp("SBC-FITPC2", dmi_get_system_info(DMI_BOARD_NAME))) {
+-		pr_info("board name is: %s. Should be SBC-FITPC2\n",
+-			dmi_get_system_info(DMI_BOARD_NAME));
++	if (!strstr(dmi_get_system_info(DMI_BOARD_NAME), "SBC-FITPC2"))
+ 		return -ENODEV;
+-	}
++
++	pr_info("%s found\n", dmi_get_system_info(DMI_BOARD_NAME));
+ 
+ 	if (!request_region(COMMAND_PORT, 1, WATCHDOG_NAME)) {
+ 		pr_err("I/O address 0x%04x already in use\n", COMMAND_PORT);
