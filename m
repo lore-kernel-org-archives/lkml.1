@@ -1,109 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132Ab0AYQyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204Ab0AYQyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132Ab0AYQyP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 11:54:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121Ab0AYQyO
+	id S1754204Ab0AYQyf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 11:54:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154Ab0AYQyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 11:54:14 -0500
-Received: from smtp101.rog.mail.re2.yahoo.com ([206.190.36.79]:23509 "HELO
-	smtp101.rog.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753776Ab0AYQyO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 11:54:14 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=rogers.com;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:Organization:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=s7+1NDYrEw1ly76mtoHoSw0DxrjhziPLmccdcXk9fGI0uKFlFrByttCFIMuSXifo8C+q1x20k7CqEO/jW85OMLgMOjShG5pcRjdTdcqA64Cu1r1A7OMFnYyuJMvabIG8EhTomNZzDIJl0JNwMbLCtbIhNW88tO1CRrrMpTSjtIU=  ;
-X-Yahoo-SMTP: rZzhDImswBA_40COIyZI42.8nAz5YXic.zo1v550XQVtX7k-
-X-YMail-OSG: iIe6CKwVM1kovsxmmjqznnbuMDVyU9MXkxAls01j5bug9Y7kPSEw4hlZ33IAIBAWYQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Shawn Starr <shawn.starr@rogers.com>
-Organization: sh0n.net
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Bug #14859] System timer firing too much without cause
-Date: Mon, 25 Jan 2010 11:53:58 -0500
-User-Agent: KMail/1.13.0 (Linux/2.6.33-rc5-custom-radeon; KDE/4.4.60; x86_64; svn-1073382; 2010-01-11)
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <201001241734.50803.shawn.starr@rogers.com> <alpine.LFD.2.00.1001251103200.2906@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1001251103200.2906@localhost.localdomain>
+	Mon, 25 Jan 2010 11:54:23 -0500
+Received: from mail.cs.nmsu.edu ([128.123.64.3]:38974 "EHLO mail.cs.nmsu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754150Ab0AYQyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 11:54:18 -0500
+Message-ID: <acd6dfcf4391c081f861d430c0b45311.squirrel@intranet.cs.nmsu.edu>
+In-Reply-To: <201001202219.12058.oliver@neukum.org>
+References: <201001202047.o0KKlMTr014003@mustang.cs.nmsu.edu>
+    <201001202219.12058.oliver@neukum.org>
+Date: Mon, 25 Jan 2010 09:48:34 -0700
+Subject: Re: [PATCH] hid: Logitech G13 driver 0.0.4
+From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+To: "Oliver Neukum" <oliver@neukum.org>
+Cc: linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, pavel@ucw.cz,
+       jayakumar.lkml@gmail.com, linux-fbdev@vger.kernel.org,
+       krzysztof.h1@wp.pl, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, linux-input@vger.kernel.org, jkosina@suse.cz,
+       dmitry.torokhov@gmail.com
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001251153.59084.shawn.starr@rogers.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 January 2010 05:35:50 Thomas Gleixner wrote:
-> On Sun, 24 Jan 2010, Shawn Starr wrote:
-> > On Sunday 24 January 2010 17:04:33 Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.32.  Please verify if it still should be listed and let me
-> > > know (either way).
-> 
-> Why is this on the regression list at all ? The report says that this
-> is happening with 33-rcX, but there is no comparison to the behaviour
-> of 32 or earlier kernels on that machine. Instead we have a comparison
-> 
-> of apples and oranges:
-> > As a comparsion my quad core box has no such issue: (Running 2.6.32-rc7)
-> > x86_64
-> > 
-> >   0:         42          4          1          1   IO-APIC-edge     
-> >   timer
-> > 
-> > my Lenovo ThinkPad W500 (latest BIOS 3.11) laptop shows the system timer
-> > flooding the bus (Running 2.6.33-rc1) x86_64
-> > 
-> >   0:      66775      70429   IO-APIC-edge      timer <-- keeps rising,
-> >   rapidly
-> 
-> So we look at a quad core desktop machine which probably has no deeper
-> power states and therefor does not use the broadcast timer and compare
-> it to a laptop which has deeper power states and needs to use the
-> broadcast timer, which of course increases the number of IRQ0
-> events. What a surprise.
-> 
-> Can we please remove this from the regression list unless Shawn
-> confirms that 32 or earlier kernels do not show that behaviour on the
-> laptop?
-> 
+Oliver Neukum wrote:
+> Am Mittwoch, 20. Januar 2010 21:47:22 schrieb Rick L. Vinyard Jr.:
+>> +       if (copy_from_user(dst, buf, count))
+>> +               err = -EFAULT;
+>> +
+>> +       if (!err)
+>> +               *ppos += count;
+>> +
+>> +       g13_fb_update(par);
+>> +
+>> +       return (err) ? err : count;
+>
+> Do you really want to go on if you get -EFAULT?
+>
 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14859
-> > > Subject		: System timer firing too much without cause
-> > > Submitter	: Shawn Starr <shawn.starr@rogers.com>
-> > > Date		: 2009-12-21 19:16 (35 days old)
-> > 
-> > Continues with -rc5, I  really cannot use Dynamic ticks at all, it has to
-> > be disabled.
-> 
-> Shawn, why can't you use dynamic ticks ? In the bugzilla I just see
-> that you worry about the IRQ0 interrupts (which are correct and
-> necessary when the system is in nohz mode) and the extra rescheduling
-> interrupts. How is the system misbehaving ?
-> 
+Since the hecubafb driver (which I based this portion of the g13 driver
+on) uses the same approach I tried to justify it myself when I first saw
+it.
 
-Well,  this all stems from trying to use Radeon KMS with IRQs on. Doing so I 
-see system stalls and this is quite noticeable however, I am able to show this 
-same stall on the quad core with the same GPU. 
+I don't know if this was the intent of the hecubafb author, but this is
+the way I saw it.
 
-Right now, it is unclear to me if there is a underlying irq issue or a bug in 
-the radeon driver code that is showing these stalls. Since the radeon folks - 
-at the moment - do not think it is a coding problem in their driver
+By this point the copy_from_user() has failed. If it resulted in a partial
+copy to dst then continuing on to an update can't hurt, and would reduce
+display jitter if a re-write occurs from userspace. If a re-write doesn't
+occur the virtual framebuffer is hosed anyways as dst is is the underlying
+framebuffer.
 
-My impression was using dynamic ticks meant ticks were on demand and not 
-continuous. On the quad core box, with dynamic ticks on, the broadcasts are 
-not increasing IRQ 0 events this only happens on the laptop.
+Given that, the worst-case consequence seems to be an unnecessary update
+to the device display.
 
-Thanks, 
-Shawn.
 
-> Thanks,
-> 
-> 	tglx
