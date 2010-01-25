@@ -1,55 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439Ab0AYRkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474Ab0AYRqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754439Ab0AYRkJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 12:40:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641Ab0AYRkH
+	id S1754474Ab0AYRqG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 12:46:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424Ab0AYRqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 12:40:07 -0500
-Received: from lider.pardus.org.tr ([193.140.100.216]:60732 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754409Ab0AYRkE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 12:40:04 -0500
-Message-ID: <4B5DD76D.2050306@pardus.org.tr>
-Date: Mon, 25 Jan 2010 19:39:57 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 25 Jan 2010 12:46:05 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:51576 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754409Ab0AYRqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 12:46:04 -0500
+Date: Mon, 25 Jan 2010 11:45:56 -0600
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] - Fix unmap_vma() bug related to mmu_notifiers
+Message-ID: <20100125174556.GA23003@sgi.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Xiaotian Feng <dfeng@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [00/29] 2.6.32.6 stable review
-References: <20100123001145.GA7391@kroah.com> <20100123232152.4b88d1e3.akpm@linux-foundation.org> <alpine.LFD.2.00.1001241727560.2906@localhost.localdomain> <4B5D5903.4000209@pardus.org.tr> <20100125171631.GB17421@kroah.com>
-In-Reply-To: <20100125171631.GB17421@kroah.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Jan 25, 2010 at 10:40:35AM +0200, Ozan Çağlayan wrote:
+unmap_vmas() can fail to correctly flush the TLB if a
+callout to mmu_notifier_invalidate_range_start() sleeps.
+The mmu_gather list is initialized prior to the callout. If it is reused
+while the thread is sleeping, the mm field may be invalid.
 
-> 
-> Huh?  That says:
-> 	clockevents: Add missing include to pacify sparse
-> 
-> and does not sound like a problem that needs to be fixed for "real"
-> users, right?
-> 
-> Or does .32.6 have a build problem somewhere?
+If the task migrates to a different cpu, the task may use the wrong
+mmu_gather.
 
-Applying the patch on top of 2.6.32.y causes build failure as the fix calls a macro from
-"tick-internal.h".
+The patch changes unmap_vmas() to initialize the mmu_gather
+AFTER the mmu_notifier completes.
 
-#include "tick-internal.h"
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+Cc: <stable@kernel.org>
 
-was added to clockevents.c with 8e1a928a2ed7e8 in linux-2.6/master for another reason e.g.
-the patch is OK for linux-2.6/master but should be modified to add #include directive
-for .32.y when backporting.
+---
+ include/linux/mm.h |    2 +-
+ mm/memory.c        |   11 +++++++----
+ mm/mmap.c          |    6 ++----
+ 3 files changed, 10 insertions(+), 9 deletions(-)
 
-Regards,
+Index: linux/include/linux/mm.h
+===================================================================
+--- linux.orig/include/linux/mm.h	2010-01-25 01:45:37.000000000 -0600
++++ linux/include/linux/mm.h	2010-01-25 11:32:21.000000000 -0600
+@@ -761,7 +761,7 @@ unsigned long zap_page_range(struct vm_a
+ unsigned long unmap_vmas(struct mmu_gather **tlb,
+ 		struct vm_area_struct *start_vma, unsigned long start_addr,
+ 		unsigned long end_addr, unsigned long *nr_accounted,
+-		struct zap_details *);
++		struct zap_details *, int fullmm);
+ 
+ /**
+  * mm_walk - callbacks for walk_page_range
+Index: linux/mm/memory.c
+===================================================================
+--- linux.orig/mm/memory.c	2010-01-25 01:45:37.000000000 -0600
++++ linux/mm/memory.c	2010-01-25 11:32:21.000000000 -0600
+@@ -1010,17 +1010,21 @@ static unsigned long unmap_page_range(st
+ unsigned long unmap_vmas(struct mmu_gather **tlbp,
+ 		struct vm_area_struct *vma, unsigned long start_addr,
+ 		unsigned long end_addr, unsigned long *nr_accounted,
+-		struct zap_details *details)
++		struct zap_details *details, int fullmm)
+ {
+ 	long zap_work = ZAP_BLOCK_SIZE;
+ 	unsigned long tlb_start = 0;	/* For tlb_finish_mmu */
+ 	int tlb_start_valid = 0;
+ 	unsigned long start = start_addr;
+ 	spinlock_t *i_mmap_lock = details? details->i_mmap_lock: NULL;
+-	int fullmm = (*tlbp)->fullmm;
+ 	struct mm_struct *mm = vma->vm_mm;
+ 
++	/*
++	 * mmu_notifier_invalidate_range_start can sleep. Don't initialize
++	 * mmu_gather until it completes
++	 */
+ 	mmu_notifier_invalidate_range_start(mm, start_addr, end_addr);
++	*tlbp = tlb_gather_mmu(mm, fullmm);
+ 	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next) {
+ 		unsigned long end;
+ 
+@@ -1108,9 +1112,8 @@ unsigned long zap_page_range(struct vm_a
+ 	unsigned long nr_accounted = 0;
+ 
+ 	lru_add_drain();
+-	tlb = tlb_gather_mmu(mm, 0);
+ 	update_hiwater_rss(mm);
+-	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
++	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details, 0);
+ 	if (tlb)
+ 		tlb_finish_mmu(tlb, address, end);
+ 	return end;
+Index: linux/mm/mmap.c
+===================================================================
+--- linux.orig/mm/mmap.c	2010-01-25 01:45:37.000000000 -0600
++++ linux/mm/mmap.c	2010-01-25 11:35:55.000000000 -0600
+@@ -1824,9 +1824,8 @@ static void unmap_region(struct mm_struc
+ 	unsigned long nr_accounted = 0;
+ 
+ 	lru_add_drain();
+-	tlb = tlb_gather_mmu(mm, 0);
+ 	update_hiwater_rss(mm);
+-	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
++	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL, 0);
+ 	vm_unacct_memory(nr_accounted);
+ 	free_pgtables(tlb, vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
+ 				 next? next->vm_start: 0);
+@@ -2168,10 +2167,9 @@ void exit_mmap(struct mm_struct *mm)
+ 
+ 	lru_add_drain();
+ 	flush_cache_mm(mm);
+-	tlb = tlb_gather_mmu(mm, 1);
+ 	/* update_hiwater_rss(mm) here? but nobody should be looking */
+ 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
+-	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
++	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL, 1);
+ 	vm_unacct_memory(nr_accounted);
+ 
+ 	free_pgtables(tlb, vma, FIRST_USER_ADDRESS, 0);
