@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831Ab0AYPfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022Ab0AYPhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753831Ab0AYPfn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 10:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541Ab0AYPfm
+	id S1754022Ab0AYPhm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 10:37:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589Ab0AYPhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 10:35:42 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41865 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932131Ab0AYPfl (ORCPT
+	Mon, 25 Jan 2010 10:37:40 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:53587 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753556Ab0AYPhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 10:35:41 -0500
-X-Authority-Analysis: v=1.0 c=1 a=V_Gd8SginLMA:10 a=7U3hwN5JcxgA:10 a=VwQbUJbxAAAA:8 a=meVymXHHAAAA:8 a=pGLkceISAAAA:8 a=20KFwNOVAAAA:8 a=1ssURZzmvnyHaDJo1R0A:9 a=T-94BAF4aAjWlWsX31F-RatMn7oA:4 a=LI9Vle30uBYA:10 a=jeBq3FmKZ4MA:10 a=MSl-tDqOz04A:10 a=jEp0ucaQiEUA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 6/8] percpu: add __percpu sparse annotations to trace
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
-       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
-       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
-       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
-       x86@kernel.org, mingo@redhat.com, fweisbec@gmail.com,
-       dan.j.williams@intel.com, borislav.petkov@amd.com, ying.huang@intel.com,
-       lenb@kernel.org, neilb@suse.de, cl@linux-foundation.org
-In-Reply-To: <1264432935-10453-7-git-send-email-tj@kernel.org>
-References: <1264432935-10453-1-git-send-email-tj@kernel.org>
-	 <1264432935-10453-7-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Mon, 25 Jan 2010 10:35:36 -0500
-Message-ID: <1264433736.31321.413.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Jan 2010 10:37:38 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: trivial@kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH] imxfb: correct location of callbacks in suspend and resume
+Date: Mon, 25 Jan 2010 16:37:34 +0100
+Message-Id: <1264433854-878-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1263226881-28008-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1263226881-28008-1-git-send-email-u.kleine-koenig@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-26 at 00:22 +0900, Tejun Heo wrote:
-> Add __percpu sparse annotations to trace.
-> 
-> These annotations are to make sparse consider percpu variables to be
-> in a different address space and warn if accessed without going
-> through percpu accessors.  This patch doesn't affect normal builds.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
+The probe function passes a pointer to a struct fb_info to
+platform_set_drvdata, so don't interpret the return value of
+platform_get_drvdata as a pointer to struct imxfb_info.
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Acked-by: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+---
+ drivers/video/imxfb.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
--- Steve
-
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> ---
->  include/linux/ftrace_event.h         |    4 ++--
->  include/trace/ftrace.h               |    4 ++--
->  kernel/trace/trace_event_profile.c   |   16 ++++++++--------
->  kernel/trace/trace_functions_graph.c |    2 +-
->  kernel/trace/trace_kprobe.c          |    4 ++--
->  kernel/trace/trace_ksym.c            |   10 +++++-----
->  kernel/trace/trace_syscalls.c        |    4 ++--
->  7 files changed, 22 insertions(+), 22 deletions(-)
-> 
-
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 66358fa..b4b6dec 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -593,7 +593,8 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+  */
+ static int imxfb_suspend(struct platform_device *dev, pm_message_t state)
+ {
+-	struct imxfb_info *fbi = platform_get_drvdata(dev);
++	struct fb_info *info = platform_get_drvdata(dev);
++	struct imxfb_info *fbi = info->par;
+ 
+ 	pr_debug("%s\n", __func__);
+ 
+@@ -603,7 +604,8 @@ static int imxfb_suspend(struct platform_device *dev, pm_message_t state)
+ 
+ static int imxfb_resume(struct platform_device *dev)
+ {
+-	struct imxfb_info *fbi = platform_get_drvdata(dev);
++	struct fb_info *info = platform_get_drvdata(dev);
++	struct imxfb_info *fbi = info->par;
+ 
+ 	pr_debug("%s\n", __func__);
+ 
+-- 
+1.6.6
 
