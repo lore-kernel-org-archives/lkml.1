@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022Ab0AYPhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869Ab0AYPxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022Ab0AYPhm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 10:37:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589Ab0AYPhk
+	id S1753869Ab0AYPxH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 10:53:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183Ab0AYPxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 10:37:40 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:53587 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753556Ab0AYPhi (ORCPT
+	Mon, 25 Jan 2010 10:53:06 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:40281 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753181Ab0AYPxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 10:37:38 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: trivial@kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH] imxfb: correct location of callbacks in suspend and resume
-Date: Mon, 25 Jan 2010 16:37:34 +0100
-Message-Id: <1264433854-878-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	Mon, 25 Jan 2010 10:53:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=p8ePHMVGBjF7ydqxgPt5XH65/itmBOPTNRq//yr0PLwK3HV5VTYmsOxGeoEjUdWLD+
+         jpiyOXL2B0Cxa4DaA4/W1HmBF7b13qOPlZDj5CcvS3/WD+hBWEqJ21qDbcB8RqD9Q7OS
+         edIApelFRBtuYdB+8C5aMqdJfWQR03/DXTADM=
+From: Brian Gerst <brgerst@gmail.com>
+To: hpa@zytor.com
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86-64: Use normal ptregs stub for execve
+Date: Mon, 25 Jan 2010 10:47:33 -0500
+Message-Id: <1264434453-2204-1-git-send-email-brgerst@gmail.com>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263226881-28008-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1263226881-28008-1-git-send-email-u.kleine-koenig@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The probe function passes a pointer to a struct fb_info to
-platform_set_drvdata, so don't interpret the return value of
-platform_get_drvdata as a pointer to struct imxfb_info.
+Execve historically passed regs by value, so it had a seperate stub.
+This is no longer true, so change it to use a normal PTREGSCALL stub.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Acked-by: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
+Signed-off-by: Brian Gerst <brgerst@gmail.com>
 ---
- drivers/video/imxfb.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ arch/x86/kernel/entry_64.S |   17 +----------------
+ 1 files changed, 1 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 66358fa..b4b6dec 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -593,7 +593,8 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
-  */
- static int imxfb_suspend(struct platform_device *dev, pm_message_t state)
- {
--	struct imxfb_info *fbi = platform_get_drvdata(dev);
-+	struct fb_info *info = platform_get_drvdata(dev);
-+	struct imxfb_info *fbi = info->par;
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index 0697ff1..0c31502 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -696,6 +696,7 @@ END(\label)
+ 	PTREGSCALL stub_clone, sys_clone, %r8
+ 	PTREGSCALL stub_fork, sys_fork, %rdi
+ 	PTREGSCALL stub_vfork, sys_vfork, %rdi
++	PTREGSCALL stub_execve, sys_execve, %rcx
+ 	PTREGSCALL stub_sigaltstack, sys_sigaltstack, %rdx
+ 	PTREGSCALL stub_iopl, sys_iopl, %rsi
  
- 	pr_debug("%s\n", __func__);
+@@ -712,22 +713,6 @@ ENTRY(ptregscall_common)
+ 	CFI_ENDPROC
+ END(ptregscall_common)
  
-@@ -603,7 +604,8 @@ static int imxfb_suspend(struct platform_device *dev, pm_message_t state)
- 
- static int imxfb_resume(struct platform_device *dev)
- {
--	struct imxfb_info *fbi = platform_get_drvdata(dev);
-+	struct fb_info *info = platform_get_drvdata(dev);
-+	struct imxfb_info *fbi = info->par;
- 
- 	pr_debug("%s\n", __func__);
- 
+-ENTRY(stub_execve)
+-	CFI_STARTPROC
+-	popq %r11
+-	CFI_ADJUST_CFA_OFFSET -8
+-	CFI_REGISTER rip, r11
+-	SAVE_REST
+-	FIXUP_TOP_OF_STACK %r11
+-	movq %rsp, %rcx
+-	call sys_execve
+-	RESTORE_TOP_OF_STACK %r11
+-	movq %rax,RAX(%rsp)
+-	RESTORE_REST
+-	jmp int_ret_from_sys_call
+-	CFI_ENDPROC
+-END(stub_execve)
+-
+ /*
+  * sigreturn is special because it needs to restore all registers on return.
+  * This cannot be done with SYSRET, so use the IRET return path instead.
 -- 
 1.6.6
 
