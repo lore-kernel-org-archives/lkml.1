@@ -1,69 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752168Ab0AYEQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752339Ab0AYE3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752168Ab0AYEQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 23:16:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953Ab0AYEQZ
+	id S1752339Ab0AYE3f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 23:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828Ab0AYE3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 23:16:25 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38478 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751892Ab0AYEQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 23:16:24 -0500
-Date: Mon, 25 Jan 2010 15:16:17 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Eric Paris <eparis@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+	Sun, 24 Jan 2010 23:29:35 -0500
+Received: from bld-mail14.adl6.internode.on.net ([150.101.137.99]:53657 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751554Ab0AYE3e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 23:29:34 -0500
+Date: Mon, 25 Jan 2010 15:29:25 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Eric Paris <eparis@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
 Subject: Re: linux-next: vfs/fsnotify trees build warning
-Message-Id: <20100125151617.4a91ad17.sfr@canb.auug.org.au>
-In-Reply-To: <20100125150456.c796f0b0.sfr@canb.auug.org.au>
+Message-ID: <20100125042925.GM25842@discord.disaster>
 References: <20100125150456.c796f0b0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__25_Jan_2010_15_16_17_+1100_abtMc/8xde6DcRBF"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100125150456.c796f0b0.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__25_Jan_2010_15_16_17_+1100_abtMc/8xde6DcRBF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Eric, Al,
-
-On Mon, 25 Jan 2010 15:04:56 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
+On Mon, Jan 25, 2010 at 03:04:56PM +1100, Stephen Rothwell wrote:
+> Hi Eric, Al,
+> 
 > Today's linux-next build (x86_64 allmodconfig) produced these warnings:
-
-These warnings only appear after I merge the fsnotify tree into
-linux-next.  The vfs tree has been merged much earlier.  So at least the
-first of these is introduced by a vfs tree commit
-(82a1dff3ed894a3b453474f168d55381a1e7318c "Lose the new_name argument of
-fsnotify_move()") but only exposed by the merge of the fsnotify tree.
-
+> 
 > In file included from include/linux/security.h:26,
 >                  from fs/xfs/linux-2.6/xfs_iops.c:56:
 > include/linux/fsnotify.h: In function 'fsnotify_move':
-> include/linux/fsnotify.h:87: warning: pointer targets in initialization d=
-iffer in signedness
+> include/linux/fsnotify.h:87: warning: pointer targets in initialization differ in signedness
+> include/linux/fsnotify.h: In function 'fsnotify_create':
+> include/linux/fsnotify.h:154: warning: pointer targets in passing argument 5 of 'fsnotify' differ in signedness
+> include/linux/fsnotify_backend.h:300: note: expected 'const char *' but argument is of type 'const unsigned char *'
+> include/linux/fsnotify.h: In function 'fsnotify_link':
+> include/linux/fsnotify.h:167: warning: pointer targets in passing argument 5 of 'fsnotify' differ in signedness
+> include/linux/fsnotify_backend.h:300: note: expected 'const char *' but argument is of type 'const unsigned char *'
+> include/linux/fsnotify.h: In function 'fsnotify_mkdir':
+> include/linux/fsnotify.h:180: warning: pointer targets in passing argument 5 of 'fsnotify' differ in signedness
+> include/linux/fsnotify_backend.h:300: note: expected 'const char *' but argument is of type 'const unsigned char *'
+> 
+> I am not sure why these started turning up (they were there on Friday as
+> well and I may have missed them earlier).
 
---=20
+I cleaned up the all the sign warnings in the XFS code because
+we mirror the kernel code into userspace for tool building (libxfs)
+and that results in lots of sign warnings. I left the kernel
+warnings switched on in the XFS makefile so we wouldn't re-introduce
+the same problems.
+
+Don't know why this isn't showing up in my build though, because:
+
+CONFIG_FSNOTIFY=y
+
+is set and it is obvious the fsnotify wrappers are passing an
+unsigned char * (dentry name) to fsnotify() which takes a const char
+* for the file name. There's mismatches like this all over the VFS,
+so I'm not going to try to fix them....
+
+The patch below should silence the warnings, though.
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__25_Jan_2010_15_16_17_+1100_abtMc/8xde6DcRBF
-Content-Type: application/pgp-signature
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+xfs: turn off sign warnings
 
-iEYEARECAAYFAktdGxEACgkQjjKRsyhoI8wnoACeNO64tUszk8YPzBu0bilaIy4f
-vnoAoImMEbPY07UsIP5wV/7bWc5R6hxH
-=6Q7H
------END PGP SIGNATURE-----
+Because they cause warnings in static inline functions conditionally
+compiled into XFS from the VFS (e.g. fsnotify).
 
---Signature=_Mon__25_Jan_2010_15_16_17_+1100_abtMc/8xde6DcRBF--
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ fs/xfs/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/xfs/Makefile b/fs/xfs/Makefile
+index 1926701..5c5a366 100644
+--- a/fs/xfs/Makefile
++++ b/fs/xfs/Makefile
+@@ -16,7 +16,7 @@
+ # Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ #
+ 
+-EXTRA_CFLAGS +=	 -I$(src) -I$(src)/linux-2.6 -Wpointer-sign
++EXTRA_CFLAGS +=	 -I$(src) -I$(src)/linux-2.6
+ 
+ XFS_LINUX := linux-2.6
+ 
