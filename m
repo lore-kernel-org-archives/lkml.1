@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155Ab0AYOD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707Ab0AYOKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155Ab0AYOD6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 09:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769Ab0AYOD5
+	id S1752707Ab0AYOKb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 09:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173Ab0AYOK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 09:03:57 -0500
-Received: from casper.infradead.org ([85.118.1.10]:40318 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752576Ab0AYOD5 (ORCPT
+	Mon, 25 Jan 2010 09:10:29 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:41215 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752009Ab0AYOK0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 09:03:57 -0500
-Subject: Re: netperf ~50% regression with 2.6.33-rc1, bisect to 1b9508f
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1264413826.3642.88.camel@minggr.sh.intel.com>
-References: <1264413826.3642.88.camel@minggr.sh.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 25 Jan 2010 15:03:49 +0100
-Message-ID: <1264428229.4283.1833.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Jan 2010 09:10:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=WNG+zeqqJI114xOuFD/w0zR9OHLQx98gXOAdnFe93/PNNyCOHUEtVh6d0Y0kK3fdmZ
+         4pn1ron+TPgBnmGinZ/pYPHeFiboUiYY8T7BcwEfeJOsbXKIW2o6mKtNuqx2Sdk6LmDj
+         Ze1P4sbF2VAz1QLh3M76+B5JSiNyLzOAYL+GE=
+MIME-Version: 1.0
+In-Reply-To: <q60Z28d_9yH.A.70H.SZMXLB@chimera>
+References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera>
+	 <q60Z28d_9yH.A.70H.SZMXLB@chimera>
+Date: Mon, 25 Jan 2010 16:10:24 +0200
+X-Google-Sender-Auth: 605639bd392e2226
+Message-ID: <84144f021001250610q3160ea06tac5f645b84285388@mail.gmail.com>
+Subject: Re: [Bug #15015] blank screen at random times in laptop when sitting 
+	idle
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jithin Emmanuel <jithin1987@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-25 at 18:03 +0800, Lin Ming wrote:
-> Hi, 
-> 
-> The netperf lookback regression comes back again.
-> UDP stream test has ~50% regression with 2.6.33-rc1 compared to 2.6.32.
-> 
-> Testing machine: Nehalem, 2 sockets, 4 cores, hyper thread, 4G mem
-> Server and client are bind to different physical cpu. 
-> 
-> taskset -c 15 ./netserver
-> taskset -c 0 ./netperf -t UDP_STREAM -l 60 -H 127.0.0.1 -i 50,3 -I 99,5
-> -- -P 12384,12888 -s 32768 -S 32768 -m 1024
+On Mon, Jan 25, 2010 at 12:23 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let me know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15015
+> Subject         : blank screen at random times in laptop when sitting idle
+> Submitter       : Jithin Emmanuel <jithin1987@gmail.com>
+> Date            : 2010-01-09 16:48 (16 days old)
 
-I cannot reproduce this on a dual socket nehalem system, I get current
--linus to be about 10% faster than .32.
+FWIW, I might have seen this on my Macbook as well (screen went blank
+but I didn't check the logs). I think I managed to unblank the screen
+by hitting the "increase brightness" key. But as you say, the bug
+doesn't trigger very often and I have no idea how to reproduce it at
+will.
 
-(Had to drop the -i -I thingies, otherwise this took ages)
-
+                         Pekka
