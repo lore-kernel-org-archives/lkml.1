@@ -1,143 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140Ab0AYApx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752816Ab0AYBQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140Ab0AYApx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 19:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914Ab0AYApw
+	id S1752816Ab0AYBQk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 20:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611Ab0AYBQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 19:45:52 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60619 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753834Ab0AYApw (ORCPT
+	Sun, 24 Jan 2010 20:16:40 -0500
+Received: from [210.246.86.191] ([210.246.86.191]:54219 "EHLO mail.moi.go.th"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751042Ab0AYBQj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 19:45:52 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 25 Jan 2010 09:42:28 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Chris Frost <frost@CS.UCLA.EDU>, Andrew Morton <akpm@linux-foundation.org>,
-       Steve Dickson <steved@redhat.com>, David Howells <dhowells@redhat.com>,
-       Xu Chenfeng <xcf@ustc.edu.cn>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Steve VanDeBogart <vandebo-lkml@nerdbox.net>
-Subject: Re: [PATCH] mm/readahead.c: update the LRU positions of in-core
- pages, too
-Message-Id: <20100125094228.f7ca1430.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100123102222.GA6943@localhost>
-References: <20100120215536.GN27212@frostnet.net>
-	<20100121054734.GC24236@localhost>
-	<20100123040348.GC30844@frostnet.net>
-	<20100123102222.GA6943@localhost>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jan 2010 20:16:39 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jan 2010 20:16:38 EST
+Message-ID: <20100125080944.dyufw9tvvo8wwwk4@mail.moi.go.th>
+X-Priority: 3 (Normal)
+Date: Mon, 25 Jan 2010 08:09:44 +0700
+From: "mail.telia.com" <helpdesk@telia.com>
+Reply-to: thomaswilson@mcom.com
+To: undisclosed-recipients:;
+Subject: =?utf-8?b?QsOkc3Rl?= mail.telia.com Post User
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=UTF-8;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+X-Originating-IP: 203.55.231.100
+X-Remote-Browser: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1;
+	Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR
+	3.0.30729; Media Center PC 6.0; InfoPath.2; OfficeLiveConnector.1.3;
+	OfficeLivePatch.0.0; Crazy Browser 2.0.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Jan 2010 18:22:22 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-> Hi Chris,
-> 
-> > > +/*
-> > > + * Move pages in danger (of thrashing) to the head of inactive_list.
-> > > + * Not expected to happen frequently.
-> > > + */
-> > > +static unsigned long rescue_pages(struct address_space *mapping,
-> > > +				  struct file_ra_state *ra,
-> > > +				  pgoff_t index, unsigned long nr_pages)
-> > > +{
-> > > +	struct page *grabbed_page;
-> > > +	struct page *page;
-> > > +	struct zone *zone;
-> > > +	int pgrescue = 0;
-> > > +
-> > > +	dprintk("rescue_pages(ino=%lu, index=%lu, nr=%lu)\n",
-> > > +			mapping->host->i_ino, index, nr_pages);
-> > > +
-> > > +	for(; nr_pages;) {
-> > > +		grabbed_page = page = find_get_page(mapping, index);
-> > > +		if (!page) {
-> > > +			index++;
-> > > +			nr_pages--;
-> > > +			continue;
-> > > +		}
-> > > +
-> > > +		zone = page_zone(page);
-> > > +		spin_lock_irq(&zone->lru_lock);
-> > > +
-> > > +		if (!PageLRU(page)) {
-> > > +			index++;
-> > > +			nr_pages--;
-> > > +			goto next_unlock;
-> > > +		}
-> > > +
-> > > +		do {
-> > > +			struct page *the_page = page;
-> > > +			page = list_entry((page)->lru.prev, struct page, lru);
-> > > +			index++;
-> > > +			nr_pages--;
-> > > +			ClearPageReadahead(the_page);
-> > > +			if (!PageActive(the_page) &&
-> > > +					!PageLocked(the_page) &&
-> > > +					page_count(the_page) == 1) {
-> > 
-> > Why require the page count to be 1?
-> 
-> Hmm, I think the PageLocked() and page_count() tests meant to
-> skip pages being manipulated by someone else.
-> 
-> You can just remove them.  In fact the page_count()==1 will exclude
-> the grabbed_page, so must be removed. Thanks for the reminder!
-> 
-> > 
-> > > +				list_move(&the_page->lru, &zone->inactive_list);
-> > 
-> > The LRU list manipulation interface has changed since this patch.
-> 
-> Yeah.
-> 
-> > I believe we should replace the list_move() call with:
-> > 	del_page_from_lru_list(zone, the_page, LRU_INACTIVE_FILE);
-> > 	add_page_to_lru_list(zone, the_page, LRU_INACTIVE_FILE);
-> > This moves the page to the top of the list, but also notifies mem_cgroup.
-> > It also, I believe needlessly, decrements and then increments the zone
-> > state for each move.
-> 
-> Why do you think mem_cgroup shall be notified here? As me understand
-> it, mem_cgroup should only care about page addition/removal.
-> 
-No. memcg maintains its LRU list in synchronous way with global LRU.
-So, I think it's better to call usual LRU handler calls as Chris does.
 
-And...for maintainance, I like following code rather than your direct code.
-Because you mention " Not expected to happen frequently."
+Bäste mail.telia.com Post User,
 
-void find_isolate_inactive_page(struct address_space *mapping,  pgoff_t index, int len)
-{
-	int i = 0;
-	struct list_head *list;
 
-	for (i = 0; i < len; i++)
-		page = find_get_page(mapping, index + i);
-		if (!page)
-			continue;
-		zone = page_zone(page);
-		spin_lock_irq(&zone->lru_lock); /* you can optimize this if you want */
-		/* isolate_lru_page() doesn't handle the type of list, so call __isolate_lru_page */
-		if (__isolate_lru_page(page, ISOLATE_INACTIVE, 1)
-			continue;
-		spin_unlock_irq(&zone->lru_lock);
-		ClearPageReadahead(page);
-		putback_lru_page(page);
-	}
-}
+Vi skrev till er den 25 januari 2010 att ge råd att du byter lösenord på
+ditt konto för att förhindra obehörig åtkomst till kontot efter
+nätverket instruktion vi kommunicerade tidigare.
 
-Please feel free to do as you want but please takeing care of memcg' lru management.
+alla Mailhub system kommer att genomgå planerat underhåll. Access
+till din e-post via webmail-klienten kommer att vara otillgänglig  
+under en längre tid
+under denna uppfyllandeperiod. Vi håller på att uppgradera vår databas
+och e-post kontocentral I.E hemsida view. Vi skall ta bort gamla
+[https: / / mail.telia.com / l konton som inte längre är aktiva för att skapa
+mer utrymme för nya accountsusers. Vi har också undersökt ett stort
+säkerhetsgranskning att förbättra och höja
+vår nuvarande säkerhet.
 
-Thanks,
--Kame
+För att fortsätta använda våra tjänster du behöver för att uppdatera och
+nytt comfirmed ditt e-postkonto detaljer som efterfrågas nedan. Att slutföra
+kontot nytt comfirmation, måste du svara på detta mail omedelbart
+Ange ditt konto
+detaljer som efterfrågas nedan.
 
+
+Användarnamn:
+Lösenord:
+Övrig
+Framtida Lösenord:
+
+
+Underlåtenhet att göra detta kommer omedelbart göra ditt konto  
+inaktiveras från
+vår databas och service kommer inte att avbrytas så viktiga budskap kan
+också gå förlorade på grund av din sjönk till nytt comfirmed till oss  
+ditt konto
+detaljer.
+
+Vi ber om ursäkt för det besvär som detta orsakar dig under den här
+period, men lita på att vi är här för att ge dig bättre och ge
+mer teknik som kretsar kring e-post och internet. Det är också
+relevant, du understandthat vår huvudsakliga uppgift är för våra kunder,
+och för säkerheten i sina filer och data.
+
+
+COMFIRMATION KOD: mail.telia.com -/93-1A388-480 Technical Support Team
