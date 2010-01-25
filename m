@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558Ab0AYVGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666Ab0AYVHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753558Ab0AYVGt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 16:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503Ab0AYVGr
+	id S1753666Ab0AYVHF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 16:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617Ab0AYVHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 16:06:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:52019 "EHLO ogre.sisk.pl"
+	Mon, 25 Jan 2010 16:07:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52022 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753479Ab0AYVGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 16:06:47 -0500
+	id S1753591Ab0AYVHB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 16:07:01 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Airlie <airlied@redhat.com>
-Subject: Re: [Bug #15038] drm/ksm: fbdev blanking regression
-Date: Mon, 25 Jan 2010 22:07:14 +0100
+To: =?utf-8?q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+Subject: Re: [Bug #15137] NULL pointer dereference in vlan_skb_recv
+Date: Mon, 25 Jan 2010 22:07:52 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Johan Hovold <jhovold@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       James Simmons <jsimmons@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <201001250013.48523.rjw@sisk.pl> <1264400885.8478.0.camel@localhost>
-In-Reply-To: <1264400885.8478.0.camel@localhost>
+       Bruno =?utf-8?q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <hE3x9c-4KZM.A.W0E.4JMXLB@chimera> <20100125134346.GA3749@hack>
+In-Reply-To: <20100125134346.GA3749@hack>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001252207.14235.rjw@sisk.pl>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201001252207.53023.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 January 2010, Dave Airlie wrote:
-> On Mon, 2010-01-25 at 00:13 +0100, Rafael J. Wysocki wrote:
-> > On Sunday 24 January 2010, Johan Hovold wrote:
-> > > On Sun, Jan 24, 2010 at 11:04:36PM +0100, Rafael J. Wysocki wrote:
-> > > > This message has been generated automatically as a part of a report
-> > > > of recent regressions.
-> > > > 
-> > > > The following bug entry is on the current list of known regressions
-> > > > from 2.6.32.  Please verify if it still should be listed and let me know
-> > > > (either way).
-> > > > 
-> > > > 
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15038
-> > > > Subject		: drm/ksm: fbdev blanking regression
-> > > > Submitter	: Johan Hovold <jhovold@gmail.com>
-> > > > Date		: 2010-01-06 17:00 (19 days old)
-> > > > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=731b5a15a3b1474a41c2ca29b4c32b0f21bc852e
-> > > > References	: http://marc.info/?l=linux-kernel&m=126279726418748&w=4
-> > > > Handled-By	: James Simmons <jsimmons@infradead.org>
-> > > 
-> > > Issue remains in rc5.
-> > 
-> > Thanks for the update.
-> > 
-> > OK, we know what commit broke things, we don't seem to know how to fix it,
-> > so perhaps it's time to revert that commit?
+On Monday 25 January 2010, Américo Wang wrote:
+> On Sun, Jan 24, 2010 at 11:04:41PM +0100, Rafael J. Wysocki wrote:
+> >This message has been generated automatically as a part of a report
+> >of recent regressions.
+> >
+> >The following bug entry is on the current list of known regressions
+> >from 2.6.32.  Please verify if it still should be listed and let me know
+> >(either way).
+> >
+> >
+> >Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15137
+> >Subject		: NULL pointer dereference in vlan_skb_recv
+> >Submitter	: Bruno Prémont <bonbons@linux-vserver.org>
+> >Date		: 2010-01-23 15:56 (2 days old)
+> >References	: http://marc.info/?l=linux-kernel&m=126426286507497&w=4
+> >Handled-By	: Eric Dumazet <eric.dumazet@gmail.com>
+> >Patch		: http://patchwork.kernel.org/patch/74999/
+> >		  http://patchwork.kernel.org/patch/75002/
+> >
 > 
-> Just sent revert of the broken bit to Linus.
+> This one can be closed, patch from Eric is already applied by David Miller.
 
-Thanks!
+Is it in the Linus' tree already?
 
 Rafael
