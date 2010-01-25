@@ -1,124 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474Ab0AYRqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492Ab0AYRrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754474Ab0AYRqG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 12:46:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424Ab0AYRqF
+	id S1754492Ab0AYRrM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 12:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476Ab0AYRrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 12:46:05 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:51576 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754409Ab0AYRqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 12:46:04 -0500
-Date: Mon, 25 Jan 2010 11:45:56 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] - Fix unmap_vma() bug related to mmu_notifiers
-Message-ID: <20100125174556.GA23003@sgi.com>
+	Mon, 25 Jan 2010 12:47:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41114 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754413Ab0AYRrG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 12:47:06 -0500
+Date: Mon, 25 Jan 2010 09:45:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Frank Ch. Eigler" <fche@redhat.com>
+cc: Kyle Moffett <kyle@moffetthome.net>, tytso@mit.edu,
+       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+In-Reply-To: <alpine.LFD.2.00.1001250930320.3574@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.1001250945210.3574@localhost.localdomain>
+References: <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
+ <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <20100123112333.GA15455@elte.hu> <20100123114729.GA7828@redhat.com> <20100123194820.GM21263@thunk.org> <f73f7ab81001241742t1f827ddetd958e1949787020f@mail.gmail.com> <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain>
+ <20100125170254.GB22862@redhat.com> <alpine.LFD.2.00.1001250930320.3574@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-unmap_vmas() can fail to correctly flush the TLB if a
-callout to mmu_notifier_invalidate_range_start() sleeps.
-The mmu_gather list is initialized prior to the callout. If it is reused
-while the thread is sleeping, the mm field may be invalid.
 
-If the task migrates to a different cpu, the task may use the wrong
-mmu_gather.
 
-The patch changes unmap_vmas() to initialize the mmu_gather
-AFTER the mmu_notifier completes.
+On Mon, 25 Jan 2010, Linus Torvalds wrote:
+> 
+> So give me a populist argument that makes sense for tons of actual users, 
+> not some f*cking "here's a cool infrastructure that developers can do 
+> random crazy out-of-tree crap with". Because I'm not interested in crazy 
+> developers.
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
-Cc: <stable@kernel.org>
+In other words, give me the "killer feature". The thing I've asked for all 
+the time. The thing that you seem to continually NOT EVEN UNDERSTAND.
 
----
- include/linux/mm.h |    2 +-
- mm/memory.c        |   11 +++++++----
- mm/mmap.c          |    6 ++----
- 3 files changed, 10 insertions(+), 9 deletions(-)
-
-Index: linux/include/linux/mm.h
-===================================================================
---- linux.orig/include/linux/mm.h	2010-01-25 01:45:37.000000000 -0600
-+++ linux/include/linux/mm.h	2010-01-25 11:32:21.000000000 -0600
-@@ -761,7 +761,7 @@ unsigned long zap_page_range(struct vm_a
- unsigned long unmap_vmas(struct mmu_gather **tlb,
- 		struct vm_area_struct *start_vma, unsigned long start_addr,
- 		unsigned long end_addr, unsigned long *nr_accounted,
--		struct zap_details *);
-+		struct zap_details *, int fullmm);
- 
- /**
-  * mm_walk - callbacks for walk_page_range
-Index: linux/mm/memory.c
-===================================================================
---- linux.orig/mm/memory.c	2010-01-25 01:45:37.000000000 -0600
-+++ linux/mm/memory.c	2010-01-25 11:32:21.000000000 -0600
-@@ -1010,17 +1010,21 @@ static unsigned long unmap_page_range(st
- unsigned long unmap_vmas(struct mmu_gather **tlbp,
- 		struct vm_area_struct *vma, unsigned long start_addr,
- 		unsigned long end_addr, unsigned long *nr_accounted,
--		struct zap_details *details)
-+		struct zap_details *details, int fullmm)
- {
- 	long zap_work = ZAP_BLOCK_SIZE;
- 	unsigned long tlb_start = 0;	/* For tlb_finish_mmu */
- 	int tlb_start_valid = 0;
- 	unsigned long start = start_addr;
- 	spinlock_t *i_mmap_lock = details? details->i_mmap_lock: NULL;
--	int fullmm = (*tlbp)->fullmm;
- 	struct mm_struct *mm = vma->vm_mm;
- 
-+	/*
-+	 * mmu_notifier_invalidate_range_start can sleep. Don't initialize
-+	 * mmu_gather until it completes
-+	 */
- 	mmu_notifier_invalidate_range_start(mm, start_addr, end_addr);
-+	*tlbp = tlb_gather_mmu(mm, fullmm);
- 	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next) {
- 		unsigned long end;
- 
-@@ -1108,9 +1112,8 @@ unsigned long zap_page_range(struct vm_a
- 	unsigned long nr_accounted = 0;
- 
- 	lru_add_drain();
--	tlb = tlb_gather_mmu(mm, 0);
- 	update_hiwater_rss(mm);
--	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
-+	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details, 0);
- 	if (tlb)
- 		tlb_finish_mmu(tlb, address, end);
- 	return end;
-Index: linux/mm/mmap.c
-===================================================================
---- linux.orig/mm/mmap.c	2010-01-25 01:45:37.000000000 -0600
-+++ linux/mm/mmap.c	2010-01-25 11:35:55.000000000 -0600
-@@ -1824,9 +1824,8 @@ static void unmap_region(struct mm_struc
- 	unsigned long nr_accounted = 0;
- 
- 	lru_add_drain();
--	tlb = tlb_gather_mmu(mm, 0);
- 	update_hiwater_rss(mm);
--	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
-+	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL, 0);
- 	vm_unacct_memory(nr_accounted);
- 	free_pgtables(tlb, vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
- 				 next? next->vm_start: 0);
-@@ -2168,10 +2167,9 @@ void exit_mmap(struct mm_struct *mm)
- 
- 	lru_add_drain();
- 	flush_cache_mm(mm);
--	tlb = tlb_gather_mmu(mm, 1);
- 	/* update_hiwater_rss(mm) here? but nobody should be looking */
- 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
--	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
-+	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL, 1);
- 	vm_unacct_memory(nr_accounted);
- 
- 	free_pgtables(tlb, vma, FIRST_USER_ADDRESS, 0);
+		Linus
