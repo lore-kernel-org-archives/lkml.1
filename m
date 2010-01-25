@@ -1,85 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747Ab0AYOjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753690Ab0AYOrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753747Ab0AYOjZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 09:39:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875Ab0AYOjY
+	id S1753690Ab0AYOrm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 09:47:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118Ab0AYOrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 09:39:24 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:59681 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752786Ab0AYOjV convert rfc822-to-8bit (ORCPT
+	Mon, 25 Jan 2010 09:47:41 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:51111 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751995Ab0AYOrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 09:39:21 -0500
+	Mon, 25 Jan 2010 09:47:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :content-type:content-transfer-encoding;
-        b=bsThN0nLz6T/Vt6hweBJLK9oB+eTXu7MlxasNW27P7cXS4kK0aZDvQ3xZAFFCZaBzY
-         inaUfGChbQqRvIzNESakWiRxgV9jZqFk9g0/bwMXzuWlt+0ekS/U3JpYTsbO4y78Ptkc
-         gkKDOmCs8OpS6ywAtSAo4Ay5YRi2/FZm9BrPo=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=b3a5LePzzSj+rP9cHPkMKK9htpyklWyN+WGyX9KC1orccFq0SamKx8VJWZSblTlX95
+         897s1AguVGNfeGuYRTYAvclOQKY5iZK+MqgJVEqo/4cYvRSWFQ1/QUnRS1A72JaMDORb
+         Vw/E5Epa4jGE8y0O2PwAre00ajTBvwyE2O/sw=
 MIME-Version: 1.0
-In-Reply-To: <daef60381001170536s79551f0drb573181d18db6369@mail.gmail.com>
-References: <daef60381001170536s79551f0drb573181d18db6369@mail.gmail.com>
-From: Hui Zhu <teawater@gmail.com>
-Date: Mon, 25 Jan 2010 22:39:01 +0800
-Message-ID: <daef60381001250639p6dce8308lf5a765d7015c7846@mail.gmail.com>
-Subject: Re: [PATCH] Change hex to Math::BigInt->from_hex in markup_oops.pl
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       =?ISO-8859-1?Q?Ozan_=C7aglayan?= <ozan@pardus.org.tr>,
-       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100125022351.GD24418@ghostprotocols.net>
+References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	 <1264167553-6510-13-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	 <20100125022351.GD24418@ghostprotocols.net>
+Date: Mon, 25 Jan 2010 23:47:40 +0900
+X-Google-Sender-Auth: d5ad6b1630b5a65a
+Message-ID: <a6b9f31a1001250647k7273ab80j771d673595d3ad80@mail.gmail.com>
+Subject: Re: [PATCH 12/12] Revert "perf record: Intercept all events"
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please ignore this patch.  Because it was included in "[PATCH]
-markup_oops.pl: add options to improve cross-sompilation
-environments".
+On Mon, Jan 25, 2010 at 11:23, Arnaldo Carvalho de Melo
+<acme@infradead.org> wrote:
+> Em Fri, Jan 22, 2010 at 10:39:13PM +0900, Hitoshi Mitake escreveu:
+>> This reverts commit f5a2c3dce03621b55f84496f58adc2d1a87ca16f.
+>>
+>> This patch is required for making "perf lock rec" work.
+>> The commit f5a2c3dce0 changes write_event() of builtin-record.c .
+>> And changed write_event() sometimes doesn't stop with perf lock rec.
+>>
+>> I'm researching what makes write_event() loop infinity,
+>> and noticed that there are some events with event_t->header.size == 0.
+>> But the detail of the problem,
+>> like kind of these events, isn't clear...
+>>
+>> If you know something related to this problem,
+>> could you tell me, Arnaldo?
+>
+> Well, this will have to wait for somebody to remove the need for
+> intercepting those events, reverting this patch fixes your tool while
+> breaking others that then won't catch all the events.
 
-Thanks,
-Hui
+Yes, this patch is too egoistic thing and temporary solution.
+I have to consider and modify 'perf lock'.
 
-On Sun, Jan 17, 2010 at 21:36, Hui Zhu <teawater@gmail.com> wrote:
-> The hex cannot work well in x86 to parse the oops message for x8664.
-> So this patch change it.
 >
-> Thanks,
-> Hui
+> I'll get 'perf regtest' out with some initial tests then try to get some
+> proposal for injecting the buildid, if found in a DSO, via
+> PERF_RECORD_MMAP, lets see how this goes...
+
+What does "DSO" mean? Sorry, I'm not good at English...
+
 >
-> Signed-off-by: Hui Zhu <teawater@gmail.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Arjan van de Ven <arjan@linux.intel.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Ozan Çaglayan <ozan@pardus.org.tr>
-> Cc: Matthew Wilcox <willy@linux.intel.com>
+> Best Regards,
 >
-> ---
->  scripts/markup_oops.pl |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> - Arnaldo
 >
-> --- a/scripts/markup_oops.pl
-> +++ b/scripts/markup_oops.pl
-> @@ -196,7 +196,7 @@ if ($module ne "") {
->        while (<FILE>) {
->                if ($_ =~ /^([0-9a-f]+) \<$function\>\:/) {
->                        my $fu = $1;
-> -                       $vmaoffset = hex($target) - hex($fu) - hex($func_offset);
-> +                       $vmaoffset = Math::BigInt->from_hex("0x$target") -
-> Math::BigInt->from_hex("0x$fu") -
-> Math::BigInt->from_hex("0x$func_offset");
->                }
->        }
->        close(FILE);
-> @@ -212,7 +212,7 @@ sub InRange {
->        my ($address, $target) = @_;
->        my $ad = "0x".$address;
->        my $ta = "0x".$target;
-> -       my $delta = hex($ad) - hex($ta);
-> +       my $delta = Math::BigInt->from_hex($ad) - Math::BigInt->from_hex($ta);
+> BTW: I took longer to send a response to this question addressed to me
+> because I wasn't on the CC list :-)
 >
->        if (($delta > -4096) && ($delta < 4096)) {
->                return 1;
 >
+
+Oh, sorry... I wonder why I didn't add you to Cc or To :(
+It is completely my mistake, and thanks for your reply!
+
+Thanks
+	Hitoshi
