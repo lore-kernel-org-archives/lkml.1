@@ -1,71 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136Ab0AYPR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954Ab0AYPTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136Ab0AYPR4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 10:17:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699Ab0AYPRz
+	id S1753954Ab0AYPTR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 10:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869Ab0AYPTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 10:17:55 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:45505 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752632Ab0AYPRy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 10:17:54 -0500
-Date: Mon, 25 Jan 2010 10:17:26 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-Cc: linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [btrfs] kernel BUG at include/linux/spinlock.h:376!
-Message-ID: <20100125151726.GA331@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>,
-	linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <201001072229.33976.johannes.hirte@fem.tu-ilmenau.de>
- <20100114193708.GD23810@think>
- <201001232123.58602.johannes.hirte@fem.tu-ilmenau.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001232123.58602.johannes.hirte@fem.tu-ilmenau.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B5DB61C.00FC:SCFMA4539814,ss=1,fgs=0
+	Mon, 25 Jan 2010 10:19:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42939 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753848Ab0AYPTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 10:19:02 -0500
+From: Tejun Heo <tj@kernel.org>
+To: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
+       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
+       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
+       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
+       x86@kernel.org, mingo@redhat.com, fweisbec@gmail.com,
+       dan.j.williams@intel.com, borislav.petkov@amd.com, ying.huang@intel.com,
+       lenb@kernel.org, neilb@suse.de, cl@linux-foundation.org
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 2/8] percpu: add __percpu sparse annotations to fs
+Date: Tue, 26 Jan 2010 00:22:09 +0900
+Message-Id: <1264432935-10453-3-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+In-Reply-To: <1264432935-10453-1-git-send-email-tj@kernel.org>
+References: <1264432935-10453-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 25 Jan 2010 15:17:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 23, 2010 at 09:23:56PM +0100, Johannes Hirte wrote:
-> Am Donnerstag 14 Januar 2010 20:37:08 schrieb Chris Mason:
-> > On Thu, Jan 07, 2010 at 10:29:32PM +0100, Johannes Hirte wrote:
-> > > One of my btrfs filesystems gives the following bug message on access:
-> > > 
-> > > Jan  6 23:08:12 datengrab kernel: ------------[ cut here ]------------
-> > > Jan  6 23:08:12 datengrab kernel: kernel BUG at
-> > > include/linux/spinlock.h:376! Jan  6 23:08:12 datengrab kernel: invalid
-> > > opcode: 0000 [#1] SMP
-> > > Jan  6 23:08:12 datengrab kernel: last sysfs file:
-> > > /sys/devices/pci0000:00/0000:00:18.3/temp1_input
-> > > Jan  6 23:08:12 datengrab kernel: CPU 1
-> > > Jan  6 23:08:12 datengrab kernel: Pid: 2837, comm: btrfs-endio-wri Not
-> > > tainted 2.6.33-rc3-00033-g03b7675 #12 TYAN Tiger K8W Dual AMD Opteron,
-> > > S2875/To Be Filled
-> > > By O.E.M.
-> > > Jan  6 23:08:12 datengrab kernel: RIP: 0010:[<ffffffff8118f7ea>] 
-> > > [<ffffffff8118f7ea>] btrfs_assert_tree_locked+0x16/0x1c
-> > 
-> > Well, we really should have this tree block locked, but
-> > btrfs_mark_extent_written is doing some special things.  Is the trace
-> > always the same?
-> 
-> Sorry for the long delay. Yes the trace was always the same. I can't test 
-> patches, since I'm not working on the corrupted FS anymore. The bug only 
-> occurred on the corrupted filesystem. But as I've seen, Yan Zheng has tracked 
-> it down (commit 6c7d54ac87f338c479d9729e8392eca3f76e11e1). 
-> 
-> I still suspect that the FS corruption was caused by this bug. It didn't 
-> happened again. If so, I'll report.
+Add __percpu sparse annotations to fs.
 
-Right, we should have it fixed now, thanks for the report.
+These annotations are to make sparse consider percpu variables to be
+in a different address space and warn if accessed without going
+through percpu accessors.  This patch doesn't affect normal builds.
 
--chris
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Alex Elder <aelder@sgi.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+---
+ fs/ext4/ext4.h            |    2 +-
+ fs/nfs/iostat.h           |    4 ++--
+ fs/xfs/xfs_mount.h        |    2 +-
+ include/linux/mount.h     |    2 +-
+ include/linux/nfs_fs_sb.h |    2 +-
+ 5 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index af7b626..eeb1e36 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -1017,7 +1017,7 @@ struct ext4_sb_info {
+ 	atomic_t s_lock_busy;
+ 
+ 	/* locality groups */
+-	struct ext4_locality_group *s_locality_groups;
++	struct ext4_locality_group __percpu *s_locality_groups;
+ 
+ 	/* for write statistics */
+ 	unsigned long s_sectors_written_start;
+diff --git a/fs/nfs/iostat.h b/fs/nfs/iostat.h
+index 46d779a..1d8d5c8 100644
+--- a/fs/nfs/iostat.h
++++ b/fs/nfs/iostat.h
+@@ -57,12 +57,12 @@ static inline void nfs_add_fscache_stats(struct inode *inode,
+ }
+ #endif
+ 
+-static inline struct nfs_iostats *nfs_alloc_iostats(void)
++static inline struct nfs_iostats __percpu *nfs_alloc_iostats(void)
+ {
+ 	return alloc_percpu(struct nfs_iostats);
+ }
+ 
+-static inline void nfs_free_iostats(struct nfs_iostats *stats)
++static inline void nfs_free_iostats(struct nfs_iostats __percpu *stats)
+ {
+ 	if (stats != NULL)
+ 		free_percpu(stats);
+diff --git a/fs/xfs/xfs_mount.h b/fs/xfs/xfs_mount.h
+index 1df7e45..24c8887 100644
+--- a/fs/xfs/xfs_mount.h
++++ b/fs/xfs/xfs_mount.h
+@@ -243,7 +243,7 @@ typedef struct xfs_mount {
+ 	struct xfs_qmops	*m_qm_ops;	/* vector of XQM ops */
+ 	atomic_t		m_active_trans;	/* number trans frozen */
+ #ifdef HAVE_PERCPU_SB
+-	xfs_icsb_cnts_t		*m_sb_cnts;	/* per-cpu superblock counters */
++	xfs_icsb_cnts_t __percpu *m_sb_cnts;	/* per-cpu superblock counters */
+ 	unsigned long		m_icsb_counters; /* disabled per-cpu counters */
+ 	struct notifier_block	m_icsb_notifier; /* hotplug cpu notifier */
+ 	struct mutex		m_icsb_mutex;	/* balancer sync lock */
+diff --git a/include/linux/mount.h b/include/linux/mount.h
+index 5d52753..b5f43a3 100644
+--- a/include/linux/mount.h
++++ b/include/linux/mount.h
+@@ -66,7 +66,7 @@ struct vfsmount {
+ 	int mnt_pinned;
+ 	int mnt_ghosts;
+ #ifdef CONFIG_SMP
+-	int *mnt_writers;
++	int __percpu *mnt_writers;
+ #else
+ 	int mnt_writers;
+ #endif
+diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
+index 34fc6be..6a2e44f 100644
+--- a/include/linux/nfs_fs_sb.h
++++ b/include/linux/nfs_fs_sb.h
+@@ -105,7 +105,7 @@ struct nfs_server {
+ 	struct rpc_clnt *	client;		/* RPC client handle */
+ 	struct rpc_clnt *	client_acl;	/* ACL RPC client handle */
+ 	struct nlm_host		*nlm_host;	/* NLM client handle */
+-	struct nfs_iostats *	io_stats;	/* I/O statistics */
++	struct nfs_iostats __percpu *io_stats;	/* I/O statistics */
+ 	struct backing_dev_info	backing_dev_info;
+ 	atomic_long_t		writeback;	/* number of writeback pages */
+ 	int			flags;		/* various flags */
+-- 
+1.6.4.2
 
