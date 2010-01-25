@@ -1,111 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169Ab0AYSG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628Ab0AYSIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753169Ab0AYSG2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 13:06:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528Ab0AYSG1
+	id S1754628Ab0AYSIJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 13:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510Ab0AYSIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 13:06:27 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34429 "EHLO mx1.suse.de"
+	Mon, 25 Jan 2010 13:08:07 -0500
+Received: from mail.kapsi.fi ([217.30.184.167]:38443 "EHLO mail.kapsi.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754437Ab0AYSG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 13:06:26 -0500
-Date: Mon, 25 Jan 2010 10:04:43 -0800
-From: Greg KH <gregkh@suse.de>
-To: Stefan Bader <stefan.bader@canonical.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [28/29] perf events: Dont report side-band
- events on each cpu for per-task-per-cpu events
-Message-ID: <20100125180443.GA18650@suse.de>
-References: <20100123001113.778789298@mini.kroah.org>
- <4B5ADFC1.6030909@canonical.com>
+	id S1752674Ab0AYSIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 13:08:06 -0500
+Message-ID: <4B5DDDFB.5020907@iki.fi>
+Date: Mon, 25 Jan 2010 20:07:55 +0200
+From: Antti Palosaari <crope@iki.fi>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B5ADFC1.6030909@canonical.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: mchehab@infradead.org, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org
+Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
+References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com>
+In-Reply-To: <4B5D6098.7010700@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 82.128.185.8
+X-SA-Exim-Mail-From: crope@iki.fi
+X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 23, 2010 at 12:38:41PM +0100, Stefan Bader wrote:
-> Greg KH wrote:
-> > 2.6.32-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > 
-> > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > 
-> > commit 5d27c23df09b702868d9a3bff86ec6abd22963ac upstream.
-> > 
-> > Acme noticed that his FORK/MMAP numbers were inflated by about
-> > the same factor as his cpu-count.
-> > 
-> > This led to the discovery of a few more sites that need to
-> > respect the event->cpu filter.
-> > 
-> > Reported-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > LKML-Reference: <20091217121830.215333434@chello.nl>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > ---
-> >  kernel/perf_event.c |   20 ++++++++++++++++++--
-> >  1 file changed, 18 insertions(+), 2 deletions(-)
-> > 
-> > --- a/kernel/perf_event.c
-> > +++ b/kernel/perf_event.c
-> > @@ -1359,6 +1359,9 @@ static void perf_ctx_adjust_freq(struct 
-> >  		if (event->state != PERF_EVENT_STATE_ACTIVE)
-> >  			continue;
-> >  
-> > +		if (event->cpu != -1 && event->cpu != smp_processor_id())
-> > +			continue;
-> > +
-> >  		hwc = &event->hw;
-> >  
-> >  		interrupts = hwc->interrupts;
-> > @@ -3226,6 +3229,9 @@ static void perf_event_task_output(struc
-> >  
-> >  static int perf_event_task_match(struct perf_event *event)
-> >  {
-> > +	if (event->cpu != -1 && event->cpu != smp_processor_id())
-> > +		return 0;
-> > +
-> >  	if (event->attr.comm || event->attr.mmap || event->attr.task)
-> >  		return 1;
-> >  
-> 
-> > @@ -3262,6 +3268,7 @@ static void perf_event_task_event(struct
-> >  		ctx = rcu_dereference(task_event->task->perf_event_ctxp);
-> >  	if (ctx)
-> >  		perf_event_task_ctx(ctx, task_event);
-> > +	put_cpu_var(perf_cpu_context);
-> >  	rcu_read_unlock();
-> >  }
-> 
-> I believe this hunk drops the move of put_cpu_var. The upstream hunk looks like
-> this:
-> 
-> @ -3290,12 +3296,11 @@ static void perf_event_task_event(struct perf_task_event
->         rcu_read_lock();
->         cpuctx = &get_cpu_var(perf_cpu_context);
->         perf_event_task_ctx(&cpuctx->ctx, task_event);
-> -       put_cpu_var(perf_cpu_context);
-> -
->         if (!ctx)
->                 ctx = rcu_dereference(task_event->task->perf_event_ctxp);
->         if (ctx)
->                 perf_event_task_ctx(ctx, task_event);
-> +       put_cpu_var(perf_cpu_context);
->         rcu_read_unlock();
->  }
+On 01/25/2010 11:12 AM, Jiri Slaby wrote:
+> On 01/25/2010 12:44 AM, Antti Palosaari wrote:
+>> When I now test this patch with debugs enabled I don't see
+>> .probe and .disconnect be called for this HID interface (interface 1) at
+>> all and thus checks not needed.
+>
+> What happens if you disable the HID layer? Or at least if you add an
+> ignore quirk for the device in usbhid?
 
-All fixed up now, thanks again for the review.
+Looks like Fedora doesn't have usbhid compiled as module. I looked 
+hid-quirks.c file and there was only one af9015 device blacklisted 
+15a4:9016. I have 15a4:9015, 15a4:9016 and 13d3:3237 devices and no 
+difference.
 
-greg k-h
+How can I disable HID layer?
+
+> I forbid usbhid to attach to the device, as the remote kills X with HID
+> driver. With dvb-usb-remote it works just fine (with remote=2 for af9015
+> or the 4 patches I've sent).
+
+In my understanding the cause of the remote problem is chipset bug which 
+sets USB2.0 polling interval to 4096ms. Therefore HID remote does not 
+work at all or starts repeating. It is possible to implement remote as 
+polling from the driver which works very well. But HID problem still 
+remains. I have some hacks in my mind to test to kill HID. One is to 
+configure HID wrongly to see if it stops outputting characters. Other 
+way is try to read remote codes directly from the chip memory.
+
+But all in all, your patch does not break anything, it is safe to add. 
+It could be still nice to know if there is better alternatives. And 
+there is surely few other devices having HID remote - are those also 
+affected.
+
+regards
+Antti
+-- 
+http://palosaari.fi/
