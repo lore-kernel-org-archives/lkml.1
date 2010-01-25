@@ -1,144 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616Ab0AYUEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719Ab0AYUbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752616Ab0AYUEj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 15:04:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468Ab0AYUEi
+	id S1752719Ab0AYUbo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 15:31:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654Ab0AYUbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 15:04:38 -0500
-Received: from mailrelay009.isp.belgacom.be ([195.238.6.176]:57644 "EHLO
-	mailrelay009.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932131Ab0AYUEg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 15:04:36 -0500
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAIeHXUtbsswT/2dsb2JhbADbFAmEMAQ
-Date: Mon, 25 Jan 2010 21:04:33 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
+	Mon, 25 Jan 2010 15:31:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10063 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751908Ab0AYUbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 15:31:42 -0500
+Subject: Re: linux-next: add utrace tree
+From: Mark Wielaard <mjw@redhat.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kyle Moffett <kyle@moffetthome.net>, tytso@mit.edu,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Denis Turischev <denis@compulab.co.il>, Peter Huewe <PeterHuewe@gmx.de>
-Subject: [WATCHDOG] v2.6.33-rc5 fixes
-Message-ID: <20100125200433.GT3804@infomag.iguana.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       utrace-devel@redhat.com
+In-Reply-To: <alpine.LFD.2.00.1001250930320.3574@localhost.localdomain>
+References: <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
+	 <20100122221348.GA4263@redhat.com>
+	 <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
+	 <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
+	 <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
+	 <20100123112333.GA15455@elte.hu> <20100123114729.GA7828@redhat.com>
+	 <20100123194820.GM21263@thunk.org>
+	 <f73f7ab81001241742t1f827ddetd958e1949787020f@mail.gmail.com>
+	 <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain>
+	 <20100125170254.GB22862@redhat.com>
+	 <alpine.LFD.2.00.1001250930320.3574@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 25 Jan 2010 21:30:53 +0100
+Message-ID: <1264451453.3028.59.camel@springer.wildebeest.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, 2010-01-25 at 09:36 -0800, Linus Torvalds wrote:
+> Upon the information that people are talking about magic new kernel 
+> interfaces to do fancy things. And talking about doing things with it that 
+> are simply not relevant for ptrace/strace.
 
-Please pull from 'master' branch of
-	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
-or if master.kernel.org hasn't synced up yet:
-	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+Unfortunately ptrace does all that magic already (badly). People don't
+just use it for (s)tracing syscalls, but also for tracing signals, for
+single step debugging and poking at memory, register state, for process
+jailing and virtualization (uml) through syscall emulation.
 
-This will update the following files:
+So when they are talking about these fancy things that is because that
+is what ptrace gives them currently. And they hate it, because the
+ptrace interface is such a pain to work with. And all these things don't
+really work together. You cannot trace, emulate, debug, jail at the same
+time.
 
- drivers/watchdog/Kconfig          |    4 ++--
- drivers/watchdog/ixp2000_wdt.c    |    1 +
- drivers/watchdog/sbc_fitpc2_wdt.c |   11 +++++------
- 3 files changed, 8 insertions(+), 8 deletions(-)
+And all these users have wishes to extend the current ptrace interface
+mess. But nobody dares to extend ptrace in any direction because
+fixing/cleaning up one of these use cases might break the others in
+subtle and not so subtle ways. Which is why the utrace series of patches
+is cleaning up all this stuff first.
 
-with these Changes:
+Cheers,
 
-Author: Denis Turischev <denis@compulab.co.il>
-Date:   Thu Jan 21 16:10:07 2010 +0200
+Mark
 
-    [WATCHDOG] sbc_fitpc2_wdt: fix I/O space access technique.
-    
-    The mdelay function was used between I/O access commands, that causes peak
-    in CPU usage. Fix it by substitution mdelay to msleep.
-    
-    Expand usage on fitPC2 compatible boards according to DMI identification.
-    
-    Signed-off-by: Denis Turischev <denis@compulab.co.il>
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
-
-Author: Peter Huewe <PeterHuewe@gmx.de>
-Date:   Thu Jan 7 03:35:49 2010 +0100
-
-    [WATCHDOG] ixp2000: Fix build failure caused by missing include
-    
-    This patch fixes a build failure[1] caused by the missing include of
-    timer.h and thus fixes the build failure.
-    
-    Notably the build failure existed since October 2009! [2]
-    
-    References:
-    [1] http://kisskb.ellerman.id.au/kisskb/buildresult/1983339/
-    [2] http://kisskb.ellerman.id.au/kisskb/buildresult/1351737/
-    
-    Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
-
-The Changes can also be looked at on:
-	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
-
-For completeness, I added the overal diff below.
-
-Greetings,
-Wim.
-
-================================================================================
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 088f32f..050ee14 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -396,8 +396,8 @@ config SBC_FITPC2_WATCHDOG
- 	tristate "Compulab SBC-FITPC2 watchdog"
- 	depends on X86
- 	---help---
--	  This is the driver for the built-in watchdog timer on the fit-PC2
--	  Single-board computer made by Compulab.
-+	  This is the driver for the built-in watchdog timer on the fit-PC2,
-+	  fit-PC2i, CM-iAM single-board computers made by Compulab.
- 
- 	  It`s possible to enable watchdog timer either from BIOS (F2) or from booted Linux.
- 	  When "Watchdog Timer Value" enabled one can set 31-255 s operational range.
-diff --git a/drivers/watchdog/ixp2000_wdt.c b/drivers/watchdog/ixp2000_wdt.c
-index 4f4b35a..3c79dc5 100644
---- a/drivers/watchdog/ixp2000_wdt.c
-+++ b/drivers/watchdog/ixp2000_wdt.c
-@@ -19,6 +19,7 @@
- #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/types.h>
-+#include <linux/timer.h>
- #include <linux/kernel.h>
- #include <linux/fs.h>
- #include <linux/miscdevice.h>
-diff --git a/drivers/watchdog/sbc_fitpc2_wdt.c b/drivers/watchdog/sbc_fitpc2_wdt.c
-index 91430a8..e6763d2 100644
---- a/drivers/watchdog/sbc_fitpc2_wdt.c
-+++ b/drivers/watchdog/sbc_fitpc2_wdt.c
-@@ -46,9 +46,9 @@ static DEFINE_SPINLOCK(wdt_lock);
- static void wdt_send_data(unsigned char command, unsigned char data)
- {
- 	outb(command, COMMAND_PORT);
--	mdelay(100);
-+	msleep(100);
- 	outb(data, DATA_PORT);
--	mdelay(200);
-+	msleep(200);
- }
- 
- static void wdt_enable(void)
-@@ -202,11 +202,10 @@ static int __init fitpc2_wdt_init(void)
- {
- 	int err;
- 
--	if (strcmp("SBC-FITPC2", dmi_get_system_info(DMI_BOARD_NAME))) {
--		pr_info("board name is: %s. Should be SBC-FITPC2\n",
--			dmi_get_system_info(DMI_BOARD_NAME));
-+	if (!strstr(dmi_get_system_info(DMI_BOARD_NAME), "SBC-FITPC2"))
- 		return -ENODEV;
--	}
-+
-+	pr_info("%s found\n", dmi_get_system_info(DMI_BOARD_NAME));
- 
- 	if (!request_region(COMMAND_PORT, 1, WATCHDOG_NAME)) {
- 		pr_err("I/O address 0x%04x already in use\n", COMMAND_PORT);
