@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797Ab0AYCYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837Ab0AYCZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752797Ab0AYCYX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 21:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800Ab0AYCYV
+	id S1752837Ab0AYCZM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 21:25:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088Ab0AYCZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 21:24:21 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51680 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751261Ab0AYCYI (ORCPT
+	Sun, 24 Jan 2010 21:25:10 -0500
+Received: from mail-iw0-f183.google.com ([209.85.223.183]:36593 "EHLO
+	mail-iw0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963Ab0AYCZI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 21:24:08 -0500
-Date: Mon, 25 Jan 2010 00:23:51 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 12/12] Revert "perf record: Intercept all events"
-Message-ID: <20100125022351.GD24418@ghostprotocols.net>
-References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1264167553-6510-13-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	Sun, 24 Jan 2010 21:25:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RX9ICVvXXH71yzw7iWvsxkfKJ/hH0hTzTpPX9xKzJd+mieZakYmMKfRvChKvZpTVCa
+         VFaWt9VTHHIJd3hskFFwUFarQhDjVDJ+0teycKTpqjz7XuG1ojX7nMf5sMDQGaWms6cM
+         OwaE+lt8cWY1OjFf50EIODcKmyk/Y85XMCbNI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264167553-6510-13-git-send-email-mitake@dcl.info.waseda.ac.jp>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <q60Z28d_9yH.A.aX.kZMXLB@chimera>
+References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera>
+	 <q60Z28d_9yH.A.aX.kZMXLB@chimera>
+Date: Sun, 24 Jan 2010 20:25:06 -0600
+Message-ID: <51f3faa71001241825yec6e37br8032b7a3730ce840@mail.gmail.com>
+Subject: Re: [Bug #14922] 2.6.32 seemed to have broken nVidia MCP7A sata 
+	controller
+From: Robert Hancock <hancockrwd@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Mike Cui <cuicui@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Jan 22, 2010 at 10:39:13PM +0900, Hitoshi Mitake escreveu:
-> This reverts commit f5a2c3dce03621b55f84496f58adc2d1a87ca16f.
-> 
-> This patch is required for making "perf lock rec" work.
-> The commit f5a2c3dce0 changes write_event() of builtin-record.c .
-> And changed write_event() sometimes doesn't stop with perf lock rec.
-> 
-> I'm researching what makes write_event() loop infinity,
-> and noticed that there are some events with event_t->header.size == 0.
-> But the detail of the problem,
-> like kind of these events, isn't clear...
-> 
-> If you know something related to this problem,
-> could you tell me, Arnaldo?
+On Sun, Jan 24, 2010 at 4:23 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let me know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14922
+> Subject         : 2.6.32 seemed to have broken nVidia MCP7A sata controller
+> Submitter       : Mike Cui <cuicui@gmail.com>
+> Date            : 2009-12-19 6:13 (37 days old)
+> References      : http://marc.info/?l=linux-ide&m=126120323407742&w=4
+> Handled-By      : Jeff Garzik <jeff@garzik.org>
+>                  Robert Hancock <hancockrwd@gmail.com>
 
-Well, this will have to wait for somebody to remove the need for
-intercepting those events, reverting this patch fixes your tool while
-breaking others that then won't catch all the events.
-
-I'll get 'perf regtest' out with some initial tests then try to get some
-proposal for injecting the buildid, if found in a DSO, via
-PERF_RECORD_MMAP, lets see how this goes...
-
-Best Regards,
-
-- Arnaldo
-
-BTW: I took longer to send a response to this question addressed to me
-because I wasn't on the CC list :-)
+It's a confirmed regression. Waiting on some lspci -nn output from the
+reporter. However, for now, disabling auto-activate optimization on
+all NVIDIA AHCIs may be the easiest option.
