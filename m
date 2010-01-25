@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605Ab0AYVoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760Ab0AYVsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605Ab0AYVoA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 16:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678Ab0AYVlE
+	id S1753760Ab0AYVsz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 16:48:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325Ab0AYVsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 16:41:04 -0500
-Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:40711 "EHLO
-	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822Ab0AYVk6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 16:40:58 -0500
-Subject: [PATCH 00/12] ACPI: processor driver vs. core
-To: lenb@kernel.org
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 25 Jan 2010 14:40:38 -0700
-Message-ID: <20100125213221.28510.74078.stgit@bob.kio>
-User-Agent: StGit/0.15
+	Mon, 25 Jan 2010 16:48:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52198 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753135Ab0AYVsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 16:48:53 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [Update][PATCH] MM / PM: Force GFP_NOIO during suspend/hibernation and resume
+Date: Mon, 25 Jan 2010 22:49:18 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+References: <201001212121.50272.rjw@sisk.pl> <201001222219.15958.rjw@sisk.pl> <1264238962.16031.4.camel@maxim-laptop>
+In-Reply-To: <1264238962.16031.4.camel@maxim-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001252249.18690.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This series cleans up some of the mess I made when introducing
-early _PDC.
+On Saturday 23 January 2010, Maxim Levitsky wrote:
+> On Fri, 2010-01-22 at 22:19 +0100, Rafael J. Wysocki wrote: 
+> > On Friday 22 January 2010, Maxim Levitsky wrote:
+> > > On Fri, 2010-01-22 at 10:42 +0900, KOSAKI Motohiro wrote: 
+> > > > > > > Probably we have multiple option. but I don't think GFP_NOIO is good
+> > > > > > > option. It assume the system have lots non-dirty cache memory and it isn't
+> > > > > > > guranteed.
+> > > > > > 
+> > > > > > Basically nothing is guaranteed in this case.  However, does it actually make
+> > > > > > things _worse_?  
+> > > > > 
+> > > > > Hmm..
+> > > > > Do you mean we don't need to prevent accidental suspend failure?
+> > > > > Perhaps, I did misunderstand your intention. If you think your patch solve
+> > > > > this this issue, I still disagree. but If you think your patch mitigate
+> > > > > the pain of this issue, I agree it. I don't have any reason to oppose your
+> > > > > first patch.
+> > > > 
+> > > > One question. Have anyone tested Rafael's $subject patch? 
+> > > > Please post test result. if the issue disapper by the patch, we can
+> > > > suppose the slowness is caused by i/o layer.
+> > > 
+> > > I did.
+> > > 
+> > > As far as I could see, patch does solve the problem I described.
+> > > 
+> > > Does it affect speed of suspend? I can't say for sure. It seems to be
+> > > the same.
+> > 
+> > Thanks for testing.
+> 
+> I'll test that too, soon.
+> Just to note that I left my hibernate loop run overnight, and now I am
+> posting from my notebook after it did 590 hibernate cycles.
 
-The major change is renaming processor_core.c to processor_driver.c,
-and then renaming processor_pdc.c to processor_core.c.
+Did you have a chance to test it?
 
-The idea is that the code in processor_core.c will always be built
-statically into the kernel (as long as ACPI is configured), while
-allowing the ACPI processor driver to remain modular (if so desired).
+> Offtopic, but Note that to achieve that I had to stop using global acpi
+> hardware lock. I tried all kinds of things, but for now it just hands
+> from time to time.
+> See http://bugzilla.kernel.org/show_bug.cgi?id=14668
 
-We do this because part of the cleanups involves teaching the
-early _PDC evaluation code how to determine if a processor is
-physically present or not -- aka enumeration -- and that sort
-of code doesn't really belong in a file named processor_pdc.
+I'm going to look at that later this week, although I'm not sure I can do more
+than Alex about that.
 
-There are quite a few checkpatch errors in the first rename patch,
-and I'll look at cleaning those up in a later series.
-
-/ac
-
----
-
-Alex Chiang (12):
-      ACPI: processor: mv processor_core.c processor_driver.c
-      ACPI: processor: mv processor_pdc.c processor_core.c
-      ACPI: processor: export acpi_get_cpuid()
-      ACPI: processor: move acpi_get_cpuid into processor_core.c
-      ACPI: processor: add internal processor_physically_present()
-      ACPI: processor: remove early _PDC optin quirks
-      ACPI: processor: driver doesn't need to evaluate _PDC
-      ACPI: processor: refactor internal map_lapic_id()
-      ACPI: processor: refactor internal map_x2apic_id()
-      ACPI: processor: refactor internal map_lsapic_id()
-      ACPI: processor: push file static MADT pointer into internal map_madt_entry()
-      ACPI: processor core: style and sparse cleanups
-
-
- Documentation/kernel-parameters.txt |    4 
- arch/ia64/kernel/acpi.c             |    3 
- arch/x86/kernel/acpi/boot.c         |    3 
- drivers/acpi/Makefile               |    4 
- drivers/acpi/processor_core.c       | 1149 +++++------------------------------
- drivers/acpi/processor_driver.c     |  976 ++++++++++++++++++++++++++++++
- drivers/acpi/processor_pdc.c        |  209 ------
- include/acpi/processor.h            |   10 
- 8 files changed, 1172 insertions(+), 1186 deletions(-)
- create mode 100644 drivers/acpi/processor_driver.c
- delete mode 100644 drivers/acpi/processor_pdc.c
-
+Rafael
