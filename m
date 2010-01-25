@@ -1,67 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508Ab0AYRzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489Ab0AYR75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508Ab0AYRzr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 12:55:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286Ab0AYRzq
+	id S1754489Ab0AYR75 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 12:59:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399Ab0AYR74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 12:55:46 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34112 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753679Ab0AYRzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 12:55:45 -0500
-Date: Tue, 26 Jan 2010 04:55:30 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: tytso@mit.edu, Ric Wheeler <rwheeler@redhat.com>,
-       Anton Altaparmakov <aia21@cam.ac.uk>,
-       Dave Chinner <david@fromorbit.com>, Jan Kara <jack@suse.cz>,
-       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: IO error semantics
-Message-ID: <20100125175529.GB2018@laptop>
-References: <4B4EDE5C.8040600@hitachi.com>
- <4B4EEE86.7080807@hitachi.com>
- <20100114141803.GB3146@quack.suse.cz>
- <20100118051847.GA8678@laptop>
- <20100118060518.GA9151@laptop>
- <20100118122437.GF7264@discord.disaster>
- <20100118140039.GA13909@laptop>
- <D65C918F-8CCD-4626-BA84-FD0410A5E81F@cam.ac.uk>
- <4B5DB78D.2090408@redhat.com>
- <20100125174723.GB28459@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100125174723.GB28459@thunk.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 25 Jan 2010 12:59:56 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45111 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148Ab0AYR7z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 12:59:55 -0500
+Subject: Re: [PATCH] perf_events: improve x86 event scheduling (v6 
+ incremental)
+From: Peter Zijlstra <peterz@infradead.org>
+To: eranian@gmail.com
+Cc: eranian@google.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       paulus@samba.org, davem@davemloft.net, fweisbec@gmail.com,
+       perfmon2-devel@lists.sf.net
+In-Reply-To: <7c86c4471001250948t2c1b06ebx2e70f30f45c81aad@mail.gmail.com>
+References: <4b588464.1818d00a.4456.383b@mx.google.com>
+	 <1264192074.4283.1602.camel@laptop>
+	 <7c86c4471001250912l47aa53dfw2c056e3a4733271e@mail.gmail.com>
+	 <1264440342.4283.1936.camel@laptop>
+	 <7c86c4471001250948t2c1b06ebx2e70f30f45c81aad@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 25 Jan 2010 18:59:41 +0100
+Message-ID: <1264442381.4283.1944.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 12:47:23PM -0500, tytso@mit.edu wrote:
-> On Mon, Jan 25, 2010 at 10:23:57AM -0500, Ric Wheeler wrote:
-> > 
-> > For permanent write errors, I would expect any modern drive to do a
-> > sector remapping internally. We should never need to track this kind
-> > of information for any modern device that I know of (S-ATA, SAS,
-> > SSD's and raid arrays should all handle this).
-> 
-> ... and if the device is run out of all of its blocks in its spare
-> blocks pool, it's probably well past the time to replace said disk.
-> 
-> BTW, I really liked Dave Chinner's summary of the issues involved; I
-> ran into Kawai-san last week at Linux.conf.au, and we discussed pretty
-> much the same thing over lunch.  (i.e., that it's a hard problem, and
-> in some cases we need to retry the writes, such as a transient FC path
-> problem --- but some kind of write throttling is critical or we could
-> end up choking the VM due to too many pages getting dirtied and no way
-> of cleaning them.)
+On Mon, 2010-01-25 at 18:48 +0100, stephane eranian wrote:
 
-Well I just don't think we can ever discard them by default. Therefore
-we must default to not discarding them, therefore we need to solve or
-work around the dirty page congestion problem some how.
+> >> It seems a solution would be to call x86_pmu_disable() before
+> >> assigning an event to a new counter for all events which are
+> >> moving. This is because we cannot assume all events have been
+> >> previously disabled individually. Something like
+> >>
+> >> if (!match_prev_assignment(hwc, cpuc, i)) {
+> >>    if (hwc->idx != -1)
+> >>       x86_pmu.disable(hwc, hwc->idx);
+> >>    x86_assign_hw_event(event, cpuc, cpuc->assign[i]);
+> >>    x86_perf_event_set_period(event, hwc, hwc->idx);
+> >> }
+> >
+> > Yes and no, my worry is not that its not counting, but that we didn't
+> > store the actual counter value before over-writing it with the new
+> > configuration.
+> >
+> > As to your suggestion,
+> >  1) we would have to do x86_pmu_disable() since that does
+> > x86_perf_event_update().
+> >  2) I worried about the case where we basically switch two counters,
+> > there we cannot do the x86_perf_event_update() in a single pass since
+> > programming the first counter will destroy the value of the second.
+> >
+> > Now possibly the scenario in 2 isn't possible because the event
+> > scheduling is stable enough for this never to happen, but I wasn't
+> > feeling too sure about that, so I skipped this part for now.
+> >
+> I think what adds to the complexity here is that there are two distinct
+> disable() mechanisms: perf_disable() and x86_pmu.disable(). They
+> don't operate the same way. You would think that by calling hw_perf_disable()
+> you would stop individual events as well (thus saving their values). That
+> means that if you do perf_disable() and then read the count, you will not
+> get the up-to-date value in event->count. you need pmu->disable(event)
+> to ensure that.
 
+No, a read is actually good enough, it does x86_perf_event_update(), but
+we're not guaranteeing that read is present.
+
+So yes, perf_disable() is basically a local_irq_disable() but for perf
+events, all it has to do is ensure there's no concurrency. ->disable()
+will really tear the configuration down.
+
+Either ->disable() or ->read() will end up calling
+x86_perf_event_update() which is needed to read the actual hw counter
+value and propagate it into event storage.
+
+> So my understanding is that perf_disable() is meant for a temporary stop,
+> thus no need to save the count.
+> 
+> As for 2, I believe this can happen if you add 2 new events which have more
+> restrictions. For instance on Core, you were measuring cycles, inst in generic
+> counters, then you add 2 events which can only be measured on generic counters.
+> That will cause cycles, inst to be moved to fixed counters.
+> 
+> So we have to modify hw_perf_enable() to first disable all events
+> which are moving,
+> then reprogram them. I suspect it may be possible to optimize this if
+> we detect that
+> those events had already been stopped individually (as opposed to
+> perf_disable()), i.e.,
+> already had their counts saved.
+
+Right, I see no fundamentally impossible things at all, we just need to
+be careful here.
+
+Anyway, I poked at the stack I've got now and it seems to hold up when I
+poke at it with various combinations of constraint events, so I'll push
+that off to Ingo and then we can go from there.
+
+Thanks for working on this!
 
