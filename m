@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902Ab0AYVnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956Ab0AYVne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902Ab0AYVnS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 16:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260Ab0AYVlN
+	id S1753956Ab0AYVne (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 16:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816Ab0AYVlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 16:41:13 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:13727 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752039Ab0AYVlJ (ORCPT
+	Mon, 25 Jan 2010 16:41:06 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:37936 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752642Ab0AYVk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 16:41:09 -0500
-Subject: [PATCH 06/12] ACPI: processor: remove early _PDC optin quirks
+	Mon, 25 Jan 2010 16:40:58 -0500
+Subject: [PATCH 03/12] ACPI: processor: export acpi_get_cpuid()
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Date: Mon, 25 Jan 2010 14:41:08 -0700
-Message-ID: <20100125214108.28510.57323.stgit@bob.kio>
+Date: Mon, 25 Jan 2010 14:40:53 -0700
+Message-ID: <20100125214053.28510.73571.stgit@bob.kio>
 In-Reply-To: <20100125213221.28510.74078.stgit@bob.kio>
 References: <20100125213221.28510.74078.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -27,86 +27,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that we check for physically present processors before blindly
-evaluating _PDC, we no longer need to maintain a DMI opt-in table
-nor a kernel param.
+Rename static get_cpu_id() to acpi_get_cpuid() and export it.
+
+This change also gives us an opportunity to remove the
+#ifndef CONFIG_SMP from processor_driver.c and into a header file
+where it properly belongs.
 
 Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- Documentation/kernel-parameters.txt |    4 ----
- drivers/acpi/processor_core.c       |   37 -----------------------------------
- 2 files changed, 0 insertions(+), 41 deletions(-)
+ drivers/acpi/processor_driver.c |   10 ++++------
+ include/acpi/processor.h        |    8 ++++++++
+ 2 files changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 826b6e1..736d456 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -199,10 +199,6 @@ and is between 256 and 4096 characters. It is defined in the file
- 			acpi_display_output=video
- 			See above.
+diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+index d2f285b..404fab4 100644
+--- a/drivers/acpi/processor_driver.c
++++ b/drivers/acpi/processor_driver.c
+@@ -359,10 +359,7 @@ static inline int acpi_processor_remove_fs(struct acpi_device *device)
  
--	acpi_early_pdc_eval	[HW,ACPI] Evaluate processor _PDC methods
--				early. Needed on some platforms to properly
--				initialize the EC.
+ /* Use the acpiid in MADT to map cpus in case of SMP */
+ 
+-#ifndef CONFIG_SMP
+-static int get_cpu_id(acpi_handle handle, int type, u32 acpi_id) { return -1; }
+-#else
 -
- 	acpi_irq_balance [HW,ACPI]
- 			ACPI will balance active IRQs
- 			default in APIC mode
-diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-index e8b1246..05874ba 100644
---- a/drivers/acpi/processor_core.c
-+++ b/drivers/acpi/processor_core.c
-@@ -341,36 +341,6 @@ void acpi_processor_set_pdc(acpi_handle handle)
++#ifdef CONFIG_SMP
+ static struct acpi_table_madt *madt;
+ 
+ static int map_lapic_id(struct acpi_subtable_header *entry,
+@@ -494,7 +491,7 @@ exit:
+ 	return apic_id;
  }
- EXPORT_SYMBOL_GPL(acpi_processor_set_pdc);
  
--static int early_pdc_optin;
--static int set_early_pdc_optin(const struct dmi_system_id *id)
--{
--	early_pdc_optin = 1;
--	return 0;
--}
--
--static int param_early_pdc_optin(char *s)
--{
--	early_pdc_optin = 1;
--	return 1;
--}
--__setup("acpi_early_pdc_eval", param_early_pdc_optin);
--
--static struct dmi_system_id __cpuinitdata early_pdc_optin_table[] = {
--	{
--	set_early_pdc_optin, "HP Envy", {
--	DMI_MATCH(DMI_BIOS_VENDOR, "Hewlett-Packard"),
--	DMI_MATCH(DMI_PRODUCT_NAME, "HP Envy") }, NULL},
--	{
--	set_early_pdc_optin, "HP Pavilion dv6", {
--	DMI_MATCH(DMI_BIOS_VENDOR, "Hewlett-Packard"),
--	DMI_MATCH(DMI_PRODUCT_NAME, "HP Pavilion dv6") }, NULL},
--	{
--	set_early_pdc_optin, "HP Pavilion dv7", {
--	DMI_MATCH(DMI_BIOS_VENDOR, "Hewlett-Packard"),
--	DMI_MATCH(DMI_PRODUCT_NAME, "HP Pavilion dv7") }, NULL},
--	{},
--};
--
- static acpi_status
- early_init_pdc(acpi_handle handle, u32 lvl, void *context, void **rv)
+-static int get_cpu_id(acpi_handle handle, int type, u32 acpi_id)
++int acpi_get_cpuid(acpi_handle handle, int type, u32 acpi_id)
  {
-@@ -396,13 +366,6 @@ void acpi_early_processor_set_pdc(void)
- 	 */
- 	dmi_check_system(processor_idle_dmi_table);
+ 	int i;
+ 	int apic_id = -1;
+@@ -511,6 +508,7 @@ static int get_cpu_id(acpi_handle handle, int type, u32 acpi_id)
+ 	}
+ 	return -1;
+ }
++EXPORT_SYMBOL_GPL(acpi_get_cpuid);
+ #endif
  
--	/*
--	 * Allow systems to opt-in to early _PDC evaluation.
--	 */
--	dmi_check_system(early_pdc_optin_table);
--	if (!early_pdc_optin)
--		return;
--
- 	acpi_walk_namespace(ACPI_TYPE_PROCESSOR, ACPI_ROOT_OBJECT,
- 			    ACPI_UINT32_MAX,
- 			    early_init_pdc, NULL, NULL, NULL);
+ /* --------------------------------------------------------------------------
+@@ -577,7 +575,7 @@ static int acpi_processor_get_info(struct acpi_device *device)
+ 		device_declaration = 1;
+ 		pr->acpi_id = value;
+ 	}
+-	cpu_index = get_cpu_id(pr->handle, device_declaration, pr->acpi_id);
++	cpu_index = acpi_get_cpuid(pr->handle, device_declaration, pr->acpi_id);
+ 
+ 	/* Handle UP system running SMP kernel, with no LAPIC in MADT */
+ 	if (!cpu0_initialized && (cpu_index == -1) &&
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index d767006..3b66978 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -322,6 +322,14 @@ static inline int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+ 
+ /* in processor_core.c */
+ void acpi_processor_set_pdc(acpi_handle handle);
++#ifdef CONFIG_SMP
++int acpi_get_cpuid(acpi_handle, int type, u32 acpi_id);
++#else
++static inline int acpi_get_cpuid(acpi_handle handle, int type, u32 acpi_id)
++{
++	return -1;
++}
++#endif
+ 
+ /* in processor_throttling.c */
+ int acpi_processor_tstate_has_changed(struct acpi_processor *pr);
 
