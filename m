@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113Ab0AYH0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752147Ab0AYH2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752113Ab0AYH0i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 02:26:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031Ab0AYH0h
+	id S1752147Ab0AYH2B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 02:28:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031Ab0AYH2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 02:26:37 -0500
-Received: from symlink.to.noone.org ([85.10.207.172]:43467 "EHLO sym.noone.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751393Ab0AYH0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 02:26:37 -0500
-Date: Mon, 25 Jan 2010 08:26:33 +0100
-From: Tobias Klauser <tklauser@distanz.ch>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, John Linn <john.linn@xilinx.com>
-Subject: Re: linux-next: input tree build failure
-Message-ID: <20100125072633.GP31478@distanz.ch>
-References: <20100125165219.cd0b869d.sfr@canb.auug.org.au> <20100125064602.GA22833@core.coreip.homeip.net>
+	Mon, 25 Jan 2010 02:28:00 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48205 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823Ab0AYH2A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 02:28:00 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mark Seaborn <mrs@mythic-beasts.com>
+Subject: Re: futex() on vdso makes process unkillable
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <20100125120459.4944.A69D9226@jp.fujitsu.com>
+References: <20100124.000458.506212773266927716.mrs@deli> <20100125120459.4944.A69D9226@jp.fujitsu.com>
+Message-Id: <20100125162733.BDB8.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100125064602.GA22833@core.coreip.homeip.net>
-X-Editor: Vi IMproved 7.1
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 25 Jan 2010 16:27:56 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010-01-25 at 07:46:03 +0100, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> On Mon, Jan 25, 2010 at 04:52:19PM +1100, Stephen Rothwell wrote:
-> > Hi Dmitry,
-> > 
-> > Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
-> > 
-> > drivers/input/serio/xilinx_ps2.c: In function 'xps2_of_probe':
-> > drivers/input/serio/xilinx_ps2.c:273: error: incompatible type for argument 1 of 'resource_size'
-> > include/linux/ioport.h:132: note: expected 'const struct resource *' but argument is of type 'struct resource'
-> > drivers/input/serio/xilinx_ps2.c: In function 'xps2_of_remove':
-> > drivers/input/serio/xilinx_ps2.c:347: error: incompatible type for argument 1 of 'resource_size'
-> > include/linux/ioport.h:132: note: expected 'const struct resource *' but argument is of type 'struct resource'
-> > 
-> > Please at least build test this stuff ...
-> > 
-> > Caused by commit cc7bbfa322b48be82b1c86a104433d4ac349da79 ("Input:
-> > xilinx_ps2 - use resource_size").
-> > 
-> > I have reverted that commit for today.
-> > 
+Hi
+
+> CC to futex folks.
 > 
-> Argh, sorry about that. I adjusted the commit; John, Tobias, please
-> verify (next branch in my tree).
+> > I was experimenting with futexes and was a little surprised to
+> > discover that futex() works on read-only pages.  This creates quite a
+> > high bandwidth side channel that allows two processes to communicate
+> > if, for example, they share a library.  (Mind you, this is not much
+> > different from file locks, which also work on read-only file
+> > descriptors.)
+> > 
+> > I also found a couple of differences between 2.6.24 (from Ubuntu
+> > hardy) and 2.6.31 (from Ubuntu karmic).  The first is a definite bug
+> > in 2.6.31:
+> > 
+> > 1) On 2.6.31 i686, using futex() on the vdso causes the process to get
+> > stuck, consuming CPU in an unkillable state.  Both FUTEX_WAIT and
+> > FUTEX_WAKE cause the problem.  The problem doesn't occur on 2.6.24.
+> > (BTW, I was testing to see whether futex() on the vdso allows any two
+> > processes to communicate.  This appears not to be the case on 2.6.24.)
+> > 
+> > A test program is below.
+> > 
+> > 
+> > 2) Suppose a file is mapped into two processes with MAP_PRIVATE.  Can
+> > the resulting mappings be used to communicate via futex()?  i.e. Does
+> > futex() consider the mappings to be the same?
+> > 
+> > On 2.6.24, the futex wakeup is not transferred; pages must be mapped
+> > with MAP_SHARED for futex to work.  On 2.6.31, the futex wakeup *is*
+> > transferred; futex works with either MAP_SHARED or MAP_PRIVATE.
+> > 
+> > 2.6.24's behaviour seems more correct, because the mappings are
+> > logically different, even if the underlying memory pages are the same
+> > before copy-on-write is triggered.  Is 2.6.31's behaviour a
+> > regression, or is the kernel's behaviour here supposed to be
+> > undefined?
 
-Sorry, that was completely my fault. I didn't have the appropriate build
-environment to at least build test it.
+Futex should work both file anon anon. however I personally think 
+vdso is not file nor anon. it is special mappings. nobody defined
+futex spec on special mappings. (yes, undefined).
 
-The adjusted commit looks fine to me.
+Personally, I think EINVAL or EFAULT are best result of vdso futexing, like as
+futexing againt kernel address. but I guess another person have another thinking.
 
-Sorry again,
-Tobias
+I'd like to hear futex folks's opinion.
+
+
+Thanks.
+
+
