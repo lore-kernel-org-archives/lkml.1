@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022Ab0AYVy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039Ab0AYVzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022Ab0AYVy2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 16:54:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305Ab0AYVy0
+	id S1754039Ab0AYVzM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 16:55:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140Ab0AYVzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 16:54:26 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:51995 "EHLO mx2.suse.de"
+	Mon, 25 Jan 2010 16:55:11 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52007 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752748Ab0AYVyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 16:54:25 -0500
-Date: Mon, 25 Jan 2010 22:54:23 +0100
-Message-ID: <s5h8wblc0kw.wl%tiwai@suse.de>
+	id S1752727Ab0AYVzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 16:55:10 -0500
+Date: Mon, 25 Jan 2010 22:55:08 +0100
+Message-ID: <s5h7hr5c0jn.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: sboyce@blueyonder.co.uk,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>
 Subject: Re: HDA Intel Audio hang on boot
-In-Reply-To: <201001252239.03017.rjw@sisk.pl>
+In-Reply-To: <s5h8wblc0kw.wl%tiwai@suse.de>
 References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
 	<4B4FC3B0.9070207@blueyonder.co.uk>
 	<4B5CF87A.20101@blueyonder.co.uk>
 	<201001252239.03017.rjw@sisk.pl>
+	<s5h8wblc0kw.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.7 Emacs/23.1
  (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
@@ -31,53 +32,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Mon, 25 Jan 2010 22:39:02 +0100,
-Rafael J. Wysocki wrote:
+At Mon, 25 Jan 2010 22:54:23 +0100,
+I wrote:
 > 
-> On Monday 25 January 2010, Sid Boyce wrote:
-> > On 15/01/10 01:24, Sid Boyce wrote:
-> > This is the only outstanding bug. No problems up 2.6.32-git1, but I get
-> > a solid lock-up on 2.6.32-git2 through 2.6.33-rc5 if the on-board audio
-> > is not disabled in the BIOS.
+> At Mon, 25 Jan 2010 22:39:02 +0100,
+> Rafael J. Wysocki wrote:
+> > 
+> > On Monday 25 January 2010, Sid Boyce wrote:
+> > > On 15/01/10 01:24, Sid Boyce wrote:
+> > > This is the only outstanding bug. No problems up 2.6.32-git1, but I get
+> > > a solid lock-up on 2.6.32-git2 through 2.6.33-rc5 if the on-board audio
+> > > is not disabled in the BIOS.
+> > 
+> > I guess we should let Takashi know.
 > 
-> I guess we should let Takashi know.
+> Thanks.
+> 
+> > > > tindog:~ # uname -r
+> > > > 2.6.33-rc4-smp
+> > > > On 2.6.32-git1 which boots, hwinfo shows:-
+> > > >   oss.card_id = 'HDA NVidia'
+> > > >   oss.card_id = 'HDA NVidia'
+> > > >   oss.card_id = 'HDA NVidia'
+> > > >   alsa.card_id = 'HDA NVidia'
+> > > >   alsa.card_id = 'HDA NVidia'
+> > > >   alsa.card_id = 'HDA NVidia'
+> > > >   alsa.card_id = 'HDA NVidia'
+> > > >   info.product = 'HDA NVidia ALSA hardware specific Device'
+> > > >   alsa.card_id = 'HDA NVidia'
+> > > >   info.product = 'HDA NVidia ALSA Control Device'
+> > > >   alsa.card_id = 'HDA NVidia'
+> > > >   info.product = 'HDA NVidia Sound Card'
+> > > >   sound.card_id = 'HDA NVidia'
+> > > >   info.linux.driver = 'HDA Intel'
+> > > >     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
+> > > >        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+> > > >        HDA Intel: module = snd_hda_intel
+> > > > irq:0 22 (   490413) "sata_nv" "HDA Intel"
+> > > >        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+> > > >        HDA Intel: module = snd_hda_intel
+> > > >        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+> > > >        HDA Intel: module = snd_hda_intel
+> > > >   E: DRIVER=HDA Intel
+> > > >   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
+> > > > low) -> IRQ 22
+> > > >   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
+> > > >   Driver: "HDA Intel"
+> 
+> What I'd try first is to pass enable_msi=0 option.
 
-Thanks.
-
-> > > tindog:~ # uname -r
-> > > 2.6.33-rc4-smp
-> > > On 2.6.32-git1 which boots, hwinfo shows:-
-> > >   oss.card_id = 'HDA NVidia'
-> > >   oss.card_id = 'HDA NVidia'
-> > >   oss.card_id = 'HDA NVidia'
-> > >   alsa.card_id = 'HDA NVidia'
-> > >   alsa.card_id = 'HDA NVidia'
-> > >   alsa.card_id = 'HDA NVidia'
-> > >   alsa.card_id = 'HDA NVidia'
-> > >   info.product = 'HDA NVidia ALSA hardware specific Device'
-> > >   alsa.card_id = 'HDA NVidia'
-> > >   info.product = 'HDA NVidia ALSA Control Device'
-> > >   alsa.card_id = 'HDA NVidia'
-> > >   info.product = 'HDA NVidia Sound Card'
-> > >   sound.card_id = 'HDA NVidia'
-> > >   info.linux.driver = 'HDA Intel'
-> > >     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
-> > >        HDA Intel: /devices/pci0000:00/0000:00:0e.1
-> > >        HDA Intel: module = snd_hda_intel
-> > > irq:0 22 (   490413) "sata_nv" "HDA Intel"
-> > >        HDA Intel: /devices/pci0000:00/0000:00:0e.1
-> > >        HDA Intel: module = snd_hda_intel
-> > >        HDA Intel: /devices/pci0000:00/0000:00:0e.1
-> > >        HDA Intel: module = snd_hda_intel
-> > >   E: DRIVER=HDA Intel
-> > >   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
-> > > low) -> IRQ 22
-> > >   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
-> > >   Driver: "HDA Intel"
-
-What I'd try first is to pass enable_msi=0 option.
-The MSI is enabled as default on 2.6.33 kernel, and this might be
-problematic on non-Intel mobo.
+Just to be sure -- it's an option for snd-hda-intel module.
 
 
 Takashi
