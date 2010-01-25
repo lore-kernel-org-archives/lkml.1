@@ -1,160 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690Ab0AYSLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066Ab0AYSN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690Ab0AYSLW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 13:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679Ab0AYSLT
+	id S1754066Ab0AYSN5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 13:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384Ab0AYSN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 13:11:19 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:51305 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753097Ab0AYSLQ (ORCPT
+	Mon, 25 Jan 2010 13:13:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59542 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751392Ab0AYSNz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 13:11:16 -0500
-Date: Mon, 25 Jan 2010 21:11:14 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] powerpc/mcu_mpc8349emitx: Remove OF GPIO handling stuff
-Message-ID: <20100125181114.GD13805@oksana.dev.rtsoft.ru>
-References: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
+	Mon, 25 Jan 2010 13:13:55 -0500
+Date: Mon, 25 Jan 2010 10:12:28 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: "Frank Ch. Eigler" <fche@redhat.com>, Kyle Moffett <kyle@moffetthome.net>,
+       tytso@mit.edu, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+In-Reply-To: <1264442070.31321.422.camel@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.2.00.1001251002430.3574@localhost.localdomain>
+References: <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>  <20100122221348.GA4263@redhat.com>  <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>  <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> 
+ <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>  <20100123112333.GA15455@elte.hu> <20100123114729.GA7828@redhat.com>  <20100123194820.GM21263@thunk.org>  <f73f7ab81001241742t1f827ddetd958e1949787020f@mail.gmail.com> 
+ <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain>  <20100125170254.GB22862@redhat.com>  <alpine.LFD.2.00.1001250930320.3574@localhost.localdomain> <1264442070.31321.422.camel@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the new OF GPIO infrastructure it's much easier to handle I2C
-GPIO controllers, i.e. now drivers don't have to deal with the
-OF-specific bits.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |   68 +++++-------------------
- 1 files changed, 14 insertions(+), 54 deletions(-)
 
-diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-index 73c7e6b..5525175 100644
---- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-+++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-@@ -18,8 +18,6 @@
- #include <linux/mutex.h>
- #include <linux/i2c.h>
- #include <linux/gpio.h>
--#include <linux/of.h>
--#include <linux/of_gpio.h>
- #include <asm/prom.h>
- #include <asm/machdep.h>
- 
-@@ -36,7 +34,7 @@ struct mcu {
- 	struct mutex lock;
- 	struct device_node *np;
- 	struct i2c_client *client;
--	struct of_gpio_chip of_gc;
-+	struct gpio_chip gc;
- 	u8 reg_ctrl;
- };
- 
-@@ -55,8 +53,7 @@ static void mcu_power_off(void)
- 
- static void mcu_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_gpio_chip *of_gc = to_of_gpio_chip(gc);
--	struct mcu *mcu = container_of(of_gc, struct mcu, of_gc);
-+	struct mcu *mcu = container_of(gc, struct mcu, gc);
- 	u8 bit = 1 << (4 + gpio);
- 
- 	mutex_lock(&mcu->lock);
-@@ -75,53 +72,6 @@ static int mcu_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	return 0;
- }
- 
--static int mcu_gpiochip_add(struct mcu *mcu)
--{
--	struct device_node *np;
--	struct of_gpio_chip *of_gc = &mcu->of_gc;
--	struct gpio_chip *gc = &of_gc->gc;
--	int ret;
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,mcu-mpc8349emitx");
--	if (!np)
--		return -ENODEV;
--
--	gc->owner = THIS_MODULE;
--	gc->label = np->full_name;
--	gc->can_sleep = 1;
--	gc->ngpio = MCU_NUM_GPIO;
--	gc->base = -1;
--	gc->set = mcu_gpio_set;
--	gc->direction_output = mcu_gpio_dir_out;
--	of_gc->chip = gc;
--	of_gc->gpio_cells = 2;
--	of_gc->xlate = of_gpio_simple_xlate;
--
--	np->data = of_gc;
--	mcu->np = np;
--
--	/*
--	 * We don't want to lose the node, its ->data and ->full_name...
--	 * So, if succeeded, we don't put the node here.
--	 */
--	ret = gpiochip_add(gc);
--	if (ret)
--		of_node_put(np);
--	return ret;
--}
--
--static int mcu_gpiochip_remove(struct mcu *mcu)
--{
--	int ret;
--
--	ret = gpiochip_remove(&mcu->of_gc.gc);
--	if (ret)
--		return ret;
--	of_node_put(mcu->np);
--
--	return 0;
--}
--
- static int __devinit mcu_probe(struct i2c_client *client,
- 			       const struct i2c_device_id *id)
- {
-@@ -141,7 +91,16 @@ static int __devinit mcu_probe(struct i2c_client *client,
- 		goto err;
- 	mcu->reg_ctrl = ret;
- 
--	ret = mcu_gpiochip_add(mcu);
-+	mcu->gc.dev = &client->dev;
-+	mcu->gc.owner = THIS_MODULE;
-+	mcu->gc.label = dev_name(&client->dev);
-+	mcu->gc.can_sleep = 1;
-+	mcu->gc.ngpio = MCU_NUM_GPIO;
-+	mcu->gc.base = -1;
-+	mcu->gc.set = mcu_gpio_set;
-+	mcu->gc.direction_output = mcu_gpio_dir_out;
-+
-+	ret = gpiochip_add(&mcu->gc);
- 	if (ret)
- 		goto err;
- 
-@@ -168,9 +127,10 @@ static int __devexit mcu_remove(struct i2c_client *client)
- 		glob_mcu = NULL;
- 	}
- 
--	ret = mcu_gpiochip_remove(mcu);
-+	ret = gpiochip_remove(&mcu->gc);
- 	if (ret)
- 		return ret;
-+
- 	i2c_set_clientdata(client, NULL);
- 	kfree(mcu);
- 	return 0;
--- 
-1.6.5.7
+On Mon, 25 Jan 2010, Steven Rostedt wrote:
+> 
+> Uh oh, that's not good for us real-time folks.
+> 
+> http://lwn.net/Articles/357800/
+> 
+> "And, according to Linus, the realtime people are crazy, so they can be
+> left to deal with the weird stuff."
+
+The RT people have actually been pretty good at slipping their stuff in, 
+in small increments, and always with good reasons for why they aren't 
+crazy. 
+
+Yeah, it's taken them years, and they still have out-of-tree stuff. And 
+yeah, they had to change some things to make them more palatable to the 
+mainline kernel - the whole fundamental raw spinlock change is just the 
+most recent example of that.
+
+But on the whole, I think it's actually worked out pretty well for them. I 
+think the mainline kernel has improved in the process, but I also suspect 
+that _their_ RT patches have also improved thanks to having to make the 
+work more palatable to people like me who don't care all that deeply about 
+their particular flavor of crazy.
+
+And yeah, I still think the hard-RT people are mostly crazy. 
+
+So I can work with crazy people, that's not the problem. They just need to 
+_sell_ their crazy stuff to me using non-crazy arguments, and in small and 
+well-defined pieces. When I ask for killer features, I want them to lull 
+me into a safe and cozy world where the stuff they are pushing is actually 
+useful to mainline people _first_.
+
+In other words, every new crazy feature should be hidden in a nice solid 
+"Trojan Horse" gift: something that looks _obviously_ good at first sight. 
+
+The fact that it may contain the germs for future features should be 
+hidden so well that not only is it not used as an argument ("Hey, look at 
+all those soldiers in that horse, imagine what you could do with them"), 
+it should also not be obvious from the source code ("Look at all those 
+hooks I sprinkled around, which aren't actually used by anything, but just 
+imagine what you could do with them").
+
+			Linus
