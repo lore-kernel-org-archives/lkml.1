@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658Ab0AYFex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050Ab0AYFwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751658Ab0AYFex (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 00:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248Ab0AYFew
+	id S1752050Ab0AYFwj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 00:52:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876Ab0AYFwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 00:34:52 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:40932 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785Ab0AYFew (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 00:34:52 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: High pitch noise when ACPI processor module is loaded.
-In-Reply-To: Your message of "Sat, 23 Jan 2010 10:48:50 EST."
-             <alpine.DEB.2.00.1001231046080.1064@p34.internal.lan>
-From: Valdis.Kletnieks@vt.edu
-References: <alpine.DEB.2.00.1001231046080.1064@p34.internal.lan>
+	Mon, 25 Jan 2010 00:52:37 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51678 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751104Ab0AYFwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 00:52:37 -0500
+Date: Mon, 25 Jan 2010 16:52:19 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tobias Klauser <tklauser@distanz.ch>, John Linn <john.linn@xilinx.com>
+Subject: linux-next: input tree build failure
+Message-Id: <20100125165219.cd0b869d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1264397678_4500P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 25 Jan 2010 00:34:38 -0500
-Message-ID: <9883.1264397678@localhost>
-X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=zidane.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020204.4B5D2D74.0130,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__25_Jan_2010_16_52_19_+1100_q6.2x4s0_YdtIP/1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1264397678_4500P
-Content-Type: text/plain; charset=us-ascii
+--Signature=_Mon__25_Jan_2010_16_52_19_+1100_q6.2x4s0_YdtIP/1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, 23 Jan 2010 10:48:50 EST, Justin Piszcz said:
-> Hi,
-> 
-> Linux:
-> When I do not load the ACPI processor module, there is no high pitch 
-> noise.  When I load the ACPI processor module (so I can utilize Turbo 
-> Boost), Linux makes the system emit a high pitch noise.
+Hi Dmitry,
 
-Sounds like singing capacitors.
+Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
 
-http://lwn.net/Articles/145973/ - and see the last 2 comments.
+drivers/input/serio/xilinx_ps2.c: In function 'xps2_of_probe':
+drivers/input/serio/xilinx_ps2.c:273: error: incompatible type for argument=
+ 1 of 'resource_size'
+include/linux/ioport.h:132: note: expected 'const struct resource *' but ar=
+gument is of type 'struct resource'
+drivers/input/serio/xilinx_ps2.c: In function 'xps2_of_remove':
+drivers/input/serio/xilinx_ps2.c:347: error: incompatible type for argument=
+ 1 of 'resource_size'
+include/linux/ioport.h:132: note: expected 'const struct resource *' but ar=
+gument is of type 'struct resource'
 
+Please at least build test this stuff ...
 
+Caused by commit cc7bbfa322b48be82b1c86a104433d4ac349da79 ("Input:
+xilinx_ps2 - use resource_size").
 
---==_Exmh_1264397678_4500P
+I have reverted that commit for today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__25_Jan_2010_16_52_19_+1100_q6.2x4s0_YdtIP/1
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFLXS1ucC3lWbTT17ARArawAKD9Myt8RHIA17tdOB0qpWI/eUZy1gCgwrA6
-BIJOdwQuQcjAmUtTWlmNnrU=
-=sSgS
+iEYEARECAAYFAktdMZMACgkQjjKRsyhoI8w7OgCguZPDU0meR46hLlrIsdgGExfy
+qRMAniEtAb2AK3xfvPhydY3R3RiOAiRQ
+=ywmw
 -----END PGP SIGNATURE-----
 
---==_Exmh_1264397678_4500P--
-
+--Signature=_Mon__25_Jan_2010_16_52_19_+1100_q6.2x4s0_YdtIP/1--
