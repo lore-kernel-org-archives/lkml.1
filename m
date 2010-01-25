@@ -1,164 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045Ab0AYPUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111Ab0AYPVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045Ab0AYPUx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 10:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881Ab0AYPUm
+	id S1754111Ab0AYPVd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 10:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858Ab0AYPV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 10:20:42 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42974 "EHLO hera.kernel.org"
+	Mon, 25 Jan 2010 10:21:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43045 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752908Ab0AYPTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 10:19:09 -0500
+	id S1753924Ab0AYPV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 10:21:26 -0500
+Message-ID: <4B5DB7E5.3070907@kernel.org>
+Date: Tue, 26 Jan 2010 00:25:25 +0900
 From: Tejun Heo <tj@kernel.org>
-To: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
-       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
-       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
-       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
-       x86@kernel.org, mingo@redhat.com, fweisbec@gmail.com,
-       dan.j.williams@intel.com, borislav.petkov@amd.com, ying.huang@intel.com,
-       lenb@kernel.org, neilb@suse.de, cl@linux-foundation.org
-Cc: Tejun Heo <tj@kernel.org>, Eric Dumazet <eric.dumazet@gmail.com>,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 4/8] percpu: add __percpu sparse annotations to net drivers
-Date: Tue, 26 Jan 2010 00:22:11 +0900
-Message-Id: <1264432935-10453-5-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1264432935-10453-1-git-send-email-tj@kernel.org>
-References: <1264432935-10453-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 25 Jan 2010 15:17:42 +0000 (UTC)
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Jeff Layton <jlayton@redhat.com>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       Steve French <sfrench@samba.org>
+Subject: Re: [PATCH UPDATED 38/40] cifs: use workqueue instead of slow-work
+References: <1263776272-382-1-git-send-email-tj@kernel.org>	<1263776272-382-39-git-send-email-tj@kernel.org>	<20100119072000.247ac894@tlielax.poochiereds.net>	<4B564B12.7020909@kernel.org>	<20100119195641.7b6a17e4@tlielax.poochiereds.net>	<4B565B26.3060709@kernel.org>	<4B59889D.7050903@kernel.org>	<20100122064528.0223d708@tlielax.poochiereds.net>	<4B5C03EE.3000007@kernel.org> <20100124071334.0f12276e@tlielax.poochiereds.net>
+In-Reply-To: <20100124071334.0f12276e@tlielax.poochiereds.net>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 25 Jan 2010 15:19:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add __percpu sparse annotations to net drivers.
+Hello,
 
-These annotations are to make sparse consider percpu variables to be
-in a different address space and warn if accessed without going
-through percpu accessors.  This patch doesn't affect normal builds.
+On 01/24/2010 09:13 PM, Jeff Layton wrote:
+>> Are you sure it needs to be changed?
+>>
+> 
+> I'm pretty sure we do. This flag only gets set to true if there's a
+> reconnection event. If there is one, then any oplock break queued up
+> before that happened is now invalid and shouldn't be sent.
+> 
+> It's a fairly minor point however. Even if we send the oplock break,
+> it's very unlikely to be treated as valid by the server as I don't
+> think the file would have a chance to be reopened prior to that.
+> 
+> If this is the way that the code works now, then let's go ahead with
+> your version and I'll plan to queue up a separate patch to change that
+> behavior after your changes go in.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Arnd Bergmann <arnd@arndb.de>
----
- drivers/net/chelsio/sge.c |    2 +-
- drivers/net/loopback.c    |   16 +++++++++-------
- drivers/net/macvlan.c     |    2 +-
- drivers/net/veth.c        |    4 ++--
- 4 files changed, 13 insertions(+), 11 deletions(-)
+Yeap, that sounds good to me or I just can queue a separate patch to
+do that along with this one so that you don't have to remember
+queueing it later.
 
-diff --git a/drivers/net/chelsio/sge.c b/drivers/net/chelsio/sge.c
-index 109d278..8e12505 100644
---- a/drivers/net/chelsio/sge.c
-+++ b/drivers/net/chelsio/sge.c
-@@ -267,7 +267,7 @@ struct sge {
- 	struct sk_buff	*espibug_skb[MAX_NPORTS];
- 	u32		sge_control;	/* shadow value of sge control reg */
- 	struct sge_intr_counts stats;
--	struct sge_port_stats *port_stats[MAX_NPORTS];
-+	struct sge_port_stats __percpu *port_stats[MAX_NPORTS];
- 	struct sched	*tx_sched;
- 	struct cmdQ cmdQ[SGE_CMDQ_N] ____cacheline_aligned_in_smp;
- };
-diff --git a/drivers/net/loopback.c b/drivers/net/loopback.c
-index b9fcc98..72b7949 100644
---- a/drivers/net/loopback.c
-+++ b/drivers/net/loopback.c
-@@ -72,7 +72,8 @@ struct pcpu_lstats {
- static netdev_tx_t loopback_xmit(struct sk_buff *skb,
- 				 struct net_device *dev)
- {
--	struct pcpu_lstats *pcpu_lstats, *lb_stats;
-+	struct pcpu_lstats __percpu *pcpu_lstats;
-+	struct pcpu_lstats *lb_stats;
- 	int len;
- 
- 	skb_orphan(skb);
-@@ -80,7 +81,7 @@ static netdev_tx_t loopback_xmit(struct sk_buff *skb,
- 	skb->protocol = eth_type_trans(skb, dev);
- 
- 	/* it's OK to use per_cpu_ptr() because BHs are off */
--	pcpu_lstats = dev->ml_priv;
-+	pcpu_lstats = (void __percpu __force *)dev->ml_priv;
- 	lb_stats = this_cpu_ptr(pcpu_lstats);
- 
- 	len = skb->len;
-@@ -95,14 +96,14 @@ static netdev_tx_t loopback_xmit(struct sk_buff *skb,
- 
- static struct net_device_stats *loopback_get_stats(struct net_device *dev)
- {
--	const struct pcpu_lstats *pcpu_lstats;
-+	const struct pcpu_lstats __percpu *pcpu_lstats;
- 	struct net_device_stats *stats = &dev->stats;
- 	unsigned long bytes = 0;
- 	unsigned long packets = 0;
- 	unsigned long drops = 0;
- 	int i;
- 
--	pcpu_lstats = dev->ml_priv;
-+	pcpu_lstats = (void __percpu __force *)dev->ml_priv;
- 	for_each_possible_cpu(i) {
- 		const struct pcpu_lstats *lb_stats;
- 
-@@ -135,19 +136,20 @@ static const struct ethtool_ops loopback_ethtool_ops = {
- 
- static int loopback_dev_init(struct net_device *dev)
- {
--	struct pcpu_lstats *lstats;
-+	struct pcpu_lstats __percpu *lstats;
- 
- 	lstats = alloc_percpu(struct pcpu_lstats);
- 	if (!lstats)
- 		return -ENOMEM;
- 
--	dev->ml_priv = lstats;
-+	dev->ml_priv = (void __force *)lstats;
- 	return 0;
- }
- 
- static void loopback_dev_free(struct net_device *dev)
- {
--	struct pcpu_lstats *lstats = dev->ml_priv;
-+	struct pcpu_lstats __percpu *lstats =
-+		(void __percpu __force *)dev->ml_priv;
- 
- 	free_percpu(lstats);
- 	free_netdev(dev);
-diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
-index 21a9c9a..4d2040c 100644
---- a/drivers/net/macvlan.c
-+++ b/drivers/net/macvlan.c
-@@ -59,7 +59,7 @@ struct macvlan_dev {
- 	struct hlist_node	hlist;
- 	struct macvlan_port	*port;
- 	struct net_device	*lowerdev;
--	struct macvlan_rx_stats *rx_stats;
-+	struct macvlan_rx_stats __percpu *rx_stats;
- 	enum macvlan_mode	mode;
- };
- 
-diff --git a/drivers/net/veth.c b/drivers/net/veth.c
-index 3a15de5..35609e6 100644
---- a/drivers/net/veth.c
-+++ b/drivers/net/veth.c
-@@ -34,7 +34,7 @@ struct veth_net_stats {
- 
- struct veth_priv {
- 	struct net_device *peer;
--	struct veth_net_stats *stats;
-+	struct veth_net_stats __percpu *stats;
- 	unsigned ip_summed;
- };
- 
-@@ -263,7 +263,7 @@ static int veth_change_mtu(struct net_device *dev, int new_mtu)
- 
- static int veth_dev_init(struct net_device *dev)
- {
--	struct veth_net_stats *stats;
-+	struct veth_net_stats __percpu *stats;
- 	struct veth_priv *priv;
- 
- 	stats = alloc_percpu(struct veth_net_stats);
+Thanks.
+
 -- 
-1.6.4.2
-
+tejun
