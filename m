@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187Ab0AYDJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436Ab0AYDMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187Ab0AYDJd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 22:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866Ab0AYDJc
+	id S1752436Ab0AYDMf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 22:12:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061Ab0AYDMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 22:09:32 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54243 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751814Ab0AYDJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 22:09:31 -0500
-Message-ID: <4B5D0BA8.20106@cn.fujitsu.com>
-Date: Mon, 25 Jan 2010 11:10:32 +0800
-From: Yang Hongyang <yanghy@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 24 Jan 2010 22:12:34 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:52262 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752103Ab0AYDMe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 22:12:34 -0500
+Date: Sun, 24 Jan 2010 22:12:29 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       <linux-usb@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [PATCH 2/8] PM: Asynchronous suspend and resume of devices
+In-Reply-To: <201001250027.42621.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.1001242155410.4189-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, fweisbec@gmail.com, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]ftrace:fix a typo in ftrace.txt
-References: <4B5D0AC8.5060307@cn.fujitsu.com>
-In-Reply-To: <4B5D0AC8.5060307@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry,please ignore prev patch,the character Encoding was bad.
-=========================================================
+On Mon, 25 Jan 2010, Rafael J. Wysocki wrote:
 
-'echo ftrace' no longer supported in current kernel,
-use 'echo function' instead.
+> > I intend to write this code, but merging it will be a little tricky.  
+> > You'll have to coordinate with Greg KH.
+> 
+> OK, I don't think that's a big deal.  I can defer patch 7/8 until that code has
+> been merged.
 
-Signed-off-by: Yang Hongyang <yanghy@cn.fujitsu.com>
+You may have to delay 6/8 as well, since the controllers are PCI
+devices.  Writing the new code shouldn't take too long, though.
 
----
- Documentation/trace/ftrace.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Is there a good way to iterate through all PCI devices in a particular
+slot, or should it be done by going through all PCI devices and
+ignoring those in other slots?  Calling pci_get_slot() multiple times
+doesn't look very efficient.
 
-diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
-index 8179692..bab3040 100644
---- a/Documentation/trace/ftrace.txt
-+++ b/Documentation/trace/ftrace.txt
-@@ -1625,7 +1625,7 @@ If I am only interested in sys_nanosleep and hrtimer_interrupt:
- 
-  # echo sys_nanosleep hrtimer_interrupt \
- 		> set_ftrace_filter
-- # echo ftrace > current_tracer
-+ # echo function > current_tracer
-  # echo 1 > tracing_enabled
-  # usleep 1
-  # echo 0 > tracing_enabled
--- 
-1.6.5.2
 
--- 
-Regards
-Yang Hongyang
+> I'll try that, but my mkinitrd automatically puts the USB drivers into
+> initramfs.  I guess I'll need to do some research to really verify it. :-)
+
+Then when you install the test kernel, mkinitrd should build a
+corresponding initramfs image with the modified drivers, right?  
+Otherwise there would be a version mismatch error when the init code
+tried to load the old drivers into the new kernel.
+
+If nothing else works, you can simply unload the standard uhci-hcd,
+ohci-hcd, and ehci-hcd drivers and then modprobe the modified versions
+before starting the hibernation.
+
+Alan Stern
+
