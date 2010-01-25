@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802Ab0AYTYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804Ab0AYTZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802Ab0AYTYo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 14:24:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783Ab0AYTYn
+	id S1754804Ab0AYTZo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 14:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783Ab0AYTZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 14:24:43 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:33719 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752058Ab0AYTYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 14:24:43 -0500
-Subject: Re: [RFC PATCH 1/2] Fix 1 untangling ima mess, part 2 with counters
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>,
-       "Serge E. Hallyn" <serue@linux.vnet.ibm.com>,
-       Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <20100123230735.GW19799@ZenIV.linux.org.uk>
-References: <cover.1264018123.git.zohar@linux.vnet.ibm.com>
-	 <4ad974923eae7a8f52be0786a630b6c64bee9d32.1264018123.git.zohar@linux.vnet.ibm.com>
-	 <20100123230735.GW19799@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Mon, 25 Jan 2010 14:24:37 -0500
-Message-Id: <1264447477.3696.30.camel@dyn9002018117.watson.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Jan 2010 14:25:43 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:56252 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753362Ab0AYTZn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 14:25:43 -0500
+Date: Mon, 25 Jan 2010 20:25:40 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] platform_driver_register: warn if probe is in
+	.init.text
+Message-ID: <20100125192540.GB14834@pengutronix.de>
+References: <20100122173846.GA11057@suse.de> <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de> <20100122234936.GA14538@core.coreip.homeip.net> <20100123094916.GA24949@pengutronix.de> <20100125171439.GA27387@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100125171439.GA27387@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-01-23 at 23:07 +0000, Al Viro wrote:
-> On Wed, Jan 20, 2010 at 03:35:40PM -0500, Mimi Zohar wrote:
-> > The "Untangling ima mess, part 2 with counters" patch messed
-> > up the counters.  Based on conversations with Al Viro, this patch
-> > streamlines ima_path_check() by removing the counter maintaince.
-> > The counters are now updated independently, from measuring the file,
-> > in __dentry_open() and alloc_file() by calling ima_counts_get().
-> > ima_path_check() is called from nfsd and do_filp_open().
+Hello Dmitry,
+
+> > > > +	if (drv->probe && kernel_init_text_address((unsigned long)drv->probe))
+> > > > +		pr_warning("oops-warning: probe function of platform driver %s"
+> > > > +			       " lives in .init.text\n", drv->driver.name);
+> > > > +#else
+> > > > +	/*
+> > > > +	 * without HOTPLUG probe functions can be discarded after the driver is
+> > > > +	 * loaded.
+> > > > +	 * There is a little chance for false positives, namely if the driver is
+> > > > +	 * registered after the .init sections are discarded.
+> > > > +	 */
+> > > > +	if (drv->probe && !kernel_init_text_address((unsigned long)drv->probe))
+> > > > +		pr_info("probably the probe function of platform driver %s can"
+> > > > +				" be moved to .init.text\n", drv->driver.name);
+> > > 
+> > > It really depends on the user's (or rather builder's) local
+> > > configuration so how can we make this suggestion?
+> > Can you point out a situation that makes the suggestion wrong?  AFAIK
+> > there only the possibility that the driver is loaded after .init is
+> > discarded (as written in the comment).
 > > 
-> > Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-> > ---
-> >  fs/namei.c                        |    4 +-
-> >  include/linux/ima.h               |    4 +-
-> >  security/integrity/ima/ima_main.c |  234 ++++++++++++++-----------------------
 > 
-> Um...
-> 	a) where's the nfsd part?
-> 	b) will that work if we open file with O_WRONLY?
+> The presence of CONFIG_HOTPLUG depends on particular .config, so, for
+> example, you may not have it set while I have. So you will boot, get the
+> suggestion, submit a patch, then I will boot and will get a warning that
+> the probe function is in wrong section.
+> 
+> So in general I wonder if it is possible to request that all probe
+> functions are marked as __devinit or not marked at all, regardless of
+> CONFIG_HOTPLUG and CONFIG_MODULE settings.
+Would you agree if the message would change to
 
-Files opened O_WRONLY are not measured.
+	probably the probe function of platform driver %s can be moved
+	to .devinit.text
 
-> nfsd side of things is non-trivial.  Note that you have that thing called
-> an awful lot; nfsd_permission() is called by fh_verify().  For which
-> operations do you really want it to happen?  Should it just migrate to
-> nfsd_open()?
+?
 
-The IMA counters are updated in alloc_file() and __dentry_open().
-__dentry_open() is called from a couple of places:
-lookup_instantiate_filp(), nameidata_to_filp() and dentry_open.  Of
-these calls, files are only being measured in the nameidata_to_filp()
-path.  So yes, the current ima_path_check() needs to be moved to after
-the dentry_open() in nfsd_open(), and also added after each of the other
-dentry_open() and lookup_instantiate_filp() calls.  Otherwise the
-counters will be correct, but the files will not be measured.
+Best regards
+Uwe
 
-Eric's proposed patches had two calls to ima_path_check().  Was sure
-looking forward to not having to add ima_path_check() calls all over.
-
-Mimi
-
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
