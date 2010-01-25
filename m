@@ -1,166 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678Ab0AYDhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736Ab0AYDmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678Ab0AYDhm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 22:37:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800Ab0AYDhl
+	id S1752736Ab0AYDmd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 22:42:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883Ab0AYDmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 22:37:41 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37532 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778Ab0AYDhl (ORCPT
+	Sun, 24 Jan 2010 22:42:32 -0500
+Received: from bld-mail16.adl2.internode.on.net ([150.101.137.101]:44813 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751404Ab0AYDmc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 22:37:41 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mark Seaborn <mrs@mythic-beasts.com>
-Subject: Re: futex() on vdso makes process unkillable
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Darren Hart <dvhltc@us.ibm.com>
-In-Reply-To: <20100124.000458.506212773266927716.mrs@deli>
-References: <20100124.000458.506212773266927716.mrs@deli>
-Message-Id: <20100125120459.4944.A69D9226@jp.fujitsu.com>
+	Sun, 24 Jan 2010 22:42:32 -0500
+Date: Mon, 25 Jan 2010 14:41:51 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Don Mullis <don.mullis@gmail.com>, linux-kernel@vger.kernel.org,
+       airlied@redhat.com, dedekind@infradead.org
+Subject: Re: [PATCH 1/2] lib: more scalable list_sort()
+Message-ID: <20100125034151.GL25842@discord.disaster>
+References: <87fx609i29.fsf@gmail.com> <20100121175914.GA8910@basil.fritz.box> <87vdeu96bo.fsf@gmail.com> <87k4vah12u.fsf@basil.nowhere.org> <20100123082839.GB25842@discord.disaster> <20100123113551.GB29555@one.firstfloor.org> <20100123160537.GG25842@discord.disaster> <20100124205906.GC29555@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 25 Jan 2010 12:37:38 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100124205906.GC29555@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC to futex folks.
+On Sun, Jan 24, 2010 at 09:59:06PM +0100, Andi Kleen wrote:
+> > Similarly, adding cond_resched() to list_sort means you can stop
+> > worrying about the scheduling latency impact of sorting long lists.
+> > I fail to see why you're making such a big deal out of this.....
+> 
+> It's not easy to add it to a low level library function like list_sort()
+> because you would need to ensure that all callers are allowed to sleep.
 
-> I was experimenting with futexes and was a little surprised to
-> discover that futex() works on read-only pages.  This creates quite a
-> high bandwidth side channel that allows two processes to communicate
-> if, for example, they share a library.  (Mind you, this is not much
-> different from file locks, which also work on read-only file
-> descriptors.)
-> 
-> I also found a couple of differences between 2.6.24 (from Ubuntu
-> hardy) and 2.6.31 (from Ubuntu karmic).  The first is a definite bug
-> in 2.6.31:
-> 
-> 
-> 1) On 2.6.31 i686, using futex() on the vdso causes the process to get
-> stuck, consuming CPU in an unkillable state.  Both FUTEX_WAIT and
-> FUTEX_WAKE cause the problem.  The problem doesn't occur on 2.6.24.
-> (BTW, I was testing to see whether futex() on the vdso allows any two
-> processes to communicate.  This appears not to be the case on 2.6.24.)
-> 
-> A test program is below.
-> 
-> 
-> 2) Suppose a file is mapped into two processes with MAP_PRIVATE.  Can
-> the resulting mappings be used to communicate via futex()?  i.e. Does
-> futex() consider the mappings to be the same?
-> 
-> On 2.6.24, the futex wakeup is not transferred; pages must be mapped
-> with MAP_SHARED for futex to work.  On 2.6.31, the futex wakeup *is*
-> transferred; futex works with either MAP_SHARED or MAP_PRIVATE.
-> 
-> 2.6.24's behaviour seems more correct, because the mappings are
-> logically different, even if the underlying memory pages are the same
-> before copy-on-write is triggered.  Is 2.6.31's behaviour a
-> regression, or is the kernel's behaviour here supposed to be
-> undefined?
-> 
-> Cheers,
-> Mark
-> 
-> 
-> /* Test futex() on the vdso, which the kernel maps on process startup. */
-> 
-> #include <stdio.h>
-> #include <stdlib.h>
-> 
-> #include <elf.h>
-> #include <linux/futex.h>
-> #include <sys/syscall.h>
-> #include <unistd.h>
-> 
-> 
-> #if __WORDSIZE == 32
-> #  define Elf(name) Elf32_##name
-> #elif __WORDSIZE == 64
-> #  define Elf(name) Elf64_##name
-> #endif
-> 
-> void *find_vdso(char **argv)
-> {
->   /* Find auxv. */
->   char **p = argv;
->   /* Skip past argv. */
->   while(*p)
->     p++;
->   p++;
->   /* Skip past env. */
->   while(*p)
->     p++;
->   p++;
->   Elf(auxv_t) *auxv = (void *) p;
->   for(; auxv->a_type; auxv++)
->     if(auxv->a_type == AT_SYSINFO_EHDR)
->       return (void *) auxv->a_un.a_val;
->   fprintf(stderr, "vdso not found\n");
->   exit(1);
-> }
-> 
-> int main(int argc, char **argv)
-> {
->   int *vdso = find_vdso(argv);
->   fprintf(stderr, "vdso found at %p\n", vdso);
->   if(syscall(__NR_futex, vdso, FUTEX_WAKE, 1) < 0)
->     perror("futex/WAKE");
->   if(syscall(__NR_futex, vdso, FUTEX_WAIT, *vdso, NULL) < 0)
->     perror("futex/WAIT");
->   return 0;
-> }
+might_sleep() annotations are typically used in this case....
 
-This test with function tracer output following.
+> Or even if all callers currently allow it future ones might not.
 
-           a.out-11459 [000] 242281.165505: get_user_pages_fast <-get_futex_key
-           a.out-11459 [000] 242281.165505: gup_pud_range <-get_user_pages_fast
-           a.out-11459 [000] 242281.165506: gup_pte_range <-gup_pud_range
-           a.out-11459 [000] 242281.165506: __might_sleep <-get_futex_key
-           a.out-11459 [000] 242281.165507: unlock_page <-get_futex_key
-           a.out-11459 [000] 242281.165507: page_waitqueue <-unlock_page
-           a.out-11459 [000] 242281.165508: __wake_up_bit <-unlock_page
-           a.out-11459 [000] 242281.165508: put_page <-get_futex_key
-           a.out-11459 [000] 242281.165508: get_user_pages_fast <-get_futex_key
-           a.out-11459 [000] 242281.165509: gup_pud_range <-get_user_pages_fast
-           a.out-11459 [000] 242281.165509: gup_pte_range <-gup_pud_range
-           a.out-11459 [000] 242281.165510: __might_sleep <-get_futex_key
-           a.out-11459 [000] 242281.165511: unlock_page <-get_futex_key
-           a.out-11459 [000] 242281.165511: page_waitqueue <-unlock_page
-           a.out-11459 [000] 242281.165512: __wake_up_bit <-unlock_page
-           a.out-11459 [000] 242281.165512: put_page <-get_futex_key
-           a.out-11459 [000] 242281.165513: get_user_pages_fast <-get_futex_key
-           a.out-11459 [000] 242281.165513: gup_pud_range <-get_user_pages_fast
-           a.out-11459 [000] 242281.165514: gup_pte_range <-gup_pud_range
-           a.out-11459 [000] 242281.165515: __might_sleep <-get_futex_key
-           a.out-11459 [000] 242281.165515: unlock_page <-get_futex_key
-           a.out-11459 [000] 242281.165516: page_waitqueue <-unlock_page
-           a.out-11459 [000] 242281.165516: __wake_up_bit <-unlock_page
-           a.out-11459 [000] 242281.165517: put_page <-get_futex_key
+You're trying to make this way more complex than the current
+requirements need it to be.  Just declaring a simple rule -
+"list_sort() can sleep" - and all these problems go away until
+someone really needs list sorting in atomic context.
 
-It mean the following code of get_futex_key() makes infinite loop.
+Cheers,
 
-
-	again:
-	        err = get_user_pages_fast(address, 1, 1, &page);
-	        if (err < 0)
-	                return err;
-
-	        page = compound_head(page);
-	        lock_page(page);
-	        if (!page->mapping) {
-	                unlock_page(page);
-	                put_page(page);
-	                goto again;
-	        }
-
-
-
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
