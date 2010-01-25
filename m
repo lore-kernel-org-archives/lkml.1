@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436Ab0AYDMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642Ab0AYD0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752436Ab0AYDMf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 22:12:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061Ab0AYDMe
+	id S1752642Ab0AYD0o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 22:26:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279Ab0AYD0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 22:12:34 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:52262 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752103Ab0AYDMe (ORCPT
+	Sun, 24 Jan 2010 22:26:43 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:41160 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844Ab0AYD0m convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 22:12:34 -0500
-Date: Sun, 24 Jan 2010 22:12:29 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       <linux-usb@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [PATCH 2/8] PM: Asynchronous suspend and resume of devices
-In-Reply-To: <201001250027.42621.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.1001242155410.4189-100000@netrider.rowland.org>
+	Sun, 24 Jan 2010 22:26:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ax8NgwhQfYAxhYshRpE4y8Cex0IWBZ4l1pVQu8/rOub8S9PwVpW4aGfwcq49dD4nlL
+         OHQMTP7AkOcI1M3i9pbCIphtijZ/0bHIDg/Mp12Kkm3nu4zAbIEZpjAiLJ1zTYkkGkOs
+         v3AUjn6rYJ/ctBYZXGnww17n37a4rBLie2LpM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <hE3x9c-4KZM.A.kWG.mKMXLB@chimera>
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
+	 <hE3x9c-4KZM.A.kWG.mKMXLB@chimera>
+Date: Sun, 24 Jan 2010 22:26:40 -0500
+Message-ID: <a728f9f91001241926m4c19aedbvda295fe3c7daade@mail.gmail.com>
+Subject: Re: [Bug #15017] kexec regression, radeon/kms irq related (bisected)
+From: Alex Deucher <alexdeucher@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jan 2010, Rafael J. Wysocki wrote:
+On Sun, Jan 24, 2010 at 5:04 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15017
+> Subject         : kexec regression, radeon/kms irq related (bisected)
+> Submitter       : Markus Trippelsdorf <markus@trippelsdorf.de>
+> Date            : 2010-01-09 18:49 (16 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d8f60cfc93452d0554f6a701aa8e3236cbee4636
+>
+>
+>
 
-> > I intend to write this code, but merging it will be a little tricky.  
-> > You'll have to coordinate with Greg KH.
-> 
-> OK, I don't think that's a big deal.  I can defer patch 7/8 until that code has
-> been merged.
+That bug has patches which fix the issue attached and queued for 2.6.33.
 
-You may have to delay 6/8 as well, since the controllers are PCI
-devices.  Writing the new code shouldn't take too long, though.
-
-Is there a good way to iterate through all PCI devices in a particular
-slot, or should it be done by going through all PCI devices and
-ignoring those in other slots?  Calling pci_get_slot() multiple times
-doesn't look very efficient.
-
-
-> I'll try that, but my mkinitrd automatically puts the USB drivers into
-> initramfs.  I guess I'll need to do some research to really verify it. :-)
-
-Then when you install the test kernel, mkinitrd should build a
-corresponding initramfs image with the modified drivers, right?  
-Otherwise there would be a version mismatch error when the init code
-tried to load the old drivers into the new kernel.
-
-If nothing else works, you can simply unload the standard uhci-hcd,
-ohci-hcd, and ehci-hcd drivers and then modprobe the modified versions
-before starting the hibernation.
-
-Alan Stern
-
+Alex
