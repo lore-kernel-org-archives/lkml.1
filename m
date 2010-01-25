@@ -1,79 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717Ab0AYSuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733Ab0AYSus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717Ab0AYSuG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 13:50:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702Ab0AYSuE
+	id S1754733Ab0AYSus (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 13:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391Ab0AYSur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 13:50:04 -0500
-Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:37043 "HELO
-	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751323Ab0AYSuA (ORCPT
+	Mon, 25 Jan 2010 13:50:47 -0500
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:56727 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323Ab0AYSur (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 13:50:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=Z5KGyb7zBULv1W7HnDxDtL79CA/5rr1znt6bD0/691aPbMtaiCU8HjwhGIvL+xZW8wzfClFyHIQBi3SZ+C1n6xfzzJgf/bBEsG9QG6S604WVzwtIrypAwTr85f2/+Q2d;
-Date: Mon, 25 Jan 2010 10:49:51 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 2/7] x86/pci: use resource_size_t in update_res -v2
-Message-ID: <20100125104951.39e0fa40@jbarnes-piketon>
-In-Reply-To: <4B59059A.7090206@kernel.org>
-References: <4B2BE063.4040704@kernel.org>
-	<4B2BE181.5090406@kernel.org>
-	<20100115114956.6207cfa4@jbarnes-piketon>
-	<4B50DC35.4080502@kernel.org>
-	<20100115133932.5d622fdc@jbarnes-piketon>
-	<4B59059A.7090206@kernel.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 25 Jan 2010 13:50:47 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4B5DE85D.7050806@jic23.retrosnub.co.uk>
+Date: Mon, 25 Jan 2010 18:52:13 +0000
+From: Jonathan Cameron <kernel@jic23.retrosnub.co.uk>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20100109 Thunderbird/3.0
+MIME-Version: 1.0
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Greg KH <greg@kroah.com>, Jonathan Cameron <jic23@cam.ac.uk>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Manuel Stahl <manuel.stahl@iis.fraunhofer.de>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
+       "Getz, Robin" <Robin.Getz@analog.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
+       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
+       Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [RFC] Staging:IIO: New ABI
+References: <4B571DA4.6070603@cam.ac.uk> <20100120153748.GA29401@kroah.com> 	<4B573501.9090001@jic23.retrosnub.co.uk> <ac3eb2511001200914g601422bfm52f4fc1bdfe66c27@mail.gmail.com>
+In-Reply-To: <ac3eb2511001200914g601422bfm52f4fc1bdfe66c27@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jan 2010 17:55:38 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+Hi Kay,
 
-> On 01/15/2010 01:39 PM, Jesse Barnes wrote:
-> > On Fri, 15 Jan 2010 13:20:53 -0800
-> > Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> >> On 01/15/2010 11:49 AM, Jesse Barnes wrote:
-> >>> On Fri, 18 Dec 2009 12:09:37 -0800
-> >>> Yinghai Lu <yinghai@kernel.org> wrote:
-> >>>
-> >>>>
-> >>>>
-> >>>> prepare to enable 32bit intel and amd bus
-> >>>>
-> >>>> v2: change __init to __devinit
-> >>>>
-> >>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >>>> ---
-> >>>
-> >>> Applied 2-3 to my linux-next branch, thanks.  (1 was already
-> >>> applied to fix Jens' problem over the holidays, thanks hpa).
-> >>>
-> >>
-> >> will find out good apply sequence....
-> > 
-> > Pushing the ones for 32 bit bus driver support through -tip is fine
-> > with me, you can add my Acked-by.
+On 01/20/10 17:14, Kay Sievers wrote:
+> On Wed, Jan 20, 2010 at 17:53, Jonathan Cameron
+> <kernel@jic23.retrosnub.co.uk> wrote:
+>>>> What:                /sys/.../ring_buffer[m]/ring_event[o]/dev
+>>>> Description:
+>>>>              Ring buffer m event character device o major:minor numbers.
+>>>
+>>> Again, don't bury devices.  Or if you are, use a bus, not a class,
+>>> that's the wrong classification.
+>> Cool, I'll look into making the change.  What we really have here
+>> is a single conceptual device using a pair or character interfaces.  Is a bus
+>> the right way to handle that?
 > 
-> please drop 2 and 3 from pci/linux-next tree. we need to make them go
-> through tip/x86 tree with range related seperating code.
+> "bus" and "class" are almost the same regarding the driver core, it
+> should not make any difference for you. The "class" implementation is
+> only a very simple case of a "bus" -- just with a pretty much broken
+> userspace interface. :)
 > 
-> http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=commitdiff;h=f84fe8aef6e4b23ab58175a15dd12c197c993f81
-> http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=commitdiff;h=693f084f82a38fc1b01e3b05664a6fe014a3488a
+> Today, if we would start from scratch, there would be only something
+> like /sys/subsystem in the layout of today's /sys/bus, and /sys/class,
+> /sys/bus and /sys/block would not event exist. Tools like udev
+> intentionally make no difference between them, and do not allow to
+> distinguish between "class" or "bus". It's just called "susbsystem"
+> there from the early days on.
+> 
+> The "class" has only a single flat directory in  /sys so it can never
+> be extended with anything custom. No new subsystem should use the
+> class interface anymore, all should use a "bus". I guess it's time to
+> document that somewhere. :)
+> 
+Thanks for clearing that up.  IIO is now a bus, as you said the changes
+needed were very minor.  I'll post the patch in a series with the ABI
+changes once the rest have settled down.
 
-Ok, dropped.
+The move to a bus has, in a sense (by looking at how others, particularly
+usb handle things), suggested that the 'bus element' naming could usefully
+provide more information about where things have come from. 
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Perhaps the contents of /sys/bus/iio should be something like
+
+dev0
+dev0:event0
+[dev0:event1 etc]
+dev0:ring
+dev0:ring:access
+dev0:ring:event
+
+Note that dev0:ring only exists as a device to allow it to be used as a common
+parent for dev0:ring:access and dev0:ring:event, making the internal navigation
+a little more obvious along with providing a site for attributes that aren't
+specific to the ring access or event devices.
+
+This does lead to some slightly clunky naming inside directories, complicating
+user space access marginally
+
+dev0/dev0:ring/dev0:ring:access etc
+
+Is this added clarity something people feel is worth doing?
+
+Jonathan
