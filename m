@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146Ab0AYXZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751977Ab0AYX2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752146Ab0AYXZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 18:25:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537Ab0AYXZj
+	id S1751977Ab0AYX2M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 18:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399Ab0AYX2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 18:25:39 -0500
-Received: from mail-pz0-f189.google.com ([209.85.222.189]:59562 "EHLO
+	Mon, 25 Jan 2010 18:28:11 -0500
+Received: from mail-pz0-f189.google.com ([209.85.222.189]:64702 "EHLO
 	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120Ab0AYXZi (ORCPT
+	with ESMTP id S1751396Ab0AYX2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 18:25:38 -0500
+	Mon, 25 Jan 2010 18:28:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=LscQul7TJfdpUGGsX67G6Gm1wjIAl+qeUKWaFzSUgFoFGwXDP/MhTqltyj52slDEGL
-         KLh5S51TmBLjwvB2tma5KgJs5sK4qcUhGGP3trU0KUhFa+8BkXSSHgczaAakF+G6epOn
-         FvWnwCmaCTmuP7WHwW6LaoJjtFCzg+9npj9p0=
-Date: Mon, 25 Jan 2010 15:25:21 -0800
+        b=iBja69cUlJ/1DDNPOTnp7R5X9FyGMIehhkIb+nGIm/a3w/pPTUgw/B3cMfCEwlH/44
+         2rtg/khm58Awcma3sfmXJ/mmsTJbabjE/ai8K3a9PXEFyAT4gtyI+qnKy5zhqP+XvtFm
+         wdTYP0g3vXSITvzqV6PKcbYppCqjDfb6K5QJE=
+Date: Mon, 25 Jan 2010 15:28:01 -0800
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Guillaume Chazarain <guichaz@gmail.com>
-Cc: ajax@redhat.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: evdev regression on macbook with 2.6.33-rc5
-Message-ID: <20100125232520.GC30307@core.coreip.homeip.net>
-References: <3d8471ca1001231053k512011dcnfab50052ce3667fa@mail.gmail.com>
- <20100124093055.GA17607@core.coreip.homeip.net>
- <3d8471ca1001251449g6bdbdb4fn11f566b41691f870@mail.gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Vojtech Pavlik <vojtech@suse.cz>, Robert Hancock <hancockrwd@gmail.com>,
+       Bastien Nocera <hadess@hadess.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
+Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
+Message-ID: <20100125232801.GD30307@core.coreip.homeip.net>
+References: <4B57A2D4.9030204@gmail.com>
+ <20100121185544.GB11996@core.coreip.homeip.net>
+ <51f3faa71001211339t4652700ct34659c37479cd67e@mail.gmail.com>
+ <20100121221701.GA15293@core.coreip.homeip.net>
+ <20100125163433.GB31957@suse.cz>
+ <4B5E0DFA.8080705@zytor.com>
+ <20100125221520.GA30307@core.coreip.homeip.net>
+ <4B5E18C0.7060402@zytor.com>
+ <20100125223004.GB30307@core.coreip.homeip.net>
+ <4B5E23BB.1090806@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3d8471ca1001251449g6bdbdb4fn11f566b41691f870@mail.gmail.com>
+In-Reply-To: <4B5E23BB.1090806@zytor.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 11:49:20PM +0100, Guillaume Chazarain wrote:
-> On Sun, Jan 24, 2010 at 10:30 AM, Dmitry Torokhov
-> <dmitry.torokhov@gmail.com> wrote:
-> > DOes the same behavior happens when you try using 'evtest' utility while
-> > in console?
+On Mon, Jan 25, 2010 at 03:05:31PM -0800, H. Peter Anvin wrote:
+> On 01/25/2010 02:30 PM, Dmitry Torokhov wrote:
+> >>
+> >> We should never read from port 0x60 unless bit 1 in port 0x64 is set.
+> >> Do we do that?
+> > 
+> > No, we don't read of OBF is 0. Incidentially 0xff has it set ;) so we do
+> > try reading data port.
+> > 
 > 
-> Hi Dmitry,
-> 
-> While struggling to make evtest show keyboard events, I discovered
-> that the problem is an incompatibility with mouseemu
-> (http://packages.ubuntu.com/karmic/mouseemu) as killing it makes the
-> keyboard work fine.
-> 
-> So, with mouseemu running, evtest won't print any event at all even if
-> I move the mouse, and when mouseemu is off everything works fine and
-> evtest prints the expected events.
+> What do you do after reading the data port?  In the case of the A20
+> code, we do dummy reads and loop until the data port drains (0xff of
+> course means it never drains...)
 > 
 
-Ah, well, I checked out the sources for this fine specimen. Oh man...
-Then we have Debian guys adding their perls to keyboard handler:
+/*
+ * i8042_flush() flushes all data that may be in the keyboard and mouse
+ * buffers
+ * of the i8042 down the toilet.
+ */
 
-++	if (inp.type != EV_KEY && inp.type != EV_REP)
-++		return;
+static int i8042_flush(void)
+{
+        unsigned long flags;
+        unsigned char data, str;
+        int i = 0;
 
-Obviously EV_SYN is completely useless message. And who cares about
-keyboards with scroll wheels, volume sliders, etc, right?
+        spin_lock_irqsave(&i8042_lock, flags);
 
-This package either needs lots of love or it just needs to die...
+        while (((str = i8042_read_status()) & I8042_STR_OBF) && (i < I8042_BUFFER_SIZE)) {
+                udelay(50);
+                data = i8042_read_data();
+                i++;
+                dbg("%02x <- i8042 (flush, %s)", data,
+                        str & I8042_STR_AUXDATA ? "aux" : "kbd");
+        }
+
+        spin_unlock_irqrestore(&i8042_lock, flags);
+
+        return i;
+}
+
+...
+
+static int i8042_controller_check(void)
+{
+        if (i8042_flush() == I8042_BUFFER_SIZE) {
+                printk(KERN_ERR "i8042.c: No controller found.\n");
+                return -ENODEV;
+        }
+
+        return 0;
+}
 
 -- 
 Dmitry
