@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083Ab0AYPVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996Ab0AYPT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754083Ab0AYPVR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 10:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924Ab0AYPUl
+	id S1753996Ab0AYPT4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 10:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913Ab0AYPTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 10:20:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42975 "EHLO hera.kernel.org"
+	Mon, 25 Jan 2010 10:19:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42986 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753855Ab0AYPTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 10:19:10 -0500
+	id S1753848Ab0AYPTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 10:19:11 -0500
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
        akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
@@ -18,9 +18,9 @@ To: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
        dan.j.williams@intel.com, borislav.petkov@amd.com, ying.huang@intel.com,
        lenb@kernel.org, neilb@suse.de, cl@linux-foundation.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 8/8] percpu: add __percpu sparse annotations to what's left
-Date: Tue, 26 Jan 2010 00:22:15 +0900
-Message-Id: <1264432935-10453-9-git-send-email-tj@kernel.org>
+Subject: [PATCH 7/8] percpu: add __percpu sparse annotations to hw_breakpoint
+Date: Tue, 26 Jan 2010 00:22:14 +0900
+Message-Id: <1264432935-10453-8-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1264432935-10453-1-git-send-email-tj@kernel.org>
 References: <1264432935-10453-1-git-send-email-tj@kernel.org>
@@ -29,134 +29,149 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add __percpu sparse annotations to places which didn't make it in one
-of the previous patches.  All converions are trivial.
+Add __percpu sparse annotations to hw_breakpoint.
 
 These annotations are to make sparse consider percpu variables to be
 in a different address space and warn if accessed without going
 through percpu accessors.  This patch doesn't affect normal builds.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Huang Ying <ying.huang@intel.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Neil Brown <neilb@suse.de>
----
- crypto/cryptd.c                  |    2 +-
- drivers/acpi/processor_perflib.c |    2 +-
- drivers/dma/dmaengine.c          |    2 +-
- drivers/edac/amd64_edac.c        |    2 +-
- drivers/md/raid5.c               |    2 +-
- drivers/md/raid5.h               |    2 +-
- include/acpi/processor.h         |    2 +-
- include/linux/dmaengine.h        |    2 +-
- 8 files changed, 8 insertions(+), 8 deletions(-)
+per_cpu(nr_task_bp_pinned, cpu) is replaced with
+&per_cpu(nr_task_bp_pinned[0], cpu).  This is the same to the compiler
+but allows per_cpu() macro to correctly drop __percpu designation for
+the returned pointer.
 
-diff --git a/crypto/cryptd.c b/crypto/cryptd.c
-index 704c141..ef71318 100644
---- a/crypto/cryptd.c
-+++ b/crypto/cryptd.c
-@@ -31,7 +31,7 @@ struct cryptd_cpu_queue {
- };
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ include/linux/hw_breakpoint.h           |    8 ++++----
+ kernel/hw_breakpoint.c                  |   14 +++++++-------
+ samples/hw_breakpoint/data_breakpoint.c |    6 +++---
+ 3 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 41235c9..f462d3d 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -66,14 +66,14 @@ register_wide_hw_breakpoint_cpu(struct perf_event_attr *attr,
+ 				perf_overflow_handler_t	triggered,
+ 				int cpu);
  
- struct cryptd_queue {
--	struct cryptd_cpu_queue *cpu_queue;
-+	struct cryptd_cpu_queue __percpu *cpu_queue;
- };
+-extern struct perf_event **
++extern struct perf_event * __percpu *
+ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 			    perf_overflow_handler_t triggered);
  
- struct cryptd_instance_ctx {
-diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-index 2cabadc..8c6a649 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -557,7 +557,7 @@ end:
- }
+ extern int register_perf_hw_breakpoint(struct perf_event *bp);
+ extern int __register_perf_hw_breakpoint(struct perf_event *bp);
+ extern void unregister_hw_breakpoint(struct perf_event *bp);
+-extern void unregister_wide_hw_breakpoint(struct perf_event **cpu_events);
++extern void unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events);
  
- int acpi_processor_preregister_performance(
--		struct acpi_processor_performance *performance)
-+		struct acpi_processor_performance __percpu *performance)
+ extern int reserve_bp_slot(struct perf_event *bp);
+ extern void release_bp_slot(struct perf_event *bp);
+@@ -98,7 +98,7 @@ static inline struct perf_event *
+ register_wide_hw_breakpoint_cpu(struct perf_event_attr *attr,
+ 				perf_overflow_handler_t	 triggered,
+ 				int cpu)		{ return NULL; }
+-static inline struct perf_event **
++static inline struct perf_event * __percpu *
+ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 			    perf_overflow_handler_t triggered)	{ return NULL; }
+ static inline int
+@@ -107,7 +107,7 @@ static inline int
+ __register_perf_hw_breakpoint(struct perf_event *bp) 	{ return -ENOSYS; }
+ static inline void unregister_hw_breakpoint(struct perf_event *bp)	{ }
+ static inline void
+-unregister_wide_hw_breakpoint(struct perf_event **cpu_events)		{ }
++unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events)	{ }
+ static inline int
+ reserve_bp_slot(struct perf_event *bp)			{return -ENOSYS; }
+ static inline void release_bp_slot(struct perf_event *bp) 		{ }
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index 50dbd59..11dae6d 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -74,7 +74,7 @@ static DEFINE_MUTEX(nr_bp_mutex);
+ static unsigned int max_task_bp_pinned(int cpu)
  {
- 	int count, count_target;
- 	int retval = 0;
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 6f51a0a..4eadd98 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -284,7 +284,7 @@ struct dma_chan_tbl_ent {
- /**
-  * channel_table - percpu lookup table for memory-to-memory offload providers
+ 	int i;
+-	unsigned int *tsk_pinned = per_cpu(nr_task_bp_pinned, cpu);
++	unsigned int *tsk_pinned = &per_cpu(nr_task_bp_pinned[0], cpu);
+ 
+ 	for (i = HBP_NUM -1; i >= 0; i--) {
+ 		if (tsk_pinned[i] > 0)
+@@ -163,7 +163,7 @@ static void toggle_bp_task_slot(struct task_struct *tsk, int cpu, bool enable)
+ 
+ 	count = task_bp_pinned(tsk);
+ 
+-	tsk_pinned = per_cpu(nr_task_bp_pinned, cpu);
++	tsk_pinned = &per_cpu(nr_task_bp_pinned[0], cpu);
+ 	if (enable) {
+ 		tsk_pinned[count]++;
+ 		if (count > 0)
+@@ -377,17 +377,17 @@ EXPORT_SYMBOL_GPL(unregister_hw_breakpoint);
+  *
+  * @return a set of per_cpu pointers to perf events
   */
--static struct dma_chan_tbl_ent *channel_table[DMA_TX_TYPE_END];
-+static struct dma_chan_tbl_ent __percpu *channel_table[DMA_TX_TYPE_END];
- 
- static int __init dma_channel_table_init(void)
+-struct perf_event **
++struct perf_event * __percpu *
+ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 			    perf_overflow_handler_t triggered)
  {
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 000dc67..7b36c88 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -13,7 +13,7 @@ module_param(report_gart_errors, int, 0644);
- static int ecc_enable_override;
- module_param(ecc_enable_override, int, 0644);
+-	struct perf_event **cpu_events, **pevent, *bp;
++	struct perf_event * __percpu *cpu_events, **pevent, *bp;
+ 	long err;
+ 	int cpu;
  
--static struct msr *msrs;
-+static struct msr __percpu *msrs;
+ 	cpu_events = alloc_percpu(typeof(*cpu_events));
+ 	if (!cpu_events)
+-		return ERR_PTR(-ENOMEM);
++		return (void __percpu __force *)ERR_PTR(-ENOMEM);
  
- /* Lookup table for all possible MC control instances */
- struct amd64_pvt;
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index e84204e..77cb3ab 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -4680,7 +4680,7 @@ static int raid5_alloc_percpu(raid5_conf_t *conf)
+ 	get_online_cpus();
+ 	for_each_online_cpu(cpu) {
+@@ -415,7 +415,7 @@ fail:
+ 	put_online_cpus();
+ 
+ 	free_percpu(cpu_events);
+-	return ERR_PTR(err);
++	return (void __percpu __force *)ERR_PTR(err);
+ }
+ EXPORT_SYMBOL_GPL(register_wide_hw_breakpoint);
+ 
+@@ -423,7 +423,7 @@ EXPORT_SYMBOL_GPL(register_wide_hw_breakpoint);
+  * unregister_wide_hw_breakpoint - unregister a wide breakpoint in the kernel
+  * @cpu_events: the per cpu set of events to unregister
+  */
+-void unregister_wide_hw_breakpoint(struct perf_event **cpu_events)
++void unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events)
  {
- 	unsigned long cpu;
- 	struct page *spare_page;
--	struct raid5_percpu *allcpus;
-+	struct raid5_percpu __percpu *allcpus;
- 	void *scribble;
- 	int err;
+ 	int cpu;
+ 	struct perf_event **pevent;
+diff --git a/samples/hw_breakpoint/data_breakpoint.c b/samples/hw_breakpoint/data_breakpoint.c
+index c69cbe9..bd0f337 100644
+--- a/samples/hw_breakpoint/data_breakpoint.c
++++ b/samples/hw_breakpoint/data_breakpoint.c
+@@ -34,7 +34,7 @@
+ #include <linux/perf_event.h>
+ #include <linux/hw_breakpoint.h>
  
-diff --git a/drivers/md/raid5.h b/drivers/md/raid5.h
-index dd70835..0f86f5e 100644
---- a/drivers/md/raid5.h
-+++ b/drivers/md/raid5.h
-@@ -405,7 +405,7 @@ struct raid5_private_data {
- 					      * lists and performing address
- 					      * conversions
- 					      */
--	} *percpu;
-+	} __percpu *percpu;
- 	size_t			scribble_len; /* size of scribble region must be
- 					       * associated with conf to handle
- 					       * cpu hotplug while reshaping
-diff --git a/include/acpi/processor.h b/include/acpi/processor.h
-index 0ea5ef4..477544f 100644
---- a/include/acpi/processor.h
-+++ b/include/acpi/processor.h
-@@ -238,7 +238,7 @@ struct acpi_processor_errata {
+-struct perf_event **sample_hbp;
++struct perf_event * __percpu *sample_hbp;
  
- extern int acpi_processor_preregister_performance(struct
- 						  acpi_processor_performance
--						  *performance);
-+						  __percpu *performance);
+ static char ksym_name[KSYM_NAME_LEN] = "pid_max";
+ module_param_string(ksym, ksym_name, KSYM_NAME_LEN, S_IRUGO);
+@@ -61,8 +61,8 @@ static int __init hw_break_module_init(void)
+ 	attr.bp_type = HW_BREAKPOINT_W | HW_BREAKPOINT_R;
  
- extern int acpi_processor_register_performance(struct acpi_processor_performance
- 					       *performance, unsigned int cpu);
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 7878498..21fd9b7 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -162,7 +162,7 @@ struct dma_chan {
- 	struct dma_chan_dev *dev;
+ 	sample_hbp = register_wide_hw_breakpoint(&attr, sample_hbp_handler);
+-	if (IS_ERR(sample_hbp)) {
+-		ret = PTR_ERR(sample_hbp);
++	if (IS_ERR((void __force *)sample_hbp)) {
++		ret = PTR_ERR((void __force *)sample_hbp);
+ 		goto fail;
+ 	}
  
- 	struct list_head device_node;
--	struct dma_chan_percpu *local;
-+	struct dma_chan_percpu __percpu *local;
- 	int client_count;
- 	int table_count;
- 	void *private;
 -- 
 1.6.4.2
 
