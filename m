@@ -1,86 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066Ab0AYSN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091Ab0AYSXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066Ab0AYSN5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 13:13:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384Ab0AYSN4
+	id S1754091Ab0AYSXO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 13:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939Ab0AYSXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 13:13:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59542 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751392Ab0AYSNz (ORCPT
+	Mon, 25 Jan 2010 13:23:13 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:34640 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753477Ab0AYSXN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 13:13:55 -0500
-Date: Mon, 25 Jan 2010 10:12:28 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: "Frank Ch. Eigler" <fche@redhat.com>, Kyle Moffett <kyle@moffetthome.net>,
-       tytso@mit.edu, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-In-Reply-To: <1264442070.31321.422.camel@gandalf.stny.rr.com>
-Message-ID: <alpine.LFD.2.00.1001251002430.3574@localhost.localdomain>
-References: <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>  <20100122221348.GA4263@redhat.com>  <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>  <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> 
- <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>  <20100123112333.GA15455@elte.hu> <20100123114729.GA7828@redhat.com>  <20100123194820.GM21263@thunk.org>  <f73f7ab81001241742t1f827ddetd958e1949787020f@mail.gmail.com> 
- <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain>  <20100125170254.GB22862@redhat.com>  <alpine.LFD.2.00.1001250930320.3574@localhost.localdomain> <1264442070.31321.422.camel@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 25 Jan 2010 13:23:13 -0500
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org, Tony Lindgren <tony@atomide.com>,
+       Russell King <linux@arm.linux.org.uk>,
+       "Zebediah C. McClure" <zmc@lurian.net>,
+       Alistair Buxton <a.j.buxton@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] omap: define _toggle_gpio_edge_triggering only for OMAP1
+References: <1264280500-22878-2-git-send-email-u.kleine-koenig@pengutronix.de>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Mon, 25 Jan 2010 10:22:18 -0800
+In-Reply-To: <1264280500-22878-2-git-send-email-u.kleine-koenig@pengutronix.de> ("Uwe
+ =?iso-8859-1?Q?Kleine-K=F6nig=22's?= message of "Sat\, 23 Jan 2010
+ 22\:01\:40 +0100")
+Message-ID: <87sk9u6o4l.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Uwe Kleine-König <u.kleine-koenig@pengutronix.de> writes:
 
+> The only usage of _toggle_gpio_edge_triggering is in an
+> CONFIG_ARCH_OMAP1 is defined, too.
+>
+> This fixes a compiler warning:
+>
+> 	arch/arm/plat-omap/gpio.c:758: warning: '_toggle_gpio_edge_triggering' defined but not used
+>
+> when compiling for ARCH_OMAP2, ARCH_OMAP3 or ARCH_OMAP4.
+>
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-On Mon, 25 Jan 2010, Steven Rostedt wrote:
-> 
-> Uh oh, that's not good for us real-time folks.
-> 
-> http://lwn.net/Articles/357800/
-> 
-> "And, according to Linus, the realtime people are crazy, so they can be
-> left to deal with the weird stuff."
+Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
 
-The RT people have actually been pretty good at slipping their stuff in, 
-in small increments, and always with good reasons for why they aren't 
-crazy. 
-
-Yeah, it's taken them years, and they still have out-of-tree stuff. And 
-yeah, they had to change some things to make them more palatable to the 
-mainline kernel - the whole fundamental raw spinlock change is just the 
-most recent example of that.
-
-But on the whole, I think it's actually worked out pretty well for them. I 
-think the mainline kernel has improved in the process, but I also suspect 
-that _their_ RT patches have also improved thanks to having to make the 
-work more palatable to people like me who don't care all that deeply about 
-their particular flavor of crazy.
-
-And yeah, I still think the hard-RT people are mostly crazy. 
-
-So I can work with crazy people, that's not the problem. They just need to 
-_sell_ their crazy stuff to me using non-crazy arguments, and in small and 
-well-defined pieces. When I ask for killer features, I want them to lull 
-me into a safe and cozy world where the stuff they are pushing is actually 
-useful to mainline people _first_.
-
-In other words, every new crazy feature should be hidden in a nice solid 
-"Trojan Horse" gift: something that looks _obviously_ good at first sight. 
-
-The fact that it may contain the germs for future features should be 
-hidden so well that not only is it not used as an argument ("Hey, look at 
-all those soldiers in that horse, imagine what you could do with them"), 
-it should also not be obvious from the source code ("Look at all those 
-hooks I sprinkled around, which aren't actually used by anything, but just 
-imagine what you could do with them").
-
-			Linus
+> ---
+>  arch/arm/plat-omap/gpio.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/arm/plat-omap/gpio.c b/arch/arm/plat-omap/gpio.c
+> index d17620c..d2422c7 100644
+> --- a/arch/arm/plat-omap/gpio.c
+> +++ b/arch/arm/plat-omap/gpio.c
+> @@ -750,6 +750,7 @@ static inline void set_24xx_gpio_triggering(struct gpio_bank *bank, int gpio,
+>  }
+>  #endif
+>  
+> +#ifdef CONFIG_ARCH_OMAP1
+>  /*
+>   * This only applies to chips that can't do both rising and falling edge
+>   * detection at once.  For all other chips, this function is a noop.
+> @@ -760,11 +761,9 @@ static void _toggle_gpio_edge_triggering(struct gpio_bank *bank, int gpio)
+>  	u32 l = 0;
+>  
+>  	switch (bank->method) {
+> -#ifdef CONFIG_ARCH_OMAP1
+>  	case METHOD_MPUIO:
+>  		reg += OMAP_MPUIO_GPIO_INT_EDGE;
+>  		break;
+> -#endif
+>  #ifdef CONFIG_ARCH_OMAP15XX
+>  	case METHOD_GPIO_1510:
+>  		reg += OMAP1510_GPIO_INT_CONTROL;
+> @@ -787,6 +786,7 @@ static void _toggle_gpio_edge_triggering(struct gpio_bank *bank, int gpio)
+>  
+>  	__raw_writel(l, reg);
+>  }
+> +#endif
+>  
+>  static int _set_gpio_triggering(struct gpio_bank *bank, int gpio, int trigger)
+>  {
+> -- 
+> 1.6.6
