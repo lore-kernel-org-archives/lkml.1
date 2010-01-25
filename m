@@ -1,115 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430Ab0AYRPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199Ab0AYRVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754430Ab0AYRPB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 12:15:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421Ab0AYRO7
+	id S1754199Ab0AYRVE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 12:21:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858Ab0AYRVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 12:14:59 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:34739 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754290Ab0AYRO6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 12:14:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=TnAX7BhpSgZJSFPJwl22lv8478PP2RHvmRsn+/XMAyn4Gfa/m2FBExCd5y2btLHMvE
-         Xw8H/7GJQIcWdYjhORO5khdc4Hv73I9gkb7whTx2UwiwNQMwlaa9D/MJ+/0jzqt6Sz9a
-         xsYaIe56VmDYi05elLLASJ8nFmkxHNtJLEA2Q=
-Date: Mon, 25 Jan 2010 09:14:39 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] platform_driver_register: warn if probe is in .init.text
-Message-ID: <20100125171439.GA27387@core.coreip.homeip.net>
-References: <20100122173846.GA11057@suse.de>
- <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <20100122234936.GA14538@core.coreip.homeip.net>
- <20100123094916.GA24949@pengutronix.de>
+	Mon, 25 Jan 2010 12:21:02 -0500
+Received: from www.tglx.de ([62.245.132.106]:53861 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752699Ab0AYRVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 12:21:00 -0500
+Date: Mon, 25 Jan 2010 18:20:38 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Shawn Starr <shawn.starr@rogers.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14859] System timer firing too much without cause
+In-Reply-To: <201001251153.59084.shawn.starr@rogers.com>
+Message-ID: <alpine.LFD.2.00.1001251808480.5926@localhost.localdomain>
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <201001241734.50803.shawn.starr@rogers.com> <alpine.LFD.2.00.1001251103200.2906@localhost.localdomain> <201001251153.59084.shawn.starr@rogers.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100123094916.GA24949@pengutronix.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 23, 2010 at 10:49:16AM +0100, Uwe Kleine-König wrote:
-> Helle Dmitry,
-> 
-> On Fri, Jan 22, 2010 at 03:49:37PM -0800, Dmitry Torokhov wrote:
-> > On Fri, Jan 22, 2010 at 08:49:18PM +0100, Uwe Kleine-König wrote:
-> > > +int platform_driver_register(struct platform_driver *drv)
-> > > +{
-> > > +	int ret = __platform_driver_register(drv);
-> > > +
-> > > +#if defined(CONFIG_HOTPLUG)
-> > > +	/*
-> > > +	 * drivers that are registered by platform_driver_register
-> > > +	 * should not have their probe function in .init.text.  The
-> > > +	 * reason is that a probe can happen after .init.text is
-> > > +	 * discarded which then results in an oops.  The alternatives
-> > > +	 * are using .devinit.text for the probe function or "register"
-> > > +	 * with platform_driver_probe.
-> > > +	 */
+On Mon, 25 Jan 2010, Shawn Starr wrote:
+> On Monday 25 January 2010 05:35:50 Thomas Gleixner wrote:
+> > Shawn, why can't you use dynamic ticks ? In the bugzilla I just see
+> > that you worry about the IRQ0 interrupts (which are correct and
+> > necessary when the system is in nohz mode) and the extra rescheduling
+> > interrupts. How is the system misbehaving ?
 > > 
-> > 
-> > What about CONFIG_MODULE case (without hotplug)? The driver may be
-> > compiled in (and thus probe will be discarded) but device might be
-> > created by a loadable module which is loaded later.
-> I don't see the problem here.
 
-You are right, without hotplug we don't try to bind to devices that
-come in later so we are safe to discard probe.
+> Well, this all stems from trying to use Radeon KMS with IRQs
+> on. Doing so I see system stalls and this is quite noticeable
+> however, I am able to show this same stall on the quad core with the
+x> same GPU.  Right now, it is unclear to me if there is a underlying
+> irq issue or a bug in the radeon driver code that is showing these
+> stalls. Since the radeon folks - at the moment - do not think it is
+> a coding problem in their driver
 
->  If the driver is registered using
-> platform_driver_register and the probe function lives in .init.text it
-> doesn't matter where the device comes from.  If there is one you can
-> unbind and bind at a later time when .init is already discarded.  No?
-> 
+Does the stall go away, when you disable dynticks ?
 
-Yes.
+> My impression was using dynamic ticks meant ticks were on demand and
 
-> More general, using platform_driver_register the pointer to the probe
-> function have to stay valid as it is saved for later use, so it must not
-> be an .init pointer.
+Dynamic ticks are providing a continuous tick long as the machine is
+busy. When a core becomes idle, we programm the timer to go off at the
+next scheduled timer event, if the event is longer away than the next
+tick. When the core goes out of idle (due to the timer or some other
+event) we restart the tick.
 
+So you see less timer interrupts (IRQ0 + Local timer interrupts)
 
-> 
-> > > +	if (drv->probe && kernel_init_text_address((unsigned long)drv->probe))
-> > > +		pr_warning("oops-warning: probe function of platform driver %s"
-> > > +			       " lives in .init.text\n", drv->driver.name);
-> > > +#else
-> > > +	/*
-> > > +	 * without HOTPLUG probe functions can be discarded after the driver is
-> > > +	 * loaded.
-> > > +	 * There is a little chance for false positives, namely if the driver is
-> > > +	 * registered after the .init sections are discarded.
-> > > +	 */
-> > > +	if (drv->probe && !kernel_init_text_address((unsigned long)drv->probe))
-> > > +		pr_info("probably the probe function of platform driver %s can"
-> > > +				" be moved to .init.text\n", drv->driver.name);
-> > 
-> > It really depends on the user's (or rather builder's) local
-> > configuration so how can we make this suggestion?
-> Can you point out a situation that makes the suggestion wrong?  AFAIK
-> there only the possibility that the driver is loaded after .init is
-> discarded (as written in the comment).
-> 
+> not continuous. On the quad core box, with dynamic ticks on, the
+> broadcasts are not increasing IRQ 0 events this only happens on the
+> laptop.
 
-The presence of CONFIG_HOTPLUG depends on particular .config, so, for
-example, you may not have it set while I have. So you will boot, get the
-suggestion, submit a patch, then I will boot and will get a warning that
-the probe function is in wrong section.
+Right, that is expected as I explained already. Your desktop does not
+use deeper power states. Check /proc/acpi/processor/CPU0/power on both
+machines to see the difference. You _cannot_ compare a desktop and a
+laptop machine and deduce a regression.
 
-So in general I wonder if it is possible to request that all probe
-functions are marked as __devinit or not marked at all, regardless of
-CONFIG_HOTPLUG and CONFIG_MODULE settings.
+The broadcast mechanism is necessary because the local APIC timer
+stops in deeper power states. That's a hardware problem. So if the
+core goes into a deeper power state then we arm the broadcast timer
+which fires on IRQ0 to wake us up. It is a single timer which is used
+by all cores in a system to work around this hardware stupidity. It's
+named broadcast because it broadcasts the event to the other cores
+when necessary. Your desktop does not use deeper power states,
+therefor it does not use the broadcast timer either.
 
--- 
-Dmitry
+So the timer IRQ0 increasing is neither a Linux BUG nor a regression.
+
+Thanks,
+
+	tglx
+
