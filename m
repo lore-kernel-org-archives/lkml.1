@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753690Ab0AYOrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788Ab0AYOsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753690Ab0AYOrm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 09:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118Ab0AYOrl
+	id S1753788Ab0AYOsX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 09:48:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374Ab0AYOsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 09:47:41 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:51111 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751995Ab0AYOrl (ORCPT
+	Mon, 25 Jan 2010 09:48:23 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44624 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752165Ab0AYOsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 09:47:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=b3a5LePzzSj+rP9cHPkMKK9htpyklWyN+WGyX9KC1orccFq0SamKx8VJWZSblTlX95
-         897s1AguVGNfeGuYRTYAvclOQKY5iZK+MqgJVEqo/4cYvRSWFQ1/QUnRS1A72JaMDORb
-         Vw/E5Epa4jGE8y0O2PwAre00ajTBvwyE2O/sw=
-MIME-Version: 1.0
-In-Reply-To: <20100125022351.GD24418@ghostprotocols.net>
+	Mon, 25 Jan 2010 09:48:21 -0500
+Subject: Re: [PATCH 00/12] perf lock: New subcommand "perf lock", for 
+ analyzing lock statistics
+From: Peter Zijlstra <peterz@infradead.org>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Tom Zanussi <tzanussi@gmail.com>, Steven Rostedt <srostedt@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <a6b9f31a1001250615y6e4501b3k17074bcc4ce26c7c@mail.gmail.com>
 References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	 <1264167553-6510-13-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	 <20100125022351.GD24418@ghostprotocols.net>
-Date: Mon, 25 Jan 2010 23:47:40 +0900
-X-Google-Sender-Auth: d5ad6b1630b5a65a
-Message-ID: <a6b9f31a1001250647k7273ab80j771d673595d3ad80@mail.gmail.com>
-Subject: Re: [PATCH 12/12] Revert "perf record: Intercept all events"
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	 <20100122164248.GA2651@redhat.com>
+	 <a6b9f31a1001250615y6e4501b3k17074bcc4ce26c7c@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 25 Jan 2010 15:48:03 +0100
+Message-ID: <1264430883.4283.1907.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 11:23, Arnaldo Carvalho de Melo
-<acme@infradead.org> wrote:
-> Em Fri, Jan 22, 2010 at 10:39:13PM +0900, Hitoshi Mitake escreveu:
->> This reverts commit f5a2c3dce03621b55f84496f58adc2d1a87ca16f.
->>
->> This patch is required for making "perf lock rec" work.
->> The commit f5a2c3dce0 changes write_event() of builtin-record.c .
->> And changed write_event() sometimes doesn't stop with perf lock rec.
->>
->> I'm researching what makes write_event() loop infinity,
->> and noticed that there are some events with event_t->header.size == 0.
->> But the detail of the problem,
->> like kind of these events, isn't clear...
->>
->> If you know something related to this problem,
->> could you tell me, Arnaldo?
->
-> Well, this will have to wait for somebody to remove the need for
-> intercepting those events, reverting this patch fixes your tool while
-> breaking others that then won't catch all the events.
+On Mon, 2010-01-25 at 23:15 +0900, Hitoshi Mitake wrote:
+> 
+> As Peter told, this patch series depends on lockdep.
+> But, checking dependency and tracing lock events are
+> essentially different things. So I think dividing these is possible.
 
-Yes, this patch is too egoistic thing and temporary solution.
-I have to consider and modify 'perf lock'.
+Still you need quite a lot of instrumentation at the actual lock sites,
+not something you'd want to have on your production machine.
 
->
-> I'll get 'perf regtest' out with some initial tests then try to get some
-> proposal for injecting the buildid, if found in a DSO, via
-> PERF_RECORD_MMAP, lets see how this goes...
+> But, perf depends on debugfs.
+> I don't know about production box well,
+> does your production box turns on debugfs?
+> It seems that debugfs is not a thing for production box...
 
-What does "DSO" mean? Sorry, I'm not good at English...
+debugfs isn't a problem to have.
 
->
-> Best Regards,
->
-> - Arnaldo
->
-> BTW: I took longer to send a response to this question addressed to me
-> because I wasn't on the CC list :-)
->
->
+> And I'm interesting in in-kernel histogram of locks.
+> Is there requirement of it?
+> I have some ideas (not done yet, completely).
 
-Oh, sorry... I wonder why I didn't add you to Cc or To :(
-It is completely my mistake, and thanks for your reply!
+No real concrete ideas yet.. One possibility is to add a range,
+bucket_size tuple to perf_event_attr and store the histrogram in the
+mmap() area instead of samples.
 
-Thanks
-	Hitoshi
+One difficulty is how to specify what to make that histogram over.
+
+Anyway, its all open still..
+
