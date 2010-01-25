@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569Ab0AYT2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870Ab0AYTaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569Ab0AYT2G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 14:28:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625Ab0AYT2A
+	id S1754870Ab0AYTaR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 14:30:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858Ab0AYTaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 14:28:00 -0500
-Received: from ns01.unsolicited.net ([69.10.132.115]:3986 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751112Ab0AYT2A (ORCPT
+	Mon, 25 Jan 2010 14:30:16 -0500
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:32679 "EHLO
+	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754808Ab0AYTaO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 14:28:00 -0500
-Message-ID: <4B5DF061.1070704@unsolicited.net>
-Date: Mon, 25 Jan 2010 19:26:25 +0000
-From: David <david@unsolicited.net>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 25 Jan 2010 14:30:14 -0500
+X-SpamScore: -5
+X-BigFish: VPS-5(zz4015L62a3Lzz1202hzzz32i6bh43j64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0KWTI4X-01-1MB-02
+X-M-MSG: 
+Date: Mon, 25 Jan 2010 20:29:22 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+Subject: [GIT PULL] oprofile fixes for v2.6.33
+Message-ID: <20100125192922.GQ2014@erda.amd.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #14924] Weird hard hangs when rendering 'some' web-sites
- in Firefox
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <hE3x9c-4KZM.A.V3G.JLMXLB@chimera> <20100125135531.GB3749@hack>
-In-Reply-To: <20100125135531.GB3749@hack>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 25 Jan 2010 19:29:25.0389 (UTC) FILETIME=[B42CB3D0:01CA9DF4]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Américo Wang wrote:
-> On Sun, Jan 24, 2010 at 11:04:33PM +0100, Rafael J. Wysocki wrote:
->   
->> This message has been generated automatically as a part of a report
->> of recent regressions.
->>
->> The following bug entry is on the current list of known regressions
->>     
-> >from 2.6.32.  Please verify if it still should be listed and let me know
->   
->> (either way).
->>
->>
->> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14924
->> Subject		: Weird hard hangs when rendering 'some' web-sites in Firefox
->> Submitter	: David <david@unsolicited.net>
->> Date		: 2009-12-21 21:53 (35 days old)
->> References	: http://marc.info/?l=linux-kernel&m=126143375823340&w=4
->>     
->
-> Hmm, you have CONFIG_DETECT_SOFTLOCKUP=y, I have no idea what happened,
-> doing a bisect would be appreciated.
->
-> Thanks.
->
->   
+Ingo,
 
-I no longer have the offending hardware, but I think that the issue was
-probably corrected by:
+please pull oprofile fixes for v2.6.33 from:
 
-    cafe6609d6dc0a6a278f9fdbb59ce4d761a35ddd -
-drm/radeon/kms: Schedule host path read cache flush through the ring V2
+ git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git urgent
 
-as the offending ATI graphics was indeed R300.
+Thanks,
 
-Cheers
-David
+-Robert
+
+The following changes since commit 92dcffb916d309aa01778bf8963a6932e4014d07:
+  Linus Torvalds (1):
+        Linux 2.6.33-rc5
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git urgent
+
+Andi Kleen (1):
+      oprofile/x86: add Xeon 7500 series support
+
+Suravee Suthikulpanit (1):
+      oprofile/x86: fix crash when profiling more than 28 events
+
+ arch/x86/oprofile/nmi_int.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
 
