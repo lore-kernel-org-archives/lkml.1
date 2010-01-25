@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050Ab0AYFwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004Ab0AYGKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752050Ab0AYFwj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 00:52:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876Ab0AYFwh
+	id S1752004Ab0AYGKW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 01:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589Ab0AYGKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 00:52:37 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51678 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751104Ab0AYFwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 00:52:37 -0500
-Date: Mon, 25 Jan 2010 16:52:19 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tobias Klauser <tklauser@distanz.ch>, John Linn <john.linn@xilinx.com>
-Subject: linux-next: input tree build failure
-Message-Id: <20100125165219.cd0b869d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__25_Jan_2010_16_52_19_+1100_q6.2x4s0_YdtIP/1"
+	Mon, 25 Jan 2010 01:10:20 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44536 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272Ab0AYGKT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 01:10:19 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Thiago Farina <tfransosi@gmail.com>
+Subject: Re: [PATCH 1/1] kernel/exit.c: fix shadows sparse warning.
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <9695506b784c54436f40b4c21ce2d7e6965b7aee.1264257828.git.tfransosi@gmail.com>
+References: <9695506b784c54436f40b4c21ce2d7e6965b7aee.1264257828.git.tfransosi@gmail.com>
+Message-Id: <20100125150956.BDAF.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 25 Jan 2010 15:10:12 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__25_Jan_2010_16_52_19_+1100_q6.2x4s0_YdtIP/1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> kernel/exit.c:1183:26: warning: symbol 'status' shadows an earlier one
+> kernel/exit.c:1173:21: originally declared here
+> 
+> Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+> ---
+>  kernel/exit.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/exit.c b/kernel/exit.c
+> index 546774a..2e72b3f 100644
+> --- a/kernel/exit.c
+> +++ b/kernel/exit.c
+> @@ -1180,7 +1180,7 @@ static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
+>  
+>  	if (unlikely(wo->wo_flags & WNOWAIT)) {
+>  		int exit_code = p->exit_code;
+> -		int why, status;
+> +		int why;
+>  
+>  		get_task_struct(p);
+>  		read_unlock(&tasklist_lock);
 
-Hi Dmitry,
+Looks good to me.
 
-Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
 
-drivers/input/serio/xilinx_ps2.c: In function 'xps2_of_probe':
-drivers/input/serio/xilinx_ps2.c:273: error: incompatible type for argument=
- 1 of 'resource_size'
-include/linux/ioport.h:132: note: expected 'const struct resource *' but ar=
-gument is of type 'struct resource'
-drivers/input/serio/xilinx_ps2.c: In function 'xps2_of_remove':
-drivers/input/serio/xilinx_ps2.c:347: error: incompatible type for argument=
- 1 of 'resource_size'
-include/linux/ioport.h:132: note: expected 'const struct resource *' but ar=
-gument is of type 'struct resource'
 
-Please at least build test this stuff ...
 
-Caused by commit cc7bbfa322b48be82b1c86a104433d4ac349da79 ("Input:
-xilinx_ps2 - use resource_size").
-
-I have reverted that commit for today.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__25_Jan_2010_16_52_19_+1100_q6.2x4s0_YdtIP/1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktdMZMACgkQjjKRsyhoI8w7OgCguZPDU0meR46hLlrIsdgGExfy
-qRMAniEtAb2AK3xfvPhydY3R3RiOAiRQ
-=ywmw
------END PGP SIGNATURE-----
-
---Signature=_Mon__25_Jan_2010_16_52_19_+1100_q6.2x4s0_YdtIP/1--
