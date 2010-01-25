@@ -1,84 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032Ab0AYQeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132Ab0AYQyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032Ab0AYQeg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 11:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679Ab0AYQef
+	id S1754132Ab0AYQyP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 11:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121Ab0AYQyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 11:34:35 -0500
-Received: from cantor.suse.de ([195.135.220.2]:59046 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752699Ab0AYQef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 11:34:35 -0500
-Date: Mon, 25 Jan 2010 17:34:33 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Bastien Nocera <hadess@hadess.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, pjones@redhat.com
-Subject: Re: [PATCH] Disable i8042 checks on Intel Apple Macs
-Message-ID: <20100125163433.GB31957@suse.cz>
-References: <1264011793.1735.3683.camel@localhost.localdomain> <4B57A2D4.9030204@gmail.com> <20100121185544.GB11996@core.coreip.homeip.net> <51f3faa71001211339t4652700ct34659c37479cd67e@mail.gmail.com> <20100121221701.GA15293@core.coreip.homeip.net>
+	Mon, 25 Jan 2010 11:54:14 -0500
+Received: from smtp101.rog.mail.re2.yahoo.com ([206.190.36.79]:23509 "HELO
+	smtp101.rog.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753776Ab0AYQyO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 11:54:14 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=rogers.com;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:Organization:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=s7+1NDYrEw1ly76mtoHoSw0DxrjhziPLmccdcXk9fGI0uKFlFrByttCFIMuSXifo8C+q1x20k7CqEO/jW85OMLgMOjShG5pcRjdTdcqA64Cu1r1A7OMFnYyuJMvabIG8EhTomNZzDIJl0JNwMbLCtbIhNW88tO1CRrrMpTSjtIU=  ;
+X-Yahoo-SMTP: rZzhDImswBA_40COIyZI42.8nAz5YXic.zo1v550XQVtX7k-
+X-YMail-OSG: iIe6CKwVM1kovsxmmjqznnbuMDVyU9MXkxAls01j5bug9Y7kPSEw4hlZ33IAIBAWYQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Shawn Starr <shawn.starr@rogers.com>
+Organization: sh0n.net
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug #14859] System timer firing too much without cause
+Date: Mon, 25 Jan 2010 11:53:58 -0500
+User-Agent: KMail/1.13.0 (Linux/2.6.33-rc5-custom-radeon; KDE/4.4.60; x86_64; svn-1073382; 2010-01-11)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <201001241734.50803.shawn.starr@rogers.com> <alpine.LFD.2.00.1001251103200.2906@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1001251103200.2906@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100121221701.GA15293@core.coreip.homeip.net>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001251153.59084.shawn.starr@rogers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 21, 2010 at 02:17:01PM -0800, Dmitry Torokhov wrote:
-> This is from the changelog when this was introduced:
+On Monday 25 January 2010 05:35:50 Thomas Gleixner wrote:
+> On Sun, 24 Jan 2010, Shawn Starr wrote:
+> > On Sunday 24 January 2010 17:04:33 Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.32.  Please verify if it still should be listed and let me
+> > > know (either way).
 > 
-> -------------------------------------------------------------------------
-> 2005/02/25 21:21:03+01:00 vojtech
-> input: After testing on real world hardware, it's obvious we can't trust
->        ACPIPnP nor PnPBIOS to properly report the existence of a keyboard
->        and mouse port in all cases. Some BIOSes hide the ports if no mouse
->        or keyboard is connected, causing trouble with eg. KVM switches.
+> Why is this on the regression list at all ? The report says that this
+> is happening with 33-rcX, but there is no comparison to the behaviour
+> of 32 or earlier kernels on that machine. Instead we have a comparison
 > 
->        The i8042 driver now does read-only probing first, which should
->        not cause any problems even if an i8042 controller really is not
->        present.
-> 
->        However, on IA64 we still need to trust ACPI, since legacy-free
->        hardware is common there and invalid port accesses cause exceptions.
-> 
->  Signed-off-by: Vojtech Pavlik <vojtech@suse.cz>
-> 
-> >> Input: Add ACPI-based i8042 keyboard and aux controller enumeration;
-> > > can be disabled by passing i8042.noacpi as a boot parameter.
+> of apples and oranges:
+> > As a comparsion my quad core box has no such issue: (Running 2.6.32-rc7)
+> > x86_64
 > > 
-> > On a whim I decided to turn on ACPI, only to discover that my keyboard
-> > no longer worked. Passing i8042.noacpi=1 makes it work again.
-> > Attached please find boot messages with and without the boot
-> > parameter. Inlined below is a diff of the two.
+> >   0:         42          4          1          1   IO-APIC-edge     
+> >   timer
+> > 
+> > my Lenovo ThinkPad W500 (latest BIOS 3.11) laptop shows the system timer
+> > flooding the bus (Running 2.6.33-rc1) x86_64
+> > 
+> >   0:      66775      70429   IO-APIC-edge      timer <-- keeps rising,
+> >   rapidly
 > 
-> --------------------------------------------------------------------------
+> So we look at a quad core desktop machine which probably has no deeper
+> power states and therefor does not use the broadcast timer and compare
+> it to a laptop which has deeper power states and needs to use the
+> broadcast timer, which of course increases the number of IRQ0
+> events. What a surprise.
 > 
-> I'm adding Vojtech in case he manages to recall what other failures he
-> has seen.
+> Can we please remove this from the regression list unless Shawn
+> confirms that 32 or earlier kernels do not show that behaviour on the
+> laptop?
+> 
 
-I don't think I can really recall what other problems we've had back
-then, but I do remember it was quite an avalanche of mails that I've
-started receiving after enabling the PnPBIOS/ACPIPnP probing and
-trusting it fully.
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14859
+> > > Subject		: System timer firing too much without cause
+> > > Submitter	: Shawn Starr <shawn.starr@rogers.com>
+> > > Date		: 2009-12-21 19:16 (35 days old)
+> > 
+> > Continues with -rc5, I  really cannot use Dynamic ticks at all, it has to
+> > be disabled.
+> 
+> Shawn, why can't you use dynamic ticks ? In the bugzilla I just see
+> that you worry about the IRQ0 interrupts (which are correct and
+> necessary when the system is in nohz mode) and the extra rescheduling
+> interrupts. How is the system misbehaving ?
+> 
 
-Now, from the hardware point of view it doesn't make much sense for the
-BIOS to hide/disable the i8042 controller, as both the keyboard IRQ and
-the 0x60-0x6f address space are reserved for it (since the IBM PC/AT
-times) and no other hardware can make use of those on an x86
-architecture.
+Well,  this all stems from trying to use Radeon KMS with IRQs on. Doing so I 
+see system stalls and this is quite noticeable however, I am able to show this 
+same stall on the quad core with the same GPU. 
 
-And this means that even on a Mac there should be no hardware present on
-these addresses if there is no i8042 and Apple is claiming x86
-compatibility.
+Right now, it is unclear to me if there is a underlying irq issue or a bug in 
+the radeon driver code that is showing these stalls. Since the radeon folks - 
+at the moment - do not think it is a coding problem in their driver
 
-Thus I believe that the right fix here is to figure out why the accesses
-to the ports 0x60/0x64 take a long time or forever on a Mac. Is it just
-that the kernel is timing out waiting for the i8042? Or is it something
-more sinister?
+My impression was using dynamic ticks meant ticks were on demand and not 
+continuous. On the quad core box, with dynamic ticks on, the broadcasts are 
+not increasing IRQ 0 events this only happens on the laptop.
 
--- 
-Vojtech Pavlik
-Director SuSE Labs
+Thanks, 
+Shawn.
+
+> Thanks,
+> 
+> 	tglx
