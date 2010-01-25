@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538Ab0AYRux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567Ab0AYRvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538Ab0AYRux (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 12:50:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508Ab0AYRuw
+	id S1754567Ab0AYRvN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 12:51:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549Ab0AYRvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 12:50:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55178 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753474Ab0AYRuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 12:50:51 -0500
-Message-ID: <4B5DD9DB.7070300@redhat.com>
-Date: Mon, 25 Jan 2010 12:50:19 -0500
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc13 Lightning/1.0pre Thunderbird/3.0
+	Mon, 25 Jan 2010 12:51:08 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:52692 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754543Ab0AYRvF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 12:51:05 -0500
+Message-ID: <4B5DD9F1.2010002@austin.ibm.com>
+Date: Mon, 25 Jan 2010 11:50:41 -0600
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: tytso@mit.edu, Anton Altaparmakov <aia21@cam.ac.uk>,
-       Nick Piggin <npiggin@suse.de>, Dave Chinner <david@fromorbit.com>,
-       Jan Kara <jack@suse.cz>, Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: IO error semantics
-References: <4B4EB5B9.4020809@hitachi.com> <4B4EDE5C.8040600@hitachi.com> <4B4EEE86.7080807@hitachi.com> <20100114141803.GB3146@quack.suse.cz> <20100118051847.GA8678@laptop> <20100118060518.GA9151@laptop> <20100118122437.GF7264@discord.disaster> <20100118140039.GA13909@laptop> <D65C918F-8CCD-4626-BA84-FD0410A5E81F@cam.ac.uk> <4B5DB78D.2090408@redhat.com> <20100125174723.GB28459@thunk.org>
-In-Reply-To: <20100125174723.GB28459@thunk.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Michael Neuling <mikey@neuling.org>, Ingo Molnar <mingo@elte.hu>,
+       ego@in.ibm.com, linuxppc-dev@lists.ozlabs.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] powerpc: implement arch_scale_smt_power for Power7
+References: <1264017638.5717.121.camel@jschopp-laptop>	 <1264017847.5717.132.camel@jschopp-laptop> <26556.1264021443@neuling.org>	 <4B577F1A.9060907@austin.ibm.com> <1264302028.3601.36.camel@pasglop>
+In-Reply-To: <1264302028.3601.36.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/25/2010 12:47 PM, tytso@mit.edu wrote:
-> On Mon, Jan 25, 2010 at 10:23:57AM -0500, Ric Wheeler wrote:
->>
->> For permanent write errors, I would expect any modern drive to do a
->> sector remapping internally. We should never need to track this kind
->> of information for any modern device that I know of (S-ATA, SAS,
->> SSD's and raid arrays should all handle this).
+Benjamin Herrenschmidt wrote:
+> On Wed, 2010-01-20 at 16:09 -0600, Joel Schopp wrote:
+>   
+>> I can turn that into a conditional branch (case statement) with a shift 
+>> for the common 1,2,4 cases which should cover all procs available today 
+>> falling back to a divide for any theoretical future processors that do 
+>> other numbers of threads. 
+>>     
 >
-> ... and if the device is run out of all of its blocks in its spare
-> blocks pool, it's probably well past the time to replace said disk.
->
-> BTW, I really liked Dave Chinner's summary of the issues involved; I
-> ran into Kawai-san last week at Linux.conf.au, and we discussed pretty
-> much the same thing over lunch.  (i.e., that it's a hard problem, and
-> in some cases we need to retry the writes, such as a transient FC path
-> problem --- but some kind of write throttling is critical or we could
-> end up choking the VM due to too many pages getting dirtied and no way
-> of cleaning them.)
->
-> 						- Ted
-
-Also note that retrying writes (or reads for that matter) often are counter 
-productive. For those of us who have suffered with trying to migrate data off of 
-an old, failing disk onto a new, shiny one, excessive retries can be painful...
-
-ric
-
+> Look at the cputhreads.h implementation ... Today we only support
+> power-of-two numbers of threads.
+>   
+I've run 3 threads using cpu hotplug to offline 1 of the 4.  It's 
+certainly a stupid idea, but there you go.
