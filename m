@@ -1,27 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039Ab0AYDFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187Ab0AYDJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752039Ab0AYDFw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jan 2010 22:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466Ab0AYDFv
+	id S1752187Ab0AYDJd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jan 2010 22:09:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866Ab0AYDJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 22:05:51 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:65370 "EHLO song.cn.fujitsu.com"
+	Sun, 24 Jan 2010 22:09:32 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:54243 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751492Ab0AYDFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 22:05:49 -0500
-Message-ID: <4B5D0AC8.5060307@cn.fujitsu.com>
-Date: Mon, 25 Jan 2010 11:06:48 +0800
+	id S1751814Ab0AYDJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jan 2010 22:09:31 -0500
+Message-ID: <4B5D0BA8.20106@cn.fujitsu.com>
+Date: Mon, 25 Jan 2010 11:10:32 +0800
 From: Yang Hongyang <yanghy@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, fweisbec@gmail.com, rostedt@goodmis.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH]ftrace:fix a typo in ftrace.txt
-Content-Type: text/plain; charset=ISO-2022-JP
+Subject: Re: [PATCH]ftrace:fix a typo in ftrace.txt
+References: <4B5D0AC8.5060307@cn.fujitsu.com>
+In-Reply-To: <4B5D0AC8.5060307@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+Sorry,please ignore prev patch,the character Encoding was bad.
+=========================================================
 
 'echo ftrace' no longer supported in current kernel,
 use 'echo function' instead.
