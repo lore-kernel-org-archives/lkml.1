@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624Ab0AZOH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865Ab0AZOHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624Ab0AZOH1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 09:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512Ab0AZOH0
+	id S1753865Ab0AZOHt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 09:07:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693Ab0AZOHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 09:07:26 -0500
-Received: from [80.120.171.167] ([80.120.171.167]:14495 "EHLO
-	merlin.merlin.local" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751828Ab0AZOHZ (ORCPT
+	Tue, 26 Jan 2010 09:07:48 -0500
+Received: from gv-out-0910.google.com ([216.239.58.186]:20796 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193Ab0AZOHq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 09:07:25 -0500
-X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jan 2010 09:07:25 EST
-Message-ID: <4B5EF717.7010707@reinelt.co.at>
-Date: Tue, 26 Jan 2010 15:07:19 +0100
-From: Michael Reinelt <michael@reinelt.co.at>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.0.7) Gecko/20061013 Thunderbird/1.5.0.7 Mnenhy/0.7.4.666
+	Tue, 26 Jan 2010 09:07:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=jYp0cEP7Hj931F52f8Wen6dKdrZT7svURjzR9QnQ6d8ApYlCjJcNgUTlxuK1JQNMCK
+         kXpnqx0UK2E/eNatCVPdQ52n3jlcGVl9DjB4uMon5it9XjFje9nzbNUSAtUt3csSqDbp
+         jfES4Y1q/fiBVypVyo1Duo+c7nugkaknF/p1s=
 MIME-Version: 1.0
-To: Chris Wilson <chris@chris-wilson.co.uk>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Roman Jarosz <kedgedev@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       A Rojas <nqn1976list@gmail.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "A. Boulan" <arnaud.boulan@libertysurf.fr>, jcnengel@googlemail.com,
-       rientjes@google.com, earny@net4u.de,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>
-Subject: Re: OOM-Killer kills too much with 2.6.32.2
-References: <20100126141055.5AAD.A69D9226@jp.fujitsu.com> <op.u64t84zuasvm2a@kedge> <20100126183412.6AC9.A69D9226@jp.fujitsu.com> <89k77n$mrr1hi@fmsmga001.fm.intel.com> <2f11576a1001260503o5f987512n3c39ae1c3caa43f3@mail.gmail.com> <89khjo$egh4fr@orsmga002.jf.intel.com> <4B5EF55A.5080602@reinelt.co.at>
-In-Reply-To: <4B5EF55A.5080602@reinelt.co.at>
-X-Enigmail-Version: 0.95.0
+In-Reply-To: <c2673ca61001250333p33305d3fma638d73c0d448e17@mail.gmail.com>
+References: <bug-15076-6666@http.bugzilla.kernel.org/>
+	 <201001221017.o0MAHQmu015858@demeter.kernel.org>
+	 <alpine.LFD.2.00.1001250831110.2906@localhost.localdomain>
+	 <c2673ca61001250333p33305d3fma638d73c0d448e17@mail.gmail.com>
+Date: Tue, 26 Jan 2010 15:07:45 +0100
+Message-ID: <c2673ca61001260607v5fe6c13ai54d10100088382f6@mail.gmail.com>
+Subject: Re: [Bug 15076] System panic under load with clockevents_program_event
+From: okias <d.okias@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, bugzilla-daemon@bugzilla.kernel.org,
+       x86@kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Lastest git without HIGHMEM look good. If no problems occur, then I
+try use kernel with HIGHMEM and see what change...
 
-
-Michael Reinelt schrieb:
-> 
-> Chris Wilson schrieb:
->> On Tue, 26 Jan 2010 22:03:06 +0900, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
->>> Please consider to revert such commit at once. Lots people reported
->>> the same issue.
->>> I really hope to stop bug report storm.
->> Your CC did not reference the problem that you were discussing, nor that
->> it is even easier to trigger an OOM without the shrinker. Memory
->> exhaustion due to the excess usage of surfaces from userspace is not a new
->> issuer. So what is the problem you have encountered and how does running
->> the OOM killer earlier fix the issue of triggering the OOM killer?
+2010/1/25, okias <d.okias@gmail.com>:
+> Okey, I try without highmem soon.
+>
+> 2010/1/25, Thomas Gleixner <tglx@linutronix.de>:
+>> Switched to email. Please reply to all instead of using the bugzilla
+>> interface.
 >>
-> 
-> To end this discussion: I just had a OOM with the GEM / shmem partial revert patch from Motohiro :-(
-> 
-> Unfortunately without Motohiro's oom-debug patch applied :-(
-> 
-> as a non-git-user I have to manually patch memory.c, but I hope I can get things right. I will provide results ASAP.
+>>> --- Comment #4 from okias <d.okias@gmail.com>  2010-01-22 10:17:25 ---
+>>> and it's regression. Now I work on 2.6.32.3 and no problem.
+>>
+>> That's a really weird one. The system is 50 min up and running and out
+>> of the blue it crashes in clockevents_program_event(). This function
+>> has been called a couple of thousand times before that point.
+>>
+>> The only way to crash there is when *dev is pointing into nirwana. dev
+>> comes from
+>>
+>> int tick_program_event(ktime_t expires, int force)
+>> {
+>>         struct clock_event_device *dev =
+>> __get_cpu_var(tick_cpu_device).evtdev;
+>>
+>> according to the callchain. At this point nothing fiddles with
+>> tick_cpu_device.evtdev, so I suspect some really nasty memory
+>> corruption going on.
+>>
+>> okias, can you please disable highmem support and verify whether the
+>> problem persists ?
+>>
+>> Thanks,
+>>
+>> 	tglx
+>>
+>
+>
+> --
+> Jabber/XMPP: okias@isgeek.info
+> SIP VoIP: sip:17474537254@proxy01.sipphone.com
+>
 
-Sorry sorry sorry... false alarm. One should also *install* a new kernel after compiling...
-
-I'll give it another try, this time with OOM debugging applied.
-
-
-sorry for the noise...
 
 -- 
-Michael Reinelt <michael@reinelt.co.at>
-http://home.pages.at/reinelt
-GPG-Key 0xDF13BA50
-ICQ #288386781
+Jabber/XMPP: okias@isgeek.info
+SIP VoIP: sip:17474537254@proxy01.sipphone.com
