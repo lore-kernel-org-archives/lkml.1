@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210Ab0AZOWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238Ab0AZOWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754210Ab0AZOWB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 09:22:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859Ab0AZOWA
+	id S1754238Ab0AZOWl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 09:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029Ab0AZOWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 09:22:00 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:60783 "EHLO e2.ny.us.ibm.com"
+	Tue, 26 Jan 2010 09:22:37 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:59539 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753929Ab0AZOV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 09:21:59 -0500
-Message-ID: <4B5EFA7A.9080800@us.ibm.com>
-Date: Tue, 26 Jan 2010 06:21:46 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1754027Ab0AZOWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 09:22:35 -0500
+Date: Tue, 26 Jan 2010 19:51:54 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tom Tromey <tromey@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100126142154.GA30571@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <m33a1tnbd9.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>
-Subject: Re: futex() on vdso makes process unkillable
-References: <1264411574.4283.1632.camel@laptop> <4B5DD6DF.4090102@us.ibm.com> <20100126113312.5AA3.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20100126113312.5AA3.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
->> Peter Zijlstra wrote:
->>> On Mon, 2010-01-25 at 16:27 +0900, KOSAKI Motohiro wrote:
->> <snip>
->>>> Futex should work both file anon anon. however I personally think 
->>>> vdso is not file nor anon. it is special mappings. nobody defined
->>>> futex spec on special mappings. (yes, undefined).
->>>>
->>>> Personally, I think EINVAL or EFAULT are best result of vdso futexing, like as
->>>> futexing againt kernel address. but I guess another person have another thinking.
->>>>
->>>> I'd like to hear futex folks's opinion.
->>> Well, my opinion is we should remove the vdso, its ugly as hell :-)
->>>
->>> But I think it would make most sense to extend its definition in the
->>> direction of it being a file (for all intents and purposes its a special
->>> DSO -- which unfortunately isn't present in any filesystem).
->>>
->>> [ For all intents and purposes processes can already communicate through
->>> futexes on the libc space, so being able to do so through the vsdo
->>> really doesn't add anything ]
->>>
->>> So the problem is that the VDSO pages do not have a page->mapping
->>> because they lack the actual filesystem part of files, so even if (with
->>> the recent zero-page patch from Kosaki-san) you make private COWs of the
->>> VDSO, you'll get stuck in that loop.
->>>
->>> So the prettiest solution is to simply place the vdso in an actual
->>> filesystem and slowly migrate towards letting userspace map it as a
->>> regular DSO -- /sys/lib{32,64}/libkernel.so like.
->>>
->>> [ that has the bonus of getting rid of install_special_mapping() ]
->>>
->>> The ugly solution is special casing the vdso in get_futex_key().
->> I like the creating-a-real-file solution. However, for now (and for 
->> stable), I think Kosaki's suggestion of EINVAL or EFAULT is a good 
->> stop-gap. EINVAL might play the best with existing glibc implementations.
+On Mon, Jan 25, 2010 at 01:41:57PM -0800, Linus Torvalds wrote:
 > 
-> May I confirm your mention?
 > 
-> If we can accept EFAULT, we don't need any change. my previous futex patch
-> already did. because 1) VDSO is alwasys read-only mapped 2) write mode
-> get_user_pages_fast() against read-only pte/vma return EFAULT.
-> 
-> Current linus and stable tree don't cause Mark's original problem. instead, just
-> return EFAULT. (Well, I'm sorry. my previous mail was unclear. I wrote v2.6.31 test
-> result)
-> 
-> If you can't accept EFAULT, we need to add vdso specific logic into get_futex_key().
-> Is this your intention?
+> On Mon, 25 Jan 2010, Tom Tromey wrote:
 
-That was my intention, but after looking at the glibc source, I don't 
-see any reason for EINVAL over EFAULT. I apparently mis-remembered 
-something there. EFAULT is fine.
+...
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+> > * Support "displaced stepping" in the kernel; I think this would improve
+> >   performance when debugging in non-stop mode.
+> 
+> Don't we already do that at least on x86? Just doing a single-step should 
+> work on an instruction even if it has a breakpoint on it, because we set 
+> the TF bit.
+> 
+> Or maybe I'm not understanding what displaced stepping means to you.
+
+If Tom is referring to supporting single-stepping out of line, ie., not
+putting back the original instruction at the bp location, yes, we
+already support it on various architectures for kernel breakpoints,
+through the kprobes infrastructure.
+
+For userspace, there are more complications to take care of. We are
+reworking a prototype based on community comments (see the long UBP/XOL
+thread on lkml from a few days ago). Hopefully the userspace breakpoint
+assistance layer will be generic enough for gdb to also take advantage
+of, though the interface details need to be hashed out.
+
+Ananth
