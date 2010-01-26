@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182Ab0AZT3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214Ab0AZTaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182Ab0AZT3m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 14:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089Ab0AZT3H
+	id S1755214Ab0AZTaB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 14:30:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194Ab0AZT3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 14:29:07 -0500
-Received: from kroah.org ([198.145.64.141]:33594 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 14:29:54 -0500
+Received: from kroah.org ([198.145.64.141]:33609 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754275Ab0AZT3C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 14:29:02 -0500
+	id S1755076Ab0AZT3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 14:29:05 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 11:16:24 2010
-Message-Id: <20100126191624.411026014@mini.kroah.org>
+Message-Id: <20100126191624.663048281@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 11:14:41 -0800
+Date: Tue, 26 Jan 2010 11:14:43 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dan Carpenter <error27@gmail.com>,
-       Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-Subject: [05/11] ecryptfs: use after free
+       Alan Stern <stern@rowland.harvard.edu>,
+       Rickard Bellini <rickard.bellini@ericsson.com>
+Subject: [07/11] USB: add missing delay during remote wakeup
 In-Reply-To: <20100126191730.GA20872@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,47 +29,74 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dan Carpenter <error27@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit ece550f51ba175c14ec3ec047815927d7386ea1f upstream.
+commit 49d0f078f494b9d81e820a13dd8093a9bfb0b6b1 upstream.
 
-The "full_alg_name" variable is used on a couple error paths, so we
-shouldn't free it until the end.
+This patch (as1330) fixes a bug in khbud's handling of remote
+wakeups.  When a device sends a remote-wakeup request, the parent hub
+(or the host controller driver, for directly attached devices) begins
+the resume sequence and notifies khubd when the sequence finishes.  At
+this point the port's SUSPEND feature is automatically turned off.
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
-Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+However the device needs an additional 10-ms resume-recovery time
+(TRSMRCY in the USB spec).  Khubd does not wait for this delay if the
+SUSPEND feature is off, and as a result some devices fail to behave
+properly following a remote wakeup.  This patch adds the missing
+delay to the remote-wakeup path.
+
+It also extends the resume-signalling delay used by ehci-hcd and
+uhci-hcd from 20 ms (the value in the spec) to 25 ms (the value we use
+for non-remote-wakeup resumes).  The extra time appears to help some
+devices.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Cc: Rickard Bellini <rickard.bellini@ericsson.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ecryptfs/crypto.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/usb/core/hub.c      |    3 +++
+ drivers/usb/host/ehci-hcd.c |    5 +++--
+ drivers/usb/host/uhci-hub.c |    2 +-
+ 3 files changed, 7 insertions(+), 3 deletions(-)
 
---- a/fs/ecryptfs/crypto.c
-+++ b/fs/ecryptfs/crypto.c
-@@ -1733,7 +1733,7 @@ ecryptfs_process_key_cipher(struct crypt
- 			    char *cipher_name, size_t *key_size)
- {
- 	char dummy_key[ECRYPTFS_MAX_KEY_BYTES];
--	char *full_alg_name;
-+	char *full_alg_name = NULL;
- 	int rc;
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -3015,6 +3015,9 @@ static void hub_events(void)
+ 					USB_PORT_FEAT_C_SUSPEND);
+ 				udev = hdev->children[i-1];
+ 				if (udev) {
++					/* TRSMRCY = 10 msec */
++					msleep(10);
++
+ 					usb_lock_device(udev);
+ 					ret = remote_wakeup(hdev->
+ 							children[i-1]);
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -723,9 +723,10 @@ static irqreturn_t ehci_irq (struct usb_
  
- 	*key_tfm = NULL;
-@@ -1748,7 +1748,6 @@ ecryptfs_process_key_cipher(struct crypt
- 	if (rc)
- 		goto out;
- 	*key_tfm = crypto_alloc_blkcipher(full_alg_name, 0, CRYPTO_ALG_ASYNC);
--	kfree(full_alg_name);
- 	if (IS_ERR(*key_tfm)) {
- 		rc = PTR_ERR(*key_tfm);
- 		printk(KERN_ERR "Unable to allocate crypto cipher with name "
-@@ -1770,6 +1769,7 @@ ecryptfs_process_key_cipher(struct crypt
- 		goto out;
- 	}
- out:
-+	kfree(full_alg_name);
- 	return rc;
- }
+ 			/* start 20 msec resume signaling from this port,
+ 			 * and make khubd collect PORT_STAT_C_SUSPEND to
+-			 * stop that signaling.
++			 * stop that signaling.  Use 5 ms extra for safety,
++			 * like usb_port_resume() does.
+ 			 */
+-			ehci->reset_done [i] = jiffies + msecs_to_jiffies (20);
++			ehci->reset_done[i] = jiffies + msecs_to_jiffies(25);
+ 			ehci_dbg (ehci, "port %d remote wakeup\n", i + 1);
+ 			mod_timer(&hcd->rh_timer, ehci->reset_done[i]);
+ 		}
+--- a/drivers/usb/host/uhci-hub.c
++++ b/drivers/usb/host/uhci-hub.c
+@@ -167,7 +167,7 @@ static void uhci_check_ports(struct uhci
+ 				/* Port received a wakeup request */
+ 				set_bit(port, &uhci->resuming_ports);
+ 				uhci->ports_timeout = jiffies +
+-						msecs_to_jiffies(20);
++						msecs_to_jiffies(25);
  
+ 				/* Make sure we see the port again
+ 				 * after the resuming period is over. */
 
 
