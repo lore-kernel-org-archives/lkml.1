@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752235Ab0AZGUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752339Ab0AZGYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752235Ab0AZGUI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 01:20:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021Ab0AZGUF
+	id S1752339Ab0AZGYd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 01:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968Ab0AZGYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 01:20:05 -0500
-Received: from bld-mail19.adl2.internode.on.net ([150.101.137.104]:56058 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751437Ab0AZGUB (ORCPT
+	Tue, 26 Jan 2010 01:24:32 -0500
+Received: from mail-qy0-f204.google.com ([209.85.221.204]:40316 "EHLO
+	mail-qy0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751908Ab0AZGYb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 01:20:01 -0500
-Date: Tue, 26 Jan 2010 17:19:54 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: tytso@mit.edu, Ric Wheeler <rwheeler@redhat.com>,
-       Anton Altaparmakov <aia21@cam.ac.uk>, Jan Kara <jack@suse.cz>,
-       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: IO error semantics
-Message-ID: <20100126061954.GD15853@discord.disaster>
-References: <4B4EEE86.7080807@hitachi.com> <20100114141803.GB3146@quack.suse.cz> <20100118051847.GA8678@laptop> <20100118060518.GA9151@laptop> <20100118122437.GF7264@discord.disaster> <20100118140039.GA13909@laptop> <D65C918F-8CCD-4626-BA84-FD0410A5E81F@cam.ac.uk> <4B5DB78D.2090408@redhat.com> <20100125174723.GB28459@thunk.org> <20100125175529.GB2018@laptop>
+	Tue, 26 Jan 2010 01:24:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bQb5sMcCgvSJrtq3Zqs2oPqu80kOBBk1F9JC5M9zypwIiMmffm5ybVQuHR8/xsQFqu
+         ROGH9Sc67WSAbbeWO/N8JdSB9c48DZVrGiSktqMI0Ge7PQkhfHkFsj9kG4GB4Oqcgalk
+         JngvIYFv/GIbphgmzrrjjcuhtDyNTQK2S9sVc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100125175529.GB2018@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100126060705.GF19799@ZenIV.linux.org.uk>
+References: <2375c9f91001252125w6f5bd3d3he183c61e9dcedd3e@mail.gmail.com>
+	 <20100126142644.5AB0.A69D9226@jp.fujitsu.com>
+	 <20100126144641.5AB3.A69D9226@jp.fujitsu.com>
+	 <2375c9f91001252201t552022ebvcd44b225eb7f9a95@mail.gmail.com>
+	 <20100126060705.GF19799@ZenIV.linux.org.uk>
+Date: Tue, 26 Jan 2010 14:24:30 +0800
+Message-ID: <2375c9f91001252224g6712cbady339dbe486a5112ac@mail.gmail.com>
+Subject: Re: [2.6.33-rc5] starting emacs makes lockdep warning
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Tavis Ormandy <taviso@google.com>, Jeff Dike <jdike@addtoit.com>,
+       Julien Tinnes <jln@google.com>, Matt Mackall <mpm@selenic.com>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 04:55:30AM +1100, Nick Piggin wrote:
-> On Mon, Jan 25, 2010 at 12:47:23PM -0500, tytso@mit.edu wrote:
-> > On Mon, Jan 25, 2010 at 10:23:57AM -0500, Ric Wheeler wrote:
-> > > 
-> > > For permanent write errors, I would expect any modern drive to do a
-> > > sector remapping internally. We should never need to track this kind
-> > > of information for any modern device that I know of (S-ATA, SAS,
-> > > SSD's and raid arrays should all handle this).
-> > 
-> > ... and if the device is run out of all of its blocks in its spare
-> > blocks pool, it's probably well past the time to replace said disk.
-> > 
-> > BTW, I really liked Dave Chinner's summary of the issues involved; I
-> > ran into Kawai-san last week at Linux.conf.au, and we discussed pretty
-> > much the same thing over lunch.  (i.e., that it's a hard problem, and
-> > in some cases we need to retry the writes, such as a transient FC path
-> > problem --- but some kind of write throttling is critical or we could
-> > end up choking the VM due to too many pages getting dirtied and no way
-> > of cleaning them.)
-> 
-> Well I just don't think we can ever discard them by default.
+On Tue, Jan 26, 2010 at 2:07 PM, Al Viro <viro@zeniv.linux.org.uk> wrote:
+> On Tue, Jan 26, 2010 at 02:01:12PM +0800, Am??rico Wang wrote:
+>
+>> I agree, it seems that patch is useless, since we already
+>> do lock_kernel() before calling __f_setown()...
+>
+> What's to prevent pid from being freed under us?  BKL won't...
+>
 
-We have done this for a long time in XFS. e.g. If we can't issue IO
-on the page (e.g. allocation fails or we are in a shutdown
-situation already) we invalidate the page immediately, clear the
-page uptodate flag and return an error to mark the address space
-with an error. See xfs_page_state_convert() for more detail.
+Hmm, I don't fully understand the race here. If it is used to protect
+'pid' which we get from 'tty->pgrp' or 'current', in the former case,
+it is protected by 'tty->ctrl_lock', in the later case, it doesn't need
+the lock. So it's not necessary to protect 'pid' by 'tty->crtl_lock'.
 
-And besides, if there is an error of some kind sufficient to shut
-down the filesystem, the last thing you want to do is write more
-data to it and potentially make the problem worse, especially if
-async transactions that the data write might rely on were cancelled
-by the shutdown rather than pushed to disk....
-
-> Therefore
-> we must default to not discarding them, therefore we need to solve or
-> work around the dirty page congestion problem some how.
-
-Agreed. The way XFS treats data IO errors is because that's the only
-thing we can do right now if we want the system to continue to function
-in the face of IO errors....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Am i missing something?
