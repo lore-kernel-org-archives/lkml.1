@@ -1,78 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753129Ab0AZKn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085Ab0AZK5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753129Ab0AZKn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 05:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890Ab0AZKn5
+	id S1753085Ab0AZK5A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 05:57:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366Ab0AZK47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 05:43:57 -0500
-Received: from www.tglx.de ([62.245.132.106]:56757 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752733Ab0AZKn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 05:43:56 -0500
-Date: Tue, 26 Jan 2010 11:43:21 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jason Wessel <jason.wessel@windriver.com>
-cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Magnus Damm <damm@igel.co.jp>
-Subject: Re: [PATCH 3/4] kgdb,clocksource: Prevent kernel hang in kernel
- debugger
-In-Reply-To: <1264480000-6997-4-git-send-email-jason.wessel@windriver.com>
-Message-ID: <alpine.LFD.2.00.1001261142280.5926@localhost.localdomain>
-References: <1264480000-6997-1-git-send-email-jason.wessel@windriver.com> <1264480000-6997-4-git-send-email-jason.wessel@windriver.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 26 Jan 2010 05:56:59 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:28845 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751845Ab0AZK46 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 05:56:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=CtOkaOzMzHF9WK0TQpG4PW3zTFopCtOAaOugVE8EjpGSCAPHpRG3YMyNBVHs8ewdXb
+         j1BrnW+Lw2yYkhZZ3a+ebxVuBf+Rm9GkX32EIRsGYw581Vi7cFFuqLKjcADg4jpFGfx6
+         aD12xFpnnquBrmfBL7YBfu2FR1uPI/PsE6h48=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 26 Jan 2010 10:56:57 +0000
+Message-ID: <6278d2221001260256q5f35457fye8baabcc333d40@mail.gmail.com>
+Subject: Re: Hyperthreading on Core i7s: To use or not to use?
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jan 2010, Jason Wessel wrote:
-> This is a regression fix against: 0f8e8ef7c204988246da5a42d576b7fa5277a8e4
-> 
-> Spin locks were added to the clocksource_resume_watchdog() which cause
-> the kernel debugger to deadlock on an SMP system frequently.
-> 
-> The kernel debugger can try for the lock, but if it fails it should
-> continue to touch the clocksource watchdog anyway, else it will trip
-> if the general kernel execution has been paused for too long.
-> 
-> This introduces an possible race condition where the kernel debugger
-> might not process the list correctly if a clocksource is being added
-> or removed at the time of this call.  This race is sufficiently rare vs
-> having the kernel debugger hang the kernel
-> 
-> CC: Thomas Gleixner <tglx@linutronix.de>
-> CC: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> CC: John Stultz <johnstul@us.ibm.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: Magnus Damm <damm@igel.co.jp>
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> ---
->  kernel/time/clocksource.c |    7 ++++++-
->  1 files changed, 6 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-> index e85c234..74f9ba6 100644
-> --- a/kernel/time/clocksource.c
-> +++ b/kernel/time/clocksource.c
-> @@ -463,7 +463,12 @@ void clocksource_resume(void)
->   */
->  void clocksource_touch_watchdog(void)
->  {
-> -	clocksource_resume_watchdog();
-> +	unsigned long flags;
-> +
-> +	int got_lock = spin_trylock_irqsave(&watchdog_lock, flags);
-> +	clocksource_reset_watchdog();
-> +	if (got_lock)
-> +		spin_unlock_irqrestore(&watchdog_lock, flags);
+On Jan 26, 10:10 am, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+> Hello,
+>
+> Should the 'correct' kernel [CPU] configuration for a core i7 860/870..?
+>
+> - Multi-core support
+> - Cores: 8
+> - SMT: Enabled/ON
+>
+> From CONFIG_SCHED_SMT:
+>
+>    . SMT scheduler support improves the CPU scheduler's decision making      .
+>    . when dealing with Intel Pentium 4 chips with HyperThreading at a        .
+>    . cost of slightly increased overhead in some places. If unsure say       .
+>    . N here.                                                                 .
+>
+> Does this also 'help' and/or 'apply' as much when dealing with Core i7s?
+>
+> --
+>
+> Quick little benchmark (pbzip2 -9 linux kernel source), the benchmark is
+> really within the noise (8 on/off)
+> - Multicore(8)/HT(Off) = 73.72user 0.33system 0:09.50elapsed 779%CPU (0avgtext+0avgdata 458528maxresident
+> - Multicore(8)/HT(On) = 74.28user 0.40system 0:09.67elapsed 772%CPU (0avgtext+0avgdata 428304maxresident
+> - Multicore(4)/HT(On) = 68.76user 0.30system 0:17.44elapsed 396%CPU (0avgtext+0avgdata 213616maxresident)k
+>
+> --
+>
+> Has anyone done any in-depth benchmarking for the core i7s that have multiple
+> cores and HT disabled/enabled?
 
-Just for the record. This patch would not compile on any platform
-which has CONFIG_CLOCKSOURCE_WATCHDOG=n
+With my Dell Studio 15 (model 1557) laptop, there is no option to
+disable HT in the current BIOS, so booting with maxcpus=4 (since the
+kernel enumerates non-sibling cores first) gave me a 5-15% speedup on
+some large image processing (convolution, FFTs, conversion) on all
+available cores, presumably due to better cache efficiency.
 
-Thanks,
+Booting with maxcpus=4 prevents any of the cores sitting in C6, needed
+for turbo-boost and a lower thermal profile, though I did find
+scheduling latency and responsiveness better under load booting with
+maxcpus=4, so favour this when plugged in.
 
-	tglx
+Clearly, having the BIOS option allows benefit to certain applications
+- Dell should give their users the choice!
+
+Perhaps the 'noht' boot option should be reintroduced to initialise
+all cores, but only expose non-sibling cores to the OS (thus allowing
+C6)?
+
+Daniel
+
+tip: modprobe msr and use turbostat to monitor turbo-boost and C-state
+residency: http://bugzilla.kernel.org/attachment.cgi?id=24673
+-- 
+Daniel J Blueman
