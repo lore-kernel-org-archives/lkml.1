@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545Ab0AZVbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680Ab0AZVbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545Ab0AZVbA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 16:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823Ab0AZVa7
+	id S1753680Ab0AZVbu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 16:31:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677Ab0AZVbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 16:30:59 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:51884 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644Ab0AZVa7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 16:30:59 -0500
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH RFC tip/core/rcu] accelerate grace period if last non-dynticked CPU
-From: Andi Kleen <andi@firstfloor.org>
-References: <20100125034816.GA14043@linux.vnet.ibm.com>
-Date: Tue, 26 Jan 2010 22:30:57 +0100
-In-Reply-To: <20100125034816.GA14043@linux.vnet.ibm.com> (Paul E. McKenney's message of "Sun, 24 Jan 2010 19:48:16 -0800")
-Message-ID: <873a1sft9q.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 26 Jan 2010 16:31:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56076 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752649Ab0AZVbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 16:31:48 -0500
+Date: Tue, 26 Jan 2010 22:30:10 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, tromey@redhat.com,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100126213010.GA19146@redhat.com>
+References: <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <m33a1tnbd9.fsf@fleche.redhat.com> <877hr4g49l.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001261038150.3574@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1001261038150.3574@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+On 01/26, Linus Torvalds wrote:
+>
+> The problem is that anything that is based on reparenting and signals is
+> fundamentally a "one parent only" kind of interface. See?
 
-Kind of offtopic to the original patch, but I couldn't 
-resist...
+Indeed. signals + do_wait() is the horrible model.
 
-> +config RCU_FAST_NO_HZ
-> +	bool "Accelerate last non-dyntick-idle CPU's grace periods"
-> +	depends on TREE_RCU && NO_HZ && SMP
+> So the reason I think using an fd is a good idea is _not_ because gdb
+> already uses an fd internally, but because it gives you a "connection"
+> between the debugger and debuggee that is not fundamentally limited to a
+> single controller.
+>
+> (It doesn't have to be a file descriptor, of course, but could be any kind
+> of other model that allows multiple connections.
 
-Having such a thing as a config option doesn't really make 
-any sense to me. Who would want to recompile their kernel
-to enable/disable this? If anything it should be runtime, or better
-just unconditionally on.
+Yes.
 
-In general RCU could probably reduce its number of "weird"
-Kconfig options.
+But then we need something which represents this connection in kernel:
+utrace_engine. Then we need something which allows multiple tracers to
+cooperate. Just for example, one tracer wants to resume the tracee,
+another tracer wants the tracee to be stopped. Utrace does this. And,
+since we should preserve the current ptrace, the tracers should cooperate
+with ptrace too.
 
-While I think I have a better understanding of RCU than a lot
-of normal users I often have no clue what to set there when
-building a kernel.
+IOW, this quickly leads to the new abstraction layer, I think. And of
+course it is possible to implement this new model on top of utrace.
 
--Andi
+Yes, utrace itself comes with utrace_engine_ops vector to implement
+"whatever you like", perhaps you dislike this part.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Oleg.
+
