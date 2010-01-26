@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752592Ab0AZA7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611Ab0AZBBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752592Ab0AZA7Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 19:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522Ab0AZA7T
+	id S1752611Ab0AZBBN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 20:01:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325Ab0AZBBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 19:59:19 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54922 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752331Ab0AZA7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 19:59:18 -0500
-Message-ID: <4B5E3E22.6030401@zytor.com>
-Date: Mon, 25 Jan 2010 16:58:10 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Mon, 25 Jan 2010 20:01:12 -0500
+Received: from mail-pz0-f189.google.com ([209.85.222.189]:33231 "EHLO
+	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751084Ab0AZBBL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 20:01:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HPjGjDxmjhWyv/qisyduJf/4MUqpduf1oUSgwfOODn5u/9Dzyoykvq+mYTLj1fy2J7
+         UMoqsDETVXFpZAwY3Vst/O1f96xfHIqGBe6zysZrdXox0j4YDKvGAJG6BcVKFsEtjva5
+         p7///0vyAHC+bKVxdUjU3kISqIK39CozCpBMw=
 MIME-Version: 1.0
+In-Reply-To: <20100125115814.156d401d.akpm@linux-foundation.org>
+References: <979dd0561001202107v4ddc1eb7xa59a7c16c452f7a2@mail.gmail.com>
+	 <20100125133308.GA26799@desktop>
+	 <20100125115814.156d401d.akpm@linux-foundation.org>
+Date: Tue, 26 Jan 2010 09:01:10 +0800
+Message-ID: <979dd0561001251701y76f35b8as545c390135b34da2@mail.gmail.com>
+Subject: Re: [PATCH] Flush dcache before writing into page to avoid alias
+From: anfei zhou <anfei.zhou@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 22/37] move round_up/down to kernel.h
-References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>	<1263611228-6751-23-git-send-email-yinghai@kernel.org>	<alpine.DEB.2.00.1001191155540.22304@router.home>	<4B57675E.7070309@kernel.org> <20100125164032.330be0e6.akpm@linux-foundation.org>
-In-Reply-To: <20100125164032.330be0e6.akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux@arm.linux.org.uk, Jamie Lokier <jamie@shareable.org>,
+       linux-arm-kernel@lists.infradead.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/25/2010 04:40 PM, Andrew Morton wrote:
-> 
-> The problem is that arch/x86/include/asm/proto.h implements private
-> rounding macros.  The right way to fix that is to convert each x86
-> "call site" over to using the standard macros from kernel.h, then
-> finally remove the private definitions from
-> arch/x86/include/asm/proto.h.  Don't just copy them over to kernel.h
-> and make things muddier than they already are!
-> 
-> If during that conversion it is found that the standard macros for some
-> reason don't suit the x86 usage sites then please propose
-> enhancements/fixes to the existing kernel.h facilities.
-> 
+On Tue, Jan 26, 2010 at 3:58 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Mon, 25 Jan 2010 21:33:08 +0800 anfei <anfei.zhou@gmail.com> wrote:
+>
+>> Hi Andrew,
+>>
+>> On Thu, Jan 21, 2010 at 01:07:57PM +0800, anfei zhou wrote:
+>> > The cache alias problem will happen if the changes of user shared mapping
+>> > is not flushed before copying, then user and kernel mapping may be mapped
+>> > into two different cache line, it is impossible to guarantee the coherence
+>> > after iov_iter_copy_from_user_atomic.  So the right steps should be:
+>> >     flush_dcache_page(page);
+>> >     kmap_atomic(page);
+>> >     write to page;
+>> >     kunmap_atomic(page);
+>> >     flush_dcache_page(page);
+>> > More precisely, we might create two new APIs flush_dcache_user_page and
+>> > flush_dcache_kern_page to replace the two flush_dcache_page accordingly.
+>> >
+>> > Here is a snippet tested on omap2430 with VIPT cache, and I think it is
+>> > not ARM-specific:
+>> >     int val = 0x11111111;
+>> >     fd = open("abc", O_RDWR);
+>> >     addr = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+>> >     *(addr+0) = 0x44444444;
+>> >     tmp = *(addr+0);
+>> >     *(addr+1) = 0x77777777;
+>> >     write(fd, &val, sizeof(int));
+>> >     close(fd);
+>> > The results are not always 0x11111111 0x77777777 at the beginning as expected.
+>> >
+>> Is this a real bug or not necessary to support?
+>
+> Bug.  If variable `addr' has type int* then the contents of that file
+> should be 0x11111111 0x77777777.  You didn't tell us what the contents
+> were in the incorrect case, but I guess it doesn't matter.
+>
+Sorry, I didn't give the details, here is the old thread with more details:
+  http://linux.derkeiler.com/Mailing-Lists/Kernel/2010-01/msg07124.html
 
-They don't.
-
-The kernel-global alignment macros assume that either the alignment
-datum (divisor) is a constant, or that it is acceptable to take the hit
-of a division.  Unfortunately, we have real use cases where the
-alignment (guaranteed to be a power of two) is variable, but we don't
-want to take the hit of a full-blown division.
-
-I suspect the global kernel tree has those, too, but it would seem to be
-a dramatic change to change to change the existing facilities to assume
-power of two alignment...
-
-	-hpa
+Regards,
+Anfei.
+>
+>
