@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568Ab0AZX7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261Ab0AZXnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568Ab0AZX7i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:59:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447Ab0AZXn3
+	id S1754261Ab0AZXnY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102Ab0AZXnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:43:29 -0500
-Received: from kroah.org ([198.145.64.141]:35221 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:43:12 -0500
+Received: from kroah.org ([198.145.64.141]:35130 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754406Ab0AZXn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:27 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:25 2010
-Message-Id: <20100126233925.339381227@mini.kroah.org>
+	id S1754005Ab0AZXnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:08 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:22 2010
+Message-Id: <20100126233922.828273112@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:00 -0800
+Date: Tue, 26 Jan 2010 15:33:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       James Bottomley <James.Bottomley@suse.de>
-Subject: [34/98] [SCSI] iscsi class: modify handling of replacement timeout
+       Michael Krufky <mkrufky@kernellabs.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Ben Hutchings <ben@decadent.org.uk>
+Subject: [15/98] V4L/DVB (13569): smsusb: add autodetection support for five additional Hauppauge USB IDs
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,51 +30,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mike Christie <michaelc@cs.wisc.edu>
+From: Michael Krufky <mkrufky@kernellabs.com>
 
-commit fdd46dcbe4468a1f47a2cc9be442d11c3d21dd68 upstream.
+commit 20d15a200d34cfb7141fb4558895d7d5233db84b upstream.
 
-This patch modifies the replacement/recovery_timeout so it works
-more like the fc fast io fail tmo.
+Add support for five new Hauppauge Device USB IDs:
 
-If userspace tries to set the replacement/recovery_timeout to less than
-zero, we will turn off the forced recovery cleanup.
+2040:b980
+2040:b990
+2040:c010
+2040:c080
+2040:c090
 
-If userspace sets the value to 0 then we will force the recovery
-cleanup immediately.
-
-Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
-Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+Signed-off-by: Michael Krufky <mkrufky@kernellabs.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Ben Hutchings <ben@decadent.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/scsi_transport_iscsi.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/media/dvb/siano/smsusb.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
---- a/drivers/scsi/scsi_transport_iscsi.c
-+++ b/drivers/scsi/scsi_transport_iscsi.c
-@@ -627,8 +627,10 @@ static void __iscsi_block_session(struct
- 	spin_unlock_irqrestore(&session->lock, flags);
- 	scsi_target_block(&session->dev);
- 	ISCSI_DBG_TRANS_SESSION(session, "Completed SCSI target blocking\n");
--	queue_delayed_work(iscsi_eh_timer_workq, &session->recovery_work,
--			   session->recovery_tmo * HZ);
-+	if (session->recovery_tmo >= 0)
-+		queue_delayed_work(iscsi_eh_timer_workq,
-+				   &session->recovery_work,
-+				   session->recovery_tmo * HZ);
- }
+--- a/drivers/media/dvb/siano/smsusb.c
++++ b/drivers/media/dvb/siano/smsusb.c
+@@ -533,8 +533,18 @@ struct usb_device_id smsusb_id_table[] =
+ 		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
+ 	{ USB_DEVICE(0x2040, 0xb910),
+ 		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
++	{ USB_DEVICE(0x2040, 0xb980),
++		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
++	{ USB_DEVICE(0x2040, 0xb990),
++		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
+ 	{ USB_DEVICE(0x2040, 0xc000),
+ 		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
++	{ USB_DEVICE(0x2040, 0xc010),
++		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
++	{ USB_DEVICE(0x2040, 0xc080),
++		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
++	{ USB_DEVICE(0x2040, 0xc090),
++		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
+ 	{ } /* Terminating entry */
+ 	};
  
- void iscsi_block_session(struct iscsi_cls_session *session)
-@@ -1348,8 +1350,7 @@ iscsi_set_param(struct iscsi_transport *
- 	switch (ev->u.set_param.param) {
- 	case ISCSI_PARAM_SESS_RECOVERY_TMO:
- 		sscanf(data, "%d", &value);
--		if (value != 0)
--			session->recovery_tmo = value;
-+		session->recovery_tmo = value;
- 		break;
- 	default:
- 		err = transport->set_param(conn, ev->u.set_param.param,
 
 
