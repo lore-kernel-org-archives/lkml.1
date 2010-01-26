@@ -1,83 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611Ab0AZBBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752644Ab0AZBCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752611Ab0AZBBN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 20:01:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325Ab0AZBBM
+	id S1752644Ab0AZBCr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 20:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437Ab0AZBCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 20:01:12 -0500
-Received: from mail-pz0-f189.google.com ([209.85.222.189]:33231 "EHLO
-	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751084Ab0AZBBL convert rfc822-to-8bit (ORCPT
+	Mon, 25 Jan 2010 20:02:46 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:62701 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042Ab0AZBCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 20:01:11 -0500
+	Mon, 25 Jan 2010 20:02:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=HPjGjDxmjhWyv/qisyduJf/4MUqpduf1oUSgwfOODn5u/9Dzyoykvq+mYTLj1fy2J7
-         UMoqsDETVXFpZAwY3Vst/O1f96xfHIqGBe6zysZrdXox0j4YDKvGAJG6BcVKFsEtjva5
-         p7///0vyAHC+bKVxdUjU3kISqIK39CozCpBMw=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tcqdcFVcvYgbaJVzydA+zL+HaP+BIFhb4feTT5W6088QpBt3Ntb5x59u6DX+J5YhXn
+         voBu7NrqrnqMTfm4ciCGy0ygHvS6I67ZMc3pfcOBHo5lksr7LX8YkKzKuG4TLFC63wrn
+         GIWF5KORvRJH62fhzphyheiY5NeMRTKvEZye8=
+Date: Tue, 26 Jan 2010 02:02:40 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
+       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
+       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
+       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
+       x86@kernel.org, mingo@redhat.com, dan.j.williams@intel.com,
+       borislav.petkov@amd.com, ying.huang@intel.com, lenb@kernel.org,
+       neilb@suse.de, cl@linux-foundation.org
+Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to
+	hw_breakpoint
+Message-ID: <20100126010239.GK5087@nowhere>
+References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere> <4B5E3BED.6030705@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20100125115814.156d401d.akpm@linux-foundation.org>
-References: <979dd0561001202107v4ddc1eb7xa59a7c16c452f7a2@mail.gmail.com>
-	 <20100125133308.GA26799@desktop>
-	 <20100125115814.156d401d.akpm@linux-foundation.org>
-Date: Tue, 26 Jan 2010 09:01:10 +0800
-Message-ID: <979dd0561001251701y76f35b8as545c390135b34da2@mail.gmail.com>
-Subject: Re: [PATCH] Flush dcache before writing into page to avoid alias
-From: anfei zhou <anfei.zhou@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux@arm.linux.org.uk, Jamie Lokier <jamie@shareable.org>,
-       linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B5E3BED.6030705@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 3:58 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Mon, 25 Jan 2010 21:33:08 +0800 anfei <anfei.zhou@gmail.com> wrote:
->
->> Hi Andrew,
->>
->> On Thu, Jan 21, 2010 at 01:07:57PM +0800, anfei zhou wrote:
->> > The cache alias problem will happen if the changes of user shared mapping
->> > is not flushed before copying, then user and kernel mapping may be mapped
->> > into two different cache line, it is impossible to guarantee the coherence
->> > after iov_iter_copy_from_user_atomic.  So the right steps should be:
->> >     flush_dcache_page(page);
->> >     kmap_atomic(page);
->> >     write to page;
->> >     kunmap_atomic(page);
->> >     flush_dcache_page(page);
->> > More precisely, we might create two new APIs flush_dcache_user_page and
->> > flush_dcache_kern_page to replace the two flush_dcache_page accordingly.
->> >
->> > Here is a snippet tested on omap2430 with VIPT cache, and I think it is
->> > not ARM-specific:
->> >     int val = 0x11111111;
->> >     fd = open("abc", O_RDWR);
->> >     addr = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
->> >     *(addr+0) = 0x44444444;
->> >     tmp = *(addr+0);
->> >     *(addr+1) = 0x77777777;
->> >     write(fd, &val, sizeof(int));
->> >     close(fd);
->> > The results are not always 0x11111111 0x77777777 at the beginning as expected.
->> >
->> Is this a real bug or not necessary to support?
->
-> Bug.  If variable `addr' has type int* then the contents of that file
-> should be 0x11111111 0x77777777.  You didn't tell us what the contents
-> were in the incorrect case, but I guess it doesn't matter.
->
-Sorry, I didn't give the details, here is the old thread with more details:
-  http://linux.derkeiler.com/Mailing-Lists/Kernel/2010-01/msg07124.html
+On Tue, Jan 26, 2010 at 09:48:45AM +0900, Tejun Heo wrote:
+> Hello, Frederic.
+> 
+> On 01/26/2010 09:19 AM, Frederic Weisbecker wrote:
+> > On Tue, Jan 26, 2010 at 12:22:14AM +0900, Tejun Heo wrote:
+> >> Add __percpu sparse annotations to hw_breakpoint.
+> >>
+> >> These annotations are to make sparse consider percpu variables to be
+> >> in a different address space and warn if accessed without going
+> >> through percpu accessors.  This patch doesn't affect normal builds.
+> >>
+> >> per_cpu(nr_task_bp_pinned, cpu) is replaced with
+> >> &per_cpu(nr_task_bp_pinned[0], cpu).  This is the same to the compiler
+> >> but allows per_cpu() macro to correctly drop __percpu designation for
+> >> the returned pointer.
+> > 
+> > Ouch... It's unpleasant to see such workaround that messes up the
+> > code just to make sparse happy.
+> > 
+> > I guess __percpu is an address_space attribute? Is there no
+> > way to force the address space change directly from the
+> > per_cpu() macro?
+> 
+> Yeah, per_cpu() macro does that but when things get a bit complicated
+> with static percpu arrays.  In the above case, the variable is defined
+> as
+> 
+>   static DEFINE_PER_CPU(unsigned int, nr_task_bp_pinned[HBP_NUM]);
+> 
+> which gets translated to
+> 
+>   static __attribute__((noderef, address_space(3))) \
+> 	 __attribute__((section(.data.percpu))) \
+> 	 __typeof__(unsigned int) nr_task_bp_pinned[HBP_NUM];
+> 
+> The above tells sparse that the members of nr_task_bp_pinned array are
+> in address space 3 which is correct.  The problematic dereference was
+> 
+>   unsigned int *task_pinned = per_cpu(nr_task_bp_pinned, cpu)
+> 
+> per_cpu() macro changes the address space of the resulting address but
+> it does so assuming that the parameter it got passed is the one which
+> got declared to be in the percpu address space.  It casts
+> nr_task_bp_pinned itself, which to the sparse isn't in the percpu
+> address space, to the kernel address space.  So, the workaround is
+> basically to give per_cpu() macro the same thing that was defined.
+> 
+> This type of usage (define as array, dereference the array as address)
+> was the only place where I needed to work around to make address space
+> change explicit.  There are two places which needed this and hwbreak
+> was one.  The options were...
+> 
+> * Leave it alone.  We can live with a few additional sparse warnings.
+> 
+> * Make the proposed change.  It is slightly ugly but not cryptic or
+>   difficult.
+> 
+> * Somehow teach per_cpu() macro or sparse how to handle the above
+>   right.
+> 
+> I tried to improve per_cpu() macro but couldn't do it in any sane way.
+> Leaving it alone isn't too bad either but given that the workaround is
+> not horribly unreadable, I think it's best to use the slightly less
+> elegant form in the few places where they are needed.
 
-Regards,
-Anfei.
->
->
+
+
+Ok.
+
+Well, sorry I must be missing something obvious, but is it impossible
+to make per_cpu(var, cpu) returning something cast in:
+
+	(typeof(var) __force)
+
+Or I guess you did that already and it is not working with static
+arrays, or?
+
+Is there a patch that shows per_cpu() macro changes in the batch?
+
+Thanks.
+
