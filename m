@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511Ab0AZX5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526Ab0AZX5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755511Ab0AZX5c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492Ab0AZX5W
+	id S1755526Ab0AZX5u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533Ab0AZX5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:57:22 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56961 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755272Ab0AZX5T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:57:19 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 27 Jan 2010 08:53:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
-       minchan.kim@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
-Message-Id: <20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100126151202.75bd9347.akpm@linux-foundation.org>
-References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100126151202.75bd9347.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jan 2010 18:57:46 -0500
+Received: from kroah.org ([198.145.64.141]:35303 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754142Ab0AZXnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:37 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:26 2010
+Message-Id: <20100126233926.670249339@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Tue, 26 Jan 2010 15:34:10 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Yi Zou <yi.zou@intel.com>, Robert Love <robert.w.love@intel.com>,
+       James Bottomley <James.Bottomley@suse.de>
+Subject: [44/98] [SCSI] libfc: Fix wrong scsi return status under FC_DATA_UNDRUN
+In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jan 2010 15:12:02 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-> On Mon, 25 Jan 2010 15:15:03 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+------------------
 
-> > This patch does
-> >   - add sysctl for new bahavior.
-> >   - add CONSTRAINT_LOWMEM to oom's constraint type.
-> >   - pass constraint to __badness()
-> >   - change calculation based on constraint. If CONSTRAINT_LOWMEM,
-> >     use low_rss instead of vmsize.
-> > 
-> > Changelog 2010/01/25
-> >  - showing extension_mask value in OOM kill main log header.
-> > Changelog 2010/01/22:
-> >  - added sysctl
-> >  - fixed !CONFIG_MMU
-> >  - fixed fs/proc/base.c breakacge.
-> 
-> It'd be nice to see some testing results for this.  Perhaps "here's a
-> test case and here's the before-and-after behaviour".
-> 
-Hm. posting test case module is O.K ?
-At leaset, I'll add what test was done and /var/log/message output to the log.
+From: Yi Zou <yi.zou@intel.com>
 
+commit 4347fa66878e079766258bc0d077c350cb31a799 upstream.
 
-> I don't like the sysctl knob much. 
-me, too.
+This bug is exposed when there is a link flap in LLD. Particularly, when it
+happens right after a SCSI write command is sent out, no FCP_DATA is sent,
+causing fsp->status_code to be set as FC_DATA_UNDRUN in fc_fcp_complete_locked
+even no SCSI status is received. Consequently, fc_io_compl treats this as DID_OK.
+This results in SCSI returning successful to the initial I/O request even
+there is no DATA actually sent. Particularly, if you run an I/O tool w/ data
+verification on, the read back for verification is gonna fail.
 
-> Hardly anyone will know to enable
-> it so the feature won't get much testing and this binary decision
-> fractures the testing effort.  It would be much better if we can get
-> everyone running the same code.  I mean, if there are certain workloads
-> on certain machines with which the oom-killer doesn't behave correctly
-> then fix it!
-Yes, I think you're right. But "breaking current behaviro of our servers!"
-arguments kills all proposal to this area and this oom-killer or vmscan is
-a feature should be tested by real users. (I'll write fork-bomb detector
-and RSS based OOM again.)
+This is fixed here by checking when FC_DATA_UNDRUN happens, SCSI status is
+received w/ FC_SRB_RCV_STATUS set in fsp->state.
 
-Then, I'd like to use sysctl. Distro/users can select default value of this
-by /etc/sysctl.conf file, at least.
+Signed-off-by: Yi Zou <yi.zou@intel.com>
+Signed-off-by: Robert Love <robert.w.love@intel.com>
+Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+---
+ drivers/scsi/libfc/fc_fcp.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> 
-> Why was the '#include <linux/sysctl.h>" removed from sysctl.c?
-> 
-> The patch adds a random newline to sysctl.c.
-> 
-Sorry. my bad.
+--- a/drivers/scsi/libfc/fc_fcp.c
++++ b/drivers/scsi/libfc/fc_fcp.c
+@@ -1850,7 +1850,8 @@ static void fc_io_compl(struct fc_fcp_pk
+ 			 * scsi status is good but transport level
+ 			 * underrun.
+ 			 */
+-			sc_cmd->result = DID_OK << 16;
++			sc_cmd->result = (fsp->state & FC_SRB_RCV_STATUS ?
++					  DID_OK : DID_ERROR) << 16;
+ 		} else {
+ 			/*
+ 			 * scsi got underrun, this is an error
 
-
-> It was never a good idea to add extern declarations to sysctl.c.  It's
-> better to add them to a subsystem-specific header file (ie:
-> mm-sysctl.h) and then include that file from the mm files that define
-> or use sysctl_foo, and include it into sysctl.c.  Oh well.
-> 
-Hmm. Okay. I'll consider about that.
-
-Thanks,
--Kame
 
