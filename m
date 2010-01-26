@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631Ab0AZGnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649Ab0AZGwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631Ab0AZGnN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 01:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214Ab0AZGnK
+	id S1752649Ab0AZGwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 01:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110Ab0AZGwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 01:43:10 -0500
-Received: from smtp102.sbc.mail.gq1.yahoo.com ([67.195.15.61]:36436 "HELO
-	smtp102.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751119Ab0AZGnJ (ORCPT
+	Tue, 26 Jan 2010 01:52:20 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:47276 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750829Ab0AZGwT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 01:43:09 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ne8AyzwyjMVke8ICqwoMm7RT6EJUkq5RN+vSuGrseZ2MRdOd6HFkiu8rDMIEWk+Je5elTEoR8SBNXKQ1U00Tbc+hHbrcPpDk+LWVWtLf44k0Ryyg4kY38AAbYD9g5Fth22p7zN70/6T7f5oW3qWXwtpjQEe/HG+3fNkjBHjf2Qo=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: PtKPUMYVM1npTCdQb25_J_NpXyFOLDYouDP3joW6MzuWfRQadLA1v7yE0h8rPCoBrhCxROepkMpxefBWC51W45o9t3Hyd.pnTTSNXYszn7hXP_wRJirqCapB08zabyy5BDNypY6FhVJdINq3K8tZX3.EnaSm5ANFOGxjWKUJpr4frWhzoxF2YvsGlBoswkOf5FFXEbx.JdERb0DyAT8D_jh.GvJb847eGVadgD.0xhgdtJ1wAycUKsy4o2Yc3XqB
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
-Date: Mon, 25 Jan 2010 22:34:29 -0800
-User-Agent: KMail/1.9.10
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       "Dmitry Eremin-Solenikov" <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-References: <20100125180957.GA5380@oksana.dev.rtsoft.ru> <20100125181100.GA13805@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100125181100.GA13805@oksana.dev.rtsoft.ru>
+	Tue, 26 Jan 2010 01:52:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=IqC10vS05U1Ez0tw/Ky4Gp872ox5bAkzNDf9UOAY33NS14fs0EhgQJdn+Qee9f2PaJ
+         1NsP5+v/K60IvgReTVBEUosjdxlevB/okJGfKbLCRlLRbA9C5jme5p8i3Zqg4fTbElhs
+         NXrPw5Iu6WSMEyAVVUpVo/FpLYr6YziwhlAqE=
+Date: Tue, 26 Jan 2010 06:52:12 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+Message-ID: <20100126065212.GB6360@ff.dom.local>
+References: <20100125.165634.92235663.davem@davemloft.net> <20100126063326.GA6360@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201001252234.30169.david-b@pacbell.net>
+In-Reply-To: <20100126063326.GA6360@ff.dom.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 January 2010, Anton Vorontsov wrote:
-> 
-> +config GPIOLIB_NOTIFIER
-> +       bool
-> +       help
-> +         This symbol is selected by subsystems that need to handle GPIO
-> +         chips addition and removal. E.g., this is used for the
-> +         OpenFirmware bindings.
-> +
+On Tue, Jan 26, 2010 at 06:33:26AM +0000, Jarek Poplawski wrote:
+> David, I hope I miss something, but there seem to be older things too:
+> ...
+> > Jarek Poplawski (1):
+> >       ax25: netrom: rose: Fix timer oopses
 
-I'm no huge fan of notifiers, but I suppose they have their place.
+Hmm... Probably OK! I'm glad I missed it only waited longer.
 
-However ... I don't see a lot of win to making this optional.  Just
-inline the little two blocking_notifier_call_chain() calls directly,
-making this a *LOT* simpler.
-
-- Dave
-
+Sorry, 
+Jarek P.
