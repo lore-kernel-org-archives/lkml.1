@@ -1,77 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405Ab0AZUPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751558Ab0AZUQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405Ab0AZUPu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 15:15:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897Ab0AZUPt
+	id S1751558Ab0AZUQz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 15:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012Ab0AZUQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 15:15:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36513 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752722Ab0AZUPs (ORCPT
+	Tue, 26 Jan 2010 15:16:54 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44649 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751120Ab0AZUQy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 15:15:48 -0500
-Date: Tue, 26 Jan 2010 12:14:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jason.wessel@windriver.com, johnstul@us.ibm.com, schwidefsky@de.ibm.com,
-       tglx@linutronix.de
-Cc: tip-bot for Thomas Gleixner <tglx@linutronix.de>,
-       linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, johnstul@us.ibm.com,
-       jason.wessel@windriver.com, schwidefsky@de.ibm.com
-Subject: Re: [tip:timers/urgent] clocksource: Prevent potential kgdb dead
- lock
-Message-Id: <20100126121458.43055709.akpm@linux-foundation.org>
-In-Reply-To: <tip-7b7422a566aa0dc1e582ce263d4c7ff4a772700a@git.kernel.org>
-References: <1264480000-6997-4-git-send-email-jason.wessel@windriver.com>
-	<tip-7b7422a566aa0dc1e582ce263d4c7ff4a772700a@git.kernel.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jan 2010 15:16:54 -0500
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX18U2h13MQYUMkhRvBhn7KrlvJgoqm2DQXK3MfJv6j
+	RoAfTUopmId9yL
+From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: typo in ./crypto/Kconfig
+Date: Tue, 26 Jan 2010 21:02:15 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32.6; KDE/4.3.3; i686; ; )
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201001262102.15946.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.73999999999999999
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jan 2010 14:09:45 GMT tip-bot for Thomas Gleixner <tglx@linutronix.de> wrote:
+Hello,
 
-> --- a/kernel/time/clocksource.c
-> +++ b/kernel/time/clocksource.c
-> @@ -343,7 +343,19 @@ static void clocksource_resume_watchdog(void)
->  {
->  	unsigned long flags;
->  
-> -	spin_lock_irqsave(&watchdog_lock, flags);
-> +	/*
-> +	 * We use trylock here to avoid a potential dead lock when
-> +	 * kgdb calls this code after the kernel has been stopped with
-> +	 * watchdog_lock held. When watchdog_lock is held we just
-> +	 * return and accept, that the watchdog might trigger and mark
-> +	 * the monitored clock source (usually TSC) unstable.
-> +	 *
-> +	 * This does not affect the other caller clocksource_resume()
-> +	 * because at this point the kernel is UP, interrupts are
-> +	 * disabled and nothing can hold watchdog_lock.
-> +	 */
-> +	if (!spin_trylock_irqsave(&watchdog_lock, flags))
-> +		return;
->  	clocksource_reset_watchdog();
->  	spin_unlock_irqrestore(&watchdog_lock, flags);
->  }
->
-> @@ -458,8 +470,8 @@ void clocksource_resume(void)
->   * clocksource_touch_watchdog - Update watchdog
->   *
->   * Update the watchdog after exception contexts such as kgdb so as not
-> - * to incorrectly trip the watchdog.
-> - *
-> + * to incorrectly trip the watchdog. This might fail when the kernel
-> + * was stopped in code which holds watchdog_lock.
->   */
->  void clocksource_touch_watchdog(void)
->  {
+line 819 lacks an "e":
 
-It would be neater and a shade more reliable to add a separate
-clocksource_try_touch_watchdog() for kgdb's use.  Which could be inside
-#ifdef CONFIG_KGDB.
+"ANSI X9.31 A.2.4. Not this option must be enabled if CRYPTO_FIPS" 
 
+, isn't it ? 
+
+-- 
+MfG/Sincerely
+Toralf Förster
