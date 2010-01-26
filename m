@@ -1,114 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211Ab0AZTbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170Ab0AZTbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211Ab0AZTbN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 14:31:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104Ab0AZT3w
+	id S1755170Ab0AZTbk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 14:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078Ab0AZTbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 14:29:52 -0500
-Received: from kroah.org ([198.145.64.141]:33620 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 14:31:37 -0500
+Received: from mga01.intel.com ([192.55.52.88]:60843 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755078Ab0AZT3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 14:29:06 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 11:16:25 2010
-Message-Id: <20100126191624.918875832@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 11:14:45 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [09/11] USB: EHCI & UHCI: fix race between root-hub suspend and port resume
-In-Reply-To: <20100126191730.GA20872@kroah.com>
+	id S1755060Ab0AZTbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 14:31:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,347,1262592000"; 
+   d="scan'208";a="534757993"
+Subject: Re: [PATCH v2 1/2] cpufreq: ondemand: Refactor frequency increase
+ code
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Mike Chan <mike@android.com>
+Cc: "tj@kernel.org" <tj@kernel.org>,
+       "Miller@fmi.uni-stuttgart.de" <Miller@fmi.uni-stuttgart.de>,
+       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1264470435-14739-1-git-send-email-mike@android.com>
+References: <1264470435-14739-1-git-send-email-mike@android.com>
+Content-Type: text/plain
+Date: Tue, 26 Jan 2010 11:31:34 -0800
+Message-Id: <1264534294.16916.345.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+On Mon, 2010-01-25 at 17:47 -0800, Mike Chan wrote:
+> Make simpler to read and call.
+> 
+> Signed-off-by: Mike Chan <mike@android.com>
 
-------------------
+Nack.
+This patch seem to be changing the logic in the code. Comment inlined
+below.
 
-From: Alan Stern <stern@rowland.harvard.edu>
+> ---
+>  drivers/cpufreq/cpufreq_ondemand.c |   26 +++++++++++++-------------
+>  1 files changed, 13 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 4b34ade..3dcf126 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -443,6 +443,17 @@ static struct attribute_group dbs_attr_group_old = {
+>  
+>  /************************** sysfs end ************************/
+>  
+> +static int dbs_freq_increase(struct cpufreq_policy *p, unsigned int target_freq)
+> +{
+> +	if (dbs_tuners_ins.powersave_bias)
+> +		target_freq = powersave_bias_target(p, target_freq,
+> +				CPUFREQ_RELATION_H);
+> +
+> +	__cpufreq_driver_target(p, target_freq,
+> +			dbs_tuners_ins.powersave_bias ?
+> +			CPUFREQ_RELATION_L : CPUFREQ_RELATION_H);
+> +}
+> +
+>  static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+>  {
+>  	unsigned int max_load_freq;
+> @@ -520,19 +531,8 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+>  
+>  	/* Check for frequency increase */
+>  	if (max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) {
+> -		/* if we are already at full speed then break out early */
+> -		if (!dbs_tuners_ins.powersave_bias) {
+> -			if (policy->cur == policy->max)
+> -				return;
+> -
+> -			__cpufreq_driver_target(policy, policy->max,
+> -				CPUFREQ_RELATION_H);
+> -		} else {
+> -			int freq = powersave_bias_target(policy, policy->max,
+> -					CPUFREQ_RELATION_H);
+> -			__cpufreq_driver_target(policy, freq,
+> -				CPUFREQ_RELATION_L);
+> -		}
+> +		if (policy->cur != policy->max)
+> +			dbs_freq_increase(policy, policy->max);
 
-commit cec3a53c7fe794237b582e8e77fc0e48465e65ee upstream.
 
-This patch (as1321) fixes a problem with EHCI and UHCI root-hub
-suspends: If the suspend occurs while a port is trying to resume, the
-resume doesn't finish and simply gets lost.  When remote wakeup is
-enabled, this is undesirable behavior.
+In case of powersave_bias, bias_target and driver_target was getting
+called even for cur == max before. After this change, they wont be
+getting called, which would be wrong.
 
-The patch checks first to see if any port resumes are in progress, and
-if they are then it fails the root-hub suspend with -EBUSY.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/host/ehci-hub.c |   20 +++++++++++++++++++-
- drivers/usb/host/uhci-hcd.c |   15 ++++++++++++++-
- 2 files changed, 33 insertions(+), 2 deletions(-)
-
---- a/drivers/usb/host/ehci-hub.c
-+++ b/drivers/usb/host/ehci-hub.c
-@@ -119,9 +119,26 @@ static int ehci_bus_suspend (struct usb_
- 	del_timer_sync(&ehci->watchdog);
- 	del_timer_sync(&ehci->iaa_watchdog);
- 
--	port = HCS_N_PORTS (ehci->hcs_params);
- 	spin_lock_irq (&ehci->lock);
- 
-+	/* Once the controller is stopped, port resumes that are already
-+	 * in progress won't complete.  Hence if remote wakeup is enabled
-+	 * for the root hub and any ports are in the middle of a resume or
-+	 * remote wakeup, we must fail the suspend.
-+	 */
-+	if (hcd->self.root_hub->do_remote_wakeup) {
-+		port = HCS_N_PORTS(ehci->hcs_params);
-+		while (port--) {
-+			if (ehci->reset_done[port] != 0) {
-+				spin_unlock_irq(&ehci->lock);
-+				ehci_dbg(ehci, "suspend failed because "
-+						"port %d is resuming\n",
-+						port + 1);
-+				return -EBUSY;
-+			}
-+		}
-+	}
-+
- 	/* stop schedules, clean any completed work */
- 	if (HC_IS_RUNNING(hcd->state)) {
- 		ehci_quiesce (ehci);
-@@ -137,6 +154,7 @@ static int ehci_bus_suspend (struct usb_
- 	 */
- 	ehci->bus_suspended = 0;
- 	ehci->owned_ports = 0;
-+	port = HCS_N_PORTS(ehci->hcs_params);
- 	while (port--) {
- 		u32 __iomem	*reg = &ehci->regs->port_status [port];
- 		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
---- a/drivers/usb/host/uhci-hcd.c
-+++ b/drivers/usb/host/uhci-hcd.c
-@@ -750,7 +750,20 @@ static int uhci_rh_suspend(struct usb_hc
- 	spin_lock_irq(&uhci->lock);
- 	if (!test_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags))
- 		rc = -ESHUTDOWN;
--	else if (!uhci->dead)
-+	else if (uhci->dead)
-+		;		/* Dead controllers tell no tales */
-+
-+	/* Once the controller is stopped, port resumes that are already
-+	 * in progress won't complete.  Hence if remote wakeup is enabled
-+	 * for the root hub and any ports are in the middle of a resume or
-+	 * remote wakeup, we must fail the suspend.
-+	 */
-+	else if (hcd->self.root_hub->do_remote_wakeup &&
-+			uhci->resuming_ports) {
-+		dev_dbg(uhci_dev(uhci), "suspend failed because a port "
-+				"is resuming\n");
-+		rc = -EBUSY;
-+	} else
- 		suspend_rh(uhci, UHCI_RH_SUSPENDED);
- 	spin_unlock_irq(&uhci->lock);
- 	return rc;
-
+Thanks,
+Venki
 
