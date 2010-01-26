@@ -1,213 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875Ab0AZDQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984Ab0AZDU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875Ab0AZDQd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 22:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487Ab0AZDQc
+	id S1752984Ab0AZDU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 22:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755Ab0AZDU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 22:16:32 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:59852 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752446Ab0AZDQb (ORCPT
+	Mon, 25 Jan 2010 22:20:27 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56069 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147Ab0AZDU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 22:16:31 -0500
-Message-Id: <201001260316.o0Q3GQbR080648@www262.sakura.ne.jp>
-Subject: [2.6.32.6] tty: possible irq lock inversion dependency in tty_fasync
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: linux-kernel@vger.kernel.org
+	Mon, 25 Jan 2010 22:20:26 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>
+Subject: [2.6.33-rc5] starting emacs makes lockdep warning
+Cc: kosaki.motohiro@jp.fujitsu.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Message-Id: <20100126121618.5AA5.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Date: Tue, 26 Jan 2010 12:16:26 +0900
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 26012010 #3149598, status: clean
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 26 Jan 2010 12:20:21 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi
 
-I got this on 2.6.32.6 .
-Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.32.6
+Current linus tree made following lockdep warning when starting emacs command.
+Is this known issue?
 
-# cat /proc/version
-Linux version 2.6.32.6 (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #1 SMP Tue Jan 26 11:35:08 JST 2010
-# cat /proc/cmdline
-root=/dev/sda1 ro ramdisk=16384 console=ttyS0,115200n8 console=tty kmemleak=off
-# dmesg
+
 =========================================================
 [ INFO: possible irq lock inversion dependency detected ]
-2.6.32.6 #1
+2.6.33-rc5 #77
 ---------------------------------------------------------
-swapper/0 just changed the state of lock:
- (&sighand->siglock){-.....}, at: [<c10515bd>] lock_task_sighand+0x5d/0xa0
+emacs/1609 just changed the state of lock:
+ (&(&tty->ctrl_lock)->rlock){+.....}, at: [<ffffffff8127c648>] tty_fasync+0xe8/0x190
 but this lock took another, HARDIRQ-unsafe lock in the past:
- (&tty->ctrl_lock){+.+...}
+ (&(&sighand->siglock)->rlock){-.....}
 
 and interrupts could create inverse lock ordering between them.
 
 
 other info that might help us debug this:
-2 locks held by swapper/0:
- #0:  (rcu_read_lock){.+.+..}, at: [<c10516c0>] kill_pid_info+0x0/0x90
- #1:  (rcu_read_lock){.+.+..}, at: [<c1051560>] lock_task_sighand+0x0/0xa0
+1 lock held by emacs/1609:
+ #0:  (&(&tty->ctrl_lock)->rlock){+.....}, at: [<ffffffff8127c648>] tty_fasync+0xe8/0x190
 
 the shortest dependencies between 2nd lock and 1st lock:
- -> (&tty->ctrl_lock){+.+...} ops: 97 {
-    HARDIRQ-ON-W at:
-                          [<c106e5e2>] mark_held_locks+0x42/0x80
-                          [<c106e6e6>] trace_hardirqs_on_caller+0xa6/0x160
-                          [<c106e7ab>] trace_hardirqs_on+0xb/0x10
-                          [<c1343487>] _write_unlock_irq+0x27/0x30
-                          [<c10e517b>] f_modown+0x6b/0x80
-                          [<c10e51d1>] __f_setown+0x41/0x50
-                          [<c11e5e8c>] tty_fasync+0xbc/0x110
-                          [<c10e50d8>] setfl+0x118/0x150
-                          [<c10e557f>] do_fcntl+0xcf/0x1e0
-                          [<c10e5788>] sys_fcntl64+0x88/0xa0
-                          [<c1002f99>] syscall_call+0x7/0xb
-    SOFTIRQ-ON-W at:
-                          [<c106e5e2>] mark_held_locks+0x42/0x80
-                          [<c106e737>] trace_hardirqs_on_caller+0xf7/0x160
-                          [<c106e7ab>] trace_hardirqs_on+0xb/0x10
-                          [<c1343487>] _write_unlock_irq+0x27/0x30
-                          [<c10e517b>] f_modown+0x6b/0x80
-                          [<c10e51d1>] __f_setown+0x41/0x50
-                          [<c11e5e8c>] tty_fasync+0xbc/0x110
-                          [<c10e50d8>] setfl+0x118/0x150
-                          [<c10e557f>] do_fcntl+0xcf/0x1e0
-                          [<c10e5788>] sys_fcntl64+0x88/0xa0
-                          [<c1002f99>] syscall_call+0x7/0xb
+ -> (&(&sighand->siglock)->rlock){-.....} ops: 50393 {
+    IN-HARDIRQ-W at:
+                          [<ffffffff8108924e>] __lock_acquire+0x7ae/0x15a0
+                          [<ffffffff8108a0df>] lock_acquire+0x9f/0x120
+                          [<ffffffff81423012>] _raw_spin_lock_irqsave+0x52/0x90
+                          [<ffffffff81065799>] lock_task_sighand+0x79/0x100
+                          [<ffffffff8106600f>] do_send_sig_info+0x3f/0x90
+                          [<ffffffff810660f0>] group_send_sig_info+0x40/0x50
+                          [<ffffffff81066703>] kill_pid_info+0x73/0xe0
+                          [<ffffffff81054014>] it_real_fn+0x44/0xa0
+                          [<ffffffff81075d1e>] __run_hrtimer+0x8e/0x1e0
+                          [<ffffffff81076116>] hrtimer_interrupt+0xe6/0x250
+                          [<ffffffff8142a0b9>] smp_apic_timer_interrupt+0x69/0x9b
+                          [<ffffffff81003a93>] apic_timer_interrupt+0x13/0x20
+                          [<ffffffff81001956>] cpu_idle+0x66/0xd0
+                          [<ffffffff814082e2>] rest_init+0x92/0xa0
+                          [<ffffffff81b4cd84>] start_kernel+0x3b9/0x3c5
+                          [<ffffffff81b4c310>] x86_64_start_reservations+0x120/0x124
+                          [<ffffffff81b4c3f8>] x86_64_start_kernel+0xe4/0xeb
     INITIAL USE at:
-                         [<c106f6f4>] __lock_acquire+0x1b4/0x8a0
-                         [<c1070ddd>] lock_acquire+0x7d/0xe0
-                         [<c1342af9>] _spin_lock_irqsave+0x49/0x90
-                         [<c11e7427>] __proc_set_tty+0x27/0xf0
-                         [<c11e751f>] proc_set_tty+0x2f/0x50
-                         [<c11e62cd>] tiocsctty+0xed/0x100
-                         [<c11e6998>] tty_ioctl+0x1b8/0x320
-                         [<c10e5e24>] vfs_ioctl+0x74/0x90
-                         [<c10e6a90>] do_vfs_ioctl+0x60/0x1a0
-                         [<c10e6c1f>] sys_ioctl+0x4f/0x70
-                         [<c1002f99>] syscall_call+0x7/0xb
+                         [<ffffffff81088e86>] __lock_acquire+0x3e6/0x15a0
+                         [<ffffffff8108a0df>] lock_acquire+0x9f/0x120
+                         [<ffffffff81423012>] _raw_spin_lock_irqsave+0x52/0x90
+                         [<ffffffff810646dc>] flush_signals+0x2c/0x60
+                         [<ffffffff81064743>] ignore_signals+0x33/0x40
+                         [<ffffffff81071067>] kthreadd+0x37/0x180
+                         [<ffffffff81003ed4>] kernel_thread_helper+0x4/0x10
   }
-  ... key      at: [<c1d31c5c>] __key.13+0x0/0x8
+  ... key      at: [<ffffffff81c054a4>] __key.46539+0x0/0x8
   ... acquired at:
-   [<c106cfa2>] check_prev_add+0x212/0x7e0
-   [<c106d614>] check_prevs_add+0xa4/0x100
-   [<c106d99a>] validate_chain+0x2fa/0x520
-   [<c106f7e1>] __lock_acquire+0x2a1/0x8a0
-   [<c1070ddd>] lock_acquire+0x7d/0xe0
-   [<c1342af9>] _spin_lock_irqsave+0x49/0x90
-   [<c11e7427>] __proc_set_tty+0x27/0xf0
-   [<c11e751f>] proc_set_tty+0x2f/0x50
-   [<c11e62cd>] tiocsctty+0xed/0x100
-   [<c11e6998>] tty_ioctl+0x1b8/0x320
-   [<c10e5e24>] vfs_ioctl+0x74/0x90
-   [<c10e6a90>] do_vfs_ioctl+0x60/0x1a0
-   [<c10e6c1f>] sys_ioctl+0x4f/0x70
-   [<c1002f99>] syscall_call+0x7/0xb
+   [<ffffffff81089af6>] __lock_acquire+0x1056/0x15a0
+   [<ffffffff8108a0df>] lock_acquire+0x9f/0x120
+   [<ffffffff81423012>] _raw_spin_lock_irqsave+0x52/0x90
+   [<ffffffff8127c1be>] __proc_set_tty+0x3e/0x150
+   [<ffffffff8127e01d>] tty_open+0x51d/0x5e0
+   [<ffffffff81142400>] chrdev_open+0x170/0x290
+   [<ffffffff8113c561>] __dentry_open+0x131/0x3a0
+   [<ffffffff8113c8e4>] nameidata_to_filp+0x54/0x70
+   [<ffffffff8114c098>] do_filp_open+0x948/0xcd0
+   [<ffffffff8113c2e9>] do_sys_open+0x69/0x140
+   [<ffffffff8113c400>] sys_open+0x20/0x30
+   [<ffffffff8100309b>] system_call_fastpath+0x16/0x1b
 
--> (&sighand->siglock){-.....} ops: 118136 {
-   IN-HARDIRQ-W at:
-                        [<c106ec48>] mark_irqflags+0x168/0x180
-                        [<c106f8bc>] __lock_acquire+0x37c/0x8a0
-                        [<c1070ddd>] lock_acquire+0x7d/0xe0
-                        [<c1342af9>] _spin_lock_irqsave+0x49/0x90
-                        [<c10515bd>] lock_task_sighand+0x5d/0xa0
-                        [<c10513e1>] do_send_sig_info+0x31/0x70
-                        [<c1051646>] group_send_sig_info+0x46/0x50
-                        [<c1051726>] kill_pid_info+0x66/0x90
-                        [<c10456d8>] it_real_fn+0x38/0x80
-                        [<c105ef9f>] __run_hrtimer+0x7f/0x160
-                        [<c105f11e>] hrtimer_run_queues+0x8e/0xb0
-                        [<c104fa0d>] run_local_timers+0xd/0x20
-                        [<c104f724>] update_process_times+0x34/0x60
-                        [<c1068afa>] tick_periodic+0x2a/0x80
-                        [<c1068b6e>] tick_handle_periodic+0x1e/0x80
-                        [<c101880d>] local_apic_timer_interrupt+0x5d/0x60
-                        [<c1343923>] smp_apic_timer_interrupt+0x33/0x42
-                        [<c10038bb>] apic_timer_interrupt+0x2f/0x34
-                        [<c10015ea>] cpu_idle+0x6a/0xc0
-                        [<c132e168>] rest_init+0x58/0x60
-                        [<c15129c6>] start_kernel+0x206/0x290
-                        [<c1512095>] i386_start_kernel+0x65/0xa0
+-> (&(&tty->ctrl_lock)->rlock){+.....} ops: 191 {
+   HARDIRQ-ON-W at:
+                        [<ffffffff81087e63>] mark_held_locks+0x73/0xa0
+                        [<ffffffff810880bb>] trace_hardirqs_on_caller+0x7b/0x1c0
+                        [<ffffffff8108820d>] trace_hardirqs_on+0xd/0x10
+                        [<ffffffff81423730>] _raw_write_unlock_irq+0x30/0x60
+                        [<ffffffff8114cc63>] f_modown+0x53/0xe0
+                        [<ffffffff8114cd1e>] __f_setown+0xe/0x20
+                        [<ffffffff8127c667>] tty_fasync+0x107/0x190
+                        [<ffffffff8114d842>] sys_fcntl+0x222/0x580
+                        [<ffffffff8100309b>] system_call_fastpath+0x16/0x1b
    INITIAL USE at:
-                       [<c106f6f4>] __lock_acquire+0x1b4/0x8a0
-                       [<c1070ddd>] lock_acquire+0x7d/0xe0
-                       [<c1342af9>] _spin_lock_irqsave+0x49/0x90
-                       [<c1050514>] flush_signals+0x24/0x50
-                       [<c105068c>] ignore_signals+0x3c/0x40
-                       [<c105b726>] kthreadd+0x26/0xd0
-                       [<c1003a77>] kernel_thread_helper+0x7/0x10
+                       [<ffffffff81088e86>] __lock_acquire+0x3e6/0x15a0
+                       [<ffffffff8108a0df>] lock_acquire+0x9f/0x120
+                       [<ffffffff81423012>] _raw_spin_lock_irqsave+0x52/0x90
+                       [<ffffffff8127c1be>] __proc_set_tty+0x3e/0x150
+                       [<ffffffff8127e01d>] tty_open+0x51d/0x5e0
+                       [<ffffffff81142400>] chrdev_open+0x170/0x290
+                       [<ffffffff8113c561>] __dentry_open+0x131/0x3a0
+                       [<ffffffff8113c8e4>] nameidata_to_filp+0x54/0x70
+                       [<ffffffff8114c098>] do_filp_open+0x948/0xcd0
+                       [<ffffffff8113c2e9>] do_sys_open+0x69/0x140
+                       [<ffffffff8113c400>] sys_open+0x20/0x30
+                       [<ffffffff8100309b>] system_call_fastpath+0x16/0x1b
  }
- ... key      at: [<c17130d8>] __key.12+0x0/0x8
+ ... key      at: [<ffffffff82533fb8>] __key.30033+0x0/0x8
  ... acquired at:
-   [<c106e0f8>] check_usage_forwards+0x78/0xe0
-   [<c106e3f9>] mark_lock_irq+0x99/0x240
-   [<c106eeb6>] mark_lock+0x1d6/0x370
-   [<c106ec48>] mark_irqflags+0x168/0x180
-   [<c106f8bc>] __lock_acquire+0x37c/0x8a0
-   [<c1070ddd>] lock_acquire+0x7d/0xe0
-   [<c1342af9>] _spin_lock_irqsave+0x49/0x90
-   [<c10515bd>] lock_task_sighand+0x5d/0xa0
-   [<c10513e1>] do_send_sig_info+0x31/0x70
-   [<c1051646>] group_send_sig_info+0x46/0x50
-   [<c1051726>] kill_pid_info+0x66/0x90
-   [<c10456d8>] it_real_fn+0x38/0x80
-   [<c105ef9f>] __run_hrtimer+0x7f/0x160
-   [<c105f11e>] hrtimer_run_queues+0x8e/0xb0
-   [<c104fa0d>] run_local_timers+0xd/0x20
-   [<c104f724>] update_process_times+0x34/0x60
-   [<c1068afa>] tick_periodic+0x2a/0x80
-   [<c1068b6e>] tick_handle_periodic+0x1e/0x80
-   [<c101880d>] local_apic_timer_interrupt+0x5d/0x60
-   [<c1343923>] smp_apic_timer_interrupt+0x33/0x42
-   [<c10038bb>] apic_timer_interrupt+0x2f/0x34
-   [<c10015ea>] cpu_idle+0x6a/0xc0
-   [<c132e168>] rest_init+0x58/0x60
-   [<c15129c6>] start_kernel+0x206/0x290
-   [<c1512095>] i386_start_kernel+0x65/0xa0
+   [<ffffffff81087263>] check_usage_backwards+0x93/0x100
+   [<ffffffff81087b9a>] mark_lock+0x1ca/0x420
+   [<ffffffff81087e63>] mark_held_locks+0x73/0xa0
+   [<ffffffff810880bb>] trace_hardirqs_on_caller+0x7b/0x1c0
+   [<ffffffff8108820d>] trace_hardirqs_on+0xd/0x10
+   [<ffffffff81423730>] _raw_write_unlock_irq+0x30/0x60
+   [<ffffffff8114cc63>] f_modown+0x53/0xe0
+   [<ffffffff8114cd1e>] __f_setown+0xe/0x20
+   [<ffffffff8127c667>] tty_fasync+0x107/0x190
+   [<ffffffff8114d842>] sys_fcntl+0x222/0x580
+   [<ffffffff8100309b>] system_call_fastpath+0x16/0x1b
 
 
 stack backtrace:
-Pid: 0, comm: swapper Not tainted 2.6.32.6 #1
+Pid: 1609, comm: emacs Not tainted 2.6.33-rc5 #77
 Call Trace:
- [<c1041b7d>] ? printk+0x1d/0x30
- [<c106e068>] print_irq_inversion_bug+0x108/0x120
- [<c106e0f8>] check_usage_forwards+0x78/0xe0
- [<c106e3f9>] mark_lock_irq+0x99/0x240
- [<c106e080>] ? check_usage_forwards+0x0/0xe0
- [<c106eeb6>] mark_lock+0x1d6/0x370
- [<c106e7d0>] ? trace_hardirqs_off_caller+0x20/0xc0
- [<c106ec48>] mark_irqflags+0x168/0x180
- [<c106f8bc>] __lock_acquire+0x37c/0x8a0
- [<c106f81c>] ? __lock_acquire+0x2dc/0x8a0
- [<c1070ddd>] lock_acquire+0x7d/0xe0
- [<c10515bd>] ? lock_task_sighand+0x5d/0xa0
- [<c1342af9>] _spin_lock_irqsave+0x49/0x90
- [<c10515bd>] ? lock_task_sighand+0x5d/0xa0
- [<c10515bd>] lock_task_sighand+0x5d/0xa0
- [<c1051560>] ? lock_task_sighand+0x0/0xa0
- [<c10513e1>] do_send_sig_info+0x31/0x70
- [<c1051646>] group_send_sig_info+0x46/0x50
- [<c1051726>] kill_pid_info+0x66/0x90
- [<c10516c0>] ? kill_pid_info+0x0/0x90
- [<c105ef91>] ? __run_hrtimer+0x71/0x160
- [<c10456d8>] it_real_fn+0x38/0x80
- [<c105ef9f>] __run_hrtimer+0x7f/0x160
- [<c1342fb3>] ? _spin_lock+0x53/0x80
- [<c10456a0>] ? it_real_fn+0x0/0x80
- [<c105f11e>] hrtimer_run_queues+0x8e/0xb0
- [<c104fa0d>] run_local_timers+0xd/0x20
- [<c104f724>] update_process_times+0x34/0x60
- [<c1068afa>] tick_periodic+0x2a/0x80
- [<c1068b6e>] tick_handle_periodic+0x1e/0x80
- [<c101880d>] local_apic_timer_interrupt+0x5d/0x60
- [<c1343923>] smp_apic_timer_interrupt+0x33/0x42
- [<c10038bb>] apic_timer_interrupt+0x2f/0x34
- [<c100a902>] ? default_idle+0x42/0xa0
- [<c10015ea>] cpu_idle+0x6a/0xc0
- [<c132e168>] rest_init+0x58/0x60
- [<c15129c6>] start_kernel+0x206/0x290
- [<c15122c0>] ? unknown_bootoption+0x0/0x130
- [<c1512095>] i386_start_kernel+0x65/0xa0
+ [<ffffffff810870bd>] print_irq_inversion_bug.clone.0+0x12d/0x140
+ [<ffffffff810871d0>] ? check_usage_backwards+0x0/0x100
+ [<ffffffff81087263>] check_usage_backwards+0x93/0x100
+ [<ffffffff8114cc4c>] ? f_modown+0x3c/0xe0
+ [<ffffffff81087b9a>] mark_lock+0x1ca/0x420
+ [<ffffffff81087e63>] mark_held_locks+0x73/0xa0
+ [<ffffffff81423730>] ? _raw_write_unlock_irq+0x30/0x60
+ [<ffffffff810880bb>] trace_hardirqs_on_caller+0x7b/0x1c0
+ [<ffffffff8108820d>] trace_hardirqs_on+0xd/0x10
+ [<ffffffff81423730>] _raw_write_unlock_irq+0x30/0x60
+ [<ffffffff8114cc63>] f_modown+0x53/0xe0
+ [<ffffffff8114cd1e>] __f_setown+0xe/0x20
+ [<ffffffff8127c667>] tty_fasync+0x107/0x190
+ [<ffffffff8114d842>] sys_fcntl+0x222/0x580
+ [<ffffffff8100309b>] system_call_fastpath+0x16/0x1b
 
