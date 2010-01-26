@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890Ab0AZKGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046Ab0AZKHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752890Ab0AZKGH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 05:06:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642Ab0AZKGG
+	id S1753046Ab0AZKHx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 05:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088Ab0AZKHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 05:06:06 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:50965 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752560Ab0AZKGF (ORCPT
+	Tue, 26 Jan 2010 05:07:52 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:46370 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751973Ab0AZKHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 05:06:05 -0500
-Subject: Re: UBIFS assert failed in ubifs_dirty_inode
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Matt Mackall <mpm@selenic.com>
-Cc: Jeff Angielski <jeff@theptrgroup.com>, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-In-Reply-To: <1264484928.3536.1017.camel@calx>
-References: <4B591573.60602@theptrgroup.com>
-	 <1264480808.2401.78.camel@localhost.localdomain>
-	 <1264484928.3536.1017.camel@calx>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 26 Jan 2010 12:03:34 +0200
-Message-ID: <1264500214.3867.21.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 26 Jan 2010 10:03:51.0054 (UTC) FILETIME=[DC25DAE0:01CA9E6E]
-X-Nokia-AV: Clean
+	Tue, 26 Jan 2010 05:07:51 -0500
+Date: Tue, 26 Jan 2010 10:07:49 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Felipe Balbi <felipe.balbi@nokia.com>, linux-kernel@vger.kernel.org,
+       Linux OMAP Mailing List <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>,
+       Aaro Koskinen <aaro.koskinen@nokia.com>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Grazvydas Ignotas <notasas@gmail.com>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Samuel Ortiz <sameo@openedhand.com>
+Subject: Re: [RFC/PATCH 0/4] twl4030 threaded_irq support
+Message-ID: <20100126100748.GC15759@rakim.wolfsonmicro.main>
+References: <20091212183410.GF3092@sirena.org.uk>
+ <1260786654-13294-1-git-send-email-felipe.balbi@nokia.com>
+ <201001252306.55625.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001252306.55625.david-b@pacbell.net>
+X-Cookie: I'm ANN LANDERS!!  I can SHOPLIFT!!
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-25 at 23:48 -0600, Matt Mackall wrote:
-> Hmm. I'd just as soon drop it entirely. Here's a patch. Herbert, you
-> want to send this through your crypto tree?
-> 
-> 
-> random: drop weird m_time/a_time manipulation
-> 
-> No other driver does anything remotely like this that I know of except
-> for the tty drivers, and I can't see any reason for random/urandom to do
-> it. In fact, it's a (trivial, harmless) timing information leak. And
-> obviously, it generates power- and flash-cycle wasting I/O, especially
-> if combined with something like hwrngd. Also, it breaks ubifs's
-> expectations.
-> 
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
-> 
-> diff -r 29db0c391ce8 drivers/char/random.c
-> --- a/drivers/char/random.c	Sun Jan 17 11:01:16 2010 -0800
-> +++ b/drivers/char/random.c	Mon Jan 25 23:32:00 2010 -0600
-> @@ -1051,12 +1051,6 @@
->  				/* like a named pipe */
->  	}
->  
-> -	/*
-> -	 * If we gave the user some bytes, update the access time.
-> -	 */
-> -	if (count)
-> -		file_accessed(file);
-> -
->  	return (count ? count : retval);
->  }
->  
-> @@ -1116,8 +1110,6 @@
->  	if (ret)
->  		return ret;
->  
-> -	inode->i_mtime = current_fs_time(inode->i_sb);
-> -	mark_inode_dirty(inode);
->  	return (ssize_t)count;
->  }
+On Mon, Jan 25, 2010 at 11:06:55PM -0800, David Brownell wrote:
+> On Monday 14 December 2009, Felipe Balbi wrote:
 
-It may brake other FSes expectations, theoretically, as well.
+> > move twl4030 children to threaded irq.
 
-Anyway, I'm perfectly fine if this is removed.
+> But nothing in drivers/mfd ... the entry to the whole stack?
 
-Jeff, could you please try Matt's patch and report back if you still
-have issues or not. If no, you can use this as a temporary work-around
-until a proper fix hits upstream or ubifs-2.6.git.
+> Did the threaded IRQ stuff ever get set up so that the top
+> level IRQ thread didn't have to hand off to another thread
+> each time?  (That's how the current stuff works.  One thread
+> calling out to each handler.)
 
-Thanks!
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
-
+Yes, that's in mainline now.  There's two bits required to use it which
+are (from the driver point of view) fairly orthogonal - one is to
+convert the interrupt controller to use the new stuff, the other is to
+make sure that all the drivers that are requesting the interrupts over
+to threaded IRQ handlers.  genirq will require the threaded handlers
+once it's being used.
