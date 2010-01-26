@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344Ab0AZLRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752378Ab0AZL3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344Ab0AZLRM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 06:17:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712Ab0AZLRK
+	id S1752378Ab0AZL3d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 06:29:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913Ab0AZL3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 06:17:10 -0500
-Received: from www.tglx.de ([62.245.132.106]:59722 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751272Ab0AZLRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 06:17:09 -0500
-Date: Tue, 26 Jan 2010 12:16:41 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Dongdong Deng <libfetion@gmail.com>
-cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org,
-       kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       John Stultz <johnstul@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Magnus Damm <damm@igel.co.jp>
-Subject: Re: [PATCH 3/4] kgdb,clocksource: Prevent kernel hang in kernel
- debugger
-In-Reply-To: <alpine.LFD.2.00.1001261108410.5926@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1001261204100.5926@localhost.localdomain>
-References: <1264480000-6997-1-git-send-email-jason.wessel@windriver.com>  <1264480000-6997-4-git-send-email-jason.wessel@windriver.com>  <20100126092234.77b363d4@mschwide.boeblingen.de.ibm.com>  <alpine.LFD.2.00.1001260946530.5926@localhost.localdomain>
- <ce2c83091001260201j62a770d2r2379a9293f909d87@mail.gmail.com> <alpine.LFD.2.00.1001261108410.5926@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 26 Jan 2010 06:29:33 -0500
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:58660 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637Ab0AZL3c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 06:29:32 -0500
+Date: Tue, 26 Jan 2010 12:29:29 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>, David Miller <davem@davemloft.net>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH v3] ftrace: unify arch_syscall_addr() implementations
+Message-ID: <20100126112929.GA14135@osiris.boeblingen.de.ibm.com>
+References: <1264230643-29434-1-git-send-email-vapier@gentoo.org>
+ <1264498803-17278-1-git-send-email-vapier@gentoo.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264498803-17278-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jan 2010, Thomas Gleixner wrote:
-> There is no sane way to reliably prevent TSC from becoming unstable
-> when kgdb stops the kernel inside the watchdog code. And I do not care
-> about that at all.
+On Tue, Jan 26, 2010 at 04:40:03AM -0500, Mike Frysinger wrote:
+> Most implementations of arch_syscall_addr() are the same, so create a
+> default version in common code and move the one piece that differs (the
+> syscall table) to asm/syscall.h.  New arch ports don't have to waste
+> time copying & pasting this simple function.
 > 
-> I'm not going to clutter code with crazy workarounds just because some
-> people believe that using a kernel debugger is a good idea. If people
-> insist on using kgdb then the possible "TSC becomes unstable" side
-> effect is the least of their problems.
+> The s390/sparc versions need to be different, so document why.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> Acked-by: David S. Miller <davem@davemloft.net>
+> Acked-by: Paul Mundt <lethal@linux-sh.org>
+> ---
+> v3
+> 	- move sys_call_table[] decl to asm/syscall.h
+> 	- unify everyone's arch_syscall_addr() again
+> 	- mention right tracehook requirements
+> 
+>  Documentation/trace/ftrace-design.txt |    5 ++---
+>  arch/s390/include/asm/syscall.h       |    7 +++++++
+>  arch/s390/kernel/ftrace.c             |   10 ----------
 
-Btw, if the kernel uses tick based timekeeping or a clock source which
-wraps in rather short intervals (e.g. pm-timer wraps after ~4.6
-seconds), stopping the kernel with kgdb will inevitably screw up time
-keeping anyway.
-
-So there is really no reason to worry about TSC becoming unstable.
-
-There is only one real sensible solution for this:
-
- Do _not_ use kgdb - which is the modus operandi of every sane kernel
- developer on the planet.
-
-Thanks,
-
-	tglx
+Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
