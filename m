@@ -1,117 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733Ab0AZWSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635Ab0AZWUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733Ab0AZWSK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 17:18:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004Ab0AZWSF
+	id S1753635Ab0AZWUo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 17:20:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677Ab0AZWUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 17:18:05 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63023 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753121Ab0AZWRQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 17:17:16 -0500
-X-Authority-Analysis: v=1.0 c=1 a=BNFEW_brtSYA:10 a=7mOBRU54AAAA:8 a=meVymXHHAAAA:8 a=4OQQ3ftBGnegng1VfFsA:9 a=bq6KfvGCHQ8Qdur-x8oA:7 a=f1Whe7zA5Cs5Ec3sLk_oq-hjt3IA:4 a=DHQQ7jDAcw4A:10 a=WeOa-AV5lc8A:10 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Message-Id: <20100126221713.432062340@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 17:09:28 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
+	Tue, 26 Jan 2010 17:20:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60026 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752110Ab0AZWUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 17:20:42 -0500
+Date: Tue, 26 Jan 2010 17:20:41 -0500
+From: Don Zickus <dzickus@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Frysinger <vapier@gentoo.org>
-Subject: [PATCH 5/5] tracing/documentation: Cover new frame pointer semantics
-References: <20100126220923.534282809@goodmis.org>
-Content-Disposition: inline; filename=0005-tracing-documentation-Cover-new-frame-pointer-semant.patch
+Subject: Fwd: [scripts] python: change scripts to use system python instead
+ of env
+Message-ID: <20100126222041.GR4472@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier@gentoo.org>
+Doh. Typo in the To: field
 
-Update the graph tracer examples to cover the new frame pointer semantics
-(in terms of passing it along).  Move the HAVE_FUNCTION_GRAPH_FP_TEST docs
-out of the Kconfig, into the right place, and expand on the details.
+----- Forwarded message from Don Zickus <dzickus@redhat.com> -----
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-LKML-Reference: <1264165967-18938-1-git-send-email-vapier@gentoo.org>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Date: Fri, 22 Jan 2010 16:32:10 -0500
+From: Don Zickus <dzickus@redhat.com>
+To: lkml@vger.kernel.org
+Cc: akpm@linux-foundation.org, tglx@linutronix.de, tony.luck@intel.com,
+	kmcmartin@redhat.com, Don Zickus <dzickus@redhat.com>
+Subject: [scripts] python: change scripts to use system python instead of env
+Message-Id: <1264195930-15815-1-git-send-email-dzickus@redhat.com>
+
+Just a small change to a couple of scripts to go from
+
+ #!/usr/bin/env python
+
+to
+
+ #!/usr/bin/python
+
+This shouldn't effect anyone, unless they don't install python there.
+
+In preparation for python3, Fedora is doing a big push to change the scripts
+to use the system python.  This allows developers to put the python3 in
+their path without fear of breaking existing scripts.
+
+Now I am pretty sure anyone using python3 for testing purposes will probably
+not run any of the scripts I changed, but Fedora has this automated tool
+that checks for this stuff so I thought I would try to push it upstream.
+
+Signed-off-by: Don Zickus <dzickus@redhat.com>
+
+--
+I don't do enough python to defend this change to much other than it seems
+to make sense.
 ---
- Documentation/trace/ftrace-design.txt |   26 +++++++++++++++++++++++---
- kernel/trace/Kconfig                  |    4 +---
- 2 files changed, 24 insertions(+), 6 deletions(-)
+ arch/ia64/scripts/unwcheck.py  |    2 +-
+ scripts/rt-tester/rt-tester.py |    2 +-
+ scripts/show_delta             |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
-index 239f14b..6a5a579 100644
---- a/Documentation/trace/ftrace-design.txt
-+++ b/Documentation/trace/ftrace-design.txt
-@@ -1,5 +1,6 @@
- 		function tracer guts
- 		====================
-+		By Mike Frysinger
- 
- Introduction
- ------------
-@@ -173,14 +174,16 @@ void ftrace_graph_caller(void)
- 
- 	unsigned long *frompc = &...;
- 	unsigned long selfpc = <return address> - MCOUNT_INSN_SIZE;
--	prepare_ftrace_return(frompc, selfpc);
-+	/* passing frame pointer up is optional -- see below */
-+	prepare_ftrace_return(frompc, selfpc, frame_pointer);
- 
- 	/* restore all state needed by the ABI */
- }
- #endif
- 
--For information on how to implement prepare_ftrace_return(), simply look at
--the x86 version.  The only architecture-specific piece in it is the setup of
-+For information on how to implement prepare_ftrace_return(), simply look at the
-+x86 version (the frame pointer passing is optional; see the next section for
-+more information).  The only architecture-specific piece in it is the setup of
- the fault recovery table (the asm(...) code).  The rest should be the same
- across architectures.
- 
-@@ -205,6 +208,23 @@ void return_to_handler(void)
- #endif
- 
- 
-+HAVE_FUNCTION_GRAPH_FP_TEST
-+---------------------------
-+
-+An arch may pass in a unique value (frame pointer) to both the entering and
-+exiting of a function.  On exit, the value is compared and if it does not
-+match, then it will panic the kernel.  This is largely a sanity check for bad
-+code generation with gcc.  If gcc for your port sanely updates the frame
-+pointer under different opitmization levels, then ignore this option.
-+
-+However, adding support for it isn't terribly difficult.  In your assembly code
-+that calls prepare_ftrace_return(), pass the frame pointer as the 3rd argument.
-+Then in the C version of that function, do what the x86 port does and pass it
-+along to ftrace_push_return_trace() instead of a stub value of 0.
-+
-+Similarly, when you call ftrace_return_to_handler(), pass it the frame pointer.
-+
-+
- HAVE_FTRACE_NMI_ENTER
- ---------------------
- 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 6c22d8a..60e2ce0 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -27,9 +27,7 @@ config HAVE_FUNCTION_GRAPH_TRACER
- config HAVE_FUNCTION_GRAPH_FP_TEST
- 	bool
- 	help
--	 An arch may pass in a unique value (frame pointer) to both the
--	 entering and exiting of a function. On exit, the value is compared
--	 and if it does not match, then it will panic the kernel.
-+	  See Documentation/trace/ftrace-design.txt
- 
- config HAVE_FUNCTION_TRACE_MCOUNT_TEST
- 	bool
+diff --git a/arch/ia64/scripts/unwcheck.py b/arch/ia64/scripts/unwcheck.py
+index c278498..2bfd941 100644
+--- a/arch/ia64/scripts/unwcheck.py
++++ b/arch/ia64/scripts/unwcheck.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/python
+ #
+ # Usage: unwcheck.py FILE
+ #
+diff --git a/scripts/rt-tester/rt-tester.py b/scripts/rt-tester/rt-tester.py
+index 4c79660..44423b4 100644
+--- a/scripts/rt-tester/rt-tester.py
++++ b/scripts/rt-tester/rt-tester.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/python
+ #
+ # rt-mutex tester
+ #
+diff --git a/scripts/show_delta b/scripts/show_delta
+index 48a706a..17df305 100755
+--- a/scripts/show_delta
++++ b/scripts/show_delta
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/python
+ #
+ # show_deltas: Read list of printk messages instrumented with
+ # time data, and format with time deltas.
 -- 
-1.6.5
+1.6.6.83.gc9a2
 
 
+----- End forwarded message -----
