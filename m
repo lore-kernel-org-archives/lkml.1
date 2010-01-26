@@ -1,90 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491Ab0AZQJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641Ab0AZQJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491Ab0AZQJH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 11:09:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241Ab0AZQJF
+	id S1754641Ab0AZQJV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 11:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614Ab0AZQJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 11:09:05 -0500
-Received: from bar.sig21.net ([80.81.252.164]:56391 "EHLO bar.sig21.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752141Ab0AZQJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 11:09:04 -0500
-Date: Tue, 26 Jan 2010 17:08:11 +0100
-From: Johannes Stezenbach <js@sig21.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Renzo Davoli <renzo@cs.unibo.it>, Mark Wielaard <mjw@redhat.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kyle Moffett <kyle@moffetthome.net>, tytso@mit.edu,
+	Tue, 26 Jan 2010 11:09:18 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:35891 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754594Ab0AZQJQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 11:09:16 -0500
+Date: Tue, 26 Jan 2010 17:09:13 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Borislav Petkov <petkovbb@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, Andreas Herrmann <andreas.herrmann3@amd.com>,
+       linux-tip-commits@vger.kernel.org,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
        Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100126160811.GA3242@sig21.net>
-References: <20100123114729.GA7828@redhat.com>
- <20100123194820.GM21263@thunk.org>
- <f73f7ab81001241742t1f827ddetd958e1949787020f@mail.gmail.com>
- <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain>
- <20100125170254.GB22862@redhat.com>
- <alpine.LFD.2.00.1001250930320.3574@localhost.localdomain>
- <1264451453.3028.59.camel@springer.wildebeest.org>
- <alpine.LFD.2.00.1001251236160.3574@localhost.localdomain>
- <20100126000237.GA15936@cs.unibo.it>
- <alpine.LFD.2.00.1001251605320.3574@localhost.localdomain>
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Aristeu Rozanski <aris@redhat.com>, Doug Thompson <norsk5@yahoo.com>,
+       Huang Ying <ying.huang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [tip:x86/mce] x86, mce: Rename cpu_specific_poll to
+	mce_cpu_specific_poll
+Message-ID: <20100126160913.GD6567@basil.fritz.box>
+References: <20100121221711.GA8242@basil.fritz.box> <tip-f91c4d2649531cc36e10c6bc0f92d0f99116b209@git.kernel.org> <20100123051717.GA26471@elte.hu> <20100123075851.GA7098@liondog.tnic> <20100123090003.GA20056@elte.hu> <20100124100815.GA2895@liondog.tnic> <20100125131915.GA7801@basil.fritz.box> <20100126063343.GA18865@liondog.tnic> <4B5EB092.80901@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001251605320.3574@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Spam-21-Score: -3.6 (---)
-X-Spam-21-Report: No, score=-3.6 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.758,BAYES_00=-2.599 autolearn=no
+In-Reply-To: <4B5EB092.80901@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 04:07:21PM -0800, Linus Torvalds wrote:
-> On Tue, 26 Jan 2010, Renzo Davoli wrote:
+On Tue, Jan 26, 2010 at 06:06:26PM +0900, Hidetoshi Seto wrote:
+> How about having a system file which can be maintained with kernel,
+> e.g. like /proc/hwinfo, /sys/devices/platform/hwinfo, or directory
+> with some files like /somewhere/hwinfo/{dmi,acpi,pci,...} etc.?
+
+Why not do that in user space?
+
+In fact it's often already done.
+
+Just because we're kernel programmers doesn't mean that everything
+needs to be solved inside the kernel.
+
+> >> And since it's kernel
+> >> based it cannot do most of the interesting reactions. And it doesn't
+> >> have a usable interface to add user events.
+> >>
+> >> And yes having all that crap in syslog is completely useless, unless
+> >> you're debugging code.
 > > 
-> > The solution is that everybody can code his/her optimized kernel/user 
-> > interface for tracing in his/her kernel module, i.e. utrace.
+> > So basically, IMHO we need:
+> > 
+> > 1. Resilient error reporting that reliably pushes decoded error info to
+> > userspace and/or network. That one might be tricky to do but we'll get
+> > there.
 > 
-> I don't think people understand. That is simply not a "solution". That is 
-> a PROBLEM. The thing you describe is an absolute disaster. Which is 
-> exactly why I rant against it.
+> I think it would be better to think "error" is a subset of "event",
+> which could be reported if interested but otherwise be filtered.
+> Use of TRACE_EVENT() for mce event aim such approach at least.
+
+The whole trace event infrastructure right now is not really
+aimed/useful for "always on low overhead background monitoring" like 
+standard error handling requires.
+
+In principle it could be probably fixed (although I'm a bit 
+sceptical on the "low overhead" part), but I suspect the result
+would be neither optimized for error handling nor optimized
+for performance monitoring anymore. They simply have
+very different requirements.
+
+When you do full event tracing anyways it makes some sense to get events
+for errors too, but that's a quite different use-case.
+
+For the "standard" error handling I think we're better of with
+something optimized for the job.
+
+> > 2. Error severity grading and acting upon each type accordingly. This
+> > might need to be vendor-specific.
 > 
-> The last thing we want to have is "here, take this, and make your own 
-> kernel module mess around it optimized for your particular crazy 
-> scenario".
+> I think you mean severity grading in kernel.
+> Even if hardware reported an error and graded it as corrected, kernel
+> can escalate the severity, likely based on some threshold.
+
+I don't think the kernel should do that, it's so much a policy
+decision and these are best kept as near the administrator
+as possible (= user space)
+
+That is for some cases it might make sense to have limited thresholds
+in the kernel, but I suspect they are limited. Mostly it would
+be the case when the hardware itselfs already keeps these counters.
+
 > 
-> But every SINGLE post in this thread that has argued for utrace has argued 
-> exactly this way. 
+> > 3. Proper error format suiting all types of errors.
+> 
+> As mentioned in Andi's PDF, CPER format is one of good candidate
+> available today, I think.
 
-I haven't followed much of the utrace discussions, but my impression was
-that utrace primarily is a cleanup effort, replacing "don't change it,
-you might break it" code with a clean, well defined (and even documented)
-implementation.  To make it easier for people not familiar
-with the low-level architecture details to experiment with
-debugging stuff.
+Yes for hardware errors. It's definitely not perfect and somewhat
+overdesigned, but I'm not sure we could come up with a much better one.
+At least a subset of it with some extensions might do. Also in some
+cases the error is already in this format.
 
-Two points to consider:
+The advantage of it is that it's at least well understood and documented.
 
-1. If you'd merge utrace + ptrace-on-utrace, but never anything else
-   which uses the utrace API, wouldn't it still be an improvement?
+> > 4. Vendor-specific hooks where it is needed for in-kernel handling of
+> > certain errors (L3 cache index disable, for example).
+> 
+> Some difficulty would be there to add such hook in the UE handling path,
+> but anyway we can have it for the CE path.  Just need to be organized.
+> 
+> > 5. Error thresholding, representation, etc all done in userspace (maybe
+> > even on a different machine).
+> 
+> (...BTW, how about putting mcelog tree under the /tools, Andi?)
 
-2. A well defined utrace API makes debugging code more hackable, thus more
-   likely that someone might come up with a brilliant killer debug
-   feature in the future. (This might sound lame, but there are already
-   a few people doing crazy things with utrace while I'm not aware
-   that people have done such experiments based on the current ptrace impl.)
+I don't see the advantage. Linux has always been a collection
+of packages, not a unified single big tree.  Also my current
+impression is that the in tree user space builds don't work
+very well.
 
-BTW, the ptrace improvements discussed elsewhere in this thread
-(like using an fd intead of signals/wait) are orthogonal
-to utrace, no?  IMHO it's a seperate discussion.
+-Andi
 
-
-Johannes
+-- 
+ak@linux.intel.com -- Speaking for myself only.
