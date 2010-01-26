@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135Ab0A0AAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203Ab0AZXnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135Ab0A0AAw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:00:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532Ab0A0AAs
+	id S1754203Ab0AZXnU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882Ab0AZXnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:00:48 -0500
-Received: from kroah.org ([198.145.64.141]:35188 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:43:10 -0500
+Received: from kroah.org ([198.145.64.141]:35122 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754238Ab0AZXnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:23 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:24 2010
-Message-Id: <20100126233924.808156660@mini.kroah.org>
+	id S1754082Ab0AZXnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:06 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:22 2010
+Message-Id: <20100126233922.563231196@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:56 -0800
+Date: Tue, 26 Jan 2010 15:33:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jon Hunter <jon-hunter@ti.com>, John Stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [30/98] nohz: Prevent clocksource wrapping during idle
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: [13/98] driver-core: fix devtmpfs crash on s390
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,232 +29,82 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jon Hunter <jon-hunter@ti.com>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 98962465ed9e6ea99c38e0af63fe1dcb5a79dc25 upstream.
+commit f776c5ec4690b21b3668ad5956774a22c86f541a upstream.
 
-The dynamic tick allows the kernel to sleep for periods longer than a
-single tick, but it does not limit the sleep time currently. In the
-worst case the kernel could sleep longer than the wrap around time of
-the time keeping clock source which would result in losing track of
-time.
+On Mon, Jan 18, 2010 at 05:26:20PM +0530, Sachin Sant wrote:
+> Hello Heiko,
+>
+> Today while trying to boot next-20100118 i came across
+> the following Oops :
+>
+> Brought up 4 CPUs
+> Unable to handle kernel pointer dereference at virtual kernel address 0000000000
+> 543000
+> Oops: 0004 #1 SMP
+> Modules linked in:
+> CPU: 0 Not tainted 2.6.33-rc4-autotest-next-20100118-5-default #1
+> Process swapper (pid: 1, task: 00000000fd792038, ksp: 00000000fd797a30)
+> Krnl PSW : 0704200180000000 00000000001eb0b8 (shmem_parse_options+0xc0/0x328)
+>           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:2 PM:0 EA:3
+> Krnl GPRS: 000000000054388a 000000000000003d 0000000000543836 000000000000003d
+>           0000000000000000 0000000000483f28 0000000000536112 00000000fd797d00
+>           00000000fd4ba100 0000000000000100 0000000000483978 0000000000543832
+>           0000000000000000 0000000000465958 00000000001eb0b0 00000000fd797c58
+> Krnl Code: 00000000001eb0aa: c0e5000994f1       brasl   %r14,31da8c
+>           00000000001eb0b0: b9020022           ltgr    %r2,%r2
+>           00000000001eb0b4: a784010b           brc     8,1eb2ca
+>          >00000000001eb0b8: 92002000           mvi     0(%r2),0
+>           00000000001eb0bc: a7080000           lhi     %r0,0
+>           00000000001eb0c0: 41902001           la      %r9,1(%r2)
+>           00000000001eb0c4: b9040016           lgr     %r1,%r6
+>           00000000001eb0c8: b904002b           lgr     %r2,%r11
+> Call Trace:
+> (<00000000fd797c50> 0xfd797c50)
+> <00000000001eb5da> shmem_fill_super+0x13a/0x25c
+> <0000000000228cfa> get_sb_single+0xbe/0xdc
+> <000000000034ffc0> dev_get_sb+0x2c/0x38
+> <000000000066c602> devtmpfs_init+0x46/0xc0
+> <000000000066c53e> driver_init+0x22/0x60
+> <000000000064d40a> kernel_init+0x24e/0x3d0
+> <000000000010a7ea> kernel_thread_starter+0x6/0xc
+> <000000000010a7e4> kernel_thread_starter+0x0/0xc
+>
+> I never tried to boot a kernel with DEVTMPFS enabled on a s390 box.
+> So am wondering if this is supported or not ? If you think this
+> is supported i will send a mail to community on this.
 
-Prevent this by limiting it to the safe maximum sleep time of the
-current time keeping clock source. The value is calculated when the
-clock source is registered.
+There is nothing arch specific to devtmpfs. This part crashes because the
+kernel tries to modify the data read-only section which is write protected
+on s390.
 
-[ tglx: simplified the code a bit and massaged the commit msg ]
-
-Signed-off-by: Jon Hunter <jon-hunter@ti.com>
-Cc: John Stultz <johnstul@us.ibm.com>
-LKML-Reference: <1250617512-23567-2-git-send-email-jon-hunter@ti.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Acked-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/clocksource.h |    2 +
- include/linux/time.h        |    1 
- kernel/time/clocksource.c   |   44 +++++++++++++++++++++++++++++++++++++
- kernel/time/tick-sched.c    |   52 ++++++++++++++++++++++++++++++++------------
- kernel/time/timekeeping.c   |   11 +++++++++
- 5 files changed, 96 insertions(+), 14 deletions(-)
+ drivers/base/devtmpfs.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -151,6 +151,7 @@ extern u64 timecounter_cyc2time(struct t
-  *			subtraction of non 64 bit counters
-  * @mult:		cycle to nanosecond multiplier
-  * @shift:		cycle to nanosecond divisor (power of two)
-+ * @max_idle_ns:	max idle time permitted by the clocksource (nsecs)
-  * @flags:		flags describing special properties
-  * @vread:		vsyscall based read
-  * @resume:		resume function for the clocksource, if necessary
-@@ -168,6 +169,7 @@ struct clocksource {
- 	cycle_t mask;
- 	u32 mult;
- 	u32 shift;
-+	u64 max_idle_ns;
- 	unsigned long flags;
- 	cycle_t (*vread)(void);
- 	void (*resume)(void);
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -148,6 +148,7 @@ extern void monotonic_to_bootbased(struc
- 
- extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
- extern int timekeeping_valid_for_hres(void);
-+extern u64 timekeeping_max_deferment(void);
- extern void update_wall_time(void);
- extern void update_xtime_cache(u64 nsec);
- extern void timekeeping_leap_insert(int leapsecond);
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -416,6 +416,47 @@ void clocksource_touch_watchdog(void)
- #ifdef CONFIG_GENERIC_TIME
- 
- /**
-+ * clocksource_max_deferment - Returns max time the clocksource can be deferred
-+ * @cs:         Pointer to clocksource
-+ *
-+ */
-+static u64 clocksource_max_deferment(struct clocksource *cs)
-+{
-+	u64 max_nsecs, max_cycles;
-+
-+	/*
-+	 * Calculate the maximum number of cycles that we can pass to the
-+	 * cyc2ns function without overflowing a 64-bit signed result. The
-+	 * maximum number of cycles is equal to ULLONG_MAX/cs->mult which
-+	 * is equivalent to the below.
-+	 * max_cycles < (2^63)/cs->mult
-+	 * max_cycles < 2^(log2((2^63)/cs->mult))
-+	 * max_cycles < 2^(log2(2^63) - log2(cs->mult))
-+	 * max_cycles < 2^(63 - log2(cs->mult))
-+	 * max_cycles < 1 << (63 - log2(cs->mult))
-+	 * Please note that we add 1 to the result of the log2 to account for
-+	 * any rounding errors, ensure the above inequality is satisfied and
-+	 * no overflow will occur.
-+	 */
-+	max_cycles = 1ULL << (63 - (ilog2(cs->mult) + 1));
-+
-+	/*
-+	 * The actual maximum number of cycles we can defer the clocksource is
-+	 * determined by the minimum of max_cycles and cs->mask.
-+	 */
-+	max_cycles = min_t(u64, max_cycles, (u64) cs->mask);
-+	max_nsecs = clocksource_cyc2ns(max_cycles, cs->mult, cs->shift);
-+
-+	/*
-+	 * To ensure that the clocksource does not wrap whilst we are idle,
-+	 * limit the time the clocksource can be deferred by 12.5%. Please
-+	 * note a margin of 12.5% is used because this can be computed with
-+	 * a shift, versus say 10% which would require division.
-+	 */
-+	return max_nsecs - (max_nsecs >> 5);
-+}
-+
-+/**
-  * clocksource_select - Select the best clocksource available
-  *
-  * Private function. Must hold clocksource_mutex when called.
-@@ -511,6 +552,9 @@ static void clocksource_enqueue(struct c
-  */
- int clocksource_register(struct clocksource *cs)
+--- a/drivers/base/devtmpfs.c
++++ b/drivers/base/devtmpfs.c
+@@ -353,6 +353,7 @@ int __init devtmpfs_init(void)
  {
-+	/* calculate max idle time permitted for this clocksource */
-+	cs->max_idle_ns = clocksource_max_deferment(cs);
-+
- 	mutex_lock(&clocksource_mutex);
- 	clocksource_enqueue(cs);
- 	clocksource_select();
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -216,6 +216,7 @@ void tick_nohz_stop_sched_tick(int inidl
- 	struct tick_sched *ts;
- 	ktime_t last_update, expires, now;
- 	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
-+	u64 time_delta;
- 	int cpu;
+ 	int err;
+ 	struct vfsmount *mnt;
++	char options[] = "mode=0755";
  
- 	local_irq_save(flags);
-@@ -275,6 +276,17 @@ void tick_nohz_stop_sched_tick(int inidl
- 		seq = read_seqbegin(&xtime_lock);
- 		last_update = last_jiffies_update;
- 		last_jiffies = jiffies;
-+
-+		/*
-+		 * On SMP we really should only care for the CPU which
-+		 * has the do_timer duty assigned. All other CPUs can
-+		 * sleep as long as they want.
-+		 */
-+		if (cpu == tick_do_timer_cpu ||
-+		    tick_do_timer_cpu == TICK_DO_TIMER_NONE)
-+			time_delta = timekeeping_max_deferment();
-+		else
-+			time_delta = KTIME_MAX;
- 	} while (read_seqretry(&xtime_lock, seq));
+ 	err = register_filesystem(&dev_fs_type);
+ 	if (err) {
+@@ -361,7 +362,7 @@ int __init devtmpfs_init(void)
+ 		return err;
+ 	}
  
- 	/* Get the next timer wheel timer */
-@@ -294,11 +306,26 @@ void tick_nohz_stop_sched_tick(int inidl
- 	if ((long)delta_jiffies >= 1) {
- 
- 		/*
--		* calculate the expiry time for the next timer wheel
--		* timer
--		*/
--		expires = ktime_add_ns(last_update, tick_period.tv64 *
--				   delta_jiffies);
-+		 * calculate the expiry time for the next timer wheel
-+		 * timer. delta_jiffies >= NEXT_TIMER_MAX_DELTA signals
-+		 * that there is no timer pending or at least extremely
-+		 * far into the future (12 days for HZ=1000). In this
-+		 * case we set the expiry to the end of time.
-+		 */
-+		if (likely(delta_jiffies < NEXT_TIMER_MAX_DELTA)) {
-+			/*
-+			 * Calculate the time delta for the next timer event.
-+			 * If the time delta exceeds the maximum time delta
-+			 * permitted by the current clocksource then adjust
-+			 * the time delta accordingly to ensure the
-+			 * clocksource does not wrap.
-+			 */
-+			time_delta = min_t(u64, time_delta,
-+					   tick_period.tv64 * delta_jiffies);
-+			expires = ktime_add_ns(last_update, time_delta);
-+		} else {
-+			expires.tv64 = KTIME_MAX;
-+		}
- 
- 		/*
- 		 * If this cpu is the one which updates jiffies, then
-@@ -342,22 +369,19 @@ void tick_nohz_stop_sched_tick(int inidl
- 
- 		ts->idle_sleeps++;
- 
-+		/* Mark expires */
-+		ts->idle_expires = expires;
-+
- 		/*
--		 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
--		 * there is no timer pending or at least extremly far
--		 * into the future (12 days for HZ=1000). In this case
--		 * we simply stop the tick timer:
-+		 * If the expiration time == KTIME_MAX, then
-+		 * in this case we simply stop the tick timer.
- 		 */
--		if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
--			ts->idle_expires.tv64 = KTIME_MAX;
-+		 if (unlikely(expires.tv64 == KTIME_MAX)) {
- 			if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
- 				hrtimer_cancel(&ts->sched_timer);
- 			goto out;
- 		}
- 
--		/* Mark expiries */
--		ts->idle_expires = expires;
--
- 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
- 			hrtimer_start(&ts->sched_timer, expires,
- 				      HRTIMER_MODE_ABS_PINNED);
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -488,6 +488,17 @@ int timekeeping_valid_for_hres(void)
- }
- 
- /**
-+ * timekeeping_max_deferment - Returns max time the clocksource can be deferred
-+ *
-+ * Caller must observe xtime_lock via read_seqbegin/read_seqretry to
-+ * ensure that the clocksource does not change!
-+ */
-+u64 timekeeping_max_deferment(void)
-+{
-+	return timekeeper.clock->max_idle_ns;
-+}
-+
-+/**
-  * read_persistent_clock -  Return time from the persistent clock.
-  *
-  * Weak dummy function for arches that do not yet support it.
+-	mnt = kern_mount_data(&dev_fs_type, "mode=0755");
++	mnt = kern_mount_data(&dev_fs_type, options);
+ 	if (IS_ERR(mnt)) {
+ 		err = PTR_ERR(mnt);
+ 		printk(KERN_ERR "devtmpfs: unable to create devtmpfs %i\n", err);
 
 
