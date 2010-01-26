@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752644Ab0AZBCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418Ab0AZBMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752644Ab0AZBCr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 20:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437Ab0AZBCq
+	id S1752418Ab0AZBMn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 20:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892Ab0AZBMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 20:02:46 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:62701 "EHLO
+	Mon, 25 Jan 2010 20:12:42 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43553 "EHLO
 	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042Ab0AZBCp (ORCPT
+	with ESMTP id S1751437Ab0AZBMl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 20:02:45 -0500
+	Mon, 25 Jan 2010 20:12:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=tcqdcFVcvYgbaJVzydA+zL+HaP+BIFhb4feTT5W6088QpBt3Ntb5x59u6DX+J5YhXn
-         voBu7NrqrnqMTfm4ciCGy0ygHvS6I67ZMc3pfcOBHo5lksr7LX8YkKzKuG4TLFC63wrn
-         GIWF5KORvRJH62fhzphyheiY5NeMRTKvEZye8=
-Date: Tue, 26 Jan 2010 02:02:40 +0100
+        b=RS1K42HfviGQ+aiOHlebT7g614AbdyEGdBG62c2D3hk7ptEBpLS5xQU0780squ7NqK
+         uHuSi/HbTCY6kAkk//4m/maaz2ZVKUZd+mFlM3SkysGlLky5HXloiaU3UNlUW8uYBFMT
+         QCbvBOWLCi/GYnM2+tdXrTDJg8mYDmOMkzYOo=
+Date: Tue, 26 Jan 2010 02:12:36 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
-       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
-       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
-       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
-       x86@kernel.org, mingo@redhat.com, dan.j.williams@intel.com,
-       borislav.petkov@amd.com, ying.huang@intel.com, lenb@kernel.org,
-       neilb@suse.de, cl@linux-foundation.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       rusty@rustcorp.com.au, akpm@linux-foundation.org, ebiederm@xmission.com,
+       tytso@mit.edu, Trond.Myklebust@netapp.com, aelder@sgi.com,
+       hch@infradead.org, viro@zeniv.linux.org.uk, davem@davemloft.net,
+       netdev@vger.kernel.org, x86@kernel.org, mingo@redhat.com,
+       dan.j.williams@intel.com, borislav.petkov@amd.com, ying.huang@intel.com,
+       lenb@kernel.org, neilb@suse.de, cl@linux-foundation.org
 Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to
 	hw_breakpoint
-Message-ID: <20100126010239.GK5087@nowhere>
-References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere> <4B5E3BED.6030705@kernel.org>
+Message-ID: <20100126011234.GL5087@nowhere>
+References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere> <4B5E401D.2020809@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B5E3BED.6030705@kernel.org>
+In-Reply-To: <4B5E401D.2020809@zytor.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 09:48:45AM +0900, Tejun Heo wrote:
-> Hello, Frederic.
-> 
-> On 01/26/2010 09:19 AM, Frederic Weisbecker wrote:
+On Mon, Jan 25, 2010 at 05:06:37PM -0800, H. Peter Anvin wrote:
+> On 01/25/2010 04:19 PM, Frederic Weisbecker wrote:
 > > On Tue, Jan 26, 2010 at 12:22:14AM +0900, Tejun Heo wrote:
 > >> Add __percpu sparse annotations to hw_breakpoint.
 > >>
@@ -62,62 +60,17 @@ On Tue, Jan 26, 2010 at 09:48:45AM +0900, Tejun Heo wrote:
 > > I guess __percpu is an address_space attribute? Is there no
 > > way to force the address space change directly from the
 > > per_cpu() macro?
+> > 
 > 
-> Yeah, per_cpu() macro does that but when things get a bit complicated
-> with static percpu arrays.  In the above case, the variable is defined
-> as
+> Hmm... thinking more about it, we should be able to just move the & and
+> [0] into the per_cpu() macro, addressing the situation, or does that
+> cause problems elsewhere?
 > 
->   static DEFINE_PER_CPU(unsigned int, nr_task_bp_pinned[HBP_NUM]);
-> 
-> which gets translated to
-> 
->   static __attribute__((noderef, address_space(3))) \
-> 	 __attribute__((section(.data.percpu))) \
-> 	 __typeof__(unsigned int) nr_task_bp_pinned[HBP_NUM];
-> 
-> The above tells sparse that the members of nr_task_bp_pinned array are
-> in address space 3 which is correct.  The problematic dereference was
-> 
->   unsigned int *task_pinned = per_cpu(nr_task_bp_pinned, cpu)
-> 
-> per_cpu() macro changes the address space of the resulting address but
-> it does so assuming that the parameter it got passed is the one which
-> got declared to be in the percpu address space.  It casts
-> nr_task_bp_pinned itself, which to the sparse isn't in the percpu
-> address space, to the kernel address space.  So, the workaround is
-> basically to give per_cpu() macro the same thing that was defined.
-> 
-> This type of usage (define as array, dereference the array as address)
-> was the only place where I needed to work around to make address space
-> change explicit.  There are two places which needed this and hwbreak
-> was one.  The options were...
-> 
-> * Leave it alone.  We can live with a few additional sparse warnings.
-> 
-> * Make the proposed change.  It is slightly ugly but not cryptic or
->   difficult.
-> 
-> * Somehow teach per_cpu() macro or sparse how to handle the above
->   right.
-> 
-> I tried to improve per_cpu() macro but couldn't do it in any sane way.
-> Leaving it alone isn't too bad either but given that the workaround is
-> not horribly unreadable, I think it's best to use the slightly less
-> elegant form in the few places where they are needed.
+> 	-hpa
 
 
-
-Ok.
-
-Well, sorry I must be missing something obvious, but is it impossible
-to make per_cpu(var, cpu) returning something cast in:
-
-	(typeof(var) __force)
-
-Or I guess you did that already and it is not working with static
-arrays, or?
-
-Is there a patch that shows per_cpu() macro changes in the batch?
-
-Thanks.
+That would work only with arrays. per_cpu() can access either pointers
+or direct values. Well that can be worked around with fake casts, but
+I would except the (typeof(x) __force) to work and then offer a more
+elegant solution.
 
