@@ -1,89 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919Ab0AZOnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108Ab0AZOu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919Ab0AZOnk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 09:43:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669Ab0AZOnk
+	id S1754108Ab0AZOu3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 09:50:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327Ab0AZOu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 09:43:40 -0500
-Received: from cantor.suse.de ([195.135.220.2]:41388 "EHLO mx1.suse.de"
+	Tue, 26 Jan 2010 09:50:28 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:38884 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753624Ab0AZOnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 09:43:39 -0500
-Date: Tue, 26 Jan 2010 06:30:08 -0800
-From: Greg KH <gregkh@suse.de>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] platform_driver_register:  warn if probe is in
- .init.text
-Message-ID: <20100126143008.GA18609@suse.de>
-References: <20090619141128.GA11506@suse.de>
- <20090619144354.GA20985@pengutronix.de>
- <20090629075535.GA20155@pengutronix.de>
- <20090711033459.GC1344@suse.de>
- <20090711100014.GA9540@pengutronix.de>
- <20090711170548.GC5205@suse.de>
- <20090907141941.GA19380@pengutronix.de>
- <20100122170641.GD13718@pengutronix.de>
- <20100122173846.GA11057@suse.de>
- <20100126085928.GD20792@pengutronix.de>
+	id S1752787Ab0AZOu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 09:50:28 -0500
+Date: Tue, 26 Jan 2010 08:50:22 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "containers@lists.osdl.org" <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] cgroups: Fix to return errno in a failure path
+Message-ID: <20100126145022.GA6224@us.ibm.com>
+References: <4B5EA4EC.8020700@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100126085928.GD20792@pengutronix.de>
+In-Reply-To: <4B5EA4EC.8020700@cn.fujitsu.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 09:59:28AM +0100, Uwe Kleine-König wrote:
-> Hello Greg,
+Quoting Li Zefan (lizf@cn.fujitsu.com):
+> In cgroup_create(), if alloc_css_id() returns failure, the errno
+> is not propagated to userspace, so mkdir will fail silently.
 > 
-> On Fri, Jan 22, 2010 at 09:38:46AM -0800, Greg KH wrote:
-> > On Fri, Jan 22, 2010 at 06:06:41PM +0100, Uwe Kleine-König wrote:
-> > > Hello,
-> > > 
-> > > On Mon, Sep 07, 2009 at 04:19:41PM +0200, Uwe Kleine-König wrote:
-> > > > Hi Greg,
-> > > > 
-> > > > On Sat, Jul 11, 2009 at 10:05:48AM -0700, Greg KH wrote:
-> > > > > On Sat, Jul 11, 2009 at 12:00:14PM +0200, Uwe Kleine-König wrote:
-> > > > > > Hi Greg,
-> > > > > > 
-> > > > > > > > Are you conviced and took the patch or did you give up to convince me?
-> > > > > > > 
-> > > > > > > Heh, no, sorry, it got burried in my queue.
-> > > > > > > 
-> > > > > > > > I still think the patch is correct and I'd like to have it applied.
-> > > > > > > 
-> > > > > > > Ok, let's test it out in the linux-next tree for a while to make sure it
-> > > > > > > works properly.  Care to send me an updated version?
-> > > > > > I updated to latest Linus' master.  It applies to linux-next from
-> > > > > > Fri Jul 10 14:44:30 2009 +1000 as is.
-> > > > > 
-> > > > > Thanks, I'll apply it later today to my trees.
-> > > > ping?!
-> > > > 
-> > > > > > Back some time I sent a series that fixes many of these bugs.  I will
-> > > > > > update it later today and resend.
-> > > > > 
-> > > > > Thanks, that would be good to have, to keep the noise down for devices
-> > > > > we already know about.
-> > > ping?  I assume you don't have the original mails anymore, so should I
-> > > resend?
-> > 
-> > Yes, sorry.
-> I would really appreciate if you'd take the patches as it is quite some
-> work to update and verify the patches are still needed as changing
-> platform_driver_register to platform_driver_probe doesn't conflict with
-> this series.
+> To trigger this bug, we mount blkio (or memory subsystem), and
+> create more then 65534 cgroups. (The number of cgroups is limited
+> to 65535 if a subsystem has use_id == 1)
 > 
-> So can you please look into that before they are swapped out of your
-> inbox the third(?) time?
+>  # mount -t cgroup -o blkio xxx /mnt
+>  # for ((i = 0; i < 65534; i++)); do mkdir /mnt/$i; done
+>  # mkdir /mnt/65534
+>  (should return ENOSPC)
+>  #
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Will do, give me a day or so.
+Yup.
 
-thanks,
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-greg k-h
+> ---
+>  cgroup.c |    7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+> 
+> --- a/kernel/cgroup.c.orig	2010-01-19 16:37:37.000000000 +0800
+> +++ a/kernel/cgroup.c	2010-01-19 16:39:07.000000000 +0800
+> @@ -3279,14 +3279,17 @@ static long cgroup_create(struct cgroup 
+> 
+>  	for_each_subsys(root, ss) {
+>  		struct cgroup_subsys_state *css = ss->create(ss, cgrp);
+> +
+>  		if (IS_ERR(css)) {
+>  			err = PTR_ERR(css);
+>  			goto err_destroy;
+>  		}
+>  		init_cgroup_css(css, ss, cgrp);
+> -		if (ss->use_id)
+> -			if (alloc_css_id(ss, parent, cgrp))
+> +		if (ss->use_id) {
+> +			err = alloc_css_id(ss, parent, cgrp);
+> +			if (err)
+>  				goto err_destroy;
+> +		}
+>  		/* At error, ->destroy() callback has to free assigned ID. */
+>  	}
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
