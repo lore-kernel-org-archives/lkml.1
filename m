@@ -1,253 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125Ab0AZWOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311Ab0AZWRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125Ab0AZWOA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 17:14:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992Ab0AZWN7
+	id S1754311Ab0AZWRS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 17:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969Ab0AZWRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 17:13:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46737 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753715Ab0AZWN6 (ORCPT
+	Tue, 26 Jan 2010 17:17:16 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63028 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753167Ab0AZWRP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 17:13:58 -0500
-Date: Tue, 26 Jan 2010 14:12:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chris Frost <frost@cs.ucla.edu>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Benny Halevy <bhalevy@panasas.com>, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Steve VanDeBogart <vandebo-lkml@nerdbox.net>
-Subject: Re: [PATCH] fs: add fincore(2) (mincore(2) for file descriptors)
-Message-Id: <20100126141229.e1a81b29.akpm@linux-foundation.org>
-In-Reply-To: <20100120215712.GO27212@frostnet.net>
-References: <20100120215712.GO27212@frostnet.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jan 2010 17:17:15 -0500
+X-Authority-Analysis: v=1.0 c=1 a=0jSYshFzokIA:10 a=VwQbUJbxAAAA:8 a=FSsOwSkDrWw3f6DzWBIA:9 a=WVzGUYmIzSFy6FH4mmQA:7 a=EYWhc0pbrkeGckKt5V4wIys9V2AA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Message-Id: <20100126220923.534282809@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Tue, 26 Jan 2010 17:09:23 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/5][GIT PULL][v2.6.33] tracing: fixes and documentation updates
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010 13:57:12 -0800
-Chris Frost <frost@cs.ucla.edu> wrote:
 
-> Add the fincore() system call. fincore() is mincore() for file descriptors.
-> 
-> The functionality of fincore() can be emulated with an mmap(), mincore(),
-> and munmap(), but this emulation requires more system calls and requires
-> page table modifications. fincore() can provide a significant performance
-> improvement for non-sequential in-core queries.
-> 
-> Signed-off-by: Chris Frost <frost@cs.ucla.edu>
-> Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
-> ---
-> 
-> Notes on micro and macro performance and on a potential optimization:
-> 
-> For a microbenchmark that sequentially queries whether the pages of a large
-> file are in memory fincore is 7-11x faster than mmap+mincore+munmap
-> when querying one page a time (Pentium 4 running a 32 bit SMP kernel).
-> When querying 1024 pages at a time the two approaches perform comparably.
-> However, an application cannot always amortize calls; e.g., non-sequential
-> reads. These improvements are increased significantly by amortizing the
-> RCU work done by each find_get_page() call, but this optimization does
-> not affect our macrobenchmarks (more in third paragraph).
-> 
-> We introduced this system call while modifying SQLite and the GIMP to
-> request large prefetches for what would otherwise be non-sequential reads.
-> As a macrobenchmark, we see a 125s SQLite query (72s system time) reduced
-> to 75s (18s system time) by using fincore() instead of mincore(). This
-> speedup of course varies by benchmark and benchmarks size; we've seen
-> both minimal speedups and 1000x speedups. More on these benchmarks in the
-> publication _Reducing Seek Overhead with Application-Directed Prefetching_
-> in USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
-> 
-> In this patch find_get_page() is called for each page, which in turn
-> calls rcu_read_lock(), for each page. We have found that amortizing
-> these RCU calls, e.g., by introducing a variant of find_get_pages_contig()
-> that does not skip missing pages, can speedup the above microbenchmark
-> by 260x when querying many pages per system call. But we have not observed
-> noticeable improvements to our macrobenchmarks. I'd be happy to also post
-> this change or look further into it, but this seems like a reasonable
-> first patch, at least.
+Ingo,
 
-I must say, the syscall appeals to my inner geek.  Lot of applications
-are leaving a lot of time on the floor due to bad disk access patterns.
-A really smart library which uses this facility could help all over
-the place.
+I found that reading the trace file and the raw_trace_pipe using
+splice, at the same time could cause a kernel oops. Not a major one,
+that is, the oops only crashes the user task that is performing
+the read of the trace file. But still urgent enough to go into
+2.6.33.
 
-Is it likely that these changes to SQLite and Gimp would be merged into
-the upstream applications?
+The issue is with the iterator that is stored to access multiple
+reads of the ring buffer without consuming the data. If a user
+process starts reading the contents of the ring buffer with the
+iterator, and in the mean time a consuming read is done, then
+the iterator can become stale and return a bogus entry.
 
-> ...
->
-> new file mode 100644
-> index 0000000..6b74cc4
-> --- /dev/null
-> +++ b/fs/fincore.c
-> @@ -0,0 +1,135 @@
-> +/*
-> + *	fs/fincore.c
-> + *
-> + * Copyright (C) 2009, 2010 Chris Frost, UC Regents
-> + * Copyright (C) 2008 Steve VanDeBogart, UC Regents
-> + */
-> +
-> +/*
-> + * The fincore() system call.
-> + */
-> +#include <linux/fs.h>
-> +#include <linux/file.h>
-> +#include <linux/pagemap.h>
-> +#include <linux/syscalls.h>
-> +#include <linux/uaccess.h>
-> +
-> +static unsigned char fincore_page(struct address_space *mapping, pgoff_t pgoff)
-> +{
-> +	unsigned char present = 0;
-> +	struct page *page = find_get_page(mapping, pgoff);
-> +	if (page) {
-> +		present = PageUptodate(page);
-> +		page_cache_release(page);
-> +	}
-> +
-> +	return present;
-> +}
+The first patch fixes the pid to cmdline mapping function to not
+crash when given a negative pid (which happened when we had a
+bogus entry).
 
-What Andi said.  This is crying out for a big radix-tree walk in the
-inner loop.
+The next two patches fix the ring buffer to detect when a consuming
+read is done and to reset the iterator.
 
-> +/*
-> + * The fincore(2) system call.
-> + *
-> + * fincore() returns the memory residency status of the pages backing
-> + * a file range specified by fd and [start, start + len).
-> + * The status is returned in a vector of bytes.  The least significant
-> + * bit of each byte is 1 if the referenced page is in memory, otherwise
-> + * it is zero.
-> + *
-> + * Because the status of a page can change after fincore() checks it
-> + * but before it returns to the application, the returned vector may
-> + * contain stale information.  Only locked pages are guaranteed to
-> + * remain in memory.
-> + *
-> + * return values:
-> + *  zero    - success
-> + *  -EBADF  - fd is an illegal file descriptor
-> + *  -EFAULT - vec points to an illegal address
-> + *  -EINVAL - start is not a multiple of PAGE_CACHE_SIZE or start + len
-> + *		is larger than the size of the file
-> + *  -EAGAIN - A kernel resource was temporarily unavailable.
-> + */
-> +SYSCALL_DEFINE4(fincore, unsigned int, fd, loff_t, start, loff_t, len,
-> +		unsigned char __user *, vec)
-> +{
-> +	long retval;
-> +	loff_t pgoff = start >> PAGE_SHIFT;
-> +	loff_t pgend;
-> +	loff_t npages;
-> +	struct file *filp;
-> +	int fput_needed;
-> +	loff_t file_nbytes;
-> +	loff_t file_npages;
-> +	unsigned char *tmp = NULL;
-> +	unsigned char tmp_small[64];
-> +	unsigned tmp_count;
-> +	int i;
+Since I'm pushing these patches up, I've also incuded two
+documentation changes. One of the patches touches a Kconfig file
+but only the help portion of it.
 
-pgoff, pgend and npages should be pgoff_t, I think.  file_nbytes I
-guess is OK, but maybe size_t.  file_npages should be pgoff_t.  And
-death to tmp!
+Please pull the latest tip/tracing/urgent tree, which can be found at:
 
-> +	/* Check the start address: needs to be page-aligned.. */
-> +	if (start & ~PAGE_CACHE_MASK)
-> +		return -EINVAL;
-> +
-> +	npages = len >> PAGE_SHIFT;
-> +	npages += (len & ~PAGE_MASK) != 0;
-> +
-> +	pgend = pgoff + npages;
-> +
-> +	filp = fget_light(fd, &fput_needed);
-> +	if (!filp)
-> +		return -EBADF;
-> +
-> +	if (filp->f_dentry->d_inode->i_mode & S_IFBLK)
-> +		file_nbytes = filp->f_dentry->d_inode->i_bdev->bd_inode->i_size << 9;
-> +	else
-> +		file_nbytes = filp->f_dentry->d_inode->i_size;
-
-I think
-
-	file_nbytes = i_size_read(filp->f_mapping->host->i_size);
-
-is what you want here.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/urgent
 
 
-> +	file_npages = file_nbytes >> PAGE_SHIFT;
-> +	file_npages += (file_nbytes & ~PAGE_MASK) != 0;
+Mike Frysinger (1):
+      tracing/documentation: Cover new frame pointer semantics
 
-	file_npages = (file_nbytes + PAGE_SIZE - 1) >> PAGE_SHIFT;
+Steven Rostedt (3):
+      tracing: Prevent kernel oops with corrupted buffer
+      ring-buffer: Check if ring buffer iterator has stale data
+      ring-buffer: Check for end of page in iterator
 
-> +	if (pgoff >= file_npages || pgend > file_npages) {
-> +		retval = -EINVAL;
-> +		goto done;
-> +	}
+Yang Hongyang (1):
+      tracing/documentation: Fix a typo in ftrace.txt
 
-Should this return -EINVAL, or should it just return "0": nothing there?
-
-Bear in mind that this code is racy against truncate (I think?), and
-this is "by design".  If that race does occur, we want to return
-something graceful to userspace and I suggest that "nope, nothing
-there" is a more graceful result that "erk, you screwed up".  Because
-the application _didn't_ screw up: the pages were there when the
-syscall was first performed.
-
-> +	if (!access_ok(VERIFY_WRITE, vec, npages)) {
-> +		retval = -EFAULT;
-> +		goto done;
-> +	}
-
-Yeah, just remove this.  copy_to_user() will handle it.
-
-> +	/*
-> +	 * Allocate buffer vector page.
-> +	 * Optimize allocation for small values of npages because the
-> +	 * __get_free_page() call doubles fincore(2) runtime when npages == 1.
-> +	 */
-> +	if (npages <= sizeof(tmp_small)) {
-> +		tmp = tmp_small;
-> +		tmp_count = sizeof(tmp_small);
-> +	} else {
-> +		tmp = (void *) __get_free_page(GFP_USER);
-> +		if (!tmp) {
-> +			retval = -EAGAIN;
-> +			goto done;
-> +		}
-> +		tmp_count = PAGE_SIZE;
-> +	}
-> +
-> +	while (pgoff < pgend) {
-> +		/*
-> +		 * Do at most tmp_count entries per iteration, due to
-> +		 * the temporary buffer size.
-> +		 */
-> +		for (i = 0; pgoff < pgend && i < tmp_count; pgoff++, i++)
-> +			tmp[i] = fincore_page(filp->f_mapping, pgoff);
-> +
-> +		if (copy_to_user(vec, tmp, i)) {
-> +			retval = -EFAULT;
-> +			break;
-> +		}
-> +		vec += i;
-> +	}
-> +	retval = 0;
-> +done:
-> +	if (tmp && tmp != tmp_small)
-> +		free_page((unsigned long) tmp);
-> +	fput_light(filp, fput_needed);
-> +	return retval;
-> +}
+----
+ Documentation/trace/ftrace-design.txt |   26 +++++++++++++++++++++++---
+ Documentation/trace/ftrace.txt        |    2 +-
+ kernel/trace/Kconfig                  |    4 +---
+ kernel/trace/ring_buffer.c            |   24 +++++++++++++++++++++---
+ kernel/trace/trace.c                  |    5 +++++
+ 5 files changed, 51 insertions(+), 10 deletions(-)
 
