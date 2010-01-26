@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238Ab0AZOWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308Ab0AZOXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754238Ab0AZOWl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 09:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029Ab0AZOWh
+	id S1754308Ab0AZOXH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 09:23:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217Ab0AZOXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 09:22:37 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:59539 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754027Ab0AZOWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 09:22:35 -0500
-Date: Tue, 26 Jan 2010 19:51:54 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tom Tromey <tromey@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100126142154.GA30571@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <m33a1tnbd9.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
+	Tue, 26 Jan 2010 09:23:05 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:38562 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754284Ab0AZOXE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 09:23:04 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: "Fabio Bas - Officine Informatiche" 
+	<fabio.bas@officineinformatiche.net>
+Subject: Re: PROBLEM: freeze on ppp connection (using an usb "key" modem)
+Date: Tue, 26 Jan 2010 15:23:21 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+References: <4B5ED90E.6060304@officineinformatiche.net> <201001261354.58287.oliver@neukum.org> <4B5EF86D.6070109@officineinformatiche.net>
+In-Reply-To: <4B5EF86D.6070109@officineinformatiche.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201001261523.21656.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 01:41:57PM -0800, Linus Torvalds wrote:
+Am Dienstag, 26. Januar 2010 15:13:01 schrieb Fabio Bas - Officine Informatiche:
+> On 26/01/2010 13:54, Oliver Neukum wrote:
+> > Am Dienstag, 26. Januar 2010 13:53:08 schrieb Rafael J. Wysocki:
+> >> On Tuesday 26 January 2010, Fabio Bas - Officine Informatiche wrote:
+> >> ...
+> >>> The last working kernel i'm aware of is kernel 2.6.30, the first showing
+> >>> the problem 2.6.32.2
+> >>
+> >> Can you test 2.6.31.x please?
+> I'll download, compile and test it asap
+
+Yes, that's the best step now.
+
+> > 
+> > Is there a bugzilla for this?
 > 
+> I've just created it and attached all of my logs
+> http://bugzilla.kernel.org/show_bug.cgi?id=15146
 > 
-> On Mon, 25 Jan 2010, Tom Tromey wrote:
-
-...
-
-> > * Support "displaced stepping" in the kernel; I think this would improve
-> >   performance when debugging in non-stop mode.
+> > Sysrq-t?
 > 
-> Don't we already do that at least on x86? Just doing a single-step should 
-> work on an instruction even if it has a breakpoint on it, because we set 
-> the TF bit.
-> 
-> Or maybe I'm not understanding what displaced stepping means to you.
+> Here's my new crash log; sysrq-t output refers to the time after the
+> connection was estabilished but before the freeze. I've tried to
+> alt+sysrq+t dìseveral times when the box was freezed, but i had no reply
+> from the kernel.
 
-If Tom is referring to supporting single-stepping out of line, ie., not
-putting back the original instruction at the bp location, yes, we
-already support it on various architectures for kernel breakpoints,
-through the kprobes infrastructure.
+It is too early. Your kernel log suggests generic ppp, which is odd.
+If the bug still happens with the newest stable kernel, it would be
+a good idea to compile a kernel with lock verification enabled.
 
-For userspace, there are more complications to take care of. We are
-reworking a prototype based on community comments (see the long UBP/XOL
-thread on lkml from a few days ago). Hopefully the userspace breakpoint
-assistance layer will be generic enough for gdb to also take advantage
-of, though the interface details need to be hashed out.
-
-Ananth
+	Regards
+		Oliver
