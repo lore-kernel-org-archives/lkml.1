@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565Ab0AZNRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850Ab0AZNSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565Ab0AZNRg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 08:17:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087Ab0AZNRf
+	id S1753850Ab0AZNSK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 08:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502Ab0AZNSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 08:17:35 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47580 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752888Ab0AZNRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 08:17:34 -0500
-Date: Tue, 26 Jan 2010 14:17:32 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: =?ISO-8859-15?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
-Subject: Re: kernel error : 'find /proc/ -type f | xargs -n 1 head -c 10
- >/dev/null'
-In-Reply-To: <201001212219.03718.toralf.foerster@gmx.de>
-Message-ID: <alpine.LRH.2.00.1001261416430.15694@twin.jikos.cz>
-References: <201001212017.00160.toralf.foerster@gmx.de> <20100121203535.GA5133@x200> <201001212219.03718.toralf.foerster@gmx.de>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 26 Jan 2010 08:18:07 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57582
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751398Ab0AZNSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 08:18:05 -0500
+Date: Tue, 26 Jan 2010 05:18:17 -0800 (PST)
+Message-Id: <20100126.051817.215651254.davem@davemloft.net>
+To: geert@linux-m68k.org
+Cc: adobriyan@gmail.com, linux-next@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: drivers/net/ariadne.c:165: error: 'set_multicast_list'
+ undeclared here (not in a function)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <10f740e81001260057h37f3494dvefa3a37b2e1453a5@mail.gmail.com>
+References: <10f740e81001260057h37f3494dvefa3a37b2e1453a5@mail.gmail.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 26 Jan 2010 09:57:05 +0100
 
-[ adding relevant CCs ]
+> http://kisskb.ellerman.id.au/kisskb/buildresult/2076964/
+> 
+> drivers/net/ariadne.c:165: error: 'set_multicast_list' undeclared here
+> (not in a function)
+> 
+> Seems to be broken by:
 
-On Thu, 21 Jan 2010, Toralf Förster wrote:
+I'll fix this with the patch below.
 
-> Alexey Dobriyan wrote at 21:35:35
-> > On Thu, Jan 21, 2010 at 08:16:59PM +0100, Toralf Förster wrote:
-> > > I was inspired by http://article.gmane.org/gmane.linux.kernel/941115 .
-> > >
-> > > Running the command (se subject) as a normal user at a 2.6.32.4 kernel
-> > > gives this in /var/log/messages:
-> > >
-> > > head: page allocation failure. order:9, mode:0xd0
-> > > Pid: 2324, comm: head Not tainted 2.6.32.4 #1
-> > > Call Trace:
-> > > [<c106e2cc>] ? __alloc_pages_nodemask+0x4bc/0x5a0
-> > > [<c108cf5a>] ? cache_alloc_refill+0x2ba/0x510
-> > > [<c108d299>] ? __kmalloc+0xe9/0xf0
-> > > [<c10aa755>] ? seq_read+0x195/0x370
-> > 
-> > Please, find out which file is causing this, if it's reproducible.
-> > 
-> I reproduced the msg :
-> "ACPI: Please implement acpi_video_bus_ROM_seq_show" by :
-> by
-> $> head -c 10 /proc/acpi/video/VID/info
-> 
-> After suspend to disk and wakeup however the file /proc/acpi/video/VID/ROM was 
-> the culprit.
-> 
-> The trace however I can't reproduce until now.
-> 
-> 
-> 
+Alexey, please go through at least drivers/net and look at the
+other stale references to these HAVE_* macros.
 
+For example I still see a bunch of HAVE_POLL_CONTROLLER stuff.
+
+Thanks.
+
+ariadne: Fix build.
+
+References removed HAVE_MULTICAST.
+
+Reporeted-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ drivers/net/ariadne.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ariadne.c b/drivers/net/ariadne.c
+index c35af3e..e2c2024 100644
+--- a/drivers/net/ariadne.c
++++ b/drivers/net/ariadne.c
+@@ -123,9 +123,7 @@ static void ariadne_reset(struct net_device *dev);
+ static irqreturn_t ariadne_interrupt(int irq, void *data);
+ static int ariadne_close(struct net_device *dev);
+ static struct net_device_stats *ariadne_get_stats(struct net_device *dev);
+-#ifdef HAVE_MULTICAST
+ static void set_multicast_list(struct net_device *dev);
+-#endif
+ 
+ 
+ static void memcpyw(volatile u_short *dest, u_short *src, int len)
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+1.6.6.1
 
