@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755852Ab0A0AJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823Ab0A0AII@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755852Ab0A0AJs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:09:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845Ab0A0AJp
+	id S1755823Ab0A0AII (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:08:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974Ab0A0AIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:09:45 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41155 "EHLO smtps.tip.net.au"
+	Tue, 26 Jan 2010 19:08:06 -0500
+Received: from kroah.org ([198.145.64.141]:35058 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754329Ab0A0AJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:09:44 -0500
-Date: Wed, 27 Jan 2010 11:09:37 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Airlie <airlied@linux.ie>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: linux-next: origin tree build warning
-Message-Id: <20100127110937.e606616d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__27_Jan_2010_11_09_37_+1100_GmD8HSpnBG8Zn0Gp"
+	id S1753888Ab0AZXm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:42:56 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:21 2010
+Message-Id: <20100126233921.099242955@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Tue, 26 Jan 2010 15:33:28 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       H Hartley Sweeten <hsweeten@visionengravers.com>, johnstul@us.ibm.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [02/98] clockevents: Add missing include to pacify sparse
+In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__27_Jan_2010_11_09_37_+1100_GmD8HSpnBG8Zn0Gp
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-Hi all,
+------------------
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
+From: H Hartley Sweeten <hartleys@visionengravers.com>
 
-drivers/gpu/drm/radeon/radeon_agp.c: In function 'radeon_agp_init':
-drivers/gpu/drm/radeon/radeon_agp.c:137: warning: format '%d' expects type =
-'int', but argument 4 has type 'size_t'
+commit 8e1a928a2ed7e8d5cad97c8e985294b4caedd168 upstream.
 
-Introduced by commit 0a3f316370da07fcdb11fde4f5a683d60713b7fd
-("drm/radeon/kms: Disable AGP is aperture size < 32M").
+Include "tick-internal.h" in order to pick up the extern function
+prototype for clockevents_shutdown(). This quiets the following sparse
+build noise:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+  warning: symbol 'clockevents_shutdown' was not declared. Should it be static?
 
---Signature=_Wed__27_Jan_2010_11_09_37_+1100_GmD8HSpnBG8Zn0Gp
-Content-Type: application/pgp-signature
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+LKML-Reference: <BD79186B4FD85F4B8E60E381CAEE190901E24550@mi8nycmail19.Mi8.com>
+Reviewed-by: Yong Zhang <yong.zhang0@gmail.com>
+Cc: johnstul@us.ibm.com
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+---
+ kernel/time/clockevents.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-iEYEARECAAYFAktfhEEACgkQjjKRsyhoI8yHdACfUzkzugOGYCXaEt2unlJ9gFop
-gaIAn2xBchw2TMBurm/9lw9620nCGmU+
-=DAHN
------END PGP SIGNATURE-----
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -20,6 +20,8 @@
+ #include <linux/sysdev.h>
+ #include <linux/tick.h>
+ 
++#include "tick-internal.h"
++
+ /* The registered clock event devices */
+ static LIST_HEAD(clockevent_devices);
+ static LIST_HEAD(clockevents_released);
 
---Signature=_Wed__27_Jan_2010_11_09_37_+1100_GmD8HSpnBG8Zn0Gp--
+
