@@ -1,85 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434Ab0AZI7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580Ab0AZJDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752434Ab0AZI7b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 03:59:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174Ab0AZI7a
+	id S1752580Ab0AZJDK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 04:03:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845Ab0AZJDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 03:59:30 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32850 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750829Ab0AZI73 (ORCPT
+	Tue, 26 Jan 2010 04:03:07 -0500
+Received: from mail.windriver.com ([147.11.1.11]:37594 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754Ab0AZJDB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 03:59:29 -0500
-Date: Tue, 26 Jan 2010 09:59:28 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] platform_driver_register:  warn if probe is in
-	.init.text
-Message-ID: <20100126085928.GD20792@pengutronix.de>
-References: <1245418939-20758-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090619141128.GA11506@suse.de> <20090619144354.GA20985@pengutronix.de> <20090629075535.GA20155@pengutronix.de> <20090711033459.GC1344@suse.de> <20090711100014.GA9540@pengutronix.de> <20090711170548.GC5205@suse.de> <20090907141941.GA19380@pengutronix.de> <20100122170641.GD13718@pengutronix.de> <20100122173846.GA11057@suse.de>
+	Tue, 26 Jan 2010 04:03:01 -0500
+Message-ID: <4B5EB223.60307@windriver.com>
+Date: Tue, 26 Jan 2010 17:13:07 +0800
+From: Hui Zhu <hui.zhu@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+To: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org,
+       teawater@gmail.com
+Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation
+ 	environments
+References: <4B5E5D4F.50803@windriver.com>	 <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com>	 <4B5E9BE9.2030702@windriver.com> <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com>
+In-Reply-To: <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100122173846.GA11057@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+X-OriginalArrivalTime: 26 Jan 2010 09:02:06.0576 (UTC) FILETIME=[3C1B5F00:01CA9E66]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Greg,
+Hi AmÃ©rico,
 
-On Fri, Jan 22, 2010 at 09:38:46AM -0800, Greg KH wrote:
-> On Fri, Jan 22, 2010 at 06:06:41PM +0100, Uwe Kleine-König wrote:
-> > Hello,
-> > 
-> > On Mon, Sep 07, 2009 at 04:19:41PM +0200, Uwe Kleine-König wrote:
-> > > Hi Greg,
-> > > 
-> > > On Sat, Jul 11, 2009 at 10:05:48AM -0700, Greg KH wrote:
-> > > > On Sat, Jul 11, 2009 at 12:00:14PM +0200, Uwe Kleine-König wrote:
-> > > > > Hi Greg,
-> > > > > 
-> > > > > > > Are you conviced and took the patch or did you give up to convince me?
-> > > > > > 
-> > > > > > Heh, no, sorry, it got burried in my queue.
-> > > > > > 
-> > > > > > > I still think the patch is correct and I'd like to have it applied.
-> > > > > > 
-> > > > > > Ok, let's test it out in the linux-next tree for a while to make sure it
-> > > > > > works properly.  Care to send me an updated version?
-> > > > > I updated to latest Linus' master.  It applies to linux-next from
-> > > > > Fri Jul 10 14:44:30 2009 +1000 as is.
-> > > > 
-> > > > Thanks, I'll apply it later today to my trees.
-> > > ping?!
-> > > 
-> > > > > Back some time I sent a series that fixes many of these bugs.  I will
-> > > > > update it later today and resend.
-> > > > 
-> > > > Thanks, that would be good to have, to keep the noise down for devices
-> > > > we already know about.
-> > ping?  I assume you don't have the original mails anymore, so should I
-> > resend?
+Thanks for your mail.
+
+AmÃ©rico Wang:
 > 
-> Yes, sorry.
-I would really appreciate if you'd take the patches as it is quite some
-work to update and verify the patches are still needed as changing
-platform_driver_register to platform_driver_probe doesn't conflict with
-this series.
+> 
+> "module" should be enough to express the meaning, I think.
+> 
+> 
+>> +       'help|h'                => \&usage,
+>> +);
+>> +my $vmlinux_name = $ARGV[$#ARGV];
+>> if (!defined($vmlinux_name)) {
+>>        my $kerver = `uname -r`;
+>>        chomp($kerver);
+>> @@ -23,6 +34,7 @@ if (!defined($vmlinux_name)) {
+>>        print "No vmlinux specified, assuming $vmlinux_name\n";
+>> }
+>> my $filename = $vmlinux_name;
+>> +
+> 
+> 
+> Adding this empty line probably is not what you really want.
+> 
+>> #
+>> # Step 1: Parse the oops to find the EIP value
+>> #
+> 
+> {snip}
+> 
 
-So can you please look into that before they are swapped out of your
-inbox the third(?) time?
+About this part, the code before "Parse the oops to find the EIP value" is for "Get options".
+I change this part to:
+ my $filename = $vmlinux_name;
+-#
+-# Step 1: Parse the oops to find the EIP value
+-#
++
++# Parse the oops to find the EIP value
 
-Best regards
-Uwe
+What do you think about it?
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+And I changed the other part according to your mail.
+
+Best regards,
+Hui
+
+The markup_oops.pl have 3 troubles to support cross-compiler environment:
+1.  It use objdump directly.
+2.  It use modinfo to get the message of module.
+3.  It use hex function that cannot support 64-bit number in 32-bit arch.
+
+This patch add 3 options to markup_oops.pl:
+1. -c CROSS_COMPILE	Specify the prefix used for toolchain.
+2. -m MODULE_DIRNAME	Specify the module directory name.
+3. Change hex function to Math::BigInt->from_hex.
+
+After this patch, parse the x8664 oops in x86, we can:
+cat amd64m | perl ~/kernel/tmp/m.pl -c /home/teawater/kernel/bin/x8664- -m ./e.ko vmlinux
+
+Thanks,
+Hui
+
+Signed-off-by: Hui Zhu <teawater@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: ozan@pardus.org.tr
+Cc: Matthew Wilcox <willy@linux.intel.com>
+
+---
+ scripts/markup_oops.pl |   49 ++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 36 insertions(+), 13 deletions(-)
+
+--- a/scripts/markup_oops.pl
++++ b/scripts/markup_oops.pl
+@@ -2,6 +2,7 @@
+ 
+ use File::Basename;
+ use Math::BigInt;
++use Getopt::Long;
+ 
+ # Copyright 2008, Intel Corporation
+ #
+@@ -15,7 +16,17 @@ use Math::BigInt;
+ # 	Arjan van de Ven <arjan@linux.intel.com>
+ 
+ 
+-my $vmlinux_name = $ARGV[0];
++my $cross_compile = "";
++my $vmlinux_name = "";
++my $modulefile = "";
++
++# Get options
++Getopt::Long::GetOptions(
++	'cross-compile|c=s'	=> \$cross_compile,
++	'module|m=s'	=> \$modulefile,
++	'help|h'		=> \&usage,
++);
++my $vmlinux_name = $ARGV[$#ARGV];
+ if (!defined($vmlinux_name)) {
+ 	my $kerver = `uname -r`;
+ 	chomp($kerver);
+@@ -23,9 +34,8 @@ if (!defined($vmlinux_name)) {
+ 	print "No vmlinux specified, assuming $vmlinux_name\n";
+ }
+ my $filename = $vmlinux_name;
+-#
+-# Step 1: Parse the oops to find the EIP value
+-#
++
++# Parse the oops to find the EIP value
+ 
+ my $target = "0";
+ my $function;
+@@ -177,26 +187,26 @@ my $decodestart = Math::BigInt->from_hex
+ my $decodestop = Math::BigInt->from_hex("0x$target") + 8192;
+ if ($target eq "0") {
+ 	print "No oops found!\n";
+-	print "Usage: \n";
+-	print "    dmesg | perl scripts/markup_oops.pl vmlinux\n";
+-	exit;
++	usage();
+ }
+ 
+ # if it's a module, we need to find the .ko file and calculate a load offset
+ if ($module ne "") {
+-	my $modulefile = `modinfo $module | grep '^filename:' | awk '{ print \$2 }'`;
+-	chomp($modulefile);
++	if ($modulefile eq "") {
++		my $modulefile = `modinfo $module | grep '^filename:' | awk '{ print \$2 }'`;
++		chomp($modulefile);
++	}
+ 	$filename = $modulefile;
+ 	if ($filename eq "") {
+ 		print "Module .ko file for $module not found. Aborting\n";
+ 		exit;
+ 	}
+ 	# ok so we found the module, now we need to calculate the vma offset
+-	open(FILE, "objdump -dS $filename |") || die "Cannot start objdump";
++	open(FILE, $cross_compile."objdump -dS $filename |") || die "Cannot start objdump";
+ 	while (<FILE>) {
+ 		if ($_ =~ /^([0-9a-f]+) \<$function\>\:/) {
+ 			my $fu = $1;
+-			$vmaoffset = hex($target) - hex($fu) - hex($func_offset);
++			$vmaoffset = Math::BigInt->from_hex("0x$target") - Math::BigInt->from_hex("0x$fu") - Math::BigInt->from_hex("0x$func_offset");
+ 		}
+ 	}
+ 	close(FILE);
+@@ -212,7 +222,7 @@ sub InRange {
+ 	my ($address, $target) = @_;
+ 	my $ad = "0x".$address;
+ 	my $ta = "0x".$target;
+-	my $delta = hex($ad) - hex($ta);
++	my $delta = Math::BigInt->from_hex($ad) - Math::BigInt->from_hex($ta);
+ 
+ 	if (($delta > -4096) && ($delta < 4096)) {
+ 		return 1;
+@@ -225,7 +235,7 @@ sub InRange {
+ # first, parse the input into the lines array, but to keep size down,
+ # we only do this for 4Kb around the sweet spot
+ 
+-open(FILE, "objdump -dS --adjust-vma=$vmaoffset --start-address=$decodestart --stop-address=$decodestop $filename |") || die "Cannot start objdump";
++open(FILE, $cross_compile."objdump -dS --adjust-vma=$vmaoffset --start-address=$decodestart --stop-address=$decodestop $filename |") || die "Cannot start objdump";
+ 
+ while (<FILE>) {
+ 	my $line = $_;
+@@ -344,3 +354,16 @@ while ($i < $finish) {
+ 	$i = $i +1;
+ }
+ 
++sub usage {
++	print <<EOT;
++Usage:
++  dmesg | perl $0 [OPTION] [VMLINUX]
++
++OPTION:
++  -c, --cross-compile CROSS_COMPILE	Specify the prefix used for toolchain.
++  -m, --module MODULE_DIRNAME		Specify the module directory name.
++  -h, --help				Help.
++EOT
++	exit;
++}
++
