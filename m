@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660Ab0AZVpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712Ab0AZVpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660Ab0AZVpW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 16:45:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532Ab0AZVpV
+	id S1754712Ab0AZVpe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 16:45:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676Ab0AZVpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 16:45:21 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:56474 "EHLO
-	mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183Ab0AZVpV (ORCPT
+	Tue, 26 Jan 2010 16:45:30 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:56826 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754546Ab0AZVpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 16:45:21 -0500
+	Tue, 26 Jan 2010 16:45:22 -0500
+To: jeff@jgarrett.org (Jeff Garrett)
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: acpi_idle: Very idle Core i7 machine never enters C3
+From: Andi Kleen <andi@firstfloor.org>
+References: <20100126084740.GA5265@jgarrett.org>
+Date: Tue, 26 Jan 2010 22:45:20 +0100
+In-Reply-To: <20100126084740.GA5265@jgarrett.org> (Jeff Garrett's message of "Tue, 26 Jan 2010 02:47:40 -0600")
+Message-ID: <87y6jkee1b.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19295.25195.709536.806581@stoffel.org>
-Date: Tue, 26 Jan 2010 16:45:15 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: How to write driver that needs to call another driver?
-In-Reply-To: <1264540265.2411.20.camel@utx.utx.cz>
-References: <1264540265.2411.20.camel@utx.utx.cz>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+jeff@jgarrett.org (Jeff Garrett) writes:
 
-Stanislav> My Zaurus SL-C3200 PDA needs a driver that needs to call
-Stanislav> another driver from another part of the device tree:
+> Hi,
+>
+> I was trying to chase down a theory that my desktop machine (a core i7)
+> is running warm (the fan sounds like it's at full speed all the time,
+> and I think it's not always acted this way -- hence the theory).
+>
+> powertop is never showing it spending any time in C3...
+>
+> I compiled a kernel without USB/sound/radeon, and ran without X.  I was
+> able to get the wakeups/sec down below 20, but no time is spent in C3.
 
-Stanislav> MAX1111 (4 channel A/D) is connected to several other
-Stanislav> pieces of hardware (audio player remote keyboard, battery
-Stanislav> voltage, battery temperature, external power voltage).
+[...]
+> This may be a complete red herring, but I added some printk logic to
+> acpi_idle_bm_check(), and it is getting called often, but bm_status is
+> always 1.  [I infer from this that the idle logic is trying to go into
+> C3, but this check is stopping it...  Unless I misread something.]
 
-Stanislav> Battery power and charging management needs to read values
-Stanislav> from MAX1111 during. Also Remote Keyboard input device
-Stanislav> needs to read MAX1111.
+Normally a Core i7 (or any modern Intel systems) should not use
+bm_check at all. That's only for older systems that didn't support
+MWAIT with c-state hint, but relied on the old port based interface. 
 
-Stanislav> But both drivers also need dedicated GPIO that are
-Stanislav> allocated on Scoop chip (different part of the platform
-Stanislav> device tree).
+So something is already confused there.
 
-Stanislav> What is the best way to implement it?
+I think it should still work though.
+Of course if you really have a lot of bus mastering in the background
+then yes there will be no C3.
 
-By no means am I a driver expert or writer, but from what I recall in
-the past when such questions came up is for you to write a low level
-core driver, which binds to the device, and then exposes that various
-interfaces you want to bind to for other devices to talk to.
+-Andi
 
-This gets the ref counting right, and lets you know when something is
-accessing the MAX1111, so that suspend and such happen in the correct
-order.
 
-Look through the lkml archives for previous answers.  I'm sure Greg
-will have a better answer and a pointer to an example driver to look
-at.
-
-Cheers,
-John
+-- 
+ak@linux.intel.com -- Speaking for myself only.
