@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667Ab0A0ACw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626Ab0A0AB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667Ab0A0ACw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755613Ab0A0ACb
+	id S1755626Ab0A0AB2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213Ab0A0ABX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:02:31 -0500
-Received: from kroah.org ([198.145.64.141]:35172 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:01:23 -0500
+Received: from kroah.org ([198.145.64.141]:35169 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754150Ab0AZXnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:20 -0500
+	id S1754061Ab0AZXnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:21 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:24 2010
-Message-Id: <20100126233924.023394147@mini.kroah.org>
+Message-Id: <20100126233924.543880691@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:50 -0800
+Date: Tue, 26 Jan 2010 15:33:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Florian Westphal <fw@strlen.de>, Patrick McHardy <kaber@trash.net>,
-       Ben Hutchings <ben@decadent.org.uk>
-Subject: [24/98] netfilter: xtables: fix conntrack match v1 ipt-save output
+       Rusty Russell <rusty@rustcorp.com.au>, peterz@infradead.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [28/98] sched: Fix isolcpus boot option
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,177 +29,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Florian Westphal <fw@strlen.de>
+From: Rusty Russell <rusty@rustcorp.com.au>
 
-commit 3a0429292daa0e1ec848bd26479f5e48b0d54a42 upstream.
+commit bdddd2963c0264c56f18043f6fa829d3c1d3d1c0 upstream.
 
-commit d6d3f08b0fd998b647a05540cedd11a067b72867
-(netfilter: xtables: conntrack match revision 2) does break the
-v1 conntrack match iptables-save output in a subtle way.
+Anton Blanchard wrote:
 
-Problem is as follows:
+> We allocate and zero cpu_isolated_map after the isolcpus
+> __setup option has run. This means cpu_isolated_map always
+> ends up empty and if CPUMASK_OFFSTACK is enabled we write to a
+> cpumask that hasn't been allocated.
 
-    up = kmalloc(sizeof(*up), GFP_KERNEL);
-[..]
-   /*
-    * The strategy here is to minimize the overhead of v1 matching,
-    * by prebuilding a v2 struct and putting the pointer into the
-    * v1 dataspace.
-    */
-    memcpy(up, info, offsetof(typeof(*info), state_mask));
-[..]
-    *(void **)info  = up;
+I introduced this regression in 49557e620339cb13 (sched: Fix
+boot crash by zalloc()ing most of the cpu masks).
 
-As the v2 struct pointer is saved in the match data space,
-it clobbers the first structure member (->origsrc_addr).
+Use the bootmem allocator if they set isolcpus=, otherwise
+allocate and zero like normal.
 
-Because the _v1 match function grabs this pointer and does not actually
-look at the v1 origsrc, run time functionality does not break.
-But iptables -nvL (or iptables-save) cannot know that v1 origsrc_addr
-has been overloaded in this way:
-
-$ iptables -p tcp -A OUTPUT -m conntrack --ctorigsrc 10.0.0.1 -j ACCEPT
-$ iptables-save
--A OUTPUT -p tcp -m conntrack --ctorigsrc 128.173.134.206 -j ACCEPT
-
-(128.173... is the address to the v2 match structure).
-
-To fix this, we take advantage of the fact that the v1 and v2 structures
-are identical with exception of the last two structure members (u8 in v1,
-u16 in v2).
-
-We extract them as early as possible and prevent the v2 matching function
-from looking at those two members directly.
-
-Previously reported by Michel Messerschmidt via Ben Hutchings, also
-see Debian Bug tracker #556587.
-
-Signed-off-by: Florian Westphal <fw@strlen.de>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Cc: Ben Hutchings <ben@decadent.org.uk>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Reported-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: peterz@infradead.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: <stable@kernel.org>
+LKML-Reference: <200912021409.17013.rusty@rustcorp.com.au>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Tested-by: Anton Blanchard <anton@samba.org>
 
 ---
- net/netfilter/xt_conntrack.c |   61 +++++++++++--------------------------------
- 1 file changed, 17 insertions(+), 44 deletions(-)
+ kernel/sched.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/net/netfilter/xt_conntrack.c
-+++ b/net/netfilter/xt_conntrack.c
-@@ -113,7 +113,8 @@ ct_proto_port_check(const struct xt_conn
- }
- 
- static bool
--conntrack_mt(const struct sk_buff *skb, const struct xt_match_param *par)
-+conntrack_mt(const struct sk_buff *skb, const struct xt_match_param *par,
-+             u16 state_mask, u16 status_mask)
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8061,6 +8061,7 @@ static cpumask_var_t cpu_isolated_map;
+ /* Setup the mask of cpus configured for isolated domains */
+ static int __init isolated_cpu_setup(char *str)
  {
- 	const struct xt_conntrack_mtinfo2 *info = par->matchinfo;
- 	enum ip_conntrack_info ctinfo;
-@@ -136,7 +137,7 @@ conntrack_mt(const struct sk_buff *skb, 
- 			if (test_bit(IPS_DST_NAT_BIT, &ct->status))
- 				statebit |= XT_CONNTRACK_STATE_DNAT;
- 		}
--		if (!!(info->state_mask & statebit) ^
-+		if (!!(state_mask & statebit) ^
- 		    !(info->invert_flags & XT_CONNTRACK_STATE))
- 			return false;
- 	}
-@@ -172,7 +173,7 @@ conntrack_mt(const struct sk_buff *skb, 
- 		return false;
- 
- 	if ((info->match_flags & XT_CONNTRACK_STATUS) &&
--	    (!!(info->status_mask & ct->status) ^
-+	    (!!(status_mask & ct->status) ^
- 	    !(info->invert_flags & XT_CONNTRACK_STATUS)))
- 		return false;
- 
-@@ -192,11 +193,17 @@ conntrack_mt(const struct sk_buff *skb, 
- static bool
- conntrack_mt_v1(const struct sk_buff *skb, const struct xt_match_param *par)
- {
--	const struct xt_conntrack_mtinfo2 *const *info = par->matchinfo;
--	struct xt_match_param newpar = *par;
-+	const struct xt_conntrack_mtinfo1 *info = par->matchinfo;
- 
--	newpar.matchinfo = *info;
--	return conntrack_mt(skb, &newpar);
-+	return conntrack_mt(skb, par, info->state_mask, info->status_mask);
-+}
-+
-+static bool
-+conntrack_mt_v2(const struct sk_buff *skb, const struct xt_match_param *par)
-+{
-+	const struct xt_conntrack_mtinfo2 *info = par->matchinfo;
-+
-+	return conntrack_mt(skb, par, info->state_mask, info->status_mask);
++	alloc_bootmem_cpumask_var(&cpu_isolated_map);
+ 	cpulist_parse(str, cpu_isolated_map);
+ 	return 1;
  }
+@@ -9591,7 +9592,9 @@ void __init sched_init(void)
+ 	zalloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
+ 	alloc_cpumask_var(&nohz.ilb_grp_nohz_mask, GFP_NOWAIT);
+ #endif
+-	zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
++	/* May be allocated at isolcpus cmdline parse time */
++	if (cpu_isolated_map == NULL)
++		zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
+ #endif /* SMP */
  
- static bool conntrack_mt_check(const struct xt_mtchk_param *par)
-@@ -209,45 +216,11 @@ static bool conntrack_mt_check(const str
- 	return true;
- }
- 
--static bool conntrack_mt_check_v1(const struct xt_mtchk_param *par)
--{
--	struct xt_conntrack_mtinfo1 *info = par->matchinfo;
--	struct xt_conntrack_mtinfo2 *up;
--	int ret = conntrack_mt_check(par);
--
--	if (ret < 0)
--		return ret;
--
--	up = kmalloc(sizeof(*up), GFP_KERNEL);
--	if (up == NULL) {
--		nf_ct_l3proto_module_put(par->family);
--		return -ENOMEM;
--	}
--
--	/*
--	 * The strategy here is to minimize the overhead of v1 matching,
--	 * by prebuilding a v2 struct and putting the pointer into the
--	 * v1 dataspace.
--	 */
--	memcpy(up, info, offsetof(typeof(*info), state_mask));
--	up->state_mask  = info->state_mask;
--	up->status_mask = info->status_mask;
--	*(void **)info  = up;
--	return true;
--}
--
- static void conntrack_mt_destroy(const struct xt_mtdtor_param *par)
- {
- 	nf_ct_l3proto_module_put(par->family);
- }
- 
--static void conntrack_mt_destroy_v1(const struct xt_mtdtor_param *par)
--{
--	struct xt_conntrack_mtinfo2 **info = par->matchinfo;
--	kfree(*info);
--	conntrack_mt_destroy(par);
--}
--
- static struct xt_match conntrack_mt_reg[] __read_mostly = {
- 	{
- 		.name       = "conntrack",
-@@ -255,8 +228,8 @@ static struct xt_match conntrack_mt_reg[
- 		.family     = NFPROTO_UNSPEC,
- 		.matchsize  = sizeof(struct xt_conntrack_mtinfo1),
- 		.match      = conntrack_mt_v1,
--		.checkentry = conntrack_mt_check_v1,
--		.destroy    = conntrack_mt_destroy_v1,
-+		.checkentry = conntrack_mt_check,
-+		.destroy    = conntrack_mt_destroy,
- 		.me         = THIS_MODULE,
- 	},
- 	{
-@@ -264,7 +237,7 @@ static struct xt_match conntrack_mt_reg[
- 		.revision   = 2,
- 		.family     = NFPROTO_UNSPEC,
- 		.matchsize  = sizeof(struct xt_conntrack_mtinfo2),
--		.match      = conntrack_mt,
-+		.match      = conntrack_mt_v2,
- 		.checkentry = conntrack_mt_check,
- 		.destroy    = conntrack_mt_destroy,
- 		.me         = THIS_MODULE,
+ 	perf_event_init();
 
 
