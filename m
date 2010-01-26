@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362Ab0AZN3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494Ab0AZNcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753362Ab0AZN3b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 08:29:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590Ab0AZN3a
+	id S1753494Ab0AZNcm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 08:32:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972Ab0AZNcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 08:29:30 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:36820 "EHLO kernel.dk"
+	Tue, 26 Jan 2010 08:32:42 -0500
+Received: from mga09.intel.com ([134.134.136.24]:12936 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752536Ab0AZN3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 08:29:30 -0500
-Date: Tue, 26 Jan 2010 14:29:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: fix bio_add_page for non trivial merge_bvec_fn
-	case
-Message-ID: <20100126132928.GI13771@kernel.dk>
-References: <87hbq980tc.fsf@openvz.org>
+	id S1751916Ab0AZNcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 08:32:41 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,346,1262592000"; 
+   d="scan'208";a="590490617"
+Date: Tue, 26 Jan 2010 21:32:17 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Chris Frost <frost@cs.ucla.edu>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steve Dickson <steved@redhat.com>, David Howells <dhowells@redhat.com>,
+       Xu Chenfeng <xcf@ustc.edu.cn>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Steve VanDeBogart <vandebo-lkml@nerdbox.net>
+Subject: Re: [PATCH] mm/readahead.c: update the LRU positions of in-core
+	pages, too
+Message-ID: <20100126133217.GB25407@localhost>
+References: <20100120215536.GN27212@frostnet.net> <20100121054734.GC24236@localhost> <20100123040348.GC30844@frostnet.net> <20100123102222.GA6943@localhost> <20100125094228.f7ca1430.kamezawa.hiroyu@jp.fujitsu.com> <20100125024544.GA16462@localhost> <20100125223635.GC2822@frostnet.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=gb2312
 Content-Disposition: inline
-In-Reply-To: <87hbq980tc.fsf@openvz.org>
+In-Reply-To: <20100125223635.GC2822@frostnet.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26 2010, Dmitry Monakhov wrote:
-> Hi, year ago I've sent a patch which fix false bio merge rejects, but
-> seems patch was missed. Currently the issue is still present.
-> 
+On Mon, Jan 25, 2010 at 03:36:35PM -0700, Chris Frost wrote:
+> I changed Wu's patch to add a PageLRU() guard that I believe is required
+> and optimized zone lock acquisition to only unlock and lock at zone changes.
+> This optimization seems to provide a 10-20% system time improvement for
+> some of my GIMP benchmarks and no improvement for other benchmarks.
 
-> From 92a97ef181e15caa94bd56a1ade5c337db599b79 Mon Sep 17 00:00:00 2001
-> From: Dmitry Monakhov <dmonakhov@openvz.org>
-> Date: Tue, 26 Jan 2010 16:01:34 +0300
-> Subject: [PATCH] [PATCH] block: fix bio_add_page for non trivial merge_bvec_fn case
-> 
-> We have to properly decrease bi_size in order to merge_bvec_fn return
-> right result.  Otherwise this result in false merge rejects for two
-> absolutely valid bio_vecs.  This may cause significant performance penalty
-> for example Itanium: page_size == 16k, fs_block_size == 1k and block device
-> is raid with small chunk_size.
-> 
-> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
-> ---
->  fs/bio.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/bio.c b/fs/bio.c
-> index 76e6713..9f8e517 100644
-> --- a/fs/bio.c
-> +++ b/fs/bio.c
-> @@ -548,7 +548,8 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
->  				struct bvec_merge_data bvm = {
->  					.bi_bdev = bio->bi_bdev,
->  					.bi_sector = bio->bi_sector,
-> -					.bi_size = bio->bi_size,
-> +					.bi_size = bio->bi_size -
-> +							(prev->bv_len - len),
->  					.bi_rw = bio->bi_rw,
->  				};
+> +			del_page_from_lru_list(zone, page, lru);
+> +			add_page_to_lru_list(zone, page, lru);
+> +		}
+> +		put_page(page);
 
-Hmm confused. why isn't this just bio->bi_size - len?
+Hmm. put_page() inside lru_lock can deadlock. So you need to further
+optimize the code to do pagevec_lookup() and pagevec_release() plus
+cond_resched().
 
--- 
-Jens Axboe
-
+Thanks,
+Fengguang
