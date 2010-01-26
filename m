@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751679Ab0AZASn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751816Ab0AZATO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751679Ab0AZASn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 19:18:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393Ab0AZASl
+	id S1751816Ab0AZATO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 19:19:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549Ab0AZATM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 19:18:41 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55481 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751325Ab0AZASk (ORCPT
+	Mon, 25 Jan 2010 19:19:12 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:19578 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450Ab0AZATK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 19:18:40 -0500
-Date: Mon, 25 Jan 2010 16:17:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Travis <travis@sgi.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Russ Anderson <rja@sgi.com>, Dave Airlie <airlied@redhat.com>,
-       Alex Chiang <achiang@hp.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Cyrill Gorcunov <gorcunov@openvz.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Robin Holt <holt@sgi.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Adam Jackson <ajax@nwnk.net>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Gaetan Nadon <memsize@videotron.ca>, "H. Peter Anvin" <hpa@zytor.com>,
-       Aaron Plattner <aplattner@nvidia.com>, Jack Steiner <steiner@sgi.com>,
-       Tiago Vignatti <tiago.vignatti@nokia.com>, Cliff Wickman <cpw@sgi.com>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Christian Zander <chzander@nvidia.com>, Yu Zhao <yu.zhao@intel.com>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH 1/4] pci: Update pci_set_vga_state to call arch
- functions
-Message-Id: <20100125161702.e070985e.akpm@linux-foundation.org>
-In-Reply-To: <4B5E32D0.8040401@sgi.com>
-References: <20100118183412.560438000@alcatraz.americas.sgi.com>
-	<20100118183418.045021000@alcatraz.americas.sgi.com>
-	<20100125155234.a2e397a1.akpm@linux-foundation.org>
-	<4B5E32D0.8040401@sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Jan 2010 19:19:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qIrtaxxs3C9NqNkKMxS2Zd6hN0KhdLcZO6b2mRfWSQRy+Bp6p+zdbDWalJStlOYOgj
+         F9jK6IHk9fzwXct1K9TNz+8u93QcLkP8MOXv8epMfwiWv9J9OkhJg7ibKpbEB+LEnm1p
+         Ne8mEL0lojIuR1TdHBExn6ErKu29xTi5zgnjU=
+Date: Tue, 26 Jan 2010 01:19:03 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
+       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
+       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
+       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
+       x86@kernel.org, mingo@redhat.com, dan.j.williams@intel.com,
+       borislav.petkov@amd.com, ying.huang@intel.com, lenb@kernel.org,
+       neilb@suse.de, cl@linux-foundation.org
+Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to
+	hw_breakpoint
+Message-ID: <20100126001901.GI5087@nowhere>
+References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264432935-10453-8-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jan 2010 16:09:52 -0800
-Mike Travis <travis@sgi.com> wrote:
-
-> > 
-> > Still, a neater solution might be
-> > 
-> > int arch_pci_set_vga_state(...) __weak
-> > {
-> > 	return 0;
-> > }
-> > 
-> > and then resolve it at linkage time?
-> > 
-> > 
+On Tue, Jan 26, 2010 at 12:22:14AM +0900, Tejun Heo wrote:
+> Add __percpu sparse annotations to hw_breakpoint.
 > 
-> Wouldn't the linked in stronger function then need to surround
-> the UV register updating with "if (uv_system)"?
-
-If the file which implements arch_pci_set_vga_state() is present in
-vmlinux on non-uv systems then yes.
-
-Presumably that file is arch/x86/kernel/apic/x2apic_uv_x.c, although
-that might later become a problem if other sub-architectures a) want to
-get at this hook and b) can be linked into vmlinux along with
-arch/x86/kernel/apic/x2apic_uv_x.o.  But such a kernel wouldn't
-actually link, so we'll need to address it at that stage.
+> These annotations are to make sparse consider percpu variables to be
+> in a different address space and warn if accessed without going
+> through percpu accessors.  This patch doesn't affect normal builds.
+> 
+> per_cpu(nr_task_bp_pinned, cpu) is replaced with
+> &per_cpu(nr_task_bp_pinned[0], cpu).  This is the same to the compiler
+> but allows per_cpu() macro to correctly drop __percpu designation for
+> the returned pointer.
 
 
-If this is a UV-specific hack which other architectures and
-sub-architectures are unlikely to need (seems that way?) then I'd be
-going for something whcih is simple and minimal.
+
+Ouch... It's unpleasant to see such workaround that messes up the
+code just to make sparse happy.
+
+I guess __percpu is an address_space attribute? Is there no
+way to force the address space change directly from the
+per_cpu() macro?
+
+Thanks.
 
