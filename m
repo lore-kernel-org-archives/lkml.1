@@ -1,134 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577Ab0AZR21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533Ab0AZRco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577Ab0AZR21 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 12:28:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703Ab0AZR21
+	id S1754533Ab0AZRco (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 12:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996Ab0AZRcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 12:28:27 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:50363 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754161Ab0AZR20 (ORCPT
+	Tue, 26 Jan 2010 12:32:43 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:20517 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753177Ab0AZRcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 12:28:26 -0500
-Date: Tue, 26 Jan 2010 20:28:24 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
-Message-ID: <20100126172824.GA20319@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
- <20100125181100.GA13805@oksana.dev.rtsoft.ru>
- <201001252234.30169.david-b@pacbell.net>
+	Tue, 26 Jan 2010 12:32:42 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with pci=use_crs)
+Date: Tue, 26 Jan 2010 10:32:35 -0700
+User-Agent: KMail/1.9.10
+Cc: Jeff Garrett <jeff@jgarrett.org>, Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Myron Stowe <myron.stowe@hp.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <20100126071912.GA7543@jgarrett.org> <201001261348.59508.rjw@sisk.pl>
+In-Reply-To: <201001261348.59508.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <201001252234.30169.david-b@pacbell.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <201001261032.37053.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 10:34:29PM -0800, David Brownell wrote:
-> On Monday 25 January 2010, Anton Vorontsov wrote:
+On Tuesday 26 January 2010 05:48:59 am Rafael J. Wysocki wrote:
+> On Tuesday 26 January 2010, Jeff Garrett wrote:
+> > On Sun, Jan 24, 2010 at 11:04:38PM +0100, Rafael J. Wysocki wrote:
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.32.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15124
+> > > Subject		: PCI host bridge windows ignored (works with pci=use_crs)
+> > > Submitter	: Jeff Garrett <jeff@jgarrett.org>
+> > > Date		: 2010-01-13 5:37 (12 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=126336296600307&w=4
+> > > Handled-By	: Yinghai Lu <yinghai@kernel.org>
+> > > 		  Bjorn Helgaas <bjorn.helgaas@hp.com>
 > > 
-> > +config GPIOLIB_NOTIFIER
-> > +       bool
-> > +       help
-> > +         This symbol is selected by subsystems that need to handle GPIO
-> > +         chips addition and removal. E.g., this is used for the
-> > +         OpenFirmware bindings.
-> > +
-> 
-> I'm no huge fan of notifiers, but I suppose they have their place.
-> 
-> However ... I don't see a lot of win to making this optional.
+> > This regression should still be listed.  No patch to test yet.
+> ...
+> IIRC, we already know how to fix this ...
 
-OK, will remove it.
+As far as I know, we do NOT know how to fix this.
 
-> Just
-> inline the little two blocking_notifier_call_chain() calls directly,
-> making this a *LOT* simpler.
+This regression occurred when we added intel_bus.c because it's not
+yet smart enough to determine the correct host bridge apertures.
+Here's what it thinks the bridge aperture is and the Radeon BAR:
 
-I'd rather stay with gpio_call_chain() helper, it makes the code
-a little bit prettier, IMO. Compare this:
+  IOH bus: 00 index 1 mmio: [e0000000, fdffffff]
+  pci 0000:04:00.0: reg 10: [mem 0xd0000000-0xdfffffff 64bit pref]
 
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -1103,6 +1107,9 @@ fail:
- 		pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
- 			chip->base, chip->base + chip->ngpio - 1,
- 			chip->label ? : "generic");
-+	else
-+		blocking_notifier_call_chain(&gpio_notifier,
-+					     GPIO_NOTIFY_CHIP_ADDED, chip);
- 	return status;
- }
- EXPORT_SYMBOL_GPL(gpiochip_add);
-@@ -1119,6 +1126,13 @@ int gpiochip_remove(struct gpio_chip *chip)
- 	int		status = 0;
- 	unsigned	id;
- 
-+	/* Ask external subsystems to release the chip. */
-+	status = blocking_notifier_call_chain(&gpio_notifier,
-+					      GPIO_NOTIFY_CHIP_REMOVE, chip);
-+	status = notifier_to_errno(status);
-+	if (status)
-+		return status;
-+
- 	spin_lock_irqsave(&gpio_lock, flags);
- 
- 	for (id = chip->base; id < chip->base + chip->ngpio; id++) {
+The IOH aperture is obviously not big enough to cover the Radeon BAR.
+But the host bridge _CRS tells us this:
 
---- 
+  pci_root PNP0A08:00: host bridge window [mem 0xc0000000-0xdfffffff]
+  pci_root PNP0A08:00: host bridge window [mem 0xf0000000-0xfed8ffff]
 
-With the call_chain helper:
+which IS big enough, and we know the bridge is in fact forwarding the
+[mem 0xd0000000-0xdfffffff 64bit pref] region, because the Radeon works
+when Jeff boots with "pci=use_crs".
 
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -1029,6 +1030,16 @@ static inline void gpiochip_unexport(struct gpio_chip *chip)
- 
- #endif /* CONFIG_GPIO_SYSFS */
- 
-+static int gpio_call_chain(struct gpio_chip *chip, enum gpio_notify_msg msg)
-+{
-+	int ret = blocking_notifier_call_chain(&gpio_notifier, msg, chip);
-+
-+	return notifier_to_errno(ret);
-+}
-+
- /**
-  * gpiochip_add() - register a gpio_chip
-  * @chip: the chip to register, with chip->base initialized
-@@ -1103,6 +1114,9 @@ fail:
- 		pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
- 			chip->base, chip->base + chip->ngpio - 1,
- 			chip->label ? : "generic");
-+	else
-+		gpio_call_chain(chip, GPIO_NOTIFY_CHIP_ADDED);
-+
- 	return status;
- }
- EXPORT_SYMBOL_GPL(gpiochip_add);
-@@ -1119,6 +1133,11 @@ int gpiochip_remove(struct gpio_chip *chip)
- 	int		status = 0;
- 	unsigned	id;
- 
-+	/* Ask external subsystems to release the chip. */
-+	status = gpio_call_chain(chip, GPIO_NOTIFY_CHIP_REMOVE);
-+	if (status)
-+		return status;
-+
- 	spin_lock_irqsave(&gpio_lock, flags);
- 
- 	for (id = chip->base; id < chip->base + chip->ngpio; id++) {
---- 
+I'm quite concerned about this for .33 because I don't think Jeff's
+configuration (Dell desktop with Intel x58 and large graphics device)
+is unusual.
 
-Thanks!
+The benefit of intel_bus.c is on machines with multiple IOHs, where we
+need to figure out which address ranges go to which IOHs so we can
+program downstream devices correctly.  But even there, _CRS should give
+us the information we need, so "pci=use_crs" should make these machines
+work.
+
+I think we should remove intel_bus.c before .33.  It's breaking boxes
+and we don't know how to fix it.  Even if we do find out how to fix it,
+I think we should move toward using _CRS instead, because that's what
+Windows uses and it's an easy way for the firmware to tell us about
+platform quirks.
+
+Bjorn
