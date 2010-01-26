@@ -1,114 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753475Ab0AZCKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504Ab0AZCME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753475Ab0AZCKt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 21:10:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184Ab0AZCKs
+	id S1753504Ab0AZCME (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 21:12:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325Ab0AZCMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 21:10:48 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:5263 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753075Ab0AZCKr (ORCPT
+	Mon, 25 Jan 2010 21:12:01 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54307 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753320Ab0AZCMA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 21:10:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BmB554uMwng8dm2yOIRaHm6+gpZi+5BO05YR9cp7FooJU+82LXqdFo6H82sV8mwMGv
-         o+WQuyZUXdKK9Tq52RqJ+qHRmLSlB37DOOURk8mFAntUNnd7GtgKNfbk6DLYej1VHnDQ
-         ghA9I2N5CWFgR4wd5DXvrD69jQ7NpVfX6QPbY=
-Date: Tue, 26 Jan 2010 03:10:42 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
-       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
-       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
-       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
-       x86@kernel.org, mingo@redhat.com, dan.j.williams@intel.com,
-       borislav.petkov@amd.com, ying.huang@intel.com, lenb@kernel.org,
-       neilb@suse.de, cl@linux-foundation.org
-Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to
-	hw_breakpoint
-Message-ID: <20100126021041.GN5087@nowhere>
-References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere> <4B5E3BED.6030705@kernel.org> <20100126010239.GK5087@nowhere> <4B5E4308.8020105@kernel.org> <20100126020113.GM5087@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100126020113.GM5087@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 25 Jan 2010 21:12:00 -0500
+Date: Tue, 26 Jan 2010 02:13:06 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: William Hubbs <w.d.hubbs@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, gregkh@suse.de,
+       Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       Chris Brannon <cmbrannon79@gmail.com>, Kirk Reiser <kirk@reisers.ca>
+Subject: Re: request for assistance:  accessing ttys from kernel space
+Message-ID: <20100126021306.16809e71@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100126020203.GA23551@linux1>
+References: <20100126020203.GA23551@linux1>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 03:01:14AM +0100, Frederic Weisbecker wrote:
-> On Tue, Jan 26, 2010 at 10:19:04AM +0900, Tejun Heo wrote:
-> > Hello,
-> > 
-> > On 01/26/2010 10:02 AM, Frederic Weisbecker wrote:
-> > > Well, sorry I must be missing something obvious, but is it impossible
-> > > to make per_cpu(var, cpu) returning something cast in:
-> > > 
-> > > 	(typeof(var) __force)
-> > > 
-> > > Or I guess you did that already and it is not working with static
-> > > arrays, or?
-> > 
-> > Yeap, the definition looks like
-> > 
-> >  #define SHIFT_PERCPU_PTR(__p, __offset)	({			\
-> > 	__verify_pcpu_ptr((__p));					\
-> > 	RELOC_HIDE((typeof(*(__p)) __kernel __force *)(__p), (__offset)); \
-> >  })
-> > 
-> >  #define per_cpu(var, cpu) \
-> > 	(*SHIFT_PERCPU_PTR(&(var), per_cpu_offset(cpu)))
-> > 
-> > but it just ends up putting the __force at the wrong layer.  It seems
-> > that (typeof(var) __kernel __force) tell sparse var is in the kernel
-> > address space but not its members.
-> 
-> 
-> So, may be it considers you are applying the address space overriding
-> to the pointer to the type and not to the type itself.
-> 
-> Consider:
-> 
-> 	int __percpu i;
-> 
-> What you do above *might* be considered as if SHIFT_PERCPU_PTR
-> returns something of a type:
-> 
-> 	int * __percpu i;
-> 
-> So the pointer is in the normal address space, but its content is in
-> __percpu address space.
-> 
-> What if you do this:
-> 
-> 
-> #define SHIFT_PERCPU_PTR(__p, __offset)      ({                      \
->       __verify_pcpu_ptr((__p));                                       \
->       RELOC_HIDE((__p), (__offset)); \
-> })
-> 
-> #define per_cpu(var, cpu) \
->       (typeof(var) __kernel __force)(*SHIFT_PERCPU_PTR(&(var), per_cpu_offset(cpu)))
-> 
-> This should work because &(var) should be dereferencable directly, since
-> it is not of type "__force t" but of type "*__force t"
-> 
-> And you're not doing anymore this:
-> 
-> 	*(int * __kernel __force) i;
-> but
-> 	*(int __kernel __force *) i;
+> Currently, speakup is using direct hardware access to communicate with
+> serial ports.  Doing so, however, has limitations since we are hard
+> coding port addresses and IRQ numbers.  For example, we have a user
 
+I pointed this out several years ago
 
+> What I would like to discuss is how we can access ttys from kernel
+> space.  If we could do this, it would definitely make things much easier
+> for us in speakup.
 
-The above is perhaps a bit confusing.
-To be more clear, in the first case you only cast the pointer
-to the type, which gives you a pointer valid in kernel space
-to data valid in percpu space.
+Basically - use a line discipline, that lets you sit on top of a tty and
+interact with the hardware
 
-The second case gives you something valid in kernel space for both.
+> We need to be able to access the ttys as early as possible in the boot
+> sequence.  Any help, suggestions, or guidance you could give us would be
+> greatly appreciated.
 
+We may need to make some special provision for that aspect - we already
+do so for the early serial console support. The ldisc is the start point
+then there may be some bits that need to be extended around it.
+
+A bigger problem is going to be the fact non USB serial is vanishing bit
+by bit. We do have a USB console but it's truely crazy stuff and
+extending it scares me 8)
