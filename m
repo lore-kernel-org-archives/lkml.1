@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350Ab0AZVDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823Ab0AZVCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350Ab0AZVDN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 16:03:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184Ab0AZVDG
+	id S1752823Ab0AZVCg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 16:02:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398Ab0AZVCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 16:03:06 -0500
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:37206 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752699Ab0AZVDE (ORCPT
+	Tue, 26 Jan 2010 16:02:35 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:39826 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751710Ab0AZVCe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 16:03:04 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Rwf2nlKXCwR9y/chLzeJQ9AHuB7sZQx+lAQBtrsW5RFyx/nf7HNl4/wYIbnHooCQ2EBNh6WAT9LsnMvuFjugL8CAdoB5Hx338CFqjNZRwubbvJ7dh5xEhZFSgCLHNaGXJOxtauL8hMGTimxD3/Vaaj4fBZdiF58n9WDBbV0/HCU=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: x1.rj54VM1kN7w1Mcp6dEZaR2y0lJfxNdXdwUMRqUB4Fhim9_C5ntBo2tyhtTmKIs7uzf1cLIkIZAIS0kQNRkOcpV0QxK9.ewCIdcxv42jCh4NuPQz4XHPpYOG39IkeMPO_u5YC0f1gQOASOoPbMqUKQYlW_Qdh0v4Bhyk.XQHlEYlFcj7YVkrmh1E73nrtiRmFT48uZCoyyfHe73xkBDxO4wuQ88bvN_UloJr_QhsBJ542k1HWLTNIRUn_AG0O2
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 2/4] of/gpio: Add support for two-stage registration for the of_gpio_chips
-Date: Tue, 26 Jan 2010 13:02:43 -0800
-User-Agent: KMail/1.9.10
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       "Dmitry Eremin-Solenikov" <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-References: <20100125180957.GA5380@oksana.dev.rtsoft.ru> <201001252236.16141.david-b@pacbell.net> <20100126174347.GB20319@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100126174347.GB20319@oksana.dev.rtsoft.ru>
+	Tue, 26 Jan 2010 16:02:34 -0500
+Date: Tue, 26 Jan 2010 22:02:32 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, tromey@redhat.com,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100126210232.GF6567@basil.fritz.box>
+References: <20100122200129.GG22003@redhat.com> <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <m33a1tnbd9.fsf@fleche.redhat.com> <877hr4g49l.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001261038150.3574@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201001261302.44424.david-b@pacbell.net>
+In-Reply-To: <alpine.LFD.2.00.1001261038150.3574@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 January 2010, Anton Vorontsov wrote:
-> 
-> > Why have two options, instead of just the first/simpler one??
-> 
-> Because I2C/SPI drivers allocate (and register) gpio_chip structures
-> by themselves, so the first option is a no-go.
+> The problem is that anything that is based on reparenting and signals is 
+> fundamentally a "one parent only" kind of interface. See?
 
-You should be mentioning such issues in the patch comments.
+I was actually thinking about that before I wrote the email.
+
+But when I did that i couldn't come up with a good scenario
+where multiple debuggers actually make sense. In a sense
+being a debugger is really a very "intimate" thing for process. Do you
+really want to have multiple of them messing with each other?
+
+If yes how would they know what to touch and what not?
+
+The only thing I could think of was "user space virtualization"
+(like old UML) together with a real debugger, but frankly
+these solutions all seemed like big race conditions to me
+anyways and should be better done in the kernel or below it, 
+so I have a hard time taking them seriously.
+
+Can you think of any scenario where multiple debuggers
+on a process make sense?
+
+-Andi
+
