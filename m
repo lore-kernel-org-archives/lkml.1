@@ -1,56 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752112Ab0AZUhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195Ab0AZUjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752112Ab0AZUhn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 15:37:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761Ab0AZUhm
+	id S1752195Ab0AZUjZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 15:39:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889Ab0AZUjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 15:37:42 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:46993 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751669Ab0AZUhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 15:37:42 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Message-ID: <4B5F52FE.5000201@crca.org.au>
-Date: Wed, 27 Jan 2010 07:39:26 +1100
-From: Nigel Cunningham <ncunningham@crca.org.au>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 26 Jan 2010 15:39:25 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57536 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746Ab0AZUjY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 15:39:24 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 26 Jan 2010 21:39:07 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: ohci: fix crashes with TSB43AB23 on 64bit systems
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.9cd039404ec3bf0c@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Pedro Ribeiro <pedrib@gmail.com>
-CC: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       "linux-mm@kvack.org >> linux-mm" <linux-mm@kvack.org>
-Subject: Re: BUG at mm/slab.c:2990 with 2.6.33-rc5-tuxonice
-References: <74fd948d1001261121r7e6d03a4i75ce40705abed4e0@mail.gmail.com>
-In-Reply-To: <74fd948d1001261121r7e6d03a4i75ce40705abed4e0@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Unsurprisingly, Texas Instruments TSB43AB23 exhibits the same behaviour
+as TSB43AB22/A in dual buffer IR DMA mode:  If descriptors are located
+at physical addresses above the 31 bit address range (2 GB), the
+controller will overwrite random memory.  With luck, this merely
+prevents video reception.  With only a little less luck, the machine
+crashes.
 
-Pedro Ribeiro wrote:
-> Hi,
-> 
-> I hit a bug at mm/slab.c:2990 with .33-rc5.
-> Unfortunately nothing more is available than a screen picture with a
-> crash dump, although it is a good one.
-> The bug was hit almost at the end of a hibernation cycle with
-> Tux-on-Ice, while saving memory contents to an encrypted swap
-> partition.
-> 
-> The image is here http://img264.imageshack.us/img264/9634/mmslab.jpg (150 kb)
-> 
-> Hopefully it is of any use for you. Please let me know if you need any
-> more info.
+We use the same workaround here as with TSB43AB22/A:  Switch off the
+dual buffer capability flag and use packet-per-buffer IR DMA instead.
+Another possible workaround would be to limit the coherent DMA mask to
+31 bits.
 
-Looks to me to be completely unrelated to TuxOnIce - at least at a first
-glance.
+In Linux 2.6.33, this change serves effectively only as documentation
+since dual buffer mode is not used for any controller anymore.  But
+somebody might want to re-enable it in the future to make use of
+features of dual buffer DMA that are not available in packet-per-buffer
+mode.
 
-Ccing the slab allocator maintainers listed in MAINTAINERS.
+In Linux 2.6.32 and older, this update is vital for anyone with this
+controller, more than 2 GB RAM, a 64 bit kernel, and FireWire video or
+audio applications.
 
-Regards,
+We have at least four reports:
+http://bugzilla.kernel.org/show_bug.cgi?id=13808
+http://marc.info/?l=linux1394-user&m=126154279004083
+https://bugzilla.redhat.com/show_bug.cgi?id=552142
+http://marc.info/?l=linux1394-user&m=126432246128386
 
-Nigel
+Reported-by: Paul Johnson
+Reported-by: Ronneil Camara
+Reported-by: G Zornetzer
+Reported-by: Mark Thompson
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/ohci.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux/drivers/firewire/ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/ohci.c
++++ linux/drivers/firewire/ohci.c
+@@ -2420,6 +2420,7 @@ static void ohci_pmac_off(struct pci_dev
+ 
+ #define PCI_VENDOR_ID_AGERE		PCI_VENDOR_ID_ATT
+ #define PCI_DEVICE_ID_AGERE_FW643	0x5901
++#define PCI_DEVICE_ID_TI_TSB43AB23	0x8024
+ 
+ static int __devinit pci_probe(struct pci_dev *dev,
+ 			       const struct pci_device_id *ent)
+@@ -2488,7 +2489,8 @@ static int __devinit pci_probe(struct pc
+ #if !defined(CONFIG_X86_32)
+ 	/* dual-buffer mode is broken with descriptor addresses above 2G */
+ 	if (dev->vendor == PCI_VENDOR_ID_TI &&
+-	    dev->device == PCI_DEVICE_ID_TI_TSB43AB22)
++	    (dev->device == PCI_DEVICE_ID_TI_TSB43AB22 ||
++	     dev->device == PCI_DEVICE_ID_TI_TSB43AB23))
+ 		ohci->use_dualbuffer = false;
+ #endif
+ 
+
+-- 
+Stefan Richter
+-=====-==-=- ---= ==-=-
+http://arcgraph.de/sr/
+
