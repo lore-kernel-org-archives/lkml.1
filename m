@@ -1,73 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680Ab0AZRda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646Ab0AZRnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680Ab0AZRda (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 12:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329Ab0AZRd3
+	id S1754646Ab0AZRnu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 12:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305Ab0AZRnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 12:33:29 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:53296 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753858Ab0AZRd2 (ORCPT
+	Tue, 26 Jan 2010 12:43:49 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:54760 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754238Ab0AZRnt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 12:33:28 -0500
-To: tromey@redhat.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-From: Andi Kleen <andi@firstfloor.org>
-References: <20100121013822.28781960.sfr@canb.auug.org.au>
-	<20100122005147.GD22003@redhat.com>
-	<20100121170541.7425ff10.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
-	<20100122182827.GA13185@redhat.com>
-	<20100122200129.GG22003@redhat.com>
-	<alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
-	<20100122221348.GA4263@redhat.com>
-	<alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
-	<alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
-	<f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
-	<alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>
-	<m33a1tnbd9.fsf@fleche.redhat.com>
-Date: Tue, 26 Jan 2010 18:33:26 +0100
-In-Reply-To: <m33a1tnbd9.fsf@fleche.redhat.com> (Tom Tromey's message of "Mon, 25 Jan 2010 14:05:54 -0700")
-Message-ID: <877hr4g49l.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 26 Jan 2010 12:43:49 -0500
+Date: Tue, 26 Jan 2010 20:43:47 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] of/gpio: Add support for two-stage registration
+ for the of_gpio_chips
+Message-ID: <20100126174347.GB20319@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
+ <20100125181103.GB13805@oksana.dev.rtsoft.ru>
+ <201001252236.16141.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201001252236.16141.david-b@pacbell.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tom Tromey <tromey@redhat.com> writes:
+On Mon, Jan 25, 2010 at 10:36:15PM -0800, David Brownell wrote:
+> On Monday 25 January 2010, Anton Vorontsov wrote:
+> > With this patch there are two ways to register OF GPIO controllers:
+> > 
+> > 1. Allocating the of_gpio_chip structure and passing the
+> >    &of_gc->gc pointer to the gpiochip_add. (Can use container_of
+> >    to convert the gpio_chip to the of_gpio_chip.)
+> > 
+> > 2. Allocating and registering the gpio_chip structure separately
+> >    from the of_gpio_chip. (Since two allocations are separate,
+> >    container_of won't work.)
+> > 
+> > As time goes by we'll kill the first option.
+> 
+> Why have two options, instead of just the first/simpler one??
 
-> * Use an fd, not SIGCHLD+wait, to report inferior state changes to gdb.
->   Internally we're already using a self-pipe to integrate this into
->   gdb's main loop.  Relatedly, don't mess with the inferior's parentage.
+Because I2C/SPI drivers allocate (and register) gpio_chip structures
+by themselves, so the first option is a no-go.
 
-How would having a kernel based solution be better over your
-user space simulation?
+You can see the first option in use in
+arch/powerpc/sysdev/qe_lib/gpio.c:
 
-BTW there's the new signalfd() system call that might do it
-(haven't checked if it works for SIGCHLD)
+struct qe_gpio_chip {
+        struct of_mm_gpio_chip mm_gc;
+	....
+};
 
-> * Support "displaced stepping" in the kernel; I think this would improve
->   performance when debugging in non-stop mode.
+Now include/linux/of_gpio.h:
 
-Not sure what "displaced stepping" is exactly, but it 
-sounds like the branch tracing extensions that got added a 
-few releases ago? On modern Intel chips they give you a branch
-buffer in memory.
+struct of_mm_gpio_chip {
+        struct of_gpio_chip of_gc;
+	...
+};
 
--Andi
+struct of_gpio_chip {
+        struct gpio_chip gc; <- here, I'm going to get rid of it
+	...
+};
+
+I2C/SPI drivers allocate gpio_chip structure already, so we don't
+need to store 'struct gpio_chip gc', instead we need to store just
+a pointer, and then attach the already allocated gpio_chip to the
+of_gpio_chip stuff.
+
+Having two ways to store gpio_chip isn't good, that's why
+I stated that the first option will have to go, i.e. I'm going to
+convert arch/powerpc/sysdev/qe_lib/gpio.c and few other of_mm
+gpio chips to the new registration scheme soon.
+
+Thanks,
+
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
