@@ -1,39 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069Ab0AZUdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752112Ab0AZUhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752069Ab0AZUdq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 15:33:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211Ab0AZUdp
+	id S1752112Ab0AZUhn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 15:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761Ab0AZUhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 15:33:45 -0500
-Received: from 1wt.eu ([62.212.114.60]:54996 "EHLO 1wt.eu"
+	Tue, 26 Jan 2010 15:37:42 -0500
+Received: from mail.crca.org.au ([67.207.131.56]:46993 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750799Ab0AZUdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 15:33:44 -0500
-Date: Tue, 26 Jan 2010 21:27:40 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Vishal Rao <vishalrao@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, stable@kernel.org
-Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
-Message-ID: <20100126202740.GA7248@1wt.eu>
-References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com> <20100126160243.018b87e3@lxorguk.ukuu.org.uk> <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	id S1751669Ab0AZUhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 15:37:42 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <4B5F52FE.5000201@crca.org.au>
+Date: Wed, 27 Jan 2010 07:39:26 +1100
+From: Nigel Cunningham <ncunningham@crca.org.au>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Pedro Ribeiro <pedrib@gmail.com>
+CC: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       "linux-mm@kvack.org >> linux-mm" <linux-mm@kvack.org>
+Subject: Re: BUG at mm/slab.c:2990 with 2.6.33-rc5-tuxonice
+References: <74fd948d1001261121r7e6d03a4i75ce40705abed4e0@mail.gmail.com>
+In-Reply-To: <74fd948d1001261121r7e6d03a4i75ce40705abed4e0@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 09:49:18PM +0530, Vishal Rao wrote:
-> At least one user of Intel SSDs reports no issues with existing
-> kernels and I've read that
-> they do NCQ right.
+Hi.
 
-FWIW, I can confirm that both the 40 and 80 GB X25-M V2 work like
-a charm on 2.6.32 here (main desktop and netbook).
+Pedro Ribeiro wrote:
+> Hi,
+> 
+> I hit a bug at mm/slab.c:2990 with .33-rc5.
+> Unfortunately nothing more is available than a screen picture with a
+> crash dump, although it is a good one.
+> The bug was hit almost at the end of a hibernation cycle with
+> Tux-on-Ice, while saving memory contents to an encrypted swap
+> partition.
+> 
+> The image is here http://img264.imageshack.us/img264/9634/mmslab.jpg (150 kb)
+> 
+> Hopefully it is of any use for you. Please let me know if you need any
+> more info.
 
-Willy
+Looks to me to be completely unrelated to TuxOnIce - at least at a first
+glance.
 
+Ccing the slab allocator maintainers listed in MAINTAINERS.
+
+Regards,
+
+Nigel
