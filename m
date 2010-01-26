@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197Ab0AZQK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648Ab0AZQNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754197Ab0AZQK4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 11:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321Ab0AZQKz
+	id S1754648Ab0AZQNX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 11:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734Ab0AZQNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 11:10:55 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:60944 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752022Ab0AZQKz (ORCPT
+	Tue, 26 Jan 2010 11:13:22 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:57993 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752477Ab0AZQNV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 11:10:55 -0500
-Subject: Re: [PATCH 01/01] regulator: support max8649
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Haojian Zhuang <haojian.zhuang@gmail.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Tue, 26 Jan 2010 11:13:21 -0500
+Date: Tue, 26 Jan 2010 16:13:19 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Felipe Balbi <felipe.balbi@nokia.com>, linux-usb@vger.kernel.org,
        linux-kernel@vger.kernel.org,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-In-Reply-To: <771cded01001260414q4c8df1e0k303772b87bc725eb@mail.gmail.com>
-References: <771cded01001120041ue24edabk8e4638ef7151c947@mail.gmail.com>
-	 <771cded01001120051l44fd76bx80d2fd4b6f60bd0b@mail.gmail.com>
-	 <20100112115156.GA546@rakim.wolfsonmicro.main>
-	 <771cded01001250301q465a9f8ma484f597ae9a292f@mail.gmail.com>
-	 <20100125135628.GB26613@rakim.wolfsonmicro.main>
-	 <771cded01001252226k342723b3p3ea235fe79c46843@mail.gmail.com>
-	 <20100126110420.GI15759@rakim.wolfsonmicro.main>
-	 <771cded01001260354y7c7db25bqa8bbfe000e0c0380@mail.gmail.com>
-	 <20100126120058.GN15759@rakim.wolfsonmicro.main>
-	 <771cded01001260414q4c8df1e0k303772b87bc725eb@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 26 Jan 2010 16:10:49 +0000
-Message-ID: <1264522249.3067.79.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Grazvydas Ignotas <notasas@gmail.com>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>, linux-omap@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [RFC/PATCH 1/5] usb: otg: add notifier support
+Message-ID: <20100126161319.GX15759@rakim.wolfsonmicro.main>
+References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com>
+ <201001260535.21689.david-b@pacbell.net>
+ <20100126142102.GU15759@rakim.wolfsonmicro.main>
+ <201001260744.46780.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001260744.46780.david-b@pacbell.net>
+X-Cookie: I'm ANN LANDERS!!  I can SHOPLIFT!!
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-26 at 07:14 -0500, Haojian Zhuang wrote:
-> On Tue, Jan 26, 2010 at 7:00 AM, Mark Brown
-> <broonie@opensource.wolfsonmicro.com> wrote:
-> > On Tue, Jan 26, 2010 at 06:54:48AM -0500, Haojian Zhuang wrote:
-> >> On Tue, Jan 26, 2010 at 6:04 AM, Mark Brown
-> >
-> >> > I'd expect the time taken to enable to be the voltage multipled by the
-> >> > step size rather than divided by the step size?
-> >
-> >> I don't agree at this point. The unit of step is uV/uSec. The function
-> >> should return uSec. So voltage divided by the step is more reasonable.
-> >
-> > Ah, then the variable step is confusingly named since it's actually a
-> > rate of change rather than a step size - I'd suggest rate or something
-> > like that instead.
-> >
-> 
-> update this patch.
-> 
+On Tue, Jan 26, 2010 at 07:44:46AM -0800, David Brownell wrote:
+> On Tuesday 26 January 2010, Mark Brown wrote:
 
-Applied.
+> > In the sort of design I'm talking about there is generally a system
+> > power rail which is generated from the various power sources available
+> > to the system, which might include a combination of batteries, USB and
+> > wall adaptors.
 
-Thanks
+> Just as an example:  drivers/mfd/tps6510.c supports exactly
+> that trio of power sources.
 
-Liam
+Yup, it's a fairly standard feature set for all in one PMICs, WM835x and
+WM831x are also examples of this.
 
+>                              More than one system rail though,
+> which (as you know) is pretty common -- core != I/O.
+
+Yes, in this context the system rail is the supply input to the
+regulators rather than the regulated voltages that are (mostly)
+used directly by the chips.
+
+> Bus powered devices can come up on that 100mA, running
+> enough to enumerate ... and request more power, if they
+> need it.
+
+> Not all Linux systems can boot with that little power!
+
+Some can even brown themselves out going full pelt with the full 500mA
+supply if there's no battery to supplement it :/
