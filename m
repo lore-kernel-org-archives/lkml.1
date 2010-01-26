@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776Ab0A0AEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744Ab0A0AEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755776Ab0A0AEk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:04:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687Ab0A0ADq
+	id S1755744Ab0A0AEA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:04:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113Ab0A0ADt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:03:46 -0500
-Received: from kroah.org ([198.145.64.141]:35145 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:03:49 -0500
+Received: from kroah.org ([198.145.64.141]:35138 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754106Ab0AZXnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:15 -0500
+	id S1754091Ab0AZXnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:11 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:23 2010
-Message-Id: <20100126233923.487128431@mini.kroah.org>
+Message-Id: <20100126233923.224478017@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:46 -0800
+Date: Tue, 26 Jan 2010 15:33:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jie Yang <jie.yang@atheros.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Ben Hutchings <ben@decadent.org.uk>
-Subject: [20/98] atl1c:use common_task instead of reset_task and link_chg_task
+       Danny Wood <danwood76@gmail.com>, Ben Hutchings <ben@decadent.org.uk>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [18/98] V4L/DVB (13168): Add support for Asus Europa Hybrid DVB-T card (SAA7134 SubVendor ID: 0x1043 Device ID: 0x4847)
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,181 +29,110 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jie Yang <jie.yang@atheros.com>
+From: Danny Wood <danwood76@gmail.com>
 
-commit cb19054697e92a793f336380fd72c588521178ff upstream.
+commit e3c6e1aaa5db7822524f5b1355960fd732910068 upstream.
 
-use common_task instead of reset_task and link_chg_task, so it fix "call cancel_work_sync
-from the work itself".
+Adds the device IDs and driver linking to allow the Asus Europa DVB-T
+card to operate with these drivers.
+The device has a SAA7134 chipset with a TD1316 Hybrid Tuner.
+All inputs work on the card including switching between DVB-T and
+Analogue TV, there is also no IR with this card.
 
-Signed-off-by: Jie Yang <jie.yang@atheros.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+[mchehab@redhat.com: CodingStyle fixes]
+
+Signed-off-by: Danny Wood <danwood76@gmail.com>
 Cc: Ben Hutchings <ben@decadent.org.uk>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/atl1c/atl1c.h      |    6 ++-
- drivers/net/atl1c/atl1c_main.c |   72 ++++++++++++++++++-----------------------
- 2 files changed, 37 insertions(+), 41 deletions(-)
+ Documentation/video4linux/CARDLIST.saa7134  |    1 
+ drivers/media/video/saa7134/saa7134-cards.c |   31 ++++++++++++++++++++++++++++
+ drivers/media/video/saa7134/saa7134-dvb.c   |    1 
+ drivers/media/video/saa7134/saa7134.h       |    1 
+ 4 files changed, 34 insertions(+)
 
---- a/drivers/net/atl1c/atl1c.h
-+++ b/drivers/net/atl1c/atl1c.h
-@@ -534,6 +534,9 @@ struct atl1c_adapter {
- #define __AT_TESTING        0x0001
- #define __AT_RESETTING      0x0002
- #define __AT_DOWN           0x0003
-+	u8 work_event;
-+#define ATL1C_WORK_EVENT_RESET 		0x01
-+#define ATL1C_WORK_EVENT_LINK_CHANGE	0x02
- 	u32 msg_enable;
+--- a/Documentation/video4linux/CARDLIST.saa7134
++++ b/Documentation/video4linux/CARDLIST.saa7134
+@@ -172,3 +172,4 @@
+ 171 -> Beholder BeholdTV X7                     [5ace:7595]
+ 172 -> RoverMedia TV Link Pro FM                [19d1:0138]
+ 173 -> Zolid Hybrid TV Tuner PCI                [1131:2004]
++174 -> Asus Europa Hybrid OEM                   [1043:4847]
+--- a/drivers/media/video/saa7134/saa7134-cards.c
++++ b/drivers/media/video/saa7134/saa7134-cards.c
+@@ -5279,6 +5279,30 @@ struct saa7134_board saa7134_boards[] = 
+ 			.amux = TV,
+ 		},
+ 	},
++	[SAA7134_BOARD_ASUS_EUROPA_HYBRID] = {
++		.name           = "Asus Europa Hybrid OEM",
++		.audio_clock    = 0x00187de7,
++		.tuner_type     = TUNER_PHILIPS_TD1316,
++		.radio_type     = UNSET,
++		.tuner_addr	= 0x61,
++		.radio_addr	= ADDR_UNSET,
++		.tda9887_conf   = TDA9887_PRESENT | TDA9887_PORT1_ACTIVE,
++		.mpeg           = SAA7134_MPEG_DVB,
++		.inputs = { {
++			.name   = name_tv,
++			.vmux   = 3,
++			.amux   = TV,
++			.tv     = 1,
++		}, {
++			.name   = name_comp1,
++			.vmux   = 4,
++			.amux   = LINE2,
++		}, {
++			.name   = name_svideo,
++			.vmux   = 8,
++			.amux   = LINE2,
++		} },
++	},
  
- 	bool have_msi;
-@@ -545,8 +548,7 @@ struct atl1c_adapter {
- 	spinlock_t tx_lock;
- 	atomic_t irq_sem;
+ };
  
--	struct work_struct reset_task;
--	struct work_struct link_chg_task;
-+	struct work_struct common_task;
- 	struct timer_list watchdog_timer;
- 	struct timer_list phy_config_timer;
+@@ -6418,6 +6442,12 @@ struct pci_device_id saa7134_pci_tbl[] =
+ 		.subdevice    = 0x2004,
+ 		.driver_data  = SAA7134_BOARD_ZOLID_HYBRID_PCI,
+ 	}, {
++		.vendor       = PCI_VENDOR_ID_PHILIPS,
++		.device       = PCI_DEVICE_ID_PHILIPS_SAA7134,
++		.subvendor    = 0x1043,
++		.subdevice    = 0x4847,
++		.driver_data  = SAA7134_BOARD_ASUS_EUROPA_HYBRID,
++	}, {
+ 		/* --- boards without eeprom + subsystem ID --- */
+ 		.vendor       = PCI_VENDOR_ID_PHILIPS,
+ 		.device       = PCI_DEVICE_ID_PHILIPS_SAA7134,
+@@ -7079,6 +7109,7 @@ int saa7134_board_init2(struct saa7134_d
+ 		/* break intentionally omitted */
+ 	case SAA7134_BOARD_VIDEOMATE_DVBT_300:
+ 	case SAA7134_BOARD_ASUS_EUROPA2_HYBRID:
++	case SAA7134_BOARD_ASUS_EUROPA_HYBRID:
+ 	{
  
---- a/drivers/net/atl1c/atl1c_main.c
-+++ b/drivers/net/atl1c/atl1c_main.c
-@@ -198,27 +198,12 @@ static void atl1c_phy_config(unsigned lo
+ 		/* The Philips EUROPA based hybrid boards have the tuner
+--- a/drivers/media/video/saa7134/saa7134-dvb.c
++++ b/drivers/media/video/saa7134/saa7134-dvb.c
+@@ -1116,6 +1116,7 @@ static int dvb_init(struct saa7134_dev *
+ 		break;
+ 	case SAA7134_BOARD_PHILIPS_EUROPA:
+ 	case SAA7134_BOARD_VIDEOMATE_DVBT_300:
++	case SAA7134_BOARD_ASUS_EUROPA_HYBRID:
+ 		fe0->dvb.frontend = dvb_attach(tda10046_attach,
+ 					       &philips_europa_config,
+ 					       &dev->i2c_adap);
+--- a/drivers/media/video/saa7134/saa7134.h
++++ b/drivers/media/video/saa7134/saa7134.h
+@@ -297,6 +297,7 @@ struct saa7134_format {
+ #define SAA7134_BOARD_BEHOLD_X7             171
+ #define SAA7134_BOARD_ROVERMEDIA_LINK_PRO_FM 172
+ #define SAA7134_BOARD_ZOLID_HYBRID_PCI		173
++#define SAA7134_BOARD_ASUS_EUROPA_HYBRID	174
  
- void atl1c_reinit_locked(struct atl1c_adapter *adapter)
- {
--
- 	WARN_ON(in_interrupt());
- 	atl1c_down(adapter);
- 	atl1c_up(adapter);
- 	clear_bit(__AT_RESETTING, &adapter->flags);
- }
- 
--static void atl1c_reset_task(struct work_struct *work)
--{
--	struct atl1c_adapter *adapter;
--	struct net_device *netdev;
--
--	adapter = container_of(work, struct atl1c_adapter, reset_task);
--	netdev = adapter->netdev;
--
--	netif_device_detach(netdev);
--	atl1c_down(adapter);
--	atl1c_up(adapter);
--	netif_device_attach(netdev);
--}
--
- static void atl1c_check_link_status(struct atl1c_adapter *adapter)
- {
- 	struct atl1c_hw *hw = &adapter->hw;
-@@ -275,18 +260,6 @@ static void atl1c_check_link_status(stru
- 	}
- }
- 
--/*
-- * atl1c_link_chg_task - deal with link change event Out of interrupt context
-- * @netdev: network interface device structure
-- */
--static void atl1c_link_chg_task(struct work_struct *work)
--{
--	struct atl1c_adapter *adapter;
--
--	adapter = container_of(work, struct atl1c_adapter, link_chg_task);
--	atl1c_check_link_status(adapter);
--}
--
- static void atl1c_link_chg_event(struct atl1c_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
-@@ -311,20 +284,40 @@ static void atl1c_link_chg_event(struct 
- 			adapter->link_speed = SPEED_0;
- 		}
- 	}
--	schedule_work(&adapter->link_chg_task);
-+
-+	adapter->work_event |= ATL1C_WORK_EVENT_LINK_CHANGE;
-+	schedule_work(&adapter->common_task);
- }
- 
--static void atl1c_del_timer(struct atl1c_adapter *adapter)
-+static void atl1c_common_task(struct work_struct *work)
- {
--	del_timer_sync(&adapter->phy_config_timer);
-+	struct atl1c_adapter *adapter;
-+	struct net_device *netdev;
-+
-+	adapter = container_of(work, struct atl1c_adapter, common_task);
-+	netdev = adapter->netdev;
-+
-+	if (adapter->work_event & ATL1C_WORK_EVENT_RESET) {
-+		netif_device_detach(netdev);
-+		atl1c_down(adapter);
-+		atl1c_up(adapter);
-+		netif_device_attach(netdev);
-+		return;
-+	}
-+
-+	if (adapter->work_event & ATL1C_WORK_EVENT_LINK_CHANGE)
-+		atl1c_check_link_status(adapter);
-+
-+	return;
- }
- 
--static void atl1c_cancel_work(struct atl1c_adapter *adapter)
-+
-+static void atl1c_del_timer(struct atl1c_adapter *adapter)
- {
--	cancel_work_sync(&adapter->reset_task);
--	cancel_work_sync(&adapter->link_chg_task);
-+	del_timer_sync(&adapter->phy_config_timer);
- }
- 
-+
- /*
-  * atl1c_tx_timeout - Respond to a Tx Hang
-  * @netdev: network interface device structure
-@@ -334,7 +327,8 @@ static void atl1c_tx_timeout(struct net_
- 	struct atl1c_adapter *adapter = netdev_priv(netdev);
- 
- 	/* Do the reset outside of interrupt context */
--	schedule_work(&adapter->reset_task);
-+	adapter->work_event |= ATL1C_WORK_EVENT_RESET;
-+	schedule_work(&adapter->common_task);
- }
- 
- /*
-@@ -1536,7 +1530,8 @@ static irqreturn_t atl1c_intr(int irq, v
- 			/* reset MAC */
- 			hw->intr_mask &= ~ISR_ERROR;
- 			AT_WRITE_REG(hw, REG_IMR, hw->intr_mask);
--			schedule_work(&adapter->reset_task);
-+			adapter->work_event |= ATL1C_WORK_EVENT_RESET;
-+			schedule_work(&adapter->common_task);
- 			break;
- 		}
- 
-@@ -2200,8 +2195,7 @@ void atl1c_down(struct atl1c_adapter *ad
- 	struct net_device *netdev = adapter->netdev;
- 
- 	atl1c_del_timer(adapter);
--	atl1c_cancel_work(adapter);
--
-+	adapter->work_event = 0; /* clear all event */
- 	/* signal that we're down so the interrupt handler does not
- 	 * reschedule our watchdog timer */
- 	set_bit(__AT_DOWN, &adapter->flags);
-@@ -2601,8 +2595,8 @@ static int __devinit atl1c_probe(struct 
- 			adapter->hw.mac_addr[4], adapter->hw.mac_addr[5]);
- 
- 	atl1c_hw_set_mac_addr(&adapter->hw);
--	INIT_WORK(&adapter->reset_task, atl1c_reset_task);
--	INIT_WORK(&adapter->link_chg_task, atl1c_link_chg_task);
-+	INIT_WORK(&adapter->common_task, atl1c_common_task);
-+	adapter->work_event = 0;
- 	err = register_netdev(netdev);
- 	if (err) {
- 		dev_err(&pdev->dev, "register netdevice failed\n");
+ #define SAA7134_MAXBOARDS 32
+ #define SAA7134_INPUT_MAX 8
 
 
