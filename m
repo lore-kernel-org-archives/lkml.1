@@ -1,99 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118Ab0AZDdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888Ab0AZDsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118Ab0AZDdR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 22:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113Ab0AZDdQ
+	id S1752888Ab0AZDsh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 22:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868Ab0AZDsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 22:33:16 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62874 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752004Ab0AZDdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 22:33:16 -0500
-Message-ID: <4B5E622E.9090106@cn.fujitsu.com>
-Date: Tue, 26 Jan 2010 11:31:58 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 25 Jan 2010 22:48:36 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:33902 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817Ab0AZDsf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 22:48:35 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAEb0XUurR7H+/2dsb2JhbADCe5ZuhDkE
+X-IronPort-AV: E=Sophos;i="4.49,344,1262563200"; 
+   d="scan'208";a="472833631"
+From: Roland Dreier <rdreier@cisco.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: infiniband limit of 32 cards per system?
+References: <20100125235013.GD2828@grease.ALLEYCAT>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 25 Jan 2010 19:48:28 -0800
+In-Reply-To: <20100125235013.GD2828@grease.ALLEYCAT> (Alex Chiang's message of
+	"Mon, 25 Jan 2010 16:50:13 -0700")
+Message-ID: <adaiqapplv7.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/6] : bug fix, remove partial zero out
-References: <4B556064.7080700@cn.fujitsu.com> <20100120175205.GA5017@nowhere>
-In-Reply-To: <20100120175205.GA5017@nowhere>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 26 Jan 2010 03:48:31.0843 (UTC) FILETIME=[6DA6F330:01CA9E3A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Tue, Jan 19, 2010 at 03:33:56PM +0800, Lai Jiangshan wrote:
->> partial-zero-out a struct is very dangerous, we should zero out
->> field by field directly when need.
->>
->> partial-zero-out for struct trace_iterator exists when ftrace
->> was first introduced into mainline kernel. But in this few years,
->> the code of ftrace is changed a lot, and:
->>
->> 1) partial-zero-out for struct trace_iterator has a bug now,
->>    cpumask_var_t started should not be zeroed out.
->>
->> 2) I viewed the codes and found that fields below
->>    "/* The below is zeroed out in pipe_read */"
->>    don't need to be zeroed out or initialized now.
->>
->> So, we remove the code of "partial zero out"
->>
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> ---
->> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
->> index 3ca9485..c6d0e1a 100644
->> --- a/include/linux/ftrace_event.h
->> +++ b/include/linux/ftrace_event.h
->> @@ -54,7 +54,6 @@ struct trace_iterator {
->>  	struct ring_buffer_iter	*buffer_iter[NR_CPUS];
->>  	unsigned long		iter_flags;
->>  
->> -	/* The below is zeroed out in pipe_read */
->>  	struct trace_seq	seq;
->>  	struct trace_entry	*ent;
->>  	int			leftover;
->> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->> index 5314c90..27fecf8 100644
->> --- a/kernel/trace/trace.c
->> +++ b/kernel/trace/trace.c
->> @@ -3124,12 +3124,6 @@ waitagain:
->>  	if (cnt >= PAGE_SIZE)
->>  		cnt = PAGE_SIZE - 1;
->>  
->> -	/* reset all but tr, trace, and overruns */
->> -	memset(&iter->seq, 0,
->> -	       sizeof(struct trace_iterator) -
->> -	       offsetof(struct trace_iterator, seq));
->> -	iter->pos = -1;
->> -
-> 
-> 
-> 
-> I'm not sure exaclty why we needed to zero the seq here.
-> We already reset it in trace_seq_init().
-> 
-> We might do it again on waitagain. I lost track how we could
-> ever need to goto waitagain. It was about a tricky bug to fix
-> but I'm don't remember exactly the details.
-> 
-> That said, if trace_seq_to_user returns -EBUSY, we
-> re-init the seq buffer, so it should be fine I guess.
 
-Yes, -EBUSY is strange here.
-but any way, trace_seq_init() is called.
+ > My colleague points out the following enum in uverbs_main.c:
+ > 
+ > 	enum {
+ > 		IB_UVERBS_MAJOR       = 231,
+ > 		IB_UVERBS_BASE_MINOR  = 192,
+ > 		IB_UVERBS_MAX_DEVICES = 32
+ > 	};
+ > 
+ > Experimentally, we've determined that on a system where we
+ > plugged in 40 IB cards, OFED only reports 32 cards are present.
 
-> 
-> But concerning the need of setting iter->pos to -1, I'm not
-> sure we need to remove it. Shouldn't it be set to 0 btw?
-> 
+wow, 40 HCAs in one system !
 
-->pos is not used here, ->idx is just increased here,
-so we don't need to initialize them.
+ > If that enum is indeed the limiting factor, would someone mind
+ > explaining (or pointing me at TFM ;) why it's limited to 32
+ > devices?
 
- 
+That dates back to when device #s had 8 bits for major and 8 bits for
+minor.  We got one major assigned for IB, and had to split up the 256
+minors that gave us among userspace verbs, management access, etc.  And
+32 seemed like a pretty reasonable limit for most uses.
+
+Nowadays I guess we should look into expanding that to dynamic device
+numbers on overflow, assuming you do have a realistic situation where
+someone would want to use that many adapters per system.
+
+ - R.
