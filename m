@@ -1,142 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122Ab0AZMCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226Ab0AZMDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753122Ab0AZMCw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 07:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498Ab0AZMCv
+	id S1753226Ab0AZMDL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 07:03:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180Ab0AZMDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 07:02:51 -0500
-Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7]:43546 "EHLO
-	smtp-out4.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752432Ab0AZMCu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 07:02:50 -0500
-Message-ID: <4B5ED9E4.60106@blueyonder.co.uk>
-Date: Tue, 26 Jan 2010 12:02:44 +0000
-From: Sid Boyce <sboyce@blueyonder.co.uk>
-Reply-To: sboyce@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
+	Tue, 26 Jan 2010 07:03:09 -0500
+Received: from server.by009.net ([74.81.86.233]:53736 "EHLO server.by009.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752976Ab0AZMDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 07:03:07 -0500
+X-Greylist: delayed 3246 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jan 2010 07:03:07 EST
+X-MDAV-Processed: sigmae.nl, Tue, 26 Jan 2010 12:08:53 +0100
+VBR-Info: md=sigmae.nl; mc=all; mv=vbr.emailcertification.org;
+X-Spam-Processed: sigmae.nl, Tue, 26 Jan 2010 12:08:53 +0100
+	(not processed: message from valid local sender)
+X-MDOP-RefID: str=0001.0A0B0208.4B5ECD44.00F7,ss=1,fgs=0 (_st=1 _vt=0 _iwf=0)
+X-Return-Path: prvs=1642dc60a7=k.schoenmakers@sigmae.nl
+X-Envelope-From: k.schoenmakers@sigmae.nl
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+From: Kees Schoenmakers <k.schoenmakers@sigmae.nl>
+Organization: Sigma_E
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Subject: Re: [PATCH 24/79] tty: usb_serial_mos7720: Fix get_lsr_info
+Date: Tue, 26 Jan 2010 12:08:51 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@linux.intel.com>
+References: <20090919213345.GB7668@kroah.com> <1253396244-7885-24-git-send-email-gregkh@suse.de>
+In-Reply-To: <1253396244-7885-24-git-send-email-gregkh@suse.de>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: HDA Intel Audio hang on boot
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>	<4B4FC3B0.9070207@blueyonder.co.uk>	<4B5CF87A.20101@blueyonder.co.uk>	<201001252239.03017.rjw@sisk.pl>	<s5h8wblc0kw.wl%tiwai@suse.de>	<s5h7hr5c0jn.wl%tiwai@suse.de>	<4B5E3E63.80305@blueyonder.co.uk>	<s5htyu99xoc.wl%tiwai@suse.de> <s5hr5pd9wsu.wl%tiwai@suse.de>
-In-Reply-To: <s5hr5pd9wsu.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001261208.51393.k.schoenmakers@sigmae.nl>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - server.by009.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - sigmae.nl
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/01/10 06:58, Takashi Iwai wrote:
-> At Tue, 26 Jan 2010 07:40:03 +0100,
-> I wrote:
->>
->> At Tue, 26 Jan 2010 00:59:15 +0000,
->> Sid Boyce wrote:
->>>
->>> On 25/01/10 21:55, Takashi Iwai wrote:
->>>> At Mon, 25 Jan 2010 22:54:23 +0100,
->>>> I wrote:
->>>>>
->>>>> At Mon, 25 Jan 2010 22:39:02 +0100,
->>>>> Rafael J. Wysocki wrote:
->>>>>>
->>>>>> On Monday 25 January 2010, Sid Boyce wrote:
->>>>>>> On 15/01/10 01:24, Sid Boyce wrote:
->>>>>>> This is the only outstanding bug. No problems up 2.6.32-git1, but I get
->>>>>>> a solid lock-up on 2.6.32-git2 through 2.6.33-rc5 if the on-board audio
->>>>>>> is not disabled in the BIOS.
->>>>>>
->>>>>> I guess we should let Takashi know.
->>>>>
->>>>> Thanks.
->>>>>
->>>>>>>> tindog:~ # uname -r
->>>>>>>> 2.6.33-rc4-smp
->>>>>>>> On 2.6.32-git1 which boots, hwinfo shows:-
->>>>>>>>   oss.card_id = 'HDA NVidia'
->>>>>>>>   oss.card_id = 'HDA NVidia'
->>>>>>>>   oss.card_id = 'HDA NVidia'
->>>>>>>>   alsa.card_id = 'HDA NVidia'
->>>>>>>>   alsa.card_id = 'HDA NVidia'
->>>>>>>>   alsa.card_id = 'HDA NVidia'
->>>>>>>>   alsa.card_id = 'HDA NVidia'
->>>>>>>>   info.product = 'HDA NVidia ALSA hardware specific Device'
->>>>>>>>   alsa.card_id = 'HDA NVidia'
->>>>>>>>   info.product = 'HDA NVidia ALSA Control Device'
->>>>>>>>   alsa.card_id = 'HDA NVidia'
->>>>>>>>   info.product = 'HDA NVidia Sound Card'
->>>>>>>>   sound.card_id = 'HDA NVidia'
->>>>>>>>   info.linux.driver = 'HDA Intel'
->>>>>>>>     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
->>>>>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->>>>>>>>        HDA Intel: module = snd_hda_intel
->>>>>>>> irq:0 22 (   490413) "sata_nv" "HDA Intel"
->>>>>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->>>>>>>>        HDA Intel: module = snd_hda_intel
->>>>>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->>>>>>>>        HDA Intel: module = snd_hda_intel
->>>>>>>>   E: DRIVER=HDA Intel
->>>>>>>>   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
->>>>>>>> low) -> IRQ 22
->>>>>>>>   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
->>>>>>>>   Driver: "HDA Intel"
->>>>>
->>>>> What I'd try first is to pass enable_msi=0 option.
->>>>
->>>> Just to be sure -- it's an option for snd-hda-intel module.
->>>>
->>>>
->>>> Takashi
->>>>
->>>
->>> I passed "modprobe snd-hda-intel enable_msi=0" on the kernel command
->>> line,
-> 
-> Oh, I overlooked this text.  Of course, this can't work :)
-> 
-> "modprobe..." isn't for the kernel command line but for modprobe
-> configs, usually specified in /etc/modprobe.d/* file.
-> 
-I had already tried that... it locks up at the same point also with
-"enable_msi=1".
-tindog:/etc/modprobe.d # less 50-sound.conf
+Gentlemen,
 
-options snd slots=snd-hda-intel,enable_msi=0
-# mDsH.vLXC8EvZgR7:MCP55 High Definition Audio
-alias snd-card-0 snd-hda-intel
+As of version 2.6.32.5 this patch has not made it into the kernel sources.
+Any reason for this? It is a pity for people who knowingly or unknowingly run 
+into this effect in the driver.
 
-> And... is this report for 2.6.32 or for 2.6.33?
-> If it's with 2.6.32, enable_msi=1 may help instead.
-> 
-> 
-The motherboard giving the problem is the Asus M2N32-SLI deluxe.
-00:0e.1 Audio device: nVidia Corporation MCP55 High Definition Audio
-(rev a2)
+kind regards
 
-No such problem with the Asus CROSSHAIR II FORMULA motherboard which
-also has the
-00:07.0 Audio device: nVidia Corporation MCP72XE/MCP72P/MCP78U/MCP78S
-High Definition Audio (rev a1)
+Kees
 
-For any kernel >2.6.32-git1 it hangs, i.e 2.6.32-git2 to 2.6.33-rc5.
-Disabling the sound chip in the BIOS, they all boot.
-tindog:/etc/modprobe.d # uname -r
-2.6.32-git1-smp
-tindog:/etc/modprobe.d # l /dev/dsp*
-crw-rw-rw- 1 root audio 14,  3 Jan 26 11:46 /dev/dsp
-crw-rw-rw- 1 root audio 14, 35 Jan 26 11:46 /dev/dsp2
 
-> Takashi
-> 
-Regards
-Sid.
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+On Saturday 19 September 2009 23:36:29 Greg Kroah-Hartman wrote:
+> From: Kees Schoenmakers <k.schoenmakers@sigmae.nl>
+>
+> I made a correction for get_lsr_info, now it returns some meaningful
+> information. I tested it with two simultaneous simplex modem channels.
+>
+> it is attached
+>
+> Signed-off-by: Kees Schoenmakers <k.schoenmakers@sigmae.nl>
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  drivers/usb/serial/mos7720.c |   19 +++++++++++++++----
+>  1 files changed, 15 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/usb/serial/mos7720.c b/drivers/usb/serial/mos7720.c
+> index 759cdd5..4342a8a 100644
+> --- a/drivers/usb/serial/mos7720.c
+> +++ b/drivers/usb/serial/mos7720.c
+> @@ -378,10 +378,14 @@ static int mos7720_open(struct tty_struct *tty,
+>  	 /* Initialize MCS7720 -- Write Init values to corresponding Registers
+>  	  *
+>  	  * Register Index
+> +	  * 0 : THR/RHR
+>  	  * 1 : IER
+>  	  * 2 : FCR
+>  	  * 3 : LCR
+>  	  * 4 : MCR
+> +	  * 5 : LSR
+> +	  * 6 : MSR
+> +	  * 7 : SPR
+>  	  *
+>  	  * 0x08 : SP1/2 Control Reg
+>  	  */
+> @@ -1250,15 +1254,22 @@ static void mos7720_set_termios(struct tty_struct
+> *tty, static int get_lsr_info(struct tty_struct *tty,
+>  		struct moschip_port *mos7720_port, unsigned int __user *value)
+>  {
+> -	int count;
+> +	struct usb_serial_port *port = tty->driver_data;
+>  	unsigned int result = 0;
+> +	unsigned char data = 0;
+> +	int port_number = port->number - port->serial->minor;
+> +	int count;
+>
+>  	count = mos7720_chars_in_buffer(tty);
+>  	if (count == 0) {
+> -		dbg("%s -- Empty", __func__);
+> -		result = TIOCSER_TEMT;
+> +		send_mos_cmd(port->serial, MOS_READ, port_number,
+> +							UART_LSR, &data);
+> +		if ((data & (UART_LSR_TEMT | UART_LSR_THRE))
+> +					== (UART_LSR_TEMT | UART_LSR_THRE)) {
+> +			dbg("%s -- Empty", __func__);
+> +			result = TIOCSER_TEMT;
+> +		}
+>  	}
+> -
+>  	if (copy_to_user(value, &result, sizeof(int)))
+>  		return -EFAULT;
+>  	return 0;
+
+
 
