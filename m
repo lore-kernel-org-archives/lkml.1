@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528Ab0AZX6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562Ab0AZX64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528Ab0AZX6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494Ab0AZXng
+	id S1755562Ab0AZX64 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:58:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467Ab0AZXna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:43:36 -0500
-Received: from kroah.org ([198.145.64.141]:35282 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:43:30 -0500
+Received: from kroah.org ([198.145.64.141]:35231 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754436Ab0AZXne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:34 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:26 2010
-Message-Id: <20100126233926.279971865@mini.kroah.org>
+	id S1754369Ab0AZXn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:28 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:25 2010
+Message-Id: <20100126233925.472413013@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:07 -0800
+Date: Tue, 26 Jan 2010 15:34:01 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Joe Eykholt <jeykholt@cisco.com>, Robert Love <robert.w.love@intel.com>,
-       James Bottomley <James.Bottomley@suse.de>
-Subject: [41/98] [SCSI] libfc: fix typo in retry check on received PRLI
+       Chuck Lever <chuck.lever@oracle.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Neil Brown <neilb@suse.de>
+Subject: [35/98] NFS: Revert default r/wsize behavior
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,37 +30,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Joe Eykholt <jeykholt@cisco.com>
+From: Chuck Lever <chuck.lever@oracle.com>
 
-commit 85b5893ca97c69e409ecbb5ee90a5d99882369c4 upstream.
+commit dd47f96c077b4516727e497e4b6fd47a06778c0a upstream.
 
-A received Fibre Channel ELS PRLI request contains a bit that
-indicates whether the remote port supports certain retry processing
-sequences.  The test for this bit was somehow coded to use multiply
-instead of AND!
+When the "rsize=" or "wsize=" mount options are not specified,
+text-based mounts have slightly different behavior than legacy binary
+mounts.  Text-based mounts use the smaller of the server's maximum
+and the client's maximum, but binary mounts use the smaller of the
+server's _preferred_ size and the client's maximum.
 
-This case would apply only for target mode operation, and it is
-unlikely to be noticed as an initiator.
+This difference is actually pretty subtle.  Most servers advertise
+the same value as their maximum and their preferred transfer size, so
+the end result is the same in most cases.
 
-Signed-off-by: Joe Eykholt <jeykholt@cisco.com>
-Signed-off-by: Robert Love <robert.w.love@intel.com>
-Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+The reason for this difference is that for text-based mounts, if
+r/wsize are not specified, they are set to the largest value supported
+by the client.  For legacy mounts, the values are set to zero if these
+options are not specified.
+
+nfs_server_set_fsinfo() can negotiate the transfer size defaults
+correctly in any case.  There's no need to specify any particular
+value as default in the text-based option parsing logic.
+
+Note that nfs4 doesn't use nfs_server_set_fsinfo(), but the mount.nfs4
+command does set rsize and wsize to 0 if the user didn't specify these
+options.  So, make the same change for text-based NFSv4 mounts.
+
+Thanks to James Pearson <james-p@moving-picture.com> for reporting and
+diagnosing the problem.
+
+Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Neil Brown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/libfc/fc_rport.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/nfs/super.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- a/drivers/scsi/libfc/fc_rport.c
-+++ b/drivers/scsi/libfc/fc_rport.c
-@@ -1402,7 +1402,7 @@ static void fc_rport_recv_prli_req(struc
- 				break;
- 			case FC_TYPE_FCP:
- 				fcp_parm = ntohl(rspp->spp_params);
--				if (fcp_parm * FCP_SPPF_RETRY)
-+				if (fcp_parm & FCP_SPPF_RETRY)
- 					rdata->flags |= FC_RP_FLAGS_RETRY;
- 				rdata->supported_classes = FC_COS_CLASS3;
- 				if (fcp_parm & FCP_SPPF_INIT_FCN)
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -734,8 +734,6 @@ static struct nfs_parsed_mount_data *nfs
+ 
+ 	data = kzalloc(sizeof(*data), GFP_KERNEL);
+ 	if (data) {
+-		data->rsize		= NFS_MAX_FILE_IO_SIZE;
+-		data->wsize		= NFS_MAX_FILE_IO_SIZE;
+ 		data->acregmin		= NFS_DEF_ACREGMIN;
+ 		data->acregmax		= NFS_DEF_ACREGMAX;
+ 		data->acdirmin		= NFS_DEF_ACDIRMIN;
 
 
