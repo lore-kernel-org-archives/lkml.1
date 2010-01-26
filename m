@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403Ab0AZVfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612Ab0AZVi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403Ab0AZVfp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 16:35:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755Ab0AZVfo
+	id S1753612Ab0AZVi1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 16:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808Ab0AZVi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 16:35:44 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:35194 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752740Ab0AZVfo (ORCPT
+	Tue, 26 Jan 2010 16:38:26 -0500
+Received: from g6t0187.atlanta.hp.com ([15.193.32.64]:43818 "EHLO
+	g6t0187.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547Ab0AZViZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 16:35:44 -0500
-Date: Tue, 26 Jan 2010 15:35:33 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Matt Mackall <mpm@selenic.com>, Nigel Cunningham <ncunningham@crca.org.au>,
-       Pedro Ribeiro <pedrib@gmail.com>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org >> linux-mm" <linux-mm@kvack.org>
-Subject: Re: BUG at mm/slab.c:2990 with 2.6.33-rc5-tuxonice
-In-Reply-To: <4B5F5794.8020302@cs.helsinki.fi>
-Message-ID: <alpine.DEB.2.00.1001261534380.30784@router.home>
-References: <74fd948d1001261121r7e6d03a4i75ce40705abed4e0@mail.gmail.com>  <4B5F52FE.5000201@crca.org.au> <1264539045.3536.1348.camel@calx> <4B5F5794.8020302@cs.helsinki.fi>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 26 Jan 2010 16:38:25 -0500
+Date: Tue, 26 Jan 2010 14:38:03 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: infiniband limit of 32 cards per system?
+Message-ID: <20100126213803.GA12035@ldl.fc.hp.com>
+References: <20100125235013.GD2828@grease.ALLEYCAT> <adaiqapplv7.fsf@roland-alpha.cisco.com> <20100126035906.GA23347@ldl.fc.hp.com> <adaaaw1pl5d.fsf@roland-alpha.cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adaaaw1pl5d.fsf@roland-alpha.cisco.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jan 2010, Pekka Enberg wrote:
+* Roland Dreier <rdreier@cisco.com>:
+> 
+>  > I'm guessing that it's not just a simple kernel fix though since
+>  > OFED has to change too, right?
+> 
+> Dunno about OFED.  Nothing sane is hard-coding major/minor numbers
+> though -- so I think OFED should be OK, asuming there are no crazy
+> scripts that bypass udev creating device nodes etc.
 
-> Looks like slab corruption to me which is usually not a slab bug but caused by
-> buggy callers. Is CONFIG_DEBUG_SLAB enabled?
+Ok.
 
-Typical BUG for slab metadata that has been overwritten by
-something.
+> I don't think that it's _totally_ trivial in the kernel -- we
+> do need to add some code in several places to allocate dynamic
+> device numbers when we run out of the static allocation
+> (probably best to keep the legacy device numbers for "small" <
+> 32 adapter systems, since there may be really small systems
+> with static hard-coded /dev etc).
+
+I take it this concern is what prevents us from simply increasing
+IB_UVERBS_MAX_DEVICES to 64 or something?
+
+thanks,
+/ac
