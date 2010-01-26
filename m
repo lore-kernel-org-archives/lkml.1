@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685Ab0AZQWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671Ab0AZQ1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685Ab0AZQWF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 11:22:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129Ab0AZQWB
+	id S1754671Ab0AZQ1g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 11:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567Ab0AZQ1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 11:22:01 -0500
-Received: from fallback4.mail.ru ([94.100.176.42]:58009 "EHLO
-	fallback4.mail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752722Ab0AZQWA (ORCPT
+	Tue, 26 Jan 2010 11:27:35 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48715 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753581Ab0AZQ1f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 11:22:00 -0500
-X-Greylist: delayed 1704 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jan 2010 11:22:00 EST
-Date: Tue, 26 Jan 2010 18:53:30 +0300
-From: Dmitry Artamonow <mad_soft@inbox.ru>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: "flinco@libero.it" <flinco@libero.it>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Arkadiusz Miskiewicz <arekm@maven.pl>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Feng Tang <feng.tang@intel.com>, Len Brown <len.brown@intel.com>
-Subject: Re: R: [Bug #14886] Asus P2B-DS not detected as SMP moterboard
-Message-ID: <20100126155330.GA4231@rainbow>
-References: <5550914.425471263201351807.JavaMail.defaultUser@defaultHost>
- <201001112040.45514.rjw@sisk.pl>
+	Tue, 26 Jan 2010 11:27:35 -0500
+Date: Tue, 26 Jan 2010 16:27:30 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>,
+       "Serge E. Hallyn" <serue@linux.vnet.ibm.com>,
+       Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [RFC PATCH 1/2] Fix 1 untangling ima mess, part 2 with counters
+Message-ID: <20100126162730.GI19799@ZenIV.linux.org.uk>
+References: <cover.1264018123.git.zohar@linux.vnet.ibm.com> <4ad974923eae7a8f52be0786a630b6c64bee9d32.1264018123.git.zohar@linux.vnet.ibm.com> <20100123230735.GW19799@ZenIV.linux.org.uk> <1264447477.3696.30.camel@dyn9002018117.watson.ibm.com> <20100126130349.GH19799@ZenIV.linux.org.uk> <1264519015.3789.28.camel@dyn9002018117.watson.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201001112040.45514.rjw@sisk.pl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Spam: Not detected
-X-Mras: Ok
+In-Reply-To: <1264519015.3789.28.camel@dyn9002018117.watson.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20:40 Mon 11 Jan     , Rafael J. Wysocki wrote:
-> On Monday 11 January 2010, flinco@libero.it wrote:
-> > Tried 2.6.32.3. The issue is still present.
-> 
-> Thanks for the update.
-> 
-> Rafael
+On Tue, Jan 26, 2010 at 10:16:55AM -0500, Mimi Zohar wrote:
+> --- security-testing-2.6.orig/init/main.c
+> +++ security-testing-2.6/init/main.c
+> @@ -663,9 +663,9 @@ asmlinkage void __init start_kernel(void
+>  	proc_caches_init();
+>  	buffer_init();
+>  	key_init();
+> +	radix_tree_init();
+>  	security_init();
+>  	vfs_caches_init(totalram_pages);
+> -	radix_tree_init();
+>  	signals_init();
+>  	/* rootfs populating might need page-writeback */
+>  	page_writeback_init();
 
-(I have some troubles with registering on kernel bugzilla, so posting here,
-adding people from bug to CC: list)
+FWIW, I'd take radix_tree_init() much earlier than that; it's a common
+infrastructure and if we have it early it'll mean less headache.
 
-Hi!
-I'm also using P2B-DS and can confirm that starting with kernel 2.6.32
-SMP stopped working (and don't work still - tested with current git
-v2.6.33-rc5-238-g158c168) The issue seems to have something to do with the
-fact that ACPI is blacklisted on P2B-DS. I used to workaround this bug
-on newer kernels (>=2.6.32) by passing "acpi=force" in kernel arguments.
-Finally, yesterday I found some time to write simple automated bisection
-script and leaved it to run on machine overnight. Here's result:
----------------------------------------------------------------------------
-e5b8fc6ac158f65598f58dba2c0d52ba3b412f52 is the first bad commit
-commit e5b8fc6ac158f65598f58dba2c0d52ba3b412f52
-Author: Len Brown <len.brown@intel.com>
-Date:   Tue Jul 7 23:22:58 2009 -0400
+AFAICS, it can go right after mm_init().  Objections, anyone?
 
-    ACPI: check acpi_disabled in acpi_table_parse() and acpi_table_parse_entries()
-    
-    Allow consumers of the acpi_table_parse()/acpi_table_parse_entries() API
-    to gracefully handle the acpi_disabled=1 case via return value
-    rather than checking the global flag themselves.
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
----------------------------------------------------------------------------
-
-I re-checked this result and yes - reverting this commit on both 2.6.32 and
-current git (v2.6.33-rc5-238-g158c168) makes problem go away.
-
--- 
-Best regards,
-Dmitry "MAD" Artamonow
-
+Other than that, I'm OK with that one.
