@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052Ab0AZHan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171Ab0AZHoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753052Ab0AZHan (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 02:30:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412Ab0AZHak
+	id S1753171Ab0AZHoS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 02:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189Ab0AZHoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 02:30:40 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:12745 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752180Ab0AZHaj (ORCPT
+	Tue, 26 Jan 2010 02:44:17 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:33892 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752726Ab0AZHoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 02:30:39 -0500
+	Tue, 26 Jan 2010 02:44:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZER9asFqnyjYFlb2L2lhkz1CPc4XlinylA8A7GQeDltOmvmdc2bDsY2r+sTC3wN4Mq
-         eUnti20WAzkHyuip73vOMgLPPhqyMRM/9YMHhdyNOzzWDEslEOFhx+C0qnN7o3c86FtR
-         R8IPrT5Ff7+728bbffugwTbw7xQ0Ih9dPXos4=
-Date: Tue, 26 Jan 2010 07:30:33 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-Message-ID: <20100126073033.GA6972@ff.dom.local>
-References: <20100125.165634.92235663.davem@davemloft.net> <20100126063326.GA6360@ff.dom.local> <20100125.231735.216761126.davem@davemloft.net>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=TtfBgHPnzIVCIOS23lfErewY+QX2AfhFk3dLh2+mCyaIWQgw5wmTNiQ7j0xaekZwfZ
+         Wf1pd85neUaJYKSDBUv+GDZAH1dUDoPbCWHhRCC0if3/UvCWbuIYXpcJDt78qp7qiS/y
+         au1gWDWeboAN58H9+XYC5wqzx8JwZmaLHYN/4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100125.231735.216761126.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <cf70f0211001222331y17af1f56oe7d4e61c1d38d7d3@mail.gmail.com>
+References: <cf70f0211001222331y17af1f56oe7d4e61c1d38d7d3@mail.gmail.com>
+Date: Tue, 26 Jan 2010 08:44:14 +0100
+Message-ID: <63386a3d1001252344u3ff7bb12q97ee65da13b69a9@mail.gmail.com>
+Subject: Re: measureing kernel & application boottime's
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Shivdas Gujare <shivdas.tech@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 11:17:35PM -0800, David Miller wrote:
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Tue, 26 Jan 2010 06:33:26 +0000
-> 
-> > On 26-01-2010 01:56, David Miller wrote:
-> >> are available in the git repository at:
-> >> 
-> >>   master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-> > 
-> > David, I hope I miss something, but there seem to be older things too:
-> > ...
-> >> Jarek Poplawski (1):
-> >>       ax25: netrom: rose: Fix timer oopses
-> 
-> That was commited on January 16th.
-> 
-> commit d00c362f1b0ff54161e0a42b4554ac621a9ef92d
-> Author: Jarek Poplawski <jarkao2@gmail.com>
-> Date:   Sat Jan 16 01:04:04 2010 -0800
-...
-> And I haven't sent a pull request to Linus since around
-> January 13th
+2010/1/23 Shivdas Gujare <shivdas.tech@gmail.com>:
 
-Right! (I was mislead a bit by the numbered list at the beginning.;-)
+> I am trying to measure kernel boottime along with measuring
+> application process start time on ARM V6 platform.
+> Because of few reasons, I have to stick to kernel 2.6.25(can't upgrade
+> it to latest).
+(...)
+> Also, Is there any best method to measure application start time
+> (except bootchart, can't use it)?
 
-Thanks,
-Jarek P.
+Upgrade anyway. Seriously. It's for your own good. The best way to get
+a bootchart without bootchart is to backport bootchart to kernel 2.6.25
+and then the best strategy to do that is likely to upgrade to kernel 2.6.32
+and rename it 2.6.25 and say it's a backport of the entire 2.6.32 to 2.6.25 :-P
+
+Yours,
+Linus Walleij
