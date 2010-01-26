@@ -1,82 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883Ab0AZAku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752058Ab0AZAmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751883Ab0AZAku (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 19:40:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214Ab0AZAkt
+	id S1752058Ab0AZAmA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 19:42:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084Ab0AZAl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 19:40:49 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:58700 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750939Ab0AZAkt (ORCPT
+	Mon, 25 Jan 2010 19:41:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59873 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750745Ab0AZAl5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 19:40:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=gLc/5+h+FMqP2XNgWKOsUXoupYghWOEGsPGgB+cJMVDvFZ3OvprWjY98IUWe8EjIwq
-         3gpCHq8apno7P9+bT85AtJ4l9YjPDS/lbn4zUJcY6L8t79A066MSza+UJfO+vk9a9Ewd
-         gfNkFV7c73rDrntAPRwNtzJq9pMbAxXnYkM00=
-Subject: Re: [git pull] drm fixes queue
-From: Kevin Winchester <kjwinchester@gmail.com>
-To: Dave Airlie <airlied@linux.ie>
-Cc: torvalds@linux-foundation.org, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.1001250645040.2474@skynet.skynet.ie>
-References: <alpine.DEB.2.00.1001250645040.2474@skynet.skynet.ie>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 25 Jan 2010 20:40:45 -0400
-Message-ID: <1264466445.1510.5.camel@localhost.localdomain>
+	Mon, 25 Jan 2010 19:41:57 -0500
+Date: Mon, 25 Jan 2010 16:40:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH 22/37] move round_up/down to kernel.h
+Message-Id: <20100125164032.330be0e6.akpm@linux-foundation.org>
+In-Reply-To: <4B57675E.7070309@kernel.org>
+References: <1263611228-6751-1-git-send-email-yinghai@kernel.org>
+	<1263611228-6751-23-git-send-email-yinghai@kernel.org>
+	<alpine.DEB.2.00.1001191155540.22304@router.home>
+	<4B57675E.7070309@kernel.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-25 at 06:46 +0000, Dave Airlie wrote:
-> Hi Linus,
-> 
-> Please pull the 'drm-linus' branch from
-> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
-> 
-> I was out last week for sick kid + LCA dash so stuff queued up behind me, 
-> I've booted this across a few radeons.
-> 
-> core drm changes: one EDID parser fix - one slighty controversial revert
-> 	a previous fix for FB blanking although correct, uncovered other
-> 	bugs in Intel/radeon KMS drivers, so until fixes for them are available
-> 	revert the part of the change the broke stuff.
-> 
-> nouveau: upstream fixes from F12 testing.
-> radeon: fixes all over the place from F12 bugs and upstream AMD changes.
-> 	DVI->DP convertors work again
-> 	IRQ fixes that fix kexec regression
-> 	atombios parser updates from AMD should fix s/r bugs on newer cards
-> 	minor r100/r200 command stream parser fixes
-> 
-> Possible r600 local priv escalation fix, the r600 could be used to access
-> system memory if someone was (a) really sneaky, (b) had a lot of time,
-> however the commit msg covers it all.
-> 
-> TTM: fix race condition in object deletion handling
-> vmware/staging: bunch of fixes from VMware for the staging driver
-> 	
-> 
+On Wed, 20 Jan 2010 12:28:14 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-I see that this has not been pulled yet - and of course it is likely due
-to the fact that Linus is busy.  But just in case some user feedback
-will make a difference, radeon KMS has been refusing to boot for me
-since about -rc4 (panic in radeon_agp_init), and I am hoping that this
-batch of fixes will correct the problem.
+> On 01/19/2010 09:57 AM, Christoph Lameter wrote:
+> > On Fri, 15 Jan 2010, Yinghai Lu wrote:
+> > 
+> >>
+> >>  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+> >>
+> >> +/*
+> >> + * This looks more complex than it should be. But we need to
+> >> + * get the type for the ~ right in round_down (it needs to be
+> >> + * as wide as the result!), and we want to evaluate the macro
+> >> + * arguments just once each.
+> >> + */
+> >> +#define __round_mask(x,y) ((__typeof__(x))((y)-1))
+> >> +#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
+> >> +#define round_down(x,y) ((x) & ~__round_mask(x,y))
+> >> +
+> >>  #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+> >>  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+> >>  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+> > 
+> > Note the last two lines! We already have roundup(), DIV_ROUND_UP and
+> > DIV_ROUND_CLOSEST. Please integrate them properly. Maybe extract
+> > __round_mask() from all of them.
+> 
+> like this, using DIVIDE for all ?
+> 
+> ---
+>  include/linux/kernel.h |   14 ++++----------
+>  1 file changed, 4 insertions(+), 10 deletions(-)
+> 
+> Index: linux-2.6/include/linux/kernel.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/kernel.h
+> +++ linux-2.6/include/linux/kernel.h
+> @@ -44,19 +44,13 @@ extern const char linux_proc_banner[];
+>  
+>  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+>  
+> -/*
+> - * This looks more complex than it should be. But we need to
+> - * get the type for the ~ right in round_down (it needs to be
+> - * as wide as the result!), and we want to evaluate the macro
+> - * arguments just once each.
+> - */
 
-If, however, my hope is misplaced, feel free to let me know so that I
-can write up a more formal bug report...
+umph.  It would have been better to read that comment, rather than
+delete it!
 
-Thanks,
+> +#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
 
--- 
-Kevin Winchester
+This references its second argument three times.
 
+> +#define rounddown(x, y) (((x) / (y)) * (y))
+> +#define round_up(x,y) roundup(x,y)
+> +#define round_down(x,y) rounddown(x,y)
 
+Please use checkpatch.pl.  Always.
+
+>  #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+>  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+> -#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+>  #define DIV_ROUND_CLOSEST(x, divisor)(			\
+>  {							\
+>  	typeof(divisor) __divisor = divisor;		\
+
+This patch doesn't seem very good.  Nor does "[PATCH 24/38] move
+round_up/down to kernel.h".
+
+The problem is that arch/x86/include/asm/proto.h implements private
+rounding macros.  The right way to fix that is to convert each x86
+"call site" over to using the standard macros from kernel.h, then
+finally remove the private definitions from
+arch/x86/include/asm/proto.h.  Don't just copy them over to kernel.h
+and make things muddier than they already are!
+
+If during that conversion it is found that the standard macros for some
+reason don't suit the x86 usage sites then please propose
+enhancements/fixes to the existing kernel.h facilities.
+
+And any such changes to kernel.h affect the whole world, so they
+shouldn't be buried in the middle of some huge x86-specific patch
+series which everyone sleeps through.  They can be _merged_ via the x86
+tree - that doesn't matter much.  But it should be made clear to
+everyone that these are changes which potentially affect every piece
+of code in the tree.
 
