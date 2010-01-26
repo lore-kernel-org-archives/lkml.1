@@ -1,87 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191Ab0AZGRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752235Ab0AZGUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752191Ab0AZGRg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 01:17:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665Ab0AZGRe
+	id S1752235Ab0AZGUI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 01:20:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021Ab0AZGUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 01:17:34 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:49730 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752009Ab0AZGR1 convert rfc822-to-8bit (ORCPT
+	Tue, 26 Jan 2010 01:20:05 -0500
+Received: from bld-mail19.adl2.internode.on.net ([150.101.137.104]:56058 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751437Ab0AZGUB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 01:17:27 -0500
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, Tavis Ormandy <taviso@google.com>,
-       Jeff Dike <jdike@addtoit.com>, Julien Tinnes <jln@google.com>,
-       Matt Mackall <mpm@selenic.com>, Americo Wang <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [2.6.33-rc5] starting emacs makes lockdep warning
-References: <2375c9f91001252125w6f5bd3d3he183c61e9dcedd3e@mail.gmail.com>
-	<20100126142644.5AB0.A69D9226@jp.fujitsu.com>
-	<20100126144641.5AB3.A69D9226@jp.fujitsu.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 25 Jan 2010 22:17:15 -0800
-In-Reply-To: <20100126144641.5AB3.A69D9226@jp.fujitsu.com> (KOSAKI Motohiro's message of "Tue\, 26 Jan 2010 14\:49\:12 +0900 \(JST\)")
-Message-ID: <m14om9jspg.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 26 Jan 2010 01:20:01 -0500
+Date: Tue, 26 Jan 2010 17:19:54 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: tytso@mit.edu, Ric Wheeler <rwheeler@redhat.com>,
+       Anton Altaparmakov <aia21@cam.ac.uk>, Jan Kara <jack@suse.cz>,
+       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Dilger <adilger@sun.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: IO error semantics
+Message-ID: <20100126061954.GD15853@discord.disaster>
+References: <4B4EEE86.7080807@hitachi.com> <20100114141803.GB3146@quack.suse.cz> <20100118051847.GA8678@laptop> <20100118060518.GA9151@laptop> <20100118122437.GF7264@discord.disaster> <20100118140039.GA13909@laptop> <D65C918F-8CCD-4626-BA84-FD0410A5E81F@cam.ac.uk> <4B5DB78D.2090408@redhat.com> <20100125174723.GB28459@thunk.org> <20100125175529.GB2018@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100125175529.GB2018@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> writes:
+On Tue, Jan 26, 2010 at 04:55:30AM +1100, Nick Piggin wrote:
+> On Mon, Jan 25, 2010 at 12:47:23PM -0500, tytso@mit.edu wrote:
+> > On Mon, Jan 25, 2010 at 10:23:57AM -0500, Ric Wheeler wrote:
+> > > 
+> > > For permanent write errors, I would expect any modern drive to do a
+> > > sector remapping internally. We should never need to track this kind
+> > > of information for any modern device that I know of (S-ATA, SAS,
+> > > SSD's and raid arrays should all handle this).
+> > 
+> > ... and if the device is run out of all of its blocks in its spare
+> > blocks pool, it's probably well past the time to replace said disk.
+> > 
+> > BTW, I really liked Dave Chinner's summary of the issues involved; I
+> > ran into Kawai-san last week at Linux.conf.au, and we discussed pretty
+> > much the same thing over lunch.  (i.e., that it's a hard problem, and
+> > in some cases we need to retry the writes, such as a transient FC path
+> > problem --- but some kind of write throttling is critical or we could
+> > end up choking the VM due to too many pages getting dirtied and no way
+> > of cleaning them.)
+> 
+> Well I just don't think we can ever discard them by default.
 
->> > On Tue, Jan 26, 2010 at 11:20 AM, KOSAKI Motohiro
->> > <kosaki.motohiro@jp.fujitsu.com> wrote:
->> > > Hi
->> > >
->> > > Current linus tree made following lockdep warning when starting emacs command.
->> > > Is this known issue?
->> > >
->> > >
->> > > =========================================================
->> > > [ INFO: possible irq lock inversion dependency detected ]
->> > > 2.6.33-rc5 #77
->> > > ---------------------------------------------------------
->> > > emacs/1609 just changed the state of lock:
->> > >  (&(&tty->ctrl_lock)->rlock){+.....}, at: [<ffffffff8127c648>] tty_fasync+0xe8/0x190
->> > > but this lock took another, HARDIRQ-unsafe lock in the past:
->> > >  (&(&sighand->siglock)->rlock){-.....}
->> > >
->> > > and interrupts could create inverse lock ordering between them.
->> > >
->> > >
->> > 
->> > Hey,
->> > 
->> > does reverting commit 703625118 help?
->> 
->> Seems solved.
->> 
->> Thanks.
->
-> I'm sorry.
-> I forgot to cc related person at last mail.
->
-> Greg, can you please consider revert commit 703625118?
+We have done this for a long time in XFS. e.g. If we can't issue IO
+on the page (e.g. allocation fails or we are in a shutdown
+situation already) we invalidate the page immediately, clear the
+page uptodate flag and return an error to mark the address space
+with an error. See xfs_page_state_convert() for more detail.
 
-It looks like f_modown needs to do irqsave irqrestore to be safely
-called in this context.  My apologies for missing this when I
-originally made the suggestion.
+And besides, if there is an error of some kind sufficient to shut
+down the filesystem, the last thing you want to do is write more
+data to it and potentially make the problem worse, especially if
+async transactions that the data write might rely on were cancelled
+by the shutdown rather than pushed to disk....
 
-As for the other comments I would be very surprised if lock_kernel()
-offers any real protection.
+> Therefore
+> we must default to not discarding them, therefore we need to solve or
+> work around the dirty page congestion problem some how.
 
-I really don't understand what it is talking about siglock being
-irq unsafe, that seems wrong on oh so many levels.
+Agreed. The way XFS treats data IO errors is because that's the only
+thing we can do right now if we want the system to continue to function
+in the face of IO errors....
 
-Eric
+Cheers,
 
-n
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
