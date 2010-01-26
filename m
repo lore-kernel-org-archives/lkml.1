@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277Ab0AZXvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355Ab0AZXvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277Ab0AZXvL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:51:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740Ab0AZXoE
+	id S1755355Ab0AZXvP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:51:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085Ab0AZXvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:44:04 -0500
-Received: from kroah.org ([198.145.64.141]:35398 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:51:09 -0500
+Received: from kroah.org ([198.145.64.141]:35436 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754729Ab0AZXn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:56 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:29 2010
-Message-Id: <20100126233929.150779408@mini.kroah.org>
+	id S1754807Ab0AZXoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:44:04 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:30 2010
+Message-Id: <20100126233930.059092054@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:29 -0800
+Date: Tue, 26 Jan 2010 15:34:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Elliott Sales de Andrade <quantum.analyst@gmail.com>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: [63/98] Input: i8042 - add Dritek quirk for Acer Aspire 5610.
+       Shaohua Li <shaohua.li@intel.com>, Jeff Garzik <jgarzik@redhat.com>
+Subject: [70/98] ahci: disable SNotification capability for ich8
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,33 +28,94 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Elliott Sales de Andrade <quantum.analyst@gmail.com>
+From: Shaohua Li <shaohua.li@intel.com>
 
-commit e6edbdc52bc0755cbfe0721ca91d4fd87649bc13 upstream.
+commit 1b677afda44f7882b7e257d6f025d006ec5d14f9 upstream.
 
-Signed-off-by: Elliott Sales de Andrade <quantum.analyst@gmail.com>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+I obseved there is a sata_async_notification() for every ahci
+interrupt. But the async notification does nothing (this is hard
+disk drive and no pmp). This cause cpu wastes some time on sntf
+register access.
+
+It appears ICH AHCI doesn't support SNotification register, but the
+controller reports it does. After quirking it, the async notification
+disappears.
+
+PS. it appears all ICH don't support SNotification register from ICH
+manual, don't know if we need quirk all ICH. I don't have machines
+with all kinds of ICH.
+
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/input/serio/i8042-x86ia64io.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/ata/ahci.c |   20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
---- a/drivers/input/serio/i8042-x86ia64io.h
-+++ b/drivers/input/serio/i8042-x86ia64io.h
-@@ -524,6 +524,13 @@ static const struct dmi_system_id __init
-  */
- static const struct dmi_system_id __initconst i8042_dmi_dritek_table[] = {
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -113,6 +113,7 @@ enum {
+ 	board_ahci_mcp65	= 6,
+ 	board_ahci_nopmp	= 7,
+ 	board_ahci_yesncq	= 8,
++	board_ahci_nosntf	= 9,
+ 
+ 	/* global controller registers */
+ 	HOST_CAP		= 0x00, /* host capabilities */
+@@ -235,6 +236,7 @@ enum {
+ 	AHCI_HFLAG_NO_SUSPEND		= (1 << 10), /* don't suspend */
+ 	AHCI_HFLAG_SRST_TOUT_IS_OFFLINE	= (1 << 11), /* treat SRST timeout as
+ 							link offline */
++	AHCI_HFLAG_NO_SNTF		= (1 << 12), /* no sntf */
+ 
+ 	/* ap->flags bits */
+ 
+@@ -508,7 +510,7 @@ static const struct ata_port_info ahci_p
+ 		.udma_mask	= ATA_UDMA6,
+ 		.port_ops	= &ahci_ops,
+ 	},
+-	/* board_ahci_yesncq */
++	[board_ahci_yesncq] =
  	{
-+		/* Acer Aspire 5610 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5610"),
-+		},
-+	},
+ 		AHCI_HFLAGS	(AHCI_HFLAG_YES_NCQ),
+ 		.flags		= AHCI_FLAG_COMMON,
+@@ -516,6 +518,14 @@ static const struct ata_port_info ahci_p
+ 		.udma_mask	= ATA_UDMA6,
+ 		.port_ops	= &ahci_ops,
+ 	},
++	[board_ahci_nosntf] =
 +	{
- 		/* Acer Aspire 5630 */
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
++		AHCI_HFLAGS	(AHCI_HFLAG_NO_SNTF),
++		.flags		= AHCI_FLAG_COMMON,
++		.pio_mask	= ATA_PIO4,
++		.udma_mask	= ATA_UDMA6,
++		.port_ops	= &ahci_ops,
++	},
+ };
+ 
+ static const struct pci_device_id ahci_pci_tbl[] = {
+@@ -531,7 +541,7 @@ static const struct pci_device_id ahci_p
+ 	{ PCI_VDEVICE(INTEL, 0x2683), board_ahci }, /* ESB2 */
+ 	{ PCI_VDEVICE(INTEL, 0x27c6), board_ahci }, /* ICH7-M DH */
+ 	{ PCI_VDEVICE(INTEL, 0x2821), board_ahci }, /* ICH8 */
+-	{ PCI_VDEVICE(INTEL, 0x2822), board_ahci }, /* ICH8 */
++	{ PCI_VDEVICE(INTEL, 0x2822), board_ahci_nosntf }, /* ICH8 */
+ 	{ PCI_VDEVICE(INTEL, 0x2824), board_ahci }, /* ICH8 */
+ 	{ PCI_VDEVICE(INTEL, 0x2829), board_ahci }, /* ICH8M */
+ 	{ PCI_VDEVICE(INTEL, 0x282a), board_ahci }, /* ICH8M */
+@@ -849,6 +859,12 @@ static void ahci_save_initial_config(str
+ 		cap &= ~HOST_CAP_PMP;
+ 	}
+ 
++	if ((cap & HOST_CAP_SNTF) && (hpriv->flags & AHCI_HFLAG_NO_SNTF)) {
++		dev_printk(KERN_INFO, &pdev->dev,
++			   "controller can't do SNTF, turning off CAP_SNTF\n");
++		cap &= ~HOST_CAP_SNTF;
++	}
++
+ 	if (pdev->vendor == PCI_VENDOR_ID_JMICRON && pdev->device == 0x2361 &&
+ 	    port_map != 1) {
+ 		dev_printk(KERN_INFO, &pdev->dev,
 
 
