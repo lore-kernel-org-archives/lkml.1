@@ -1,108 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668Ab0AZNfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787Ab0AZNij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668Ab0AZNfZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 08:35:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431Ab0AZNfY
+	id S1753787Ab0AZNij (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 08:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816Ab0AZNii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 08:35:24 -0500
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:32364 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752235Ab0AZNfX (ORCPT
+	Tue, 26 Jan 2010 08:38:38 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43509 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752590Ab0AZNih (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 08:35:23 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=LzvPhg6YkBC3Oj1FArRCLkW8N51KmFeyUur39MjWgE6DjfOCWhLBwljGN+IwhbWH4g2HZLy5QJ3hUaccfos/v3+/lypqdPbn5jUwCYI+We1Ko0PX4hBuJt/V2kd44rVH5hcF9nh9z7/ITg4rj1ONodAf1WIkTiZh8kOfhVu97Bw=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: wiIFiMUVM1nORR_l8O6ezsCVq_meg.wWql6ubPQ_mv6LIvYmFvJe3kD7P3wO1oyhULBb27KJazOfgqWtWgo8.vxGm4WwMyIVRxeJbLuQFwRC.xy4ZMrk_n69cCjQooWjaIYP14KeApU_lGOzMZAt12_vAGFBoCjj3j3GhZ4reKTTDcCnGukN0fC0PZqHsVQtox.k8xHXY8qYozZ8JWb2cxFc6YiTujKTHLwr.aUEw1UIn097c3PjqaogEc3nXb8u
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [RFC/PATCH 1/5] usb: otg: add notifier support
-Date: Tue, 26 Jan 2010 05:35:21 -0800
-User-Agent: KMail/1.9.10
-Cc: Felipe Balbi <felipe.balbi@nokia.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Grazvydas Ignotas <notasas@gmail.com>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>, linux-omap@vger.kernel.org,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com> <201001260316.20529.david-b@pacbell.net> <20100126131146.GC32291@sirena.org.uk>
-In-Reply-To: <20100126131146.GC32291@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 26 Jan 2010 08:38:37 -0500
+Date: Tue, 26 Jan 2010 13:39:58 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: William Hubbs <w.d.hubbs@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, gregkh@suse.de,
+       Chris Brannon <cmbrannon79@gmail.com>, Kirk Reiser <kirk@reisers.ca>
+Subject: Re: request for assistance:  accessing ttys from kernel space
+Message-ID: <20100126133958.49e660a5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100126024049.GQ21492@const.famille.thibault.fr>
+References: <20100126020203.GA23551@linux1>
+	<20100126021306.16809e71@lxorguk.ukuu.org.uk>
+	<20100126024049.GQ21492@const.famille.thibault.fr>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001260535.21689.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 January 2010, Mark Brown wrote:
-> On Tue, Jan 26, 2010 at 03:16:20AM -0800, David Brownell wrote:
+> Is there another way to set up a line discipline from the kernel itself
+> without the need from userland intervention, even before any / is
+> mounted?
+
+There is no fundamental reason you can't do that once the tty object
+itself exists. Currently there is no path for doing it in the kernel.
+
+> Maybe the early serial console support layer could be extended a bit so
+> speakup can use it first during the boot?  For now it's quite tied to
+> just printing the printk logs. drivers/accessibility/braille_console.c
+> does manage do make something else, but it happens that the
+> serial_core.c's uart_console_write puts additional \rs before \ns, which
+> can be a problem.
 > 
-> > I'd vote to convert all the USB-to-charger interfaces so
-> > they use notifiers.  After fixing the events ... see
-> > comments below.  :)
-> 
-> Yes please - it's not just chargers either, this can also be used by
-> PMICs which do power path management that includes USB.
+> Also, for proper speech flow, speakup would need to be able to read
+> characters from the device.
 
-Color me confused ... what do you mean by "power path"?
+Some debugger folk want that too.
 
-Do you mean something like "the board as a whole can take N mA of
-current from USB", rather than specifically addressing a charger?
+I've been trying to get to the point where each tty consists of a
+tty_struct which is the instance of an opened tty device, and a tty_port
+which is a common struct instance for each physical port. That then has
+some operations attached to it.
 
-It's not uncommon to do things like use VBUS current to power the
-USB circuitry, too.  That can leave less for other purposes.  All
-of that being rather board-specific.
+However at the moment most of the operation paths are not pushed into
+tty_port, not every device yet has a tty_port and many of the paths that
+need pushing into tty_port reference material that is in struct tty but
+probably also needs moving.
 
+So there is an awful lot of work to be done.
 
-> > Those seem like the wrong events.  The right events for a charger
-> > would be more along the lines of:
-> 
-> >  - For peripheral:  "you may use N milliAmperes now".
-> >  - General:  "Don't Charge" (a.k.a. "use 0 mA").
-> 
-> > I don't see how "N" would be passed with those events ...
-> 
-> These are good for the peripheral side.  You do get to pass a void *
-> along with the notifier value, that could be used to pass data like the
-> current limit.
+I guess the quick 'get it working' hack for the moment would be to add a
+'raw' flag to the console output routines and use those (where raw=1
+would mean 'don't tamper with the formatting')
 
-I don't think I saw that being done ... either in code, comments,
-or documentation.  Passing N is fundamental.
-
-
-> > A host *might* want to be able to say things like "supply
-> > up to N milliAmperes now", e.g. to let a regulator choose
-> > the most efficient mode.
-> 
-> Yes, they definitely want this - not just for efficiency but also to
-> allow current limiting to protect the system from excessive current
-> drain.
-
-There are load bursting issues too.  All part of the USB spec;
-a load that's OK for 1 millisecond might not be OK for 1 second.
-ISTR the "supply N mA" refers to an average.  And there are some
-limits to the capacitance that can practically be stuck on VBUS
-output lines (which includes the cable).  Solvable problems, but
-not always pretty if software has to think it through.
-
-Thing is, supplying current is a bit more involved.  If the
-board can't supply 300 mA, the USB configuration selection
-mechanism has to know that, so it never selects peripheral
-configurations which require that much current.
-
-Or maybe these two ports can serve 500 mA, but not those two;
-or their total can't exceed N (function of componentry and power
-budgeting).
-
-Ergo my desire to start with a straightforward problem whose
-solution has real value (how much VBUS current may be consumed?),
-and leave some of those other messes for later!
-
-- Dave
-
+Alan
