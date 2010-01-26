@@ -1,91 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873Ab0AZJTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898Ab0AZJVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873Ab0AZJTR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 04:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752Ab0AZJTP
+	id S1752898Ab0AZJVd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 04:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584Ab0AZJVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 04:19:15 -0500
-Received: from mga11.intel.com ([192.55.52.93]:61069 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751924Ab0AZJTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 04:19:13 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,345,1262592000"; 
-   d="scan'208";a="767361763"
-Subject: Re: netperf ~50% regression with 2.6.33-rc1, bisect to 1b9508f
-From: Lin Ming <ming.m.lin@intel.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1264419342.5888.42.camel@marge.simson.net>
-References: <1264413826.3642.88.camel@minggr.sh.intel.com>
-	 <1264419342.5888.42.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Tue, 26 Jan 2010 17:03:01 +0800
-Message-Id: <1264496581.3642.114.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jan 2010 04:21:30 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:34790 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751589Ab0AZJV2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 04:21:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=qrUwWh2BryP+uOjOty4VMuGH3MHKP2dmOhdLBmolob8psoEcrwnMIqG/yyOR54f0i7
+         y0A8RtgR9pYDKCiaJc85b0VR5MCX43SmwS1jzQViDLqqyTp6RaWHtwch9Be5nAHmHKUd
+         p87Vw16Yvvjmt0p5Og6CXQDC5KRuvx2HWfGLw=
+MIME-Version: 1.0
+In-Reply-To: <2375c9f91001260115q3fe86964l7ea1c8f9c69cb5e9@mail.gmail.com>
+References: <4B5E5D4F.50803@windriver.com> <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com> 
+	<4B5E9BE9.2030702@windriver.com> <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com> 
+	<4B5EB223.60307@windriver.com> <2375c9f91001260115q3fe86964l7ea1c8f9c69cb5e9@mail.gmail.com>
+From: Hui Zhu <teawater@gmail.com>
+Date: Tue, 26 Jan 2010 17:21:08 +0800
+Message-ID: <daef60381001260121q675ecb30r2099c085c40d7964@mail.gmail.com>
+Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation 
+	environments
+To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Cc: Hui Zhu <hui.zhu@windriver.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-25 at 19:35 +0800, Mike Galbraith wrote:
-> On Mon, 2010-01-25 at 18:03 +0800, Lin Ming wrote:
-> 
-> > With above commit, the idle balance was rate limited, so CPU 15(server,
-> > waiting data from client) is idle at most time.
-> > 
-> > CPU0(client) executes as below,
-> > 
-> > try_to_wake_up
-> >    check_preempt_curr_idle
-> >       resched_task
-> >          smp_send_reschedule
-> > 
-> > This causes a lot of rescheduling IPI.
-> > 
-> > This commit can't be reverted due to conflict, so I just add below code
-> > to disable "Rate-limit newidle" and the performance was recovered.
-> > 
-> > diff --git a/kernel/sched.c b/kernel/sched.c
-> > index 18cceee..588fdef 100644
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -4421,9 +4421,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
-> >  
-> >  	this_rq->idle_stamp = this_rq->clock;
-> >  
-> > -	if (this_rq->avg_idle < sysctl_sched_migration_cost)
-> > -		return;
-> > -
-> >  	for_each_domain(this_cpu, sd) {
-> >  		unsigned long interval;
-> >  
-> 
-> Heh, so you should see the same thing with newidle disabled, as it was
-> in .31 and many kernels prior.  Do you?
+Hi Américo,
 
-Weird.
-2.6.31 does not have so many reschedule IPI.
+On Tue, Jan 26, 2010 at 17:15, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> On Tue, Jan 26, 2010 at 5:13 PM, Hui Zhu <hui.zhu@windriver.com> wrote:
+>>
+>> What do you think about it?
+>>
+>> And I changed the other part according to your mail.
+>
+>
+> It looks fine for me now, I assume you already tested it.
 
-This Nehalem machine has 3 domain levels,
-$ grep . cpu0/domain*/name
-cpu0/domain0/name:SIBLING
-cpu0/domain1/name:MC
-cpu0/domain2/name:NODE
+It was tested.  :)
 
-For 2.6.31, SD_BALANCE_NEWIDLE is only set on SIBLING level.
-For 2.6.32-rc1, SD_BALANCE_NEWIDLE is set on all 3 levels.
+>
+>
+>>
+>> Best regards,
+>> Hui
+>>
+>> The markup_oops.pl have 3 troubles to support cross-compiler environment:
+>> 1.  It use objdump directly.
+>> 2.  It use modinfo to get the message of module.
+>> 3.  It use hex function that cannot support 64-bit number in 32-bit arch.
+>>
+>> This patch add 3 options to markup_oops.pl:
+>> 1. -c CROSS_COMPILE     Specify the prefix used for toolchain.
+>> 2. -m MODULE_DIRNAME    Specify the module directory name.
+>> 3. Change hex function to Math::BigInt->from_hex.
+>>
+>> After this patch, parse the x8664 oops in x86, we can:
+>> cat amd64m | perl ~/kernel/tmp/m.pl -c /home/teawater/kernel/bin/x8664- -m
+>> ./e.ko vmlinux
+>>
+>> Thanks,
+>> Hui
+>>
+>> Signed-off-by: Hui Zhu <teawater@gmail.com>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: Arjan van de Ven <arjan@linux.intel.com>
+>> Cc: Sam Ravnborg <sam@ravnborg.org>
+>> Cc: ozan@pardus.org.tr
+>> Cc: Matthew Wilcox <willy@linux.intel.com>
+>>
+>
+> Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+>
 
-I can see many reschedule IPI in 2.6.32-rc1 if SD_BALANCE_NEWIDLE is
-cleared for all 3 levels.
-But for 2.6.31, I didn't see so many IPI even SD_BALANCE_NEWIDLE is
-cleared on SIBLING level.
-
-So it seems something happens between 2.6.31 and 2.6.32-rc1.
-I'll bisect ...
-
-Lin Ming
-
+Thanks,
+Hui
