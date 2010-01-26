@@ -1,121 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892Ab0AZDF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652Ab0AZDG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751892Ab0AZDF4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 22:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514Ab0AZDFz
+	id S1752652Ab0AZDG4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 22:06:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550Ab0AZDG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 22:05:55 -0500
-Received: from mail-qy0-f204.google.com ([209.85.221.204]:52110 "EHLO
+	Mon, 25 Jan 2010 22:06:56 -0500
+Received: from mail-qy0-f204.google.com ([209.85.221.204]:52171 "EHLO
 	mail-qy0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229Ab0AZDFz convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751514Ab0AZDGz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 22:05:55 -0500
+	Mon, 25 Jan 2010 22:06:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=uMHfL6N5JQxAaUnIOSEDd4uyzKuki6pVYMJzznEe8sE7SSffZUzZS58KNbGK9UiCYo
-         2Ub8lnqHap99UmlinzZTHQkrN7/aPTgFUwi739ElNfey4lnesfD33zi+NxE0NU0ANBEi
-         5HfkgTXMiY4YX7xRc8HYFBeiz+EbCanvtvakA=
+        b=pArXkU58GdZEh8gTijq6u+YzRa+FB8VVjmA5GZrsQYwtB2hlV/UxwGFJtMytBBlHwt
+         fauy1a7tQDXygNQObFPcqCs3yBqiAUrF1RaaM4AV2jnO2PrqOwQzi7hAofkSbug34JJt
+         asf9b9mV9y4rEVTPNOA1sLA0UqZtU1ymJizYo=
 MIME-Version: 1.0
-In-Reply-To: <4B5E5D4F.50803@windriver.com>
-References: <4B5E5D4F.50803@windriver.com>
-Date: Tue, 26 Jan 2010 11:05:54 +0800
-Message-ID: <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com>
-Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation 
-	environments
+In-Reply-To: <4B5DF061.1070704@unsolicited.net>
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
+	 <hE3x9c-4KZM.A.V3G.JLMXLB@chimera> <20100125135531.GB3749@hack>
+	 <4B5DF061.1070704@unsolicited.net>
+Date: Tue, 26 Jan 2010 11:06:53 +0800
+Message-ID: <2375c9f91001251906s520112ebuf12f60729b004857@mail.gmail.com>
+Subject: Re: [Bug #14924] Weird hard hangs when rendering 'some' web-sites in 
+	Firefox
 From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Hui Zhu <hui.zhu@windriver.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
-       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org,
-       teawater@gmail.com
+To: David <david@unsolicited.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 11:11 AM, Hui Zhu <hui.zhu@windriver.com> wrote:
-> Sorry guys, the prev mail still have some format trouble.  I send a new mail
-> for it.
+On Tue, Jan 26, 2010 at 3:26 AM, David <david@unsolicited.net> wrote:
+> Américo Wang wrote:
+>> On Sun, Jan 24, 2010 at 11:04:33PM +0100, Rafael J. Wysocki wrote:
+>>
+>>> This message has been generated automatically as a part of a report
+>>> of recent regressions.
+>>>
+>>> The following bug entry is on the current list of known regressions
+>>>
+>> >from 2.6.32.  Please verify if it still should be listed and let me know
+>>
+>>> (either way).
+>>>
+>>>
+>>> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=14924
+>>> Subject              : Weird hard hangs when rendering 'some' web-sites in Firefox
+>>> Submitter    : David <david@unsolicited.net>
+>>> Date         : 2009-12-21 21:53 (35 days old)
+>>> References   : http://marc.info/?l=linux-kernel&m=126143375823340&w=4
+>>>
+>>
+>> Hmm, you have CONFIG_DETECT_SOFTLOCKUP=y, I have no idea what happened,
+>> doing a bisect would be appreciated.
+>>
+>> Thanks.
+>>
+>>
 >
-> The markup_oops.pl have 3 troubles to support cross-compiler environment:
-> 1.  It use objdump directly.
-> 2.  It use modinfo to get the message of module.
-> 3.  It use hex function that cannot support 64-bit number in 32-bit arch.
+> I no longer have the offending hardware, but I think that the issue was
+> probably corrected by:
 >
-> This patch add 3 options to markup_oops.pl:
-> 1. -c CROSS_COMPILE     Specify the prefix used for toolchain.
-> 2. -m MODULE_DIRNAME    Specify the module directory name.
-> 3. Change hex function to Math::BigInt->from_hex.
+>    cafe6609d6dc0a6a278f9fdbb59ce4d761a35ddd -
+> drm/radeon/kms: Schedule host path read cache flush through the ring V2
 >
-> After this patch, parse the x8664 oops in x86, we can:
-> cat amd64m | perl ~/kernel/tmp/m.pl -c /home/teawater/kernel/bin/x8664- -m
-> ./e.ko vmlinux
+> as the offending ATI graphics was indeed R300.
 >
-> Thanks,
-> Hui
->
-> Signed-off-by: Hui Zhu <teawater@gmail.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Arjan van de Ven <arjan@linux.intel.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: ozan@pardus.org.tr
-> Cc: Matthew Wilcox <willy@linux.intel.com>
->
-> ---
-> scripts/markup_oops.pl |   71
-> ++++++++++++++++++++++++++++++++++++++++++-------
-> 1 file changed, 61 insertions(+), 10 deletions(-)
->
-> --- a/scripts/markup_oops.pl
-> +++ b/scripts/markup_oops.pl
-> @@ -15,8 +15,46 @@ use Math::BigInt;
-> #       Arjan van de Ven <arjan@linux.intel.com>
->
->
-> -my $vmlinux_name = $ARGV[0];
-> -if (!defined($vmlinux_name)) {
-> +my $cross_compile = "";
-> +my $vmlinux_name = "";
-> +my $modulefile = "";
-> +
-> +# Get options
-> +my $option = 0;
-> +for (my $i = 0; $i <= $#ARGV; $i++) {
-> +       if ($option == 0) {
-> +               if ($ARGV[$i] eq "-c") {
-> +                       $option = 1;
-> +               }
-> +               elsif ($ARGV[$i] eq "-m") {
-> +                       $option = 2;
-> +               }
-> +               elsif ($ARGV[$i] eq "-h") {
-> +                       usage();
-> +                       exit;
-> +               }
-> +               elsif ($i == $#ARGV) {
-> +                       $vmlinux_name = $ARGV[$i];
-> +               }
-> +               else {
-> +                       usage();
-> +                       exit;
-> +               }
-> +       }
-> +       elsif ($option == 1) {
-> +               $cross_compile = $ARGV[$i];
-> +               $option = 0;
-> +       }
-> +       elsif ($option == 2) {
-> +               $modulefile = $ARGV[$i];
-> +               $option = 0;
-> +       }
-> +}
-> +
-> +if ($vmlinux_name ne "") {
-> +       $vmlinux_name = $ARGV[$#ARGV];
-> +}
 
-Why not using the Perl module 'Getopt' to do this?
+Ok, thanks!
