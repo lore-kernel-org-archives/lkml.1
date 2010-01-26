@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710Ab0A0ADJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667Ab0A0ACw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755710Ab0A0ADJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:03:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691Ab0A0ACv
+	id S1755667Ab0A0ACw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:02:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755613Ab0A0ACb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:02:51 -0500
-Received: from kroah.org ([198.145.64.141]:35169 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:02:31 -0500
+Received: from kroah.org ([198.145.64.141]:35172 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754139Ab0AZXnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:19 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:23 2010
-Message-Id: <20100126233923.767452258@mini.kroah.org>
+	id S1754150Ab0AZXnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:20 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:24 2010
+Message-Id: <20100126233924.023394147@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:48 -0800
+Date: Tue, 26 Jan 2010 15:33:50 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ben Hutchings <ben@decadent.org.uk>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [22/98] V4L/DVB (13680a): DocBook/media: copy images after building HTML
+       Florian Westphal <fw@strlen.de>, Patrick McHardy <kaber@trash.net>,
+       Ben Hutchings <ben@decadent.org.uk>
+Subject: [24/98] netfilter: xtables: fix conntrack match v1 ipt-save output
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,54 +29,177 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ben Hutchings <ben@decadent.org.uk>
+From: Florian Westphal <fw@strlen.de>
 
-commit 49b14650ba5bf80234cb1984fd8396aff03430ce upstream.
+commit 3a0429292daa0e1ec848bd26479f5e48b0d54a42 upstream.
 
-The rule for %.html removes the output directory, so there is no point
-in copying images before building HTML.
+commit d6d3f08b0fd998b647a05540cedd11a067b72867
+(netfilter: xtables: conntrack match revision 2) does break the
+v1 conntrack match iptables-save output in a subtle way.
 
-Documentation/DocBook/Makefile |   10 +++++-----
+Problem is as follows:
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+    up = kmalloc(sizeof(*up), GFP_KERNEL);
+[..]
+   /*
+    * The strategy here is to minimize the overhead of v1 matching,
+    * by prebuilding a v2 struct and putting the pointer into the
+    * v1 dataspace.
+    */
+    memcpy(up, info, offsetof(typeof(*info), state_mask));
+[..]
+    *(void **)info  = up;
+
+As the v2 struct pointer is saved in the match data space,
+it clobbers the first structure member (->origsrc_addr).
+
+Because the _v1 match function grabs this pointer and does not actually
+look at the v1 origsrc, run time functionality does not break.
+But iptables -nvL (or iptables-save) cannot know that v1 origsrc_addr
+has been overloaded in this way:
+
+$ iptables -p tcp -A OUTPUT -m conntrack --ctorigsrc 10.0.0.1 -j ACCEPT
+$ iptables-save
+-A OUTPUT -p tcp -m conntrack --ctorigsrc 128.173.134.206 -j ACCEPT
+
+(128.173... is the address to the v2 match structure).
+
+To fix this, we take advantage of the fact that the v1 and v2 structures
+are identical with exception of the last two structure members (u8 in v1,
+u16 in v2).
+
+We extract them as early as possible and prevent the v2 matching function
+from looking at those two members directly.
+
+Previously reported by Michel Messerschmidt via Ben Hutchings, also
+see Debian Bug tracker #556587.
+
+Signed-off-by: Florian Westphal <fw@strlen.de>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Cc: Ben Hutchings <ben@decadent.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/DocBook/Makefile |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ net/netfilter/xt_conntrack.c |   61 +++++++++++--------------------------------
+ 1 file changed, 17 insertions(+), 44 deletions(-)
 
---- a/Documentation/DocBook/Makefile
-+++ b/Documentation/DocBook/Makefile
-@@ -32,7 +32,7 @@ PS_METHOD	= $(prefer-db2x)
+--- a/net/netfilter/xt_conntrack.c
++++ b/net/netfilter/xt_conntrack.c
+@@ -113,7 +113,8 @@ ct_proto_port_check(const struct xt_conn
+ }
  
- ###
- # The targets that may be used.
--PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs media
-+PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs
+ static bool
+-conntrack_mt(const struct sk_buff *skb, const struct xt_match_param *par)
++conntrack_mt(const struct sk_buff *skb, const struct xt_match_param *par,
++             u16 state_mask, u16 status_mask)
+ {
+ 	const struct xt_conntrack_mtinfo2 *info = par->matchinfo;
+ 	enum ip_conntrack_info ctinfo;
+@@ -136,7 +137,7 @@ conntrack_mt(const struct sk_buff *skb, 
+ 			if (test_bit(IPS_DST_NAT_BIT, &ct->status))
+ 				statebit |= XT_CONNTRACK_STATE_DNAT;
+ 		}
+-		if (!!(info->state_mask & statebit) ^
++		if (!!(state_mask & statebit) ^
+ 		    !(info->invert_flags & XT_CONNTRACK_STATE))
+ 			return false;
+ 	}
+@@ -172,7 +173,7 @@ conntrack_mt(const struct sk_buff *skb, 
+ 		return false;
  
- BOOKS := $(addprefix $(obj)/,$(DOCBOOKS))
- xmldocs: $(BOOKS)
-@@ -45,15 +45,15 @@ PDF := $(patsubst %.xml, %.pdf, $(BOOKS)
- pdfdocs: $(PDF)
+ 	if ((info->match_flags & XT_CONNTRACK_STATUS) &&
+-	    (!!(info->status_mask & ct->status) ^
++	    (!!(status_mask & ct->status) ^
+ 	    !(info->invert_flags & XT_CONNTRACK_STATUS)))
+ 		return false;
  
- HTML := $(sort $(patsubst %.xml, %.html, $(BOOKS)))
--htmldocs: media $(HTML)
-+htmldocs: $(HTML)
- 	$(call build_main_index)
-+	$(call build_images)
+@@ -192,11 +193,17 @@ conntrack_mt(const struct sk_buff *skb, 
+ static bool
+ conntrack_mt_v1(const struct sk_buff *skb, const struct xt_match_param *par)
+ {
+-	const struct xt_conntrack_mtinfo2 *const *info = par->matchinfo;
+-	struct xt_match_param newpar = *par;
++	const struct xt_conntrack_mtinfo1 *info = par->matchinfo;
  
- MAN := $(patsubst %.xml, %.9, $(BOOKS))
- mandocs: $(MAN)
+-	newpar.matchinfo = *info;
+-	return conntrack_mt(skb, &newpar);
++	return conntrack_mt(skb, par, info->state_mask, info->status_mask);
++}
++
++static bool
++conntrack_mt_v2(const struct sk_buff *skb, const struct xt_match_param *par)
++{
++	const struct xt_conntrack_mtinfo2 *info = par->matchinfo;
++
++	return conntrack_mt(skb, par, info->state_mask, info->status_mask);
+ }
  
--media:
--	mkdir -p $(srctree)/Documentation/DocBook/media/
--	cp $(srctree)/Documentation/DocBook/dvb/*.png $(srctree)/Documentation/DocBook/v4l/*.gif $(srctree)/Documentation/DocBook/media/
-+build_images = mkdir -p $(objtree)/Documentation/DocBook/media/ && \
-+	       cp $(srctree)/Documentation/DocBook/dvb/*.png $(srctree)/Documentation/DocBook/v4l/*.gif $(objtree)/Documentation/DocBook/media/
+ static bool conntrack_mt_check(const struct xt_mtchk_param *par)
+@@ -209,45 +216,11 @@ static bool conntrack_mt_check(const str
+ 	return true;
+ }
  
- installmandocs: mandocs
- 	mkdir -p /usr/local/man/man9/
+-static bool conntrack_mt_check_v1(const struct xt_mtchk_param *par)
+-{
+-	struct xt_conntrack_mtinfo1 *info = par->matchinfo;
+-	struct xt_conntrack_mtinfo2 *up;
+-	int ret = conntrack_mt_check(par);
+-
+-	if (ret < 0)
+-		return ret;
+-
+-	up = kmalloc(sizeof(*up), GFP_KERNEL);
+-	if (up == NULL) {
+-		nf_ct_l3proto_module_put(par->family);
+-		return -ENOMEM;
+-	}
+-
+-	/*
+-	 * The strategy here is to minimize the overhead of v1 matching,
+-	 * by prebuilding a v2 struct and putting the pointer into the
+-	 * v1 dataspace.
+-	 */
+-	memcpy(up, info, offsetof(typeof(*info), state_mask));
+-	up->state_mask  = info->state_mask;
+-	up->status_mask = info->status_mask;
+-	*(void **)info  = up;
+-	return true;
+-}
+-
+ static void conntrack_mt_destroy(const struct xt_mtdtor_param *par)
+ {
+ 	nf_ct_l3proto_module_put(par->family);
+ }
+ 
+-static void conntrack_mt_destroy_v1(const struct xt_mtdtor_param *par)
+-{
+-	struct xt_conntrack_mtinfo2 **info = par->matchinfo;
+-	kfree(*info);
+-	conntrack_mt_destroy(par);
+-}
+-
+ static struct xt_match conntrack_mt_reg[] __read_mostly = {
+ 	{
+ 		.name       = "conntrack",
+@@ -255,8 +228,8 @@ static struct xt_match conntrack_mt_reg[
+ 		.family     = NFPROTO_UNSPEC,
+ 		.matchsize  = sizeof(struct xt_conntrack_mtinfo1),
+ 		.match      = conntrack_mt_v1,
+-		.checkentry = conntrack_mt_check_v1,
+-		.destroy    = conntrack_mt_destroy_v1,
++		.checkentry = conntrack_mt_check,
++		.destroy    = conntrack_mt_destroy,
+ 		.me         = THIS_MODULE,
+ 	},
+ 	{
+@@ -264,7 +237,7 @@ static struct xt_match conntrack_mt_reg[
+ 		.revision   = 2,
+ 		.family     = NFPROTO_UNSPEC,
+ 		.matchsize  = sizeof(struct xt_conntrack_mtinfo2),
+-		.match      = conntrack_mt,
++		.match      = conntrack_mt_v2,
+ 		.checkentry = conntrack_mt_check,
+ 		.destroy    = conntrack_mt_destroy,
+ 		.me         = THIS_MODULE,
 
 
