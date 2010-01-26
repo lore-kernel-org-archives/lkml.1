@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510Ab0AZE1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615Ab0AZE2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754510Ab0AZE1V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 23:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668Ab0AZE1U
+	id S1754615Ab0AZE2H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 23:28:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583Ab0AZE1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 23:27:20 -0500
-Received: from mail.windriver.com ([147.11.1.11]:64461 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751314Ab0AZE1U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 23:27:20 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu
-Subject: [PATCH 0/4] kgdb regression fixes for 2.6.33
-Date: Mon, 25 Jan 2010 22:26:36 -0600
-Message-Id: <1264480000-6997-1-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.4.rc1
-X-OriginalArrivalTime: 26 Jan 2010 04:26:44.0411 (UTC) FILETIME=[C42110B0:01CA9E3F]
+	Mon, 25 Jan 2010 23:27:55 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:59941 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754554Ab0AZE1i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 23:27:38 -0500
+Date: Mon, 25 Jan 2010 20:26:44 -0800
+From: Greg KH <gregkh@suse.de>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 00/12] perf lock: New subcommand "perf lock", for
+	analyzing lock statistics
+Message-ID: <20100126042644.GB31666@suse.de>
+References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp> <20100122164248.GA2651@redhat.com> <a6b9f31a1001250615y6e4501b3k17074bcc4ce26c7c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a6b9f31a1001250615y6e4501b3k17074bcc4ce26c7c@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I would like to get acks from the respective parties to fix these
-reported regressions against kgdb in 2.6.33.
+On Mon, Jan 25, 2010 at 11:15:33PM +0900, Hitoshi Mitake wrote:
+> But, perf depends on debugfs.
+> I don't know about production box well,
+> does your production box turns on debugfs?
+> It seems that debugfs is not a thing for production box...
 
-I imagine the constraints for the hw breakpoint API is possibly still
-a dicey issue, so it is split into its own patch.  Even without the
-constraints patch it is possible to use hw breakpoints in the kernel
-debugger in the same manner that has existed since 2.6.26 (only kgdb
-gets to use hw breakpoints).
+Not true, it is enabled in many "enterprise" distros these days.
 
-The regression are:
-  * hw breakpoints no longer work on x86 after the perf API merge
-  * clocksource watchdog can dead lock while in the kernel debugger
-  * softlockup watchdog can reboot the system while using the kernel debugger
+thanks,
 
-I collected all the patches which could go into the tip branch or the
-kgdb for_linus branch at the following location depending on the
-status of the discussion that ensues.
-
-git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_igno
-
-Thanks,
-Jason.
-
-
----
-The following changes since commit 92dcffb916d309aa01778bf8963a6932e4014d07:
-  Linus Torvalds (1):
-        Linux 2.6.33-rc5
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_ingo
-
-Jason Wessel (4):
-      x86,hw_breakpoint,kgdb: kgdb to use hw_breakpoint API
-      perf,hw_breakpoint: add lockless reservation for hw_breaks
-      kgdb,clocksource: Prevent kernel hang in kernel debugger
-      softlockup: add sched_clock_tick() to avoid kernel warning on kgdb resume
-
- arch/x86/kernel/hw_breakpoint.c |    5 +-
- arch/x86/kernel/kgdb.c          |  216 ++++++++++++++++++++++++++++-----------
- include/linux/perf_event.h      |    1 +
- include/linux/sched.h           |    4 +
- kernel/hw_breakpoint.c          |   16 +++
- kernel/kgdb.c                   |    9 +-
- kernel/softlockup.c             |   15 +++
- kernel/time/clocksource.c       |    7 +-
- 8 files changed, 205 insertions(+), 68 deletions(-)
+greg k-h
