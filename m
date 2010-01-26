@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520Ab0A0AAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135Ab0A0AAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755520Ab0A0AAz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:00:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217Ab0AZXnX
+	id S1754135Ab0A0AAw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532Ab0A0AAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:43:23 -0500
-Received: from kroah.org ([198.145.64.141]:35176 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:00:48 -0500
+Received: from kroah.org ([198.145.64.141]:35188 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754154Ab0AZXnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:21 -0500
+	id S1754238Ab0AZXnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:23 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:24 2010
-Message-Id: <20100126233924.412446312@mini.kroah.org>
+Message-Id: <20100126233924.808156660@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:53 -0800
+Date: Tue, 26 Jan 2010 15:33:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Aleksey Kunitskiy <alexey.kv@gmail.com>, Takashi Iwai <tiwai@suse.de>
-Subject: [27/98] ALSA: ice1724 - Patch for suspend/resume for ESI Juli@
+       Jon Hunter <jon-hunter@ti.com>, John Stultz <johnstul@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [30/98] nohz: Prevent clocksource wrapping during idle
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,70 +29,232 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Aleksey Kunitskiy <alexey.kv@gmail.com>
+From: Jon Hunter <jon-hunter@ti.com>
 
-commit 50d40f187f9182ee8caa1b83f80a0e11e2226baa upstream.
+commit 98962465ed9e6ea99c38e0af63fe1dcb5a79dc25 upstream.
 
-Add proper suspend/resume code for Juli@ cards. Based on ice1724
-suspend/resume work of Igor Chernyshev.
-Fixes bug https://bugtrack.alsa-project.org/alsa-bug/view.php?id=4413
-Tested on linux-2.6.31.6
+The dynamic tick allows the kernel to sleep for periods longer than a
+single tick, but it does not limit the sleep time currently. In the
+worst case the kernel could sleep longer than the wrap around time of
+the time keeping clock source which would result in losing track of
+time.
 
-Signed-off-by: Aleksey Kunitskiy <alexey.kv@gmail.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Prevent this by limiting it to the safe maximum sleep time of the
+current time keeping clock source. The value is calculated when the
+clock source is registered.
+
+[ tglx: simplified the code a bit and massaged the commit msg ]
+
+Signed-off-by: Jon Hunter <jon-hunter@ti.com>
+Cc: John Stultz <johnstul@us.ibm.com>
+LKML-Reference: <1250617512-23567-2-git-send-email-jon-hunter@ti.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/ice1712/juli.c |   32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+ include/linux/clocksource.h |    2 +
+ include/linux/time.h        |    1 
+ kernel/time/clocksource.c   |   44 +++++++++++++++++++++++++++++++++++++
+ kernel/time/tick-sched.c    |   52 ++++++++++++++++++++++++++++++++------------
+ kernel/time/timekeeping.c   |   11 +++++++++
+ 5 files changed, 96 insertions(+), 14 deletions(-)
 
---- a/sound/pci/ice1712/juli.c
-+++ b/sound/pci/ice1712/juli.c
-@@ -504,6 +504,31 @@ static int __devinit juli_add_controls(s
- }
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -151,6 +151,7 @@ extern u64 timecounter_cyc2time(struct t
+  *			subtraction of non 64 bit counters
+  * @mult:		cycle to nanosecond multiplier
+  * @shift:		cycle to nanosecond divisor (power of two)
++ * @max_idle_ns:	max idle time permitted by the clocksource (nsecs)
+  * @flags:		flags describing special properties
+  * @vread:		vsyscall based read
+  * @resume:		resume function for the clocksource, if necessary
+@@ -168,6 +169,7 @@ struct clocksource {
+ 	cycle_t mask;
+ 	u32 mult;
+ 	u32 shift;
++	u64 max_idle_ns;
+ 	unsigned long flags;
+ 	cycle_t (*vread)(void);
+ 	void (*resume)(void);
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -148,6 +148,7 @@ extern void monotonic_to_bootbased(struc
  
- /*
-+ * suspend/resume
-+ * */
-+
-+#ifdef CONFIG_PM
-+static int juli_resume(struct snd_ice1712 *ice)
+ extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
+ extern int timekeeping_valid_for_hres(void);
++extern u64 timekeeping_max_deferment(void);
+ extern void update_wall_time(void);
+ extern void update_xtime_cache(u64 nsec);
+ extern void timekeeping_leap_insert(int leapsecond);
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -416,6 +416,47 @@ void clocksource_touch_watchdog(void)
+ #ifdef CONFIG_GENERIC_TIME
+ 
+ /**
++ * clocksource_max_deferment - Returns max time the clocksource can be deferred
++ * @cs:         Pointer to clocksource
++ *
++ */
++static u64 clocksource_max_deferment(struct clocksource *cs)
 +{
-+	struct snd_akm4xxx *ak = ice->akm;
-+	struct juli_spec *spec = ice->spec;
-+	/* akm4358 un-reset, un-mute */
-+	snd_akm4xxx_reset(ak, 0);
-+	/* reinit ak4114 */
-+	snd_ak4114_reinit(spec->ak4114);
-+	return 0;
++	u64 max_nsecs, max_cycles;
++
++	/*
++	 * Calculate the maximum number of cycles that we can pass to the
++	 * cyc2ns function without overflowing a 64-bit signed result. The
++	 * maximum number of cycles is equal to ULLONG_MAX/cs->mult which
++	 * is equivalent to the below.
++	 * max_cycles < (2^63)/cs->mult
++	 * max_cycles < 2^(log2((2^63)/cs->mult))
++	 * max_cycles < 2^(log2(2^63) - log2(cs->mult))
++	 * max_cycles < 2^(63 - log2(cs->mult))
++	 * max_cycles < 1 << (63 - log2(cs->mult))
++	 * Please note that we add 1 to the result of the log2 to account for
++	 * any rounding errors, ensure the above inequality is satisfied and
++	 * no overflow will occur.
++	 */
++	max_cycles = 1ULL << (63 - (ilog2(cs->mult) + 1));
++
++	/*
++	 * The actual maximum number of cycles we can defer the clocksource is
++	 * determined by the minimum of max_cycles and cs->mask.
++	 */
++	max_cycles = min_t(u64, max_cycles, (u64) cs->mask);
++	max_nsecs = clocksource_cyc2ns(max_cycles, cs->mult, cs->shift);
++
++	/*
++	 * To ensure that the clocksource does not wrap whilst we are idle,
++	 * limit the time the clocksource can be deferred by 12.5%. Please
++	 * note a margin of 12.5% is used because this can be computed with
++	 * a shift, versus say 10% which would require division.
++	 */
++	return max_nsecs - (max_nsecs >> 5);
 +}
 +
-+static int juli_suspend(struct snd_ice1712 *ice)
-+{
-+	struct snd_akm4xxx *ak = ice->akm;
-+	/* akm4358 reset and soft-mute */
-+	snd_akm4xxx_reset(ak, 1);
-+	return 0;
-+}
-+#endif
-+
-+/*
-  * initialize the chip
++/**
+  * clocksource_select - Select the best clocksource available
+  *
+  * Private function. Must hold clocksource_mutex when called.
+@@ -511,6 +552,9 @@ static void clocksource_enqueue(struct c
   */
- 
-@@ -646,6 +671,13 @@ static int __devinit juli_init(struct sn
- 	ice->set_spdif_clock = juli_set_spdif_clock;
- 
- 	ice->spdif.ops.open = juli_spdif_in_open;
+ int clocksource_register(struct clocksource *cs)
+ {
++	/* calculate max idle time permitted for this clocksource */
++	cs->max_idle_ns = clocksource_max_deferment(cs);
 +
-+#ifdef CONFIG_PM
-+	ice->pm_resume = juli_resume;
-+	ice->pm_suspend = juli_suspend;
-+	ice->pm_suspend_enabled = 1;
-+#endif
+ 	mutex_lock(&clocksource_mutex);
+ 	clocksource_enqueue(cs);
+ 	clocksource_select();
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -216,6 +216,7 @@ void tick_nohz_stop_sched_tick(int inidl
+ 	struct tick_sched *ts;
+ 	ktime_t last_update, expires, now;
+ 	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
++	u64 time_delta;
+ 	int cpu;
+ 
+ 	local_irq_save(flags);
+@@ -275,6 +276,17 @@ void tick_nohz_stop_sched_tick(int inidl
+ 		seq = read_seqbegin(&xtime_lock);
+ 		last_update = last_jiffies_update;
+ 		last_jiffies = jiffies;
 +
- 	return 0;
++		/*
++		 * On SMP we really should only care for the CPU which
++		 * has the do_timer duty assigned. All other CPUs can
++		 * sleep as long as they want.
++		 */
++		if (cpu == tick_do_timer_cpu ||
++		    tick_do_timer_cpu == TICK_DO_TIMER_NONE)
++			time_delta = timekeeping_max_deferment();
++		else
++			time_delta = KTIME_MAX;
+ 	} while (read_seqretry(&xtime_lock, seq));
+ 
+ 	/* Get the next timer wheel timer */
+@@ -294,11 +306,26 @@ void tick_nohz_stop_sched_tick(int inidl
+ 	if ((long)delta_jiffies >= 1) {
+ 
+ 		/*
+-		* calculate the expiry time for the next timer wheel
+-		* timer
+-		*/
+-		expires = ktime_add_ns(last_update, tick_period.tv64 *
+-				   delta_jiffies);
++		 * calculate the expiry time for the next timer wheel
++		 * timer. delta_jiffies >= NEXT_TIMER_MAX_DELTA signals
++		 * that there is no timer pending or at least extremely
++		 * far into the future (12 days for HZ=1000). In this
++		 * case we set the expiry to the end of time.
++		 */
++		if (likely(delta_jiffies < NEXT_TIMER_MAX_DELTA)) {
++			/*
++			 * Calculate the time delta for the next timer event.
++			 * If the time delta exceeds the maximum time delta
++			 * permitted by the current clocksource then adjust
++			 * the time delta accordingly to ensure the
++			 * clocksource does not wrap.
++			 */
++			time_delta = min_t(u64, time_delta,
++					   tick_period.tv64 * delta_jiffies);
++			expires = ktime_add_ns(last_update, time_delta);
++		} else {
++			expires.tv64 = KTIME_MAX;
++		}
+ 
+ 		/*
+ 		 * If this cpu is the one which updates jiffies, then
+@@ -342,22 +369,19 @@ void tick_nohz_stop_sched_tick(int inidl
+ 
+ 		ts->idle_sleeps++;
+ 
++		/* Mark expires */
++		ts->idle_expires = expires;
++
+ 		/*
+-		 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
+-		 * there is no timer pending or at least extremly far
+-		 * into the future (12 days for HZ=1000). In this case
+-		 * we simply stop the tick timer:
++		 * If the expiration time == KTIME_MAX, then
++		 * in this case we simply stop the tick timer.
+ 		 */
+-		if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
+-			ts->idle_expires.tv64 = KTIME_MAX;
++		 if (unlikely(expires.tv64 == KTIME_MAX)) {
+ 			if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
+ 				hrtimer_cancel(&ts->sched_timer);
+ 			goto out;
+ 		}
+ 
+-		/* Mark expiries */
+-		ts->idle_expires = expires;
+-
+ 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
+ 			hrtimer_start(&ts->sched_timer, expires,
+ 				      HRTIMER_MODE_ABS_PINNED);
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -488,6 +488,17 @@ int timekeeping_valid_for_hres(void)
  }
  
+ /**
++ * timekeeping_max_deferment - Returns max time the clocksource can be deferred
++ *
++ * Caller must observe xtime_lock via read_seqbegin/read_seqretry to
++ * ensure that the clocksource does not change!
++ */
++u64 timekeeping_max_deferment(void)
++{
++	return timekeeper.clock->max_idle_ns;
++}
++
++/**
+  * read_persistent_clock -  Return time from the persistent clock.
+  *
+  * Weak dummy function for arches that do not yet support it.
 
 
