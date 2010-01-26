@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756Ab0AZBTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854Ab0AZBTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756Ab0AZBTP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 20:19:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287Ab0AZBTO
+	id S1752854Ab0AZBTf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 20:19:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689Ab0AZBT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 20:19:14 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35984 "EHLO mail.zytor.com"
+	Mon, 25 Jan 2010 20:19:29 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35991 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751012Ab0AZBTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 20:19:13 -0500
-Message-ID: <4B5E401C.1050605@zytor.com>
-Date: Mon, 25 Jan 2010 17:06:36 -0800
+	id S1752776Ab0AZBT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 20:19:28 -0500
+Message-ID: <4B5E401D.2020809@zytor.com>
+Date: Mon, 25 Jan 2010 17:06:37 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
-       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
-       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
-       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
-       x86@kernel.org, mingo@redhat.com, fweisbec@gmail.com,
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       rusty@rustcorp.com.au, akpm@linux-foundation.org, ebiederm@xmission.com,
+       tytso@mit.edu, Trond.Myklebust@netapp.com, aelder@sgi.com,
+       hch@infradead.org, viro@zeniv.linux.org.uk, davem@davemloft.net,
+       netdev@vger.kernel.org, x86@kernel.org, mingo@redhat.com,
        dan.j.williams@intel.com, borislav.petkov@amd.com, ying.huang@intel.com,
-       lenb@kernel.org, neilb@suse.de, cl@linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 5/8] percpu: add __percpu sparse annotations to x86
-References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-6-git-send-email-tj@kernel.org>
-In-Reply-To: <1264432935-10453-6-git-send-email-tj@kernel.org>
+       lenb@kernel.org, neilb@suse.de, cl@linux-foundation.org
+Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to	hw_breakpoint
+References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere>
+In-Reply-To: <20100126001901.GI5087@nowhere>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/25/2010 07:22 AM, Tejun Heo wrote:
+On 01/25/2010 04:19 PM, Frederic Weisbecker wrote:
+> On Tue, Jan 26, 2010 at 12:22:14AM +0900, Tejun Heo wrote:
+>> Add __percpu sparse annotations to hw_breakpoint.
+>>
+>> These annotations are to make sparse consider percpu variables to be
+>> in a different address space and warn if accessed without going
+>> through percpu accessors.  This patch doesn't affect normal builds.
+>>
+>> per_cpu(nr_task_bp_pinned, cpu) is replaced with
+>> &per_cpu(nr_task_bp_pinned[0], cpu).  This is the same to the compiler
+>> but allows per_cpu() macro to correctly drop __percpu designation for
+>> the returned pointer.
 > 
-> In arch/x86/kernel/cpu/common.c, per_cpu(exception_stacks, cpu) is
-> replaced with &per_cpu(exception_stacks[0], cpu) which is equivalent
-> except that it allows per_cpu() macro to correctly drop percpu
-> designation during sparse pass.
+> Ouch... It's unpleasant to see such workaround that messes up the
+> code just to make sparse happy.
+> 
+> I guess __percpu is an address_space attribute? Is there no
+> way to force the address space change directly from the
+> per_cpu() macro?
 > 
 
-Same comment as Frederic's about this... this kind of uglification
-really is unacceptable and needs to be addressed.
-
-Other than that, it looks good.
+Hmm... thinking more about it, we should be able to just move the & and
+[0] into the per_cpu() macro, addressing the situation, or does that
+cause problems elsewhere?
 
 	-hpa
