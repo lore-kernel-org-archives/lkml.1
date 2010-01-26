@@ -1,73 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616Ab0AZR13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577Ab0AZR21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754616Ab0AZR13 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 12:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161Ab0AZR12
+	id S1754577Ab0AZR21 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 12:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703Ab0AZR21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 12:27:28 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:43886 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753565Ab0AZR11 (ORCPT
+	Tue, 26 Jan 2010 12:28:27 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:50363 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754161Ab0AZR20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 12:27:27 -0500
-Date: Tue, 26 Jan 2010 22:40:14 +0530
-From: Himanshu Chauhan <hschauhan@nulltrace.org>
-To: Greg KH <greg@kroah.com>
-Cc: Himanshu Chauhan <himanshu@symmetricore.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Kernel Newbies <kernelnewbies@nl.linux.org>
-Subject: Re: sysfs_ops show vector: size of buffer not required?
-Message-ID: <20100126171014.GA5999@himanshu-laptop>
-References: <20100124074118.GA4201@himanshu-laptop>
- <20100126043646.GB32066@kroah.com>
- <20100126063127.GA2369@himanshu-laptop>
- <20100126152924.GA3204@kroah.com>
+	Tue, 26 Jan 2010 12:28:26 -0500
+Date: Tue, 26 Jan 2010 20:28:24 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
+Message-ID: <20100126172824.GA20319@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
+ <20100125181100.GA13805@oksana.dev.rtsoft.ru>
+ <201001252234.30169.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20100126152924.GA3204@kroah.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201001252234.30169.david-b@pacbell.net>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 07:29:24AM -0800, Greg KH wrote:
-> On Tue, Jan 26, 2010 at 12:01:27PM +0530, Himanshu Chauhan wrote:
-> > On Mon, Jan 25, 2010 at 08:36:46PM -0800, Greg KH wrote:
-> > > On Sun, Jan 24, 2010 at 01:11:18PM +0530, Himanshu Chauhan wrote:
-> > > > Hi All,
-> > > > 
-> > > > The sysfs_ops's show vector doesn't have a size of the
-> > > > buffer given to the vector, while store on the other hand
-> > > > has. What is the rationale behind it?
-> > > 
-> > > If you need to check the size, you are doing something wrong.
-> > > 
-> > > Seriously, that is the reason.  A sysfs file should be a single value,
-> > > which will never overflow the buffer.
-> > > 
-> > I was talking in context of usb/ip's show_status. It writes a lot of data
-> > into this buffer.
+On Mon, Jan 25, 2010 at 10:34:29PM -0800, David Brownell wrote:
+> On Monday 25 January 2010, Anton Vorontsov wrote:
+> > 
+> > +config GPIOLIB_NOTIFIER
+> > +       bool
+> > +       help
+> > +         This symbol is selected by subsystems that need to handle GPIO
+> > +         chips addition and removal. E.g., this is used for the
+> > +         OpenFirmware bindings.
+> > +
 > 
-> Then it needs to be fixed.  Again, it must be, one value per file, that
-> is the sysfs rule.
+> I'm no huge fan of notifiers, but I suppose they have their place.
 > 
-> > Which seems to over flow the buffer. But anyways, I will check if it
-> > can be reduced or at least be splitted into differnt device
-> > attributes.
-> 
-> That would be great.
+> However ... I don't see a lot of win to making this optional.
 
-Okay, I will do that.
+OK, will remove it.
 
-> 
-> > BTW, Greg, Did you take a look at other patches I had sent? Are are worth or
-> > I need rework?
-> 
-> They are in my "to-apply" queue that I will be flushing out in the next
-> few days.
+> Just
+> inline the little two blocking_notifier_call_chain() calls directly,
+> making this a *LOT* simpler.
 
-Thanks Greg.
+I'd rather stay with gpio_call_chain() helper, it makes the code
+a little bit prettier, IMO. Compare this:
 
-Regards
-Himanshu
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -1103,6 +1107,9 @@ fail:
+ 		pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
+ 			chip->base, chip->base + chip->ngpio - 1,
+ 			chip->label ? : "generic");
++	else
++		blocking_notifier_call_chain(&gpio_notifier,
++					     GPIO_NOTIFY_CHIP_ADDED, chip);
+ 	return status;
+ }
+ EXPORT_SYMBOL_GPL(gpiochip_add);
+@@ -1119,6 +1126,13 @@ int gpiochip_remove(struct gpio_chip *chip)
+ 	int		status = 0;
+ 	unsigned	id;
+ 
++	/* Ask external subsystems to release the chip. */
++	status = blocking_notifier_call_chain(&gpio_notifier,
++					      GPIO_NOTIFY_CHIP_REMOVE, chip);
++	status = notifier_to_errno(status);
++	if (status)
++		return status;
++
+ 	spin_lock_irqsave(&gpio_lock, flags);
+ 
+ 	for (id = chip->base; id < chip->base + chip->ngpio; id++) {
+
+--- 
+
+With the call_chain helper:
+
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -1029,6 +1030,16 @@ static inline void gpiochip_unexport(struct gpio_chip *chip)
+ 
+ #endif /* CONFIG_GPIO_SYSFS */
+ 
++static int gpio_call_chain(struct gpio_chip *chip, enum gpio_notify_msg msg)
++{
++	int ret = blocking_notifier_call_chain(&gpio_notifier, msg, chip);
++
++	return notifier_to_errno(ret);
++}
++
+ /**
+  * gpiochip_add() - register a gpio_chip
+  * @chip: the chip to register, with chip->base initialized
+@@ -1103,6 +1114,9 @@ fail:
+ 		pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
+ 			chip->base, chip->base + chip->ngpio - 1,
+ 			chip->label ? : "generic");
++	else
++		gpio_call_chain(chip, GPIO_NOTIFY_CHIP_ADDED);
++
+ 	return status;
+ }
+ EXPORT_SYMBOL_GPL(gpiochip_add);
+@@ -1119,6 +1133,11 @@ int gpiochip_remove(struct gpio_chip *chip)
+ 	int		status = 0;
+ 	unsigned	id;
+ 
++	/* Ask external subsystems to release the chip. */
++	status = gpio_call_chain(chip, GPIO_NOTIFY_CHIP_REMOVE);
++	if (status)
++		return status;
++
+ 	spin_lock_irqsave(&gpio_lock, flags);
+ 
+ 	for (id = chip->base; id < chip->base + chip->ngpio; id++) {
+--- 
+
+Thanks!
