@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065Ab0AZT27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098Ab0AZT3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755065Ab0AZT27 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 14:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001Ab0AZT27
+	id S1755098Ab0AZT3J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 14:29:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072Ab0AZT3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 14:28:59 -0500
-Received: from kroah.org ([198.145.64.141]:33566 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 14:29:01 -0500
+Received: from kroah.org ([198.145.64.141]:33578 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754976Ab0AZT26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 14:28:58 -0500
+	id S1755001Ab0AZT3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 14:29:00 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 11:16:24 2010
-Message-Id: <20100126191623.898160039@mini.kroah.org>
+Message-Id: <20100126191624.151291187@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 11:14:37 -0800
+Date: Tue, 26 Jan 2010 11:14:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tamas Vincze <tom@vincze.org>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Doug Thompson <dougthompson@xmission.com>
-Subject: [01/11] edac: i5000_edac critical fix panic out of bounds
+       Jeff Mahoney <jeffm@suse.com>, Jan Kara <jack@suse.cz>
+Subject: [03/11] reiserfs: truncate blocks not used by a write
 In-Reply-To: <20100126191730.GA20872@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,46 +28,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tamas Vincze <tom@vincze.org>
+From: Jan Kara <jack@suse.cz>
 
-commit 118f3e1afd5534c15f9701f33514186cfc841a27 upstream.
+commit ec8e2f7466ca370f5e09000ca40a71759afc9ac8 upstream.
 
-EDAC MC0: INTERNAL ERROR: channel-b out of range (4 >= 4)
-Kernel panic - not syncing: EDAC MC0: Uncorrected Error  (XEN) Domain 0 crashed: 'noreboot' set - not rebooting.
+It can happen that write does not use all the blocks allocated in
+write_begin either because of some filesystem error (like ENOSPC) or
+because page with data to write has been removed from memory.  We truncate
+these blocks so that we don't have dangling blocks beyond i_size.
 
-This happens because FERR_NF_FBD bit 28 is not updated on i5000.  Due to
-that, both bits 28 and 29 may be equal to one, returning channel = 3.  As
-this value is invalid, EDAC core generates the panic.
-
-Addresses http://bugzilla.kernel.org/show_bug.cgi?id=14568
-
-Signed-off-by: Tamas Vincze <tom@vincze.org>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+Cc: Jeff Mahoney <jeffm@suse.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/edac/i5000_edac.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ fs/reiserfs/inode.c |   17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
---- a/drivers/edac/i5000_edac.c
-+++ b/drivers/edac/i5000_edac.c
-@@ -566,7 +566,13 @@ static void i5000_process_nonfatal_error
- 		debugf0("\tUncorrected bits= 0x%x\n", ue_errors);
+--- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -2545,6 +2545,12 @@ static int reiserfs_writepage(struct pag
+ 	return reiserfs_write_full_page(page, wbc);
+ }
  
- 		branch = EXTRACT_FBDCHAN_INDX(info->ferr_nf_fbd);
--		channel = branch;
++static void reiserfs_truncate_failed_write(struct inode *inode)
++{
++	truncate_inode_pages(inode->i_mapping, inode->i_size);
++	reiserfs_truncate_file(inode, 0);
++}
 +
-+		/*
-+		 * According with i5000 datasheet, bit 28 has no significance
-+		 * for errors M4Err-M12Err and M17Err-M21Err, on FERR_NF_FBD
-+		 */
-+		channel = branch & 2;
+ static int reiserfs_write_begin(struct file *file,
+ 				struct address_space *mapping,
+ 				loff_t pos, unsigned len, unsigned flags,
+@@ -2611,6 +2617,8 @@ static int reiserfs_write_begin(struct f
+ 	if (ret) {
+ 		unlock_page(page);
+ 		page_cache_release(page);
++		/* Truncate allocated blocks */
++		reiserfs_truncate_failed_write(inode);
+ 	}
+ 	return ret;
+ }
+@@ -2703,8 +2711,7 @@ static int reiserfs_write_end(struct fil
+ 	 ** transaction tracking stuff when the size changes.  So, we have
+ 	 ** to do the i_size updates here.
+ 	 */
+-	pos += copied;
+-	if (pos > inode->i_size) {
++	if (pos + copied > inode->i_size) {
+ 		struct reiserfs_transaction_handle myth;
+ 		reiserfs_write_lock(inode->i_sb);
+ 		/* If the file have grown beyond the border where it
+@@ -2722,7 +2729,7 @@ static int reiserfs_write_end(struct fil
+ 			goto journal_error;
+ 		}
+ 		reiserfs_update_inode_transaction(inode);
+-		inode->i_size = pos;
++		inode->i_size = pos + copied;
+ 		/*
+ 		 * this will just nest into our transaction.  It's important
+ 		 * to use mark_inode_dirty so the inode gets pushed around on the
+@@ -2749,6 +2756,10 @@ static int reiserfs_write_end(struct fil
+       out:
+ 	unlock_page(page);
+ 	page_cache_release(page);
 +
- 		bank = NREC_BANK(info->nrecmema);
- 		rank = NREC_RANK(info->nrecmema);
- 		rdwr = NREC_RDWR(info->nrecmema);
++	if (pos + len > inode->i_size)
++		reiserfs_truncate_failed_write(inode);
++
+ 	return ret == 0 ? copied : ret;
+ 
+       journal_error:
 
 
