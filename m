@@ -1,94 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646Ab0AZRnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751323Ab0AZRzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754646Ab0AZRnu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 12:43:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305Ab0AZRnt
+	id S1751323Ab0AZRzM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 12:55:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829Ab0AZRzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 12:43:49 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:54760 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754238Ab0AZRnt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 12:43:49 -0500
-Date: Tue, 26 Jan 2010 20:43:47 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] of/gpio: Add support for two-stage registration
- for the of_gpio_chips
-Message-ID: <20100126174347.GB20319@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
- <20100125181103.GB13805@oksana.dev.rtsoft.ru>
- <201001252236.16141.david-b@pacbell.net>
+	Tue, 26 Jan 2010 12:55:10 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:48776 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751323Ab0AZRzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 12:55:09 -0500
+Message-ID: <4B5F2C6E.9010803@sgi.com>
+Date: Tue, 26 Jan 2010 09:54:54 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <201001252236.16141.david-b@pacbell.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Russ Anderson <rja@sgi.com>, Dave Airlie <airlied@redhat.com>,
+       Alex Chiang <achiang@hp.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Cyrill Gorcunov <gorcunov@openvz.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Robin Holt <holt@sgi.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Adam Jackson <ajax@nwnk.net>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Gaetan Nadon <memsize@videotron.ca>,
+       Aaron Plattner <aplattner@nvidia.com>, Jack Steiner <steiner@sgi.com>,
+       Tiago Vignatti <tiago.vignatti@nokia.com>, Cliff Wickman <cpw@sgi.com>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Christian Zander <chzander@nvidia.com>, Yu Zhao <yu.zhao@intel.com>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH 2/4] x86_64 UV: Update UV arch to target Legacy VGA I/O
+ correctly.
+References: <20100118183412.560438000@alcatraz.americas.sgi.com>	<20100118183435.948841000@alcatraz.americas.sgi.com> <20100125155410.1fde82d4.akpm@linux-foundation.org> <4B5E31AC.3060209@sgi.com> <4B5E35DA.8010601@zytor.com>
+In-Reply-To: <4B5E35DA.8010601@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 10:36:15PM -0800, David Brownell wrote:
-> On Monday 25 January 2010, Anton Vorontsov wrote:
-> > With this patch there are two ways to register OF GPIO controllers:
-> > 
-> > 1. Allocating the of_gpio_chip structure and passing the
-> >    &of_gc->gc pointer to the gpiochip_add. (Can use container_of
-> >    to convert the gpio_chip to the of_gpio_chip.)
-> > 
-> > 2. Allocating and registering the gpio_chip structure separately
-> >    from the of_gpio_chip. (Since two allocations are separate,
-> >    container_of won't work.)
-> > 
-> > As time goes by we'll kill the first option.
+H. Peter Anvin wrote:
+> On 01/25/2010 04:05 PM, Mike Travis wrote:
+>>> So pci_register_set_vga_state() could/should have been __init?
+>> Good catch.  Do you want me to update and resubmit?
 > 
-> Why have two options, instead of just the first/simpler one??
+> Please.  This patchset is still on my review queue, FWIW.
+> 
+> 	-hpa
 
-Because I2C/SPI drivers allocate (and register) gpio_chip structures
-by themselves, so the first option is a no-go.
-
-You can see the first option in use in
-arch/powerpc/sysdev/qe_lib/gpio.c:
-
-struct qe_gpio_chip {
-        struct of_mm_gpio_chip mm_gc;
-	....
-};
-
-Now include/linux/of_gpio.h:
-
-struct of_mm_gpio_chip {
-        struct of_gpio_chip of_gc;
-	...
-};
-
-struct of_gpio_chip {
-        struct gpio_chip gc; <- here, I'm going to get rid of it
-	...
-};
-
-I2C/SPI drivers allocate gpio_chip structure already, so we don't
-need to store 'struct gpio_chip gc', instead we need to store just
-a pointer, and then attach the already allocated gpio_chip to the
-of_gpio_chip stuff.
-
-Having two ways to store gpio_chip isn't good, that's why
-I stated that the first option will have to go, i.e. I'm going to
-convert arch/powerpc/sysdev/qe_lib/gpio.c and few other of_mm
-gpio chips to the new registration scheme soon.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Looks like Andrew added a fix-it patch to the stream.
