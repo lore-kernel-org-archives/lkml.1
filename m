@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291Ab0AZXsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268Ab0AZXsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291Ab0AZXsv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:48:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746Ab0AZXst
+	id S1755268Ab0AZXsT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150Ab0AZXsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:48:49 -0500
-Received: from kroah.org ([198.145.64.141]:35484 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:48:06 -0500
+Received: from kroah.org ([198.145.64.141]:35491 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754800Ab0AZXoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:44:12 -0500
+	id S1754916Ab0AZXoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:44:14 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:31 2010
-Message-Id: <20100126233931.363066640@mini.kroah.org>
+Message-Id: <20100126233931.624064978@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:46 -0800
+Date: Tue, 26 Jan 2010 15:34:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Hans de Goede <hdegoede@redhat.com>, Jean Delvare <khali@linux-fr.org>
-Subject: [80/98] hwmon: (fschmd) Fix a memleak on multiple opens of /dev/watchdog
+       Peter Horton <zero@colonel-panic.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: [82/98] UBI: initialise update marker
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,45 +29,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Hans de Goede <hdegoede@redhat.com>
+From: Peter Horton <zero@colonel-panic.org>
 
-commit c453615f77aa51593c1c9c9031b4278797d3fd19 upstream.
+commit ff998793288b49a3b22d929bf8e56362320905ff upstream.
 
-When /dev/watchdog gets opened a second time we return -EBUSY, but
-we already have got a kref then, so we end up leaking our data struct.
+The in kernel copy of a volume's update marker is not initialised from the
+volume table. This means that volumes where an update was unfinnished will
+not be treated as "forbidden to use". This is basically that the update
+functionality was broken.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Peter Horton <zero@colonel-panic.org>
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hwmon/fschmd.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/mtd/ubi/vtbl.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/hwmon/fschmd.c
-+++ b/drivers/hwmon/fschmd.c
-@@ -767,6 +767,7 @@ leave:
- static int watchdog_open(struct inode *inode, struct file *filp)
- {
- 	struct fschmd_data *pos, *data = NULL;
-+	int watchdog_is_open;
- 
- 	/* We get called from drivers/char/misc.c with misc_mtx hold, and we
- 	   call misc_register() from fschmd_probe() with watchdog_data_mutex
-@@ -781,10 +782,12 @@ static int watchdog_open(struct inode *i
- 		}
- 	}
- 	/* Note we can never not have found data, so we don't check for this */
--	kref_get(&data->kref);
-+	watchdog_is_open = test_and_set_bit(0, &data->watchdog_is_open);
-+	if (!watchdog_is_open)
-+		kref_get(&data->kref);
- 	mutex_unlock(&watchdog_data_mutex);
- 
--	if (test_and_set_bit(0, &data->watchdog_is_open))
-+	if (watchdog_is_open)
- 		return -EBUSY;
- 
- 	/* Start the watchdog */
+--- a/drivers/mtd/ubi/vtbl.c
++++ b/drivers/mtd/ubi/vtbl.c
+@@ -566,6 +566,7 @@ static int init_volumes(struct ubi_devic
+ 		vol->reserved_pebs = be32_to_cpu(vtbl[i].reserved_pebs);
+ 		vol->alignment = be32_to_cpu(vtbl[i].alignment);
+ 		vol->data_pad = be32_to_cpu(vtbl[i].data_pad);
++		vol->upd_marker = vtbl[i].upd_marker;
+ 		vol->vol_type = vtbl[i].vol_type == UBI_VID_DYNAMIC ?
+ 					UBI_DYNAMIC_VOLUME : UBI_STATIC_VOLUME;
+ 		vol->name_len = be16_to_cpu(vtbl[i].name_len);
 
 
