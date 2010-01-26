@@ -1,89 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753040Ab0AZHwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190Ab0AZHxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753040Ab0AZHwp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 02:52:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777Ab0AZHwo
+	id S1753190Ab0AZHxe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 02:53:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577Ab0AZHxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 02:52:44 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49684 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752757Ab0AZHwo (ORCPT
+	Tue, 26 Jan 2010 02:53:34 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:30074 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752021Ab0AZHxd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 02:52:44 -0500
-Subject: Re: futex() on vdso makes process unkillable
-From: Peter Zijlstra <peterz@infradead.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Darren Hart <dvhltc@us.ibm.com>, Mark Seaborn <mrs@mythic-beasts.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>
-In-Reply-To: <20100126113312.5AA3.A69D9226@jp.fujitsu.com>
-References: <1264411574.4283.1632.camel@laptop>
-	 <4B5DD6DF.4090102@us.ibm.com> <20100126113312.5AA3.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 26 Jan 2010 08:52:25 +0100
-Message-ID: <1264492345.4283.1945.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jan 2010 02:53:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MRt6PWG7J8GaFRZSHhljc+UWA06gSPqKjT4pzc/F6ZGQV6Bi7mM/aKQCReYVWRWWww
+         Ax3I/x89Jsebh0gKk1SADTx4Wh2mb/eJO3CP9/yYzojWnkRgnjBXIinAwmKMWkFd1Dsl
+         YZai3RPSN6Mr0ruoko3lHx/EJlxOExfiWFEFU=
+MIME-Version: 1.0
+In-Reply-To: <4B5E9BE9.2030702@windriver.com>
+References: <4B5E5D4F.50803@windriver.com>
+	 <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com>
+	 <4B5E9BE9.2030702@windriver.com>
+Date: Tue, 26 Jan 2010 15:53:32 +0800
+Message-ID: <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com>
+Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation 
+	environments
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Hui Zhu <hui.zhu@windriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org,
+       teawater@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-26 at 11:41 +0900, KOSAKI Motohiro wrote:
-> > Peter Zijlstra wrote:
-> > > On Mon, 2010-01-25 at 16:27 +0900, KOSAKI Motohiro wrote:
-> > <snip>
-> > >> Futex should work both file anon anon. however I personally think 
-> > >> vdso is not file nor anon. it is special mappings. nobody defined
-> > >> futex spec on special mappings. (yes, undefined).
-> > >>
-> > >> Personally, I think EINVAL or EFAULT are best result of vdso futexing, like as
-> > >> futexing againt kernel address. but I guess another person have another thinking.
-> > >>
-> > >> I'd like to hear futex folks's opinion.
-> > > 
-> > > Well, my opinion is we should remove the vdso, its ugly as hell :-)
-> > > 
-> > > But I think it would make most sense to extend its definition in the
-> > > direction of it being a file (for all intents and purposes its a special
-> > > DSO -- which unfortunately isn't present in any filesystem).
-> > > 
-> > > [ For all intents and purposes processes can already communicate through
-> > > futexes on the libc space, so being able to do so through the vsdo
-> > > really doesn't add anything ]
-> > > 
-> > > So the problem is that the VDSO pages do not have a page->mapping
-> > > because they lack the actual filesystem part of files, so even if (with
-> > > the recent zero-page patch from Kosaki-san) you make private COWs of the
-> > > VDSO, you'll get stuck in that loop.
-> > > 
-> > > So the prettiest solution is to simply place the vdso in an actual
-> > > filesystem and slowly migrate towards letting userspace map it as a
-> > > regular DSO -- /sys/lib{32,64}/libkernel.so like.
-> > > 
-> > > [ that has the bonus of getting rid of install_special_mapping() ]
-> > > 
-> > > The ugly solution is special casing the vdso in get_futex_key().
-> > 
-> > I like the creating-a-real-file solution. However, for now (and for 
-> > stable), I think Kosaki's suggestion of EINVAL or EFAULT is a good 
-> > stop-gap. EINVAL might play the best with existing glibc implementations.
-> 
-> May I confirm your mention?
-> 
-> If we can accept EFAULT, we don't need any change. my previous futex patch
-> already did. because 1) VDSO is alwasys read-only mapped 2) write mode
-> get_user_pages_fast() against read-only pte/vma return EFAULT.
-> 
-> Current linus and stable tree don't cause Mark's original problem. instead, just
-> return EFAULT. (Well, I'm sorry. my previous mail was unclear. I wrote v2.6.31 test
-> result)
-> 
-> If you can't accept EFAULT, we need to add vdso specific logic into get_futex_key().
-> Is this your intention?
+On Tue, Jan 26, 2010 at 3:38 PM, Hui Zhu <hui.zhu@windriver.com> wrote:
+> Américo Wang:
+>>
+>> On Tue, Jan 26, 2010 at 11:11 AM, Hui Zhu <hui.zhu@windriver.com> wrote:
+>>>
+>>> Sorry guys, the prev mail still have some format trouble.  I send a new
+>>> mail
+>>> for it.
+>>> +}
+>>> +
+>>> +if ($vmlinux_name ne "") {
+>>> +       $vmlinux_name = $ARGV[$#ARGV];
+>>> +}
+>>
+>> Why not using the Perl module 'Getopt' to do this?
+>>
+> Hi Américo,
+>
+> Thanks for remind me about it.  The following patch use Getopt.
+>
+> The markup_oops.pl have 3 troubles to support cross-compiler environment:
+> 1.  It use objdump directly.
+> 2.  It use modinfo to get the message of module.
+> 3.  It use hex function that cannot support 64-bit number in 32-bit arch.
+>
+> This patch add 3 options to markup_oops.pl:
+> 1. -c CROSS_COMPILE     Specify the prefix used for toolchain.
+> 2. -m MODULE_DIRNAME    Specify the module directory name.
+> 3. Change hex function to Math::BigInt->from_hex.
+>
+> After this patch, parse the x8664 oops in x86, we can:
+> cat amd64m | perl ~/kernel/tmp/m.pl -c /home/teawater/kernel/bin/x8664- -m
+> ./e.ko vmlinux
+>
+> Thanks,
+> Hui
+>
+> Signed-off-by: Hui Zhu <teawater@gmail.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Arjan van de Ven <arjan@linux.intel.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: ozan@pardus.org.tr
+> Cc: Matthew Wilcox <willy@linux.intel.com>
+>
+> ---
+> scripts/markup_oops.pl |   45 +++++++++++++++++++++++++++++++++++----------
+> 1 file changed, 35 insertions(+), 10 deletions(-)
+>
+> --- a/scripts/markup_oops.pl
+> +++ b/scripts/markup_oops.pl
+> @@ -2,6 +2,7 @@
+>
+> use File::Basename;
+> use Math::BigInt;
+> +use Getopt::Long;
+>
+> # Copyright 2008, Intel Corporation
+> #
+> @@ -15,7 +16,17 @@ use Math::BigInt;
+> #       Arjan van de Ven <arjan@linux.intel.com>
+>
+>
+> -my $vmlinux_name = $ARGV[0];
+> +my $cross_compile = "";
+> +my $vmlinux_name = "";
+> +my $modulefile = "";
+> +
+> +# Get options
+> +Getopt::Long::GetOptions(
+> +       'cross_compile|c=s'     => \$cross_compile,
 
-Oh, right you are, I mixed up the force and write arguments. Yes I tihnk
-we're good.
+
+Please make it "cross-compile", because underline is not common
+in command line, so "--cross_compile" is worse than "--cross-compile".
 
 
+> +       'modulefile|m=s'        => \$modulefile,
+
+
+"module" should be enough to express the meaning, I think.
+
+
+> +       'help|h'                => \&usage,
+> +);
+> +my $vmlinux_name = $ARGV[$#ARGV];
+> if (!defined($vmlinux_name)) {
+>        my $kerver = `uname -r`;
+>        chomp($kerver);
+> @@ -23,6 +34,7 @@ if (!defined($vmlinux_name)) {
+>        print "No vmlinux specified, assuming $vmlinux_name\n";
+> }
+> my $filename = $vmlinux_name;
+> +
+
+
+Adding this empty line probably is not what you really want.
+
+> #
+> # Step 1: Parse the oops to find the EIP value
+> #
+
+{snip}
+
+>
+> +sub usage {
+> +       print <<EOT;
+> +Usage:
+> +  dmesg | perl $0 [OPTION] [VMLINUX]
+> +
+> +OPTION:
+> +  -c, -cross_compile CROSS_COMPILE     Specify the prefix used for
+> toolchain.
+> +  -m, -modulefile MODULE_DIRNAME       Specify the module directory name.
+> +  -h, -help                            Help.
+> +EOT
+> +       exit;
+> +}
+> +
+
+GNU style is preferred here, please use "--foo" instead of "-foo".
+
+Thanks.
