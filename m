@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744Ab0A0AEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732Ab0A0ADz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755744Ab0A0AEA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:04:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113Ab0A0ADt
+	id S1755732Ab0A0ADz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:03:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725Ab0A0ADs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:03:49 -0500
-Received: from kroah.org ([198.145.64.141]:35138 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:03:48 -0500
+Received: from kroah.org ([198.145.64.141]:35141 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754091Ab0AZXnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:11 -0500
+	id S1754082Ab0AZXnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:12 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:23 2010
-Message-Id: <20100126233923.224478017@mini.kroah.org>
+Message-Id: <20100126233923.356237628@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:44 -0800
+Date: Tue, 26 Jan 2010 15:33:45 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Danny Wood <danwood76@gmail.com>, Ben Hutchings <ben@decadent.org.uk>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [18/98] V4L/DVB (13168): Add support for Asus Europa Hybrid DVB-T card (SAA7134 SubVendor ID: 0x1043 Device ID: 0x4847)
+       Seth Heasley <seth.heasley@intel.com>, Wim Van Sebroeck <wim@iguana.be>,
+       Ben Hutchings <ben@decadent.org.uk>
+Subject: [19/98] [WATCHDOG] iTCO_wdt: Add support for Intel Ibex Peak
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,110 +29,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Danny Wood <danwood76@gmail.com>
+From: Seth Heasley <seth.heasley@intel.com>
 
-commit e3c6e1aaa5db7822524f5b1355960fd732910068 upstream.
+commit 79e8941dda254505bb8af37b3a009165dfb7e98a upstream.
 
-Adds the device IDs and driver linking to allow the Asus Europa DVB-T
-card to operate with these drivers.
-The device has a SAA7134 chipset with a TD1316 Hybrid Tuner.
-All inputs work on the card including switching between DVB-T and
-Analogue TV, there is also no IR with this card.
+Add the Intel Ibex Peak (PCH) Device IDs to iTCO_wdt.c.
 
-[mchehab@redhat.com: CodingStyle fixes]
-
-Signed-off-by: Danny Wood <danwood76@gmail.com>
+Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
 Cc: Ben Hutchings <ben@decadent.org.uk>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/video4linux/CARDLIST.saa7134  |    1 
- drivers/media/video/saa7134/saa7134-cards.c |   31 ++++++++++++++++++++++++++++
- drivers/media/video/saa7134/saa7134-dvb.c   |    1 
- drivers/media/video/saa7134/saa7134.h       |    1 
- 4 files changed, 34 insertions(+)
+ drivers/watchdog/iTCO_wdt.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
---- a/Documentation/video4linux/CARDLIST.saa7134
-+++ b/Documentation/video4linux/CARDLIST.saa7134
-@@ -172,3 +172,4 @@
- 171 -> Beholder BeholdTV X7                     [5ace:7595]
- 172 -> RoverMedia TV Link Pro FM                [19d1:0138]
- 173 -> Zolid Hybrid TV Tuner PCI                [1131:2004]
-+174 -> Asus Europa Hybrid OEM                   [1043:4847]
---- a/drivers/media/video/saa7134/saa7134-cards.c
-+++ b/drivers/media/video/saa7134/saa7134-cards.c
-@@ -5279,6 +5279,30 @@ struct saa7134_board saa7134_boards[] = 
- 			.amux = TV,
- 		},
- 	},
-+	[SAA7134_BOARD_ASUS_EUROPA_HYBRID] = {
-+		.name           = "Asus Europa Hybrid OEM",
-+		.audio_clock    = 0x00187de7,
-+		.tuner_type     = TUNER_PHILIPS_TD1316,
-+		.radio_type     = UNSET,
-+		.tuner_addr	= 0x61,
-+		.radio_addr	= ADDR_UNSET,
-+		.tda9887_conf   = TDA9887_PRESENT | TDA9887_PORT1_ACTIVE,
-+		.mpeg           = SAA7134_MPEG_DVB,
-+		.inputs = { {
-+			.name   = name_tv,
-+			.vmux   = 3,
-+			.amux   = TV,
-+			.tv     = 1,
-+		}, {
-+			.name   = name_comp1,
-+			.vmux   = 4,
-+			.amux   = LINE2,
-+		}, {
-+			.name   = name_svideo,
-+			.vmux   = 8,
-+			.amux   = LINE2,
-+		} },
-+	},
+--- a/drivers/watchdog/iTCO_wdt.c
++++ b/drivers/watchdog/iTCO_wdt.c
+@@ -54,7 +54,9 @@
+  *	82801JIB (ICH10)     : document number 319973-002, 319974-002,
+  *	82801JIR (ICH10R)    : document number 319973-002, 319974-002,
+  *	82801JD  (ICH10D)    : document number 319973-002, 319974-002,
+- *	82801JDO (ICH10DO)   : document number 319973-002, 319974-002
++ *	82801JDO (ICH10DO)   : document number 319973-002, 319974-002,
++ *	5 Series (PCH)       : document number 322169-001, 322170-001,
++ *	3400 Series (PCH)    : document number 322169-001, 322170-001
+  */
  
+ /*
+@@ -122,6 +124,9 @@ enum iTCO_chipsets {
+ 	TCO_ICH10R,	/* ICH10R */
+ 	TCO_ICH10D,	/* ICH10D */
+ 	TCO_ICH10DO,	/* ICH10DO */
++	TCO_PCH,	/* PCH Desktop Full Featured */
++	TCO_PCHM,	/* PCH Mobile Full Featured */
++	TCO_PCHMSFF,	/* PCH Mobile SFF Full Featured */
  };
  
-@@ -6418,6 +6442,12 @@ struct pci_device_id saa7134_pci_tbl[] =
- 		.subdevice    = 0x2004,
- 		.driver_data  = SAA7134_BOARD_ZOLID_HYBRID_PCI,
- 	}, {
-+		.vendor       = PCI_VENDOR_ID_PHILIPS,
-+		.device       = PCI_DEVICE_ID_PHILIPS_SAA7134,
-+		.subvendor    = 0x1043,
-+		.subdevice    = 0x4847,
-+		.driver_data  = SAA7134_BOARD_ASUS_EUROPA_HYBRID,
-+	}, {
- 		/* --- boards without eeprom + subsystem ID --- */
- 		.vendor       = PCI_VENDOR_ID_PHILIPS,
- 		.device       = PCI_DEVICE_ID_PHILIPS_SAA7134,
-@@ -7079,6 +7109,7 @@ int saa7134_board_init2(struct saa7134_d
- 		/* break intentionally omitted */
- 	case SAA7134_BOARD_VIDEOMATE_DVBT_300:
- 	case SAA7134_BOARD_ASUS_EUROPA2_HYBRID:
-+	case SAA7134_BOARD_ASUS_EUROPA_HYBRID:
- 	{
+ static struct {
+@@ -162,6 +167,9 @@ static struct {
+ 	{"ICH10R", 2},
+ 	{"ICH10D", 2},
+ 	{"ICH10DO", 2},
++	{"PCH Desktop Full Featured", 2},
++	{"PCH Mobile Full Featured", 2},
++	{"PCH Mobile SFF Full Featured", 2},
+ 	{NULL, 0}
+ };
  
- 		/* The Philips EUROPA based hybrid boards have the tuner
---- a/drivers/media/video/saa7134/saa7134-dvb.c
-+++ b/drivers/media/video/saa7134/saa7134-dvb.c
-@@ -1116,6 +1116,7 @@ static int dvb_init(struct saa7134_dev *
- 		break;
- 	case SAA7134_BOARD_PHILIPS_EUROPA:
- 	case SAA7134_BOARD_VIDEOMATE_DVBT_300:
-+	case SAA7134_BOARD_ASUS_EUROPA_HYBRID:
- 		fe0->dvb.frontend = dvb_attach(tda10046_attach,
- 					       &philips_europa_config,
- 					       &dev->i2c_adap);
---- a/drivers/media/video/saa7134/saa7134.h
-+++ b/drivers/media/video/saa7134/saa7134.h
-@@ -297,6 +297,7 @@ struct saa7134_format {
- #define SAA7134_BOARD_BEHOLD_X7             171
- #define SAA7134_BOARD_ROVERMEDIA_LINK_PRO_FM 172
- #define SAA7134_BOARD_ZOLID_HYBRID_PCI		173
-+#define SAA7134_BOARD_ASUS_EUROPA_HYBRID	174
- 
- #define SAA7134_MAXBOARDS 32
- #define SAA7134_INPUT_MAX 8
+@@ -230,6 +238,9 @@ static struct pci_device_id iTCO_wdt_pci
+ 	{ ITCO_PCI_DEVICE(0x3a16,				TCO_ICH10R)},
+ 	{ ITCO_PCI_DEVICE(0x3a1a,				TCO_ICH10D)},
+ 	{ ITCO_PCI_DEVICE(0x3a14,				TCO_ICH10DO)},
++	{ ITCO_PCI_DEVICE(0x3b00,				TCO_PCH)},
++	{ ITCO_PCI_DEVICE(0x3b01,				TCO_PCHM)},
++	{ ITCO_PCI_DEVICE(0x3b0d,				TCO_PCHMSFF)},
+ 	{ 0, },			/* End of list */
+ };
+ MODULE_DEVICE_TABLE(pci, iTCO_wdt_pci_tbl);
 
 
