@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732Ab0A0ADz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755801Ab0A0AEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755732Ab0A0ADz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725Ab0A0ADs
+	id S1755801Ab0A0AEv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762Ab0A0AEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:03:48 -0500
-Received: from kroah.org ([198.145.64.141]:35141 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:04:39 -0500
+Received: from kroah.org ([198.145.64.141]:35135 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754082Ab0AZXnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:12 -0500
+	id S1754089Ab0AZXnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:10 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:23 2010
-Message-Id: <20100126233923.356237628@mini.kroah.org>
+Message-Id: <20100126233923.095146079@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:45 -0800
+Date: Tue, 26 Jan 2010 15:33:43 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Seth Heasley <seth.heasley@intel.com>, Wim Van Sebroeck <wim@iguana.be>,
+       Cliff Brake <cbrake@bec-systems.com>,
        Ben Hutchings <ben@decadent.org.uk>
-Subject: [19/98] [WATCHDOG] iTCO_wdt: Add support for Intel Ibex Peak
+Subject: [17/98] USB: ftdi_sio: add USB device IDs for B&B Electronics line
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,63 +29,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Seth Heasley <seth.heasley@intel.com>
+From: Cliff Brake <cbrake@bec-systems.com>
 
-commit 79e8941dda254505bb8af37b3a009165dfb7e98a upstream.
+commit a8cbd90a0410096e152f68a4e114a8b5c7abb49b upstream.
 
-Add the Intel Ibex Peak (PCH) Device IDs to iTCO_wdt.c.
-
-Signed-off-by: Seth Heasley <seth.heasley@intel.com>
-Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+Reviewed-by: John Pilles <jpilles@bb-elec.com>
+Signed-off-by: Cliff Brake <cbrake@bec-systems.com>
 Cc: Ben Hutchings <ben@decadent.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/watchdog/iTCO_wdt.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ drivers/usb/serial/ftdi_sio.c |   14 ++++++++++++++
+ drivers/usb/serial/ftdi_sio.h |   14 ++++++++++++++
+ 2 files changed, 28 insertions(+)
 
---- a/drivers/watchdog/iTCO_wdt.c
-+++ b/drivers/watchdog/iTCO_wdt.c
-@@ -54,7 +54,9 @@
-  *	82801JIB (ICH10)     : document number 319973-002, 319974-002,
-  *	82801JIR (ICH10R)    : document number 319973-002, 319974-002,
-  *	82801JD  (ICH10D)    : document number 319973-002, 319974-002,
-- *	82801JDO (ICH10DO)   : document number 319973-002, 319974-002
-+ *	82801JDO (ICH10DO)   : document number 319973-002, 319974-002,
-+ *	5 Series (PCH)       : document number 322169-001, 322170-001,
-+ *	3400 Series (PCH)    : document number 322169-001, 322170-001
-  */
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -598,6 +598,20 @@ static struct usb_device_id id_table_com
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USOTL4_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USTL4_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USO9ML2_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_USOPTL4_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_USPTL4_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_USO9ML2DR_2_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_USO9ML2DR_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_USOPTL4DR2_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_USOPTL4DR_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_485USB9F_2W_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_485USB9F_4W_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_232USB9M_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_485USBTB_2W_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_485USBTB_4W_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_TTL5USB9M_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_TTL3USB9M_PID) },
++	{ USB_DEVICE(BANDB_VID, BANDB_ZZ_PROG1_USB_PID) },
+ 	{ USB_DEVICE(FTDI_VID, EVER_ECO_PRO_CDS) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_4N_GALAXY_DE_1_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_4N_GALAXY_DE_2_PID) },
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -662,6 +662,20 @@
+ #define BANDB_USOTL4_PID	0xAC01	/* USOTL4 Isolated RS-485 Converter */
+ #define BANDB_USTL4_PID		0xAC02	/* USTL4 RS-485 Converter */
+ #define BANDB_USO9ML2_PID	0xAC03	/* USO9ML2 Isolated RS-232 Converter */
++#define BANDB_USOPTL4_PID	0xAC11
++#define BANDB_USPTL4_PID	0xAC12
++#define BANDB_USO9ML2DR_2_PID	0xAC16
++#define BANDB_USO9ML2DR_PID	0xAC17
++#define BANDB_USOPTL4DR2_PID	0xAC18	/* USOPTL4R-2 2-port Isolated RS-232 Converter */
++#define BANDB_USOPTL4DR_PID	0xAC19
++#define BANDB_485USB9F_2W_PID	0xAC25
++#define BANDB_485USB9F_4W_PID	0xAC26
++#define BANDB_232USB9M_PID	0xAC27
++#define BANDB_485USBTB_2W_PID	0xAC33
++#define BANDB_485USBTB_4W_PID	0xAC34
++#define BANDB_TTL5USB9M_PID	0xAC49
++#define BANDB_TTL3USB9M_PID	0xAC50
++#define BANDB_ZZ_PROG1_USB_PID	0xBA02
  
  /*
-@@ -122,6 +124,9 @@ enum iTCO_chipsets {
- 	TCO_ICH10R,	/* ICH10R */
- 	TCO_ICH10D,	/* ICH10D */
- 	TCO_ICH10DO,	/* ICH10DO */
-+	TCO_PCH,	/* PCH Desktop Full Featured */
-+	TCO_PCHM,	/* PCH Mobile Full Featured */
-+	TCO_PCHMSFF,	/* PCH Mobile SFF Full Featured */
- };
- 
- static struct {
-@@ -162,6 +167,9 @@ static struct {
- 	{"ICH10R", 2},
- 	{"ICH10D", 2},
- 	{"ICH10DO", 2},
-+	{"PCH Desktop Full Featured", 2},
-+	{"PCH Mobile Full Featured", 2},
-+	{"PCH Mobile SFF Full Featured", 2},
- 	{NULL, 0}
- };
- 
-@@ -230,6 +238,9 @@ static struct pci_device_id iTCO_wdt_pci
- 	{ ITCO_PCI_DEVICE(0x3a16,				TCO_ICH10R)},
- 	{ ITCO_PCI_DEVICE(0x3a1a,				TCO_ICH10D)},
- 	{ ITCO_PCI_DEVICE(0x3a14,				TCO_ICH10DO)},
-+	{ ITCO_PCI_DEVICE(0x3b00,				TCO_PCH)},
-+	{ ITCO_PCI_DEVICE(0x3b01,				TCO_PCHM)},
-+	{ ITCO_PCI_DEVICE(0x3b0d,				TCO_PCHMSFF)},
- 	{ 0, },			/* End of list */
- };
- MODULE_DEVICE_TABLE(pci, iTCO_wdt_pci_tbl);
+  * RM Michaelides CANview USB (http://www.rmcan.com)
 
 
