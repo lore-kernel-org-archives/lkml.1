@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293Ab0AZXxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678Ab0AZXxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755293Ab0AZXxP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:53:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594Ab0AZXxJ
+	id S1754678Ab0AZXxp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:53:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473Ab0AZXnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:53:09 -0500
-Received: from kroah.org ([198.145.64.141]:35396 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:43:50 -0500
+Received: from kroah.org ([198.145.64.141]:35366 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754748Ab0AZXnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:55 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:29 2010
-Message-Id: <20100126233929.020437276@mini.kroah.org>
+	id S1754616Ab0AZXns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:48 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:28 2010
+Message-Id: <20100126233928.239244487@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:28 -0800
+Date: Tue, 26 Jan 2010 15:34:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: [62/98] Input: i8042 - add Gigabyte M1022M to the noloop list
+       Ron Mercer <ron.mercer@qlogic.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [56/98] qlge: Dont fail open when port is not initialized.
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,39 +29,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Ron Mercer <ron.mercer@qlogic.com>
 
-commit a61cd03827eceefcec19eefc6e1173703fdc5e5d upstream.
+commit 80928860941023bb37e9c61927395d0eb753bc3b upstream.
 
-Gigabyte netbook model M1022M requires i8042.noloop, otherwise AUX port
-will not detected and the touchpad will not work. Unfortunately chassis
-type in DMI set to "Other" and thus generic laptop entry does not fire
-on it.
-
-Reported-by: Darryl Bond <dbond@nrggos.com.au>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Signed-off-by: Ron Mercer <ron.mercer@qlogic.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/input/serio/i8042-x86ia64io.h |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/net/qlge/qlge_main.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
---- a/drivers/input/serio/i8042-x86ia64io.h
-+++ b/drivers/input/serio/i8042-x86ia64io.h
-@@ -158,6 +158,14 @@ static const struct dmi_system_id __init
- 		},
- 	},
- 	{
-+		/* Gigabyte M1022M netbook */
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "Gigabyte Technology Co.,Ltd."),
-+			DMI_MATCH(DMI_BOARD_NAME, "M1022E"),
-+			DMI_MATCH(DMI_BOARD_VERSION, "1.02"),
-+		},
-+	},
-+	{
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
- 			DMI_MATCH(DMI_PRODUCT_NAME, "HP Pavilion dv9700"),
+--- a/drivers/net/qlge/qlge_main.c
++++ b/drivers/net/qlge/qlge_main.c
+@@ -3310,10 +3310,8 @@ static int ql_adapter_initialize(struct 
+ 
+ 	/* Initialize the port and set the max framesize. */
+ 	status = qdev->nic_ops->port_initialize(qdev);
+-       if (status) {
+-              QPRINTK(qdev, IFUP, ERR, "Failed to start port.\n");
+-              return status;
+-       }
++	if (status)
++		QPRINTK(qdev, IFUP, ERR, "Failed to start port.\n");
+ 
+ 	/* Set up the MAC address and frame routing filter. */
+ 	status = ql_cam_route_initialize(qdev);
 
 
