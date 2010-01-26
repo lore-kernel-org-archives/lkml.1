@@ -1,27 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194Ab0AZTaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679Ab0AZTak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194Ab0AZTaz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 14:30:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174Ab0AZT3x
+	id S1754679Ab0AZTak (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 14:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087Ab0AZT3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 14:29:53 -0500
-Received: from kroah.org ([198.145.64.141]:33603 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 14:29:54 -0500
+Received: from kroah.org ([198.145.64.141]:33616 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755075Ab0AZT3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755077Ab0AZT3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 26 Jan 2010 14:29:05 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 11:16:24 2010
-Message-Id: <20100126191624.538119758@mini.kroah.org>
+Message-Id: <20100126191624.789857266@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 11:14:42 -0800
+Date: Tue, 26 Jan 2010 11:14:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Tavis Ormandy <taviso@google.com>,
-       Jeff Dike <jdike@addtoit.com>, Julien Tinnes <jln@google.com>,
-       Matt Mackall <mpm@selenic.com>
-Subject: [06/11] tty: fix race in tty_fasync
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [08/11] USB: EHCI: fix handling of unusual interrupt intervals
 In-Reply-To: <20100126191730.GA20872@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,41 +28,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 703625118069f9f8960d356676662d3db5a9d116 upstream.
+commit 1b9a38bfa6e664ff02511314f5586d711c83cc91 upstream.
 
-We need to keep the lock held over the call to __f_setown() to
-prevent a PID race.
+This patch (as1320) fixes two problems related to interrupt-URB
+scheduling in ehci-hcd.
 
-Thanks to Al Viro for pointing out the problem, and to Travis for
-making us look here in the first place.
+	URBs with an interval of 2 or 4 microframes aren't handled.
+	For the time being, the patch reduces to interval to 1 uframe.
 
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tavis Ormandy <taviso@google.com>
-Cc: Jeff Dike <jdike@addtoit.com>
-Cc: Julien Tinnes <jln@google.com>
-Cc: Matt Mackall <mpm@selenic.com>
+	URBs are constrained to have an interval no larger than 1024
+	frames by usb_submit_urb().  But some EHCI controllers allow
+	use of a schedule as short as 256 frames; for these
+	controllers we may have to decrease the interval to the
+	actual schedule length.
+
+The second problem isn't very significant since few devices expose
+interrupt endpoints with an interval larger than 256 frames.  But the
+first problem is critical; it will prevent the kernel from working
+with devices having interrupt intervals of 2 or 4 uframes.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Glynn Farrow <farrowg@sg.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/tty_io.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/host/ehci-q.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -2437,8 +2437,8 @@ static int tty_fasync(int fd, struct fil
- 			pid = task_pid(current);
- 			type = PIDTYPE_PID;
+--- a/drivers/usb/host/ehci-q.c
++++ b/drivers/usb/host/ehci-q.c
+@@ -748,9 +748,10 @@ qh_make (
+ 				 * But interval 1 scheduling is simpler, and
+ 				 * includes high bandwidth.
+ 				 */
+-				dbg ("intr period %d uframes, NYET!",
+-						urb->interval);
+-				goto done;
++				urb->interval = 1;
++			} else if (qh->period > ehci->periodic_size) {
++				qh->period = ehci->periodic_size;
++				urb->interval = qh->period << 3;
+ 			}
+ 		} else {
+ 			int		think_time;
+@@ -773,6 +774,10 @@ qh_make (
+ 					usb_calc_bus_time (urb->dev->speed,
+ 					is_input, 0, max_packet (maxp)));
+ 			qh->period = urb->interval;
++			if (qh->period > ehci->periodic_size) {
++				qh->period = ehci->periodic_size;
++				urb->interval = qh->period;
++			}
  		}
--		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
- 		retval = __f_setown(filp, pid, type, 0);
-+		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
- 		if (retval)
- 			goto out;
- 	} else {
+ 	}
+ 
 
 
