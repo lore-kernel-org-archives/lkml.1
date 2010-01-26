@@ -1,318 +1,284 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711Ab0AZLyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886Ab0AZLzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752711Ab0AZLyw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 06:54:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254Ab0AZLyv
+	id S1752886Ab0AZLzx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 06:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590Ab0AZLzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 06:54:51 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:36031 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752121Ab0AZLyt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 06:54:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=o7iBLqohqTQVDo0UsSNitNxWpgILdAcpC2oTlaBd53Rhin2Cb4xYUWkQKTXqUE6jA2
-         roVj0Gd3tZMfD2Qp1/11whR7IbzxFSTas28YS4+f+mjR8R6C7eBwMqE2keVPLb6MODtU
-         esOByN+Se97To4gMMFM/4JEQh+UJjSPtL78IQ=
+	Tue, 26 Jan 2010 06:55:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61203 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752254Ab0AZLzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 06:55:51 -0500
+Message-ID: <4B5ED838.1080509@hhs.nl>
+Date: Tue, 26 Jan 2010 12:55:36 +0100
+From: Hans de Goede <j.w.r.degoede@hhs.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <20100126110420.GI15759@rakim.wolfsonmicro.main>
-References: <771cded01001120041ue24edabk8e4638ef7151c947@mail.gmail.com>
-	 <771cded01001120051l44fd76bx80d2fd4b6f60bd0b@mail.gmail.com>
-	 <20100112115156.GA546@rakim.wolfsonmicro.main>
-	 <771cded01001250301q465a9f8ma484f597ae9a292f@mail.gmail.com>
-	 <20100125135628.GB26613@rakim.wolfsonmicro.main>
-	 <771cded01001252226k342723b3p3ea235fe79c46843@mail.gmail.com>
-	 <20100126110420.GI15759@rakim.wolfsonmicro.main>
-Date: Tue, 26 Jan 2010 06:54:48 -0500
-Message-ID: <771cded01001260354y7c7db25bqa8bbfe000e0c0380@mail.gmail.com>
-Subject: Re: [PATCH 01/01] regulator: support max8649
-From: Haojian Zhuang <haojian.zhuang@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=001636e1f93deeb76f047e0ff3cc
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+CC: George Joseph <George.joseph@fairview5.com>, lm-sensors@lm-sensors.org,
+       Jean Delvare <khali@linux-fr.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [lm-sensors] Status of Andigilog asc7621 driver submitted by
+ 	George Joseph on 2008-05-29
+References: <3f9a31f41001230952g6321c47bq9baf5dcfdfaf5b59@mail.gmail.com>	 <4B5B38C1.5080109@hhs.nl> <3f9a31f41001232105l58d36ffdp8d06231f524a98ec@mail.gmail.com>
+In-Reply-To: <3f9a31f41001232105l58d36ffdp8d06231f524a98ec@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001636e1f93deeb76f047e0ff3cc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Jan 26, 2010 at 6:04 AM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Tue, Jan 26, 2010 at 01:26:08AM -0500, Haojian Zhuang wrote:
+On 01/24/2010 06:05 AM, Jaswinder Singh Rajput wrote:
+> Hello Hans,
 >
-> This all looks good except...
+> On Sat, Jan 23, 2010 at 11:28 PM, Hans de Goede<j.w.r.degoede@hhs.nl>  wrote:
+>> Hi,
+>>
+>> I just checked my Drafts folder, and I still have my unfinished review
+>> in there. So if there is interest I can send that, note that it is
+>> not a complete review though (there is a note in there which part
+>> of the code is reviewed and which still needs to be reviewed).
+>>
 >
->> +static int max8649_enable_time(struct regulator_dev *rdev)
->> +{
->
-> ...
->
->> + =A0 =A0 return (voltage / step);
->
-> I'd expect the time taken to enable to be the voltage multipled by the
-> step size rather than divided by the step size?
+> Please provide your review so that we can discuss about this driver
+> and make relevant changes to accept it.
 >
 
-I don't agree at this point. The unit of step is uV/uSec. The function
-should return uSec. So voltage divided by the step is more reasonable.
+Ok, here is the partly review I've done:
 
-Others are updated.
+---begin---
+Hi Joseph,
 
-Thanks
-Haojian
+george.joseph@peakin.com wrote:
+ > Here's the c file by itself.
+ >
+ > Hans, will you have any time to review the driver in the near future?
+ >
 
---001636e1f93deeb76f047e0ff3cc
-Content-Type: text/x-patch; charset=US-ASCII; 
-	name="0001-regulator-enable-max8649-regulator-driver.patch"
-Content-Disposition: attachment; 
-	filename="0001-regulator-enable-max8649-regulator-driver.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g4x393ww0
+I believe I said I would make time for this some time ago. Given that the 2.6.29 merge window has already opened, I've now done so (made time). So that this hopefully / maybe can make 2.6.29's merge window.
 
-RnJvbSA2MzkwOTdlYmQwYjJjNjZmODkzNjlhZGRkODYwMzhjYTQ4ZjM1NTkxIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBIYW9qaWFuIFpodWFuZyA8aGFvamlhbi56aHVhbmdAbWFydmVs
-bC5jb20+CkRhdGU6IE1vbiwgMjUgSmFuIDIwMTAgMTA6MjQ6MDkgLTA1MDAKU3ViamVjdDogW1BB
-VENIXSByZWd1bGF0b3I6IGVuYWJsZSBtYXg4NjQ5IHJlZ3VsYXRvciBkcml2ZXIKClNpZ25lZC1v
-ZmYtYnk6IEhhb2ppYW4gWmh1YW5nIDxoYW9qaWFuLnpodWFuZ0BtYXJ2ZWxsLmNvbT4KLS0tCiBk
-cml2ZXJzL3JlZ3VsYXRvci9LY29uZmlnICAgICAgICAgfCAgICA3ICsKIGRyaXZlcnMvcmVndWxh
-dG9yL01ha2VmaWxlICAgICAgICB8ICAgIDEgKwogZHJpdmVycy9yZWd1bGF0b3IvbWF4ODY0OS5j
-ICAgICAgIHwgIDQwOCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCiBpbmNs
-dWRlL2xpbnV4L3JlZ3VsYXRvci9tYXg4NjQ5LmggfCAgIDQ0ICsrKysKIDQgZmlsZXMgY2hhbmdl
-ZCwgNDYwIGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pCiBjcmVhdGUgbW9kZSAxMDA2NDQg
-ZHJpdmVycy9yZWd1bGF0b3IvbWF4ODY0OS5jCiBjcmVhdGUgbW9kZSAxMDA2NDQgaW5jbHVkZS9s
-aW51eC9yZWd1bGF0b3IvbWF4ODY0OS5oCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9yZWd1bGF0b3Iv
-S2NvbmZpZyBiL2RyaXZlcnMvcmVndWxhdG9yL0tjb25maWcKaW5kZXggMjYyZjYyZS4uYTZlN2Ew
-YyAxMDA2NDQKLS0tIGEvZHJpdmVycy9yZWd1bGF0b3IvS2NvbmZpZworKysgYi9kcml2ZXJzL3Jl
-Z3VsYXRvci9LY29uZmlnCkBAIC02OSw2ICs2OSwxMyBAQCBjb25maWcgUkVHVUxBVE9SX01BWDE1
-ODYKIAkgIHJlZ3VsYXRvciB2aWEgSTJDIGJ1cy4gVGhlIHByb3ZpZGVkIHJlZ3VsYXRvciBpcyBz
-dWl0YWJsZQogCSAgZm9yIFBYQTI3eCBjaGlwcyB0byBjb250cm9sIFZDQ19DT1JFIGFuZCBWQ0Nf
-VVNJTSB2b2x0YWdlcy4KIAorY29uZmlnIFJFR1VMQVRPUl9NQVg4NjQ5CisJdHJpc3RhdGUgIk1h
-eGltIDg2NDkgdm9sdGFnZSByZWd1bGF0b3IiCisJZGVwZW5kcyBvbiBJMkMKKwloZWxwCisJICBU
-aGlzIGRyaXZlciBjb250cm9scyBhIE1heGltIDg2NDkgdm9sdGFnZSBvdXRwdXQgcmVndWxhdG9y
-IHZpYQorCSAgSTJDIGJ1cy4KKwogY29uZmlnIFJFR1VMQVRPUl9NQVg4NjYwCiAJdHJpc3RhdGUg
-Ik1heGltIDg2NjAvODY2MSB2b2x0YWdlIHJlZ3VsYXRvciIKIAlkZXBlbmRzIG9uIEkyQwpkaWZm
-IC0tZ2l0IGEvZHJpdmVycy9yZWd1bGF0b3IvTWFrZWZpbGUgYi9kcml2ZXJzL3JlZ3VsYXRvci9N
-YWtlZmlsZQppbmRleCBiM2M4MDZjLi4wNzU4MzViIDEwMDY0NAotLS0gYS9kcml2ZXJzL3JlZ3Vs
-YXRvci9NYWtlZmlsZQorKysgYi9kcml2ZXJzL3JlZ3VsYXRvci9NYWtlZmlsZQpAQCAtMTIsNiAr
-MTIsNyBAQCBvYmotJChDT05GSUdfUkVHVUxBVE9SX0JRMjQwMjIpICs9IGJxMjQwMjIubwogb2Jq
-LSQoQ09ORklHX1JFR1VMQVRPUl9MUDM5NzEpICs9IGxwMzk3MS5vCiBvYmotJChDT05GSUdfUkVH
-VUxBVE9SX01BWDE1ODYpICs9IG1heDE1ODYubwogb2JqLSQoQ09ORklHX1JFR1VMQVRPUl9UV0w0
-MDMwKSArPSB0d2wtcmVndWxhdG9yLm8KK29iai0kKENPTkZJR19SRUdVTEFUT1JfTUFYODY0OSkJ
-Kz0gbWF4ODY0OS5vCiBvYmotJChDT05GSUdfUkVHVUxBVE9SX01BWDg2NjApICs9IG1heDg2NjAu
-bwogb2JqLSQoQ09ORklHX1JFR1VMQVRPUl9XTTgzMVgpICs9IHdtODMxeC1kY2RjLm8KIG9iai0k
-KENPTkZJR19SRUdVTEFUT1JfV004MzFYKSArPSB3bTgzMXgtaXNpbmsubwpkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy9yZWd1bGF0b3IvbWF4ODY0OS5jIGIvZHJpdmVycy9yZWd1bGF0b3IvbWF4ODY0OS5j
-Cm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAuLjkzNDcyNzEKLS0tIC9kZXYvbnVs
-bAorKysgYi9kcml2ZXJzL3JlZ3VsYXRvci9tYXg4NjQ5LmMKQEAgLTAsMCArMSw0MDggQEAKKy8q
-CisgKiBSZWd1bGF0b3JzIGRyaXZlciBmb3IgTWF4aW0gbWF4ODY0OQorICoKKyAqIENvcHlyaWdo
-dCAoQykgMjAwOS0yMDEwIE1hcnZlbGwgSW50ZXJuYXRpb25hbCBMdGQuCisgKiAgICAgIEhhb2pp
-YW4gWmh1YW5nIDxoYW9qaWFuLnpodWFuZ0BtYXJ2ZWxsLmNvbT4KKyAqCisgKiBUaGlzIHByb2dy
-YW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5kL29yIG1vZGlm
-eQorICogaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5z
-ZSB2ZXJzaW9uIDIgYXMKKyAqIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0
-aW9uLgorICovCisjaW5jbHVkZSA8bGludXgva2VybmVsLmg+CisjaW5jbHVkZSA8bGludXgvbW9k
-dWxlLmg+CisjaW5jbHVkZSA8bGludXgvZXJyLmg+CisjaW5jbHVkZSA8bGludXgvaTJjLmg+Cisj
-aW5jbHVkZSA8bGludXgvcGxhdGZvcm1fZGV2aWNlLmg+CisjaW5jbHVkZSA8bGludXgvcmVndWxh
-dG9yL2RyaXZlci5oPgorI2luY2x1ZGUgPGxpbnV4L3JlZ3VsYXRvci9tYXg4NjQ5Lmg+CisKKyNk
-ZWZpbmUgTUFYODY0OV9EQ0RDX1ZNSU4JNzUwMDAwCQkvKiB1ViAqLworI2RlZmluZSBNQVg4NjQ5
-X0RDRENfVk1BWAkxMzgwMDAwCQkvKiB1ViAqLworI2RlZmluZSBNQVg4NjQ5X0RDRENfU1RFUAkx
-MDAwMAkJLyogdVYgKi8KKyNkZWZpbmUgTUFYODY0OV9WT0xfTUFTSwkweDNmCisKKy8qIFJlZ2lz
-dGVycyAqLworI2RlZmluZSBNQVg4NjQ5X01PREUwCQkweDAwCisjZGVmaW5lIE1BWDg2NDlfTU9E
-RTEJCTB4MDEKKyNkZWZpbmUgTUFYODY0OV9NT0RFMgkJMHgwMgorI2RlZmluZSBNQVg4NjQ5X01P
-REUzCQkweDAzCisjZGVmaW5lIE1BWDg2NDlfQ09OVFJPTAkJMHgwNAorI2RlZmluZSBNQVg4NjQ5
-X1NZTkMJCTB4MDUKKyNkZWZpbmUgTUFYODY0OV9SQU1QCQkweDA2CisjZGVmaW5lIE1BWDg2NDlf
-Q0hJUF9JRDEJMHgwOAorI2RlZmluZSBNQVg4NjQ5X0NISVBfSUQyCTB4MDkKKworLyogQml0cyAq
-LworI2RlZmluZSBNQVg4NjQ5X0VOX1BECQkoMSA8PCA3KQorI2RlZmluZSBNQVg4NjQ5X1ZJRDBf
-UEQJCSgxIDw8IDYpCisjZGVmaW5lIE1BWDg2NDlfVklEMV9QRAkJKDEgPDwgNSkKKyNkZWZpbmUg
-TUFYODY0OV9WSURfTUFTSwkoMyA8PCA1KQorCisjZGVmaW5lIE1BWDg2NDlfRk9SQ0VfUFdNCSgx
-IDw8IDcpCisjZGVmaW5lIE1BWDg2NDlfU1lOQ19FWFRDTEsJKDEgPDwgNikKKworI2RlZmluZSBN
-QVg4NjQ5X0VYVF9NQVNLCSgzIDw8IDYpCisKKyNkZWZpbmUgTUFYODY0OV9SQU1QX01BU0sJKDcg
-PDwgNSkKKyNkZWZpbmUgTUFYODY0OV9SQU1QX0RPV04JKDEgPDwgMSkKKworc3RydWN0IG1heDg2
-NDlfcmVndWxhdG9yX2luZm8geworCXN0cnVjdCByZWd1bGF0b3JfZGV2CSpyZWd1bGF0b3I7CisJ
-c3RydWN0IGkyY19jbGllbnQJKmkyYzsKKwlzdHJ1Y3QgZGV2aWNlCQkqZGV2OworCXN0cnVjdCBt
-dXRleAkJaW9fbG9jazsKKworCWludAkJdm9sX3JlZzsKKwl1bnNpZ25lZAltb2RlOjI7CS8qIGJp
-dFsxOjBdID0gVklEMSwgVklEMCAqLworCXVuc2lnbmVkCWV4dGNsa19mcmVxOjI7CisJdW5zaWdu
-ZWQJZXh0Y2xrOjE7CisJdW5zaWduZWQJcmFtcF90aW1pbmc6MzsKKwl1bnNpZ25lZAlyYW1wX2Rv
-d246MTsKK307CisKKy8qIEkyQyBvcGVyYXRpb25zICovCisKK3N0YXRpYyBpbmxpbmUgaW50IG1h
-eDg2NDlfcmVhZF9kZXZpY2Uoc3RydWN0IGkyY19jbGllbnQgKmkyYywKKwkJCQkgICAgICBpbnQg
-cmVnLCBpbnQgYnl0ZXMsIHZvaWQgKmRlc3QpCit7CisJdW5zaWduZWQgY2hhciBkYXRhOworCWlu
-dCByZXQ7CisKKwlkYXRhID0gKHVuc2lnbmVkIGNoYXIpcmVnOworCXJldCA9IGkyY19tYXN0ZXJf
-c2VuZChpMmMsICZkYXRhLCAxKTsKKwlpZiAocmV0IDwgMCkKKwkJcmV0dXJuIHJldDsKKwlyZXQg
-PSBpMmNfbWFzdGVyX3JlY3YoaTJjLCBkZXN0LCBieXRlcyk7CisJaWYgKHJldCA8IDApCisJCXJl
-dHVybiByZXQ7CisJcmV0dXJuIDA7Cit9CisKK3N0YXRpYyBpbmxpbmUgaW50IG1heDg2NDlfd3Jp
-dGVfZGV2aWNlKHN0cnVjdCBpMmNfY2xpZW50ICppMmMsCisJCQkJICAgICAgIGludCByZWcsIGlu
-dCBieXRlcywgdm9pZCAqc3JjKQoreworCXVuc2lnbmVkIGNoYXIgYnVmW2J5dGVzICsgMV07CisJ
-aW50IHJldDsKKworCWJ1ZlswXSA9ICh1bnNpZ25lZCBjaGFyKXJlZzsKKwltZW1jcHkoJmJ1Zlsx
-XSwgc3JjLCBieXRlcyk7CisKKwlyZXQgPSBpMmNfbWFzdGVyX3NlbmQoaTJjLCBidWYsIGJ5dGVz
-ICsgMSk7CisJaWYgKHJldCA8IDApCisJCXJldHVybiByZXQ7CisJcmV0dXJuIDA7Cit9CisKK3N0
-YXRpYyBpbnQgbWF4ODY0OV9yZWdfcmVhZChzdHJ1Y3QgaTJjX2NsaWVudCAqaTJjLCBpbnQgcmVn
-KQoreworCXN0cnVjdCBtYXg4NjQ5X3JlZ3VsYXRvcl9pbmZvICppbmZvID0gaTJjX2dldF9jbGll
-bnRkYXRhKGkyYyk7CisJdW5zaWduZWQgY2hhciBkYXRhOworCWludCByZXQ7CisKKwltdXRleF9s
-b2NrKCZpbmZvLT5pb19sb2NrKTsKKwlyZXQgPSBtYXg4NjQ5X3JlYWRfZGV2aWNlKGkyYywgcmVn
-LCAxLCAmZGF0YSk7CisJbXV0ZXhfdW5sb2NrKCZpbmZvLT5pb19sb2NrKTsKKworCWlmIChyZXQg
-PCAwKQorCQlyZXR1cm4gcmV0OworCXJldHVybiAoaW50KWRhdGE7Cit9CisKK3N0YXRpYyBpbnQg
-bWF4ODY0OV9zZXRfYml0cyhzdHJ1Y3QgaTJjX2NsaWVudCAqaTJjLCBpbnQgcmVnLAorCQkJICAg
-IHVuc2lnbmVkIGNoYXIgbWFzaywgdW5zaWduZWQgY2hhciBkYXRhKQoreworCXN0cnVjdCBtYXg4
-NjQ5X3JlZ3VsYXRvcl9pbmZvICppbmZvID0gaTJjX2dldF9jbGllbnRkYXRhKGkyYyk7CisJdW5z
-aWduZWQgY2hhciB2YWx1ZTsKKwlpbnQgcmV0OworCisJbXV0ZXhfbG9jaygmaW5mby0+aW9fbG9j
-ayk7CisJcmV0ID0gbWF4ODY0OV9yZWFkX2RldmljZShpMmMsIHJlZywgMSwgJnZhbHVlKTsKKwlp
-ZiAocmV0IDwgMCkKKwkJZ290byBvdXQ7CisJdmFsdWUgJj0gfm1hc2s7CisJdmFsdWUgfD0gZGF0
-YTsKKwlyZXQgPSBtYXg4NjQ5X3dyaXRlX2RldmljZShpMmMsIHJlZywgMSwgJnZhbHVlKTsKK291
-dDoKKwltdXRleF91bmxvY2soJmluZm8tPmlvX2xvY2spOworCXJldHVybiByZXQ7Cit9CisKK3N0
-YXRpYyBpbmxpbmUgaW50IGNoZWNrX3JhbmdlKGludCBtaW5fdVYsIGludCBtYXhfdVYpCit7CisJ
-aWYgKChtaW5fdVYgPCBNQVg4NjQ5X0RDRENfVk1JTikgfHwgKG1heF91ViA+IE1BWDg2NDlfRENE
-Q19WTUFYKQorCQl8fCAobWluX3VWID4gbWF4X3VWKSkKKwkJcmV0dXJuIC1FSU5WQUw7CisJcmV0
-dXJuIDA7Cit9CisKK3N0YXRpYyBpbnQgbWF4ODY0OV9saXN0X3ZvbHRhZ2Uoc3RydWN0IHJlZ3Vs
-YXRvcl9kZXYgKnJkZXYsIHVuc2lnbmVkIGluZGV4KQoreworCXJldHVybiAoTUFYODY0OV9EQ0RD
-X1ZNSU4gKyBpbmRleCAqIE1BWDg2NDlfRENEQ19TVEVQKTsKK30KKworc3RhdGljIGludCBtYXg4
-NjQ5X2dldF92b2x0YWdlKHN0cnVjdCByZWd1bGF0b3JfZGV2ICpyZGV2KQoreworCXN0cnVjdCBt
-YXg4NjQ5X3JlZ3VsYXRvcl9pbmZvICppbmZvID0gcmRldl9nZXRfZHJ2ZGF0YShyZGV2KTsKKwl1
-bnNpZ25lZCBjaGFyIGRhdGE7CisJaW50IHJldDsKKworCXJldCA9IG1heDg2NDlfcmVnX3JlYWQo
-aW5mby0+aTJjLCBpbmZvLT52b2xfcmVnKTsKKwlpZiAocmV0IDwgMCkKKwkJcmV0dXJuIHJldDsK
-KwlkYXRhID0gKHVuc2lnbmVkIGNoYXIpcmV0ICYgTUFYODY0OV9WT0xfTUFTSzsKKwlyZXR1cm4g
-bWF4ODY0OV9saXN0X3ZvbHRhZ2UocmRldiwgZGF0YSk7Cit9CisKK3N0YXRpYyBpbnQgbWF4ODY0
-OV9zZXRfdm9sdGFnZShzdHJ1Y3QgcmVndWxhdG9yX2RldiAqcmRldiwKKwkJCSAgICAgICBpbnQg
-bWluX3VWLCBpbnQgbWF4X3VWKQoreworCXN0cnVjdCBtYXg4NjQ5X3JlZ3VsYXRvcl9pbmZvICpp
-bmZvID0gcmRldl9nZXRfZHJ2ZGF0YShyZGV2KTsKKwl1bnNpZ25lZCBjaGFyIGRhdGEsIG1hc2s7
-CisKKwlpZiAoY2hlY2tfcmFuZ2UobWluX3VWLCBtYXhfdVYpKSB7CisJCWRldl9lcnIoaW5mby0+
-ZGV2LCAiaW52YWxpZCB2b2x0YWdlIHJhbmdlICglZCwgJWQpIHVWXG4iLAorCQkJbWluX3VWLCBt
-YXhfdVYpOworCQlyZXR1cm4gLUVJTlZBTDsKKwl9CisJZGF0YSA9IChtaW5fdVYgLSBNQVg4NjQ5
-X0RDRENfVk1JTiArIE1BWDg2NDlfRENEQ19TVEVQIC0gMSkKKwkJLyBNQVg4NjQ5X0RDRENfU1RF
-UDsKKwltYXNrID0gTUFYODY0OV9WT0xfTUFTSzsKKworCXJldHVybiBtYXg4NjQ5X3NldF9iaXRz
-KGluZm8tPmkyYywgaW5mby0+dm9sX3JlZywgbWFzaywgZGF0YSk7Cit9CisKKy8qIEVOX1BEIG1l
-YW5zIHB1bGxkb3duIG9uIEVOIGlucHV0ICovCitzdGF0aWMgaW50IG1heDg2NDlfZW5hYmxlKHN0
-cnVjdCByZWd1bGF0b3JfZGV2ICpyZGV2KQoreworCXN0cnVjdCBtYXg4NjQ5X3JlZ3VsYXRvcl9p
-bmZvICppbmZvID0gcmRldl9nZXRfZHJ2ZGF0YShyZGV2KTsKKwlyZXR1cm4gbWF4ODY0OV9zZXRf
-Yml0cyhpbmZvLT5pMmMsIE1BWDg2NDlfQ09OVFJPTCwgTUFYODY0OV9FTl9QRCwgMCk7Cit9CisK
-Ky8qCisgKiBBcHBsaWVkIGludGVybmFsIHB1bGxkb3duIHJlc2lzdG9yIG9uIEVOIGlucHV0IHBp
-bi4KKyAqIElmIHB1bGxkb3duIEVOIHBpbiBvdXRzaWRlLCBpdCB3b3VsZCBiZSBiZXR0ZXIuCisg
-Ki8KK3N0YXRpYyBpbnQgbWF4ODY0OV9kaXNhYmxlKHN0cnVjdCByZWd1bGF0b3JfZGV2ICpyZGV2
-KQoreworCXN0cnVjdCBtYXg4NjQ5X3JlZ3VsYXRvcl9pbmZvICppbmZvID0gcmRldl9nZXRfZHJ2
-ZGF0YShyZGV2KTsKKwlyZXR1cm4gbWF4ODY0OV9zZXRfYml0cyhpbmZvLT5pMmMsIE1BWDg2NDlf
-Q09OVFJPTCwgTUFYODY0OV9FTl9QRCwKKwkJCQlNQVg4NjQ5X0VOX1BEKTsKK30KKworc3RhdGlj
-IGludCBtYXg4NjQ5X2lzX2VuYWJsZWQoc3RydWN0IHJlZ3VsYXRvcl9kZXYgKnJkZXYpCit7CisJ
-c3RydWN0IG1heDg2NDlfcmVndWxhdG9yX2luZm8gKmluZm8gPSByZGV2X2dldF9kcnZkYXRhKHJk
-ZXYpOworCWludCByZXQ7CisKKwlyZXQgPSBtYXg4NjQ5X3JlZ19yZWFkKGluZm8tPmkyYywgTUFY
-ODY0OV9DT05UUk9MKTsKKwlpZiAocmV0IDwgMCkKKwkJcmV0dXJuIHJldDsKKwlyZXR1cm4gISgo
-dW5zaWduZWQgY2hhcilyZXQgJiBNQVg4NjQ5X0VOX1BEKTsKK30KKworc3RhdGljIGludCBtYXg4
-NjQ5X2VuYWJsZV90aW1lKHN0cnVjdCByZWd1bGF0b3JfZGV2ICpyZGV2KQoreworCXN0cnVjdCBt
-YXg4NjQ5X3JlZ3VsYXRvcl9pbmZvICppbmZvID0gcmRldl9nZXRfZHJ2ZGF0YShyZGV2KTsKKwlp
-bnQgdm9sdGFnZSwgc3RlcCwgcmV0OworCisJLyogZ2V0IHZvbHRhZ2UgKi8KKwlyZXQgPSBtYXg4
-NjQ5X3JlZ19yZWFkKGluZm8tPmkyYywgaW5mby0+dm9sX3JlZyk7CisJaWYgKHJldCA8IDApCisJ
-CXJldHVybiByZXQ7CisJcmV0ICY9IE1BWDg2NDlfVk9MX01BU0s7CisJdm9sdGFnZSA9IG1heDg2
-NDlfbGlzdF92b2x0YWdlKHJkZXYsICh1bnNpZ25lZCBjaGFyKXJldCk7CS8qIHVWICovCisKKwkv
-KiBnZXQgc3RlcCAqLworCXJldCA9IG1heDg2NDlfcmVnX3JlYWQoaW5mby0+aTJjLCBNQVg4NjQ5
-X1JBTVApOworCWlmIChyZXQgPCAwKQorCQlyZXR1cm4gcmV0OworCXJldCA9IChyZXQgJiBNQVg4
-NjQ5X1JBTVBfTUFTSykgPj4gNTsKKwlzdGVwID0gKDMyICogMTAwMCkgPj4gcmV0OwkvKiB1Vi91
-UyAqLworCisJcmV0dXJuICh2b2x0YWdlIC8gc3RlcCk7Cit9CisKK3N0YXRpYyBpbnQgbWF4ODY0
-OV9zZXRfbW9kZShzdHJ1Y3QgcmVndWxhdG9yX2RldiAqcmRldiwgdW5zaWduZWQgaW50IG1vZGUp
-Cit7CisJc3RydWN0IG1heDg2NDlfcmVndWxhdG9yX2luZm8gKmluZm8gPSByZGV2X2dldF9kcnZk
-YXRhKHJkZXYpOworCisJc3dpdGNoIChtb2RlKSB7CisJY2FzZSBSRUdVTEFUT1JfTU9ERV9GQVNU
-OgorCQltYXg4NjQ5X3NldF9iaXRzKGluZm8tPmkyYywgaW5mby0+dm9sX3JlZywgTUFYODY0OV9G
-T1JDRV9QV00sCisJCQkJIE1BWDg2NDlfRk9SQ0VfUFdNKTsKKwkJYnJlYWs7CisJY2FzZSBSRUdV
-TEFUT1JfTU9ERV9OT1JNQUw6CisJCW1heDg2NDlfc2V0X2JpdHMoaW5mby0+aTJjLCBpbmZvLT52
-b2xfcmVnLAorCQkJCSBNQVg4NjQ5X0ZPUkNFX1BXTSwgMCk7CisJCWJyZWFrOworCWRlZmF1bHQ6
-CisJCXJldHVybiAtRUlOVkFMOworCX0KKwlyZXR1cm4gMDsKK30KKworc3RhdGljIHVuc2lnbmVk
-IGludCBtYXg4NjQ5X2dldF9tb2RlKHN0cnVjdCByZWd1bGF0b3JfZGV2ICpyZGV2KQoreworCXN0
-cnVjdCBtYXg4NjQ5X3JlZ3VsYXRvcl9pbmZvICppbmZvID0gcmRldl9nZXRfZHJ2ZGF0YShyZGV2
-KTsKKwlpbnQgcmV0OworCisJcmV0ID0gbWF4ODY0OV9yZWdfcmVhZChpbmZvLT5pMmMsIGluZm8t
-PnZvbF9yZWcpOworCWlmIChyZXQgJiBNQVg4NjQ5X0ZPUkNFX1BXTSkKKwkJcmV0dXJuIFJFR1VM
-QVRPUl9NT0RFX0ZBU1Q7CisJcmV0dXJuIFJFR1VMQVRPUl9NT0RFX05PUk1BTDsKK30KKworc3Rh
-dGljIHN0cnVjdCByZWd1bGF0b3Jfb3BzIG1heDg2NDlfZGNkY19vcHMgPSB7CisJLnNldF92b2x0
-YWdlCT0gbWF4ODY0OV9zZXRfdm9sdGFnZSwKKwkuZ2V0X3ZvbHRhZ2UJPSBtYXg4NjQ5X2dldF92
-b2x0YWdlLAorCS5saXN0X3ZvbHRhZ2UJPSBtYXg4NjQ5X2xpc3Rfdm9sdGFnZSwKKwkuZW5hYmxl
-CQk9IG1heDg2NDlfZW5hYmxlLAorCS5kaXNhYmxlCT0gbWF4ODY0OV9kaXNhYmxlLAorCS5pc19l
-bmFibGVkCT0gbWF4ODY0OV9pc19lbmFibGVkLAorCS5lbmFibGVfdGltZQk9IG1heDg2NDlfZW5h
-YmxlX3RpbWUsCisJLnNldF9tb2RlCT0gbWF4ODY0OV9zZXRfbW9kZSwKKwkuZ2V0X21vZGUJPSBt
-YXg4NjQ5X2dldF9tb2RlLAorCit9OworCitzdGF0aWMgc3RydWN0IHJlZ3VsYXRvcl9kZXNjIGRj
-ZGNfZGVzYyA9IHsKKwkubmFtZQkJPSAibWF4ODY0OSIsCisJLm9wcwkJPSAmbWF4ODY0OV9kY2Rj
-X29wcywKKwkudHlwZQkJPSBSRUdVTEFUT1JfVk9MVEFHRSwKKwkubl92b2x0YWdlcwk9IDEgPDwg
-NiwKKwkub3duZXIJCT0gVEhJU19NT0RVTEUsCit9OworCitzdGF0aWMgaW50IF9fZGV2aW5pdCBt
-YXg4NjQ5X3JlZ3VsYXRvcl9wcm9iZShzdHJ1Y3QgaTJjX2NsaWVudCAqY2xpZW50LAorCQkJCQkg
-ICAgIGNvbnN0IHN0cnVjdCBpMmNfZGV2aWNlX2lkICppZCkKK3sKKwlzdHJ1Y3QgbWF4ODY0OV9w
-bGF0Zm9ybV9kYXRhICpwZGF0YSA9IGNsaWVudC0+ZGV2LnBsYXRmb3JtX2RhdGE7CisJc3RydWN0
-IG1heDg2NDlfcmVndWxhdG9yX2luZm8gKmluZm8gPSBOVUxMOworCXVuc2lnbmVkIGNoYXIgZGF0
-YTsKKwlpbnQgcmV0OworCisJaW5mbyA9IGt6YWxsb2Moc2l6ZW9mKHN0cnVjdCBtYXg4NjQ5X3Jl
-Z3VsYXRvcl9pbmZvKSwgR0ZQX0tFUk5FTCk7CisJaWYgKCFpbmZvKSB7CisJCWRldl9lcnIoJmNs
-aWVudC0+ZGV2LCAiTm8gZW5vdWdoIG1lbW9yeVxuIik7CisJCXJldHVybiAtRU5PTUVNOworCX0K
-KworCWluZm8tPmkyYyA9IGNsaWVudDsKKwlpbmZvLT5kZXYgPSAmY2xpZW50LT5kZXY7CisJbXV0
-ZXhfaW5pdCgmaW5mby0+aW9fbG9jayk7CisJaTJjX3NldF9jbGllbnRkYXRhKGNsaWVudCwgaW5m
-byk7CisKKwlpbmZvLT5tb2RlID0gcGRhdGEtPm1vZGU7CisJc3dpdGNoIChpbmZvLT5tb2RlKSB7
-CisJY2FzZSAwOgorCQlpbmZvLT52b2xfcmVnID0gTUFYODY0OV9NT0RFMDsKKwkJYnJlYWs7CisJ
-Y2FzZSAxOgorCQlpbmZvLT52b2xfcmVnID0gTUFYODY0OV9NT0RFMTsKKwkJYnJlYWs7CisJY2Fz
-ZSAyOgorCQlpbmZvLT52b2xfcmVnID0gTUFYODY0OV9NT0RFMjsKKwkJYnJlYWs7CisJY2FzZSAz
-OgorCQlpbmZvLT52b2xfcmVnID0gTUFYODY0OV9NT0RFMzsKKwkJYnJlYWs7CisJZGVmYXVsdDoK
-KwkJYnJlYWs7CisJfQorCisJcmV0ID0gbWF4ODY0OV9yZWdfcmVhZChpbmZvLT5pMmMsIE1BWDg2
-NDlfQ0hJUF9JRDEpOworCWlmIChyZXQgPCAwKSB7CisJCWRldl9lcnIoaW5mby0+ZGV2LCAiRmFp
-bGVkIHRvIGRldGVjdCBJRCBvZiBNQVg4NjQ5OiVkXG4iLAorCQkJcmV0KTsKKwkJZ290byBvdXQ7
-CisJfQorCWRldl9pbmZvKGluZm8tPmRldiwgIkRldGVjdGVkIE1BWDg2NDkgKElEOiV4KVxuIiwg
-cmV0KTsKKworCS8qIGVuYWJsZSBWSUQwICYgVklEMSAqLworCW1heDg2NDlfc2V0X2JpdHMoaW5m
-by0+aTJjLCBNQVg4NjQ5X0NPTlRST0wsIE1BWDg2NDlfVklEX01BU0ssIDApOworCisJLyogZW5h
-YmxlL2Rpc2FibGUgZXh0ZXJuYWwgY2xvY2sgc3luY2hyb25pemF0aW9uICovCisJaW5mby0+ZXh0
-Y2xrID0gcGRhdGEtPmV4dGNsazsKKwlkYXRhID0gKGluZm8tPmV4dGNsaykgPyBNQVg4NjQ5X1NZ
-TkNfRVhUQ0xLIDogMDsKKwltYXg4NjQ5X3NldF9iaXRzKGluZm8tPmkyYywgaW5mby0+dm9sX3Jl
-ZywgTUFYODY0OV9TWU5DX0VYVENMSywgZGF0YSk7CisJaWYgKGluZm8tPmV4dGNsaykgeworCQkv
-KiBzZXQgZXh0ZXJuYWwgY2xvY2sgZnJlcXVlbmN5ICovCisJCWluZm8tPmV4dGNsa19mcmVxID0g
-cGRhdGEtPmV4dGNsa19mcmVxOworCQltYXg4NjQ5X3NldF9iaXRzKGluZm8tPmkyYywgTUFYODY0
-OV9TWU5DLCBNQVg4NjQ5X0VYVF9NQVNLLAorCQkJCSBpbmZvLT5leHRjbGtfZnJlcSk7CisJfQor
-CisJaWYgKHBkYXRhLT5yYW1wX3RpbWluZykgeworCQlpbmZvLT5yYW1wX3RpbWluZyA9IHBkYXRh
-LT5yYW1wX3RpbWluZzsKKwkJbWF4ODY0OV9zZXRfYml0cyhpbmZvLT5pMmMsIE1BWDg2NDlfUkFN
-UCwgTUFYODY0OV9SQU1QX01BU0ssCisJCQkJIGluZm8tPnJhbXBfdGltaW5nIDw8IDUpOworCX0K
-KworCWluZm8tPnJhbXBfZG93biA9IHBkYXRhLT5yYW1wX2Rvd247CisJaWYgKGluZm8tPnJhbXBf
-ZG93bikgeworCQltYXg4NjQ5X3NldF9iaXRzKGluZm8tPmkyYywgTUFYODY0OV9SQU1QLCBNQVg4
-NjQ5X1JBTVBfRE9XTiwKKwkJCQkgTUFYODY0OV9SQU1QX0RPV04pOworCX0KKworCWluZm8tPnJl
-Z3VsYXRvciA9IHJlZ3VsYXRvcl9yZWdpc3RlcigmZGNkY19kZXNjLCAmY2xpZW50LT5kZXYsCisJ
-CQkJCSAgICAgcGRhdGEtPnJlZ3VsYXRvciwgaW5mbyk7CisJaWYgKElTX0VSUihpbmZvLT5yZWd1
-bGF0b3IpKSB7CisJCWRldl9lcnIoaW5mby0+ZGV2LCAiZmFpbGVkIHRvIHJlZ2lzdGVyIHJlZ3Vs
-YXRvciAlc1xuIiwKKwkJCWRjZGNfZGVzYy5uYW1lKTsKKwkJcmV0ID0gUFRSX0VSUihpbmZvLT5y
-ZWd1bGF0b3IpOworCQlnb3RvIG91dDsKKwl9CisKKwlkZXZfaW5mbyhpbmZvLT5kZXYsICJNYXg4
-NjQ5IHJlZ3VsYXRvciBkZXZpY2UgaXMgZGV0ZWN0ZWQuXG4iKTsKKwlyZXR1cm4gMDsKK291dDoK
-KwlrZnJlZShpbmZvKTsKKwlyZXR1cm4gcmV0OworfQorCitzdGF0aWMgaW50IF9fZGV2ZXhpdCBt
-YXg4NjQ5X3JlZ3VsYXRvcl9yZW1vdmUoc3RydWN0IGkyY19jbGllbnQgKmNsaWVudCkKK3sKKwlz
-dHJ1Y3QgbWF4ODY0OV9yZWd1bGF0b3JfaW5mbyAqaW5mbyA9IGkyY19nZXRfY2xpZW50ZGF0YShj
-bGllbnQpOworCisJaWYgKGluZm8pIHsKKwkJaWYgKGluZm8tPnJlZ3VsYXRvcikKKwkJCXJlZ3Vs
-YXRvcl91bnJlZ2lzdGVyKGluZm8tPnJlZ3VsYXRvcik7CisJCWtmcmVlKGluZm8pOworCX0KKwlp
-MmNfc2V0X2NsaWVudGRhdGEoY2xpZW50LCBOVUxMKTsKKworCXJldHVybiAwOworfQorCitzdGF0
-aWMgY29uc3Qgc3RydWN0IGkyY19kZXZpY2VfaWQgbWF4ODY0OV9pZFtdID0geworCXsgIm1heDg2
-NDkiLCAwIH0sCisJeyB9Cit9OworTU9EVUxFX0RFVklDRV9UQUJMRShpMmMsIG1heDg2NDlfaWQp
-OworCitzdGF0aWMgc3RydWN0IGkyY19kcml2ZXIgbWF4ODY0OV9kcml2ZXIgPSB7CisJLnByb2Jl
-CQk9IG1heDg2NDlfcmVndWxhdG9yX3Byb2JlLAorCS5yZW1vdmUJCT0gX19kZXZleGl0X3AobWF4
-ODY0OV9yZWd1bGF0b3JfcmVtb3ZlKSwKKwkuZHJpdmVyCQk9IHsKKwkJLm5hbWUJPSAibWF4ODY0
-OSIsCisJfSwKKwkuaWRfdGFibGUJPSBtYXg4NjQ5X2lkLAorfTsKKworc3RhdGljIGludCBfX2lu
-aXQgbWF4ODY0OV9pbml0KHZvaWQpCit7CisJcmV0dXJuIGkyY19hZGRfZHJpdmVyKCZtYXg4NjQ5
-X2RyaXZlcik7Cit9CitzdWJzeXNfaW5pdGNhbGwobWF4ODY0OV9pbml0KTsKKworc3RhdGljIHZv
-aWQgX19leGl0IG1heDg2NDlfZXhpdCh2b2lkKQoreworCWkyY19kZWxfZHJpdmVyKCZtYXg4NjQ5
-X2RyaXZlcik7Cit9Cittb2R1bGVfZXhpdChtYXg4NjQ5X2V4aXQpOworCisvKiBNb2R1bGUgaW5m
-b3JtYXRpb24gKi8KK01PRFVMRV9ERVNDUklQVElPTigiTUFYSU0gODY0OSB2b2x0YWdlIHJlZ3Vs
-YXRvciBkcml2ZXIiKTsKK01PRFVMRV9BVVRIT1IoIkhhb2ppYW4gWmh1YW5nIDxoYW9qaWFuLnpo
-dWFuZ0BtYXJ2ZWxsLmNvbT4iKTsKK01PRFVMRV9MSUNFTlNFKCJHUEwiKTsKKwpkaWZmIC0tZ2l0
-IGEvaW5jbHVkZS9saW51eC9yZWd1bGF0b3IvbWF4ODY0OS5oIGIvaW5jbHVkZS9saW51eC9yZWd1
-bGF0b3IvbWF4ODY0OS5oCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAuLjQxN2Qx
-NGUKLS0tIC9kZXYvbnVsbAorKysgYi9pbmNsdWRlL2xpbnV4L3JlZ3VsYXRvci9tYXg4NjQ5LmgK
-QEAgLTAsMCArMSw0NCBAQAorLyoKKyAqIEludGVyZmFjZSBvZiBNYXhpbSBtYXg4NjQ5CisgKgor
-ICogQ29weXJpZ2h0IChDKSAyMDA5LTIwMTAgTWFydmVsbCBJbnRlcm5hdGlvbmFsIEx0ZC4KKyAq
-ICAgICAgSGFvamlhbiBaaHVhbmcgPGhhb2ppYW4uemh1YW5nQG1hcnZlbGwuY29tPgorICoKKyAq
-IFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBh
-bmQvb3IgbW9kaWZ5CisgKiBpdCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1
-YmxpYyBMaWNlbnNlIHZlcnNpb24gMiBhcworICogcHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNvZnR3
-YXJlIEZvdW5kYXRpb24uCisgKi8KKworI2lmbmRlZiBfX0xJTlVYX1JFR1VMQVRPUl9NQVg4NjQ5
-X0gKKyNkZWZpbmUJX19MSU5VWF9SRUdVTEFUT1JfTUFYODY0OV9ICisKKyNpbmNsdWRlIDxsaW51
-eC9yZWd1bGF0b3IvbWFjaGluZS5oPgorCitlbnVtIHsKKwlNQVg4NjQ5X0VYVENMS18yNk1IWiA9
-IDAsCisJTUFYODY0OV9FWFRDTEtfMTNNSFosCisJTUFYODY0OV9FWFRDTEtfMTlNSFosCS8qIDE5
-LjJNSHogKi8KK307CisKK2VudW0geworCU1BWDg2NDlfUkFNUF8zMk1WID0gMCwKKwlNQVg4NjQ5
-X1JBTVBfMTZNViwKKwlNQVg4NjQ5X1JBTVBfOE1WLAorCU1BWDg2NDlfUkFNUF80TVYsCisJTUFY
-ODY0OV9SQU1QXzJNViwKKwlNQVg4NjQ5X1JBTVBfMU1WLAorCU1BWDg2NDlfUkFNUF8wXzVNViwK
-KwlNQVg4NjQ5X1JBTVBfMF8yNU1WLAorfTsKKworc3RydWN0IG1heDg2NDlfcGxhdGZvcm1fZGF0
-YSB7CisJc3RydWN0IHJlZ3VsYXRvcl9pbml0X2RhdGEgKnJlZ3VsYXRvcjsKKworCXVuc2lnbmVk
-CW1vZGU6MjsJCS8qIGJpdFsxOjBdID0gVklEMSxWSUQwICovCisJdW5zaWduZWQJZXh0Y2xrX2Zy
-ZXE6MjsKKwl1bnNpZ25lZAlleHRjbGs6MTsKKwl1bnNpZ25lZAlyYW1wX3RpbWluZzozOworCXVu
-c2lnbmVkCXJhbXBfZG93bjoxOworfTsKKworI2VuZGlmCS8qIF9fTElOVVhfUkVHVUxBVE9SX01B
-WDg2NDlfSCAqLwotLSAKMS41LjYuNQoK
---001636e1f93deeb76f047e0ff3cc--
+I must say that this driver deviates a lot from the standard way all other hwmon drivers are written making the review somewhat cumbersome and this might also be a problem if you step down and someone else becomes the maintainer.
+
+I've split me review in 2 parts, first some comments about how you've implemented the sysfs API:
+
+I notice that you have added foo_label sysfs entries, while you have nothing usefull to put in them, please do not _label entries are only for when the driver knows / can provide a label in the prefered format for a human reader of the sensors output, so not "in1", but something like "ATX 12V", so please remove all _label sysfs entries and remove the corresponding "char *label" member from the asc7621_param struct.
+
+Likewise you've added tempX_type entries, but these always return the same value, in this case they can (and should be omitted) there is only the need to know (and more importantly be able to set) the type of the sensor, if it can be of different types, as in this case the BIOS might have set it wrong, when you remove these sysfs entries, you can also remove the corresponding "value" member from the asc7621_param struct.
+
+
+
+And second, some feedback on the code itself.
+
+First of all in *ALL* your store functions you need to store the result of strtol in a long and strtoul in an unsigned long, storing in smaller types can cause an overflow before you do any checking / clamping when the user gives a really large value as input.
+
+Also in *ALL* store functions please use strict_strtol (and strtoul) instead of simple.
+
+Last in some functions you need to clamp the input from the user to the valid input range before doing further calculations to avoid overflows during the calculation. Often clamping after calculations can be too late.
+
+Example:
+
+Instead of:
+
+static ssize_t store_u8(struct device *dev, struct device_attribute *attr,
+                         const char *buf, size_t count)
+{
+         SETUP_STORE_data_param(dev, attr);
+
+         u8 reqval = simple_strtoul(buf, NULL, 10);
+
+         mutex_lock(&data->update_lock);
+         data->reg[param->msb[0]] = reqval;
+         write_byte(param->msb[0], reqval);
+         mutex_unlock(&data->update_lock);
+         return count;
+}
+
+Write:
+
+static ssize_t store_u8(struct device *dev, struct device_attribute *attr,
+                         const char *buf, size_t count)
+{
+     SETUP_STORE_data_param(dev, attr);
+     long reqval;
+
+     if (strict_strtoul(buf, 10, &reqval))
+         return -EINVAL;
+
+     reqval = SENSORS_LIMIT(v, 0, 255);
+
+         mutex_lock(&data->update_lock);
+         data->reg[param->msb[0]] = reqval;
+         write_byte(param->msb[0], reqval);
+         mutex_unlock(&data->update_lock);
+         return count;
+}
+
+Note that in this example all 3 described changes were made (use long, use strict_strtol, clamp before further use). *ALL* your store functions need the first 2 changes (use long, use strict_strtol), so I'm not going to make that comment for each and every store functions in the detailed comments below.
+
+Where a store function needs earlier / different clamping I will make a comment in the detailed feedback given below.
+
+Below are pieces of code from the driver with detailed feedback below them.
+
+###
+
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; version 2 of the License.
+  *
+
+I notice there is no "or at your option any later version" language here, this
+is fine, but I wonder if this is on purpose, if not please add "or at your
+option any later version", so that if the kernel ever (not likely) wants to
+move to GPL v3 this is one less file to worry about.
+
+###
+
+/*
+  * The "chips" enum created by I2C_CLIENT_INSMOD_2 has "any_chip" as
+  * the first element in the enum, so it must also be first in our array.
+  */
+static struct asc7621_chip asc7621_chips[] = {
+         {
+          .name = "any",.chip_type = any_chip,
+          },
+         {
+          .name = "asc7621",.chip_type = asc7621,
+          .company_reg = 0x3e,.company_id = 0x61,
+          .verstep_reg = 0x3f,.verstep_id = 0x6c,
+          .addresses = normal_i2c,
+          },
+         {
+          .name = "asc7621a",.chip_type = asc7621a,
+          .company_reg = 0x3e,.company_id = 0x61,
+          .verstep_reg = 0x3f,.verstep_id = 0x6d,
+          .addresses = normal_i2c,
+          },
+};
+
+Your driver still uses old style i2c driver binding, please update it too the
+new style. See for example:
+http://lists.lm-sensors.org/pipermail/lm-sensors/2008-July/023773.html
+
+You will probably want to remove using this when you do this, as this overlaps
+with the i2c_device_id array you need to declare then.
+
+###
+
+static ssize_t store_u8(struct device *dev, struct device_attribute *attr,
+                         const char *buf, size_t count)
+{
+         SETUP_STORE_data_param(dev, attr);
+
+         u8 reqval = simple_strtoul(buf, NULL, 10);
+
+         mutex_lock(&data->update_lock);
+         data->reg[param->msb[0]] = reqval;
+         write_byte(param->msb[0], reqval);
+         mutex_unlock(&data->update_lock);
+         return count;
+}
+
+Clamp large input values instead of allowing large values to cause overflows, see above for how this function should look (IMHO)
+
+###
+
+static ssize_t store_bitmask(struct device *dev,
+                              struct device_attribute *attr,
+                              const char *buf, size_t count)
+{
+         SETUP_STORE_data_param(dev, attr);
+
+         u8 reqval = simple_strtoul(buf, NULL, 10);
+
+Same as for store_u8, except the values between which to clamp depend on the mask.
+
+###
+
+static ssize_t show_fan16(struct device *dev,
+                           struct device_attribute *attr, char *buf)
+{
+         SETUP_SHOW_data_param(dev, attr);
+
+         u16 regval = (data->reg[param->msb[0]] << 8) | data->reg[param->lsb[0]]
+
+
+You are using multiple values from data here, this might race with device update resulting in using an old msb with a new lsb or vica versa, so you need locking around this.
+
+###
+
+static ssize_t show_in10(struct device *dev, struct device_attribute *attr,
+                          char *buf)
+{
+
+You are using multiple values from data here, you need locking around this.
+
+###
+
+static ssize_t store_in8(struct device *dev, struct device_attribute *attr,
+                          const char *buf, size_t count)
+{
+
+         u8 nr;
+         s32 reqval;
+
+         SETUP_STORE_data_param(dev, attr);
+
+         nr = sda->index;
+         reqval = simple_strtoul(buf, NULL, 10);
+         reqval *= asc7621_in_scaling_div[nr];
+         reqval /= asc7621_in_scaling_mul[nr];
+         reqval = SENSORS_LIMIT(reqval, 0, 255);
+
+do SENSORS_LIMIT before calculations, the multiple might cause an overflow
+otherwise (and ofcourse, reqval should be a long, use strict_strtol).
+
+###
+static ssize_t show_temp10(struct device *dev,
+                            struct device_attribute *attr, char *buf)
+{
+
+You are using multiple values from data here, you need locking around this.
+
+###
+
+static ssize_t show_ap2_temp(struct device *dev,
+                              struct device_attribute *attr, char *buf)
+{
+
+You are using multiple values from data here, you need locking around this.
+
+###
+
+static ssize_t store_ap2_temp(struct device *dev,
+                               struct device_attribute *attr,
+                               const char *buf, size_t count)
+{
+
+you need to take the lock earlier, before reading auto_point1 from the cached
+register array (and ofcourse, reqval should be a long, use strict_strtol).
+
+###
+
+static ssize_t show_pwm_enable(struct device *dev,
+                                struct device_attribute *attr, char *buf)
+{
+
+You are using multiple values from data here, you need locking around this.
+
+###
+
+In store store_pwm_freq() / store_pwm_ast() / store_temp_st() the following:
+         if (newval == 255)
+                 return count;
+
+Should return -EINVAL, as you are rejecting the value (not making any changes)
+
+###
+
+Note to self all store / show functions are reviewed
+
+---end---
+
+Regards,
+
+Hans
