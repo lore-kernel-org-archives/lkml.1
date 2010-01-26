@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000Ab0AZPEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010Ab0AZPGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754000Ab0AZPEg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 10:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789Ab0AZPEf
+	id S1754010Ab0AZPGS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 10:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560Ab0AZPGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 10:04:35 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:49627 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753704Ab0AZPEe (ORCPT
+	Tue, 26 Jan 2010 10:06:17 -0500
+Received: from mail.elliptictech.com ([209.217.122.41]:37418 "EHLO
+	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753536Ab0AZPGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 10:04:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=hYjfMjb25WQ8rxPk7zxpxYybaL/bnA3YUkOPe5ldcUDySjxELss7ckhDmXypvQzRVa
-         uAJvkWEN4H1yTjdMHn9T3pB0NOnObLFO2IEgBYExgaMvFUXwqaxBH9x5voO2PBf11a/P
-         c3TtdF8Km8jKkPTsHz5OvyDwVn5/D9OMK2Eac=
+	Tue, 26 Jan 2010 10:06:17 -0500
+Date: Tue, 26 Jan 2010 10:06:09 -0500
+From: Nick Bowler <nbowler@elliptictech.com>
+To: James Kosin <james.kosin.04@cnu.edu>
+Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 23/24] drivers/block/floppy.c: Add function
+ is_ready_state
+Message-ID: <20100126150609.GA24349@emergent.ellipticsemi.com>
+Mail-Followup-To: James Kosin <james.kosin.04@cnu.edu>,
+	Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
+References: <e5jMK-25X-3@gated-at.bofh.it>
+ <e5jMM-25X-51@gated-at.bofh.it>
+ <4B5B32AF.1010509@cox.net>
+ <1264279618.30778.34.camel@Joe-Laptop.home>
+ <4B5E44DD.9090305@cnu.edu>
 MIME-Version: 1.0
-Date: Tue, 26 Jan 2010 20:34:31 +0530
-Message-ID: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
-Subject: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
-From: Vishal Rao <vishalrao@gmail.com>
-To: jgarzik@pobox.com
-Cc: linux-ide@vger.kernel.org, vishalrao@gmail.com,
-       linux-kernel@vger.kernel.org, trivial@kernel.org, stable@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B5E44DD.9090305@cnu.edu>
+Organization: Elliptic Technologies Inc.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Disable NCQ usage for Crucial M225 model range of SSDs.
+On 20:26 Mon 25 Jan     , James Kosin wrote:
+> On 1/23/2010 3:46 PM, Joe Perches wrote:
+> > On Sat, 2010-01-23 at 12:32 -0500, James Kosin wrote:
+> >    
+> >> On 1/22/2010 12:00 AM, Joe Perches wrote:
+> >>      
+> >>> +static bool is_ready_state(int status)
+> >>> +{
+> >>> +	int state = status&   (STATUS_READY | STATUS_DIR | STATUS_DMA);
+> >>> +	return state == STATUS_READY;
+> >>> +}
+> >>> +
+> >>>        
+> >> This should probably be simplified to:
+> >>
+> >> static bool is_ready_state(int status)
+> >> {
+> >> 	return ((state&  STATUS_READY) == STATUS_READY);
+> >> }
+> >>      
+> > Certainly not.
+> > That wouldn't be the same code.
+> >
+> > include/linux/fdreg.h:#define STATUS_DMA	0x20		/* 0- DMA mode */
+> > include/linux/fdreg.h:#define STATUS_DIR	0x40		/* 0- cpu->fdc */
+> > include/linux/fdreg.h:#define STATUS_READY	0x80		/* Data reg ready */
+> >    
+> Read the code....
+> 
+> It simplifies what is already there.  The two other status flags make no 
+> difference in the test for equality with STATUS_READY.
 
-Signed-off-by: Vishal Rao <vishalrao@gmail.com>
-Tested-by: Vishal Rao <vishalrao@gmail.com>
-Cc: stable@kernel.org
+Sure they do: the old code tests that the STATUS_READY is set and
+both STATUS_DMA and STATUS_DIR bits are clear.  So, for example, if
+STATUS_READY and STATUS_DMA are both set, then the old test will return
+false.
 
----
-
-Should work with 64, 128 (tested) and 256 GB capacities with any
-firmware versions in
-drivers/ata/libata-core.c because of ATA errors in dmesg, hangs and
-filesystem corruption.
-
-The diff is against linux kernel 2.6.33 rc5 though also meant for
-2.6.32 stable series due to multiple distros' proposed long term support.
-
-I've tested on my PC with my Crucial M225 model 128 GB SSD and it works
-without the need to specify kernel boot option " libata.force=noncq ".
-
---- linux-source-2.6.33rc5/drivers/ata/libata-core.c.orig	2010-01-26
-08:35:54.117306573 +0530
-+++ linux-source-2.6.33rc5/drivers/ata/libata-core.c	2010-01-26
-08:35:13.047306938 +0530
-@@ -4274,6 +4274,9 @@ static const struct ata_blacklist_entry
- 	{ "ST380817AS",		"3.42",		ATA_HORKAGE_NONCQ },
- 	{ "ST3160023AS",	"3.42",		ATA_HORKAGE_NONCQ },
- 	{ "OCZ CORE_SSD",	"02.10104",	ATA_HORKAGE_NONCQ },
-+	{ "CRUCIAL_CT64M225",	NULL,		ATA_HORKAGE_NONCQ },
-+	{ "CRUCIAL_CT128M225",	NULL,		ATA_HORKAGE_NONCQ },
-+	{ "CRUCIAL_CT256M225",	NULL,		ATA_HORKAGE_NONCQ },
-
- 	/* Seagate NCQ + FLUSH CACHE firmware bug */
- 	{ "ST31500341AS",	"SD15",		ATA_HORKAGE_NONCQ |
-
+Your "simplification" has removed the check for those clear bits, and
+will return true even if all three bits are set.
 
 -- 
-"Thou shalt not follow the null pointer for at its end madness and chaos lie."
+Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
