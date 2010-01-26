@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728Ab0AZCip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760Ab0AZCkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753728Ab0AZCip (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 21:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370Ab0AZCio
+	id S1753760Ab0AZCkx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 21:40:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548Ab0AZCkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 21:38:44 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59649 "EHLO hera.kernel.org"
+	Mon, 25 Jan 2010 21:40:52 -0500
+Received: from solo.fdn.fr ([80.67.169.19]:42448 "EHLO solo.fdn.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751628Ab0AZCin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 21:38:43 -0500
-Message-ID: <4B5E56EC.2090600@kernel.org>
-Date: Tue, 26 Jan 2010 11:43:56 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1751084Ab0AZCkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 21:40:51 -0500
+X-Greylist: delayed 820 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jan 2010 21:40:51 EST
+Date: Tue, 26 Jan 2010 03:40:49 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: William Hubbs <w.d.hubbs@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, gregkh@suse.de,
+       Chris Brannon <cmbrannon79@gmail.com>, Kirk Reiser <kirk@reisers.ca>
+Subject: Re: request for assistance:  accessing ttys from kernel space
+Message-ID: <20100126024049.GQ21492@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	William Hubbs <w.d.hubbs@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-serial@vger.kernel.org, gregkh@suse.de,
+	Chris Brannon <cmbrannon79@gmail.com>,
+	Kirk Reiser <kirk@reisers.ca>
+References: <20100126020203.GA23551@linux1> <20100126021306.16809e71@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Frederic Weisbecker <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
-       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
-       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
-       davem@davemloft.net, netdev@vger.kernel.org, x86@kernel.org,
-       mingo@redhat.com, dan.j.williams@intel.com, borislav.petkov@amd.com,
-       ying.huang@intel.com, lenb@kernel.org, neilb@suse.de,
-       cl@linux-foundation.org
-Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to	hw_breakpoint
-References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere> <4B5E3F2C.2010702@zytor.com> <4B5E4E12.7060900@kernel.org> <20100126020452.GB19799@ZenIV.linux.org.uk> <4B5E508A.1030305@kernel.org> <20100126023238.GC19799@ZenIV.linux.org.uk>
-In-Reply-To: <20100126023238.GC19799@ZenIV.linux.org.uk>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 26 Jan 2010 02:37:36 +0000 (UTC)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100126021306.16809e71@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 01/26/2010 11:32 AM, Al Viro wrote:
-> On Tue, Jan 26, 2010 at 11:16:42AM +0900, Tejun Heo wrote:
+Alan Cox, le Tue 26 Jan 2010 02:13:06 +0000, a écrit :
+> > What I would like to discuss is how we can access ttys from kernel
+> > space.  If we could do this, it would definitely make things much easier
+> > for us in speakup.
 > 
->> # define RELOC_HIDE(ptr, off)					\
->>   ({ unsigned long __ptr;					\
->>      __ptr = (unsigned long) (ptr);				\
->>     (typeof(ptr)) (__ptr + (off)); })
->>
->> #define __verify_pcpu_ptr(ptr)	do {					\
->> 	const void __percpu *__vpp_verify = (typeof(ptr))NULL;		\
->> 	(void)__vpp_verify;						\
->> } while (0)
->>
->> /* Weird cast keeps both GCC and sparse happy. */
->> #define SHIFT_PERCPU_PTR(__p, __offset)	({				\
->> 	__verify_pcpu_ptr((__p));					\
->> 	RELOC_HIDE((typeof(*(__p)) __kernel __force *)(__p), (__offset)); \
->> })
->>
->> #define per_cpu(var, cpu) \
->> 	(*SHIFT_PERCPU_PTR(&(var), per_cpu_offset(cpu)))
+> Basically - use a line discipline, that lets you sit on top of a tty and
+> interact with the hardware
+
+The problem is that to my knowledge, to setup a line discipline, you
+need to already have a daemon opening /dev/ttySomething and set up the
+line discipline.  You could as well just move all the speakup code into
+the daemon.  The point of speakup is to have feedback even when it is
+not possible to run such daemon.
+
+Is there another way to set up a line discipline from the kernel itself
+without the need from userland intervention, even before any / is
+mounted?
+
+> > We need to be able to access the ttys as early as possible in the boot
+> > sequence.  Any help, suggestions, or guidance you could give us would be
+> > greatly appreciated.
 > 
-> Eh...  You are leaving that noderef in place in case of array.  And _that_
-> is not an address space, so casts to AS 0 won't do you any good.
+> We may need to make some special provision for that aspect - we already
+> do so for the early serial console support.
 
-Any ideas on how to fix it?
+Maybe the early serial console support layer could be extended a bit so
+speakup can use it first during the boot?  For now it's quite tied to
+just printing the printk logs. drivers/accessibility/braille_console.c
+does manage do make something else, but it happens that the
+serial_core.c's uart_console_write puts additional \rs before \ns, which
+can be a problem.
 
-Thanks.
+Also, for proper speech flow, speakup would need to be able to read
+characters from the device.
 
--- 
-tejun
+> The ldisc is the start point then there may be some bits that need to
+> be extended around it.
+
+To me it seems like the only missing bit is how to setup the line
+discipline from the kernel itself (i.e. how to "open" the device?) as
+soon as it becomes safe to rely on the tty layer.
+
+> A bigger problem is going to be the fact non USB serial is vanishing bit
+> by bit.
+
+Actually that's precisely why the speakup community is pressing for
+proper tty support, in order to get PCI & USB support :)
+
+> We do have a USB console but it's truely crazy stuff and extending it
+> scares me 8)
+
+Ideally that'll needed :/
+
+Samuel
