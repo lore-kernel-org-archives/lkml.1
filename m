@@ -1,91 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195Ab0AZUjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547Ab0AZUrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752195Ab0AZUjZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 15:39:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889Ab0AZUjZ
+	id S1752547Ab0AZUrN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 15:47:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446Ab0AZUrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 15:39:25 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57536 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751746Ab0AZUjY (ORCPT
+	Tue, 26 Jan 2010 15:47:12 -0500
+Received: from mail.windriver.com ([147.11.1.11]:54492 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751755Ab0AZUrL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 15:39:24 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 26 Jan 2010 21:39:07 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: ohci: fix crashes with TSB43AB23 on 64bit systems
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.9cd039404ec3bf0c@s5r6.in-berlin.de>
+	Tue, 26 Jan 2010 15:47:11 -0500
+Message-ID: <4B5F54AC.9010200@windriver.com>
+Date: Tue, 26 Jan 2010 14:46:36 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:timers/urgent] clocksource: Prevent potential kgdb dead
+ lock
+References: <1264480000-6997-4-git-send-email-jason.wessel@windriver.com><tip-7b7422a566aa0dc1e582ce263d4c7ff4a772700a@git.kernel.org> <20100126121458.43055709.akpm@linux-foundation.org>
+In-Reply-To: <20100126121458.43055709.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Jan 2010 20:46:31.0201 (UTC) FILETIME=[A3C95910:01CA9EC8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unsurprisingly, Texas Instruments TSB43AB23 exhibits the same behaviour
-as TSB43AB22/A in dual buffer IR DMA mode:  If descriptors are located
-at physical addresses above the 31 bit address range (2 GB), the
-controller will overwrite random memory.  With luck, this merely
-prevents video reception.  With only a little less luck, the machine
-crashes.
+Andrew Morton wrote:
+> On Tue, 26 Jan 2010 14:09:45 GMT tip-bot for Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+>   
+>> --- a/kernel/time/clocksource.c
+>> +++ b/kernel/time/clocksource.c
+>> @@ -343,7 +343,19 @@ static void clocksource_resume_watchdog(void)
+>>  {
+>>  	unsigned long flags;
+>>  
+>> -	spin_lock_irqsave(&watchdog_lock, flags);
+>> +	/*
+>> +	 * We use trylock here to avoid a potential dead lock when
+>> +	 * kgdb calls this code after the kernel has been stopped with
+>> +	 * watchdog_lock held. When watchdog_lock is held we just
+>> +	 * return and accept, that the watchdog might trigger and mark
+>> +	 * the monitored clock source (usually TSC) unstable.
+>> +	 *
+>> +	 * This does not affect the other caller clocksource_resume()
+>> +	 * because at this point the kernel is UP, interrupts are
+>> +	 * disabled and nothing can hold watchdog_lock.
+>> +	 */
+>> +	if (!spin_trylock_irqsave(&watchdog_lock, flags))
+>> +		return;
+>>  	clocksource_reset_watchdog();
+>>  	spin_unlock_irqrestore(&watchdog_lock, flags);
+>>  }
+>>
+>> @@ -458,8 +470,8 @@ void clocksource_resume(void)
+>>   * clocksource_touch_watchdog - Update watchdog
+>>   *
+>>   * Update the watchdog after exception contexts such as kgdb so as not
+>> - * to incorrectly trip the watchdog.
+>> - *
+>> + * to incorrectly trip the watchdog. This might fail when the kernel
+>> + * was stopped in code which holds watchdog_lock.
+>>   */
+>>  void clocksource_touch_watchdog(void)
+>>  {
+>>     
+>
+> It would be neater and a shade more reliable to add a separate
+> clocksource_try_touch_watchdog() for kgdb's use.  Which could be inside
+> #ifdef CONFIG_KGDB.
+>
+>   
 
-We use the same workaround here as with TSB43AB22/A:  Switch off the
-dual buffer capability flag and use packet-per-buffer IR DMA instead.
-Another possible workaround would be to limit the coherent DMA mask to
-31 bits.
+The kernel debugger is the only user of this API function so
+realistically you do not need a new function, and could simply rename
+this one, if the name does not fit.
 
-In Linux 2.6.33, this change serves effectively only as documentation
-since dual buffer mode is not used for any controller anymore.  But
-somebody might want to re-enable it in the future to make use of
-features of dual buffer DMA that are not available in packet-per-buffer
-mode.
+-- more notes on the problem --
 
-In Linux 2.6.32 and older, this update is vital for anyone with this
-controller, more than 2 GB RAM, a 64 bit kernel, and FireWire video or
-audio applications.
+I further diagnosed the problem, and it is reasonably rare that it
+happens in the first place.  I had an instrumented version of the kernel
+debugger which showed the problem happening quite frequently, while
+trying to fix hw breakpoints.
 
-We have at least four reports:
-http://bugzilla.kernel.org/show_bug.cgi?id=13808
-http://marc.info/?l=linux1394-user&m=126154279004083
-https://bugzilla.redhat.com/show_bug.cgi?id=552142
-http://marc.info/?l=linux1394-user&m=126432246128386
+The problem is not actually an interprocessor deadlock, but that of
+re-entering the spin_lock() when it is already held by the interrupted
+task on the same cpu.  There is no obvious way that I could see to check
+for this specific condition and to abort.
 
-Reported-by: Paul Johnson
-Reported-by: Ronneil Camara
-Reported-by: G Zornetzer
-Reported-by: Mark Thompson
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/ohci.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+For now the patch Thomas created is sufficient, and given some time
+we'll decide how to best live with the side effects or to consider any
+further changes.
 
-Index: linux/drivers/firewire/ohci.c
-===================================================================
---- linux.orig/drivers/firewire/ohci.c
-+++ linux/drivers/firewire/ohci.c
-@@ -2420,6 +2420,7 @@ static void ohci_pmac_off(struct pci_dev
- 
- #define PCI_VENDOR_ID_AGERE		PCI_VENDOR_ID_ATT
- #define PCI_DEVICE_ID_AGERE_FW643	0x5901
-+#define PCI_DEVICE_ID_TI_TSB43AB23	0x8024
- 
- static int __devinit pci_probe(struct pci_dev *dev,
- 			       const struct pci_device_id *ent)
-@@ -2488,7 +2489,8 @@ static int __devinit pci_probe(struct pc
- #if !defined(CONFIG_X86_32)
- 	/* dual-buffer mode is broken with descriptor addresses above 2G */
- 	if (dev->vendor == PCI_VENDOR_ID_TI &&
--	    dev->device == PCI_DEVICE_ID_TI_TSB43AB22)
-+	    (dev->device == PCI_DEVICE_ID_TI_TSB43AB22 ||
-+	     dev->device == PCI_DEVICE_ID_TI_TSB43AB23))
- 		ohci->use_dualbuffer = false;
- #endif
- 
+Jason.
 
--- 
-Stefan Richter
--=====-==-=- ---= ==-=-
-http://arcgraph.de/sr/
+Tested-by: Jason Wessel <jason.wessel@windriver.com>
+
 
