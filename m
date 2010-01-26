@@ -1,83 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755Ab0AZUws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848Ab0AZU43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755Ab0AZUws (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 15:52:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554Ab0AZUwr
+	id S1752848Ab0AZU43 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 15:56:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770Ab0AZU42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 15:52:47 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:43656 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752384Ab0AZUwq (ORCPT
+	Tue, 26 Jan 2010 15:56:28 -0500
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:42271 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752731Ab0AZU40 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 15:52:46 -0500
-Message-ID: <4B5F54DE.7030302@nortel.com>
-Date: Tue, 26 Jan 2010 14:47:26 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	Tue, 26 Jan 2010 15:56:26 -0500
+Message-ID: <4B5F56F7.3030008@blueyonder.co.uk>
+Date: Tue, 26 Jan 2010 20:56:23 +0000
+From: Sid Boyce <sboyce@blueyonder.co.uk>
+Reply-To: sboyce@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: which fields in /proc/meminfo are orthogonal?
-References: <4B5F3C9C.3050908@nortel.com>
-In-Reply-To: <4B5F3C9C.3050908@nortel.com>
+To: Takashi Iwai <tiwai@suse.de>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: HDA Intel Audio hang on boot
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>	<s5h636puit8.wl%tiwai@suse.de>	<4B5EF1B7.3090800@blueyonder.co.uk>	<201001261922.35213.rjw@sisk.pl> <s5hpr4w8vgi.wl%tiwai@suse.de>
+In-Reply-To: <s5hpr4w8vgi.wl%tiwai@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Jan 2010 20:52:28.0241 (UTC) FILETIME=[78995410:01CA9EC9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/26/2010 01:03 PM, Chris Friesen wrote:
+On 26/01/10 20:25, Takashi Iwai wrote:
+> At Tue, 26 Jan 2010 19:22:35 +0100,
+> Rafael J. Wysocki wrote:
+>>
+>> On Tuesday 26 January 2010, Sid Boyce wrote:
+>>> On 26/01/10 12:55, Takashi Iwai wrote:
+>>>> At Tue, 26 Jan 2010 12:02:44 +0000,
+>>>> Sid Boyce wrote:
+>>>>>
+>>>>> On 26/01/10 06:58, Takashi Iwai wrote:
+>>>>>> At Tue, 26 Jan 2010 07:40:03 +0100,
+>>>>>> I wrote:
+>>>>>>>
+>>>>>>> At Tue, 26 Jan 2010 00:59:15 +0000,
+>>>>>>> Sid Boyce wrote:
+>>>>>>>>
+>>>>>>>> On 25/01/10 21:55, Takashi Iwai wrote:
+>>>>>>>>> At Mon, 25 Jan 2010 22:54:23 +0100,
+>>>>>>>>> I wrote:
+>>>>>>>>>>
+>>>>>>>>>> At Mon, 25 Jan 2010 22:39:02 +0100,
+>>>>>>>>>> Rafael J. Wysocki wrote:
+>>>>>>>>>>>
+>>>>>>>>>>> On Monday 25 January 2010, Sid Boyce wrote:
+>>>>>>>>>>>> On 15/01/10 01:24, Sid Boyce wrote:
+>>>>>>>>>>>> This is the only outstanding bug. No problems up 2.6.32-git1, but I get
+>>>>>>>>>>>> a solid lock-up on 2.6.32-git2 through 2.6.33-rc5 if the on-board audio
+>>>>>>>>>>>> is not disabled in the BIOS.
+>>>>>>>>>>>
+>>>>>>>>>>> I guess we should let Takashi know.
+>>>>>>>>>>
+>>>>>>>>>> Thanks.
+>>>>>>>>>>
+>>>>>>>>>>>>> tindog:~ # uname -r
+>>>>>>>>>>>>> 2.6.33-rc4-smp
+>>>>>>>>>>>>> On 2.6.32-git1 which boots, hwinfo shows:-
+>>>>>>>>>>>>>   oss.card_id = 'HDA NVidia'
+>>>>>>>>>>>>>   oss.card_id = 'HDA NVidia'
+>>>>>>>>>>>>>   oss.card_id = 'HDA NVidia'
+>>>>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>>>>   info.product = 'HDA NVidia ALSA hardware specific Device'
+>>>>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>>>>   info.product = 'HDA NVidia ALSA Control Device'
+>>>>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>>>>   info.product = 'HDA NVidia Sound Card'
+>>>>>>>>>>>>>   sound.card_id = 'HDA NVidia'
+>>>>>>>>>>>>>   info.linux.driver = 'HDA Intel'
+>>>>>>>>>>>>>     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
+>>>>>>>>>>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>>>>>>>>>>>>>        HDA Intel: module = snd_hda_intel
+>>>>>>>>>>>>> irq:0 22 (   490413) "sata_nv" "HDA Intel"
+>>>>>>>>>>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>>>>>>>>>>>>>        HDA Intel: module = snd_hda_intel
+>>>>>>>>>>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>>>>>>>>>>>>>        HDA Intel: module = snd_hda_intel
+>>>>>>>>>>>>>   E: DRIVER=HDA Intel
+>>>>>>>>>>>>>   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
+>>>>>>>>>>>>> low) -> IRQ 22
+>>>>>>>>>>>>>   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
+>>>>>>>>>>>>>   Driver: "HDA Intel"
+>>>>>>>>>>
+>>>>>>>>>> What I'd try first is to pass enable_msi=0 option.
+>>>>>>>>>
+>>>>>>>>> Just to be sure -- it's an option for snd-hda-intel module.
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> Takashi
+>>>>>>>>>
+>>>>>>>>
+>>>>>>>> I passed "modprobe snd-hda-intel enable_msi=0" on the kernel command
+>>>>>>>> line,
+>>>>>>
+>>>>>> Oh, I overlooked this text.  Of course, this can't work :)
+>>>>>>
+>>>>>> "modprobe..." isn't for the kernel command line but for modprobe
+>>>>>> configs, usually specified in /etc/modprobe.d/* file.
+>>>>>>
+>>>>> I had already tried that... it locks up at the same point also with
+>>>>> "enable_msi=1".
+>>>>> tindog:/etc/modprobe.d # less 50-sound.conf
+>>>>>
+>>>>> options snd slots=snd-hda-intel,enable_msi=0
+>>>>
+>>>> This is the option for module snd, not snd-hda-intel.
+>>>>
+>>>>
+>>>> Takashi
+>>>>
+>>> options snd,enable_msi=0 slots=snd-hda-intel
+>>
+>> options snd enable_msi=0 slots=snd-hda-intel
+>>
+>> (ie. the comma shouldn't be present in there).
+> 
+> Heh, not quite right :)
+> You need just a new line containing:
+> 
+>     options snd-hda-intel enable_msi=0
+> 
+> 
+> Takashi
+> 
+Apologies, with the following it boots successfully.
+options slots=snd-hda-intel
+# 9LTX.vLXC8EvZgR7:MCP55 High Definition Audio
+alias snd-card-0 snd-hda-intel
+options snd-hda-intel enable_msi=0
 
-> I'm currently trying to figure out which of the entries in /proc/meminfo
-> are actually orthogonal to each other.  Ideally I'd like to be able to
-> add up the suitable entries and have it work out to the total memory on
-> the system, so that I can then narrow down exactly where the memory is
-> going.  Is this feasable?
+Regards
+Sid.
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
-I've tried adding up
-MemFree+Buffers+Cached+AnonPages+Mapped+Slab+PageTables+VmallocUsed
-
-(hugepages are disabled and there is no swap)
-
-Shortly after boot this gets me within about 3MB of MemTotal.  However,
-after 1070 minutes there is a 64MB difference between MemTotal and the
-above sum.
-
-Here's /proc/meminfo after 1070 minutes:
-
-MemTotal:      4042848 kB
-MemFree:        406112 kB
-Buffers:         12072 kB
-Cached:        3068368 kB
-SwapCached:          0 kB
-Active:         671200 kB
-Inactive:      2711952 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-Dirty:              44 kB
-Writeback:           0 kB
-AnonPages:      235864 kB
-Mapped:          30752 kB
-Slab:           200156 kB
-SReclaimable:   142828 kB
-SUnreclaim:      57328 kB
-PageTables:       4320 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-WritebackTmp:        0 kB
-CommitLimit:   2021424 kB
-Committed_AS:  2593116 kB
-VmallocTotal: 34359738367 kB
-VmallocUsed:     21496 kB
-VmallocChunk: 34359716779 kB
-HugePages_Total:     0
-HugePages_Free:      0
-HugePages_Rsvd:      0
-HugePages_Surp:      0
-Hugepagesize:     2048 kB
-DirectMap4k:      3008 kB
-DirectMap2M:   4190208 kB
-
-Any ideas how to track down the missing memory?
-
-Chris
