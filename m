@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177Ab0AZD5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586Ab0AZD7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177Ab0AZD5w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 22:57:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002Ab0AZD5v
+	id S1753586Ab0AZD7M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 22:59:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397Ab0AZD7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 22:57:51 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37207 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229Ab0AZD5v (ORCPT
+	Mon, 25 Jan 2010 22:59:09 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:9079 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753348Ab0AZD7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 22:57:51 -0500
-Date: Tue, 26 Jan 2010 03:56:58 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Tejun Heo <tj@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Frederic Weisbecker <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
-       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
-       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
-       davem@davemloft.net, netdev@vger.kernel.org, x86@kernel.org,
-       mingo@redhat.com, dan.j.williams@intel.com, borislav.petkov@amd.com,
-       ying.huang@intel.com, lenb@kernel.org, neilb@suse.de,
-       cl@linux-foundation.org
-Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to
-	hw_breakpoint
-Message-ID: <20100126035658.GE19799@ZenIV.linux.org.uk>
-References: <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere> <4B5E3F2C.2010702@zytor.com> <4B5E4E12.7060900@kernel.org> <20100126020452.GB19799@ZenIV.linux.org.uk> <4B5E508A.1030305@kernel.org> <20100126023238.GC19799@ZenIV.linux.org.uk> <4B5E56EC.2090600@kernel.org> <20100126024857.GD19799@ZenIV.linux.org.uk> <4B5E5D3B.7040102@kernel.org>
+	Mon, 25 Jan 2010 22:59:08 -0500
+Date: Mon, 25 Jan 2010 20:59:06 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: infiniband limit of 32 cards per system?
+Message-ID: <20100126035906.GA23347@ldl.fc.hp.com>
+References: <20100125235013.GD2828@grease.ALLEYCAT> <adaiqapplv7.fsf@roland-alpha.cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B5E5D3B.7040102@kernel.org>
+In-Reply-To: <adaiqapplv7.fsf@roland-alpha.cisco.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 12:10:51PM +0900, Tejun Heo wrote:
-> Hello,
+* Roland Dreier <rdreier@cisco.com>:
 > 
-> On 01/26/2010 11:48 AM, Al Viro wrote:
-> > On Tue, Jan 26, 2010 at 11:43:56AM +0900, Tejun Heo wrote:
-> > 
-> >>> Eh...  You are leaving that noderef in place in case of array.  And _that_
-> >>> is not an address space, so casts to AS 0 won't do you any good.
-> >>
-> >> Any ideas on how to fix it?
-> > 
-> > BTW, before we go any further, which warnings are you getting from sparse
-> > and which version of sparse are you using?
-> > 
-> > noderef is one thing; address_space mess is a different story.  The version
-> > I have here steps into the former, but not the latter; what are you seeing?
+>  > My colleague points out the following enum in uverbs_main.c:
+>  > 
+>  > 	enum {
+>  > 		IB_UVERBS_MAJOR       = 231,
+>  > 		IB_UVERBS_BASE_MINOR  = 192,
+>  > 		IB_UVERBS_MAX_DEVICES = 32
+>  > 	};
+>  > 
+>  > Experimentally, we've determined that on a system where we
+>  > plugged in 40 IB cards, OFED only reports 32 cards are present.
 > 
-> Oops, I too am seeing the noderef thing not the address space warning.
+> wow, 40 HCAs in one system !
 
-OK...  So all messing around __kernel __force is actually a red herring.
+HP sell some pretty big systems. :)
 
-Frankly, for now I'd keep it as in your patch.  Yes, including workarounds
-in these few places.  Longer term...  We probably want to implement
-__attribute__((qualify(...)))/__attribute__((unqualify(...))), revert
-__typeof__ for AS/noderef to what gcc is doing for normal qualifiers
-(i.e. "if p is int const *, typeof(*p) v gives const int") go for explicit
-__unqualify((address_space,noderef)) in there.  Playing interesting games
-with arrays for unqualify (i.e. creating parallel chains of type nodes
-all way down to the place where original qualifier had been applied).
+>  > If that enum is indeed the limiting factor, would someone mind
+>  > explaining (or pointing me at TFM ;) why it's limited to 32
+>  > devices?
+> 
+> That dates back to when device #s had 8 bits for major and 8 bits for
+> minor.  We got one major assigned for IB, and had to split up the 256
+> minors that gave us among userspace verbs, management access, etc.  And
+> 32 seemed like a pretty reasonable limit for most uses.
+
+Thanks for the explanation.
+
+> Nowadays I guess we should look into expanding that to dynamic device
+> numbers on overflow, assuming you do have a realistic situation where
+> someone would want to use that many adapters per system.
+
+Think of a large scale-up ia64 box, possibly running some
+virtualization stack.
+
+I'm guessing that it's not just a simple kernel fix though since
+OFED has to change too, right?
+
+/ac
