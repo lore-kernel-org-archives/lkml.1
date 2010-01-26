@@ -1,54 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494Ab0AZNcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668Ab0AZNfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494Ab0AZNcm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 08:32:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972Ab0AZNcm
+	id S1753668Ab0AZNfZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 08:35:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431Ab0AZNfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 08:32:42 -0500
-Received: from mga09.intel.com ([134.134.136.24]:12936 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751916Ab0AZNcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 08:32:41 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,346,1262592000"; 
-   d="scan'208";a="590490617"
-Date: Tue, 26 Jan 2010 21:32:17 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Chris Frost <frost@cs.ucla.edu>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steve Dickson <steved@redhat.com>, David Howells <dhowells@redhat.com>,
-       Xu Chenfeng <xcf@ustc.edu.cn>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Steve VanDeBogart <vandebo-lkml@nerdbox.net>
-Subject: Re: [PATCH] mm/readahead.c: update the LRU positions of in-core
-	pages, too
-Message-ID: <20100126133217.GB25407@localhost>
-References: <20100120215536.GN27212@frostnet.net> <20100121054734.GC24236@localhost> <20100123040348.GC30844@frostnet.net> <20100123102222.GA6943@localhost> <20100125094228.f7ca1430.kamezawa.hiroyu@jp.fujitsu.com> <20100125024544.GA16462@localhost> <20100125223635.GC2822@frostnet.net>
+	Tue, 26 Jan 2010 08:35:24 -0500
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:32364 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752235Ab0AZNfX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 08:35:23 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=LzvPhg6YkBC3Oj1FArRCLkW8N51KmFeyUur39MjWgE6DjfOCWhLBwljGN+IwhbWH4g2HZLy5QJ3hUaccfos/v3+/lypqdPbn5jUwCYI+We1Ko0PX4hBuJt/V2kd44rVH5hcF9nh9z7/ITg4rj1ONodAf1WIkTiZh8kOfhVu97Bw=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: wiIFiMUVM1nORR_l8O6ezsCVq_meg.wWql6ubPQ_mv6LIvYmFvJe3kD7P3wO1oyhULBb27KJazOfgqWtWgo8.vxGm4WwMyIVRxeJbLuQFwRC.xy4ZMrk_n69cCjQooWjaIYP14KeApU_lGOzMZAt12_vAGFBoCjj3j3GhZ4reKTTDcCnGukN0fC0PZqHsVQtox.k8xHXY8qYozZ8JWb2cxFc6YiTujKTHLwr.aUEw1UIn097c3PjqaogEc3nXb8u
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [RFC/PATCH 1/5] usb: otg: add notifier support
+Date: Tue, 26 Jan 2010 05:35:21 -0800
+User-Agent: KMail/1.9.10
+Cc: Felipe Balbi <felipe.balbi@nokia.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Grazvydas Ignotas <notasas@gmail.com>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>, linux-omap@vger.kernel.org,
+       "Greg Kroah-Hartman" <gregkh@suse.de>
+References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com> <201001260316.20529.david-b@pacbell.net> <20100126131146.GC32291@sirena.org.uk>
+In-Reply-To: <20100126131146.GC32291@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20100125223635.GC2822@frostnet.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <201001260535.21689.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 03:36:35PM -0700, Chris Frost wrote:
-> I changed Wu's patch to add a PageLRU() guard that I believe is required
-> and optimized zone lock acquisition to only unlock and lock at zone changes.
-> This optimization seems to provide a 10-20% system time improvement for
-> some of my GIMP benchmarks and no improvement for other benchmarks.
+On Tuesday 26 January 2010, Mark Brown wrote:
+> On Tue, Jan 26, 2010 at 03:16:20AM -0800, David Brownell wrote:
+> 
+> > I'd vote to convert all the USB-to-charger interfaces so
+> > they use notifiers.  After fixing the events ... see
+> > comments below.  :)
+> 
+> Yes please - it's not just chargers either, this can also be used by
+> PMICs which do power path management that includes USB.
 
-> +			del_page_from_lru_list(zone, page, lru);
-> +			add_page_to_lru_list(zone, page, lru);
-> +		}
-> +		put_page(page);
+Color me confused ... what do you mean by "power path"?
 
-Hmm. put_page() inside lru_lock can deadlock. So you need to further
-optimize the code to do pagevec_lookup() and pagevec_release() plus
-cond_resched().
+Do you mean something like "the board as a whole can take N mA of
+current from USB", rather than specifically addressing a charger?
 
-Thanks,
-Fengguang
+It's not uncommon to do things like use VBUS current to power the
+USB circuitry, too.  That can leave less for other purposes.  All
+of that being rather board-specific.
+
+
+> > Those seem like the wrong events.  The right events for a charger
+> > would be more along the lines of:
+> 
+> >  - For peripheral:  "you may use N milliAmperes now".
+> >  - General:  "Don't Charge" (a.k.a. "use 0 mA").
+> 
+> > I don't see how "N" would be passed with those events ...
+> 
+> These are good for the peripheral side.  You do get to pass a void *
+> along with the notifier value, that could be used to pass data like the
+> current limit.
+
+I don't think I saw that being done ... either in code, comments,
+or documentation.  Passing N is fundamental.
+
+
+> > A host *might* want to be able to say things like "supply
+> > up to N milliAmperes now", e.g. to let a regulator choose
+> > the most efficient mode.
+> 
+> Yes, they definitely want this - not just for efficiency but also to
+> allow current limiting to protect the system from excessive current
+> drain.
+
+There are load bursting issues too.  All part of the USB spec;
+a load that's OK for 1 millisecond might not be OK for 1 second.
+ISTR the "supply N mA" refers to an average.  And there are some
+limits to the capacitance that can practically be stuck on VBUS
+output lines (which includes the cable).  Solvable problems, but
+not always pretty if software has to think it through.
+
+Thing is, supplying current is a bit more involved.  If the
+board can't supply 300 mA, the USB configuration selection
+mechanism has to know that, so it never selects peripheral
+configurations which require that much current.
+
+Or maybe these two ports can serve 500 mA, but not those two;
+or their total can't exceed N (function of componentry and power
+budgeting).
+
+Ergo my desire to start with a straightforward problem whose
+solution has real value (how much VBUS current may be consumed?),
+and leave some of those other messes for later!
+
+- Dave
+
