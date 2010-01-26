@@ -1,178 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969Ab0AZOKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939Ab0AZOMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753969Ab0AZOKs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 09:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362Ab0AZOKp
+	id S1753939Ab0AZOMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 09:12:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414Ab0AZOMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 09:10:45 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:64423 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753972Ab0AZOKn convert rfc822-to-8bit (ORCPT
+	Tue, 26 Jan 2010 09:12:21 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:19239 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752353Ab0AZOMU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 09:10:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=E1RbwLG4mfmdRb3SaqFTObnqp3XTmYHFVcfA2j4KgW8qPQFU3T8IxG+cU/biyyqKRp
-         JoBQ0BdM8evkJw1aLsyXFlL+pj6P4mJIbNW2vBe02KyCVqF/hqWLr9++9HLsX9PcjX2C
-         eCwF9kMdw7lfYriI9Pfs0euQKYppy0QtGlO+0=
+	Tue, 26 Jan 2010 09:12:20 -0500
+Date: Tue, 26 Jan 2010 16:10:16 +0200
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext David Brownell <david-b@pacbell.net>
+Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Grazvydas Ignotas <notasas@gmail.com>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [RFC/PATCH 1/5] usb: otg: add notifier support
+Message-ID: <20100126141016.GD10690@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com>
+ <1260531086-23857-2-git-send-email-felipe.balbi@nokia.com>
+ <201001260316.20529.david-b@pacbell.net>
 MIME-Version: 1.0
-In-Reply-To: <a728f9f91001260559h3bd86e28sc6b76c327d5fc84d@mail.gmail.com>
-References: <alpine.LFD.2.00.1001151538500.5514@localhost.localdomain>
-	 <alpine.LFD.2.00.1001151546350.5514@localhost.localdomain>
-	 <20100115153852.GA13297@localhost.localdomain>
-	 <alpine.LFD.2.00.1001261417220.9499@localhost.localdomain>
-	 <a728f9f91001260559h3bd86e28sc6b76c327d5fc84d@mail.gmail.com>
-Date: Tue, 26 Jan 2010 15:10:39 +0100
-X-Google-Sender-Auth: 34b32e879625d798
-Message-ID: <520f0cf11001260610g7380e4c0y4496554e5700564f@mail.gmail.com>
-Subject: Re: [OOPS] radeon kms
-From: John Kacur <jkacur@redhat.com>
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: Jerome Glisse <glisse@freedesktop.org>, Jerome Glisse <jglisse@redhat.com>,
-       Dave Airlie <airlied@redhat.com>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <201001260316.20529.david-b@pacbell.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 26 Jan 2010 14:11:57.0242 (UTC) FILETIME=[8501E1A0:01CA9E91]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 2:59 PM, Alex Deucher <alexdeucher@gmail.com> wrote:
-> On Tue, Jan 26, 2010 at 8:21 AM, John Kacur <jkacur@redhat.com> wrote:
->>
->>
->> On Fri, 15 Jan 2010, Jerome Glisse wrote:
->>
->>> On Fri, Jan 15, 2010 at 03:47:19PM +0100, John Kacur wrote:
->>> >
->>> >
->>> > On Fri, 15 Jan 2010, John Kacur wrote:
->>> >
->>> > > The oops is triggered because I am missing the firmware for
->>> > > radeon/R700_rlc.bin and
->>> > > radeon/R600_rlc.bin
->>> > >
->>> > > However, I think it should be able to deal with this more gracefully.
->>> > >
->>> > > ATOM BIOS: 9498.11.22.6.0.AS03
->>> > > [drm] Clocks initialized !
->>> > > [drm] Detected VRAM RAM=256M, BAR=256M
->>> > > [drm] RAM width 128bits DDR
->>> > > [TTM] Zone  kernel: Available graphics memory: 3050912 kiB.
->>> > > [TTM] Zone   dma32: Available graphics memory: 2097152 kiB.
->>> > > [drm] radeon: 256M of VRAM memory ready
->>> > > [drm] radeon: 512M of GTT memory ready.
->>> > >   alloc irq_desc for 33 on node -1
->>> > >   alloc kstat_irqs on node -1
->>> > > radeon 0000:02:00.0: irq 33 for MSI/MSI-X
->>> > > [drm] radeon: using MSI.
->>> > > [drm] radeon: irq initialized.
->>> > > [drm] GART: num cpu pages 131072, num gpu pages 131072
->>> > > [drm] Loading RV730 Microcode
->>> > > platform radeon_cp.0: firmware: requesting radeon/RV730_pfp.bin
->>> > > platform radeon_cp.0: firmware: requesting radeon/RV730_me.bin
->>> > > platform radeon_cp.0: firmware: requesting radeon/R700_rlc.bin
->>> > > r600_cp: Failed to load firmware "radeon/R700_rlc.bin"
->>> > > [drm:rv770_startup] *ERROR* Failed to load firmware!
->>> > > radeon 0000:02:00.0: ffff8801a20b5400 unpin not necessary
->>> > > BUG: unable to handle kernel NULL pointer dereference at 0000000000000048
->>> > > IP: [<ffffffffa0061034>] ttm_bo_reserve+0x16/0xf8 [ttm]
->>> > > PGD 1a1a74067 PUD 1a19b8067 PMD 0
->>> > > Oops: 0000 [#1] SMP
->>> > > last sysfs file: /sys/devices/platform/radeon_cp.0/firmware/radeon_cp.0/loading
->>> > > CPU 4
->>> > > Pid: 168, comm: modprobe Not tainted 2.6.33-rc4 #3 EX58-UD3R/EX58-UD3R
->>> > > RIP: 0010:[<ffffffffa0061034>]  [<ffffffffa0061034>] ttm_bo_reserve+0x16/0xf8 [t
->>> > > tm]
->>> > > RSP: 0018:ffff8801a1a8fb68  EFLAGS: 00010292
->>> > > RAX: ffff880100000000 RBX: 0000000000000000 RCX: 0000000000000000
->>> > > RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000048
->>> > > RBP: ffff8801a1a8fba8 R08: 0000000000000000 R09: 0000000000000000
->>> > > R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
->>> > > R13: ffff8801a8838000 R14: 0000000000000024 R15: 0000000000002000
->>> > > FS:  00007f0f9c6dc700(0000) GS:ffff88002e400000(0000) knlGS:0000000000000000
->>> > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->>> > > CR2: 0000000000000048 CR3: 00000001a195d000 CR4: 00000000000006e0
->>> > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->>> > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->>> > > Process modprobe (pid: 168, threadinfo ffff8801a1a8e000, task ffff8801a22c0000)
->>> > > Stack:
->>> > >  ffff880100000000 ffff8801a27e2900 ffff8801a1a8fb88 0000000000000000
->>> > > <0> 0000000000000000 ffff8801a8838000 0000000000000024 0000000000002000
->>> > > <0> ffff8801a1a8fbd8 ffffffffa00ba05b ffff8801a1a8fbd8 ffff8801a27f4000
->>> > > Call Trace:
->>> > >  [<ffffffffa00ba05b>] radeon_bo_reserve.clone.0+0x2a/0x6d [radeon]
->>> > >  [<ffffffffa00bb441>] rv770_suspend+0x43/0x69 [radeon]
->>> > >  [<ffffffffa00bb6cf>] rv770_init+0x1a4/0x22d [radeon]
->>> > >  [<ffffffffa0089593>] radeon_device_init+0x27f/0x300 [radeon]
->>> > >  [<ffffffffa008a0fb>] radeon_driver_load_kms+0xff/0x184 [radeon]
->>> > >  [<ffffffffa001e1a6>] drm_get_dev+0x3c4/0x4c5 [drm]
->>> > >  [<ffffffff8122ea73>] ? pci_match_device+0x22/0xd0
->>> > >  [<ffffffffa00c3bb8>] radeon_pci_probe+0x15/0x268 [radeon]
->>> > >  [<ffffffff8122e941>] local_pci_probe+0x17/0x1b
->>> > >  [<ffffffff8122f721>] pci_device_probe+0xcd/0xfd
->>> > >  [<ffffffff812ce793>] ? driver_sysfs_add+0x4c/0x71
->>> > >  [<ffffffff812ce95c>] driver_probe_device+0xde/0x1fe
->>> > >  [<ffffffff812cead9>] __driver_attach+0x5d/0x81
->>> > >  [<ffffffff812cea7c>] ? __driver_attach+0x0/0x81
->>> > >  [<ffffffff812cdded>] bus_for_each_dev+0x59/0x8e
->>> > >  [<ffffffff812ce6f2>] driver_attach+0x1e/0x20
->>> > >  [<ffffffff812ce330>] bus_add_driver+0xd8/0x240
->>> > >  [<ffffffff812cedcb>] driver_register+0x9d/0x10e
->>> > >  [<ffffffff8122f969>] __pci_register_driver+0x68/0xd8
->>> > >  [<ffffffff81439aa2>] ? printk+0x41/0x47
->>> > >  [<ffffffffa00f7000>] ? radeon_init+0x0/0xc1 [radeon]
->>> > >  [<ffffffffa0018eb3>] drm_init+0x75/0xdb [drm]
->>> > >  [<ffffffffa00f7000>] ? radeon_init+0x0/0xc1 [radeon]
->>> > >  [<ffffffffa00f70bf>] radeon_init+0xbf/0xc1 [radeon]
->>> > >  [<ffffffff81002069>] do_one_initcall+0x5e/0x15e
->>> > >  [<ffffffff81087788>] sys_init_module+0xd8/0x23a
->>> > >  [<ffffffff81009bf2>] system_call_fastpath+0x16/0x1b
->>> > > Code: 01 00 00 00 31 c0 48 83 c4 38 5b 41 5c 41 5d 41 5e 41 5f c9 c3 55 48 89 e5
->>> > >  41 57 41 56 41 55 41 54 53 48 83 ec 18 0f 1f 44 00 00 <4c> 8b 27 48 89 fb 41 88
->>> > >  f5 41 88 d6 41 88 cf 44 89 45 c8 49 81
->>> > > RIP  [<ffffffffa0061034>] ttm_bo_reserve+0x16/0xf8 [ttm]
->>> > >  RSP <ffff8801a1a8fb68>
->>> > > CR2: 0000000000000048
->>> > > ---[ end trace 604e2e318733e108 ]---
->>> > > udevd-work[166]: '/sbin/modprobe -b pci:v00001002d00009498sv00001043sd00000300bc
->>> > > 03sc00i00' unexpected exit with status 0x0009
->>> > >
->>> > >
->>> >
->>> > I forgot to mention that this is kernel version 2.6.33-rc4.
->>> >
->>> > Thanks.
->>>
->>> Yes, we didn't paid enough attention to failure path :( Sorry for that
->>> Fix should be in next rc, patch is:
->>> http://git.kernel.org/?p=linux/kernel/git/airlied/drm-2.6.git;a=commit;h=30d2d9a54d48e4fefede0389ded1b6fc2d44a522
->>>
->>
->> I think your fix didn't make it to 2.6.33-rc5 because I'm still oopsing
->> when I don't grab the firmware from the internet. (instead of merely
->> reverting to vga mode).
->>
->> Furthermore, why is the firmware not shipped with the kernel?
->> I never needed to fetch firmware for the 2.6.31 kernels and my graphic
->> card worked fine.
->>
->> Am I right to conclude that the license is a problem?
->> http://people.freedesktop.org/~agd5f/radeon_ucode/LICENSE.radeon
->>
->> This is a huge step backwards if we are exchanging a working driver with
->> what shipped with the linux kernel to one that only works with blobs that
->> don't ship with the kernel.
->
-> In general, microcode is slowly being moved out of the kernel and into
-> the Linux firmware tree:
-> http://git.kernel.org/?p=linux/kernel/git/dwmw2/linux-firmware.git;a=tree
-> Eventually all of the radeon microcode will end up out up in that tree.
->
+Hi,
 
-Okay, but why are R600_rlc.bin  R700_rlc.bin in particular missing
-from the firmware?
+On Tue, Jan 26, 2010 at 12:16:20PM +0100, ext David Brownell wrote:
+>On Friday 11 December 2009, Felipe Balbi wrote:
+>> The notifier will be used to communicate usb events
+>> to other drivers like the charger chip.
+>
+>Good idea ... but not OTG-specific.  It doesn't seem to me
+
+thanks
+
+>that charging hookups belong in that header at all.
+
+I noticed that when started actually using it :-)
+
+>In fact, usb_gadget_vbus_draw() might better be implemented
+>as such a notifier call, removing that configuration mess
+>from the usb gadget drivers ("how can I know what charger
+>to use??").  That would be the most common situation:  a
+>peripheral-only device.
+>
+>And in fact, OTG can be treated as a trivial superset of
+>peripheral-only USB.  (In terms of charger support, only!!)
+>
+>I'd vote to convert all the USB-to-charger interfaces so
+>they use notifiers.  After fixing the events ... see
+>comments below.  :)
+
+makes sense
+
+>> @@ -9,6 +9,8 @@
+>>  #ifndef __LINUX_USB_OTG_H
+>>  #define __LINUX_USB_OTG_H
+>>
+>> +#include <linux/notifier.h>
+>> +
+>>  /* OTG defines lots of enumeration states before device reset */
+>>  enum usb_otg_state {
+>>  	OTG_STATE_UNDEFINED = 0,
+>> @@ -33,6 +35,14 @@ enum usb_otg_state {
+>>  	OTG_STATE_A_VBUS_ERR,
+>>  };
+>>
+>> +enum usb_xceiv_events {
+>
+>Let's keep charger events separate from anything else,
+>like "enter host mode" or "enter peripheral mode" (or
+>even "disconnect").  The audiences for any other types
+>of event would be entirely different.
+
+the idea was to notify USB events to interested drivers, not only "usb 
+charger events".
+
+>Right now there's a mess in terms of charger hookup,
+>so getting that straight is IMO a priority over any
+>other type of event.  Using events will decouple a
+>bunch of drivers, and simplify driver configuration.
+
+well, if you consider that this transceiver isn't really otg specific, 
+then this is already wrong.
+
+>> +	USB_EVENT_NONE,         /* no events or cable disconnected */
+>> +	USB_EVENT_VBUS,         /* vbus valid event */
+>> +	USB_EVENT_ID,           /* id was grounded */
+>> +	USB_EVENT_CHARGER,      /* usb dedicated charger */
+>> +	USB_EVENT_ENUMERATED,   /* gadget driver enumerated */
+>
+>Those seem like the wrong events.  The right events for a charger
+>would be more along the lines of:
+>
+> - For peripheral:  "you may use N milliAmperes now".
+> - General:  "Don't Charge" (a.k.a. "use 0 mA").
+
+I have to disagree, which information would you used to kick the usb 
+dedicated charger detection other than VBUS irq from transceiver ?
+
+So we need at least that, and also need to notify when the charger 
+detection is finished, so we can enable data pullups on the link. 
+Remember we might be connected to a charging downstream port.
+
+>I don't see how "N" would be passed with those events ...
+
+there's a void * we can use to pass bMaxPower field of the selected 
+configuration.
+
+>Haven't looked at the details of the charger spec, but
+>those two events are the *basics* from the USB 2.0 spec,
+>so "official" charger hardware wouldn't be less capable.
+
+I believe the dedicated charger is also "basic".
+
+>Thing like different levels of VBUS validity, ID grounding,
+>and so forth ... wouldn't be very relevant.  An OTG driver
+>will do various things, internally, when ID grounds; but
+>anything else is a function of what role eventually gets
+>negotiated.  And for the charger, they all add up to "Don't
+>Charge" (since ID grounded means A-role, sourcing power).
+
+ID grounding event is necessary if you have an external charge pump. 
+At least the boards I've been working use an external chip as the USB 
+Charger and Charge pump, iow, the transceiver doesn't source VBUS on ID 
+ground, but the charger chip is put into "boost" mode for that role.
+
+>>  #define USB_OTG_PULLUP_ID		(1 << 0)
+>>  #define USB_OTG_PULLDOWN_DP		(1 << 1)
+>>  #define USB_OTG_PULLDOWN_DM		(1 << 2)
+>> @@ -70,6 +80,9 @@ struct otg_transceiver {
+>>  	struct otg_io_access_ops	*io_ops;
+>>  	void __iomem			*io_priv;
+>>
+>> +	/* for notification of usb_xceiv_events */
+>> +	struct blocking_notifier_head	notifier;
+>
+>Why "blocking"?  That seems kind of unnatural; for example,
+>the main users -- like usb_gadget_vbus_draw() -- would be
+>called in IRQ context (blocking not allowed).
+
+what about irqs running in thread, wouldn't we "BUG sleeping in irq 
+context" ?
+
+-- 
+balbi
