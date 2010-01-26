@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667Ab0AZQTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683Ab0AZQVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667Ab0AZQTU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 11:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638Ab0AZQTU
+	id S1754683Ab0AZQVK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 11:21:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660Ab0AZQVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 11:19:20 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:62712 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752103Ab0AZQTT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 11:19:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=XmwVoluCfV35MGDv1xXlWrzTx88gAT/MIxIfyNDBRH8AZuDnusLqdfe1XVemM0kqhx
-         KkjN8zTF8x8/pLHSO+eap1P5t+vBJmJkCq2isVu2H3potv2xw3+pfa65m0FBF86Xu6PP
-         goHxNvN26map4Be0LyY7C0WdQkTHv1SkoWG+Y=
+	Tue, 26 Jan 2010 11:21:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16933 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754657Ab0AZQVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 11:21:03 -0500
+Message-ID: <4B5F164B.5070602@redhat.com>
+Date: Tue, 26 Jan 2010 11:20:27 -0500
+From: Peter Jones <pjones@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0b2pre Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20100126160243.018b87e3@lxorguk.ukuu.org.uk>
-References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
-	 <20100126160243.018b87e3@lxorguk.ukuu.org.uk>
-Date: Tue, 26 Jan 2010 21:49:18 +0530
-Message-ID: <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
-Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
-From: Vishal Rao <vishalrao@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, stable@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
+	<u.kleine-koenig@pengutronix.de>
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       Huang Ying <ying.huang@intel.com>
+Subject: Re: [PATCH 07/29] move efifb's probe function to .devinit.text
+References: <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de> <1264278937-19675-7-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1264278937-19675-7-git-send-email-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/26 Alan Cox <alan@lxorguk.ukuu.org.uk>:
->> Should work with 64, 128 (tested) and 256 GB capacities with any
->> firmware versions in
->> drivers/ata/libata-core.c because of ATA errors in dmesg, hangs and
->> filesystem corruption.
->
-> If you've only tested one type why list all three ? Also you've not
-> listed a firmware version so do you know which are affected ?
->
-> What controllers did you test with ?
->
-> Alan
->
+On 01/23/2010 03:35 PM, Uwe Kleine-König wrote:
+> A pointer to efifb_probe is passed to the core via
+> platform_driver_register and so the function must not disappear when the
+> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> unbinding and binding a device to the driver via sysfs will result in an
+> oops as does a device being registered late.
+> 
+> An alternative to this patch is using platform_driver_probe instead of
+> platform_driver_register plus removing the pointer to the probe function
+> from the struct platform_driver.
 
-The 3 IDs should match I believe and the firmware parameter is NULL.
-Affected firmware versions include at least the latest 1916 and the
-previous 1819, likely older ones as well.
+__devinit looks reasonable enough to me.
 
-Tested with my own Crucial CT128M225 model which has the IndiLinx
-Barefoot controller.
+Acked-By: Peter Jones <pjones@redhat.com>
 
-The libata-core.c file has an existing line for "OCZ_CORESSD" for a
-particular firmware version
-but I suspect many, if not all of those controllers may have this issue?
-At least one user of Intel SSDs reports no issues with existing
-kernels and I've read that
-they do NCQ right.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Cc: Peter Jones <pjones@redhat.com>
+> Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+> Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Cc: Jaya Kumar <jayakumar.lkml@gmail.com>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Maciej W. Rozycki <macro@linux-mips.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Chandramouli Narayanan <mouli@linux.intel.com>
+> Cc: Huang Ying <ying.huang@intel.com>
+> ---
+>  drivers/video/efifb.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+> index eb12182..2161f21 100644
+> --- a/drivers/video/efifb.c
+> +++ b/drivers/video/efifb.c
+> @@ -201,7 +201,7 @@ static int __init efifb_setup(char *options)
+>  	return 0;
+>  }
+>  
+> -static int __init efifb_probe(struct platform_device *dev)
+> +static int __devinit efifb_probe(struct platform_device *dev)
+>  {
+>  	struct fb_info *info;
+>  	int err;
+
+
+-- 
+        Peter
+
+The trouble with the global village are all the global village idiots.
+		-- Paul Ginsparg
