@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565Ab0AZCQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752165Ab0AZCSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565Ab0AZCQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 21:16:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416Ab0AZCQ0
+	id S1752165Ab0AZCSy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 21:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084Ab0AZCSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 21:16:26 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53743 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751868Ab0AZCQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 21:16:25 -0500
-Message-ID: <4B5E501A.4000707@kernel.org>
-Date: Mon, 25 Jan 2010 18:14:50 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Mon, 25 Jan 2010 21:18:53 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:54182 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845Ab0AZCSw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 21:18:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TeEXN59qo3C73kx4KshZEPf1pFD74HphbX0odA8WD1lLE4BVfEOGoyupzCyTKs0xHD
+         oWpxbdbB3E72e+sjVm2GVOWOoJTwNajtYa+6YEAEotO5yo3X4ZnGLWHQjk6Lom7NKtaL
+         cTY6o7JNEfHFJs4wpbVvYT08eW3tsCk1mJoI0=
+Date: Tue, 26 Jan 2010 03:18:48 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
+       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
+       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
+       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
+       x86@kernel.org, mingo@redhat.com, dan.j.williams@intel.com,
+       borislav.petkov@amd.com, ying.huang@intel.com, lenb@kernel.org,
+       neilb@suse.de, cl@linux-foundation.org
+Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to
+	hw_breakpoint
+Message-ID: <20100126021846.GO5087@nowhere>
+References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere> <4B5E3BED.6030705@kernel.org> <20100126010239.GK5087@nowhere> <4B5E4308.8020105@kernel.org> <20100126020113.GM5087@nowhere> <4B5E4FE7.30700@kernel.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH -v5 0/38] x86: not use  bootmem for x86
-References: <1264152287-13866-1-git-send-email-yinghai@kernel.org> <4B5E3A12.4030506@zytor.com>
-In-Reply-To: <4B5E3A12.4030506@zytor.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B5E4FE7.30700@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/25/2010 04:40 PM, H. Peter Anvin wrote:
-> I have been looking at this patchset and tried it out; it has a build
-> failure because of a naming conflict:
+On Tue, Jan 26, 2010 at 11:13:59AM +0900, Tejun Heo wrote:
+> Hello,
 > 
-> /home/hpa/kernel/linux-2.6-tip.range/drivers/pci/hotplug/ibmphp_res.c:43: error:
-> conflicting types for ‘add_range’
-> /home/hpa/kernel/linux-2.6-tip.range/include/linux/range.h:9: note:
-> previous declaration of ‘add_range’ was here
+> On 01/26/2010 11:01 AM, Frederic Weisbecker wrote:
+> > So, may be it considers you are applying the address space overriding
+> > to the pointer to the type and not to the type itself.
+> > 
+> > Consider:
+> > 
+> > 	int __percpu i;
+> > 
+> > What you do above *might* be considered as if SHIFT_PERCPU_PTR
+> > returns something of a type:
+> > 
+> > 	int * __percpu i;
+> > 
+> > So the pointer is in the normal address space, but its content is in
+> > __percpu address space.
+> > 
+> > What if you do this:
+> > 
+> > 
+> > #define SHIFT_PERCPU_PTR(__p, __offset)      ({                      \
+> >       __verify_pcpu_ptr((__p));                                       \
+> >       RELOC_HIDE((__p), (__offset)); \
+> > })
+> > 
+> > #define per_cpu(var, cpu) \
+> >       (typeof(var) __kernel __force)(*SHIFT_PERCPU_PTR(&(var), per_cpu_offset(cpu)))
 > 
-> "add_range" is static.
+> arch/x86/kernel/cpu/common.c:1149:20: warning: cast to non-scalar
+> arch/x86/kernel/cpu/common.c:1149:20: error: strange non-value function or array
+>   CC      arch/x86/kernel/cpu/common.o
+> arch/x86/kernel/cpu/common.c: In function 'cpu_init':
+> arch/x86/kernel/cpu/common.c:1149: error: cast specifies array type
 > 
-> This makes me concerned that the naming is too generic.  In particular,
-> we tend to prefer naming of the type subsystem_function(), so in this
-> case range_add() might be a more suitable naming scheme.
+> Can't cast that way.  :-(
 
-ibmphp_res.c:static int add_range (int type, struct range_node *, struct bus_node *);
-ibmphp_res.c:           add_range (flag, newrange, newbus);
-ibmphp_res.c:static int add_range (int type, struct range_node *range, struct bus_node *bus_cur)
-ibmphp_res.c: * the range numbers that they correspond to.  It was called from add_range fnc
-ibmphp_res.c:                                                                   add_range (IO, range, bus_sec);
-ibmphp_res.c:                                                                   add_range (MEM, range, bus_sec);
-ibmphp_res.c:                                                                   add_range (PFMEM, range, bus_sec);
 
-can we change name in ibmphp_res.c instead. that is local one.
+What about this? It doesn't use direct cast to scalar but should
+create a pointer type to kernel space datas:
 
-> 
-> I'm going to spend more time on this patchset.
-> 
-Thanks
 
-Yinghai
+#define kernel_space_t(var)	\
+	(typeof(var)	__kernel __force)
+
+#define SHIFT_PERCPU_PTR(__p, __offset) ({                              \
+        __verify_pcpu_ptr((__p));                                       \
+        RELOC_HIDE((typeof(*(kernel_space_t(var)) __kernel __force *)(__p), (__offset)); \
+})
+
+#define per_cpu(var, cpu) \
+        (*SHIFT_PERCPU_PTR(&(var), per_cpu_offset(cpu)))
+
