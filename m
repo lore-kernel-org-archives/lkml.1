@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840Ab0AZVy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015Ab0AZWB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840Ab0AZVy5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 16:54:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821Ab0AZVy4
+	id S1754015Ab0AZWB0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 17:01:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847Ab0AZWBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 16:54:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8992 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754761Ab0AZVyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 16:54:55 -0500
-Date: Tue, 26 Jan 2010 22:53:49 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, tromey@redhat.com,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100126215349.GB19146@redhat.com>
-References: <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain> <20100122221348.GA4263@redhat.com> <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain> <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <m33a1tnbd9.fsf@fleche.redhat.com> <877hr4g49l.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001261038150.3574@localhost.localdomain> <20100126210232.GF6567@basil.fritz.box>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100126210232.GF6567@basil.fritz.box>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 26 Jan 2010 17:01:25 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:50337 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753831Ab0AZWBZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 17:01:25 -0500
+Subject: Re: [RFC PATCH 1/2] Fix 1 untangling ima mess, part 2 with counters
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>,
+       "Serge E. Hallyn" <serue@linux.vnet.ibm.com>,
+       Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <20100126130349.GH19799@ZenIV.linux.org.uk>
+References: <cover.1264018123.git.zohar@linux.vnet.ibm.com>
+	 <4ad974923eae7a8f52be0786a630b6c64bee9d32.1264018123.git.zohar@linux.vnet.ibm.com>
+	 <20100123230735.GW19799@ZenIV.linux.org.uk>
+	 <1264447477.3696.30.camel@dyn9002018117.watson.ibm.com>
+	 <20100126130349.GH19799@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Tue, 26 Jan 2010 17:01:01 -0500
+Message-Id: <1264543261.3556.1.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/26, Andi Kleen wrote:
->
-> But when I did that i couldn't come up with a good scenario
-> where multiple debuggers actually make sense. In a sense
-> being a debugger is really a very "intimate" thing for process. Do you
-> really want to have multiple of them messing with each other?
->
-> If yes how would they know what to touch and what not?
+On Tue, 2010-01-26 at 13:03 +0000, Al Viro wrote: 
+> OK, this stuff is in for-next, with the following changes:
+> 	* nfsd call has been moved to nfsd_open()
+> 	* patches reordered
+> 	* masking irrelevant bits (i.e. leaving only MAY_{READ,WRITE,EXEC})
+> has been taken to ima_path_check(); all callers do it and it's safer that
+> way anyway.
+> 
+> Please, see if it's OK with you in this form; other calls of dentry_open()
+> are separate story, we'll have to see which ones should and which ones
+> should not get ima_path_check().  Do you have any other problems with that
+> one?  If not, it's going to migrate into for-linus and into the mainline;
+> this stuff is definitely 2.6.33 fodder.
 
-Yes, multiple debuggers can confuse each other if they change
-the state of debuggee simultaneously. The user should do this ;)
+Other than missing the export for ima_path_check() for nfs and the
+re-ordering not being bisect safe, they look good.  I've updated
+the following two patches, from Eric's patchset, and would appreciate
+your applying them as well:
 
-> Can you think of any scenario where multiple debuggers
-> on a process make sense?
+ima: rename ima_path_check to ima_file_check
+ima: rename PATH_CHECK to FILE_CHECK
 
-Simple example. Try to debug/strace strace ot gdb itself. Not trivial,
-you can't attach to strace's tracees. Recently I spent 2 days trying to
-understand why strace -f hangs. I was able to attach to strace, but
-I wasn't able to see what its tracees do.
+Posting them separately.
 
-And, it was not possible to even trace strace until it hangs, with
-ptrace the tracee (strace) must stop to report the event and this
-shadowed the race.
+Mimi
 
-Oleg.
+
 
