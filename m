@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180Ab0AZIWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268Ab0AZIeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752180Ab0AZIWl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 03:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027Ab0AZIWj
+	id S1752268Ab0AZIeA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 03:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112Ab0AZId6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 03:22:39 -0500
-Received: from mtagate5.de.ibm.com ([195.212.17.165]:59403 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754Ab0AZIWj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 03:22:39 -0500
-Date: Tue, 26 Jan 2010 09:22:34 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu, Thomas Gleixner <tglx@linutronix.de>,
-       John Stultz <johnstul@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Magnus Damm <damm@igel.co.jp>
-Subject: Re: [PATCH 3/4] kgdb,clocksource: Prevent kernel hang in kernel
- debugger
-Message-ID: <20100126092234.77b363d4@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <1264480000-6997-4-git-send-email-jason.wessel@windriver.com>
-References: <1264480000-6997-1-git-send-email-jason.wessel@windriver.com>
-	<1264480000-6997-4-git-send-email-jason.wessel@windriver.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jan 2010 03:33:58 -0500
+Received: from www.tglx.de ([62.245.132.106]:50165 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750756Ab0AZId5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 03:33:57 -0500
+Date: Tue, 26 Jan 2010 09:33:11 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Darren Hart <dvhltc@us.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>
+Subject: Re: futex() on vdso makes process unkillable
+In-Reply-To: <20100126113312.5AA3.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.LFD.2.00.1001260931490.5926@localhost.localdomain>
+References: <1264411574.4283.1632.camel@laptop> <4B5DD6DF.4090102@us.ibm.com> <20100126113312.5AA3.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jan 2010 22:26:39 -0600
-Jason Wessel <jason.wessel@windriver.com> wrote:
-
-> This is a regression fix against: 0f8e8ef7c204988246da5a42d576b7fa5277a8e4
+On Tue, 26 Jan 2010, KOSAKI Motohiro wrote:
+> > Peter Zijlstra wrote:
+> > I like the creating-a-real-file solution. However, for now (and for 
+> > stable), I think Kosaki's suggestion of EINVAL or EFAULT is a good 
+> > stop-gap. EINVAL might play the best with existing glibc implementations.
 > 
-> Spin locks were added to the clocksource_resume_watchdog() which cause
-> the kernel debugger to deadlock on an SMP system frequently.
+> May I confirm your mention?
 > 
-> The kernel debugger can try for the lock, but if it fails it should
-> continue to touch the clocksource watchdog anyway, else it will trip
-> if the general kernel execution has been paused for too long.
+> If we can accept EFAULT, we don't need any change. my previous futex patch
+> already did. because 1) VDSO is alwasys read-only mapped 2) write mode
+> get_user_pages_fast() against read-only pte/vma return EFAULT.
 > 
-> This introduces an possible race condition where the kernel debugger
-> might not process the list correctly if a clocksource is being added
-> or removed at the time of this call.  This race is sufficiently rare vs
-> having the kernel debugger hang the kernel
+> Current linus and stable tree don't cause Mark's original problem. instead, just
+> return EFAULT. (Well, I'm sorry. my previous mail was unclear. I wrote v2.6.31 test
+> result)
 > 
-> CC: Thomas Gleixner <tglx@linutronix.de>
-> CC: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> CC: John Stultz <johnstul@us.ibm.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: Magnus Damm <damm@igel.co.jp>
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> If you can't accept EFAULT, we need to add vdso specific logic into get_futex_key().
 
-The first question I would ask is why does the kernel deadlock? Can we
-have a backchain of a deadlock please?
+EFAULT is perfectly fine. No need for any special tricks.
 
-Hmm, there are all kinds of races if the watchdog code gets interrupted
-by the kernel debugger. Wouldn't it be better to just disable the
-watchdog while the kernel debugger is active? 
+Thanks,
 
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+	tglx
 
