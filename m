@@ -1,46 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752160Ab0AZGBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750756Ab0AZGH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752160Ab0AZGBh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 01:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368Ab0AZGBg
+	id S1750756Ab0AZGH1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 01:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323Ab0AZGHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 01:01:36 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:14151 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754Ab0AZGBg (ORCPT
+	Tue, 26 Jan 2010 01:07:20 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43718 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750771Ab0AZGHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 01:01:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=U8rrVHnHTho/WZON9SP8fgkvNWlIXQ2wn8KlQ9/X1GrX/JTYYkZNfOz1TLIwEw+xxx
-         rvZMzkKEIslBHsoqA3PaQGstq7ybJGD312YHj14wtgYp6EIF2qSXWDRlEDBX9BPLuyfP
-         YpQ5UUB9QneOiLmmMemBlo49bFls2//9uoBV8=
+	Tue, 26 Jan 2010 01:07:19 -0500
+Date: Tue, 26 Jan 2010 06:07:06 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Am??rico Wang <xiyou.wangcong@gmail.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Tavis Ormandy <taviso@google.com>, Jeff Dike <jdike@addtoit.com>,
+       Julien Tinnes <jln@google.com>, Matt Mackall <mpm@selenic.com>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [2.6.33-rc5] starting emacs makes lockdep warning
+Message-ID: <20100126060705.GF19799@ZenIV.linux.org.uk>
+References: <2375c9f91001252125w6f5bd3d3he183c61e9dcedd3e@mail.gmail.com> <20100126142644.5AB0.A69D9226@jp.fujitsu.com> <20100126144641.5AB3.A69D9226@jp.fujitsu.com> <2375c9f91001252201t552022ebvcd44b225eb7f9a95@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <4B5E092B.3070801@gmail.com>
-References: <1264179837-22999-1-git-send-email-u.kleine-koenig@pengutronix.de> 
-	<20100125013421.GL26562@trinity.fluff.org> <4B5CFEBE.2070906@gmail.com> 
-	<20100125074242.GA12480@pengutronix.de> <4B5E092B.3070801@gmail.com>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Tue, 26 Jan 2010 14:01:15 +0800
-Message-ID: <f17812d71001252201n215f2a9y1906fef630726dbe@mail.gmail.com>
-Subject: Re: [PATCH] RFC: make struct platform_driver.id_table const
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Vikram Dhillon <opensolarisdev@gmail.com>,
-       linux-arm-kernel@lists.infradead.org, Eric Miao <eric.miao@marvell.com>,
-       linux-kernel@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2375c9f91001252201t552022ebvcd44b225eb7f9a95@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I seems to remember a similar patch sent to GregKH weeks ago and
-should be sitting somewhere but this one looks to be more complete.
+On Tue, Jan 26, 2010 at 02:01:12PM +0800, Am??rico Wang wrote:
 
-Uwe, maybe you can file an incremental patch, or GregKH may help
-to drop mine and merge this instead, either way is OK to me.
+> I agree, it seems that patch is useless, since we already
+> do lock_kernel() before calling __f_setown()...
 
-- eric
+What's to prevent pid from being freed under us?  BKL won't...
