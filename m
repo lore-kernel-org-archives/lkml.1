@@ -1,180 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859Ab0AZNjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753777Ab0AZNo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859Ab0AZNjV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 08:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726Ab0AZNjU
+	id S1753777Ab0AZNo2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 08:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551Ab0AZNo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 08:39:20 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:45776 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753740Ab0AZNjT (ORCPT
+	Tue, 26 Jan 2010 08:44:27 -0500
+Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7]:37834 "EHLO
+	smtp-out4.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750824Ab0AZNo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 08:39:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=content-type:to:cc:subject:references:date:mime-version
-         :content-transfer-encoding:from:message-id:in-reply-to:user-agent;
-        b=K+wzhNn/m0z/rF1eYEo4gvmp8LDV/PKTAHmBwC/VMlAoVBRwTo9mJKCQ8WxYFAF2+d
-         yLaIByv6ceqycht3Tp1e9tRoTn5cIpdka6oeqdEmSSr4ldIKPgF/prMvKonZoDJyZSyE
-         OYC3HBEXAGOBkPhdcGDeR+2XmD0/G/BQvHeFs=
-Content-Type: text/plain; charset=utf-8; format=flowed; delsp=yes
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, "A Rojas" <nqn1976list@gmail.com>,
-       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
-       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
-       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Eric Anholt" <eric@anholt.net>,
-       "Chris Wilson" <chris@chris-wilson.co.uk>
-Subject: Re: OOM-Killer kills too much with 2.6.32.2
-References: <20100126141055.5AAD.A69D9226@jp.fujitsu.com>
- <op.u64t84zuasvm2a@kedge> <20100126183412.6AC9.A69D9226@jp.fujitsu.com>
-Date: Tue, 26 Jan 2010 14:41:54 +0100
+	Tue, 26 Jan 2010 08:44:26 -0500
+Message-ID: <4B5EF1B7.3090800@blueyonder.co.uk>
+Date: Tue, 26 Jan 2010 13:44:23 +0000
+From: Sid Boyce <sboyce@blueyonder.co.uk>
+Reply-To: sboyce@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-From: "Roman Jarosz" <kedgedev@gmail.com>
-Message-ID: <op.u646z3e7asvm2a@kedge>
-In-Reply-To: <20100126183412.6AC9.A69D9226@jp.fujitsu.com>
-User-Agent: Opera Mail/10.10 (Linux)
+To: Takashi Iwai <tiwai@suse.de>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: HDA Intel Audio hang on boot
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>	<4B4FC3B0.9070207@blueyonder.co.uk>	<4B5CF87A.20101@blueyonder.co.uk>	<201001252239.03017.rjw@sisk.pl>	<s5h8wblc0kw.wl%tiwai@suse.de>	<s5h7hr5c0jn.wl%tiwai@suse.de>	<4B5E3E63.80305@blueyonder.co.uk>	<s5htyu99xoc.wl%tiwai@suse.de>	<s5hr5pd9wsu.wl%tiwai@suse.de>	<4B5ED9E4.60106@blueyonder.co.uk> <s5h636puit8.wl%tiwai@suse.de>
+In-Reply-To: <s5h636puit8.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jan 2010 12:07:43 +0100, KOSAKI Motohiro  
-<kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> (Restore all cc and add Hugh and Chris)
->
->
->> > Hi all,
->> >
->> > Strangely, all reproduce machine are x86_64 with Intel i915. but I  
->> don't
->> > have any solid evidence.
->> > Can anyone please apply following debug patch and reproduce this  
->> issue?
->> >
->> > this patch write some debug message into /var/log/messages.
->> >
+On 26/01/10 12:55, Takashi Iwai wrote:
+> At Tue, 26 Jan 2010 12:02:44 +0000,
+> Sid Boyce wrote:
 >>
->> Here it is
+>> On 26/01/10 06:58, Takashi Iwai wrote:
+>>> At Tue, 26 Jan 2010 07:40:03 +0100,
+>>> I wrote:
+>>>>
+>>>> At Tue, 26 Jan 2010 00:59:15 +0000,
+>>>> Sid Boyce wrote:
+>>>>>
+>>>>> On 25/01/10 21:55, Takashi Iwai wrote:
+>>>>>> At Mon, 25 Jan 2010 22:54:23 +0100,
+>>>>>> I wrote:
+>>>>>>>
+>>>>>>> At Mon, 25 Jan 2010 22:39:02 +0100,
+>>>>>>> Rafael J. Wysocki wrote:
+>>>>>>>>
+>>>>>>>> On Monday 25 January 2010, Sid Boyce wrote:
+>>>>>>>>> On 15/01/10 01:24, Sid Boyce wrote:
+>>>>>>>>> This is the only outstanding bug. No problems up 2.6.32-git1, but I get
+>>>>>>>>> a solid lock-up on 2.6.32-git2 through 2.6.33-rc5 if the on-board audio
+>>>>>>>>> is not disabled in the BIOS.
+>>>>>>>>
+>>>>>>>> I guess we should let Takashi know.
+>>>>>>>
+>>>>>>> Thanks.
+>>>>>>>
+>>>>>>>>>> tindog:~ # uname -r
+>>>>>>>>>> 2.6.33-rc4-smp
+>>>>>>>>>> On 2.6.32-git1 which boots, hwinfo shows:-
+>>>>>>>>>>   oss.card_id = 'HDA NVidia'
+>>>>>>>>>>   oss.card_id = 'HDA NVidia'
+>>>>>>>>>>   oss.card_id = 'HDA NVidia'
+>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>   info.product = 'HDA NVidia ALSA hardware specific Device'
+>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>   info.product = 'HDA NVidia ALSA Control Device'
+>>>>>>>>>>   alsa.card_id = 'HDA NVidia'
+>>>>>>>>>>   info.product = 'HDA NVidia Sound Card'
+>>>>>>>>>>   sound.card_id = 'HDA NVidia'
+>>>>>>>>>>   info.linux.driver = 'HDA Intel'
+>>>>>>>>>>     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
+>>>>>>>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>>>>>>>>>>        HDA Intel: module = snd_hda_intel
+>>>>>>>>>> irq:0 22 (   490413) "sata_nv" "HDA Intel"
+>>>>>>>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>>>>>>>>>>        HDA Intel: module = snd_hda_intel
+>>>>>>>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
+>>>>>>>>>>        HDA Intel: module = snd_hda_intel
+>>>>>>>>>>   E: DRIVER=HDA Intel
+>>>>>>>>>>   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
+>>>>>>>>>> low) -> IRQ 22
+>>>>>>>>>>   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
+>>>>>>>>>>   Driver: "HDA Intel"
+>>>>>>>
+>>>>>>> What I'd try first is to pass enable_msi=0 option.
+>>>>>>
+>>>>>> Just to be sure -- it's an option for snd-hda-intel module.
+>>>>>>
+>>>>>>
+>>>>>> Takashi
+>>>>>>
+>>>>>
+>>>>> I passed "modprobe snd-hda-intel enable_msi=0" on the kernel command
+>>>>> line,
+>>>
+>>> Oh, I overlooked this text.  Of course, this can't work :)
+>>>
+>>> "modprobe..." isn't for the kernel command line but for modprobe
+>>> configs, usually specified in /etc/modprobe.d/* file.
+>>>
+>> I had already tried that... it locks up at the same point also with
+>> "enable_msi=1".
+>> tindog:/etc/modprobe.d # less 50-sound.conf
 >>
->> Jan 26 09:34:32 kedge kernel: ->fault OOM shmem_fault 1 1
->> Jan 26 09:34:32 kedge kernel: X invoked oom-killer: gfp_mask=0x0,  
->> order=0,
->> oom_adj=0
->> Jan 26 09:34:32 kedge kernel: Pid: 1927, comm: X Not tainted 2.6.33-rc5  
->> #3
->
->
-> Very thank you!!
->
-> Current status and analysis are
->   - OOM is invoked by VM_FAULT_OOM in page fault
->   - GEM use lots shmem internally. i915 use GEM.
->   - VM_FAULT_OOM is created by shmem.
->   - shmem allocate some memory by using  
-> mapping_gfp_mask(inode->i_mapping).
->     and if allocation failed, it can return -ENOMEM and -ENOMEM generate  
-> VM_FAULT_OOM.
->   - But, GEM have following code.
->
->
-> drm_gem.c drm_gem_object_alloc()
-> --------------------
->         obj->filp = shmem_file_setup("drm mm object", size,  
-> VM_NORESERVE);
-> (snip)
->         /* Basically we want to disable the OOM killer and handle ENOMEM
->          * ourselves by sacrificing pages from cached buffers.
->          * XXX shmem_file_[gs]et_gfp_mask()
->          */
->         mapping_set_gfp_mask(obj->filp->f_path.dentry->d_inode->i_mapping,
->                              GFP_HIGHUSER |
->                              __GFP_COLD |
->                              __GFP_FS |
->                              __GFP_RECLAIMABLE |
->                              __GFP_NORETRY |
->                              __GFP_NOWARN |
->                              __GFP_NOMEMALLOC);
->
->
-> This comment is lie. __GFP_NORETY cause ENOMEM to shmem, not GEM itself.
-> GEM can't handle nor recover it. I suspect following commit is wrong.
->
-> ----------------------------------------------------
-> commit 07f73f6912667621276b002e33844ef283d98203
-> Author: Chris Wilson <chris@chris-wilson.co.uk>
-> Date:   Mon Sep 14 16:50:30 2009 +0100
->
->     drm/i915: Improve behaviour under memory pressure
->
->     Due to the necessity of having to take the struct_mutex, the i915
->     shrinker can not free the inactive lists if we fail to allocate  
-> memory
->     whilst processing a batch buffer, triggering an OOM and an ENOMEM  
-> that
->     is reported back to userspace. In order to fare better under such
->     circumstances we need to manually retry a failed allocation after
->     evicting inactive buffers.
->
->     To do so involves 3 steps:
->     1. Marking the backing shm pages as NORETRY.
->     2. Updating the get_pages() callers to evict something on failure  
-> and then
->        retry.
->     3. Revamping the evict something logic to be smarter about the  
-> required
->        buffer size and prefer to use volatile or clean inactive pages.
->
->     Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
->     Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-> ----------------------------------------------------
->
->
-> but unfortunatelly it can't revert easily.
-> So, Can you please try following partial revert patch?
->
->
->
-> From a27115f93d4f3ff6538860e69a7b444761cef91b Mon Sep 17 00:00:00 2001
-> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Date: Tue, 26 Jan 2010 19:51:57 +0900
-> Subject: [PATCH] Revert NORETRY
->
-> ---
->  drivers/gpu/drm/drm_gem.c |   13 -------------
->  1 files changed, 0 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
-> index e9dbb48..8bf3770 100644
-> --- a/drivers/gpu/drm/drm_gem.c
-> +++ b/drivers/gpu/drm/drm_gem.c
-> @@ -142,19 +142,6 @@ drm_gem_object_alloc(struct drm_device *dev, size_t  
-> size)
->  	if (IS_ERR(obj->filp))
->  		goto free;
-> -	/* Basically we want to disable the OOM killer and handle ENOMEM
-> -	 * ourselves by sacrificing pages from cached buffers.
-> -	 * XXX shmem_file_[gs]et_gfp_mask()
-> -	 */
-> -	mapping_set_gfp_mask(obj->filp->f_path.dentry->d_inode->i_mapping,
-> -			     GFP_HIGHUSER |
-> -			     __GFP_COLD |
-> -			     __GFP_FS |
-> -			     __GFP_RECLAIMABLE |
-> -			     __GFP_NORETRY |
-> -			     __GFP_NOWARN |
-> -			     __GFP_NOMEMALLOC);
-> -
->  	kref_init(&obj->refcount);
->  	kref_init(&obj->handlecount);
->  	obj->size = size;
+>> options snd slots=snd-hda-intel,enable_msi=0
+> 
+> This is the option for module snd, not snd-hda-intel.
+> 
+> 
+> Takashi
+> 
+options snd,enable_msi=0 slots=snd-hda-intel
+# 9LTX.vLXC8EvZgR7:MCP55 High Definition Audio
+alias snd-card-0 snd-hda-intel
 
-I've applied this patch and I'm testing it right now.
-Btw. what this patch will do from user(my) point of view?
-
+enable_msi=0 or 1, it still hangs.
 Regards
-Roman
-
+Sid.
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
