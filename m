@@ -1,72 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936Ab0AZPdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077Ab0AZPgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753936Ab0AZPdJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 10:33:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536Ab0AZPdH
+	id S1754077Ab0AZPgz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 10:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636Ab0AZPgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 10:33:07 -0500
-Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:30052 "HELO
-	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752936Ab0AZPdF (ORCPT
+	Tue, 26 Jan 2010 10:36:53 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:32924 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753536Ab0AZPgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 10:33:05 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=QCeKten5+QU5vhECRAfpGdFlLGY9jmkY/XTy406ZR98hmHgijzyNoMqEBzdEl8LwVZ2RJVqjbStaHkimG1WTzihjvUU7cxBPNUPoEM4dGHHp3ueSQHcs+kxlxU6uOKn/xehvPQ/uaGn2V59xEkQ7J4RvtRc7fpRfcOaMwhwHu0A=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: fWYEF6UVM1kBmNnr95QLkNw31e0IT6_8Kylxy3kIV7aVWjdfPUskYWuHmvF2I9f02ReDJtzRPLbHHUhD1q7udYZLJCjPm.ZqIwn._SkQQGH8aVbqJ_x8e_GRBXOLOo0mNR6r4bKkEntRnv703DYbWLsWfKSmlPcle2IUc5oHI97C5LlqurD9tEPw.herHL6hnqmmXX052jvurtL.MiJ3ZqZErbxSM5ATFVVaeksWyc16QwIufSBbK3YWQJPTTvpx
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: felipe.balbi@nokia.com
-Subject: Re: [RFC/PATCH 1/5] usb: otg: add notifier support
-Date: Tue, 26 Jan 2010 07:33:01 -0800
-User-Agent: KMail/1.9.10
-Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Grazvydas Ignotas <notasas@gmail.com>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com> <20100126141016.GD10690@nokia.com> <20100126141935.GG10690@nokia.com>
-In-Reply-To: <20100126141935.GG10690@nokia.com>
+	Tue, 26 Jan 2010 10:36:51 -0500
+Date: Tue, 26 Jan 2010 16:36:46 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Borislav Petkov <petkovbb@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       linux-tip-commits@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Aristeu Rozanski <aris@redhat.com>, Doug Thompson <norsk5@yahoo.com>,
+       Huang Ying <ying.huang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [tip:x86/mce] x86, mce: Rename cpu_specific_poll to
+	mce_cpu_specific_poll
+Message-ID: <20100126153646.GA6567@basil.fritz.box>
+References: <20100121221711.GA8242@basil.fritz.box> <tip-f91c4d2649531cc36e10c6bc0f92d0f99116b209@git.kernel.org> <20100123051717.GA26471@elte.hu> <20100123075851.GA7098@liondog.tnic> <20100123090003.GA20056@elte.hu> <20100124100815.GA2895@liondog.tnic> <20100125131915.GA7801@basil.fritz.box> <20100126063343.GA18865@liondog.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201001260733.01628.david-b@pacbell.net>
+In-Reply-To: <20100126063343.GA18865@liondog.tnic>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 January 2010, Felipe Balbi wrote:
-> just remember of another problem which I couldn't solve yet:
+On Tue, Jan 26, 2010 at 07:33:43AM +0100, Borislav Petkov wrote:
+> Uuh, dmidecode doesn't even start to look usable in my book because you
+> have to rely on BIOS vendors to fill out the information for you. Here
+> are some assorted excerpts from dmidecode on my machines:
+
+For most of the information in DMI decode you can't even
+find it any other way. If you can't get it from the BIOS
+it's simply not there.
+
+One example are silkscreen labels, which are extremly important
+for any kind of hardware error handling.
+
+On my server class systems the information is largely correct. If it's not
+on your system perhaps you need to complain to the vendor.
+
+On non server class there are a lot of BIOS problems, but typically
+the platforms there don't have enough support for good error
+handling anyways.
+
+> how is my L3 4-way set-associative and how do they come up with that???
+
+Cache/CPU information is in lscpu. The important part are the motherboard
+resources.
+
+> on any system. And this tool should be distributed with the kernel
+> sources like perf is, so that you don't have to jump through hoops to
+
+Most distributions have some kind of summary tool to aggregate
+complete system configuration.
+
+It's not the same everywhere, but that's one of the strengths
+of Linux imho, not a weakness.
+
+> Oh yes, EDAC has the edac-utils too which access /sysfs files but even
+> so, it is suboptimal and we really need a single interface/output
+> channel/whatever you call a beast like that to reliably transfer human
+> readable hw error info to userspace and/or network. And this has to be
+> pushed from kernel space outwards as early as the gravity of the error
+> suggests, IMO.
+
+You just reinvented mcelog, congratulations.
+
+> valid reasons to panic the machine. Imagine, for example, you encounter
+> (as unlikely as it might be) a multibit error during L1 data cache
+> scrubbing which hasn't been consumed yet. Now, technically, no data
+> corruption has taken place yet so you can easily start the shell on
+
+When no data corruption has been taken it's not a UC error.
+
+An UC error in this case is defined as something that the hardware
+tells us is a UC error, worse even a uncontained UC error
+
+The reason the hardware tells us about that is that it wants us to prevent 
+further damage. And the primary way to do that is to NOT write anything 
+to disk, because that would risk corrupting it.
+
+For contained memory UC errors I wrote all the infrastructure last year to 
+handle them. Making hwpoison better is still an ongoing 
+project, but it's already quite usable.
+
+> And even if an UC causes data corruption, panicking the system doesn't
+> mean that the error has been contained. Nothing can assure you that by
+> the time do_machine_check() has run the corrupted data hasn't left the
+> CPU core and landed in another core's cache (maybe even on a different
+
+That is why the panic stops all cpus to prevent that.
+
+But yes if the disk write happens at exactly the wrong point the error
+could still escape, but we try to keep the window as small as possible.
+Typically there's also some hardware help with that to catch currently
+in flight transactions. It depends on the platform how well it works.
+
+> Yes, I'm very well aware of that. I'm currently working on a solution.
+> It's just an idea now but I might be able to read DIMM configuration
+> on the SPD ROM on the DIMM along with their labels and position on the
+
+The SPD ROM doesn't have labels. The only entity who knows them
+is the BIOS (or someone who just studied the semantics of the motherboard,
+but I don't think we can rely on that)
+
+> 1. Resilient error reporting that reliably pushes decoded error info to
+> userspace and/or network. That one might be tricky to do but we'll get
+> there.
+
+Not at all tricky.  At least on modern Intel platforms mcelog 
+already does it.
+
 > 
-> if you boot the board with the usb cable already attached, then we miss 
-> the first notification because when the notifier is called, usb 
-> controller driver isn't probed yet.
+> 2. Error severity grading and acting upon each type accordingly. This
+> might need to be vendor-specific.
 
-That's part of why the OTG transceiver driver has methods
-used by host and peripheral drivers to register themselves.
 
-Standard init sequence there is to do nothing until both
-drivers are fully initialized ... last step being to
-register the drivers with the transceiver.  That way the
-transceiver can know when its peer drivers are ready.
+mcelog does it mostly. It's not perfect yet, but not too bad.
 
-Example:  VBUS present from a host.  If the board runs
-in OTG mode, as soon as both drivers are registered then
-the B-Default state machine would start running ... and
-that involves (see the OTG state machine!) issuing a VBBUS
-event.
 
-Same thing can be done with the power events.  As soon
-as an event listener is registered, it could be fed any
-events it missed.  (Just one approach; one must sort
-out any other interdependencies too.  In this case, it
-can make sense to consume 100mA current right away, and
-then adjust the draw later if needed.)
+> 3. Proper error format suiting all types of errors.
 
-- Dave
+I plan to look into that.
+
+But "suiting all types of errors" is probably a mistake,
+I don't think it makes sense to try to  invent the one 
+perfect error that covers everything. People have tried
+that in the past and it was always a spectacular failure.
+
+I suspect the better goal is rather a range of error formats
+for common situations with a lot of flexibility.
+
+
+> 5. Error thresholding, representation, etc all done in userspace (maybe
+> even on a different machine).
+
+mcelog does that for memory errors on modern systems.
+
+> 6. Last but not least, and maybe this is wishful thinking, a good tool
+> to dump hwinfo from the kernel. We do a great job of detecting that info
+> already - we should do something with it, at least report it...
+
+IMHO there are already enough of them.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
