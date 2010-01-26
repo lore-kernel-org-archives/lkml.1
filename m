@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664Ab0A0ACR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112Ab0A0ACm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664Ab0A0ACR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601Ab0A0AB1
+	id S1754112Ab0A0ACm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:02:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150Ab0A0ACc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:01:27 -0500
-Received: from kroah.org ([198.145.64.141]:35171 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:02:32 -0500
+Received: from kroah.org ([198.145.64.141]:35170 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754151Ab0AZXnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:20 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:24 2010
-Message-Id: <20100126233924.152935338@mini.kroah.org>
+	id S1754112Ab0AZXnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:19 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:23 2010
+Message-Id: <20100126233923.883903788@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:51 -0800
+Date: Tue, 26 Jan 2010 15:33:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Karel Zak <kzak@redhat.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: [25/98] partitions: read whole sector with EFI GPT header
+       Ben Hutchings <ben@decadent.org.uk>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [23/98] V4L/DVB (13680b): DocBook/media: create links for included sources
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,76 +29,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Karel Zak <kzak@redhat.com>
+From: Ben Hutchings <ben@decadent.org.uk>
 
-commit 87038c2d5bda2418fda8b1456a0ae81cc3ff5bd8 upstream.
+commit 5bf583473813530c1bf82051a35fac8d5045f4f7 upstream.
 
-The size of EFI GPT header is not static, but whole sector is
-allocated for the header. The HeaderSize field must be greater
-than 92 (= sizeof(struct gpt_header) and must be less than or
-equal to the logical block size.
+If docs are being built in a separate directory, xmlto and xsltproc
+can't find included sources.  Make links back to the source directory.
 
-It means we have to read whole sector with the header, because the
-header crc32 checksum is calculated according to HeaderSize.
+I would much prefer to have xmlto and xsltproc look in the source
+directory for included entities but couldn't see how to do that.  This
+needs to be solved in some way for 2.6.32, even if this patch isn't the
+right way to do it.
 
-For more details see UEFI standard (version 2.3, May 2009):
-  - 5.3.1 GUID Format overview, page 93
-  - Table 13. GUID Partition Table Header, page 96
-
-Signed-off-by: Karel Zak <kzak@redhat.com>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Cc: Ben Hutchings <ben@decadent.org.uk>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/partitions/efi.c |    7 ++++---
- fs/partitions/efi.h |    8 ++++++--
- 2 files changed, 10 insertions(+), 5 deletions(-)
+ Documentation/DocBook/Makefile |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
---- a/fs/partitions/efi.c
-+++ b/fs/partitions/efi.c
-@@ -257,15 +257,16 @@ static gpt_header *
- alloc_read_gpt_header(struct block_device *bdev, u64 lba)
- {
- 	gpt_header *gpt;
-+	unsigned ssz = bdev_logical_block_size(bdev);
+--- a/Documentation/DocBook/Makefile
++++ b/Documentation/DocBook/Makefile
+@@ -32,10 +32,10 @@ PS_METHOD	= $(prefer-db2x)
+ 
+ ###
+ # The targets that may be used.
+-PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs
++PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs xmldoclinks
+ 
+ BOOKS := $(addprefix $(obj)/,$(DOCBOOKS))
+-xmldocs: $(BOOKS)
++xmldocs: $(BOOKS) xmldoclinks
+ sgmldocs: xmldocs
+ 
+ PS := $(patsubst %.xml, %.ps, $(BOOKS))
+@@ -55,6 +55,15 @@ mandocs: $(MAN)
+ build_images = mkdir -p $(objtree)/Documentation/DocBook/media/ && \
+ 	       cp $(srctree)/Documentation/DocBook/dvb/*.png $(srctree)/Documentation/DocBook/v4l/*.gif $(objtree)/Documentation/DocBook/media/
+ 
++xmldoclinks:
++ifneq ($(objtree),$(srctree))
++	for dep in dvb media-entities.tmpl media-indices.tmpl v4l; do \
++		rm -f $(objtree)/Documentation/DocBook/$$dep \
++		&& ln -s $(srctree)/Documentation/DocBook/$$dep $(objtree)/Documentation/DocBook/ \
++		|| exit; \
++	done
++endif
 +
- 	if (!bdev)
- 		return NULL;
- 
--	gpt = kzalloc(sizeof (gpt_header), GFP_KERNEL);
-+	gpt = kzalloc(ssz, GFP_KERNEL);
- 	if (!gpt)
- 		return NULL;
- 
--	if (read_lba(bdev, lba, (u8 *) gpt,
--		     sizeof (gpt_header)) < sizeof (gpt_header)) {
-+	if (read_lba(bdev, lba, (u8 *) gpt, ssz) < ssz) {
- 		kfree(gpt);
-                 gpt=NULL;
- 		return NULL;
---- a/fs/partitions/efi.h
-+++ b/fs/partitions/efi.h
-@@ -37,7 +37,6 @@
- #define EFI_PMBR_OSTYPE_EFI 0xEF
- #define EFI_PMBR_OSTYPE_EFI_GPT 0xEE
- 
--#define GPT_BLOCK_SIZE 512
- #define GPT_HEADER_SIGNATURE 0x5452415020494645ULL
- #define GPT_HEADER_REVISION_V1 0x00010000
- #define GPT_PRIMARY_PARTITION_TABLE_LBA 1
-@@ -79,7 +78,12 @@ typedef struct _gpt_header {
- 	__le32 num_partition_entries;
- 	__le32 sizeof_partition_entry;
- 	__le32 partition_entry_array_crc32;
--	u8 reserved2[GPT_BLOCK_SIZE - 92];
-+
-+	/* The rest of the logical block is reserved by UEFI and must be zero.
-+	 * EFI standard handles this by:
-+	 *
-+	 * uint8_t		reserved2[ BlockSize - 92 ];
-+	 */
- } __attribute__ ((packed)) gpt_header;
- 
- typedef struct _gpt_entry_attributes {
+ installmandocs: mandocs
+ 	mkdir -p /usr/local/man/man9/
+ 	install Documentation/DocBook/man/*.9.gz /usr/local/man/man9/
 
 
