@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143Ab0AZVBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699Ab0AZVDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143Ab0AZVBW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 16:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699Ab0AZVBV
+	id S1752699Ab0AZVDH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 16:03:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779Ab0AZVDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 16:01:21 -0500
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:20803 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752640Ab0AZVBV (ORCPT
+	Tue, 26 Jan 2010 16:03:05 -0500
+Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:48403 "EHLO
+	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752416Ab0AZVDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 16:01:21 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=alczl/u9rIWSK7TepgvlLGXsp6qlVk5UoY2mdji0jD5JT+58ZK18CTF6EYrSDx7aZHidFJ6ZrRZ22tjgDuMNMINLu1KD2t925AxEVhyCAatyaPPDTg8qJ2JAY/YFjISu56ZzcBXdr0F8GqaYJpW067mcuIXUBb5YnWP1PrxbEaE=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: Aiyga9UVM1mUhjNBIUFFEs2_uFsD.sZHlh1x9VmhvXtMUOCeSX1iZi9nPOw_h1C_tz41tETmXrKmyGlY8uiP8KDaPc1Qyd3RPyJ.2veQqvNNICKiAwgEb.Vqboq6vXRKmnduS0XuYlj.qDlVLQTRknNZYiJQMb5TneHPtPZbfXkK.AZyOAIkQq3DepHjqDlOY6V1I49oMWKAg3UlRpvZJnp4DiWKxiW7vKHbw0YqFzKrIDalggg0BWneqItoN138
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
-Date: Tue, 26 Jan 2010 13:01:05 -0800
-User-Agent: KMail/1.9.10
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       "Dmitry Eremin-Solenikov" <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-References: <20100125180957.GA5380@oksana.dev.rtsoft.ru> <201001252234.30169.david-b@pacbell.net> <20100126172824.GA20319@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100126172824.GA20319@oksana.dev.rtsoft.ru>
+	Tue, 26 Jan 2010 16:03:04 -0500
+Message-ID: <4B5F5882.7010800@hp.com>
+Date: Tue, 26 Jan 2010 16:02:58 -0500
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: linux-doc@vger.kernel.org
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] doc: document IPv6 parameters
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001261301.05475.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 January 2010, Anton Vorontsov wrote:
-> > Just
-> > inline the little two blocking_notifier_call_chain() calls directly,
-> > making this a *LOT* simpler.
-> 
-> I'd rather stay with gpio_call_chain() helper, it makes the code
-> a little bit prettier, IMO. Compare this:
+Update documentation to describe IPv6 parameters.
+Reported by <greg@enjellic.com>.
 
-The one without the wrapper is IMO more clear, since it doesn't
-obfuscate anything.  Fewer lines of code, too.  :)
+Signed-off-by: Brian Haley <brian.haley@hp.com>
+---
 
-Pretty is a good attribute ... but is a distant third to clarity.
-
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 736d456..3ca7f8f 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -54,6 +54,7 @@ parameter is applicable:
+ 	IMA     Integrity measurement architecture is enabled.
+ 	IOSCHED	More than one I/O scheduler is enabled.
+ 	IP_PNP	IP DHCP, BOOTP, or RARP is enabled.
++	IPV6	IPv6 support is enabled.
+ 	ISAPNP	ISA PnP code is enabled.
+ 	ISDN	Appropriate ISDN support is enabled.
+ 	JOY	Appropriate joystick support is enabled.
+@@ -347,6 +348,9 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Change the amount of debugging information output
+ 			when initialising the APIC and IO-APIC components.
+ 
++	autoconf=	[IPV6]
++			See Documentation/networking/ipv6.txt.
++
+ 	show_lapic=	[APIC,X86] Advanced Programmable Interrupt Controller
+ 			Limit apic dumping. The parameter defines the maximal
+ 			number of local apics being dumped. Also it is possible
+@@ -629,6 +633,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			See drivers/char/README.epca and
+ 			Documentation/serial/digiepca.txt.
+ 
++	disable=	[IPV6]
++			See Documentation/networking/ipv6.txt.
++
++	disable_ipv6=	[IPV6]
++			See Documentation/networking/ipv6.txt.
++
+ 	disable_mtrr_cleanup [X86]
+ 			The kernel tries to adjust MTRR layout from continuous
+ 			to discrete, to make X server driver able to add WB
