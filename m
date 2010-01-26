@@ -1,65 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528Ab0AZPVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556Ab0AZPZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528Ab0AZPVc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 10:21:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467Ab0AZPVb
+	id S1754556Ab0AZPZV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 10:25:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466Ab0AZPZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 10:21:31 -0500
-Received: from smtp104.sbc.mail.gq1.yahoo.com ([67.195.15.63]:46225 "HELO
-	smtp104.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754036Ab0AZPVa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 10:21:30 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=vgmeC85EYuE+40+nPF1Dho1dLQvaPwrZBpDHII3eZ/WZ8N70axDwT5WEclpuURPQKZZ2/I+TgqIzxMNQeD4sZUcHxBiZFhA9MzM2aBt6TZPeyUWsgPtD6gyckuHSgLK1AjBe9jNl70vbMx/mkfiF6XE9uhpVViN6x7lCxER/+6c=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: xCSRrfcVM1kzKmzBVLBnvotQD0C.LRQL4qCEtoF4.VszjBW3jtO1QZGV7_Z1U4cNPx.y0mqwK.OKf9ZqPfVhf2UydvpBOdKb4JZqAhRVYGpdaHyxqTWnMWduiC2Zml3Yk7Qs.kbDTSdDIKFDusb2fblVxPWVpmOp2m8vy20DyCX69hxUtazqF0pTjAwPPnvfegnWUMeT50y5n.fR6hgNVi.ruobEMFT5wUibRjb2.oHTWeoWSB.PizV8eGk_G.RMFFC4w.nH6WNzGaC_ab1qmaCwA2kI3OUjIAR7
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: felipe.balbi@nokia.com
-Subject: Re: [RFC/PATCH 1/5] usb: otg: add notifier support
-Date: Tue, 26 Jan 2010 07:21:28 -0800
-User-Agent: KMail/1.9.10
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Grazvydas Ignotas <notasas@gmail.com>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com> <201001260535.21689.david-b@pacbell.net> <20100126141443.GE10690@nokia.com>
-In-Reply-To: <20100126141443.GE10690@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <201001260721.29275.david-b@pacbell.net>
+	Tue, 26 Jan 2010 10:25:19 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:50666 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753852Ab0AZPZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 10:25:18 -0500
+Date: Tue, 26 Jan 2010 16:25:15 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Uwe Kleine-Koenig <u.kleine-koenig@pengutronix.de>,
+       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ben Dooks <ben-linux@fluff.org>
+Subject: Re: [PATCH] MAINTAINERS: add i2c tree for embedded platforms
+Message-ID: <20100126162515.230bdf36@hyperion.delvare>
+In-Reply-To: <20100126143830.GC12774@fluff.org.uk>
+References: <1264411234-5400-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	<20100125111055.05ccedf2@hyperion.delvare>
+	<20100126143830.GC12774@fluff.org.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 January 2010, Felipe Balbi wrote:
-> >
-> >Thing is, supplying current is a bit more involved.  If the
-> >board can't supply 300 mA, the USB configuration selection
-> >mechanism has to know that, so it never selects peripheral
-> >configurations which require that much current.
+On Tue, 26 Jan 2010 14:38:30 +0000, Ben Dooks wrote:
+> On Mon, Jan 25, 2010 at 11:10:55AM +0100, Jean Delvare wrote:
+> > On Mon, 25 Jan 2010 10:20:34 +0100, Uwe Kleine-K??nig wrote:
+> > > Signed-off-by: Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>
+> > > Cc: Ben Dooks <ben-linux@fluff.org>
+> > > ---
+> > > Hello,
+> > > 
+> > > I wonder if it makes sence to split the "I2C SUBSYSTEM" entry into
+> > > something like:
+> > > 
+> > > 	I2C SUBSYSTEM (PC drivers, core)
+> > > 	M:	Jean Delvare <khali@linux-fr.org>
+> > > 	L:	...
+> > > 	W:	...
+> > > 	T:	quilt ...
+> > > 	S:	...
+> > > 	F:	Documentation/i2c/
+> > > 	F:	drivers/i2c/
+> > > 	F:	include/linux/i2c.h
+> > > 	F:	include/linux/i2c-*.h
+> > > 
+> > > 	I2C SUBSYSTEM (embedded platforms)
+> > > 	M:	Ben Dooks <ben-linux@fluff.org>
+> > > 	L:	...
+> > > 	W:	...
+> > > 	T:	git ...
+> > > 	S:	...
+> > > 	F:	drivers/i2c/
+> > > 	F:	include/linux/i2c-*.h
+> > > 
+> > > (I'm not entirely sure about the file patterns for the 2nd entry.)
+> > 
+> > I'm not sure what value it adds, compared to having a single entry as
+> > we have today. scripts/get_maintainer.pl will produce the same output,
+> > won't it?
+> > 
+> > This script (and our minds) being directory-driven, I suspect that the
+> > only efficient way to split the entries would be to first move all i2c bus
+> > driver for embedded platforms to a separate subdirectory. I'm leaving
+> > it to Ben and the embedded community to decide whether they want to do
+> > that or not.
 > 
-> but that's done already by the usb core, no ? It rules out configuration 
-> based on the hub->power_budget (can't remember if the field is that 
-> exact name).
+> I'd much prefer to see just the one directory of i2c drivers, the
+> minor point being people silly enough to load modules by explicit path
 
-Yes, it handles that ... but where does the power budget
-come from?  That's what I meant by "more involved".
+Never thought of that, but I wouldn't care. There is no good reason to
+do this.
 
-As in, the host/supplying side of the power equation can't
-be event driven like the peripheral/consuming side can.
+> and the second is that having all the drivers in one place makes it
+> easier to update them when changing something in the core...
 
-And that's another reason I think it's best to fully solve
-the common (peripheral, recharge-that-batter) case first.
+This doesn't seem to be a blocker either. For one thing, i2c
+subsystem-wide changes tend to affect chip drivers more than bus
+drivers. And even then, looking for drivers in 2 directories doesn't
+seem much harder than looking into just one, especially when said 2
+directories live next to each other.
 
-- Dave
+So I see no objection to a mass move of all embedded/system i2c bus
+drivers to a separate sub-directory.
+
+-- 
+Jean Delvare
