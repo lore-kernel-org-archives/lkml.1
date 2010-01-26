@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229Ab0AZDIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731Ab0AZDOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752229Ab0AZDIn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 22:08:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795Ab0AZDIj
+	id S1752731Ab0AZDOm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 22:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002Ab0AZDOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 22:08:39 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54327 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658Ab0AZDIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 22:08:38 -0500
-Message-ID: <4B5E5C59.2080203@cn.fujitsu.com>
-Date: Tue, 26 Jan 2010 11:07:05 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 25 Jan 2010 22:14:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41657 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751706Ab0AZDOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 22:14:40 -0500
+Message-ID: <4B5E5D3B.7040102@kernel.org>
+Date: Tue, 26 Jan 2010 12:10:51 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 5/6] tracing: reduce latency and remove percpu trace_seq
-References: <4B55607E.8070403@cn.fujitsu.com> <20100120192225.GC6194@nowhere>
-In-Reply-To: <20100120192225.GC6194@nowhere>
-Content-Type: text/plain; charset=UTF-8
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
+       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
+       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
+       davem@davemloft.net, netdev@vger.kernel.org, x86@kernel.org,
+       mingo@redhat.com, dan.j.williams@intel.com, borislav.petkov@amd.com,
+       ying.huang@intel.com, lenb@kernel.org, neilb@suse.de,
+       cl@linux-foundation.org
+Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to	hw_breakpoint
+References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere> <4B5E3F2C.2010702@zytor.com> <4B5E4E12.7060900@kernel.org> <20100126020452.GB19799@ZenIV.linux.org.uk> <4B5E508A.1030305@kernel.org> <20100126023238.GC19799@ZenIV.linux.org.uk> <4B5E56EC.2090600@kernel.org> <20100126024857.GD19799@ZenIV.linux.org.uk>
+In-Reply-To: <20100126024857.GD19799@ZenIV.linux.org.uk>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 26 Jan 2010 03:04:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Tue, Jan 19, 2010 at 03:34:22PM +0800, Lai Jiangshan wrote:
->> __print_flags() and __print_symbolic() use percpu trace_seq:
->>
->> 1) Its memory is preallocated, it wastes memory when we don't use tracing.
->> 2) It wastes memory for multi-cpus system.
->> 3) It disables preemption when it executes its core routine
->>    "trace_seq_printf(s, "%s: ", #call);" and introduce latency
->>    for more important process.
->>
->> So we move this trace_seq to struct trace_iterator.
->>
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> ---
->> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
->> index be9ece5..348500d 100644
->> --- a/include/linux/ftrace_event.h
->> +++ b/include/linux/ftrace_event.h
->> @@ -12,9 +12,6 @@ struct dentry;
->>  
->>  #define FTRACE_SEQ_BUFSIZE PAGE_SIZE
->>  
->> -DECLARE_PER_CPU(struct trace_seq, ftrace_event_seq);
->> -DECLARE_PER_CPU(unsigned char[FTRACE_SEQ_BUFSIZE], ftrace_event_buffer);
->> -
->>  struct trace_print_flags {
->>  	unsigned long		mask;
->>  	const char		*name;
->> @@ -60,6 +57,10 @@ struct trace_iterator {
->>  	struct trace_seq	seq;
->>  	unsigned char		buffer[FTRACE_SEQ_BUFSIZE];
->>  
->> +	/* trace_seq for __print_flags() and __print_symbolic() */
->> +	struct trace_seq	tmp_seq;
->> +	unsigned char 		tmp_buffer[FTRACE_SEQ_BUFSIZE];
-> 
-> 
-> 
-> 
-> Well, I don't like much that because it's a temporary buffer
-> in trace iter only used by few events.
-> But the problem is indeed tricky.
-> 
-> May be should we use a kmalloc in raw_output?
-> 
+Hello,
 
-But we have to preallocate it before raw_output().
-a kmalloc in raw_output make ftrace_dump() unhappy.
+On 01/26/2010 11:48 AM, Al Viro wrote:
+> On Tue, Jan 26, 2010 at 11:43:56AM +0900, Tejun Heo wrote:
+> 
+>>> Eh...  You are leaving that noderef in place in case of array.  And _that_
+>>> is not an address space, so casts to AS 0 won't do you any good.
+>>
+>> Any ideas on how to fix it?
+> 
+> BTW, before we go any further, which warnings are you getting from sparse
+> and which version of sparse are you using?
+> 
+> noderef is one thing; address_space mess is a different story.  The version
+> I have here steps into the former, but not the latter; what are you seeing?
 
-At real system, tracepoints are used more frequently,
-So it is not "only used by few events."
+Oops, I too am seeing the noderef thing not the address space warning.
 
-But maybe FTRACE_SEQ_BUFSIZE is too large, 128 is enough.
+ char *estacks = per_cpu(exception_stacks, cpu);
+
+I get
+
+arch/x86/kernel/cpu/common.c:1149:19: warning: incorrect type in initializer (different modifiers)
+arch/x86/kernel/cpu/common.c:1149:19:    expected char *estacks
+arch/x86/kernel/cpu/common.c:1149:19:    got char [noderef] *<noident>
+  CC      arch/x86/kernel/cpu/common.o
+
+$ rpm -qi sparse
+Name        : sparse                       Relocations: (not relocatable)
+Version     : 0.4.1.git1                        Vendor: openSUSE
+Release     : 3.2                           Build Date: Sat 24 Oct 2009 11:58:16 AM KST
+
+Thanks.
+
+-- 
+tejun
