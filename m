@@ -1,68 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752183Ab0AZAna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268Ab0AZAns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752183Ab0AZAna (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 19:43:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550Ab0AZAn3
+	id S1752268Ab0AZAns (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 19:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201Ab0AZAnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 19:43:29 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38222 "EHLO mail.zytor.com"
+	Mon, 25 Jan 2010 19:43:45 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37374 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931Ab0AZAn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 19:43:27 -0500
-Message-ID: <4B5E3A12.4030506@zytor.com>
-Date: Mon, 25 Jan 2010 16:40:50 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	id S1752002Ab0AZAno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 19:43:44 -0500
+Message-ID: <4B5E3BED.6030705@kernel.org>
+Date: Tue, 26 Jan 2010 09:48:45 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH -v5 0/38] x86: not use  bootmem for x86
-References: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1264152287-13866-1-git-send-email-yinghai@kernel.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
+       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
+       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
+       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
+       x86@kernel.org, mingo@redhat.com, dan.j.williams@intel.com,
+       borislav.petkov@amd.com, ying.huang@intel.com, lenb@kernel.org,
+       neilb@suse.de, cl@linux-foundation.org
+Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to	hw_breakpoint
+References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere>
+In-Reply-To: <20100126001901.GI5087@nowhere>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 26 Jan 2010 00:42:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/22/2010 01:24 AM, Yinghai Lu wrote:
-> please check the patches regarding with early_res and bootmem
+Hello, Frederic.
+
+On 01/26/2010 09:19 AM, Frederic Weisbecker wrote:
+> On Tue, Jan 26, 2010 at 12:22:14AM +0900, Tejun Heo wrote:
+>> Add __percpu sparse annotations to hw_breakpoint.
+>>
+>> These annotations are to make sparse consider percpu variables to be
+>> in a different address space and warn if accessed without going
+>> through percpu accessors.  This patch doesn't affect normal builds.
+>>
+>> per_cpu(nr_task_bp_pinned, cpu) is replaced with
+>> &per_cpu(nr_task_bp_pinned[0], cpu).  This is the same to the compiler
+>> but allows per_cpu() macro to correctly drop __percpu designation for
+>> the returned pointer.
 > 
-> it will use early_res instead of bootmem with x86 code.
-> but still can use CONFIG_NO_BOOMEM to use bootmem or not
-> so could make transistion more smoothly
+> Ouch... It's unpleasant to see such workaround that messes up the
+> code just to make sparse happy.
 > 
-> -v2: allocate vmemmap on one node together, and also seperate early_res
-> -v3: make x86 32 bit support early_res to use bootmem too
->      move related early_res to kernel/
->      sparse vmemmap together: address Ingo.
-> -v4: some patches could go with tip with acked-by Jesse
->      radix and logical flat etc
-> -v5: put back to 2 patches into this patch to make it consistent
->      as linus pointed out that some place should replace size_t
->      with resource_size_t, and acctually that is done already in
->      those patches in pci/linux-next.
-> 
+> I guess __percpu is an address_space attribute? Is there no
+> way to force the address space change directly from the
+> per_cpu() macro?
 
-I have been looking at this patchset and tried it out; it has a build
-failure because of a naming conflict:
+Yeah, per_cpu() macro does that but when things get a bit complicated
+with static percpu arrays.  In the above case, the variable is defined
+as
 
-/home/hpa/kernel/linux-2.6-tip.range/drivers/pci/hotplug/ibmphp_res.c:43: error:
-conflicting types for ‘add_range’
-/home/hpa/kernel/linux-2.6-tip.range/include/linux/range.h:9: note:
-previous declaration of ‘add_range’ was here
+  static DEFINE_PER_CPU(unsigned int, nr_task_bp_pinned[HBP_NUM]);
 
-"add_range" is static.
+which gets translated to
 
-This makes me concerned that the naming is too generic.  In particular,
-we tend to prefer naming of the type subsystem_function(), so in this
-case range_add() might be a more suitable naming scheme.
+  static __attribute__((noderef, address_space(3))) \
+	 __attribute__((section(.data.percpu))) \
+	 __typeof__(unsigned int) nr_task_bp_pinned[HBP_NUM];
 
-I'm going to spend more time on this patchset.
+The above tells sparse that the members of nr_task_bp_pinned array are
+in address space 3 which is correct.  The problematic dereference was
 
-	-hpa
+  unsigned int *task_pinned = per_cpu(nr_task_bp_pinned, cpu)
+
+per_cpu() macro changes the address space of the resulting address but
+it does so assuming that the parameter it got passed is the one which
+got declared to be in the percpu address space.  It casts
+nr_task_bp_pinned itself, which to the sparse isn't in the percpu
+address space, to the kernel address space.  So, the workaround is
+basically to give per_cpu() macro the same thing that was defined.
+
+This type of usage (define as array, dereference the array as address)
+was the only place where I needed to work around to make address space
+change explicit.  There are two places which needed this and hwbreak
+was one.  The options were...
+
+* Leave it alone.  We can live with a few additional sparse warnings.
+
+* Make the proposed change.  It is slightly ugly but not cryptic or
+  difficult.
+
+* Somehow teach per_cpu() macro or sparse how to handle the above
+  right.
+
+I tried to improve per_cpu() macro but couldn't do it in any sane way.
+Leaving it alone isn't too bad either but given that the workaround is
+not horribly unreadable, I think it's best to use the slightly less
+elegant form in the few places where they are needed.
+
+Thanks.
+
+-- 
+tejun
