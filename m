@@ -1,91 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760Ab0AZCkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859Ab0AZClN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753760Ab0AZCkx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 21:40:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548Ab0AZCkw
+	id S1753859Ab0AZClN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 21:41:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575Ab0AZClL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 21:40:52 -0500
-Received: from solo.fdn.fr ([80.67.169.19]:42448 "EHLO solo.fdn.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751084Ab0AZCkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 21:40:51 -0500
-X-Greylist: delayed 820 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jan 2010 21:40:51 EST
-Date: Tue, 26 Jan 2010 03:40:49 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: William Hubbs <w.d.hubbs@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, gregkh@suse.de,
-       Chris Brannon <cmbrannon79@gmail.com>, Kirk Reiser <kirk@reisers.ca>
-Subject: Re: request for assistance:  accessing ttys from kernel space
-Message-ID: <20100126024049.GQ21492@const.famille.thibault.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	William Hubbs <w.d.hubbs@gmail.com>, linux-kernel@vger.kernel.org,
-	linux-serial@vger.kernel.org, gregkh@suse.de,
-	Chris Brannon <cmbrannon79@gmail.com>,
-	Kirk Reiser <kirk@reisers.ca>
-References: <20100126020203.GA23551@linux1> <20100126021306.16809e71@lxorguk.ukuu.org.uk>
+	Mon, 25 Jan 2010 21:41:11 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54530 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751314Ab0AZClK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 21:41:10 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Darren Hart <dvhltc@us.ibm.com>
+Subject: Re: futex() on vdso makes process unkillable
+Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <peterz@infradead.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>
+In-Reply-To: <4B5DD6DF.4090102@us.ibm.com>
+References: <1264411574.4283.1632.camel@laptop> <4B5DD6DF.4090102@us.ibm.com>
+Message-Id: <20100126113312.5AA3.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100126021306.16809e71@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 26 Jan 2010 11:41:05 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox, le Tue 26 Jan 2010 02:13:06 +0000, a écrit :
-> > What I would like to discuss is how we can access ttys from kernel
-> > space.  If we could do this, it would definitely make things much easier
-> > for us in speakup.
+> Peter Zijlstra wrote:
+> > On Mon, 2010-01-25 at 16:27 +0900, KOSAKI Motohiro wrote:
+> <snip>
+> >> Futex should work both file anon anon. however I personally think 
+> >> vdso is not file nor anon. it is special mappings. nobody defined
+> >> futex spec on special mappings. (yes, undefined).
+> >>
+> >> Personally, I think EINVAL or EFAULT are best result of vdso futexing, like as
+> >> futexing againt kernel address. but I guess another person have another thinking.
+> >>
+> >> I'd like to hear futex folks's opinion.
+> > 
+> > Well, my opinion is we should remove the vdso, its ugly as hell :-)
+> > 
+> > But I think it would make most sense to extend its definition in the
+> > direction of it being a file (for all intents and purposes its a special
+> > DSO -- which unfortunately isn't present in any filesystem).
+> > 
+> > [ For all intents and purposes processes can already communicate through
+> > futexes on the libc space, so being able to do so through the vsdo
+> > really doesn't add anything ]
+> > 
+> > So the problem is that the VDSO pages do not have a page->mapping
+> > because they lack the actual filesystem part of files, so even if (with
+> > the recent zero-page patch from Kosaki-san) you make private COWs of the
+> > VDSO, you'll get stuck in that loop.
+> > 
+> > So the prettiest solution is to simply place the vdso in an actual
+> > filesystem and slowly migrate towards letting userspace map it as a
+> > regular DSO -- /sys/lib{32,64}/libkernel.so like.
+> > 
+> > [ that has the bonus of getting rid of install_special_mapping() ]
+> > 
+> > The ugly solution is special casing the vdso in get_futex_key().
 > 
-> Basically - use a line discipline, that lets you sit on top of a tty and
-> interact with the hardware
+> I like the creating-a-real-file solution. However, for now (and for 
+> stable), I think Kosaki's suggestion of EINVAL or EFAULT is a good 
+> stop-gap. EINVAL might play the best with existing glibc implementations.
 
-The problem is that to my knowledge, to setup a line discipline, you
-need to already have a daemon opening /dev/ttySomething and set up the
-line discipline.  You could as well just move all the speakup code into
-the daemon.  The point of speakup is to have feedback even when it is
-not possible to run such daemon.
+May I confirm your mention?
 
-Is there another way to set up a line discipline from the kernel itself
-without the need from userland intervention, even before any / is
-mounted?
+If we can accept EFAULT, we don't need any change. my previous futex patch
+already did. because 1) VDSO is alwasys read-only mapped 2) write mode
+get_user_pages_fast() against read-only pte/vma return EFAULT.
 
-> > We need to be able to access the ttys as early as possible in the boot
-> > sequence.  Any help, suggestions, or guidance you could give us would be
-> > greatly appreciated.
-> 
-> We may need to make some special provision for that aspect - we already
-> do so for the early serial console support.
+Current linus and stable tree don't cause Mark's original problem. instead, just
+return EFAULT. (Well, I'm sorry. my previous mail was unclear. I wrote v2.6.31 test
+result)
 
-Maybe the early serial console support layer could be extended a bit so
-speakup can use it first during the boot?  For now it's quite tied to
-just printing the printk logs. drivers/accessibility/braille_console.c
-does manage do make something else, but it happens that the
-serial_core.c's uart_console_write puts additional \rs before \ns, which
-can be a problem.
+If you can't accept EFAULT, we need to add vdso specific logic into get_futex_key().
+Is this your intention?
 
-Also, for proper speech flow, speakup would need to be able to read
-characters from the device.
 
-> The ldisc is the start point then there may be some bits that need to
-> be extended around it.
 
-To me it seems like the only missing bit is how to setup the line
-discipline from the kernel itself (i.e. how to "open" the device?) as
-soon as it becomes safe to rely on the tty layer.
-
-> A bigger problem is going to be the fact non USB serial is vanishing bit
-> by bit.
-
-Actually that's precisely why the speakup community is pressing for
-proper tty support, in order to get PCI & USB support :)
-
-> We do have a USB console but it's truely crazy stuff and extending it
-> scares me 8)
-
-Ideally that'll needed :/
-
-Samuel
