@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178Ab0AZWpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752366Ab0AZWpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752178Ab0AZWpG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 17:45:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164Ab0AZWpE
+	id S1752366Ab0AZWpY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 17:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235Ab0AZWpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 17:45:04 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:48946 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967Ab0AZWpB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 17:45:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=EZesL6evMLa/uf7wyDuD9f/xWlN3VxcMSZlzLH4cQmrzL3Ep8cnzefoxn1uEKUJwNP
-         1VfCnDnT7E+qOG3I4mUS6bhRKPrKpl527kwvWs+jd+qekdYcmFZPmfeXH3/ZmaWs5U+B
-         6ybnUOuyQmS+8hEQSPDZOameZBgrZqazD0zXQ=
+	Tue, 26 Jan 2010 17:45:21 -0500
+Received: from [150.254.222.82] ([150.254.222.82]:45562 "EHLO mail.pceuip.pl"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751502Ab0AZWpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 17:45:19 -0500
+X-Nat-Received: from [192.168.241.179]:47443 [ident-empty]
+	by I DS proxy with TPROXY id 1264545904.23994
+	abuse-to abuse(at)dsv.agh.edu.pl
+Message-ID: <4B5F706B.60905@freesco.pl>
+Date: Tue, 26 Jan 2010 23:44:59 +0100
+From: Maciej Sitarz <macieks@freesco.pl>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); pl-PL; rv:1.9.1.7) Gecko/20100111 Lightning/1.0b1 Thunderbird/3.0.1
 MIME-Version: 1.0
-Date: Tue, 26 Jan 2010 16:44:59 -0600
-Message-ID: <a4e6962a1001261444l1235a15dxada6964151ffe119@mail.gmail.com>
-Subject: [GIT PULL] 9p file system bug fixes
-From: Eric Van Hensbergen <ericvh@gmail.com>
-To: Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       V9FS Developers <v9fs-developer@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14748] e1000e NIC not working after reboot
+References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera> <q60Z28d_9yH.A.JGB.haMXLB@chimera>
+In-Reply-To: <q60Z28d_9yH.A.JGB.haMXLB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -48.574
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On 24.01.2010 23:22, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let me know (either way).
 
-  Please pull a couple of bug fixes for the 9P filesystem for 2.6.33-rc
+The problem still exist I'm using kernel version 2.6.32.6 now.
 
-The following changes since commit 7284ce6c9f6153d1777df5f310c959724d1bd446:
-  Linus Torvalds (1):
-        Linux 2.6.33-rc4
+I have one more observation:
+After the reboot, when the NIC is not working, both leds are on. Not 
+blinking, they light all the time, even if I remove the plug.
 
-are available in the git repository at:
-
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
-
-Eric Van Hensbergen (3):
-      net/9p: fix virtio transport to correctly update status on connect
-      net/9p: fail when user specifies a transport which we can't find
-      net/9p: fix statsize inside twstat
-
- net/9p/client.c       |   13 +++++++++++--
- net/9p/trans_virtio.c |    1 +
- 2 files changed, 12 insertions(+), 2 deletions(-)
-
-      Thanks,
-
-           -eric
+Best regards
+-- 
+Maciek Sitarz
