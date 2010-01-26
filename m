@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018Ab0AZXob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928Ab0AZXoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755018Ab0AZXob (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:44:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930Ab0AZXoV
+	id S1754928Ab0AZXoP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:44:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877Ab0AZXoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:44:21 -0500
-Received: from kroah.org ([198.145.64.141]:35499 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:44:11 -0500
+Received: from kroah.org ([198.145.64.141]:35464 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754877Ab0AZXoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:44:16 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:31 2010
-Message-Id: <20100126233931.894407917@mini.kroah.org>
+	id S1754874Ab0AZXoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:44:08 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:30 2010
+Message-Id: <20100126233930.846297610@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:50 -0800
+Date: Tue, 26 Jan 2010 15:34:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Benoit Papillault <benoit.papillault@free.fr>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [84/98] mac80211: check that ieee80211_set_power_mgmt only handles STA interfaces.
+       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [76/98] [S390] cio: dont panic in non-fatal conditions
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,34 +29,85 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Benoit Papillault <benoit.papillault@free.fr>
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 
-commit e5de30c9bf4a39db9f54c4a373470ce65881ade0 upstream.
+commit 16b9a0571da4ee5cd15ca75e871722b0b5aee64d upstream.
 
-ieee80211_set_power_mgmt is meant for STA interfaces only. Moreover,
-since sdata->u.mgd.mtx is only initialized for STA interfaces, using
-this code for any other type of interface (like creating a monitor
-interface) will result in a oops.
+Remove the call to BUG() for situations which are unexpected
+but do not cause actual problems.
 
-Signed-off-by: Benoit Papillault <benoit.papillault@free.fr>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/mac80211/cfg.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/s390/cio/device_fsm.c |   25 ++++++-------------------
+ 1 file changed, 6 insertions(+), 19 deletions(-)
 
---- a/net/mac80211/cfg.c
-+++ b/net/mac80211/cfg.c
-@@ -1306,6 +1306,9 @@ static int ieee80211_set_power_mgmt(stru
- 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
- 	struct ieee80211_conf *conf = &local->hw.conf;
+--- a/drivers/s390/cio/device_fsm.c
++++ b/drivers/s390/cio/device_fsm.c
+@@ -1080,14 +1080,14 @@ void ccw_device_trigger_reprobe(struct c
+ 		ccw_device_start_id(cdev, 0);
+ }
  
-+	if (sdata->vif.type != NL80211_IFTYPE_STATION)
-+		return -EOPNOTSUPP;
-+
- 	if (!(local->hw.flags & IEEE80211_HW_SUPPORTS_PS))
- 		return -EOPNOTSUPP;
+-static void
+-ccw_device_offline_irq(struct ccw_device *cdev, enum dev_event dev_event)
++static void ccw_device_disabled_irq(struct ccw_device *cdev,
++				    enum dev_event dev_event)
+ {
+ 	struct subchannel *sch;
  
+ 	sch = to_subchannel(cdev->dev.parent);
+ 	/*
+-	 * An interrupt in state offline means a previous disable was not
++	 * An interrupt in a disabled state means a previous disable was not
+ 	 * successful - should not happen, but we try to disable again.
+ 	 */
+ 	cio_disable_subchannel(sch);
+@@ -1150,25 +1150,12 @@ ccw_device_nop(struct ccw_device *cdev, 
+ }
+ 
+ /*
+- * Bug operation action. 
+- */
+-static void
+-ccw_device_bug(struct ccw_device *cdev, enum dev_event dev_event)
+-{
+-	CIO_MSG_EVENT(0, "Internal state [%i][%i] not handled for device "
+-		      "0.%x.%04x\n", cdev->private->state, dev_event,
+-		      cdev->private->dev_id.ssid,
+-		      cdev->private->dev_id.devno);
+-	BUG();
+-}
+-
+-/*
+  * device statemachine
+  */
+ fsm_func_t *dev_jumptable[NR_DEV_STATES][NR_DEV_EVENTS] = {
+ 	[DEV_STATE_NOT_OPER] = {
+ 		[DEV_EVENT_NOTOPER]	= ccw_device_nop,
+-		[DEV_EVENT_INTERRUPT]	= ccw_device_bug,
++		[DEV_EVENT_INTERRUPT]	= ccw_device_disabled_irq,
+ 		[DEV_EVENT_TIMEOUT]	= ccw_device_nop,
+ 		[DEV_EVENT_VERIFY]	= ccw_device_nop,
+ 	},
+@@ -1186,7 +1173,7 @@ fsm_func_t *dev_jumptable[NR_DEV_STATES]
+ 	},
+ 	[DEV_STATE_OFFLINE] = {
+ 		[DEV_EVENT_NOTOPER]	= ccw_device_generic_notoper,
+-		[DEV_EVENT_INTERRUPT]	= ccw_device_offline_irq,
++		[DEV_EVENT_INTERRUPT]	= ccw_device_disabled_irq,
+ 		[DEV_EVENT_TIMEOUT]	= ccw_device_nop,
+ 		[DEV_EVENT_VERIFY]	= ccw_device_offline_verify,
+ 	},
+@@ -1243,7 +1230,7 @@ fsm_func_t *dev_jumptable[NR_DEV_STATES]
+ 	[DEV_STATE_DISCONNECTED] = {
+ 		[DEV_EVENT_NOTOPER]	= ccw_device_nop,
+ 		[DEV_EVENT_INTERRUPT]	= ccw_device_start_id,
+-		[DEV_EVENT_TIMEOUT]	= ccw_device_bug,
++		[DEV_EVENT_TIMEOUT]	= ccw_device_nop,
+ 		[DEV_EVENT_VERIFY]	= ccw_device_start_id,
+ 	},
+ 	[DEV_STATE_DISCONNECTED_SENSE_ID] = {
 
 
