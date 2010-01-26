@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462Ab0AZXzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328Ab0AZXye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755462Ab0AZXzP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:55:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663Ab0AZXnt
+	id S1755328Ab0AZXye (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:54:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425Ab0AZXxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:43:49 -0500
-Received: from kroah.org ([198.145.64.141]:35344 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:53:55 -0500
+Received: from kroah.org ([198.145.64.141]:35370 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754592Ab0AZXno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:44 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:27 2010
-Message-Id: <20100126233927.583402057@mini.kroah.org>
+	id S1754693Ab0AZXnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:50 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:28 2010
+Message-Id: <20100126233928.368179161@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:17 -0800
+Date: Tue, 26 Jan 2010 15:34:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Vasu Dev <vasu.dev@intel.com>, Robert Love <robert.w.love@intel.com>,
-       James Bottomley <James.Bottomley@suse.de>
-Subject: [51/98] [SCSI] fcoe, libfc: fix an libfc issue with queue ramp down in libfc
+       Ron Mercer <ron.mercer@qlogic.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Brandon Philips <bphilips@suse.de>
+Subject: [57/98] qlge: Add handler for DCBX firmware event.
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,64 +30,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Vasu Dev <vasu.dev@intel.com>
+From: Ron Mercer <ron.mercer@qlogic.com>
 
-commit 14caf44c69184ed72d46a2f883311daf27a4192f upstream.
+commit 91ced682f9de17ebab5fcb2a70b48e372eb43281 upstream.
 
-The cmd_per_lun value is used by scsi-ml as fall back lowest
-queue_depth value but in case of libfc cmd_per_lun is set to
-same value as max queue_depth = 32.
+The driver has nothing to do, but this marker prevents the event from
+showing up 'not handled'.
 
-So this patch reduces cmd_per_lun value to 3 and configures
-each lun with default max queue_depth 32 in fc_slave_alloc.
-
-Signed-off-by: Vasu Dev <vasu.dev@intel.com>
-Acked-by: Robert Love <robert.w.love@intel.com>
-Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+Signed-off-by: Ron Mercer <ron.mercer@qlogic.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Brandon Philips <bphilips@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/fcoe/fcoe.c    |    2 +-
- drivers/scsi/libfc/fc_fcp.c |   14 ++++++--------
- 2 files changed, 7 insertions(+), 9 deletions(-)
+ drivers/net/qlge/qlge_mpi.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/scsi/fcoe/fcoe.c
-+++ b/drivers/scsi/fcoe/fcoe.c
-@@ -137,7 +137,7 @@ static struct scsi_host_template fcoe_sh
- 	.change_queue_depth = fc_change_queue_depth,
- 	.change_queue_type = fc_change_queue_type,
- 	.this_id = -1,
--	.cmd_per_lun = 32,
-+	.cmd_per_lun = 3,
- 	.can_queue = FCOE_MAX_OUTSTANDING_COMMANDS,
- 	.use_clustering = ENABLE_CLUSTERING,
- 	.sg_tablesize = SG_ALL,
---- a/drivers/scsi/libfc/fc_fcp.c
-+++ b/drivers/scsi/libfc/fc_fcp.c
-@@ -2049,18 +2049,16 @@ EXPORT_SYMBOL(fc_eh_host_reset);
- int fc_slave_alloc(struct scsi_device *sdev)
- {
- 	struct fc_rport *rport = starget_to_rport(scsi_target(sdev));
--	int queue_depth;
+--- a/drivers/net/qlge/qlge_mpi.c
++++ b/drivers/net/qlge/qlge_mpi.c
+@@ -446,6 +446,9 @@ static int ql_mpi_handler(struct ql_adap
+ 		ql_aen_lost(qdev, mbcp);
+ 		break;
  
- 	if (!rport || fc_remote_port_chkready(rport))
- 		return -ENXIO;
- 
--	if (sdev->tagged_supported) {
--		if (sdev->host->hostt->cmd_per_lun)
--			queue_depth = sdev->host->hostt->cmd_per_lun;
--		else
--			queue_depth = FC_FCP_DFLT_QUEUE_DEPTH;
--		scsi_activate_tcq(sdev, queue_depth);
--	}
-+	if (sdev->tagged_supported)
-+		scsi_activate_tcq(sdev, FC_FCP_DFLT_QUEUE_DEPTH);
-+	else
-+		scsi_adjust_queue_depth(sdev, scsi_get_tag_type(sdev),
-+					FC_FCP_DFLT_QUEUE_DEPTH);
-+
- 	return 0;
- }
- EXPORT_SYMBOL(fc_slave_alloc);
++	case AEN_DCBX_CHG:
++		/* Need to support AEN 8110 */
++		break;
+ 	default:
+ 		QPRINTK(qdev, DRV, ERR,
+ 			"Unsupported AE %.08x.\n", mbcp->mbox_out[0]);
 
 
