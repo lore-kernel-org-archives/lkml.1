@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365Ab0AZXn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480Ab0AZXnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754365Ab0AZXn0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:43:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133Ab0AZXnR
+	id S1754480Ab0AZXnb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:43:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384Ab0AZXn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:43:17 -0500
-Received: from kroah.org ([198.145.64.141]:35126 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:43:27 -0500
+Received: from kroah.org ([198.145.64.141]:35215 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753995Ab0AZXnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:07 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:22 2010
-Message-Id: <20100126233922.699592453@mini.kroah.org>
+	id S1754369Ab0AZXn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:26 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:25 2010
+Message-Id: <20100126233925.207096060@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:40 -0800
+Date: Tue, 26 Jan 2010 15:33:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stefan Ringel <stefan.ringel@arcor.de>, Takashi Iwai <tiwai@suse.de>,
-       Ben Hutchings <ben@decadent.org.uk>
-Subject: [14/98] ALSA: hda - Add PCI IDs for Nvidia G2xx-series
+       Alex Williamson <alex.williamson@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Rafael J. Wysocki" <rjw@suse.de>
+Subject: [33/98] PCI: Always set prefetchable base/limit upper32 registers
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,30 +30,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Stefan Ringel <stefan.ringel@arcor.de>
+From: Alex Williamson <alex.williamson@hp.com>
 
-commit 6dd7dc767e35cfbb38f8c63a50b1c27acad25920 upstream.
+commit 59353ea30e65ab3ae181d6175e3212e1361c3787 upstream.
 
-Signed-off-by: Stefan Ringel <stefan.ringel@arcor.de>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-Cc: Ben Hutchings <ben@decadent.org.uk>
+Prior to 1f82de10 we always initialized the upper 32bits of the
+prefetchable memory window, regardless of the address range used.
+Now we only touch it for a >32bit address, which means the upper32
+registers remain whatever the BIOS initialized them too.
+
+It's valid for the BIOS to set the upper32 base/limit to
+0xffffffff/0x00000000, which makes us program prefetchable ranges
+like 0xffffffffabc00000 - 0x00000000abc00000
+
+Revert the chunk of 1f82de10 that made this conditional so we always
+write the upper32 registers and remove now unused pref_mem64 variable.
+
+Signed-off-by: Alex Williamson <alex.williamson@hp.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Rafael J. Wysocki <rjw@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/hda_intel.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/pci/setup-bus.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -2694,6 +2694,9 @@ static struct pci_device_id azx_ids[] = 
- 	{ PCI_DEVICE(0x10de, 0x0ac1), .driver_data = AZX_DRIVER_NVIDIA },
- 	{ PCI_DEVICE(0x10de, 0x0ac2), .driver_data = AZX_DRIVER_NVIDIA },
- 	{ PCI_DEVICE(0x10de, 0x0ac3), .driver_data = AZX_DRIVER_NVIDIA },
-+	{ PCI_DEVICE(0x10de, 0x0be2), .driver_data = AZX_DRIVER_NVIDIA },
-+	{ PCI_DEVICE(0x10de, 0x0be3), .driver_data = AZX_DRIVER_NVIDIA },
-+	{ PCI_DEVICE(0x10de, 0x0be4), .driver_data = AZX_DRIVER_NVIDIA },
- 	{ PCI_DEVICE(0x10de, 0x0d94), .driver_data = AZX_DRIVER_NVIDIA },
- 	{ PCI_DEVICE(0x10de, 0x0d95), .driver_data = AZX_DRIVER_NVIDIA },
- 	{ PCI_DEVICE(0x10de, 0x0d96), .driver_data = AZX_DRIVER_NVIDIA },
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -142,7 +142,6 @@ static void pci_setup_bridge(struct pci_
+ 	struct pci_dev *bridge = bus->self;
+ 	struct pci_bus_region region;
+ 	u32 l, bu, lu, io_upper16;
+-	int pref_mem64;
+ 
+ 	if (pci_is_enabled(bridge))
+ 		return;
+@@ -198,7 +197,6 @@ static void pci_setup_bridge(struct pci_
+ 	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, 0);
+ 
+ 	/* Set up PREF base/limit. */
+-	pref_mem64 = 0;
+ 	bu = lu = 0;
+ 	pcibios_resource_to_bus(bridge, &region, bus->resource[2]);
+ 	if (bus->resource[2]->flags & IORESOURCE_PREFETCH) {
+@@ -206,7 +204,6 @@ static void pci_setup_bridge(struct pci_
+ 		l = (region.start >> 16) & 0xfff0;
+ 		l |= region.end & 0xfff00000;
+ 		if (bus->resource[2]->flags & IORESOURCE_MEM_64) {
+-			pref_mem64 = 1;
+ 			bu = upper_32_bits(region.start);
+ 			lu = upper_32_bits(region.end);
+ 			width = 16;
+@@ -221,11 +218,9 @@ static void pci_setup_bridge(struct pci_
+ 	}
+ 	pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, l);
+ 
+-	if (pref_mem64) {
+-		/* Set the upper 32 bits of PREF base & limit. */
+-		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
+-		pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+-	}
++	/* Set the upper 32 bits of PREF base & limit. */
++	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
++	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+ 
+ 	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+ }
 
 
