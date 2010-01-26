@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294Ab0AZMsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481Ab0AZMuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752294Ab0AZMsS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 07:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433Ab0AZMsQ
+	id S1753481Ab0AZMuu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 07:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888Ab0AZMut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 07:48:16 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56416 "EHLO ogre.sisk.pl"
+	Tue, 26 Jan 2010 07:50:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56428 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750967Ab0AZMsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 07:48:15 -0500
+	id S1752065Ab0AZMus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 07:50:48 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeff Garrett <jeff@jgarrett.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with pci=use_crs)
-Date: Tue, 26 Jan 2010 13:48:59 +0100
+To: sboyce@blueyonder.co.uk
+Subject: Re: HDA Intel Audio hang on boot
+Date: Tue, 26 Jan 2010 13:51:40 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc4-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <hE3x9c-4KZM.A.tpF.EKMXLB@chimera> <20100126071912.GA7543@jgarrett.org>
-In-Reply-To: <20100126071912.GA7543@jgarrett.org>
+Cc: Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <s5hr5pd9wsu.wl%tiwai@suse.de> <4B5ED9E4.60106@blueyonder.co.uk>
+In-Reply-To: <4B5ED9E4.60106@blueyonder.co.uk>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001261348.59508.rjw@sisk.pl>
+Message-Id: <201001261351.40292.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 January 2010, Jeff Garrett wrote:
-> On Sun, Jan 24, 2010 at 11:04:38PM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.32.  Please verify if it still should be listed and let me know
-> > (either way).
+On Tuesday 26 January 2010, Sid Boyce wrote:
+> On 26/01/10 06:58, Takashi Iwai wrote:
+...
+> > And... is this report for 2.6.32 or for 2.6.33?
+> > If it's with 2.6.32, enable_msi=1 may help instead.
 > > 
 > > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15124
-> > Subject		: PCI host bridge windows ignored (works with pci=use_crs)
-> > Submitter	: Jeff Garrett <jeff@jgarrett.org>
-> > Date		: 2010-01-13 5:37 (12 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=126336296600307&w=4
-> > Handled-By	: Yinghai Lu <yinghai@kernel.org>
-> > 		  Bjorn Helgaas <bjorn.helgaas@hp.com>
+> The motherboard giving the problem is the Asus M2N32-SLI deluxe.
+> 00:0e.1 Audio device: nVidia Corporation MCP55 High Definition Audio
+> (rev a2)
 > 
-> This regression should still be listed.  No patch to test yet.
+> No such problem with the Asus CROSSHAIR II FORMULA motherboard which
+> also has the
+> 00:07.0 Audio device: nVidia Corporation MCP72XE/MCP72P/MCP78U/MCP78S
+> High Definition Audio (rev a1)
+> 
+> For any kernel >2.6.32-git1 it hangs, i.e 2.6.32-git2 to 2.6.33-rc5.
+> Disabling the sound chip in the BIOS, they all boot.
+> tindog:/etc/modprobe.d # uname -r
+> 2.6.32-git1-smp
+> tindog:/etc/modprobe.d # l /dev/dsp*
+> crw-rw-rw- 1 root audio 14,  3 Jan 26 11:46 /dev/dsp
+> crw-rw-rw- 1 root audio 14, 35 Jan 26 11:46 /dev/dsp2
 
-Thanks for the update.
-
-IIRC, we already know how to fix this ...
+Is your adapter build as a module or is it compiled directly into the kernel?
 
 Rafael
