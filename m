@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546Ab0AZEn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524Ab0AZEqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754546Ab0AZEn4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 23:43:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317Ab0AZEnx
+	id S1754524Ab0AZEqq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 23:46:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485Ab0AZEqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 23:43:53 -0500
-Received: from sh.osrg.net ([192.16.179.4]:51445 "EHLO sh.osrg.net"
+	Mon, 25 Jan 2010 23:46:44 -0500
+Received: from kroah.org ([198.145.64.141]:48626 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752821Ab0AZEnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 23:43:52 -0500
-Date: Tue, 26 Jan 2010 13:43:01 +0900
-To: benh@kernel.crashing.org
-Cc: adharmap@codeaurora.org, linux-kernel@vger.kernel.org,
-       linux-arm-msm@vger.kernel.org, dwalker@codeaurora.org, arnd@arndb.de,
-       fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org, mingo@elte.hu,
-       joerg.roedel@amd.com, maciej.sosnowski@intel.com,
-       dan.j.williams@intel.com, beckyb@kernel.crashing.org,
-       yanghy@cn.fujitsu.com, linux-arch@vger.kernel.org, adharmap@quicinc.com
-Subject: Re: [RFC PATCH] dma: Add barrierless dma mapping/unmapping api
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1264480210.3601.118.camel@pasglop>
-References: <1264473346-32721-1-git-send-email-adharmap@codeaurora.org>
-	<1264480210.3601.118.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20100126134207T.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 26 Jan 2010 13:43:03 +0900 (JST)
+	id S1753164Ab0AZEqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 23:46:44 -0500
+Date: Mon, 25 Jan 2010 20:36:46 -0800
+From: Greg KH <greg@kroah.com>
+To: Himanshu Chauhan <himanshu@symmetricore.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Kernel Newbies <kernelnewbies@nl.linux.org>
+Subject: Re: sysfs_ops show vector: size of buffer not required?
+Message-ID: <20100126043646.GB32066@kroah.com>
+References: <20100124074118.GA4201@himanshu-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100124074118.GA4201@himanshu-laptop>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jan 2010 15:30:10 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Mon, 2010-01-25 at 18:35 -0800, adharmap@codeaurora.org wrote:
-> > From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
-> > 
-> > Tests have shown that there is a significant performance gain
-> > when a driver uses mapping/unmapping functions without a barrier
-> > multiple times and calls dsb() only after the last buffer. This
-> > api adds support for barrierless dma operations on ARMv6
-> > and ARMv7.
+On Sun, Jan 24, 2010 at 01:11:18PM +0530, Himanshu Chauhan wrote:
+> Hi All,
 > 
-> Gotta love when each architecture has subtely different barriers
-> semantics ...
-> 
-> This is ARM stuff at this stage and as such not a huge deal to me but I
-> don't like seeing new arch specific API extending generic ones for
-> drivers, it's just going to make it harder when those drivers start
-> using them and those devices are use on other archs.
+> The sysfs_ops's show vector doesn't have a size of the
+> buffer given to the vector, while store on the other hand
+> has. What is the rationale behind it?
 
-Completely agreed. Adding architecture specific DMA API is a really
-bad idea. We need to keep the DMA API that works for all the
-architectures.
+If you need to check the size, you are doing something wrong.
 
+Seriously, that is the reason.  A sysfs file should be a single value,
+which will never overflow the buffer.
 
-> There are people nowadays putting AXI bridges and the whole ARM
-> paraphernalia of IP cores behind them on PowerPC cores for example and I
-> can see that happening with x86 as well.
-> 
-> In your case, I believe your are fixing the wrong problem anyways. The
-> right approach would be instead to put all your buffer into an sglist
-> and use dma_map/unmap_sg().
+> I see most of the implementations doing strcpy in the
+> show vectors. Ill behaved driver might overwrite the
+> given buffer when size is not known. Should this be addressed
+> by providing the buffer size along with the buffer pointer?
 
-Agreed again. That's exactly what I suggested before:
+Nope.
 
-http://marc.info/?l=linux-kernel&m=126294076917753&w=2
+Again, a single value only, it easily fits into the buffer size.
+
+thanks,
+
+greg k-h
