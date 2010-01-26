@@ -1,41 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275Ab0AZHzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973Ab0AZILB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753275Ab0AZHzP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 02:55:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537Ab0AZHzK
+	id S1751973Ab0AZILB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 03:11:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342Ab0AZILA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 02:55:10 -0500
-Received: from lo.gmane.org ([80.91.229.12]:45463 "EHLO lo.gmane.org"
+	Tue, 26 Jan 2010 03:11:00 -0500
+Received: from ozlabs.org ([203.10.76.45]:48095 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752730Ab0AZHzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 02:55:09 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: A Rojas <nqn1976list@gmail.com>
-Subject: Re: OOM-Killer kills too much with 2.6.32.2
-Followup-To: gmane.linux.kernel
-Date: Tue, 26 Jan 2010 08:51:03 +0100
-Message-ID: <hjm6t6$6mf$1@ger.gmane.org>
-References: <20100125104728.4935.A69D9226@jp.fujitsu.com> <op.u63v1pxzasvm2a@kedge> <20100126141055.5AAD.A69D9226@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 9.red-81-43-142.staticip.rima-tde.net
-User-Agent: KNode/4.3.4
+	id S1750756Ab0AZIK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 03:10:59 -0500
+Date: Tue, 26 Jan 2010 19:07:48 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: balbir@linux.vnet.ibm.com, Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       schwidefsky@de.ibm.com, balajirrao@gmail.com, dhaval@linux.vnet.ibm.com,
+       tglx@linutronix.de, kamezawa.hiroyu@jp.fujitsu.com,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com
+Subject: Re: [PATCH] sched: cpuacct: Use bigger percpu counter batch values
+ for stats counters
+Message-ID: <20100126080748.GD2996@kryten>
+References: <20090512102412.GG6351@balbir.in.ibm.com>
+ <20090512102939.GB11714@elte.hu>
+ <20090512193656.D647.A69D9226@jp.fujitsu.com>
+ <20090716081010.GB3134@in.ibm.com>
+ <20090716083948.GA2950@kryten>
+ <20090820051038.GF21100@kryten>
+ <20100118044142.GS12666@kryten>
+ <20100125151404.7b7e6970.akpm@linux-foundation.org>
+ <4B5E88EB.4020001@linux.vnet.ibm.com>
+ <20100125223513.dd82e260.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100125223513.dd82e260.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
 
+Hi Andrew,
 
+> > I guess a lot of the changelog and comments are in the email history,
 > 
-> Hi all,
+> Not a very useful location for it!
+
+Good point, I'll work on a useful comment.
+
+> > Why does it look quite wrong to you?
 > 
-> Strangely, all reproduce machine are x86_64 with Intel i915. but I don't
-> have any solid evidence.
+> Because it computes the correct value and then if it's larger than
+> INT_MAX, it inexplicably assigns INT_MAX to it, giving a wrong result!
+>
+> Does that code actually work, btw?  percpu_counter_batch has type `int'
+> and cputime_one_jiffy has type `int' so their product has type `int'. 
+> So by the time min_t performs its comparison, the upper 32 bits of the
+> product are already lost.
 
-Hi,
- I have the same issue in i686 (intel i915 too)
+On ppc64, s390 and ia64 cputime_one_jiffy is 64bit and I want to prevent us
+creating too large a batch value:
 
+void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
+
+If we pass in something bigger than INT_MAX we could end up with 0 after
+truncation which will turn the percpu counter into a single spinlock global
+counter.
+
+Anton
