@@ -1,51 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461Ab0AZCIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753475Ab0AZCKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461Ab0AZCIz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 21:08:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679Ab0AZCIy
+	id S1753475Ab0AZCKt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 21:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184Ab0AZCKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 21:08:54 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:51059 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752487Ab0AZCIx convert rfc822-to-8bit (ORCPT
+	Mon, 25 Jan 2010 21:10:48 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:5263 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753075Ab0AZCKr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 21:08:53 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=Rj5T15NXWRUIJMEvM9dpt7nVsZ6usOwJU2REXwqeRTMxfyaDo0RDcVVU9txHaMV/7
-	hdk2PjvoxbYC7lZOfNr2w==
+	Mon, 25 Jan 2010 21:10:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BmB554uMwng8dm2yOIRaHm6+gpZi+5BO05YR9cp7FooJU+82LXqdFo6H82sV8mwMGv
+         o+WQuyZUXdKK9Tq52RqJ+qHRmLSlB37DOOURk8mFAntUNnd7GtgKNfbk6DLYej1VHnDQ
+         ghA9I2N5CWFgR4wd5DXvrD69jQ7NpVfX6QPbY=
+Date: Tue, 26 Jan 2010 03:10:42 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
+       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
+       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
+       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
+       x86@kernel.org, mingo@redhat.com, dan.j.williams@intel.com,
+       borislav.petkov@amd.com, ying.huang@intel.com, lenb@kernel.org,
+       neilb@suse.de, cl@linux-foundation.org
+Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to
+	hw_breakpoint
+Message-ID: <20100126021041.GN5087@nowhere>
+References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere> <4B5E3BED.6030705@kernel.org> <20100126010239.GK5087@nowhere> <4B5E4308.8020105@kernel.org> <20100126020113.GM5087@nowhere>
 MIME-Version: 1.0
-In-Reply-To: <20100124232512.GA12383@linux.vnet.ibm.com>
-References: <20100124232512.GA12383@linux.vnet.ibm.com>
-Date: Mon, 25 Jan 2010 18:08:51 -0800
-Message-ID: <6599ad831001251808k143c03fal14fe6bf5f19e0e5e@mail.gmail.com>
-Subject: Re: locking design for task_subsys_state()?
-From: Paul Menage <menage@google.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100126020113.GM5087@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 24, 2010 at 3:25 PM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
->
-> Is there some flag in the task structure that I should check in order to
-> suppress this splat, and, more important, to document the locking
-> design?  Here is what I currently have in my local tree:
+On Tue, Jan 26, 2010 at 03:01:14AM +0100, Frederic Weisbecker wrote:
+> On Tue, Jan 26, 2010 at 10:19:04AM +0900, Tejun Heo wrote:
+> > Hello,
+> > 
+> > On 01/26/2010 10:02 AM, Frederic Weisbecker wrote:
+> > > Well, sorry I must be missing something obvious, but is it impossible
+> > > to make per_cpu(var, cpu) returning something cast in:
+> > > 
+> > > 	(typeof(var) __force)
+> > > 
+> > > Or I guess you did that already and it is not working with static
+> > > arrays, or?
+> > 
+> > Yeap, the definition looks like
+> > 
+> >  #define SHIFT_PERCPU_PTR(__p, __offset)	({			\
+> > 	__verify_pcpu_ptr((__p));					\
+> > 	RELOC_HIDE((typeof(*(__p)) __kernel __force *)(__p), (__offset)); \
+> >  })
+> > 
+> >  #define per_cpu(var, cpu) \
+> > 	(*SHIFT_PERCPU_PTR(&(var), per_cpu_offset(cpu)))
+> > 
+> > but it just ends up putting the __force at the wrong layer.  It seems
+> > that (typeof(var) __kernel __force) tell sparse var is in the kernel
+> > address space but not its members.
+> 
+> 
+> So, may be it considers you are applying the address space overriding
+> to the pointer to the type and not to the type itself.
+> 
+> Consider:
+> 
+> 	int __percpu i;
+> 
+> What you do above *might* be considered as if SHIFT_PERCPU_PTR
+> returns something of a type:
+> 
+> 	int * __percpu i;
+> 
+> So the pointer is in the normal address space, but its content is in
+> __percpu address space.
+> 
+> What if you do this:
+> 
+> 
+> #define SHIFT_PERCPU_PTR(__p, __offset)      ({                      \
+>       __verify_pcpu_ptr((__p));                                       \
+>       RELOC_HIDE((__p), (__offset)); \
+> })
+> 
+> #define per_cpu(var, cpu) \
+>       (typeof(var) __kernel __force)(*SHIFT_PERCPU_PTR(&(var), per_cpu_offset(cpu)))
+> 
+> This should work because &(var) should be dereferencable directly, since
+> it is not of type "__force t" but of type "*__force t"
+> 
+> And you're not doing anymore this:
+> 
+> 	*(int * __kernel __force) i;
+> but
+> 	*(int __kernel __force *) i;
 
-Nothing cgroup-specific as far as I know - I guess it's just assumed
-that since nothing else can be accessing the task_struct at that point
-as it's not linked into any lists (is that correct?) then there's no
-locking needed. If there's no generic task flag that indicates that
-the task has never been exposed to any other thread via a list, etc,
-it could be added? I imagine that some other subsystems are likely to
-have similar problems. Alternatively, adding an RCU read-lock pair
-around the relevant code is probably possible too, even if not
-technically necessary.
 
-Paul
+
+The above is perhaps a bit confusing.
+To be more clear, in the first case you only cast the pointer
+to the type, which gives you a pointer valid in kernel space
+to data valid in percpu space.
+
+The second case gives you something valid in kernel space for both.
+
