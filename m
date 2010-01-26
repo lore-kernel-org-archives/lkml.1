@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453Ab0AZXyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477Ab0AZXz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453Ab0AZXyo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:54:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577Ab0AZXyc
+	id S1755477Ab0AZXz5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331Ab0AZXzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:54:32 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:60308 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755420Ab0AZXxz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:53:55 -0500
-Message-ID: <4B5F7F53.8060002@nortel.com>
-Date: Tue, 26 Jan 2010 17:48:35 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: which fields in /proc/meminfo are orthogonal?
-References: <4B5F3C9C.3050908@nortel.com> <4B5F54DE.7030302@nortel.com>
-In-Reply-To: <4B5F54DE.7030302@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Jan 2010 23:53:36.0757 (UTC) FILETIME=[C6BD4250:01CA9EE2]
+	Tue, 26 Jan 2010 18:55:52 -0500
+Received: from kroah.org ([198.145.64.141]:35353 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754615Ab0AZXnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:46 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:27 2010
+Message-Id: <20100126233927.843428460@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Tue, 26 Jan 2010 15:34:19 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Yi Zou <yi.zou@intel.com>, Robert Love <robert.w.love@intel.com>,
+       James Bottomley <James.Bottomley@suse.de>
+Subject: [53/98] [SCSI] fcoe: Fix getting san mac for VLAN interface
+In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/26/2010 02:47 PM, Chris Friesen wrote:
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-> I've tried adding up
-> MemFree+Buffers+Cached+AnonPages+Mapped+Slab+PageTables+VmallocUsed
-> 
-> (hugepages are disabled and there is no swap)
-> 
-> Shortly after boot this gets me within about 3MB of MemTotal.  However,
-> after 1070 minutes there is a 64MB difference between MemTotal and the
-> above sum.
+------------------
 
-Oddly enough, over the same period it appears that
+From: Yi Zou <yi.zou@intel.com>
 
-MemFree + Active + Inactive + Slab + PageTables
+commit 5bab87e6d465d54a2b5899e0f583d42f00dbee2e upstream.
 
-is basically (+/- half a meg) constant and equal to "MemTotal - 48.5MB".
+Make sure we are get the SAN MAC address from the real netdev if the input
+netdev is a VLAN device.
+
+Signed-off-by: Yi Zou <yi.zou@intel.com>
+Signed-off-by: Robert Love <robert.w.love@intel.com>
+Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/scsi/fcoe/fcoe.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+--- a/drivers/scsi/fcoe/fcoe.c
++++ b/drivers/scsi/fcoe/fcoe.c
+@@ -160,6 +160,7 @@ static int fcoe_interface_setup(struct f
+ {
+ 	struct fcoe_ctlr *fip = &fcoe->ctlr;
+ 	struct netdev_hw_addr *ha;
++	struct net_device *real_dev;
+ 	u8 flogi_maddr[ETH_ALEN];
+ 
+ 	fcoe->netdev = netdev;
+@@ -173,8 +174,10 @@ static int fcoe_interface_setup(struct f
+ 
+ 	/* look for SAN MAC address, if multiple SAN MACs exist, only
+ 	 * use the first one for SPMA */
++	real_dev = (netdev->priv_flags & IFF_802_1Q_VLAN) ?
++		vlan_dev_real_dev(netdev) : netdev;
+ 	rcu_read_lock();
+-	for_each_dev_addr(netdev, ha) {
++	for_each_dev_addr(real_dev, ha) {
+ 		if ((ha->type == NETDEV_HW_ADDR_T_SAN) &&
+ 		    (is_valid_ether_addr(ha->addr))) {
+ 			memcpy(fip->ctl_src_addr, ha->addr, ETH_ALEN);
 
 
-It would seem that active/inactive track memory that isn't visible in
-Buffers+Cached+AnonPages+Mapped.  Anyone have any suggestions what it
-might be?
-
-Thanks,
-
-Chris
