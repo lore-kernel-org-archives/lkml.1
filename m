@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626Ab0A0AB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482Ab0A0ABg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755626Ab0A0AB2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213Ab0A0ABX
+	id S1755482Ab0A0ABg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:01:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755584Ab0A0AB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:01:23 -0500
-Received: from kroah.org ([198.145.64.141]:35169 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:01:26 -0500
+Received: from kroah.org ([198.145.64.141]:35173 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754061Ab0AZXnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:21 -0500
+	id S1754189Ab0AZXnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:20 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:24 2010
-Message-Id: <20100126233924.543880691@mini.kroah.org>
+Message-Id: <20100126233924.283455757@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:54 -0800
+Date: Tue, 26 Jan 2010 15:33:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Rusty Russell <rusty@rustcorp.com.au>, peterz@infradead.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [28/98] sched: Fix isolcpus boot option
+       Karel Zak <kzak@redhat.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: [26/98] partitions: use sector size for EFI GPT
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,56 +28,127 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Rusty Russell <rusty@rustcorp.com.au>
+From: Karel Zak <kzak@redhat.com>
 
-commit bdddd2963c0264c56f18043f6fa829d3c1d3d1c0 upstream.
+commit 7d13af3279985f554784a45cc961f706dbcdbdd1 upstream.
 
-Anton Blanchard wrote:
+Currently, kernel uses strictly 512-byte sectors for EFI GPT parsing.
+That's wrong.
 
-> We allocate and zero cpu_isolated_map after the isolcpus
-> __setup option has run. This means cpu_isolated_map always
-> ends up empty and if CPUMASK_OFFSTACK is enabled we write to a
-> cpumask that hasn't been allocated.
+UEFI standard (version 2.3, May 2009, 5.3.1 GUID Format overview, page
+95) defines that LBA is always based on the logical block size. It
+means bdev_logical_block_size() (aka BLKSSZGET) for Linux.
 
-I introduced this regression in 49557e620339cb13 (sched: Fix
-boot crash by zalloc()ing most of the cpu masks).
+This patch removes static sector size from EFI GPT parser.
 
-Use the bootmem allocator if they set isolcpus=, otherwise
-allocate and zero like normal.
+The problem is reproducible with the latest GNU Parted:
 
-Reported-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: peterz@infradead.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: <stable@kernel.org>
-LKML-Reference: <200912021409.17013.rusty@rustcorp.com.au>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Tested-by: Anton Blanchard <anton@samba.org>
+ # modprobe scsi_debug dev_size_mb=50 sector_size=4096
+
+  # ./parted /dev/sdb print
+  Model: Linux scsi_debug (scsi)
+  Disk /dev/sdb: 52.4MB
+  Sector size (logical/physical): 4096B/4096B
+  Partition Table: gpt
+
+  Number  Start   End     Size    File system  Name     Flags
+   1      24.6kB  3002kB  2978kB               primary
+   2      3002kB  6001kB  2998kB               primary
+   3      6001kB  9003kB  3002kB               primary
+
+  # blockdev --rereadpt /dev/sdb
+  # dmesg | tail -1
+   sdb: unknown partition table      <---- !!!
+
+with this patch:
+
+  # blockdev --rereadpt /dev/sdb
+  # dmesg | tail -1
+   sdb: sdb1 sdb2 sdb3
+
+Signed-off-by: Karel Zak <kzak@redhat.com>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/sched.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ fs/partitions/efi.c |   23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -8061,6 +8061,7 @@ static cpumask_var_t cpu_isolated_map;
- /* Setup the mask of cpus configured for isolated domains */
- static int __init isolated_cpu_setup(char *str)
- {
-+	alloc_bootmem_cpumask_var(&cpu_isolated_map);
- 	cpulist_parse(str, cpu_isolated_map);
- 	return 1;
- }
-@@ -9591,7 +9592,9 @@ void __init sched_init(void)
- 	zalloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
- 	alloc_cpumask_var(&nohz.ilb_grp_nohz_mask, GFP_NOWAIT);
- #endif
--	zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
-+	/* May be allocated at isolcpus cmdline parse time */
-+	if (cpu_isolated_map == NULL)
-+		zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
- #endif /* SMP */
+--- a/fs/partitions/efi.c
++++ b/fs/partitions/efi.c
+@@ -1,7 +1,9 @@
+ /************************************************************
+  * EFI GUID Partition Table handling
+- * Per Intel EFI Specification v1.02
+- * http://developer.intel.com/technology/efi/efi.htm
++ *
++ * http://www.uefi.org/specs/
++ * http://www.intel.com/technology/efi/
++ *
+  * efi.[ch] by Matt Domsch <Matt_Domsch@dell.com>
+  *   Copyright 2000,2001,2002,2004 Dell Inc.
+  *
+@@ -92,6 +94,7 @@
+  *
+  ************************************************************/
+ #include <linux/crc32.h>
++#include <linux/math64.h>
+ #include "check.h"
+ #include "efi.h"
  
- 	perf_event_init();
+@@ -141,7 +144,8 @@ last_lba(struct block_device *bdev)
+ {
+ 	if (!bdev || !bdev->bd_inode)
+ 		return 0;
+-	return (bdev->bd_inode->i_size >> 9) - 1ULL;
++	return div_u64(bdev->bd_inode->i_size,
++		       bdev_logical_block_size(bdev)) - 1ULL;
+ }
+ 
+ static inline int
+@@ -188,6 +192,7 @@ static size_t
+ read_lba(struct block_device *bdev, u64 lba, u8 * buffer, size_t count)
+ {
+ 	size_t totalreadcount = 0;
++	sector_t n = lba * (bdev_logical_block_size(bdev) / 512);
+ 
+ 	if (!bdev || !buffer || lba > last_lba(bdev))
+                 return 0;
+@@ -195,7 +200,7 @@ read_lba(struct block_device *bdev, u64 
+ 	while (count) {
+ 		int copied = 512;
+ 		Sector sect;
+-		unsigned char *data = read_dev_sector(bdev, lba++, &sect);
++		unsigned char *data = read_dev_sector(bdev, n++, &sect);
+ 		if (!data)
+ 			break;
+ 		if (copied > count)
+@@ -602,6 +607,7 @@ efi_partition(struct parsed_partitions *
+ 	gpt_header *gpt = NULL;
+ 	gpt_entry *ptes = NULL;
+ 	u32 i;
++	unsigned ssz = bdev_logical_block_size(bdev) / 512;
+ 
+ 	if (!find_valid_gpt(bdev, &gpt, &ptes) || !gpt || !ptes) {
+ 		kfree(gpt);
+@@ -612,13 +618,14 @@ efi_partition(struct parsed_partitions *
+ 	pr_debug("GUID Partition Table is valid!  Yea!\n");
+ 
+ 	for (i = 0; i < le32_to_cpu(gpt->num_partition_entries) && i < state->limit-1; i++) {
++		u64 start = le64_to_cpu(ptes[i].starting_lba);
++		u64 size = le64_to_cpu(ptes[i].ending_lba) -
++			   le64_to_cpu(ptes[i].starting_lba) + 1ULL;
++
+ 		if (!is_pte_valid(&ptes[i], last_lba(bdev)))
+ 			continue;
+ 
+-		put_partition(state, i+1, le64_to_cpu(ptes[i].starting_lba),
+-				 (le64_to_cpu(ptes[i].ending_lba) -
+-                                  le64_to_cpu(ptes[i].starting_lba) +
+-				  1ULL));
++		put_partition(state, i+1, start * ssz, size * ssz);
+ 
+ 		/* If this is a RAID volume, tell md */
+ 		if (!efi_guidcmp(ptes[i].partition_type_guid,
 
 
