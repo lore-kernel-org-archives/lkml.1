@@ -1,114 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533Ab0AZOii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919Ab0AZOnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533Ab0AZOii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 09:38:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439Ab0AZOih
+	id S1753919Ab0AZOnk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 09:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669Ab0AZOnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 09:38:37 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:52969 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751972Ab0AZOih (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 09:38:37 -0500
-Date: Tue, 26 Jan 2010 14:38:30 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>,
-       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [PATCH] MAINTAINERS: add i2c tree for embedded platforms
-Message-ID: <20100126143830.GC12774@fluff.org.uk>
-References: <1264411234-5400-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <20100125111055.05ccedf2@hyperion.delvare>
+	Tue, 26 Jan 2010 09:43:40 -0500
+Received: from cantor.suse.de ([195.135.220.2]:41388 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753624Ab0AZOnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 09:43:39 -0500
+Date: Tue, 26 Jan 2010 06:30:08 -0800
+From: Greg KH <gregkh@suse.de>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] platform_driver_register:  warn if probe is in
+ .init.text
+Message-ID: <20100126143008.GA18609@suse.de>
+References: <20090619141128.GA11506@suse.de>
+ <20090619144354.GA20985@pengutronix.de>
+ <20090629075535.GA20155@pengutronix.de>
+ <20090711033459.GC1344@suse.de>
+ <20090711100014.GA9540@pengutronix.de>
+ <20090711170548.GC5205@suse.de>
+ <20090907141941.GA19380@pengutronix.de>
+ <20100122170641.GD13718@pengutronix.de>
+ <20100122173846.GA11057@suse.de>
+ <20100126085928.GD20792@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20100125111055.05ccedf2@hyperion.delvare>
-X-Disclaimer: These are my own opinions, so there!
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100126085928.GD20792@pengutronix.de>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 11:10:55AM +0100, Jean Delvare wrote:
-> On Mon, 25 Jan 2010 10:20:34 +0100, Uwe Kleine-K??nig wrote:
-> > Signed-off-by: Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>
-> > Cc: Ben Dooks <ben-linux@fluff.org>
-> > ---
-> > Hello,
-> > 
-> > I wonder if it makes sence to split the "I2C SUBSYSTEM" entry into
-> > something like:
-> > 
-> > 	I2C SUBSYSTEM (PC drivers, core)
-> > 	M:	Jean Delvare <khali@linux-fr.org>
-> > 	L:	...
-> > 	W:	...
-> > 	T:	quilt ...
-> > 	S:	...
-> > 	F:	Documentation/i2c/
-> > 	F:	drivers/i2c/
-> > 	F:	include/linux/i2c.h
-> > 	F:	include/linux/i2c-*.h
-> > 
-> > 	I2C SUBSYSTEM (embedded platforms)
-> > 	M:	Ben Dooks <ben-linux@fluff.org>
-> > 	L:	...
-> > 	W:	...
-> > 	T:	git ...
-> > 	S:	...
-> > 	F:	drivers/i2c/
-> > 	F:	include/linux/i2c-*.h
-> > 
-> > (I'm not entirely sure about the file patterns for the 2nd entry.)
+On Tue, Jan 26, 2010 at 09:59:28AM +0100, Uwe Kleine-König wrote:
+> Hello Greg,
 > 
-> I'm not sure what value it adds, compared to having a single entry as
-> we have today. scripts/get_maintainer.pl will produce the same output,
-> won't it?
+> On Fri, Jan 22, 2010 at 09:38:46AM -0800, Greg KH wrote:
+> > On Fri, Jan 22, 2010 at 06:06:41PM +0100, Uwe Kleine-König wrote:
+> > > Hello,
+> > > 
+> > > On Mon, Sep 07, 2009 at 04:19:41PM +0200, Uwe Kleine-König wrote:
+> > > > Hi Greg,
+> > > > 
+> > > > On Sat, Jul 11, 2009 at 10:05:48AM -0700, Greg KH wrote:
+> > > > > On Sat, Jul 11, 2009 at 12:00:14PM +0200, Uwe Kleine-König wrote:
+> > > > > > Hi Greg,
+> > > > > > 
+> > > > > > > > Are you conviced and took the patch or did you give up to convince me?
+> > > > > > > 
+> > > > > > > Heh, no, sorry, it got burried in my queue.
+> > > > > > > 
+> > > > > > > > I still think the patch is correct and I'd like to have it applied.
+> > > > > > > 
+> > > > > > > Ok, let's test it out in the linux-next tree for a while to make sure it
+> > > > > > > works properly.  Care to send me an updated version?
+> > > > > > I updated to latest Linus' master.  It applies to linux-next from
+> > > > > > Fri Jul 10 14:44:30 2009 +1000 as is.
+> > > > > 
+> > > > > Thanks, I'll apply it later today to my trees.
+> > > > ping?!
+> > > > 
+> > > > > > Back some time I sent a series that fixes many of these bugs.  I will
+> > > > > > update it later today and resend.
+> > > > > 
+> > > > > Thanks, that would be good to have, to keep the noise down for devices
+> > > > > we already know about.
+> > > ping?  I assume you don't have the original mails anymore, so should I
+> > > resend?
+> > 
+> > Yes, sorry.
+> I would really appreciate if you'd take the patches as it is quite some
+> work to update and verify the patches are still needed as changing
+> platform_driver_register to platform_driver_probe doesn't conflict with
+> this series.
 > 
-> This script (and our minds) being directory-driven, I suspect that the
-> only efficient way to split the entries would be to first move all i2c bus
-> driver for embedded platforms to a separate subdirectory. I'm leaving
-> it to Ben and the embedded community to decide whether they want to do
-> that or not.
+> So can you please look into that before they are swapped out of your
+> inbox the third(?) time?
 
-I'd much prefer to see just the one directory of i2c drivers, the
-minor point being people silly enough to load modules by explicit path
-and the second is that having all the drivers in one place makes it
-easier to update them when changing something in the core...
- 
-> > 
-> > Best regards
-> > Uwe
-> > 
-> >  MAINTAINERS |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 1858646..a1813fd 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -2629,6 +2629,7 @@ M:	"Ben Dooks (embedded platforms)" <ben-linux@fluff.org>
-> >  L:	linux-i2c@vger.kernel.org
-> >  W:	http://i2c.wiki.kernel.org/
-> >  T:	quilt kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/
-> > +T:	git git://git.fluff.org/bjdooks/linux.git
-> >  S:	Maintained
-> >  F:	Documentation/i2c/
-> >  F:	drivers/i2c/
-> 
-> Yes, please!
-> 
-> Acked-by: Jean Delvare <khali@linux-fr.org>
-> 
-> -- 
-> Jean Delvare
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-i2c" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Will do, give me a day or so.
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+thanks,
 
-  'a smiley only costs 4 bytes'
+greg k-h
