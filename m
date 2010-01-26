@@ -1,87 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873Ab0AZJwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799Ab0AZJzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873Ab0AZJwa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 04:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652Ab0AZJwY
+	id S1752799Ab0AZJzx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 04:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335Ab0AZJzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 04:52:24 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:61020 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752200Ab0AZJwX (ORCPT
+	Tue, 26 Jan 2010 04:55:51 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:63340 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754Ab0AZJzu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 04:52:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=eKycl03CY1xCE67Gn42HMy84L3jOhySwUbhU2jdWi41fAKC6qSs7q/rwRXSONc1ic4
-         +rRDJ6BDCMqftlyxmlnkUULIKqvlQLVEAgpxRe57gEhkCuDJKyxq6L5Yx78vtmWqUHhH
-         xrlStdOBNhx/Mpy9IXybk8QnYBrknsJ3yBVSw=
-Date: Tue, 26 Jan 2010 01:52:17 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
-       linux-input@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>,
-       Sascha linux-arm <s.hauer@pengutronix.de>
-Subject: Re: [PATCH v2] input: MXC: add mxc-keypad driver to support the
- Keypad Port present in the mxc application processors family.
-Message-ID: <20100126095217.GC3480@core.coreip.homeip.net>
-References: <1262977099.2050.75.camel@climbing-alby>
- <BD79186B4FD85F4B8E60E381CAEE190902089738@mi8nycmail19.Mi8.com>
- <1263664125.4350.18.camel@realization>
+	Tue, 26 Jan 2010 04:55:50 -0500
+X-IronPort-AV: E=Sophos;i="4.49,345,1262581200"; 
+   d="scan'208";a="12005409"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263664125.4350.18.camel@realization>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [RFC] Staging:IIO: New ABI
+Date: Tue, 26 Jan 2010 09:55:45 +0000
+Message-ID: <8A42379416420646B9BFAC9682273B6D0F1DB670@limkexm3.ad.analog.com>
+In-Reply-To: <20100126093422.GA3480@core.coreip.homeip.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC] Staging:IIO: New ABI
+Thread-index: Acqeasds3vxs1V9tTU+2Y3dPbolIeQAAMfLA
+References: <4B571DA4.6070603@cam.ac.uk> <20100120153748.GA29401@kroah.com> <4B573501.9090001@jic23.retrosnub.co.uk> <20100122204718.GA15759@kroah.com> <20100123001414.GB14538@core.coreip.homeip.net> <20100123003112.GA7836@kroah.com> <20100126093422.GA3480@core.coreip.homeip.net>
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>, "Greg KH" <greg@kroah.com>
+CC: "Jonathan Cameron" <kernel@jic23.retrosnub.co.uk>,
+       "Jonathan Cameron" <jic23@cam.ac.uk>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "Manuel Stahl" <manuel.stahl@iis.fraunhofer.de>,
+       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
+       "Getz, Robin" <Robin.Getz@analog.com>,
+       "Jean Delvare" <khali@linux-fr.org>,
+       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
+       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
+       "Ira Snyder" <iws@ovro.caltech.edu>
+X-OriginalArrivalTime: 26 Jan 2010 09:55:48.0490 (UTC) FILETIME=[BC846EA0:01CA9E6D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alberto,
 
-On Sat, Jan 16, 2010 at 06:48:45PM +0100, Alberto Panizzo wrote:
-> Version 2 for this driver proposal.
-> --------------------------------------------------------------------------------
-> The MXC family of Application Processors is shipped with a Keypad Port 
-> supported now by this driver.
-> 
-> The peripheral can control up to an 8x8 matrix key pad where all the scanning 
-> procedure is done via software.
-> 
-> The hardware provide two interrupts: one for a key pressed (KDI) and one for 
-> all key releases (KRI). There is also a simple circuit for glitch reduction 
-> (said for synchronization) made by two series of 3 D-latches clocked by the 
-> keypad-clock that stabilize the interrupts sources.
-> KDI and KRI are fired only if the respective conditions are maintained for at 
-> last 4 keypad-clock cycle.
-> 
-> Those simple synchronization circuits are used also for multiple key pressures: 
-> between a KDI and a KRI the driver reset the sync circuit and re-enable the KDI
-> interrupt so after 3 keypad-clock cycle another KDI is fired making possible to
-> repeat the matrix scan operation.
-> 
 
-Nicely looking driver, thank you.
+>From: Dmitry Torokhov [mailto:dmitry.torokhov@gmail.com]
+>
+>On Fri, Jan 22, 2010 at 04:31:12PM -0800, Greg KH wrote:
+>> On Fri, Jan 22, 2010 at 04:14:15PM -0800, Dmitry Torokhov wrote:
+>> > On Fri, Jan 22, 2010 at 12:47:18PM -0800, Greg KH wrote:
+>> > > On Wed, Jan 20, 2010 at 04:53:21PM +0000, Jonathan Cameron wrote:
+>> > > > I am not aware of these. Could you direct me to the current api? Also note that these
+>> > > > aren't the actual alarms, merely a means of enabling the relevant event on the related
+>> > > > event character device.
+>> > >
+>> > > Hm, I thought we had an accelerator interface somewhere...
+>> > >
+>> >
+>> > Nope. And I am also interested in this since I am sittign on a bunch of
+>> > accelerometers, magnetometers, etc drivers that are trying to plug into
+>> > input sysbsystem and quite unsure what to do with them.
+>> >
+>> > It was OK whch HDAPS and friends when they were using input for
+>> > secondary, toyish purposes, but these new drivers trying to use input
+>> > devnts as primary API and I am unsure if it is the best solution.
+>> > Accelerometer might be used as an input device but not always an input
+>> > device.
+>>
+>> Yeah, I see it using a joystick interface, which might be acceptable for
+>> "toy" devices like you say.
+>>
+>> But for "real" ones, we should do something else.
+>>
+>> Maybe, for devices that are going to be used by x.org, like the "toy"
+>> ones, we stick with the current input interface, but for others, we use
+>> a "real" interface, probably through hwmon, so that users can get the
+>> real data out in a consistant manner.
+>>
+>
+>I'd rather have all of them use real interface and then have a bridge
+>to input module to enable toyish mode (unless the device in question
+>is really truly an input device).
+>
+>--
+>Dmitry
 
-> This algorithm is done via a threaded management of the keypad interrupt source
-> and delayed by a proper (and longer) debounce interval controlled by the 
-> platform initialization.
+I really don't see that hwmon provides facilities like input/evdev does.
+Queuing of events with time stamping and multiple reader support.
+The adxl34x accelerometer driver for example is really intended to be a input device.
+Send EV_KEY for x,y,z_TAP detections, send EV_KEY for 3D orientation sensing, and EV_ABS for acceleration.
+With very minor platform data customization you can use this device for game controls or GUI interaction.
+A few examples include digital picture frames, ebook readers, etc.
 
-This I am not so sure about - the core of the matrix scan routine does
-not sleep so I wonder if starting a separate thread is not too wasteful
-in this case - you can easily do whan you want with a timer, no?
+-Michael
 
-> +
-> +	/*
-> +	 * Search for rows and cols enabled
-> +	 */
-> +	keymap_data = (struct matrix_keymap_data *) pdata->keymap_data;
+------------------------------------------------------------------
+********* Analog Devices GmbH              Open Platform Solutions        
+**  *****                                  
+**     ** Wilhelm-Wagenfeld-Strasse 6       
+**  ***** D-80807 Munich
+********* Germany
+Registergericht München HRB 40368,  Geschäftsführer: Thomas Wessel, William A. Martin, Margaret K. Seif
 
-Why do you need to cast away constness instead of declaring keymap_data
-as const pointer?
 
--- 
-Dmitry
+
+     
+
