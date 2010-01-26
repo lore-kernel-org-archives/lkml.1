@@ -1,74 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687Ab0AZNIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730Ab0AZNL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753687Ab0AZNIt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 08:08:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656Ab0AZNIs
+	id S1753730Ab0AZNL5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 08:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668Ab0AZNL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 08:08:48 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47321 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752632Ab0AZNIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 08:08:47 -0500
-Date: Tue, 26 Jan 2010 14:08:45 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Antti Palosaari <crope@iki.fi>
-Cc: Jiri Slaby <jirislaby@gmail.com>, mchehab@infradead.org,
-       linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org,
-       Pekka Sarnila <sarnila@adit.fi>
-Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
-In-Reply-To: <4B5DDDFB.5020907@iki.fi>
-Message-ID: <alpine.LRH.2.00.1001261406010.15694@twin.jikos.cz>
-References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com> <4B5DDDFB.5020907@iki.fi>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 Jan 2010 08:11:56 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:62108 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753535Ab0AZNLz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 08:11:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=qjOzKjNPc3/5m2IsmI/NE+AhDvzmsMwrhI7fT8+2jRWYrz9oXDPvLzv5M568sdD9wg
+         xSggZbm48t5HdBgdID2kC3l6y4ydK0l1RsSOm2f91ZaewJLsMZxj4VFb5f291bVXAzfv
+         hIWHS2gKzMEUYf+jWE62VS+b8Sa+BVKg30gJ0=
+Subject: Re: Hyperthreading on Core i7s: To use or not to use?
+From: peng huang <huangpeng.linux@gmail.com>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>
+In-Reply-To: <6278d2221001260256q5f35457fye8baabcc333d40@mail.gmail.com>
+References: <6278d2221001260256q5f35457fye8baabcc333d40@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 26 Jan 2010 22:11:52 +0900
+Message-ID: <1264511512.29891.37.camel@huang-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jan 2010, Antti Palosaari wrote:
+Hello,
 
-> > What happens if you disable the HID layer? Or at least if you add an
-> > ignore quirk for the device in usbhid?
+I have been done some benchmark things on the processors with HT,
+if you run lots of processes/threads that more than the physical 
+cores,may be you should enable the HT to get more benefits.
+#unless your processes cause some cache competitions. 
+
+I will send you some test data later. 
+
+-huang
+
+2010-01-26 (火) の 10:56 +0000 に Daniel J Blueman さんは書きました:
+> On Jan 26, 10:10 am, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+> > Hello,
+> >
+> > Should the 'correct' kernel [CPU] configuration for a core i7 860/870..?
+> >
+> > - Multi-core support
+> > - Cores: 8
+> > - SMT: Enabled/ON
+> >
+> > From CONFIG_SCHED_SMT:
+> >
+> >    . SMT scheduler support improves the CPU scheduler's decision making      .
+> >    . when dealing with Intel Pentium 4 chips with HyperThreading at a        .
+> >    . cost of slightly increased overhead in some places. If unsure say       .
+> >    . N here.                                                                 .
+> >
+> > Does this also 'help' and/or 'apply' as much when dealing with Core i7s?
+> >
+> > --
+> >
+> > Quick little benchmark (pbzip2 -9 linux kernel source), the benchmark is
+> > really within the noise (8 on/off)
+> > - Multicore(8)/HT(Off) = 73.72user 0.33system 0:09.50elapsed 779%CPU (0avgtext+0avgdata 458528maxresident
+> > - Multicore(8)/HT(On) = 74.28user 0.40system 0:09.67elapsed 772%CPU (0avgtext+0avgdata 428304maxresident
+> > - Multicore(4)/HT(On) = 68.76user 0.30system 0:17.44elapsed 396%CPU (0avgtext+0avgdata 213616maxresident)k
+> >
+> > --
+> >
+> > Has anyone done any in-depth benchmarking for the core i7s that have multiple
+> > cores and HT disabled/enabled?
 > 
-> Looks like Fedora doesn't have usbhid compiled as module. I looked
-> hid-quirks.c file and there was only one af9015 device blacklisted 15a4:9016.
-> I have 15a4:9015, 15a4:9016 and 13d3:3237 devices and no difference.
+> With my Dell Studio 15 (model 1557) laptop, there is no option to
+> disable HT in the current BIOS, so booting with maxcpus=4 (since the
+> kernel enumerates non-sibling cores first) gave me a 5-15% speedup on
+> some large image processing (convolution, FFTs, conversion) on all
+> available cores, presumably due to better cache efficiency.
 > 
-> How can I disable HID layer?
-
-In case usbhid is compiled in, you should still be able to force the 
-ignore quirk by passing
-
-	usbhid.quirks=0x15a4:0x9015:0x04
-
-to kernel boot commandline.
-
-> > I forbid usbhid to attach to the device, as the remote kills X with HID
-> > driver. With dvb-usb-remote it works just fine (with remote=2 for af9015
-> > or the 4 patches I've sent).
+> Booting with maxcpus=4 prevents any of the cores sitting in C6, needed
+> for turbo-boost and a lower thermal profile, though I did find
+> scheduling latency and responsiveness better under load booting with
+> maxcpus=4, so favour this when plugged in.
 > 
-> In my understanding the cause of the remote problem is chipset bug which sets
-> USB2.0 polling interval to 4096ms. Therefore HID remote does not work at all
-> or starts repeating. It is possible to implement remote as polling from the
-> driver which works very well. But HID problem still remains. I have some hacks
-> in my mind to test to kill HID. One is to configure HID wrongly to see if it
-> stops outputting characters. Other way is try to read remote codes directly
-> from the chip memory.
+> Clearly, having the BIOS option allows benefit to certain applications
+> - Dell should give their users the choice!
+> 
+> Perhaps the 'noht' boot option should be reintroduced to initialise
+> all cores, but only expose non-sibling cores to the OS (thus allowing
+> C6)?
+> 
+> Daniel
+> 
+> tip: modprobe msr and use turbostat to monitor turbo-boost and C-state
+> residency: http://bugzilla.kernel.org/attachment.cgi?id=24673
 
-Yes, Pekka Sarnila has added this workaround to the HID driver, as the 
-device is apparently broken.
-
-I want to better understand why others are not hitting this with the 
-DVB remote driver before removing the quirk from HID code completely.
-
-> But all in all, your patch does not break anything, it is safe to add. It
-> could be still nice to know if there is better alternatives. And there is
-> surely few other devices having HID remote - are those also affected.
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+peng huang <huangpeng.linux@gmail.com>
 
