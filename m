@@ -1,176 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751323Ab0AZNC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570Ab0AZNDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751323Ab0AZNC2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 08:02:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810Ab0AZNC1
+	id S1753570Ab0AZNDL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 08:03:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154Ab0AZNDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 08:02:27 -0500
-Received: from mga14.intel.com ([143.182.124.37]:23446 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751323Ab0AZNC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 08:02:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="236899641"
-Date: Tue, 26 Jan 2010 21:02:12 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Chris Frost <frost@cs.ucla.edu>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steve Dickson <steved@redhat.com>, David Howells <dhowells@redhat.com>,
-       Xu Chenfeng <xcf@ustc.edu.cn>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Steve VanDeBogart <vandebo-lkml@nerdbox.net>
-Subject: Re: [PATCH] mm/readahead.c: update the LRU positions of in-core
-	pages, too
-Message-ID: <20100126130211.GA25407@localhost>
-References: <20100120215536.GN27212@frostnet.net> <20100121054734.GC24236@localhost> <20100123040348.GC30844@frostnet.net> <20100123102222.GA6943@localhost> <20100125094228.f7ca1430.kamezawa.hiroyu@jp.fujitsu.com> <20100125024544.GA16462@localhost> <20100125223635.GC2822@frostnet.net>
+	Tue, 26 Jan 2010 08:03:09 -0500
+Received: from mail-pz0-f189.google.com ([209.85.222.189]:61015 "EHLO
+	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752810Ab0AZNDI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 08:03:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=Mv78aionyhezKME6KC7ZOKyA4U0C2UU+F4oPcH0gJzyrA4CTkRJjj1dpIinRHr2C1y
+         n0uuppNo8SEUQcNO1I5rRClN69UHynRqrKc/WY+M/+ssl6/V0x8mVuChVlO0e3SRkyna
+         iobw23VJp0+6av6hH5laFZyI5FjS55z88NTAk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Content-Disposition: inline
-In-Reply-To: <20100125223635.GC2822@frostnet.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <89k77n$mrr1hi@fmsmga001.fm.intel.com>
+References: <20100126141055.5AAD.A69D9226@jp.fujitsu.com>
+	 <op.u64t84zuasvm2a@kedge>
+	 <20100126183412.6AC9.A69D9226@jp.fujitsu.com>
+	 <89k77n$mrr1hi@fmsmga001.fm.intel.com>
+Date: Tue, 26 Jan 2010 22:03:06 +0900
+X-Google-Sender-Auth: 58307c24608c7d8a
+Message-ID: <2f11576a1001260503o5f987512n3c39ae1c3caa43f3@mail.gmail.com>
+Subject: Re: OOM-Killer kills too much with 2.6.32.2
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Chris Wilson <chris@chris-wilson.co.uk>
+Cc: Roman Jarosz <kedgedev@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       A Rojas <nqn1976list@gmail.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
+       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 03:36:35PM -0700, Chris Frost wrote:
-> I changed Wu's patch to add a PageLRU() guard that I believe is required
+>> This comment is lie. __GFP_NORETY cause ENOMEM to shmem, not GEM itself.
+>> GEM can't handle nor recover it. I suspect following commit is wrong.
+>
+> Indeed, the NORETRY flag is required for the inode mapping routines to
+> return ENOMEM instead of triggering the OOM killer themselves. GEM has
+> code to handle the ENOMEM as returned from shmem (please at least read the
+> code before commenting, and comments are appreciated), by attempting to
+> free up some of its own inactive buffers before retrying the allocation
+> (with NORETRY removed, so the OOM killer will be invoked on the second
+> instance). The reason for this convoluted approach is that GEM's inactive
+> list shrinker requires the struct mutex and so cannot be run when GEM
+> itself is attempting and failing to allocate memory. We could recover from
+> more situations if we made some more invasive changes to our locking.
+>
+> This is without a doubt an area that needs improvement.
 
-Good catch, Thanks!
-
-> and optimized zone lock acquisition to only unlock and lock at zone changes.
-> This optimization seems to provide a 10-20% system time improvement for
-> some of my GIMP benchmarks and no improvement for other benchmarks.
-
-OK.
-
-> I agree that the remove and add lru list entry code looks correct.
-> putback_lru_page() has to worry about a page's evictable status
-> changing, but I think this code does not because it holds the page
-> zone lock.
-> 
-> Wu removed the ClearPageReadahead(page) call on in-core pages that
-> Kamezawa's change added. This removal, not making this call, looks
-> ok to me.
-> 
-> Thanks Wu and Kamezawa.
-> 
-> 
-> What's next?
-
-I happen to be preparing a readahead series, will include this one :)
-
-Thanks,
-Fengguang
-
-> ---
-> readahead: retain inactive lru pages to be accessed soon
-> From: Chris Frost <frost@cs.ucla.edu>
-> 
-> Ensure that cached pages in the inactive list are not prematurely evicted;
-> move such pages to lru head when they are covered by
-> - in-kernel heuristic readahead
-> - an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
-> 
-> Before this patch, pages already in core may be evicted before the
-> pages covered by the same prefetch scan but that were not yet in core.
-> Many small read requests may be forced on the disk because of this behavior.
-> 
-> In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
-> has no effect on the page's location in the LRU list, even if it is the
-> next victim on the inactive list.
-> 
-> This change helps address the performance problems we encountered
-> while modifying SQLite and the GIMP to use large file prefetching.
-> Overall these prefetching techniques improved the runtime of large
-> benchmarks by 10-17x for these applications. More in the publication
-> _Reducing Seek Overhead with Application-Directed Prefetching_ in
-> USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
-> 
-> Signed-off-by: Chris Frost <frost@cs.ucla.edu>
-> Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  readahead.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 47 insertions(+)
-> 
-> diff --git a/mm/readahead.c b/mm/readahead.c
-> index aa1aa23..c1d67ab 100644
-> --- a/mm/readahead.c
-> +++ b/mm/readahead.c
-> @@ -9,7 +9,9 @@
->  
->  #include <linux/kernel.h>
->  #include <linux/fs.h>
-> +#include <linux/memcontrol.h>
->  #include <linux/mm.h>
-> +#include <linux/mm_inline.h>
->  #include <linux/module.h>
->  #include <linux/blkdev.h>
->  #include <linux/backing-dev.h>
-> @@ -133,6 +135,43 @@ out:
->  }
->  
->  /*
-> + * The file range is expected to be accessed in near future.  Move pages
-> + * (possibly in inactive lru tail) to lru head, so that they are retained
-> + * in memory for some reasonable time.
-> + */
-> +static void retain_inactive_pages(struct address_space *mapping,
-> +				  pgoff_t index, int len)
-> +{
-> +	int i;
-> +	struct page *page;
-> +	struct zone *zone;
-> +	struct zone *locked_zone = NULL;
-> +
-> +	for (i = 0; i < len; i++) {
-> +		page = find_get_page(mapping, index + i);
-> +		if (!page)
-> +			continue;
-> +		zone = page_zone(page);
-> +		if (zone != locked_zone) {
-> +			if (locked_zone)
-> +				spin_unlock_irq(&locked_zone->lru_lock);
-> +			locked_zone = zone;
-> +			spin_lock_irq(&locked_zone->lru_lock);
-> +		}
-> +		if (!PageActive(page) && !PageUnevictable(page) &&
-> +		    PageLRU(page)) {
-> +			int lru = page_lru_base_type(page);
-> +
-> +			del_page_from_lru_list(zone, page, lru);
-> +			add_page_to_lru_list(zone, page, lru);
-> +		}
-> +		put_page(page);
-> +	}
-> +	if (locked_zone)
-> +		spin_unlock_irq(&locked_zone->lru_lock);
-> +}
-> +
-> +/*
->   * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
->   * the pages first, then submits them all for I/O. This avoids the very bad
->   * behaviour which would occur if page allocations are causing VM writeback.
-> @@ -184,6 +223,14 @@ __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
->  	}
->  
->  	/*
-> +	 * Normally readahead will auto stop on cached segments, so we won't
-> +	 * hit many cached pages. If it does happen, bring the inactive pages
-> +	 * adjecent to the newly prefetched ones(if any).
-> +	 */
-> +	if (ret < nr_to_read)
-> +		retain_inactive_pages(mapping, offset, page_idx);
-> +
-> +	/*
->  	 * Now start the IO.  We ignore I/O errors - if the page is not
->  	 * uptodate then the caller will launch readpage again, and
->  	 * will then handle the error.
-> 
-> -- 
-> Chris Frost
-> http://www.frostnet.net/chris/
+Please consider to revert such commit at once. Lots people reported
+the same issue.
+I really hope to stop bug report storm.
