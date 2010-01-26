@@ -1,132 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461Ab0AZAx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497Ab0AZA4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752461Ab0AZAx3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 19:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967Ab0AZAx2
+	id S1752497Ab0AZA4Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 19:56:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122Ab0AZA4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 19:53:28 -0500
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:53130 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912Ab0AZAx1 (ORCPT
+	Mon, 25 Jan 2010 19:56:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35566
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751229Ab0AZA4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 19:53:27 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/y13i9mw4tjfNJYQ6jJ5bw
-Date: Mon, 25 Jan 2010 16:53:42 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       linux-omap@vger.kernel.org
-Subject: [GIT PULL] omap-fixes for 2.6.33-rc5
-Message-ID: <20100126005342.GE2879@atomide.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 25 Jan 2010 19:56:22 -0500
+Date: Mon, 25 Jan 2010 16:56:34 -0800 (PST)
+Message-Id: <20100125.165634.92235663.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull omap-fixes from:
+1) SKY2 revert to fix a resume regression, from Stephem Hemminger
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-fixes-for-linus
+2) We can end up trying to remove/proc/net/rt_acct when exiting
+   a namespace even when we didn't create it in the first place.
+   Fix from Alexey Dobriyan.
 
-Regards,
+3) IPSEC in namespaces can wedge if IPSEC route creation hits the
+   garbage collection threshold, it'll wedge until the initial
+   namespace happens to hit GC limits and garbage collect.
 
-Tony
+   Fix from Alexey Dobriyan.
 
+4) igb/igbvg test for DMA mapping failures incorrectly in TX
+   path, from Alexander Duyck.
 
-The following changes since commit 92dcffb916d309aa01778bf8963a6932e4014d07:
+5) qlge tries to free resources never allocated, fix from Breno Leitao
+
+6) vlan_skb_recv() references wrong device for statistics bumping,
+   resulting in OOPS.  Regression fixed by Eric Dumazet.
+
+7) virtio_net refilling is unreliable when OOM and can wedge,
+   fix from Herbert Xu
+
+8) Intel drivers test for ipv6 GRO incorrectly, fix from Sridhar
+   Samudrala.
+
+9) tcp_probe reports available space incorrectly (off by one) and
+   does many unnecessary expensive modulus operations, from Stephen
+   Hemminger.
+
+10) Add ID for Microsoft MN-120 PCMCIA card, from Ron Murray.
+
+11) Appletalk's aarp_recv() references wrong foo.s_net, from Roel Kluin.
+
+12) INET_DIAG_BC_S_LE compares wrong TCP port, also from Roel Kluin.
+
+13) Fix two branches of an if() in S2IO which erroneously program the
+    chip identically, noticed by Roel Kluin and fixed by Ram Vepa.
+
+14) Fix dccp_probe/dccp module dependencies, and cure crashes on
+    dccp module unload.  From Neil Horman.
+
+15) SKY2 needs to enable/disable WOL per card, not per port.  Fix
+    from Mike McCormack.
+
+16) SFC bug fixes (bad MMD checks at init, GMAC bug workaround fix,
+    BUG() and hang due to misaligned MCDI NVRAM requests, etc.) from
+    Matthew Slattery, Guido Barzini, and Ben Hutchings.
+
+17) Fix regression by moving phylib's workqueue init to the proper
+    place, from Anton Vorontsov.
+
+18) I/O AT maintainership update.
+
+19) Wireless fixes via John Linville and co.
+
+Please pull, thanks a lot!
+
+The following changes since commit f6760aa024199cfbce564311dc4bc4d47b6fb349:
   Linus Torvalds (1):
-        Linux 2.6.33-rc5
+        Merge branch 'timers-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
 
 are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-fixes-for-linus
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
 
-Kevin Hilman (1):
-      OMAP: timekeeping: time should not stop during suspend
+Abhijeet Kolekar (1):
+      cfg80211: fix channel setting for wext
 
-Manjunatha GK (1):
-      OMAP3: PM debug: fix build error when !CONFIG_DEBUG_FS
+Alexander Duyck (1):
+      igb/igbvf: cleanup exception handling in tx_map_adv
 
-Olof Johansson (1):
-      omap: Enable GPMC clock in gpmc_init
+Alexey Dobriyan (3):
+      ipv4: don't remove /proc/net/rt_acct
+      netns xfrm: fix "ip xfrm state|policy count" misreport
+      netns xfrm: deal with dst entries in netns
 
-Paul Walmsley (1):
-      OMAP1 clock: fix for "BUG: spinlock lockup on CPU#0"
+Anton Vorontsov (1):
+      phylib: Move workqueue initialization to a proper place
 
-Peter Ujfalusi (1):
-      OMAP3: PM: Enable wake-up from McBSP2, 3 and 4 modules
+Ben Hutchings (1):
+      sfc: Use fixed-size buffers for MCDI NVRAM requests
 
-Rajendra Nayak (2):
-      OMAP4: PRCM: Fix the base address for CHIRONSS reg defines
-      OMAP4: clocks: Fix the clksel_rate struct DPLL divs
+Benoit Papillault (1):
+      mac80211: check that ieee80211_set_power_mgmt only handles STA interfaces.
 
-Roel Kluin (2):
-      OMAP: dma_chan[lch_head].flag & OMAP_DMA_ACTIVE tested twice in omap_dma_unlink_lch()
-      OMAP: omap3_pm_get_suspend_state() error ignored in pwrdm_suspend_get()
+Bob Copeland (1):
+      mac80211: fix sign error in pid controller
 
-Russell King (1):
-      OMAP3: clock: Remove unnecessarily .init initializers from OMAP3 clocks
+Breno Leitao (1):
+      qlge: Only free resources if they were allocated
 
-Sanjeev Premi (1):
-      OMAP3: PM: Remove duplicate code blocks
+Christian Lamparter (1):
+      p54pci: rx frame length check
 
-Sergio Aguirre (1):
-      PM debug: Fix warning when no CONFIG_DEBUG_FS
+Dan Williams (1):
+      MAINTAINERS: transfer maintainership of I/OAT
 
-Sripathy, Vishwanath (1):
-      OMAP3: PM: Removing redundant and potentially dangerous PRCM configration
+David S. Miller (3):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
+      Merge branch 'linux-2.6.33.y' of git://git.kernel.org/.../inaky/wimax
 
-Subramani Venkatesh (1):
-      OMAP3: PM: DSS PM_WKEN to refill DMA
+Eric Dumazet (1):
+      vlan: fix vlan_skb_recv()
 
-Tero Kristo (7):
-      OMAP3: PM: Ack pending interrupts before entering suspend
-      OMAP3: PM: Enable system control module autoidle
-      OMAP3: PM: Disable interrupt controller AUTOIDLE before WFI
-      OMAP3: CPUidle: Fixed timer resolution
-      OMAP3: Fixed ARM aux ctrl register save/restore
-      OMAP3: PM: Force write last pad config register into save area
-      OMAP2/3: DMTIMER: Clear pending interrupts when stopping a timer
+Guido Barzini (1):
+      sfc: Add workspace for GMAC bug workaround to MCDI MAC_STATS buffer
 
-Thara Gopinath (1):
-      OMAP3: hwmod: Adding flag to prevent caching of sysconfig register.
+Herbert Xu (1):
+      virtio_net: Make delayed refill more reliable
 
-Tony Lindgren (6):
-      omap: Fix cmdline muxing
-      omap: Fix functions for dynamic remuxing of pins
-      omap3: Fix cpu detection
-      Merge branch 'for_2.6.33rc_d' of git://git.pwsan.com/linux-2.6 into omap-fixes-for-linus
-      Merge branch 'pm-fixes' of master.kernel.org:/.../khilman/linux-omap-pm into omap-fixes-for-linus
-      Merge branch 'omap-fixes' into omap-fixes-for-linus
+Hin-Tak Leung (1):
+      zd1211rw: adding 0409:0248 to supported device list
 
- arch/arm/mach-omap1/clock.c                  |    6 +-
- arch/arm/mach-omap2/clock34xx_data.c         |    4 --
- arch/arm/mach-omap2/clock44xx_data.c         |   62 +++++++++++++-------------
- arch/arm/mach-omap2/cpuidle34xx.c            |    2 +-
- arch/arm/mach-omap2/gpmc.c                   |    2 +
- arch/arm/mach-omap2/id.c                     |   41 ++++++++++-------
- arch/arm/mach-omap2/irq.c                    |   18 +++++++
- arch/arm/mach-omap2/mux.c                    |   27 ++++++-----
- arch/arm/mach-omap2/mux.h                    |   24 ++++++++++
- arch/arm/mach-omap2/omap_hwmod.c             |    3 +-
- arch/arm/mach-omap2/pm-debug.c               |   12 +++---
- arch/arm/mach-omap2/pm.h                     |    8 +++-
- arch/arm/mach-omap2/pm34xx.c                 |   47 +++++++++++---------
- arch/arm/mach-omap2/prcm.c                   |   11 -----
- arch/arm/mach-omap2/prm.h                    |    2 +
- arch/arm/mach-omap2/prm44xx.h                |   32 +++++++-------
- arch/arm/mach-omap2/sleep34xx.S              |   13 ++++--
- arch/arm/plat-omap/common.c                  |   26 +++++++++++
- arch/arm/plat-omap/dma.c                     |    2 +-
- arch/arm/plat-omap/dmtimer.c                 |   13 +++++
- arch/arm/plat-omap/include/plat/cpu.h        |    1 +
- arch/arm/plat-omap/include/plat/irqs.h       |    3 +
- arch/arm/plat-omap/include/plat/omap_hwmod.h |    1 +
- 23 files changed, 229 insertions(+), 131 deletions(-)
+Inaky Perez-Gonzalez (1):
+      wimax/i2400m: Add support for more i6x50 SKUs
+
+Jarek Poplawski (1):
+      ax25: netrom: rose: Fix timer oopses
+
+Jeff Kirsher (1):
+      MAINTAINERS: Add Intel igbvf maintainer
+
+Jesse Brandeburg (3):
+      e1000: enhance frame fragment detection
+      e1000e: enhance frame fragment detection
+      e1000/e1000e: don't use small hardware rx buffers
+
+Jiajun Wu (1):
+      ucc_geth: Fix full TX queue processing
+
+Ken Kawasaki (1):
+      fmvj18x_cs: add new id (Panasonic lan & modem card)
+
+Matthew Slattery (1):
+      sfc: QT202x: Remove unreliable MMD check at initialisation
+
+Mike Frysinger (1):
+      bfin_mac: use the newer CLKBUFOE bit name via asm/dpmc.h
+
+Mike McCormack (1):
+      sky2: Enable/disable WOL per hardware device
+
+Neil Horman (2):
+      dccp_probe: Fix module load dependencies between dccp and dccp_probe
+      dccp: fix dccp rmmod when kernel configured to use slub
+
+Ram Vepa (1):
+      S2io: two branches the same in wait_for_cmd_complete()
+
+Reinette Chatre (1):
+      iwlwifi: add license to tracing files
+
+Roel Kluin (3):
+      appletalk:: da.s_net not copied but assigned to itself in aarp_rcv()
+      netlink: With opcode INET_DIAG_BC_S_LE dport was compared in inet_diag_bc_run()
+      e1000/e1000e/igb/igbvf/ixgb/ixgbe: Fix tests of unsigned in *_tx_map()
+
+Ron Murray (1):
+      Please add support for Microsoft MN-120 PCMCIA network card
+
+Samuel Ortiz (1):
+      iwmc3200wifi: Add UMAC wifi headers to the pmkid command
+
+Sathya Perla (2):
+      be2net: fix bug in rx page posting
+      be2net: swap only first 2 fields of mcc_wrb
+
+Sridhar Samudrala (1):
+      net: Fix IPv6 GSO type checks in Intel ethernet drivers
+
+Stephen Hemminger (1):
+      tcp_probe: avoid modulus operation and wrap fix
+
+Wey-Yi Guy (1):
+      iwlwifi: Fix throughput stall issue in HT mode for 5000
+
+stephen hemminger (1):
+      sky2: revert config space change
+
+ MAINTAINERS                                  |    8 ++--
+ drivers/net/benet/be_cmds.c                  |    2 +-
+ drivers/net/benet/be_main.c                  |    8 ++-
+ drivers/net/bfin_mac.c                       |    5 +-
+ drivers/net/e1000/e1000.h                    |    2 +
+ drivers/net/e1000/e1000_main.c               |   43 ++++++---------
+ drivers/net/e1000e/e1000.h                   |    1 +
+ drivers/net/e1000e/netdev.c                  |   57 ++++++++++----------
+ drivers/net/igb/igb_main.c                   |    4 +-
+ drivers/net/igbvf/netdev.c                   |   14 +++---
+ drivers/net/ixgb/ixgb_main.c                 |   10 ++--
+ drivers/net/ixgbe/ixgbe_main.c               |   12 ++--
+ drivers/net/pcmcia/fmvj18x_cs.c              |    1 +
+ drivers/net/phy/phy.c                        |    4 +-
+ drivers/net/phy/phy_device.c                 |    1 +
+ drivers/net/qlge/qlge_main.c                 |   15 +++---
+ drivers/net/s2io.c                           |    2 +-
+ drivers/net/sfc/mcdi.c                       |    7 ++-
+ drivers/net/sfc/mcdi.h                       |    1 +
+ drivers/net/sfc/mcdi_pcol.h                  |    4 +-
+ drivers/net/sfc/mtd.c                        |    5 +-
+ drivers/net/sfc/qt202x_phy.c                 |    6 --
+ drivers/net/sky2.c                           |   42 ++++++++++++---
+ drivers/net/tulip/tulip_core.c               |    1 +
+ drivers/net/ucc_geth.c                       |    5 +-
+ drivers/net/virtio_net.c                     |    3 +-
+ drivers/net/wimax/i2400m/i2400m-usb.h        |    2 +
+ drivers/net/wimax/i2400m/usb.c               |   12 ++++-
+ drivers/net/wireless/iwlwifi/iwl-5000.c      |    5 ++
+ drivers/net/wireless/iwlwifi/iwl-devtrace.c  |   26 +++++++++
+ drivers/net/wireless/iwlwifi/iwl-devtrace.h  |   26 +++++++++
+ drivers/net/wireless/iwmc3200wifi/commands.c |    4 ++
+ drivers/net/wireless/iwmc3200wifi/commands.h |    1 +
+ drivers/net/wireless/p54/p54pci.c            |    8 +++
+ drivers/net/wireless/zd1211rw/zd_usb.c       |    1 +
+ drivers/serial/serial_cs.c                   |    1 +
+ include/linux/phy.h                          |    1 +
+ include/net/netns/xfrm.h                     |    6 ++
+ include/net/netrom.h                         |    2 +
+ include/net/xfrm.h                           |    4 +-
+ net/8021q/vlan_dev.c                         |    2 +-
+ net/appletalk/aarp.c                         |    2 +-
+ net/ax25/ax25_out.c                          |    6 ++
+ net/dccp/ccid.c                              |   18 ++-----
+ net/dccp/ccid.h                              |    2 +
+ net/dccp/probe.c                             |    3 +-
+ net/ipv4/inet_diag.c                         |    2 +-
+ net/ipv4/route.c                             |    2 +
+ net/ipv4/tcp_probe.c                         |   19 ++++---
+ net/ipv4/xfrm4_policy.c                      |   14 +++--
+ net/ipv6/xfrm6_policy.c                      |   25 +++++----
+ net/mac80211/cfg.c                           |    3 +
+ net/mac80211/rc80211_pid_algo.c              |    2 +-
+ net/netrom/nr_route.c                        |   11 ++--
+ net/rose/rose_link.c                         |    8 +++
+ net/rose/rose_route.c                        |    5 ++
+ net/wireless/sme.c                           |    1 +
+ net/xfrm/xfrm_policy.c                       |   75 ++++++++++++++++++++++----
+ net/xfrm/xfrm_state.c                        |    6 +-
+ net/xfrm/xfrm_user.c                         |   14 +++--
+ 60 files changed, 389 insertions(+), 193 deletions(-)
