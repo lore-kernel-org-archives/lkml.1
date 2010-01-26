@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751323Ab0AZRzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697Ab0AZR6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751323Ab0AZRzM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 12:55:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829Ab0AZRzK
+	id S1754697Ab0AZR6F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 12:58:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474Ab0AZR6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 12:55:10 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:48776 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751323Ab0AZRzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 12:55:09 -0500
-Message-ID: <4B5F2C6E.9010803@sgi.com>
-Date: Tue, 26 Jan 2010 09:54:54 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 26 Jan 2010 12:58:04 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:41823 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753029Ab0AZR6B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 12:58:01 -0500
+Subject: [PATCH] kmemleak: Do not enable KMEMCHECK_PARTIAL_OK if DEBUG_KMEMLEAK
+To: linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christian Casteyde <casteyde.christian@free.fr>
+Date: Tue, 26 Jan 2010 17:57:19 +0000
+Message-ID: <20100126175719.7820.74641.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.15-36-g53e3
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Russ Anderson <rja@sgi.com>, Dave Airlie <airlied@redhat.com>,
-       Alex Chiang <achiang@hp.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Cyrill Gorcunov <gorcunov@openvz.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Robin Holt <holt@sgi.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Adam Jackson <ajax@nwnk.net>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Gaetan Nadon <memsize@videotron.ca>,
-       Aaron Plattner <aplattner@nvidia.com>, Jack Steiner <steiner@sgi.com>,
-       Tiago Vignatti <tiago.vignatti@nokia.com>, Cliff Wickman <cpw@sgi.com>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Christian Zander <chzander@nvidia.com>, Yu Zhao <yu.zhao@intel.com>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH 2/4] x86_64 UV: Update UV arch to target Legacy VGA I/O
- correctly.
-References: <20100118183412.560438000@alcatraz.americas.sgi.com>	<20100118183435.948841000@alcatraz.americas.sgi.com> <20100125155410.1fde82d4.akpm@linux-foundation.org> <4B5E31AC.3060209@sgi.com> <4B5E35DA.8010601@zytor.com>
-In-Reply-To: <4B5E35DA.8010601@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Jan 2010 17:57:20.0267 (UTC) FILETIME=[015BBDB0:01CA9EB1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 01/25/2010 04:05 PM, Mike Travis wrote:
->>> So pci_register_set_vga_state() could/should have been __init?
->> Good catch.  Do you want me to update and resubmit?
-> 
-> Please.  This patchset is still on my review queue, FWIW.
-> 
-> 	-hpa
+This is a fix for bug #14845 (bugzilla.kernel.org). The
+update_checksum() function in mm/kmemleak.c calls
+kmemcheck_is_obj_initialised() before scanning an object. When
+KMEMCHECK_PARTIAL_OK is enabled, this function returns true. However,
+the crc32_le() reads smaller intervals (32-bit) for which
+kmemleak_is_obj_initialised() is may be false leading to a kmemcheck
+warning.
 
-Looks like Andrew added a fix-it patch to the stream.
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christian Casteyde <casteyde.christian@free.fr>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ lib/Kconfig.kmemcheck |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/lib/Kconfig.kmemcheck b/lib/Kconfig.kmemcheck
+index 846e039..80660e9 100644
+--- a/lib/Kconfig.kmemcheck
++++ b/lib/Kconfig.kmemcheck
+@@ -75,7 +75,7 @@ config KMEMCHECK_SHADOW_COPY_SHIFT
+ config KMEMCHECK_PARTIAL_OK
+ 	bool "kmemcheck: allow partially uninitialized memory"
+ 	depends on KMEMCHECK
+-	default y
++	default y if !DEBUG_KMEMLEAK
+ 	help
+ 	  This option works around certain GCC optimizations that produce
+ 	  32-bit reads from 16-bit variables where the upper 16 bits are
+
