@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214Ab0AZCCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369Ab0AZCF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753214Ab0AZCCN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 21:02:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864Ab0AZCCL
+	id S1753369Ab0AZCF0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 21:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276Ab0AZCFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 21:02:11 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:61678 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892Ab0AZCCI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 21:02:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=X+WVURifjgCmySqQwkinsCveqReGsPbWvowcLlQCdb0Vaio0xA4eWUi/n76MOhzWuG
-         hsnABTDLF81rFOTByeJyQzn/XfhX6qeEjjG7P6CiQDK80+Rs0xLADA11IL7/CddS3i8M
-         hPgloR4bQwIENsrsQezGFaMUH3nfJEbNty0DI=
-Date: Mon, 25 Jan 2010 20:02:03 -0600
-From: William Hubbs <w.d.hubbs@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Cc: gregkh@suse.de, Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       Chris Brannon <cmbrannon79@gmail.com>, Kirk Reiser <kirk@reisers.ca>
-Subject: request for assistance:  accessing ttys from kernel space
-Message-ID: <20100126020203.GA23551@linux1>
+	Mon, 25 Jan 2010 21:05:24 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48217 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752370Ab0AZCFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 21:05:23 -0500
+Message-ID: <4B5E4F30.60600@kernel.org>
+Date: Tue, 26 Jan 2010 11:10:56 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, rusty@rustcorp.com.au, akpm@linux-foundation.org,
+       ebiederm@xmission.com, tytso@mit.edu, Trond.Myklebust@netapp.com,
+       aelder@sgi.com, hch@infradead.org, viro@zeniv.linux.org.uk,
+       davem@davemloft.net, netdev@vger.kernel.org, x86@kernel.org,
+       mingo@redhat.com, dan.j.williams@intel.com, borislav.petkov@amd.com,
+       ying.huang@intel.com, lenb@kernel.org, neilb@suse.de,
+       cl@linux-foundation.org
+Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to	hw_breakpoint
+References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere> <4B5E401D.2020809@zytor.com>
+In-Reply-To: <4B5E401D.2020809@zytor.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 26 Jan 2010 02:04:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hello,
 
-I am the lead developer for gentoo linux's accessibility team[1], and I
-am on the development team for the speakup screen reader [2].
+On 01/26/2010 10:06 AM, H. Peter Anvin wrote:
+>> I guess __percpu is an address_space attribute? Is there no
+>> way to force the address space change directly from the
+>> per_cpu() macro?
+>>
+> 
+> Hmm... thinking more about it, we should be able to just move the & and
+> [0] into the per_cpu() macro, addressing the situation, or does that
+> cause problems elsewhere?
 
-I received these addresses from Samuel, and Chris and Kirk are the other
-developers on the speakup team.
+Hmmm.... the argument gotta be an lvalue.  Let me try just in case.
+Nope, it doesn't work.
 
-Currently, speakup is using direct hardware access to communicate with
-serial ports.  Doing so, however, has limitations since we are hard
-coding port addresses and IRQ numbers.  For example, we have a user
-right now who is wanting to use a PCI Express serial card for his
-synthesizer, but the port and IRQ are not standard, so speakup is unable
-to use it.  He says that the kernel does recognize the card however.
+Thanks.
 
-What I would like to discuss is how we can access ttys from kernel
-space.  If we could do this, it would definitely make things much easier
-for us in speakup.
-
-For reference, our git repository is at
-http://linux-speakup.org/speakup.git.  We are looking to write another
-.c file similar to serialio.c but using ttys or some other way to access
-the serial ports which works better than hard coading ports and IRQs.
-
-We found another example of attempting this on the web [3], but this
-doesn't work any longer according to the thread.
-
-We need to be able to access the ttys as early as possible in the boot
-sequence.  Any help, suggestions, or guidance you could give us would be
-greatly appreciated.
-
-Thanks much,
-
-William
-
-[1] http://www.gentoo.org/proj/en/desktop/accessibility
-[2] http://linux-speakup.org
-[3]
-http://www.linuxquestions.org/questions/programming-9/accessing-tty-in-kernel-space-596538/
+-- 
+tejun
