@@ -1,53 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752200Ab0AZDEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892Ab0AZDF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752200Ab0AZDEF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 22:04:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514Ab0AZDED
+	id S1751892Ab0AZDF4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 22:05:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514Ab0AZDFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 22:04:03 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:36202 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751122Ab0AZDEB (ORCPT
+	Mon, 25 Jan 2010 22:05:55 -0500
+Received: from mail-qy0-f204.google.com ([209.85.221.204]:52110 "EHLO
+	mail-qy0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229Ab0AZDFz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 22:04:01 -0500
-Date: Tue, 26 Jan 2010 12:03:38 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH] ftrace: unify arch_syscall_addr() implementations
-Message-ID: <20100126030338.GC2739@linux-sh.org>
-References: <1264167826-20913-1-git-send-email-vapier@gentoo.org> <1264170977.31321.382.camel@gandalf.stny.rr.com>
+	Mon, 25 Jan 2010 22:05:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=uMHfL6N5JQxAaUnIOSEDd4uyzKuki6pVYMJzznEe8sE7SSffZUzZS58KNbGK9UiCYo
+         2Ub8lnqHap99UmlinzZTHQkrN7/aPTgFUwi739ElNfey4lnesfD33zi+NxE0NU0ANBEi
+         5HfkgTXMiY4YX7xRc8HYFBeiz+EbCanvtvakA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264170977.31321.382.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4B5E5D4F.50803@windriver.com>
+References: <4B5E5D4F.50803@windriver.com>
+Date: Tue, 26 Jan 2010 11:05:54 +0800
+Message-ID: <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com>
+Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation 
+	environments
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Hui Zhu <hui.zhu@windriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org,
+       teawater@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 22, 2010 at 09:36:17AM -0500, Steven Rostedt wrote:
-> [ Added Heiko Carstens and Paul Mundt to Cc ]
-> 
-> On Fri, 2010-01-22 at 08:43 -0500, Mike Frysinger wrote:
-> > also, does the arch_syscall_addr() even really need to be weak ?  or can
-> > we assume that everyone is going to be sane and do it the same way ...
-> > 
-> >  Documentation/trace/ftrace-design.txt |    6 +++++-
-> >  arch/s390/kernel/ftrace.c             |   10 ----------
-> >  arch/sh/kernel/ftrace.c               |    9 ---------
-> >  arch/sparc/kernel/ftrace.c            |   11 -----------
-> >  arch/x86/kernel/ftrace.c              |   10 ----------
-> >  include/linux/ftrace.h                |    6 ++++++
-> >  kernel/trace/trace_syscalls.c         |    6 +++++
-> 
-> Actually for this patch to be accepted, we need to get the acks from the
-> maintainers of s390, sh, and sparc since it touches their code. Doesn't
-> matter if it is just removing duplicate code. Still need their acks.
-> 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+On Tue, Jan 26, 2010 at 11:11 AM, Hui Zhu <hui.zhu@windriver.com> wrote:
+> Sorry guys, the prev mail still have some format trouble.  I send a new mail
+> for it.
+>
+> The markup_oops.pl have 3 troubles to support cross-compiler environment:
+> 1.  It use objdump directly.
+> 2.  It use modinfo to get the message of module.
+> 3.  It use hex function that cannot support 64-bit number in 32-bit arch.
+>
+> This patch add 3 options to markup_oops.pl:
+> 1. -c CROSS_COMPILE     Specify the prefix used for toolchain.
+> 2. -m MODULE_DIRNAME    Specify the module directory name.
+> 3. Change hex function to Math::BigInt->from_hex.
+>
+> After this patch, parse the x8664 oops in x86, we can:
+> cat amd64m | perl ~/kernel/tmp/m.pl -c /home/teawater/kernel/bin/x8664- -m
+> ./e.ko vmlinux
+>
+> Thanks,
+> Hui
+>
+> Signed-off-by: Hui Zhu <teawater@gmail.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Arjan van de Ven <arjan@linux.intel.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: ozan@pardus.org.tr
+> Cc: Matthew Wilcox <willy@linux.intel.com>
+>
+> ---
+> scripts/markup_oops.pl |   71
+> ++++++++++++++++++++++++++++++++++++++++++-------
+> 1 file changed, 61 insertions(+), 10 deletions(-)
+>
+> --- a/scripts/markup_oops.pl
+> +++ b/scripts/markup_oops.pl
+> @@ -15,8 +15,46 @@ use Math::BigInt;
+> #       Arjan van de Ven <arjan@linux.intel.com>
+>
+>
+> -my $vmlinux_name = $ARGV[0];
+> -if (!defined($vmlinux_name)) {
+> +my $cross_compile = "";
+> +my $vmlinux_name = "";
+> +my $modulefile = "";
+> +
+> +# Get options
+> +my $option = 0;
+> +for (my $i = 0; $i <= $#ARGV; $i++) {
+> +       if ($option == 0) {
+> +               if ($ARGV[$i] eq "-c") {
+> +                       $option = 1;
+> +               }
+> +               elsif ($ARGV[$i] eq "-m") {
+> +                       $option = 2;
+> +               }
+> +               elsif ($ARGV[$i] eq "-h") {
+> +                       usage();
+> +                       exit;
+> +               }
+> +               elsif ($i == $#ARGV) {
+> +                       $vmlinux_name = $ARGV[$i];
+> +               }
+> +               else {
+> +                       usage();
+> +                       exit;
+> +               }
+> +       }
+> +       elsif ($option == 1) {
+> +               $cross_compile = $ARGV[$i];
+> +               $option = 0;
+> +       }
+> +       elsif ($option == 2) {
+> +               $modulefile = $ARGV[$i];
+> +               $option = 0;
+> +       }
+> +}
+> +
+> +if ($vmlinux_name ne "") {
+> +       $vmlinux_name = $ARGV[$#ARGV];
+> +}
+
+Why not using the Perl module 'Getopt' to do this?
