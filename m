@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752988Ab0AZU71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143Ab0AZVBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752988Ab0AZU71 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 15:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640Ab0AZU70
+	id S1753143Ab0AZVBW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 16:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699Ab0AZVBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 15:59:26 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:50437 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1749667Ab0AZU7Z (ORCPT
+	Tue, 26 Jan 2010 16:01:21 -0500
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:20803 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752640Ab0AZVBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 15:59:25 -0500
-Message-ID: <4B5F5794.8020302@cs.helsinki.fi>
-Date: Tue, 26 Jan 2010 22:59:00 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 26 Jan 2010 16:01:21 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=alczl/u9rIWSK7TepgvlLGXsp6qlVk5UoY2mdji0jD5JT+58ZK18CTF6EYrSDx7aZHidFJ6ZrRZ22tjgDuMNMINLu1KD2t925AxEVhyCAatyaPPDTg8qJ2JAY/YFjISu56ZzcBXdr0F8GqaYJpW067mcuIXUBb5YnWP1PrxbEaE=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: Aiyga9UVM1mUhjNBIUFFEs2_uFsD.sZHlh1x9VmhvXtMUOCeSX1iZi9nPOw_h1C_tz41tETmXrKmyGlY8uiP8KDaPc1Qyd3RPyJ.2veQqvNNICKiAwgEb.Vqboq6vXRKmnduS0XuYlj.qDlVLQTRknNZYiJQMb5TneHPtPZbfXkK.AZyOAIkQq3DepHjqDlOY6V1I49oMWKAg3UlRpvZJnp4DiWKxiW7vKHbw0YqFzKrIDalggg0BWneqItoN138
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
+Date: Tue, 26 Jan 2010 13:01:05 -0800
+User-Agent: KMail/1.9.10
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       "Dmitry Eremin-Solenikov" <dbaryshkov@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <20100125180957.GA5380@oksana.dev.rtsoft.ru> <201001252234.30169.david-b@pacbell.net> <20100126172824.GA20319@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100126172824.GA20319@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Nigel Cunningham <ncunningham@crca.org.au>,
-       Pedro Ribeiro <pedrib@gmail.com>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "linux-mm@kvack.org >> linux-mm" <linux-mm@kvack.org>
-Subject: Re: BUG at mm/slab.c:2990 with 2.6.33-rc5-tuxonice
-References: <74fd948d1001261121r7e6d03a4i75ce40705abed4e0@mail.gmail.com>	 <4B5F52FE.5000201@crca.org.au> <1264539045.3536.1348.camel@calx>
-In-Reply-To: <1264539045.3536.1348.camel@calx>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001261301.05475.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Wed, 2010-01-27 at 07:39 +1100, Nigel Cunningham wrote:
->> Hi.
->>
->> Pedro Ribeiro wrote:
->>> Hi,
->>>
->>> I hit a bug at mm/slab.c:2990 with .33-rc5.
->>> Unfortunately nothing more is available than a screen picture with a
->>> crash dump, although it is a good one.
->>> The bug was hit almost at the end of a hibernation cycle with
->>> Tux-on-Ice, while saving memory contents to an encrypted swap
->>> partition.
->>>
->>> The image is here http://img264.imageshack.us/img264/9634/mmslab.jpg (150 kb)
->>>
->>> Hopefully it is of any use for you. Please let me know if you need any
->>> more info.
->> Looks to me to be completely unrelated to TuxOnIce - at least at a first
->> glance.
->>
->> Ccing the slab allocator maintainers listed in MAINTAINERS.
+On Tuesday 26 January 2010, Anton Vorontsov wrote:
+> > Just
+> > inline the little two blocking_notifier_call_chain() calls directly,
+> > making this a *LOT* simpler.
 > 
-> Not sure if this will do us any good, it's the second oops.
+> I'd rather stay with gpio_call_chain() helper, it makes the code
+> a little bit prettier, IMO. Compare this:
 
-Looks like slab corruption to me which is usually not a slab bug but 
-caused by buggy callers. Is CONFIG_DEBUG_SLAB enabled?
+The one without the wrapper is IMO more clear, since it doesn't
+obfuscate anything.  Fewer lines of code, too.  :)
+
+Pretty is a good attribute ... but is a distant third to clarity.
+
