@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642Ab0A0ABa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710Ab0A0ADJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755642Ab0A0ABa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:01:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953Ab0A0ABW
+	id S1755710Ab0A0ADJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691Ab0A0ACv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:01:22 -0500
-Received: from kroah.org ([198.145.64.141]:35172 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:02:51 -0500
+Received: from kroah.org ([198.145.64.141]:35169 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754213Ab0AZXnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:22 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:24 2010
-Message-Id: <20100126233924.675869677@mini.kroah.org>
+	id S1754139Ab0AZXnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:19 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:23 2010
+Message-Id: <20100126233923.767452258@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:55 -0800
+Date: Tue, 26 Jan 2010 15:33:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: [29/98] sched: Fix missing sched tunable recalculation on cpu add/remove
+       Ben Hutchings <ben@decadent.org.uk>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [22/98] V4L/DVB (13680a): DocBook/media: copy images after building HTML
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,131 +29,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+From: Ben Hutchings <ben@decadent.org.uk>
 
-commit 0bcdcf28c979869f44e05121b96ff2cfb05bd8e6 upstream.
+commit 49b14650ba5bf80234cb1984fd8396aff03430ce upstream.
 
-Based on Peter Zijlstras patch suggestion this enables recalculation of
-the scheduler tunables in response of a change in the number of cpus. It
-also adds a max of eight cpus that are considered in that scaling.
+The rule for %.html removes the output directory, so there is no point
+in copying images before building HTML.
 
-Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1259579808-11357-2-git-send-email-ehrhardt@linux.vnet.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Documentation/DocBook/Makefile |   10 +++++-----
+
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Ben Hutchings <ben@decadent.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/sched.c      |   29 ++++++++++++++++-------------
- kernel/sched_fair.c |   16 ++++++++++++++++
- 2 files changed, 32 insertions(+), 13 deletions(-)
+ Documentation/DocBook/Makefile |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -816,6 +816,7 @@ const_debug unsigned int sysctl_sched_nr
-  * default: 0.25ms
-  */
- unsigned int sysctl_sched_shares_ratelimit = 250000;
-+unsigned int normalized_sysctl_sched_shares_ratelimit = 250000;
+--- a/Documentation/DocBook/Makefile
++++ b/Documentation/DocBook/Makefile
+@@ -32,7 +32,7 @@ PS_METHOD	= $(prefer-db2x)
  
- /*
-  * Inject some fuzzyness into changing the per-cpu group shares
-@@ -1812,6 +1813,7 @@ static void cfs_rq_set_shares(struct cfs
- #endif
+ ###
+ # The targets that may be used.
+-PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs media
++PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs
  
- static void calc_load_account_active(struct rq *this_rq);
-+static void update_sysctl(void);
+ BOOKS := $(addprefix $(obj)/,$(DOCBOOKS))
+ xmldocs: $(BOOKS)
+@@ -45,15 +45,15 @@ PDF := $(patsubst %.xml, %.pdf, $(BOOKS)
+ pdfdocs: $(PDF)
  
- #include "sched_stats.h"
- #include "sched_idletask.c"
-@@ -7018,22 +7020,23 @@ cpumask_var_t nohz_cpu_mask;
-  *
-  * This idea comes from the SD scheduler of Con Kolivas:
-  */
--static inline void sched_init_granularity(void)
-+static void update_sysctl(void)
- {
--	unsigned int factor = 1 + ilog2(num_online_cpus());
--	const unsigned long limit = 200000000;
--
--	sysctl_sched_min_granularity *= factor;
--	if (sysctl_sched_min_granularity > limit)
--		sysctl_sched_min_granularity = limit;
--
--	sysctl_sched_latency *= factor;
--	if (sysctl_sched_latency > limit)
--		sysctl_sched_latency = limit;
-+	unsigned int cpus = min(num_online_cpus(), 8U);
-+	unsigned int factor = 1 + ilog2(cpus);
+ HTML := $(sort $(patsubst %.xml, %.html, $(BOOKS)))
+-htmldocs: media $(HTML)
++htmldocs: $(HTML)
+ 	$(call build_main_index)
++	$(call build_images)
  
--	sysctl_sched_wakeup_granularity *= factor;
-+#define SET_SYSCTL(name) \
-+	(sysctl_##name = (factor) * normalized_sysctl_##name)
-+	SET_SYSCTL(sched_min_granularity);
-+	SET_SYSCTL(sched_latency);
-+	SET_SYSCTL(sched_wakeup_granularity);
-+	SET_SYSCTL(sched_shares_ratelimit);
-+#undef SET_SYSCTL
-+}
+ MAN := $(patsubst %.xml, %.9, $(BOOKS))
+ mandocs: $(MAN)
  
--	sysctl_sched_shares_ratelimit *= factor;
-+static inline void sched_init_granularity(void)
-+{
-+	update_sysctl();
- }
+-media:
+-	mkdir -p $(srctree)/Documentation/DocBook/media/
+-	cp $(srctree)/Documentation/DocBook/dvb/*.png $(srctree)/Documentation/DocBook/v4l/*.gif $(srctree)/Documentation/DocBook/media/
++build_images = mkdir -p $(objtree)/Documentation/DocBook/media/ && \
++	       cp $(srctree)/Documentation/DocBook/dvb/*.png $(srctree)/Documentation/DocBook/v4l/*.gif $(objtree)/Documentation/DocBook/media/
  
- #ifdef CONFIG_SMP
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -35,12 +35,14 @@
-  *  run vmstat and monitor the context-switches (cs) field)
-  */
- unsigned int sysctl_sched_latency = 5000000ULL;
-+unsigned int normalized_sysctl_sched_latency = 5000000ULL;
- 
- /*
-  * Minimal preemption granularity for CPU-bound tasks:
-  * (default: 1 msec * (1 + ilog(ncpus)), units: nanoseconds)
-  */
- unsigned int sysctl_sched_min_granularity = 1000000ULL;
-+unsigned int normalized_sysctl_sched_min_granularity = 1000000ULL;
- 
- /*
-  * is kept at sysctl_sched_latency / sysctl_sched_min_granularity
-@@ -70,6 +72,7 @@ unsigned int __read_mostly sysctl_sched_
-  * have immediate wakeup/sleep latencies.
-  */
- unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
-+unsigned int normalized_sysctl_sched_wakeup_granularity = 1000000UL;
- 
- const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
- 
-@@ -1880,6 +1883,17 @@ move_one_task_fair(struct rq *this_rq, i
- 
- 	return 0;
- }
-+
-+static void rq_online_fair(struct rq *rq)
-+{
-+	update_sysctl();
-+}
-+
-+static void rq_offline_fair(struct rq *rq)
-+{
-+	update_sysctl();
-+}
-+
- #endif /* CONFIG_SMP */
- 
- /*
-@@ -2027,6 +2041,8 @@ static const struct sched_class fair_sch
- 
- 	.load_balance		= load_balance_fair,
- 	.move_one_task		= move_one_task_fair,
-+	.rq_online		= rq_online_fair,
-+	.rq_offline		= rq_offline_fair,
- #endif
- 
- 	.set_curr_task          = set_curr_task_fair,
+ installmandocs: mandocs
+ 	mkdir -p /usr/local/man/man9/
 
 
