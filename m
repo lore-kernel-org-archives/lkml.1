@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854Ab0AZBTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752228Ab0AZB07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752854Ab0AZBTf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 20:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689Ab0AZBT3
+	id S1752228Ab0AZB07 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 20:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749Ab0AZB07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 20:19:29 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35991 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752776Ab0AZBT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 20:19:28 -0500
-Message-ID: <4B5E401D.2020809@zytor.com>
-Date: Mon, 25 Jan 2010 17:06:37 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Mon, 25 Jan 2010 20:26:59 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:52150 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750773Ab0AZB06 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 20:26:58 -0500
+Message-ID: <4B5E44DD.9090305@cnu.edu>
+Date: Mon, 25 Jan 2010 20:26:53 -0500
+From: James Kosin <james.kosin.04@cnu.edu>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       rusty@rustcorp.com.au, akpm@linux-foundation.org, ebiederm@xmission.com,
-       tytso@mit.edu, Trond.Myklebust@netapp.com, aelder@sgi.com,
-       hch@infradead.org, viro@zeniv.linux.org.uk, davem@davemloft.net,
-       netdev@vger.kernel.org, x86@kernel.org, mingo@redhat.com,
-       dan.j.williams@intel.com, borislav.petkov@amd.com, ying.huang@intel.com,
-       lenb@kernel.org, neilb@suse.de, cl@linux-foundation.org
-Subject: Re: [PATCH 7/8] percpu: add __percpu sparse annotations to	hw_breakpoint
-References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-8-git-send-email-tj@kernel.org> <20100126001901.GI5087@nowhere>
-In-Reply-To: <20100126001901.GI5087@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 23/24] drivers/block/floppy.c: Add function is_ready_state
+References: <e5jMK-25X-3@gated-at.bofh.it> <e5jMM-25X-51@gated-at.bofh.it>	 <4B5B32AF.1010509@cox.net> <1264279618.30778.34.camel@Joe-Laptop.home>
+In-Reply-To: <1264279618.30778.34.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/25/2010 04:19 PM, Frederic Weisbecker wrote:
-> On Tue, Jan 26, 2010 at 12:22:14AM +0900, Tejun Heo wrote:
->> Add __percpu sparse annotations to hw_breakpoint.
+On 1/23/2010 3:46 PM, Joe Perches wrote:
+> On Sat, 2010-01-23 at 12:32 -0500, James Kosin wrote:
+>    
+>> On 1/22/2010 12:00 AM, Joe Perches wrote:
+>>      
+>>> Used a couple of times, might simplify the code a bit.
+>>>
+>>> Signed-off-by: Joe Perches<joe@perches.com>
+>>> ---
+>>>    drivers/block/floppy.c |   19 +++++++++++++++----
+>>>    1 files changed, 15 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+>>> index 2f6ed78..fd56b26 100644
+>>> --- a/drivers/block/floppy.c
+>>> +++ b/drivers/block/floppy.c
+>>> @@ -782,6 +782,12 @@ static inline int is_selected(int dor, int unit)
+>>>    	return ((dor&   (0x10<<   unit))&&   (dor&   3) == unit);
+>>>    }
+>>>
+>>> +static bool is_ready_state(int status)
+>>> +{
+>>> +	int state = status&   (STATUS_READY | STATUS_DIR | STATUS_DMA);
+>>> +	return state == STATUS_READY;
+>>> +}
+>>> +
+>>>        
+>> This should probably be simplified to:
 >>
->> These annotations are to make sparse consider percpu variables to be
->> in a different address space and warn if accessed without going
->> through percpu accessors.  This patch doesn't affect normal builds.
->>
->> per_cpu(nr_task_bp_pinned, cpu) is replaced with
->> &per_cpu(nr_task_bp_pinned[0], cpu).  This is the same to the compiler
->> but allows per_cpu() macro to correctly drop __percpu designation for
->> the returned pointer.
-> 
-> Ouch... It's unpleasant to see such workaround that messes up the
-> code just to make sparse happy.
-> 
-> I guess __percpu is an address_space attribute? Is there no
-> way to force the address space change directly from the
-> per_cpu() macro?
-> 
+>> static bool is_ready_state(int status)
+>> {
+>> 	return ((state&  STATUS_READY) == STATUS_READY);
+>> }
+>>      
+> Certainly not.
+> That wouldn't be the same code.
+>
+> include/linux/fdreg.h:#define STATUS_DMA	0x20		/* 0- DMA mode */
+> include/linux/fdreg.h:#define STATUS_DIR	0x40		/* 0- cpu->fdc */
+> include/linux/fdreg.h:#define STATUS_READY	0x80		/* Data reg ready */
+>
+>
+>    
+Read the code....
 
-Hmm... thinking more about it, we should be able to just move the & and
-[0] into the per_cpu() macro, addressing the situation, or does that
-cause problems elsewhere?
+It simplifies what is already there.  The two other status flags make no 
+difference in the test for equality with STATUS_READY.
 
-	-hpa
+James
