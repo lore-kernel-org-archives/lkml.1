@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399Ab0AZXx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342Ab0AZXnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399Ab0AZXx7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:53:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697Ab0AZXnu
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1752342Ab0AZXnu (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 26 Jan 2010 18:43:50 -0500
-Received: from kroah.org ([198.145.64.141]:35335 "EHLO coco.kroah.org"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612Ab0AZXnp
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 26 Jan 2010 18:43:45 -0500
+Received: from kroah.org ([198.145.64.141]:35340 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754567Ab0AZXnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:41 -0500
+	id S1754486Ab0AZXnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:43 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:27 2010
-Message-Id: <20100126233927.321178985@mini.kroah.org>
+Message-Id: <20100126233927.458130052@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:15 -0800
+Date: Tue, 26 Jan 2010 15:34:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Chris Leech <christopher.leech@intel.com>,
-       Robert Love <robert.w.love@intel.com>,
+       Joe Eykholt <jeykholt@cisco.com>, Robert Love <robert.w.love@intel.com>,
        James Bottomley <James.Bottomley@suse.de>
-Subject: [49/98] [SCSI] libfc: fix memory corruption caused by double frees and bad error handling
+Subject: [50/98] [SCSI] libfc: fix free of fc_rport_priv with timer pending
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,190 +29,224 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Chris Leech <christopher.leech@intel.com>
+From: Joe Eykholt <jeykholt@cisco.com>
 
-commit 8f550f937e9fdafa5c37e348e214aecec851ef3f upstream.
+commit b4a9c7ede96e90f7b1ec009ce7256059295e76df upstream.
 
-I was running into several different panics under stress, which I traced down
-to a few different possible slab corruption issues in error handling paths.
-I have not yet looked into why these exchange sends fail, but with these
-fixes my test system is much more stable under stress than before.
+Timer crashes were caused by freeing a struct fc_rport_priv
+with a timer pending, causing the timer facility list to be
+corrupted.  This was during FC uplink flap tests with a lot
+of targets.
 
-fc_elsct_send() could fail and either leave the passed in frame intact
-(failure in fc_ct/els_fill) or the frame could have been freed if the
-failure was is fc_exch_seq_send().  The caller had no way of knowing, and
-there was a potential double free in the error handling in fc_fcp_rec().
+After discovery, we were doing an PLOGI on an rdata that was
+in DELETE state but not yet removed from the lookup list.
+This moved the rdata from DELETE state to PLOGI state.
+If the PLOGI exchange allocation failed and needed to be
+retried, the timer scheduling could race with the free
+being done by fc_rport_work().
 
-Make fc_elsct_send() always free the frame before returning, and remove the
-fc_frame_free() call in fc_fcp_rec().
+When fc_rport_login() is called on a rport in DELETE state,
+move it to a new state RESTART.  In fc_rport_work, when
+handling a LOGO, STOPPED or FAILED event, look for restart
+state.  In the RESTART case, don't take the rdata off the
+list and after the transport remote port is deleted and
+exchanges are reset, re-login to the remote port.
 
-While fc_exch_seq_send() did always consume the frame, there were double free
-bugs in the error handling of fc_fcp_cmd_send() and fc_fcp_srr() as well.
+Note that the new RESTART state also corrects a problem we
+had when re-discovering a port that had moved to DELETE state.
+In that case, a new rdata was created, but the old rdata
+would do an exchange manager reset affecting the FC_ID
+for both the new rdata and old rdata.  With the new state,
+the new port isn't logged into until after any old exchanges
+are reset.
 
-Numerous calls to error handling routines (fc_disc_error(),
-fc_lport_error(), fc_rport_error_retry() ) were passing in a frame pointer that
-had already been freed in the case of an error.  I have changed the call
-sites to pass in a NULL pointer, but there may be more appropriate error
-codes to use.
-
-Question:  Why do these error routines take a frame pointer anyway?  I
-understand passing in a pointer encoded error to the response handlers, but
-the error routines take no action on a valid pointer and should never be
-called that way.
-
-Signed-off-by: Chris Leech <christopher.leech@intel.com>
+Signed-off-by: Joe Eykholt <jeykholt@cisco.com>
 Signed-off-by: Robert Love <robert.w.love@intel.com>
 Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/libfc/fc_disc.c  |    2 +-
- drivers/scsi/libfc/fc_elsct.c |    4 +++-
- drivers/scsi/libfc/fc_fcp.c   |    7 ++-----
- drivers/scsi/libfc/fc_lport.c |    8 ++++----
- drivers/scsi/libfc/fc_rport.c |   10 +++++-----
- 5 files changed, 15 insertions(+), 16 deletions(-)
+ drivers/scsi/libfc/fc_rport.c |   69 ++++++++++++++++++++++++++++++------------
+ include/scsi/libfc.h          |    1 
+ 2 files changed, 51 insertions(+), 19 deletions(-)
 
---- a/drivers/scsi/libfc/fc_disc.c
-+++ b/drivers/scsi/libfc/fc_disc.c
-@@ -371,7 +371,7 @@ static void fc_disc_gpn_ft_req(struct fc
- 				 disc, lport->e_d_tov))
- 		return;
- err:
--	fc_disc_error(disc, fp);
-+	fc_disc_error(disc, NULL);
- }
- 
- /**
---- a/drivers/scsi/libfc/fc_elsct.c
-+++ b/drivers/scsi/libfc/fc_elsct.c
-@@ -53,8 +53,10 @@ static struct fc_seq *fc_elsct_send(stru
- 		did = FC_FID_DIR_SERV;
- 	}
- 
--	if (rc)
-+	if (rc) {
-+		fc_frame_free(fp);
- 		return NULL;
-+	}
- 
- 	fc_fill_fc_hdr(fp, r_ctl, did, fc_host_port_id(lport->host), fh_type,
- 		       FC_FC_FIRST_SEQ | FC_FC_END_SEQ | FC_FC_SEQ_INIT, 0);
---- a/drivers/scsi/libfc/fc_fcp.c
-+++ b/drivers/scsi/libfc/fc_fcp.c
-@@ -1052,7 +1052,6 @@ static int fc_fcp_cmd_send(struct fc_lpo
- 
- 	seq = lp->tt.exch_seq_send(lp, fp, resp, fc_fcp_pkt_destroy, fsp, 0);
- 	if (!seq) {
--		fc_frame_free(fp);
- 		rc = -1;
- 		goto unlock;
- 	}
-@@ -1317,7 +1316,6 @@ static void fc_fcp_rec(struct fc_fcp_pkt
- 		fc_fcp_pkt_hold(fsp);		/* hold while REC outstanding */
- 		return;
- 	}
--	fc_frame_free(fp);
- retry:
- 	if (fsp->recov_retry++ < FC_MAX_RECOV_RETRY)
- 		fc_fcp_timer_set(fsp, FC_SCSI_REC_TOV);
-@@ -1565,10 +1563,9 @@ static void fc_fcp_srr(struct fc_fcp_pkt
- 
- 	seq = lp->tt.exch_seq_send(lp, fp, fc_fcp_srr_resp, NULL,
- 				   fsp, jiffies_to_msecs(FC_SCSI_REC_TOV));
--	if (!seq) {
--		fc_frame_free(fp);
-+	if (!seq)
- 		goto retry;
--	}
-+
- 	fsp->recov_seq = seq;
- 	fsp->xfer_len = offset;
- 	fsp->xfer_contig_end = offset;
---- a/drivers/scsi/libfc/fc_lport.c
-+++ b/drivers/scsi/libfc/fc_lport.c
-@@ -1115,7 +1115,7 @@ static void fc_lport_enter_scr(struct fc
- 
- 	if (!lport->tt.elsct_send(lport, FC_FID_FCTRL, fp, ELS_SCR,
- 				  fc_lport_scr_resp, lport, lport->e_d_tov))
--		fc_lport_error(lport, fp);
-+		fc_lport_error(lport, NULL);
- }
- 
- /**
-@@ -1186,7 +1186,7 @@ static void fc_lport_enter_rpn_id(struct
- 	if (!lport->tt.elsct_send(lport, FC_FID_DIR_SERV, fp, FC_NS_RPN_ID,
- 				  fc_lport_rpn_id_resp,
- 				  lport, lport->e_d_tov))
--		fc_lport_error(lport, fp);
-+		fc_lport_error(lport, NULL);
- }
- 
- static struct fc_rport_operations fc_lport_rport_ops = {
-@@ -1340,7 +1340,7 @@ static void fc_lport_enter_logo(struct f
- 
- 	if (!lport->tt.elsct_send(lport, FC_FID_FLOGI, fp, ELS_LOGO,
- 				  fc_lport_logo_resp, lport, lport->e_d_tov))
--		fc_lport_error(lport, fp);
-+		fc_lport_error(lport, NULL);
- }
- 
- /**
-@@ -1456,7 +1456,7 @@ void fc_lport_enter_flogi(struct fc_lpor
- 
- 	if (!lport->tt.elsct_send(lport, FC_FID_FLOGI, fp, ELS_FLOGI,
- 				  fc_lport_flogi_resp, lport, lport->e_d_tov))
--		fc_lport_error(lport, fp);
-+		fc_lport_error(lport, NULL);
- }
- 
- /* Configure a fc_lport */
 --- a/drivers/scsi/libfc/fc_rport.c
 +++ b/drivers/scsi/libfc/fc_rport.c
-@@ -632,7 +632,7 @@ static void fc_rport_enter_plogi(struct 
+@@ -86,6 +86,7 @@ static const char *fc_rport_state_names[
+ 	[RPORT_ST_LOGO] = "LOGO",
+ 	[RPORT_ST_ADISC] = "ADISC",
+ 	[RPORT_ST_DELETE] = "Delete",
++	[RPORT_ST_RESTART] = "Restart",
+ };
  
- 	if (!lport->tt.elsct_send(lport, rdata->ids.port_id, fp, ELS_PLOGI,
- 				  fc_rport_plogi_resp, rdata, lport->e_d_tov))
--		fc_rport_error_retry(rdata, fp);
-+		fc_rport_error_retry(rdata, NULL);
- 	else
- 		kref_get(&rdata->kref);
- }
-@@ -793,7 +793,7 @@ static void fc_rport_enter_prli(struct f
+ /**
+@@ -99,8 +100,7 @@ static struct fc_rport_priv *fc_rport_lo
+ 	struct fc_rport_priv *rdata;
  
- 	if (!lport->tt.elsct_send(lport, rdata->ids.port_id, fp, ELS_PRLI,
- 				  fc_rport_prli_resp, rdata, lport->e_d_tov))
--		fc_rport_error_retry(rdata, fp);
-+		fc_rport_error_retry(rdata, NULL);
- 	else
- 		kref_get(&rdata->kref);
+ 	list_for_each_entry(rdata, &lport->disc.rports, peers)
+-		if (rdata->ids.port_id == port_id &&
+-		    rdata->rp_state != RPORT_ST_DELETE)
++		if (rdata->ids.port_id == port_id)
+ 			return rdata;
+ 	return NULL;
  }
-@@ -889,7 +889,7 @@ static void fc_rport_enter_rtv(struct fc
+@@ -235,6 +235,7 @@ static void fc_rport_work(struct work_st
+ 	struct fc_rport_operations *rport_ops;
+ 	struct fc_rport_identifiers ids;
+ 	struct fc_rport *rport;
++	int restart = 0;
  
- 	if (!lport->tt.elsct_send(lport, rdata->ids.port_id, fp, ELS_RTV,
- 				     fc_rport_rtv_resp, rdata, lport->e_d_tov))
--		fc_rport_error_retry(rdata, fp);
-+		fc_rport_error_retry(rdata, NULL);
- 	else
- 		kref_get(&rdata->kref);
- }
-@@ -919,7 +919,7 @@ static void fc_rport_enter_logo(struct f
+ 	mutex_lock(&rdata->rp_mutex);
+ 	event = rdata->event;
+@@ -287,8 +288,19 @@ static void fc_rport_work(struct work_st
+ 		mutex_unlock(&rdata->rp_mutex);
  
- 	if (!lport->tt.elsct_send(lport, rdata->ids.port_id, fp, ELS_LOGO,
- 				  fc_rport_logo_resp, rdata, lport->e_d_tov))
--		fc_rport_error_retry(rdata, fp);
-+		fc_rport_error_retry(rdata, NULL);
- 	else
- 		kref_get(&rdata->kref);
- }
-@@ -1006,7 +1006,7 @@ static void fc_rport_enter_adisc(struct 
+ 		if (port_id != FC_FID_DIR_SERV) {
++			/*
++			 * We must drop rp_mutex before taking disc_mutex.
++			 * Re-evaluate state to allow for restart.
++			 * A transition to RESTART state must only happen
++			 * while disc_mutex is held and rdata is on the list.
++			 */
+ 			mutex_lock(&lport->disc.disc_mutex);
+-			list_del(&rdata->peers);
++			mutex_lock(&rdata->rp_mutex);
++			if (rdata->rp_state == RPORT_ST_RESTART)
++				restart = 1;
++			else
++				list_del(&rdata->peers);
++			mutex_unlock(&rdata->rp_mutex);
+ 			mutex_unlock(&lport->disc.disc_mutex);
+ 		}
+ 
+@@ -312,7 +324,13 @@ static void fc_rport_work(struct work_st
+ 			mutex_unlock(&rdata->rp_mutex);
+ 			fc_remote_port_delete(rport);
+ 		}
+-		kref_put(&rdata->kref, lport->tt.rport_destroy);
++		if (restart) {
++			mutex_lock(&rdata->rp_mutex);
++			FC_RPORT_DBG(rdata, "work restart\n");
++			fc_rport_enter_plogi(rdata);
++			mutex_unlock(&rdata->rp_mutex);
++		} else
++			kref_put(&rdata->kref, lport->tt.rport_destroy);
+ 		break;
+ 
+ 	default:
+@@ -342,6 +360,12 @@ int fc_rport_login(struct fc_rport_priv 
+ 		FC_RPORT_DBG(rdata, "ADISC port\n");
+ 		fc_rport_enter_adisc(rdata);
+ 		break;
++	case RPORT_ST_RESTART:
++		break;
++	case RPORT_ST_DELETE:
++		FC_RPORT_DBG(rdata, "Restart deleted port\n");
++		fc_rport_state_enter(rdata, RPORT_ST_RESTART);
++		break;
+ 	default:
+ 		FC_RPORT_DBG(rdata, "Login to port\n");
+ 		fc_rport_enter_plogi(rdata);
+@@ -397,20 +421,21 @@ int fc_rport_logoff(struct fc_rport_priv
+ 
+ 	if (rdata->rp_state == RPORT_ST_DELETE) {
+ 		FC_RPORT_DBG(rdata, "Port in Delete state, not removing\n");
+-		mutex_unlock(&rdata->rp_mutex);
+ 		goto out;
  	}
- 	if (!lport->tt.elsct_send(lport, rdata->ids.port_id, fp, ELS_ADISC,
- 				  fc_rport_adisc_resp, rdata, lport->e_d_tov))
--		fc_rport_error_retry(rdata, fp);
-+		fc_rport_error_retry(rdata, NULL);
- 	else
- 		kref_get(&rdata->kref);
+ 
+-	fc_rport_enter_logo(rdata);
++	if (rdata->rp_state == RPORT_ST_RESTART)
++		FC_RPORT_DBG(rdata, "Port in Restart state, deleting\n");
++	else
++		fc_rport_enter_logo(rdata);
+ 
+ 	/*
+ 	 * Change the state to Delete so that we discard
+ 	 * the response.
+ 	 */
+ 	fc_rport_enter_delete(rdata, RPORT_EV_STOP);
+-	mutex_unlock(&rdata->rp_mutex);
+-
+ out:
++	mutex_unlock(&rdata->rp_mutex);
+ 	return 0;
  }
+ 
+@@ -466,6 +491,7 @@ static void fc_rport_timeout(struct work
+ 	case RPORT_ST_READY:
+ 	case RPORT_ST_INIT:
+ 	case RPORT_ST_DELETE:
++	case RPORT_ST_RESTART:
+ 		break;
+ 	}
+ 
+@@ -499,6 +525,7 @@ static void fc_rport_error(struct fc_rpo
+ 		fc_rport_enter_logo(rdata);
+ 		break;
+ 	case RPORT_ST_DELETE:
++	case RPORT_ST_RESTART:
+ 	case RPORT_ST_READY:
+ 	case RPORT_ST_INIT:
+ 		break;
+@@ -1248,6 +1275,7 @@ static void fc_rport_recv_plogi_req(stru
+ 		}
+ 		break;
+ 	case RPORT_ST_PRLI:
++	case RPORT_ST_RTV:
+ 	case RPORT_ST_READY:
+ 	case RPORT_ST_ADISC:
+ 		FC_RPORT_DBG(rdata, "Received PLOGI in logged-in state %d "
+@@ -1255,11 +1283,14 @@ static void fc_rport_recv_plogi_req(stru
+ 		/* XXX TBD - should reset */
+ 		break;
+ 	case RPORT_ST_DELETE:
+-	default:
+-		FC_RPORT_DBG(rdata, "Received PLOGI in unexpected state %d\n",
+-			     rdata->rp_state);
+-		fc_frame_free(rx_fp);
+-		goto out;
++	case RPORT_ST_LOGO:
++	case RPORT_ST_RESTART:
++		FC_RPORT_DBG(rdata, "Received PLOGI in state %s - send busy\n",
++			     fc_rport_state(rdata));
++		mutex_unlock(&rdata->rp_mutex);
++		rjt_data.reason = ELS_RJT_BUSY;
++		rjt_data.explan = ELS_EXPL_NONE;
++		goto reject;
+ 	}
+ 
+ 	/*
+@@ -1510,14 +1541,14 @@ static void fc_rport_recv_logo_req(struc
+ 		FC_RPORT_DBG(rdata, "Received LOGO request while in state %s\n",
+ 			     fc_rport_state(rdata));
+ 
++		fc_rport_enter_delete(rdata, RPORT_EV_LOGO);
++
+ 		/*
+-		 * If the remote port was created due to discovery,
+-		 * log back in.  It may have seen a stale RSCN about us.
++		 * If the remote port was created due to discovery, set state
++		 * to log back in.  It may have seen a stale RSCN about us.
+ 		 */
+-		if (rdata->rp_state != RPORT_ST_DELETE && rdata->disc_id)
+-			fc_rport_enter_plogi(rdata);
+-		else
+-			fc_rport_enter_delete(rdata, RPORT_EV_LOGO);
++		if (rdata->disc_id)
++			fc_rport_state_enter(rdata, RPORT_ST_RESTART);
+ 		mutex_unlock(&rdata->rp_mutex);
+ 	} else
+ 		FC_RPORT_ID_DBG(lport, sid,
+--- a/include/scsi/libfc.h
++++ b/include/scsi/libfc.h
+@@ -145,6 +145,7 @@ enum fc_rport_state {
+ 	RPORT_ST_LOGO,		/* port logout sent */
+ 	RPORT_ST_ADISC,		/* Discover Address sent */
+ 	RPORT_ST_DELETE,	/* port being deleted */
++	RPORT_ST_RESTART,       /* remote port being deleted and will restart */
+ };
+ 
+ /**
 
 
