@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580Ab0AZX7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557Ab0AZX7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580Ab0AZX7u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:59:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494Ab0AZX7h
+	id S1755557Ab0AZX7W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180Ab0AZX6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:59:37 -0500
-Received: from kroah.org ([198.145.64.141]:35240 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:58:53 -0500
+Received: from kroah.org ([198.145.64.141]:35259 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754466Ab0AZXn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:29 -0500
+	id S1754369Ab0AZXna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:30 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:25 2010
-Message-Id: <20100126233925.611466380@mini.kroah.org>
+Message-Id: <20100126233925.746705211@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:02 -0800
+Date: Tue, 26 Jan 2010 15:34:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: [36/98] HID: fixup quirk for NCR devices
+       Takahiro Yasui <tyasui@redhat.com>,
+       James Bottomley <James.Bottomley@suse.de>,
+       Hannes Reinecke <hare@suse.de>
+Subject: [37/98] [SCSI] scsi_devinfo: update Hitachi entries (v2)
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,68 +30,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Kosina <jkosina@suse.cz>
+From: Takahiro Yasui <tyasui@redhat.com>
 
-commit 5b915d9e6dc3d22fedde91dfef1cb1a8fa9a1870 upstream.
+commit 627511e3e67553b04f6917c03e39b797df210e04 upstream.
 
-NCR devices are terminally broken by design -- they claim themselves to contain
-proper input applications in their HID report descriptor, but behave very badly
-if treated in standard way.
+Four models, OPEN-/DF400/DF500/DISK-SUBSYSTEM, can handle REPORT_LUN,
+and the BLIST_REPORTLUN2 flag needs to be set. And DF600 doesn't require
+any flags because it returns ANSI 03h (SPC).
 
-According to NCR developers, the devices get confused when queried for reports
-in a standard way, rendering them unusable.
-
-NCR is shipping application called "RPSL" that can be used to drive these
-devices through hiddev, under the assumption that in-kernel driver doesn't
-perform initial report query.
-If it does, neither in-kernel nor hiddev-based driver can operate with these
-devices any more.
-
-Introduce a quirk that skips the report query for all NCR devices. The previous
-NOGET quirk was wrong and had been introduced because I misunderstood the nature
-of brokenness of these devices.
-
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Takahiro Yasui <tyasui@redhat.com>
+Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+Acked-by: Hannes Reinecke <hare@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hid/usbhid/hid-core.c   |    3 ++-
- drivers/hid/usbhid/hid-quirks.c |    2 +-
- include/linux/hid.h             |    1 +
- 3 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/scsi/scsi_devinfo.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -998,7 +998,8 @@ static int usbhid_start(struct hid_devic
- 	usbhid->urbctrl->transfer_dma = usbhid->ctrlbuf_dma;
- 	usbhid->urbctrl->transfer_flags |= (URB_NO_TRANSFER_DMA_MAP | URB_NO_SETUP_DMA_MAP);
- 
--	usbhid_init_reports(hid);
-+	if (!(hid->quirks & HID_QUIRK_NO_INIT_REPORTS))
-+		usbhid_init_reports(hid);
- 
- 	set_bit(HID_STARTED, &usbhid->iofl);
- 
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -280,7 +280,7 @@ u32 usbhid_lookup_quirk(const u16 idVend
- 	if (idVendor == USB_VENDOR_ID_NCR &&
- 			idProduct >= USB_DEVICE_ID_NCR_FIRST &&
- 			idProduct <= USB_DEVICE_ID_NCR_LAST)
--			return HID_QUIRK_NOGET;
-+			return HID_QUIRK_NO_INIT_REPORTS;
- 
- 	down_read(&dquirks_rwsem);
- 	bl_entry = usbhid_exists_dquirk(idVendor, idProduct);
---- a/include/linux/hid.h
-+++ b/include/linux/hid.h
-@@ -312,6 +312,7 @@ struct hid_item {
- #define HID_QUIRK_MULTI_INPUT			0x00000040
- #define HID_QUIRK_SKIP_OUTPUT_REPORTS		0x00010000
- #define HID_QUIRK_FULLSPEED_INTERVAL		0x10000000
-+#define HID_QUIRK_NO_INIT_REPORTS		0x20000000
- 
- /*
-  * This is the global environment of the parser. This information is
+--- a/drivers/scsi/scsi_devinfo.c
++++ b/drivers/scsi/scsi_devinfo.c
+@@ -168,11 +168,10 @@ static struct {
+ 	{"Generic", "USB SD Reader", "1.00", BLIST_FORCELUN | BLIST_INQUIRY_36},
+ 	{"Generic", "USB Storage-SMC", "0180", BLIST_FORCELUN | BLIST_INQUIRY_36},
+ 	{"Generic", "USB Storage-SMC", "0207", BLIST_FORCELUN | BLIST_INQUIRY_36},
+-	{"HITACHI", "DF400", "*", BLIST_SPARSELUN},
+-	{"HITACHI", "DF500", "*", BLIST_SPARSELUN},
+-	{"HITACHI", "DF600", "*", BLIST_SPARSELUN},
+-	{"HITACHI", "DISK-SUBSYSTEM", "*", BLIST_ATTACH_PQ3 | BLIST_SPARSELUN | BLIST_LARGELUN},
+-	{"HITACHI", "OPEN-E", "*", BLIST_ATTACH_PQ3 | BLIST_SPARSELUN | BLIST_LARGELUN},
++	{"HITACHI", "DF400", "*", BLIST_REPORTLUN2},
++	{"HITACHI", "DF500", "*", BLIST_REPORTLUN2},
++	{"HITACHI", "DISK-SUBSYSTEM", "*", BLIST_REPORTLUN2},
++	{"HITACHI", "OPEN-", "*", BLIST_REPORTLUN2},
+ 	{"HITACHI", "OP-C-", "*", BLIST_SPARSELUN | BLIST_LARGELUN},
+ 	{"HITACHI", "3380-", "*", BLIST_SPARSELUN | BLIST_LARGELUN},
+ 	{"HITACHI", "3390-", "*", BLIST_SPARSELUN | BLIST_LARGELUN},
 
 
