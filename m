@@ -1,76 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953Ab0AZBeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799Ab0AZBiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752953Ab0AZBeq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 20:34:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248Ab0AZBep
+	id S1752799Ab0AZBiT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 20:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638Ab0AZBiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 20:34:45 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:45819 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751122Ab0AZBep (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 20:34:45 -0500
-Message-ID: <4B5E46B0.80300@cnu.edu>
-Date: Mon, 25 Jan 2010 20:34:40 -0500
-From: James Kosin <james.kosin.04@cnu.edu>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Mon, 25 Jan 2010 20:38:18 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17192 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752576Ab0AZBiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 20:38:18 -0500
+Message-ID: <4B5E476C.9030303@redhat.com>
+Date: Mon, 25 Jan 2010 20:37:48 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 23/24] drivers/block/floppy.c: Add function is_ready_state
-References: <e5jMK-25X-3@gated-at.bofh.it> <e5jMM-25X-51@gated-at.bofh.it>	 <4B5B32AF.1010509@cox.net> <1264279618.30778.34.camel@Joe-Laptop.home>
-In-Reply-To: <1264279618.30778.34.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [RFC PATCH 03/10] ftrace: Drop the ftrace_profile_enabled	checks
+ in tracing hot path
+References: <1264122982-1553-4-git-send-regression-fweisbec@gmail.com> <1264125917.31321.312.camel@gandalf.stny.rr.com> <20100122022858.GA2604@Krystal> <1264129978.31321.333.camel@gandalf.stny.rr.com> <20100122040959.GA11827@Krystal> <1264135966.31321.375.camel@gandalf.stny.rr.com> <20100122123450.GA19348@Krystal> <20100125205814.GD5087@nowhere> <4B5E17B8.4090002@redhat.com> <20100126004153.GJ5087@nowhere> <20100126011303.GA29148@Krystal>
+In-Reply-To: <20100126011303.GA29148@Krystal>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/23/2010 3:46 PM, Joe Perches wrote:
-> On Sat, 2010-01-23 at 12:32 -0500, James Kosin wrote:
->    
->> On 1/22/2010 12:00 AM, Joe Perches wrote:
->>      
->>> Used a couple of times, might simplify the code a bit.
+Mathieu Desnoyers wrote:
+> * Frederic Weisbecker (fweisbec@gmail.com) wrote:
+>> On Mon, Jan 25, 2010 at 05:14:16PM -0500, Masami Hiramatsu wrote:
+>>> Frederic Weisbecker wrote:
+>>>> On Fri, Jan 22, 2010 at 07:34:51AM -0500, Mathieu Desnoyers wrote:
+>>>>> * Steven Rostedt (rostedt@goodmis.org) wrote:
+>>>>>> On Thu, 2010-01-21 at 23:09 -0500, Mathieu Desnoyers wrote:
+>>>>>>> * Steven Rostedt (rostedt@goodmis.org) wrote:
+>>>>>>
+>>>>>>>> Hmm, interesting. Maybe something like that might work. But what if
+>>>>>>>> CONFIG_PREEMPT is enabled but CONFIG_FREEZER is not?
+>>>>>>>
+>>>>>>> Then you may want to make the function tracer depend on CONFIG_FREEZER,
+>>>>>>> but maybe Masami has other ideas ?
+>>>>>>
+>>>>>> egad no! This is just to help add guarantees to those that use the
+>>>>>> function tracer that when the tracing is disabled, it is guaranteed that
+>>>>>> no more tracing will be called by the function tracer. Currently,
+>>>>>> nothing relies on this. But we may add cases that might need this.
+>>>>>
+>>>>> Yep, identifying tracer quiescent state can become handy.
+>>>>>
+>>>>>>
+>>>>>> In fact, only those that need this requirement would need to do this
+>>>>>> trick. Anyway, we could make those depend on CONFIG_FREEZER, but that
+>>>>>> just seems to be a strange dependency.
+>>>>>
+>>>>> This makes me wonder (question for Masami)...
+>>>>>
+>>>>> static int __kprobes check_safety(void)
+>>>>> {
+>>>>>         int ret = 0;
+>>>>> #if defined(CONFIG_PREEMPT) && defined(CONFIG_FREEZER)
+>>>>>         ret = freeze_processes();
+>>>>>         if (ret == 0) {
+>>>>>                 struct task_struct *p, *q;
+>>>>>                 do_each_thread(p, q) {
+>>>>>                         if (p != current && p->state == TASK_RUNNING &&
+>>>>>                             p->pid != 0) {
+>>>>>                                 printk("Check failed: %s is running\n",p->comm);
+>>>>>                                 ret = -1;
+>>>>>                                 goto loop_end;
+>>>>>                         }
+>>>>>                 } while_each_thread(p, q);
+>>>>
+>>>>
+>>>>
+>>>> How does that deal with kernel threads that don't freeze?
 >>>
->>> Signed-off-by: Joe Perches<joe@perches.com>
->>> ---
->>>    drivers/block/floppy.c |   19 +++++++++++++++----
->>>    1 files changed, 15 insertions(+), 4 deletions(-)
+>>> Hmm, right. It can't handle non-freezable kernel threads.
 >>>
->>> diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
->>> index 2f6ed78..fd56b26 100644
->>> --- a/drivers/block/floppy.c
->>> +++ b/drivers/block/floppy.c
->>> @@ -782,6 +782,12 @@ static inline int is_selected(int dor, int unit)
->>>    	return ((dor&   (0x10<<   unit))&&   (dor&   3) == unit);
->>>    }
+>>>> Also freezing every processes seems a bit of a heavy thing for that.
+>>>> Looks like a synchronize_tasks() would be really useful.
 >>>
->>> +static bool is_ready_state(int status)
->>> +{
->>> +	int state = status&   (STATUS_READY | STATUS_DIR | STATUS_DMA);
->>> +	return state == STATUS_READY;
->>> +}
->>> +
->>>        
->> This should probably be simplified to:
+>>> Sure :-)
+>>> Maybe, I'd better remove booster support on preemptive kernel until then.
 >>
->> static bool is_ready_state(int status)
->> {
->> 	return ((state&  STATUS_READY) == STATUS_READY);
->> }
->>      
-> Certainly not.
-> That wouldn't be the same code.
->
-> include/linux/fdreg.h:#define STATUS_DMA	0x20		/* 0- DMA mode */
-> include/linux/fdreg.h:#define STATUS_DIR	0x40		/* 0- cpu->fdc */
-> include/linux/fdreg.h:#define STATUS_READY	0x80		/* Data reg ready */
->
->
->    
-   Sorry,
+>>
+>> I don't know as I haven't looked deeper into check_safety(), but does the
+>> fact we have non-freezable tasks break the assumptions that make
+>> kprobes booster safe? If so then yeah, may be deactivate it for now.
+>>
+> 
+> In the case of check_safety, it's not a bug per se if a task happens to
+> be non freezable. freeze_processes() will likely return a non-zero
+> value, and the whole check_safety will therefore return that value, so
+> standard breakpoints will be used instead.
 
-That probably should have been:
-         return ((status & STATUS_READY) == STATUS_READY);
+Hmm, unfortunately no, because freeze_processes() doesn't count
+non-freezable threads...
 
-James
+---
+                todo = 0;
+                read_lock(&tasklist_lock);
+                do_each_thread(g, p) {
+                        if (frozen(p) || !freezeable(p))
+                                continue;
+
+                        if (!freeze_task(p, sig_only))
+                                continue;
+
+                        /*
+                         * Now that we've done set_freeze_flag, don't
+                         * perturb a task in TASK_STOPPED or TASK_TRACED.
+                         * It is "frozen enough".  If the task does wake
+                         * up, it will immediately call try_to_freeze.
+                         */
+                        if (!task_is_stopped_or_traced(p) &&
+                            !freezer_should_skip(p))
+                                todo++;
+                } while_each_thread(g, p);
+                read_unlock(&tasklist_lock);
+                if (!todo || time_after(jiffies, end_time))
+                        break;
+---
+
+So, it can return 0 if there is non-freezable threads running.
+
+Thank you,
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
