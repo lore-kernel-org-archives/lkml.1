@@ -1,99 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831Ab0AZBd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953Ab0AZBeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752831Ab0AZBd4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 20:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628Ab0AZBdz
+	id S1752953Ab0AZBeq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 20:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248Ab0AZBep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 20:33:55 -0500
-Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7]:39061 "EHLO
-	smtp-out4.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751214Ab0AZBdz (ORCPT
+	Mon, 25 Jan 2010 20:34:45 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:45819 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751122Ab0AZBep (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 20:33:55 -0500
-Message-ID: <4B5E3E63.80305@blueyonder.co.uk>
-Date: Tue, 26 Jan 2010 00:59:15 +0000
-From: Sid Boyce <sboyce@blueyonder.co.uk>
-Reply-To: sboyce@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
+	Mon, 25 Jan 2010 20:34:45 -0500
+Message-ID: <4B5E46B0.80300@cnu.edu>
+Date: Mon, 25 Jan 2010 20:34:40 -0500
+From: James Kosin <james.kosin.04@cnu.edu>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: HDA Intel Audio hang on boot
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>	<4B4FC3B0.9070207@blueyonder.co.uk>	<4B5CF87A.20101@blueyonder.co.uk>	<201001252239.03017.rjw@sisk.pl>	<s5h8wblc0kw.wl%tiwai@suse.de> <s5h7hr5c0jn.wl%tiwai@suse.de>
-In-Reply-To: <s5h7hr5c0jn.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 23/24] drivers/block/floppy.c: Add function is_ready_state
+References: <e5jMK-25X-3@gated-at.bofh.it> <e5jMM-25X-51@gated-at.bofh.it>	 <4B5B32AF.1010509@cox.net> <1264279618.30778.34.camel@Joe-Laptop.home>
+In-Reply-To: <1264279618.30778.34.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/01/10 21:55, Takashi Iwai wrote:
-> At Mon, 25 Jan 2010 22:54:23 +0100,
-> I wrote:
->>
->> At Mon, 25 Jan 2010 22:39:02 +0100,
->> Rafael J. Wysocki wrote:
+On 1/23/2010 3:46 PM, Joe Perches wrote:
+> On Sat, 2010-01-23 at 12:32 -0500, James Kosin wrote:
+>    
+>> On 1/22/2010 12:00 AM, Joe Perches wrote:
+>>      
+>>> Used a couple of times, might simplify the code a bit.
 >>>
->>> On Monday 25 January 2010, Sid Boyce wrote:
->>>> On 15/01/10 01:24, Sid Boyce wrote:
->>>> This is the only outstanding bug. No problems up 2.6.32-git1, but I get
->>>> a solid lock-up on 2.6.32-git2 through 2.6.33-rc5 if the on-board audio
->>>> is not disabled in the BIOS.
+>>> Signed-off-by: Joe Perches<joe@perches.com>
+>>> ---
+>>>    drivers/block/floppy.c |   19 +++++++++++++++----
+>>>    1 files changed, 15 insertions(+), 4 deletions(-)
 >>>
->>> I guess we should let Takashi know.
+>>> diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+>>> index 2f6ed78..fd56b26 100644
+>>> --- a/drivers/block/floppy.c
+>>> +++ b/drivers/block/floppy.c
+>>> @@ -782,6 +782,12 @@ static inline int is_selected(int dor, int unit)
+>>>    	return ((dor&   (0x10<<   unit))&&   (dor&   3) == unit);
+>>>    }
+>>>
+>>> +static bool is_ready_state(int status)
+>>> +{
+>>> +	int state = status&   (STATUS_READY | STATUS_DIR | STATUS_DMA);
+>>> +	return state == STATUS_READY;
+>>> +}
+>>> +
+>>>        
+>> This should probably be simplified to:
 >>
->> Thanks.
->>
->>>>> tindog:~ # uname -r
->>>>> 2.6.33-rc4-smp
->>>>> On 2.6.32-git1 which boots, hwinfo shows:-
->>>>>   oss.card_id = 'HDA NVidia'
->>>>>   oss.card_id = 'HDA NVidia'
->>>>>   oss.card_id = 'HDA NVidia'
->>>>>   alsa.card_id = 'HDA NVidia'
->>>>>   alsa.card_id = 'HDA NVidia'
->>>>>   alsa.card_id = 'HDA NVidia'
->>>>>   alsa.card_id = 'HDA NVidia'
->>>>>   info.product = 'HDA NVidia ALSA hardware specific Device'
->>>>>   alsa.card_id = 'HDA NVidia'
->>>>>   info.product = 'HDA NVidia ALSA Control Device'
->>>>>   alsa.card_id = 'HDA NVidia'
->>>>>   info.product = 'HDA NVidia Sound Card'
->>>>>   sound.card_id = 'HDA NVidia'
->>>>>   info.linux.driver = 'HDA Intel'
->>>>>     22:     489835        578   IO-APIC-fasteoi   sata_nv, HDA Intel
->>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->>>>>        HDA Intel: module = snd_hda_intel
->>>>> irq:0 22 (   490413) "sata_nv" "HDA Intel"
->>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->>>>>        HDA Intel: module = snd_hda_intel
->>>>>        HDA Intel: /devices/pci0000:00/0000:00:0e.1
->>>>>        HDA Intel: module = snd_hda_intel
->>>>>   E: DRIVER=HDA Intel
->>>>>   <6>HDA Intel 0000:00:0e.1: PCI INT B -> Link[AAZA] -> GSI 22 (level,
->>>>> low) -> IRQ 22
->>>>>   <7>HDA Intel 0000:00:0e.1: setting latency timer to 64
->>>>>   Driver: "HDA Intel"
->>
->> What I'd try first is to pass enable_msi=0 option.
-> 
-> Just to be sure -- it's an option for snd-hda-intel module.
-> 
-> 
-> Takashi
-> 
+>> static bool is_ready_state(int status)
+>> {
+>> 	return ((state&  STATUS_READY) == STATUS_READY);
+>> }
+>>      
+> Certainly not.
+> That wouldn't be the same code.
+>
+> include/linux/fdreg.h:#define STATUS_DMA	0x20		/* 0- DMA mode */
+> include/linux/fdreg.h:#define STATUS_DIR	0x40		/* 0- cpu->fdc */
+> include/linux/fdreg.h:#define STATUS_READY	0x80		/* Data reg ready */
+>
+>
+>    
+   Sorry,
 
-I passed "modprobe snd-hda-intel enable_msi=0" on the kernel command
-line, still locks up as before.
-Regards
-Sid.
+That probably should have been:
+         return ((status & STATUS_READY) == STATUS_READY);
 
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
-
+James
