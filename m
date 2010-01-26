@@ -1,102 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751822Ab0AZA2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914Ab0AZAaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751822Ab0AZA2s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 19:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299Ab0AZA2r
+	id S1751914Ab0AZAaZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 19:30:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466Ab0AZAaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 19:28:47 -0500
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:51876 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207Ab0AZA2q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 19:28:46 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/QoqYUFnl5XrgiIJZuQ3Rc
-Date: Mon, 25 Jan 2010 16:28:32 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       linux-arm-kernel@lists.infradead.org,
-       Russell King <linux@arm.linux.org.uk>,
-       "Zebediah C. McClure" <zmc@lurian.net>,
-       Alistair Buxton <a.j.buxton@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] omap: define _toggle_gpio_edge_triggering only for
- OMAP1
-Message-ID: <20100126002832.GD2879@atomide.com>
-References: <1264280500-22878-2-git-send-email-u.kleine-koenig@pengutronix.de>
- <87sk9u6o4l.fsf@deeprootsystems.com>
+	Mon, 25 Jan 2010 19:30:19 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39457 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751450Ab0AZAaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 19:30:18 -0500
+Message-ID: <4B5E35DA.8010601@zytor.com>
+Date: Mon, 25 Jan 2010 16:22:50 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87sk9u6o4l.fsf@deeprootsystems.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Mike Travis <travis@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Russ Anderson <rja@sgi.com>, Dave Airlie <airlied@redhat.com>,
+       Alex Chiang <achiang@hp.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Cyrill Gorcunov <gorcunov@openvz.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Robin Holt <holt@sgi.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Adam Jackson <ajax@nwnk.net>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Gaetan Nadon <memsize@videotron.ca>,
+       Aaron Plattner <aplattner@nvidia.com>, Jack Steiner <steiner@sgi.com>,
+       Tiago Vignatti <tiago.vignatti@nokia.com>, Cliff Wickman <cpw@sgi.com>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Christian Zander <chzander@nvidia.com>, Yu Zhao <yu.zhao@intel.com>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH 2/4] x86_64 UV: Update UV arch to target Legacy VGA I/O
+ correctly.
+References: <20100118183412.560438000@alcatraz.americas.sgi.com>	<20100118183435.948841000@alcatraz.americas.sgi.com> <20100125155410.1fde82d4.akpm@linux-foundation.org> <4B5E31AC.3060209@sgi.com>
+In-Reply-To: <4B5E31AC.3060209@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kevin Hilman <khilman@deeprootsystems.com> [100125 10:20]:
-> Uwe Kleine-König <u.kleine-koenig@pengutronix.de> writes:
+On 01/25/2010 04:05 PM, Mike Travis wrote:
+>>
+>> So pci_register_set_vga_state() could/should have been __init?
 > 
-> > The only usage of _toggle_gpio_edge_triggering is in an
-> > CONFIG_ARCH_OMAP1 is defined, too.
-> >
-> > This fixes a compiler warning:
-> >
-> > 	arch/arm/plat-omap/gpio.c:758: warning: '_toggle_gpio_edge_triggering' defined but not used
-> >
-> > when compiling for ARCH_OMAP2, ARCH_OMAP3 or ARCH_OMAP4.
-> >
-> > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> 
-> Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
+> Good catch.  Do you want me to update and resubmit?
 
-Ack, I'll add this into omap-fixes for the -rc cycle.
+Please.  This patchset is still on my review queue, FWIW.
 
-Regards,
-
-Tony
- 
-> > ---
-> >  arch/arm/plat-omap/gpio.c |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/arch/arm/plat-omap/gpio.c b/arch/arm/plat-omap/gpio.c
-> > index d17620c..d2422c7 100644
-> > --- a/arch/arm/plat-omap/gpio.c
-> > +++ b/arch/arm/plat-omap/gpio.c
-> > @@ -750,6 +750,7 @@ static inline void set_24xx_gpio_triggering(struct gpio_bank *bank, int gpio,
-> >  }
-> >  #endif
-> >  
-> > +#ifdef CONFIG_ARCH_OMAP1
-> >  /*
-> >   * This only applies to chips that can't do both rising and falling edge
-> >   * detection at once.  For all other chips, this function is a noop.
-> > @@ -760,11 +761,9 @@ static void _toggle_gpio_edge_triggering(struct gpio_bank *bank, int gpio)
-> >  	u32 l = 0;
-> >  
-> >  	switch (bank->method) {
-> > -#ifdef CONFIG_ARCH_OMAP1
-> >  	case METHOD_MPUIO:
-> >  		reg += OMAP_MPUIO_GPIO_INT_EDGE;
-> >  		break;
-> > -#endif
-> >  #ifdef CONFIG_ARCH_OMAP15XX
-> >  	case METHOD_GPIO_1510:
-> >  		reg += OMAP1510_GPIO_INT_CONTROL;
-> > @@ -787,6 +786,7 @@ static void _toggle_gpio_edge_triggering(struct gpio_bank *bank, int gpio)
-> >  
-> >  	__raw_writel(l, reg);
-> >  }
-> > +#endif
-> >  
-> >  static int _set_gpio_triggering(struct gpio_bank *bank, int gpio, int trigger)
-> >  {
-> > -- 
-> > 1.6.6
+	-hpa
