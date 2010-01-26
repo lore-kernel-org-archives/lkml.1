@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195Ab0AZT3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194Ab0AZTaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195Ab0AZT3y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 14:29:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185Ab0AZT3v
+	id S1755194Ab0AZTaz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 14:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174Ab0AZT3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 14:29:51 -0500
-Received: from kroah.org ([198.145.64.141]:33625 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 14:29:53 -0500
+Received: from kroah.org ([198.145.64.141]:33603 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755087Ab0AZT3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 14:29:06 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 11:16:25 2010
-Message-Id: <20100126191625.055697697@mini.kroah.org>
+	id S1755075Ab0AZT3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 14:29:05 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 11:16:24 2010
+Message-Id: <20100126191624.538119758@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 11:14:46 -0800
+Date: Tue, 26 Jan 2010 11:14:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Nick Piggin <npiggin@suse.de>
-Subject: [10/11] ipc ns: fix memory leak (idr)
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Tavis Ormandy <taviso@google.com>,
+       Jeff Dike <jdike@addtoit.com>, Julien Tinnes <jln@google.com>,
+       Matt Mackall <mpm@selenic.com>
+Subject: [06/11] tty: fix race in tty_fasync
 In-Reply-To: <20100126191730.GA20872@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,62 +31,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Serge E. Hallyn <serue@us.ibm.com>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-commit 7d6feeb287c61aafa88f06345387b1188edf4b86 upstream.
+commit 703625118069f9f8960d356676662d3db5a9d116 upstream.
 
-We have apparently had a memory leak since
-7ca7e564e049d8b350ec9d958ff25eaa24226352 "ipc: store ipcs into IDRs" in
-2007.  The idr of which 3 exist for each ipc namespace is never freed.
+We need to keep the lock held over the call to __f_setown() to
+prevent a PID race.
 
-This patch simply frees them when the ipcns is freed.  I don't believe any
-idr_remove() are done from rcu (and could therefore be delayed until after
-this idr_destroy()), so the patch should be safe.  Some quick testing
-showed no harm, and the memory leak fixed.
+Thanks to Al Viro for pointing out the problem, and to Travis for
+making us look here in the first place.
 
-Caught by kmemleak.
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Acked-by: Nick Piggin <npiggin@suse.de>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tavis Ormandy <taviso@google.com>
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Julien Tinnes <jln@google.com>
+Cc: Matt Mackall <mpm@selenic.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- ipc/msg.c |    1 +
- ipc/sem.c |    1 +
- ipc/shm.c |    1 +
- 3 files changed, 3 insertions(+)
+ drivers/char/tty_io.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -125,6 +125,7 @@ void msg_init_ns(struct ipc_namespace *n
- void msg_exit_ns(struct ipc_namespace *ns)
- {
- 	free_ipcs(ns, &msg_ids(ns), freeque);
-+	idr_destroy(&ns->ids[IPC_MSG_IDS].ipcs_idr);
- }
- #endif
- 
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -129,6 +129,7 @@ void sem_init_ns(struct ipc_namespace *n
- void sem_exit_ns(struct ipc_namespace *ns)
- {
- 	free_ipcs(ns, &sem_ids(ns), freeary);
-+	idr_destroy(&ns->ids[IPC_SEM_IDS].ipcs_idr);
- }
- #endif
- 
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -100,6 +100,7 @@ static void do_shm_rmid(struct ipc_names
- void shm_exit_ns(struct ipc_namespace *ns)
- {
- 	free_ipcs(ns, &shm_ids(ns), do_shm_rmid);
-+	idr_destroy(&ns->ids[IPC_SHM_IDS].ipcs_idr);
- }
- #endif
- 
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -2437,8 +2437,8 @@ static int tty_fasync(int fd, struct fil
+ 			pid = task_pid(current);
+ 			type = PIDTYPE_PID;
+ 		}
+-		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+ 		retval = __f_setown(filp, pid, type, 0);
++		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+ 		if (retval)
+ 			goto out;
+ 	} else {
 
 
