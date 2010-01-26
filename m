@@ -1,102 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793Ab0AZHEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752498Ab0AZHNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793Ab0AZHEn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 02:04:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821Ab0AZHEn
+	id S1752498Ab0AZHNk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 02:13:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168Ab0AZHNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 02:04:43 -0500
-Received: from mail-qy0-f204.google.com ([209.85.221.204]:41945 "EHLO
-	mail-qy0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754Ab0AZHEm (ORCPT
+	Tue, 26 Jan 2010 02:13:38 -0500
+Received: from smtp106.sbc.mail.gq1.yahoo.com ([67.195.14.109]:44359 "HELO
+	smtp106.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750799Ab0AZHNh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 02:04:42 -0500
-X-Greylist: delayed 60547 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jan 2010 02:04:42 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=PkBao0DNrPm4NjwAgHQwcH9Cs9dCWHZTUEOnfILv1tAy5PC2m4CQKYY8/6fKB5epz+
-         3rKcXXcmy/rBgyILQw8sd6Iqa75cYRV8gm66jPopgUiP/T817id2w6mFmGktfq+nFvp7
-         xgmmex583J7wxaQeYb8Nv7gbQ6BjFJnIXoto0=
+	Tue, 26 Jan 2010 02:13:37 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jan 2010 02:13:37 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=i19jjokGdKifz83oKLcRIfb3B0zANn6RIpaTbGijZF3RQ+2afuLZe4H6HkJX10zRerubnde1wnQyDm4p0rQ8IDrZWaWhxlYmv81t3N9QoyAwIi54AuZomEkxPd8kKUfHZBaG7f/a+QeB8MrBBCe9ab2g00/iL1R88GRakN7oKjs=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: saO195YVM1kdPgmSZ_g2rUBp3CWAihHbvJgoPsGMj6DcktV3xRJvs.dtYrZ6fgIqzICMgXLpDqUrVizM4NHe.i8A6gqN59owWLYtdD2cvlPdeMefeZR9XUjQST72O_WvDD4GUV.LK2y70VfuNY9lpEunMzocA0QAX7sWVhAcV1dOZ2_z3iuPLhXwZ0V49KL7FlGkQV6PC4VgpU7cHy48gDTvLhPndy2SF3YhfRfyfD6e4pmVT0NdzmCDL1CmFCCY
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Felipe Balbi <felipe.balbi@nokia.com>
+Subject: Re: [RFC/PATCH 0/4] twl4030 threaded_irq support
+Date: Mon, 25 Jan 2010 23:06:55 -0800
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org,
+       Linux OMAP Mailing List <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>,
+       Aaro Koskinen <aaro.koskinen@nokia.com>,
+       Linux USB Mailing List <linux-usb@vger.kernel.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Grazvydas Ignotas <notasas@gmail.com>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Samuel Ortiz <sameo@openedhand.com>
+References: <20091212183410.GF3092@sirena.org.uk> <1260786654-13294-1-git-send-email-felipe.balbi@nokia.com>
+In-Reply-To: <1260786654-13294-1-git-send-email-felipe.balbi@nokia.com>
 MIME-Version: 1.0
-In-Reply-To: <1264430883.4283.1907.camel@laptop>
-References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	 <20100122164248.GA2651@redhat.com>
-	 <a6b9f31a1001250615y6e4501b3k17074bcc4ce26c7c@mail.gmail.com>
-	 <1264430883.4283.1907.camel@laptop>
-Date: Tue, 26 Jan 2010 16:04:41 +0900
-X-Google-Sender-Auth: e16f3fb14757e300
-Message-ID: <a6b9f31a1001252304j68f9c9e3n81143dddd337ec16@mail.gmail.com>
-Subject: Re: [PATCH 00/12] perf lock: New subcommand "perf lock", for 
-	analyzing lock statistics
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Tom Zanussi <tzanussi@gmail.com>, Steven Rostedt <srostedt@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001252306.55625.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 23:48, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, 2010-01-25 at 23:15 +0900, Hitoshi Mitake wrote:
->>
->> As Peter told, this patch series depends on lockdep.
->> But, checking dependency and tracing lock events are
->> essentially different things. So I think dividing these is possible.
->
-> Still you need quite a lot of instrumentation at the actual lock sites,
-> not something you'd want to have on your production machine.
->
->> But, perf depends on debugfs.
->> I don't know about production box well,
->> does your production box turns on debugfs?
->> It seems that debugfs is not a thing for production box...
->
-> debugfs isn't a problem to have.
+On Monday 14 December 2009, Felipe Balbi wrote:
+> move twl4030 children to threaded irq.
+> 
+> Felipe Balbi (4):
+>   input: keyboard: twl4030: move to request_threaded_irq
+>   input: misc: twl4030: move to request_threaded_irq
+>   rtc: twl4030: move to request_threaded_irq
+>   usb: otg: twl4030: move to request_threaded_irq
 
-I didn't know that, thanks Peter and Greg!
+But nothing in drivers/mfd ... the entry to the whole stack?
 
->
->> And I'm interesting in in-kernel histogram of locks.
->> Is there requirement of it?
->> I have some ideas (not done yet, completely).
->
-> No real concrete ideas yet.. One possibility is to add a range,
-> bucket_size tuple to perf_event_attr and store the histrogram in the
-> mmap() area instead of samples.
->
-> One difficulty is how to specify what to make that histogram over.
->
-> Anyway, its all open still..
->
->
->
+Did the threaded IRQ stuff ever get set up so that the top
+level IRQ thread didn't have to hand off to another thread
+each time?  (That's how the current stuff works.  One thread
+calling out to each handler.)
 
-I think my previous patch will helpful for this purpose,
-http://lkml.org/lkml/2009/12/13/16
-# This patch is too dangerous and too incomplete, please don't use!
+If so, I'd like to see that be used here, rather than needlessly
+spend all those pages on mostly-unused stacks.  
 
-I think distributing numerical IDs for lock instances makes things easily.
-Distributing IDs means that kernel can know where the lock instances are.
-Updating information of ID should be triggered by:
 
-1) booting
-   Lock defined by DEFINE_SPINLOCK(), DEFINE_RWLOCK(), etc can be
-   corrected into specific section and initialized.
-   Like the way of event_trace_init() in kernel/trace/trace_events.c
+> 
+>  drivers/input/keyboard/twl4030_keypad.c |   11 ++---------
+>  drivers/input/misc/twl4030-pwrbutton.c  |   12 +-----------
+>  drivers/rtc/rtc-twl4030.c               |   10 +---------
+>  drivers/usb/otg/twl4030-usb.c           |   10 +---------
+>  4 files changed, 5 insertions(+), 38 deletions(-)
+> 
+> 
 
-2) loading/unloading modules
-   Lock defined by DEFINE_SPINLOCK(), DEFINE_RWLOCK(), etc can be in .ko files.
-   So hooking module loading or unloading will be required.
 
-3) calling spin_lock_init(), rwlock_init(), etc...
-
-It seems that difficulty of drawing histogram came from the running kernel's
-lack of knowledge about where the lock instances are, isn't it?
-
-Thanks,
-	Hitoshi
