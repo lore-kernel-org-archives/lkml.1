@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203Ab0AZXnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664Ab0A0ACR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203Ab0AZXnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882Ab0AZXnK
+	id S1755664Ab0A0ACR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601Ab0A0AB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:43:10 -0500
-Received: from kroah.org ([198.145.64.141]:35122 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:01:27 -0500
+Received: from kroah.org ([198.145.64.141]:35171 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754082Ab0AZXnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:06 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:22 2010
-Message-Id: <20100126233922.563231196@mini.kroah.org>
+	id S1754151Ab0AZXnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:43:20 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:24 2010
+Message-Id: <20100126233924.152935338@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:39 -0800
+Date: Tue, 26 Jan 2010 15:33:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: [13/98] driver-core: fix devtmpfs crash on s390
+       Karel Zak <kzak@redhat.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: [25/98] partitions: read whole sector with EFI GPT header
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,82 +28,76 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Karel Zak <kzak@redhat.com>
 
-commit f776c5ec4690b21b3668ad5956774a22c86f541a upstream.
+commit 87038c2d5bda2418fda8b1456a0ae81cc3ff5bd8 upstream.
 
-On Mon, Jan 18, 2010 at 05:26:20PM +0530, Sachin Sant wrote:
-> Hello Heiko,
->
-> Today while trying to boot next-20100118 i came across
-> the following Oops :
->
-> Brought up 4 CPUs
-> Unable to handle kernel pointer dereference at virtual kernel address 0000000000
-> 543000
-> Oops: 0004 #1 SMP
-> Modules linked in:
-> CPU: 0 Not tainted 2.6.33-rc4-autotest-next-20100118-5-default #1
-> Process swapper (pid: 1, task: 00000000fd792038, ksp: 00000000fd797a30)
-> Krnl PSW : 0704200180000000 00000000001eb0b8 (shmem_parse_options+0xc0/0x328)
->           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:2 PM:0 EA:3
-> Krnl GPRS: 000000000054388a 000000000000003d 0000000000543836 000000000000003d
->           0000000000000000 0000000000483f28 0000000000536112 00000000fd797d00
->           00000000fd4ba100 0000000000000100 0000000000483978 0000000000543832
->           0000000000000000 0000000000465958 00000000001eb0b0 00000000fd797c58
-> Krnl Code: 00000000001eb0aa: c0e5000994f1       brasl   %r14,31da8c
->           00000000001eb0b0: b9020022           ltgr    %r2,%r2
->           00000000001eb0b4: a784010b           brc     8,1eb2ca
->          >00000000001eb0b8: 92002000           mvi     0(%r2),0
->           00000000001eb0bc: a7080000           lhi     %r0,0
->           00000000001eb0c0: 41902001           la      %r9,1(%r2)
->           00000000001eb0c4: b9040016           lgr     %r1,%r6
->           00000000001eb0c8: b904002b           lgr     %r2,%r11
-> Call Trace:
-> (<00000000fd797c50> 0xfd797c50)
-> <00000000001eb5da> shmem_fill_super+0x13a/0x25c
-> <0000000000228cfa> get_sb_single+0xbe/0xdc
-> <000000000034ffc0> dev_get_sb+0x2c/0x38
-> <000000000066c602> devtmpfs_init+0x46/0xc0
-> <000000000066c53e> driver_init+0x22/0x60
-> <000000000064d40a> kernel_init+0x24e/0x3d0
-> <000000000010a7ea> kernel_thread_starter+0x6/0xc
-> <000000000010a7e4> kernel_thread_starter+0x0/0xc
->
-> I never tried to boot a kernel with DEVTMPFS enabled on a s390 box.
-> So am wondering if this is supported or not ? If you think this
-> is supported i will send a mail to community on this.
+The size of EFI GPT header is not static, but whole sector is
+allocated for the header. The HeaderSize field must be greater
+than 92 (= sizeof(struct gpt_header) and must be less than or
+equal to the logical block size.
 
-There is nothing arch specific to devtmpfs. This part crashes because the
-kernel tries to modify the data read-only section which is write protected
-on s390.
+It means we have to read whole sector with the header, because the
+header crc32 checksum is calculated according to HeaderSize.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Acked-by: Kay Sievers <kay.sievers@vrfy.org>
+For more details see UEFI standard (version 2.3, May 2009):
+  - 5.3.1 GUID Format overview, page 93
+  - Table 13. GUID Partition Table Header, page 96
+
+Signed-off-by: Karel Zak <kzak@redhat.com>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/base/devtmpfs.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/partitions/efi.c |    7 ++++---
+ fs/partitions/efi.h |    8 ++++++--
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
---- a/drivers/base/devtmpfs.c
-+++ b/drivers/base/devtmpfs.c
-@@ -353,6 +353,7 @@ int __init devtmpfs_init(void)
+--- a/fs/partitions/efi.c
++++ b/fs/partitions/efi.c
+@@ -257,15 +257,16 @@ static gpt_header *
+ alloc_read_gpt_header(struct block_device *bdev, u64 lba)
  {
- 	int err;
- 	struct vfsmount *mnt;
-+	char options[] = "mode=0755";
+ 	gpt_header *gpt;
++	unsigned ssz = bdev_logical_block_size(bdev);
++
+ 	if (!bdev)
+ 		return NULL;
  
- 	err = register_filesystem(&dev_fs_type);
- 	if (err) {
-@@ -361,7 +362,7 @@ int __init devtmpfs_init(void)
- 		return err;
- 	}
+-	gpt = kzalloc(sizeof (gpt_header), GFP_KERNEL);
++	gpt = kzalloc(ssz, GFP_KERNEL);
+ 	if (!gpt)
+ 		return NULL;
  
--	mnt = kern_mount_data(&dev_fs_type, "mode=0755");
-+	mnt = kern_mount_data(&dev_fs_type, options);
- 	if (IS_ERR(mnt)) {
- 		err = PTR_ERR(mnt);
- 		printk(KERN_ERR "devtmpfs: unable to create devtmpfs %i\n", err);
+-	if (read_lba(bdev, lba, (u8 *) gpt,
+-		     sizeof (gpt_header)) < sizeof (gpt_header)) {
++	if (read_lba(bdev, lba, (u8 *) gpt, ssz) < ssz) {
+ 		kfree(gpt);
+                 gpt=NULL;
+ 		return NULL;
+--- a/fs/partitions/efi.h
++++ b/fs/partitions/efi.h
+@@ -37,7 +37,6 @@
+ #define EFI_PMBR_OSTYPE_EFI 0xEF
+ #define EFI_PMBR_OSTYPE_EFI_GPT 0xEE
+ 
+-#define GPT_BLOCK_SIZE 512
+ #define GPT_HEADER_SIGNATURE 0x5452415020494645ULL
+ #define GPT_HEADER_REVISION_V1 0x00010000
+ #define GPT_PRIMARY_PARTITION_TABLE_LBA 1
+@@ -79,7 +78,12 @@ typedef struct _gpt_header {
+ 	__le32 num_partition_entries;
+ 	__le32 sizeof_partition_entry;
+ 	__le32 partition_entry_array_crc32;
+-	u8 reserved2[GPT_BLOCK_SIZE - 92];
++
++	/* The rest of the logical block is reserved by UEFI and must be zero.
++	 * EFI standard handles this by:
++	 *
++	 * uint8_t		reserved2[ BlockSize - 92 ];
++	 */
+ } __attribute__ ((packed)) gpt_header;
+ 
+ typedef struct _gpt_entry_attributes {
 
 
