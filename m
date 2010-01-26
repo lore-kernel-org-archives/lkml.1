@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671Ab0AZQ1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697Ab0AZQ3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671Ab0AZQ1g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 11:27:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567Ab0AZQ1f
+	id S1754697Ab0AZQ3S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 11:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573Ab0AZQ3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 11:27:35 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:48715 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753581Ab0AZQ1f (ORCPT
+	Tue, 26 Jan 2010 11:29:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52498 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753129Ab0AZQ3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 11:27:35 -0500
-Date: Tue, 26 Jan 2010 16:27:30 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>,
-       "Serge E. Hallyn" <serue@linux.vnet.ibm.com>,
-       Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [RFC PATCH 1/2] Fix 1 untangling ima mess, part 2 with counters
-Message-ID: <20100126162730.GI19799@ZenIV.linux.org.uk>
-References: <cover.1264018123.git.zohar@linux.vnet.ibm.com> <4ad974923eae7a8f52be0786a630b6c64bee9d32.1264018123.git.zohar@linux.vnet.ibm.com> <20100123230735.GW19799@ZenIV.linux.org.uk> <1264447477.3696.30.camel@dyn9002018117.watson.ibm.com> <20100126130349.GH19799@ZenIV.linux.org.uk> <1264519015.3789.28.camel@dyn9002018117.watson.ibm.com>
+	Tue, 26 Jan 2010 11:29:16 -0500
+Date: Tue, 26 Jan 2010 08:28:15 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Johannes Stezenbach <js@sig21.net>
+cc: Renzo Davoli <renzo@cs.unibo.it>, Mark Wielaard <mjw@redhat.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kyle Moffett <kyle@moffetthome.net>, tytso@mit.edu,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+In-Reply-To: <20100126160811.GA3242@sig21.net>
+Message-ID: <alpine.LFD.2.00.1001260816000.3574@localhost.localdomain>
+References: <20100123114729.GA7828@redhat.com> <20100123194820.GM21263@thunk.org> <f73f7ab81001241742t1f827ddetd958e1949787020f@mail.gmail.com> <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain> <20100125170254.GB22862@redhat.com>
+ <alpine.LFD.2.00.1001250930320.3574@localhost.localdomain> <1264451453.3028.59.camel@springer.wildebeest.org> <alpine.LFD.2.00.1001251236160.3574@localhost.localdomain> <20100126000237.GA15936@cs.unibo.it> <alpine.LFD.2.00.1001251605320.3574@localhost.localdomain>
+ <20100126160811.GA3242@sig21.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264519015.3789.28.camel@dyn9002018117.watson.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 10:16:55AM -0500, Mimi Zohar wrote:
-> --- security-testing-2.6.orig/init/main.c
-> +++ security-testing-2.6/init/main.c
-> @@ -663,9 +663,9 @@ asmlinkage void __init start_kernel(void
->  	proc_caches_init();
->  	buffer_init();
->  	key_init();
-> +	radix_tree_init();
->  	security_init();
->  	vfs_caches_init(totalram_pages);
-> -	radix_tree_init();
->  	signals_init();
->  	/* rootfs populating might need page-writeback */
->  	page_writeback_init();
 
-FWIW, I'd take radix_tree_init() much earlier than that; it's a common
-infrastructure and if we have it early it'll mean less headache.
 
-AFAICS, it can go right after mm_init().  Objections, anyone?
+On Tue, 26 Jan 2010, Johannes Stezenbach wrote:
+> 
+> 1. If you'd merge utrace + ptrace-on-utrace, but never anything else
+>    which uses the utrace API, wouldn't it still be an improvement?
 
-Other than that, I'm OK with that one.
+I already said earlier that I'd be perfectly happy to merge utrace code, 
+as long as it was clear that I'm not merging a platform for crazy work. 
+IOW, the end result might be merging 99% of the code, but I want to set 
+peoples _expectations_ right. I'm not at all interested in merging stuff 
+that has various exported helper functions for people doing random things, 
+but I could happily merge stuff that cleans up internal implementation.
+
+> 2. A well defined utrace API makes debugging code more hackable, thus more
+>    likely that someone might come up with a brilliant killer debug
+>    feature in the future.
+
+I don't really agree. 
+
+Clean code makes things easier to improve, and maybe utrace cleans thigns 
+up. But defining new API's makes me very worried, and quite frankly, the 
+last thing I ever want to see is a new interface that out-of-tree modules 
+starr using for random hacking.
+
+So I'd be much happier without the whole utrace kernel interface and 
+callbacks, and very much would want to avoid the whole issue of plugins. 
+I'd like to see ptrace improvements - not something else.
+
+In other words, I'd much much rather keep the utrace thing _internal_ to 
+ptrace. If people have performance complaints about ptrace, let's look at 
+fixing those _as_such_, rather than look at new modules etc.
+
+> BTW, the ptrace improvements discussed elsewhere in this thread
+> (like using an fd intead of signals/wait) are orthogonal
+> to utrace, no?  IMHO it's a seperate discussion.
+
+Largely, yes. Tied together to some degree of course, but the whole issue 
+of code cleanup can be seen as a reasonably independent first step (while 
+moving to a fd-based interface should probably not be done without some 
+cleanup first, so they _are_ somewhat tied together).
+
+		Linus
