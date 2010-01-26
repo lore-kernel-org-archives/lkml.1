@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752378Ab0AZL3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752275Ab0AZLaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752378Ab0AZL3d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 06:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913Ab0AZL3d
+	id S1752275Ab0AZLaa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 06:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916Ab0AZLa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 06:29:33 -0500
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:58660 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637Ab0AZL3c (ORCPT
+	Tue, 26 Jan 2010 06:30:29 -0500
+Received: from mail-iw0-f173.google.com ([209.85.223.173]:40092 "EHLO
+	mail-iw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751525Ab0AZLa2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 06:29:32 -0500
-Date: Tue, 26 Jan 2010 12:29:29 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>, David Miller <davem@davemloft.net>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH v3] ftrace: unify arch_syscall_addr() implementations
-Message-ID: <20100126112929.GA14135@osiris.boeblingen.de.ibm.com>
-References: <1264230643-29434-1-git-send-email-vapier@gentoo.org>
- <1264498803-17278-1-git-send-email-vapier@gentoo.org>
+	Tue, 26 Jan 2010 06:30:28 -0500
+X-Greylist: delayed 391 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jan 2010 06:30:28 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=BMy87E0M+9wZDc1V6eNjaZQfmITUHuqxsZZorDigPrebfrlxX9h96xa8UkAz4hI6qJ
+         zLSHg/XuY8Mm2k7pjIxuv+K66vTVDRiknFjRjvQjQ/vV97T0qTHYxQrE+qHjXqwb4GHe
+         h6GD3+FT4aVMXuaQvrlkVGo83EiTYBxhPPUo4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264498803-17278-1-git-send-email-vapier@gentoo.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1264502668.4480.97.camel@utx.utx.cz>
+References: <20100106071026.GD1382@ucw.cz>
+	 <f17812d71001052317h2bf25fady6bd729b35ef6db63@mail.gmail.com>
+	 <20100107065230.GA1303@ucw.cz>
+	 <f17812d71001062333y2e49fa21scf91718da9ae3091@mail.gmail.com>
+	 <1264275669.9100.11.camel@utx.utx.cz>
+	 <1264286611.11766.49.camel@utx.utx.cz>
+	 <f17812d71001251958t377e158bxc64aac0cb426110b@mail.gmail.com>
+	 <1264500824.4480.79.camel@utx.utx.cz>
+	 <f17812d71001260220v5d03b0e1u1e3bc229827c37c8@mail.gmail.com>
+	 <1264502668.4480.97.camel@utx.utx.cz>
+Date: Tue, 26 Jan 2010 14:23:56 +0300
+Message-ID: <bc64b4641001260323y496bf7cdv507085644fadb0fe@mail.gmail.com>
+Subject: Re: gpio_keys and how PXA27x sets gpio_set_wake() (was Re: sharp 
+	c-3000 aka spitz: fix warn_on introduced in 2.6.32-rc1)
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Stanislav Brabec <utx@penguin.cz>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       thommycheck <thommycheck@gmail.com>, dtor <dtor@mail.ru>,
+       arminlitzel <arminlitzel@web.de>,
+       linux-input <linux-input@vger.kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk <Dirk@opfer-online.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, lenz <lenz@cs.wisc.edu>,
+       rpurdie <rpurdie@rpsys.net>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Pavel Machek <pavel@ucw.cz>, Cyril Hrubis <metan@ucw.cz>,
+       zaurus-devel <zaurus-devel@www.linuxtogo.org>,
+       omegamoon <omegamoon@gmail.com>, Vojtech Pavlik <vojtech@suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 04:40:03AM -0500, Mike Frysinger wrote:
-> Most implementations of arch_syscall_addr() are the same, so create a
-> default version in common code and move the one piece that differs (the
-> syscall table) to asm/syscall.h.  New arch ports don't have to waste
-> time copying & pasting this simple function.
-> 
-> The s390/sparc versions need to be different, so document why.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> Acked-by: David S. Miller <davem@davemloft.net>
-> Acked-by: Paul Mundt <lethal@linux-sh.org>
-> ---
-> v3
-> 	- move sys_call_table[] decl to asm/syscall.h
-> 	- unify everyone's arch_syscall_addr() again
-> 	- mention right tracehook requirements
-> 
->  Documentation/trace/ftrace-design.txt |    5 ++---
->  arch/s390/include/asm/syscall.h       |    7 +++++++
->  arch/s390/kernel/ftrace.c             |   10 ----------
+Hello,
 
-Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+2010/1/26 Stanislav Brabec <utx@penguin.cz>:
+> Eric Miao wrote:
+>> > The problem affects gpio_keys: It is a driver implementing "one key per
+>> > gpio". It now handles On/Off and lid switches on Zaurus. Lid switches
+>> > are on "normal" GPIOs, On/Off switch is wired to PKWR capable GPIO.
+>> Ain't On/Off switch one of the matrix key? And so SPITZ_GPIO_KEY_INT
+>> could be used to handle that?
+>
+> No. On/Off is connected directly to GPIO 95. Other keys use strobe/sense
+> matrix keypad.
+>
+> SPITZ_GPIO_KEY_INT is a bit unspecific. I think it means: Charger was
+> inserted or key was pressed or On/Off was pressed.
+
+This seems to be true. At least they used the same design on tosa and other
+zaurii.
+
+
+-- 
+With best wishes
+Dmitry
