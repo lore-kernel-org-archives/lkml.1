@@ -1,57 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508Ab0AZPQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541Ab0AZPRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508Ab0AZPQx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 10:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476Ab0AZPQw
+	id S1754541Ab0AZPRS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 10:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852Ab0AZPRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 10:16:52 -0500
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:34740 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754004Ab0AZPQv (ORCPT
+	Tue, 26 Jan 2010 10:17:17 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:46755 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753204Ab0AZPRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 10:16:51 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=l5BYWrfLWsFCmb0oRl8i+GnN1ycj7HJWuoEEh/WjHSyuB6bziyHmi0clcCtGJEsCMgJKIURBJ+HPgs1WeAzsRclZwLHCpFsea9zekE/MFQr2c4112mHn11kDX2thDRoXqvHdYMiYSj1mr17vD2/n5S0T85pu++Wm65ntYlFgRVk=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: Gdv2YD4VM1l70jAS27zlIjoVAo59dVEbR_1kS.6XPXRy77g4Oy0Xxj5LkdkGuvIOe7LCjKSwdeL.wXejmi3gicjwPXPYd3CsIzJDP7LTttjSTS3xvU082KZMe0gZBCVmHq3YCfN7RZqiJttXHEh9g6rYIf0tJ0M0Kjhmqj65sb4Wupf0fdtlSiQkiPCAy5iTBMkCxk2ISxmNTMh.c5ixsoiPcFvEhjYkz1fChdreTWrmRZPH_zQtDZTO8fkzPSCA
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: felipe.balbi@nokia.com
-Subject: Re: [RFC/PATCH 1/5] usb: otg: add notifier support
-Date: Tue, 26 Jan 2010 07:16:49 -0800
-User-Agent: KMail/1.9.10
-Cc: ext Oliver Neukum <oliver@neukum.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Grazvydas Ignotas <notasas@gmail.com>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com> <201001261524.49661.oliver@neukum.org> <20100126143005.GI10690@nokia.com>
-In-Reply-To: <20100126143005.GI10690@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 26 Jan 2010 10:17:16 -0500
+Subject: Re: [RFC PATCH 1/2] Fix 1 untangling ima mess, part 2 with counters
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>,
+       "Serge E. Hallyn" <serue@linux.vnet.ibm.com>,
+       Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <20100126130349.GH19799@ZenIV.linux.org.uk>
+References: <cover.1264018123.git.zohar@linux.vnet.ibm.com>
+	 <4ad974923eae7a8f52be0786a630b6c64bee9d32.1264018123.git.zohar@linux.vnet.ibm.com>
+	 <20100123230735.GW19799@ZenIV.linux.org.uk>
+	 <1264447477.3696.30.camel@dyn9002018117.watson.ibm.com>
+	 <20100126130349.GH19799@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Tue, 26 Jan 2010 10:16:55 -0500
+Message-Id: <1264519015.3789.28.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001260716.49553.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 January 2010, Felipe Balbi wrote:
-> but when suspended, we have to cut power ASAP. If not enumerated we can 
-> still draw power for a few miliseconds due to dead battery provision.
+On Tue, 2010-01-26 at 13:03 +0000, Al Viro wrote:
+> OK, this stuff is in for-next, with the following changes:
+> 	* nfsd call has been moved to nfsd_open()
+> 	* patches reordered
+> 	* masking irrelevant bits (i.e. leaving only MAY_{READ,WRITE,EXEC})
+> has been taken to ima_path_check(); all callers do it and it's safer that
+> way anyway.
+> 
+> Please, see if it's OK with you in this form; other calls of dentry_open()
+> are separate story, we'll have to see which ones should and which ones
+> should not get ima_path_check().  Do you have any other problems with that
+> one?  If not, it's going to migrate into for-linus and into the mainline;
+> this stuff is definitely 2.6.33 fodder.
 
-When suspended, it's OK to draw a small amount of power.
-On the order of one milliamp, based on the config that's
-active ... instead of, often, hundreds.
+I'll look at the patches, but in the meantime we also needed the
+following patch.
 
-That limit is why for example a PXA 255 could never get
-certified as a bus-powered peripheral.  It required much
-more than that when in suspend mode.
+commit 8262bb85da4a71c4ff8c9b22e03aff11f8427b6d
+Author: Eric Paris <eparis@redhat.com>
+Date:   Wed Dec 9 15:29:01 2009 -0500
+
+    ima: initialize ima before inodes can be allocated
+    
+    ima wants to create an inode information struct (iint) when inodes are
+    allocated.  This means that at least the part of ima which does this
+    allocation (the allocation is filled with information later) should
+    before any inodes are created.  To accomplish this we split the ima
+    initialization routine placing the kmem cache allocator inside a
+    security_initcall() function.  Since this makes use of radix trees we also
+    need to make sure that is initialized before security_initcall().
+    
+    Signed-off-by: Eric Paris <eparis@redhat.com>
+    Acked-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+
+Index: security-testing-2.6/init/main.c
+===================================================================
+--- security-testing-2.6.orig/init/main.c
++++ security-testing-2.6/init/main.c
+@@ -663,9 +663,9 @@ asmlinkage void __init start_kernel(void
+ 	proc_caches_init();
+ 	buffer_init();
+ 	key_init();
++	radix_tree_init();
+ 	security_init();
+ 	vfs_caches_init(totalram_pages);
+-	radix_tree_init();
+ 	signals_init();
+ 	/* rootfs populating might need page-writeback */
+ 	page_writeback_init();
+Index: security-testing-2.6/security/integrity/ima/ima.h
+===================================================================
+--- security-testing-2.6.orig/security/integrity/ima/ima.h
++++ security-testing-2.6/security/integrity/ima/ima.h
+@@ -65,7 +65,6 @@ void integrity_audit_msg(int audit_msgno
+ 			 const char *cause, int result, int info);
+ 
+ /* Internal IMA function definitions */
+-void ima_iintcache_init(void);
+ int ima_init(void);
+ void ima_cleanup(void);
+ int ima_fs_init(void);
+Index: security-testing-2.6/security/integrity/ima/ima_iint.c
+===================================================================
+--- security-testing-2.6.orig/security/integrity/ima/ima_iint.c
++++ security-testing-2.6/security/integrity/ima/ima_iint.c
+@@ -52,9 +52,6 @@ int ima_inode_alloc(struct inode *inode)
+ 	struct ima_iint_cache *iint = NULL;
+ 	int rc = 0;
+ 
+-	if (!ima_initialized)
+-		return 0;
+-
+ 	iint = kmem_cache_alloc(iint_cache, GFP_NOFS);
+ 	if (!iint)
+ 		return -ENOMEM;
+@@ -118,8 +115,6 @@ void ima_inode_free(struct inode *inode)
+ {
+ 	struct ima_iint_cache *iint;
+ 
+-	if (!ima_initialized)
+-		return;
+ 	spin_lock(&ima_iint_lock);
+ 	iint = radix_tree_delete(&ima_iint_store, (unsigned long)inode);
+ 	spin_unlock(&ima_iint_lock);
+@@ -141,9 +136,11 @@ static void init_once(void *foo)
+ 	kref_set(&iint->refcount, 1);
+ }
+ 
+-void __init ima_iintcache_init(void)
++static int __init ima_iintcache_init(void)
+ {
+ 	iint_cache =
+ 	    kmem_cache_create("iint_cache", sizeof(struct ima_iint_cache), 0,
+ 			      SLAB_PANIC, init_once);
++	return 0;
+ }
++security_initcall(ima_iintcache_init);
+Index: security-testing-2.6/security/integrity/ima/ima_main.c
+===================================================================
+--- security-testing-2.6.orig/security/integrity/ima/ima_main.c
++++ security-testing-2.6/security/integrity/ima/ima_main.c
+@@ -319,7 +319,6 @@ static int __init init_ima(void)
+ {
+ 	int error;
+ 
+-	ima_iintcache_init();
+ 	error = ima_init();
+ 	ima_initialized = 1;
+ 	return error;
+ 
+
 
