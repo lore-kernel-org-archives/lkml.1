@@ -1,122 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752569Ab0AZA4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616Ab0AZA4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752569Ab0AZA4r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 19:56:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536Ab0AZA4o
+	id S1752616Ab0AZA4l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 19:56:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576Ab0AZA4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 19:56:44 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56140 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752548Ab0AZA4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 19:56:42 -0500
-Date: Tue, 26 Jan 2010 01:56:35 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, jirislaby@gmail.com,
-       Pekka Sarnila <sarnila@adit.fi>
-Subject: Re: [PATCH v2 1/1] HID: ignore afatech 9016
-In-Reply-To: <1263415146-26321-1-git-send-email-jslaby@suse.cz>
-Message-ID: <alpine.LNX.2.00.1001260156010.30977@pobox.suse.cz>
-References: <alpine.LNX.2.00.1001132111570.30977@pobox.suse.cz> <1263415146-26321-1-git-send-email-jslaby@suse.cz>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 25 Jan 2010 19:56:36 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35570
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752550Ab0AZA4c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 19:56:32 -0500
+Date: Mon, 25 Jan 2010 16:56:44 -0800 (PST)
+Message-Id: <20100125.165644.197238824.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010, Jiri Slaby wrote:
 
-> Let's ignore the device altogether by the HID layer. It's handled
-> by dvb-usb-remote driver already.
-> 
-> By now, FULLSPEED_INTERVAL quirk was used. It probably made things
-> better, but the remote controller was still a perfect X killer.
-> This was the last user of the particular quirk. So remove the quirk
-> as well.
-> 
-> With input going through dvb-usb-remote, the remote works
-> perfectly.
-> 
-> The device is 15a4:9016.
+1) Use rlimit helpers, from Jiri Slaby.
 
-Pekka, did you have chance to verify whether it works fine also with your 
-version of the remote, or you still need the FULLSPEED_INTERVAL quirk on 
-your side?
+2) Use arch_gettimeoffset() in sparc32.
 
-Thanks.
+3) Simplify asm/param.h by using asm-generic/param.h
 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Jiri Kosina <jkosina@suse.cz>
-> Cc: Pekka Sarnila <sarnila@adit.fi>
-> ---
->  drivers/hid/hid-core.c          |    1 +
->  drivers/hid/usbhid/hid-core.c   |    8 --------
->  drivers/hid/usbhid/hid-quirks.c |    2 --
->  include/linux/hid.h             |    1 -
->  4 files changed, 1 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-> index 08f8f23..0ae0bfd 100644
-> --- a/drivers/hid/hid-core.c
-> +++ b/drivers/hid/hid-core.c
-> @@ -1534,6 +1534,7 @@ static const struct hid_device_id hid_ignore_list[] = {
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_ACECAD, USB_DEVICE_ID_ACECAD_FLAIR) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_ACECAD, USB_DEVICE_ID_ACECAD_302) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_ADS_TECH, USB_DEVICE_ID_ADS_TECH_RADIO_SI470X) },
-> +	{ HID_USB_DEVICE(USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_AIPTEK, USB_DEVICE_ID_AIPTEK_01) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_AIPTEK, USB_DEVICE_ID_AIPTEK_10) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_AIPTEK, USB_DEVICE_ID_AIPTEK_20) },
-> diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-> index e2997a8..36a1561 100644
-> --- a/drivers/hid/usbhid/hid-core.c
-> +++ b/drivers/hid/usbhid/hid-core.c
-> @@ -938,14 +938,6 @@ static int usbhid_start(struct hid_device *hid)
->  
->  		interval = endpoint->bInterval;
->  
-> -		/* Some vendors give fullspeed interval on highspeed devides */
-> -		if (hid->quirks & HID_QUIRK_FULLSPEED_INTERVAL &&
-> -		    dev->speed == USB_SPEED_HIGH) {
-> -			interval = fls(endpoint->bInterval*8);
-> -			printk(KERN_INFO "%s: Fixing fullspeed to highspeed interval: %d -> %d\n",
-> -			       hid->name, endpoint->bInterval, interval);
-> -		}
-> -
->  		/* Change the polling interval of mice. */
->  		if (hid->collection->usage == HID_GD_MOUSE && hid_mousepoll_interval > 0)
->  			interval = hid_mousepoll_interval;
-> diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
-> index 38773dc..f2ae8a7 100644
-> --- a/drivers/hid/usbhid/hid-quirks.c
-> +++ b/drivers/hid/usbhid/hid-quirks.c
-> @@ -41,8 +41,6 @@ static const struct hid_blacklist {
->  	{ USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_RUMBLEPAD, HID_QUIRK_BADPAD },
->  	{ USB_VENDOR_ID_TOPMAX, USB_DEVICE_ID_TOPMAX_COBRAPAD, HID_QUIRK_BADPAD },
->  
-> -	{ USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016, HID_QUIRK_FULLSPEED_INTERVAL },
-> -
->  	{ USB_VENDOR_ID_PANTHERLORD, USB_DEVICE_ID_PANTHERLORD_TWIN_USB_JOYSTICK, HID_QUIRK_MULTI_INPUT | HID_QUIRK_SKIP_OUTPUT_REPORTS },
->  	{ USB_VENDOR_ID_PLAYDOTCOM, USB_DEVICE_ID_PLAYDOTCOM_EMS_USBII, HID_QUIRK_MULTI_INPUT },
->  
-> diff --git a/include/linux/hid.h b/include/linux/hid.h
-> index 8709365..4a33e16 100644
-> --- a/include/linux/hid.h
-> +++ b/include/linux/hid.h
-> @@ -311,7 +311,6 @@ struct hid_item {
->  #define HID_QUIRK_BADPAD			0x00000020
->  #define HID_QUIRK_MULTI_INPUT			0x00000040
->  #define HID_QUIRK_SKIP_OUTPUT_REPORTS		0x00010000
-> -#define HID_QUIRK_FULLSPEED_INTERVAL		0x10000000
->  #define HID_QUIRK_NO_INIT_REPORTS		0x20000000
->  
->  /*
-> -- 
-> 1.6.5.7
-> 
+4) Central board driver sets up leds_resource erroneously, fix from
+   Roel Kluin.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+5) Fix copy_from_user() return on error, from Heiko Carstens.
+
+6) Page fault perf SW events not being counted.
+
+7) IRQ ->set_affinity() using wrong cpu mask, thanks to Ben H. for
+   noticing.
+
+8) page_to_phys() calculations completely busted on sparc32.
+
+9) cpumask_of_node() fix to handle -1 properly from Anton Blanchard.
+
+10) Perf callchain support and full support of both PMU counters
+    on sparc64.
+
+Please pull, thanks a lot!
+
+The following changes since commit f6760aa024199cfbce564311dc4bc4d47b6fb349:
+  Linus Torvalds (1):
+        Merge branch 'timers-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+
+Anton Blanchard (1):
+      sparc: cpumask_of_node() should handle -1 as a node
+
+David S. Miller (7):
+      sparc32: Update defconfig.
+      sparc32: Fix page_to_phys().
+      sparc64: Add perf callchain support.
+      sparc64: Fully support both performance counters.
+      sparc: Add missing SW perf fault events.
+      sparc64: Update defconfig.
+      sparc64: Fix IRQ ->set_affinity() methods.
+
+Heiko Carstens (1):
+      sparc: copy_from_user() should not return -EFAULT
+
+Jiri Slaby (1):
+      SPARC: use helpers for rlimits
+
+John Stultz (1):
+      sparc: convert to arch_gettimeoffset()
+
+Robert P. J. Day (1):
+      sparc: Simplify param.h by simply including <asm-generic/param.h>
+
+Roel Kluin (1):
+      sparc: leds_resource.end assigned to itself in clock_board_probe()
+
+ arch/sparc/Kconfig                   |    5 +-
+ arch/sparc/configs/sparc32_defconfig |   87 ++++-
+ arch/sparc/configs/sparc64_defconfig |  131 ++++++--
+ arch/sparc/include/asm/io_32.h       |    2 +-
+ arch/sparc/include/asm/page_32.h     |    2 +-
+ arch/sparc/include/asm/param.h       |   19 +-
+ arch/sparc/include/asm/timex_32.h    |    1 +
+ arch/sparc/include/asm/topology_64.h |    4 +-
+ arch/sparc/include/asm/uaccess_32.h  |    2 +-
+ arch/sparc/include/asm/uaccess_64.h  |    2 +-
+ arch/sparc/kernel/central.c          |    4 +-
+ arch/sparc/kernel/irq_64.c           |   37 ++-
+ arch/sparc/kernel/pcic.c             |  103 +-----
+ arch/sparc/kernel/perf_event.c       |  627 +++++++++++++++++++++++++---------
+ arch/sparc/kernel/sys_sparc_64.c     |    6 +-
+ arch/sparc/kernel/time_32.c          |  116 ++-----
+ arch/sparc/mm/fault_32.c             |   12 +-
+ arch/sparc/mm/fault_64.c             |   13 +-
+ 18 files changed, 749 insertions(+), 424 deletions(-)
