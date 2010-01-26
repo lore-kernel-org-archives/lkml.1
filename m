@@ -1,111 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789Ab0AZNNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755Ab0AZNPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753789Ab0AZNNO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 08:13:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715Ab0AZNNL
+	id S1753755Ab0AZNPU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 08:15:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065Ab0AZNPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 08:13:11 -0500
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:57954 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753706Ab0AZNNJ (ORCPT
+	Tue, 26 Jan 2010 08:15:19 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:28642 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750734Ab0AZNPR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 08:13:09 -0500
-Date: Tue, 26 Jan 2010 14:13:06 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com, stable@kernel.org
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
- results on s390x)
-Message-ID: <20100126141306.3cb60b14@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20100121205113.GB20050@redhat.com>
-References: <20100105153633.GA9376@redhat.com>
-	<20100105164610.388effd3@mschwide.boeblingen.de.ibm.com>
-	<20100105155913.GA10652@redhat.com>
-	<20100105170301.GA13641@redhat.com>
-	<20100105195818.GA20358@redhat.com>
-	<20100106201722.GB26204@redhat.com>
-	<20100106211329.DB4F5134D@magilla.sf.frob.com>
-	<20100107101855.13248dc2@mschwide.boeblingen.de.ibm.com>
-	<20100107175446.GA13300@redhat.com>
-	<20100107214821.94FF97300@magilla.sf.frob.com>
-	<20100121205113.GB20050@redhat.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jan 2010 08:15:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:cc:date:message-id:user-agent:mime-version
+         :content-type;
+        b=vd3GFyHMACKb6c7sIPH4yy47iMxNM4OMZ7ZO2mt6tDCwgV5h3ScUcbAQvJfq8qpK+m
+         g33htLKbqgAysd2uidi0RaGOs27Z8vjDZr+uzNWpcnEOtxa0geshJCv1Z4zzsPo5h3Ul
+         0zlRQiL2tOowXgeEDHJDfcbSxjqJC3WsgOypU=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] block: fix bio_add_page for non trivial merge_bvec_fn case
+CC: Jens Axboe <jens.axboe@oracle.com>
+Date: Tue, 26 Jan 2010 16:15:11 +0300
+Message-ID: <87hbq980tc.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jan 2010 21:51:13 +0100
-Oleg Nesterov <oleg@redhat.com> wrote:
+--=-=-=
 
-> On 01/07, Roland McGrath wrote:
-> >
-> > > I am confused as well. Yes, I thought about regs->psw.mask change too,
-> > > but I don't understand why it helps..
-> > [...]
-> > > But. Acoording to the testing I did (unless I did something wrong
-> > > again) this patch doesn't make any difference in this particular
-> > > case. 6580807da14c423f0d0a708108e6df6ebc8bc83d does.
-> >
-> > Those results are quite mysterious to me.
-> > I think we'll have to get Martin to sort it out definitively.
+Hi, year ago I've sent a patch which fix false bio merge rejects, but
+seems patch was missed. Currently the issue is still present.
 
-Finally nailed that one. Grrmpf.. the special case in the program check
-handler for single stepped svcs clobbers the argument registers. With our
-test case this affects the clone() system call. Funny things happen when
-the clone_flags argument is more or less random ..
-The following patch fixes the problem for me.
 
---
-Subject: [PATCH] fix single stepped svcs with TRACE_IRQFLAGS=y
+--=-=-=
+Content-Type: text/x-diff
+Content-Disposition: inline;
+ filename=0001-PATCH-block-fix-bio_add_page-for-non-trivial-merge_b.patch
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+>From 92a97ef181e15caa94bd56a1ade5c337db599b79 Mon Sep 17 00:00:00 2001
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+Date: Tue, 26 Jan 2010 16:01:34 +0300
+Subject: [PATCH] [PATCH] block: fix bio_add_page for non trivial merge_bvec_fn case
 
-If irq flags tracing is enabled the TRACE_IRQS_ON macros expands to
-a function call which clobbers registers %r0-%r5. The macro is used
-in the code path for single stepped system calls. The argument
-registers %r2-%r6 need to be restored from the stack before the system
-call function is called.
+We have to properly decrease bi_size in order to merge_bvec_fn return
+right result.  Otherwise this result in false merge rejects for two
+absolutely valid bio_vecs.  This may cause significant performance penalty
+for example Itanium: page_size == 16k, fs_block_size == 1k and block device
+is raid with small chunk_size.
 
-Cc: stable@kernel.org
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
 ---
+ fs/bio.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
- arch/s390/kernel/entry.S   |    1 +
- arch/s390/kernel/entry64.S |    1 +
- 2 files changed, 2 insertions(+)
-
-diff -urpN linux-2.6/arch/s390/kernel/entry64.S linux-2.6-patched/arch/s390/kernel/entry64.S
---- linux-2.6/arch/s390/kernel/entry64.S	2009-12-03 04:51:21.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/entry64.S	2010-01-26 14:04:58.000000000 +0100
-@@ -549,6 +549,7 @@ pgm_svcper:
- 	mvc	__THREAD_per+__PER_access_id(1,%r8),__LC_PER_ACCESS_ID
- 	oi	__TI_flags+7(%r9),_TIF_SINGLE_STEP # set TIF_SINGLE_STEP
- 	TRACE_IRQS_ON
-+	lmg	%r2,%r6,SP_R2(%r15)	# load svc arguments
- 	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
- 	j	sysc_do_svc
- 
-diff -urpN linux-2.6/arch/s390/kernel/entry.S linux-2.6-patched/arch/s390/kernel/entry.S
---- linux-2.6/arch/s390/kernel/entry.S	2009-12-03 04:51:21.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/entry.S	2010-01-26 14:04:58.000000000 +0100
-@@ -571,6 +571,7 @@ pgm_svcper:
- 	mvc	__THREAD_per+__PER_access_id(1,%r8),__LC_PER_ACCESS_ID
- 	oi	__TI_flags+3(%r9),_TIF_SINGLE_STEP # set TIF_SINGLE_STEP
- 	TRACE_IRQS_ON
-+	lm	%r2,%r6,SP_R2(%r15)	# load svc arguments
- 	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
- 	b	BASED(sysc_do_svc)
+diff --git a/fs/bio.c b/fs/bio.c
+index 76e6713..9f8e517 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -548,7 +548,8 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
+ 				struct bvec_merge_data bvm = {
+ 					.bi_bdev = bio->bi_bdev,
+ 					.bi_sector = bio->bi_sector,
+-					.bi_size = bio->bi_size,
++					.bi_size = bio->bi_size -
++							(prev->bv_len - len),
+ 					.bi_rw = bio->bi_rw,
+ 				};
  
 -- 
-blue skies,
-   Martin.
+1.6.3.3
 
-"Reality continues to ruin my life." - Calvin.
 
+--=-=-=--
