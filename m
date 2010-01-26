@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046Ab0AZXuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327Ab0AZXuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046Ab0AZXuk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289Ab0AZXuB
+	id S1755327Ab0AZXuF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:50:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819Ab0AZXoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:50:01 -0500
-Received: from kroah.org ([198.145.64.141]:35431 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754729Ab0AZXoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 26 Jan 2010 18:44:06 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:30 2010
-Message-Id: <20100126233930.454173125@mini.kroah.org>
+Received: from kroah.org ([198.145.64.141]:35420 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754761Ab0AZXoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:44:00 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:29 2010
+Message-Id: <20100126233929.670227828@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:39 -0800
+Date: Tue, 26 Jan 2010 15:34:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       NeilBrown <neilb@suse.de>
-Subject: [73/98] md: fix small irregularity with start_ro module parameter
+       Wim Van Sebroeck <wim@iguana.be>
+Subject: [67/98] [WATCHDOG] iTCO_wdt.c - cleanup chipset documentation
 In-Reply-To: <20100126233950.GA5372@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,40 +28,95 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: NeilBrown <neilb@suse.de>
+From: Wim Van Sebroeck <wim@iguana.be>
 
-commit 0f9552b5dc4fe10da37fa3f4a4ca185d90fa41c9 upstream.
+commit cb711a1931363b8ad4dc98df4a92c262ced8eeb4 upstream.
 
-The start_ro modules parameter can be used to force arrays to be
-started in 'auto-readonly' in which they are read-only until the first
-write.  This ensures that no resync/recovery happens until something
-else writes to the device.  This is important for resume-from-disk
-off an md array.
+Cleanup the documentation about the supported chipsets.
 
-However if an array is started 'readonly' (by writing 'readonly' to
-the 'array_state' sysfs attribute) we want it to be really 'readonly',
-not 'auto-readonly'.
+[needed for further device ids to add to this driver - gkh]
 
-So strengthen the condition to only set auto-readonly if the
-array is not already read-only.
-
-Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/md.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/watchdog/iTCO_wdt.c |   61 ++++++++++++--------------------------------
+ 1 file changed, 17 insertions(+), 44 deletions(-)
 
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -4173,7 +4173,7 @@ static int do_md_run(mddev_t * mddev)
- 	mddev->barriers_work = 1;
- 	mddev->ok_start_degraded = start_dirty_degraded;
+--- a/drivers/watchdog/iTCO_wdt.c
++++ b/drivers/watchdog/iTCO_wdt.c
+@@ -1,5 +1,5 @@
+ /*
+- *	intel TCO Watchdog Driver (Used in i82801 and i63xxESB chipsets)
++ *	intel TCO Watchdog Driver
+  *
+  *	(c) Copyright 2006-2009 Wim Van Sebroeck <wim@iguana.be>.
+  *
+@@ -14,49 +14,22 @@
+  *
+  *	The TCO watchdog is implemented in the following I/O controller hubs:
+  *	(See the intel documentation on http://developer.intel.com.)
+- *	82801AA  (ICH)       : document number 290655-003, 290677-014,
+- *	82801AB  (ICHO)      : document number 290655-003, 290677-014,
+- *	82801BA  (ICH2)      : document number 290687-002, 298242-027,
+- *	82801BAM (ICH2-M)    : document number 290687-002, 298242-027,
+- *	82801CA  (ICH3-S)    : document number 290733-003, 290739-013,
+- *	82801CAM (ICH3-M)    : document number 290716-001, 290718-007,
+- *	82801DB  (ICH4)      : document number 290744-001, 290745-025,
+- *	82801DBM (ICH4-M)    : document number 252337-001, 252663-008,
+- *	82801E   (C-ICH)     : document number 273599-001, 273645-002,
+- *	82801EB  (ICH5)      : document number 252516-001, 252517-028,
+- *	82801ER  (ICH5R)     : document number 252516-001, 252517-028,
+- *	6300ESB  (6300ESB)   : document number 300641-004, 300884-013,
+- *	82801FB  (ICH6)      : document number 301473-002, 301474-026,
+- *	82801FR  (ICH6R)     : document number 301473-002, 301474-026,
+- *	82801FBM (ICH6-M)    : document number 301473-002, 301474-026,
+- *	82801FW  (ICH6W)     : document number 301473-001, 301474-026,
+- *	82801FRW (ICH6RW)    : document number 301473-001, 301474-026,
+- *	631xESB  (631xESB)   : document number 313082-001, 313075-006,
+- *	632xESB  (632xESB)   : document number 313082-001, 313075-006,
+- *	82801GB  (ICH7)      : document number 307013-003, 307014-024,
+- *	82801GR  (ICH7R)     : document number 307013-003, 307014-024,
+- *	82801GDH (ICH7DH)    : document number 307013-003, 307014-024,
+- *	82801GBM (ICH7-M)    : document number 307013-003, 307014-024,
+- *	82801GHM (ICH7-M DH) : document number 307013-003, 307014-024,
+- *	82801GU  (ICH7-U)    : document number 307013-003, 307014-024,
+- *	82801HB  (ICH8)      : document number 313056-003, 313057-017,
+- *	82801HR  (ICH8R)     : document number 313056-003, 313057-017,
+- *	82801HBM (ICH8M)     : document number 313056-003, 313057-017,
+- *	82801HH  (ICH8DH)    : document number 313056-003, 313057-017,
+- *	82801HO  (ICH8DO)    : document number 313056-003, 313057-017,
+- *	82801HEM (ICH8M-E)   : document number 313056-003, 313057-017,
+- *	82801IB  (ICH9)      : document number 316972-004, 316973-012,
+- *	82801IR  (ICH9R)     : document number 316972-004, 316973-012,
+- *	82801IH  (ICH9DH)    : document number 316972-004, 316973-012,
+- *	82801IO  (ICH9DO)    : document number 316972-004, 316973-012,
+- *	82801IBM (ICH9M)     : document number 316972-004, 316973-012,
+- *	82801IEM (ICH9M-E)   : document number 316972-004, 316973-012,
+- *	82801JIB (ICH10)     : document number 319973-002, 319974-002,
+- *	82801JIR (ICH10R)    : document number 319973-002, 319974-002,
+- *	82801JD  (ICH10D)    : document number 319973-002, 319974-002,
+- *	82801JDO (ICH10DO)   : document number 319973-002, 319974-002,
+- *	5 Series (PCH)       : document number 322169-001, 322170-001,
+- *	3400 Series (PCH)    : document number 322169-001, 322170-001
++ *	document number 290655-003, 290677-014: 82801AA (ICH), 82801AB (ICHO)
++ *	document number 290687-002, 298242-027: 82801BA (ICH2)
++ *	document number 290733-003, 290739-013: 82801CA (ICH3-S)
++ *	document number 290716-001, 290718-007: 82801CAM (ICH3-M)
++ *	document number 290744-001, 290745-025: 82801DB (ICH4)
++ *	document number 252337-001, 252663-008: 82801DBM (ICH4-M)
++ *	document number 273599-001, 273645-002: 82801E (C-ICH)
++ *	document number 252516-001, 252517-028: 82801EB (ICH5), 82801ER (ICH5R)
++ *	document number 300641-004, 300884-013: 6300ESB
++ *	document number 301473-002, 301474-026: 82801F (ICH6)
++ *	document number 313082-001, 313075-006: 631xESB, 632xESB
++ *	document number 307013-003, 307014-024: 82801G (ICH7)
++ *	document number 313056-003, 313057-017: 82801H (ICH8)
++ *	document number 316972-004, 316973-012: 82801I (ICH9)
++ *	document number 319973-002, 319974-002: 82801J (ICH10)
++ *	document number 322169-001, 322170-001: 5 Series, 3400 Series (PCH)
+  */
  
--	if (start_readonly)
-+	if (start_readonly && mddev->ro == 0)
- 		mddev->ro = 2; /* read-only, but switch on first write */
- 
- 	err = mddev->pers->run(mddev);
+ /*
 
 
