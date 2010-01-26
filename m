@@ -1,126 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751589Ab0AZAMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751679Ab0AZASn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751589Ab0AZAMe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jan 2010 19:12:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147Ab0AZAMc
+	id S1751679Ab0AZASn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jan 2010 19:18:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393Ab0AZASl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jan 2010 19:12:32 -0500
-Received: from leb.cs.unibo.it ([130.136.1.102]:58386 "EHLO leb.cs.unibo.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751043Ab0AZAMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jan 2010 19:12:31 -0500
-X-Greylist: delayed 590 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jan 2010 19:12:30 EST
-Date: Tue, 26 Jan 2010 01:02:37 +0100
-From: Renzo Davoli <renzo@cs.unibo.it>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Wielaard <mjw@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kyle Moffett <kyle@moffetthome.net>, tytso@mit.edu,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100126000237.GA15936@cs.unibo.it>
-References: <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <20100123112333.GA15455@elte.hu> <20100123114729.GA7828@redhat.com> <20100123194820.GM21263@thunk.org> <f73f7ab81001241742t1f827ddetd958e1949787020f@mail.gmail.com> <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain> <20100125170254.GB22862@redhat.com> <alpine.LFD.2.00.1001250930320.3574@localhost.localdomain> <1264451453.3028.59.camel@springer.wildebeest.org> <alpine.LFD.2.00.1001251236160.3574@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001251236160.3574@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 25 Jan 2010 19:18:41 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55481 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751325Ab0AZASk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jan 2010 19:18:40 -0500
+Date: Mon, 25 Jan 2010 16:17:02 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Travis <travis@sgi.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Russ Anderson <rja@sgi.com>, Dave Airlie <airlied@redhat.com>,
+       Alex Chiang <achiang@hp.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Cyrill Gorcunov <gorcunov@openvz.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Robin Holt <holt@sgi.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Adam Jackson <ajax@nwnk.net>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Gaetan Nadon <memsize@videotron.ca>, "H. Peter Anvin" <hpa@zytor.com>,
+       Aaron Plattner <aplattner@nvidia.com>, Jack Steiner <steiner@sgi.com>,
+       Tiago Vignatti <tiago.vignatti@nokia.com>, Cliff Wickman <cpw@sgi.com>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Christian Zander <chzander@nvidia.com>, Yu Zhao <yu.zhao@intel.com>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH 1/4] pci: Update pci_set_vga_state to call arch
+ functions
+Message-Id: <20100125161702.e070985e.akpm@linux-foundation.org>
+In-Reply-To: <4B5E32D0.8040401@sgi.com>
+References: <20100118183412.560438000@alcatraz.americas.sgi.com>
+	<20100118183418.045021000@alcatraz.americas.sgi.com>
+	<20100125155234.a2e397a1.akpm@linux-foundation.org>
+	<4B5E32D0.8040401@sgi.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let me add my two euro-cents to this discussion.
+On Mon, 25 Jan 2010 16:09:52 -0800
+Mike Travis <travis@sgi.com> wrote:
 
-Mark Wielaard <mjw@redhat.com>:
-> Unfortunately ptrace does all that magic already (badly). People don't
-> just use it for (s)tracing syscalls, but also for tracing signals, for
->  single step debugging and poking at memory, register state, for process
-> jailing and virtualization (uml) through syscall emulation.
-> So when they are talking about these fancy things that is because that
-> is what ptrace gives them currently. And they hate it, because the
-> ptrace interface is such a pain to work with. And all these things don't
-> really work together. You cannot trace, emulate, debug, jail at the same
-> time.
-I support Mark's words. I don't use ptrace for debugging/tracing and I
-have experienced severe limitations of ptrace interface.
-(I have tried to post some extensions for ptrace to overcome some 
-constraints.... see my posts on ptrace_vm or ptrace_multi on LKML).
+> > 
+> > Still, a neater solution might be
+> > 
+> > int arch_pci_set_vga_state(...) __weak
+> > {
+> > 	return 0;
+> > }
+> > 
+> > and then resolve it at linkage time?
+> > 
+> > 
+> 
+> Wouldn't the linked in stronger function then need to surround
+> the UV register updating with "if (uv_system)"?
 
-Oleg Nesterov, writing to Andrew Morton said:
-> First of all, utrace makes other things possible.  gdbstub,
-> nondestructive core dump, uprobes, kmview, hopefully more.  I didn't
-> look at these projects closely, perhaps other people can tell more.  As
-> for their merge status, until utrace itself is merged it is very hard to
-> develop them out of tree.
+If the file which implements arch_pci_set_vga_state() is present in
+vmlinux on non-uv systems then yes.
 
-In the list above there is also kmview, which is a creature of mines.
-umview and kmview are partial virtual machines, processes running
-in a [uk]mview machine can have their own view for the file system, 
-networking support, user-id, system-name, etc.
-A [uk]mview machine virtualizes just what the user need: the filesystem
-or just a subtree/some subtrees or networking or define one/some
-virtual devices, etc. The "view" provided by a [uk]mview machine can be
-a composition of real resources (provided by the Linux kernel) and
-virtual resources.
+Presumably that file is arch/x86/kernel/apic/x2apic_uv_x.c, although
+that might later become a problem if other sub-architectures a) want to
+get at this hook and b) can be linked into vmlinux along with
+arch/x86/kernel/apic/x2apic_uv_x.o.  But such a kernel wouldn't
+actually link, so we'll need to address it at that stage.
 
-Each system call request gets hijacked to a module of [uk]mview when
-it refers to a virtual resource. The request is forwarded to the kernel
-otherwise.
 
-umview is based on ptrace, kmview uses a kernel module based on utrace.
-(umview is included in debian lenny (to sid), tutorial and manuals in 
-wiki.virtualsquare.org)
+If this is a UV-specific hack which other architectures and
+sub-architectures are unlikely to need (seems that way?) then I'd be
+going for something whcih is simple and minimal.
 
-IMHO utrace is better than ptrace (or an optimized version of it):
-1 - "Frank Ch. Eigler" wrote: 
-> At least one reason is that ptrace is single-usage-only, so for
-> example you cannot concurrently debug & strace the same program.
-  - exactly. utrace allows multiple tracing engines, this means that kmview 
-  machines can be nested (in a natural way, no extra code is needed for
-  this feature). In the same way strace/gdb can run on virtualized processes, too.
-2 - kmview kernel module implements several optimizations
-  to minimize the number of requests forwarded to the kmview process
-  (the virtual machine monitor). kmview is just a module using the
-  utrace interface, prior attempts of optimized umview required kernel patches.
-  Like kmview any other service requiring process tracing can include 
-  specific optimizations in its own kernel module.
-  On the other hand, all these services could use the standardized utrace
-  interface for their optimizations, instead asking for messy patches 
-  to change code all around the kernel source.
-3 - ptrace takes SIGSTOP/SIGCONT for its own management. Strace/gdb and
-  umview cannot be transparent for programs using these signals.
-
-Oleg Nesterov talking about Ptrace said:
-> Of course they can't use other interfaces, we don't have them. And
-> without the new abstraction layer we will never have, I think.
-I agree.
-
-THe following list includes the execution times I got in a recent test 
-(make vde-2, see http://www.cs.unibo.it/~renzo/view-os-lk2009.pdf)
-plain kernel 22.7s, 
-kmview (no modules) 23.9s (+5.5%), 
-full kmview (modules loaded, all syscall virtualized) 38.5s (+70%)
-optimized umview 51.0 (+124%), 
-umview on vanilla kernel 75.7s (+233%).
-
-utrace can be used to speedup virtualization (at least in my case
-it worked in this way). 
-Performance can be useful for debugging but it is a main issue for
-virtualization.
-Kmview module provides optimizations to select the system call requests 
-depending on the syscall number, the pathnames or the file descriptors. 
-http://wiki.virtualsquare.org/index.php/KMview_module_interface_specifications
-Trying to add all the optimizations needed by different projects to ptrace is a
-never-ending nightmare: the LKML will continue to receive patch proposals
-for ptrace... 
-The solution is that everybody can code his/her optimized kernel/user 
-interface for tracing in his/her kernel module, i.e. utrace.
-
-renzo
