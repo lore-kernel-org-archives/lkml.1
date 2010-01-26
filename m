@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533Ab0AZRco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680Ab0AZRda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533Ab0AZRco (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 12:32:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996Ab0AZRcn
+	id S1754680Ab0AZRda (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 12:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329Ab0AZRd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 12:32:43 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:20517 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753177Ab0AZRcm (ORCPT
+	Tue, 26 Jan 2010 12:33:29 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:53296 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753858Ab0AZRd2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 12:32:42 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with pci=use_crs)
-Date: Tue, 26 Jan 2010 10:32:35 -0700
-User-Agent: KMail/1.9.10
-Cc: Jeff Garrett <jeff@jgarrett.org>, Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Myron Stowe <myron.stowe@hp.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <20100126071912.GA7543@jgarrett.org> <201001261348.59508.rjw@sisk.pl>
-In-Reply-To: <201001261348.59508.rjw@sisk.pl>
+	Tue, 26 Jan 2010 12:33:28 -0500
+To: tromey@redhat.com
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+From: Andi Kleen <andi@firstfloor.org>
+References: <20100121013822.28781960.sfr@canb.auug.org.au>
+	<20100122005147.GD22003@redhat.com>
+	<20100121170541.7425ff10.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
+	<20100122182827.GA13185@redhat.com>
+	<20100122200129.GG22003@redhat.com>
+	<alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
+	<20100122221348.GA4263@redhat.com>
+	<alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
+	<alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
+	<f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
+	<alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>
+	<m33a1tnbd9.fsf@fleche.redhat.com>
+Date: Tue, 26 Jan 2010 18:33:26 +0100
+In-Reply-To: <m33a1tnbd9.fsf@fleche.redhat.com> (Tom Tromey's message of "Mon, 25 Jan 2010 14:05:54 -0700")
+Message-ID: <877hr4g49l.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001261032.37053.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 January 2010 05:48:59 am Rafael J. Wysocki wrote:
-> On Tuesday 26 January 2010, Jeff Garrett wrote:
-> > On Sun, Jan 24, 2010 at 11:04:38PM +0100, Rafael J. Wysocki wrote:
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.32.  Please verify if it still should be listed and let me know
-> > > (either way).
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15124
-> > > Subject		: PCI host bridge windows ignored (works with pci=use_crs)
-> > > Submitter	: Jeff Garrett <jeff@jgarrett.org>
-> > > Date		: 2010-01-13 5:37 (12 days old)
-> > > References	: http://marc.info/?l=linux-kernel&m=126336296600307&w=4
-> > > Handled-By	: Yinghai Lu <yinghai@kernel.org>
-> > > 		  Bjorn Helgaas <bjorn.helgaas@hp.com>
-> > 
-> > This regression should still be listed.  No patch to test yet.
-> ...
-> IIRC, we already know how to fix this ...
+Tom Tromey <tromey@redhat.com> writes:
 
-As far as I know, we do NOT know how to fix this.
+> * Use an fd, not SIGCHLD+wait, to report inferior state changes to gdb.
+>   Internally we're already using a self-pipe to integrate this into
+>   gdb's main loop.  Relatedly, don't mess with the inferior's parentage.
 
-This regression occurred when we added intel_bus.c because it's not
-yet smart enough to determine the correct host bridge apertures.
-Here's what it thinks the bridge aperture is and the Radeon BAR:
+How would having a kernel based solution be better over your
+user space simulation?
 
-  IOH bus: 00 index 1 mmio: [e0000000, fdffffff]
-  pci 0000:04:00.0: reg 10: [mem 0xd0000000-0xdfffffff 64bit pref]
+BTW there's the new signalfd() system call that might do it
+(haven't checked if it works for SIGCHLD)
 
-The IOH aperture is obviously not big enough to cover the Radeon BAR.
-But the host bridge _CRS tells us this:
+> * Support "displaced stepping" in the kernel; I think this would improve
+>   performance when debugging in non-stop mode.
 
-  pci_root PNP0A08:00: host bridge window [mem 0xc0000000-0xdfffffff]
-  pci_root PNP0A08:00: host bridge window [mem 0xf0000000-0xfed8ffff]
+Not sure what "displaced stepping" is exactly, but it 
+sounds like the branch tracing extensions that got added a 
+few releases ago? On modern Intel chips they give you a branch
+buffer in memory.
 
-which IS big enough, and we know the bridge is in fact forwarding the
-[mem 0xd0000000-0xdfffffff 64bit pref] region, because the Radeon works
-when Jeff boots with "pci=use_crs".
-
-I'm quite concerned about this for .33 because I don't think Jeff's
-configuration (Dell desktop with Intel x58 and large graphics device)
-is unusual.
-
-The benefit of intel_bus.c is on machines with multiple IOHs, where we
-need to figure out which address ranges go to which IOHs so we can
-program downstream devices correctly.  But even there, _CRS should give
-us the information we need, so "pci=use_crs" should make these machines
-work.
-
-I think we should remove intel_bus.c before .33.  It's breaking boxes
-and we don't know how to fix it.  Even if we do find out how to fix it,
-I think we should move toward using _CRS instead, because that's what
-Windows uses and it's an easy way for the firmware to tell us about
-platform quirks.
-
-Bjorn
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
