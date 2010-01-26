@@ -1,87 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091Ab0AZXqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141Ab0AZXpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755091Ab0AZXqR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 18:46:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924Ab0AZXoZ
+	id S1755141Ab0AZXpk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 18:45:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125Ab0AZXpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 18:44:25 -0500
-Received: from kroah.org ([198.145.64.141]:35528 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 18:45:32 -0500
+Received: from cantor.suse.de ([195.135.220.2]:58964 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754949Ab0AZXoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:44:19 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:32 2010
-Message-Id: <20100126233932.275072919@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:34:53 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Michael S. Tsirkin" <mst@redhat.com>,
-       "Acked-by: Gregory Haskins" <ghaskins@novell.com>,
-       Avi Kivity <avi@redhat.com>
-Subject: [87/98] KVM: only allow one gsi per fd
-In-Reply-To: <20100126233950.GA5372@kroah.com>
+	id S1755112Ab0AZXp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 18:45:28 -0500
+Date: Wed, 27 Jan 2010 00:45:27 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Clean-up a few comments.
+In-Reply-To: <1264549178-2874-1-git-send-email-justinmattock@gmail.com>
+Message-ID: <alpine.LNX.2.00.1001270043450.30977@pobox.suse.cz>
+References: <1264549178-2874-1-git-send-email-justinmattock@gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+On Tue, 26 Jan 2010, Justin P. Mattock wrote:
 
-------------------
+> Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+> ---
+>  arch/x86/kernel/setup.c |    9 ++++-----
+>  1 files changed, 4 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index f7b8b98..1bd37e9 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -245,7 +245,7 @@ struct edd edd;
+>  #ifdef CONFIG_EDD_MODULE
+>  EXPORT_SYMBOL(edd);
+>  #endif
+> -/**
+> +/*
 
-From: Michael S. Tsirkin <mst@redhat.com>
+There are zillions of '**' comment starters in kernel sources.
 
-commit f1d1c309f35e9b0fb961cffd70fbd04f450ec47c upstream.
+	$ git grep '/\*\*$' drivers/ | wc -l
+	15506
 
-Looks like repeatedly binding same fd to multiple gsi's with irqfd can
-use up a ton of kernel memory for irqfd structures.
+So it doesn't seem to make sense to fix only this particular one.
 
-A simple fix is to allow each fd to only trigger one gsi: triggering a
-storm of interrupts in guest is likely useless anyway, and we can do it
-by binding a single gsi to many interrupts if we really want to.
-
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-Acked-by: Acked-by: Gregory Haskins <ghaskins@novell.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- virt/kvm/eventfd.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
-
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -168,7 +168,7 @@ irqfd_ptable_queue_proc(struct file *fil
- static int
- kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
- {
--	struct _irqfd *irqfd;
-+	struct _irqfd *irqfd, *tmp;
- 	struct file *file = NULL;
- 	struct eventfd_ctx *eventfd = NULL;
- 	int ret;
-@@ -205,9 +205,20 @@ kvm_irqfd_assign(struct kvm *kvm, int fd
- 	init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
- 	init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
- 
-+	spin_lock_irq(&kvm->irqfds.lock);
-+
-+	ret = 0;
-+	list_for_each_entry(tmp, &kvm->irqfds.items, list) {
-+		if (irqfd->eventfd != tmp->eventfd)
-+			continue;
-+		/* This fd is used for another irq already. */
-+		ret = -EBUSY;
-+		spin_unlock_irq(&kvm->irqfds.lock);
-+		goto fail;
-+	}
-+
- 	events = file->f_op->poll(file, &irqfd->pt);
- 
--	spin_lock_irq(&kvm->irqfds.lock);
- 	list_add_tail(&irqfd->list, &kvm->irqfds.items);
- 	spin_unlock_irq(&kvm->irqfds.lock);
- 
-
-
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
