@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858Ab0AZPDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000Ab0AZPEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753858Ab0AZPDt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 10:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704Ab0AZPDs
+	id S1754000Ab0AZPEg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 10:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789Ab0AZPEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 10:03:48 -0500
-Received: from cantor.suse.de ([195.135.220.2]:41876 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753614Ab0AZPDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 10:03:48 -0500
-Message-ID: <4B5F0452.1080306@suse.cz>
-Date: Tue, 26 Jan 2010 16:03:46 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
+	Tue, 26 Jan 2010 10:04:35 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:49627 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753704Ab0AZPEe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 10:04:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=hYjfMjb25WQ8rxPk7zxpxYybaL/bnA3YUkOPe5ldcUDySjxELss7ckhDmXypvQzRVa
+         uAJvkWEN4H1yTjdMHn9T3pB0NOnObLFO2IEgBYExgaMvFUXwqaxBH9x5voO2PBf11a/P
+         c3TtdF8Km8jKkPTsHz5OvyDwVn5/D9OMK2Eac=
 MIME-Version: 1.0
-To: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
-       Glenn Sommer <glemsom@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Use full path to dnsdomainname and domainname in  scripts/mkcompile_h
-References: <d65b1b151001191029o66794c24t228177a8ca544e44@mail.gmail.com>	 <2375c9f91001191926hc80dc50mb264f757295c1337@mail.gmail.com>	 <d65b1b151001200706k7a60eaf9le2a6cf4e1227bdad@mail.gmail.com> <2375c9f91001251955s1dfc70f9p94054b7824a4c4b7@mail.gmail.com>
-In-Reply-To: <2375c9f91001251955s1dfc70f9p94054b7824a4c4b7@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Date: Tue, 26 Jan 2010 20:34:31 +0530
+Message-ID: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
+Subject: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
+From: Vishal Rao <vishalrao@gmail.com>
+To: jgarzik@pobox.com
+Cc: linux-ide@vger.kernel.org, vishalrao@gmail.com,
+       linux-kernel@vger.kernel.org, trivial@kernel.org, stable@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26.1.2010 04:55, Américo Wang wrote:
-> On Wed, Jan 20, 2010 at 11:06 PM, Glenn Sommer <glemsom@gmail.com> wrote:
->> Alternatively, if we want it to be more flexible(and allow the above)
->> - we should do something like:
->>
->> domainname_executable=`which domainname`
->> if [ ! -z "$domainname_executable" ] && [ -x "$domainname_executable" ]; then
->>
+Disable NCQ usage for Crucial M225 model range of SSDs.
 
-(or 'if command -v domainname >/dev/null 2>&1; then domainname ...')
+Signed-off-by: Vishal Rao <vishalrao@gmail.com>
+Tested-by: Vishal Rao <vishalrao@gmail.com>
+Cc: stable@kernel.org
+
+---
+
+Should work with 64, 128 (tested) and 256 GB capacities with any
+firmware versions in
+drivers/ata/libata-core.c because of ATA errors in dmesg, hangs and
+filesystem corruption.
+
+The diff is against linux kernel 2.6.33 rc5 though also meant for
+2.6.32 stable series due to multiple distros' proposed long term support.
+
+I've tested on my PC with my Crucial M225 model 128 GB SSD and it works
+without the need to specify kernel boot option " libata.force=noncq ".
+
+--- linux-source-2.6.33rc5/drivers/ata/libata-core.c.orig	2010-01-26
+08:35:54.117306573 +0530
++++ linux-source-2.6.33rc5/drivers/ata/libata-core.c	2010-01-26
+08:35:13.047306938 +0530
+@@ -4274,6 +4274,9 @@ static const struct ata_blacklist_entry
+ 	{ "ST380817AS",		"3.42",		ATA_HORKAGE_NONCQ },
+ 	{ "ST3160023AS",	"3.42",		ATA_HORKAGE_NONCQ },
+ 	{ "OCZ CORE_SSD",	"02.10104",	ATA_HORKAGE_NONCQ },
++	{ "CRUCIAL_CT64M225",	NULL,		ATA_HORKAGE_NONCQ },
++	{ "CRUCIAL_CT128M225",	NULL,		ATA_HORKAGE_NONCQ },
++	{ "CRUCIAL_CT256M225",	NULL,		ATA_HORKAGE_NONCQ },
+
+ 	/* Seagate NCQ + FLUSH CACHE firmware bug */
+ 	{ "ST31500341AS",	"SD15",		ATA_HORKAGE_NONCQ |
 
 
-> Yeah, this seems better for me.
-
-Me too. Glenn, could you send a complete patch doing this? I'll add it
-to the kbuild tree then.
-
-Thanks,
-Michal
+-- 
+"Thou shalt not follow the null pointer for at its end madness and chaos lie."
