@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524Ab0A0XHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525Ab0A0XIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756524Ab0A0XHt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:07:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756517Ab0A0XHq
+	id S1756525Ab0A0XIE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:08:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528Ab0A0XH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:07:46 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:40179 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756514Ab0A0XHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:07:44 -0500
-X-Greylist: delayed 378 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jan 2010 18:07:44 EST
-X-Bogosity: Ham, spamicity=0.000003
-Message-ID: <4B60C632.5050500@tuxonice.net>
-Date: Thu, 28 Jan 2010 10:03:14 +1100
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Pedro Ribeiro <pedrib@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: WARN_ON at line 380 in kernel/smp.c under 2.6.32.2 + TuxOnIce
- + KDB
-References: <74fd948d0912220851v354b1704xa55fc3c88e1c300c@mail.gmail.com>	 <1261502431.4937.38.camel@laptop>	 <74fd948d0912221116l477a8a71w1feadc1341fc6e21@mail.gmail.com> <1261510020.4937.73.camel@laptop>
-In-Reply-To: <1261510020.4937.73.camel@laptop>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=8B613241
-Content-Type: text/plain; charset=UTF-8
+	Wed, 27 Jan 2010 18:07:58 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:44822 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756398Ab0A0XHz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 18:07:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=Ug2XMOq1xm5kC9gaLWDvfSYOtfS+WbLMSmMbhVznwdqDaRxLFCWdstjASz+pvS7mLU
+         GXdNRnXUJLqfU0JYLM3WOMbbtQ5GrQDRt98ddDIJVdCTIXrrGXYk9ew86aHlSFaYr467
+         kRWoXe7yuQP88jH8gC30sds3HbIZIS69dwWso=
+Date: Thu, 28 Jan 2010 00:07:51 +0100
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, airlied@linux.ie,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       dri-devel@lists.sourceforge.net, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [linux-pm] [PATCH] PM / i915: Skip kernel VT switch during
+ suspend/resume	if KMS is used
+Message-ID: <20100128000751.099630ed@strolchi>
+In-Reply-To: <20100126145842.GA11295@ucw.cz>
+References: <201001240055.59479.rjw@sisk.pl>
+	<201001252254.37635.rjw@sisk.pl>
+	<20100126141726.GA1437@ucw.cz>
+	<201001261947.46015.rjw@sisk.pl>
+	<20100126145842.GA11295@ucw.cz>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.19.2; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter et al.
+Hi,
 
-Peter Zijlstra wrote:
-> On Tue, 2009-12-22 at 19:16 +0000, Pedro Ribeiro wrote:
->> On Tue, Dec 22, 2009 at 5:20 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> 
->>> If you'd enable frame pointers the strack traces would be clearer, but
->>> it looks like a bug in tux on ice, doing kmap_high() with IRQs disabled
->>> or something like that.
-> 
->> I enabled frame pointers, is this more useful?
->> http://img684.imageshack.us/img684/5118/dsc01206m.jpg
->> http://img96.imageshack.us/img96/5493/dsc01207k.jpg
->> http://img33.imageshack.us/img33/7470/dsc01208lp.jpg
-> 
-> Those read more clearly indeed, thanks!
-> 
-> It really looks like what I said above, in that tux on ice is calling
-> kmap() from an inappropriate context.
+On Tue, 26 Jan 2010 15:58:43 +0100 Pavel Machek <pavel@ucw.cz> wrote:
+> We need vt switch when display is controlled by userland app directly
+> accessing hw. It may or may not be X (svgalib anyone?,
+> gtk-on-framebuffer? qtopia?).
 
-I've finally gotten around to looking at this problem properly, and Pete
-is exactly right. I'll send a test fix to Pedro separately.
+anything-on-framebuffer should not be different from plain framebuffer
+console, or am I missing something?
 
-Regards,
+> Ideally, userspace should explicitely tell us. KD_KERNEL_GRAPHICS
+> console mode?
+> 
+> Plus the switch is needed for any graphics app using fbcon -- I do not
+> think we actually save the framebuffer over suspend. (This one should
+> probably be fixed).
 
-Nigel
+Framebuffer should be easy to fix - it works pretty well already
+because apparently the fbcon code needs to "shadow buffer" all VT
+"windows" anyway - so maybe it's just the issue of doing an additional
+"redraw()" somewhere appropriate.
+
+The VGA consoles loses their content, because AFAICT they are in the
+graphics card memory, which is not saved and restored.
+
+	seife
+-- 
+Stefan Seyfried
+
+"Any ideas, John?"
+"Well, surrounding them's out."
