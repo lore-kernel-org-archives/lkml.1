@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109Ab0A0OJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170Ab0A0OJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755109Ab0A0OJK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 09:09:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088Ab0A0OJH
+	id S1755170Ab0A0OJi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 09:09:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057Ab0A0OJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 09:09:07 -0500
-Received: from mail.perches.com ([173.55.12.10]:1500 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755078Ab0A0OJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 09:09:03 -0500
-Subject: Re: + drivers-block-floppyc-use-pr_level.patch added to -mm tree
-From: Joe Perches <joe@perches.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, bzolnier@gmail.com, jens.axboe@oracle.com,
-       marcin.slusarz@gmail.com, shemminger@vyatta.com
-In-Reply-To: <4B600806.4010003@gmail.com>
-References: <201001270037.o0R0bN6S032517@imap1.linux-foundation.org>
-	 <4B600806.4010003@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 06:09:00 -0800
-Message-ID: <1264601340.14552.55.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 09:09:36 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:49045 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755018Ab0A0OJg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 09:09:36 -0500
+Date: Wed, 27 Jan 2010 17:09:34 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Josh Boyer <jwboyer@gmail.com>,
+       Stefani Seibold <stefani@seibold.net>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [PATCH 1/3] kfifo: Make kfifo_initialized work after kfifo_free
+Message-ID: <20100127140934.GA31608@oksana.dev.rtsoft.ru>
+References: <20100127140809.GA27906@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20100127140809.GA27906@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-27 at 10:31 +0100, Jiri Slaby wrote:
-> On 01/27/2010 01:37 AM, akpm@linux-foundation.org wrote:
-> > @@ -687,9 +687,7 @@ static void __reschedule_timeout(int dri
-> >  		fd_timeout.expires = jiffies + UDP->timeout;
-> >  	add_timer(&fd_timeout);
-> >  	if (UDP->flags & FD_DEBUG) {
-> > -		DPRINT("reschedule timeout ");
-> > -		printk(message, marg);
-> > -		printk("\n");
-> > +		DPRINT("reschedule timeout %s %d\n", message, marg);
-> 
-> This is wrong.
+After kfifo rework it's no longer possible to reliably know if kfifo is
+usable, since after kfifo_free(), kfifo_initialized() would still return
+true. The correct behaviour is needed for at least FHCI USB driver.
 
-I disagree.
+This patch fixes the issue by resetting the kfifo to zero values (the
+same approach is used in kfifo_alloc() if allocation failed).
 
-It does add an always output decimal value to the DPRINT
-instead of a mostly mismatched format and argument
-	printk(message, marg).
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ kernel/kfifo.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Previous single matched output use of message/marg:
-
--	reschedule_timeout(MAXTIMEOUT, "request done %d", uptodate);
-+	reschedule_timeout(MAXTIMEOUT, "request done", uptodate);
-
-vs now:
-
-$ grep reschedule_timeout drivers/block/floppy.c
-static void __reschedule_timeout(int drive, const char *message, int marg)
-static void reschedule_timeout(int drive, const char *message, int marg)
-	__reschedule_timeout(drive, message, marg);
-	__reschedule_timeout(drive, "lock fdc", 0);
-	reschedule_timeout(current_reqD, "floppy start", 0);
-	reschedule_timeout(MAXTIMEOUT, "do wakeup", 0);
-	reschedule_timeout(MAXTIMEOUT, "request done", uptodate);
-		reschedule_timeout(current_reqD, "redo fd request", 0);
-	reschedule_timeout(MAXTIMEOUT, "floppy init", MAXTIMEOUT);
-
-Arguably, that single use could be something like:
-
-	char msg_buf[sizeof("request done ") + 20];
-	snprintf(msg_buf, sizeof(msg_buf), "request_done %d", uptodate);
-	reschedule_timeout(MAXTIMEOUT, msg_buf);
-
-(uptodate should be 0, 1 or 2)
-
-with the now unused marg argument removed from
-reschedule_timeout and __reschedule_timeout.
+diff --git a/kernel/kfifo.c b/kernel/kfifo.c
+index 32c5c15..3b00bf8 100644
+--- a/kernel/kfifo.c
++++ b/kernel/kfifo.c
+@@ -97,6 +97,7 @@ EXPORT_SYMBOL(kfifo_alloc);
+ void kfifo_free(struct kfifo *fifo)
+ {
+ 	kfree(fifo->buffer);
++	_kfifo_init(fifo, NULL, 0);
+ }
+ EXPORT_SYMBOL(kfifo_free);
+ 
+-- 
+1.6.5.7
 
