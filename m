@@ -1,47 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125Ab0A0Gwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139Ab0A0GyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125Ab0A0Gwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 01:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614Ab0A0Gwc
+	id S1754139Ab0A0GyO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 01:54:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039Ab0A0GyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 01:52:32 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37575 "EHLO
+	Wed, 27 Jan 2010 01:54:13 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59023 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753089Ab0A0Gwc (ORCPT
+	with ESMTP id S1753700Ab0A0GyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 01:52:32 -0500
-Subject: Re: linux-next: add utrace tree
+	Wed, 27 Jan 2010 01:54:12 -0500
+Subject: Re: [RFC] [PATCH 0/7] UBP, XOL and Uprobes [ Summary of Comments
+ and actions to be taken ]
 From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tom Tromey <tromey@redhat.com>, Kyle Moffett <kyle@moffetthome.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>, JimKeniston <jkenisto@us.ibm.com>
-In-Reply-To: <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain>
-References: <20100121013822.28781960.sfr@canb.auug.org.au>
-	 <20100122005147.GD22003@redhat.com>
-	 <20100121170541.7425ff10.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
-	 <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com>
-	 <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
-	 <20100122221348.GA4263@redhat.com>
-	 <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
-	 <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
-	 <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
-	 <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>
-	 <m33a1tnbd9.fsf@fleche.redhat.com>
-	 <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
-	 <m3636oh2rt.fsf@fleche.redhat.com>
-	 <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain>
+To: ananth@in.ibm.com
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mel Gorman <mel@csn.ul.ie>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100122072402.GA7440@in.ibm.com>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100122070232.GA2975@linux.vnet.ibm.com>
+	 <20100122072402.GA7440@in.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 07:52:14 +0100
-Message-ID: <1264575134.4283.1983.camel@laptop>
+Date: Wed, 27 Jan 2010 07:53:45 +0100
+Message-ID: <1264575225.4283.1985.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -49,30 +37,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-26 at 15:37 -0800, Linus Torvalds wrote:
-> 
-> On Tue, 26 Jan 2010, Tom Tromey wrote:
+On Fri, 2010-01-22 at 12:54 +0530, Ananth N Mavinakayanahalli wrote:
+> On Fri, Jan 22, 2010 at 12:32:32PM +0530, Srikar Dronamraju wrote:
+> > Here is a summary of the Comments and actions that need to be taken for
+> > the current uprobes patchset. Please let me know if I missed or
+> > misunderstood any of your comments.  
 > > 
-> > In non-stop mode (where you can stop one thread but leave the others
-> > running), gdb wants to have the breakpoints always inserted.  So,
-> > something must emulate the displaced instruction.
+> > 1. Uprobes depends on trap signal.
+> > 	Uprobes depends on trap signal rather than hooking to the global
+> > die notifier. It was suggested that we hook to the global die notifier.
+> > 
+> > 	In the next version of patches, Uprobes will use the global die
+> > 	notifier and look at the per-task count of the probes in use to
+> > 	see if it has to be consumed.
+> > 
+> > 	However this would reduce the ability of uprobe handlers to
+> > 	sleep. Since we are dealing with userspace, sleeping in handlers
+> > 	would have been a good feature. We are looking at ways to get
+> > 	around this limitation.
 > 
-> I'm almost totally uninterested in breakpoints that actually re-write 
-> instructions. It's impossible to do that efficiently and well, especially 
-> in threaded environments.
-> 
-> So if you do instruction rewriting, I can only say "that's your problem".
+> We could set a TIF_ flag in the notifier to indicate a breakpoint hit
+> and process it in task context before the task heads into userspace.
 
-Right, so you're going to love uprobes, which does exactly that. The
-current proposal is overwriting the target instruction with an INT3 and
-injecting an extra vma into the target process's address space
-containing the original instruction(s) and possible jumps back to the
-old code stream.
-
-I'm all in favor of not doing that extra vma and instead use stack or
-TLS space, but then people complain about having to make that executable
-(which is something I don't really mind, x86 had executable everything
-for very long, and also, its only so when debugging the thing anyway).
-
-
+OK, so we can go play stack games in the INT3 interrupt handler by
+moving to a non IST stack when it comes from userspace, or move kprobes
+over to INT1 or something.
 
