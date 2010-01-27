@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265Ab0A0Aui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236Ab0A0AwG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755265Ab0A0Aui (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033Ab0A0Aug
+	id S1755236Ab0A0AwG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:52:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235Ab0A0AwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:50:36 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59320 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754964Ab0A0Auf (ORCPT
+	Tue, 26 Jan 2010 19:52:04 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56045 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752146Ab0A0AwA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:50:35 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Chris Wilson <chris@chris-wilson.co.uk>
-Subject: Re: OOM-Killer kills too much with 2.6.32.2
-Cc: kosaki.motohiro@jp.fujitsu.com, Roman Jarosz <kedgedev@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, A Rojas <nqn1976list@gmail.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
-       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>
-In-Reply-To: <89khjo$egh4fr@orsmga002.jf.intel.com>
-References: <2f11576a1001260503o5f987512n3c39ae1c3caa43f3@mail.gmail.com> <89khjo$egh4fr@orsmga002.jf.intel.com>
-Message-Id: <20100127091903.6AD5.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 26 Jan 2010 19:52:00 -0500
+Date: Tue, 26 Jan 2010 16:50:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, stable@kernel.org,
+       Andi Kleen <andi@firstfloor.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] devmem and readahead fixes for 2.6.33
+Message-Id: <20100126165050.6ab7977b.akpm@linux-foundation.org>
+In-Reply-To: <20100122053157.GA8312@suse.de>
+References: <20100122045914.993668874@intel.com>
+	<20100122053157.GA8312@suse.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 27 Jan 2010 09:50:32 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 26 Jan 2010 22:03:06 +0900, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > Please consider to revert such commit at once. Lots people reported
-> > the same issue.
-> > I really hope to stop bug report storm.
+On Thu, 21 Jan 2010 21:31:57 -0800
+Greg KH <gregkh@suse.de> wrote:
+
+> On Fri, Jan 22, 2010 at 12:59:14PM +0800, Wu Fengguang wrote:
+> > Andrew,
+> > 
+> > Here are some good fixes for 2.6.33, they have been floating around
+> > with other patches for some time. I should really seperate them out
+> > earlier..
+> > 
+> > Greg,
+> > 
+> > The first two patches are on devmem. 2.6.32 also needs fixing, however
+> > the patches can only apply cleanly to 2.6.33. I can do backporting if
+> > necessary.
+> > 
+> > 	[PATCH 1/4] devmem: check vmalloc address on kmem read/write
+> > 	[PATCH 2/4] devmem: fix kmem write bug on memory holes
 > 
-> Your CC did not reference the problem that you were discussing, nor that
-> it is even easier to trigger an OOM without the shrinker. Memory
-> exhaustion due to the excess usage of surfaces from userspace is not a new
-> issuer. So what is the problem you have encountered and how does running
-> the OOM killer earlier fix the issue of triggering the OOM killer?
+> After these hit Linus's tree, please send the backport to
+> stable@kernel.org and I will be glad to queue them up.
+> 
 
-Why do you bother easy googling?
+I tagged the first two patches for -stable and shall send them in for 2.6.33.
 
-example.
-
-1) http://bugzilla.kernel.org/show_bug.cgi?id=14933
-	Subject    : OOM killer unexpectedly called with kernel 2.6.32
-	Submitter  : "A. Boulan" <arnaud.boulan@libertysurf.fr>
-	Date       : 2009-12-24 23:42
-	References : http://marc.info/?l=linux-kernel&m=126169821317492&w=4
-
-2) http://bugzilla.kernel.org/show_bug.cgi?id=15015
-	Subject: blank screen at random times in laptop when sitting idle
-	From:    Jithin Emmanuel
-	Date:    2010-01-09 16:48:23
-
-	see comment #2
-
-3) http://bugzilla.kernel.org/show_bug.cgi?id=15058
-	From:   Michael Reinelt
-	Date:   2010-01-14 16:39:51
-
-4) Subject: Re: OOM kernel behaviour
-   From: David John <davidjon@xenontk.org>
-   Mon, 07 Dec 2009 11:04:24 +0530
-
-5) This thread
-
-
+The second two patches aren't quite as obvious - perhaps a risk of
+weird regressions.  So I'm thinking I'll send them in for 2.6.34-rc1
+and I tagged them as "[2.6.33.x]" for -stable, so you can feed them
+into 2.6.33.x once 2.6.34-rcX has had a bit of testing time, OK?
 
