@@ -1,162 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230Ab0A0K6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243Ab0A0K6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230Ab0A0K6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 05:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104Ab0A0K6A
+	id S1754243Ab0A0K6r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 05:58:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254Ab0A0K6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 05:58:00 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:44107 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751400Ab0A0K57 (ORCPT
+	Wed, 27 Jan 2010 05:58:45 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:39437 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932142Ab0A0K6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 05:57:59 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH 1/2] PM: remove deprecated user ioctls
-Date: Wed, 27 Jan 2010 11:57:54 +0100
-Message-Id: <1264589875-17045-1-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.6.1
+	Wed, 27 Jan 2010 05:58:44 -0500
+Subject: Re: linux-next: add utrace tree
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tom Tromey <tromey@redhat.com>, Kyle Moffett <kyle@moffetthome.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, JimKeniston <jkenisto@us.ibm.com>
+In-Reply-To: <1264589716.4283.2006.camel@laptop>
+References: <20100121013822.28781960.sfr@canb.auug.org.au>
+	 <20100122005147.GD22003@redhat.com>
+	 <20100121170541.7425ff10.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
+	 <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com>
+	 <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
+	 <20100122221348.GA4263@redhat.com>
+	 <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
+	 <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
+	 <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
+	 <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>
+	 <m33a1tnbd9.fsf@fleche.redhat.com>
+	 <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
+	 <m3636oh2rt.fsf@fleche.redhat.com>
+	 <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain>
+	 <1264575134.4283.1983.camel@laptop>
+	 <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain>
+	 <1264589716.4283.2006.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Jan 2010 11:58:06 +0100
+Message-ID: <1264589886.4283.2008.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-They were deprecated and removed from exported headers more than 2
-years ago.
+On Wed, 2010-01-27 at 11:55 +0100, Peter Zijlstra wrote:
+> Right, so there's two aspects:
+> 
+>  1) concurrency when inserting the probe
+>  2) concurrency when hitting the probe
+> 
+> 1) used to be dealt with by using utrace to stop all threads in the
+> process and then writing the instruction. I suggested to CoW the page,
+> modify the instruction, set the pagetable and flush tlbs at full speed
+> -- the very thing you suggest here. 
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>
----
- kernel/power/user.c |   73 ---------------------------------------------------
- 1 files changed, 0 insertions(+), 73 deletions(-)
-
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index bf0014d..d7d6347 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -29,29 +29,6 @@
- 
- #include "power.h"
- 
--/*
-- * NOTE: The SNAPSHOT_SET_SWAP_FILE and SNAPSHOT_PMOPS ioctls are obsolete and
-- * will be removed in the future.  They are only preserved here for
-- * compatibility with existing userland utilities.
-- */
--#define SNAPSHOT_SET_SWAP_FILE	_IOW(SNAPSHOT_IOC_MAGIC, 10, unsigned int)
--#define SNAPSHOT_PMOPS		_IOW(SNAPSHOT_IOC_MAGIC, 12, unsigned int)
--
--#define PMOPS_PREPARE	1
--#define PMOPS_ENTER	2
--#define PMOPS_FINISH	3
--
--/*
-- * NOTE: The following ioctl definitions are wrong and have been replaced with
-- * correct ones.  They are only preserved here for compatibility with existing
-- * userland utilities and will be removed in the future.
-- */
--#define SNAPSHOT_ATOMIC_SNAPSHOT	_IOW(SNAPSHOT_IOC_MAGIC, 3, void *)
--#define SNAPSHOT_SET_IMAGE_SIZE		_IOW(SNAPSHOT_IOC_MAGIC, 6, unsigned long)
--#define SNAPSHOT_AVAIL_SWAP		_IOR(SNAPSHOT_IOC_MAGIC, 7, void *)
--#define SNAPSHOT_GET_SWAP_PAGE		_IOR(SNAPSHOT_IOC_MAGIC, 8, void *)
--
--
- #define SNAPSHOT_MINOR	231
- 
- static struct snapshot_data {
-@@ -247,7 +224,6 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 		break;
- 
- 	case SNAPSHOT_CREATE_IMAGE:
--	case SNAPSHOT_ATOMIC_SNAPSHOT:
- 		if (data->mode != O_RDONLY || !data->frozen  || data->ready) {
- 			error = -EPERM;
- 			break;
-@@ -276,7 +252,6 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 		break;
- 
- 	case SNAPSHOT_PREF_IMAGE_SIZE:
--	case SNAPSHOT_SET_IMAGE_SIZE:
- 		image_size = arg;
- 		break;
- 
-@@ -291,14 +266,12 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 		break;
- 
- 	case SNAPSHOT_AVAIL_SWAP_SIZE:
--	case SNAPSHOT_AVAIL_SWAP:
- 		size = count_swap_pages(data->swap, 1);
- 		size <<= PAGE_SHIFT;
- 		error = put_user(size, (loff_t __user *)arg);
- 		break;
- 
- 	case SNAPSHOT_ALLOC_SWAP_PAGE:
--	case SNAPSHOT_GET_SWAP_PAGE:
- 		if (data->swap < 0 || data->swap >= MAX_SWAPFILES) {
- 			error = -ENODEV;
- 			break;
-@@ -320,26 +293,6 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 		free_all_swap_pages(data->swap);
- 		break;
- 
--	case SNAPSHOT_SET_SWAP_FILE: /* This ioctl is deprecated */
--		if (!swsusp_swap_in_use()) {
--			/*
--			 * User space encodes device types as two-byte values,
--			 * so we need to recode them
--			 */
--			if (old_decode_dev(arg)) {
--				data->swap = swap_type_of(old_decode_dev(arg),
--							0, NULL);
--				if (data->swap < 0)
--					error = -ENODEV;
--			} else {
--				data->swap = -1;
--				error = -EINVAL;
--			}
--		} else {
--			error = -EPERM;
--		}
--		break;
--
- 	case SNAPSHOT_S2RAM:
- 		if (!data->frozen) {
- 			error = -EPERM;
-@@ -361,32 +314,6 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 			error = hibernation_platform_enter();
- 		break;
- 
--	case SNAPSHOT_PMOPS: /* This ioctl is deprecated */
--		error = -EINVAL;
--
--		switch (arg) {
--
--		case PMOPS_PREPARE:
--			data->platform_support = 1;
--			error = 0;
--			break;
--
--		case PMOPS_ENTER:
--			if (data->platform_support)
--				error = hibernation_platform_enter();
--			break;
--
--		case PMOPS_FINISH:
--			if (data->platform_support)
--				error = 0;
--			break;
--
--		default:
--			printk(KERN_ERR "SNAPSHOT_PMOPS: invalid argument %ld\n", arg);
--
--		}
--		break;
--
- 	case SNAPSHOT_SET_SWAP_AREA:
- 		if (swsusp_swap_in_use()) {
- 			error = -EPERM;
--- 
-1.6.6.1
+Also, since executable maps are typically MAP_PRIVATE, you have to CoW
+anyway in order to modify it and I would exclude MAP_SHARED from being
+probable because then the modification could seep through into whatever
+was backing that thing.
 
