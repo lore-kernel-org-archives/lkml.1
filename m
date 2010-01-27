@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200Ab0A0Ah0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220Ab0A0Ahz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200Ab0A0Ah0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117Ab0A0AhZ
+	id S1754220Ab0A0Ahz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305Ab0A0Ahy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:37:25 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:46206 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753899Ab0A0AhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:37:24 -0500
-Date: Wed, 27 Jan 2010 11:37:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>
-Subject: linux-next: vfs tree build failure
-Message-Id: <20100127113718.5177ceb1.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__27_Jan_2010_11_37_18_+1100_gXBG=lKdb/T964xd"
+	Tue, 26 Jan 2010 19:37:54 -0500
+Received: from static-122-103-239-153.ng-fam.svips.gol.ne.jp ([122.103.239.153]:62171
+	"EHLO priv.dyadic.cynic.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754159Ab0A0Ahx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 19:37:53 -0500
+Date: Wed, 27 Jan 2010 09:37:46 +0900
+From: Curt Sampson <cjs@starling-software.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Problems Receiving UDP Broadcasts on Some Versions of Linux
+Message-ID: <20100127003744.GA16322@analytic.cynic.net>
+Mail-Followup-To: cjs@starling-software.com, linux-kernel@vger.kernel.org,
+	Linux Netdev List <netdev@vger.kernel.org>
+References: <20100125072749.GG21419@analytic.cynic.net> <4B5D51E6.5090601@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B5D51E6.5090601@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__27_Jan_2010_11_37_18_+1100_gXBG=lKdb/T964xd
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 2010-01-25 09:10 +0100 (Mon), Eric Dumazet wrote:
 
-Hi Al,
+> > The short summary is that on two very similar servers on the same
+> > network, an application that listens for broadcast UDP packets on a
+> > given port works fine on the Ubuntu 8.04/Linux 2.6.24-26-server box but
+> > does not receive the packets on the Ubuntu 9.04/Linux 2.6.28-17-server
+> > box.
+>
+> Could you post a sample of tcpdump trafic you receive on the 9.04
+> host, and your network config ? "ifconfig -a"
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+I've added both to the end of the StackOverflow entry:
 
-ERROR: "ima_path_check" [fs/nfsd/nfsd.ko] undefined!
+  http://stackoverflow.com/questions/2130563/udp-broadcast-reception-problems-with-ubuntu-9-04-but-not-8-04
 
-Caused by commit b35d5b4f7f47215f322bc6d9a1fd8499c11455d2 ("Fix
-untangling ima mess, part 2 with counters").
+Again, please cc me on any responses; I'm on neither the linux-kernel
+nor netdev lists.
 
-I have used the vfs tree from next-20100125 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__27_Jan_2010_11_37_18_+1100_gXBG=lKdb/T964xd
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktfir4ACgkQjjKRsyhoI8wHjgCgpv+KFgJbkKapRzl5460remmX
-11AAn3om+4g69Pj9lPSJwUrDixLmcAo7
-=4uB/
------END PGP SIGNATURE-----
-
---Signature=_Wed__27_Jan_2010_11_37_18_+1100_gXBG=lKdb/T964xd--
+cjs
+-- 
+Curt Sampson         <cjs@cynic.net>         +81 90 7737 2974
+             http://www.starling-software.com
+The power of accurate observation is commonly called cynicism
+by those who have not got it.    --George Bernard Shaw
