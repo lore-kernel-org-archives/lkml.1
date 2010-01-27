@@ -1,137 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461Ab0A0MSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197Ab0A0MWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461Ab0A0MSY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 07:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098Ab0A0MSX
+	id S1753197Ab0A0MWK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 07:22:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668Ab0A0MWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 07:18:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38434 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752590Ab0A0MSW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 07:18:22 -0500
-Date: Wed, 27 Jan 2010 04:16:52 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Chris Wilson <chris@chris-wilson.co.uk>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Roman Jarosz <kedgedev@gmail.com>,
-       A Rojas <nqn1976list@gmail.com>,
-       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
-       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
-       linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
-       stable@kernel.org
-Subject: Re: [PATCH] drm/i915: Selectively enable self-reclaim
-In-Reply-To: <1264590844-22972-1-git-send-email-chris@chris-wilson.co.uk>
-Message-ID: <alpine.LFD.2.00.1001270327580.24253@localhost.localdomain>
-References: <alpine.LFD.2.00.1001270252290.24253@localhost.localdomain> <1264590844-22972-1-git-send-email-chris@chris-wilson.co.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 27 Jan 2010 07:22:09 -0500
+Received: from mga01.intel.com ([192.55.52.88]:22046 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751123Ab0A0MWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 07:22:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,353,1262592000"; 
+   d="scan'208";a="767716952"
+Date: Wed, 27 Jan 2010 20:21:57 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Chris Frost <frost@cs.ucla.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Steve Dickson <steved@redhat.com>, David Howells <dhowells@redhat.com>,
+       Xu Chenfeng <xcf@ustc.edu.cn>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Steve VanDeBogart <vandebo-lkml@nerdbox.net>
+Subject: Re: [PATCH] mm/readahead.c: update the LRU positions of in-core
+	pages, too
+Message-ID: <20100127122157.GA4545@localhost>
+References: <20100120215536.GN27212@frostnet.net> <20100121054734.GC24236@localhost> <28c262361001262309x332a895aoa906dda0bc040859@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=gb2312
+Content-Disposition: inline
+In-Reply-To: <28c262361001262309x332a895aoa906dda0bc040859@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Minchan,
 
+On Wed, Jan 27, 2010 at 09:09:40AM +0200, Minchan Kim wrote:
+> Hi, Wu.
+> 
+> I have missed this thread until now.
+> Before review, first of all, Thanks for adding to good feature, Chris and Wu.
+> I have some questions.
+> 
+> 2010/1/21 Wu Fengguang <fengguang.wu@intel.com>:
+> 
+> > Years ago I wrote a similar function, which can be called for both
+> > in-kernel-readahead (when it decides not to bring in new pages, but
+> > only retain existing pages) and fadvise-readahead (where it want to
+> > read new pages as well as retain existing pages).
+> 
+> Why doesn't it merged into mainline?
+> It's private patch or has some problem?
 
-On Wed, 27 Jan 2010, Chris Wilson wrote:
->  
-> +	gfp = i915_gem_object_get_page_gfp_mask(obj);
-> +	i915_gem_object_set_page_gfp_mask(obj, gfp | __GFP_NORETRY | __GFP_NOWARN);
->  	ret = i915_gem_object_get_pages(obj);
-> +	i915_gem_object_set_page_gfp_mask (obj, gfp);
+It's part of the early adaptive readahead patchset, which is too
+complex to be acceptable to mainline.
 
-This is just all still totally and utterly broken.
+> Actually I am worried about this patch.
+> That's because it makes shortcut promotion in reclaim exceptionally.
+> 
+> Of course If readahead is working well, this patch effect also would
+> be good. But let's think about it.
+> 
+> This patch effect happens when inactive file list is small, I think.
+> It means it's high memory pressure. so if we move ra pages into
+> head of inactive list, other application which require free page urgently
+> suffer from latency or are killed.
+> 
+> If VM don't have this patch, of course ra pages are discarded and
+> then I/O performance would be bad. but as I mentioned, it's time
+> high memory pressure. so I/O performance low makes system
+> natural throttling. It can help out of  system memory pressure.
+> 
+> In summary I think it's good about viewpoint of I/O but I am not sure
+> it's good about viewpoint of system.
+> 
+> I will review this patch after my concern is solved. :)
 
-There is no possible reason why something like drm should _ever_ play with 
-the mapping gfp-mask. The fact that you guys do means that something is 
-seriously wrong.
+That's legitimate concern. I'm now including this patch in a bigger
+patchset to do adaptive (wrt. thrashing safety) readahead, which will
+automatically back off readahead size when thrashing happened. I hope
+that would address your concern.
 
-Setting the mapping gfp mask like that is totally wrong. Yes, it looks 
-like you take the 'struct_mutex' lock, but I don't think the page fault 
-does that, does it? So the locking in no way protects other uses of that 
-mapping gfp mask.
-
-Guys, this is just not acceptable. Playing games like this with obvious 
-crap code is not the way to fix any problems what-so-ever. Even if the 
-code happens to work, just a quick look at it clearly says "oh, that's 
-ugly".
-
-Just pass in the GFP mask to i915_gem_object_get_pages() instead, and stop 
-making up these sh*tty idiotic interfaces. 
-
-The whole "mapping_set_gfp_mask()" function that you use is meant to 
-INITIALIZE a mapping when it is created. It's simply not safe at run-time. 
-It never was, and it never will be.
-
-So get rid of that whole i915_gem_object_set_page_gfp_mask() function - 
-any user is by definition pure and utter crap.
-
-Now, if you want to pass the gfp mask to the allocator directly (and 
-judging by the code, that's _exactly_ what you want to do), then you don't 
-want to use the read_mapping_page() helper function. That is very much 
-designed to take the mappign GFP.
-
-You can do your own version, something like this:
-
-  struct page *i915_gem_get_page(struct address_space *mapping, pgoff_t index)
-  {
-	for (;;) {
-		int err; 
-		struct page *page;
-
-		page = find_get_page(mapping, index);
-		if (page)
-			return page;
-
-		page = __page_cache_alloc(gfpmask | __GFP_ZERO);
-		if (!page)
-			return ERR_PTR(-ENOMEM);
-
-		/* Zero-page is already uptodate */
-		__SetPageUptodate(page);
-
-		err = add_to_page_cache_lru(page, mapping, index, GFP_KERNEL);
-		if (err) {
-			page_cache_release(page);
-			if (err == -EEXIST)
-				continue;
-			return ERR_PTR(err);
-		}
-
-		return page;
-	}
-  }
-
-and now you have a way to allocate cleared pages into that mapping with a 
-GFP that you control.
-
-We could even make it a generic helper function if we just did that whole 
-"mapping->a_ops->readpage()" dance or whatever and add the required async 
-waiting etc. But I think gem just basically wants a zero-initialized 
-mapping, no?
-
-THE ABOVE IS TOTALLY UNTESTED. I wrote it in the mail-reader. It hasn't 
-seen a compiler, and I didn't actually check that gem really just wants 
-pages that are initialized to zero (aka "simle_readpage"), so what the 
-heck do I know. My point is that something like the above should work in 
-the sense that it avoids the whole "play games with setting a global 
-gfpmask" thing, and keeps the gfpmask local to the execution.
-
-Oh, and if you actually use shmem/tmpfs and can swap your pages out, then 
-you do need to do the whole readpage() thing. It gets more complex then 
-(you can't just mark things up-to-date, you need to lock the page, check 
-PageUptodate() and friends etc etc).
-
-I didn't check where that 'mapping' thing gets initialized.
-
-Another alternative would be to keep the current i915_gem logic, but pass 
-the gfp down all the way to read_cache_page(), rather than take it from 
-the mapping. Then we'd make the 'read_mapping_page()' function look up the 
-gfp (so users of 'read_mapping_page()' would get the old behavior, but we 
-could call read_cache_page() with a gfpmask that is different from the 
-mapping->gfpmask).
-
-			Linus
+Thanks,
+Fengguang
