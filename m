@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207Ab0A0WOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240Ab0A0WOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756207Ab0A0WOO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 17:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756196Ab0A0WOK
+	id S1756240Ab0A0WOm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 17:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199Ab0A0WOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 17:14:10 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40923 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756162Ab0A0WOG (ORCPT
+	Wed, 27 Jan 2010 17:14:40 -0500
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:34474 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756197Ab0A0WOi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 17:14:06 -0500
-Message-Id: <20100127221121.967610372@chello.nl>
-References: <20100127220745.027096123@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Wed, 27 Jan 2010 23:07:46 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: mingo@elte.hu, eranian@google.com
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 1/4] perf_events: x86: Fix event constraint masks
-Content-Disposition: inline; filename=perf-fix-constraint-mask.patch
+	Wed, 27 Jan 2010 17:14:38 -0500
+Message-ID: <4B60BAC9.3080002@blueyonder.co.uk>
+Date: Wed, 27 Jan 2010 22:14:33 +0000
+From: Sid Boyce <sboyce@blueyonder.co.uk>
+Reply-To: sboyce@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: HDA Intel Audio hang on boot
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>	<201001261922.35213.rjw@sisk.pl>	<4B5F5777.8070701@blueyonder.co.uk>	<201001270156.46217.rjw@sisk.pl>	<4B5FA785.3010002@blueyonder.co.uk>	<s5hljfk82wn.wl%tiwai@suse.de>	<4B607510.6020204@blueyonder.co.uk> <s5hhbq7l520.wl%tiwai@suse.de>
+In-Reply-To: <s5hhbq7l520.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since constraints are specified on the event number, not number and
-unit mask shorten the constraint masks so that we'll actually match
-something.
+On 27/01/10 19:29, Takashi Iwai wrote:
+> At Wed, 27 Jan 2010 17:17:04 +0000,
+> Sid Boyce wrote:
+>>
+>> On 27/01/10 06:42, Takashi Iwai wrote:
+>>> At Wed, 27 Jan 2010 02:40:05 +0000,
+>>> Sid Boyce wrote:
+>>>>
+>>>> On 27/01/10 00:56, Rafael J. Wysocki wrote:
+>>>>> On Tuesday 26 January 2010, Sid Boyce wrote:
+>>>>>> I forgot to mention 2.6.33-rc5 now boots successfully.
+>>>>>
+>>>>> Does that mean the problem is fixed in 2.6.33-rc5 or you still need the
+>>>>> enable_msi=0 workaround?
+>>>>>
+>>>>> Rafael
+>>>>>
+>>>> It boots only with the enable_msi=0 workaround.
+>>>
+>>> OK, then could you run alsa-info.sh (with --no-upload option), and
+>>> attach the generated file?  I'll add your device to the blacklist for
+>>> disabling MSI in hda_intel.c.
+>>>
+>>>
+>>> thanks,
+>>>
+>>> Takashi
+>>>
+>>>
+>>
+>> Thanks.
+> 
+> OK, I added the corresponding quirk entry to sound git tree.
+> The patch will be included in the next pull request so that it'll
+> be fixed in 2.6.33-rc6.
+> 
+> 
+> thanks,
+> 
+> Takashi
+> 
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Stephane Eranian <eranian@google.com>
----
- arch/x86/include/asm/perf_event.h |    2 +-
- arch/x86/kernel/cpu/perf_event.c  |   13 +++++++++----
- 2 files changed, 10 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
-@@ -100,12 +100,17 @@ struct cpu_hw_events {
- 	.weight = HWEIGHT64((u64)(n)),	\
- }
- 
--#define INTEL_EVENT_CONSTRAINT(c, n)		EVENT_CONSTRAINT(c, n, INTEL_ARCH_EVENT_MASK)
--#define FIXED_EVENT_CONSTRAINT(c, n)		EVENT_CONSTRAINT(c, n, INTEL_ARCH_FIXED_MASK)
-+#define INTEL_EVENT_CONSTRAINT(c, n)	\
-+	EVENT_CONSTRAINT(c, n, INTEL_ARCH_EVTSEL_MASK)
- 
--#define EVENT_CONSTRAINT_END			EVENT_CONSTRAINT(0, 0, 0)
-+#define FIXED_EVENT_CONSTRAINT(c, n)	\
-+	EVENT_CONSTRAINT(c, n, INTEL_ARCH_FIXED_MASK)
- 
--#define for_each_event_constraint(e, c)		for ((e) = (c); (e)->cmask; (e)++)
-+#define EVENT_CONSTRAINT_END		\
-+	EVENT_CONSTRAINT(0, 0, 0)
-+
-+#define for_each_event_constraint(e, c)	\
-+	for ((e) = (c); (e)->cmask; (e)++)
- 
- /*
-  * struct x86_pmu - generic x86 pmu
-Index: linux-2.6/arch/x86/include/asm/perf_event.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/perf_event.h
-+++ linux-2.6/arch/x86/include/asm/perf_event.h
-@@ -50,7 +50,7 @@
- 	 INTEL_ARCH_INV_MASK| \
- 	 INTEL_ARCH_EDGE_MASK|\
- 	 INTEL_ARCH_UNIT_MASK|\
--	 INTEL_ARCH_EVENT_MASK)
-+	 INTEL_ARCH_EVTSEL_MASK)
- 
- #define ARCH_PERFMON_UNHALTED_CORE_CYCLES_SEL		      0x3c
- #define ARCH_PERFMON_UNHALTED_CORE_CYCLES_UMASK		(0x00 << 8)
+Thanks, I shall give a try then.
+Regards
+Sid.
 
 -- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
