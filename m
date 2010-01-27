@@ -1,93 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594Ab0A0ML6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624Ab0A0MPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594Ab0A0ML6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 07:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426Ab0A0MLz
+	id S1754624Ab0A0MPi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 07:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521Ab0A0MPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 07:11:55 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:53538 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753406Ab0A0MLz (ORCPT
+	Wed, 27 Jan 2010 07:15:37 -0500
+Received: from mail-pz0-f189.google.com ([209.85.222.189]:38991 "EHLO
+	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754276Ab0A0MPg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 07:11:55 -0500
-Date: Wed, 27 Jan 2010 13:11:50 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, arjan@infradead.org
-Subject: Re: [PATCH RFC tip/core/rcu] accelerate grace period if last
-	non-dynticked CPU
-Message-ID: <20100127121150.GD12522@basil.fritz.box>
-References: <20100125034816.GA14043@linux.vnet.ibm.com> <873a1sft9q.fsf@basil.nowhere.org> <20100127052050.GC6807@linux.vnet.ibm.com> <20100127094336.GA12522@basil.fritz.box> <20100127100136.GM6807@linux.vnet.ibm.com> <20100127101342.GC12522@basil.fritz.box> <20100127114459.GP6807@linux.vnet.ibm.com>
+	Wed, 27 Jan 2010 07:15:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=c7lkG3ra5PF3flomw0nuU2X+n6TYhKdynhqt7neLko2PSliCUudcSEnIP64nEydkyW
+         ky8ZP6onR8zEE56NuwJ15HpIip7j+UC+frHi7OeGmkQO2ktEH+NnH6NDUc2DgV6erscn
+         AVX87IS3qR2sJagy7ux2VOn4pPftSlNCO7gos=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100127114459.GP6807@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <aacba7e1001262136o3b1cfb97yed421bba02580bef@mail.gmail.com>
+References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
+	 <20100126160243.018b87e3@lxorguk.ukuu.org.uk>
+	 <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
+	 <4B5F62C2.4000800@pobox.com>
+	 <aacba7e1001261624m4358e4ebwcf8e2305b0c5fc16@mail.gmail.com>
+	 <4B5FA38A.5040700@teksavvy.com>
+	 <aacba7e1001262136o3b1cfb97yed421bba02580bef@mail.gmail.com>
+Date: Wed, 27 Jan 2010 17:45:35 +0530
+Message-ID: <aacba7e1001270415o7795db4bva32a5a23068e5d08@mail.gmail.com>
+Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
+From: Vishal Rao <vishalrao@gmail.com>
+To: Mark Lord <kernel@teksavvy.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, stable@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From what I can see, most people would want RCU_FAST_NO_HZ=n.  Only
+2010/1/27 Vishal Rao <vishalrao@gmail.com>:
+> And here is the output of hdparm --Istdout /dev/sd? :
+> http://pastebin.ubuntu.com/363660/
 
-Most people do not recompile their kernel. And even those
-that do most likely will not have enough information to make
-an informed choice at build time.
+Apologies, pasting the output inline:
 
-> people with extreme power-consumption concerns would likely care enough
-> to select this.
-
-What would a distributor shipping binary kernels use?
-
-> > But I think in this case scalability is not the key thing to check
-> > for, but expected idle latency. Even on a large system if near all
-> > CPUs are idle spending some time to keep them idle even longer is a good
-> > thing. But only if the CPUs actually benefit from long idle.
-> 
-> The larger the number of CPUs, the lower the probability of all of them
-> going idle, so the less difference this patch makes.  Perhaps some
-
-My shiny new 8 CPU threads desktop is not less likely to go idle when I do 
-nothing on it than an older dual core 2 CPU thread desktop.
-
-Especially not given all the recent optimizations (no idle tick)
-in this area etc. 
-
-And core/thread counts are growing. In terms of CPU numbers today's
-large machine is tomorrow's small machine.
-
-> I do need to query from interrupt context, but could potentially have a
-> notifier set up state for me.  Still, the real question is "how important
-> is a small reduction in power consumption?"
-
-I think any (measurable) power saving is important. Also on modern Intel
-CPUs power saving often directly translates into performance:
-if more cores are idle the others can clock faster.
-
-> I took a quick look at te pm_qos_latency, and, as you note, it doesn't
-> really seem to be designed to handle this situation.
-
-It could be extended for it. It's just software after all,
-we can change it.
-
-> 
-> And we really should not be gold-plating this thing.  I have one requester
-> (off list) who needs it badly, and who is willing to deal with a kernel
-> configuration parameter.  I have no other requesters, and therefore
-> cannot reasonably anticipate their needs.  As a result, we cannot justify
-> building any kind of infrastructure beyond what is reasonable for the
-> single requester.
-
-If this has a measurable power advantage I think it's better to
-do the extra steps to make it usable everywhere, with automatic heuristics 
-and no Kconfig hacks. 
-
-If it's not then it's probably not worth merging.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+/dev/sda:
+0c5a 3fff c837 0010 0000 0000 003f 0000
+0000 0000 5335 3935 3031 352d 4146 4258
+2d42 3131 3931 3936 0000 ffff 3000 3139
+3136 2020 2020 4352 5543 4941 4c5f 4354
+3132 384d 3232 3520 2020 2020 2020 2020
+2020 2020 2020 2020 2020 2020 2020 8001
+0000 2f00 4000 0200 0200 0007 3fff 0010
+003f fc10 00fb 0101 c2b0 0ee7 0000 0007
+0003 0078 0078 0078 0078 4000 0000 0000
+0000 0000 0000 001f 0506 0000 004c 0040
+01e0 0000 346b 7d01 4022 3469 3c01 4022
+407f 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 c2b0 0ee7 0000 0000
+0000 0000 4000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0009 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0001 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0001 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 27a5
