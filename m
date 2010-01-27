@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611Ab0A0FVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391Ab0A0FgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753611Ab0A0FVj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 00:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991Ab0A0FVh
+	id S1753391Ab0A0FgQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 00:36:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889Ab0A0FgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 00:21:37 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:46493 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750870Ab0A0FVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 00:21:37 -0500
-Date: Tue, 26 Jan 2010 21:21:33 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH RFC tip/core/rcu] accelerate grace period if last
-	non-dynticked CPU
-Message-ID: <20100127052133.GD6807@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100125034816.GA14043@linux.vnet.ibm.com> <873a1sft9q.fsf@basil.nowhere.org> <20100126235516.GA15855@Krystal>
+	Wed, 27 Jan 2010 00:36:15 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:57443 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751821Ab0A0FgO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 00:36:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qJTJXWy79BgjCod2DEnPwWvHbGJUDWVJDTc7rkgeWC3LKd6a4yp3M/188N7SVKX0qz
+         fNP9AnNCBKdjubAQ0iz8uEhsaE3mcumSEuWr3ILv7aL82E+Y6tihdlWT32Nfgx7xX4ew
+         cQ3PnXqKT+y5yq/99fC/kERuSB+KqkOOUMQJM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100126235516.GA15855@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <4B5FA38A.5040700@teksavvy.com>
+References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
+	 <20100126160243.018b87e3@lxorguk.ukuu.org.uk>
+	 <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
+	 <4B5F62C2.4000800@pobox.com>
+	 <aacba7e1001261624m4358e4ebwcf8e2305b0c5fc16@mail.gmail.com>
+	 <4B5FA38A.5040700@teksavvy.com>
+Date: Wed, 27 Jan 2010 11:06:13 +0530
+Message-ID: <aacba7e1001262136o3b1cfb97yed421bba02580bef@mail.gmail.com>
+Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
+From: Vishal Rao <vishalrao@gmail.com>
+To: Mark Lord <kernel@teksavvy.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, stable@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 06:55:16PM -0500, Mathieu Desnoyers wrote:
-> * Andi Kleen (andi@firstfloor.org) wrote:
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
-> > 
-> > Kind of offtopic to the original patch, but I couldn't 
-> > resist...
-> > 
-> > > +config RCU_FAST_NO_HZ
-> > > +	bool "Accelerate last non-dyntick-idle CPU's grace periods"
-> > > +	depends on TREE_RCU && NO_HZ && SMP
-> > 
-> > Having such a thing as a config option doesn't really make 
-> > any sense to me. Who would want to recompile their kernel
-> > to enable/disable this? If anything it should be runtime, or better
-> > just unconditionally on.
-> > 
-> > In general RCU could probably reduce its number of "weird"
-> > Kconfig options.
-> > 
-> > While I think I have a better understanding of RCU than a lot
-> > of normal users I often have no clue what to set there when
-> > building a kernel.
-> 
-> Maybe we could keep them under a CONFIG_DEBUG_RCU umbrella. Compiling
-> out parts of the rcu options can be useful for debugging purposes, but
-> I agree with you that end users should not be bothered with that much
-> options when some of them are "obviously" wanted.
-> 
-> OTOH, I understand that Paul seems to want to introduce new RCU
-> features gradually, without hitting all kernel users with bugs in newer
-> features. That's a sane approach to keep things generally stable, but
-> maybe it is time to set some of the stabilized RCU options to default Y
-> and move their config to the debug menu.
+2010/1/27 Mark Lord <kernel@teksavvy.com>:
+> Can you identify the specific Indilinx build number that your drive firmware
+> is based upon?  If not, then at least post the identify data for us to
+> examine:
+>
+>  hdparm --Istdout /dev/sd?
 
-That is indeed a big part of the motivation.  ;-)
 
-							Thanx, Paul
+Thanks for taking the time on this.
 
-> Let's see what Paul has to say about this...
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> > 
-> > -Andi
-> > 
-> > -- 
-> > ak@linux.intel.com -- Speaking for myself only.
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I am unsure of the "specific IndiLinx firmware build number" though I've
+noticed the release numbers are common for different manufacturers.
+For example my disk came with the then-latest firmware "1819"
+(with TRIM) which had write-perf issues then they recently released
+"1916" which added TRIM and GC support (seems to work very well
+I should say).
+
+Linux logs "CRUCIAL_CT128M225" and "1916" in my dmesg, speaking
+of which, here is my latest full dmesg: http://pastebin.ubuntu.com/363659/
+
+And here is the output of hdparm --Istdout /dev/sd? :
+http://pastebin.ubuntu.com/363660/
+
+I am running the following on Kubuntu development version, uname -a is:
+"Linux thunderbird 2.6.32-11-generic #16~vishalrao2 SMP Tue Jan 26
+19:03:33 IST 2010 x86_64 GNU/Linux"
+
+The " ~vishalrao2 " portion indicating it being the proposed patch -
+in that good old "works for me" kind of way.
