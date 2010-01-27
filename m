@@ -1,62 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888Ab0A0R6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922Ab0A0R7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888Ab0A0R6u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 12:58:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852Ab0A0R6t
+	id S1755922Ab0A0R7L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 12:59:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852Ab0A0R7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 12:58:49 -0500
-Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:42371 "HELO
-	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755829Ab0A0R6s (ORCPT
+	Wed, 27 Jan 2010 12:59:08 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:50916 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755907Ab0A0R7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 12:58:48 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=cvlXmDnyifYXOnEBFaEUID/JyUoDrzqBIukHLfNP2FqSKizzbjRV/+V5X5zkv/iIKBAOBkl6bDj6f3tdApmhRfkFqLzPUNbds4zloSzfK6hGgwMsNse8W/UxNby42o2L;
-Date: Wed, 27 Jan 2010 09:58:32 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Chris Wilson" <chris@chris-wilson.co.uk>,
-       "Miles Lane" <miles.lane@gmail.com>
-Subject: Re: [Bug #15129] [drm:i915_gem_execbuffer] *ERROR*
- i915_gem_do_execbuffer returns -512
-Message-ID: <20100127095832.2d8c42b5@jbarnes-piketon>
-In-Reply-To: <hE3x9c-4KZM.A.WQF.-JMXLB@chimera>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
-	<hE3x9c-4KZM.A.WQF.-JMXLB@chimera>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 27 Jan 2010 12:59:06 -0500
+Date: Wed, 27 Jan 2010 12:58:59 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
+ lib/dma-debug.c:902 check_sync)
+In-reply-to: <20100127095614.14313677@nehalam>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Message-id: <4B607EE3.9010403@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100120094103.GA6225@ff.dom.local> <4B58B217.8030001@majjas.com>
+ <20100121204133.GB3085@del.dom.local> <4B59E7EB.3050605@majjas.com>
+ <20100122215304.GA3105@del.dom.local> <4B5A2362.6000306@majjas.com>
+ <20100122230605.GB3105@del.dom.local> <4B5A33D8.90501@majjas.com>
+ <20100122234656.GC3105@del.dom.local> <4B5A39BD.8020305@majjas.com>
+ <20100123232133.GA3487@del.dom.local> <4B605D1B.60402@majjas.com>
+ <20100127085049.5b5048e9@nehalam> <4B60707F.1000608@majjas.com>
+ <20100127095614.14313677@nehalam>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
+ Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jan 2010 23:04:39 +0100 (CET)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.32.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15129
-> Subject		: [drm:i915_gem_execbuffer] *ERROR* i915_gem_do_execbuffer returns -512
-> Submitter	: Miles Lane <miles.lane@gmail.com>
-> Date		: 2010-01-14 23:18 (11 days old)
-> References	: http://lkml.org/lkml/2010/1/14/570
-> Handled-By	: Chris Wilson <chris@chris-wilson.co.uk>
-> 
-
-I think this message has been rightly killed.  Getting -ERESTARTSYS from
-this function is perfectly normal, so we shouldn't bother printing a
-message about it.
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
+On 1/27/2010 12:56 PM, Stephen Hemminger wrote:
+> On Wed, 27 Jan 2010 11:57:35 -0500
+> Michael Breuer<mbreuer@majjas.com>  wrote:
+>
+>    
+>> On 1/27/2010 11:50 AM, Stephen Hemminger wrote:
+>>      
+>>> On Wed, 27 Jan 2010 10:34:51 -0500
+>>> Michael Breuer<mbreuer@majjas.com>   wrote:
+>>>
+>>>
+>>>        
+>>>> On 01/23/2010 06:21 PM, Jarek Poplawski wrote:
+>>>>
+>>>>          
+>>>>> On Fri, Jan 22, 2010 at 06:50:21PM -0500, Michael Breuer wrote:
+>>>>>
+>>>>>
+>>>>>            
+>>>>>> When the packets were dropped, there was a different sequence in the
+>>>>>> log - DISCOVER/OFFER repeated. The "normal" is that the sequence
+>>>>>> appeared correct and complete - DISCOVER/OFFER/REQUEST/ACK - or
+>>>>>> INFORM/ACK (vs. INFORM repeatedly sans ACK) as the case may be.
+>>>>>>
+>>>>>>
+>>>>>>              
+>>>>> Anyway, I'd be intersted if the switch matters here.
+>>>>>
+>>>>> Plus one more test: could you try to load sky2 with the parameter:
+>>>>> "copybreak=1" (the rest as in any recent test, which gave you dmar
+>>>>> errors; any switch).
+>>>>>
+>>>>> Thanks,
+>>>>> Jarek P.
+>>>>>
+>>>>>
+>>>>>            
+>>>> Ok - now up 80+ hours with copybreak=1. I'm going to redo w/o copybreak
+>>>> to confirm that I haven't inadvertently fixed something. However, given
+>>>> that it might be copybreak-related, I looked at sky2.c again and I'm
+>>>> wondering about the copybreak max size in sky2_rx_start:
+>>>>
+>>>>      size = roundup(sky2->netdev->mtu + ETH_HLEN + VLAN_HLEN, 8);
+>>>>
+>>>>            /* Stopping point for hardware truncation */
+>>>>            thresh = (size - 8) / sizeof(u32);
+>>>>
+>>>>            sky2->rx_nfrags = size>>   PAGE_SHIFT;
+>>>>            BUG_ON(sky2->rx_nfrags>   ARRAY_SIZE(re->frag_addr));
+>>>>
+>>>>            /* Compute residue after pages */
+>>>>            size -= sky2->rx_nfrags<<   PAGE_SHIFT;
+>>>>
+>>>>            /* Optimize to handle small packets and headers */
+>>>>            if (size<   copybreak)
+>>>>                    size = copybreak;
+>>>>            if (size<   ETH_HLEN)
+>>>>                    size = ETH_HLEN;
+>>>>
+>>>>
+>>>> Why would increasing size to copybreak be valid here?
+>>>>
+>>>> Guessing a bit as I'm not sure about rx_nfrags, but if I read this
+>>>> correctly, if size is ever less than copybreak it's because there isn't
+>>>> enough space left for anything larger. If so, wouldn't increasing size
+>>>> potentially corrupt something? I'd further guess that the resulting
+>>>> condition manifests sooner (or at least with a more visible effect) when
+>>>> using DMAR.
+>>>>
+>>>> In any event, why "copybreak" as the minimum buffer size? I'd suggest
+>>>> that if it isn't possible to allocate at least MTU + overhead that
+>>>> sky2_rx_start ought to be delayed until there is room.
+>>>>
+>>>>          
+>>> This code is where driver decides how much data will be received in skb
+>>> data area and the remaining data spills over into skb frags.
+>>> Copybreak is the threshold so that packets less than size are copied
+>>> to a new skb.  The code doing the copying there assumes the data is
+>>> totally contained in the skb (not in frags). The size increase there
+>>> is to make sure that assumption is always true.  I suppose you
+>>> could do something perverse like setting copybreak really huge
+>>> and confuse driver, but that is a user error.
+>>>
+>>>
+>>>        
+>> Ok - but I'm wondering under what circumstances size would be<
+>> copybreak in the first place after computing the residue. If size ends
+>> up being unreasonably small, is simply increasing the number to whatever
+>> copybreak is correct? Assuming my testing is correct, then the crash
+>> I've been experiencing when using dmar (only) seems related to the value
+>> of copybreak. I don't think the other use (skb reuse) is the issue (but
+>> hey, I could have missed something). The crash occurs when copybreak is
+>> the default of 128, didn't happen when I set copybreak to 1.
+>>      
+> Does this change it? If so the dma code is (not sky2) is buggy and not
+> rounding up properly.
+>
+> --- a/drivers/net/sky2.c	2010-01-27 09:46:10.940005248 -0800
+> +++ b/drivers/net/sky2.c	2010-01-27 09:53:47.141267850 -0800
+> @@ -2257,13 +2257,16 @@ static struct sk_buff *receive_copy(stru
+>
+>   	skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
+>   	if (likely(skb)) {
+> +		unsigned dma_align = dma_get_cache_alignment();
+> +		unsigned dma_size = ALIGN(length+1, dma_align);
+> +
+>   		pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
+> -					    length, PCI_DMA_FROMDEVICE);
+> +					    dma_size, PCI_DMA_FROMDEVICE);
+>   		skb_copy_from_linear_data(re->skb, skb->data, length);
+>   		skb->ip_summed = re->skb->ip_summed;
+>   		skb->csum = re->skb->csum;
+>   		pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
+> -					       length, PCI_DMA_FROMDEVICE);
+> +					       dma_size, PCI_DMA_FROMDEVICE);
+>   		re->skb->ip_summed = CHECKSUM_NONE;
+>   		skb_put(skb, length);
+>   	}
+>    
+Ok - will queue this - want to reconfirm that the system still crashes 
+w/o this (or copybreak). That should take a few days.
