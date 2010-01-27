@@ -1,114 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259Ab0A0LCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260Ab0A0LFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259Ab0A0LCq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 06:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779Ab0A0LCp
+	id S1754260Ab0A0LFi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 06:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187Ab0A0LFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 06:02:45 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:48712 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751042Ab0A0LCo (ORCPT
+	Wed, 27 Jan 2010 06:05:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52349 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753679Ab0A0LFf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 06:02:44 -0500
-Subject: Re: [PATCH] kmemleak: Do not enable KMEMCHECK_PARTIAL_OK if
-	DEBUG_KMEMLEAK
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christian Casteyde <casteyde.christian@free.fr>,
-       vegard.nossum@gmail.com
-In-Reply-To: <4B5FDD85.5080701@cs.helsinki.fi>
-References: <4B5FDD85.5080701@cs.helsinki.fi>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 27 Jan 2010 11:02:06 +0000
-Message-Id: <1264590127.15957.14.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Jan 2010 11:02:08.0020 (UTC) FILETIME=[2AEA4540:01CA9F40]
+	Wed, 27 Jan 2010 06:05:35 -0500
+Date: Wed, 27 Jan 2010 03:04:58 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Tom Tromey <tromey@redhat.com>, Kyle Moffett <kyle@moffetthome.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, JimKeniston <jkenisto@us.ibm.com>
+Subject: Re: linux-next: add utrace tree
+In-Reply-To: <1264589716.4283.2006.camel@laptop>
+Message-ID: <alpine.LFD.2.00.1001270302200.24253@localhost.localdomain>
+References: <20100121013822.28781960.sfr@canb.auug.org.au>  <20100122005147.GD22003@redhat.com>  <20100121170541.7425ff10.akpm@linux-foundation.org>  <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>  <20100122182827.GA13185@redhat.com>
+ <20100122200129.GG22003@redhat.com>  <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>  <20100122221348.GA4263@redhat.com>  <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>  <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> 
+ <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>  <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>  <m33a1tnbd9.fsf@fleche.redhat.com>  <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>  <m3636oh2rt.fsf@fleche.redhat.com> 
+ <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain>  <1264575134.4283.1983.camel@laptop>  <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain> <1264589716.4283.2006.camel@laptop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pekka,
 
-On Wed, 2010-01-27 at 06:30 +0000, Pekka Enberg wrote:
-> Catalin Marinas kirjoitti:
-> > diff --git a/lib/Kconfig.kmemcheck b/lib/Kconfig.kmemcheck
-> > index 846e039..80660e9 100644
-> > --- a/lib/Kconfig.kmemcheck
-> > +++ b/lib/Kconfig.kmemcheck
-> > @@ -75,7 +75,7 @@ config KMEMCHECK_SHADOW_COPY_SHIFT
-> >  config KMEMCHECK_PARTIAL_OK
-> >       bool "kmemcheck: allow partially uninitialized memory"
-> >       depends on KMEMCHECK
-> > -     default y
-> > +     default y if !DEBUG_KMEMLEAK
-> >       help
-> >         This option works around certain GCC optimizations that produce
-> >         32-bit reads from 16-bit variables where the upper 16 bits are
-> >
+
+On Wed, 27 Jan 2010, Peter Zijlstra wrote:
 > 
-> Disabling KMEMCHECK_PARTIAL_OK can cause other false positives so maybe
-> we should add a new function to kmemcheck for kmemleak that only reads
-> full intervals?
+> Right, so there's two aspects:
+> 
+>  1) concurrency when inserting the probe
 
-There are two uses of kmemcheck_is_obj_initialized() in kmemleak: (1)
-before reading a value to check for valid pointer (sizeof long) and (2)
-before computing a CRC sum.
+That's the one I worried about. Stopping all threads will fix it, 
+obviously at a disastrous performance cost, but what do I care? As noted, 
+there are ways to do it safely with TLB switching, so it's fixable.
 
-(1) is fine since it only does this for sizeof(long) before reading the
-same size. (2) has an issues since kmemleak checks the size of an
-allocated memory block while crc32 reads individual u32's.
+>  2) concurrency when hitting the probe
 
-Is there a way in kmemcheck to mark a false positive?
+Yeah, I didn't worry about this part, since the only solution is the 
+out-of-line one, and I don't much care how the memory gets allocated for 
+it. Inserting a whole new vma seems pretty drastic, but compared to 
+stopping all threads, it's a small thing.
 
-The alternative, assuming that CRC_LE_BITS is 8 (that's what it seems to
-be defined to), the crc32 computation uses u32 values and something like
-below should work, though slower (not yet tested):
-
-
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 5b069e4..dfd39ba 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -948,6 +948,25 @@ EXPORT_SYMBOL(kmemleak_no_scan);
- /*
-  * Update an object's checksum and return true if it was modified.
-  */
-+#ifdef CONFIG_KMEMCHECK_PARTIAL_OK
-+static bool update_checksum(struct kmemleak_object *object)
-+{
-+	u32 crc = 0;
-+	unsigned long ptr;
-+
-+	for (ptr = ALIGN(object->pointer, 4);
-+	     ptr < ((object->pointer + object->size) & ~3); ptr += 4) {
-+		if (!kmemcheck_is_obj_initialized(ptr, 4))
-+			continue;
-+		crc = crc32(crc, (void *)ptr, 4);
-+	}
-+
-+	if (object->checksum == crc)
-+		return false;
-+	object->checksum = crc;
-+	return true;
-+}
-+#else	/* !CONFIG_KMEMCHECK_PARTIAL_OK */
- static bool update_checksum(struct kmemleak_object *object)
- {
- 	u32 old_csum = object->checksum;
-@@ -958,6 +977,7 @@ static bool update_checksum(struct kmemleak_object *object)
- 	object->checksum = crc32(0, (void *)object->pointer, object->size);
- 	return object->checksum != old_csum;
- }
-+#endif	/* CONFIG_KMEMCHECK_PARTIAL_OK */
- 
- /*
-  * Memory scanning is a long process and it needs to be interruptable. This
-
-
--- 
-Catalin
-
+		Linus
