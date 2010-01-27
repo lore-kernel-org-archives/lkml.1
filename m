@@ -1,100 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376Ab0A0Aja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489Ab0A0Ajw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754376Ab0A0Aja (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303Ab0A0Aj3
+	id S1754489Ab0A0Ajw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361Ab0A0Aju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:39:29 -0500
-Received: from mail1.radix.net ([207.192.128.31]:44619 "EHLO mail1.radix.net"
+	Tue, 26 Jan 2010 19:39:50 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14263 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754300Ab0A0Aj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:39:29 -0500
-Subject: Re: which fields in /proc/meminfo are orthogonal?
-From: Andy Walls <awalls@radix.net>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-In-Reply-To: <4B5F54DE.7030302@nortel.com>
-References: <4B5F3C9C.3050908@nortel.com>  <4B5F54DE.7030302@nortel.com>
-Content-Type: text/plain
-Date: Tue, 26 Jan 2010 19:38:34 -0500
-Message-Id: <1264552714.3089.2.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1754301Ab0A0Ajs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 19:39:48 -0500
+To: Tom Tromey <tromey@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+References: <20100121013822.28781960.sfr@canb.auug.org.au>
+	<20100122005147.GD22003@redhat.com>
+	<20100121170541.7425ff10.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
+	<20100122182827.GA13185@redhat.com>
+	<20100122200129.GG22003@redhat.com>
+	<alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
+	<20100122221348.GA4263@redhat.com>
+	<alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
+	<alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
+	<f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
+	<alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>
+	<m33a1tnbd9.fsf@fleche.redhat.com>
+	<alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
+	<m3636oh2rt.fsf@fleche.redhat.com>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Tue, 26 Jan 2010 19:38:45 -0500
+In-Reply-To: <m3636oh2rt.fsf@fleche.redhat.com> (Tom Tromey's message of "Tue, 26 Jan 2010 16:20:22 -0700")
+Message-ID: <y0m1vhcfkkq.fsf@fche.csb>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-26 at 14:47 -0600, Chris Friesen wrote:
-> On 01/26/2010 01:03 PM, Chris Friesen wrote:
-> 
-> > I'm currently trying to figure out which of the entries in /proc/meminfo
-> > are actually orthogonal to each other.  Ideally I'd like to be able to
-> > add up the suitable entries and have it work out to the total memory on
-> > the system, so that I can then narrow down exactly where the memory is
-> > going.  Is this feasable?
-> 
-> I've tried adding up
-> MemFree+Buffers+Cached+AnonPages+Mapped+Slab+PageTables+VmallocUsed
 
-VmallocUsed referws to Vmalloc address space consumption.  However,
-Vmalloc address space is not used exclusively to map system RAM into
-virtual address space.  It is also used to map PCI MMIO windows to the
-register sets or memory chips on PCI cards into the vritual address
-space.
+tromey wrote:
 
-Regards,
-Andy
+> [...]
+> In non-stop mode (where you can stop one thread but leave the others
+> running), gdb wants to have the breakpoints always inserted.  So,
+> something must emulate the displaced instruction.
 
+This sounds like the sort of thing that kernel kprobes do, which the
+uprobes patch does for userspace.  The gdbstub prototype can use
+uprobes for such "displaced" breakpoints, and single-step-out-of-line
+to execute them on a few platforms like x86-*.  This is already
+prototyped / working.  (gdbstub currently restricts itself to
+single-threaded programs only, but that's another todo.)
 
-> (hugepages are disabled and there is no swap)
-> 
-> Shortly after boot this gets me within about 3MB of MemTotal.  However,
-> after 1070 minutes there is a 64MB difference between MemTotal and the
-> above sum.
-> 
-> Here's /proc/meminfo after 1070 minutes:
-> 
-> MemTotal:      4042848 kB
-> MemFree:        406112 kB
-> Buffers:         12072 kB
-> Cached:        3068368 kB
-> SwapCached:          0 kB
-> Active:         671200 kB
-> Inactive:      2711952 kB
-> SwapTotal:           0 kB
-> SwapFree:            0 kB
-> Dirty:              44 kB
-> Writeback:           0 kB
-> AnonPages:      235864 kB
-> Mapped:          30752 kB
-> Slab:           200156 kB
-> SReclaimable:   142828 kB
-> SUnreclaim:      57328 kB
-> PageTables:       4320 kB
-> NFS_Unstable:        0 kB
-> Bounce:              0 kB
-> WritebackTmp:        0 kB
-> CommitLimit:   2021424 kB
-> Committed_AS:  2593116 kB
-> VmallocTotal: 34359738367 kB
-> VmallocUsed:     21496 kB
-> VmallocChunk: 34359716779 kB
-> HugePages_Total:     0
-> HugePages_Free:      0
-> HugePages_Rsvd:      0
-> HugePages_Surp:      0
-> Hugepagesize:     2048 kB
-> DirectMap4k:      3008 kB
-> DirectMap2M:   4190208 kB
-> 
-> Any ideas how to track down the missing memory?
-> 
-> Chris
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+- FChE
