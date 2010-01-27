@@ -1,78 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590Ab0A0Ign@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138Ab0A0Ij7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752590Ab0A0Ign (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 03:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953Ab0A0Igm
+	id S1753138Ab0A0Ij7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 03:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919Ab0A0Ij6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 03:36:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48013 "EHLO mx1.redhat.com"
+	Wed, 27 Jan 2010 03:39:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38333 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751866Ab0A0Igl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 03:36:41 -0500
-Message-ID: <4B5FFADB.5090209@redhat.com>
-Date: Wed, 27 Jan 2010 10:35:39 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1752584Ab0A0Ij5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 03:39:57 -0500
+Date: Wed, 27 Jan 2010 08:39:34 GMT
+From: tip-bot for Brian Gerst <brgerst@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       brgerst@gmail.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       brgerst@gmail.com, tglx@linutronix.de
+In-Reply-To: <1264434453-2204-1-git-send-email-brgerst@gmail.com>
+References: <1264434453-2204-1-git-send-email-brgerst@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/asm] x86-64: Use normal ptregs stub for execve
+Message-ID: <tip-f19a25c872b20ae4357f72687cf3e7b0da220ee2@git.kernel.org>
+Git-Commit-ID: f19a25c872b20ae4357f72687cf3e7b0da220ee2
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>, ananth@in.ibm.com,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-References: <20100118124419.GC1628@linux.vnet.ibm.com> <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com> <4B5459CA.9060603@redhat.com> <4B545ACF.40203@cs.helsinki.fi> <1263852957.2266.38.camel@localhost.localdomain> <4B556855.6040800@redhat.com> <1263923265.4998.28.camel@localhost.localdomain> <4B56D027.3010808@redhat.com> <1263981472.4283.843.camel@laptop> <4B56F588.2060109@redhat.com> <20100127082440.GA16640@elte.hu>
-In-Reply-To: <20100127082440.GA16640@elte.hu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 27 Jan 2010 08:39:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/27/2010 10:24 AM, Ingo Molnar wrote:
->
->
->>> Not to mention that that process could wreck the trace data rendering it
->>> utterly unreliable.
->>>        
->> It could, but it also might not.  Are we going to deny high performance
->> tracing to users just because it doesn't work in all cases?
->>      
-> Tracing and monitoring is foremost about being able to trust the instrument,
-> then about performance and usability. That's one of the big things about
-> ftrace and perf.
->
-> By proposing 'user space tracing' you are missing two big aspects:
->
->   - That self-contained, kernel-driven tracing can be replicated in user-space.
->     It cannot. Sharing and global state is much harder to maintain reliably,
->     but the bigger problem is that user-space can stomp on its own tracing
->     state and can make it unreliable. Tracing is often used to figure out bugs,
->     and tracers will be trusted less if they can stomp on themselves.
->
->   - That somehow it's much faster and that this edge matters. It isnt and it
->     doesnt matter. The few places that need very very fast tracing wont use any
->     of these facilities - it will use something specialized.
->
-> So you are creating a solution for special cases that dont need it, and you
-> are also ignoring prime qualities of a good tracing framework.
->    
+Commit-ID:  f19a25c872b20ae4357f72687cf3e7b0da220ee2
+Gitweb:     http://git.kernel.org/tip/f19a25c872b20ae4357f72687cf3e7b0da220ee2
+Author:     Brian Gerst <brgerst@gmail.com>
+AuthorDate: Mon, 25 Jan 2010 10:47:33 -0500
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Tue, 26 Jan 2010 23:38:14 -0800
 
-I see it exactly the opposite.  Only a very small minority of cases will 
-have such severe memory corruption that tracing will fall apart because 
-of random writes to memory; especially on 64-bit where the address space 
-is sparse.  On the other hand, knowing that the cost is a few dozen 
-cycles rather than a thousand or so means that you can trace production 
-servers running full loads without worrying about whether tracing will 
-affect whatever it is you're trying to observe.
+x86-64: Use normal ptregs stub for execve
 
-I'm not against slow reliable tracing, but we shouldn't ignore the need 
-for speed.
+Execve historically passed regs by value, so it had a seperate stub.
+This is no longer true, so change it to use a normal PTREGSCALL stub.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Signed-off-by: Brian Gerst <brgerst@gmail.com>
+LKML-Reference: <1264434453-2204-1-git-send-email-brgerst@gmail.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/entry_64.S |   17 +----------------
+ 1 files changed, 1 insertions(+), 16 deletions(-)
 
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index 0697ff1..0c31502 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -696,6 +696,7 @@ END(\label)
+ 	PTREGSCALL stub_clone, sys_clone, %r8
+ 	PTREGSCALL stub_fork, sys_fork, %rdi
+ 	PTREGSCALL stub_vfork, sys_vfork, %rdi
++	PTREGSCALL stub_execve, sys_execve, %rcx
+ 	PTREGSCALL stub_sigaltstack, sys_sigaltstack, %rdx
+ 	PTREGSCALL stub_iopl, sys_iopl, %rsi
+ 
+@@ -712,22 +713,6 @@ ENTRY(ptregscall_common)
+ 	CFI_ENDPROC
+ END(ptregscall_common)
+ 
+-ENTRY(stub_execve)
+-	CFI_STARTPROC
+-	popq %r11
+-	CFI_ADJUST_CFA_OFFSET -8
+-	CFI_REGISTER rip, r11
+-	SAVE_REST
+-	FIXUP_TOP_OF_STACK %r11
+-	movq %rsp, %rcx
+-	call sys_execve
+-	RESTORE_TOP_OF_STACK %r11
+-	movq %rax,RAX(%rsp)
+-	RESTORE_REST
+-	jmp int_ret_from_sys_call
+-	CFI_ENDPROC
+-END(stub_execve)
+-
+ /*
+  * sigreturn is special because it needs to restore all registers on return.
+  * This cannot be done with SYSRET, so use the IRET return path instead.
