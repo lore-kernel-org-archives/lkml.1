@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100Ab0A0KEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112Ab0A0KFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100Ab0A0KEj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 05:04:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748Ab0A0KEj
+	id S1754112Ab0A0KFb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 05:05:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104Ab0A0KFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 05:04:39 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:41139 "EHLO e5.ny.us.ibm.com"
+	Wed, 27 Jan 2010 05:05:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58813 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751236Ab0A0KEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 05:04:38 -0500
-Date: Wed, 27 Jan 2010 02:04:34 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com
-Subject: Re: [PATCH RFC tip/core/rcu] accelerate grace period if last
-	non-dynticked CPU
-Message-ID: <20100127100434.GN6807@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100125034816.GA14043@linux.vnet.ibm.com> <873a1sft9q.fsf@basil.nowhere.org> <20100127052050.GC6807@linux.vnet.ibm.com> <20100127094336.GA12522@basil.fritz.box> <1264585850.4283.1992.camel@laptop>
+	id S1751236Ab0A0KFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 05:05:30 -0500
+Date: Wed, 27 Jan 2010 11:04:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: [git pull] IOMMU fixes for 2.6.33-rc5
+Message-ID: <20100127100457.GB8642@elte.hu>
+References: <1264180693-27197-1-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1264585850.4283.1992.camel@laptop>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1264180693-27197-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 10:50:50AM +0100, Peter Zijlstra wrote:
-> On Wed, 2010-01-27 at 10:43 +0100, Andi Kleen wrote:
-> > 
-> > Can't you simply check that at runtime then?
-> > 
-> > if (num_possible_cpus() > 20) 
-> >         ...
-> > 
-> > BTW the new small is large. This years high end desktop PC will come with 
-> > upto 12 CPU threads. It would likely be challenging to find a good
-> > number for 20 that holds up with the future. 
+
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
+
+> Hi Ingo,
 > 
-> If only scalability were that easy :/
+> The following changes since commit 92dcffb916d309aa01778bf8963a6932e4014d07:
+>   Linus Torvalds (1):
+>         Linux 2.6.33-rc5
 > 
-> These massive core/thread count things are causing more problems as
-> well, the cpus/node ratios are constantly growing, giving grief in the
-> page allocator as well as other places that used to scale per node.
+> are available in the git repository at:
 > 
-> As to the current problem, the call_rcu() interface doesn't make a hard
-> promise that the callback will be done on the same cpu, right? So why
-> not simply move the callback list over to a more active cpu?
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu/fixes
+> 
+> Joerg Roedel (5):
+>       x86/amd-iommu: Fix possible integer overflow
+>       x86/amd-iommu: Fix NULL pointer dereference in __detach_device()
+>       x86/amd-iommu: Fix IOMMU-API initialization for iommu=pt
+>       x86/amd-iommu: Fix deassignment of a device from the pt_domain
+>       Merge branches 'amd-iommu/fixes' and 'dma-debug/fixes' into iommu/fixes
+> 
+> Thiago Farina (1):
+>       lib/dma-debug.c: mark file-local struct symbol static.
+> 
+>  arch/x86/include/asm/amd_iommu_proto.h |    1 +
+>  arch/x86/kernel/amd_iommu.c            |   23 ++++++++++++++++-------
+>  arch/x86/kernel/amd_iommu_init.c       |    3 +++
+>  lib/dma-debug.c                        |    2 +-
+>  4 files changed, 21 insertions(+), 8 deletions(-)
+> 
+> The patches fix several issues with device kvm device assignement when the 
+> amd iommu driver is configured to run in passthrough mode. One patch fixes a 
+> possible integer overflow in the driver as well. The last patch in the 
+> series fixes a build warning in the dma-api debug code. Please pull.
 
-I could indeed do that.  However, there is nothing stopping the
-more-active CPU from going into dynticks-idle mode between the time
-that I decide to push the callback to it and the time I actually do
-the pushing.  :-(
+Pulled, thanks a lot Joerg!
 
-I considered pushing the callbacks to the orphanage, but that is a
-global lock that I would rather not acquire on each dyntick-idle
-transition.
-
-This conversation is having the effect of making me much more comfortable
-adding a kernel configuration parameter.  Might not have been the intent,
-but there you have it!  ;-)
-
-							Thanx, Paul
+	Ingo
