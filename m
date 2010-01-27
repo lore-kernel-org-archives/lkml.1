@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287Ab0A0JPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338Ab0A0JSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753287Ab0A0JPY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 04:15:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262Ab0A0JPX
+	id S1753338Ab0A0JSI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 04:18:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193Ab0A0JSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 04:15:23 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53777 "EHLO mx2.suse.de"
+	Wed, 27 Jan 2010 04:18:06 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:39811 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750744Ab0A0JPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 04:15:21 -0500
-Date: Wed, 27 Jan 2010 10:15:20 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Shahar Havivi <shaharh@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Remove unused variables
-In-Reply-To: <b0ae6fcc1001270049m6e2e7b1dre9971e57e282b48a@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.1001271013580.30977@pobox.suse.cz>
-References: <b0ae6fcc1001200359y8779182j76f92b50924b340b@mail.gmail.com>  <alpine.LNX.2.00.1001262342240.30977@pobox.suse.cz> <b0ae6fcc1001270049m6e2e7b1dre9971e57e282b48a@mail.gmail.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752268Ab0A0JSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 04:18:05 -0500
+Date: Wed, 27 Jan 2010 20:17:55 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Theodore Kilgore <kilgota@banach.math.auburn.edu>
+Subject: Re: linux-next: v4l-dvb tree build warning
+Message-Id: <20100127201755.5d64aa00.sfr@canb.auug.org.au>
+In-Reply-To: <4B5FF2CE.8070304@redhat.com>
+References: <20100127121223.9af2253f.sfr@canb.auug.org.au>
+	<4B5FF2CE.8070304@redhat.com>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__27_Jan_2010_20_17_55_+1100_xcaH.E6H5tjFrAbk"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010, Shahar Havivi wrote:
+--Signature=_Wed__27_Jan_2010_20_17_55_+1100_xcaH.E6H5tjFrAbk
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Remove unused fields in drivers/char/vt.c
-> variables orig_buf and orig_count are assigned but never used.
-> 
-> Signed-off-by: Shahar Havivi <shaharh@gmail.com>
-> ---
->  drivers/char/vt.c |    4 ----
->  1 files changed, 0 insertions(+), 4 deletions(-)
-> diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-> index 50faa1f..94f530a 100644
-> --- a/drivers/char/vt.c
-> +++ b/drivers/char/vt.c
-> @@ -2119,8 +2119,6 @@ static int do_con_write(struct tty_struct *tty,
-> const unsigned char *buf, int co
->     uint8_t inverse;
->     uint8_t width;
->     u16 himask, charmask;
-> -   const unsigned char *orig_buf = NULL;
-> -   int orig_count;
-> 
->     if (in_interrupt())
->         return count;
-> @@ -2142,8 +2140,6 @@ static int do_con_write(struct tty_struct *tty,
-> const unsigned char *buf, int co
->         release_console_sem();
->         return 0;
->     }
-> -   orig_buf = buf;
-> -   orig_count = count;
-> 
->     himask = vc->vc_hi_font_mask;
->     charmask = himask ? 0x1ff : 0xff;
+Hi Hans,
 
-Your patch is whitespace damaged and line wrapped.
+On Wed, 27 Jan 2010 09:01:18 +0100 Hans de Goede <hdegoede@redhat.com> wrot=
+e:
+>
+> Ack, my bad. Note that a fix for this is pending in Jean Francois' gscpa
+> tree, and AFAIK he has send a pull request.
 
-I have fixed it by hand and applied it, but please fix your mail client 
-for any patch submissions in the future.
+OK, thanks.
 
-Thanks,
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+--Signature=_Wed__27_Jan_2010_20_17_55_+1100_xcaH.E6H5tjFrAbk
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktgBMMACgkQjjKRsyhoI8yYRgCgjc8LEN5T280SJ1RX8mX0aq4i
+sVsAoLvV0A4QHgqGjpGQORt6uGHr3QIf
+=KlMk
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__27_Jan_2010_20_17_55_+1100_xcaH.E6H5tjFrAbk--
