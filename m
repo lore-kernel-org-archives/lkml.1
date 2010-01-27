@@ -1,197 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785Ab0A0N1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815Ab0A0Ne6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754785Ab0A0N1Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 08:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489Ab0A0N1V
+	id S1754815Ab0A0Ne6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 08:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497Ab0A0Ne5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 08:27:21 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:45662 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754481Ab0A0N1U (ORCPT
+	Wed, 27 Jan 2010 08:34:57 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:51604 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221Ab0A0Ne4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 08:27:20 -0500
+	Wed, 27 Jan 2010 08:34:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=CXl1w9rFdh4ENGKoaam3XumYyw49RjbuoaagJfZyaCEgoyB2g0fgAgy3Y3ZPH39+ST
-         Nli7roKx23KzDmZ9LHNQOliSdEGyMvbnR3Dg3XNDWXQzfycMvSMBBOLBFrXq79yxP6Nt
-         svfNWCQf2VeEJmCV8ZUb+xZ5rQrKKgR39lKN8=
-Subject: Re: acpi_idle: Very idle Core i7 machine never enters C3
-From: peng huang <huangpeng.linux@gmail.com>
-To: Jeff Garrett <jeff@jgarrett.org>
-Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, huangpeng.linux@gmail.com
-In-Reply-To: <20100126145951.GA4987@jgarrett.org>
-References: <20100126084740.GA5265@jgarrett.org>
-	 <1264509660.29891.7.camel@huang-laptop>
-	 <20100126145951.GA4987@jgarrett.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 22:27:17 +0900
-Message-ID: <1264598837.32649.9.camel@huang-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=BINXHtVsACZel+SXhhZwJZ3teyEzCfGcCbmoBg1pSAEcztn9vv/e7jpKzw9WkLUbPV
+         5gPI4p4dA/mNUnQ+gGvXZE4ix45xSsHbJLXVRuGvfoZhgYtH+Z+7JV31WrVNsGw+D0xz
+         vkfGa6Gw733ahQh77z35khg2MaNs2bxtEgO9k=
+MIME-Version: 1.0
+In-Reply-To: <tip-43f85eab1411905afe5db510fbf9841b516e7e6a@git.kernel.org>
+References: <20100118044142.GS12666@kryten>
+	 <tip-43f85eab1411905afe5db510fbf9841b516e7e6a@git.kernel.org>
+Date: Wed, 27 Jan 2010 19:04:55 +0530
+X-Google-Sender-Auth: 7428219a1903c633
+Message-ID: <661de9471001270534ve6f7bf0nb58ef58f9a6ff10e@mail.gmail.com>
+Subject: Re: [tip:sched/urgent] sched: cpuacct: Use bigger percpu counter 
+	batch values for stats counters
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: mingo@redhat.com, hpa@zytor.com, anton@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu, akpm@linux-foundation.org
+Cc: linux-tip-commits@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010-01-26 (ç«) ã® 08:59 -0600 ã« Jeff Garrett ã•ã‚“ã¯æ›¸ãã¾ã—ãŸ:
-> On Tue, Jan 26, 2010 at 09:41:00PM +0900, peng huang wrote:
-> > Hi,
-> > can you show me the file /proc/acpi/processor/CPU*/power.
-> > and are you sure your cpu usage is 0 or nearly zero.
-> 
-> Yea, I'm pretty sure my cpu usage is nearly zero.  powertop shows fewer
-> than 20 wakeups per second, shows 99% C2 residency, top shows 100% idle,
-> perf top shows acpi_idle_enter_simple as the most common function
-> (~50%).  Very little is running on the box, and I've compiled out the
-> heavier parts of the kernel (such as USB)...
-> 
-> (It still has ordinary userspace running, e.g. udev & hal, and still has
-> sshd and network traffic, as examples.)
-> 
-> This is all consistent with a very idle machine, I think.
+On Wed, Jan 27, 2010 at 6:45 PM, tip-bot for Anton Blanchard
+<anton@samba.org> wrote:
+> Commit-ID:  43f85eb1411905afe5db510fbf9841b516e7e6a
+> Gitweb:     http://git.kernel.org/tip/43f85eab1411905afe5db510fbf9841b516e7e6a
+> Author:     Anton Blanchard <anton@samba.org>
+> AuthorDate: Mon, 18 Jan 2010 15:41:42 +1100
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 27 Jan 2010 08:34:38 +0100
+>
+> sched: cpuacct: Use bigger percpu counter batch values for stats counters
+>
+> When CONFIG_VIRT_CPU_ACCOUNTING and CONFIG_CGROUP_CPUACCT are enabled we
+> can call cpuacct_update_stats with values much larger than
+> percpu_counter_batch. This means the call to percpu_counter_add will
+> always add to the global count which is protected by a spinlock and we
+> end up with a global spinlock in the scheduler.
+>
+> Based on an idea by KOSAKI Motohiro, this patch scales the batch value by
+> cputime_one_jiffy such that we have the same batch limit as we would if
+> CONFIG_VIRT_CPU_ACCOUNTING was disabled. His patch did this once at boot
+> but that initialisation happened too early on PowerPC (before time_init)
+> and it was never updated at runtime as a result of a hotplug cpu
+> add/remove.
+>
+> This patch instead scales percpu_counter_batch by cputime_one_jiffy at
+> runtime, which keeps the batch correct even after cpu hotplug operations.
+> We cap it at INT_MAX in case of overflow.
+>
+> For architectures that do not support CONFIG_VIRT_CPU_ACCOUNTING,
+> cputime_one_jiffy is the constant 1 and gcc is smart enough to optimise
+> min(s32 percpu_counter_batch, INT_MAX) to just percpu_counter_batch at
+> least on x86 and PowerPC. So there is no need to add an #ifdef.
+>
+> On a 64 thread PowerPC box with CONFIG_VIRT_CPU_ACCOUNTING and
+> CONFIG_CGROUP_CPUACCT enabled, a context switch microbenchmark is 234x
+> faster and almost matches a CONFIG_CGROUP_CPUACCT disabled kernel:
+>
+> CONFIG_CGROUP_CPUACCT disabled:         16906698 ctx switches/sec
+> CONFIG_CGROUP_CPUACCT enabled:             61720 ctx switches/sec
+> CONFIG_CGROUP_CPUACCT + patch:          16663217 ctx switches/sec
+>
+> Tested with:
+>
+>  wget http://ozlabs.org/~anton/junkcode/context_switch.c
+>  make context_switch
+>  for i in `seq 0 63`; do taskset -c $i ./context_switch & done
+>  vmstat 1
+>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> LKML-Reference: <20100118044142.GS12666@kryten>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  kernel/sched.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+>
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 3a8fb30..8f94138 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -10906,6 +10906,7 @@ static void cpuacct_update_stats(struct task_struct *tsk,
+>                enum cpuacct_stat_index idx, cputime_t val)
+>  {
+>        struct cpuacct *ca;
+> +       int batch;
+>
+>        if (unlikely(!cpuacct_subsys.active))
+>                return;
+> @@ -10913,8 +10914,9 @@ static void cpuacct_update_stats(struct task_struct *tsk,
+>        rcu_read_lock();
+>        ca = task_ca(tsk);
+>
+> +       batch = min_t(long, percpu_counter_batch * cputime_one_jiffy, INT_MAX);
+>        do {
+> -               percpu_counter_add(&ca->cpustat[idx], val);
+> +               __percpu_counter_add(&ca->cpustat[idx], val, batch);
+>                ca = ca->parent;
+>        } while (ca);
+>        rcu_read_unlock();
 
-yes,you processor is always in c2,it does means your system is nearly
-ilde.
+IIRC, Andrew picked up this patch as well and applied some checkpatch
+fixes too..
 
-> > this is the info of my laptop(using core 2 processors):
-> > powertop's output:
-> > Cn                Avg residency       P-states (frequencies)
-> > C0 (cpu running)        (10.6%)         2.00 Ghz     1.9%
-> > C0                0.0ms ( 0.0%)         1.67 Ghz     0.1%
-> > C1 mwait          0.0ms ( 0.0%)         1333 Mhz     0.0%
-> > C2 mwait          0.0ms ( 0.0%)         1000 Mhz    98.0%
-> > C3 mwait          1.1ms (89.4%)
-> 
-> Yea, my laptop also (also core 2) has 700-1000 wakeups/sec and spends
-> greater than 80% of its time in C3...  That's partly why I'm curious
-> about what my core i7 desktop is doing.
-
-So I think it is a core i7 thing.I have heard that some intel cpu have a
-problem when in c2-state,maybe that is why you cpu cant enter c3-state.
-I think there is some configuration about deep c-state in the bios,may
-be you can try it(it cannot solve this problem...).
-And in some bios there is a enhanced idle state configuration ,but i
-dont known if it is the reason why the cpu cannot enter c3-state.You can
-try it anyway.
-
-With disable the deep c-state you BIOS will not give c3-info to the
-OS,then you would see there is no c3-state in the OS.
-
-> > and power things:
-> > huang@huang-laptop:~$ cat /proc/acpi/processor/CPU0/power 
-> > active state:            C0
-> > max_cstate:              C8
-> > maximum allowed latency: 2000000000 usec
-> > states:
-> >     C1:                  type[C1] promotion[--] demotion[--]
-> > latency[001] usage[00002364] duration[00000000000000000000]
-> >     C2:                  type[C2] promotion[--] demotion[--]
-> > latency[001] usage[00070662] duration[00000000000006013816]
-> >     C3:                  type[C3] promotion[--] demotion[--]
-> > latency[017] usage[04774185] duration[00000000010838418152]
-> > 
-> > you can see C3 with powertop,so i think your BIOS has enabled Deep 
-> > C-state.
-> 
-> Here's my power files...
-> 
-> /proc/acpi/processor/CPU0/power:
-> active state:            C0
-> max_cstate:              C8
-> maximum allowed latency: 2000000000 usec
-> states:
->     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00001470] duration[00000000000000000000]
->     C2:                  type[C2] promotion[--] demotion[--] latency[017] usage[00234416] duration[00000000017165798539]
->     C3:                  type[C3] promotion[--] demotion[--] latency[017] usage[00000000] duration[00000000000000000000]
-> /proc/acpi/processor/CPU1/power:
-> active state:            C0
-> max_cstate:              C8
-> maximum allowed latency: 2000000000 usec
-> states:
->     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000481] duration[00000000000000000000]
->     C2:                  type[C2] promotion[--] demotion[--] latency[017] usage[00090169] duration[00000000017188463157]
->     C3:                  type[C3] promotion[--] demotion[--] latency[017] usage[00000000] duration[00000000000000000000]
-> /proc/acpi/processor/CPU2/power:
-> active state:            C0
-> max_cstate:              C8
-> maximum allowed latency: 2000000000 usec
-> states:
->     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000418] duration[00000000000000000000]
->     C2:                  type[C2] promotion[--] demotion[--] latency[017] usage[00068874] duration[00000000017193805291]
->     C3:                  type[C3] promotion[--] demotion[--] latency[017] usage[00000000] duration[00000000000000000000]
-> /proc/acpi/processor/CPU3/power:
-> active state:            C0
-> max_cstate:              C8
-> maximum allowed latency: 2000000000 usec
-> states:
->     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00001356] duration[00000000000000000000]
->     C2:                  type[C2] promotion[--] demotion[--] latency[017] usage[00362752] duration[00000000017156707397]
->     C3:                  type[C3] promotion[--] demotion[--] latency[017] usage[00000000] duration[00000000000000000000]
-> 
-> > 
-> > -huang
-> > 
-> > 2010-01-26 (ç«) ã® 02:47 -0600 ã« Jeff Garrett ã•ã‚“ã¯æ›¸ãã¾ã—ãŸ:
-> > > Hi,
-> > > 
-> > > I was trying to chase down a theory that my desktop machine (a core i7)
-> > > is running warm (the fan sounds like it's at full speed all the time,
-> > > and I think it's not always acted this way -- hence the theory).
-> > > 
-> > > powertop is never showing it spending any time in C3...
-> > > 
-> > > I compiled a kernel without USB/sound/radeon, and ran without X.  I was
-> > > able to get the wakeups/sec down below 20, but no time is spent in C3.
-> > > 
-> > > sysfs looks to agree with powertop here (time = 0 on C3):
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/desc: CPUIDLE CORE POLL IDLE
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/latency: 0
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/name: C0
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/power: 4294967295
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/time: 457
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/usage: 59
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/desc: ACPI FFH INTEL MWAIT 0x0
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/latency: 1
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/name: C1
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/power: 1000
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/time: 308177
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/usage: 3975
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/desc: ACPI FFH INTEL MWAIT 0x10
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/latency: 17
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/name: C2
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/power: 500
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/time: 873440787
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/usage: 239038
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/desc: ACPI FFH INTEL MWAIT 0x20
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/latency: 17
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/name: C3
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/power: 350
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/time: 0
-> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/usage: 0
-> > > 
-> > > This may be a complete red herring, but I added some printk logic to
-> > > acpi_idle_bm_check(), and it is getting called often, but bm_status is
-> > > always 1.  [I infer from this that the idle logic is trying to go into
-> > > C3, but this check is stopping it...  Unless I misread something.]
-> > > 
-> > > Is this expected behavior or is this a legitimate problem?
-> > > 
-> > > How might I investigate this further?
-> > > 
-> > > Attaching dmesg, /proc/cpuinfo, powertop -d output.
-> > > 
-> > > Thanks,
-> > > Jeff Garrett
-> > 
-> > 
-> > -- 
-> > peng huang <huangpeng.linux@gmail.com>
-> > 
-
-
--- 
-peng huang <huangpeng.linux@gmail.com>
-
+Balbir
