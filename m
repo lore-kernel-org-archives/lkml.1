@@ -1,30 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331Ab0A0RjC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429Ab0A0Rpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331Ab0A0RjC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 12:39:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127Ab0A0RjB
+	id S1755429Ab0A0Rpu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 12:45:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045Ab0A0Rpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 12:39:01 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:41922 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754697Ab0A0RjA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 12:39:00 -0500
-Date: Wed, 27 Jan 2010 12:38:50 -0500
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
-Cc: Leigh Porter <leigh@leighporter.org>, linux-geode@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: MFGPT in 2.6.33-rc5
-Message-ID: <20100127123850.129020d3@mycelium.queued.net>
-In-Reply-To: <4B605410.3030409@LiPPERTEmbedded.de>
-References: <4B5DC7EF.5060609@leighporter.org>
-	<4B5EE78F.8030705@LiPPERTEmbedded.de>
-	<4B5F01E3.2090006@leighporter.org>
-	<4B603383.1090807@LiPPERTEmbedded.de>
-	<4B604324.6030806@leighporter.org>
-	<4B605410.3030409@LiPPERTEmbedded.de>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; i486-pc-linux-gnu)
+	Wed, 27 Jan 2010 12:45:49 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:44147 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753344Ab0A0Rps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 12:45:48 -0500
+Date: Wed, 27 Jan 2010 09:45:31 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
+ lib/dma-debug.c:902 check_sync)
+Message-ID: <20100127094531.53c85aa7@nehalam>
+In-Reply-To: <4B60707F.1000608@majjas.com>
+References: <20100120094103.GA6225@ff.dom.local>
+	<4B58B217.8030001@majjas.com>
+	<20100121204133.GB3085@del.dom.local>
+	<4B59E7EB.3050605@majjas.com>
+	<20100122215304.GA3105@del.dom.local>
+	<4B5A2362.6000306@majjas.com>
+	<20100122230605.GB3105@del.dom.local>
+	<4B5A33D8.90501@majjas.com>
+	<20100122234656.GC3105@del.dom.local>
+	<4B5A39BD.8020305@majjas.com>
+	<20100123232133.GA3487@del.dom.local>
+	<4B605D1B.60402@majjas.com>
+	<20100127085049.5b5048e9@nehalam>
+	<4B60707F.1000608@majjas.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,60 +45,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010 15:56:16 +0100
-Jens Rottmann <JRottmann@LiPPERTEmbedded.de> wrote:
+On Wed, 27 Jan 2010 11:57:35 -0500
+Michael Breuer <mbreuer@majjas.com> wrote:
 
-> A bit of background: The _real_ base address for the MFGPT hardware
-> is set with the MSR, but this is very Geode-proprietary. So the BIOS
-> contains VSA (Virtual System Architecture) code to implement a
-> _virtual_ PCI device. This means the BIOS simulates a standard PCI
-> device solely in software as a front-end for the MFGPT hardware to
-> make it look like a 'normal' device which can be accessed with normal
-> PCI drivers.
+> On 1/27/2010 11:50 AM, Stephen Hemminger wrote:
+> > On Wed, 27 Jan 2010 10:34:51 -0500
+> > Michael Breuer<mbreuer@majjas.com>  wrote:
+> >
+> >    
+> >> On 01/23/2010 06:21 PM, Jarek Poplawski wrote:
+> >>      
+> >>> On Fri, Jan 22, 2010 at 06:50:21PM -0500, Michael Breuer wrote:
+> >>>
+> >>>        
+> >>>> When the packets were dropped, there was a different sequence in the
+> >>>> log - DISCOVER/OFFER repeated. The "normal" is that the sequence
+> >>>> appeared correct and complete - DISCOVER/OFFER/REQUEST/ACK - or
+> >>>> INFORM/ACK (vs. INFORM repeatedly sans ACK) as the case may be.
+> >>>>
+> >>>>          
+> >>> Anyway, I'd be intersted if the switch matters here.
+> >>>
+> >>> Plus one more test: could you try to load sky2 with the parameter:
+> >>> "copybreak=1" (the rest as in any recent test, which gave you dmar
+> >>> errors; any switch).
+> >>>
+> >>> Thanks,
+> >>> Jarek P.
+> >>>
+> >>>        
+> >> Ok - now up 80+ hours with copybreak=1. I'm going to redo w/o copybreak
+> >> to confirm that I haven't inadvertently fixed something. However, given
+> >> that it might be copybreak-related, I looked at sky2.c again and I'm
+> >> wondering about the copybreak max size in sky2_rx_start:
+> >>
+> >>     size = roundup(sky2->netdev->mtu + ETH_HLEN + VLAN_HLEN, 8);
+> >>
+> >>           /* Stopping point for hardware truncation */
+> >>           thresh = (size - 8) / sizeof(u32);
+> >>
+> >>           sky2->rx_nfrags = size>>  PAGE_SHIFT;
+> >>           BUG_ON(sky2->rx_nfrags>  ARRAY_SIZE(re->frag_addr));
+> >>
+> >>           /* Compute residue after pages */
+> >>           size -= sky2->rx_nfrags<<  PAGE_SHIFT;
+> >>
+> >>           /* Optimize to handle small packets and headers */
+> >>           if (size<  copybreak)
+> >>                   size = copybreak;
+> >>           if (size<  ETH_HLEN)
+> >>                   size = ETH_HLEN;
+> >>
+> >>
+> >> Why would increasing size to copybreak be valid here?
+> >>
+> >> Guessing a bit as I'm not sure about rx_nfrags, but if I read this
+> >> correctly, if size is ever less than copybreak it's because there isn't
+> >> enough space left for anything larger. If so, wouldn't increasing size
+> >> potentially corrupt something? I'd further guess that the resulting
+> >> condition manifests sooner (or at least with a more visible effect) when
+> >> using DMAR.
+> >>
+> >> In any event, why "copybreak" as the minimum buffer size? I'd suggest
+> >> that if it isn't possible to allocate at least MTU + overhead that
+> >> sky2_rx_start ought to be delayed until there is room.
+> >>      
+> > This code is where driver decides how much data will be received in skb
+> > data area and the remaining data spills over into skb frags.
+> > Copybreak is the threshold so that packets less than size are copied
+> > to a new skb.  The code doing the copying there assumes the data is
+> > totally contained in the skb (not in frags). The size increase there
+> > is to make sure that assumption is always true.  I suppose you
+> > could do something perverse like setting copybreak really huge
+> > and confuse driver, but that is a user error.
+> >
+> >    
+> Ok - but I'm wondering under what circumstances size would be < 
+> copybreak in the first place after computing the residue. If size ends 
+> up being unreasonably small, is simply increasing the number to whatever 
+> copybreak is correct? Assuming my testing is correct, then the crash 
+> I've been experiencing when using dmar (only) seems related to the value 
+> of copybreak. I don't think the other use (skb reuse) is the issue (but 
+> hey, I could have missed something). The crash occurs when copybreak is 
+> the default of 128, didn't happen when I set copybreak to 1.
 > 
-> Well, this PCI device's configuration should of course always mirror
-> the real state of the hardware, i.e. if someone changes the MSR, the
-> PCI header should reflect that change, and vice versa.
-> 
-> > [    0.090015] pci 0000:00:14.0: address space collision: [io
-> > 0x6200-0x63ff] already in use
-> ....
-> > [    0.202033] pci 0000:00:14.0: BAR 2: set to [io  0x1000-0x11ff]
-> > (PCI address [0x1000-0x11ff]
-> ....
-> > root@doulos:/home/leigh# ./mfgpt
-> > 6200
-> 
-> Now it looks like originally both MSR and PCI say the adress is 6200.
-> But Linux detects a conflict on boot and moves it to 1000 by changing
-> the PCI config. At this point the BIOS should copy the new address to
-> the backing MSR i.e. to the real hardware. But this it fails to do.
-> And later the cs5535-mfgpt uses the address from PCI (=1000) to look
-> for the MFGPTs, but they're not there - they're are still at 6200.
 
-At least on another net5501 board, BAR0 appears to have an 8k size.
-This is pretty clearly wrong, and is why there are space conflicts w/
-the other BARs (consuming 0x6000 through 0x7fff, while BAR1 and BAR2
-are in the 0x6100/0x6200 range).
+Setting it to 1 causes driver to never go through the dma_sync_single/memcpy
+path.  Perhaps the code for DMAR doesn't do dma_sync_single_for_cpu
+properly, or the value passed to sync_single_for_cpu doesn't account for
+all the overhead of padding and/or ether header.
 
- 	Region 0: I/O ports at 6000 [size=8K]
- 
-
-
-
-> >>> Copyright (C) 2000-2007 Soekris Engineering."
-> > Yup, I am about to call them. ...
-> 
-> Hope they fix it. But this will not be the only BIOS with this bug,
-> that's why we have to revert the cs5535-mfgpt driver to read the MSR
-> directly again.
-> 
-
-
-Indeed, thanks for the report.  This is the second email I've gotten in
-the past week about net5501 bios being broken w/ the new mfgpt
-stuff.  :(
-
-CC'ing lkml to ensure others see it.  I'll write and test a patch
-sometime this week.
-
+-- 
