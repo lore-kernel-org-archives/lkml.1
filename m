@@ -1,130 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924Ab0A0DHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816Ab0A0DHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924Ab0A0DHa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 22:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319Ab0A0DH2
+	id S1754816Ab0A0DHJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 22:07:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308Ab0A0DHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 22:07:28 -0500
-Received: from mail.theptrgroup.com ([71.178.251.9]:43053 "EHLO
-	mail.theptrgroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754410Ab0A0DH0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 22:07:26 -0500
-Message-ID: <4B5FADE8.30803@theptrgroup.com>
-Date: Tue, 26 Jan 2010 22:07:20 -0500
-From: Jeff Angielski <jeff@theptrgroup.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 26 Jan 2010 22:07:07 -0500
+Received: from mga02.intel.com ([134.134.136.20]:57985 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753789Ab0A0DHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 22:07:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,350,1262592000"; 
+   d="scan'208";a="487329230"
+Date: Wed, 27 Jan 2010 11:06:39 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Chen Liqin <liqin.chen@sunplusct.com>,
+       Lennox Wu <lennox.wu@gmail.com>, Ralf Baechle <ralf@linux-mips.org>,
+       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yinghai Lu <yinghai@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       "Zheng, Shaohui" <shaohui.zheng@intel.com>
+Subject: Re: [PATCH 1/3 v4] resources: introduce generic page_is_ram()
+Message-ID: <20100127030639.GD8132@localhost>
+References: <20100122032102.137106635@intel.com> <20100122033004.193166010@intel.com> <4B595904.4000202@zytor.com> <20100122081619.GA6431@localhost> <20100126163058.1f2f6582.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>, dedekind1@gmail.com
-Subject: Re: UBIFS assert failed in ubifs_dirty_inode
-References: <4B591573.60602@theptrgroup.com>	<1264480808.2401.78.camel@localhost.localdomain>	<1264484928.3536.1017.camel@calx> <1264500214.3867.21.camel@localhost>	<4B5F9A78.7080000@theptrgroup.com> <1264558433.3536.1543.camel@calx>
-In-Reply-To: <1264558433.3536.1543.camel@calx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100126163058.1f2f6582.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Tue, 2010-01-26 at 20:44 -0500, Jeff Angielski wrote:
->> Artem Bityutskiy wrote:
->>> On Mon, 2010-01-25 at 23:48 -0600, Matt Mackall wrote:
->>>> Hmm. I'd just as soon drop it entirely. Here's a patch. Herbert, you
->>>> want to send this through your crypto tree?
->>>>
->>>>
->>>> random: drop weird m_time/a_time manipulation
->>>>
->>>> No other driver does anything remotely like this that I know of except
->>>> for the tty drivers, and I can't see any reason for random/urandom to do
->>>> it. In fact, it's a (trivial, harmless) timing information leak. And
->>>> obviously, it generates power- and flash-cycle wasting I/O, especially
->>>> if combined with something like hwrngd. Also, it breaks ubifs's
->>>> expectations.
->>>>
->>>> Signed-off-by: Matt Mackall <mpm@selenic.com>
->>>>
->>>> diff -r 29db0c391ce8 drivers/char/random.c
->>>> --- a/drivers/char/random.c	Sun Jan 17 11:01:16 2010 -0800
->>>> +++ b/drivers/char/random.c	Mon Jan 25 23:32:00 2010 -0600
->>>> @@ -1051,12 +1051,6 @@
->>>>  				/* like a named pipe */
->>>>  	}
->>>>  
->>>> -	/*
->>>> -	 * If we gave the user some bytes, update the access time.
->>>> -	 */
->>>> -	if (count)
->>>> -		file_accessed(file);
->>>> -
->>>>  	return (count ? count : retval);
->>>>  }
->>>>  
->>>> @@ -1116,8 +1110,6 @@
->>>>  	if (ret)
->>>>  		return ret;
->>>>  
->>>> -	inode->i_mtime = current_fs_time(inode->i_sb);
->>>> -	mark_inode_dirty(inode);
->>>>  	return (ssize_t)count;
->>>>  }
->>> It may brake other FSes expectations, theoretically, as well.
->>>
->>> Anyway, I'm perfectly fine if this is removed.
->>>
->>> Jeff, could you please try Matt's patch and report back if you still
->>> have issues or not. If no, you can use this as a temporary work-around
->>> until a proper fix hits upstream or ubifs-2.6.git.
->> Matt's patch did not compile as written.  I tried to implement what I 
->> think he was trying to do and created this patch (it seems to match the 
->> guts of what inode_setattr() was looking for):
->>
->>
->> diff --git a/drivers/char/random.c b/drivers/char/random.c
->> index 8258982..70f16c7 100644
->> --- a/drivers/char/random.c
->> +++ b/drivers/char/random.c
->> @@ -1108,6 +1108,7 @@ static ssize_t random_write(struct file *file, 
->> const char __user *buffer,
->>   {
->>   	size_t ret;
->>   	struct inode *inode = file->f_path.dentry->d_inode;
->> +	struct iattr attr;
->>
->>   	ret = write_pool(&blocking_pool, buffer, count);
->>   	if (ret)
->> @@ -1116,8 +1117,12 @@ static ssize_t random_write(struct file *file, 
->> const char __user *buffer,
->>   	if (ret)
->>   		return ret;
->>
->> -	inode->i_mtime = current_fs_time(inode->i_sb);
->> -	mark_inode_dirty(inode);
->> +	attr.ia_mtime = current_fs_time(inode->i_sb);
->> +	attr.ia_valid = ATTR_MTIME;
->> +	ret = inode_setattr(inode, &attr);
->> +	if (ret)
->> +		return ret;
->> +
->>   	return (ssize_t)count;
->>   }
->>
->> However, this patch does not fix the problem.  I still see the same 
->> errors.  Matt, is this what you were trying to do?
+On Tue, Jan 26, 2010 at 05:30:58PM -0700, Andrew Morton wrote:
+
+> > +int __attribute__((weak)) page_is_ram(unsigned long pfn)
+> > +{
+> > +	return walk_system_ram_range(pfn, 1, NULL, __is_ram) == 1;
+> > +}
 > 
-> That doesn't look anything like my patch? And mine was test compiled.
+> I'll switch this to use __weak.
 
-Ahh, you would be right.  I mixed up authors.  My bad.  ;)
+Thanks.
 
-Matt's patch that removes the offending code works fine.
+> >  /*
+> >   * Find empty slot in the resource tree given range and alignment.
+> >   */
+> > --- linux-mm.orig/include/linux/ioport.h	2010-01-22 11:20:34.000000000 +0800
+> > +++ linux-mm/include/linux/ioport.h	2010-01-22 11:20:35.000000000 +0800
+> > @@ -191,5 +191,7 @@ extern int
+> >  walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+> >  		void *arg, int (*func)(unsigned long, unsigned long, void *));
+> >  
+> > +extern int page_is_ram(unsigned long pfn);
+> 
+> Is it appropriate that this function be declared in ioport.h?  It's a
+> pretty general function.  Dunno.
 
-Artem's patch that tries to fix the offending code (and does not compile 
-as posted) does not work.
+Good suggestion. The following patch moves it to mm.h.
 
+> >  #endif /* __ASSEMBLY__ */
+> >  #endif	/* _LINUX_IOPORT_H */
+> > --- linux-mm.orig/arch/score/mm/init.c	2010-01-22 11:20:34.000000000 +0800
+> > +++ linux-mm/arch/score/mm/init.c	2010-01-22 11:20:35.000000000 +0800
+> > @@ -59,7 +59,7 @@ static unsigned long setup_zero_page(voi
+> >  }
+> >  
+> >  #ifndef CONFIG_NEED_MULTIPLE_NODES
+> > -static int __init page_is_ram(unsigned long pagenr)
+> > +int page_is_ram(unsigned long pagenr)
+> >  {
+> >  	if (pagenr >= min_low_pfn && pagenr < max_low_pfn)
+> >  		return 1;
+> > --- linux-mm.orig/arch/mips/mm/init.c	2010-01-22 11:20:34.000000000 +0800
+> > +++ linux-mm/arch/mips/mm/init.c	2010-01-22 11:20:35.000000000 +0800
+> > @@ -298,7 +298,7 @@ void __init fixrange_init(unsigned long 
+> >  }
+> >  
+> >  #ifndef CONFIG_NEED_MULTIPLE_NODES
+> > -static int __init page_is_ram(unsigned long pagenr)
+> > +int page_is_ram(unsigned long pagenr)
+> >  {
+> >  	int i;
+> 
+> hm, so we lose the __init.
 
--- 
-Jeff Angielski
-The PTR Group
-www.theptrgroup.com
+Maybe Ralf Baechle knows whether MIPS can switch to the (smaller) 
+generic page_is_ram().
+
+Thanks,
+Fengguang
+---
+move page_is_ram() declaration to mm.h
+
+---
+ include/linux/ioport.h |    2 --
+ include/linux/mm.h     |    2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+--- linux-mm.orig/include/linux/ioport.h	2010-01-27 11:04:22.000000000 +0800
++++ linux-mm/include/linux/ioport.h	2010-01-27 11:04:38.000000000 +0800
+@@ -191,7 +191,5 @@ extern int
+ walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+ 		void *arg, int (*func)(unsigned long, unsigned long, void *));
+ 
+-extern int page_is_ram(unsigned long pfn);
+-
+ #endif /* __ASSEMBLY__ */
+ #endif	/* _LINUX_IOPORT_H */
+--- linux-mm.orig/include/linux/mm.h	2010-01-27 11:04:43.000000000 +0800
++++ linux-mm/include/linux/mm.h	2010-01-27 11:05:30.000000000 +0800
+@@ -265,6 +265,8 @@ static inline int get_page_unless_zero(s
+ 	return atomic_inc_not_zero(&page->_count);
+ }
+ 
++extern int page_is_ram(unsigned long pfn);
++
+ /* Support for virtually mapped pages */
+ struct page *vmalloc_to_page(const void *addr);
+ unsigned long vmalloc_to_pfn(const void *addr);
+
