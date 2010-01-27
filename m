@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236Ab0A0AwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437Ab0A0Aw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236Ab0A0AwG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:52:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235Ab0A0AwE
+	id S1755437Ab0A0Aw1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:52:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951Ab0A0Aw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:52:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56045 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752146Ab0A0AwA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:52:00 -0500
-Date: Tue, 26 Jan 2010 16:50:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, stable@kernel.org,
-       Andi Kleen <andi@firstfloor.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] devmem and readahead fixes for 2.6.33
-Message-Id: <20100126165050.6ab7977b.akpm@linux-foundation.org>
-In-Reply-To: <20100122053157.GA8312@suse.de>
-References: <20100122045914.993668874@intel.com>
-	<20100122053157.GA8312@suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Jan 2010 19:52:26 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58740 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755322Ab0A0AwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 19:52:24 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maciej Sitarz <macieks@freesco.pl>
+Subject: Re: [Bug #14748] e1000e NIC not working after reboot
+Date: Wed, 27 Jan 2010 01:52:56 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc5-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera> <q60Z28d_9yH.A.JGB.haMXLB@chimera> <4B5F706B.60905@freesco.pl>
+In-Reply-To: <4B5F706B.60905@freesco.pl>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001270152.56316.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jan 2010 21:31:57 -0800
-Greg KH <gregkh@suse.de> wrote:
-
-> On Fri, Jan 22, 2010 at 12:59:14PM +0800, Wu Fengguang wrote:
-> > Andrew,
-> > 
-> > Here are some good fixes for 2.6.33, they have been floating around
-> > with other patches for some time. I should really seperate them out
-> > earlier..
-> > 
-> > Greg,
-> > 
-> > The first two patches are on devmem. 2.6.32 also needs fixing, however
-> > the patches can only apply cleanly to 2.6.33. I can do backporting if
-> > necessary.
-> > 
-> > 	[PATCH 1/4] devmem: check vmalloc address on kmem read/write
-> > 	[PATCH 2/4] devmem: fix kmem write bug on memory holes
+On Tuesday 26 January 2010, Maciej Sitarz wrote:
+> On 24.01.2010 23:22, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.31 and 2.6.32.
+> >
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> > be listed and let me know (either way).
 > 
-> After these hit Linus's tree, please send the backport to
-> stable@kernel.org and I will be glad to queue them up.
+> The problem still exist I'm using kernel version 2.6.32.6 now.
 > 
+> I have one more observation:
+> After the reboot, when the NIC is not working, both leds are on. Not 
+> blinking, they light all the time, even if I remove the plug.
 
-I tagged the first two patches for -stable and shall send them in for 2.6.33.
+Thanks for the update.
 
-The second two patches aren't quite as obvious - perhaps a risk of
-weird regressions.  So I'm thinking I'll send them in for 2.6.34-rc1
-and I tagged them as "[2.6.33.x]" for -stable, so you can feed them
-into 2.6.33.x once 2.6.34-rcX has had a bit of testing time, OK?
-
+Rafael
