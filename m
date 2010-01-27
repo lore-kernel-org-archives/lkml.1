@@ -1,79 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752160Ab0A0ITV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222Ab0A0IU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752160Ab0A0ITV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 03:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706Ab0A0ITU
+	id S1752222Ab0A0IU5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 03:20:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858Ab0A0IUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 03:19:20 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44247 "EHLO hera.kernel.org"
+	Wed, 27 Jan 2010 03:20:55 -0500
+Received: from mga01.intel.com ([192.55.52.88]:65017 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751012Ab0A0ITT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 03:19:19 -0500
-Date: Wed, 27 Jan 2010 08:18:52 GMT
-From: tip-bot for Russ Anderson <rja@sgi.com>
-Cc: linux-kernel@vger.kernel.org, rja@sgi.com, hpa@zytor.com, mingo@redhat.com,
-       dnelson@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, rja@sgi.com,
-       linux-kernel@vger.kernel.org, dnelson@redhat.com, tglx@linutronix.de
-In-Reply-To: <20100127023722.GA22305@sgi.com>
-References: <20100127023722.GA22305@sgi.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86, msr/cpuid: Pass the number of minors when unregistering MSR and CPUID drivers.
-Message-ID: <tip-da482474b8396e1a099c37ffc6541b78775aedb4@git.kernel.org>
-Git-Commit-ID: da482474b8396e1a099c37ffc6541b78775aedb4
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 27 Jan 2010 08:18:52 +0000 (UTC)
+	id S1750956Ab0A0IUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 03:20:55 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,352,1262592000"; 
+   d="scan'208";a="534945873"
+Subject: Re: 2.6.33-rc5-git2 -- ACPI Error: Attempt to CreateField of
+ length zero (20091214/dsopcode-529)
+From: Lin Ming <ming.m.lin@intel.com>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       "rui.zhang" <rui.zhang@intel.com>
+In-Reply-To: <efbf743b1001270005v301dbe34ia65b63973e761e8@mail.gmail.com>
+References: <4B5FE33A.7000201@gmail.com>
+	 <efbf743b1001270005v301dbe34ia65b63973e761e8@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 27 Jan 2010 16:04:36 +0800
+Message-Id: <1264579476.7187.56.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  da482474b8396e1a099c37ffc6541b78775aedb4
-Gitweb:     http://git.kernel.org/tip/da482474b8396e1a099c37ffc6541b78775aedb4
-Author:     Russ Anderson <rja@sgi.com>
-AuthorDate: Tue, 26 Jan 2010 20:37:22 -0600
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 26 Jan 2010 23:52:38 -0800
 
-x86, msr/cpuid: Pass the number of minors when unregistering MSR and CPUID drivers.
+> From: Miles Lane <miles.lane@gmail.com>
+> Date: Wed, Jan 27, 2010 at 2:54 PM
+> Subject: 2.6.33-rc5-git2 -- ACPI Error: Attempt to CreateField of
+> length zero (20091214/dsopcode-529)
+> To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML
+> <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+> 
+> 
+> I am not sure how much of this is due to a single cause.  Please let
+> me know if you'd like me to send separate reports.
+> 
+> ACPI: EC: GPE = 0x1b, I/O: command/status = 0x66, data = 0x62
+> ACPI Warning: Incorrect checksum in table [ATKG] - FA, should be 05
+> (20091214/tbutils-314)
+> 
+> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ACPI Error: Attempt to CreateField of length zero (20091214/dsopcode-529)
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.IDE0.RATA] (Node ffff88013f81a9e0), AE_AML_OPERAND_VALUE
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.IDE0.PRT1._GTF] (Node ffff88013f81ab20),
+> AE_AML_OPERAND_VALUE
+> ata2.00: _GTF evaluation failed (AE 0x3004)
+> ata2.00: ATAPI: MATSHITADVD-RAM UJ892AS, 1.00, max UDMA/100, ATAPI AN
+> ACPI Error: Attempt to CreateField of length zero (20091214/dsopcode-529)
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.IDE0.RATA] (Node ffff88013f81a9e0), AE_AML_OPERAND_VALUE
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.IDE0.PRT1._GTF] (Node ffff88013f81ab20),
+> AE_AML_OPERAND_VALUE
+> ata2.00: _GTF evaluation failed (AE 0x3004)
+> ata2.00: configured for UDMA/100
+> scsi 1:0:0:0: CD-ROM            MATSHITA DVD-RAM UJ892AS  1.00 PQ: 0 ANSI: 5
+> 
 
-Pass the number of minors when unregistering MSR and CPUID drivers.
+>From the DSDT,
 
-Reported-by: Dean Nelson <dnelson@redhat.com>
-Signed-off-by: Dean Nelson <dnelson@redhat.com>
-LKML-Reference: <20100127023722.GA22305@sgi.com>
-Signed-off-by: Russ Anderson <rja@sgi.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/cpuid.c |    2 +-
- arch/x86/kernel/msr.c   |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ 2522                 Method (RATA, 1, NotSerialized)
+ 2523                 {
+ 2524                     CreateByteField (Arg0, Zero, CMDN)
+ 2525                     Multiply (CMDN, 0x38, Local0)
+ 2526                     CreateField (Arg0, 0x08, Local0, RETB)
+ 2527                     Store (RETB, Debug)
+ 2528                     Return (RETB)
+ 2529                 }
 
-diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
-index cb27fd6..83e5e62 100644
---- a/arch/x86/kernel/cpuid.c
-+++ b/arch/x86/kernel/cpuid.c
-@@ -229,7 +229,7 @@ static void __exit cpuid_exit(void)
- 	for_each_online_cpu(cpu)
- 		cpuid_device_destroy(cpu);
- 	class_destroy(cpuid_class);
--	unregister_chrdev(CPUID_MAJOR, "cpu/cpuid");
-+	__unregister_chrdev(CPUID_MAJOR, 0, NR_CPUS, "cpu/cpuid");
- 	unregister_hotcpu_notifier(&cpuid_class_cpu_notifier);
- }
- 
-diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
-index 4bd93c9..206735a 100644
---- a/arch/x86/kernel/msr.c
-+++ b/arch/x86/kernel/msr.c
-@@ -285,7 +285,7 @@ static void __exit msr_exit(void)
- 	for_each_online_cpu(cpu)
- 		msr_device_destroy(cpu);
- 	class_destroy(msr_class);
--	unregister_chrdev(MSR_MAJOR, "cpu/msr");
-+	__unregister_chrdev(MSR_MAJOR, 0, NR_CPUS, "cpu/msr");
- 	unregister_hotcpu_notifier(&msr_class_cpu_notifier);
- }
- 
+ 2546                 Name (ATP1, Buffer (0x32) {})
+ 2547                 Device (PRT1)
+ 2548                 {
+ 2549                     Name (_ADR, 0x0001FFFF)
+ 2550                     Method (_SDD, 1, NotSerialized)
+ 2551                     {
+ 2552                         Store (AGTF (Zero, Arg0), ATP1)
+ 2553                     }
+ 2554 
+ 2555                     Method (_GTF, 0, NotSerialized)
+ 2556                     {
+ 2557                         Return (RATA (ATP1))
+ 2558                     }
+ 2559                 }
+
+It seems that ATP1 is not set correctly in PRT1._SDD.
+Then ATP1 is passed into RATA and CMDN is created with value zero.
+That causes the error message.
+
+Lin Ming
+
