@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756468Ab0A0XRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485Ab0A0XSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756468Ab0A0XRu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:17:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381Ab0A0XRt
+	id S1756485Ab0A0XSf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087Ab0A0XSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:17:49 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57598 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756051Ab0A0XRs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:17:48 -0500
-Date: Wed, 27 Jan 2010 23:19:19 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.33-rc5
-Message-ID: <20100127231919.244f8873@lxorguk.ukuu.org.uk>
-In-Reply-To: <1264633756.3075.116.camel@mulgrave.site>
-References: <1264614691.3075.19.camel@mulgrave.site>
-	<20100127222404.6dfdd0a7@lxorguk.ukuu.org.uk>
-	<1264631609.3075.94.camel@mulgrave.site>
-	<20100127224654.76db3693@lxorguk.ukuu.org.uk>
-	<1264633756.3075.116.camel@mulgrave.site>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 27 Jan 2010 18:18:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49301 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750915Ab0A0XSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 18:18:34 -0500
+Message-ID: <4B60C9A6.10704@redhat.com>
+Date: Wed, 27 Jan 2010 18:17:58 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 4/9] perf session: Create kernel maps in the constructor
+References: <1264633557-17597-1-git-send-email-acme@infradead.org> <1264633557-17597-4-git-send-email-acme@infradead.org>
+In-Reply-To: <1264633557-17597-4-git-send-email-acme@infradead.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This value can already be altered on the fly using the
+Arnaldo Carvalho de Melo wrote:
+> From: Arnaldo Carvalho de Melo <acme@redhat.com>
 > 
-> /sys/block/<dev>/queue/max_sectors_kb
-> 
-> Setting that should work for the two reporters without impacting anyone
-> else.
+> Removing one extra step needed in the tools that need this, fixing a bug
+> in 'perf probe' where this was not being done.
 
-Ok I'll close it WONTFIX
+Thanks,
+BTW, when O_WRONLY should be used? I guess I might misunderstand something
+in builtin-probe.c, and it should use O_RDONLY ...
+
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
