@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042Ab0A0AZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106Ab0A0Acs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042Ab0A0AZL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:25:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726Ab0A0AZJ
+	id S1754106Ab0A0Acs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:32:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900Ab0A0Acr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:25:09 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:38940 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752679Ab0A0AZH (ORCPT
+	Tue, 26 Jan 2010 19:32:47 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57632
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753705Ab0A0Acr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:25:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=U2PjmWb+AyPHM7jP6eaHOPYHX3FWU0dI6/sRkJ4Igbsgfb3I9QNCiLntRJoh5JuWFN
-         jlAB9okrMoiCRKd6LnDaVCTDZPi0ZSZOK3n5P4mzcuMp0ut+o2M0NchCJm5BAcBg1Td4
-         dXHRX3E2oyF1JwUAvnvfzTPs3IQvnBvXqgveM=
-MIME-Version: 1.0
-In-Reply-To: <4B5F62C2.4000800@pobox.com>
-References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
-	 <20100126160243.018b87e3@lxorguk.ukuu.org.uk>
-	 <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
-	 <4B5F62C2.4000800@pobox.com>
-Date: Wed, 27 Jan 2010 05:54:56 +0530
-Message-ID: <aacba7e1001261624m4358e4ebwcf8e2305b0c5fc16@mail.gmail.com>
-Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
-From: Vishal Rao <vishalrao@gmail.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, trivial@kernel.org, stable@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Jan 2010 19:32:47 -0500
+Date: Tue, 26 Jan 2010 16:32:56 -0800 (PST)
+Message-Id: <20100126.163256.196562963.davem@davemloft.net>
+To: adobriyan@gmail.com
+Cc: geert@linux-m68k.org, linux-next@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] netdev: remove HAVE_ leftovers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100126191727.GA5454@x200>
+References: <10f740e81001260057h37f3494dvefa3a37b2e1453a5@mail.gmail.com>
+	<20100126.051817.215651254.davem@davemloft.net>
+	<20100126191727.GA5454@x200>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/27 Jeff Garzik <jgarzik@pobox.com>:
-> On 01/26/2010 11:19 AM, Vishal Rao wrote:
->> 2010/1/26 Alan Cox<alan@lxorguk.ukuu.org.uk>:
->>> What controllers did you test with ?
->> Tested with my own Crucial CT128M225 model which has the IndiLinx
->> Barefoot controller.
->
-> By controller, I think Alan meant the host controller (ata_piix, ahci,
-> etc.)?
+From: Alexey Dobriyan <adobriyan@gmail.com>
+Date: Tue, 26 Jan 2010 21:17:27 +0200
 
-Oh I see, I have an Intel DP35DP motherboard with onboard IDE controller
-with AHCI enabled. I hope thats sufficient information for now. I did read
-that simply setting the mode to legacy IDE would disable NCQ there but
-would disable for all drives connected.
+> On Tue, Jan 26, 2010 at 05:18:17AM -0800, David Miller wrote:
+>> Alexey, please go through at least drivers/net and look at the
+>> other stale references to these HAVE_* macros.
+> 
+> My apologies.
+> 
+> 
+> [PATCH] netdev: remove HAVE_ leftovers
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-Please let me know if further info/log files (dmesg, lspci etc) would help
-and I will pastebin them...
+What about HAVE_POLL_CONTROLLER and some other remaining stuff?
+
+drivers/net/bnx2.c:#if defined(HAVE_POLL_CONTROLLER) || defined(CONFIG_NET_POLL_CONTROLLER)
+drivers/net/bnx2x_main.c:#if defined(HAVE_POLL_CONTROLLER) || defined(CONFIG_NET_POLL_CONTROLLER)
+drivers/net/ixgbevf/ixgbevf_main.c:#ifdef HAVE_TX_MQ
+drivers/net/ixgbevf/ixgbevf_main.c:#ifndef HAVE_NETDEV_NAPI_LIST
+drivers/net/ixgbevf/ixgbevf_main.c:#ifdef HAVE_NET_DEVICE_OPS
