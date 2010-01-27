@@ -1,81 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837Ab0A0Rx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848Ab0A0R4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837Ab0A0Rx3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 12:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812Ab0A0Rx1
+	id S1755848Ab0A0R4s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 12:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061Ab0A0R4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 12:53:27 -0500
-Received: from mail.gmx.net ([213.165.64.20]:59829 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755549Ab0A0Rx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 12:53:26 -0500
-X-Authenticated: #18024098
-X-Provags-ID: V01U2FsdGVkX1/QIh0RcULQGrW5VI52cEzpnGHXTCscF+uSGvLWZQ
-	ODw3kEK7owyxhI
-Message-Id: <7.0.1.0.2.20100127184859.01d47850@chello.at>
-X-Mailer: QUALCOMM Windows Eudora Version 7.0.1.0
-Date: Wed, 27 Jan 2010 18:51:52 +0100
-To: linux-kernel@vger.kernel.org
-From: Alexander Oberhuber <lzw77rnc@gmx.at>
-Subject: multiple bugs in 2.6.32.4-ZEN5 : EIP@SpinLock+10 / SATA
-  Exception Frozen / no MTRR 
+	Wed, 27 Jan 2010 12:56:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55926 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932160Ab0A0R4q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 12:56:46 -0500
+Date: Wed, 27 Jan 2010 09:56:14 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
+ lib/dma-debug.c:902 check_sync)
+Message-ID: <20100127095614.14313677@nehalam>
+In-Reply-To: <4B60707F.1000608@majjas.com>
+References: <20100120094103.GA6225@ff.dom.local>
+	<4B58B217.8030001@majjas.com>
+	<20100121204133.GB3085@del.dom.local>
+	<4B59E7EB.3050605@majjas.com>
+	<20100122215304.GA3105@del.dom.local>
+	<4B5A2362.6000306@majjas.com>
+	<20100122230605.GB3105@del.dom.local>
+	<4B5A33D8.90501@majjas.com>
+	<20100122234656.GC3105@del.dom.local>
+	<4B5A39BD.8020305@majjas.com>
+	<20100123232133.GA3487@del.dom.local>
+	<4B605D1B.60402@majjas.com>
+	<20100127085049.5b5048e9@nehalam>
+	<4B60707F.1000608@majjas.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.44
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, I played for a while with Slax-Remix, and it spurts out quite 
-many errors at me, all centered around bugs that appear to be kernel 
-bugs. But first:
+On Wed, 27 Jan 2010 11:57:35 -0500
+Michael Breuer <mbreuer@majjas.com> wrote:
 
-a) My Hardware: Motherboard: MSI-Neo3-FR "7514" ; Intel CPU Quadcore 
-Q6600, 4 GB RAM. Graphiccard: ATI Radeon 4850.
-Various SATA HD drives connected to the mainboard. Slax-Remix 3 
-booted from a (slow!) "Maxell 8GB" USB-stick.
+> On 1/27/2010 11:50 AM, Stephen Hemminger wrote:
+> > On Wed, 27 Jan 2010 10:34:51 -0500
+> > Michael Breuer<mbreuer@majjas.com>  wrote:
+> >
+> >    
+> >> On 01/23/2010 06:21 PM, Jarek Poplawski wrote:
+> >>      
+> >>> On Fri, Jan 22, 2010 at 06:50:21PM -0500, Michael Breuer wrote:
+> >>>
+> >>>        
+> >>>> When the packets were dropped, there was a different sequence in the
+> >>>> log - DISCOVER/OFFER repeated. The "normal" is that the sequence
+> >>>> appeared correct and complete - DISCOVER/OFFER/REQUEST/ACK - or
+> >>>> INFORM/ACK (vs. INFORM repeatedly sans ACK) as the case may be.
+> >>>>
+> >>>>          
+> >>> Anyway, I'd be intersted if the switch matters here.
+> >>>
+> >>> Plus one more test: could you try to load sky2 with the parameter:
+> >>> "copybreak=1" (the rest as in any recent test, which gave you dmar
+> >>> errors; any switch).
+> >>>
+> >>> Thanks,
+> >>> Jarek P.
+> >>>
+> >>>        
+> >> Ok - now up 80+ hours with copybreak=1. I'm going to redo w/o copybreak
+> >> to confirm that I haven't inadvertently fixed something. However, given
+> >> that it might be copybreak-related, I looked at sky2.c again and I'm
+> >> wondering about the copybreak max size in sky2_rx_start:
+> >>
+> >>     size = roundup(sky2->netdev->mtu + ETH_HLEN + VLAN_HLEN, 8);
+> >>
+> >>           /* Stopping point for hardware truncation */
+> >>           thresh = (size - 8) / sizeof(u32);
+> >>
+> >>           sky2->rx_nfrags = size>>  PAGE_SHIFT;
+> >>           BUG_ON(sky2->rx_nfrags>  ARRAY_SIZE(re->frag_addr));
+> >>
+> >>           /* Compute residue after pages */
+> >>           size -= sky2->rx_nfrags<<  PAGE_SHIFT;
+> >>
+> >>           /* Optimize to handle small packets and headers */
+> >>           if (size<  copybreak)
+> >>                   size = copybreak;
+> >>           if (size<  ETH_HLEN)
+> >>                   size = ETH_HLEN;
+> >>
+> >>
+> >> Why would increasing size to copybreak be valid here?
+> >>
+> >> Guessing a bit as I'm not sure about rx_nfrags, but if I read this
+> >> correctly, if size is ever less than copybreak it's because there isn't
+> >> enough space left for anything larger. If so, wouldn't increasing size
+> >> potentially corrupt something? I'd further guess that the resulting
+> >> condition manifests sooner (or at least with a more visible effect) when
+> >> using DMAR.
+> >>
+> >> In any event, why "copybreak" as the minimum buffer size? I'd suggest
+> >> that if it isn't possible to allocate at least MTU + overhead that
+> >> sky2_rx_start ought to be delayed until there is room.
+> >>      
+> > This code is where driver decides how much data will be received in skb
+> > data area and the remaining data spills over into skb frags.
+> > Copybreak is the threshold so that packets less than size are copied
+> > to a new skb.  The code doing the copying there assumes the data is
+> > totally contained in the skb (not in frags). The size increase there
+> > is to make sure that assumption is always true.  I suppose you
+> > could do something perverse like setting copybreak really huge
+> > and confuse driver, but that is a user error.
+> >
+> >    
+> Ok - but I'm wondering under what circumstances size would be < 
+> copybreak in the first place after computing the residue. If size ends 
+> up being unreasonably small, is simply increasing the number to whatever 
+> copybreak is correct? Assuming my testing is correct, then the crash 
+> I've been experiencing when using dmar (only) seems related to the value 
+> of copybreak. I don't think the other use (skb reuse) is the issue (but 
+> hey, I could have missed something). The crash occurs when copybreak is 
+> the default of 128, didn't happen when I set copybreak to 1.
 
-Used Kernel : 2.6.32.4-ZEN5 as in the Distribution "Slax-Remix v0.3" 
-( http://www.slax.org/forum.php?action=view&parentID=55706 )
+Does this change it? If so the dma code is (not sky2) is buggy and not
+rounding up properly.
 
-Now, to the
-b) Bugs:
-
-1.) When I boot into graphics mode, it sometimes happens that the KDE 
-splash screen appears, "Starting up KDE", then the icons on the 
-splash screen start blinking, and the third icon, the "heart" icon 
-KEEPS blinking and nothing continues.
-Curious, I booted into text mode, ran "xconfig", then I used 
-"startx". Same bug again. So I forcedly switched into text mode using 
-CTRL-F1 and checked the text screen for errors. There was a syslogd 
-error appearing in the textscreen. I'm too lazy to write it down, but 
-I made a screenshot:
-
-http://666kb.com/i/bg6wrh1c9lusg2bhd.jpg : "Message from Syslog.... 
--> EIP @ SpinLock + 0x10 ...
-
-2.) A few minutes, while I was trying to fetch my cam and make a foto 
-of the bug, another bug spurted at me, the kernel didn't like 
-whatever was supposed to be on SATA9 :
-
-http://666kb.com/i/bg6wu3xlexssqg4v5.jpg : "ATA9 : ...Exception 
-EMASK...Frozen..." and several other errors.
-
-A "Failed to identify" message appeared a couple of times, just 
-below: http://666kb.com/i/bg6wvzfds8sk8sckh.jpg
-
-3.) When I tried to reboot my poor machine (which was left alone for 
-a couple of hours in the meantime, while I was away) I noticed that 
-SLAX-remix didn't want to remove the loop-devices that were linked to 
-the modules:
-http://666kb.com/i/bg6wxky1e3d030gip.jpg : "Transport endpoint [of 
-the loop] is not connected". How comes? I didn't deactivate 
-anything...I only went shopping! :-)
-
-4.) I also got a "no MTRR" message in the reboot screen :
-http://666kb.com/i/bg6wzeks8vxhsyd29.jpg
-
-Yours
-A.O.
-
+--- a/drivers/net/sky2.c	2010-01-27 09:46:10.940005248 -0800
++++ b/drivers/net/sky2.c	2010-01-27 09:53:47.141267850 -0800
+@@ -2257,13 +2257,16 @@ static struct sk_buff *receive_copy(stru
+ 
+ 	skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
+ 	if (likely(skb)) {
++		unsigned dma_align = dma_get_cache_alignment();
++		unsigned dma_size = ALIGN(length+1, dma_align);
++
+ 		pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
+-					    length, PCI_DMA_FROMDEVICE);
++					    dma_size, PCI_DMA_FROMDEVICE);
+ 		skb_copy_from_linear_data(re->skb, skb->data, length);
+ 		skb->ip_summed = re->skb->ip_summed;
+ 		skb->csum = re->skb->csum;
+ 		pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
+-					       length, PCI_DMA_FROMDEVICE);
++					       dma_size, PCI_DMA_FROMDEVICE);
+ 		re->skb->ip_summed = CHECKSUM_NONE;
+ 		skb_put(skb, length);
+ 	}
