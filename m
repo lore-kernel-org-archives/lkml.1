@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708Ab0A0RsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472Ab0A0RsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755708Ab0A0RsV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 12:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490Ab0A0RsT
+	id S1755472Ab0A0RsQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 12:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032Ab0A0RsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 12:48:19 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43924 "EHLO mail.zytor.com"
+	Wed, 27 Jan 2010 12:48:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61832 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754697Ab0A0RsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 12:48:18 -0500
-Message-ID: <4B607B1A.3080007@zytor.com>
-Date: Wed, 27 Jan 2010 09:42:50 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1754697Ab0A0RsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 12:48:15 -0500
+Date: Wed, 27 Jan 2010 18:47:06 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, nhorman@tuxdriver.com, abelay@mit.edu,
+       benh@kernel.crashing.org, drbd-dev@lists.linbit.com, gregkh@suse.de,
+       jmoskovc@redhat.com, menage@google.com, mfasheh@suse.com,
+       mingo@redhat.com, neilb@suse.de, shemminger@linux-foundation.org,
+       spock@gentoo.org, t.sailer@alumni.ethz.ch, takedakn@nttdata.co.jp,
+       viro@zeniv.linux.org.uk
+Subject: Re: +
+	exec-allow-core_pipe-recursion-check-to-look-for-a-value-of-1-rather
+	-than-0.patch added to -mm tree
+Message-ID: <20100127174706.GA6333@redhat.com>
+References: <201001262354.o0QNsBiM029772@imap1.linux-foundation.org>
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Tom Tromey <tromey@redhat.com>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       utrace-devel@redhat.com, Thomas Gleixner <tglx@linutronix.de>,
-       JimKeniston <jkenisto@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: linux-next: add utrace tree
-References: <20100121013822.28781960.sfr@canb.auug.org.au>	 <20100122005147.GD22003@redhat.com>	 <20100121170541.7425ff10.akpm@linux-foundation.org>	 <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>	 <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com>	 <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>	 <20100122221348.GA4263@redhat.com>	 <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>	 <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>	 <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>	 <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>	 <m33a1tnbd9.fsf@fleche.redhat.com>	 <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>	 <m3636oh2rt.fsf@fleche.redhat.com>	 <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain>	 <1264575134.4283.1983.camel@laptop>	 <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain> <1264600792.31321.464.camel@gandalf.stny.rr.com>
-In-Reply-To: <1264600792.31321.464.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001262354.o0QNsBiM029772@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/27/2010 05:59 AM, Steven Rostedt wrote:
-> [ Added Arjan ]
-> 
-> On Wed, 2010-01-27 at 02:43 -0800, Linus Torvalds wrote:
->>
->> On Wed, 27 Jan 2010, Peter Zijlstra wrote:
->>>
->>> Right, so you're going to love uprobes, which does exactly that. The
->>> current proposal is overwriting the target instruction with an INT3 and
->>> injecting an extra vma into the target process's address space
->>> containing the original instruction(s) and possible jumps back to the
->>> old code stream.
->>
->> Just out of interest, how does it handle the threading issue?
->>
->> Last I saw, at least some CPU people were _very_ nervous about overwriting 
->> instructions if another CPU might be just about to execute them.
-> 
-> I think the issue was that ring 0 was never meant to do that, where as,
-> ring 3 does it all the time. Doesn't the dynamic library modify its
-> text?
-> 
+On 01/26, Andrew Morton wrote:
+>
+> From: Neil Horman <nhorman@tuxdriver.com>
+>
+> What I've done is modify the
+> call_usermodehelper() api such that an extra parameter is added, a
+> function pointer which will be called by the user helper task, after it
+> forks, but before it execs the required process.
 
-No, it has nothing to do with ring.  It has to do with modifying code
-that another CPU could be executing at the same time, and with modifying
-code on the same processor through another virtual alias (they are
-different issues.)  The same issues apply regardless of the CPL of the
-processor.
+Personally I agree, I think this fptr can be useful, not only for coredump.
 
-	-hpa
+> This will give the
+> caller the opportunity to get a callback in the process's context,
+> allowing it to do whatever it needs to to the process in the kernel
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+in this case it probably needs "void *data" argument, otherwise the
+usage is very limited.
+
+Currently only d_coredump() needs this new feature, but please note
+that ____call_usermodehelper() was already "uglified" for the coredumping
+over the pipe.
+
+If we add sub_info->finit(), then probably we should move the code
+under "if (sub_info->stdin)" from ____call_usermodehelper() to
+core_pipe_setup() ?
+
+> +/*
+> + * This is used as a helper to set up the task that execs
+> + * our user space core collector application
+> + * Its called in the context of the task thats going to
+> + * exec itself to be the helper, so we can modify current here
+> + */
+
+very minor nit, perhaps the comment should explain what is the meaning
+of the magical rlim_cur = 1 value? It is not immediately obvious we
+check cprm.limit == 1 below.
+
+> +void core_pipe_setup(void)
+> +{
+> +	task_lock(current->group_leader);
+> +	current->signal->rlim[RLIMIT_CORE].rlim_cur = 1;
+> +	task_unlock(current->group_leader);
+> +}
+
+Well, this thread must be the kernel thread and thus it should be
+->group_leader and I don't think we really need task_lock() her,
+but this is minor and perhaps ->group_leader + task_lock() look
+better even if not needed.
+
+Oleg.
 
