@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932194Ab0A0XJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544Ab0A0XIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932194Ab0A0XJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:09:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431Ab0A0XJ0
+	id S1756544Ab0A0XIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420Ab0A0XIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:09:26 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43723 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753762Ab0A0XJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:09:25 -0500
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.33-rc5
-From: James Bottomley <James.Bottomley@suse.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100127224654.76db3693@lxorguk.ukuu.org.uk>
-References: <1264614691.3075.19.camel@mulgrave.site>
-	 <20100127222404.6dfdd0a7@lxorguk.ukuu.org.uk>
-	 <1264631609.3075.94.camel@mulgrave.site>
-	 <20100127224654.76db3693@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 17:09:16 -0600
-Message-Id: <1264633756.3075.116.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Wed, 27 Jan 2010 18:08:47 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:36613 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755213Ab0A0XIq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 18:08:46 -0500
+From: nhorman@mail.tuxdriver.com
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Neil Horman" <nhorman@tuxdriver.com>
+Cc: "Oleg Nesterov" <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+       abelay@mit.edu, benh@kernel.crashing.org, drbd-dev@lists.linbit.com,
+       gregkh@suse.de, jmoskovc@redhat.com, menage@google.com,
+       mfasheh@suse.com, mingo@redhat.com, neilb@suse.de,
+       shemminger@linux-foundation.org, spock@gentoo.org,
+       t.sailer@alumni.ethz.ch, takedakn@nttdata.co.jp,
+       viro@zeniv.linux.org.uk
+Date: Wed, 27 Jan 2010 18:08:42 -0500
+User-Agent: LogicMail/1.0.4
+Subject: Re: + exec-allow-core_pipe-recursion-check-to-look-for-a-value-of-1-rather -than-0.patch added to -mm tree
+In-Reply-To: <20100127133408.9d8f72fe.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+    charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <E1NaGzz-0002tJ-OY@smtp.tuxdriver.com>
+X-Spam-Score: -2.9 (--)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-27 at 22:46 +0000, Alan Cox wrote:
-> On Wed, 27 Jan 2010 16:33:29 -0600
-> James Bottomley <James.Bottomley@suse.de> wrote:
+
+On Wed, 27 Jan 2010 16:34:08 -0500, Andrew Morton wrote:
+> On Wed, 27 Jan 2010 16:22:39 -0500
+> Neil Horman <nhorman@tuxdriver.com> wrote:
 > 
-> > On Wed, 2010-01-27 at 22:24 +0000, Alan Cox wrote:
-> > > > Penchala Narasimha Reddy Chilakala, ERS-HCLTech (1):
-> > > >       aacraid: fix File System going into read-only mode
+> > On Wed, Jan 27, 2010 at 06:58:52PM +0100, Oleg Nesterov wrote:
+> > > On 01/27, Oleg Nesterov wrote:
+> > > >
+> > > > Currently only d_coredump() needs this new feature, but please note
+> > > > that ____call_usermodehelper() was already "uglified" for the coredumping
+> > > > over the pipe.
+> > > >> > > > If we add sub_info->finit(), then probably we should move the code
+> > > > under "if (sub_info->stdin)" from ____call_usermodehelper() to
+> > > > core_pipe_setup() ?
 > > > 
-> > > If aacraid is actually getting patches then see
-> > > also http://bugzilla.kernel.org/show_bug.cgi?id=11120 which I found
-> > > bugzilla tidyying.
+> > > And, perhaps, we should not change call_usermodehelper() and all its
+> > > callers? If the caller needs ->finit() it can customize subprocess_info
+> > > like call_usermodehelper_pipe() already does?
 > > > 
-> > > Contains a patch and test confirmations
+> > > To clarify, I don't have a "strong" opinion, I am just asking.
+> > > 
+> > I'm not opposed to that, Since Andew has already taken these patches, I'll
+> > tinkier to see how such an implementation change looks, and post some follow on
+> > patches if it seems good.  I'll clean up the comments while I'm at it.
 > > 
-> > So the patch it contains is almost certainly wrong in general; Mark was
-> > just suggesting it as a trial ... it might work for specific adapter
-> > versions but reducing the queue depth by half globally will impact
-> > performance noticeably.  The bug report does rather sound like cabling
-> > issues are leading to a firmware related problem.
 > 
-> Odd then that they worked reliably until the numbers were increased.
-> Sorry but having worked on the aacraid for a long time in the past I
-> don't buy that explanation. Cabling issues would get logged by the driver
-> and the controller. Secondly I don't buy it because the reporter was
-> Matthias Ulrichs, who to borrow a hitchhikers term "really knows where his
-> towel is". 
+> The patch conflicts a bit with Andi's
+> sysctl-add-call_usermodehelper_cleanup.patch so I dropped v1 of
+> exec-allow-core_pipe-recursion-check-to-look-for-a-value-of-1-rather-than-0.patch
 > 
-> The patch isn't a halving the queue size - its a returning to the known
-> working state from a regression (unfixed).
+That's fine.  I'll repost with the cleanups you & oleg noted in a few days
 
-What regression?  The 32 bit queue depth has always been 256 since 2005
-(when it was reduced from 512) ... it's never been 127.
-
-> The story is pretty simple
-> 
-> Worked until the kernel changed
-> Didn't work with kernel change
-> Worked after the kernel changed back.
-> 
-> Kernel's dont go in and fix your cables (much as I wish they did) and
-> there are two folks who've actually found the bug report specifically
-> confirming it.
-
-But we have two bug reports for all of the aacraids over the last five
-years ... the patch would reduce the maximum transfer length from 128k
-to 63.5k.
-
-Linux tends to send down the largest transfer size it can, suggesting
-that most of the aacraids in the field are happy with 128k.
-
-The maximum transfer length critically impacts I/O throughput and
-performance ... I can't just penalise everyone for the sake of two bug
-reports.
-
-This value can already be altered on the fly using the
-
-/sys/block/<dev>/queue/max_sectors_kb
-
-Setting that should work for the two reporters without impacting anyone
-else.
-
-> When you have a cable fault on the aacraid you can get hangs on crappier
-> firmware sets (normally in the BIOS boot though) but it's not dependant
-> on queue size - it either works or it doesn't. On good firmware you get
-> nice logged errors and it recovers if possible (or multipaths if you've
-> got the right bits).
-
-James
-
+Regards
+Neil
 
