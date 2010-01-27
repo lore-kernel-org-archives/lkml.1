@@ -1,62 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991Ab0A0SOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932172Ab0A0SWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991Ab0A0SOq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 13:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958Ab0A0SOo
+	id S932172Ab0A0SWJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 13:22:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932162Ab0A0SWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 13:14:44 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:46213 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755867Ab0A0SOm (ORCPT
+	Wed, 27 Jan 2010 13:22:08 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:31604 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932161Ab0A0SWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 13:14:42 -0500
-Date: Wed, 27 Jan 2010 18:14:24 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Chris Frost <frost@cs.ucla.edu>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Benny Halevy <bhalevy@panasas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Steve VanDeBogart <vandebo-lkml@nerdbox.net>
-Subject: Re: [PATCH] fs: add fincore(2) (mincore(2) for file descriptors)
-Message-ID: <20100127181424.GA21585@shareable.org>
-References: <20100120215712.GO27212@frostnet.net>
+	Wed, 27 Jan 2010 13:22:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=Hjo1vLqnJjr4wqys5HejzPda37nexd/t058HsY8zP5TkS2RuhN52oAvTRi/wKeJWtd
+         W6TFsoEgnyHgS2r+/idl8Pz50t0Cqtjx99b3rzI5uSc8iztRQZZrMPCWe8YJ1tVfeT2L
+         IOViqB8p4f2CVoFVCfhkw7iBdW3zMOO/pV5jQ=
+From: Don Mullis <don.mullis@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: airlied@redhat.com, andi@firstfloor.org, david@fromorbit.com,
+       dedekind@infradead.org
+Subject: [PATCH v2 3/3] lib: Build list_sort() only if needed
+References: <878wbja0h6.fsf@gmail.com>
+Date: Wed, 27 Jan 2010 10:21:59 -0800
+In-Reply-To: <878wbja0h6.fsf@gmail.com> (Don Mullis's message of "Wed, 27 Jan
+	2010 10:04:05 -0800")
+Message-ID: <87zl3z8l2w.fsf@gmail.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100120215712.GO27212@frostnet.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Frost wrote:
-> We introduced this system call while modifying SQLite and the GIMP to
-> request large prefetches for what would otherwise be non-sequential reads.
-> As a macrobenchmark, we see a 125s SQLite query (72s system time) reduced
-> to 75s (18s system time) by using fincore() instead of mincore(). This
-> speedup of course varies by benchmark and benchmarks size; we've seen
-> both minimal speedups and 1000x speedups. More on these benchmarks in the
-> publication _Reducing Seek Overhead with Application-Directed Prefetching_
-> in USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
+Build list_sort() only for configs that need it -- those that don't
+save ~581 bytes (i386).
 
-My first thought was:
+Signed-off-by: Don Mullis <don.mullis@gmail.com>
+Cc: Dave Airlie <airlied@redhat.com>            
+Cc: Andi Kleen <andi@firstfloor.org>            
+Cc: Dave Chinner <david@fromorbit.com>          
+Cc: Artem Bityutskiy <dedekind@infradead.org>   
+---
+ drivers/gpu/drm/Kconfig |    1 +
+ fs/ubifs/Kconfig        |    1 +
+ lib/Kconfig             |    3 +++
+ lib/Makefile            |    3 ++-
+ 4 files changed, 7 insertions(+), 1 deletion(-)
 
-Why is calling fincore() and then issuing reads better than simply
-calling readahead() on the same range?  I.e. why is readahead() (or
-POSIX_FADV_WILLNEED) unsuitable to give the same result?  Or even
-issuing lots of AIO requests.
-
-I knew that I was missing something, so I read the paper ;-) I don't
-fully understand it, but *think* that it says fincore() is used to
-detect when the kernel is evicting pages faster than libprefetch had
-planned for, implying memory pressure, so it adjusts its planning in
-response.
-
-Interesting idea, though I wonder if it wouldn't be even better to
-have a direct way to ask the kernel "tell me when there is memory
-pressure causing my file to be evicted".
-
--- Jamie
+Index: linux-2.6/drivers/gpu/drm/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/gpu/drm/Kconfig	2010-01-25 21:45:25.000000000 -0800
++++ linux-2.6/drivers/gpu/drm/Kconfig	2010-01-25 21:48:14.000000000 -0800
+@@ -9,6 +9,7 @@ menuconfig DRM
+ 	depends on (AGP || AGP=n) && PCI && !EMULATED_CMPXCHG && MMU
+ 	select I2C
+ 	select I2C_ALGOBIT
++	select LIST_SORT
+ 	help
+ 	  Kernel-level support for the Direct Rendering Infrastructure (DRI)
+ 	  introduced in XFree86 4.0. If you say Y here, you need to select
+Index: linux-2.6/fs/ubifs/Kconfig
+===================================================================
+--- linux-2.6.orig/fs/ubifs/Kconfig	2010-01-25 21:40:35.000000000 -0800
++++ linux-2.6/fs/ubifs/Kconfig	2010-01-25 21:47:54.000000000 -0800
+@@ -7,6 +7,7 @@ config UBIFS_FS
+ 	select CRYPTO if UBIFS_FS_ZLIB
+ 	select CRYPTO_LZO if UBIFS_FS_LZO
+ 	select CRYPTO_DEFLATE if UBIFS_FS_ZLIB
++	select LIST_SORT
+ 	depends on MTD_UBI
+ 	help
+ 	  UBIFS is a file system for flash devices which works on top of UBI.
+Index: linux-2.6/lib/Makefile
+===================================================================
+--- linux-2.6.orig/lib/Makefile	2010-01-25 21:39:23.000000000 -0800
++++ linux-2.6/lib/Makefile	2010-01-25 21:43:06.000000000 -0800
+@@ -21,7 +21,7 @@ lib-y	+= kobject.o kref.o klist.o
+ 
+ obj-y += bcd.o div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
+ 	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o \
+-	 string_helpers.o gcd.o list_sort.o
++	 string_helpers.o gcd.o
+ 
+ ifeq ($(CONFIG_DEBUG_KOBJECT),y)
+ CFLAGS_kobject.o += -DDEBUG
+@@ -42,6 +42,7 @@ obj-$(CONFIG_GENERIC_FIND_LAST_BIT) += f
+ obj-$(CONFIG_GENERIC_HWEIGHT) += hweight.o
+ obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o
+ obj-$(CONFIG_BTREE) += btree.o
++obj-$(CONFIG_LIST_SORT) += list_sort.o
+ obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
+ obj-$(CONFIG_DEBUG_LIST) += list_debug.o
+ obj-$(CONFIG_DEBUG_OBJECTS) += debugobjects.o
+Index: linux-2.6/lib/Kconfig
+===================================================================
+--- linux-2.6.orig/lib/Kconfig	2010-01-25 21:39:23.000000000 -0800
++++ linux-2.6/lib/Kconfig	2010-01-25 21:52:45.000000000 -0800
+@@ -166,6 +166,9 @@ config TEXTSEARCH_FSM
+ config BTREE
+ 	boolean
+ 
++config LIST_SORT
++	boolean
++
+ config HAS_IOMEM
+ 	boolean
+ 	depends on !NO_IOMEM
