@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968Ab0A0SIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979Ab0A0SJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968Ab0A0SIV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 13:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827Ab0A0SIU
+	id S1755979Ab0A0SJA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 13:09:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755886Ab0A0SI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 13:08:20 -0500
-Received: from mga05.intel.com ([192.55.52.89]:54039 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755956Ab0A0SIT (ORCPT
+	Wed, 27 Jan 2010 13:08:59 -0500
+Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:36352 "EHLO
+	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755205Ab0A0SI6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 13:08:19 -0500
-Message-Id: <89kc63$fua5o0@fmsmga002.fm.intel.com>
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,355,1262592000"; 
-   d="scan'208";a="535107328"
-Date: Wed, 27 Jan 2010 18:08:06 +0000
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #15004] i915: *ERROR* Execbuf while wedged
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       tomas m <tmezzadra@gmail.com>
-References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera> <q60Z28d_9yH.A.r3H.XZMXLB@chimera> <20100127100144.4c7d8996@jbarnes-piketon>
-From: Chris Wilson <chris@chris-wilson.co.uk>
-In-Reply-To: <20100127100144.4c7d8996@jbarnes-piketon>
+	Wed, 27 Jan 2010 13:08:58 -0500
+Date: Wed, 27 Jan 2010 13:08:40 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
+ lib/dma-debug.c:902 check_sync)
+In-reply-to: <20100127095614.14313677@nehalam>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Message-id: <4B608128.7090607@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100120094103.GA6225@ff.dom.local> <4B58B217.8030001@majjas.com>
+ <20100121204133.GB3085@del.dom.local> <4B59E7EB.3050605@majjas.com>
+ <20100122215304.GA3105@del.dom.local> <4B5A2362.6000306@majjas.com>
+ <20100122230605.GB3105@del.dom.local> <4B5A33D8.90501@majjas.com>
+ <20100122234656.GC3105@del.dom.local> <4B5A39BD.8020305@majjas.com>
+ <20100123232133.GA3487@del.dom.local> <4B605D1B.60402@majjas.com>
+ <20100127085049.5b5048e9@nehalam> <4B60707F.1000608@majjas.com>
+ <20100127095614.14313677@nehalam>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7)
+ Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010 10:01:44 -0800, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Sun, 24 Jan 2010 23:23:11 +0100 (CET)
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15004
-> > Subject		: i915: *ERROR* Execbuf while wedged
-> > Submitter	: tomas m <tmezzadra@gmail.com>
-> > Date		: 2010-01-07 18:53 (18 days old)
-> 
-> Chris, any ideas about this one?  I remember seeing a few like this
-> that have been bisected to 2D driver changes recently...
+On 01/27/2010 12:56 PM, Stephen Hemminger wrote:
+> --- a/drivers/net/sky2.c	2010-01-27 09:46:10.940005248 -0800
+> +++ b/drivers/net/sky2.c	2010-01-27 09:53:47.141267850 -0800
+> @@ -2257,13 +2257,16 @@ static struct sk_buff *receive_copy(stru
+>
+>   	skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
+>   	if (likely(skb)) {
+> +		unsigned dma_align = dma_get_cache_alignment();
+> +		unsigned dma_size = ALIGN(length+1, dma_align);
+> +
+>   		pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
+> -					    length, PCI_DMA_FROMDEVICE);
+> +					    dma_size, PCI_DMA_FROMDEVICE);
+>   		skb_copy_from_linear_data(re->skb, skb->data, length);
+>   		skb->ip_summed = re->skb->ip_summed;
+>   		skb->csum = re->skb->csum;
+>   		pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
+> -					       length, PCI_DMA_FROMDEVICE);
+> +					       dma_size, PCI_DMA_FROMDEVICE);
+>   		re->skb->ip_summed = CHECKSUM_NONE;
+>   		skb_put(skb, length);
+>   	}
+>    
+This doesn't apply - I'm missing some intermediate patch.
 
-Yes, this is almost certainly our userspace driver sending the GPU into a
-spin. And no, we haven't identified the cause yet, there have a been a lot
-of conflicting reports and guesswork, with very little information.
-
--- 
-Chris Wilson, Intel Open Source Technology Centre
+I've got (both in 2.6.32.4 and 2.6.33-rc5: pci_unmap_len(re, data_size) 
+vs., "length." I assume that I can just replace the pci_unmap_len with 
+dma_size... but perhaps the intermediate change may have affected this 
+as well?
