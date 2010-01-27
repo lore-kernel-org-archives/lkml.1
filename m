@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185Ab0A0AdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173Ab0A0AeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754185Ab0A0AdZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:33:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164Ab0A0AdW
+	id S1754173Ab0A0AeZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066Ab0A0AeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:33:22 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:50094 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752779Ab0A0AdK (ORCPT
+	Tue, 26 Jan 2010 19:34:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60385 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753726Ab0A0AeX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:33:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=NWyjZfgjZCo+dDKjOuztGNOZ/46p7YdqtNR4fxz+Sx+PQjgVvzkHEhrSoQwKnHwJtI
-         L+5/DUoIt9ba+ijAM0Yxha+hX9OFOKlyv25xrKvfxFJwBaFXXea/zq2YyzGUx1ztdgSf
-         0uUqJGyeJ3O2GbcVh5p5Wf5g69Z/Enj0YorQ0=
-MIME-Version: 1.0
-In-Reply-To: <aacba7e1001261621v6abb4270i996a28d19c9f7d7@mail.gmail.com>
-References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com> 
-	<20100126160243.018b87e3@lxorguk.ukuu.org.uk> <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com> 
-	<72dbd3151001261251s606ebf00h86c2ce63293305b6@mail.gmail.com> 
-	<aacba7e1001261621v6abb4270i996a28d19c9f7d7@mail.gmail.com>
-From: David Rees <drees76@gmail.com>
-Date: Tue, 26 Jan 2010 16:32:49 -0800
-Message-ID: <72dbd3151001261632t7bbe43d0nb7490eae02185c81@mail.gmail.com>
-Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
-To: Vishal Rao <vishalrao@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, stable@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Jan 2010 19:34:23 -0500
+Date: Tue, 26 Jan 2010 16:32:33 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
+       x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, shaohui.zheng@intel.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 2/3] x86: remove bios data range from e820
+Message-Id: <20100126163233.7ef1addb.akpm@linux-foundation.org>
+In-Reply-To: <20100122033004.335813103@intel.com>
+References: <20100122032102.137106635@intel.com>
+	<20100122033004.335813103@intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 4:21 PM, Vishal Rao <vishalrao@gmail.com> wrote:
-> 2010/1/27 David Rees <drees76@gmail.com>:
->> Have there been any other reports of NCQ issues with similar Crucial
->> drives or Indilinx?
->
-> I haven't personally seen reports of NCQ specific issues. I have seen
-> people (online) reporting "issues" with Linux distro installations
-> hanging/freezing etc. and some prior attempts at SMART fixes which
-> I also initially tried but did not work for me.
->
-> I have tried to "publicise" this issue (forum, blog, mailing list posts)
-> in the hope more users may search and identify the correct issue
-> so that it may be better verified.
+On Fri, 22 Jan 2010 11:21:04 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-See, that's just the problem.  I'm running couple OCZ SSD with an
-Indilinx controller and also know that Mark Lord and a bunch of others
-are also running them on Linux without issues.  And supposedly all the
-Indilinx firmware for the different resellers are based on the same
-base firmware.
+> From: Yinghai Lu <yinghai@kernel.org>
+> 
+> To prepare move page_is_ram() as generic one.
+> 
+> Tested-by: Wu Fengguang <fengguang.wu@intel.com>
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-I did have an issue with one of them on a particular motherboard
-locking up, but it turned out that the whole SATA controller was flaky
-and went away after I replaced the motherboard.
+This should have included Signed-off-by:you, as you were on the patch
+delivery path.  I shall add that.
 
-So my concern is that you're proposing to black list NCQ for all users
-of those particular models of SSD when it's more likely at this point
-that it's a problem with your specific setup.
-
--Dave
