@@ -1,53 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553Ab0A0LVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512Ab0A0LWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553Ab0A0LVL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 06:21:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508Ab0A0LVJ
+	id S1754512Ab0A0LWS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 06:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294Ab0A0LWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 06:21:09 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:60821 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754357Ab0A0LVI (ORCPT
+	Wed, 27 Jan 2010 06:22:17 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53471 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753320Ab0A0LWR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 06:21:08 -0500
-Date: Wed, 27 Jan 2010 16:50:55 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, Tom Tromey <tromey@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>, avi@redhat.com
-Subject: Re: linux-next: add utrace tree
-Message-ID: <20100127112055.GA14289@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <m33a1tnbd9.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain> <m3636oh2rt.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain> <1264575134.4283.1983.camel@laptop> <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain> <1264589716.4283.2006.camel@laptop> <20100127110555.GB1842@in.ibm.com> <1264590511.4283.2009.camel@laptop>
+	Wed, 27 Jan 2010 06:22:17 -0500
+Date: Wed, 27 Jan 2010 12:22:16 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, jirislaby@gmail.com
+Subject: Re: [PATCH 1/2] PM: remove deprecated user ioctls
+Message-ID: <20100127112215.GA11551@atrey.karlin.mff.cuni.cz>
+References: <1264589875-17045-1-git-send-email-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1264590511.4283.2009.camel@laptop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1264589875-17045-1-git-send-email-jslaby@suse.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 12:08:31PM +0100, Peter Zijlstra wrote:
-> On Wed, 2010-01-27 at 16:35 +0530, Ananth N Mavinakayanahalli wrote:
-> > Probing RIP-relative instructions work just fine; there are fixups that
-> > take care of it. 
+> They were deprecated and removed from exported headers more than 2
+> years ago.
+
+Should not this go through feature removal schedule etc...? Add
+printks when someone uses deprecated ioctl?
+									Pavel
+
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> ---
+>  kernel/power/user.c |   73 ---------------------------------------------------
+>  1 files changed, 0 insertions(+), 73 deletions(-)
 > 
-> Ah my bad then, it was my understanding you simply bailed on those.
-> 
-> Just for my information, how large are the replacement sequences?
+> diff --git a/kernel/power/user.c b/kernel/power/user.c
+> index bf0014d..d7d6347 100644
+> --- a/kernel/power/user.c
+> +++ b/kernel/power/user.c
+> @@ -29,29 +29,6 @@
+>  
+>  #include "power.h"
+>  
+> -/*
+> - * NOTE: The SNAPSHOT_SET_SWAP_FILE and SNAPSHOT_PMOPS ioctls are obsolete and
+> - * will be removed in the future.  They are only preserved here for
+> - * compatibility with existing userland utilities.
+> - */
+> -#define SNAPSHOT_SET_SWAP_FILE	_IOW(SNAPSHOT_IOC_MAGIC, 10, unsigned int)
+> -#define SNAPSHOT_PMOPS		_IOW(SNAPSHOT_IOC_MAGIC, 12, unsigned int)
+> -
+> -#define PMOPS_PREPARE	1
+> -#define PMOPS_ENTER	2
+> -#define PMOPS_FINISH	3
+> -
+> -/*
+> - * NOTE: The following ioctl definitions are wrong and have been replaced with
+> - * correct ones.  They are only preserved here for compatibility with existing
+> - * userland utilities and will be removed in the future.
+> - */
+> -#define SNAPSHOT_ATOMIC_SNAPSHOT	_IOW(SNAPSHOT_IOC_MAGIC, 3, void *)
+> -#define SNAPSHOT_SET_IMAGE_SIZE		_IOW(SNAPSHOT_IOC_MAGIC, 6, unsigned long)
+> -#define SNAPSHOT_AVAIL_SWAP		_IOR(SNAPSHOT_IOC_MAGIC, 7, void *)
+> -#define SNAPSHOT_GET_SWAP_PAGE		_IOR(SNAPSHOT_IOC_MAGIC, 8, void *)
+> -
+> -
+>  #define SNAPSHOT_MINOR	231
+>  
+>  static struct snapshot_data {
+> @@ -247,7 +224,6 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+>  		break;
+>  
+>  	case SNAPSHOT_CREATE_IMAGE:
+> -	case SNAPSHOT_ATOMIC_SNAPSHOT:
+>  		if (data->mode != O_RDONLY || !data->frozen  || data->ready) {
+>  			error = -EPERM;
+>  			break;
+> @@ -276,7 +252,6 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+>  		break;
+>  
+>  	case SNAPSHOT_PREF_IMAGE_SIZE:
+> -	case SNAPSHOT_SET_IMAGE_SIZE:
+>  		image_size = arg;
+>  		break;
+>  
+> @@ -291,14 +266,12 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+>  		break;
+>  
+>  	case SNAPSHOT_AVAIL_SWAP_SIZE:
+> -	case SNAPSHOT_AVAIL_SWAP:
+>  		size = count_swap_pages(data->swap, 1);
+>  		size <<= PAGE_SHIFT;
+>  		error = put_user(size, (loff_t __user *)arg);
+>  		break;
+>  
+>  	case SNAPSHOT_ALLOC_SWAP_PAGE:
+> -	case SNAPSHOT_GET_SWAP_PAGE:
+>  		if (data->swap < 0 || data->swap >= MAX_SWAPFILES) {
+>  			error = -ENODEV;
+>  			break;
+> @@ -320,26 +293,6 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+>  		free_all_swap_pages(data->swap);
+>  		break;
+>  
+> -	case SNAPSHOT_SET_SWAP_FILE: /* This ioctl is deprecated */
+> -		if (!swsusp_swap_in_use()) {
+> -			/*
+> -			 * User space encodes device types as two-byte values,
+> -			 * so we need to recode them
+> -			 */
+> -			if (old_decode_dev(arg)) {
+> -				data->swap = swap_type_of(old_decode_dev(arg),
+> -							0, NULL);
+> -				if (data->swap < 0)
+> -					error = -ENODEV;
+> -			} else {
+> -				data->swap = -1;
+> -				error = -EINVAL;
+> -			}
+> -		} else {
+> -			error = -EPERM;
+> -		}
+> -		break;
+> -
+>  	case SNAPSHOT_S2RAM:
+>  		if (!data->frozen) {
+>  			error = -EPERM;
+> @@ -361,32 +314,6 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+>  			error = hibernation_platform_enter();
+>  		break;
+>  
+> -	case SNAPSHOT_PMOPS: /* This ioctl is deprecated */
+> -		error = -EINVAL;
+> -
+> -		switch (arg) {
+> -
+> -		case PMOPS_PREPARE:
+> -			data->platform_support = 1;
+> -			error = 0;
+> -			break;
+> -
+> -		case PMOPS_ENTER:
+> -			if (data->platform_support)
+> -				error = hibernation_platform_enter();
+> -			break;
+> -
+> -		case PMOPS_FINISH:
+> -			if (data->platform_support)
+> -				error = 0;
+> -			break;
+> -
+> -		default:
+> -			printk(KERN_ERR "SNAPSHOT_PMOPS: invalid argument %ld\n", arg);
+> -
+> -		}
+> -		break;
+> -
+>  	case SNAPSHOT_SET_SWAP_AREA:
+>  		if (swsusp_swap_in_use()) {
+>  			error = -EPERM;
 
-The RIP relative instruction is transformed into indirect addressing
-mode using a scratch register.
-
-For details http://marc.info/?l=linux-kernel&m=126401936114639&w=2. 
-
-Ananth
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
