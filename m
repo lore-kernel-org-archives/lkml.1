@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671Ab0A0Q2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018Ab0A0Q27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671Ab0A0Q2c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 11:28:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436Ab0A0Q2b
+	id S1755018Ab0A0Q27 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 11:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546Ab0A0Q25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 11:28:31 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:53457 "EHLO mail.zytor.com"
+	Wed, 27 Jan 2010 11:28:57 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53465 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753020Ab0A0Q2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 11:28:31 -0500
-Message-ID: <4B606920.8000306@zytor.com>
-Date: Wed, 27 Jan 2010 08:26:08 -0800
+	id S1753150Ab0A0Q24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 11:28:56 -0500
+Message-ID: <4B6069A7.1020907@zytor.com>
+Date: Wed, 27 Jan 2010 08:28:23 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Dean Nelson <dnelson@redhat.com>,
-       Russ Anderson <rja@sgi.com>, ozan@pardus.org.tr,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai Lu <yinghai@kernel.org>,
-       Gene Heskett <gene.heskett@verizon.net>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Mark Hounschell <markh@compro.net>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       David Rientjes <rientjes@google.com>,
-       Haicheng Li <haicheng.li@linux.intel.com>
-Subject: Re: [GIT PULL] x86 fixes for 2.6.33-rc6
-References: <201001270833.o0R8X7ZN018729@terminus.zytor.com> <alpine.LFD.2.00.1001270249190.24253@localhost.localdomain> <20100127112446.GA19613@elte.hu>
-In-Reply-To: <20100127112446.GA19613@elte.hu>
+To: Brian Gerst <brgerst@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/asm] x86-64: Use normal ptregs stub for execve
+References: <1264434453-2204-1-git-send-email-brgerst@gmail.com>	 <tip-f19a25c872b20ae4357f72687cf3e7b0da220ee2@git.kernel.org>	 <20100127130716.GA26908@elte.hu> <73c1f2161001270721x3d07b507lb78fa8c53567dcaa@mail.gmail.com>
+In-Reply-To: <73c1f2161001270721x3d07b507lb78fa8c53567dcaa@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/27/2010 03:24 AM, Ingo Molnar wrote:
+On 01/27/2010 07:21 AM, Brian Gerst wrote:
 > 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
->> On Wed, 27 Jan 2010, H. Peter Anvin wrote:
->>>
->>>   git://git.kernel.org/pub/scm/linux/kernel/x86/linux-2.6-tip.git x86-fixes-for-linus
->>
->> That doesn't work for me at all.
-> 
-> i think Peter typoed it and the git/ portion went missing, it should have 
-> been:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git x86-fixes-for-linus
-> 
->> I assume you meant
->>
->>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
->>
->> (note the "git/tip" instead of "x86")
-> 
-> Yes, that works too. The x86 repo is symlinked to the tip repo.
+> I see what is going on.  Grub is a 32-bit statically linked executable
+> even on a 64-bit distro.  The old execve stub forced return to
+> userspace via iret, but PTREGSCALL apparently doesn't.  This means
+> that the 32-bit %cs isn't getting set.  Drop this patch for now.
 > 
 
-Sorry about that.  Get it done before bed syndrome.
+OK, I presume that breaks execing any 32-bit app, not just statically
+linked (eww...)
+
+Yet one more case of Grub making me shudder, though :-/
 
 	-hpa
 
