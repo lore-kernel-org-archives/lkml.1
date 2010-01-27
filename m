@@ -1,156 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848Ab0A0R4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872Ab0A0R5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848Ab0A0R4s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 12:56:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061Ab0A0R4r
+	id S1755872Ab0A0R5A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 12:57:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755858Ab0A0R45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 12:56:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55926 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932160Ab0A0R4q (ORCPT
+	Wed, 27 Jan 2010 12:56:57 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:34080 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755851Ab0A0R4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 12:56:46 -0500
-Date: Wed, 27 Jan 2010 09:56:14 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-Message-ID: <20100127095614.14313677@nehalam>
-In-Reply-To: <4B60707F.1000608@majjas.com>
-References: <20100120094103.GA6225@ff.dom.local>
-	<4B58B217.8030001@majjas.com>
-	<20100121204133.GB3085@del.dom.local>
-	<4B59E7EB.3050605@majjas.com>
-	<20100122215304.GA3105@del.dom.local>
-	<4B5A2362.6000306@majjas.com>
-	<20100122230605.GB3105@del.dom.local>
-	<4B5A33D8.90501@majjas.com>
-	<20100122234656.GC3105@del.dom.local>
-	<4B5A39BD.8020305@majjas.com>
-	<20100123232133.GA3487@del.dom.local>
-	<4B605D1B.60402@majjas.com>
-	<20100127085049.5b5048e9@nehalam>
-	<4B60707F.1000608@majjas.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 12:56:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=s0treB1jYDS3oJIkiYTNlGFo/Zbi9Jy27CaRnqfwGJpqYZ4CiitwsRRTH0nVvjU0AY
+         49C1yseTQ2PCnG1nmPcT0HNZIzupRWr69FPeQvqzt75zKiliV4w8V+6MlIcZUU2A2ZEx
+         pKveBF/oxw7gVJlI6hkHbkGrMe/lMpUktO6ZA=
+Date: Wed, 27 Jan 2010 18:56:50 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 2/4] perf,hw_breakpoint: add lockless reservation for
+	hw_breaks
+Message-ID: <20100127175647.GA23017@nowhere>
+References: <1264480000-6997-1-git-send-email-jason.wessel@windriver.com> <1264480000-6997-3-git-send-email-jason.wessel@windriver.com> <4B5F419F.2090901@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B5F419F.2090901@windriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010 11:57:35 -0500
-Michael Breuer <mbreuer@majjas.com> wrote:
+On Tue, Jan 26, 2010 at 01:25:19PM -0600, Jason Wessel wrote:
+> @@ -250,11 +326,16 @@ int reserve_bp_slot(struct perf_event *b
+>  
+>  	mutex_lock(&nr_bp_mutex);
+>  
+> +	ret = dbg_hw_breakpoint_alloc(bp->cpu);
+> +	if (ret)
+> +		goto end;
+> +
 
-> On 1/27/2010 11:50 AM, Stephen Hemminger wrote:
-> > On Wed, 27 Jan 2010 10:34:51 -0500
-> > Michael Breuer<mbreuer@majjas.com>  wrote:
-> >
-> >    
-> >> On 01/23/2010 06:21 PM, Jarek Poplawski wrote:
-> >>      
-> >>> On Fri, Jan 22, 2010 at 06:50:21PM -0500, Michael Breuer wrote:
-> >>>
-> >>>        
-> >>>> When the packets were dropped, there was a different sequence in the
-> >>>> log - DISCOVER/OFFER repeated. The "normal" is that the sequence
-> >>>> appeared correct and complete - DISCOVER/OFFER/REQUEST/ACK - or
-> >>>> INFORM/ACK (vs. INFORM repeatedly sans ACK) as the case may be.
-> >>>>
-> >>>>          
-> >>> Anyway, I'd be intersted if the switch matters here.
-> >>>
-> >>> Plus one more test: could you try to load sky2 with the parameter:
-> >>> "copybreak=1" (the rest as in any recent test, which gave you dmar
-> >>> errors; any switch).
-> >>>
-> >>> Thanks,
-> >>> Jarek P.
-> >>>
-> >>>        
-> >> Ok - now up 80+ hours with copybreak=1. I'm going to redo w/o copybreak
-> >> to confirm that I haven't inadvertently fixed something. However, given
-> >> that it might be copybreak-related, I looked at sky2.c again and I'm
-> >> wondering about the copybreak max size in sky2_rx_start:
-> >>
-> >>     size = roundup(sky2->netdev->mtu + ETH_HLEN + VLAN_HLEN, 8);
-> >>
-> >>           /* Stopping point for hardware truncation */
-> >>           thresh = (size - 8) / sizeof(u32);
-> >>
-> >>           sky2->rx_nfrags = size>>  PAGE_SHIFT;
-> >>           BUG_ON(sky2->rx_nfrags>  ARRAY_SIZE(re->frag_addr));
-> >>
-> >>           /* Compute residue after pages */
-> >>           size -= sky2->rx_nfrags<<  PAGE_SHIFT;
-> >>
-> >>           /* Optimize to handle small packets and headers */
-> >>           if (size<  copybreak)
-> >>                   size = copybreak;
-> >>           if (size<  ETH_HLEN)
-> >>                   size = ETH_HLEN;
-> >>
-> >>
-> >> Why would increasing size to copybreak be valid here?
-> >>
-> >> Guessing a bit as I'm not sure about rx_nfrags, but if I read this
-> >> correctly, if size is ever less than copybreak it's because there isn't
-> >> enough space left for anything larger. If so, wouldn't increasing size
-> >> potentially corrupt something? I'd further guess that the resulting
-> >> condition manifests sooner (or at least with a more visible effect) when
-> >> using DMAR.
-> >>
-> >> In any event, why "copybreak" as the minimum buffer size? I'd suggest
-> >> that if it isn't possible to allocate at least MTU + overhead that
-> >> sky2_rx_start ought to be delayed until there is room.
-> >>      
-> > This code is where driver decides how much data will be received in skb
-> > data area and the remaining data spills over into skb frags.
-> > Copybreak is the threshold so that packets less than size are copied
-> > to a new skb.  The code doing the copying there assumes the data is
-> > totally contained in the skb (not in frags). The size increase there
-> > is to make sure that assumption is always true.  I suppose you
-> > could do something perverse like setting copybreak really huge
-> > and confuse driver, but that is a user error.
-> >
-> >    
-> Ok - but I'm wondering under what circumstances size would be < 
-> copybreak in the first place after computing the residue. If size ends 
-> up being unreasonably small, is simply increasing the number to whatever 
-> copybreak is correct? Assuming my testing is correct, then the crash 
-> I've been experiencing when using dmar (only) seems related to the value 
-> of copybreak. I don't think the other use (skb reuse) is the issue (but 
-> hey, I could have missed something). The crash occurs when copybreak is 
-> the default of 128, didn't happen when I set copybreak to 1.
 
-Does this change it? If so the dma code is (not sky2) is buggy and not
-rounding up properly.
 
---- a/drivers/net/sky2.c	2010-01-27 09:46:10.940005248 -0800
-+++ b/drivers/net/sky2.c	2010-01-27 09:53:47.141267850 -0800
-@@ -2257,13 +2257,16 @@ static struct sk_buff *receive_copy(stru
- 
- 	skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
- 	if (likely(skb)) {
-+		unsigned dma_align = dma_get_cache_alignment();
-+		unsigned dma_size = ALIGN(length+1, dma_align);
-+
- 		pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
--					    length, PCI_DMA_FROMDEVICE);
-+					    dma_size, PCI_DMA_FROMDEVICE);
- 		skb_copy_from_linear_data(re->skb, skb->data, length);
- 		skb->ip_summed = re->skb->ip_summed;
- 		skb->csum = re->skb->csum;
- 		pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
--					       length, PCI_DMA_FROMDEVICE);
-+					       dma_size, PCI_DMA_FROMDEVICE);
- 		re->skb->ip_summed = CHECKSUM_NONE;
- 		skb_put(skb, length);
- 	}
+This is totally breaking all the constraints that try to
+make the reservation cpu-wide/task-wide aware.
+
+Basically, you just reduced the reservation in 4 breakpoints
+per cpu.
+
+The current constraints are able to host thousands of
+task wide breakpoints, given none of these tasks has
+more than 4 breakpoints. What you've just added here breaks
+all this flexibility and reduces every breakpoints to
+per cpu breakpoints (or system wide), ignoring the per
+task contexts, or non-pinned events.
+
+Now I still don't understand why you refuse to use
+a best effort approach wrt locking.
+
+A simple mutex_is_locked() would tell you if someone
+is trying to reserve a breakpoint. And this is
+safe since all the system is stopped at this time,
+right? So once you ensure nobody is fighting against
+you for the reservation, you can be sure you are alone
+until the end of your reservation.
+
+Or if it is not guaranteed the system is stopped when
+you reserve a breakpoint for kgdb, you can use
+mutex_trylock(). Basically this is the same approach.
+
+If you are fighting against another breakpoint reservation,
+it means you are really unlucky, it only happens when
+you create such event through a perf syscall, ptrace or ftrace.
+
+Yes a user can create a perf/ftrace/ptrace breakpoint while
+another user creates one kgdb, then if the reservation happen
+on the same time, either both can make or kgdb will fail.
+This *might* happen once in the universe lifetime, should
+we really care about that?
+
+I can write a patch for that if you want.
+
