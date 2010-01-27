@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212Ab0A0Kk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670Ab0A0Kox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754212Ab0A0Kk3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 05:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061Ab0A0Kk1
+	id S1753670Ab0A0Kox (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 05:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923Ab0A0Kow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 05:40:27 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:54143 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754043Ab0A0Kk0 (ORCPT
+	Wed, 27 Jan 2010 05:44:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38167 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751393Ab0A0Kou (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 05:40:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=tEXw4Co3mITXRsGiQIW3jQ5rjO1PkXh+/jabqdAe4vZRFyyn+ORh/kP/8XZjRTe0zs
-         HvO4uGLvsHgDprcGH54KVl5fhah1Pb8yDRxakC/EcB89UoLLPfRc4/f942JCGPjoz7yN
-         o7EaF/RIPyTWpO4U5H0ibWNbrVOIOYW/S1AGI=
-Date: Wed, 27 Jan 2010 13:40:11 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: kernel-janitors@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: bug list: assigning negative values to unsigned variables
-Message-ID: <20100127104011.GA24796@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+	Wed, 27 Jan 2010 05:44:50 -0500
+Date: Wed, 27 Jan 2010 02:43:39 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Tom Tromey <tromey@redhat.com>, Kyle Moffett <kyle@moffetthome.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, JimKeniston <jkenisto@us.ibm.com>
+Subject: Re: linux-next: add utrace tree
+In-Reply-To: <1264575134.4283.1983.camel@laptop>
+Message-ID: <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain>
+References: <20100121013822.28781960.sfr@canb.auug.org.au>  <20100122005147.GD22003@redhat.com>  <20100121170541.7425ff10.akpm@linux-foundation.org>  <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>  <20100122182827.GA13185@redhat.com>
+ <20100122200129.GG22003@redhat.com>  <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>  <20100122221348.GA4263@redhat.com>  <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>  <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> 
+ <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>  <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>  <m33a1tnbd9.fsf@fleche.redhat.com>  <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>  <m3636oh2rt.fsf@fleche.redhat.com> 
+ <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain> <1264575134.4283.1983.camel@laptop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixing the places which assign negative values to unsigned variables is a good janitor task.
 
-This list is from smatch:  grep -w "fit into 0" warns.txt | grep -v "\-1" | tee err-list
 
-regards,
-dan carpenter
+On Wed, 27 Jan 2010, Peter Zijlstra wrote:
+> 
+> Right, so you're going to love uprobes, which does exactly that. The
+> current proposal is overwriting the target instruction with an INT3 and
+> injecting an extra vma into the target process's address space
+> containing the original instruction(s) and possible jumps back to the
+> old code stream.
 
-drivers/bluetooth/btmrvl_main.c +74 btmrvl_process_event(9) warn: value -22 can't fit into 0 'ret'
-drivers/bluetooth/btmrvl_main.c +123 btmrvl_process_event(58) warn: value -22 can't fit into 0 'ret'
-drivers/bluetooth/btmrvl_main.c +136 btmrvl_process_event(71) warn: value -22 can't fit into 0 'ret'
-drivers/char/mwave/smapi.c +69 smapi_request(12) warn: value -5 can't fit into 0 'usSmapiOK'
-drivers/net/ixgbe/ixgbe_dcb_nl.c +439 ixgbe_dcbnl_getcap(29) warn: value -22 can't fit into 0 'rval'
-drivers/net/ixgbe/ixgbe_dcb_nl.c +443 ixgbe_dcbnl_getcap(33) warn: value -22 can't fit into 0 'rval'
-drivers/net/ixgbe/ixgbe_dcb_nl.c +463 ixgbe_dcbnl_getnumtcs(14) warn: value -22 can't fit into 0 'rval'
-drivers/net/ixgbe/ixgbe_dcb_nl.c +467 ixgbe_dcbnl_getnumtcs(18) warn: value -22 can't fit into 0 'rval'
-drivers/net/wireless/b43legacy/phy.c +1205 b43legacy_phy_lo_b_measure(60) warn: value -772 can't fit into 0 'fval'
-drivers/net/wireless/b43legacy/phy.c +1632 b43legacy_phy_lo_g_measure(143) warn: value -3 can't fit into 0 'tmp'
-drivers/net/wireless/hostap/hostap_ioctl.c +1020 prism2_ioctl_giwrange(66) warn: value -60 can't fit into 0 'range->avg_qual.level'
-drivers/net/wireless/hostap/hostap_ioctl.c +1021 prism2_ioctl_giwrange(67) warn: value -95 can't fit into 0 'range->avg_qual.noise'
-drivers/net/wireless/ipw2x00/ipw2100.c +6901 ipw2100_wx_get_range(37) warn: value -78 can't fit into 0 'range->avg_qual.level'
-drivers/net/wireless/libertas/wext.c +875 lbs_get_wireless_stats(34) warn: value -96 can't fit into 0 'priv->wstats.qual.noise'
-drivers/net/wireless/prism54/isl_ioctl.c +452 prism54_get_range(33) warn: value -80 can't fit into 0 'range->avg_qual.level'
-drivers/net/bnx2x_link.c +3189 bnx2x_sfp_module_detection(21) warn: value -22 can't fit into 0 'rc'
-drivers/net/bnx2x_link.c +4548 bnx2x_ext_phy_init(911) warn: value -22 can't fit into 0 'rc'
-drivers/net/bnx2x_link.c +4553 bnx2x_ext_phy_init(916) warn: value -22 can't fit into 0 'rc'
-drivers/net/bnx2x_link.c +5556 bnx2x_get_ext_phy_fw_version(53) warn: value -22 can't fit into 0 'status'
-drivers/net/bnx2x_link.c +5854 bnx2x_set_led(59) warn: value -22 can't fit into 0 'rc'
-drivers/staging/rt2860/sta_ioctl.c +564 rt_ioctl_giwrange(60) warn: value -60 can't fit into 0 'range->avg_qual.level'
-drivers/staging/rt2860/sta_ioctl.c +565 rt_ioctl_giwrange(61) warn: value -95 can't fit into 0 'range->avg_qual.noise'
-drivers/staging/rt2870/../rt2860/sta_ioctl.c +564 rt_ioctl_giwrange(60) warn: value -60 can't fit into 0 'range->avg_qual.level'
-drivers/staging/rt2870/../rt2860/sta_ioctl.c +565 rt_ioctl_giwrange(61) warn: value -95 can't fit into 0 'range->avg_qual.noise'
-drivers/staging/rtl8187se/r8180_wx.c +275 rtl8180_wx_get_range(39) warn: value -98 can't fit into 0 'range->max_qual.noise'
-drivers/staging/rtl8187se/r8180_wx.c +280 rtl8180_wx_get_range(44) warn: value -78 can't fit into 0 'range->avg_qual.level'
-drivers/staging/rtl8192e/r8192E_wx.c +445 rtl8180_wx_get_range(39) warn: value -98 can't fit into 0 'range->max_qual.noise'
-drivers/staging/rtl8192e/r8192E_wx.c +450 rtl8180_wx_get_range(44) warn: value -78 can't fit into 0 'range->avg_qual.level'
-drivers/staging/rtl8192su/r8192U_wx.c +434 rtl8180_wx_get_range(39) warn: value -98 can't fit into 0 'range->max_qual.noise'
-drivers/staging/rtl8192su/r8192U_wx.c +439 rtl8180_wx_get_range(44) warn: value -78 can't fit into 0 'range->avg_qual.level'
-drivers/staging/rtl8192u/r8192U_wx.c +420 rtl8180_wx_get_range(39) warn: value -98 can't fit into 0 'range->max_qual.noise'
-drivers/staging/rtl8192u/r8192U_wx.c +425 rtl8180_wx_get_range(44) warn: value -78 can't fit into 0 'range->avg_qual.level'
-drivers/usb/serial/iuu_phoenix.c +565 iuu_clk(125) warn: value -2 can't fit into 0 '*(priv->buf+Count++)'
+Just out of interest, how does it handle the threading issue?
+
+Last I saw, at least some CPU people were _very_ nervous about overwriting 
+instructions if another CPU might be just about to execute them.
+
+Even the "overwrite only the first byte with 'int3'" made them go "umm, I 
+need to talk to some core CPU people to see if that's ok". They mumble 
+about possible CPU errata, I$ coherency, instruction retry etc.
+
+I realize kprobes does this very thing, but kprobes is esoteric stuff and 
+doesn't have much choice. In user space, you _could_ do the modification 
+on a different physical page and then just switch the page table entry 
+instead, and not get into the whole D$/I$ coherency thing at all.
+
+				Linus
