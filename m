@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748Ab0A0AUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930Ab0A0AVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748Ab0A0AUY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503Ab0A0AUW
+	id S1753930Ab0A0AVV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:21:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671Ab0A0AVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:20:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45854 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751953Ab0A0AUV (ORCPT
+	Tue, 26 Jan 2010 19:21:20 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:41112 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653Ab0A0AVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:20:21 -0500
-Date: Tue, 26 Jan 2010 16:19:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
-       minchan.kim@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
-Message-Id: <20100126161952.ee267d1c.akpm@linux-foundation.org>
-In-Reply-To: <20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100126151202.75bd9347.akpm@linux-foundation.org>
-	<20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jan 2010 19:21:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Mib8ns7D4bWuYIF2Nvip+s0eMlhIwuBtXAzW/z59IGpu0BPwl/d80Kp9Dk7CHk3B0B
+         ti87wjSEVZncmGX920jDoL//xycCtOCDWdfmiN7pf5iR3VDbbMP2REMLo36yK36eFD0z
+         a9PwwKU01cR5RqH+iKfGJfDmzEEJdY0viyfuc=
+MIME-Version: 1.0
+In-Reply-To: <72dbd3151001261251s606ebf00h86c2ce63293305b6@mail.gmail.com>
+References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
+	 <20100126160243.018b87e3@lxorguk.ukuu.org.uk>
+	 <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
+	 <72dbd3151001261251s606ebf00h86c2ce63293305b6@mail.gmail.com>
+Date: Wed, 27 Jan 2010 05:51:17 +0530
+Message-ID: <aacba7e1001261621v6abb4270i996a28d19c9f7d7@mail.gmail.com>
+Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
+From: Vishal Rao <vishalrao@gmail.com>
+To: David Rees <drees76@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, stable@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010 08:53:55 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+2010/1/27 David Rees <drees76@gmail.com>:
+> Have there been any other reports of NCQ issues with similar Crucial
+> drives or Indilinx?
 
-> > Hardly anyone will know to enable
-> > it so the feature won't get much testing and this binary decision
-> > fractures the testing effort.  It would be much better if we can get
-> > everyone running the same code.  I mean, if there are certain workloads
-> > on certain machines with which the oom-killer doesn't behave correctly
-> > then fix it!
-> Yes, I think you're right. But "breaking current behaviro of our servers!"
-> arguments kills all proposal to this area and this oom-killer or vmscan is
-> a feature should be tested by real users. (I'll write fork-bomb detector
-> and RSS based OOM again.)
+I haven't personally seen reports of NCQ specific issues. I have seen
+people (online) reporting "issues" with Linux distro installations
+hanging/freezing etc. and some prior attempts at SMART fixes which
+I also initially tried but did not work for me.
 
-Well don't break their servers then ;)
+I have tried to "publicise" this issue (forum, blog, mailing list posts)
+in the hope more users may search and identify the correct issue
+so that it may be better verified.
 
-What I'm not understanding is: why is it not possible to improve the
-behaviour on the affected machines without affecting the behaviour on
-other machines?
+Unfortunately, the Crucial ID string is not model-agnostic (if thats
+the right term)... meaning the patch has 3 lines to ID the 3 current
+models that I know of including my own 128 GB model.
 
-What are these "servers" to which you refer?  x86_32 servers, I assume
-- the patch shouldn't affect 64-bit machines.  Why don't they also want
-this treatment and in what way does the patch "break" them?
+Not sure if there's a better, more generic way to match a whole group
+of SSDs (same model family or various vendors) which trigger NCQ errors?
 
+-- 
+"Thou shalt not follow the null pointer for at its end madness and chaos lie."
