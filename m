@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754375Ab0A0LKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420Ab0A0LM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754375Ab0A0LKN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 06:10:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365Ab0A0LKL
+	id S1754420Ab0A0LM1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 06:12:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384Ab0A0LM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 06:10:11 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:58158 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754272Ab0A0LKJ (ORCPT
+	Wed, 27 Jan 2010 06:12:26 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:58749 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754367Ab0A0LM0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 06:10:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=GElqSpZHfSbADaobiwXySc/e1T1ofWC269x5vp/SSzbogWxHeS/fuegck83boE4n4B
-         cEePxTe/IsLcJuRgTJOeEEiB09DMWuaW7sXgcU+z1d55qnGCEtBYpXA5pds0Gb9aKdNS
-         LEAv7tCoGOvT5D+dUPT9PWVpG7tHwcHHoAO/Y=
-Subject: Re: [PATCH] backlight: l4f00242t03: Fix module licence absence.
-From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1263889850.3121.12.camel@realization>
-References: <20100119150836.bb975e4b.sfr@canb.auug.org.au>
-	 <1263889757.3121.10.camel@realization>
-	 <1263889850.3121.12.camel@realization>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 12:10:02 +0100
-Message-ID: <1264590602.2463.47.camel@realization>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 27 Jan 2010 06:12:26 -0500
+Message-ID: <4B601F98.6010708@cs.helsinki.fi>
+Date: Wed, 27 Jan 2010 13:12:24 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Chris Wilson <chris@chris-wilson.co.uk>,
+       Roman Jarosz <kedgedev@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       A Rojas <nqn1976list@gmail.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
+       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: OOM-Killer kills too much with 2.6.32.2
+References: <2f11576a1001260503o5f987512n3c39ae1c3caa43f3@mail.gmail.com>  <89khjo$egh4fr@orsmga002.jf.intel.com>  <20100127091903.6AD5.A69D9226@jp.fujitsu.com> <84144f021001270156x7613c8b1ha0084b0abf604775@mail.gmail.com> <alpine.LFD.2.00.1001270252290.24253@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1001270252290.24253@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-Signed-off-by: Alberto Panizzo <maramaopercheseimorto@gmail.com>
----
+Linus Torvalds kirjoitti:
+> On Wed, 27 Jan 2010, Pekka Enberg wrote:
+>> Yes, we're very late in 2.6.33 cycle. Chris/Jesse, please apply
+>> Motohiro-san's patch or revert the commit.
+> 
+> I assume you're talking about reverting commit 07f73f691 ("drm/i915: 
+> Improve behaviour under memory pressure").
 
-Richard, can you pick this for "for-mm" branch of backlight tree?
-in previous mail I explain my mistake..
-Thanks.
+Yup.
 
+> Motohiro-san's patch didn't have a sign-off or a commit message. I guess I 
+> could cobble some commit message together from the thread, but it would be 
+> good if somebody involved with the code were to do so. Please?
 
- drivers/video/backlight/l4f00242t03.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I wasn't involved with the actual patch so I'll just let Motohiro-san, 
+Chris, or Jesse handle that.
 
-diff --git a/drivers/video/backlight/l4f00242t03.c b/drivers/video/backlight/l4f00242t03.c
-index 42d061e..74abd69 100644
---- a/drivers/video/backlight/l4f00242t03.c
-+++ b/drivers/video/backlight/l4f00242t03.c
-@@ -254,3 +254,4 @@ module_exit(l4f00242t03_exit);
- 
- MODULE_AUTHOR("Alberto Panizzo <maramaopercheseimorto@gmail.com>");
- MODULE_DESCRIPTION("EPSON L4F00242T03 LCD");
-+MODULE_LICENSE("GPL v2");
--- 
-1.6.3.3
-
-
+			Pekka
