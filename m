@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310Ab0A0X4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614Ab0A0X4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755310Ab0A0X4Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636Ab0A0X4P
+	id S1755614Ab0A0X4q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:56:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754525Ab0A0X4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:56:15 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:54633 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754432Ab0A0X4O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:56:14 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=PaDw9R8UkIVZEm/pUuSNaIWviGnhqblQ2hVzX9e5wfWCJHZmt4dl+svm1y2KyGJzX
-	OU2ardIb0SgxN/nhrZazQ==
-Date: Wed, 27 Jan 2010 15:56:09 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, minchan.kim@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
-In-Reply-To: <20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.1001271547200.4663@chino.kir.corp.google.com>
-References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com> <20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com> <20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com> <20100126151202.75bd9347.akpm@linux-foundation.org>
- <20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com> <20100126161952.ee267d1c.akpm@linux-foundation.org> <20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 27 Jan 2010 18:56:45 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:36302 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753919Ab0A0X4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 18:56:44 -0500
+X-Greylist: delayed 1397 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jan 2010 18:56:44 EST
+From: Ferenc Wagner <wferi@niif.hu>
+To: linux-kernel@vger.kernel.org
+Subject: Warning: dev (ttyS1) tty->count(6) != #fd's(5) in tty_release_dev
+Date: Thu, 28 Jan 2010 00:33:22 +0100
+Message-ID: <878wbjp1h9.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010, KAMEZAWA Hiroyuki wrote:
+Hi,
 
-> Now, /proc/<pid>/oom_score and /proc/<pid>/oom_adj are used by servers.
+I often get several such messages during system boot, at least when udev
+is in debug mode (udev_log="debug") and console=ttyS1,19200n8r under
+Linux 2.6.32 and udev 150.  The numbers vary, but they are always small
+and the difference is always one.  For example, as captured on a serial
+line:
 
-Nonsense, there are plenty of userspace applications such as udev that 
-tune their own oom_adj value on their own!  oom_adj is used by anyone who 
-wants to define oom killer priority by polarizing the badness heuristic 
-for certain tasks to, for example, always prefer them or completely 
-disable oom killing for them.
+udevd-work[  140.719498] Warning: dev (ttyS1) tty->count(7) != #fd's(6) in tty_release_dev
+[113]: seq 628 p[  140.770449] Warning: dev (ttyS1) tty->count(7) != #fd's(6) in tty_release_dev
+rocessed with 0
+[...]
+usb_[  141.585263] sd 1:0:0:0: [sdb] Add. Sense: Logical unit not ready, manual intervention required
+id[266]: device [  141.585269] sd 1:0:0:0: [sdb] CDB: Read(10): 28 00 00 00 00 00 00 00 08 00
+[  141.585276] end_request: I/O error, dev sdb, sector 0
+0x9f3c068 has de[  141.827050] Warning: dev (ttyS1) tty->count(5) != #fd's(4) in tty_release_dev
+vpath '/devices/[  141.878019] Warn.rules:40
+[...]
+udevd-work[127]:[  151.518217] sd 2:0:0:0: [sdd] Sense Key : Not Ready [current] 
+ creating device[  151.518220] sd 2:0:0:0: [sdd] Add. Sense: Logical unit not ready, manual intervention required
+ node '/dev/bsg/[  151.518226] sd 2:0:0:0: [sdd] CDB: Read(10): 28 00 00 00 00 00 00 00 08 00
+[  151.518233] end_request: I/O error, dev sdd, sector 0
+0:0:0:0', devnum[  151.760024] Warning: dev (ttyS1) tty->count(3) != #fd's(2) in tty_release_dev
+=253:0, mode=066[  151.816122] sd 2:0:0:0: [sdd] Device not ready
+0, uid=0, gid=0[  151.845797] sd 2:0:0:0: [sdd] 
 
-> After this patch, badness() returns different value based on given context.
-> Changing format of them was an idea, but, as David said, using "RSS" values
-> will show unstable oom_score. So, I didn't modify oom_score (for this time).
-> 
-
-That's a seperate issue: you cannot define the baseline of the heuristic 
-in terms of rss because it does not allow userspace to define when a task 
-has become "rogue", i.e. when it is consuming far more memory than 
-expected, because it is a dynamic value that depends on the state of the 
-VM at the time of oom.  That is one of the two most popular reasons for 
-tuning oom_adj, the other aforementioned.
-
-The issue with using lowmem rss for CONSTRAINT_LOWMEM is that it 
-misinterprets oom_adj values given to tasks; users will tune their oom_adj 
-based on global, system-wide ooms (or use /proc/pid/oom_score to reveal 
-the priority) and will never understand how it affects the value of a 
-resident page in lowmem for GFP_DMA allocations.
-
-> To be honest, all my work are for guys who don't tweak oom_adj based on oom_score.
-> IOW, this is for usual novice people. And I don't wan't to break servers which
-> depends on oom black magic currently supported.
-> 
-
-Why can't you simply create your own heuristic, seperate from badness(), 
-for CONSTRAINT_LOWMEM?  Define the criteria that you see as important in 
-selecting a task in that scenario and then propose it as a seperate 
-function, there is no requirement that we must have a single heuristic 
-that works for all the various oom killer constraints.  It would be 
-entirely appropriate to ignore oom_adj in that heuristic, as well, since 
-its not defined for such oom conditions (OOM_DISABLE is already taken care 
-of in the tasklist scan and needs no further support).
+I wonder if it rings some bells here...
+-- 
+Regards,
+Feri.
