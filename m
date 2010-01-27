@@ -1,32 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712Ab0A0UYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815Ab0A0UYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754712Ab0A0UYr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 15:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655Ab0A0UYo
+	id S1754815Ab0A0UYx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 15:24:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690Ab0A0UYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 15:24:44 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:32839 "EHLO
+	Wed, 27 Jan 2010 15:24:47 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:35046 "EHLO
 	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754239Ab0A0UYl (ORCPT
+	with ESMTP id S1754653Ab0A0UYn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 15:24:41 -0500
+	Wed, 27 Jan 2010 15:24:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=TkgVc8rTtTbRYl2mv6IIQ3ITTviimVpzgJDCIDL+HCfZhWMeD6XieFvQvdHw9fqyoj
-         EcgjygBQJlK80hoQusDNDJY4Dy7rfS15ynYNbvQE7KjnR+kUdnvDzQ3/h0jTxNZWSS8z
-         bo0iBm0Eykmh6x3wwtnZHXsNKJP/wQ/dEkVbQ=
+        b=b7IvmNMmKveqaV/qc1bzajZKJzfdyTl30rZTmRfChy9Qzr3izqdGJj/zBOlyfAaXQn
+         X3S2hMPleYraTEamQip9t53xXLn0aW5Wq9y6xn6hX9AlzuglciRw+PhUbwXS5+h3g6o/
+         U/6C5hUofj5PxBtnAsee0jHnO8T9Ln0cDSA0A=
 From: John Kacur <jkacur@redhat.com>
 To: Clark Williams <williams@redhat.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>, Carsten Emde <C.Emde@osadl.org>,
        rt-users <linux-rt-users@vger.kernel.org>,
-       John Kacur <jkacur@localhost.localdomain>,
        John Kacur <jkacur@redhat.com>
-Subject: [PATCH 4/5] rt-tests: Fix some style problems, such as spaces instead of tabs.
-Date: Wed, 27 Jan 2010 21:24:27 +0100
-Message-Id: <1264623868-23595-5-git-send-email-jkacur@redhat.com>
+Subject: [PATCH 5/5] rt-tests: Automatically generate dependencies.
+Date: Wed, 27 Jan 2010 21:24:28 +0100
+Message-Id: <1264623868-23595-6-git-send-email-jkacur@redhat.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264623868-23595-1-git-send-email-jkacur@redhat.com>
 References: <1264623868-23595-1-git-send-email-jkacur@redhat.com>
@@ -34,80 +33,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: John Kacur <jkacur@localhost.localdomain>
-
-Fix some style problems, such as spaces instead of tabs, trailing spaces,
-spaces required before }
+Automatically generate dependencies. This will tell the make file that
+cyclictest is dependent on rt_numa.h for example, and that if a change
+is made there, then cyclictest needs to be remade.
 
 Signed-off-by: John Kacur <jkacur@redhat.com>
 ---
- src/cyclictest/rt_numa.h |   22 +++++++++++-----------
- 1 files changed, 11 insertions(+), 11 deletions(-)
+ Makefile |   20 ++++++++++++++++----
+ 1 files changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/src/cyclictest/rt_numa.h b/src/cyclictest/rt_numa.h
-index ac2aca2..73ef3d8 100644
---- a/src/cyclictest/rt_numa.h
-+++ b/src/cyclictest/rt_numa.h
-@@ -40,7 +40,7 @@ threadfree(void *ptr, size_t size, int node)
- 		free(ptr);
- 	else
- 		numa_free(ptr, size);
--}			
-+}
+diff --git a/Makefile b/Makefile
+index 6156c03..4be0838 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,8 +1,10 @@
+ VERSION_STRING = 0.63
  
- static void rt_numa_set_numa_run_on_node(int node, int cpu)
- {
-@@ -73,29 +73,29 @@ static int rt_numa_numa_node_of_cpu(int cpu)
- static int rt_numa_numa_node_of_cpu(int cpu)
- {
- 	unsigned char cpumask[16];
--        int node, idx, bit;
-+	int node, idx, bit;
- 	int max_node, max_cpus;
+-TARGETS	= cyclictest signaltest pi_stress \
+-	  rt-migrate-test ptsematest sigwaittest svsematest \
+-	  sendme pip
++sources = cyclictest.c signaltest.c pi_stress.c rt-migrate-test.c	\
++	  ptsematest.c sigwaittest.c svsematest.c sendme.c pip.c
++
++TARGETS = $(sources:.c=)
++
+ LIBS 	= -lrt -lpthread
+ EXTRA_LIBS ?= -ldl	# for get_cpu
+ DESTDIR	?=
+@@ -39,9 +41,19 @@ VPATH	+= src/lib
+ %.o: %.c
+ 	$(CC) -D VERSION_STRING=$(VERSION_STRING) -c $< $(CFLAGS)
  
- 	max_node = numa_max_node();
- 	max_cpus = sysconf(_SC_NPROCESSORS_CONF);
++# Pattern rule to generate dependency files from .c files
++%.d: %.c
++	@set -e; rm -f $@; \
++	$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
++	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
++	rm -f $@.$$$$
++
+ .PHONY: all
+ all: $(TARGETS) hwlatdetect
  
--        if (cpu > max_cpus) {
--                errno = EINVAL;
--                return -1;
--        }
-+	if (cpu > max_cpus) {
-+		errno = EINVAL;
-+		return -1;
-+	}
++# Include dependency files, automatically generate them if needed.
++-include $(sources:.c=.d)
++
+ cyclictest: cyclictest.o rt-utils.o
+ 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(NUMA_LIBS)
  
- 	/* calculate bitmask index and relative bit position of cpu */
- 	idx = cpu / 8;
- 	bit = cpu % 8;
+@@ -73,7 +85,7 @@ sendme: sendme.o rt-utils.o rt-get_cpu.o
+ pip: pip.o error.o rt-utils.o
+ 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
  
--        for (node = 0; node <= max_node; node++) {
-+	for (node = 0; node <= max_node; node++) {
- 		if (numa_node_to_cpus(node, (void *) cpumask, sizeof(cpumask)))
- 			return -1;
+-CLEANUP  = $(TARGETS) *.o .depend *.*~ *.orig *.rej rt-tests.spec
++CLEANUP  = $(TARGETS) *.o .depend *.*~ *.orig *.rej rt-tests.spec *.d
+ CLEANUP += $(if $(wildcard .git), ChangeLog)
  
- 		if (cpumask[idx] & (1<<bit))
- 			return node;
--        }
--        errno = EINVAL;
-+	}
-+	errno = EINVAL;
- 	return -1;
- }
- 
-@@ -114,10 +114,10 @@ static void *rt_numa_numa_alloc_onnode(size_t size, int node, int cpu)
- #else
- 
- static inline void *threadalloc(size_t size, int n) { return malloc(size); }
--static inline void threadfree(void *ptr, size_t s, int n) { free(ptr); } 
-+static inline void threadfree(void *ptr, size_t s, int n) { free(ptr); }
- static inline void rt_numa_set_numa_run_on_node(int n, int c) { }
- static inline void numa_on_and_available() { };
--static inline int rt_numa_numa_node_of_cpu(int cpu) { return -1;}
-+static inline int rt_numa_numa_node_of_cpu(int cpu) { return -1; }
- static void *rt_numa_numa_alloc_onnode(size_t s, int n, int c) { return NULL; }
- 
- #endif	/* NUMA */
+ .PHONY: clean
 -- 
 1.6.6
 
