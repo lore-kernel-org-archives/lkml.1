@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536Ab0A0IZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178Ab0A0IY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752536Ab0A0IZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 03:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018Ab0A0IY5
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 03:24:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59897 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752268Ab0A0IY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752178Ab0A0IY4 (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 27 Jan 2010 03:24:56 -0500
-Date: Wed, 27 Jan 2010 09:24:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>, ananth@in.ibm.com,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174Ab0A0IYy
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 27 Jan 2010 03:24:54 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52603 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751953Ab0A0IYy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 03:24:54 -0500
+Subject: Re: [RFC] [PATCH 0/7] UBP, XOL and Uprobes [ Summary of Comments
+ and actions to be taken ]
+From: Peter Zijlstra <peterz@infradead.org>
+To: ananth@in.ibm.com
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
        utrace-devel <utrace-devel@redhat.com>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mel Gorman <mel@csn.ul.ie>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-Message-ID: <20100127082440.GA16640@elte.hu>
-References: <20100118124419.GC1628@linux.vnet.ibm.com>
- <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com>
- <4B5459CA.9060603@redhat.com>
- <4B545ACF.40203@cs.helsinki.fi>
- <1263852957.2266.38.camel@localhost.localdomain>
- <4B556855.6040800@redhat.com>
- <1263923265.4998.28.camel@localhost.localdomain>
- <4B56D027.3010808@redhat.com>
- <1263981472.4283.843.camel@laptop>
- <4B56F588.2060109@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B56F588.2060109@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1264575225.4283.1985.camel@laptop>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100122070232.GA2975@linux.vnet.ibm.com>
+	 <20100122072402.GA7440@in.ibm.com>  <1264575225.4283.1985.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Jan 2010 09:24:14 +0100
+Message-ID: <1264580654.4283.1986.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Avi Kivity <avi@redhat.com> wrote:
-
-> On 01/20/2010 11:57 AM, Peter Zijlstra wrote:
-> >On Wed, 2010-01-20 at 11:43 +0200, Avi Kivity wrote:
-> >> 1. Write a trace entry into shared memory, trap into the kernel on 
-> >>    overflow.
-> >> 2. Trap if a condition is satisfied (fast watchpoint implementation).
-> >
-> > So now you want to consume more of a process' address space to store trace 
-> > data as well?
+On Wed, 2010-01-27 at 07:53 +0100, Peter Zijlstra wrote:
+> On Fri, 2010-01-22 at 12:54 +0530, Ananth N Mavinakayanahalli wrote:
+> > On Fri, Jan 22, 2010 at 12:32:32PM +0530, Srikar Dronamraju wrote:
+> > > Here is a summary of the Comments and actions that need to be taken for
+> > > the current uprobes patchset. Please let me know if I missed or
+> > > misunderstood any of your comments.  
+> > > 
+> > > 1. Uprobes depends on trap signal.
+> > > 	Uprobes depends on trap signal rather than hooking to the global
+> > > die notifier. It was suggested that we hook to the global die notifier.
+> > > 
+> > > 	In the next version of patches, Uprobes will use the global die
+> > > 	notifier and look at the per-task count of the probes in use to
+> > > 	see if it has to be consumed.
+> > > 
+> > > 	However this would reduce the ability of uprobe handlers to
+> > > 	sleep. Since we are dealing with userspace, sleeping in handlers
+> > > 	would have been a good feature. We are looking at ways to get
+> > > 	around this limitation.
+> > 
+> > We could set a TIF_ flag in the notifier to indicate a breakpoint hit
+> > and process it in task context before the task heads into userspace.
 > 
-> Yes.  I know I'm bad.
+> OK, so we can go play stack games in the INT3 interrupt handler by
+> moving to a non IST stack when it comes from userspace, or move kprobes
+> over to INT1 or something.
 
-No, you are just wrong.
+Right, it just got pointed out that INT1 doesn't have a single byte
+encoding, only INT0 and INT3 :/
 
-> > Not to mention that that process could wreck the trace data rendering it 
-> > utterly unreliable.
-> 
-> It could, but it also might not.  Are we going to deny high performance 
-> tracing to users just because it doesn't work in all cases?
-
-Tracing and monitoring is foremost about being able to trust the instrument, 
-then about performance and usability. That's one of the big things about 
-ftrace and perf.
-
-By proposing 'user space tracing' you are missing two big aspects:
-
- - That self-contained, kernel-driven tracing can be replicated in user-space.
-   It cannot. Sharing and global state is much harder to maintain reliably,
-   but the bigger problem is that user-space can stomp on its own tracing
-   state and can make it unreliable. Tracing is often used to figure out bugs,
-   and tracers will be trusted less if they can stomp on themselves.
-
- - That somehow it's much faster and that this edge matters. It isnt and it
-   doesnt matter. The few places that need very very fast tracing wont use any
-   of these facilities - it will use something specialized.
-
-So you are creating a solution for special cases that dont need it, and you 
-are also ignoring prime qualities of a good tracing framework.
-
-	Ingo
