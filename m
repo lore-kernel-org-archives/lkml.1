@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089Ab0A0GtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116Ab0A0GvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089Ab0A0GtF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 01:49:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750703Ab0A0GtE
+	id S1754116Ab0A0GvN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 01:51:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023Ab0A0GvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 01:49:04 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:53680 "EHLO smtps.tip.net.au"
+	Wed, 27 Jan 2010 01:51:11 -0500
+Received: from gate.crashing.org ([63.228.1.57]:52985 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751188Ab0A0GtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 01:49:03 -0500
-Date: Wed, 27 Jan 2010 17:49:00 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: pci tree build failure
-Message-Id: <20100127174900.e2f8fcf9.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+	id S1751098Ab0A0GvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 01:51:10 -0500
+Subject: Re: [RFC PATCH] dma: Add barrierless dma mapping/unmapping api
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: adharmap@codeaurora.org, linux-kernel@vger.kernel.org,
+       linux-arm-msm@vger.kernel.org, dwalker@codeaurora.org, arnd@arndb.de,
+       akpm@linux-foundation.org, mingo@elte.hu, joerg.roedel@amd.com,
+       maciej.sosnowski@intel.com, dan.j.williams@intel.com,
+       beckyb@kernel.crashing.org, yanghy@cn.fujitsu.com,
+       linux-arch@vger.kernel.org, adharmap@quicinc.com
+In-Reply-To: <20100127141901P.fujita.tomonori@lab.ntt.co.jp>
+References: <1264480210.3601.118.camel@pasglop>
+	 <20100126134207T.fujita.tomonori@lab.ntt.co.jp>
+	 <4B5F4C76.4050100@codeaurora.org>
+	 <20100127141901P.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Jan 2010 17:49:47 +1100
+Message-ID: <1264574987.3601.171.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesse,
+On Wed, 2010-01-27 at 14:19 +0900, FUJITA Tomonori wrote:
+> > I somehow missed your post, my apologies. Agreed that
+> dma_map/unmap_sg 
+> > would be the correct api to use here, however they still call the 
+> > dmac_.*_range to map buffers.
+> 
+> Hmm, sounds like arm's implementation issue. dma_map_sg API doesn't
+> require such. dma_map_sg API gives what you want, do a sync only after
+> mapping the last buffer.
 
-Today's linux-next build (powerpc allyesconfig) failed like this:
+dmac_* appears to be ARM's low-level ops for cache flushing on
+non-coherent DMA, so it's really down to arch stuff here and how ARM
+implements dma_[un]map_sg() and we keep a sane global driver API.
 
-In file included from drivers/pci/pcie/pme/pcie_pme.c:22:
-include/linux/pci-acpi.h:42: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'acpi_find_root_bridge_handle'
-
-You seem to have lost the patch below which I have reapplied for today.
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 18 Jan 2010 19:36:11 +1100
-Subject: [PATCH] pci: PCIE_PME seems to depend on ACPI
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/pci/pcie/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
-index cf3c35f..b8b494b 100644
---- a/drivers/pci/pcie/Kconfig
-+++ b/drivers/pci/pcie/Kconfig
-@@ -49,4 +49,4 @@ config PCIEASPM_DEBUG
- 
- config PCIE_PME
- 	def_bool y
--	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
-+	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL && ACPI
--- 
-1.6.6
-
--- 
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben.
+
+
