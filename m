@@ -1,41 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748Ab0A0RNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771Ab0A0ROy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755748Ab0A0RNV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 12:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708Ab0A0RNV
+	id S1755771Ab0A0ROy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 12:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742Ab0A0ROx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 12:13:21 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58486 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755701Ab0A0RNU (ORCPT
+	Wed, 27 Jan 2010 12:14:53 -0500
+Received: from mga10.intel.com ([192.55.52.92]:28057 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754184Ab0A0ROw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 12:13:20 -0500
-Date: Wed, 27 Jan 2010 18:13:08 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, arminlitzel@web.de,
-       Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz, zaurus-devel@www.linuxtogo.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: spitz (arm pda): time no longer ok after resume
-Message-ID: <20100127171308.GA24875@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 Jan 2010 12:14:52 -0500
+Message-Id: <89k77n$ms73l9@fmsmga001.fm.intel.com>
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,355,1262592000"; 
+   d="scan'208";a="767790761"
+Date: Wed, 27 Jan 2010 17:14:41 +0000
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] drm/i915: Selectively enable self-reclaim
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Roman Jarosz <kedgedev@gmail.com>,
+       A Rojas <nqn1976list@gmail.com>,
+       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
+       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
+       linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       stable@kernel.org
+References: <alpine.LFD.2.00.1001270327580.24253@localhost.localdomain> <1264605932-8540-1-git-send-email-chris@chris-wilson.co.uk> <alpine.LFD.2.00.1001270738220.24253@localhost.localdomain>
+From: Chris Wilson <chris@chris-wilson.co.uk>
+In-Reply-To: <alpine.LFD.2.00.1001270738220.24253@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 27 Jan 2010 08:09:55 -0800 (PST), Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Wed, 27 Jan 2010, Chris Wilson wrote:
+> > 
+> > v2: Pass gfp into page mapping.
+> 
+> Ahh, you did need the whole complexity of ->readpage?
+> 
+> Ok, in that case, can you test if this works for you?
 
-It seems that spitz has problems with time after resume; time while it
-was sleeping is not accounted. This seems to be regression in
-2.6.33-rc5.
+Yes, it survives a short torture test that leaks lots of bo objects from
+X. Obviously this patch depends upon the new interface.
+---
 
-								Pavel
+>From 3f63bea00af2027d668055bc4124f6a1ae28b95b Mon Sep 17 00:00:00 2001
+From: Chris Wilson <chris@chris-wilson.co.uk>
+Date: Wed, 27 Jan 2010 13:36:32 +0000
+Subject: [PATCH] drm/i915: Selectively enable self-reclaim
+
+Having missed the ENOMEM return via i915_gem_fault(), there are probably
+other paths that I also missed. By not enabling NORETRY by default these
+paths can run the shrinker and take memory from the system (but not from
+our own inactive lists because our shrinker can not run whilst we hold
+the struct mutex) and this may allow the system to survive a little longer
+whilst our drivers consume all available memory.
+
+References:
+  OOM killer unexpectedly called with kernel 2.6.32
+  http://bugzilla.kernel.org/show_bug.cgi?id=14933
+
+v2: Pass gfp into page mapping.
+v3: Use new read_cache_page_gfp() instead of open-coding.
+
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Eric Anholt <eric@anholt.net>
+Cc: stable@kernel.org
+---
+ drivers/gpu/drm/drm_gem.c           |   13 --------
+ drivers/gpu/drm/i915/i915_debugfs.c |    2 +-
+ drivers/gpu/drm/i915/i915_drv.h     |    2 +-
+ drivers/gpu/drm/i915/i915_gem.c     |   54 +++++++++++------------------------
+ 4 files changed, 19 insertions(+), 52 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
+index e9dbb48..8bf3770 100644
+--- a/drivers/gpu/drm/drm_gem.c
++++ b/drivers/gpu/drm/drm_gem.c
+@@ -142,19 +142,6 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
+ 	if (IS_ERR(obj->filp))
+ 		goto free;
+ 
+-	/* Basically we want to disable the OOM killer and handle ENOMEM
+-	 * ourselves by sacrificing pages from cached buffers.
+-	 * XXX shmem_file_[gs]et_gfp_mask()
+-	 */
+-	mapping_set_gfp_mask(obj->filp->f_path.dentry->d_inode->i_mapping,
+-			     GFP_HIGHUSER |
+-			     __GFP_COLD |
+-			     __GFP_FS |
+-			     __GFP_RECLAIMABLE |
+-			     __GFP_NORETRY |
+-			     __GFP_NOWARN |
+-			     __GFP_NOMEMALLOC);
+-
+ 	kref_init(&obj->refcount);
+ 	kref_init(&obj->handlecount);
+ 	obj->size = size;
+diff --git a/drivers/gpu/drm/i915/i915_debugfs.c b/drivers/gpu/drm/i915/i915_debugfs.c
+index 9c9998c..a894ade 100644
+--- a/drivers/gpu/drm/i915/i915_debugfs.c
++++ b/drivers/gpu/drm/i915/i915_debugfs.c
+@@ -290,7 +290,7 @@ static int i915_batchbuffer_info(struct seq_file *m, void *data)
+ 	list_for_each_entry(obj_priv, &dev_priv->mm.active_list, list) {
+ 		obj = obj_priv->obj;
+ 		if (obj->read_domains & I915_GEM_DOMAIN_COMMAND) {
+-		    ret = i915_gem_object_get_pages(obj);
++		    ret = i915_gem_object_get_pages(obj, 0);
+ 		    if (ret) {
+ 			    DRM_ERROR("Failed to get pages: %d\n", ret);
+ 			    spin_unlock(&dev_priv->mm.active_list_lock);
+diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
+index 2c16694..aaf934d 100644
+--- a/drivers/gpu/drm/i915/i915_drv.h
++++ b/drivers/gpu/drm/i915/i915_drv.h
+@@ -872,7 +872,7 @@ int i915_gem_attach_phys_object(struct drm_device *dev,
+ void i915_gem_detach_phys_object(struct drm_device *dev,
+ 				 struct drm_gem_object *obj);
+ void i915_gem_free_all_phys_object(struct drm_device *dev);
+-int i915_gem_object_get_pages(struct drm_gem_object *obj);
++int i915_gem_object_get_pages(struct drm_gem_object *obj, gfp_t gfpmask);
+ void i915_gem_object_put_pages(struct drm_gem_object *obj);
+ void i915_gem_release(struct drm_device * dev, struct drm_file *file_priv);
+ void i915_gem_object_flush_write_domain(struct drm_gem_object *obj);
+diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+index 0c67924..dda787a 100644
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -277,7 +277,7 @@ i915_gem_shmem_pread_fast(struct drm_device *dev, struct drm_gem_object *obj,
+ 
+ 	mutex_lock(&dev->struct_mutex);
+ 
+-	ret = i915_gem_object_get_pages(obj);
++	ret = i915_gem_object_get_pages(obj, 0);
+ 	if (ret != 0)
+ 		goto fail_unlock;
+ 
+@@ -321,40 +321,24 @@ fail_unlock:
+ 	return ret;
+ }
+ 
+-static inline gfp_t
+-i915_gem_object_get_page_gfp_mask (struct drm_gem_object *obj)
+-{
+-	return mapping_gfp_mask(obj->filp->f_path.dentry->d_inode->i_mapping);
+-}
+-
+-static inline void
+-i915_gem_object_set_page_gfp_mask (struct drm_gem_object *obj, gfp_t gfp)
+-{
+-	mapping_set_gfp_mask(obj->filp->f_path.dentry->d_inode->i_mapping, gfp);
+-}
+-
+ static int
+ i915_gem_object_get_pages_or_evict(struct drm_gem_object *obj)
+ {
+ 	int ret;
+ 
+-	ret = i915_gem_object_get_pages(obj);
++	ret = i915_gem_object_get_pages(obj, __GFP_NORETRY | __GFP_NOWARN);
+ 
+ 	/* If we've insufficient memory to map in the pages, attempt
+ 	 * to make some space by throwing out some old buffers.
+ 	 */
+ 	if (ret == -ENOMEM) {
+ 		struct drm_device *dev = obj->dev;
+-		gfp_t gfp;
+ 
+ 		ret = i915_gem_evict_something(dev, obj->size);
+ 		if (ret)
+ 			return ret;
+ 
+-		gfp = i915_gem_object_get_page_gfp_mask(obj);
+-		i915_gem_object_set_page_gfp_mask(obj, gfp & ~__GFP_NORETRY);
+-		ret = i915_gem_object_get_pages(obj);
+-		i915_gem_object_set_page_gfp_mask (obj, gfp);
++		ret = i915_gem_object_get_pages(obj, 0);
+ 	}
+ 
+ 	return ret;
+@@ -790,7 +774,7 @@ i915_gem_shmem_pwrite_fast(struct drm_device *dev, struct drm_gem_object *obj,
+ 
+ 	mutex_lock(&dev->struct_mutex);
+ 
+-	ret = i915_gem_object_get_pages(obj);
++	ret = i915_gem_object_get_pages(obj, 0);
+ 	if (ret != 0)
+ 		goto fail_unlock;
+ 
+@@ -2230,7 +2214,8 @@ i915_gem_evict_something(struct drm_device *dev, int min_size)
+ }
+ 
+ int
+-i915_gem_object_get_pages(struct drm_gem_object *obj)
++i915_gem_object_get_pages(struct drm_gem_object *obj,
++			  gfp_t gfpmask)
+ {
+ 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+ 	int page_count, i;
+@@ -2256,7 +2241,10 @@ i915_gem_object_get_pages(struct drm_gem_object *obj)
+ 	inode = obj->filp->f_path.dentry->d_inode;
+ 	mapping = inode->i_mapping;
+ 	for (i = 0; i < page_count; i++) {
+-		page = read_mapping_page(mapping, i, NULL);
++		page = read_cache_page_gfp(mapping, i,
++					   mapping_gfp_mask (mapping) |
++					   __GFP_COLD |
++					   gfpmask);
+ 		if (IS_ERR(page)) {
+ 			ret = PTR_ERR(page);
+ 			i915_gem_object_put_pages(obj);
+@@ -2579,7 +2567,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+ 	struct drm_mm_node *free_space;
+-	bool retry_alloc = false;
++	gfp_t gfpmask =  __GFP_NORETRY | __GFP_NOWARN;
+ 	int ret;
+ 
+ 	if (obj_priv->madv != I915_MADV_WILLNEED) {
+@@ -2623,15 +2611,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+ 	DRM_INFO("Binding object of size %zd at 0x%08x\n",
+ 		 obj->size, obj_priv->gtt_offset);
+ #endif
+-	if (retry_alloc) {
+-		i915_gem_object_set_page_gfp_mask (obj,
+-						   i915_gem_object_get_page_gfp_mask (obj) & ~__GFP_NORETRY);
+-	}
+-	ret = i915_gem_object_get_pages(obj);
+-	if (retry_alloc) {
+-		i915_gem_object_set_page_gfp_mask (obj,
+-						   i915_gem_object_get_page_gfp_mask (obj) | __GFP_NORETRY);
+-	}
++	ret = i915_gem_object_get_pages(obj, gfpmask);
+ 	if (ret) {
+ 		drm_mm_put_block(obj_priv->gtt_space);
+ 		obj_priv->gtt_space = NULL;
+@@ -2641,9 +2621,9 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+ 			ret = i915_gem_evict_something(dev, obj->size);
+ 			if (ret) {
+ 				/* now try to shrink everyone else */
+-				if (! retry_alloc) {
+-				    retry_alloc = true;
+-				    goto search_free;
++				if (gfpmask) {
++					gfpmask = 0;
++					goto search_free;
+ 				}
+ 
+ 				return ret;
+@@ -4946,7 +4926,7 @@ void i915_gem_detach_phys_object(struct drm_device *dev,
+ 	if (!obj_priv->phys_obj)
+ 		return;
+ 
+-	ret = i915_gem_object_get_pages(obj);
++	ret = i915_gem_object_get_pages(obj, 0);
+ 	if (ret)
+ 		goto out;
+ 
+@@ -5004,7 +4984,7 @@ i915_gem_attach_phys_object(struct drm_device *dev,
+ 	obj_priv->phys_obj = dev_priv->mm.phys_objs[id - 1];
+ 	obj_priv->phys_obj->cur_obj = obj;
+ 
+-	ret = i915_gem_object_get_pages(obj);
++	ret = i915_gem_object_get_pages(obj, 0);
+ 	if (ret) {
+ 		DRM_ERROR("failed to get page list\n");
+ 		goto out;
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.6
+
