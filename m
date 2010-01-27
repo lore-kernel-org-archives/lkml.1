@@ -1,63 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769Ab0A0PGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100Ab0A0PKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752769Ab0A0PGP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 10:06:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772Ab0A0PGN
+	id S1754100Ab0A0PKS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 10:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706Ab0A0PKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 10:06:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16219 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751305Ab0A0PGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 10:06:12 -0500
-Message-ID: <4B605617.6050006@redhat.com>
-Date: Wed, 27 Jan 2010 13:04:55 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Wed, 27 Jan 2010 10:10:17 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56833 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753638Ab0A0PKQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 10:10:16 -0500
+Message-ID: <4B60573E.7080108@cs.helsinki.fi>
+Date: Wed, 27 Jan 2010 17:09:50 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Borislav Petkov <petkovbb@googlemail.com>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-tip-commits@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Aristeu Rozanski <aris@redhat.com>, Doug Thompson <norsk5@yahoo.com>,
-       Huang Ying <ying.huang@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [tip:x86/mce] x86, mce: Rename cpu_specific_poll to	mce_cpu_specific_poll
-References: <20100121221711.GA8242@basil.fritz.box> <tip-f91c4d2649531cc36e10c6bc0f92d0f99116b209@git.kernel.org> <20100123051717.GA26471@elte.hu> <20100123075851.GA7098@liondog.tnic> <20100123090003.GA20056@elte.hu> <4B6032E7.1090900@redhat.com> <20100127143957.GE12522@basil.fritz.box>
-In-Reply-To: <20100127143957.GE12522@basil.fritz.box>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christian Casteyde <casteyde.christian@free.fr>,
+       vegard.nossum@gmail.com
+Subject: Re: [PATCH] kmemleak: Do not enable KMEMCHECK_PARTIAL_OK if	DEBUG_KMEMLEAK
+References: <4B5FDD85.5080701@cs.helsinki.fi> <1264590127.15957.14.camel@pc1117.cambridge.arm.com>
+In-Reply-To: <1264590127.15957.14.camel@pc1117.cambridge.arm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> it only covers
-> parts of the space (some subset of Nehalems with a specific uncore). 
-
-The changes for Xeon 55xx are minimal. I did some tests with the driver on it already.
-
-> This does not include Xeon 75xx where all this is quite different.
-
-I haven't the datasheets for 75xx, so I can't say for sure if it would be better to
-use the same driver or to fork it.
-
->> I agree. The EDAC module handles memory errors for several memory controllers,
->> including some on non-x86 architectures. Letting this decode to happen outside
->> the kernel, just for a very few set of memory controllers, seems a bad idea.
+Catalin Marinas wrote:
+> Hi Pekka,
 > 
-> Again you can't do all the things mcelog does in kernel space only.
+> On Wed, 2010-01-27 at 06:30 +0000, Pekka Enberg wrote:
+>> Catalin Marinas kirjoitti:
+>>> diff --git a/lib/Kconfig.kmemcheck b/lib/Kconfig.kmemcheck
+>>> index 846e039..80660e9 100644
+>>> --- a/lib/Kconfig.kmemcheck
+>>> +++ b/lib/Kconfig.kmemcheck
+>>> @@ -75,7 +75,7 @@ config KMEMCHECK_SHADOW_COPY_SHIFT
+>>>  config KMEMCHECK_PARTIAL_OK
+>>>       bool "kmemcheck: allow partially uninitialized memory"
+>>>       depends on KMEMCHECK
+>>> -     default y
+>>> +     default y if !DEBUG_KMEMLEAK
+>>>       help
+>>>         This option works around certain GCC optimizations that produce
+>>>         32-bit reads from 16-bit variables where the upper 16 bits are
+>>>
+>> Disabling KMEMCHECK_PARTIAL_OK can cause other false positives so maybe
+>> we should add a new function to kmemcheck for kmemleak that only reads
+>> full intervals?
+> 
+> There are two uses of kmemcheck_is_obj_initialized() in kmemleak: (1)
+> before reading a value to check for valid pointer (sizeof long) and (2)
+> before computing a CRC sum.
+> 
+> (1) is fine since it only does this for sizeof(long) before reading the
+> same size. (2) has an issues since kmemleak checks the size of an
+> allocated memory block while crc32 reads individual u32's.
+> 
+> Is there a way in kmemcheck to mark a false positive?
 
-Well, the error parsing can be done in kernel space in a standard way provided
-by the edac interface.
+IIRC, no. The false positives come from the code generated by GCC so 
+we'd need to sprinkle annotations here and there.
 
-I don't see why not the mcelog userspace shouldn't use the EDAC interface as one
-of its source, getting memory errors from it, avoiding the need of re-parsing
-the errors.
+> The alternative, assuming that CRC_LE_BITS is 8 (that's what it seems to
+> be defined to), the crc32 computation uses u32 values and something like
+> below should work, though slower (not yet tested):
+> 
+> 
+> diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+> index 5b069e4..dfd39ba 100644
+> --- a/mm/kmemleak.c
+> +++ b/mm/kmemleak.c
+> @@ -948,6 +948,25 @@ EXPORT_SYMBOL(kmemleak_no_scan);
+>  /*
+>   * Update an object's checksum and return true if it was modified.
+>   */
+> +#ifdef CONFIG_KMEMCHECK_PARTIAL_OK
+> +static bool update_checksum(struct kmemleak_object *object)
+> +{
+> +	u32 crc = 0;
+> +	unsigned long ptr;
+> +
+> +	for (ptr = ALIGN(object->pointer, 4);
+> +	     ptr < ((object->pointer + object->size) & ~3); ptr += 4) {
+> +		if (!kmemcheck_is_obj_initialized(ptr, 4))
+> +			continue;
+> +		crc = crc32(crc, (void *)ptr, 4);
+> +	}
+> +
+> +	if (object->checksum == crc)
+> +		return false;
+> +	object->checksum = crc;
+> +	return true;
 
-Cheers,
-Mauro.
+I think it would be better to add a function to _kmemcheck_ that checks 
+the full object regardless of CONFIG_KMEMCHECK_PARTIAL_OK and use it here.
+
+> +}
+> +#else	/* !CONFIG_KMEMCHECK_PARTIAL_OK */
+>  static bool update_checksum(struct kmemleak_object *object)
+>  {
+>  	u32 old_csum = object->checksum;
+> @@ -958,6 +977,7 @@ static bool update_checksum(struct kmemleak_object *object)
+>  	object->checksum = crc32(0, (void *)object->pointer, object->size);
+>  	return object->checksum != old_csum;
+>  }
+> +#endif	/* CONFIG_KMEMCHECK_PARTIAL_OK */
+>  
+>  /*
+>   * Memory scanning is a long process and it needs to be interruptable. This
+> 
+> 
 
