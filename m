@@ -1,94 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249Ab0A0OUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230Ab0A0OVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249Ab0A0OUA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 09:20:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230Ab0A0OT7
+	id S1755230Ab0A0OVQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 09:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755240Ab0A0OVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 09:19:59 -0500
-Received: from mail-pz0-f189.google.com ([209.85.222.189]:52459 "EHLO
-	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754017Ab0A0OT6 (ORCPT
+	Wed, 27 Jan 2010 09:21:15 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:13696 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755230Ab0A0OVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 09:19:58 -0500
+	Wed, 27 Jan 2010 09:21:14 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=LRG5OU/w+ljy45gJ2TkOtSroHYqSfKWfsZkxF36kUo0/k7AK85wGcVyus+RbLIM+yz
-         ZxpBsL8DJ5odphr4FvPVmyMliYUZtygRjf6tZ3T3/Oy1PowDcHwMdVirVlXd6BpGEvpq
-         PnIHjL+ElbH88QadQezYh6TZBFch8iflOYYiQ=
-Message-ID: <4B604B86.9040307@gmail.com>
-Date: Wed, 27 Jan 2010 22:19:50 +0800
-From: Liuwenyi <qingshenlwy@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=VtePmD8ntBLYGZGxiMuRQCE9g9a38c2ZCpW5VTpI+bcHBXytQWj8qTUHtLgZSk4EEv
+         OzP3b0oE3AufjiHYchPzrQnO4wHZDu8GW93ZOB6ln32AEKMWBB8eMARRcKT4Mv1pc/5i
+         z28CwZTRNKdm9E//mEMYwtg8zvplGiGC7ajgc=
+Message-ID: <4B604BD6.1010205@gmail.com>
+Date: Wed, 27 Jan 2010 15:21:10 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: "Yan, Zheng " <yanzheng@21cn.com>
-CC: chris.mason@oracle.com, jbacik@redhat.com, jens.axboe@oracle.com,
-       linux-btrfs <linux-btrfs@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       strongzgy@gmail.com
-Subject: Re: [PATCH]btrfs: avoid comparing with NULL pointer
-References: <4B5FDCD1.8060806@gmail.com> <3d0408631001270000w49fc9100yb1e3b59df2e032e9@mail.gmail.com>
-In-Reply-To: <3d0408631001270000w49fc9100yb1e3b59df2e032e9@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Joe Perches <joe@perches.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mm-commits@vger.kernel.org, bzolnier@gmail.com, jens.axboe@oracle.com,
+       marcin.slusarz@gmail.com, shemminger@vyatta.com
+Subject: Re: + drivers-block-floppyc-use-pr_level.patch added to -mm tree
+References: <201001270037.o0R0bN6S032517@imap1.linux-foundation.org>	 <4B600806.4010003@gmail.com> <1264601340.14552.55.camel@Joe-Laptop.home>
+In-Reply-To: <1264601340.14552.55.camel@Joe-Laptop.home>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-于 2010年01月27日 16:00, Yan, Zheng 写道:
-> 2010/1/27 Liuwenyi<qingshenlwy@gmail.com>:
->    
->> In this patch, I adjust the seqence of if-conditions.
->> It will assess the page->private situation.
->> First, we make sure the page->private is not null.
->> And then, we can do some with this page->private.
+On 01/27/2010 03:09 PM, Joe Perches wrote:
+> On Wed, 2010-01-27 at 10:31 +0100, Jiri Slaby wrote:
+>> On 01/27/2010 01:37 AM, akpm@linux-foundation.org wrote:
+>>> @@ -687,9 +687,7 @@ static void __reschedule_timeout(int dri
+>>>  		fd_timeout.expires = jiffies + UDP->timeout;
+>>>  	add_timer(&fd_timeout);
+>>>  	if (UDP->flags & FD_DEBUG) {
+>>> -		DPRINT("reschedule timeout ");
+>>> -		printk(message, marg);
+>>> -		printk("\n");
+>>> +		DPRINT("reschedule timeout %s %d\n", message, marg);
 >>
->> ---
->> Signed-off-by: Liuwenyi<qingshenlwy@gmail.com>
->> Cc: Chris Mason<chris.mason@oracle.com>
->> Cc: Yan Zheng<zheng.yan@oracle.com>
->> Cc: Josef Bacik<jbacik@redhat.com>
->> Cc: Jens Axboe<jens.axboe@oracle.com>
->> Cc: linux-btrfs@vger.kernel.org
->> Cc: linux-kernel@vger.kernel.org
->>
->> ---
->> fs/btrfs/disk-io.c | 4 ++--
->> 1 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
->> index 009e3bd..a300dca 100644
->> --- a/fs/btrfs/disk-io.c
->> +++ b/fs/btrfs/disk-io.c
->> @@ -1407,11 +1407,11 @@ static int bio_ready_for_csum(struct bio *bio)
->>
->> bio_for_each_segment(bvec, bio, i) {
->> page = bvec->bv_page;
->> - if (page->private == EXTENT_PAGE_PRIVATE) {
->> + if (!page->private) {
->> length += bvec->bv_len;
->> continue;
->> }
->> - if (!page->private) {
->> + if (page->private == EXTENT_PAGE_PRIVATE) {
->> length += bvec->bv_len;
->> continue;
->> }
->> --
->>      
-> Why do you want to do this? The code is perfect safe even
-> page->private is NULL. Furthermore, your patch is malformed.
->
-> Yan, Zheng
->    
-Yes, I agree with you, this code is safe.
-But I think we should check whether the pointer is available first.
-It is unnecessary judge the "(page->private == EXTENT_PAGE_PRIVATE)"
-while page->private is null.
+>> This is wrong.
+> 
+> I disagree.
 
+Then you need to document it in the changelog. The patch does something
+completely different to what is stated in the changelog.
 
----
-Best Regards,
-Liuwenyi
-2010-1-27
+> It does add an always output decimal value to the DPRINT
+> instead of a mostly mismatched format and argument
+> 	printk(message, marg).
+> 
+> Previous single matched output use of message/marg:
+> 
+> -	reschedule_timeout(MAXTIMEOUT, "request done %d", uptodate);
+> +	reschedule_timeout(MAXTIMEOUT, "request done", uptodate);
+> 
+> vs now:
+> 
+> $ grep reschedule_timeout drivers/block/floppy.c
+> static void __reschedule_timeout(int drive, const char *message, int marg)
+> static void reschedule_timeout(int drive, const char *message, int marg)
+> 	__reschedule_timeout(drive, message, marg);
+> 	__reschedule_timeout(drive, "lock fdc", 0);
+> 	reschedule_timeout(current_reqD, "floppy start", 0);
+> 	reschedule_timeout(MAXTIMEOUT, "do wakeup", 0);
+> 	reschedule_timeout(MAXTIMEOUT, "request done", uptodate);
+> 		reschedule_timeout(current_reqD, "redo fd request", 0);
+> 	reschedule_timeout(MAXTIMEOUT, "floppy init", MAXTIMEOUT);
 
+So if I understand correctly, it now prints the third argument every time.
+
+-- 
+js
