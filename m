@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887Ab0A0I2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593Ab0A0I2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752887Ab0A0I2b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 03:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752Ab0A0I22
+	id S1752593Ab0A0I2P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 03:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995Ab0A0I2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 03:28:28 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:38468 "EHLO
+	Wed, 27 Jan 2010 03:28:11 -0500
+Received: from mail-iw0-f186.google.com ([209.85.223.186]:38170 "EHLO
 	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709Ab0A0I2T (ORCPT
+	with ESMTP id S1750744Ab0A0I2J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 03:28:19 -0500
+	Wed, 27 Jan 2010 03:28:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=qa/AzsZVOEl2FBrXxhrC4WXtS474LqOeJRPhcQzIu0N1vLjLORnDErx79MupKGLRyR
-         51SSdDemkOzrgic+AVEC4cAnL7Xlhh3LsGcpLqH6UizwzKunaqi+PYQwULwWWGpd3T9s
-         J/vhnqbYcCUucw8pcnrvTsZfA9bYO/iV5p7zY=
+        b=fb8y5z/V2R8xlmrvtxRcLuQomDXJXVrJ+uYQiD8ZKOyDX3UgaQuYYXBQDHVWPQ1/3z
+         1pS+jcNqH9GICNm2fKCv+pfY9tz45jZC5bAwy1Gcy3yciJqRZEeq5pWnZBF9IIGkvyxQ
+         oJ/An8dPf7LRRzS++CeIaHhSoC2bFnNMM0pGU=
 From: Tom Zanussi <tzanussi@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, fweisbec@gmail.com, rostedt@goodmis.org,
        k-keiichi@bx.jp.nec.com
-Subject: [PATCH 09/12] perf tools: save syscall map
-Date: Wed, 27 Jan 2010 02:28:00 -0600
-Message-Id: <1264580883-15324-10-git-send-email-tzanussi@gmail.com>
+Subject: [PATCH 01/12] perf trace/scripting: Fix supported language listing option
+Date: Wed, 27 Jan 2010 02:27:52 -0600
+Message-Id: <1264580883-15324-2-git-send-email-tzanussi@gmail.com>
 X-Mailer: git-send-email 1.6.4.GIT
 In-Reply-To: <1264580883-15324-1-git-send-email-tzanussi@gmail.com>
 References: <1264580883-15324-1-git-send-email-tzanussi@gmail.com>
@@ -30,191 +30,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Read the exported syscall metadata and save it in the trace file for
-post-processing tools.
+'perf trace -s list' prints a list of the supported scripting
+languages.  One problem with it is that it falls through and prints
+the trace as well.  The use of 'list' for this also makes it easy to
+confuse with 'perf trace -l', used for listing available scripts.  So
+change 'perf trace -s list' to 'perf trace -s lang' and fixes the
+fall-through problem.
 
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 ---
- tools/perf/util/trace-event-info.c  |   25 ++++++++++++++
- tools/perf/util/trace-event-parse.c |   63 +++++++++++++++++++++++++++++++++++
- tools/perf/util/trace-event-read.c  |   18 ++++++++++
- tools/perf/util/trace-event.h       |   10 +++++
- 4 files changed, 116 insertions(+), 0 deletions(-)
+ tools/perf/Documentation/perf-trace.txt |    4 +++-
+ tools/perf/builtin-trace.c              |    4 ++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
-index 5ea8973..6a6e5cc 100644
---- a/tools/perf/util/trace-event-info.c
-+++ b/tools/perf/util/trace-event-info.c
-@@ -461,6 +461,30 @@ out:
- 	put_tracing_file(path);
- }
+diff --git a/tools/perf/Documentation/perf-trace.txt b/tools/perf/Documentation/perf-trace.txt
+index 60e5900..c00a76f 100644
+--- a/tools/perf/Documentation/perf-trace.txt
++++ b/tools/perf/Documentation/perf-trace.txt
+@@ -45,9 +45,11 @@ OPTIONS
+ --list=::
+         Display a list of available trace scripts.
  
-+static void read_syscall_map(void)
-+{
-+	unsigned int size, check_size;
-+	char *path;
-+	struct stat st;
-+	int ret;
-+
-+	path = get_tracing_file("syscall_map");
-+	ret = stat(path, &st);
-+	if (ret < 0) {
-+		/* not found */
-+		size = 0;
-+		write_or_die(&size, 4);
-+		goto out;
-+	}
-+	size = get_size(path);
-+	write_or_die(&size, 4);
-+	check_size = copy_file(path);
-+	if (size != check_size)
-+		die("error in size of file '%s'", path);
-+out:
-+	put_tracing_file(path);
-+}
-+
- static struct tracepoint_path *
- get_tracepoints_path(struct perf_event_attr *pattrs, int nb_events)
- {
-@@ -523,6 +547,7 @@ int read_tracing_data(int fd, struct perf_event_attr *pattrs, int nb_events)
- 	read_event_files(tps);
- 	read_proc_kallsyms();
- 	read_ftrace_printk();
-+	read_syscall_map();
+--s::
++-s ['lang']::
+ --script=::
+         Process trace data with the given script ([lang]:script[.ext]).
++	If the string 'lang' is specified in place of a script name, a
++        list of supported languages will be displayed instead.
  
- 	return 0;
- }
-diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-index c1299ff..31bb6f2 100644
---- a/tools/perf/util/trace-event-parse.c
-+++ b/tools/perf/util/trace-event-parse.c
-@@ -336,6 +336,69 @@ void print_printk(void)
+ -g::
+ --gen-script=::
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index 8e9cbfe..850d0aa 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -219,9 +219,9 @@ static int parse_scriptname(const struct option *opt __used,
+ 	const char *script, *ext;
+ 	int len;
+ 
+-	if (strcmp(str, "list") == 0) {
++	if (strcmp(str, "lang") == 0) {
+ 		list_available_languages();
+-		return 0;
++		exit(0);
  	}
- }
  
-+static struct syscall_metadata *syscalls;
-+static int syscall_count;
-+
-+void parse_syscall_map(char *file, int size __unused)
-+{
-+	struct syscall_list {
-+		struct syscall_list	*next;
-+		char			*name;
-+		int			nr;
-+	} *list = NULL, *item;
-+	char *line;
-+	char *next = NULL;
-+	int i;
-+
-+	line = strtok_r(file, "\n", &next);
-+	while (line) {
-+		item = malloc_or_die(sizeof(*item));
-+		sscanf(line, "%d:%as", &item->nr,
-+		       (float *)(void *)&item->name); /* workaround gcc warning */
-+		item->next = list;
-+		list = item;
-+		line = strtok_r(NULL, "\n", &next);
-+		syscall_count++;
-+	}
-+
-+	syscalls = malloc_or_die(sizeof(*syscalls) * syscall_count);
-+
-+	i = 0;
-+	while (list) {
-+		syscalls[i].nr = list->nr;
-+		syscalls[i].name = list->name;
-+		i++;
-+		item = list;
-+		list = list->next;
-+		free(item);
-+	}
-+}
-+
-+int nr_syscalls(void)
-+{
-+	return syscall_count;
-+}
-+
-+const struct syscall_metadata *syscall_at_idx(int idx)
-+{
-+	if (idx >= syscall_count)
-+		return NULL;
-+
-+	return &syscalls[idx];
-+}
-+
-+const struct syscall_metadata *find_syscall(int syscall_nr)
-+{
-+	int i;
-+
-+	for (i = 0; i < syscall_count; i++) {
-+		if (syscalls[i].nr == syscall_nr)
-+			return &syscalls[i];
-+	}
-+
-+	return NULL;
-+}
-+
- static struct event *alloc_event(void)
- {
- 	struct event *event;
-diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
-index 1744422..70fcaec 100644
---- a/tools/perf/util/trace-event-read.c
-+++ b/tools/perf/util/trace-event-read.c
-@@ -171,6 +171,23 @@ static void read_ftrace_printk(void)
- 	free(buf);
- }
- 
-+static void read_syscall_map(void)
-+{
-+	unsigned int size;
-+	char *buf;
-+
-+	size = read4();
-+	if (!size)
-+		return;
-+
-+	buf = malloc_or_die(size);
-+	read_or_die(buf, size);
-+
-+	parse_syscall_map(buf, size);
-+
-+	free(buf);
-+}
-+
- static void read_header_files(void)
- {
- 	unsigned long long size;
-@@ -498,6 +515,7 @@ void trace_report(int fd)
- 	read_event_files();
- 	read_proc_kallsyms();
- 	read_ftrace_printk();
-+	read_syscall_map();
- 
- 	if (show_funcs) {
- 		print_funcs();
-diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
-index c3269b9..5313ad8 100644
---- a/tools/perf/util/trace-event.h
-+++ b/tools/perf/util/trace-event.h
-@@ -178,6 +178,16 @@ int parse_event_file(char *buf, unsigned long size, char *sys);
- void print_event(int cpu, void *data, int size, unsigned long long nsecs,
- 		  char *comm);
- 
-+struct syscall_metadata {
-+	char *name;
-+	int nr;
-+};
-+
-+void parse_syscall_map(char *file, int size);
-+int nr_syscalls(void);
-+const struct syscall_metadata *syscall_at_idx(int idx);
-+const struct syscall_metadata *find_syscall(int syscall_nr);
-+
- extern int file_bigendian;
- extern int host_bigendian;
- 
+ 	script = strchr(str, ':');
 -- 
 1.6.4.GIT
 
