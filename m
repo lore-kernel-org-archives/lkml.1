@@ -1,105 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493Ab0A0LS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500Ab0A0LUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493Ab0A0LS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 06:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304Ab0A0LS5
+	id S1754500Ab0A0LUl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 06:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456Ab0A0LUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 06:18:57 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:42246 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753104Ab0A0LS4 (ORCPT
+	Wed, 27 Jan 2010 06:20:39 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:44140 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753320Ab0A0LUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 06:18:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=ScVYYUbzvUcZX3B7TmJGJhMGJ3zlpHAVYYXWnwZU4NcU9nK4dFbNDjaDFR9w+JaMxB
-         0mauTMWHZBbT30DXPrOLBoRk7n+jb5r4v4sUAS96E/E2aJlE8U6RK5WlBkYkJoSWDoWq
-         gBc2oza4hiybVyKT5htAz8FsZ/1KIVp9g17Yg=
+	Wed, 27 Jan 2010 06:20:39 -0500
+Message-ID: <4B602186.8050303@cs.helsinki.fi>
+Date: Wed, 27 Jan 2010 13:20:38 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Date: Wed, 27 Jan 2010 19:18:55 +0800
-Message-ID: <a0e7fce51001270318q6f16aea1j765849bb09df8640@mail.gmail.com>
-Subject: [PATCH] cyclictest: Set tracing_thresh optionally
-From: yi li <liyi.dev@gmail.com>
-To: williams@redhat.com, tglx@linutronix.de
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Chris Wilson <chris@chris-wilson.co.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roman Jarosz <kedgedev@gmail.com>, A Rojas <nqn1976list@gmail.com>,
+       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
+       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
+       linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       stable@kernel.org
+Subject: Re: [PATCH] drm/i915: Selectively enable self-reclaim
+References: <alpine.LFD.2.00.1001270252290.24253@localhost.localdomain> <1264590844-22972-1-git-send-email-chris@chris-wilson.co.uk>
+In-Reply-To: <1264590844-22972-1-git-send-email-chris@chris-wilson.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Chris Wilson kirjoitti:
+> Having missed the ENOMEM return via i915_gem_fault(), there are probably
+> other paths that I also missed. By not enabling NORETRY by default these
+> paths can run the shrinker and take memory from the system (but not from
+> our own inactive lists because our shrinker can not run whilst we hold
+> the struct mutex) and this may allow the system to survive a little longer
+> whilst our drivers consume all available memory.
+> 
+> References:
+>   OOM killer unexpectedly called with kernel 2.6.32
+>   http://bugzilla.kernel.org/show_bug.cgi?id=14933
+> 
+> Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Cc: Eric Anholt <eric@anholt.net>
+> Cc: stable@kernel.org
 
-In cyclictest, by default "tracing_thresh" will be set to "tracelimit"
-(given to cyclictest with option "-b tracelimit").
-If the maximum latency of the tracer currently used is less than
-"tracelimit", no trace will be recorded.
+Roman, can you give this patch a spin?
 
-e.g:
-./cyclictest -p 80 -t 1 -n -l 10000 -i 10000 -b 8000 -I -f
-If the "irqsoff" maximum latency is less than 8000,
-"/sys/kernel/debug/tracing/trace" will no contain valid "irqsoff"
-trace.
+> ---
+>  drivers/gpu/drm/drm_gem.c       |   13 -------------
+>  drivers/gpu/drm/i915/i915_gem.c |   22 ++++++++++------------
+>  2 files changed, 10 insertions(+), 25 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
+> index e9dbb48..8bf3770 100644
+> --- a/drivers/gpu/drm/drm_gem.c
+> +++ b/drivers/gpu/drm/drm_gem.c
+> @@ -142,19 +142,6 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
+>  	if (IS_ERR(obj->filp))
+>  		goto free;
+>  
+> -	/* Basically we want to disable the OOM killer and handle ENOMEM
+> -	 * ourselves by sacrificing pages from cached buffers.
+> -	 * XXX shmem_file_[gs]et_gfp_mask()
+> -	 */
+> -	mapping_set_gfp_mask(obj->filp->f_path.dentry->d_inode->i_mapping,
+> -			     GFP_HIGHUSER |
+> -			     __GFP_COLD |
+> -			     __GFP_FS |
+> -			     __GFP_RECLAIMABLE |
+> -			     __GFP_NORETRY |
+> -			     __GFP_NOWARN |
+> -			     __GFP_NOMEMALLOC);
+> -
+>  	kref_init(&obj->refcount);
+>  	kref_init(&obj->handlecount);
+>  	obj->size = size;
+> diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+> index 28b8f03..1ef5b54 100644
+> --- a/drivers/gpu/drm/i915/i915_gem.c
+> +++ b/drivers/gpu/drm/i915/i915_gem.c
+> @@ -336,25 +336,25 @@ i915_gem_object_set_page_gfp_mask (struct drm_gem_object *obj, gfp_t gfp)
+>  static int
+>  i915_gem_object_get_pages_or_evict(struct drm_gem_object *obj)
+>  {
+> +	gfp_t gfp;
+>  	int ret;
+>  
+> +	gfp = i915_gem_object_get_page_gfp_mask(obj);
+> +	i915_gem_object_set_page_gfp_mask(obj, gfp | __GFP_NORETRY | __GFP_NOWARN);
+>  	ret = i915_gem_object_get_pages(obj);
+> +	i915_gem_object_set_page_gfp_mask (obj, gfp);
+>  
+>  	/* If we've insufficient memory to map in the pages, attempt
+>  	 * to make some space by throwing out some old buffers.
+>  	 */
+>  	if (ret == -ENOMEM) {
+>  		struct drm_device *dev = obj->dev;
+> -		gfp_t gfp;
+>  
+>  		ret = i915_gem_evict_something(dev, obj->size);
+>  		if (ret)
+>  			return ret;
+>  
+> -		gfp = i915_gem_object_get_page_gfp_mask(obj);
+> -		i915_gem_object_set_page_gfp_mask(obj, gfp & ~__GFP_NORETRY);
+>  		ret = i915_gem_object_get_pages(obj);
+> -		i915_gem_object_set_page_gfp_mask (obj, gfp);
+>  	}
+>  
+>  	return ret;
+> @@ -2580,6 +2580,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+>  	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+>  	struct drm_mm_node *free_space;
+>  	bool retry_alloc = false;
+> +	gfp_t gfp;
+>  	int ret;
+>  
+>  	if (obj_priv->madv != I915_MADV_WILLNEED) {
+> @@ -2623,15 +2624,12 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+>  	DRM_INFO("Binding object of size %zd at 0x%08x\n",
+>  		 obj->size, obj_priv->gtt_offset);
+>  #endif
+> -	if (retry_alloc) {
+> -		i915_gem_object_set_page_gfp_mask (obj,
+> -						   i915_gem_object_get_page_gfp_mask (obj) & ~__GFP_NORETRY);
+> -	}
+> +	gfp = i915_gem_object_get_page_gfp_mask(obj);
+> +	if (! retry_alloc)
+> +		i915_gem_object_set_page_gfp_mask (obj, gfp | __GFP_NORETRY | __GFP_NOWARN);
+>  	ret = i915_gem_object_get_pages(obj);
+> -	if (retry_alloc) {
+> -		i915_gem_object_set_page_gfp_mask (obj,
+> -						   i915_gem_object_get_page_gfp_mask (obj) | __GFP_NORETRY);
+> -	}
+> +	i915_gem_object_set_page_gfp_mask (obj, gfp);
+> +
+>  	if (ret) {
+>  		drm_mm_put_block(obj_priv->gtt_space);
+>  		obj_priv->gtt_space = NULL;
 
-This is not expected sometimes if e.g, the maximum latency of
-cyclictest is caused by wakeup, but I want to see the irqsoff latency.
-So I think it may be better to allow user set "tracing_thresh"
-optionally, by adding a "--tracing_thresh=THRESH" option.
-
-Here is a simple patch to show the idea:
-
-Signed-off-by: yi.li@analog.com
-
-diff --git a/src/cyclictest/cyclictest.c b/src/cyclictest/cyclictest.c
-index ce4d911..c2f1c07 100644
---- a/src/cyclictest/cyclictest.c
-+++ b/src/cyclictest/cyclictest.c
-@@ -144,6 +144,7 @@ struct thread_stat {
-
- static int shutdown;
- static int tracelimit = 0;
-+static int tracing_thresh = 0;
- static int ftrace = 0;
- static int kernelversion;
- static int verbose = 0;
-@@ -384,9 +385,11 @@ static void setup_tracer(void)
- 	if (kernelversion == KV_26_CURR) {
- 		char buffer[32];
- 		int ret;
--
--		sprintf(buffer, "%d", tracelimit);
--		setkernvar("tracing_thresh", buffer);
-+		
-+		if (tracing_thresh > 0 && tracing_thresh <= tracelimit) {
-+			sprintf(buffer, "%d", tracing_thresh);
-+			setkernvar("tracing_thresh", buffer);
-+		}
-
- 		/* ftrace_enabled is a sysctl variable */
- 		fileprefix = procfileprefix;
-@@ -766,6 +769,7 @@ static void display_help(int error)
- 	       "                           without -t default = 1\n"
- 	       "-T TRACE --tracer=TRACER   set tracing function\n"
- 	       "    configured tracers: %s\n"
-+	       "--tracing_thresh=THRESH    set tracing_thresh of current
-tracer to THRESH\n"
- 	       "-u       --unbuffered      force unbuffered output for live
-processing\n"
- 	       "-v       --verbose         output values on stdout for statistics\n"
- 	       "                           format: n:c:v n=tasknum c=count
-v=value in us\n"
-@@ -896,6 +900,7 @@ static void process_options (int argc, char *argv[])
- 			{"help", no_argument, NULL, '?'},
- 			{"tracer", required_argument, NULL, 'T'},
- 			{"traceopt", required_argument, NULL, 'O'},
-+			{"tracing_thresh", required_argument, NULL, 1},
- 			{"smp", no_argument, NULL, 'S'},
- 			{NULL, 0, NULL, 0}
- 		};
-@@ -972,6 +977,7 @@ static void process_options (int argc, char *argv[])
- 			use_nanosleep = MODE_CLOCK_NANOSLEEP;
- 			break;
- 		case '?': display_help(0); break;
-+		case 1 : tracing_thresh = atoi(optarg); break;
- 		}
- 	}
