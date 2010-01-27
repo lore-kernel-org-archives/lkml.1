@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641Ab0A0ANG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547Ab0A0AOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641Ab0A0ANG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252Ab0A0ANB
+	id S1752547Ab0A0AOu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:14:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673Ab0A0AOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:13:01 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60378 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751084Ab0A0ANA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:13:00 -0500
-Date: Tue, 26 Jan 2010 16:11:13 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: [61/98] Input: i8042 - remove identification strings from DMI
- tables
-Message-ID: <20100127001113.GA32478@suse.de>
-References: <20100126233928.894956940@mini.kroah.org>
- <alpine.LFD.2.00.1001261559240.17519@localhost.localdomain>
+	Tue, 26 Jan 2010 19:14:49 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37798 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305Ab0A0AOs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 19:14:48 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "Roman Jarosz" <kedgedev@gmail.com>
+Subject: Re: OOM-Killer kills too much with 2.6.32.2
+Cc: kosaki.motohiro@jp.fujitsu.com, lkml <linux-kernel@vger.kernel.org>,
+       "A Rojas" <nqn1976list@gmail.com>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
+       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Eric Anholt" <eric@anholt.net>,
+       "Chris Wilson" <chris@chris-wilson.co.uk>
+In-Reply-To: <op.u646z3e7asvm2a@kedge>
+References: <20100126183412.6AC9.A69D9226@jp.fujitsu.com> <op.u646z3e7asvm2a@kedge>
+Message-Id: <20100127091354.6ACF.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001261559240.17519@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 27 Jan 2010 09:14:44 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 04:00:16PM -0800, Linus Torvalds wrote:
+> > -	mapping_set_gfp_mask(obj->filp->f_path.dentry->d_inode->i_mapping,
+> > -			     GFP_HIGHUSER |
+> > -			     __GFP_COLD |
+> > -			     __GFP_FS |
+> > -			     __GFP_RECLAIMABLE |
+> > -			     __GFP_NORETRY |
+> > -			     __GFP_NOWARN |
+> > -			     __GFP_NOMEMALLOC);
+> > -
+> >  	kref_init(&obj->refcount);
+> >  	kref_init(&obj->handlecount);
+> >  	obj->size = size;
 > 
-> 
-> On Tue, 26 Jan 2010, Greg KH wrote:
-> >
-> > 2.6.32-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > 
-> > From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> > 
-> > commit f909b1df0a068f30e252d8dc3e9d45ca25bf266f upstream.
-> > 
-> > The driver does not reference identification strings in DMI tables and
-> > since these strings are no longer required by DMI core we can safely
-> > remove them and save some memory.
-> > 
-> > Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> 
-> This seems to have lost your sign-off?
+> I've applied this patch and I'm testing it right now.
+> Btw. what this patch will do from user(my) point of view?
 
-Argh, good catch, I've now added it.
+OOM Killer disappear :)
 
-thanks,
 
-greg k-h
+
+
