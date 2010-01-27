@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173Ab0A0AeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200Ab0A0Ah0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754173Ab0A0AeZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066Ab0A0AeY
+	id S1754200Ab0A0Ah0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117Ab0A0AhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:34:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60385 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753726Ab0A0AeX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:34:23 -0500
-Date: Tue, 26 Jan 2010 16:32:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
-       x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, shaohui.zheng@intel.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 2/3] x86: remove bios data range from e820
-Message-Id: <20100126163233.7ef1addb.akpm@linux-foundation.org>
-In-Reply-To: <20100122033004.335813103@intel.com>
-References: <20100122032102.137106635@intel.com>
-	<20100122033004.335813103@intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Tue, 26 Jan 2010 19:37:25 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:46206 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753899Ab0A0AhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 19:37:24 -0500
+Date: Wed, 27 Jan 2010 11:37:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>
+Subject: linux-next: vfs tree build failure
+Message-Id: <20100127113718.5177ceb1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__27_Jan_2010_11_37_18_+1100_gXBG=lKdb/T964xd"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jan 2010 11:21:04 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+--Signature=_Wed__27_Jan_2010_11_37_18_+1100_gXBG=lKdb/T964xd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> From: Yinghai Lu <yinghai@kernel.org>
-> 
-> To prepare move page_is_ram() as generic one.
-> 
-> Tested-by: Wu Fengguang <fengguang.wu@intel.com>
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Hi Al,
 
-This should have included Signed-off-by:you, as you were on the patch
-delivery path.  I shall add that.
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
+ERROR: "ima_path_check" [fs/nfsd/nfsd.ko] undefined!
+
+Caused by commit b35d5b4f7f47215f322bc6d9a1fd8499c11455d2 ("Fix
+untangling ima mess, part 2 with counters").
+
+I have used the vfs tree from next-20100125 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__27_Jan_2010_11_37_18_+1100_gXBG=lKdb/T964xd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktfir4ACgkQjjKRsyhoI8wHjgCgpv+KFgJbkKapRzl5460remmX
+11AAn3om+4g69Pj9lPSJwUrDixLmcAo7
+=4uB/
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__27_Jan_2010_11_37_18_+1100_gXBG=lKdb/T964xd--
