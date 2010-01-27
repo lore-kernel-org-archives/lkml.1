@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590Ab0A0CxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713Ab0A0C65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752590Ab0A0CxZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 21:53:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060Ab0A0CxZ
+	id S1753713Ab0A0C65 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 21:58:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094Ab0A0C64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 21:53:25 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:49739 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900Ab0A0CxY convert rfc822-to-8bit (ORCPT
+	Tue, 26 Jan 2010 21:58:56 -0500
+Received: from mail-qy0-f204.google.com ([209.85.221.204]:63575 "EHLO
+	mail-qy0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502Ab0A0C6z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 21:53:24 -0500
+	Tue, 26 Jan 2010 21:58:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=Ql0OwYZ9vrT8YHXYYgy8/shoMWFOXKGbGiUFP2ZIg2rl0cPx9p9/XDc4JO1Ib2zlir
-         0yNLpHoWdeG62KxPjWh8A9m4ZFLScWb3Y7xUpCQCVj51/K3sRSpNzbTucnRdA4fJPFdC
-         o9sLFnPH0+WclRv8mon8bDJu4Iw7vNBoUeW4o=
+        b=iSRUCcj/b+0GTHY/n9k1W8S7ztFB3xMOWuWvTRVChSEa1xNYNNbANMqDhEX2EKd9yA
+         h0FnRA9bdNwb37aGK72lg+cvdINtK4gLZVxs8d8N0VEEyy3PbACnfcTB98RfLGfU0MIL
+         AEW1b5mFwvB6kS6vNOGOK6AA08OhMsf4apM/4=
 MIME-Version: 1.0
-In-Reply-To: <20100126111853.10890fc6@marrow.netinsight.se>
-References: <20100126105640.6bf9488c@marrow.netinsight.se>
-	 <2375c9f91001260208t31379702tb49cb57d12d5890b@mail.gmail.com>
-	 <20100126111853.10890fc6@marrow.netinsight.se>
-Date: Wed, 27 Jan 2010 10:53:23 +0800
-Message-ID: <2375c9f91001261853t1158a66aw86546a61e613338f@mail.gmail.com>
-Subject: Re: [PATCH] Provide ways of crashing the kernel through debugfs
+In-Reply-To: <20100126181641.GA10460@redhat.com>
+References: <20100126121618.5AA5.A69D9226@jp.fujitsu.com>
+	 <20100126181641.GA10460@redhat.com>
+Date: Wed, 27 Jan 2010 10:58:54 +0800
+Message-ID: <2375c9f91001261858y7fee9388o55a8e6f11fcdc0bf@mail.gmail.com>
+Subject: Re: check_usage_backwards() && forwards? (Was: [2.6.33-rc5] starting 
+	emacs makes lockdep warning)
 From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>, Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 6:18 PM, Simon Kagstrom
-<simon.kagstrom@netinsight.net> wrote:
-> Hi Americo!
+On Wed, Jan 27, 2010 at 2:16 AM, Oleg Nesterov <oleg@redhat.com> wrote:
+> (add  lockdep gurus)
 >
-> On Tue, 26 Jan 2010 18:08:28 +0800
-> Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> Lockdep has found the real bug, but the output doesn't look right to me
 >
->> On Tue, Jan 26, 2010 at 5:56 PM, Simon Kagstrom
->> <simon.kagstrom@netinsight.net> wrote:
->> > For development and testing it's sometimes useful to crash or injure the
->> > kernel in various ways. This patch adds a debugfs interface to provoke
->> > null-pointer dereferences, stack corruption, panics, bugons etc. For
->> > example:
->> >
->> >  mount -t debugfs debugfs /mnt
->> >  echo 1 > /mnt/provoke-crash/null_dereference
->> >
->> > Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
->> > ---
->> > Obviously this feature is for debugging and testing only, and of
->> > interest to fairly few people. I've used it for testing the kmsg_dump
->> > stuff (hence the CC:s above) and kdump, and have found it fairly useful.
->> >
->> > If it's not of interest, at least this mail will be in the archives if
->> > someone else needs something like it :-)
+> On 01/26, KOSAKI Motohiro wrote:
 >>
->> Hey, we already have /proc/sysrq-trigger, you need to state why
->> it is better than using /proc/sysrq-trigger.
+>> =========================================================
+>> [ INFO: possible irq lock inversion dependency detected ]
+>> 2.6.33-rc5 #77
+>> ---------------------------------------------------------
+>> emacs/1609 just changed the state of lock:
+>>  (&(&tty->ctrl_lock)->rlock){+.....}, at: [<ffffffff8127c648>] tty_fasync+0xe8/0x190
+>> but this lock took another, HARDIRQ-unsafe lock in the past:
+>>  (&(&sighand->siglock)->rlock){-.....}
 >
-> Well, it provides a few more ways of crashing the kernel. That's
-> basically the only additional feature you'll get.
+> "HARDIRQ-unsafe" and "this lock took another" looks wrong, afaics.
+>
+>>   ... key      at: [<ffffffff81c054a4>] __key.46539+0x0/0x8
+>>   ... acquired at:
+>>    [<ffffffff81089af6>] __lock_acquire+0x1056/0x15a0
+>>    [<ffffffff8108a0df>] lock_acquire+0x9f/0x120
+>>    [<ffffffff81423012>] _raw_spin_lock_irqsave+0x52/0x90
+>>    [<ffffffff8127c1be>] __proc_set_tty+0x3e/0x150
+>>    [<ffffffff8127e01d>] tty_open+0x51d/0x5e0
+>
+> The stack-trace shows that this lock (ctrl_lock) was taken under
+> ->siglock (which is hopefully irq-safe).
+>
+> Typo in check_usage_backwards() ?
+>
+> Oleg.
+>
+> --- a/kernel/lockdep.c
+> +++ b/kernel/lockdep.c
+> @@ -2147,7 +2147,7 @@ check_usage_backwards(struct task_struct
+>                return ret;
+>
+>        return print_irq_inversion_bug(curr, &root, target_entry,
+> -                                       this, 1, irqclass);
+> +                                       this, 0, irqclass);
+>  }
+>
+>  void print_irqtrace_events(struct task_struct *curr)
+>
 >
 
-Yeah, I can see that, but why do I need to care how I crash the kernel
-as long as I can crash it in a way.
+Yes!! Almost definitely... You are so careful!
+ACK, please submit it as a normal patch.
 
 Thanks.
