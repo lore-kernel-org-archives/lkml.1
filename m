@@ -1,57 +1,404 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951Ab0A0SCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961Ab0A0SEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755951Ab0A0SCG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 13:02:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926Ab0A0SCE
+	id S1755961Ab0A0SEQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 13:04:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032Ab0A0SEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 13:02:04 -0500
-Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:44652 "HELO
-	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755212Ab0A0SCB (ORCPT
+	Wed, 27 Jan 2010 13:04:15 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:51065 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755337Ab0A0SEO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 13:02:01 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=uhJikyR8A5eZ5KlsLENnESzb8ubyhdkVErlFmwyNCn1GjSTyzy1ag1y8tfDFVS58L2qKQXbmNYR/XgY5DrfAVAZIdFaBm3fm5pBoJp2ScyNsAAXCjD9hU4zJ1EVeOidj;
-Date: Wed, 27 Jan 2010 10:01:44 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Chris Wilson" <chris@chris-wilson.co.uk>,
-       "tomas m" <tmezzadra@gmail.com>
-Subject: Re: [Bug #15004] i915: *ERROR* Execbuf while wedged
-Message-ID: <20100127100144.4c7d8996@jbarnes-piketon>
-In-Reply-To: <q60Z28d_9yH.A.r3H.XZMXLB@chimera>
-References: <pYFNu11z2aM.A.pJH.CZMXLB@chimera>
-	<q60Z28d_9yH.A.r3H.XZMXLB@chimera>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 27 Jan 2010 13:04:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:user-agent:mime-version
+         :content-type;
+        b=wjtWlv4YBwYLcizslm4cLPeLAJRsE9ltK0b7dkTxyFOG94s3m7lYsdbgUCFUFS27RD
+         6PTpRzsGS8WYrLgOOUQpkEXICOgv+wbN01vz5TeWREWRVcov/PJXFWJgqNC+KPCLNseZ
+         WEl6MydP34uYJgf+FSucW7uTX3bmehBfHOzKE=
+From: Don Mullis <don.mullis@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: airlied@redhat.com, andi@firstfloor.org, david@fromorbit.com,
+       dedekind@infradead.org
+Subject: [PATCH v2 1/3] lib: More scalable list_sort()
+Date: Wed, 27 Jan 2010 10:04:05 -0800
+Message-ID: <878wbja0h6.fsf@gmail.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jan 2010 23:23:11 +0100 (CET)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+XFS and UBIFS can pass long lists to list_sort(); this alternative
+implementation scales better, reaching ~3x performance gain when list
+length exceeds the L2 cache size.
 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.31 and 2.6.32.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15004
-> Subject		: i915: *ERROR* Execbuf while wedged
-> Submitter	: tomas m <tmezzadra@gmail.com>
-> Date		: 2010-01-07 18:53 (18 days old)
+Stand-alone program timings were run on a Core 2 duo L1=32KB L2=4MB,
+gcc-4.4, with flags extracted from an Ubuntu kernel build.  Object
+size is 581 bytes compared to 455 for Mark J. Roberts' code.
 
-Chris, any ideas about this one?  I remember seeing a few like this
-that have been bisected to 2D driver changes recently...
+Worst case for either implementation is a list length just over a
+power of two, and to roughly the same degree, so here are timing
+results for a range of 2^N+1 lengths.  List elements were 16 bytes
+each including malloc overhead; initial order was random.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+                      time (msec)
+                      Tatham-Roberts
+                      |       generic-Mullis-v2
+loop_count  length    |       |    ratio
+4000000       2     206     294    1.427
+2000000       3     176     227    1.289
+1000000       5     199     172    0.864
+ 500000       9     235     178    0.757
+ 250000      17     243     182    0.748
+ 125000      33     261     196    0.750
+  62500      65     277     209    0.754
+  31250     129     292     219    0.75 
+  15625     257     317     235    0.741
+   7812     513     340     252    0.741
+   3906    1025     362     267    0.737
+   1953    2049     388     283    0.729  ~ L1 size
+    976    4097     556     323    0.580
+    488    8193     678     361    0.532
+    244   16385     773     395    0.510
+    122   32769     844     418    0.495
+     61   65537     917     454    0.495
+     30  131073    1128     543    0.481
+     15  262145    2355     869    0.369  ~ L2 size
+      7  524289    5597    1714    0.306
+      3 1048577    6218    2022    0.325
+
+
+Mark's code does not actually implement the usual or generic
+mergesort, but rather a variant from Simon Tatham described here:
+
+    http://www.chiark.greenend.org.uk/~sgtatham/algorithms/listsort.html
+
+Simon's algorithm performs O(log N) passes over the entire input list,
+doing merges of sublists that double in size on each pass.  The
+generic algorithm instead merges pairs of equal length lists as early
+as possible, in recursive order.  For either algorithm, the elements
+that extend the list beyond power-of-two length are a special case,
+handled as nearly as possible as a "rounding-up" to a full POT.
+
+Some intuition for the locality of reference implications of merge
+order may be gotten by watching this animation:
+
+    http://www.sorting-algorithms.com/merge-sort
+
+Simon's algorithm requires only O(1) extra space rather than the
+generic algorithm's O(log N), but in my non-recursive implementation
+the actual O(log N) data is merely a vector of ~20 pointers, which
+I've put on the stack.
+
+Long-running list_sort() calls: If the list passed in may be long, or
+the client's cmp() callback function is slow, the client's cmp() may
+periodically invoke cond_resched() to voluntarily yield the CPU.  All
+inner loops of list_sort() call back to cmp().
+
+Stability of the sort: distinct elements that compare equal emerge
+from the sort in the same order as with Mark's code, for simple test
+cases.  A boot-time test is provided to verify this and other
+correctness requirements.
+
+A kernel that uses drm.ko appears to run normally with this change; I
+have no suitable hardware to similarly test the use by UBIFS.
+
+Signed-off-by: Don Mullis <don.mullis@gmail.com>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: Artem Bityutskiy <dedekind@infradead.org>
+---
+ lib/list_sort.c |  252 ++++++++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 183 insertions(+), 69 deletions(-)
+
+Index: linux-2.6/lib/list_sort.c
+===================================================================
+--- linux-2.6.orig/lib/list_sort.c	2010-01-25 21:13:37.000000000 -0800
++++ linux-2.6/lib/list_sort.c	2010-01-26 22:19:58.000000000 -0800
+@@ -4,99 +4,213 @@
+ #include <linux/slab.h>
+ #include <linux/list.h>
+ 
++#define MAX_LIST_LENGTH_BITS 20
++
++/*
++ * Returns a list organized in an intermediate format suited
++ * to chaining of merge() calls: null-terminated, no reserved or
++ * sentinel head node, "prev" links not maintained.
++ */
++static struct list_head *merge(void *priv,
++				int (*cmp)(void *priv, struct list_head *a,
++					struct list_head *b),
++				struct list_head *a, struct list_head *b)
++{
++	struct list_head head, *tail = &head;
++
++	while (a && b) {
++		/* if equal, take 'a' -- important for sort stability */
++		if ((*cmp)(priv, a, b) <= 0) {
++			tail->next = a;
++			a = a->next;
++		} else {
++			tail->next = b;
++			b = b->next;
++		}
++		tail = tail->next;
++	}
++	tail->next = a?:b;
++	return head.next;
++}
++
++/*
++ * Combine final list merge with restoration of standard doubly-linked
++ * list structure.  This approach duplicates code from merge(), but
++ * runs faster than the tidier alternatives of either a separate final
++ * prev-link restoration pass, or maintaining the prev links
++ * throughout.
++ */
++static void merge_and_restore_back_links(void *priv,
++				int (*cmp)(void *priv, struct list_head *a,
++					struct list_head *b),
++				struct list_head *head,
++				struct list_head *a, struct list_head *b)
++{
++	struct list_head *tail = head;
++
++	while (a && b) {
++		/* if equal, take 'a' -- important for sort stability */
++		if ((*cmp)(priv, a, b) <= 0) {
++			tail->next = a;
++			a->prev = tail;
++			a = a->next;
++		} else {
++			tail->next = b;
++			b->prev = tail;
++			b = b->next;
++		}
++		tail = tail->next;
++	}
++	tail->next = a?:b;
++
++	do {
++		/*
++		 * In worst cases this loop may run many iterations.
++		 * Continue callbacks to the client even though no
++		 * element comparison is need, so the client's cmp()
++		 * routine can invoke cond_resched() periodically.
++		 */
++		(void) (*cmp)(priv, tail, tail);
++
++		tail->next->prev = tail;
++		tail = tail->next;
++	} while (tail->next);
++
++	tail->next = head;
++	head->prev = tail;
++}
++
+ /**
+  * list_sort - sort a list.
+  * @priv: private data, passed to @cmp
+  * @head: the list to sort
+  * @cmp: the elements comparison function
+  *
+- * This function has been implemented by Mark J Roberts <mjr@znex.org>. It
+- * implements "merge sort" which has O(nlog(n)) complexity. The list is sorted
+- * in ascending order.
++ * This function implements "merge sort" which has O(nlog(n)) complexity.
++ * The list is sorted in ascending order.
+  *
+  * The comparison function @cmp is supposed to return a negative value if @a is
+  * less than @b, and a positive value if @a is greater than @b. If @a and @b
+  * are equivalent, then it does not matter what this function returns.
+  */
+ void list_sort(void *priv, struct list_head *head,
+-	       int (*cmp)(void *priv, struct list_head *a,
+-			  struct list_head *b))
++		int (*cmp)(void *priv, struct list_head *a,
++			struct list_head *b))
+ {
+-	struct list_head *p, *q, *e, *list, *tail, *oldhead;
+-	int insize, nmerges, psize, qsize, i;
++	struct list_head *part[MAX_LIST_LENGTH_BITS+1]; /* sorted partial lists
++						-- last slot is a sentinel */
++	int lev;  /* index into part[] */
++	int max_lev = 0;
++	struct list_head *list;
+ 
+ 	if (list_empty(head))
+ 		return;
+ 
++	memset(part, 0, sizeof(part));
++
++	head->prev->next = NULL;
+ 	list = head->next;
+-	list_del(head);
+-	insize = 1;
+-	for (;;) {
+-		p = oldhead = list;
+-		list = tail = NULL;
+-		nmerges = 0;
+-
+-		while (p) {
+-			nmerges++;
+-			q = p;
+-			psize = 0;
+-			for (i = 0; i < insize; i++) {
+-				psize++;
+-				q = q->next == oldhead ? NULL : q->next;
+-				if (!q)
+-					break;
+-			}
+ 
+-			qsize = insize;
+-			while (psize > 0 || (qsize > 0 && q)) {
+-				if (!psize) {
+-					e = q;
+-					q = q->next;
+-					qsize--;
+-					if (q == oldhead)
+-						q = NULL;
+-				} else if (!qsize || !q) {
+-					e = p;
+-					p = p->next;
+-					psize--;
+-					if (p == oldhead)
+-						p = NULL;
+-				} else if (cmp(priv, p, q) <= 0) {
+-					e = p;
+-					p = p->next;
+-					psize--;
+-					if (p == oldhead)
+-						p = NULL;
+-				} else {
+-					e = q;
+-					q = q->next;
+-					qsize--;
+-					if (q == oldhead)
+-						q = NULL;
+-				}
+-				if (tail)
+-					tail->next = e;
+-				else
+-					list = e;
+-				e->prev = tail;
+-				tail = e;
++	while (list) {
++		struct list_head *cur = list;
++		list = list->next;
++		cur->next = NULL;
++
++		for (lev = 0; part[lev]; lev++) {
++			cur = merge(priv, cmp, part[lev], cur);
++			part[lev] = NULL;
++		}
++		if (lev > max_lev) {
++			if (unlikely(lev >= ARRAY_SIZE(part)-1)) {
++				printk_once(KERN_DEBUG "list passed to"
++					" list_sort() too long for"
++					" efficiency\n");
++				lev--;
+ 			}
+-			p = q;
++			max_lev = lev;
+ 		}
++		part[lev] = cur;
++	}
+ 
+-		tail->next = list;
+-		list->prev = tail;
++	for (lev = 0; lev < max_lev; lev++)
++		if (part[lev])
++			list = merge(priv, cmp, part[lev], list);
+ 
+-		if (nmerges <= 1)
+-			break;
++	merge_and_restore_back_links(priv, cmp, head, part[max_lev], list);
++}
++EXPORT_SYMBOL(list_sort);
+ 
+-		insize *= 2;
+-	}
++#ifdef DEBUG_LIST_SORT
++struct debug_el {
++	struct list_head l_h;
++	int value;
++	unsigned serial;
++};
+ 
+-	head->next = list;
+-	head->prev = list->prev;
+-	list->prev->next = head;
+-	list->prev = head;
++static int cmp(void *priv, struct list_head *a, struct list_head *b)
++{
++	return container_of(a, struct debug_el, l_h)->value
++	     - container_of(b, struct debug_el, l_h)->value;
+ }
+ 
+-EXPORT_SYMBOL(list_sort);
++/*
++ * The pattern of set bits in the list length determines which cases
++ * are hit in list_sort().
++ */
++#define LIST_SORT_TEST_LENGTH (512+128+2) /* not including head */
++
++static int list_sort_test(void)
++{
++	int i, r = 1, count;
++	struct list_head *head = kmalloc(sizeof(*head), GFP_KERNEL);
++	struct list_head *cur;
++
++	printk(KERN_WARNING "testing list_sort()\n");
++
++	cur = head;
++	for (i = 0; i < LIST_SORT_TEST_LENGTH; i++) {
++		struct debug_el *el = kmalloc(sizeof(*el), GFP_KERNEL);
++		BUG_ON(!el);
++		 /* force some equivalencies */
++		el->value = (r = (r * 725861) % 6599) % (LIST_SORT_TEST_LENGTH/3);
++		el->serial = i;
++
++		el->l_h.prev = cur;
++		cur->next = &el->l_h;
++		cur = cur->next;
++	}
++	head->prev = cur;
++
++	list_sort(NULL, head, cmp);
++
++	count = 1;
++	for (cur = head->next; cur->next != head; cur = cur->next) {
++		struct debug_el *el = container_of(cur, struct debug_el, l_h);
++		int cmp_result = cmp(NULL, cur, cur->next);
++		if (cur->next->prev != cur) {
++			printk(KERN_EMERG "list_sort() returned "
++						"a corrupted list!\n");
++			return 1;
++		} else if (cmp_result > 0) {
++			printk(KERN_EMERG "list_sort() failed to sort!\n");
++			return 1;
++		} else if (cmp_result == 0 &&
++				el->serial >= container_of(cur->next,
++					struct debug_el, l_h)->serial) {
++			printk(KERN_EMERG "list_sort() failed to preserve order"
++						 " of equivalent elements!\n");
++			return 1;
++		}
++		kfree(cur->prev);
++		count++;
++	}
++	kfree(cur);
++	if (count != LIST_SORT_TEST_LENGTH) {
++		printk(KERN_EMERG "list_sort() returned list of"
++						"different length!\n");
++		return 1;
++	}
++	return 0;
++}
++module_init(list_sort_test);
++#endif
