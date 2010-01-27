@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528Ab0A0Xb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553Ab0A0Xcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756528Ab0A0Xb5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:31:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509Ab0A0Xb5
+	id S1756553Ab0A0Xcx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756540Ab0A0Xcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:31:57 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52302 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753727Ab0A0Xb4 (ORCPT
+	Wed, 27 Jan 2010 18:32:52 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:43803 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756531Ab0A0Xcw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:31:56 -0500
-Date: Wed, 27 Jan 2010 23:29:55 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: adharmap@codeaurora.org
-Cc: linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@elte.hu>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Yinghai Lu <yinghai@kernel.org>, Tony Lindgren <tony@atomide.com>,
-       Santosh Shilimkar <santosh.shilimkar@ti.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Kalle Valo <kalle.valo@iki.fi>, Jean Pihet <jpihet@mvista.com>,
-       Linus Walleij <linus.walleij@stericsson.com>,
-       Colin Tuckley <colin.tuckley@arm.com>,
-       Philby John <pjohn@in.mvista.com>,
-       Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
-       Alessandro Rubini <rubini@unipv.it>,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       Abhijeet Dharmapurikar <adharmap@quicinc.com>
-Subject: Re: [RFC PATCH 5/5] gic: initialize interrupts as per argument
-Message-ID: <20100127232955.GG29665@n2100.arm.linux.org.uk>
-References: <1264620749-24527-1-git-send-email-adharmap@codeaurora.org> <1264620749-24527-6-git-send-email-adharmap@codeaurora.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264620749-24527-6-git-send-email-adharmap@codeaurora.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 Jan 2010 18:32:52 -0500
+Subject: [PATCH] x86: add Dell OptiPlex 760 reboot quirk
+From: Leann Ogasawara <leann.ogasawara@canonical.com>
+To: tglx@linutronix.de, mingo@redhat.com, hpa <hpa@zytor.com>
+Cc: x86@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Jan 2010 15:29:18 -0800
+Message-ID: <1264634958.27335.1091.camel@emiko>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 11:32:29AM -0800, adharmap@codeaurora.org wrote:
-> From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
-> 
-> Initialize interrupts as per an argument passed instead of initializing
-> them as active level low triggered interrupts.
-> 
-> Signed-off-by: Abhijeet Dharmapurikar <adharmap@quicinc.com>
-> ---
->  Configuring level triggered interrupts as default may not be correct on
->  some platforms, this changes the default behaviour of the gic_dist_init 
->  function and also adds a flag to indicate whether the default should be level
->  or edge.
+Hi All,
 
-Changing the interrupt type for all interrupts is just wrong.  For on-chip
-peripherals, you generally want to use level based interrupts as they're
-the most efficient and simplest way to signal interrupts.
+A bug reporter noted their Dell OptiPlex 760 hangs on reboot unless
+reboot=bios is specified.  They have confirmed the following reboot
+quirk resolves the issue.  Please consider applying for 2.6.33.
 
-It should be a per-interrupt thing, and we already have that through
-request_irq() etc.  Other platforms manage this just fine without having
-to have special configuration like this.
+Thanks,
+Leann
+
+>From 1e25ca7ec6c1894032a0174e42c537c9b7d849fd Mon Sep 17 00:00:00 2001
+From: Leann Ogasawara <leann.ogasawara@canonical.com>
+Date: Wed, 27 Jan 2010 15:02:02 -0800
+Subject: [PATCH] x86: add Dell OptiPlex 760 reboot quirk
+
+BugLink: https://bugs.launchpad.net/bugs/488319
+
+Dell OptiPlex 760 hangs on reboot unless reboot=bios is used.  Add quirk
+to reboot through the BIOS.
+
+Signed-off-by: Leann Ogasawara <leann.ogasawara@canonical.com>
+Cc: <stable@kernel.org>
+---
+ arch/x86/kernel/reboot.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 1545bc0..704bddc 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -203,6 +203,15 @@ static struct dmi_system_id __initdata reboot_dmi_table[] = {
+ 			DMI_MATCH(DMI_BOARD_NAME, "0T656F"),
+ 		},
+ 	},
++	{	/* Handle problems with rebooting on Dell OptiPlex 760 with 0G919G*/
++		.callback = set_bios_reboot,
++		.ident = "Dell OptiPlex 760",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 760"),
++			DMI_MATCH(DMI_BOARD_NAME, "0G919G"),
++		},
++	},
+ 	{	/* Handle problems with rebooting on Dell 2400's */
+ 		.callback = set_bios_reboot,
+ 		.ident = "Dell PowerEdge 2400",
+-- 
+1.6.3.3
+
+
+
