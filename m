@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276Ab0A0Oou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331Ab0A0OpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276Ab0A0Oou (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 09:44:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333Ab0A0Oot
+	id S1755331Ab0A0OpO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 09:45:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285Ab0A0OpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 09:44:49 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34787 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753688Ab0A0Oos (ORCPT
+	Wed, 27 Jan 2010 09:45:12 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:59937 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755317Ab0A0OpK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 09:44:48 -0500
-Date: Wed, 27 Jan 2010 14:44:44 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Bernd Petrovitsch <bernd@petrovitsch.priv.at>
-Cc: Julia Lawall <julia@diku.dk>, Dan Carpenter <error27@gmail.com>,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: bug list: assigning negative values to unsigned variables
-Message-ID: <20100127144444.GM19799@ZenIV.linux.org.uk>
-References: <20100127104011.GA24796@bicker> <Pine.LNX.4.64.1001271155430.20256@ask.diku.dk> <1264590586.9749.2.camel@localhost> <Pine.LNX.4.64.1001271329460.20256@ask.diku.dk> <1264601569.10795.131.camel@localhost>
+	Wed, 27 Jan 2010 09:45:10 -0500
+Message-ID: <4B60516F.4020106@canonical.com>
+Date: Wed, 27 Jan 2010 15:45:03 +0100
+From: Stefan Bader <stefan.bader@canonical.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264601569.10795.131.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Willy Tarreau <w@1wt.eu>
+CC: Greg KH <gregkh@suse.de>, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, Jie Yang <jie.yang@atheros.com>,
+       stable@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [Stable-review] [20/98] atl1c:use common_task instead of	reset_task
+ and link_chg_task
+References: <20100126233950.GA5372@kroah.com>	<20100126233923.487128431@mini.kroah.org> <20100127052531.GK20093@1wt.eu>
+In-Reply-To: <20100127052531.GK20093@1wt.eu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 03:12:49PM +0100, Bernd Petrovitsch wrote:
-> On Mit, 2010-01-27 at 13:30 +0100, Julia Lawall wrote:
-> > On Wed, 27 Jan 2010, Bernd Petrovitsch wrote:
-> > > On Mit, 2010-01-27 at 11:57 +0100, Julia Lawall wrote:
-> > > > On Wed, 27 Jan 2010, Dan Carpenter wrote:
-> > > > 
-> > > > > Fixing the places which assign negative values to unsigned variables is a good janitor task.
-> > > > 
-> > > > I had the impression that assignment to -1 was done sometimes as a 
-> > > > portable way to initialize the variable to 0xffff (for any number of f's).  
-> Hmm, perhaps some experienced language lawyer can comment on the
-> "portable".
+Willy Tarreau wrote:
+> On Tue, Jan 26, 2010 at 03:33:46PM -0800, Greg KH wrote:
+>> From: Jie Yang <jie.yang@atheros.com>
+>>
+>> commit cb19054697e92a793f336380fd72c588521178ff upstream.
+>>
+>> use common_task instead of reset_task and link_chg_task, so it fix "call cancel_work_sync
+>> from the work itself".
+>>
+>> Signed-off-by: Jie Yang <jie.yang@atheros.com>
+>> Signed-off-by: David S. Miller <davem@davemloft.net>
+>> Cc: Ben Hutchings <ben@decadent.org.uk>
+>> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> I'm going to test this one. I'm randomly seeing my ASUS 1005HA
+> hanging after I replug the network cable. I noticed that the
+> driver from the Atheros site doesn't have the issue at all. I
+> spent a week-end trying to eliminate almost all of the diffs
+> between the two drivers to try to spot the faulty code chunk,
+> until I realized that I went past the failure point without
+> noticing in time because the issue was too much random :-(
 
-Doesn't take a lawyer; conversion to unsigned types *IS* portable and defined
-as arithmetics modulo 2^{width}.  In particular, for any unsigned type T you
-are going to have the same results from (T)-1 and ~(T)0 (and (T)-1L, etc.).
-The value being converted is interpreted as an integer (i.e. the element of
-$\Bbb Z$) and then taken modulo 2^{width}, regardless of the type it had
-come from.  So -1 is just fine and will result in 0xff....f of the right
-width.
+Not sure how much this is true or helps. While looking over that patch I was
+wondering whether there could be a problem of not having an explicit
+cancel_work_sync on the way down. It just seems to disable actions by setting
+the flags to 0 but I somehow it felt like it still could be scheduled to run
+doing nothing...
 
-It's conversion to signed that is a mess if the value you are converting isn't
-already in range representable by the type you are converting to.
+-Stefan
+> Clearly a non-bisectable issue. But with just this fix, I'll
+> be able to tell if the problem is definitely over.
+> 
+> Regards,
+> Willy
+> 
+> _______________________________________________
+> Stable-review mailing list
+> Stable-review@linux.kernel.org
+> http://linux.kernel.org/mailman/listinfo/stable-review
 
-Whether a specific example of conversion of negative to unsigned is a good
-idea stylistically is a different question, of course, but that should be
-taken on case-to-case basis.
