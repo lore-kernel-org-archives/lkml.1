@@ -1,67 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658Ab0A0FON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222Ab0A0FOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751658Ab0A0FON (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 00:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123Ab0A0FOM
+	id S1752222Ab0A0FOj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 00:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309Ab0A0FOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 00:14:12 -0500
-Received: from static-122-103-239-153.ng-fam.svips.gol.ne.jp ([122.103.239.153]:62154
-	"EHLO priv.dyadic.cynic.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750993Ab0A0FOL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 00:14:11 -0500
-Date: Wed, 27 Jan 2010 14:14:06 +0900
-From: Curt Sampson <cjs@starling-software.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Problems Receiving UDP Broadcasts on Some Versions of Linux
-Message-ID: <20100127051405.GA5316@analytic.cynic.net>
-Mail-Followup-To: Curt Sampson <cjs@starling-software.com>,
-	linux-kernel@vger.kernel.org,
-	Linux Netdev List <netdev@vger.kernel.org>
-References: <20100125072749.GG21419@analytic.cynic.net> <4B5D51E6.5090601@gmail.com> <20100127003744.GA16322@analytic.cynic.net> <1264564565.2810.11.camel@edumazet-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264564565.2810.11.camel@edumazet-laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 Jan 2010 00:14:38 -0500
+Received: from waste.org ([173.11.57.241]:49330 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750744Ab0A0FOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 00:14:37 -0500
+Subject: Re: UBIFS assert failed in ubifs_dirty_inode
+From: Matt Mackall <mpm@selenic.com>
+To: dedekind1@gmail.com
+Cc: Jeff Angielski <jeff@theptrgroup.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-mtd@lists.infradead.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1264566010.2401.143.camel@localhost.localdomain>
+References: <4B591573.60602@theptrgroup.com>
+	 <1264480808.2401.78.camel@localhost.localdomain>
+	 <1264484928.3536.1017.camel@calx> <1264500214.3867.21.camel@localhost>
+	 <4B5F9A78.7080000@theptrgroup.com> <1264558433.3536.1543.camel@calx>
+	 <4B5FADE8.30803@theptrgroup.com>
+	 <1264566010.2401.143.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 26 Jan 2010 23:14:26 -0600
+Message-ID: <1264569266.3536.1547.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010-01-27 04:56 +0100 (Wed), Eric Dumazet wrote:
-
-> And you receive a frame on eth1 with src ip address = 192.166.1.120
+On Wed, 2010-01-27 at 06:20 +0200, Artem Bityutskiy wrote:
+> On Tue, 2010-01-26 at 22:07 -0500, Jeff Angielski wrote:
+> > Matt Mackall wrote:
+> > > On Tue, 2010-01-26 at 20:44 -0500, Jeff Angielski wrote:
+> > >> Artem Bityutskiy wrote:
+> > >>> On Mon, 2010-01-25 at 23:48 -0600, Matt Mackall wrote:
+> > >>>> Hmm. I'd just as soon drop it entirely. Here's a patch. Herbert, you
+> > >>>> want to send this through your crypto tree?
+> > >>>>
+> > >>>>
+> > >>>> random: drop weird m_time/a_time manipulation
+> > >>>>
+> > >>>> No other driver does anything remotely like this that I know of except
+> > >>>> for the tty drivers, and I can't see any reason for random/urandom to do
+> > >>>> it. In fact, it's a (trivial, harmless) timing information leak. And
+> > >>>> obviously, it generates power- and flash-cycle wasting I/O, especially
+> > >>>> if combined with something like hwrngd. Also, it breaks ubifs's
+> > >>>> expectations.
+> > >>>>
+> > >>>> Signed-off-by: Matt Mackall <mpm@selenic.com>
+> > >>>>
+> > >>>> diff -r 29db0c391ce8 drivers/char/random.c
+> > >>>> --- a/drivers/char/random.c	Sun Jan 17 11:01:16 2010 -0800
+> > >>>> +++ b/drivers/char/random.c	Mon Jan 25 23:32:00 2010 -0600
+> > >>>> @@ -1051,12 +1051,6 @@
+> > >>>>  				/* like a named pipe */
+> > >>>>  	}
+> > >>>>  
+> > >>>> -	/*
+> > >>>> -	 * If we gave the user some bytes, update the access time.
+> > >>>> -	 */
+> > >>>> -	if (count)
+> > >>>> -		file_accessed(file);
+> > >>>> -
+> > >>>>  	return (count ? count : retval);
+> > >>>>  }
+> > >>>>  
+> > >>>> @@ -1116,8 +1110,6 @@
+> > >>>>  	if (ret)
+> > >>>>  		return ret;
+> > >>>>  
+> > >>>> -	inode->i_mtime = current_fs_time(inode->i_sb);
+> > >>>> -	mark_inode_dirty(inode);
+> > >>>>  	return (ssize_t)count;
+> > >>>>  }
+> > >>> It may brake other FSes expectations, theoretically, as well.
+> > >>>
+> > >>> Anyway, I'm perfectly fine if this is removed.
+> > >>>
+> > >>> Jeff, could you please try Matt's patch and report back if you still
+> > >>> have issues or not. If no, you can use this as a temporary work-around
+> > >>> until a proper fix hits upstream or ubifs-2.6.git.
+> > >> Matt's patch did not compile as written.  I tried to implement what I 
+> > >> think he was trying to do and created this patch (it seems to match the 
+> > >> guts of what inode_setattr() was looking for):
+> > >>
+> > >>
+> > >> diff --git a/drivers/char/random.c b/drivers/char/random.c
+> > >> index 8258982..70f16c7 100644
+> > >> --- a/drivers/char/random.c
+> > >> +++ b/drivers/char/random.c
+> > >> @@ -1108,6 +1108,7 @@ static ssize_t random_write(struct file *file, 
+> > >> const char __user *buffer,
+> > >>   {
+> > >>   	size_t ret;
+> > >>   	struct inode *inode = file->f_path.dentry->d_inode;
+> > >> +	struct iattr attr;
+> > >>
+> > >>   	ret = write_pool(&blocking_pool, buffer, count);
+> > >>   	if (ret)
+> > >> @@ -1116,8 +1117,12 @@ static ssize_t random_write(struct file *file, 
+> > >> const char __user *buffer,
+> > >>   	if (ret)
+> > >>   		return ret;
+> > >>
+> > >> -	inode->i_mtime = current_fs_time(inode->i_sb);
+> > >> -	mark_inode_dirty(inode);
+> > >> +	attr.ia_mtime = current_fs_time(inode->i_sb);
+> > >> +	attr.ia_valid = ATTR_MTIME;
+> > >> +	ret = inode_setattr(inode, &attr);
+> > >> +	if (ret)
+> > >> +		return ret;
+> > >> +
+> > >>   	return (ssize_t)count;
+> > >>   }
+> > >>
+> > >> However, this patch does not fix the problem.  I still see the same 
+> > >> errors.  Matt, is this what you were trying to do?
+> > > 
+> > > That doesn't look anything like my patch? And mine was test compiled.
+> > 
+> > Ahh, you would be right.  I mixed up authors.  My bad.  ;)
+> > 
+> > Matt's patch that removes the offending code works fine.
+> > 
+> > Artem's patch that tries to fix the offending code (and does not compile 
+> > as posted) does not work.
 > 
-> I suspect your kernel drops this frame because of asymetric routing
+> Thanks for testing. So, who would bring Matt's patch upstream then, hmm?
 > 
-> Check "ip route get 192.166.1.120" and if answer is directed to another interface,
-> this may explain the problem.
 
-Indeed, you are absolutely correct. I've further verified that this is
-the issue by having the 8.04 host generate broadcast packets on eth0 and
-eth1, and the "malfunctioning" 9.04 host receives them correctly in both
-cases.
+I think Herbert's tree is the best path, but if he doesn't chime in,
+I'll send it through Andrew.
 
-I ought to have known, looking at that patently bogus source address
-(there's no way I should be seeing anything to 255.255.255.255 that has
-a source address from a different network), to start looking at these
-sorts
-
-> Solution : tweak rp_filter settings.
-
-And indeed, that worked. (I've added the old settings to the
-StackOverflow page.) Thank you very much!
-
-Let me know (by private e-mail) if you're going to add an answer to my
-question on StackOverflow, so I can give you the reputation points.
-Otherwise I'll add the answer myself. The URL, again, is:
-
-  http://stackoverflow.com/questions/2130563/udp-broadcast-reception-problems-with-ubuntu-9-04-but-not-8-04
-
-cjs
 -- 
-Curt Sampson         <cjs@cynic.net>         +81 90 7737 2974
-             http://www.starling-software.com
-The power of accurate observation is commonly called cynicism
-by those who have not got it.    --George Bernard Shaw
+http://selenic.com : development and support for Mercurial and Linux
+
+
