@@ -1,96 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267Ab0A0WYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279Ab0A0W1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267Ab0A0WYZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 17:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227Ab0A0WYY
+	id S1756279Ab0A0W1R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 17:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230Ab0A0W1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 17:24:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54559 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755122Ab0A0WYY (ORCPT
+	Wed, 27 Jan 2010 17:27:16 -0500
+Received: from mail.windriver.com ([147.11.1.11]:54931 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756177Ab0A0W1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 17:24:24 -0500
-Date: Wed, 27 Jan 2010 14:24:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, zhenyuw@linux.intel.com,
-       yakui.zhao@intel.com
-Subject: Re: i915: gpu wedged [was: mmotm 2010-01-15-15-34 uploaded]
-Message-Id: <20100127142400.5657a7fe.akpm@linux-foundation.org>
-In-Reply-To: <4B5AF1E5.1070304@gmail.com>
-References: <201001152359.o0FNxVne006113@imap1.linux-foundation.org>
-	<4B5AF1E5.1070304@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 17:27:16 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu
+Subject: [PATCH 0/3] V2 kgdb regression fixes for 2.6.33
+Date: Wed, 27 Jan 2010 16:25:21 -0600
+Message-Id: <1264631124-4837-1-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.4.rc1
+X-OriginalArrivalTime: 27 Jan 2010 22:26:24.0782 (UTC) FILETIME=[C2A6FAE0:01CA9F9F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Jan 2010 13:56:05 +0100
-Jiri Slaby <jirislaby@gmail.com> wrote:
+I would like to get acks from the respective parties to fix these
+reported regressions against kgdb in 2.6.33.
 
-> On 01/16/2010 12:34 AM, akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2010-01-15-15-34 has been uploaded to
-> 
-> So I've decided to switch to KMS on this kernel with
-> 00:02.0 VGA compatible controller [0300]: Intel Corporation 82G33/G31
-> Express Integrated Graphics Controller [8086:29c2] (rev 02) (prog-if 00
-> [VGA controller])
->         Subsystem: Intel Corporation 82G33/G31 Express Integrated
-> Graphics Controller [8086:29c2]
->         Flags: bus master, fast devsel, latency 0, IRQ 26
->         Memory at ffa80000 (32-bit, non-prefetchable) [size=512K]
->         I/O ports at ec00 [size=8]
->         Memory at d0000000 (32-bit, prefetchable) [size=256M]
->         Memory at ff900000 (32-bit, non-prefetchable) [size=1M]
->         Expansion ROM at <unassigned> [disabled]
->         Capabilities: [90] MSI: Enable+ Count=1/1 Maskable- 64bit-
->         Capabilities: [d0] Power Management version 2
->         Kernel driver in use: i915
-> 
-> 
-> with this X driver:
-> (II) Module intel: vendor="X.Org Foundation"
->         compiled for 1.7.4, module version = 2.10.0
->         Module class: X.Org Video Driver
->         ABI class: X.Org Video Driver, version 6.0
-> 
-> 
-> on X.Org X Server 1.7.4 and after some time I get:
-> (WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
-> error
-> (EE) intel(0): Failed to submit batch buffer, expect rendering
-> corruption or even a frozen display: Input/output er
-> ror.
-> (WW) intel(0): i830_uxa_pixmap_swap_bo_with_image: bo map failed
-> (WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
-> error
-> (WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
-> error
-> (WW) intel(0): i830_uxa_prepare_access: gtt bo map failed: Input/output
-> error
-> (EE) intel(0): Failed to submit batch buffer, expect rendering
-> corruption or even a frozen display: Input/output er
-> ror.
-> (EE) intel(0): Failed to submit batch buffer, expect rendering
-> corruption or even a frozen display: Input/output er
-> 
-> 
-> and kernel says:
-> [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
-> render error detected, EIR: 0x00000000
-> [drm:i915_do_wait_request] *ERROR* i915_do_wait_request returns -5
-> (awaiting 153151 at 153150)
-> [drm:i915_gem_execbuffer] *ERROR* i915_gem_do_execbuffer returns -5
-> 
-> 
-> >From <debugfs>/dri/0/i915_wedged, the GPU is wedged.
-> 
+The constraints for the hw breakpoint API is possibly was definitely a
+dicey issue, but is hopefully resolved in this series.  Even without
+the constraints patch it is possible to use hw breakpoints in the
+kernel debugger in the same manner that has existed since 2.6.26 (only
+kgdb gets to use hw breakpoints).
 
-umph.  There isn't much I can do about that, really.  Apart from
-fervently hoping that this known regression doesn't turn up in
-2.6.34-rc1.
+The regression are:
+  * hw breakpoints no longer work on x86 after the perf API merge
+  * softlockup watchdog can reboot the system while using the kernel debugger
+    *** This has been in linux-next for several months waiting for acks
 
+Dropped from the series was the clocksource patch, it was resolved
+separately.
+
+I collected all the patches which could go into the tip branch or the
+kgdb for_linus branch at the following location depending on the
+status of the discussion that ensues.
+
+git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_igno
+
+Thanks,
+Jason.
+
+---
+
+The following changes since commit be8cde8b24c9dca1e54598690115eee5b1476519:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../jejb/scsi-rc-fixes-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_ingo
+
+Jason Wessel (3):
+      softlockup: add sched_clock_tick() to avoid kernel warning on kgdb resume
+      x86,hw_breakpoint,kgdb: kgdb to use hw_breakpoint API
+      perf,hw_breakpoint,kgdb: No mutex taken for kernel debugger
+
+ arch/x86/kernel/hw_breakpoint.c |    5 +-
+ arch/x86/kernel/kgdb.c          |  251 ++++++++++++++++++++++++++++++---------
+ include/linux/hw_breakpoint.h   |    2 +
+ include/linux/sched.h           |    4 +
+ kernel/hw_breakpoint.c          |   52 +++++++--
+ kernel/kgdb.c                   |    9 +-
+ kernel/softlockup.c             |   15 +++
+ 7 files changed, 264 insertions(+), 74 deletions(-)
