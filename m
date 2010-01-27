@@ -1,45 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779Ab0A0XyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895Ab0A0XzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779Ab0A0XyS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569Ab0A0XyQ
+	id S1754895Ab0A0XzX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:55:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740Ab0A0XzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:54:16 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51552
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754528Ab0A0XyO (ORCPT
+	Wed, 27 Jan 2010 18:55:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54129 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753719Ab0A0XzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:54:14 -0500
-Date: Wed, 27 Jan 2010 15:54:23 -0800 (PST)
-Message-Id: <20100127.155423.169231741.davem@davemloft.net>
-To: shemminger@vyatta.com
-Cc: mbreuer@majjas.com, jarkao2@gmail.com, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       mchan@broadcom.com, pcnet32@verizon.net, romieu@fr.zoreil.com,
-       mcarlson@broadcom.com
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100127094531.53c85aa7@nehalam>
-References: <20100127085049.5b5048e9@nehalam>
-	<4B60707F.1000608@majjas.com>
-	<20100127094531.53c85aa7@nehalam>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	Wed, 27 Jan 2010 18:55:21 -0500
+Date: Wed, 27 Jan 2010 15:55:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: jon - <crayzeejon@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: [PATCH] Generic PS/2 mouse detected on Fujitsu Lifebook
+ B-Series  model laptop instead of LBPS/2 Fujitsu Lifebook TouchScreen
+Message-Id: <20100127155514.cc743fa4.akpm@linux-foundation.org>
+In-Reply-To: <a05e21071001250812x4461e4a0re7f46f7cd28c4162@mail.gmail.com>
+References: <a05e21071001250812x4461e4a0re7f46f7cd28c4162@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@vyatta.com>
-Date: Wed, 27 Jan 2010 09:45:31 -0800
+(suitable cc's added)
 
-> Setting it to 1 causes driver to never go through the dma_sync_single/memcpy
-> path.  Perhaps the code for DMAR doesn't do dma_sync_single_for_cpu
-> properly, or the value passed to sync_single_for_cpu doesn't account for
-> all the overhead of padding and/or ether header.
+On Mon, 25 Jan 2010 16:12:43 +0000
+jon - <crayzeejon@gmail.com> wrote:
 
-For the millionth time...
+> From: Jon Dodgson <crayzeejon@gmail.com>
+> 
+> Fix Detection of Lifebook B-Series Laptop touch screen with DMI
+> product Name string 'Lifebook B Series'
+> 
+> Signed-off-by: Jon Dodgson <crayzeejon@gmail.com>
+> 
+> ---
+> diff -Nurb linux-2.6.26.2/drivers/input/mouse/lifebook.c
+> linux-2.6.26.2_patched/drivers/input/mouse/lifebook.c
+> --- linux-2.6.26.2/drivers/input/mouse/lifebook.c    2008-08-06
+> 17:19:01.000000000 +0100
+> +++ linux-2.6.26.2_patched/drivers/input/mouse/lifebook.c    2010-01-25
+> 02:56:41.000000000 +0000
+> @@ -51,6 +51,12 @@
+>     {
+>         .ident = "LifeBook B",
+>         .matches = {
+> +            DMI_MATCH(DMI_PRODUCT_NAME, "Lifebook B Series"),
+> +        },
+> +    },
+> +    {
+> +        .ident = "LifeBook B",
+> +        .matches = {
+>             DMI_MATCH(DMI_PRODUCT_NAME, "LifeBook B Series"),
+>         },
+>     },
 
-DMAR does not implement any of the DMA SYNC operations, they are set
-to NULL in the dma ops vector, and thus are NOPs.
+So the problem is "LifeBook" versus "Lifebook"?  These matches are
+case-sensitive?
+
+I don't know what kernel you were patching, but current kernels no
+longer have the ".ident" initialisation in that table.  If it _was_
+still there then I'd wonder why you set the ident to "LifeBook B"
+rather than "Lifebook B".
+
+Your email client wordwrapped the patch and replaced its tabs with
+spaces.
+
+Anyway, thanks.  Please work this with Dmitry.
