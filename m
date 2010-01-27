@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895Ab0A0XzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310Ab0A0X4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895Ab0A0XzX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740Ab0A0XzW
+	id S1755310Ab0A0X4Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636Ab0A0X4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:55:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54129 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753719Ab0A0XzV (ORCPT
+	Wed, 27 Jan 2010 18:56:15 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:54633 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754432Ab0A0X4O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:55:21 -0500
-Date: Wed, 27 Jan 2010 15:55:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: jon - <crayzeejon@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: [PATCH] Generic PS/2 mouse detected on Fujitsu Lifebook
- B-Series  model laptop instead of LBPS/2 Fujitsu Lifebook TouchScreen
-Message-Id: <20100127155514.cc743fa4.akpm@linux-foundation.org>
-In-Reply-To: <a05e21071001250812x4461e4a0re7f46f7cd28c4162@mail.gmail.com>
-References: <a05e21071001250812x4461e4a0re7f46f7cd28c4162@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 18:56:14 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=PaDw9R8UkIVZEm/pUuSNaIWviGnhqblQ2hVzX9e5wfWCJHZmt4dl+svm1y2KyGJzX
+	OU2ardIb0SgxN/nhrZazQ==
+Date: Wed, 27 Jan 2010 15:56:09 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, minchan.kim@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
+In-Reply-To: <20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1001271547200.4663@chino.kir.corp.google.com>
+References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com> <20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com> <20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com> <20100126151202.75bd9347.akpm@linux-foundation.org>
+ <20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com> <20100126161952.ee267d1c.akpm@linux-foundation.org> <20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(suitable cc's added)
+On Wed, 27 Jan 2010, KAMEZAWA Hiroyuki wrote:
 
-On Mon, 25 Jan 2010 16:12:43 +0000
-jon - <crayzeejon@gmail.com> wrote:
+> Now, /proc/<pid>/oom_score and /proc/<pid>/oom_adj are used by servers.
 
-> From: Jon Dodgson <crayzeejon@gmail.com>
+Nonsense, there are plenty of userspace applications such as udev that 
+tune their own oom_adj value on their own!  oom_adj is used by anyone who 
+wants to define oom killer priority by polarizing the badness heuristic 
+for certain tasks to, for example, always prefer them or completely 
+disable oom killing for them.
+
+> After this patch, badness() returns different value based on given context.
+> Changing format of them was an idea, but, as David said, using "RSS" values
+> will show unstable oom_score. So, I didn't modify oom_score (for this time).
 > 
-> Fix Detection of Lifebook B-Series Laptop touch screen with DMI
-> product Name string 'Lifebook B Series'
+
+That's a seperate issue: you cannot define the baseline of the heuristic 
+in terms of rss because it does not allow userspace to define when a task 
+has become "rogue", i.e. when it is consuming far more memory than 
+expected, because it is a dynamic value that depends on the state of the 
+VM at the time of oom.  That is one of the two most popular reasons for 
+tuning oom_adj, the other aforementioned.
+
+The issue with using lowmem rss for CONSTRAINT_LOWMEM is that it 
+misinterprets oom_adj values given to tasks; users will tune their oom_adj 
+based on global, system-wide ooms (or use /proc/pid/oom_score to reveal 
+the priority) and will never understand how it affects the value of a 
+resident page in lowmem for GFP_DMA allocations.
+
+> To be honest, all my work are for guys who don't tweak oom_adj based on oom_score.
+> IOW, this is for usual novice people. And I don't wan't to break servers which
+> depends on oom black magic currently supported.
 > 
-> Signed-off-by: Jon Dodgson <crayzeejon@gmail.com>
-> 
-> ---
-> diff -Nurb linux-2.6.26.2/drivers/input/mouse/lifebook.c
-> linux-2.6.26.2_patched/drivers/input/mouse/lifebook.c
-> --- linux-2.6.26.2/drivers/input/mouse/lifebook.c    2008-08-06
-> 17:19:01.000000000 +0100
-> +++ linux-2.6.26.2_patched/drivers/input/mouse/lifebook.c    2010-01-25
-> 02:56:41.000000000 +0000
-> @@ -51,6 +51,12 @@
->     {
->         .ident = "LifeBook B",
->         .matches = {
-> +            DMI_MATCH(DMI_PRODUCT_NAME, "Lifebook B Series"),
-> +        },
-> +    },
-> +    {
-> +        .ident = "LifeBook B",
-> +        .matches = {
->             DMI_MATCH(DMI_PRODUCT_NAME, "LifeBook B Series"),
->         },
->     },
 
-So the problem is "LifeBook" versus "Lifebook"?  These matches are
-case-sensitive?
-
-I don't know what kernel you were patching, but current kernels no
-longer have the ".ident" initialisation in that table.  If it _was_
-still there then I'd wonder why you set the ident to "LifeBook B"
-rather than "Lifebook B".
-
-Your email client wordwrapped the patch and replaced its tabs with
-spaces.
-
-Anyway, thanks.  Please work this with Dmitry.
+Why can't you simply create your own heuristic, seperate from badness(), 
+for CONSTRAINT_LOWMEM?  Define the criteria that you see as important in 
+selecting a task in that scenario and then propose it as a seperate 
+function, there is no requirement that we must have a single heuristic 
+that works for all the various oom killer constraints.  It would be 
+entirely appropriate to ignore oom_adj in that heuristic, as well, since 
+its not defined for such oom conditions (OOM_DISABLE is already taken care 
+of in the tasklist scan and needs no further support).
