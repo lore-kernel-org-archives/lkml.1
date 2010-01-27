@@ -1,91 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563Ab0A0MKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608Ab0A0MKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754563Ab0A0MKc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 07:10:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412Ab0A0MKb
+	id S1754608Ab0A0MKy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 07:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578Ab0A0MKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 07:10:31 -0500
-Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:52496 "EHLO
-	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753855Ab0A0MKa (ORCPT
+	Wed, 27 Jan 2010 07:10:53 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:21795 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753197Ab0A0MKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 07:10:30 -0500
-Subject: Re: [PATCH] kernel/timekeeping:  move xtime_cache to be in the
- same cache line as the lock
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100126152822.d05b5487.akpm@linux-foundation.org>
-References: <1264088361.2082.45.camel@localhost>
-	 <20100126152822.d05b5487.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 12:10:26 +0000
-Message-ID: <1264594226.2059.47.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 07:10:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=M5nhotv94+BL/nIuVZf7UeRWauYMmFrOAQ9qfhOji0Dx3MDq6YmZ7DpJD/DmcbZHcA
+         eh3LzWEFnGcj7W8uUMRx2ZEEmhm9THYQjZBRvvd0xJ8wfVDHdGI3w/swIDXQWzw2QBFY
+         pKcV6chzEAQnPsu2P6WfptXpn3FVg7PrqDfp8=
+MIME-Version: 1.0
+Date: Wed, 27 Jan 2010 12:10:50 +0000
+Message-ID: <6278d2221001270410k1493582fvccdf23bed14cc0ff@mail.gmail.com>
+Subject: file/extent checksums for dedup/sync...
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Linux BTRFS <linux-btrfs@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-26 at 15:28 -0800, Andrew Morton wrote:
-> On Thu, 21 Jan 2010 15:39:21 +0000
-> Richard Kennedy <richard@rsk.demon.co.uk> wrote:
-> 
-> > move xtime_cache to be in the same cache line as the lock
-> >     
-> > allowing current_kernel_time() to access only one cache line
-> 
-> Sentences start with capital letters, please.
+For purposes of data deduplication and data synchronisation, it would
+be a powerful tool to expose file data checksums.
 
-Sorry about that, I will try harder in future ;)
+Since eg BTRFS uses the crc32c algorithm [1], it's possible to compute
+the file's overall CRC from the accumulation of the CRCs from all it's
+extents' CRCs.
 
+For now, exposing this via an IOCTL may be sufficient, though any
+ideas for introducing it in a more standard way? (it's a pity that
+when stat64 was introduced, reserved fields weren't added)
 
-> 
-> I don't know how reliable this is.  I _think_ the compiler and linker
-> are free to place variables of this nature in any old place.  Whether
-> any of the current tools actually do that I don't know.  Note that one
-> of these variables has file-static scope and the other does not, which
-> perhaps increases the risk that the compiler or linker will go and
-> fiddle with them.
-> 
-> To do this reliably one would need to put them in a struct:
-> 
-> time.h:
-> 
-> extern struct xtime_stuff {
-> 	seqlock_t _xtime_lock,
-> 	struct timespec _xtime_cache,
-> } xtime_stuff;
-> 
-> #define xtime_lock xtime_stuff._xtime_lock
-> 
-> 
-> timekeeping.c:
-> 
-> struct xtime_stuff {
-> 	._xtime_lock = __SEQLOCK_UNLOCKED(xtime_stuff._xtime_lock),
-> };
-Thank you, yes that looks like a much better approach.
-I can do this if it's needed, but John Stultz said he's going to kill
-the xtime_cache anyway, so it may not be worth it?
+Thanks,
+  Daniel
 
-However I do wonder if we should move all, or at least some, of the
-variables protected by that xtime_lock into that structure? Then we can
-manage their placement and they would be easier to find. After only a
-brief look I see variables in ntp, tick &  timekeeping that seem to be
-protected by that seqlock.
-
-> > BTW on 64 bit timespec is a 16 byte structure so the aligned 16 doesn't
-> > do much, and on 32bit timepec is 8bytes so this just seems to spread
-> > these variables across more cache lines than necessary. Any ideas what
-> > this is here for?
-> 
-> Dunno.  I had a bit of a peek in the git history but it got complicated
-> and people rarely bother explaining things like this anyway :(
-> 
-regards
-Richard
-
+[1] http://www.research.ibm.com/haifa/satran/ips/Vince-Luben-crc32c-01.pdf
+-- 
+Daniel J Blueman
