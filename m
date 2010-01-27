@@ -1,86 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138Ab0A0Ij7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098Ab0A0Itf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753138Ab0A0Ij7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 03:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919Ab0A0Ij6
+	id S1753098Ab0A0Itf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 03:49:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008Ab0A0Ite
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 03:39:58 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38333 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752584Ab0A0Ij5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 03:39:57 -0500
-Date: Wed, 27 Jan 2010 08:39:34 GMT
-From: tip-bot for Brian Gerst <brgerst@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       brgerst@gmail.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       brgerst@gmail.com, tglx@linutronix.de
-In-Reply-To: <1264434453-2204-1-git-send-email-brgerst@gmail.com>
-References: <1264434453-2204-1-git-send-email-brgerst@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/asm] x86-64: Use normal ptregs stub for execve
-Message-ID: <tip-f19a25c872b20ae4357f72687cf3e7b0da220ee2@git.kernel.org>
-Git-Commit-ID: f19a25c872b20ae4357f72687cf3e7b0da220ee2
-X-Mailer: tip-git-log-daemon
+	Wed, 27 Jan 2010 03:49:34 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:45437 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079Ab0A0Ite convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 03:49:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=E/BqmnsjQ7XG9QxThE0p4qzMpmzl7UsULyjOaN2fjagiHQ1Kd1IMueS7Akh6oR4CVE
+         GpFqPxNrWaWUlTlaf8MP3hvyRXtgi1VsYb7vOHmQvr/BmTZ5cvw6sAPH8WVDT+3J7emw
+         KOVCTB2Ye7K6HqgJ8Q5x5sxpQEZRVQ7baVBmU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 27 Jan 2010 08:39:34 +0000 (UTC)
+In-Reply-To: <alpine.LNX.2.00.1001262342240.30977@pobox.suse.cz>
+References: <b0ae6fcc1001200359y8779182j76f92b50924b340b@mail.gmail.com> 
+	<alpine.LNX.2.00.1001262342240.30977@pobox.suse.cz>
+From: Shahar Havivi <shaharh@gmail.com>
+Date: Wed, 27 Jan 2010 10:49:11 +0200
+Message-ID: <b0ae6fcc1001270049m6e2e7b1dre9971e57e282b48a@mail.gmail.com>
+Subject: Re: [PATCH] Remove unused variables
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f19a25c872b20ae4357f72687cf3e7b0da220ee2
-Gitweb:     http://git.kernel.org/tip/f19a25c872b20ae4357f72687cf3e7b0da220ee2
-Author:     Brian Gerst <brgerst@gmail.com>
-AuthorDate: Mon, 25 Jan 2010 10:47:33 -0500
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 26 Jan 2010 23:38:14 -0800
+Remove unused fields in drivers/char/vt.c
+variables orig_buf and orig_count are assigned but never used.
 
-x86-64: Use normal ptregs stub for execve
-
-Execve historically passed regs by value, so it had a seperate stub.
-This is no longer true, so change it to use a normal PTREGSCALL stub.
-
-Signed-off-by: Brian Gerst <brgerst@gmail.com>
-LKML-Reference: <1264434453-2204-1-git-send-email-brgerst@gmail.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Shahar Havivi <shaharh@gmail.com>
 ---
- arch/x86/kernel/entry_64.S |   17 +----------------
- 1 files changed, 1 insertions(+), 16 deletions(-)
+ drivers/char/vt.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 50faa1f..94f530a 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -2119,8 +2119,6 @@ static int do_con_write(struct tty_struct *tty,
+const unsigned char *buf, int co
+    uint8_t inverse;
+    uint8_t width;
+    u16 himask, charmask;
+-   const unsigned char *orig_buf = NULL;
+-   int orig_count;
 
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index 0697ff1..0c31502 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -696,6 +696,7 @@ END(\label)
- 	PTREGSCALL stub_clone, sys_clone, %r8
- 	PTREGSCALL stub_fork, sys_fork, %rdi
- 	PTREGSCALL stub_vfork, sys_vfork, %rdi
-+	PTREGSCALL stub_execve, sys_execve, %rcx
- 	PTREGSCALL stub_sigaltstack, sys_sigaltstack, %rdx
- 	PTREGSCALL stub_iopl, sys_iopl, %rsi
- 
-@@ -712,22 +713,6 @@ ENTRY(ptregscall_common)
- 	CFI_ENDPROC
- END(ptregscall_common)
- 
--ENTRY(stub_execve)
--	CFI_STARTPROC
--	popq %r11
--	CFI_ADJUST_CFA_OFFSET -8
--	CFI_REGISTER rip, r11
--	SAVE_REST
--	FIXUP_TOP_OF_STACK %r11
--	movq %rsp, %rcx
--	call sys_execve
--	RESTORE_TOP_OF_STACK %r11
--	movq %rax,RAX(%rsp)
--	RESTORE_REST
--	jmp int_ret_from_sys_call
--	CFI_ENDPROC
--END(stub_execve)
--
- /*
-  * sigreturn is special because it needs to restore all registers on return.
-  * This cannot be done with SYSRET, so use the IRET return path instead.
+    if (in_interrupt())
+        return count;
+@@ -2142,8 +2140,6 @@ static int do_con_write(struct tty_struct *tty,
+const unsigned char *buf, int co
+        release_console_sem();
+        return 0;
+    }
+-   orig_buf = buf;
+-   orig_count = count;
+
+    himask = vc->vc_hi_font_mask;
+    charmask = himask ? 0x1ff : 0xff;
+-- 
+1.6.3.3
+
+On Wed, Jan 27, 2010 at 12:43 AM, Jiri Kosina <jkosina@suse.cz> wrote:
+> On Wed, 20 Jan 2010, Shahar Havivi wrote:
+>
+>> Remove unused fields in drivers/char/vt.c
+>> variables orig_buf and orig_count are assigned but never used.
+>> Shahar Havivi
+>
+> Could you please resend with your Signed-off-by line, as described in
+> Documentation/SubmittingPatches, so that I could apply the patch?
+>
+>> ---
+>>  drivers/char/vt.c |    4 ----
+>>  1 files changed, 0 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+>> index 50faa1f..94f530a 100644
+>> --- a/drivers/char/vt.c
+>> +++ b/drivers/char/vt.c
+>> @@ -2119,8 +2119,6 @@ static int do_con_write(struct tty_struct *tty,
+>> const unsigned char *buf, int co
+>>     uint8_t inverse;
+>>     uint8_t width;
+>>     u16 himask, charmask;
+>> -   const unsigned char *orig_buf = NULL;
+>> -   int orig_count;
+>>
+>>     if (in_interrupt())
+>>         return count;
+>> @@ -2142,8 +2140,6 @@ static int do_con_write(struct tty_struct *tty,
+>> const unsigned char *buf, int co
+>>         release_console_sem();
+>>         return 0;
+>>     }
+>> -   orig_buf = buf;
+>> -   orig_count = count;
+>>
+>>     himask = vc->vc_hi_font_mask;
+>>     charmask = himask ? 0x1ff : 0xff;
+>
+> Thanks,
+>
+> --
+> Jiri Kosina
+> SUSE Labs, Novell Inc.
+>
