@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790Ab0A0Ch1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842Ab0A0CkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754790Ab0A0Ch1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 21:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473Ab0A0Ch0
+	id S1754842Ab0A0CkM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 21:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678Ab0A0CkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 21:37:26 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:49346 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753193Ab0A0Ch0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 21:37:26 -0500
-Date: Tue, 26 Jan 2010 20:37:22 -0600
-From: Russ Anderson <rja@sgi.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Cc: Dean Nelson <dnelson@redhat.com>, Russ Anderson <rja@sgi.com>
-Subject: [bigfix] x86, msr/cpuid: Pass the number of minors when unregistering MSR and CPUID drivers.
-Message-ID: <20100127023722.GA22305@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Tue, 26 Jan 2010 21:40:10 -0500
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:49602 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752897Ab0A0CkJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 21:40:09 -0500
+Message-ID: <4B5FA785.3010002@blueyonder.co.uk>
+Date: Wed, 27 Jan 2010 02:40:05 +0000
+From: Sid Boyce <sboyce@blueyonder.co.uk>
+Reply-To: sboyce@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: HDA Intel Audio hang on boot
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <201001261922.35213.rjw@sisk.pl> <4B5F5777.8070701@blueyonder.co.uk> <201001270156.46217.rjw@sisk.pl>
+In-Reply-To: <201001270156.46217.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass the number of minors when unregistering MSR and CPUID drivers.
-
-Reported-by: Dean Nelson <dnelson@redhat.com>
-Signed-off-by: Dean Nelson <dnelson@redhat.com>
-Signed-off-by: Russ Anderson <rja@sgi.com>
-
----
-While code reviewing the patch "x86, msr/cpuid: Register enough minors for
-the MSR and CPUID drivers", Dean noticed the number of minors not being
-passed when unregistering in the *_exit functions.
-
- arch/x86/kernel/cpuid.c |    2 +-
- arch/x86/kernel/msr.c   |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux/arch/x86/kernel/cpuid.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpuid.c	2010-01-26 15:23:38.000000000 -0600
-+++ linux/arch/x86/kernel/cpuid.c	2010-01-26 15:30:15.000000000 -0600
-@@ -234,7 +234,7 @@ static void __exit cpuid_exit(void)
- 	for_each_online_cpu(cpu)
- 		cpuid_device_destroy(cpu);
- 	class_destroy(cpuid_class);
--	unregister_chrdev(CPUID_MAJOR, "cpu/cpuid");
-+	__unregister_chrdev(CPUID_MAJOR, 0, NR_CPUS, "cpu/cpuid");
- 	unregister_hotcpu_notifier(&cpuid_class_cpu_notifier);
- }
- 
-Index: linux/arch/x86/kernel/msr.c
-===================================================================
---- linux.orig/arch/x86/kernel/msr.c	2010-01-26 15:23:38.000000000 -0600
-+++ linux/arch/x86/kernel/msr.c	2010-01-26 15:30:38.000000000 -0600
-@@ -290,7 +290,7 @@ static void __exit msr_exit(void)
- 	for_each_online_cpu(cpu)
- 		msr_device_destroy(cpu);
- 	class_destroy(msr_class);
--	unregister_chrdev(MSR_MAJOR, "cpu/msr");
-+	__unregister_chrdev(MSR_MAJOR, 0, NR_CPUS, "cpu/msr");
- 	unregister_hotcpu_notifier(&msr_class_cpu_notifier);
- }
- 
+On 27/01/10 00:56, Rafael J. Wysocki wrote:
+> On Tuesday 26 January 2010, Sid Boyce wrote:
+>> I forgot to mention 2.6.33-rc5 now boots successfully.
+> 
+> Does that mean the problem is fixed in 2.6.33-rc5 or you still need the
+> enable_msi=0 workaround?
+> 
+> Rafael
+> 
+It boots only with the enable_msi=0 workaround.
+Regards
+Sid.
 -- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
+
