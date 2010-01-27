@@ -1,85 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005Ab0A0QJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852Ab0A0QL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754005Ab0A0QJh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 11:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013Ab0A0QJf
+	id S1753852Ab0A0QL7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 11:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557Ab0A0QL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 11:09:35 -0500
-Received: from banach.math.auburn.edu ([131.204.45.3]:59960 "EHLO
-	banach.math.auburn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593Ab0A0QJf (ORCPT
+	Wed, 27 Jan 2010 11:11:57 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:45058 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753150Ab0A0QLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 11:09:35 -0500
-Date: Wed, 27 Jan 2010 10:25:07 -0600 (CST)
-From: Theodore Kilgore <kilgota@banach.math.auburn.edu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
-Subject: Re: linux-next: v4l-dvb tree build warning
-In-Reply-To: <20100127121223.9af2253f.sfr@canb.auug.org.au>
-Message-ID: <alpine.LNX.2.00.1001271010580.16311@banach.math.auburn.edu>
-References: <20100127121223.9af2253f.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Wed, 27 Jan 2010 11:11:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kMy+WdtnIBJCx1LPvokFOzNMOYKrWxVDzWCKvYgzjQXz9/Y4jsqdmws6BsLLYH3/Ur
+         +C9U6nYLUtA69EoTxxyVFl3DBIO951zzjvaqrenSlPX7K86hajm7Gs2rOubghFAshdds
+         SEjm6939HWyTeejEJIIfwLl1Lx1qDmzpWFCTw=
+Date: Wed, 27 Jan 2010 17:11:51 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC Patch 2/2][Bugfix][x86][hw-breakpoint] Fix return-code to
+	notifier chain in hw_breakpoint_handler
+Message-ID: <20100127161146.GC22447@nowhere>
+References: <20091226175533.149765731@linux.vnet.ibm.com> <20091226182833.GC9494@in.ibm.com> <20100125221101.GE5087@nowhere> <20100127102826.GA3460@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100127102826.GA3460@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 27, 2010 at 03:58:26PM +0530, K.Prasad wrote:
+> On Mon, Jan 25, 2010 at 11:11:04PM +0100, Frederic Weisbecker wrote:
+> > Is that < TASK_SIZE an accurate check? We want support for
+> > userspace breakpoints on perf tools later, and those don't want
+> > signals.
+> > 
+> 
+> Well, signal generation for user-space breakpoints happened
+> unconditionally for 'historical' reasons (guess that Alan Stern's
+> original patch had it that way).
+> 
+> We could change that into a 'ptrace-only' signal generation now.
 
 
-On Wed, 27 Jan 2010, Stephen Rothwell wrote:
 
-> Hi Mauro,
->
-> Today's linux-next build (x86_64 allmodconfig) produced this warning:
->
-> drivers/media/video/gspca/sq905c.c: In function 'sd_config':
-> drivers/media/video/gspca/sq905c.c:207: warning: unused variable 'i'
->
-> Introduced by commit 6436e86d8920520f6650bedaa816ed596c7c30b7 ("V4L/DVB
-> (14006): gscpa_sq905c: Better detection of CIF resolution cameras").
->
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->
-
-Hmmm. Indeed this is there. The reason I have been saying that it can't be 
-there is, my local copy of sq905c.c had at lines
+Yeah, now that we can have multiple-purpose concurrent breakpoints,
+this is necessary.
 
 
-/* This function is called at probe time just before sd_init */
-static int sd_config(struct gspca_dev *gspca_dev,
- 		const struct usb_device_id *id)
-{
- 	struct cam *cam = &gspca_dev->cam;
- 	struct sd *dev = (struct sd *) gspca_dev; (here is line 207)
- 	int ret;
-
-But, having just done a pull, I have now a file which agrees with the tree 
-of Hans de Goede, and it says in it
-
-/* This function is called at probe time just before sd_init */
-static int sd_config(struct gspca_dev *gspca_dev,
- 		const struct usb_device_id *id)
-{
- 	struct cam *cam = &gspca_dev->cam;
- 	struct sd *dev = (struct sd *) gspca_dev;
- 	int i, ret;				  (here is line 207)
-
-Amazing, and I have at this point no idea how it got in there. Again, it 
-is not present in the copy I have been staring at for the last several 
-days, every time that this issue has come up.
-
-(me scratches head)
-
-Definitely, the declaration of "i" has to come out because it is true it 
-is not used.
-
-Hans, what is the quickest and most efficient way to get this fixed? I 
-suspect people are in a hurry.
+ 
+> > We do this cleanup in the beginning of the breakpoint handler:
+> > 
+> > 	current->thread.debugreg6 &= ~DR_TRAP_BITS;
+> > 
+> > And from ptrace.c:ptrace_triggered():
+> > 
+> > 	thread->debugreg6 |= (DR_TRAP0 << i);
+> > 
+> > This is called on perf_bp_event().
+> > Instead of checking if this is a userspace thread, we should actually
+> > check if this is a ptrace breakpoint by looking at this
+> > in the end of hw_breakpoint_handler().
+> > 
+> > 	current->thread.debugreg6 & DR_TRAP_BITS
+> > 
+> > Only ptrace breakpoints require signals.
+> >
+> 
+> Yes, this does look like a clean way to limit signals to those requests
+> that are interested (I was looking at round-about ways like doing a
+> lookup based on callback functions).
+> 
+> I will send the next version of the patch with the above changes.
 
 
-Theodore Kilgore
+Thanks.
+
