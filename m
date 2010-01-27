@@ -1,48 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018Ab0A0Q27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471Ab0A0Qc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755018Ab0A0Q27 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 11:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546Ab0A0Q25
+	id S1754471Ab0A0Qc3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 11:32:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188Ab0A0Qc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 11:28:57 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:53465 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753150Ab0A0Q24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 11:28:56 -0500
-Message-ID: <4B6069A7.1020907@zytor.com>
-Date: Wed, 27 Jan 2010 08:28:23 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Brian Gerst <brgerst@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/asm] x86-64: Use normal ptregs stub for execve
-References: <1264434453-2204-1-git-send-email-brgerst@gmail.com>	 <tip-f19a25c872b20ae4357f72687cf3e7b0da220ee2@git.kernel.org>	 <20100127130716.GA26908@elte.hu> <73c1f2161001270721x3d07b507lb78fa8c53567dcaa@mail.gmail.com>
-In-Reply-To: <73c1f2161001270721x3d07b507lb78fa8c53567dcaa@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 11:32:28 -0500
+Received: from smtp.mujha-vel.cz ([81.30.225.246]:33759 "EHLO
+	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437Ab0A0Qc1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 11:32:27 -0500
+From: Jiri Slaby <jslaby@suse.cz>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org
+Subject: [PATCH 1/1] X86: use helpers for rlimits
+Date: Wed, 27 Jan 2010 17:32:22 +0100
+Message-Id: <1264609942-24621-1-git-send-email-jslaby@suse.cz>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/27/2010 07:21 AM, Brian Gerst wrote:
-> 
-> I see what is going on.  Grub is a 32-bit statically linked executable
-> even on a 64-bit distro.  The old execve stub forced return to
-> userspace via iret, but PTREGSCALL apparently doesn't.  This means
-> that the 32-bit %cs isn't getting set.  Drop this patch for now.
-> 
+Make sure compiler won't do weird things with limits. E.g. fetching
+them twice may return 2 different values after writable limits are
+implemented.
 
-OK, I presume that breaks execing any 32-bit app, not just statically
-linked (eww...)
+I.e. either use rlimit helpers added in
+3e10e716abf3c71bdb5d86b8f507f9e72236c9cd
+or ACCESS_ONCE if not applicable.
 
-Yet one more case of Grub making me shudder, though :-/
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+---
+ arch/x86/ia32/ia32_aout.c |    2 +-
+ arch/x86/mm/mmap.c        |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-	-hpa
-
+diff --git a/arch/x86/ia32/ia32_aout.c b/arch/x86/ia32/ia32_aout.c
+index 652e80f..3eb0974 100644
+--- a/arch/x86/ia32/ia32_aout.c
++++ b/arch/x86/ia32/ia32_aout.c
+@@ -297,7 +297,7 @@ static int load_aout_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	 * size limits imposed on them by creating programs with large
+ 	 * arrays in the data or bss.
+ 	 */
+-	rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
++	rlim = rlimit(RLIMIT_DATA);
+ 	if (rlim >= RLIM_INFINITY)
+ 		rlim = ~0;
+ 	if (ex.a_data + ex.a_bss > rlim)
+diff --git a/arch/x86/mm/mmap.c b/arch/x86/mm/mmap.c
+index c8191de..1dab519 100644
+--- a/arch/x86/mm/mmap.c
++++ b/arch/x86/mm/mmap.c
+@@ -71,7 +71,7 @@ static int mmap_is_legacy(void)
+ 	if (current->personality & ADDR_COMPAT_LAYOUT)
+ 		return 1;
+ 
+-	if (current->signal->rlim[RLIMIT_STACK].rlim_cur == RLIM_INFINITY)
++	if (rlimit(RLIMIT_STACK) == RLIM_INFINITY)
+ 		return 1;
+ 
+ 	return sysctl_legacy_va_layout;
+@@ -96,7 +96,7 @@ static unsigned long mmap_rnd(void)
+ 
+ static unsigned long mmap_base(void)
+ {
+-	unsigned long gap = current->signal->rlim[RLIMIT_STACK].rlim_cur;
++	unsigned long gap = rlimit(RLIMIT_STACK);
+ 
+ 	if (gap < MIN_GAP)
+ 		gap = MIN_GAP;
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1.6.6.1
 
