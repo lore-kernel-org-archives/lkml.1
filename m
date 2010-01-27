@@ -1,127 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761Ab0A0NXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785Ab0A0N1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761Ab0A0NXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 08:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683Ab0A0NXv
+	id S1754785Ab0A0N1Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 08:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489Ab0A0N1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 08:23:51 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:46802 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754441Ab0A0NXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 08:23:49 -0500
-Date: Wed, 27 Jan 2010 05:23:45 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       arjan@infradead.org
-Subject: Re: [PATCH RFC tip/core/rcu] accelerate grace period if last
-	non-dynticked CPU
-Message-ID: <20100127132345.GR6807@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100125034816.GA14043@linux.vnet.ibm.com> <873a1sft9q.fsf@basil.nowhere.org> <20100127052050.GC6807@linux.vnet.ibm.com> <20100127094336.GA12522@basil.fritz.box> <20100127100136.GM6807@linux.vnet.ibm.com> <20100127101342.GC12522@basil.fritz.box> <20100127114459.GP6807@linux.vnet.ibm.com> <20100127121150.GD12522@basil.fritz.box>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100127121150.GD12522@basil.fritz.box>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 27 Jan 2010 08:27:21 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:45662 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754481Ab0A0N1U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 08:27:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=CXl1w9rFdh4ENGKoaam3XumYyw49RjbuoaagJfZyaCEgoyB2g0fgAgy3Y3ZPH39+ST
+         Nli7roKx23KzDmZ9LHNQOliSdEGyMvbnR3Dg3XNDWXQzfycMvSMBBOLBFrXq79yxP6Nt
+         svfNWCQf2VeEJmCV8ZUb+xZ5rQrKKgR39lKN8=
+Subject: Re: acpi_idle: Very idle Core i7 machine never enters C3
+From: peng huang <huangpeng.linux@gmail.com>
+To: Jeff Garrett <jeff@jgarrett.org>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, huangpeng.linux@gmail.com
+In-Reply-To: <20100126145951.GA4987@jgarrett.org>
+References: <20100126084740.GA5265@jgarrett.org>
+	 <1264509660.29891.7.camel@huang-laptop>
+	 <20100126145951.GA4987@jgarrett.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Jan 2010 22:27:17 +0900
+Message-ID: <1264598837.32649.9.camel@huang-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 01:11:50PM +0100, Andi Kleen wrote:
-> > From what I can see, most people would want RCU_FAST_NO_HZ=n.  Only
+2010-01-26 (火) の 08:59 -0600 に Jeff Garrett さんは書きました:
+> On Tue, Jan 26, 2010 at 09:41:00PM +0900, peng huang wrote:
+> > Hi,
+> > can you show me the file /proc/acpi/processor/CPU*/power.
+> > and are you sure your cpu usage is 0 or nearly zero.
 > 
-> Most people do not recompile their kernel. And even those
-> that do most likely will not have enough information to make
-> an informed choice at build time.
-
-I believe that only a few embedded people will be using RCU_FAST_NO_HZ=y.
-
-> > people with extreme power-consumption concerns would likely care enough
-> > to select this.
+> Yea, I'm pretty sure my cpu usage is nearly zero.  powertop shows fewer
+> than 20 wakeups per second, shows 99% C2 residency, top shows 100% idle,
+> perf top shows acpi_idle_enter_simple as the most common function
+> (~50%).  Very little is running on the box, and I've compiled out the
+> heavier parts of the kernel (such as USB)...
 > 
-> What would a distributor shipping binary kernels use?
+> (It still has ordinary userspace running, e.g. udev & hal, and still has
+> sshd and network traffic, as examples.)
+> 
+> This is all consistent with a very idle machine, I think.
 
-RCU_FAST_NO_HZ=n.
+yes,you processor is always in c2,it does means your system is nearly
+ilde.
 
-> > > But I think in this case scalability is not the key thing to check
-> > > for, but expected idle latency. Even on a large system if near all
-> > > CPUs are idle spending some time to keep them idle even longer is a good
-> > > thing. But only if the CPUs actually benefit from long idle.
+> > this is the info of my laptop(using core 2 processors):
+> > powertop's output:
+> > Cn                Avg residency       P-states (frequencies)
+> > C0 (cpu running)        (10.6%)         2.00 Ghz     1.9%
+> > C0                0.0ms ( 0.0%)         1.67 Ghz     0.1%
+> > C1 mwait          0.0ms ( 0.0%)         1333 Mhz     0.0%
+> > C2 mwait          0.0ms ( 0.0%)         1000 Mhz    98.0%
+> > C3 mwait          1.1ms (89.4%)
+> 
+> Yea, my laptop also (also core 2) has 700-1000 wakeups/sec and spends
+> greater than 80% of its time in C3...  That's partly why I'm curious
+> about what my core i7 desktop is doing.
+
+So I think it is a core i7 thing.I have heard that some intel cpu have a
+problem when in c2-state,maybe that is why you cpu cant enter c3-state.
+I think there is some configuration about deep c-state in the bios,may
+be you can try it(it cannot solve this problem...).
+And in some bios there is a enhanced idle state configuration ,but i
+dont known if it is the reason why the cpu cannot enter c3-state.You can
+try it anyway.
+
+With disable the deep c-state you BIOS will not give c3-info to the
+OS,then you would see there is no c3-state in the OS.
+
+> > and power things:
+> > huang@huang-laptop:~$ cat /proc/acpi/processor/CPU0/power 
+> > active state:            C0
+> > max_cstate:              C8
+> > maximum allowed latency: 2000000000 usec
+> > states:
+> >     C1:                  type[C1] promotion[--] demotion[--]
+> > latency[001] usage[00002364] duration[00000000000000000000]
+> >     C2:                  type[C2] promotion[--] demotion[--]
+> > latency[001] usage[00070662] duration[00000000000006013816]
+> >     C3:                  type[C3] promotion[--] demotion[--]
+> > latency[017] usage[04774185] duration[00000000010838418152]
 > > 
-> > The larger the number of CPUs, the lower the probability of all of them
-> > going idle, so the less difference this patch makes.  Perhaps some
+> > you can see C3 with powertop,so i think your BIOS has enabled Deep 
+> > C-state.
 > 
-> My shiny new 8 CPU threads desktop is not less likely to go idle when I do 
-> nothing on it than an older dual core 2 CPU thread desktop.
+> Here's my power files...
 > 
-> Especially not given all the recent optimizations (no idle tick)
-> in this area etc. 
+> /proc/acpi/processor/CPU0/power:
+> active state:            C0
+> max_cstate:              C8
+> maximum allowed latency: 2000000000 usec
+> states:
+>     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00001470] duration[00000000000000000000]
+>     C2:                  type[C2] promotion[--] demotion[--] latency[017] usage[00234416] duration[00000000017165798539]
+>     C3:                  type[C3] promotion[--] demotion[--] latency[017] usage[00000000] duration[00000000000000000000]
+> /proc/acpi/processor/CPU1/power:
+> active state:            C0
+> max_cstate:              C8
+> maximum allowed latency: 2000000000 usec
+> states:
+>     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000481] duration[00000000000000000000]
+>     C2:                  type[C2] promotion[--] demotion[--] latency[017] usage[00090169] duration[00000000017188463157]
+>     C3:                  type[C3] promotion[--] demotion[--] latency[017] usage[00000000] duration[00000000000000000000]
+> /proc/acpi/processor/CPU2/power:
+> active state:            C0
+> max_cstate:              C8
+> maximum allowed latency: 2000000000 usec
+> states:
+>     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000418] duration[00000000000000000000]
+>     C2:                  type[C2] promotion[--] demotion[--] latency[017] usage[00068874] duration[00000000017193805291]
+>     C3:                  type[C3] promotion[--] demotion[--] latency[017] usage[00000000] duration[00000000000000000000]
+> /proc/acpi/processor/CPU3/power:
+> active state:            C0
+> max_cstate:              C8
+> maximum allowed latency: 2000000000 usec
+> states:
+>     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00001356] duration[00000000000000000000]
+>     C2:                  type[C2] promotion[--] demotion[--] latency[017] usage[00362752] duration[00000000017156707397]
+>     C3:                  type[C3] promotion[--] demotion[--] latency[017] usage[00000000] duration[00000000000000000000]
 > 
-> And core/thread counts are growing. In terms of CPU numbers today's
-> large machine is tomorrow's small machine.
+> > 
+> > -huang
+> > 
+> > 2010-01-26 (火) の 02:47 -0600 に Jeff Garrett さんは書きました:
+> > > Hi,
+> > > 
+> > > I was trying to chase down a theory that my desktop machine (a core i7)
+> > > is running warm (the fan sounds like it's at full speed all the time,
+> > > and I think it's not always acted this way -- hence the theory).
+> > > 
+> > > powertop is never showing it spending any time in C3...
+> > > 
+> > > I compiled a kernel without USB/sound/radeon, and ran without X.  I was
+> > > able to get the wakeups/sec down below 20, but no time is spent in C3.
+> > > 
+> > > sysfs looks to agree with powertop here (time = 0 on C3):
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/desc: CPUIDLE CORE POLL IDLE
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/latency: 0
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/name: C0
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/power: 4294967295
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/time: 457
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state0/usage: 59
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/desc: ACPI FFH INTEL MWAIT 0x0
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/latency: 1
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/name: C1
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/power: 1000
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/time: 308177
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state1/usage: 3975
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/desc: ACPI FFH INTEL MWAIT 0x10
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/latency: 17
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/name: C2
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/power: 500
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/time: 873440787
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state2/usage: 239038
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/desc: ACPI FFH INTEL MWAIT 0x20
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/latency: 17
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/name: C3
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/power: 350
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/time: 0
+> > > /sys/devices/system/cpu/cpu0/cpuidle/state3/usage: 0
+> > > 
+> > > This may be a complete red herring, but I added some printk logic to
+> > > acpi_idle_bm_check(), and it is getting called often, but bm_status is
+> > > always 1.  [I infer from this that the idle logic is trying to go into
+> > > C3, but this check is stopping it...  Unless I misread something.]
+> > > 
+> > > Is this expected behavior or is this a legitimate problem?
+> > > 
+> > > How might I investigate this further?
+> > > 
+> > > Attaching dmesg, /proc/cpuinfo, powertop -d output.
+> > > 
+> > > Thanks,
+> > > Jeff Garrett
+> > 
+> > 
+> > -- 
+> > peng huang <huangpeng.linux@gmail.com>
+> > 
 
-But your shiny new 8-CPU threads desktop runs off of AC power, right?
-If so, I don't think you will care about a 4-5-tick delay for the last
-CPU going into dyntick-idle mode.
 
-And I bet you won't be able to measure the difference on your
-battery-powered laptop.
+-- 
+peng huang <huangpeng.linux@gmail.com>
 
-> > I do need to query from interrupt context, but could potentially have a
-> > notifier set up state for me.  Still, the real question is "how important
-> > is a small reduction in power consumption?"
-> 
-> I think any (measurable) power saving is important. Also on modern Intel
-> CPUs power saving often directly translates into performance:
-> if more cores are idle the others can clock faster.
-
-OK, I am testing a corrected patch with the kernel configuration
-parameter.  If you can show a measureable difference on typical
-desktop/server systems, then we can look into doing something more
-generally useful.
-
-> > I took a quick look at te pm_qos_latency, and, as you note, it doesn't
-> > really seem to be designed to handle this situation.
-> 
-> It could be extended for it. It's just software after all,
-> we can change it.
-
-Of course we can change it.  But should we?
-
-> > And we really should not be gold-plating this thing.  I have one requester
-> > (off list) who needs it badly, and who is willing to deal with a kernel
-> > configuration parameter.  I have no other requesters, and therefore
-> > cannot reasonably anticipate their needs.  As a result, we cannot justify
-> > building any kind of infrastructure beyond what is reasonable for the
-> > single requester.
-> 
-> If this has a measurable power advantage I think it's better to
-> do the extra steps to make it usable everywhere, with automatic heuristics 
-> and no Kconfig hacks. 
-
-I would agree with the following:
-
-	If this has a measurable power advantage -on- -a- -large-
-	-fraction- -of- -systems-, then it -might- be better to do
-	extra steps to make it usable everywhere, which -might- involve
-	heuristics instead of a kernel configuration parameter.
-
-> If it's not then it's probably not worth merging.
-
-This is not necessarily the case.  It can make a lot of sense to try
-something for a special case, and then use the experience gained in
-that special case to produce a good solution.  On the other hand, it
-does not necessarily make sense to do a lot of possibly useless work
-based on vague guesses as to what is needed.
-
-If we merge the special case, then others have the opportunity to try it
-out, thus getting us the experience required to see (1) if soemthing
-more general-purpose is needed in the first place and (2) if so, what
-that more general-purpose thing might look like.
-
-							Thanx, Paul
