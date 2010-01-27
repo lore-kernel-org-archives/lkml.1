@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932200Ab0A0XLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520Ab0A0XQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932200Ab0A0XLZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:11:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932142Ab0A0XLX
+	id S1755520Ab0A0XQk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081Ab0A0XQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:11:23 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34762 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755081Ab0A0XLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:11:17 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 2/2] PM / Runtime: Document power.runtime_auto and related functions
-Date: Thu, 28 Jan 2010 00:11:59 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc5-rjw; KDE/4.3.5; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <201001280009.44589.rjw@sisk.pl>
-In-Reply-To: <201001280009.44589.rjw@sisk.pl>
+	Wed, 27 Jan 2010 18:16:38 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:64453 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754375Ab0A0XQh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 18:16:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=DaxobGzLiOxacgzIBZGXqEq3sE+jpW2AYyEKsG8YMv443nYOcQ+eBOAW8OIfZm1oQ8
+         pFWFjE1Rvbfp4ar4Wa7zsorUiEjKAmdHbKCXgDzm38M8pdZPMrrhZQhBGrcifaCzpsAf
+         HOzlBFPoZEJX+ideJAxju7D15r1BaoPxkwFt0=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001280011.59609.rjw@sisk.pl>
+In-Reply-To: <4B60C1C0.8050402@teksavvy.com>
+References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
+	 <20100126160243.018b87e3@lxorguk.ukuu.org.uk>
+	 <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
+	 <72dbd3151001261251s606ebf00h86c2ce63293305b6@mail.gmail.com>
+	 <aacba7e1001261621v6abb4270i996a28d19c9f7d7@mail.gmail.com>
+	 <72dbd3151001261632t7bbe43d0nb7490eae02185c81@mail.gmail.com>
+	 <20100127010204.7976c38b@lxorguk.ukuu.org.uk>
+	 <aacba7e1001261714n42a68824k62c411cd1e5d7893@mail.gmail.com>
+	 <4B60C1C0.8050402@teksavvy.com>
+Date: Thu, 28 Jan 2010 04:46:37 +0530
+Message-ID: <aacba7e1001271516k3bb82a0fq7e019b28f3b8972f@mail.gmail.com>
+Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
+From: Vishal Rao <vishalrao@gmail.com>
+To: Mark Lord <kernel@teksavvy.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Rees <drees76@gmail.com>,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, trivial@kernel.org, stable@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+2010/1/28 Mark Lord <kernel@teksavvy.com>:
+> The errors in that log indicate bad media.
+> So the question is, can you demonstrate Win7rc NOT having the same
+> errors when accessing the SAME (logical) sectors ?
 
-The power.runtime_auto device flag and the helper functions
-pm_runtime_allow() and pm_runtime_forbid() used to modify it are a
-part of the run-time power management framework and therefore they
-should be described in Documentation/power/runtime_pm.txt.
+Would that mean I have to blow away my precious ext4 partitions and
+have them Win7rc NTFS formatted and run a full check-disk with
+bad block checking enabled?
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- Documentation/power/runtime_pm.txt |   28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+I can do that, but probably over the weekend since I'll have to backup files
+and what not.
 
-Index: linux-2.6/Documentation/power/runtime_pm.txt
-===================================================================
---- linux-2.6.orig/Documentation/power/runtime_pm.txt
-+++ linux-2.6/Documentation/power/runtime_pm.txt
-@@ -224,6 +224,12 @@ defined in include/linux/pm.h:
-       RPM_SUSPENDED, which means that each device is initially regarded by the
-       PM core as 'suspended', regardless of its real hardware status
- 
-+  unsigned int runtime_auto;
-+    - if set, indicates that the user space has allowed the device driver to
-+      power manage the device at run time via the /sys/devices/.../power/control
-+      interface; it may only be modified with the help of the pm_runtime_allow()
-+      and pm_runtime_forbid() helper functions
-+
- All of the above fields are members of the 'power' member of 'struct device'.
- 
- 4. Run-time PM Device Helper Functions
-@@ -329,6 +335,16 @@ drivers/base/power/runtime.c and include
-       'power.runtime_error' is set or 'power.disable_depth' is greater than
-       zero)
- 
-+  void pm_runtime_allow(struct device *dev);
-+    - set the power.runtime_auto flag for the device and decrease its usage
-+      counter (used by the /sys/devices/.../power/control interface to
-+      effectively allow the device to be power managed at run time)
-+
-+  void pm_runtime_forbid(struct device *dev);
-+    - unset the power.runtime_auto flag for the device and increase its usage
-+      counter (used by the /sys/devices/.../power/control interface to
-+      effectively prevent the device from being power managed at run time)
-+
- It is safe to execute the following helper functions from interrupt context:
- 
- pm_request_idle()
-@@ -382,6 +398,18 @@ may be desirable to suspend the device a
- finished, so the PM core uses pm_runtime_idle_sync() to invoke the
- subsystem-level idle callback for the device at that time.
- 
-+The user space can effectively disallow the driver of the device to power manage
-+it at run time by changing the value of its /sys/devices/.../power/control
-+attribute to "on", which causes pm_runtime_forbid() to be called.  In principle,
-+this mechanism may also be used by the driver to effectively turn off the
-+run-time power management of the device until the user space turns it on.
-+Namely, during the initialization the driver can make sure that the run-time PM
-+status of the device is 'active' and call pm_runtime_forbid().  It should be
-+noted, however, that if the user space has already intentionally changed the
-+value of /sys/devices/.../power/control to "auto" to allow the driver to power
-+manage the device at run time, the driver may confuse it by using
-+pm_runtime_forbid() this way.
-+
- 6. Run-time PM and System Sleep
- 
- Run-time PM and system sleep (i.e., system suspend and hibernation, also known
+In the mean time, can I run a linux command (please tell me what it is or
+I will search for something to run online) or tool while NCQ is disabled (via
+libata.force=noncq) that can do a disk scan with bad block checking?
 
+If that linux command/tool does not show errors, will that be sufficient to
+demonstrate that my disk does not have bad blocks without the need to
+run Win7rc?
