@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246Ab0A0Tc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654Ab0A0Tco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754246Ab0A0Tc3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 14:32:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799Ab0A0Tc2
+	id S1754654Ab0A0Tco (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 14:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614Ab0A0Tck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 14:32:28 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:60635 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753066Ab0A0Tc1 (ORCPT
+	Wed, 27 Jan 2010 14:32:40 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:12510 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754332Ab0A0Tcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 14:32:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=E4nEHKpT+NwvyB2QWqbr6jRCI78J5ROuLdPhjQtiznexo3ShFmKv49FLAPnyVUT2GW
-         eDvL/+eCkFarhEakk2IPaSsZvS7FmwnOUcKK1I+5cIOVfLanU+N6T8DQhksk5z3rH0Fn
-         DL+wsGA9kZvAME0CBUThAT+UKBgYGkfJ3cm74=
-Date: Wed, 27 Jan 2010 20:32:20 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-Message-ID: <20100127193220.GB3135@del.dom.local>
-References: <20100122234656.GC3105@del.dom.local>
- <4B5A39BD.8020305@majjas.com>
- <20100123232133.GA3487@del.dom.local>
- <4B605D1B.60402@majjas.com>
- <20100127085049.5b5048e9@nehalam>
- <4B60707F.1000608@majjas.com>
- <20100127095614.14313677@nehalam>
- <4B608128.7090607@majjas.com>
- <4B6089C7.4010803@majjas.com>
- <20100127192312.GA3135@del.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100127192312.GA3135@del.dom.local>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 27 Jan 2010 14:32:35 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5874"; a="32894956"
+From: adharmap@codeaurora.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Russell King <linux@arm.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Yinghai Lu <yinghai@kernel.org>, Tony Lindgren <tony@atomide.com>,
+       Santosh Shilimkar <santosh.shilimkar@ti.com>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Kalle Valo <kalle.valo@iki.fi>, Jean Pihet <jpihet@mvista.com>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Colin Tuckley <colin.tuckley@arm.com>,
+       Philby John <pjohn@in.mvista.com>,
+       Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+       Alessandro Rubini <rubini@unipv.it>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       Abhijeet Dharmapurikar <adharmap@quicinc.com>
+Subject: [PATCH 1/5] gic: prevent gic from crossing NR_IRQ
+Date: Wed, 27 Jan 2010 11:32:25 -0800
+Message-Id: <1264620749-24527-2-git-send-email-adharmap@codeaurora.org>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1264620749-24527-1-git-send-email-adharmap@codeaurora.org>
+References: <1264620749-24527-1-git-send-email-adharmap@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 08:23:12PM +0100, Jarek Poplawski wrote:
-> Stephen, I'm not sure this patch can show much after the patch with
-> "legal" dma_size == re->data_addr didn't help. It looks like David
+From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
 
-Of course: "dma_size == re->data_size".
+The gic code tries to initialize interrupts beyond NR_IRQ. Prevent
+code from doing that.
 
-Jarek P.
+Signed-off-by: Abhijeet Dharmapurikar <adharmap@quicinc.com>
+---
+ arch/arm/common/gic.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/common/gic.c b/arch/arm/common/gic.c
+index 337741f..e763c4c 100644
+--- a/arch/arm/common/gic.c
++++ b/arch/arm/common/gic.c
+@@ -175,6 +175,11 @@ void __init gic_cascade_irq(unsigned int gic_nr, unsigned int irq)
+ 	set_irq_chained_handler(irq, gic_handle_cascade_irq);
+ }
+ 
++/*
++ * In case of multiple cascaded GICs, order calls to gic_dist_init with
++ * ascending irq_start
++ */
++
+ void __init gic_dist_init(unsigned int gic_nr, void __iomem *base,
+ 			  unsigned int irq_start)
+ {
+@@ -233,7 +238,7 @@ void __init gic_dist_init(unsigned int gic_nr, void __iomem *base,
+ 	/*
+ 	 * Setup the Linux IRQ subsystem.
+ 	 */
+-	for (i = irq_start; i < gic_data[gic_nr].irq_offset + max_irq; i++) {
++	for (i = irq_start; i < NR_IRQS && i < gic_data[gic_nr].irq_offset + max_irq; i++) {
+ 		set_irq_chip(i, &gic_chip);
+ 		set_irq_chip_data(i, &gic_data[gic_nr]);
+ 		set_irq_handler(i, handle_level_irq);
+-- 
+1.5.6.3
+
