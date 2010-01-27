@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923Ab0A0PTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060Ab0A0PVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923Ab0A0PTJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 10:19:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418Ab0A0PTI
+	id S1755060Ab0A0PVU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 10:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167Ab0A0PVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 10:19:08 -0500
-Received: from mail-pz0-f190.google.com ([209.85.222.190]:47874 "EHLO
-	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753706Ab0A0PTF (ORCPT
+	Wed, 27 Jan 2010 10:21:19 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:54057 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752398Ab0A0PVR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 10:19:05 -0500
+	Wed, 27 Jan 2010 10:21:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=RfR0s5+YVRIAKJQnidcAuvnS3XM2spP/OsEF0AwfgcXuEZjQ/IJdlU5J62L35uvxbK
-         c4lBwZzogWxPuR0M9hvqUvGpuSM2vXYhuko7WIUT9mAsMzHozSzi6ljO2Y4IqxAWJ4aT
-         WrWaD5MSt8nSqe+PRQu7N+Dqz4wkxl1d4Cmic=
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Wu Zhangjin <wuzhangjin@gmail.com>
-Subject: [PATCH rt/2.6.31] [RT] kernel/sched.c: Fixup of "implicit declaration of function '_finish_arch_switch'"
-Date: Wed, 27 Jan 2010 23:12:55 +0800
-Message-Id: <4dc11af5f8e10e716e94f4b6b886d1160a5a1744.1264605070.git.wuzhangjin@gmail.com>
-X-Mailer: git-send-email 1.6.6
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OqbZaPzh9MdRhEaDycAyd2aJG9u2vNvgaQv8i7WvENJawqSMpOn/eHf7RC8JLyhDD+
+         3dtiFopC6Yi1hNucyc7QxEgf2quyg6Ok+PSstagsYjHXrNnMo0wHRdOQPweFozA7QNz/
+         Luv19E4QecJnEiiwDAnKUmyTnYNoKkFf5t2To=
+MIME-Version: 1.0
+In-Reply-To: <20100127130716.GA26908@elte.hu>
+References: <1264434453-2204-1-git-send-email-brgerst@gmail.com>
+	 <tip-f19a25c872b20ae4357f72687cf3e7b0da220ee2@git.kernel.org>
+	 <20100127130716.GA26908@elte.hu>
+Date: Wed, 27 Jan 2010 10:21:15 -0500
+Message-ID: <73c1f2161001270721x3d07b507lb78fa8c53567dcaa@mail.gmail.com>
+Subject: Re: [tip:x86/asm] x86-64: Use normal ptregs stub for execve
+From: Brian Gerst <brgerst@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wu Zhangjin <wuzhangjin@gmail.com>
+On Wed, Jan 27, 2010 at 8:07 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * tip-bot for Brian Gerst <brgerst@gmail.com> wrote:
+>
+>> Commit-ID:  f19a25c872b20ae4357f72687cf3e7b0da220ee2
+>> Gitweb:     http://git.kernel.org/tip/f19a25c872b20ae4357f72687cf3e7b0da220ee2
+>> Author:     Brian Gerst <brgerst@gmail.com>
+>> AuthorDate: Mon, 25 Jan 2010 10:47:33 -0500
+>> Committer:  H. Peter Anvin <hpa@zytor.com>
+>> CommitDate: Tue, 26 Jan 2010 23:38:14 -0800
+>>
+>> x86-64: Use normal ptregs stub for execve
+>>
+>> Execve historically passed regs by value, so it had a seperate stub.
+>> This is no longer true, so change it to use a normal PTREGSCALL stub.
+>>
+>> Signed-off-by: Brian Gerst <brgerst@gmail.com>
+>> LKML-Reference: <1264434453-2204-1-git-send-email-brgerst@gmail.com>
+>> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+>> ---
+>>  arch/x86/kernel/entry_64.S |   17 +----------------
+>>  1 files changed, 1 insertions(+), 16 deletions(-)
+>
+> FYI, -tip testing found that this commit breaks the grub binary on 64-bit,
+> simply running /sbin/grub causes it to segfault:
+>
+> [ 3145.999766] grub[6706] general protection ip:805c481 sp:ff95629c error:0 in
+> grub[8048000+8c000]
+>
+> i've excluded this commit for now.
+>
+>        Ingo
+>
+>
 
-This patch fixes the following error:
+I see what is going on.  Grub is a 32-bit statically linked executable
+even on a 64-bit distro.  The old execve stub forced return to
+userspace via iret, but PTREGSCALL apparently doesn't.  This means
+that the 32-bit %cs isn't getting set.  Drop this patch for now.
 
-kernel/sched.c: In function 'finish_task_switch':
-kernel/sched.c:2979: error: implicit declaration of function
-'_finish_arch_switch'
-
-The following archs have defined their finish_arch_switch:
-
-$ grep finish_arch_switch -ur arch/
-arch/s390/include/asm/system.h:#define finish_arch_switch(prev)
-arch/sh/include/asm/system_32.h:#define finish_arch_switch(prev
-arch/avr32/include/asm/system.h:#define finish_arch_switch(prev)
-arch/mips/include/asm/system.h:#define finish_arch_switch(prev)
-
-Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
----
- kernel/sched.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 590b9bb..739156e 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -959,6 +959,8 @@ static inline u64 global_rt_runtime(void)
- #endif
- #ifndef finish_arch_switch
- # define _finish_arch_switch(prev)	do { } while (0)
-+#else
-+# define _finish_arch_switc		finish_arch_switch
- #endif
- 
- static inline int task_current(struct rq *rq, struct task_struct *p)
--- 
-1.6.6
-
+--
+Brian Gerst
