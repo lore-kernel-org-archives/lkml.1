@@ -1,91 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459Ab0A0MIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563Ab0A0MKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754459Ab0A0MIf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 07:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370Ab0A0MIe
+	id S1754563Ab0A0MKc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 07:10:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412Ab0A0MKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 07:08:34 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:57670 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754292Ab0A0MId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 07:08:33 -0500
-Date: Wed, 27 Jan 2010 12:08:20 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Mark Lord <kernel@teksavvy.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: 2.6.32.5 regression: page allocation failure. order:1,
-Message-ID: <20100127120820.GB25750@csn.ul.ie>
-References: <4B5FA147.5040802@teksavvy.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <4B5FA147.5040802@teksavvy.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 27 Jan 2010 07:10:31 -0500
+Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:52496 "EHLO
+	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753855Ab0A0MKa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 07:10:30 -0500
+Subject: Re: [PATCH] kernel/timekeeping:  move xtime_cache to be in the
+ same cache line as the lock
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100126152822.d05b5487.akpm@linux-foundation.org>
+References: <1264088361.2082.45.camel@localhost>
+	 <20100126152822.d05b5487.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Jan 2010 12:10:26 +0000
+Message-ID: <1264594226.2059.47.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 09:13:27PM -0500, Mark Lord wrote:
-> I recently upgraded our 24/7 server from 2.6.31.5 to 2.6.32.5.
->
-> Now, suddenly the logs are full of "page allocation failure. order:1",
-> and the odd "page allocation failure. order:4" failures.
->
-> Wow.  WTF happened in 2.6.32 ???
->
+On Tue, 2010-01-26 at 15:28 -0800, Andrew Morton wrote:
+> On Thu, 21 Jan 2010 15:39:21 +0000
+> Richard Kennedy <richard@rsk.demon.co.uk> wrote:
+> 
+> > move xtime_cache to be in the same cache line as the lock
+> >     
+> > allowing current_kernel_time() to access only one cache line
+> 
+> Sentences start with capital letters, please.
 
-There was one bug related to MIGRATE_RESERVE that might be affecting
-you. It reported as impacting swap-orientated workloads but it could
-easily affect drivers that depend on high-order atomic allocations.
-Unfortunately, the fix is not signed-off yet but I expect it to make its
-way towards mainline when it is.
+Sorry about that, I will try harder in future ;)
 
-Here is the patch with a slightly-altered changelog. Can you test if it
-makes a difference please?
 
-==== CUT HERE ====
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Fix 2.6.32 slowdown in heavy swapping
+> 
+> I don't know how reliable this is.  I _think_ the compiler and linker
+> are free to place variables of this nature in any old place.  Whether
+> any of the current tools actually do that I don't know.  Note that one
+> of these variables has file-static scope and the other does not, which
+> perhaps increases the risk that the compiler or linker will go and
+> fiddle with them.
+> 
+> To do this reliably one would need to put them in a struct:
+> 
+> time.h:
+> 
+> extern struct xtime_stuff {
+> 	seqlock_t _xtime_lock,
+> 	struct timespec _xtime_cache,
+> } xtime_stuff;
+> 
+> #define xtime_lock xtime_stuff._xtime_lock
+> 
+> 
+> timekeeping.c:
+> 
+> struct xtime_stuff {
+> 	._xtime_lock = __SEQLOCK_UNLOCKED(xtime_stuff._xtime_lock),
+> };
+Thank you, yes that looks like a much better approach.
+I can do this if it's needed, but John Stultz said he's going to kill
+the xtime_cache anyway, so it may not be worth it?
 
-There is a problem with simply building kernels as part of a tmpfs loop
-swapping tests, and it's only obvious on the PowerPC G5. The problem
-is that those swapping builds run about 20% slower in 2.6.32 than
-2.6.31 (and look as if they run increasingly slowly, though I'm not
-certain of that); and surprisingly it bisected down to your commit
-5f8dcc21211a3d4e3a7a5ca366b469fb88117f61 page-allocator: split per-cpu list
-into one-list-per-migrate-type
+However I do wonder if we should move all, or at least some, of the
+variables protected by that xtime_lock into that structure? Then we can
+manage their placement and they would be easier to find. After only a
+brief look I see variables in ntp, tick &  timekeeping that seem to be
+protected by that seqlock.
 
-The problem was down to MIGRATE_RESERVE pages are being put on the
-MIGRATE_MOVABLE list, then freed as MIGRATE_MOVABLE. While it is not clear
-why this has such a severe impact, it may be down to how many short-lived
-high-order allocations are taking place. On machines making large numbers of
-short-lived-high-order allocations, they may be depending on MIGRATE_RESERVE
-to allocate in a timely fashion. In the case where they are GFP_ATOMIC,
-they may be depending on MIGRATE_RESERVE to just work.
-
-The simplest, straight bugfix, patch is the one below: rely on
-page_private instead of migratetype when freeing.
-
-Unfortunately-not-signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
-
----
- mm/page_alloc.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
---- 2.6.33-rc1/mm/page_alloc.c	2009-12-18 11:42:54.000000000 +0000
-+++ linux/mm/page_alloc.c	2009-12-20 19:10:50.000000000 +0000
-@@ -555,8 +555,9 @@ static void free_pcppages_bulk(struct zo
- 			page = list_entry(list->prev, struct page, lru);
- 			/* must delete as __free_one_page list manipulates */
- 			list_del(&page->lru);
--			__free_one_page(page, zone, 0, migratetype);
--			trace_mm_page_pcpu_drain(page, 0, migratetype);
-+			/* MIGRATE_MOVABLE list may include MIGRATE_RESERVEs */
-+			__free_one_page(page, zone, 0, page_private(page));
-+			trace_mm_page_pcpu_drain(page, 0, page_private(page));
- 		} while (--count && --batch_free && !list_empty(list));
- 	}
- 	spin_unlock(&zone->lock);
+> > BTW on 64 bit timespec is a 16 byte structure so the aligned 16 doesn't
+> > do much, and on 32bit timepec is 8bytes so this just seems to spread
+> > these variables across more cache lines than necessary. Any ideas what
+> > this is here for?
+> 
+> Dunno.  I had a bit of a peek in the git history but it got complicated
+> and people rarely bother explaining things like this anyway :(
+> 
+regards
+Richard
 
