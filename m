@@ -1,158 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963Ab0A0VLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018Ab0A0VLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963Ab0A0VLe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 16:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756005Ab0A0VL3
+	id S1756018Ab0A0VLq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 16:11:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756005Ab0A0VLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 16:11:29 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:60523 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756004Ab0A0VL2 (ORCPT
+	Wed, 27 Jan 2010 16:11:45 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:39059 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755966Ab0A0VLn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 16:11:28 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH 1/3] net: maintain namespace isolation between vlan and real device
-Date: Wed, 27 Jan 2010 11:05:15 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc5; KDE/4.3.2; x86_64; ; )
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>,
-       "Michael S. Tsirkin" <mst@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Or Gerlitz <ogerlitz@voltaire.com>, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <201001271104.20607.arnd@arndb.de>
-In-Reply-To: <201001271104.20607.arnd@arndb.de>
+	Wed, 27 Jan 2010 16:11:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=dqyRmsyfsadRQgE8pBP+FWjN49HXL40gmD1XtsJ8yS71IRRhN6NOeOsMb66GYjVzFY
+         2Q69s3fArbPh7Z+FPZXAhxqiVMMYAfSvz5PZpBsV8TF8Ybh45LSWPMFx831VudFk+m+A
+         nUGAIUYRFH3ijDBZaJzindr823Hw6CqcqCGWg=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block: fix bio_add_page for non trivial merge_bvec_fn  case
+References: <87hbq980tc.fsf@openvz.org> <20100126132928.GI13771@kernel.dk>
+	<c18d6aa21001260617y3ddad4deq139bf2afbc37d0be@mail.gmail.com>
+Date: Thu, 28 Jan 2010 00:11:37 +0300
+In-Reply-To: <c18d6aa21001260617y3ddad4deq139bf2afbc37d0be@mail.gmail.com>
+	(Dmitry Monakhov's message of "Tue, 26 Jan 2010 17:17:07 +0300")
+Message-ID: <874om7jlrq.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001271105.15733.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18LGhOZld4ZN9veE6S2oDVTU+V1DF8FXn3Fg/m
- yZM9o+4+BYGa+8E2Xd+vNkfa7Z8I/I9yYFLQw7W+uNdTyZnNO8
- uwffjsUgSt6Vt2pprSZfQ==
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the vlan and macvlan drivers, the start_xmit function forwards
-data to the dev_queue_xmit function for another device, which may
-potentially belong to a different namespace.
+--=-=-=
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-To make sure that classification stays within a single namespace,
-this resets the potentially critical fields.
+Dmitry Monakhov <dmonakhov@openvz.org> writes:
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> On Tue, Jan 26, 2010 at 4:29 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+>> On Tue, Jan 26 2010, Dmitry Monakhov wrote:
+>>> Hi, year ago I've sent a patch which fix false bio merge rejects, but
+>>> seems patch was missed. Currently the issue is still present.
+>>>
+>>
+>>> From 92a97ef181e15caa94bd56a1ade5c337db599b79 Mon Sep 17 00:00:00 2001
+>>> From: Dmitry Monakhov <dmonakhov@openvz.org>
+>>> Date: Tue, 26 Jan 2010 16:01:34 +0300
+>>> Subject: [PATCH] [PATCH] block: fix bio_add_page for non trivial merge_=
+bvec_fn case
+>>>
+>>> We have to properly decrease bi_size in order to merge_bvec_fn return
+>>> right result. =C2=A0Otherwise this result in false merge rejects for two
+>>> absolutely valid bio_vecs. =C2=A0This may cause significant performance=
+ penalty
+>>> for example Itanium: page_size =3D=3D 16k, fs_block_size =3D=3D 1k and =
+block device
+>>> is raid with small chunk_size.
+>>>
+>>> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+>>> ---
+>>> =C2=A0fs/bio.c | =C2=A0 =C2=A03 ++-
+>>> =C2=A01 files changed, 2 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/fs/bio.c b/fs/bio.c
+>>> index 76e6713..9f8e517 100644
+>>> --- a/fs/bio.c
+>>> +++ b/fs/bio.c
+>>> @@ -548,7 +548,8 @@ static int __bio_add_page(struct request_queue *q, =
+struct bio *bio, struct page
+>>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 struct bvec_merge_data bvm =3D {
+>>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .bi_bdev =3D=
+ bio->bi_bdev,
+>>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .bi_sector =
+=3D bio->bi_sector,
+>>> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .bi_size =3D bio->=
+bi_size,
+>>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .bi_size =3D bio->=
+bi_size -
+>>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 (prev->bv_len - len),
+>>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .bi_rw =3D b=
+io->bi_rw,
+>>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 };
+>>
+>> Hmm confused. why isn't this just bio->bi_size - len?
+I've attached more descriptive  version of the patch. Jens, please
+clarify your opinion to the patch( do you like it or not?)
+I don't want it miss again.
+
+--=-=-=
+Content-Disposition: inline;
+ filename=0001-PATCH-block-fix-bio_add_page-for-non-trivial-merge_b.patch
+
+>From 65ac8c9a2988310a79215b68e9c93b6dca6c6665 Mon Sep 17 00:00:00 2001
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+Date: Wed, 27 Jan 2010 22:44:36 +0300
+Subject: [PATCH] [PATCH] block: fix bio_add_page for non trivial merge_bvec_fn case
+
+We have to properly decrease bi_size in order to merge_bvec_fn return
+right result.  Otherwise this result in false merge rejects for two
+absolutely valid bio_vecs.  This may cause significant performance
+penalty for example fs_block_size == 1k and block device is raid0 with
+small chunk_size = 8k. Then it is impossible to merge 7-th fs-block in
+to bio which already has 6 fs-blocks.
+
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
 ---
- drivers/net/macvlan.c     |    2 +-
- include/linux/netdevice.h |    9 +++++++++
- net/8021q/vlan_dev.c      |    2 +-
- net/core/dev.c            |   35 +++++++++++++++++++++++++++++++----
- 4 files changed, 42 insertions(+), 6 deletions(-)
+ fs/bio.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
-index bad1303..e0436fd 100644
---- a/drivers/net/macvlan.c
-+++ b/drivers/net/macvlan.c
-@@ -269,7 +269,7 @@ static int macvlan_queue_xmit(struct sk_buff *skb, struct net_device *dev)
- 	}
+diff --git a/fs/bio.c b/fs/bio.c
+index 76e6713..7448c7d 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -542,13 +542,18 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
  
- xmit_world:
--	skb->dev = vlan->lowerdev;
-+	skb_set_dev(skb, vlan->lowerdev);
- 	return dev_queue_xmit(skb);
- }
+ 		if (page == prev->bv_page &&
+ 		    offset == prev->bv_offset + prev->bv_len) {
++			unsigned int prev_bv_len = prev->bv_len;
+ 			prev->bv_len += len;
  
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 93a32a5..622ba5a 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1004,6 +1004,15 @@ static inline bool netdev_uses_dsa_tags(struct net_device *dev)
- 	return 0;
- }
+ 			if (q->merge_bvec_fn) {
+ 				struct bvec_merge_data bvm = {
++					/* prev_bvec is already charged in
++					   bi_size, discharge it in order to
++					   simulate merging updated prev_bvec
++					   as new bvec. */
+ 					.bi_bdev = bio->bi_bdev,
+ 					.bi_sector = bio->bi_sector,
+-					.bi_size = bio->bi_size,
++					.bi_size = bio->bi_size - prev_bv_len,
+ 					.bi_rw = bio->bi_rw,
+ 				};
  
-+#ifndef CONFIG_NET_NS
-+static inline void skb_set_dev(struct sk_buff *skb, struct net_device *dev)
-+{
-+	skb->dev = dev;
-+}
-+#else /* CONFIG_NET_NS */
-+void skb_set_dev(struct sk_buff *skb, struct net_device *dev);
-+#endif
-+
- static inline bool netdev_uses_trailer_tags(struct net_device *dev)
- {
- #ifdef CONFIG_NET_DSA_TAG_TRAILER
-diff --git a/net/8021q/vlan_dev.c b/net/8021q/vlan_dev.c
-index 77a49ff..95034a8 100644
---- a/net/8021q/vlan_dev.c
-+++ b/net/8021q/vlan_dev.c
-@@ -322,7 +322,7 @@ static netdev_tx_t vlan_dev_hard_start_xmit(struct sk_buff *skb,
- 	}
- 
- 
--	skb->dev = vlan_dev_info(dev)->real_dev;
-+	skb_set_dev(skb, vlan_dev_info(dev)->real_dev);
- 	len = skb->len;
- 	ret = dev_queue_xmit(skb);
- 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 2cba5c5..e80403a 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -1448,13 +1448,10 @@ int dev_forward_skb(struct net_device *dev, struct sk_buff *skb)
- 	if (skb->len > (dev->mtu + dev->hard_header_len))
- 		return NET_RX_DROP;
- 
--	skb_dst_drop(skb);
-+	skb_set_dev(skb, dev);
- 	skb->tstamp.tv64 = 0;
- 	skb->pkt_type = PACKET_HOST;
- 	skb->protocol = eth_type_trans(skb, dev);
--	skb->mark = 0;
--	secpath_reset(skb);
--	nf_reset(skb);
- 	return netif_rx(skb);
- }
- EXPORT_SYMBOL_GPL(dev_forward_skb);
-@@ -1614,6 +1611,36 @@ static bool dev_can_checksum(struct net_device *dev, struct sk_buff *skb)
- 	return false;
- }
- 
-+/**
-+ * skb_dev_set -- assign a buffer to a new device
-+ * @skb: buffer for the new device
-+ * @dev: network device
-+ *
-+ * If an skb is owned by a device already, we have to reset
-+ * all data private to the namespace a device belongs to
-+ * before assigning it a new device.
-+ */
-+#ifdef CONFIG_NET_NS
-+void skb_set_dev(struct sk_buff *skb, struct net_device *dev)
-+{
-+	skb_dst_drop(skb);
-+	if (skb->dev && !net_eq(dev_net(skb->dev), dev_net(dev))) {
-+		secpath_reset(skb);
-+		nf_reset(skb);
-+		skb_init_secmark(skb);
-+		skb->mark = 0;
-+		skb->priority = 0;
-+		skb->nf_trace = 0;
-+		skb->ipvs_property = 0;
-+#ifdef CONFIG_NET_SCHED
-+		skb->tc_index = 0;
-+#endif
-+	}
-+	skb->dev = dev;
-+}
-+EXPORT_SYMBOL(skb_set_dev);
-+#endif /* CONFIG_NET_NS */
-+
- /*
-  * Invalidate hardware checksum when packet is to be mangled, and
-  * complete checksum manually on outgoing path.
 -- 
 1.6.3.3
 
 
+--=-=-=--
