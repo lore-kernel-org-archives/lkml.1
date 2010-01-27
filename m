@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619Ab0A0Edl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765Ab0A0Etb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619Ab0A0Edl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 23:33:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033Ab0A0Edk
+	id S1753765Ab0A0Etb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 23:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696Ab0A0Eta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 23:33:40 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:52985 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751953Ab0A0Edj (ORCPT
+	Tue, 26 Jan 2010 23:49:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43999
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753680Ab0A0Eta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 23:33:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=h9Jg92BmRpkmooWF18Mu/iP4EIw+kGakQ4SMQMwceSyAjaBkbo3mHxEvRzh7i7nEHJ
-         jtDQ9EOsk1V/tWUs3FjcU99qiprWpJR8iLyJKmpFJABHyWA31XRdbEp/c6UW4kMhT1Xh
-         STNP3SGKAWsyMsBjrdDCS6d0w0XvWIXLp5m8U=
-Message-ID: <4B5FC213.1060601@gmail.com>
-Date: Tue, 26 Jan 2010 22:33:23 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-CC: Mike Cui <cuicui@gmail.com>, Peer Chen <pchen@nvidia.com>
-Subject: [PATCH] ahci: disable FPDMA auto-activate optimization on NVIDIA
- AHCI
-Content-Type: text/plain; charset=UTF-8
+	Tue, 26 Jan 2010 23:49:30 -0500
+Date: Tue, 26 Jan 2010 20:49:42 -0800 (PST)
+Message-Id: <20100126.204942.44952742.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ron.mercer@qlogic.com, leitao@linux.vnet.ibm.com
+Subject: Re: linux-next: net tree build failure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100127131827.6aea9bf5.sfr@canb.auug.org.au>
+References: <20100127131827.6aea9bf5.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Cui reported that his system with an NVIDIA MCP79 (aka MCP7A) chipset
-stopped working with 2.6.32. The problem appears to be that 2.6.32 now enables
-the FPDMA auto-activate optimization in the ahci driver. The drive works fine
-with this enabled on an Intel AHCI so this appears to be a chipset bug.
-Since MCP79 is a fairly recent NVIDIA chipset and we don't have any info on
-whether any other NVIDIA chipsets have this issue, disable FPDMA AA optimization
-on all NVIDIA AHCI controllers for now.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 27 Jan 2010 13:18:27 +1100
 
-Should address http://bugzilla.kernel.org/show_bug.cgi?id=14922
+> Hi Dave,
+> 
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+> 
+> drivers/net/qlge/qlge_main.c: In function 'ql_init_device':
+> drivers/net/qlge/qlge_main.c:4502: error: label 'err_out' used but not defined
+> 
+> Caused by commit 8aae2600030f54494f9061d2cde141802d774be9 ("qlge: Add
+> basic firmware dump") interacting with commit
+> 4f9a91c81273b66afe0b6a9be460b47581b28246 ("qlge: Only free resources if
+> they were allocated") from Linus' tree.
+> 
+> I applied the following merge fixup.
 
-Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
-
----
-
-Mike, can you test this out and make sure this resolves the problem for you?
-
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index b8bea10..47e57dc 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -3067,8 +3067,16 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	ahci_save_initial_config(pdev, hpriv);
- 
- 	/* prepare host */
--	if (hpriv->cap & HOST_CAP_NCQ)
--		pi.flags |= ATA_FLAG_NCQ | ATA_FLAG_FPDMA_AA;
-+	if (hpriv->cap & HOST_CAP_NCQ) {
-+		pi.flags |= ATA_FLAG_NCQ;
-+		/* Auto-activate optimization is supposed to be supported on
-+		   all AHCI controllers indicating NCQ support, but it seems
-+		   to be broken at least on some NVIDIA MCP79 chipsets.
-+		   Until we get info on which NVIDIA chipsets don't have this
-+		   issue, if any, disable AA on all NVIDIA AHCIs. */
-+		if (pdev->vendor != PCI_VENDOR_ID_NVIDIA)
-+			pi.flags |= ATA_FLAG_FPDMA_AA;
-+	}
- 
- 	if (hpriv->cap & HOST_CAP_PMP)
- 		pi.flags |= ATA_FLAG_PMP;
+Thanks for letting me know, I'll do a merge and make sure this
+gets cured just how you fixed it.
