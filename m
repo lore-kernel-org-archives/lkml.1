@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765Ab0A0Etb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862Ab0A0EvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765Ab0A0Etb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 23:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696Ab0A0Eta
+	id S1753862Ab0A0EvU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 23:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726Ab0A0EvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 23:49:30 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43999
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753680Ab0A0Eta (ORCPT
+	Tue, 26 Jan 2010 23:51:19 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:46883 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753706Ab0A0EvT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 23:49:30 -0500
-Date: Tue, 26 Jan 2010 20:49:42 -0800 (PST)
-Message-Id: <20100126.204942.44952742.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ron.mercer@qlogic.com, leitao@linux.vnet.ibm.com
-Subject: Re: linux-next: net tree build failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100127131827.6aea9bf5.sfr@canb.auug.org.au>
-References: <20100127131827.6aea9bf5.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jan 2010 23:51:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=B2bFFvTcxYeFJzVfdx4d/tWK+hKghqHcbzYlhZsRip2x62wsfRj9+oeiiolTHtaHrC
+         Fa4DHjtY35jwebjr9qR0koTjLLLs0DJxsDWrKhk67kthNb0uZ1zBv89Yd9nmXQE/7C5x
+         mG6VOMykPgvoC5wk6a0mDNBM0xm1Me4feGhRw=
+MIME-Version: 1.0
+In-Reply-To: <1264170977.31321.382.camel@gandalf.stny.rr.com>
+References: <1264167826-20913-1-git-send-email-vapier@gentoo.org> 
+	<1264170977.31321.382.camel@gandalf.stny.rr.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 26 Jan 2010 23:50:58 -0500
+Message-ID: <8bd0f97a1001262050g1b6ce455o4b767251c8bebc95@mail.gmail.com>
+Subject: Re: [PATCH] ftrace: unify arch_syscall_addr() implementations
+To: rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 27 Jan 2010 13:18:27 +1100
+On Fri, Jan 22, 2010 at 09:36, Steven Rostedt wrote:
+> On Fri, 2010-01-22 at 08:43 -0500, Mike Frysinger wrote:
+>> Every arch_syscall_addr() implementation thus far is the same, so unify
+>> them as a default weak in common code so more arches don't have to waste
+>> time copying & pasting this simple function.  The Blackfin version is
+>> going to be exactly the same.
+>>
+>> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+>> ---
+>> note: only thing that needs double checking is s390 and sparc where they
+>> declared the sys_call_table as an array of ints.  considering this table
+>> is supposed to be an array of function pointers, this seems like more of
+>> a typo to me ...
+>
+> I would not be too sure. s390 is very strange, and I would definitely
+> want to get an Ack from the arch maintainers first.
 
-> Hi Dave,
-> 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> drivers/net/qlge/qlge_main.c: In function 'ql_init_device':
-> drivers/net/qlge/qlge_main.c:4502: error: label 'err_out' used but not defined
-> 
-> Caused by commit 8aae2600030f54494f9061d2cde141802d774be9 ("qlge: Add
-> basic firmware dump") interacting with commit
-> 4f9a91c81273b66afe0b6a9be460b47581b28246 ("qlge: Only free resources if
-> they were allocated") from Linus' tree.
-> 
-> I applied the following merge fixup.
-
-Thanks for letting me know, I'll do a merge and make sure this
-gets cured just how you fixed it.
+i think everyone has checked in with v3 ...
+-mike
