@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876Ab0A0Jp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953Ab0A0JtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876Ab0A0Jp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 04:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818Ab0A0Jp3
+	id S1753953Ab0A0JtL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 04:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820Ab0A0JtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 04:45:29 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:34897 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752547Ab0A0Jp2 (ORCPT
+	Wed, 27 Jan 2010 04:49:10 -0500
+Received: from smtpauth.net4india.com ([202.71.129.41]:44043 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751240Ab0A0JtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 04:45:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=mrHJPsXGQLpsQy5MPIQVbOwvjxKkq3al1Iu+egGq3FJaweeePF6LgBTfkNTItPl5BQ
-         sft+V8m5WOmIK6EO2n232FilfxcSbg+0g68uyw787Ek1JVx+wWdqkCfsU2mwhRF2LwC6
-         +OkodygCuW2qsdP+IsReN8jUDWlOgPl1hGNKU=
-Subject: Re: [PATCH] mx3fb: some debug and initialisation fixes.
-From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Sascha linux-arm <s.hauer@pengutronix.de>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100126134657.4cc543a6.akpm@linux-foundation.org>
-References: <1263999434.3083.44.camel@realization>
-	 <20100126134657.4cc543a6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 10:45:21 +0100
-Message-ID: <1264585521.2463.15.camel@realization>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 04:49:09 -0500
+From: David John <davidjon@xenontk.org>
+To: jbarnes@virtuousgeek.org, yakui.zhao@intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Disable SR when more than one pipe is enabled
+Date: Wed, 27 Jan 2010 15:19:08 +0530
+Message-Id: <1264585748-16929-1-BlackWidow-davidjon@xenontk.org>
+X-Mailer: BlackWidow 0.1
+In-Reply-To: <4B60080E.2000508@xenontk.org>
+References: <4B60080E.2000508@xenontk.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On mar, 2010-01-26 at 13:46 -0800, Andrew Morton wrote:
-> On Wed, 20 Jan 2010 15:57:14 +0100
-> Alberto Panizzo <maramaopercheseimorto@gmail.com> wrote:
-> 
-> > Fix the kernel oops when dev_dbg is called with mx3_fbi->txd == NULL
-> > 
-> > Fix the late initialisation of mx3fb->backlight_level.
-> > If not, in the chain of function started by init_fb_chan(), in __blank() call 
-> > sdc_set_brightness(mx3fb, mx3fb->backlight_level) that will shut down
-> > the CONTRAST PWM output. 
-> 
-> I guess these aren't the biggest bugs we ever had but I tagged the
-> patch for backporting into 2.6.32.x anyway - the fixes are prety
-> obvious.
+Self Refresh should be disabled on dual plane configs.
+Otherwise, as the SR watermark is not calculated for
+such configs, switching to non VGA mode causes FIFO
+underrun and display flicker.
 
-Yes, apart of the debug part, the late initialisation of 
-mx3fb->backlight_level prevent screen switch-on on boot in my development
-board. So for me (and for all hardware that make use of the CONTRAST PWM to
-control the brightness) is important.
+This fixes Korg Bug # 14897.
 
-> 
-> Your email client replaces tabs with spaces.  I fixed that up, but
-> please do prevent it from happening next time. 
-> Documentation/email-clients.txt has some Evolution tips.
-> 
+Signed-off-by: David John <davidjon@xenontk.org>
 
-The Evolution client lose tabs in copy/past between mails....
-I'll take more care on this in future.
-
-Thanks!
-
-Alberto!
-
-
+diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
+index 45da78e..46d7c0c 100644
+--- a/drivers/gpu/drm/i915/intel_display.c
++++ b/drivers/gpu/drm/i915/intel_display.c
+@@ -2519,6 +2519,10 @@ static void g4x_update_wm(struct drm_device *dev,  int planea_clock,
+ 		sr_entries = roundup(sr_entries / cacheline_size, 1);
+ 		DRM_DEBUG("self-refresh entries: %d\n", sr_entries);
+ 		I915_WRITE(FW_BLC_SELF, FW_BLC_SELF_EN);
++	} else {
++		/* Turn off self refresh if both pipes are enabled */
++		I915_WRITE(FW_BLC_SELF, I915_READ(FW_BLC_SELF)
++					& ~FW_BLC_SELF_EN);
+ 	}
+ 
+ 	DRM_DEBUG("Setting FIFO watermarks - A: %d, B: %d, SR %d\n",
+@@ -2562,6 +2566,10 @@ static void i965_update_wm(struct drm_device *dev, int planea_clock,
+ 			srwm = 1;
+ 		srwm &= 0x3f;
+ 		I915_WRITE(FW_BLC_SELF, FW_BLC_SELF_EN);
++	} else {
++		/* Turn off self refresh if both pipes are enabled */
++		I915_WRITE(FW_BLC_SELF, I915_READ(FW_BLC_SELF)
++					& ~FW_BLC_SELF_EN);
+ 	}
+ 
+ 	DRM_DEBUG_KMS("Setting FIFO watermarks - A: 8, B: 8, C: 8, SR %d\n",
+@@ -2630,6 +2638,10 @@ static void i9xx_update_wm(struct drm_device *dev, int planea_clock,
+ 		if (srwm < 0)
+ 			srwm = 1;
+ 		I915_WRITE(FW_BLC_SELF, FW_BLC_SELF_EN | (srwm & 0x3f));
++	} else {
++		/* Turn off self refresh if both pipes are enabled */
++		I915_WRITE(FW_BLC_SELF, I915_READ(FW_BLC_SELF)
++					& ~FW_BLC_SELF_EN);
+ 	}
+ 
+ 	DRM_DEBUG_KMS("Setting FIFO watermarks - A: %d, B: %d, C: %d, SR %d\n",
