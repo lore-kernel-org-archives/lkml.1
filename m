@@ -1,61 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613Ab0A0NJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189Ab0A0NP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753613Ab0A0NJZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 08:09:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658Ab0A0NJY
+	id S1754189Ab0A0NP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 08:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088Ab0A0NP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 08:09:24 -0500
-Received: from www84.your-server.de ([213.133.104.84]:46843 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893Ab0A0NJY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 08:09:24 -0500
-Subject: [PATCH] checkpatch.pl: remove the 80 charactes punch card limit
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, apw@canonical.com,
-       jschopp@austin.ibm.com, davej@redhat.com
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Wed, 27 Jan 2010 14:09:07 +0100
-Message-ID: <1264597747.3607.29.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Wed, 27 Jan 2010 08:15:27 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60383 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754026Ab0A0NP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 08:15:26 -0500
+Message-ID: <4B603C6C.8060008@suse.cz>
+Date: Wed, 27 Jan 2010 14:15:24 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
+MIME-Version: 1.0
+To: Glenn Sommer <glemsom@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Use full path to dnsdomainname and domainname in 	scripts/mkcompile_h
+References: <d65b1b151001191029o66794c24t228177a8ca544e44@mail.gmail.com>	 <2375c9f91001191926hc80dc50mb264f757295c1337@mail.gmail.com>	 <d65b1b151001200706k7a60eaf9le2a6cf4e1227bdad@mail.gmail.com>	 <2375c9f91001251955s1dfc70f9p94054b7824a4c4b7@mail.gmail.com>	 <4B5F0452.1080306@suse.cz>	 <d65b1b151001261110j6c0561a1ifba2da0077698e54@mail.gmail.com>	 <2375c9f91001261844q474b05a2k6d96237fc925b706@mail.gmail.com>	 <20100127085239.GA27660@sepie.suse.cz>	 <d65b1b151001270212q737706f1md00953155135b271@mail.gmail.com> <d65b1b151001270214p6abb10e6l6d4a562f94e37db5@mail.gmail.com>
+In-Reply-To: <d65b1b151001270214p6abb10e6l6d4a562f94e37db5@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The time of 80 characters punch card and terminals are over, so i would
-be a good thing to set the line length limit to 120. Every display today
-should be able handle this. 
-  
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
----
- checkpatch.pl |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On 27.1.2010 11:14, Glenn Sommer wrote:
+> 2010/1/27 Michal Marek <mmarek@suse.cz>:
+>> On Wed, Jan 27, 2010 at 10:44:29AM +0800, Américo Wang wrote:
+>>> On Wed, Jan 27, 2010 at 3:10 AM, Glenn Sommer <glemsom@gmail.com> wrote:
+>>>> --- scripts/mkcompile_h.orig    2010-01-26 18:59:37.000000000 +0100
+>>>> +++ scripts/mkcompile_h 2010-01-26 20:03:42.000000000 +0100
+>>>> @@ -67,9 +67,9 @@
+>>>>   echo \#define LINUX_COMPILE_BY \"`whoami`\"
+>>>>   echo \#define LINUX_COMPILE_HOST \"`hostname | $UTS_TRUNCATE`\"
+>>>>
+>>>> -  if [ -x /bin/dnsdomainname ]; then
+>>>> +  if [ `command -v dnsdomainname 2> /dev/null` ]; then
+>>>>     domain=`dnsdomainname 2> /dev/null`
+>>>> -  elif [ -x /bin/domainname ]; then
+>>>> +  elif [ `command -v domainname 2> /dev/null` ]; then
+>>>>     domain=`domainname 2> /dev/null`
+>>>>   fi
+>>>>
+>>>
+>>> No, this doesn't look good.
+>>>
+>>> First, you don't need to redirect stderr for 'command'.
+>>>
+>>> Second, 'command' also searches in shell built-in commands, aliases,
+>>> so I prefer 'whereis -b'.
+>>
+>>
+>> Well, 'command -v domainname' returns success iff 'domainname' can be
+>> executed (be it an external command, builtin, function, whatever), which
+>> is exactly what we do on the next line. But, there is no need to capture
+>> the output of 'command -v domainname' and pass it to [ ... ], just test
+>> the return code.
+> 
+>> ... crap, now I learned that busybox doesn't support 'command' :-(
+>> So what about simply trying 'dnsdomainname' and falling back to
+>> domainname if it fails? Like this:
+> 
+> 
+> Ohh, I didn't know that! We DO need to be compatible with busybox! :/
+> 
+> 
+>>
+>> Subject: [PATCH] scripts/mkcompile_h: don't test for hardcoded paths
+>>
+>> Don't test for /bin/{dnsdomainname,domainname}, simply try to execute
+>> the command and check if it returned something.
+>>
+>> Reported-by: Glenn Sommer <glemsom@gmail.com>
+>> Signed-off-by: Michal Marek <mmarek@suse.cz>
+>> ---
+>>  scripts/mkcompile_h |    5 ++---
+>>  1 files changed, 2 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/scripts/mkcompile_h b/scripts/mkcompile_h
+>> index 23dbad8..50ad317 100755
+>> --- a/scripts/mkcompile_h
+>> +++ b/scripts/mkcompile_h
+>> @@ -67,9 +67,8 @@ UTS_TRUNCATE="cut -b -$UTS_LEN"
+>>   echo \#define LINUX_COMPILE_BY \"`whoami`\"
+>>   echo \#define LINUX_COMPILE_HOST \"`hostname | $UTS_TRUNCATE`\"
+>>
+>> -  if [ -x /bin/dnsdomainname ]; then
+>> -    domain=`dnsdomainname 2> /dev/null`
+>> -  elif [ -x /bin/domainname ]; then
+>> +  domain=`dnsdomainname 2> /dev/null`
+>> +  if [ -z "$domain" ]; then
+>>     domain=`domainname 2> /dev/null`
+>>   fi
+>>
+>> --
+>> 1.6.5.3
+>>
+>>
+> 
+> I tested above patch, and it seems to work fine.
 
---- linux-2.6.33-rc2.orig/scripts/checkpatch.pl	2009-12-03 04:51:21.000000000 +0100
-+++ linux-2.6.33-rc2.new/scripts/checkpatch.pl	2010-01-06 17:46:40.057565661 +0100
-@@ -1374,13 +1374,13 @@ sub process {
- # check we are in a valid source file if not then ignore this hunk
- 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
- 
--#80 column limit
-+#120 column limit
- 		if ($line =~ /^\+/ && $prevrawline !~ /\/\*\*/ &&
- 		    $rawline !~ /^.\s*\*\s*\@$Ident\s/ &&
- 		    $line !~ /^\+\s*printk\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/ &&
--		    $length > 80)
-+		    $length > 120)
- 		{
--			WARN("line over 80 characters\n" . $herecurr);
-+			WARN("line over 120 characters\n" . $herecurr);
- 		}
- 
- # check for adding lines without a newline.
+Thanks! I added a Tested-by: Glenn Sommer <glemsom@gmail.com> line to
+the patch and pushed to the kbuild tree.
 
 
+> Though, by looking a bit closer at the source - I found we actually
+> NEVER need to use 2> /dev/null.
+
+The redirecion was added by
+
+commit 9c3049c02c6142e166c9472237f1f60d86153682
+Author: Felipe Contreras <felipe.contreras@gmail.com>
+Date:   Thu Sep 17 00:38:39 2009 +0300
+
+    kbuild: fix warning when domainname is not available
 
 
+and it suits me well because it hides the potential "command not found
+message" :).
 
+Michal
