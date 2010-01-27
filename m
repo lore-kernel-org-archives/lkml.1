@@ -1,42 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340Ab0A0LJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754375Ab0A0LKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340Ab0A0LJB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 06:09:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253Ab0A0LI7
+	id S1754375Ab0A0LKN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 06:10:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365Ab0A0LKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 06:08:59 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49952 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754218Ab0A0LI6 (ORCPT
+	Wed, 27 Jan 2010 06:10:11 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:58158 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754272Ab0A0LKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 06:08:58 -0500
-Subject: Re: linux-next: add utrace tree
-From: Peter Zijlstra <peterz@infradead.org>
-To: ananth@in.ibm.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, Tom Tromey <tromey@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>, avi@redhat.com
-In-Reply-To: <20100127110555.GB1842@in.ibm.com>
-References: <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
-	 <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
-	 <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>
-	 <m33a1tnbd9.fsf@fleche.redhat.com>
-	 <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
-	 <m3636oh2rt.fsf@fleche.redhat.com>
-	 <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain>
-	 <1264575134.4283.1983.camel@laptop>
-	 <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain>
-	 <1264589716.4283.2006.camel@laptop>  <20100127110555.GB1842@in.ibm.com>
+	Wed, 27 Jan 2010 06:10:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=GElqSpZHfSbADaobiwXySc/e1T1ofWC269x5vp/SSzbogWxHeS/fuegck83boE4n4B
+         cEePxTe/IsLcJuRgTJOeEEiB09DMWuaW7sXgcU+z1d55qnGCEtBYpXA5pds0Gb9aKdNS
+         LEAv7tCoGOvT5D+dUPT9PWVpG7tHwcHHoAO/Y=
+Subject: Re: [PATCH] backlight: l4f00242t03: Fix module licence absence.
+From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1263889850.3121.12.camel@realization>
+References: <20100119150836.bb975e4b.sfr@canb.auug.org.au>
+	 <1263889757.3121.10.camel@realization>
+	 <1263889850.3121.12.camel@realization>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 12:08:31 +0100
-Message-ID: <1264590511.4283.2009.camel@laptop>
+Date: Wed, 27 Jan 2010 12:10:02 +0100
+Message-ID: <1264590602.2463.47.camel@realization>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -44,11 +36,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-27 at 16:35 +0530, Ananth N Mavinakayanahalli wrote:
-> Probing RIP-relative instructions work just fine; there are fixups that
-> take care of it. 
 
-Ah my bad then, it was my understanding you simply bailed on those.
+Signed-off-by: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+---
 
-Just for my information, how large are the replacement sequences?
+Richard, can you pick this for "for-mm" branch of backlight tree?
+in previous mail I explain my mistake..
+Thanks.
+
+
+ drivers/video/backlight/l4f00242t03.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/backlight/l4f00242t03.c b/drivers/video/backlight/l4f00242t03.c
+index 42d061e..74abd69 100644
+--- a/drivers/video/backlight/l4f00242t03.c
++++ b/drivers/video/backlight/l4f00242t03.c
+@@ -254,3 +254,4 @@ module_exit(l4f00242t03_exit);
+ 
+ MODULE_AUTHOR("Alberto Panizzo <maramaopercheseimorto@gmail.com>");
+ MODULE_DESCRIPTION("EPSON L4F00242T03 LCD");
++MODULE_LICENSE("GPL v2");
+-- 
+1.6.3.3
+
 
