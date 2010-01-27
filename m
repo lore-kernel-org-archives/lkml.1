@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497Ab0A0X0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932235Ab0A0X3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756497Ab0A0X0W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:26:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589Ab0A0X0V
+	id S932235Ab0A0X3w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:29:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756421Ab0A0X3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:26:21 -0500
-Received: from mail1.radix.net ([207.192.128.31]:48120 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755437Ab0A0X0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:26:20 -0500
-Subject: Re: linux-next: v4l-dvb tree build failure
-From: Andy Walls <awalls@radix.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Devin Heitmueller <dheitmueller@kernellabs.com>
-In-Reply-To: <20100127175917.5d690f52.sfr@canb.auug.org.au>
-References: <20100127175917.5d690f52.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Wed, 27 Jan 2010 18:24:48 -0500
-Message-Id: <1264634688.3088.1.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 18:29:51 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35078 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932221Ab0A0X3t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 18:29:49 -0500
+Date: Wed, 27 Jan 2010 21:29:36 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 4/9] perf session: Create kernel maps in the constructor
+Message-ID: <20100127232936.GI12567@ghostprotocols.net>
+References: <1264633557-17597-1-git-send-email-acme@infradead.org>
+ <1264633557-17597-4-git-send-email-acme@infradead.org>
+ <4B60C9A6.10704@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B60C9A6.10704@redhat.com>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-27 at 17:59 +1100, Stephen Rothwell wrote:
-> Hi Mauro,
+Em Wed, Jan 27, 2010 at 06:17:58PM -0500, Masami Hiramatsu escreveu:
+> Arnaldo Carvalho de Melo wrote:
+> > From: Arnaldo Carvalho de Melo <acme@redhat.com>
+> > 
+> > Removing one extra step needed in the tools that need this, fixing a bug
+> > in 'perf probe' where this was not being done.
 > 
-> Today's linux-next build (powerpc allyesconfig) failed like this:
-> 
-> drivers/media/video/cx18/cx18-alsa-pcm.c: In function 'snd_pcm_alloc_vmalloc_buffer':
-> drivers/media/video/cx18/cx18-alsa-pcm.c:234: error: implicit declaration of function 'vfree'
-> drivers/media/video/cx18/cx18-alsa-pcm.c:236: error: implicit declaration of function 'vmalloc'
-> 
-> Caused by commit 5e9a302853301e0a2bb6671036daac3366fd85f4 ("V4L/DVB: cx18: overhaul ALSA PCM device handling so it works").
-> 
-> I applied the following patch for today.
-> 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Wed, 27 Jan 2010 17:53:39 +1100
-> Subject: [PATCH] V4L/DVB: using vmalloc requires include of linux/vmalloc.h
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Thanks,
+> BTW, when O_WRONLY should be used? I guess I might misunderstand something
+> in builtin-probe.c, and it should use O_RDONLY ...
 
-Stephen,
+O_RDONLY only when you have a perf.data file, O_WRONLY was thought for
+'perf record', then for tools that want only to do symbol lookup it was
+reused...
 
-Looks good to me.
+I think we should have a proper enum and more clearly specify these
+semantics, as well as adding a MMAP mode so that we can lift the code
+now in perf top somehow.
 
-Acked-by: Andy Walls <awalls@radix.net>
+But for now using O_WRONLY provides what 'perf probe' needs, I guess :-)
 
-Regards,
-Andy
-
-> ---
->  drivers/media/video/cx18/cx18-alsa-pcm.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/media/video/cx18/cx18-alsa-pcm.c b/drivers/media/video/cx18/cx18-alsa-pcm.c
-> index 6e56df9..b9f42b1 100644
-> --- a/drivers/media/video/cx18/cx18-alsa-pcm.c
-> +++ b/drivers/media/video/cx18/cx18-alsa-pcm.c
-> @@ -25,6 +25,7 @@
->  
->  #include <linux/init.h>
->  #include <linux/kernel.h>
-> +#include <linux/vmalloc.h>
->  
->  #include <media/v4l2-device.h>
->  
-> -- 
-> 1.6.6
-> 
-
+- Arnaldo
