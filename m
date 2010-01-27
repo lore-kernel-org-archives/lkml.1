@@ -1,75 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525Ab0A0XIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932194Ab0A0XJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756525Ab0A0XIE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528Ab0A0XH6
+	id S932194Ab0A0XJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431Ab0A0XJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:07:58 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:44822 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756398Ab0A0XHz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:07:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=Ug2XMOq1xm5kC9gaLWDvfSYOtfS+WbLMSmMbhVznwdqDaRxLFCWdstjASz+pvS7mLU
-         GXdNRnXUJLqfU0JYLM3WOMbbtQ5GrQDRt98ddDIJVdCTIXrrGXYk9ew86aHlSFaYr467
-         kRWoXe7yuQP88jH8gC30sds3HbIZIS69dwWso=
-Date: Thu, 28 Jan 2010 00:07:51 +0100
-From: Stefan Seyfried <stefan.seyfried@googlemail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, airlied@linux.ie,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [linux-pm] [PATCH] PM / i915: Skip kernel VT switch during
- suspend/resume	if KMS is used
-Message-ID: <20100128000751.099630ed@strolchi>
-In-Reply-To: <20100126145842.GA11295@ucw.cz>
-References: <201001240055.59479.rjw@sisk.pl>
-	<201001252254.37635.rjw@sisk.pl>
-	<20100126141726.GA1437@ucw.cz>
-	<201001261947.46015.rjw@sisk.pl>
-	<20100126145842.GA11295@ucw.cz>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.19.2; i586-suse-linux-gnu)
+	Wed, 27 Jan 2010 18:09:26 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43723 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753762Ab0A0XJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 18:09:25 -0500
+Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.33-rc5
+From: James Bottomley <James.Bottomley@suse.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100127224654.76db3693@lxorguk.ukuu.org.uk>
+References: <1264614691.3075.19.camel@mulgrave.site>
+	 <20100127222404.6dfdd0a7@lxorguk.ukuu.org.uk>
+	 <1264631609.3075.94.camel@mulgrave.site>
+	 <20100127224654.76db3693@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Jan 2010 17:09:16 -0600
+Message-Id: <1264633756.3075.116.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, 26 Jan 2010 15:58:43 +0100 Pavel Machek <pavel@ucw.cz> wrote:
-> We need vt switch when display is controlled by userland app directly
-> accessing hw. It may or may not be X (svgalib anyone?,
-> gtk-on-framebuffer? qtopia?).
-
-anything-on-framebuffer should not be different from plain framebuffer
-console, or am I missing something?
-
-> Ideally, userspace should explicitely tell us. KD_KERNEL_GRAPHICS
-> console mode?
+On Wed, 2010-01-27 at 22:46 +0000, Alan Cox wrote:
+> On Wed, 27 Jan 2010 16:33:29 -0600
+> James Bottomley <James.Bottomley@suse.de> wrote:
 > 
-> Plus the switch is needed for any graphics app using fbcon -- I do not
-> think we actually save the framebuffer over suspend. (This one should
-> probably be fixed).
+> > On Wed, 2010-01-27 at 22:24 +0000, Alan Cox wrote:
+> > > > Penchala Narasimha Reddy Chilakala, ERS-HCLTech (1):
+> > > >       aacraid: fix File System going into read-only mode
+> > > 
+> > > If aacraid is actually getting patches then see
+> > > also http://bugzilla.kernel.org/show_bug.cgi?id=11120 which I found
+> > > bugzilla tidyying.
+> > > 
+> > > Contains a patch and test confirmations
+> > 
+> > So the patch it contains is almost certainly wrong in general; Mark was
+> > just suggesting it as a trial ... it might work for specific adapter
+> > versions but reducing the queue depth by half globally will impact
+> > performance noticeably.  The bug report does rather sound like cabling
+> > issues are leading to a firmware related problem.
+> 
+> Odd then that they worked reliably until the numbers were increased.
+> Sorry but having worked on the aacraid for a long time in the past I
+> don't buy that explanation. Cabling issues would get logged by the driver
+> and the controller. Secondly I don't buy it because the reporter was
+> Matthias Ulrichs, who to borrow a hitchhikers term "really knows where his
+> towel is". 
+> 
+> The patch isn't a halving the queue size - its a returning to the known
+> working state from a regression (unfixed).
 
-Framebuffer should be easy to fix - it works pretty well already
-because apparently the fbcon code needs to "shadow buffer" all VT
-"windows" anyway - so maybe it's just the issue of doing an additional
-"redraw()" somewhere appropriate.
+What regression?  The 32 bit queue depth has always been 256 since 2005
+(when it was reduced from 512) ... it's never been 127.
 
-The VGA consoles loses their content, because AFAICT they are in the
-graphics card memory, which is not saved and restored.
+> The story is pretty simple
+> 
+> Worked until the kernel changed
+> Didn't work with kernel change
+> Worked after the kernel changed back.
+> 
+> Kernel's dont go in and fix your cables (much as I wish they did) and
+> there are two folks who've actually found the bug report specifically
+> confirming it.
 
-	seife
--- 
-Stefan Seyfried
+But we have two bug reports for all of the aacraids over the last five
+years ... the patch would reduce the maximum transfer length from 128k
+to 63.5k.
 
-"Any ideas, John?"
-"Well, surrounding them's out."
+Linux tends to send down the largest transfer size it can, suggesting
+that most of the aacraids in the field are happy with 128k.
+
+The maximum transfer length critically impacts I/O throughput and
+performance ... I can't just penalise everyone for the sake of two bug
+reports.
+
+This value can already be altered on the fly using the
+
+/sys/block/<dev>/queue/max_sectors_kb
+
+Setting that should work for the two reporters without impacting anyone
+else.
+
+> When you have a cable fault on the aacraid you can get hangs on crappier
+> firmware sets (normally in the BIOS boot though) but it's not dependant
+> on queue size - it either works or it doesn't. On good firmware you get
+> nice logged errors and it recovers if possible (or multipaths if you've
+> got the right bits).
+
+James
+
+
