@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143Ab0A0V7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159Ab0A0V7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143Ab0A0V7X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 16:59:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102Ab0A0V7X
+	id S1756159Ab0A0V7s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 16:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130Ab0A0V7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 16:59:23 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41989 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756064Ab0A0V7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 16:59:22 -0500
-Message-ID: <4B60B721.1020908@redhat.com>
-Date: Wed, 27 Jan 2010 19:58:57 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Wed, 27 Jan 2010 16:59:47 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:58358 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756102Ab0A0V7q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 16:59:46 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 0/3 v3] macvtap driver
+Date: Wed, 27 Jan 2010 22:59:31 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc5; KDE/4.3.2; x86_64; ; )
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Patrick McHardy <kaber@trash.net>,
+       "Michael S. Tsirkin" <mst@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Or Gerlitz <ogerlitz@voltaire.com>, netdev@vger.kernel.org,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <201001271104.20607.arnd@arndb.de>
+In-Reply-To: <201001271104.20607.arnd@arndb.de>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Linux Media Mailing List <linux-media@vger.kernel.org>,
-       linux kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dean <dean@sensoray.com>
-Subject: [PULL] firmware for Sensoray s2255 driver
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001272259.31158.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+dNEcBBVrB0OQZr0bCHidhpHFnBrjCv3haUd5
+ T7VHLBUtVw2z8Z8r/Is+SuwT9FIGVMN0sFNLZtb7pGaaqaJusJ
+ f1MCAL9W4/NU/+mc1C/Dw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit c024a251e1dd1a39de610bbdc2af65b36e42637d:
-  David Woodhouse (1):
-        Merge from fixed from-kernel tree to fix Matrox firmware binaries
+On Wednesday 27 January 2010, Arnd Bergmann wrote:
+> There are still known problems, but unless there
+> are fundamental concerns, I'd like this to go
+> into net-next as an experimental driver,
+> fixing up the remaining problems by 2.6.34-rc1.
 
-are available in the git repository at:
+I should have been more specific here. The one
+really annoying problem is a reference counting
+problem I introduced in one of the last changes
+that prevents you from destroying a device after
+it has been used.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-firmware.git master
+Unfortunately, I'm still traveling after LCA,
+and haven't had a chance to look into this before
+sending out the patches as I had originally
+planned. I've also seen crashes that are not
+fully reproducible, any bug reports on those
+are appreciated.
 
-Mauro Carvalho Chehab (1):
-      Firmware for Sensoray s2255 webcam drivers
-
- WHENCE       |   13 +++++++++++++
- f2255usb.bin |  Bin 0 -> 180760 bytes
- 2 files changed, 13 insertions(+), 0 deletions(-)
- create mode 100644 f2255usb.bin
-
+	Arnd
