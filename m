@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842Ab0A0AHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755852Ab0A0AJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842Ab0A0AHt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:07:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041Ab0A0AHZ
+	id S1755852Ab0A0AJs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845Ab0A0AJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:07:25 -0500
-Received: from kroah.org ([198.145.64.141]:35086 "EHLO coco.kroah.org"
+	Tue, 26 Jan 2010 19:09:45 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41155 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753974Ab0AZXm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:42:59 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:21 2010
-Message-Id: <20100126233921.631156799@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:32 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ajit Khaparde <ajitk@serverengines.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Ben Hutchings <ben@decadent.org.uk>
-Subject: [06/98] be2net: Add the new PCI IDs to PCI_DEVICE_TABLE.
-In-Reply-To: <20100126233950.GA5372@kroah.com>
+	id S1754329Ab0A0AJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 19:09:44 -0500
+Date: Wed, 27 Jan 2010 11:09:37 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dave Airlie <airlied@linux.ie>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jerome Glisse <jglisse@redhat.com>
+Subject: linux-next: origin tree build warning
+Message-Id: <20100127110937.e606616d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__27_Jan_2010_11_09_37_+1100_GmD8HSpnBG8Zn0Gp"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+--Signature=_Wed__27_Jan_2010_11_09_37_+1100_GmD8HSpnBG8Zn0Gp
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-------------------
+Hi all,
 
-From: Ajit Khaparde <ajitk@serverengines.com>
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-commit 59fd5d87a4243a992f3a3e69f3627cf4c509608e upstream.
+drivers/gpu/drm/radeon/radeon_agp.c: In function 'radeon_agp_init':
+drivers/gpu/drm/radeon/radeon_agp.c:137: warning: format '%d' expects type =
+'int', but argument 4 has type 'size_t'
 
-This patch adds the PCI IDs for the next generation chip to the
-PCI_DEVICE_ID table.
+Introduced by commit 0a3f316370da07fcdb11fde4f5a683d60713b7fd
+("drm/radeon/kms: Disable AGP is aperture size < 32M").
 
-Signed-off-by: Ajit Khaparde <ajitk@serverengines.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Ben Hutchings <ben@decadent.org.uk>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
----
- drivers/net/benet/be_main.c |    2 ++
- 1 file changed, 2 insertions(+)
+--Signature=_Wed__27_Jan_2010_11_09_37_+1100_GmD8HSpnBG8Zn0Gp
+Content-Type: application/pgp-signature
 
---- a/drivers/net/benet/be_main.c
-+++ b/drivers/net/benet/be_main.c
-@@ -31,8 +31,10 @@ MODULE_PARM_DESC(rx_frag_size, "Size of 
- 
- static DEFINE_PCI_DEVICE_TABLE(be_dev_ids) = {
- 	{ PCI_DEVICE(BE_VENDOR_ID, BE_DEVICE_ID1) },
-+	{ PCI_DEVICE(BE_VENDOR_ID, BE_DEVICE_ID2) },
- 	{ PCI_DEVICE(BE_VENDOR_ID, OC_DEVICE_ID1) },
- 	{ PCI_DEVICE(BE_VENDOR_ID, OC_DEVICE_ID2) },
-+	{ PCI_DEVICE(BE_VENDOR_ID, OC_DEVICE_ID3) },
- 	{ 0 }
- };
- MODULE_DEVICE_TABLE(pci, be_dev_ids);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAktfhEEACgkQjjKRsyhoI8yHdACfUzkzugOGYCXaEt2unlJ9gFop
+gaIAn2xBchw2TMBurm/9lw9620nCGmU+
+=DAHN
+-----END PGP SIGNATURE-----
 
+--Signature=_Wed__27_Jan_2010_11_09_37_+1100_GmD8HSpnBG8Zn0Gp--
