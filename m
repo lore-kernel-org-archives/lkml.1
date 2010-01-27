@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823Ab0A0AII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975Ab0A0AI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755823Ab0A0AII (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:08:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974Ab0A0AIG
+	id S1754975Ab0A0AI7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:08:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923Ab0A0AI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:08:06 -0500
-Received: from kroah.org ([198.145.64.141]:35058 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753888Ab0AZXm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:42:56 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:21 2010
-Message-Id: <20100126233921.099242955@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:28 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       H Hartley Sweeten <hsweeten@visionengravers.com>, johnstul@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [02/98] clockevents: Add missing include to pacify sparse
-In-Reply-To: <20100126233950.GA5372@kroah.com>
+	Tue, 26 Jan 2010 19:08:57 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37521 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753913Ab0A0AI4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 19:08:56 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 27 Jan 2010 09:05:31 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "containers@lists.osdl.org" <containers@lists.osdl.org>
+Subject: Re: [PATCH 1/2] cgroups: Fix to return errno in a failure path
+Message-Id: <20100127090531.546f8bea.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6599ad831001261501q2e6e54bckebb3d2d225ecc126@mail.gmail.com>
+References: <4B5EA4EC.8020700@cn.fujitsu.com>
+	<6599ad831001261501q2e6e54bckebb3d2d225ecc126@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+On Tue, 26 Jan 2010 15:01:26 -0800
+Paul Menage <menage@google.com> wrote:
 
-------------------
+> On Tue, Jan 26, 2010 at 12:16 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> >
+> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> Acked-by: Paul Menage <menage@google.com>
+> 
+Thank you.
 
-From: H Hartley Sweeten <hartleys@visionengravers.com>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-commit 8e1a928a2ed7e8d5cad97c8e985294b4caedd168 upstream.
-
-Include "tick-internal.h" in order to pick up the extern function
-prototype for clockevents_shutdown(). This quiets the following sparse
-build noise:
-
-  warning: symbol 'clockevents_shutdown' was not declared. Should it be static?
-
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-LKML-Reference: <BD79186B4FD85F4B8E60E381CAEE190901E24550@mi8nycmail19.Mi8.com>
-Reviewed-by: Yong Zhang <yong.zhang0@gmail.com>
-Cc: johnstul@us.ibm.com
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- kernel/time/clockevents.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- a/kernel/time/clockevents.c
-+++ b/kernel/time/clockevents.c
-@@ -20,6 +20,8 @@
- #include <linux/sysdev.h>
- #include <linux/tick.h>
- 
-+#include "tick-internal.h"
-+
- /* The registered clock event devices */
- static LIST_HEAD(clockevent_devices);
- static LIST_HEAD(clockevents_released);
-
+> > ---
+> >  cgroup.c |    7 +++++--
+> >  1 file changed, 5 insertions(+), 2 deletions(-)
+> >
+> > --- a/kernel/cgroup.c.orig      2010-01-19 16:37:37.000000000 +0800
+> > +++ a/kernel/cgroup.c   2010-01-19 16:39:07.000000000 +0800
+> > @@ -3279,14 +3279,17 @@ static long cgroup_create(struct cgroup
+> >
+> >        for_each_subsys(root, ss) {
+> >                struct cgroup_subsys_state *css = ss->create(ss, cgrp);
+> > +
+> >                if (IS_ERR(css)) {
+> >                        err = PTR_ERR(css);
+> >                        goto err_destroy;
+> >                }
+> >                init_cgroup_css(css, ss, cgrp);
+> > -               if (ss->use_id)
+> > -                       if (alloc_css_id(ss, parent, cgrp))
+> > +               if (ss->use_id) {
+> > +                       err = alloc_css_id(ss, parent, cgrp);
+> > +                       if (err)
+> >                                goto err_destroy;
+> > +               }
+> >                /* At error, ->destroy() callback has to free assigned ID. */
+> >        }
+> >
+> >
+> 
 
