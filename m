@@ -1,97 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122Ab0A0KXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132Ab0A0K0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754122Ab0A0KXd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 05:23:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831Ab0A0KXd
+	id S1754132Ab0A0K0B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 05:26:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023Ab0A0K0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 05:23:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52425 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753728Ab0A0KXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 05:23:32 -0500
-Date: Wed, 27 Jan 2010 11:23:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>, ananth@in.ibm.com,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-Message-ID: <20100127102311.GA973@elte.hu>
-References: <1263852957.2266.38.camel@localhost.localdomain>
- <4B556855.6040800@redhat.com>
- <1263923265.4998.28.camel@localhost.localdomain>
- <4B56D027.3010808@redhat.com>
- <1263981472.4283.843.camel@laptop>
- <4B56F588.2060109@redhat.com>
- <20100127082440.GA16640@elte.hu>
- <4B5FFADB.5090209@redhat.com>
- <20100127090824.GA23570@elte.hu>
- <4B60067B.4060708@redhat.com>
+	Wed, 27 Jan 2010 05:26:00 -0500
+Received: from ks358108.kimsufi.com ([91.121.151.81]:53018 "EHLO
+	mail.bercot.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753735Ab0A0KZ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 05:25:59 -0500
+X-Greylist: delayed 527 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jan 2010 05:25:59 EST
+To: <linux-kernel@vger.kernel.org>
+Subject: Radeon HDMI audio in 2.6.33 kernel =?UTF-8?Q?=3F=3F=3F?=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B60067B.4060708@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Date: Wed, 27 Jan 2010 11:17:04 +0100
+From: <debian@bercot.org>
+Message-ID: <1457ffed8ff5fb0cf572cbc7384597a8@localhost>
+User-Agent: RoundCube Webmail/0.2
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+ charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Avi Kivity <avi@redhat.com> wrote:
+Hello,
 
-> > If so then you ignore the obvious solution to _that_ problem: dont use 
-> > INT3 at all, but rebuild (or re-JIT) your program with explicit callbacks. 
-> > It's _MUCH_ faster than _any_ breakpoint based solution - literally just 
-> > the cost of a function call (or not even that - i've written very fast 
-> > inlined tracers - they do rock when it comes to performance). Problem 
-> > solved and none of the INT3 details matters at all.
-> 
-> However did I not think of that?  Yes, and let's rip off kprobes tracing 
-> from the kernel, we can always rebuild it.
-> 
-> Well, I'm observing an issue in a production system now.  I may not want to 
-> take it down, or if I take it down I may not be able to observe it again as 
-> the problem takes a couple of days to show up, or I may not have the full 
-> source, or it takes 10 minutes to build and so an iterative edit/build/run 
-> cycle can stretch for hours.
+I'm not sure I'm at the right place (please, if not, tell me where I can
+find a solution...) but I have a problem with multimedia hardware.
+So, I've changed my graphic card and I've bought an ATI Radeon HD 4550. My
+goal is to use only an HDMI cable between my computer and my AV amplifier.
+I've installed Debian Sid but I can't have any sound... Everything seems
+OK with Alsa (and PulseAudio), but no sound !!!
 
-You have somewhat misconstrued my argument. What i said above is that _if_ you 
-need extreme levels of performance you always have the option to go even 
-faster via specialized tracing solutions. I did not promote it as a 
-replacement solution. Specialization obviously brings in a new set of 
-problems: infexibility and non-transparency, an example of what you gave 
-above.
+With google, I've found this :
+http://www.phoronix.com/scan.php?page=news_item&px=NzgxMA
+[I should need a 2.6.33 kernel to have HDMI support with ATI cards]
+So, I've compiled the 2.6.33RC5 kernel, but no difference !!!
 
-Your proposed solution brings in precisely such kinds of issues, on a 
-different level, just to improve performance at the cost of transparency and 
-at the cost of features and robustness.
+The card seems to be OK :
+# aplay -l
+**** List of PLAYBACK Hardware Devices ****
+card 0: HDMI [HDA ATI HDMI], device 3: ATI HDMI [ATI HDMI]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
 
-It's btw rather ironic as your arguments are somewhat similar to the Xen vs. 
-KVM argument just turned around: KVM started out slower by relying on hardware 
-implementation for virtualization while Xen relied on a clever but limiting 
-hack. With each CPU generation the hardware got faster, while the various 
-design limitations of Xen are hurting it and KVM is winning that race.
+Do you have any idea ?
 
-A (partially) similar situation exists here: INT3 into ring 0 and handling it 
-there in a protected environment might be more expensive, but _if_ it matters 
-to performance it sure could be made faster in hardware (and in fact it will 
-become faster with every new generation of hardware).
+Thank you.
 
-Both Peter and me are telling you that we are considering your solution too 
-specialized, at the cost of flexibility, features and robustness.
-
-Thanks,
-
-	Ingo
+David.
