@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799Ab0A0I22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887Ab0A0I2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799Ab0A0I22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 03:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752Ab0A0I2Y
+	id S1752887Ab0A0I2b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 03:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752Ab0A0I22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 03:28:24 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:47235 "EHLO
+	Wed, 27 Jan 2010 03:28:28 -0500
+Received: from mail-iw0-f186.google.com ([209.85.223.186]:38468 "EHLO
 	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752626Ab0A0I2V (ORCPT
+	with ESMTP id S1752709Ab0A0I2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 03:28:21 -0500
+	Wed, 27 Jan 2010 03:28:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=LN3tPdwWjWBLe8KgYAH8sQYuFTLESwnJLyxVmrGGlt0zNDrHQz4oorqKx158Z0up3X
-         xj6/n5Nb/rideCXoc9FGUk5jDMlMgsIodZ1dVTJuWi7qWOcHSAfXAh1OfbVnqQSvLRSv
-         hwdCoCiedFBv9leVBbhsY8Jk364RrT/I99a8M=
+        b=qa/AzsZVOEl2FBrXxhrC4WXtS474LqOeJRPhcQzIu0N1vLjLORnDErx79MupKGLRyR
+         51SSdDemkOzrgic+AVEC4cAnL7Xlhh3LsGcpLqH6UizwzKunaqi+PYQwULwWWGpd3T9s
+         J/vhnqbYcCUucw8pcnrvTsZfA9bYO/iV5p7zY=
 From: Tom Zanussi <tzanussi@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, fweisbec@gmail.com, rostedt@goodmis.org,
        k-keiichi@bx.jp.nec.com
-Subject: [PATCH 10/12] perf trace/scripting: make the syscall map available as a Python dict
-Date: Wed, 27 Jan 2010 02:28:01 -0600
-Message-Id: <1264580883-15324-11-git-send-email-tzanussi@gmail.com>
+Subject: [PATCH 09/12] perf tools: save syscall map
+Date: Wed, 27 Jan 2010 02:28:00 -0600
+Message-Id: <1264580883-15324-10-git-send-email-tzanussi@gmail.com>
 X-Mailer: git-send-email 1.6.4.GIT
 In-Reply-To: <1264580883-15324-1-git-send-email-tzanussi@gmail.com>
 References: <1264580883-15324-1-git-send-email-tzanussi@gmail.com>
@@ -30,154 +30,191 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create a Python extension that makes the perf syscall map into a
-Python dict.
-
-New instances of the syscall dict can be retrieved at any time by by
-calling the Python function get_syscall_names().
-
-Also adds a new utility function that makes uses of the syscall name
-dict:
-
-syscall_name(syscall_nr)
-
-which returns a syscall name given a syscall_nr, or the number itself
-if the syscall wasn't found in the map (or 'undefined' if the value
-passed in was bogus).
+Read the exported syscall metadata and save it in the trace file for
+post-processing tools.
 
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 ---
- .../perf/scripts/python/Perf-Trace-Util/Context.c  |   22 ++++++++++++++++++++
- .../python/Perf-Trace-Util/lib/Perf/Trace/Util.py  |   12 ++++++++++
- .../perf/scripts/python/failed-syscalls-by-pid.py  |    3 +-
- tools/perf/scripts/python/syscall-counts-by-pid.py |    3 +-
- tools/perf/scripts/python/syscall-counts.py        |    3 +-
- 5 files changed, 40 insertions(+), 3 deletions(-)
+ tools/perf/util/trace-event-info.c  |   25 ++++++++++++++
+ tools/perf/util/trace-event-parse.c |   63 +++++++++++++++++++++++++++++++++++
+ tools/perf/util/trace-event-read.c  |   18 ++++++++++
+ tools/perf/util/trace-event.h       |   10 +++++
+ 4 files changed, 116 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/scripts/python/Perf-Trace-Util/Context.c b/tools/perf/scripts/python/Perf-Trace-Util/Context.c
-index 957085d..ebdcc35 100644
---- a/tools/perf/scripts/python/Perf-Trace-Util/Context.c
-+++ b/tools/perf/scripts/python/Perf-Trace-Util/Context.c
-@@ -72,6 +72,26 @@ static PyObject *perf_trace_context_common_lock_depth(PyObject *self,
- 	return Py_BuildValue("i", retval);
+diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
+index 5ea8973..6a6e5cc 100644
+--- a/tools/perf/util/trace-event-info.c
++++ b/tools/perf/util/trace-event-info.c
+@@ -461,6 +461,30 @@ out:
+ 	put_tracing_file(path);
  }
  
-+static PyObject *perf_trace_context_get_syscall_names(PyObject *self,
-+						      PyObject *args)
++static void read_syscall_map(void)
 +{
-+	const struct syscall_metadata *meta;
-+	PyObject *dict;
-+	int i;
++	unsigned int size, check_size;
++	char *path;
++	struct stat st;
++	int ret;
 +
-+	dict = PyDict_New();
-+	if (!dict)
-+		return NULL;
-+
-+	for (i = 0; i < nr_syscalls(); i++) {
-+		meta = syscall_at_idx(i);
-+		PyDict_SetItem(dict, PyInt_FromLong(meta->nr),
-+			       PyString_FromString(meta->name));
++	path = get_tracing_file("syscall_map");
++	ret = stat(path, &st);
++	if (ret < 0) {
++		/* not found */
++		size = 0;
++		write_or_die(&size, 4);
++		goto out;
 +	}
-+
-+	return dict;
++	size = get_size(path);
++	write_or_die(&size, 4);
++	check_size = copy_file(path);
++	if (size != check_size)
++		die("error in size of file '%s'", path);
++out:
++	put_tracing_file(path);
 +}
 +
- static PyMethodDef ContextMethods[] = {
- 	{ "common_pc", perf_trace_context_common_pc, METH_VARARGS,
- 	  "Get the common preempt count event field value."},
-@@ -79,6 +99,8 @@ static PyMethodDef ContextMethods[] = {
- 	  "Get the common flags event field value."},
- 	{ "common_lock_depth", perf_trace_context_common_lock_depth,
- 	  METH_VARARGS,	"Get the common lock depth event field value."},
-+	{ "get_syscall_names", perf_trace_context_get_syscall_names,
-+	  METH_NOARGS,	"Get the syscall_nr->syscall_name dict."},
- 	{ NULL, NULL, 0, NULL}
- };
+ static struct tracepoint_path *
+ get_tracepoints_path(struct perf_event_attr *pattrs, int nb_events)
+ {
+@@ -523,6 +547,7 @@ int read_tracing_data(int fd, struct perf_event_attr *pattrs, int nb_events)
+ 	read_event_files(tps);
+ 	read_proc_kallsyms();
+ 	read_ftrace_printk();
++	read_syscall_map();
  
-diff --git a/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py b/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
-index 83e9143..08d7d8e 100644
---- a/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
-+++ b/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
-@@ -6,6 +6,8 @@
- # Public License ("GPL") version 2 as published by the Free Software
- # Foundation.
+ 	return 0;
+ }
+diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+index c1299ff..31bb6f2 100644
+--- a/tools/perf/util/trace-event-parse.c
++++ b/tools/perf/util/trace-event-parse.c
+@@ -336,6 +336,69 @@ void print_printk(void)
+ 	}
+ }
  
-+from perf_trace_context import *
++static struct syscall_metadata *syscalls;
++static int syscall_count;
 +
- NSECS_PER_SEC    = 1000000000
- 
- def avg(total, n):
-@@ -23,3 +25,13 @@ def nsecs_nsecs(nsecs):
- def nsecs_str(nsecs):
-     str = "%5u.%09u" % (nsecs_secs(nsecs), nsecs_nsecs(nsecs)),
-     return str
++void parse_syscall_map(char *file, int size __unused)
++{
++	struct syscall_list {
++		struct syscall_list	*next;
++		char			*name;
++		int			nr;
++	} *list = NULL, *item;
++	char *line;
++	char *next = NULL;
++	int i;
 +
-+syscall_name_map = get_syscall_names()
++	line = strtok_r(file, "\n", &next);
++	while (line) {
++		item = malloc_or_die(sizeof(*item));
++		sscanf(line, "%d:%as", &item->nr,
++		       (float *)(void *)&item->name); /* workaround gcc warning */
++		item->next = list;
++		list = item;
++		line = strtok_r(NULL, "\n", &next);
++		syscall_count++;
++	}
 +
-+def syscall_name(id):
-+	if id == -1:
-+		return "undefined"
-+	try:
-+		return syscall_name_map[id]
-+	except KeyError:
-+		return str(id)
-diff --git a/tools/perf/scripts/python/failed-syscalls-by-pid.py b/tools/perf/scripts/python/failed-syscalls-by-pid.py
-index 0ca0227..007e959 100644
---- a/tools/perf/scripts/python/failed-syscalls-by-pid.py
-+++ b/tools/perf/scripts/python/failed-syscalls-by-pid.py
-@@ -13,6 +13,7 @@ sys.path.append(os.environ['PERF_EXEC_PATH'] + \
++	syscalls = malloc_or_die(sizeof(*syscalls) * syscall_count);
++
++	i = 0;
++	while (list) {
++		syscalls[i].nr = list->nr;
++		syscalls[i].name = list->name;
++		i++;
++		item = list;
++		list = list->next;
++		free(item);
++	}
++}
++
++int nr_syscalls(void)
++{
++	return syscall_count;
++}
++
++const struct syscall_metadata *syscall_at_idx(int idx)
++{
++	if (idx >= syscall_count)
++		return NULL;
++
++	return &syscalls[idx];
++}
++
++const struct syscall_metadata *find_syscall(int syscall_nr)
++{
++	int i;
++
++	for (i = 0; i < syscall_count; i++) {
++		if (syscalls[i].nr == syscall_nr)
++			return &syscalls[i];
++	}
++
++	return NULL;
++}
++
+ static struct event *alloc_event(void)
+ {
+ 	struct event *event;
+diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
+index 1744422..70fcaec 100644
+--- a/tools/perf/util/trace-event-read.c
++++ b/tools/perf/util/trace-event-read.c
+@@ -171,6 +171,23 @@ static void read_ftrace_printk(void)
+ 	free(buf);
+ }
  
- from perf_trace_context import *
- from Core import *
-+from Util import *
++static void read_syscall_map(void)
++{
++	unsigned int size;
++	char *buf;
++
++	size = read4();
++	if (!size)
++		return;
++
++	buf = malloc_or_die(size);
++	read_or_die(buf, size);
++
++	parse_syscall_map(buf, size);
++
++	free(buf);
++}
++
+ static void read_header_files(void)
+ {
+ 	unsigned long long size;
+@@ -498,6 +515,7 @@ void trace_report(int fd)
+ 	read_event_files();
+ 	read_proc_kallsyms();
+ 	read_ftrace_printk();
++	read_syscall_map();
  
- usage = "perf trace -s syscall-counts-by-pid.py [comm]\n";
+ 	if (show_funcs) {
+ 		print_funcs();
+diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
+index c3269b9..5313ad8 100644
+--- a/tools/perf/util/trace-event.h
++++ b/tools/perf/util/trace-event.h
+@@ -178,6 +178,16 @@ int parse_event_file(char *buf, unsigned long size, char *sys);
+ void print_event(int cpu, void *data, int size, unsigned long long nsecs,
+ 		  char *comm);
  
-@@ -62,7 +63,7 @@ def print_error_totals():
- 		    print "\n%s [%d]\n" % (comm, pid),
- 		    id_keys = syscalls[comm][pid].keys()
- 		    for id in id_keys:
--			    print "  syscall: %-16d\n" % (id),
-+			    print "  syscall: %-16s\n" % (syscall_name(id)),
- 			    ret_keys = syscalls[comm][pid][id].keys()
- 			    for ret, val in sorted(syscalls[comm][pid][id].iteritems(), key = lambda(k, v): (v, k),  reverse = True):
- 				    print "    err = %-20d  %10d\n" % (ret, val),
-diff --git a/tools/perf/scripts/python/syscall-counts-by-pid.py b/tools/perf/scripts/python/syscall-counts-by-pid.py
-index af722d6..fffe0d6 100644
---- a/tools/perf/scripts/python/syscall-counts-by-pid.py
-+++ b/tools/perf/scripts/python/syscall-counts-by-pid.py
-@@ -13,6 +13,7 @@ sys.path.append(os.environ['PERF_EXEC_PATH'] + \
++struct syscall_metadata {
++	char *name;
++	int nr;
++};
++
++void parse_syscall_map(char *file, int size);
++int nr_syscalls(void);
++const struct syscall_metadata *syscall_at_idx(int idx);
++const struct syscall_metadata *find_syscall(int syscall_nr);
++
+ extern int file_bigendian;
+ extern int host_bigendian;
  
- from perf_trace_context import *
- from Core import *
-+from Util import *
- 
- usage = "perf trace -s syscall-counts-by-pid.py [comm]\n";
- 
-@@ -61,4 +62,4 @@ def print_syscall_totals():
- 		    id_keys = syscalls[comm][pid].keys()
- 		    for id, val in sorted(syscalls[comm][pid].iteritems(), \
- 				  key = lambda(k, v): (v, k),  reverse = True):
--			    print "  %-38d  %10d\n" % (id, val),
-+			    print "  %-38s  %10d\n" % (syscall_name(id), val),
-diff --git a/tools/perf/scripts/python/syscall-counts.py b/tools/perf/scripts/python/syscall-counts.py
-index f977e85..a641c6f 100644
---- a/tools/perf/scripts/python/syscall-counts.py
-+++ b/tools/perf/scripts/python/syscall-counts.py
-@@ -13,6 +13,7 @@ sys.path.append(os.environ['PERF_EXEC_PATH'] + \
- 
- from perf_trace_context import *
- from Core import *
-+from Util import *
- 
- usage = "perf trace -s syscall-counts.py [comm]\n";
- 
-@@ -55,4 +56,4 @@ def print_syscall_totals():
- 
-     for id, val in sorted(syscalls.iteritems(), key = lambda(k, v): (v, k), \
- 				  reverse = True):
--	    print "%-40d  %10d\n" % (id, val),
-+	    print "%-40s  %10d\n" % (syscall_name(id), val),
 -- 
 1.6.4.GIT
 
