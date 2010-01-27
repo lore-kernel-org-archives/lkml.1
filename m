@@ -1,102 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222Ab0A0IU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536Ab0A0IZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752222Ab0A0IU5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 03:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858Ab0A0IUz
+	id S1752536Ab0A0IZA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 03:25:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018Ab0A0IY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 03:20:55 -0500
-Received: from mga01.intel.com ([192.55.52.88]:65017 "EHLO mga01.intel.com"
+	Wed, 27 Jan 2010 03:24:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59897 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750956Ab0A0IUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 03:20:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,352,1262592000"; 
-   d="scan'208";a="534945873"
-Subject: Re: 2.6.33-rc5-git2 -- ACPI Error: Attempt to CreateField of
- length zero (20091214/dsopcode-529)
-From: Lin Ming <ming.m.lin@intel.com>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       "rui.zhang" <rui.zhang@intel.com>
-In-Reply-To: <efbf743b1001270005v301dbe34ia65b63973e761e8@mail.gmail.com>
-References: <4B5FE33A.7000201@gmail.com>
-	 <efbf743b1001270005v301dbe34ia65b63973e761e8@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 27 Jan 2010 16:04:36 +0800
-Message-Id: <1264579476.7187.56.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1752268Ab0A0IY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 03:24:56 -0500
+Date: Wed, 27 Jan 2010 09:24:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Jim Keniston <jkenisto@us.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>, ananth@in.ibm.com,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+Message-ID: <20100127082440.GA16640@elte.hu>
+References: <20100118124419.GC1628@linux.vnet.ibm.com>
+ <84144f021001180451k2a84f17x3dc24796fea986c9@mail.gmail.com>
+ <4B5459CA.9060603@redhat.com>
+ <4B545ACF.40203@cs.helsinki.fi>
+ <1263852957.2266.38.camel@localhost.localdomain>
+ <4B556855.6040800@redhat.com>
+ <1263923265.4998.28.camel@localhost.localdomain>
+ <4B56D027.3010808@redhat.com>
+ <1263981472.4283.843.camel@laptop>
+ <4B56F588.2060109@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B56F588.2060109@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> From: Miles Lane <miles.lane@gmail.com>
-> Date: Wed, Jan 27, 2010 at 2:54 PM
-> Subject: 2.6.33-rc5-git2 -- ACPI Error: Attempt to CreateField of
-> length zero (20091214/dsopcode-529)
-> To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML
-> <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+* Avi Kivity <avi@redhat.com> wrote:
+
+> On 01/20/2010 11:57 AM, Peter Zijlstra wrote:
+> >On Wed, 2010-01-20 at 11:43 +0200, Avi Kivity wrote:
+> >> 1. Write a trace entry into shared memory, trap into the kernel on 
+> >>    overflow.
+> >> 2. Trap if a condition is satisfied (fast watchpoint implementation).
+> >
+> > So now you want to consume more of a process' address space to store trace 
+> > data as well?
 > 
+> Yes.  I know I'm bad.
+
+No, you are just wrong.
+
+> > Not to mention that that process could wreck the trace data rendering it 
+> > utterly unreliable.
 > 
-> I am not sure how much of this is due to a single cause.  Please let
-> me know if you'd like me to send separate reports.
-> 
-> ACPI: EC: GPE = 0x1b, I/O: command/status = 0x66, data = 0x62
-> ACPI Warning: Incorrect checksum in table [ATKG] - FA, should be 05
-> (20091214/tbutils-314)
-> 
-> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ACPI Error: Attempt to CreateField of length zero (20091214/dsopcode-529)
-> ACPI Error (psparse-0537): Method parse/execution failed
-> [\_SB_.PCI0.IDE0.RATA] (Node ffff88013f81a9e0), AE_AML_OPERAND_VALUE
-> ACPI Error (psparse-0537): Method parse/execution failed
-> [\_SB_.PCI0.IDE0.PRT1._GTF] (Node ffff88013f81ab20),
-> AE_AML_OPERAND_VALUE
-> ata2.00: _GTF evaluation failed (AE 0x3004)
-> ata2.00: ATAPI: MATSHITADVD-RAM UJ892AS, 1.00, max UDMA/100, ATAPI AN
-> ACPI Error: Attempt to CreateField of length zero (20091214/dsopcode-529)
-> ACPI Error (psparse-0537): Method parse/execution failed
-> [\_SB_.PCI0.IDE0.RATA] (Node ffff88013f81a9e0), AE_AML_OPERAND_VALUE
-> ACPI Error (psparse-0537): Method parse/execution failed
-> [\_SB_.PCI0.IDE0.PRT1._GTF] (Node ffff88013f81ab20),
-> AE_AML_OPERAND_VALUE
-> ata2.00: _GTF evaluation failed (AE 0x3004)
-> ata2.00: configured for UDMA/100
-> scsi 1:0:0:0: CD-ROM            MATSHITA DVD-RAM UJ892AS  1.00 PQ: 0 ANSI: 5
-> 
+> It could, but it also might not.  Are we going to deny high performance 
+> tracing to users just because it doesn't work in all cases?
 
->From the DSDT,
+Tracing and monitoring is foremost about being able to trust the instrument, 
+then about performance and usability. That's one of the big things about 
+ftrace and perf.
 
- 2522                 Method (RATA, 1, NotSerialized)
- 2523                 {
- 2524                     CreateByteField (Arg0, Zero, CMDN)
- 2525                     Multiply (CMDN, 0x38, Local0)
- 2526                     CreateField (Arg0, 0x08, Local0, RETB)
- 2527                     Store (RETB, Debug)
- 2528                     Return (RETB)
- 2529                 }
+By proposing 'user space tracing' you are missing two big aspects:
 
- 2546                 Name (ATP1, Buffer (0x32) {})
- 2547                 Device (PRT1)
- 2548                 {
- 2549                     Name (_ADR, 0x0001FFFF)
- 2550                     Method (_SDD, 1, NotSerialized)
- 2551                     {
- 2552                         Store (AGTF (Zero, Arg0), ATP1)
- 2553                     }
- 2554 
- 2555                     Method (_GTF, 0, NotSerialized)
- 2556                     {
- 2557                         Return (RATA (ATP1))
- 2558                     }
- 2559                 }
+ - That self-contained, kernel-driven tracing can be replicated in user-space.
+   It cannot. Sharing and global state is much harder to maintain reliably,
+   but the bigger problem is that user-space can stomp on its own tracing
+   state and can make it unreliable. Tracing is often used to figure out bugs,
+   and tracers will be trusted less if they can stomp on themselves.
 
-It seems that ATP1 is not set correctly in PRT1._SDD.
-Then ATP1 is passed into RATA and CMDN is created with value zero.
-That causes the error message.
+ - That somehow it's much faster and that this edge matters. It isnt and it
+   doesnt matter. The few places that need very very fast tracing wont use any
+   of these facilities - it will use something specialized.
 
-Lin Ming
+So you are creating a solution for special cases that dont need it, and you 
+are also ignoring prime qualities of a good tracing framework.
 
+	Ingo
