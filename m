@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485Ab0A0XSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422Ab0A0XU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756485Ab0A0XSf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:18:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087Ab0A0XSe
+	id S1756422Ab0A0XU4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177Ab0A0XUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:18:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:49301 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750915Ab0A0XSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:18:34 -0500
-Message-ID: <4B60C9A6.10704@redhat.com>
-Date: Wed, 27 Jan 2010 18:17:58 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	Wed, 27 Jan 2010 18:20:55 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50288 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755355Ab0A0XUz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 18:20:55 -0500
+Date: Wed, 27 Jan 2010 23:18:32 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: adharmap@codeaurora.org
+Cc: linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@elte.hu>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Yinghai Lu <yinghai@kernel.org>, Tony Lindgren <tony@atomide.com>,
+       Santosh Shilimkar <santosh.shilimkar@ti.com>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Kalle Valo <kalle.valo@iki.fi>, Jean Pihet <jpihet@mvista.com>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Colin Tuckley <colin.tuckley@arm.com>,
+       Philby John <pjohn@in.mvista.com>,
+       Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+       Alessandro Rubini <rubini@unipv.it>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       Abhijeet Dharmapurikar <adharmap@quicinc.com>
+Subject: Re: [PATCH 3/5] gic: Add set_type callback
+Message-ID: <20100127231832.GF29665@n2100.arm.linux.org.uk>
+References: <1264620749-24527-1-git-send-email-adharmap@codeaurora.org> <1264620749-24527-4-git-send-email-adharmap@codeaurora.org>
 MIME-Version: 1.0
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 4/9] perf session: Create kernel maps in the constructor
-References: <1264633557-17597-1-git-send-email-acme@infradead.org> <1264633557-17597-4-git-send-email-acme@infradead.org>
-In-Reply-To: <1264633557-17597-4-git-send-email-acme@infradead.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264620749-24527-4-git-send-email-adharmap@codeaurora.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnaldo Carvalho de Melo wrote:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> Removing one extra step needed in the tools that need this, fixing a bug
-> in 'perf probe' where this was not being done.
+On Wed, Jan 27, 2010 at 11:32:27AM -0800, adharmap@codeaurora.org wrote:
+> +	if (flow_type & (IRQ_TYPE_EDGE_RISING|IRQ_TYPE_EDGE_FALLING)) {
+> +		reg_value |= (2<<bit_index);
+> +		writel(reg_value, gic_dist_base(irq) + GIC_DIST_CONFIG
+> +							+ register_index);
+> +		__set_irq_handler_unlocked(irq, handle_edge_irq);
+> +	}
+> +
+> +	if (flow_type & (IRQ_TYPE_LEVEL_HIGH|IRQ_TYPE_LEVEL_LOW)) {
 
-Thanks,
-BTW, when O_WRONLY should be used? I guess I might misunderstand something
-in builtin-probe.c, and it should use O_RDONLY ...
+This is actually where things start to get rather sticky - because
+there may well be on-chip inverters between the GIC and external
+peripherals.
 
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Since the GIC can only sense one edge or one level depending on the
+hardware setup, it seems wrong to allow the configuration of both
+high and low levels, and both edges.
