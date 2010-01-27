@@ -1,70 +1,381 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243Ab0A0K6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235Ab0A0K64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754243Ab0A0K6r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 05:58:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254Ab0A0K6p
+	id S1754235Ab0A0K64 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 05:58:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262Ab0A0K6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 05:58:45 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39437 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932142Ab0A0K6o (ORCPT
+	Wed, 27 Jan 2010 05:58:54 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:45285 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254Ab0A0K6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 05:58:44 -0500
-Subject: Re: linux-next: add utrace tree
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tom Tromey <tromey@redhat.com>, Kyle Moffett <kyle@moffetthome.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>, JimKeniston <jkenisto@us.ibm.com>
-In-Reply-To: <1264589716.4283.2006.camel@laptop>
-References: <20100121013822.28781960.sfr@canb.auug.org.au>
-	 <20100122005147.GD22003@redhat.com>
-	 <20100121170541.7425ff10.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
-	 <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com>
-	 <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
-	 <20100122221348.GA4263@redhat.com>
-	 <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
-	 <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
-	 <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
-	 <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>
-	 <m33a1tnbd9.fsf@fleche.redhat.com>
-	 <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
-	 <m3636oh2rt.fsf@fleche.redhat.com>
-	 <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain>
-	 <1264575134.4283.1983.camel@laptop>
-	 <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain>
-	 <1264589716.4283.2006.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 11:58:06 +0100
-Message-ID: <1264589886.4283.2008.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 05:58:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:user-agent;
+        b=eK7+BxftxMe8xS8jCbWGik9EYHQjaFwn0fC5CbgCW3NAgIFAaEpzVkcX6ynSgUIR+q
+         gMstACnc7AJhiV7u79ELCOW6UOGseuFWz9w6oK7/N7ONEhoe8Km/3RxVjPqTz9+xXZos
+         JNfNqZuwNw/w55QW/dBpfDRfSD0QxTYjId75w=
+Date: Wed, 27 Jan 2010 13:58:25 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: bug list: doing dma on the stack
+Message-ID: <20100127105825.GB24796@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-27 at 11:55 +0100, Peter Zijlstra wrote:
-> Right, so there's two aspects:
-> 
->  1) concurrency when inserting the probe
->  2) concurrency when hitting the probe
-> 
-> 1) used to be dealt with by using utrace to stop all threads in the
-> process and then writing the instruction. I suggested to CoW the page,
-> modify the instruction, set the pagetable and flush tlbs at full speed
-> -- the very thing you suggest here. 
+Here is another janitor task if you want it.
 
-Also, since executable maps are typically MAP_PRIVATE, you have to CoW
-anyway in order to modify it and I would exclude MAP_SHARED from being
-probable because then the modification could seep through into whatever
-was backing that thing.
+All these variables eventually get passed to either usb_fill_bulk_urb() or 
+usb_control_msg().  If you want I could add other functions to the list.
+The test looks for variables declared as an array or variables passed by
+reference like &foo.
 
+grep "doing dma" warns.txt  | grep -v usb/serial
+Johan Hovold already fixed all the bugs in usb/serial.
+
+regards,
+dan carpenter
+
+drivers/firewire/core-device.c +506 read_bus_info_block(52) error: doing dma on the stack (&dummy)
+drivers/firewire/core-device.c +1031 reread_bus_info_block(6) error: doing dma on the stack (&q)
+drivers/i2c/busses/i2c-tiny-usb.c +97 usb_xfer(46) error: doing dma on the stack (&status)
+drivers/i2c/busses/i2c-tiny-usb.c +115 usb_func(5) error: doing dma on the stack (&func)
+drivers/isdn/gigaset/usb-gigaset.c +567 gigaset_brkchars(6) error: doing dma on the stack (&buf)
+drivers/isdn/hardware/mISDN/hfcsusb.c +1733 setup_hfcsusb(9) error: doing dma on the stack (&b)
+drivers/isdn/hisax/hfc_usb.c +1104 hfc_usb_init(8) error: doing dma on the stack (&b)
+drivers/media/dvb/dvb-usb/a800.c +82 a800_rc_query(3) error: doing dma on the stack (key)
+drivers/media/dvb/dvb-usb/af9005.c +149 af9005_generic_read_write(48) error: doing dma on the stack (obuf)
+drivers/media/dvb/dvb-usb/af9005.c +149 af9005_generic_read_write(48) error: doing dma on the stack (ibuf)
+drivers/media/dvb/dvb-usb/af9005.c +537 af9005_send_command(32) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/af9005.c +537 af9005_send_command(32) error: doing dma on the stack (ibuf)
+drivers/media/dvb/dvb-usb/af9005.c +584 af9005_read_eeprom(23) error: doing dma on the stack (obuf)
+drivers/media/dvb/dvb-usb/af9005.c +584 af9005_read_eeprom(23) error: doing dma on the stack (ibuf)
+drivers/media/dvb/dvb-usb/af9005.c +658 af9005_boot_packet(49) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/af9005.c +669 af9005_boot_packet(60) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/af9005.c +785 af9005_download_firmware(22) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/af9005.c +885 af9005_rc_query(19) error: doing dma on the stack (obuf)
+drivers/media/dvb/dvb-usb/af9005.c +885 af9005_rc_query(19) error: doing dma on the stack (ibuf)
+drivers/media/dvb/dvb-usb/af9015.c +131 af9015_rw_udev(69) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/af9015.c +151 af9015_rw_udev(89) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/anysee.c +68 anysee_ctrl_msg(17) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/anysee.c +68 anysee_ctrl_msg(17) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/anysee.c +72 anysee_ctrl_msg(21) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/au6610.c +51 au6610_usb_msg(20) error: doing dma on the stack (usb_buf)
+drivers/media/dvb/dvb-usb/ce6230.c +76 ce6230_rw_udev(42) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/cinergyT2-core.c +55 cinergyt2_streaming_ctrl(4) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/cinergyT2-core.c +55 cinergyt2_streaming_ctrl(4) error: doing dma on the stack (result)
+drivers/media/dvb/dvb-usb/cinergyT2-core.c +63 cinergyt2_power_ctrl(4) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/cinergyT2-core.c +63 cinergyt2_power_ctrl(4) error: doing dma on the stack (state)
+drivers/media/dvb/dvb-usb/cinergyT2-core.c +74 cinergyt2_frontend_attach(8) error: doing dma on the stack (query)
+drivers/media/dvb/dvb-usb/cinergyT2-core.c +74 cinergyt2_frontend_attach(8) error: doing dma on the stack (state)
+drivers/media/dvb/dvb-usb/cinergyT2-core.c +149 cinergyt2_rc_query(8) error: doing dma on the stack (&cmd)
+drivers/media/dvb/dvb-usb/cinergyT2-core.c +149 cinergyt2_rc_query(8) error: doing dma on the stack (key)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +153 cinergyt2_fe_read_status(8) error: doing dma on the stack (cmd)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +153 cinergyt2_fe_read_status(8) error: doing dma on the stack (&result)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +185 cinergyt2_fe_read_ber(7) error: doing dma on the stack (cmd)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +185 cinergyt2_fe_read_ber(7) error: doing dma on the stack (&status)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +201 cinergyt2_fe_read_unc_blocks(7) error: doing dma on the stack (cmd)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +201 cinergyt2_fe_read_unc_blocks(7) error: doing dma on the stack (&status)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +220 cinergyt2_fe_read_signal_strength(8) error: doing dma on the stack (cmd)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +220 cinergyt2_fe_read_signal_strength(8) error: doing dma on the stack (&status)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +238 cinergyt2_fe_read_snr(7) error: doing dma on the stack (cmd)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +238 cinergyt2_fe_read_snr(7) error: doing dma on the stack (&status)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +280 cinergyt2_fe_set_frontend(14) error: doing dma on the stack (&param)
+drivers/media/dvb/dvb-usb/cinergyT2-fe.c +280 cinergyt2_fe_set_frontend(14) error: doing dma on the stack (result)
+drivers/media/dvb/dvb-usb/cxusb.c +65 cxusb_ctrl_msg(10) error: doing dma on the stack (sndbuf)
+drivers/media/dvb/dvb-usb/cxusb.c +67 cxusb_ctrl_msg(12) error: doing dma on the stack (sndbuf)
+drivers/media/dvb/dvb-usb/cxusb.c +81 cxusb_gpio_tuner(10) error: doing dma on the stack (&i)
+drivers/media/dvb/dvb-usb/cxusb.c +98 cxusb_bluebird_gpio_rw(9) error: doing dma on the stack (&gpio_state)
+drivers/media/dvb/dvb-usb/cxusb.c +124 cxusb_d680_dmb_gpio_tuner(7) error: doing dma on the stack (&i)
+drivers/media/dvb/dvb-usb/cxusb.c +164 cxusb_i2c_xfer(27) error: doing dma on the stack (ibuf)
+drivers/media/dvb/dvb-usb/cxusb.c +180 cxusb_i2c_xfer(43) error: doing dma on the stack (ibuf)
+drivers/media/dvb/dvb-usb/cxusb.c +198 cxusb_i2c_xfer(61) error: doing dma on the stack (&ibuf)
+drivers/media/dvb/dvb-usb/cxusb.c +258 cxusb_aver_power_ctrl(29) error: doing dma on the stack (&buf)
+drivers/media/dvb/dvb-usb/cxusb.c +298 cxusb_d680_dmb_power_ctrl(9) error: doing dma on the stack (&b)
+drivers/media/dvb/dvb-usb/cxusb.c +391 cxusb_rc_query(6) error: doing dma on the stack (ircode)
+drivers/media/dvb/dvb-usb/cxusb.c +447 cxusb_d680_dmb_rc_query(10) error: doing dma on the stack (ircode)
+drivers/media/dvb/dvb-usb/cxusb.c +837 cxusb_cx22702_frontend_attach(6) error: doing dma on the stack (&b)
+drivers/media/dvb/dvb-usb/dib0700_core.c +35 dib0700_get_version(4) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dib0700_core.c +35 dib0700_get_version(4) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dib0700_core.c +109 dib0700_set_gpio(3) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/dib0700_core.c +125 dib0700_set_usb_xfer_len(13) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dib0700_core.c +212 dib0700_i2c_xfer_new(76) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/dib0700_core.c +264 dib0700_i2c_xfer_legacy(33) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/dib0700_core.c +302 dib0700_identify_state(4) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dib0700_core.c +302 dib0700_identify_state(4) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dib0700_core.c +329 dib0700_set_clock(16) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dib0700_core.c +350 dib0700_jumpram(9) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/dib0700_core.c +380 dib0700_download_firmware(19) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/dib0700_core.c +407 dib0700_download_firmware(46) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dib0700_core.c +471 dib0700_streaming_ctrl(38) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dib0700_core.c +477 dib0700_rc_setup(3) error: doing dma on the stack (rc_setup)
+drivers/media/dvb/dvb-usb/dib0700_core.c +477 dib0700_rc_setup(3) error: doing dma on the stack (rc_setup)
+drivers/media/dvb/dvb-usb/dib0700_devices.c +489 dib0700_rc_query_legacy(9) error: doing dma on the stack (key)
+drivers/media/dvb/dvb-usb/dib0700_devices.c +587 dib0700_rc_query_v1_20(17) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/dibusb-common.c +65 dibusb_power_ctrl(7) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dibusb-common.c +82 dibusb2_0_streaming_ctrl(11) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dibusb-common.c +88 dibusb2_0_streaming_ctrl(17) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dibusb-common.c +96 dibusb2_0_power_ctrl(4) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dibusb-common.c +120 dibusb_i2c_msg(18) error: doing dma on the stack (sndbuf)
+drivers/media/dvb/dvb-usb/dibusb-common.c +285 dibusb_dib3000mc_tuner_attach(11) error: doing dma on the stack (&a)
+drivers/media/dvb/dvb-usb/dibusb-common.c +286 dibusb_dib3000mc_tuner_attach(12) error: doing dma on the stack (&b)
+drivers/media/dvb/dvb-usb/dibusb-common.c +298 dibusb_dib3000mc_tuner_attach(24) error: doing dma on the stack (&desc)
+drivers/media/dvb/dvb-usb/dibusb-common.c +302 dibusb_dib3000mc_tuner_attach(28) error: doing dma on the stack (&desc)
+drivers/media/dvb/dvb-usb/dibusb-common.c +464 dibusb_rc_query(3) error: doing dma on the stack (&cmd)
+drivers/media/dvb/dvb-usb/dibusb-common.c +464 dibusb_rc_query(3) error: doing dma on the stack (key)
+drivers/media/dvb/dvb-usb/digitv.c +41 digitv_ctrl_msg(13) error: doing dma on the stack (sndbuf)
+drivers/media/dvb/dvb-usb/digitv.c +43 digitv_ctrl_msg(15) error: doing dma on the stack (sndbuf)
+drivers/media/dvb/dvb-usb/digitv.c +43 digitv_ctrl_msg(15) error: doing dma on the stack (rcvbuf)
+drivers/media/dvb/dvb-usb/dtt200u.c +28 dtt200u_power_ctrl(5) error: doing dma on the stack (&b)
+drivers/media/dvb/dvb-usb/dtt200u.c +38 dtt200u_streaming_ctrl(5) error: doing dma on the stack (b_streaming)
+drivers/media/dvb/dvb-usb/dtt200u.c +41 dtt200u_streaming_ctrl(8) error: doing dma on the stack (&b_rst_pid)
+drivers/media/dvb/dvb-usb/dtt200u.c +55 dtt200u_pid_filter(10) error: doing dma on the stack (b_pid)
+drivers/media/dvb/dvb-usb/dtt200u.c +84 dtt200u_rc_query(3) error: doing dma on the stack (&cmd)
+drivers/media/dvb/dvb-usb/dtt200u.c +84 dtt200u_rc_query(3) error: doing dma on the stack (key)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +28 dtt200u_fe_read_status(5) error: doing dma on the stack (&st)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +28 dtt200u_fe_read_status(5) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +50 dtt200u_fe_read_ber(4) error: doing dma on the stack (&bw)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +50 dtt200u_fe_read_ber(4) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +60 dtt200u_fe_read_unc_blocks(5) error: doing dma on the stack (&bw)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +60 dtt200u_fe_read_unc_blocks(5) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +69 dtt200u_fe_read_signal_strength(4) error: doing dma on the stack (&bw)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +69 dtt200u_fe_read_signal_strength(4) error: doing dma on the stack (&b)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +78 dtt200u_fe_read_snr(4) error: doing dma on the stack (&bw)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +78 dtt200u_fe_read_snr(4) error: doing dma on the stack (&br)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +87 dtt200u_fe_init(4) error: doing dma on the stack (&b)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +121 dtt200u_fe_set_frontend(18) error: doing dma on the stack (bwbuf)
+drivers/media/dvb/dvb-usb/dtt200u-fe.c +125 dtt200u_fe_set_frontend(22) error: doing dma on the stack (freqbuf)
+drivers/media/dvb/dvb-usb/dw2102.c +111 dw210x_op_rw(12) error: doing dma on the stack (u8buf)
+drivers/media/dvb/dvb-usb/ec168.c +86 ec168_rw_udev(52) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/friio.c +248 friio_initialize(31) error: doing dma on the stack (wbuf)
+drivers/media/dvb/dvb-usb/friio.c +258 friio_initialize(41) error: doing dma on the stack (rbuf)
+drivers/media/dvb/dvb-usb/friio.c +266 friio_initialize(49) error: doing dma on the stack (wbuf)
+drivers/media/dvb/dvb-usb/friio.c +276 friio_initialize(59) error: doing dma on the stack (rbuf)
+drivers/media/dvb/dvb-usb/friio.c +297 friio_initialize(80) error: doing dma on the stack (rbuf)
+drivers/media/dvb/dvb-usb/gp8psk.c +139 gp8psk_power_ctrl(6) error: doing dma on the stack (&status)
+drivers/media/dvb/dvb-usb/gp8psk.c +143 gp8psk_power_ctrl(10) error: doing dma on the stack (&buf)
+drivers/media/dvb/dvb-usb/gp8psk.c +153 gp8psk_power_ctrl(20) error: doing dma on the stack (&buf)
+drivers/media/dvb/dvb-usb/gp8psk.c +166 gp8psk_power_ctrl(33) error: doing dma on the stack (&buf)
+drivers/media/dvb/dvb-usb/gp8psk.c +169 gp8psk_power_ctrl(36) error: doing dma on the stack (&buf)
+drivers/media/dvb/dvb-usb/gp8psk.c +182 gp8psk_bcm4500_reload(5) error: doing dma on the stack (&buf)
+drivers/media/dvb/dvb-usb/gp8psk.c +185 gp8psk_bcm4500_reload(8) error: doing dma on the stack (&buf)
+drivers/media/dvb/dvb-usb/gp8psk-fe.c +32 gp8psk_tuned_to_DCII(4) error: doing dma on the stack (&status)
+drivers/media/dvb/dvb-usb/gp8psk-fe.c +47 gp8psk_fe_update_status(5) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/gp8psk-fe.c +223 gp8psk_fe_set_frontend(92) error: doing dma on the stack (cmd)
+drivers/media/dvb/dvb-usb/gp8psk-fe.c +257 gp8psk_fe_send_diseqc_burst(11) error: doing dma on the stack (&cmd)
+drivers/media/dvb/dvb-usb/nova-t-usb2.c +82 nova_t_rc_query(7) error: doing dma on the stack (cmd)
+drivers/media/dvb/dvb-usb/nova-t-usb2.c +82 nova_t_rc_query(7) error: doing dma on the stack (key)
+drivers/media/dvb/dvb-usb/nova-t-usb2.c +134 nova_t_read_mac_address(11) error: doing dma on the stack (&b)
+drivers/media/dvb/dvb-usb/opera1.c +66 opera1_xilinx_rw(14) error: doing dma on the stack (u8buf)
+drivers/media/dvb/dvb-usb/opera1.c +70 opera1_xilinx_rw(18) error: doing dma on the stack (&r)
+drivers/media/dvb/dvb-usb/ttusb2.c +61 ttusb2_msg(15) error: doing dma on the stack (s)
+drivers/media/dvb/dvb-usb/ttusb2.c +61 ttusb2_msg(15) error: doing dma on the stack (r)
+drivers/media/dvb/dvb-usb/vp702x.c +107 vp702x_usb_inout_cmd(11) error: doing dma on the stack (bout)
+drivers/media/dvb/dvb-usb/vp702x.c +107 vp702x_usb_inout_cmd(11) error: doing dma on the stack (bin)
+drivers/media/dvb/dvb-usb/vp702x.c +118 vp702x_set_pld_mode(3) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/vp702x.c +124 vp702x_set_pld_state(3) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/vp702x.c +142 vp702x_set_pid(15) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/vp702x.c +143 vp702x_set_pid(16) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/vp702x.c +163 vp702x_init_pid_filter(15) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/vp702x.c +164 vp702x_init_pid_filter(16) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/vp702x.c +165 vp702x_init_pid_filter(17) error: doing dma on the stack (b)
+drivers/media/dvb/dvb-usb/vp702x.c +191 vp702x_rc_query(8) error: doing dma on the stack (key)
+drivers/media/dvb/dvb-usb/vp702x-fe.c +46 vp702x_fe_refresh_state(4) error: doing dma on the stack (buf)
+drivers/media/dvb/dvb-usb/vp702x-fe.c +173 vp702x_fe_set_frontend(44) error: doing dma on the stack (cmd)
+drivers/media/dvb/dvb-usb/vp702x-fe.c +173 vp702x_fe_set_frontend(44) error: doing dma on the stack (ibuf)
+drivers/media/dvb/dvb-usb/vp702x-fe.c +221 vp702x_fe_send_diseqc_msg(17) error: doing dma on the stack (cmd)
+drivers/media/dvb/dvb-usb/vp702x-fe.c +221 vp702x_fe_send_diseqc_msg(17) error: doing dma on the stack (ibuf)
+drivers/media/dvb/dvb-usb/vp702x-fe.c +252 vp702x_fe_set_tone(15) error: doing dma on the stack (ibuf)
+drivers/media/dvb/dvb-usb/vp702x-fe.c +277 vp702x_fe_set_voltage(16) error: doing dma on the stack (ibuf)
+drivers/media/dvb/dvb-usb/vp7045.c +50 vp7045_usb_op(22) error: doing dma on the stack (outbuf)
+drivers/media/dvb/dvb-usb/vp7045.c +61 vp7045_usb_op(33) error: doing dma on the stack (inbuf)
+drivers/media/dvb/dvb-usb/dvb-usb-firmware.c +44 usb_cypress_load_firmware(8) error: doing dma on the stack (&reset)
+drivers/media/dvb/dvb-usb/dvb-usb-firmware.c +67 usb_cypress_load_firmware(31) error: doing dma on the stack (&reset)
+drivers/media/dvb/siano/smsusb.c +285 smsusb1_setmode(10) error: doing dma on the stack (&Msg)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +220 ttusb_i2c_msg(22) error: doing dma on the stack (b)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +315 ttusb_boot_dsp(25) error: doing dma on the stack (b)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +325 ttusb_boot_dsp(35) error: doing dma on the stack (b)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +334 ttusb_boot_dsp(44) error: doing dma on the stack (b)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +354 ttusb_set_channel(9) error: doing dma on the stack (b)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +364 ttusb_del_channel(6) error: doing dma on the stack (b)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +415 ttusb_init_controller(17) error: doing dma on the stack (b0)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +419 ttusb_init_controller(21) error: doing dma on the stack (b1)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +425 ttusb_init_controller(27) error: doing dma on the stack (b2)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +428 ttusb_init_controller(30) error: doing dma on the stack (b3)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +433 ttusb_init_controller(35) error: doing dma on the stack (get_version)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +457 ttusb_init_controller(59) error: doing dma on the stack (get_dsp_version)
+drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c +504 ttusb_update_lnb(9) error: doing dma on the stack (b)
+drivers/media/radio/si470x/radio-si470x-usb.c +262 si470x_get_register(7) error: doing dma on the stack (&buf)
+drivers/media/radio/si470x/radio-si470x-usb.c +282 si470x_set_register(8) error: doing dma on the stack (&buf)
+drivers/media/radio/si470x/radio-si470x-usb.c +304 si470x_get_all_registers(8) error: doing dma on the stack (&buf)
+drivers/media/radio/si470x/radio-si470x-usb.c +333 si470x_set_led_state(10) error: doing dma on the stack (&buf)
+drivers/media/radio/si470x/radio-si470x-usb.c +354 si470x_get_scratch_page_versions(7) error: doing dma on the stack (&buf)
+drivers/media/video/stk-webcam.c +128 stk_start_stream(19) error: doing dma on the stack (&value_116)
+drivers/media/video/stk-webcam.c +129 stk_start_stream(20) error: doing dma on the stack (&value_117)
+drivers/media/video/stk-webcam.c +134 stk_start_stream(25) error: doing dma on the stack (&value)
+drivers/media/video/stk-webcam.c +156 stk_stop_stream(5) error: doing dma on the stack (&value)
+drivers/media/video/stk-sensor.c +240 stk_sensor_outb(12) error: doing dma on the stack (&tmpval)
+drivers/media/video/stk-sensor.c +263 stk_sensor_inb(10) error: doing dma on the stack (&tmpval)
+drivers/media/video/stk-sensor.c +274 stk_sensor_inb(21) error: doing dma on the stack (&tmpval)
+drivers/media/video/cpia_usb.c +358 cpia_usb_transferCmd(27) error: doing dma on the stack (buffer)
+drivers/media/video/se401.c +157 se401_get_feature(7) error: doing dma on the stack (cp)
+drivers/media/video/se401.c +1267 se401_init(11) error: doing dma on the stack (cp)
+drivers/media/video/se401.c +1297 se401_init(41) error: doing dma on the stack (cp)
+drivers/media/video/se401.c +1299 se401_init(43) error: doing dma on the stack (cp)
+drivers/media/video/se401.c +1310 se401_init(54) error: doing dma on the stack (cp)
+drivers/media/video/s2255drv.c +2094 s2255_get_fx2fw(5) error: doing dma on the stack (transBuffer)
+drivers/media/video/pvrusb2/pvrusb2-hdw.c +4089 pvr2_hdw_cpureset_assert(15) error: doing dma on the stack (da)
+drivers/media/video/usbvideo/ibmcam.c +1173 ibmcam_veio(14) error: doing dma on the stack (cp)
+drivers/media/video/usbvideo/ultracam.c +148 ultracam_veio(15) error: doing dma on the stack (cp)
+drivers/media/video/usbvideo/konicawc.c +771 konicawc_configure_video(47) error: doing dma on the stack (buf)
+drivers/media/video/usbvideo/konicawc.c +773 konicawc_configure_video(49) error: doing dma on the stack (buf)
+drivers/media/video/usbvideo/quickcam_messenger.c +208 qcm_stv_setb(5) error: doing dma on the stack (&val)
+drivers/media/video/usbvideo/quickcam_messenger.c +219 qcm_stv_setw(5) error: doing dma on the stack (&val)
+drivers/media/video/usbvideo/quickcam_messenger.c +993 qcm_probe(73) error: doing dma on the stack (&sensor_id)
+drivers/media/video/usbvision/usbvision-core.c +1542 usbvision_read_reg(8) error: doing dma on the stack (buffer)
+drivers/media/video/usbvision/usbvision-core.c +1571 usbvision_write_reg(8) error: doing dma on the stack (&value)
+drivers/media/video/usbvision/usbvision-core.c +1783 usbvision_set_video_format(20) error: doing dma on the stack (value)
+drivers/media/video/usbvision/usbvision-core.c +1848 usbvision_set_output(46) error: doing dma on the stack (value)
+drivers/media/video/usbvision/usbvision-core.c +2021 usbvision_set_compress_params(22) error: doing dma on the stack (value)
+drivers/media/video/usbvision/usbvision-core.c +2053 usbvision_set_compress_params(54) error: doing dma on the stack (value)
+drivers/media/video/usbvision/usbvision-core.c +2157 usbvision_set_input(80) error: doing dma on the stack (value)
+drivers/media/video/usbvision/usbvision-core.c +2234 usbvision_set_dram_settings(44) error: doing dma on the stack (value)
+drivers/media/video/usbvision/usbvision-i2c.c +372 usbvision_i2c_write_max4(17) error: doing dma on the stack (value)
+drivers/media/video/uvc/uvc_v4l2.c +659 uvc_v4l2_do_ioctl(178) error: doing dma on the stack (&input)
+drivers/media/video/uvc/uvc_v4l2.c +686 uvc_v4l2_do_ioctl(205) error: doing dma on the stack (&input)
+drivers/media/video/uvc/uvc_ctrl.c +1215 uvc_ctrl_add_ctrl(35) error: doing dma on the stack (&size)
+drivers/media/video/uvc/uvc_ctrl.c +1233 uvc_ctrl_add_ctrl(53) error: doing dma on the stack (&inf)
+drivers/mtd/nand/alauda.c +170 alauda_reset(7) error: doing dma on the stack (command)
+drivers/mtd/nand/alauda.c +226 __alauda_read_page(23) error: doing dma on the stack (command)
+drivers/mtd/nand/alauda.c +291 alauda_write_page(23) error: doing dma on the stack (command)
+drivers/mtd/nand/alauda.c +342 alauda_erase_block(22) error: doing dma on the stack (command)
+drivers/mtd/nand/alauda.c +344 alauda_erase_block(24) error: doing dma on the stack (buf)
+drivers/mtd/nand/alauda.c +372 alauda_read_oob(4) error: doing dma on the stack (ignore_buf)
+drivers/mtd/nand/alauda.c +380 alauda_isbad(5) error: doing dma on the stack (oob)
+drivers/mtd/nand/alauda.c +405 alauda_bounce_read(17) error: doing dma on the stack (oob)
+drivers/mtd/nand/alauda.c +438 alauda_read(13) error: doing dma on the stack (oob)
+drivers/mtd/nand/alauda.c +480 alauda_write(25) error: doing dma on the stack (oob)
+drivers/mtd/nand/alauda.c +541 alauda_init_media(12) error: doing dma on the stack (buf)
+drivers/mtd/nand/alauda.c +555 alauda_init_media(26) error: doing dma on the stack (buf)
+drivers/mtd/nand/alauda.c +564 alauda_init_media(35) error: doing dma on the stack (buf)
+drivers/mtd/nand/alauda.c +614 alauda_check_media(5) error: doing dma on the stack (buf)
+drivers/net/irda/mcs7780.c +584 mcs_speed_change(11) error: doing dma on the stack (&rval)
+drivers/net/irda/mcs7780.c +593 mcs_speed_change(20) error: doing dma on the stack (&rval)
+drivers/net/irda/mcs7780.c +645 mcs_speed_change(72) error: doing dma on the stack (&rval)
+drivers/net/usb/catc.c +840 catc_probe(77) error: doing dma on the stack (&i)
+drivers/net/usb/catc.c +842 catc_probe(79) error: doing dma on the stack (&i)
+drivers/net/usb/catc.c +843 catc_probe(80) error: doing dma on the stack (&i)
+drivers/net/usb/pegasus.c +343 read_mii_word(8) error: doing dma on the stack (data)
+drivers/net/usb/pegasus.c +346 read_mii_word(11) error: doing dma on the stack (data)
+drivers/net/usb/pegasus.c +353 read_mii_word(18) error: doing dma on the stack (&regdi)
+drivers/net/usb/pegasus.c +382 write_mii_word(9) error: doing dma on the stack (data)
+drivers/net/usb/pegasus.c +385 write_mii_word(12) error: doing dma on the stack (data)
+drivers/net/usb/pegasus.c +419 read_eprom_word(12) error: doing dma on the stack (&tmp)
+drivers/net/usb/pegasus.c +426 read_eprom_word(19) error: doing dma on the stack (&retdatai)
+drivers/net/usb/pegasus.c +503 set_ethernet_addr(5) error: doing dma on the stack (node_id)
+drivers/net/usb/pegasus.c +506 set_ethernet_addr(8) error: doing dma on the stack (node_id)
+drivers/net/usb/pegasus.c +567 enable_net_traffic(19) error: doing dma on the stack (data)
+drivers/net/usb/rtl8150.c +267 read_mii_word(10) error: doing dma on the stack (data)
+drivers/net/usb/rtl8150.c +268 read_mii_word(11) error: doing dma on the stack (&tmp)
+drivers/net/usb/rtl8150.c +270 read_mii_word(13) error: doing dma on the stack (data)
+drivers/net/usb/rtl8150.c +274 read_mii_word(17) error: doing dma on the stack (data)
+drivers/net/usb/rtl8150.c +292 write_mii_word(11) error: doing dma on the stack (data)
+drivers/net/usb/rtl8150.c +293 write_mii_word(12) error: doing dma on the stack (&tmp)
+drivers/net/usb/rtl8150.c +295 write_mii_word(14) error: doing dma on the stack (data)
+drivers/net/usb/rtl8150.c +355 rtl8150_reset(5) error: doing dma on the stack (&data)
+drivers/net/usb/rtl8150.c +357 rtl8150_reset(7) error: doing dma on the stack (&data)
+drivers/net/usb/rtl8150.c +685 enable_net_traffic(14) error: doing dma on the stack (&rcr)
+drivers/net/usb/rtl8150.c +686 enable_net_traffic(15) error: doing dma on the stack (&tcr)
+drivers/net/usb/rtl8150.c +687 enable_net_traffic(16) error: doing dma on the stack (&cr)
+drivers/net/usb/rtl8150.c +688 enable_net_traffic(17) error: doing dma on the stack (&msr)
+drivers/net/usb/rtl8150.c +697 disable_net_traffic(4) error: doing dma on the stack (&cr)
+drivers/net/usb/rtl8150.c +699 disable_net_traffic(6) error: doing dma on the stack (&cr)
+drivers/net/usb/rtl8150.c +766 set_carrier(5) error: doing dma on the stack (&tmp)
+drivers/net/usb/rtl8150.c +846 rtl8150_get_settings(14) error: doing dma on the stack (&bmcr)
+drivers/net/usb/rtl8150.c +847 rtl8150_get_settings(15) error: doing dma on the stack (&lpa)
+drivers/net/usb/hso.c +2892 hso_get_config_data(7) error: doing dma on the stack (config_data)
+drivers/net/wireless/at76c50x-usb.c +394 at76_usbdfu_download(27) error: doing dma on the stack (&dfu_state)
+drivers/net/wireless/at76c50x-usb.c +406 at76_usbdfu_download(39) error: doing dma on the stack (&dfu_stat_buf)
+drivers/net/wireless/at76c50x-usb.c +452 at76_usbdfu_download(85) error: doing dma on the stack (&dfu_stat_buf)
+drivers/net/wireless/zd1201.c +98 zd1201_fw_upload(49) error: doing dma on the stack (&ret)
+drivers/staging/comedi/drivers/dt9812.c +354 dt9812_read_info(13) error: doing dma on the stack (&cmd)
+drivers/staging/comedi/drivers/dt9812.c +380 dt9812_read_multiple_registers(13) error: doing dma on the stack (&cmd)
+drivers/staging/comedi/drivers/dt9812.c +407 dt9812_write_multiple_registers(14) error: doing dma on the stack (&cmd)
+drivers/staging/comedi/drivers/dt9812.c +426 dt9812_rmw_multiple_registers(12) error: doing dma on the stack (&cmd)
+drivers/staging/comedi/drivers/dt9812.c +442 dt9812_digital_in(9) error: doing dma on the stack (value)
+drivers/staging/comedi/drivers/dt9812.c +587 dt9812_analog_in(32) error: doing dma on the stack (val)
+drivers/staging/comedi/drivers/dt9812.c +766 dt9812_probe(73) error: doing dma on the stack (&fw)
+drivers/staging/comedi/drivers/dt9812.c +773 dt9812_probe(80) error: doing dma on the stack (&fw)
+drivers/staging/comedi/drivers/usbdux.c +741 usbduxsub_start(7) error: doing dma on the stack (local_transfer_buffer)
+drivers/staging/comedi/drivers/usbdux.c +774 usbduxsub_stop(8) error: doing dma on the stack (local_transfer_buffer)
+drivers/staging/comedi/drivers/usbduxfast.c +455 usbduxfastsub_start(7) error: doing dma on the stack (local_transfer_buffer)
+drivers/staging/comedi/drivers/usbduxfast.c +477 usbduxfastsub_stop(7) error: doing dma on the stack (local_transfer_buffer)
+drivers/staging/comedi/drivers/vmk80xx.c +321 vmk80xx_check_data_link(15) error: doing dma on the stack (tx)
+drivers/staging/comedi/drivers/vmk80xx.c +322 vmk80xx_check_data_link(16) error: doing dma on the stack (rx)
+drivers/staging/comedi/drivers/vmk80xx.c +342 vmk80xx_read_eeprom(15) error: doing dma on the stack (tx)
+drivers/staging/comedi/drivers/vmk80xx.c +343 vmk80xx_read_eeprom(16) error: doing dma on the stack (rx)
+drivers/staging/go7007/go7007-usb.c +623 go7007_usb_ezusb_write_interrupt(14) error: doing dma on the stack (&status_reg)
+drivers/staging/go7007/go7007-usb.c +927 go7007_usb_i2c_master_xfer(56) error: doing dma on the stack (buf)
+drivers/staging/go7007/go7007-usb.c +932 go7007_usb_i2c_master_xfer(61) error: doing dma on the stack (buf)
+drivers/staging/go7007/go7007-usb.c +1128 go7007_usb_probe(163) error: doing dma on the stack (data)
+drivers/staging/line6/driver.c +491 line6_read_data(20) error: doing dma on the stack (&len)
+drivers/staging/line6/driver.c +547 line6_write_data(19) error: doing dma on the stack (&status)
+drivers/staging/line6/toneport.c +204 toneport_init(37) error: doing dma on the stack (&ticks)
+drivers/staging/quatech_usb2/quatech_usb2.c +489 qt2_open(44) error: doing dma on the stack (&ChannelData)
+drivers/staging/quatech_usb2/quatech_usb2.c +663 qt2_close(31) error: doing dma on the stack (&lsr_value)
+drivers/staging/quatech_usb2/quatech_usb2.c +886 qt2_ioctl(26) error: doing dma on the stack (&mcr_value)
+drivers/staging/quatech_usb2/quatech_usb2.c +1104 qt2_tiocmget(18) error: doing dma on the stack (&mcr_value)
+drivers/staging/quatech_usb2/quatech_usb2.c +1107 qt2_tiocmget(21) error: doing dma on the stack (&msr_value)
+drivers/staging/quatech_usb2/quatech_usb2.c +1144 qt2_tiocmset(15) error: doing dma on the stack (&mcr_value)
+drivers/staging/rtl8192su/r8192U_core.c +332 write_nic_byte_E(6) error: doing dma on the stack (&data)
+drivers/staging/rtl8192su/r8192U_core.c +349 read_nic_byte_E(7) error: doing dma on the stack (&data)
+drivers/staging/rtl8192su/r8192U_core.c +368 write_nic_byte(7) error: doing dma on the stack (&data)
+drivers/staging/rtl8192su/r8192U_core.c +389 write_nic_word(8) error: doing dma on the stack (&data)
+drivers/staging/rtl8192su/r8192U_core.c +409 write_nic_dword(8) error: doing dma on the stack (&data)
+drivers/staging/rtl8192su/r8192U_core.c +430 read_nic_byte(7) error: doing dma on the stack (&data)
+drivers/staging/rtl8192su/r8192U_core.c +451 read_nic_word(7) error: doing dma on the stack (&data)
+drivers/staging/rtl8192su/r8192U_core.c +471 read_nic_word_E(7) error: doing dma on the stack (&data)
+drivers/staging/rtl8192su/r8192U_core.c +493 read_nic_dword(9) error: doing dma on the stack (&data)
+drivers/staging/rtl8192su/r8192U_core.c +2365 rtl8192SU_tx(233) error: doing dma on the stack (&zero)
+drivers/staging/rtl8192u/r8192U_core.c +290 write_nic_byte_E(6) error: doing dma on the stack (&data)
+drivers/staging/rtl8192u/r8192U_core.c +307 read_nic_byte_E(7) error: doing dma on the stack (&data)
+drivers/staging/rtl8192u/r8192U_core.c +326 write_nic_byte(7) error: doing dma on the stack (&data)
+drivers/staging/rtl8192u/r8192U_core.c +347 write_nic_word(8) error: doing dma on the stack (&data)
+drivers/staging/rtl8192u/r8192U_core.c +367 write_nic_dword(8) error: doing dma on the stack (&data)
+drivers/staging/rtl8192u/r8192U_core.c +388 read_nic_byte(7) error: doing dma on the stack (&data)
+drivers/staging/rtl8192u/r8192U_core.c +409 read_nic_word(7) error: doing dma on the stack (&data)
+drivers/staging/rtl8192u/r8192U_core.c +429 read_nic_word_E(7) error: doing dma on the stack (&data)
+drivers/staging/rtl8192u/r8192U_core.c +451 read_nic_dword(9) error: doing dma on the stack (&data)
+drivers/staging/rtl8192u/r8192U_core.c +2195 rtl8192_tx(188) error: doing dma on the stack (&zero)
+drivers/staging/serqt_usb2/serqt_usb2.c +909 qt_open(33) error: doing dma on the stack (&ChannelData)
+drivers/staging/udlfb/udlfb.h +61 dlfb_edid(8) error: doing dma on the stack (rbuf)
+drivers/staging/udlfb/udlfb.c +768 dlfb_probe(39) error: doing dma on the stack (rbuf)
+drivers/staging/winbond/wb35reg.c +141 Wb35Reg_WriteSync(20) error: doing dma on the stack (&RegisterValue)
+drivers/staging/winbond/wbusb.c +789 wb35_probe(15) error: doing dma on the stack (&ltmp)
+drivers/usb/class/usblp.c +594 usblp_ioctl(103) error: doing dma on the stack (&newChannel)
+drivers/usb/host/hwa-hc.c +308 __hwahc_op_bwa_set(22) error: doing dma on the stack (mas_le)
+drivers/usb/misc/legousbtower.c +387 tower_open(50) error: doing dma on the stack (&reset_reply)
+drivers/usb/misc/legousbtower.c +970 tower_probe(120) error: doing dma on the stack (&get_version_reply)
+drivers/usb/storage/alauda.c +469 alauda_check_media(6) error: doing dma on the stack (status)
+drivers/usb/storage/alauda.c +510 alauda_check_status2(9) error: doing dma on the stack (command)
+drivers/usb/storage/alauda.c +515 alauda_check_status2(14) error: doing dma on the stack (data)
+drivers/usb/storage/alauda.c +539 alauda_get_redu_data(8) error: doing dma on the stack (command)
+drivers/usb/storage/alauda.c +715 alauda_erase_block(11) error: doing dma on the stack (command)
+drivers/usb/storage/alauda.c +720 alauda_erase_block(16) error: doing dma on the stack (buf)
+drivers/usb/storage/alauda.c +746 alauda_read_block_raw(12) error: doing dma on the stack (command)
+drivers/usb/storage/alauda.c +797 alauda_write_block(11) error: doing dma on the stack (command)
+drivers/w1/masters/ds2490.c +361 ds_recv_data(24) error: doing dma on the stack (buf)
+drivers/w1/masters/ds2490.c +456 ds_wait_status(6) error: doing dma on the stack (buf)
+drivers/w1/masters/ds2490.c +616 ds_write_byte(17) error: doing dma on the stack (&rbyte)
+drivers/w1/masters/ds2490.c +774 ds9490r_touch_bit(5) error: doing dma on the stack (&ret)
+drivers/w1/masters/ds2490.c +815 ds9490r_read_byte(6) error: doing dma on the stack (&byte)
+drivers/watchdog/pcwd_usb.c +250 usb_pcwd_send_command(23) error: doing dma on the stack (buf)
