@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815Ab0A0UYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922Ab0A0UZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754815Ab0A0UYx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 15:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690Ab0A0UYr
+	id S1754922Ab0A0UZL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 15:25:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639Ab0A0UYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 15:24:47 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:35046 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754653Ab0A0UYn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 Jan 2010 15:24:43 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:52868 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754632Ab0A0UYl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 15:24:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=b7IvmNMmKveqaV/qc1bzajZKJzfdyTl30rZTmRfChy9Qzr3izqdGJj/zBOlyfAaXQn
-         X3S2hMPleYraTEamQip9t53xXLn0aW5Wq9y6xn6hX9AlzuglciRw+PhUbwXS5+h3g6o/
-         U/6C5hUofj5PxBtnAsee0jHnO8T9Ln0cDSA0A=
+        b=F6NMlYFR+d6BDXkY2XIkikoEfdgU3WoyDOWzYIIDLqy81rKQ0AZL5kyEQmgAvrs+bY
+         RySkLkPyEArTKqGZDasTjLPBzrBUj4flawiONh4MJoAxfv1AbL0bufi1SU71V3SM83vG
+         /Od6xRbvaUHU/e+gXhvrRiCToE6qD3LxwpuwI=
 From: John Kacur <jkacur@redhat.com>
 To: Clark Williams <williams@redhat.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>, Carsten Emde <C.Emde@osadl.org>,
        rt-users <linux-rt-users@vger.kernel.org>,
        John Kacur <jkacur@redhat.com>
-Subject: [PATCH 5/5] rt-tests: Automatically generate dependencies.
-Date: Wed, 27 Jan 2010 21:24:28 +0100
-Message-Id: <1264623868-23595-6-git-send-email-jkacur@redhat.com>
+Subject: [PATCH 3/5] rt-tests: Remove the ret variable, the end label and the goto.
+Date: Wed, 27 Jan 2010 21:24:26 +0100
+Message-Id: <1264623868-23595-4-git-send-email-jkacur@redhat.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264623868-23595-1-git-send-email-jkacur@redhat.com>
 References: <1264623868-23595-1-git-send-email-jkacur@redhat.com>
@@ -33,62 +33,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Automatically generate dependencies. This will tell the make file that
-cyclictest is dependent on rt_numa.h for example, and that if a change
-is made there, then cyclictest needs to be remade.
+Remove the ret variable, the end lable and the goto. We already have
+inconsistent exit points for the function, and the end lable wasn't strictly
+for errors. Directly returning simplifies and shortens the code.
 
 Signed-off-by: John Kacur <jkacur@redhat.com>
 ---
- Makefile |   20 ++++++++++++++++----
- 1 files changed, 16 insertions(+), 4 deletions(-)
+ src/cyclictest/rt_numa.h |   14 +++++---------
+ 1 files changed, 5 insertions(+), 9 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 6156c03..4be0838 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,8 +1,10 @@
- VERSION_STRING = 0.63
+diff --git a/src/cyclictest/rt_numa.h b/src/cyclictest/rt_numa.h
+index 8d44097..ac2aca2 100644
+--- a/src/cyclictest/rt_numa.h
++++ b/src/cyclictest/rt_numa.h
+@@ -73,7 +73,7 @@ static int rt_numa_numa_node_of_cpu(int cpu)
+ static int rt_numa_numa_node_of_cpu(int cpu)
+ {
+ 	unsigned char cpumask[16];
+-        int node, ret, idx, bit;
++        int node, idx, bit;
+ 	int max_node, max_cpus;
  
--TARGETS	= cyclictest signaltest pi_stress \
--	  rt-migrate-test ptsematest sigwaittest svsematest \
--	  sendme pip
-+sources = cyclictest.c signaltest.c pi_stress.c rt-migrate-test.c	\
-+	  ptsematest.c sigwaittest.c svsematest.c sendme.c pip.c
-+
-+TARGETS = $(sources:.c=)
-+
- LIBS 	= -lrt -lpthread
- EXTRA_LIBS ?= -ldl	# for get_cpu
- DESTDIR	?=
-@@ -39,9 +41,19 @@ VPATH	+= src/lib
- %.o: %.c
- 	$(CC) -D VERSION_STRING=$(VERSION_STRING) -c $< $(CFLAGS)
+ 	max_node = numa_max_node();
+@@ -88,19 +88,15 @@ static int rt_numa_numa_node_of_cpu(int cpu)
+ 	idx = cpu / 8;
+ 	bit = cpu % 8;
  
-+# Pattern rule to generate dependency files from .c files
-+%.d: %.c
-+	@set -e; rm -f $@; \
-+	$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
-+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-+	rm -f $@.$$$$
-+
- .PHONY: all
- all: $(TARGETS) hwlatdetect
+-        for (node = 0; node <= max_node; node++){
++        for (node = 0; node <= max_node; node++) {
+ 		if (numa_node_to_cpus(node, (void *) cpumask, sizeof(cpumask)))
+ 			return -1;
  
-+# Include dependency files, automatically generate them if needed.
-+-include $(sources:.c=.d)
-+
- cyclictest: cyclictest.o rt-utils.o
- 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(NUMA_LIBS)
+-		if (cpumask[idx] & (1<<bit)) {
+-			ret = node;
+-			goto end;
+-		}
++		if (cpumask[idx] & (1<<bit))
++			return node;
+         }
+-        ret = -1;
+         errno = EINVAL;
+-end:
+-        return ret;
++	return -1;
+ }
  
-@@ -73,7 +85,7 @@ sendme: sendme.o rt-utils.o rt-get_cpu.o
- pip: pip.o error.o rt-utils.o
- 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
- 
--CLEANUP  = $(TARGETS) *.o .depend *.*~ *.orig *.rej rt-tests.spec
-+CLEANUP  = $(TARGETS) *.o .depend *.*~ *.orig *.rej rt-tests.spec *.d
- CLEANUP += $(if $(wildcard .git), ChangeLog)
- 
- .PHONY: clean
+ #endif	/* LIBNUMA_API_VERSION */
 -- 
 1.6.6
 
