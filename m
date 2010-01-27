@@ -1,55 +1,118 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980Ab0AXRp7 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sun, 24 Jan 2010 12:45:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449Ab0AXRp4
+	id S1754712Ab0A0NR7 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Wed, 27 Jan 2010 08:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648Ab0A0NRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jan 2010 12:45:56 -0500
-Received: from hope.its.csufresno.edu ([129.8.5.117]:49743 "EHLO
-	hope.its.csufresno.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753214Ab0AXRp4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jan 2010 12:45:56 -0500
-X-Greylist: delayed 591 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jan 2010 12:45:56 EST
-Date: Sun, 24 Jan 2010 09:36:02 -0800
-From: David C Yang <dcy14@csufresno.edu>
-Subject: LOAN OFFER GUARANTEED
-Reply-to: joebarringo.financialservice@gmail.com
-Message-id: <e01ec8246466.6466e01ec824@cvip.net>
-MIME-version: 1.0
-X-Mailer: iPlanet Messenger Express 5.2 HotFix 2.17 (built Mar 28 2007)
-Content-type: text/plain; charset=us-ascii
-Content-language: en
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-Accept-Language: en
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 27 Jan 2010 08:17:50 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60562 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754608Ab0A0NRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 08:17:48 -0500
+Date: Wed, 27 Jan 2010 13:17:31 GMT
+From: tip-bot for Dimitri Sivanich <sivanich@sgi.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+        steiner@sgi.com, tglx@linutronix.de, sivanich@sgi.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+        steiner@sgi.com, tglx@linutronix.de, sivanich@sgi.com, mingo@elte.hu
+In-Reply-To: <20100122154140.GB4975@sgi.com>
+References: <20100122154140.GB4975@sgi.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, UV: Fix RTC latency bug by reading replicated cachelines
+Message-ID: <tip-aca3bb5910119d4cf6c28568a642582efb4cc14a@git.kernel.org>
+Git-Commit-ID: aca3bb5910119d4cf6c28568a642582efb4cc14a
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 27 Jan 2010 13:17:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  aca3bb5910119d4cf6c28568a642582efb4cc14a
+Gitweb:     http://git.kernel.org/tip/aca3bb5910119d4cf6c28568a642582efb4cc14a
+Author:     Dimitri Sivanich <sivanich@sgi.com>
+AuthorDate: Fri, 22 Jan 2010 09:41:40 -0600
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 27 Jan 2010 11:33:53 +0100
 
+x86, UV: Fix RTC latency bug by reading replicated cachelines
 
-Attention!!!
+For SGI UV node controllers (HUB) rev 2.0 or greater, use
+replicated cachelines to read the RTC timer.  This optimization
+allows faster simulataneous reads from a given socket.
 
-We wish to give out loan to who ever that is
-in need of loan.If interested, Contact this
-agent, Names: Mr Joe Barringo, and
-PLEASE REPLY VIA THIS Email:
-joebarringo.financialservice@gmail.com
-and fill these information's below.
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+Cc: Jack Steiner <steiner@sgi.com>
+LKML-Reference: <20100122154140.GB4975@sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/uv_time.c |   13 ++++++++++++-
+ drivers/char/uv_mmtimer.c |   18 +++++++++++-------
+ 2 files changed, 23 insertions(+), 8 deletions(-)
 
-Your Names:...........
-Amount Needed:...........
-Loan Duration:................
-Phone Number:............
-Country:...............
-Occupation.............
-Monthly income level.....
-
-Email:
-joebarringo.financialservice@gmail.com
-
-Regards,
-
-Management.
-
+diff --git a/arch/x86/kernel/uv_time.c b/arch/x86/kernel/uv_time.c
+index 3c84aa0..2b75ef6 100644
+--- a/arch/x86/kernel/uv_time.c
++++ b/arch/x86/kernel/uv_time.c
+@@ -282,10 +282,21 @@ static int uv_rtc_unset_timer(int cpu, int force)
+ 
+ /*
+  * Read the RTC.
++ *
++ * Starting with HUB rev 2.0, the UV RTC register is replicated across all
++ * cachelines of it's own page.  This allows faster simultaneous reads
++ * from a given socket.
+  */
+ static cycle_t uv_read_rtc(struct clocksource *cs)
+ {
+-	return (cycle_t)uv_read_local_mmr(UVH_RTC);
++	unsigned long offset;
++
++	if (uv_get_min_hub_revision_id() == 1)
++		offset = 0;
++	else
++		offset = (uv_blade_processor_id() * L1_CACHE_BYTES) % PAGE_SIZE;
++
++	return (cycle_t)uv_read_local_mmr(UVH_RTC | offset);
+ }
+ 
+ /*
+diff --git a/drivers/char/uv_mmtimer.c b/drivers/char/uv_mmtimer.c
+index 867b67b..c7072ba 100644
+--- a/drivers/char/uv_mmtimer.c
++++ b/drivers/char/uv_mmtimer.c
+@@ -89,13 +89,17 @@ static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
+ 	switch (cmd) {
+ 	case MMTIMER_GETOFFSET:	/* offset of the counter */
+ 		/*
+-		 * UV RTC register is on its own page
++		 * Starting with HUB rev 2.0, the UV RTC register is
++		 * replicated across all cachelines of it's own page.
++		 * This allows faster simultaneous reads from a given socket.
++		 *
++		 * The offset returned is in 64 bit units.
+ 		 */
+-		if (PAGE_SIZE <= (1 << 16))
+-			ret = ((UV_LOCAL_MMR_BASE | UVH_RTC) & (PAGE_SIZE-1))
+-				/ 8;
++		if (uv_get_min_hub_revision_id() == 1)
++			ret = 0;
+ 		else
+-			ret = -ENOSYS;
++			ret = ((uv_blade_processor_id() * L1_CACHE_BYTES) %
++					PAGE_SIZE) / 8;
+ 		break;
+ 
+ 	case MMTIMER_GETRES: /* resolution of the clock in 10^-15 s */
+@@ -115,8 +119,8 @@ static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
+ 		ret = hweight64(UVH_RTC_REAL_TIME_CLOCK_MASK);
+ 		break;
+ 
+-	case MMTIMER_MMAPAVAIL: /* can we mmap the clock into userspace? */
+-		ret = (PAGE_SIZE <= (1 << 16)) ? 1 : 0;
++	case MMTIMER_MMAPAVAIL:
++		ret = 1;
+ 		break;
+ 
+ 	case MMTIMER_GETCOUNTER:
