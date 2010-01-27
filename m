@@ -1,126 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464Ab0A0COG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683Ab0A0CSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464Ab0A0COG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 21:14:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847Ab0A0COF
+	id S1754683Ab0A0CSe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 21:18:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788Ab0A0CSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 21:14:05 -0500
-Received: from waste.org ([173.11.57.241]:52478 "EHLO waste.org"
+	Tue, 26 Jan 2010 21:18:33 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:59663 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753716Ab0A0COF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 21:14:05 -0500
-Subject: Re: UBIFS assert failed in ubifs_dirty_inode
-From: Matt Mackall <mpm@selenic.com>
-To: Jeff Angielski <jeff@theptrgroup.com>
-Cc: dedekind1@gmail.com, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-In-Reply-To: <4B5F9A78.7080000@theptrgroup.com>
-References: <4B591573.60602@theptrgroup.com>
-	 <1264480808.2401.78.camel@localhost.localdomain>
-	 <1264484928.3536.1017.camel@calx> <1264500214.3867.21.camel@localhost>
-	 <4B5F9A78.7080000@theptrgroup.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 26 Jan 2010 20:13:53 -0600
-Message-ID: <1264558433.3536.1543.camel@calx>
+	id S932150Ab0A0CSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 21:18:32 -0500
+Date: Wed, 27 Jan 2010 13:18:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ron Mercer <ron.mercer@qlogic.com>,
+       Breno Leitao <leitao@linux.vnet.ibm.com>
+Subject: linux-next: net tree build failure
+Message-Id: <20100127131827.6aea9bf5.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-26 at 20:44 -0500, Jeff Angielski wrote:
-> Artem Bityutskiy wrote:
-> > On Mon, 2010-01-25 at 23:48 -0600, Matt Mackall wrote:
-> >> Hmm. I'd just as soon drop it entirely. Here's a patch. Herbert, you
-> >> want to send this through your crypto tree?
-> >>
-> >>
-> >> random: drop weird m_time/a_time manipulation
-> >>
-> >> No other driver does anything remotely like this that I know of except
-> >> for the tty drivers, and I can't see any reason for random/urandom to do
-> >> it. In fact, it's a (trivial, harmless) timing information leak. And
-> >> obviously, it generates power- and flash-cycle wasting I/O, especially
-> >> if combined with something like hwrngd. Also, it breaks ubifs's
-> >> expectations.
-> >>
-> >> Signed-off-by: Matt Mackall <mpm@selenic.com>
-> >>
-> >> diff -r 29db0c391ce8 drivers/char/random.c
-> >> --- a/drivers/char/random.c	Sun Jan 17 11:01:16 2010 -0800
-> >> +++ b/drivers/char/random.c	Mon Jan 25 23:32:00 2010 -0600
-> >> @@ -1051,12 +1051,6 @@
-> >>  				/* like a named pipe */
-> >>  	}
-> >>  
-> >> -	/*
-> >> -	 * If we gave the user some bytes, update the access time.
-> >> -	 */
-> >> -	if (count)
-> >> -		file_accessed(file);
-> >> -
-> >>  	return (count ? count : retval);
-> >>  }
-> >>  
-> >> @@ -1116,8 +1110,6 @@
-> >>  	if (ret)
-> >>  		return ret;
-> >>  
-> >> -	inode->i_mtime = current_fs_time(inode->i_sb);
-> >> -	mark_inode_dirty(inode);
-> >>  	return (ssize_t)count;
-> >>  }
-> > 
-> > It may brake other FSes expectations, theoretically, as well.
-> > 
-> > Anyway, I'm perfectly fine if this is removed.
-> > 
-> > Jeff, could you please try Matt's patch and report back if you still
-> > have issues or not. If no, you can use this as a temporary work-around
-> > until a proper fix hits upstream or ubifs-2.6.git.
-> 
-> Matt's patch did not compile as written.  I tried to implement what I 
-> think he was trying to do and created this patch (it seems to match the 
-> guts of what inode_setattr() was looking for):
-> 
-> 
-> diff --git a/drivers/char/random.c b/drivers/char/random.c
-> index 8258982..70f16c7 100644
-> --- a/drivers/char/random.c
-> +++ b/drivers/char/random.c
-> @@ -1108,6 +1108,7 @@ static ssize_t random_write(struct file *file, 
-> const char __user *buffer,
->   {
->   	size_t ret;
->   	struct inode *inode = file->f_path.dentry->d_inode;
-> +	struct iattr attr;
-> 
->   	ret = write_pool(&blocking_pool, buffer, count);
->   	if (ret)
-> @@ -1116,8 +1117,12 @@ static ssize_t random_write(struct file *file, 
-> const char __user *buffer,
->   	if (ret)
->   		return ret;
-> 
-> -	inode->i_mtime = current_fs_time(inode->i_sb);
-> -	mark_inode_dirty(inode);
-> +	attr.ia_mtime = current_fs_time(inode->i_sb);
-> +	attr.ia_valid = ATTR_MTIME;
-> +	ret = inode_setattr(inode, &attr);
-> +	if (ret)
-> +		return ret;
-> +
->   	return (ssize_t)count;
->   }
-> 
-> However, this patch does not fix the problem.  I still see the same 
-> errors.  Matt, is this what you were trying to do?
+Hi Dave,
 
-That doesn't look anything like my patch? And mine was test compiled.
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
+drivers/net/qlge/qlge_main.c: In function 'ql_init_device':
+drivers/net/qlge/qlge_main.c:4502: error: label 'err_out' used but not defined
+
+Caused by commit 8aae2600030f54494f9061d2cde141802d774be9 ("qlge: Add
+basic firmware dump") interacting with commit
+4f9a91c81273b66afe0b6a9be460b47581b28246 ("qlge: Only free resources if
+they were allocated") from Linus' tree.
+
+I applied the following merge fixup.
 -- 
-http://selenic.com : development and support for Mercurial and Linux
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 27 Jan 2010 13:10:17 +1100
+Subject: [PATCH] net: merge fixup for qlge_main
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/net/qlge/qlge_main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/qlge/qlge_main.c b/drivers/net/qlge/qlge_main.c
+index 4adca94..5be3ae2 100644
+--- a/drivers/net/qlge/qlge_main.c
++++ b/drivers/net/qlge/qlge_main.c
+@@ -4499,7 +4499,7 @@ static int __devinit ql_init_device(struct pci_dev *pdev,
+ 		if (qdev->mpi_coredump == NULL) {
+ 			dev_err(&pdev->dev, "Coredump alloc failed.\n");
+ 			err = -ENOMEM;
+-			goto err_out;
++			goto err_out2;
+ 		}
+ 		if (qlge_force_coredump)
+ 			set_bit(QL_FRC_COREDUMP, &qdev->flags);
+-- 
+1.6.6
 
