@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561Ab0A0Qqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556Ab0A0QtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755561Ab0A0Qqf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 11:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373Ab0A0QqX
+	id S1755556Ab0A0QtP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 11:49:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400Ab0A0QtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 11:46:23 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:45439 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754062Ab0A0QqW (ORCPT
+	Wed, 27 Jan 2010 11:49:14 -0500
+Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:56790 "HELO
+	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755373Ab0A0QtM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 11:46:22 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: rjw@sisk.pl
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH 2/2] PM / Hibernate: swap, remove useless check from swsusp_read
-Date: Wed, 27 Jan 2010 17:46:18 +0100
-Message-Id: <1264610778-13242-2-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.6.1
-In-Reply-To: <1264610778-13242-1-git-send-email-jslaby@suse.cz>
-References: <1264610778-13242-1-git-send-email-jslaby@suse.cz>
+	Wed, 27 Jan 2010 11:49:12 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=jxlvH7S+oKH2Vs57hC+ZI07f5G44J2MISEugHWfIGOL0lTGZ3CjSComaBQkImGCHfx00MPCC9ENtAj6LQwD0ACBgwLyBO4958DXVjV71/ZY2j6bS3uxL5cPIm7n0lbZX;
+Date: Wed, 27 Jan 2010 08:48:54 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: davidjon@xenontk.org
+Cc: yakui.zhao@intel.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Fix For Korg Bug #14897 (GM45 Display Flicker)
+Message-ID: <20100127084854.6da89284@jbarnes-piketon>
+In-Reply-To: <4B60080E.2000508@xenontk.org>
+References: <4B60080E.2000508@xenontk.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It will never reach here if the sws_resume_bdev is erratic.
-swsusp_read is called only from software_resume, but after
-swsusp_check which would catch the error state.
+On Wed, 27 Jan 2010 15:01:58 +0530
+David John <davidjon@xenontk.org> wrote:
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>
----
- kernel/power/swap.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+> Hi Jesse, Yakui,
+> 
+> Sorry for the delay, but I was busy with other work last week. I got
+> some time to look into this on Monday and the problem seems to be this:
+> 
+> With the external display connected on VGA, intel_update_watermarks
+> calls update_wm a couple of times in sequence with the following params:
+> 
+> 1) planea_clock = 148500 planeb_clock = 0, sr_hdisplay=1920 (VGA)
+> 2) planea_clock = 148500 planeb_clock = 72330, sr_hdisplay=1366 (LVDS)
+> 
+> In update_wm (in my case g4x_update_wm), for 1) sr_entries is calculated
+> correctly and self refresh is enabled. For 2) sr_entries remains zero
+> and the SR watermark is set as such. However, SR remains
+> active. On mode switch to console, this causes a FIFO underrun and the
+> display flicker.
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 09b2b0a..1d57573 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -657,10 +657,6 @@ int swsusp_read(unsigned int *flags_p)
- 	struct swsusp_info *header;
- 
- 	*flags_p = swsusp_header->flags;
--	if (IS_ERR(resume_bdev)) {
--		pr_debug("PM: Image device not initialised\n");
--		return PTR_ERR(resume_bdev);
--	}
- 
- 	memset(&snapshot, 0, sizeof(struct snapshot_handle));
- 	error = snapshot_write_next(&snapshot, PAGE_SIZE);
+Ugg that's not supposed to happen.  With both planes enabled
+self-refresh shouldn't be active afaik.  I guess we'll actually have to
+flip the bit and turn it off in that case.
+
+> The solution that I see is to simply disable SR if more than one pipe is
+> enabled. I've written a patch that does this. Also another point is that
+> the G45 docs state that a particular sequence has to be followed if SR
+> is to be used when only one pipe is active for Cantiga (Pg 30, G45 Vol
+> 3). I didn't see any code doing this, but I did not see any untoward
+> behaviour either, with only my patch applied.
+
+Great, I'll look for it and ack it.
+
+> I've updated the patch to fix i965 and i9xx as I assume the same problem
+> will occur on those chipsets as well, but this has _not_been tested as I
+> don't have the relevant platforms.
+
+Yeah, it's probably the safe thing to do.
+
+> 
+> Patch follows this mail. Please let me know if any changes are required.
+> 
+> The VGA output powering-on on mode change mentioned in my bug report is
+> a separate DRM bug for which I will send a patch later.
+
+Thanks a lot.
+
 -- 
-1.6.6.1
-
+Jesse Barnes, Intel Open Source Technology Center
