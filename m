@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125Ab0A0K5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174Ab0A0K6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125Ab0A0K5F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 05:57:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713Ab0A0K5E
+	id S1754174Ab0A0K6B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 05:58:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806Ab0A0K6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 05:57:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42483 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751845Ab0A0K5B (ORCPT
+	Wed, 27 Jan 2010 05:58:00 -0500
+Received: from smtp.mujha-vel.cz ([81.30.225.246]:44111 "EHLO
+	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713Ab0A0K57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 05:57:01 -0500
-Date: Wed, 27 Jan 2010 02:55:42 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Chris Wilson <chris@chris-wilson.co.uk>,
-       Roman Jarosz <kedgedev@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       A Rojas <nqn1976list@gmail.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
-       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: OOM-Killer kills too much with 2.6.32.2
-In-Reply-To: <84144f021001270156x7613c8b1ha0084b0abf604775@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1001270252290.24253@localhost.localdomain>
-References: <2f11576a1001260503o5f987512n3c39ae1c3caa43f3@mail.gmail.com>  <89khjo$egh4fr@orsmga002.jf.intel.com>  <20100127091903.6AD5.A69D9226@jp.fujitsu.com> <84144f021001270156x7613c8b1ha0084b0abf604775@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 27 Jan 2010 05:57:59 -0500
+From: Jiri Slaby <jslaby@suse.cz>
+To: rjw@sisk.pl
+Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com
+Subject: [PATCH 2/2] PM / Hibernate: swap, remove useless check from swsusp_read
+Date: Wed, 27 Jan 2010 11:57:55 +0100
+Message-Id: <1264589875-17045-2-git-send-email-jslaby@suse.cz>
+X-Mailer: git-send-email 1.6.6.1
+In-Reply-To: <1264589875-17045-1-git-send-email-jslaby@suse.cz>
+References: <1264589875-17045-1-git-send-email-jslaby@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It will never reach here if the sws_resume_bdev is erratic.
+swsusp_read is called only from software_resume, but after
+swsusp_check which would catch the error state.
 
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+---
+ kernel/power/swap.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-On Wed, 27 Jan 2010, Pekka Enberg wrote:
-> 
-> Yes, we're very late in 2.6.33 cycle. Chris/Jesse, please apply
-> Motohiro-san's patch or revert the commit.
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 09b2b0a..1d57573 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -657,10 +657,6 @@ int swsusp_read(unsigned int *flags_p)
+ 	struct swsusp_info *header;
+ 
+ 	*flags_p = swsusp_header->flags;
+-	if (IS_ERR(resume_bdev)) {
+-		pr_debug("PM: Image device not initialised\n");
+-		return PTR_ERR(resume_bdev);
+-	}
+ 
+ 	memset(&snapshot, 0, sizeof(struct snapshot_handle));
+ 	error = snapshot_write_next(&snapshot, PAGE_SIZE);
+-- 
+1.6.6.1
 
-I assume you're talking about reverting commit 07f73f691 ("drm/i915: 
-Improve behaviour under memory pressure").
-
-Motohiro-san's patch didn't have a sign-off or a commit message. I guess I 
-could cobble some commit message together from the thread, but it would be 
-good if somebody involved with the code were to do so. Please?
-
-		Linus
