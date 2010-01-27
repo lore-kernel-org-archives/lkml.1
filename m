@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125Ab0A0I2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953Ab0A0I2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125Ab0A0I2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 03:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787Ab0A0I21
+	id S1752953Ab0A0I2d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 03:28:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709Ab0A0I23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 03:28:27 -0500
+	Wed, 27 Jan 2010 03:28:29 -0500
 Received: from mail-iw0-f186.google.com ([209.85.223.186]:51210 "EHLO
 	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752674Ab0A0I2T (ORCPT
+	with ESMTP id S1752756Ab0A0I2Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 03:28:19 -0500
+	Wed, 27 Jan 2010 03:28:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=jrfxm3+rmdYJDq/OqS3miYLHsOF4x3iNvx7qhP8A0gERIa4SLpdPhPuwiUrgWPSKi8
-         w2sFqlfRzfstZUlXFrlRtLqEMBwbIKj2QziU2L2zro/Ws/5Bp6zfUTky+SnB54yVPucy
-         PxkOqAk2zQuWJgDll107LiHb2a2YpMJfnvR+A=
+        b=cpf907sMpY2Y0hIWlEyzRrXvhdLbT228l3FnHMxHh4jB/cSXRz68BEyWRonRmj+cQn
+         oHrOKG7tfDHV2VJc//Qh+sSFmKkOBF3hc3QLWwZaVK3EPgnLHdPRpaSU3bJa2FvWHbR6
+         GxTmyO/2y6Lf4c3oD1A5yxjOLMfffy50C5m+g=
 From: Tom Zanussi <tzanussi@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, fweisbec@gmail.com, rostedt@goodmis.org,
        k-keiichi@bx.jp.nec.com
-Subject: [PATCH 07/12] perf trace/scripting: add syscall tracing scripts
-Date: Wed, 27 Jan 2010 02:27:58 -0600
-Message-Id: <1264580883-15324-8-git-send-email-tzanussi@gmail.com>
+Subject: [PATCH 12/12] perf trace/scripting: add perf-trace-python Documentation
+Date: Wed, 27 Jan 2010 02:28:03 -0600
+Message-Id: <1264580883-15324-13-git-send-email-tzanussi@gmail.com>
 X-Mailer: git-send-email 1.6.4.GIT
 In-Reply-To: <1264580883-15324-1-git-send-email-tzanussi@gmail.com>
 References: <1264580883-15324-1-git-send-email-tzanussi@gmail.com>
@@ -30,197 +30,168 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds a set of scripts for that aggregate system call totals and system
-call errors.  Most are Python scripts that also test basic
-functionality of the new Python engine, but there's also one Perl
-script added for comparison and for reference in some new
-Documentation contained in a later patch.
+Also small update to perf-trace-perl and perf-trace docs.
 
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 ---
- tools/perf/Makefile                                |    3 +
- .../perf/scripts/perl/bin/check-perf-trace-record  |    2 +-
- tools/perf/scripts/perl/bin/failed-syscalls-record |    2 +
- tools/perf/scripts/perl/bin/failed-syscalls-report |    4 +
- tools/perf/scripts/perl/failed-syscalls.pl         |   38 +++++++++
- .../python/bin/failed-syscalls-by-pid-record       |    2 +
- .../python/bin/failed-syscalls-by-pid-report       |    4 +
- .../python/bin/syscall-counts-by-pid-record        |    2 +
- .../python/bin/syscall-counts-by-pid-report        |    4 +
- .../perf/scripts/python/bin/syscall-counts-record  |    2 +
- .../perf/scripts/python/bin/syscall-counts-report  |    4 +
- tools/perf/scripts/python/check-perf-trace.py      |   83 ++++++++++++++++++++
- .../perf/scripts/python/failed-syscalls-by-pid.py  |   68 ++++++++++++++++
- tools/perf/scripts/python/syscall-counts-by-pid.py |   64 +++++++++++++++
- tools/perf/scripts/python/syscall-counts.py        |   58 ++++++++++++++
- 15 files changed, 339 insertions(+), 1 deletions(-)
- create mode 100644 tools/perf/scripts/perl/bin/failed-syscalls-record
- create mode 100644 tools/perf/scripts/perl/bin/failed-syscalls-report
- create mode 100644 tools/perf/scripts/perl/failed-syscalls.pl
- create mode 100644 tools/perf/scripts/python/bin/failed-syscalls-by-pid-record
- create mode 100644 tools/perf/scripts/python/bin/failed-syscalls-by-pid-report
- create mode 100644 tools/perf/scripts/python/bin/syscall-counts-by-pid-record
- create mode 100644 tools/perf/scripts/python/bin/syscall-counts-by-pid-report
- create mode 100644 tools/perf/scripts/python/bin/syscall-counts-record
- create mode 100644 tools/perf/scripts/python/bin/syscall-counts-report
- create mode 100644 tools/perf/scripts/python/check-perf-trace.py
- create mode 100644 tools/perf/scripts/python/failed-syscalls-by-pid.py
- create mode 100644 tools/perf/scripts/python/syscall-counts-by-pid.py
- create mode 100644 tools/perf/scripts/python/syscall-counts.py
+ tools/perf/Documentation/perf-trace-perl.txt   |    3 +-
+ tools/perf/Documentation/perf-trace-python.txt |  624 ++++++++++++++++++++++++
+ tools/perf/Documentation/perf-trace.txt        |   11 +-
+ 3 files changed, 636 insertions(+), 2 deletions(-)
+ create mode 100644 tools/perf/Documentation/perf-trace-python.txt
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 19d535f..25664d5 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -1028,7 +1028,10 @@ install: all
- 	$(INSTALL) scripts/perl/*.pl -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl'
- 	$(INSTALL) scripts/perl/bin/* -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl/bin'
- 	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/python/Perf-Trace-Util/lib/Perf/Trace'
-+	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/python/bin'
- 	$(INSTALL) scripts/python/Perf-Trace-Util/lib/Perf/Trace/* -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/python/Perf-Trace-Util/lib/Perf/Trace'
-+	$(INSTALL) scripts/python/*.py -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/python'
-+	$(INSTALL) scripts/python/bin/* -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/python/bin'
+diff --git a/tools/perf/Documentation/perf-trace-perl.txt b/tools/perf/Documentation/perf-trace-perl.txt
+index c5f55f4..d2206c3 100644
+--- a/tools/perf/Documentation/perf-trace-perl.txt
++++ b/tools/perf/Documentation/perf-trace-perl.txt
+@@ -8,7 +8,7 @@ perf-trace-perl - Process trace data with a Perl script
+ SYNOPSIS
+ --------
+ [verse]
+-'perf trace' [-s [lang]:script[.ext] ]
++'perf trace' [-s [Perl]:script[.pl] ]
  
- ifdef BUILT_INS
- 	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perfexec_instdir_SQ)'
-diff --git a/tools/perf/scripts/perl/bin/check-perf-trace-record b/tools/perf/scripts/perl/bin/check-perf-trace-record
-index f439cc3..e6cb147 100644
---- a/tools/perf/scripts/perl/bin/check-perf-trace-record
-+++ b/tools/perf/scripts/perl/bin/check-perf-trace-record
-@@ -1,2 +1,2 @@
- #!/bin/bash
--perf record -c 1 -f -a -M -R -e kmem:kmalloc -e irq:softirq_entry -e kmem:kmalloc
-+perf record -c 1 -f -a -M -R -e kmem:kmalloc -e irq:softirq_entry -e kmem:kfree
-diff --git a/tools/perf/scripts/perl/bin/failed-syscalls-record b/tools/perf/scripts/perl/bin/failed-syscalls-record
+ DESCRIPTION
+ -----------
+@@ -213,6 +213,7 @@ Various utility functions for use with perf trace:
+   nsecs_nsecs($nsecs) - returns nsecs remainder given nsecs
+   nsecs_str($nsecs) - returns printable string in the form secs.nsecs
+   avg($total, $n) - returns average given a sum and a total number of values
++  syscall_name($id) - returns the syscall name for the specified syscall_nr
+ 
+ SEE ALSO
+ --------
+diff --git a/tools/perf/Documentation/perf-trace-python.txt b/tools/perf/Documentation/perf-trace-python.txt
 new file mode 100644
-index 0000000..f8885d3
+index 0000000..119d5de
 --- /dev/null
-+++ b/tools/perf/scripts/perl/bin/failed-syscalls-record
-@@ -0,0 +1,2 @@
-+#!/bin/bash
-+perf record -c 1 -f -a -M -R -e raw_syscalls:sys_exit
-diff --git a/tools/perf/scripts/perl/bin/failed-syscalls-report b/tools/perf/scripts/perl/bin/failed-syscalls-report
-new file mode 100644
-index 0000000..8bfc660
---- /dev/null
-+++ b/tools/perf/scripts/perl/bin/failed-syscalls-report
-@@ -0,0 +1,4 @@
-+#!/bin/bash
-+# description: system-wide failed syscalls
-+# args: [comm]
-+perf trace -s ~/libexec/perf-core/scripts/perl/failed-syscalls.pl $1
-diff --git a/tools/perf/scripts/perl/failed-syscalls.pl b/tools/perf/scripts/perl/failed-syscalls.pl
-new file mode 100644
-index 0000000..c18e7e2
---- /dev/null
-+++ b/tools/perf/scripts/perl/failed-syscalls.pl
-@@ -0,0 +1,38 @@
-+# failed system call counts
-+# (c) 2010, Tom Zanussi <tzanussi@gmail.com>
-+# Licensed under the terms of the GNU GPL License version 2
-+#
-+# Displays system-wide failed system call totals
-+# If a [comm] arg is specified, only syscalls called by [comm] are displayed.
++++ b/tools/perf/Documentation/perf-trace-python.txt
+@@ -0,0 +1,624 @@
++perf-trace-python(1)
++==================
 +
-+use lib "$ENV{'PERF_EXEC_PATH'}/scripts/perl/Perf-Trace-Util/lib";
-+use lib "./Perf-Trace-Util/lib";
-+use Perf::Trace::Core;
-+use Perf::Trace::Context;
-+use Perf::Trace::Util;
++NAME
++----
++perf-trace-python - Process trace data with a Python script
 +
-+my %failed_syscalls;
++SYNOPSIS
++--------
++[verse]
++'perf trace' [-s [Python]:script[.py] ]
 +
-+sub raw_syscalls::sys_exit
-+{
-+	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	    $common_pid, $common_comm,
-+	    $id, $ret) = @_;
++DESCRIPTION
++-----------
 +
-+	if ($ret < 0) {
-+	    $failed_syscalls{$common_comm}++;
-+	}
-+}
++This perf trace option is used to process perf trace data using perf's
++built-in Python interpreter.  It reads and processes the input file and
++displays the results of the trace analysis implemented in the given
++Python script, if any.
 +
-+sub trace_end
-+{
-+    printf("\nfailed syscalls by comm:\n\n");
++A QUICK EXAMPLE
++---------------
 +
-+    printf("%-20s  %10s\n", "comm", "# errors");
-+    printf("%-20s  %6s  %10s\n", "--------------------", "----------");
++This section shows the process, start to finish, of creating a working
++Python script that aggregates and extracts useful information from a
++raw perf trace stream.  You can avoid reading the rest of this
++document if an example is enough for you; the rest of the document
++provides more details on each step and lists the library functions
++available to script writers.
 +
-+    foreach my $comm (sort {$failed_syscalls{$b} <=> $failed_syscalls{$a}}
-+		      keys %failed_syscalls) {
-+	    printf("%-20s  %10s\n", $comm, $failed_syscalls{$comm});
-+    }
-+}
-diff --git a/tools/perf/scripts/python/bin/failed-syscalls-by-pid-record b/tools/perf/scripts/python/bin/failed-syscalls-by-pid-record
-new file mode 100644
-index 0000000..f8885d3
---- /dev/null
-+++ b/tools/perf/scripts/python/bin/failed-syscalls-by-pid-record
-@@ -0,0 +1,2 @@
-+#!/bin/bash
-+perf record -c 1 -f -a -M -R -e raw_syscalls:sys_exit
-diff --git a/tools/perf/scripts/python/bin/failed-syscalls-by-pid-report b/tools/perf/scripts/python/bin/failed-syscalls-by-pid-report
-new file mode 100644
-index 0000000..1e0c0a8
---- /dev/null
-+++ b/tools/perf/scripts/python/bin/failed-syscalls-by-pid-report
-@@ -0,0 +1,4 @@
-+#!/bin/bash
-+# description: system-wide failed syscalls, by pid
-+# args: [comm]
-+perf trace -s ~/libexec/perf-core/scripts/python/failed-syscalls-by-pid.py $1
-diff --git a/tools/perf/scripts/python/bin/syscall-counts-by-pid-record b/tools/perf/scripts/python/bin/syscall-counts-by-pid-record
-new file mode 100644
-index 0000000..45a8c50
---- /dev/null
-+++ b/tools/perf/scripts/python/bin/syscall-counts-by-pid-record
-@@ -0,0 +1,2 @@
-+#!/bin/bash
-+perf record -c 1 -f -a -M -R -e raw_syscalls:sys_enter
-diff --git a/tools/perf/scripts/python/bin/syscall-counts-by-pid-report b/tools/perf/scripts/python/bin/syscall-counts-by-pid-report
-new file mode 100644
-index 0000000..f8044d1
---- /dev/null
-+++ b/tools/perf/scripts/python/bin/syscall-counts-by-pid-report
-@@ -0,0 +1,4 @@
-+#!/bin/bash
-+# description: system-wide syscall counts, by pid
-+# args: [comm]
-+perf trace -s ~/libexec/perf-core/scripts/python/syscall-counts-by-pid.py $1
-diff --git a/tools/perf/scripts/python/bin/syscall-counts-record b/tools/perf/scripts/python/bin/syscall-counts-record
-new file mode 100644
-index 0000000..45a8c50
---- /dev/null
-+++ b/tools/perf/scripts/python/bin/syscall-counts-record
-@@ -0,0 +1,2 @@
-+#!/bin/bash
-+perf record -c 1 -f -a -M -R -e raw_syscalls:sys_enter
-diff --git a/tools/perf/scripts/python/bin/syscall-counts-report b/tools/perf/scripts/python/bin/syscall-counts-report
-new file mode 100644
-index 0000000..a366aa6
---- /dev/null
-+++ b/tools/perf/scripts/python/bin/syscall-counts-report
-@@ -0,0 +1,4 @@
-+#!/bin/bash
-+# description: system-wide syscall counts
-+# args: [comm]
-+perf trace -s ~/libexec/perf-core/scripts/python/syscall-counts.py $1
-diff --git a/tools/perf/scripts/python/check-perf-trace.py b/tools/perf/scripts/python/check-perf-trace.py
-new file mode 100644
-index 0000000..964d934
---- /dev/null
-+++ b/tools/perf/scripts/python/check-perf-trace.py
-@@ -0,0 +1,83 @@
++This example actually details the steps that were used to create the
++'syscall-counts' script you see when you list the available perf trace
++scripts via 'perf trace -l'.  As such, this script also shows how to
++integrate your script into the list of general-purpose 'perf trace'
++scripts listed by that command.
++
++The syscall-counts script is a simple script, but demonstrates all the
++basic ideas necessary to create a useful script.  Here's an example
++of its output:
++
++----
++syscall events:
++
++event                                          count
++----------------------------------------  -----------
++sys_write                                     455067
++sys_getdents                                    4072
++sys_close                                       3037
++sys_swapoff                                     1769
++sys_read                                         923
++sys_sched_setparam                               826
++sys_open                                         331
++sys_newfstat                                     326
++sys_mmap                                         217
++sys_munmap                                       216
++sys_futex                                        141
++sys_select                                       102
++sys_poll                                          84
++sys_setitimer                                     12
++sys_writev                                         8
++15                                                 8
++sys_lseek                                          7
++sys_rt_sigprocmask                                 6
++sys_wait4                                          3
++sys_ioctl                                          3
++sys_set_robust_list                                1
++sys_exit                                           1
++56                                                 1
++sys_access                                         1
++----
++
++Basically our task is to keep a per-syscall tally that gets updated
++every time a system call occurs in the system.  Our script will do
++that, but first we need to record the data that will be processed by
++that script.  Theoretically, there are a couple of ways we could do
++that:
++
++- we could enable every event under the tracing/events/syscalls
++  directory, but this is over 600 syscalls, well beyond the number
++  allowable by perf.  These individual syscall events will however be
++  useful if we want to later use the guidance we get from the
++  general-purpose scripts to drill down and get more detail about
++  individual syscalls of interest.
++
++- we can enable the sys_enter and/or sys_exit syscalls found under
++  tracing/events/raw_syscalls.  These are called for all syscalls; the
++  'id' field can be used to distinguish between individual syscall
++  numbers.
++
++For this script, we only need to know that a syscall was entered; we
++don't care how it exited, so we'll use 'perf record' to record only
++the sys_enter events:
++
++----
++# perf record -c 1 -f -a -M -R -e raw_syscalls:sys_enter
++
++^C[ perf record: Woken up 1 times to write data ]
++[ perf record: Captured and wrote 56.545 MB perf.data (~2470503 samples) ]
++----
++
++The options basically say to collect data for every syscall event
++system-wide and multiplex the per-cpu output into a single stream.
++That single stream will be recorded in a file in the current directory
++called perf.data.
++
++Once we have a perf.data file containing our data, we can use the -g
++'perf trace' option to generate a Python script that will contain a
++callback handler for each event type found in the perf.data trace
++stream (for more details, see the STARTER SCRIPTS section).
++
++----
++# perf trace -g python
++generated Python script: perf-trace.py
++
++The output file created also in the current directory is named
++perf-trace.py.  Here's the file in its entirety:
++
 +# perf trace event handlers, generated by perf trace -g python
-+# (c) 2010, Tom Zanussi <tzanussi@gmail.com>
 +# Licensed under the terms of the GNU GPL License version 2
-+#
-+# This script tests basic functionality such as flag and symbol
-+# strings, common_xxx() calls back into perf, begin, end, unhandled
-+# events, etc.  Basically, if this script runs successfully and
-+# displays expected results, Python scripting support should be ok.
++
++# The common_* event handler fields are the most useful fields common to
++# all events.  They don't necessarily correspond to the 'common_*' fields
++# in the format files.  Those fields not available as handler params can
++# be retrieved using Python functions of the form common_*(context).
++# See the perf-trace-python Documentation for the list of available functions.
 +
 +import os
 +import sys
@@ -228,87 +199,87 @@ index 0000000..964d934
 +sys.path.append(os.environ['PERF_EXEC_PATH'] + \
 +	'/scripts/python/Perf-Trace-Util/lib/Perf/Trace')
 +
-+from Core import *
 +from perf_trace_context import *
-+
-+unhandled = autodict()
++from Core import *
 +
 +def trace_begin():
-+	print "trace_begin"
-+	pass
++	print "in trace_begin"
 +
 +def trace_end():
-+        print_unhandled()
++	print "in trace_end"
 +
-+def irq__softirq_entry(event_name, context, common_cpu,
++def raw_syscalls__sys_enter(event_name, context, common_cpu,
 +	common_secs, common_nsecs, common_pid, common_comm,
-+	vec):
++	id, args):
 +		print_header(event_name, common_cpu, common_secs, common_nsecs,
 +			common_pid, common_comm)
 +
-+                print_uncommon(context)
-+
-+		print "vec=%s\n" % \
-+		(symbol_str("irq__softirq_entry", "vec", vec)),
-+
-+def kmem__kmalloc(event_name, context, common_cpu,
-+	common_secs, common_nsecs, common_pid, common_comm,
-+	call_site, ptr, bytes_req, bytes_alloc,
-+	gfp_flags):
-+		print_header(event_name, common_cpu, common_secs, common_nsecs,
-+			common_pid, common_comm)
-+
-+                print_uncommon(context)
-+
-+		print "call_site=%u, ptr=%u, bytes_req=%u, " \
-+		"bytes_alloc=%u, gfp_flags=%s\n" % \
-+		(call_site, ptr, bytes_req, bytes_alloc,
-+
-+		flag_str("kmem__kmalloc", "gfp_flags", gfp_flags)),
++		print "id=%d, args=%s\n" % \
++		(id, args),
 +
 +def trace_unhandled(event_name, context, common_cpu, common_secs, common_nsecs,
 +		common_pid, common_comm):
-+    try:
-+        unhandled[event_name] += 1
-+    except TypeError:
-+        unhandled[event_name] = 1
++		print_header(event_name, common_cpu, common_secs, common_nsecs,
++		common_pid, common_comm)
 +
 +def print_header(event_name, cpu, secs, nsecs, pid, comm):
 +	print "%-20s %5u %05u.%09u %8u %-20s " % \
 +	(event_name, cpu, secs, nsecs, pid, comm),
++----
 +
-+# print trace fields not included in handler args
-+def print_uncommon(context):
-+    print "common_preempt_count=%d, common_flags=%s, common_lock_depth=%d, " \
-+        % (common_pc(context), trace_flag_str(common_flags(context)), \
-+               common_lock_depth(context))
++At the top is a comment block followed by some import statements and a
++path append which every perf trace script should include.
 +
-+def print_unhandled():
-+    keys = unhandled.keys()
-+    if not keys:
-+        return
++Following that are a couple generated functions, trace_begin() and
++trace_end(), which are called at the beginning and the end of the
++script respectively (for more details, see the SCRIPT_LAYOUT section
++below).
 +
-+    print "\nunhandled events:\n\n",
++Following those are the 'event handler' functions generated one for
++every event in the 'perf record' output.  The handler functions take
++the form subsystem__event_name, and contain named parameters, one for
++each field in the event; in this case, there's only one event,
++raw_syscalls__sys_enter().  (see the EVENT HANDLERS section below for
++more info on event handlers).
 +
-+    print "%-40s  %10s\n" % ("event", "count"),
-+    print "%-40s  %10s\n" % ("----------------------------------------", \
-+                                 "-----------"),
++The final couple of functions are, like the begin and end functions,
++generated for every script.  The first, trace_unhandled(), is called
++every time the script finds an event in the perf.data file that
++doesn't correspond to any event handler in the script.  This could
++mean either that the record step recorded event types that it wasn't
++really interested in, or the script was run against a trace file that
++doesn't correspond to the script.
 +
-+    for event_name in keys:
-+	print "%-40s  %10d\n" % (event_name, unhandled[event_name])
-diff --git a/tools/perf/scripts/python/failed-syscalls-by-pid.py b/tools/perf/scripts/python/failed-syscalls-by-pid.py
-new file mode 100644
-index 0000000..0ca0227
---- /dev/null
-+++ b/tools/perf/scripts/python/failed-syscalls-by-pid.py
-@@ -0,0 +1,68 @@
-+# failed system call counts, by pid
-+# (c) 2010, Tom Zanussi <tzanussi@gmail.com>
-+# Licensed under the terms of the GNU GPL License version 2
-+#
-+# Displays system-wide failed system call totals, broken down by pid.
-+# If a [comm] arg is specified, only syscalls called by [comm] are displayed.
++The script generated by -g option option simply prints a line for each
++event found in the trace stream i.e. it basically just dumps the event
++and its parameter values to stdout.  The print_header() function is
++simply a utility function used for that purpose.  Let's rename the
++script and run it to see the default output:
 +
++----
++# mv perf-trace.py syscall-counts.py
++# perf trace -s syscall-counts.py
++
++raw_syscalls__sys_enter     1 00840.847582083     7506 perf                  id=1, args=
++raw_syscalls__sys_enter     1 00840.847595764     7506 perf                  id=1, args=
++raw_syscalls__sys_enter     1 00840.847620860     7506 perf                  id=1, args=
++raw_syscalls__sys_enter     1 00840.847710478     6533 npviewer.bin          id=78, args=
++raw_syscalls__sys_enter     1 00840.847719204     6533 npviewer.bin          id=142, args=
++raw_syscalls__sys_enter     1 00840.847755445     6533 npviewer.bin          id=3, args=
++raw_syscalls__sys_enter     1 00840.847775601     6533 npviewer.bin          id=3, args=
++raw_syscalls__sys_enter     1 00840.847781820     6533 npviewer.bin          id=3, args=
++.
++.
++.
++----
++
++Of course, for this script, we're not interested in printing every
++trace event, but rather aggregating it in a useful way.  So we'll get
++rid of everything to do with printing as well as the trace_begin() and
++trace_unhandled() functions, which we won't be using.  That leaves us
++with this minimalistic skeleton:
++
++----
 +import os
 +import sys
 +
@@ -317,72 +288,60 @@ index 0000000..0ca0227
 +
 +from perf_trace_context import *
 +from Core import *
-+
-+usage = "perf trace -s syscall-counts-by-pid.py [comm]\n";
-+
-+for_comm = None
-+
-+if len(sys.argv) > 2:
-+	sys.exit(usage)
-+
-+if len(sys.argv) > 1:
-+	for_comm = sys.argv[1]
-+
-+syscalls = autodict()
-+
-+def trace_begin():
-+	pass
 +
 +def trace_end():
-+	print_error_totals()
++	print "in trace_end"
 +
-+def raw_syscalls__sys_exit(event_name, context, common_cpu,
++def raw_syscalls__sys_enter(event_name, context, common_cpu,
 +	common_secs, common_nsecs, common_pid, common_comm,
-+	id, ret):
-+	if for_comm is not None:
-+		if common_comm != for_comm:
-+			return
++	id, args):
++----
 +
-+	if ret < 0:
-+		try:
-+			syscalls[common_comm][common_pid][id][ret] += 1
-+		except TypeError:
-+			syscalls[common_comm][common_pid][id][ret] = 1
++In trace_end(), we'll simply print the results, but first we need to
++generate some results to print.  To do that we need to have our
++sys_enter() handler do the necessary tallying until all events have
++been counted.  A hash table indexed by syscall id is a good way to
++store that information; every time the sys_enter() handler is called,
++we simply increment a count associated with that hash entry indexed by
++that syscall id:
 +
-+def print_error_totals():
-+    if for_comm is not None:
-+	    print "\nsyscall errors for %s:\n\n" % (for_comm),
-+    else:
-+	    print "\nsyscall errors:\n\n",
++----
++  syscalls = autodict()
 +
-+    print "%-30s  %10s\n" % ("comm [pid]", "count"),
-+    print "%-30s  %10s\n" % ("------------------------------", \
-+                                 "----------"),
++  try:
++    syscalls[id] += 1
++  except TypeError:
++    syscalls[id] = 1
++----
 +
-+    comm_keys = syscalls.keys()
-+    for comm in comm_keys:
-+	    pid_keys = syscalls[comm].keys()
-+	    for pid in pid_keys:
-+		    print "\n%s [%d]\n" % (comm, pid),
-+		    id_keys = syscalls[comm][pid].keys()
-+		    for id in id_keys:
-+			    print "  syscall: %-16d\n" % (id),
-+			    ret_keys = syscalls[comm][pid][id].keys()
-+			    for ret, val in sorted(syscalls[comm][pid][id].iteritems(), key = lambda(k, v): (v, k),  reverse = True):
-+				    print "    err = %-20d  %10d\n" % (ret, val),
-diff --git a/tools/perf/scripts/python/syscall-counts-by-pid.py b/tools/perf/scripts/python/syscall-counts-by-pid.py
-new file mode 100644
-index 0000000..af722d6
---- /dev/null
-+++ b/tools/perf/scripts/python/syscall-counts-by-pid.py
-@@ -0,0 +1,64 @@
-+# system call counts, by pid
-+# (c) 2010, Tom Zanussi <tzanussi@gmail.com>
-+# Licensed under the terms of the GNU GPL License version 2
-+#
-+# Displays system-wide system call totals, broken down by syscall.
-+# If a [comm] arg is specified, only syscalls called by [comm] are displayed.
++The syscalls 'autodict' object is a special kind of Python dictionary
++(implemented in Core.py) that implements Perl's 'autovivifying' hashes
++in Python i.e. with autovivifying hashes, you can assign nested hash
++values without having to go to the trouble of creating intermediate
++levels if they don't exist e.g syscalls[comm][pid][id] = 1 will create
++the intermediate hash levels and finally assign the value 1 to the
++hash entry for 'id' (because the value being assigned isn't a hash
++object itself, the initial value is assigned in the TypeError
++exception.  Well, there may be a better way to do this in Python but
++that's what works for now).
 +
++Putting that code into the raw_syscalls__sys_enter() handler, we
++effectively end up with a single-level dictionary keyed on syscall id
++and having the counts we've tallied as values.
++
++The print_syscall_totals() function iterates over the entries in the
++dictionary and displays a line for each entry containing the syscall
++name (the dictonary keys contain the syscall ids, which are passed to
++the Util function syscall_name(), which translates the raw syscall
++numbers to the corresponding syscall name strings).  The output is
++displayed after all the events in the trace have been processed, by
++calling the print_syscall_totals() function from the trace_end()
++handler called at the end of script processing.
++
++The final script producing the output shown above is shown in its
++entirety below:
++
++----
 +import os
 +import sys
 +
@@ -391,21 +350,9 @@ index 0000000..af722d6
 +
 +from perf_trace_context import *
 +from Core import *
-+
-+usage = "perf trace -s syscall-counts-by-pid.py [comm]\n";
-+
-+for_comm = None
-+
-+if len(sys.argv) > 2:
-+	sys.exit(usage)
-+
-+if len(sys.argv) > 1:
-+	for_comm = sys.argv[1]
++from Util import *
 +
 +syscalls = autodict()
-+
-+def trace_begin():
-+	pass
 +
 +def trace_end():
 +	print_syscall_totals()
@@ -413,79 +360,6 @@ index 0000000..af722d6
 +def raw_syscalls__sys_enter(event_name, context, common_cpu,
 +	common_secs, common_nsecs, common_pid, common_comm,
 +	id, args):
-+	if for_comm is not None:
-+		if common_comm != for_comm:
-+			return
-+	try:
-+		syscalls[common_comm][common_pid][id] += 1
-+	except TypeError:
-+		syscalls[common_comm][common_pid][id] = 1
-+
-+def print_syscall_totals():
-+    if for_comm is not None:
-+	    print "\nsyscall events for %s:\n\n" % (for_comm),
-+    else:
-+	    print "\nsyscall events by comm/pid:\n\n",
-+
-+    print "%-40s  %10s\n" % ("comm [pid]/syscalls", "count"),
-+    print "%-40s  %10s\n" % ("----------------------------------------", \
-+                                 "----------"),
-+
-+    comm_keys = syscalls.keys()
-+    for comm in comm_keys:
-+	    pid_keys = syscalls[comm].keys()
-+	    for pid in pid_keys:
-+		    print "\n%s [%d]\n" % (comm, pid),
-+		    id_keys = syscalls[comm][pid].keys()
-+		    for id, val in sorted(syscalls[comm][pid].iteritems(), \
-+				  key = lambda(k, v): (v, k),  reverse = True):
-+			    print "  %-38d  %10d\n" % (id, val),
-diff --git a/tools/perf/scripts/python/syscall-counts.py b/tools/perf/scripts/python/syscall-counts.py
-new file mode 100644
-index 0000000..f977e85
---- /dev/null
-+++ b/tools/perf/scripts/python/syscall-counts.py
-@@ -0,0 +1,58 @@
-+# system call counts
-+# (c) 2010, Tom Zanussi <tzanussi@gmail.com>
-+# Licensed under the terms of the GNU GPL License version 2
-+#
-+# Displays system-wide system call totals, broken down by syscall.
-+# If a [comm] arg is specified, only syscalls called by [comm] are displayed.
-+
-+import os
-+import sys
-+
-+sys.path.append(os.environ['PERF_EXEC_PATH'] + \
-+	'/scripts/python/Perf-Trace-Util/lib/Perf/Trace')
-+
-+from perf_trace_context import *
-+from Core import *
-+
-+usage = "perf trace -s syscall-counts.py [comm]\n";
-+
-+for_comm = None
-+
-+if len(sys.argv) > 2:
-+	sys.exit(usage)
-+
-+if len(sys.argv) > 1:
-+	for_comm = sys.argv[1]
-+
-+syscalls = autodict()
-+
-+def trace_begin():
-+	pass
-+
-+def trace_end():
-+	print_syscall_totals()
-+
-+def raw_syscalls__sys_enter(event_name, context, common_cpu,
-+	common_secs, common_nsecs, common_pid, common_comm,
-+	id, args):
-+	if for_comm is not None:
-+		if common_comm != for_comm:
-+			return
 +	try:
 +		syscalls[id] += 1
 +	except TypeError:
@@ -503,7 +377,353 @@ index 0000000..f977e85
 +
 +    for id, val in sorted(syscalls.iteritems(), key = lambda(k, v): (v, k), \
 +				  reverse = True):
-+	    print "%-40d  %10d\n" % (id, val),
++	    print "%-40s  %10d\n" % (syscall_name(id), val),
++----
++
++The script can be run just as before:
++
++  # perf trace -s syscall-counts.py
++
++So those are the essential steps in writing and running a script.  The
++process can be generalized to any tracepoint or set of tracepoints
++you're interested in - basically find the tracepoint(s) you're
++interested in by looking at the list of available events shown by
++'perf list' and/or look in /sys/kernel/debug/tracing events for
++detailed event and field info, record the corresponding trace data
++using 'perf record', passing it the list of interesting events,
++generate a skeleton script using 'perf trace -g python' and modify the
++code to aggregate and display it for your particular needs.
++
++After you've done that you may end up with a general-purpose script
++that you want to keep around and have available for future use.  By
++writing a couple of very simple shell scripts and putting them in the
++right place, you can have your script listed alongside the other
++scripts listed by the 'perf trace -l' command e.g.:
++
++----
++root@tropicana:~# perf trace -l
++List of available trace scripts:
++  workqueue-stats                      workqueue stats (ins/exe/create/destroy)
++  wakeup-latency                       system-wide min/max/avg wakeup latency
++  rw-by-file <comm>                    r/w activity for a program, by file
++  rw-by-pid                            system-wide r/w activity
++----
++
++A nice side effect of doing this is that you also then capture the
++probably lengthy 'perf record' command needed to record the events for
++the script.
++
++To have the script appear as a 'built-in' script, you write two simple
++scripts, one for recording and one for 'reporting'.
++
++The 'record' script is a shell script with the same base name as your
++script, but with -record appended.  The shell script should be put
++into the perf/scripts/python/bin directory in the kernel source tree.
++In that script, you write the 'perf record' command-line needed for
++your script:
++
++----
++# cat kernel-source/tools/perf/scripts/python/bin/syscall-counts-record
++
++#!/bin/bash
++perf record -c 1 -f -a -M -R -e raw_syscalls:sys_enter
++----
++
++The 'report' script is also a shell script with the same base name as
++your script, but with -report appended.  It should also be located in
++the perf/scripts/python/bin directory.  In that script, you write the
++'perf trace -s' command-line needed for running your script:
++
++----
++# cat kernel-source/tools/perf/scripts/python/bin/syscall-counts-report
++
++#!/bin/bash
++# description: system-wide syscall counts
++perf trace -s ~/libexec/perf-core/scripts/python/syscall-counts.py
++----
++
++Note that the location of the Python script given in the shell script
++is in the libexec/perf-core/scripts/python directory - this is where
++the script will be copied by 'make install' when you install perf.
++For the installation to install your script there, your script needs
++to be located in the perf/scripts/python directory in the kernel
++source tree:
++
++----
++# ls -al kernel-source/tools/perf/scripts/python
++
++root@tropicana:/home/trz/src/tip# ls -al tools/perf/scripts/python
++total 32
++drwxr-xr-x 4 trz trz 4096 2010-01-26 22:30 .
++drwxr-xr-x 4 trz trz 4096 2010-01-26 22:29 ..
++drwxr-xr-x 2 trz trz 4096 2010-01-26 22:29 bin
++-rw-r--r-- 1 trz trz 2548 2010-01-26 22:29 check-perf-trace.py
++drwxr-xr-x 3 trz trz 4096 2010-01-26 22:49 Perf-Trace-Util
++-rw-r--r-- 1 trz trz 1462 2010-01-26 22:30 syscall-counts.py
++----
++
++Once you've done that (don't forget to do a new 'make install',
++otherwise your script won't show up at run-time), 'perf trace -l'
++should show a new entry for your script:
++
++----
++root@tropicana:~# perf trace -l
++List of available trace scripts:
++  workqueue-stats                      workqueue stats (ins/exe/create/destroy)
++  wakeup-latency                       system-wide min/max/avg wakeup latency
++  rw-by-file <comm>                    r/w activity for a program, by file
++  rw-by-pid                            system-wide r/w activity
++  syscall-counts                       system-wide syscall counts
++----
++
++You can now perform the record step via 'perf trace record':
++
++  # perf trace record syscall-counts
++
++and display the output using 'perf trace report':
++
++  # perf trace report syscall-counts
++
++STARTER SCRIPTS
++---------------
++
++You can quickly get started writing a script for a particular set of
++trace data by generating a skeleton script using 'perf trace -g
++python' in the same directory as an existing perf.data trace file.
++That will generate a starter script containing a handler for each of
++the event types in the trace file; it simply prints every available
++field for each event in the trace file.
++
++You can also look at the existing scripts in
++~/libexec/perf-core/scripts/python for typical examples showing how to
++do basic things like aggregate event data, print results, etc.  Also,
++the check-perf-trace.py script, while not interesting for its results,
++attempts to exercise all of the main scripting features.
++
++EVENT HANDLERS
++--------------
++
++When perf trace is invoked using a trace script, a user-defined
++'handler function' is called for each event in the trace.  If there's
++no handler function defined for a given event type, the event is
++ignored (or passed to a 'trace_handled' function, see below) and the
++next event is processed.
++
++Most of the event's field values are passed as arguments to the
++handler function; some of the less common ones aren't - those are
++available as calls back into the perf executable (see below).
++
++As an example, the following perf record command can be used to record
++all sched_wakeup events in the system:
++
++ # perf record -c 1 -f -a -M -R -e sched:sched_wakeup
++
++Traces meant to be processed using a script should be recorded with
++the above options: -c 1 says to sample every event, -a to enable
++system-wide collection, -M to multiplex the output, and -R to collect
++raw samples.
++
++The format file for the sched_wakep event defines the following fields
++(see /sys/kernel/debug/tracing/events/sched/sched_wakeup/format):
++
++----
++ format:
++        field:unsigned short common_type;
++        field:unsigned char common_flags;
++        field:unsigned char common_preempt_count;
++        field:int common_pid;
++        field:int common_lock_depth;
++
++        field:char comm[TASK_COMM_LEN];
++        field:pid_t pid;
++        field:int prio;
++        field:int success;
++        field:int target_cpu;
++----
++
++The handler function for this event would be defined as:
++
++----
++def sched__sched_wakeup(event_name, context, common_cpu, common_secs,
++       common_nsecs, common_pid, common_comm,
++       comm, pid, prio, success, target_cpu):
++       pass
++----
++
++The handler function takes the form subsystem__event_name.
++
++The common_* arguments in the handler's argument list are the set of
++arguments passed to all event handlers; some of the fields correspond
++to the common_* fields in the format file, but some are synthesized,
++and some of the common_* fields aren't common enough to to be passed
++to every event as arguments but are available as library functions.
++
++Here's a brief description of each of the invariant event args:
++
++ event_name 	  	    the name of the event as text
++ context		    an opaque 'cookie' used in calls back into perf
++ common_cpu		    the cpu the event occurred on
++ common_secs		    the secs portion of the event timestamp
++ common_nsecs		    the nsecs portion of the event timestamp
++ common_pid		    the pid of the current task
++ common_comm		    the name of the current process
++
++All of the remaining fields in the event's format file have
++counterparts as handler function arguments of the same name, as can be
++seen in the example above.
++
++The above provides the basics needed to directly access every field of
++every event in a trace, which covers 90% of what you need to know to
++write a useful trace script.  The sections below cover the rest.
++
++SCRIPT LAYOUT
++-------------
++
++Every perf trace Python script should start by setting up a Python
++module search path and 'import'ing a few support modules (see module
++descriptions below):
++
++----
++ import os
++ import sys
++
++ sys.path.append(os.environ['PERF_EXEC_PATH'] + \
++	      '/scripts/python/Perf-Trace-Util/lib/Perf/Trace')
++
++ from perf_trace_context import *
++ from Core import *
++----
++
++The rest of the script can contain handler functions and support
++functions in any order.
++
++Aside from the event handler functions discussed above, every script
++can implement a set of optional functions:
++
++*trace_begin*, if defined, is called before any event is processed and
++gives scripts a chance to do setup tasks:
++
++----
++def trace_begin:
++    pass
++----
++
++*trace_end*, if defined, is called after all events have been
++ processed and gives scripts a chance to do end-of-script tasks, such
++ as display results:
++
++----
++def trace_end:
++    pass
++----
++
++*trace_unhandled*, if defined, is called after for any event that
++ doesn't have a handler explicitly defined for it.  The standard set
++ of common arguments are passed into it:
++
++----
++def trace_unhandled(event_name, context, common_cpu, common_secs,
++        common_nsecs, common_pid, common_comm):
++    pass
++----
++
++The remaining sections provide descriptions of each of the available
++built-in perf trace Python modules and their associated functions.
++
++AVAILABLE MODULES AND FUNCTIONS
++-------------------------------
++
++The following sections describe the functions and variables available
++via the various perf trace Python modules.  To use the functions and
++variables from the given module, add the corresponding 'from XXXX
++import' line to your perf trace script.
++
++Core.py Module
++~~~~~~~~~~~~~~
++
++These functions provide some essential functions to user scripts.
++
++The *flag_str* and *symbol_str* functions provide human-readable
++strings for flag and symbolic fields.  These correspond to the strings
++and values parsed from the 'print fmt' fields of the event format
++files:
++
++  flag_str(event_name, field_name, field_value) - returns the string represention corresponding to field_value for the flag field field_name of event event_name
++  symbol_str(event_name, field_name, field_value) - returns the string represention corresponding to field_value for the symbolic field field_name of event event_name
++
++The *autodict* function returns a special special kind of Python
++dictionary that implements Perl's 'autovivifying' hashes in Python
++i.e. with autovivifying hashes, you can assign nested hash values
++without having to go to the trouble of creating intermediate levels if
++they don't exist.
++
++  autodict() - returns an autovivifying dictionary instance
++
++
++perf_trace_context Module
++~~~~~~~~~~~~~~~~~~~~~~~~~
++
++Some of the 'common' fields in the event format file aren't all that
++common, but need to be made accessible to user scripts nonetheless.
++
++perf_trace_context defines a set of functions that can be used to
++access this data in the context of the current event.  Each of these
++functions expects a context variable, which is the same as the
++context variable passed into every event handler as the second
++argument.
++
++ common_pc(context) - returns common_preempt count for the current event
++ common_flags(context) - returns common_flags for the current event
++ common_lock_depth(context) - returns common_lock_depth for the current event
++
++Util.py Module
++~~~~~~~~~~~~~~
++
++Various utility functions for use with perf trace:
++
++  nsecs(secs, nsecs) - returns total nsecs given secs/nsecs pair
++  nsecs_secs(nsecs) - returns whole secs portion given nsecs
++  nsecs_nsecs(nsecs) - returns nsecs remainder given nsecs
++  nsecs_str(nsecs) - returns printable string in the form secs.nsecs
++  avg(total, n) - returns average given a sum and a total number of values
++  syscall_name(id) - returns the syscall name for the specified syscall_nr
++
++SEE ALSO
++--------
++linkperf:perf-trace[1]
+diff --git a/tools/perf/Documentation/perf-trace.txt b/tools/perf/Documentation/perf-trace.txt
+index c00a76f..8879299 100644
+--- a/tools/perf/Documentation/perf-trace.txt
++++ b/tools/perf/Documentation/perf-trace.txt
+@@ -19,6 +19,11 @@ There are several variants of perf trace:
+   'perf trace' to see a detailed trace of the workload that was
+   recorded.
+ 
++  You can also run a set of pre-canned scripts that aggregate and
++  summarize the raw trace data in various ways (the list of scripts is
++  available via 'perf trace -l').  The following variants allow you to
++  record and run those scripts:
++
+   'perf trace record <script>' to record the events required for 'perf
+   trace report'.  <script> is the name displayed in the output of
+   'perf trace --list' i.e. the actual script name minus any language
+@@ -31,6 +36,9 @@ There are several variants of perf trace:
+   record <script>' is used and should be present for this command to
+   succeed.
+ 
++  See the 'SEE ALSO' section for links to language-specific
++  information on how to write and run your own trace scripts.
++
+ OPTIONS
+ -------
+ -D::
+@@ -58,4 +66,5 @@ OPTIONS
+ 
+ SEE ALSO
+ --------
+-linkperf:perf-record[1], linkperf:perf-trace-perl[1]
++linkperf:perf-record[1], linkperf:perf-trace-perl[1],
++linkperf:perf-trace-python[1]
 -- 
 1.6.4.GIT
 
