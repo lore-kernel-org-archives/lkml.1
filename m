@@ -1,82 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806Ab0A0UQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333Ab0A0UXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753806Ab0A0UQN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 15:16:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540Ab0A0UQM
+	id S1754333Ab0A0UXy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 15:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100Ab0A0UXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 15:16:12 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:46733 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753467Ab0A0UQI (ORCPT
+	Wed, 27 Jan 2010 15:23:53 -0500
+Received: from mail-ew0-f216.google.com ([209.85.219.216]:34185 "EHLO
+	mail-ew0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753978Ab0A0UXw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 15:16:08 -0500
-Date: Wed, 27 Jan 2010 15:15:50 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linux BTRFS <linux-btrfs@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: file/extent checksums for dedup/sync...
-Message-ID: <20100127201550.GW2770@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Daniel J Blueman <daniel.blueman@gmail.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	Linux BTRFS <linux-btrfs@vger.kernel.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <6278d2221001270410k1493582fvccdf23bed14cc0ff@mail.gmail.com>
- <87pr4venm4.fsf@basil.nowhere.org>
- <6278d2221001270523r13ab8973v927c8b60da181c9c@mail.gmail.com>
+	Wed, 27 Jan 2010 15:23:52 -0500
+X-Greylist: delayed 360 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jan 2010 15:23:49 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DhmfN/OMnIT495gY7iv4tNWbzz648UpuKSD5gMLA1nsM7hHsXw/XSC+wQ969f0ulS1
+         6UtHBXy608Z8ny7pkEtzB7sqxfV+gdMlTkJSBWvv1qppbMPtfzpQJB7LIk5HrRdRbkC5
+         9Ac50buOkswMdwKoIOkIDBwxGsvvJswpvCfY4=
+Date: Wed, 27 Jan 2010 22:17:41 +0200
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: geert@linux-m68k.org, linux-next@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] netdev: remove more HAVE_ leftovers
+Message-ID: <20100127201741.GA4855@x200>
+References: <10f740e81001260057h37f3494dvefa3a37b2e1453a5@mail.gmail.com>
+ <20100126.051817.215651254.davem@davemloft.net>
+ <20100126191727.GA5454@x200>
+ <20100126.163256.196562963.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6278d2221001270523r13ab8973v927c8b60da181c9c@mail.gmail.com>
+In-Reply-To: <20100126.163256.196562963.davem@davemloft.net>
 User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B609EFA.005B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 01:23:28PM +0000, Daniel J Blueman wrote:
-> On Wed, Jan 27, 2010 at 12:30 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> > Daniel J Blueman <daniel.blueman@gmail.com> writes:
-> >
-> >> For purposes of data deduplication and data synchronisation, it would
-> >> be a powerful tool to expose file data checksums.
-> >>
-> >> Since eg BTRFS uses the crc32c algorithm [1], it's possible to compute
-> >> the file's overall CRC from the accumulation of the CRCs from all it's
-> >> extents' CRCs.
-> >>
-> >> For now, exposing this via an IOCTL may be sufficient, though any
-> >> ideas for introducing it in a more standard way? (it's a pity that
-> >> when stat64 was introduced, reserved fields weren't added)
-> >
-> > The problem of doing it in any "standard way" is that it would
-> > hard code the way the file system does checksums in the applications.
-> > So the file system could never change it without breaking
-> > user space.
-
-At the end of the day the checksums are also hard coded on disk.  We
-can't add a new way without continuing to support the old one.
-
+On Tue, Jan 26, 2010 at 04:32:56PM -0800, David Miller wrote:
+> From: Alexey Dobriyan <adobriyan@gmail.com>
+> Date: Tue, 26 Jan 2010 21:17:27 +0200
 > 
-> I guess the filesystem would need to express this in the resulting
-> data-structure, eg:
->  - type 1 corresponds to using the crc32c algorithm with starting seed
-> N and accumulating ascending over data extents, padding with modulus
-> remainder or sparse holes with 0
->  - type 2 etc
-
-Yes, if they were exported to userland we'd need to export version info.
-
+> > On Tue, Jan 26, 2010 at 05:18:17AM -0800, David Miller wrote:
+> >> Alexey, please go through at least drivers/net and look at the
+> >> other stale references to these HAVE_* macros.
+> > 
+> > My apologies.
+> > 
+> > 
+> > [PATCH] netdev: remove HAVE_ leftovers
+> > 
+> > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 > 
-> The next question, is does filesystem (eg BTRFS) compression come
-> before or after checksumming?
+> What about HAVE_POLL_CONTROLLER and some other remaining stuff?
 
-The checksums are based on what is on disk, so they are done on the
-compressed data.
+Ick, I thought I left some compile breakage :^)
 
--chris
+> drivers/net/bnx2.c:#if defined(HAVE_POLL_CONTROLLER) || defined(CONFIG_NET_POLL_CONTROLLER)
+> drivers/net/bnx2x_main.c:#if defined(HAVE_POLL_CONTROLLER) || defined(CONFIG_NET_POLL_CONTROLLER)
+> drivers/net/ixgbevf/ixgbevf_main.c:#ifdef HAVE_TX_MQ
+> drivers/net/ixgbevf/ixgbevf_main.c:#ifndef HAVE_NETDEV_NAPI_LIST
+> drivers/net/ixgbevf/ixgbevf_main.c:#ifdef HAVE_NET_DEVICE_OPS
 
+As for HAVE_TX_MQ and HAVE_NETDEV_NAPI_LIST, I have no clue what's going on.
+
+[PATCH] netdev: remove more HAVE_ leftovers 
+
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
+
+ drivers/net/bnx2.c                     |    4 ++--
+ drivers/net/bnx2x_main.c               |    4 ++--
+ drivers/net/cassini.c                  |    2 +-
+ drivers/net/ixgbevf/ixgbevf_main.c     |   18 ------------------
+ drivers/net/meth.c                     |    3 ---
+ drivers/staging/wlags49_h2/wl_netdev.c |    6 ------
+ 6 files changed, 5 insertions(+), 32 deletions(-)
+
+--- a/drivers/net/bnx2.c
++++ b/drivers/net/bnx2.c
+@@ -7668,7 +7668,7 @@ bnx2_change_mtu(struct net_device *dev, int new_mtu)
+ 	return (bnx2_change_ring_size(bp, bp->rx_ring_size, bp->tx_ring_size));
+ }
+ 
+-#if defined(HAVE_POLL_CONTROLLER) || defined(CONFIG_NET_POLL_CONTROLLER)
++#ifdef CONFIG_NET_POLL_CONTROLLER
+ static void
+ poll_bnx2(struct net_device *dev)
+ {
+@@ -8280,7 +8280,7 @@ static const struct net_device_ops bnx2_netdev_ops = {
+ #ifdef BCM_VLAN
+ 	.ndo_vlan_rx_register	= bnx2_vlan_rx_register,
+ #endif
+-#if defined(HAVE_POLL_CONTROLLER) || defined(CONFIG_NET_POLL_CONTROLLER)
++#ifdef CONFIG_NET_POLL_CONTROLLER
+ 	.ndo_poll_controller	= poll_bnx2,
+ #endif
+ };
+--- a/drivers/net/bnx2x_main.c
++++ b/drivers/net/bnx2x_main.c
+@@ -11731,7 +11731,7 @@ static void bnx2x_vlan_rx_register(struct net_device *dev,
+ 
+ #endif
+ 
+-#if defined(HAVE_POLL_CONTROLLER) || defined(CONFIG_NET_POLL_CONTROLLER)
++#ifdef CONFIG_NET_POLL_CONTROLLER
+ static void poll_bnx2x(struct net_device *dev)
+ {
+ 	struct bnx2x *bp = netdev_priv(dev);
+@@ -11755,7 +11755,7 @@ static const struct net_device_ops bnx2x_netdev_ops = {
+ #ifdef BCM_VLAN
+ 	.ndo_vlan_rx_register	= bnx2x_vlan_rx_register,
+ #endif
+-#if defined(HAVE_POLL_CONTROLLER) || defined(CONFIG_NET_POLL_CONTROLLER)
++#ifdef CONFIG_NET_POLL_CONTROLLER
+ 	.ndo_poll_controller	= poll_bnx2x,
+ #endif
+ };
+--- a/drivers/net/cassini.c
++++ b/drivers/net/cassini.c
+@@ -106,7 +106,7 @@
+ #define cas_page_unmap(x)    kunmap_atomic((x), KM_SKB_DATA_SOFTIRQ)
+ #define CAS_NCPUS            num_online_cpus()
+ 
+-#if defined(CONFIG_CASSINI_NAPI) && defined(HAVE_NETDEV_POLL)
++#ifdef CONFIG_CASSINI_NAPI
+ #define USE_NAPI
+ #define cas_skb_release(x)  netif_receive_skb(x)
+ #else
+--- a/drivers/net/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ixgbevf/ixgbevf_main.c
+@@ -3262,7 +3262,6 @@ static void ixgbevf_shutdown(struct pci_dev *pdev)
+ 	pci_disable_device(pdev);
+ }
+ 
+-#ifdef HAVE_NET_DEVICE_OPS
+ static const struct net_device_ops ixgbe_netdev_ops = {
+ 	.ndo_open		= &ixgbevf_open,
+ 	.ndo_stop		= &ixgbevf_close,
+@@ -3278,29 +3277,12 @@ static const struct net_device_ops ixgbe_netdev_ops = {
+ 	.ndo_vlan_rx_add_vid	= &ixgbevf_vlan_rx_add_vid,
+ 	.ndo_vlan_rx_kill_vid	= &ixgbevf_vlan_rx_kill_vid,
+ };
+-#endif /* HAVE_NET_DEVICE_OPS */
+ 
+ static void ixgbevf_assign_netdev_ops(struct net_device *dev)
+ {
+ 	struct ixgbevf_adapter *adapter;
+ 	adapter = netdev_priv(dev);
+-#ifdef HAVE_NET_DEVICE_OPS
+ 	dev->netdev_ops = &ixgbe_netdev_ops;
+-#else /* HAVE_NET_DEVICE_OPS */
+-	dev->open = &ixgbevf_open;
+-	dev->stop = &ixgbevf_close;
+-
+-	dev->hard_start_xmit = &ixgbevf_xmit_frame;
+-
+-	dev->get_stats = &ixgbevf_get_stats;
+-	dev->set_multicast_list = &ixgbevf_set_rx_mode;
+-	dev->set_mac_address = &ixgbevf_set_mac;
+-	dev->change_mtu = &ixgbevf_change_mtu;
+-	dev->tx_timeout = &ixgbevf_tx_timeout;
+-	dev->vlan_rx_register = &ixgbevf_vlan_rx_register;
+-	dev->vlan_rx_add_vid = &ixgbevf_vlan_rx_add_vid;
+-	dev->vlan_rx_kill_vid = &ixgbevf_vlan_rx_kill_vid;
+-#endif /* HAVE_NET_DEVICE_OPS */
+ 	ixgbevf_set_ethtool_ops(dev);
+ 	dev->watchdog_timeo = 5 * HZ;
+ }
+--- a/drivers/net/meth.c
++++ b/drivers/net/meth.c
+@@ -51,14 +51,11 @@
+ 
+ static const char *meth_str="SGI O2 Fast Ethernet";
+ 
+-#define HAVE_TX_TIMEOUT
+ /* The maximum time waited (in jiffies) before assuming a Tx failed. (400ms) */
+ #define TX_TIMEOUT (400*HZ/1000)
+ 
+-#ifdef HAVE_TX_TIMEOUT
+ static int timeout = TX_TIMEOUT;
+ module_param(timeout, int, 0);
+-#endif
+ 
+ /*
+  * This structure is private to each device. It is used to pass
+--- a/drivers/staging/wlags49_h2/wl_netdev.c
++++ b/drivers/staging/wlags49_h2/wl_netdev.c
+@@ -1194,9 +1194,7 @@ static const struct net_device_ops wl_netdev_ops =
+     .ndo_stop               = &wl_adapter_close,
+     .ndo_do_ioctl           = &wl_ioctl,
+ 
+-#ifdef HAVE_TX_TIMEOUT
+     .ndo_tx_timeout         = &wl_tx_timeout,
+-#endif
+ 
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+     .ndo_poll_controller    = wl_poll,
+@@ -1270,9 +1268,7 @@ struct net_device * wl_device_alloc( void )
+     dev->stop               = &wl_adapter_close;
+     dev->do_ioctl           = &wl_ioctl;
+ 
+-#ifdef HAVE_TX_TIMEOUT
+     dev->tx_timeout         = &wl_tx_timeout;
+-#endif
+ 
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+     dev->poll_controller = wl_poll;
+@@ -1280,9 +1276,7 @@ struct net_device * wl_device_alloc( void )
+ 
+ #endif // (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,30))
+ 
+-#ifdef HAVE_TX_TIMEOUT
+     dev->watchdog_timeo     = TX_TIMEOUT;
+-#endif
+ 
+     dev->ethtool_ops	    = &wl_ethtool_ops;
+ 
