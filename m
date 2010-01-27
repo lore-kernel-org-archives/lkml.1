@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430Ab0A0Wua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461Ab0A0W6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430Ab0A0Wua (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 17:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415Ab0A0Wu3
+	id S1756461Ab0A0W6v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 17:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414Ab0A0W6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 17:50:29 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58128 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756385Ab0A0Wu2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 17:50:28 -0500
-Date: Wed, 27 Jan 2010 22:43:09 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: adharmap@codeaurora.org
-Cc: linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@elte.hu>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Yinghai Lu <yinghai@kernel.org>, Tony Lindgren <tony@atomide.com>,
-       Santosh Shilimkar <santosh.shilimkar@ti.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Kalle Valo <kalle.valo@iki.fi>, Jean Pihet <jpihet@mvista.com>,
-       Linus Walleij <linus.walleij@stericsson.com>,
-       Colin Tuckley <colin.tuckley@arm.com>,
-       Philby John <pjohn@in.mvista.com>,
-       Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
-       Alessandro Rubini <rubini@unipv.it>,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       Abhijeet Dharmapurikar <adharmap@quicinc.com>
-Subject: Re: [PATCH 1/5] gic: prevent gic from crossing NR_IRQ
-Message-ID: <20100127224309.GD29665@n2100.arm.linux.org.uk>
-References: <1264620749-24527-1-git-send-email-adharmap@codeaurora.org> <1264620749-24527-2-git-send-email-adharmap@codeaurora.org>
+	Wed, 27 Jan 2010 17:58:49 -0500
+Received: from kroah.org ([198.145.64.141]:44262 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756446Ab0A0W6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 17:58:48 -0500
+Date: Wed, 27 Jan 2010 14:40:53 -0800
+From: Greg KH <greg@kroah.com>
+To: Eirik Aanonsen <EAA@wprmedical.com>
+Cc: "kernel@avr32linux.org" <kernel@avr32linux.org>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
+Message-ID: <20100127224053.GB25655@kroah.com>
+References: <B5E0EDE940845B429B7ECCE186529F2C0641D177FD@dware2702>
+ <20100115185457.GG12146@kroah.com>
+ <B5E0EDE940845B429B7ECCE186529F2C0641D181F7@dware2702>
+ <20100119044912.GB10262@kroah.com>
+ <B5E0EDE940845B429B7ECCE186529F2C0641D18303@dware2702>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1264620749-24527-2-git-send-email-adharmap@codeaurora.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <B5E0EDE940845B429B7ECCE186529F2C0641D18303@dware2702>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 11:32:25AM -0800, adharmap@codeaurora.org wrote:
-> From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
+On Tue, Jan 19, 2010 at 08:16:26AM +0100, Eirik Aanonsen wrote:
+> ...
 > 
-> The gic code tries to initialize interrupts beyond NR_IRQ. Prevent
-> code from doing that.
+> > > > Please always run your patches through 'scripts/checkpatch.pl'
+> > before
+> > > > sending them so that you don't accidentally add coding style
+> > errors.
+> > > >
+> > > > thanks,
+> > > >
+> > > > greg k-h
+> > >
+> > > Yes I'm sorry I got that feedback from several others as well.
+> > >
+> > > That is why I resubmitted the patch on 05.Jan. But under the same
+> > name, and since then I have not received any feedback on that patch.
+> > >
+> 
+> ...
+> 
+> > 
+> > I don't see it in my queue, care to resend?
+> > 
+> > thanks,
+> > 
+> > greg k-h
+> 
+> 
+> Adding it here:
 
-NAK.  This is completely the wrong approach.
+The patch below is somehow corrupted, and I couldn't figure out why.
 
-        /*
-         * Find out how many interrupts are supported.
-         */
-        max_irq = readl(base + GIC_DIST_CTR) & 0x1f;
-        max_irq = (max_irq + 1) * 32;
+Care to regenerate it and send it again?
 
-        /*
-         * The GIC only supports up to 1020 interrupt sources.
-         * Limit this to either the architected maximum, or the
-         * platform maximum.
-         */
-        if (max_irq > max(1020, NR_IRQS))
-                max_irq = max(1020, NR_IRQS);
-...
-        for (i = irq_start; i < gic_data[gic_nr].irq_offset + max_irq; i++) {
+Sorry for the delay,
 
-This function is broken if irq_start != 0, and needs fixing - max_irq
-needs to be limited to the _minimum_ of 1020 or NR_IRQS - irq_start.
+greg k-h
