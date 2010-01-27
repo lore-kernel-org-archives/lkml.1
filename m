@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979Ab0A0SJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943Ab0A0SNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979Ab0A0SJA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 13:09:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755886Ab0A0SI7
+	id S1755943Ab0A0SNU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 13:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249Ab0A0SNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 13:08:59 -0500
-Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:36352 "EHLO
-	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755205Ab0A0SI6 (ORCPT
+	Wed, 27 Jan 2010 13:13:19 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:42359 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753646Ab0A0SNS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 13:08:58 -0500
-Date: Wed, 27 Jan 2010 13:08:40 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-In-reply-to: <20100127095614.14313677@nehalam>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B608128.7090607@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100120094103.GA6225@ff.dom.local> <4B58B217.8030001@majjas.com>
- <20100121204133.GB3085@del.dom.local> <4B59E7EB.3050605@majjas.com>
- <20100122215304.GA3105@del.dom.local> <4B5A2362.6000306@majjas.com>
- <20100122230605.GB3105@del.dom.local> <4B5A33D8.90501@majjas.com>
- <20100122234656.GC3105@del.dom.local> <4B5A39BD.8020305@majjas.com>
- <20100123232133.GA3487@del.dom.local> <4B605D1B.60402@majjas.com>
- <20100127085049.5b5048e9@nehalam> <4B60707F.1000608@majjas.com>
- <20100127095614.14313677@nehalam>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7)
- Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	Wed, 27 Jan 2010 13:13:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=Fmt5YqOi7AqxbZKaCrdDCYkDYtoAkZFtVW9iARuej7V4NuBjYfs469gIiJe3CT3Ru/
+         b13zvgkA0nDpgc9qiqd2UJSaGo9omhxWkmd7Qu3x3AkHneWe5TYSXDwt8vqx+VAvnMvJ
+         34c/uO5jJRsLPmnKhknHFEcYcULSVpNqafStM=
+From: Don Mullis <don.mullis@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: airlied@redhat.com, andi@firstfloor.org, david@fromorbit.com,
+       dedekind@infradead.org
+Subject: [PATCH v2 2/3] lib: Revise list_sort() header comment
+References: <878wbja0h6.fsf@gmail.com>
+Date: Wed, 27 Jan 2010 10:13:12 -0800
+In-Reply-To: <878wbja0h6.fsf@gmail.com> (Don Mullis's message of "Wed, 27 Jan
+	2010 10:04:05 -0800")
+Message-ID: <874om7a01z.fsf@gmail.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/27/2010 12:56 PM, Stephen Hemminger wrote:
-> --- a/drivers/net/sky2.c	2010-01-27 09:46:10.940005248 -0800
-> +++ b/drivers/net/sky2.c	2010-01-27 09:53:47.141267850 -0800
-> @@ -2257,13 +2257,16 @@ static struct sk_buff *receive_copy(stru
->
->   	skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
->   	if (likely(skb)) {
-> +		unsigned dma_align = dma_get_cache_alignment();
-> +		unsigned dma_size = ALIGN(length+1, dma_align);
-> +
->   		pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
-> -					    length, PCI_DMA_FROMDEVICE);
-> +					    dma_size, PCI_DMA_FROMDEVICE);
->   		skb_copy_from_linear_data(re->skb, skb->data, length);
->   		skb->ip_summed = re->skb->ip_summed;
->   		skb->csum = re->skb->csum;
->   		pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
-> -					       length, PCI_DMA_FROMDEVICE);
-> +					       dma_size, PCI_DMA_FROMDEVICE);
->   		re->skb->ip_summed = CHECKSUM_NONE;
->   		skb_put(skb, length);
->   	}
->    
-This doesn't apply - I'm missing some intermediate patch.
+Clarify and correct header comment of list_sort().
 
-I've got (both in 2.6.32.4 and 2.6.33-rc5: pci_unmap_len(re, data_size) 
-vs., "length." I assume that I can just replace the pci_unmap_len with 
-dma_size... but perhaps the intermediate change may have affected this 
-as well?
+Signed-off-by: Don Mullis <don.mullis@gmail.com>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: Artem Bityutskiy <dedekind@infradead.org>
+---
+ lib/list_sort.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+Index: linux-2.6/lib/list_sort.c
+===================================================================
+--- linux-2.6.orig/lib/list_sort.c	2010-01-26 20:01:55.000000000 -0800
++++ linux-2.6/lib/list_sort.c	2010-01-26 20:05:11.000000000 -0800
+@@ -81,17 +81,18 @@ static void merge_and_restore_back_links
+ }
+ 
+ /**
+- * list_sort - sort a list.
+- * @priv: private data, passed to @cmp
++ * list_sort - sort a list
++ * @priv: private data, opaque to list_sort(), passed to @cmp
+  * @head: the list to sort
+  * @cmp: the elements comparison function
+  *
+- * This function implements "merge sort" which has O(nlog(n)) complexity.
+- * The list is sorted in ascending order.
++ * This function implements "merge sort", which has O(nlog(n))
++ * complexity.
+  *
+- * The comparison function @cmp is supposed to return a negative value if @a is
+- * less than @b, and a positive value if @a is greater than @b. If @a and @b
+- * are equivalent, then it does not matter what this function returns.
++ * The comparison function @cmp must return a negative value if @a
++ * should sort before @b, and a positive value if @a should sort after
++ * @b. If @a and @b are equivalent, and their original relative
++ * ordering is to be preserved, @cmp must return 0.
+  */
+ void list_sort(void *priv, struct list_head *head,
+ 		int (*cmp)(void *priv, struct list_head *a,
