@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338Ab0A0FVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611Ab0A0FVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338Ab0A0FVL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 00:21:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198Ab0A0FVI
+	id S1753611Ab0A0FVj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 00:21:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991Ab0A0FVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 00:21:08 -0500
-Received: from sh.osrg.net ([192.16.179.4]:50194 "EHLO sh.osrg.net"
+	Wed, 27 Jan 2010 00:21:37 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:46493 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753125Ab0A0FVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 00:21:04 -0500
-Date: Wed, 27 Jan 2010 14:19:44 +0900
-To: adharmap@codeaurora.org
-Cc: fujita.tomonori@lab.ntt.co.jp, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-       dwalker@codeaurora.org, arnd@arndb.de, akpm@linux-foundation.org,
-       mingo@elte.hu, joerg.roedel@amd.com, maciej.sosnowski@intel.com,
-       dan.j.williams@intel.com, beckyb@kernel.crashing.org,
-       yanghy@cn.fujitsu.com, linux-arch@vger.kernel.org, adharmap@quicinc.com
-Subject: Re: [RFC PATCH] dma: Add barrierless dma mapping/unmapping api
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B5F4C76.4050100@codeaurora.org>
-References: <1264480210.3601.118.camel@pasglop>
-	<20100126134207T.fujita.tomonori@lab.ntt.co.jp>
-	<4B5F4C76.4050100@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20100127141901P.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 27 Jan 2010 14:19:48 +0900 (JST)
+	id S1750870Ab0A0FVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 00:21:37 -0500
+Date: Tue, 26 Jan 2010 21:21:33 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH RFC tip/core/rcu] accelerate grace period if last
+	non-dynticked CPU
+Message-ID: <20100127052133.GD6807@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100125034816.GA14043@linux.vnet.ibm.com> <873a1sft9q.fsf@basil.nowhere.org> <20100126235516.GA15855@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100126235516.GA15855@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jan 2010 12:11:34 -0800
-Abhijeet Dharmapurikar <adharmap@codeaurora.org> wrote:
-
-> FUJITA Tomonori wrote:
-> > On Tue, 26 Jan 2010 15:30:10 +1100
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Tue, Jan 26, 2010 at 06:55:16PM -0500, Mathieu Desnoyers wrote:
+> * Andi Kleen (andi@firstfloor.org) wrote:
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
 > > 
-> >> On Mon, 2010-01-25 at 18:35 -0800, adharmap@codeaurora.org wrote:
-> >>> From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
-> >>>
->   >
-> >> There are people nowadays putting AXI bridges and the whole ARM
-> >> paraphernalia of IP cores behind them on PowerPC cores for example and I
-> >> can see that happening with x86 as well.
-> >>
-> >> In your case, I believe your are fixing the wrong problem anyways. The
-> >> right approach would be instead to put all your buffer into an sglist
-> >> and use dma_map/unmap_sg().
+> > Kind of offtopic to the original patch, but I couldn't 
+> > resist...
 > > 
-> > Agreed again. That's exactly what I suggested before:
+> > > +config RCU_FAST_NO_HZ
+> > > +	bool "Accelerate last non-dyntick-idle CPU's grace periods"
+> > > +	depends on TREE_RCU && NO_HZ && SMP
 > > 
-> > http://marc.info/?l=linux-kernel&m=126294076917753&w=2
+> > Having such a thing as a config option doesn't really make 
+> > any sense to me. Who would want to recompile their kernel
+> > to enable/disable this? If anything it should be runtime, or better
+> > just unconditionally on.
+> > 
+> > In general RCU could probably reduce its number of "weird"
+> > Kconfig options.
+> > 
+> > While I think I have a better understanding of RCU than a lot
+> > of normal users I often have no clue what to set there when
+> > building a kernel.
 > 
-> I somehow missed your post, my apologies. Agreed that dma_map/unmap_sg 
-> would be the correct api to use here, however they still call the 
-> dmac_.*_range to map buffers.
+> Maybe we could keep them under a CONFIG_DEBUG_RCU umbrella. Compiling
+> out parts of the rcu options can be useful for debugging purposes, but
+> I agree with you that end users should not be bothered with that much
+> options when some of them are "obviously" wanted.
+> 
+> OTOH, I understand that Paul seems to want to introduce new RCU
+> features gradually, without hitting all kernel users with bugs in newer
+> features. That's a sane approach to keep things generally stable, but
+> maybe it is time to set some of the stabilized RCU options to default Y
+> and move their config to the debug menu.
 
-Hmm, sounds like arm's implementation issue. dma_map_sg API doesn't
-require such. dma_map_sg API gives what you want, do a sync only after
-mapping the last buffer.
+That is indeed a big part of the motivation.  ;-)
 
+							Thanx, Paul
 
-> I could change those calls to do a barrier 
->   only after mapping the last buffer. This would be much more cleaner 
-> than introducing a .*_nobarrier API.
+> Let's see what Paul has to say about this...
+> 
+> Thanks,
+> 
+> Mathieu
+> 
+> > 
+> > -Andi
+> > 
+> > -- 
+> > ak@linux.intel.com -- Speaking for myself only.
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
