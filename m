@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624Ab0A0MPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020Ab0A0MR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624Ab0A0MPi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 07:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521Ab0A0MPh
+	id S1753020Ab0A0MR5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 07:17:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577Ab0A0MR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 07:15:37 -0500
-Received: from mail-pz0-f189.google.com ([209.85.222.189]:38991 "EHLO
-	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754276Ab0A0MPg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 07:15:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=c7lkG3ra5PF3flomw0nuU2X+n6TYhKdynhqt7neLko2PSliCUudcSEnIP64nEydkyW
-         ky8ZP6onR8zEE56NuwJ15HpIip7j+UC+frHi7OeGmkQO2ktEH+NnH6NDUc2DgV6erscn
-         AVX87IS3qR2sJagy7ux2VOn4pPftSlNCO7gos=
+	Wed, 27 Jan 2010 07:17:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59424 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752452Ab0A0MRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 07:17:55 -0500
+Date: Wed, 27 Jan 2010 13:17:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de,
+       andreas.herrmann3@amd.com, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -v3 0/5] x86, cacheinfo, amd: L3 Cache Index Disable fixes
+Message-ID: <20100127121740.GB4360@elte.hu>
+References: <1264172467-25155-1-git-send-email-bp@amd64.org>
+ <4B59DF4C.7040608@zytor.com>
+ <20100122174049.GC19425@aftab>
+ <4B59E507.9060403@zytor.com>
+ <20100123065953.GB15774@elte.hu>
+ <20100123081132.GB7098@liondog.tnic>
+ <20100123090135.GB20056@elte.hu>
+ <20100123163223.GA30859@liondog.tnic>
+ <20100125170647.GG14274@aftab>
 MIME-Version: 1.0
-In-Reply-To: <aacba7e1001262136o3b1cfb97yed421bba02580bef@mail.gmail.com>
-References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
-	 <20100126160243.018b87e3@lxorguk.ukuu.org.uk>
-	 <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
-	 <4B5F62C2.4000800@pobox.com>
-	 <aacba7e1001261624m4358e4ebwcf8e2305b0c5fc16@mail.gmail.com>
-	 <4B5FA38A.5040700@teksavvy.com>
-	 <aacba7e1001262136o3b1cfb97yed421bba02580bef@mail.gmail.com>
-Date: Wed, 27 Jan 2010 17:45:35 +0530
-Message-ID: <aacba7e1001270415o7795db4bva32a5a23068e5d08@mail.gmail.com>
-Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
-From: Vishal Rao <vishalrao@gmail.com>
-To: Mark Lord <kernel@teksavvy.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, stable@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100125170647.GG14274@aftab>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/27 Vishal Rao <vishalrao@gmail.com>:
-> And here is the output of hdparm --Istdout /dev/sd? :
-> http://pastebin.ubuntu.com/363660/
 
-Apologies, pasting the output inline:
+* Borislav Petkov <borislav.petkov@amd.com> wrote:
 
-/dev/sda:
-0c5a 3fff c837 0010 0000 0000 003f 0000
-0000 0000 5335 3935 3031 352d 4146 4258
-2d42 3131 3931 3936 0000 ffff 3000 3139
-3136 2020 2020 4352 5543 4941 4c5f 4354
-3132 384d 3232 3520 2020 2020 2020 2020
-2020 2020 2020 2020 2020 2020 2020 8001
-0000 2f00 4000 0200 0200 0007 3fff 0010
-003f fc10 00fb 0101 c2b0 0ee7 0000 0007
-0003 0078 0078 0078 0078 4000 0000 0000
-0000 0000 0000 001f 0506 0000 004c 0040
-01e0 0000 346b 7d01 4022 3469 3c01 4022
-407f 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 c2b0 0ee7 0000 0000
-0000 0000 4000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0009 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0001 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0001 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 27a5
+> Hi Ingo,
+> 
+> On Sat, Jan 23, 2010 at 05:32:23PM +0100, Borislav Petkov wrote:
+> > > Well, if there's a crasher in there, then a minimal fix to address just that 
+> > > is preferred for .33 - and that can be tagged for -stable immediately.
+> > 
+> > As I said earlier, I don't believe we have machines in the wild to
+> > practically support the feature yet so we should be OK without a fix.
+> > Let me verify that next week and get back to you with a minimal fix in
+> > case we have any affected configurations.
+> 
+> I could verify that we don't need a minimal fix for .33 for the reason above 
+> so the 5 fixes for .34 merge window should suffice completely.
+
+Great - thanks for confirming that.
+
+	Ingo
