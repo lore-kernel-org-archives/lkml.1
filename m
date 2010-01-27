@@ -1,60 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332Ab0A0Wab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347Ab0A0Wc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332Ab0A0Wab (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 17:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318Ab0A0Waa
+	id S1756347Ab0A0Wc2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 17:32:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864Ab0A0Wc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 17:30:30 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:37600 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756315Ab0A0Wa2 (ORCPT
+	Wed, 27 Jan 2010 17:32:27 -0500
+Received: from mail.windriver.com ([147.11.1.11]:55869 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932168Ab0A0Wc0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 17:30:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=LFsTFQloQoftIIflT2sY82KPVGI+7bqabFw6TQK1eIkbbkSvJkCKvv3hA+hoVrn1aL
-         6unSEdQQs7gDI1N0unGJx5Ap9ueENAZiiLdb3vordJC5hVcm/aUXFsHhoHnIjyN0eQWK
-         spurAuY5RUBNCQpt4uuqdv2yI88H3mZuIKrP4=
-Message-ID: <4B60BE7F.8070304@gmail.com>
-Date: Wed, 27 Jan 2010 23:30:23 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, zhenyuw@linux.intel.com,
-       yakui.zhao@intel.com
-Subject: Re: i915: gpu wedged [was: mmotm 2010-01-15-15-34 uploaded]
-References: <201001152359.o0FNxVne006113@imap1.linux-foundation.org>	<4B5AF1E5.1070304@gmail.com> <20100127142400.5657a7fe.akpm@linux-foundation.org>
-In-Reply-To: <20100127142400.5657a7fe.akpm@linux-foundation.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 17:32:26 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
+       Jason Wessel <jason.wessel@windriver.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH 3/3] perf,hw_breakpoint,kgdb: No mutex taken for kernel debugger
+Date: Wed, 27 Jan 2010 16:25:24 -0600
+Message-Id: <1264631124-4837-4-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.4.rc1
+In-Reply-To: <1264631124-4837-1-git-send-email-jason.wessel@windriver.com>
+References: <1264631124-4837-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 27 Jan 2010 22:26:27.0782 (UTC) FILETIME=[C470BE60:01CA9F9F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/27/2010 11:24 PM, Andrew Morton wrote:
->> and kernel says:
->> [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
->> render error detected, EIR: 0x00000000
->> [drm:i915_do_wait_request] *ERROR* i915_do_wait_request returns -5
->> (awaiting 153151 at 153150)
->> [drm:i915_gem_execbuffer] *ERROR* i915_gem_do_execbuffer returns -5
->>
->>
->> >From <debugfs>/dri/0/i915_wedged, the GPU is wedged.
->>
-> 
-> umph.  There isn't much I can do about that, really.  Apart from
-> fervently hoping that this known regression doesn't turn up in
-> 2.6.34-rc1.
+The kernel debugger cannot use any mutex_lock() calls because it can
+start the kernel running from an invalid context.
 
-Ah, it is known. I apparently googled for a wrong line :).
+The possibility for a breakpoint reservation to be concurrently
+processed at the time that kgdb interrupts the system is improbable.
+As a safety check against this condition the kernel debugger will
+prohibit updating the hardware breakpoint reservations and an error
+will be returned to the end user.
 
-Thanks for the clue,
+Any time the kernel debugger reserves a hardware breakpoint it will be
+a system wide reservation.
+
+CC: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: K.Prasad <prasad@linux.vnet.ibm.com>
+CC: Peter Zijlstra <peterz@infradead.org>
+CC: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+---
+ arch/x86/kernel/kgdb.c        |   49 +++++++++++++++++++++++++++++++++++++-
+ include/linux/hw_breakpoint.h |    2 +
+ kernel/hw_breakpoint.c        |   52 +++++++++++++++++++++++++++++++++--------
+ 3 files changed, 92 insertions(+), 11 deletions(-)
+
+diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+index 9f47cd3..7c3e929 100644
+--- a/arch/x86/kernel/kgdb.c
++++ b/arch/x86/kernel/kgdb.c
+@@ -239,6 +239,45 @@ static void kgdb_correct_hw_break(void)
+ 	hw_breakpoint_restore();
+ }
+ 
++static int hw_break_reserve_slot(int breakno)
++{
++	int cpu;
++	int cnt = 0;
++	struct perf_event **pevent;
++
++	for_each_online_cpu(cpu) {
++		cnt++;
++		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
++		if (dbg_reserve_bp_slot(*pevent))
++			goto fail;
++	}
++
++	return 0;
++
++fail:
++	for_each_online_cpu(cpu) {
++		cnt--;
++		if (!cnt)
++			break;
++		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
++		dbg_release_bp_slot(*pevent);
++	}
++	return -1;
++}
++
++static int hw_break_release_slot(int breakno)
++{
++	struct perf_event **pevent;
++	int ret;
++	int cpu;
++
++	for_each_online_cpu(cpu) {
++		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
++		ret = dbg_release_bp_slot(*pevent);
++	}
++	return ret;
++}
++
+ static int
+ kgdb_remove_hw_break(unsigned long addr, int len, enum kgdb_bptype bptype)
+ {
+@@ -250,6 +289,10 @@ kgdb_remove_hw_break(unsigned long addr, int len, enum kgdb_bptype bptype)
+ 	if (i == 4)
+ 		return -1;
+ 
++	if (hw_break_release_slot(i)) {
++		printk(KERN_ERR "Cannot remove hw breakpoint at %lx\n", addr);
++		return -1;
++	}
+ 	breakinfo[i].enabled = 0;
+ 
+ 	return 0;
+@@ -313,9 +356,13 @@ kgdb_set_hw_break(unsigned long addr, int len, enum kgdb_bptype bptype)
+ 		break;
+ #endif
+ 	default:
+-	return -1;
++		return -1;
+ 	}
+ 	breakinfo[i].addr = addr;
++	if (hw_break_reserve_slot(i)) {
++		breakinfo[i].addr = 0;
++		return -1;
++	}
+ 	breakinfo[i].enabled = 1;
+ 
+ 	return 0;
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 41235c9..070ba06 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -75,6 +75,8 @@ extern int __register_perf_hw_breakpoint(struct perf_event *bp);
+ extern void unregister_hw_breakpoint(struct perf_event *bp);
+ extern void unregister_wide_hw_breakpoint(struct perf_event **cpu_events);
+ 
++extern int dbg_reserve_bp_slot(struct perf_event *bp);
++extern int dbg_release_bp_slot(struct perf_event *bp);
+ extern int reserve_bp_slot(struct perf_event *bp);
+ extern void release_bp_slot(struct perf_event *bp);
+ 
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index 50dbd59..e5aa380 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -243,38 +243,70 @@ static void toggle_bp_slot(struct perf_event *bp, bool enable)
+  *       ((per_cpu(nr_bp_flexible, *) > 1) + max(per_cpu(nr_cpu_bp_pinned, *))
+  *            + max(per_cpu(nr_task_bp_pinned, *))) < HBP_NUM
+  */
+-int reserve_bp_slot(struct perf_event *bp)
++static int __reserve_bp_slot(struct perf_event *bp)
+ {
+ 	struct bp_busy_slots slots = {0};
+-	int ret = 0;
+-
+-	mutex_lock(&nr_bp_mutex);
+ 
+ 	fetch_bp_busy_slots(&slots, bp);
+ 
+ 	/* Flexible counters need to keep at least one slot */
+-	if (slots.pinned + (!!slots.flexible) == HBP_NUM) {
+-		ret = -ENOSPC;
+-		goto end;
+-	}
++	if (slots.pinned + (!!slots.flexible) == HBP_NUM)
++		return -ENOSPC;
+ 
+ 	toggle_bp_slot(bp, true);
+ 
+-end:
++	return 0;
++}
++
++int reserve_bp_slot(struct perf_event *bp)
++{
++	int ret;
++
++	mutex_lock(&nr_bp_mutex);
++
++	ret = __reserve_bp_slot(bp);
++
+ 	mutex_unlock(&nr_bp_mutex);
+ 
+ 	return ret;
+ }
+ 
++static void __release_bp_slot(struct perf_event *bp)
++{
++	toggle_bp_slot(bp, false);
++}
++
+ void release_bp_slot(struct perf_event *bp)
+ {
+ 	mutex_lock(&nr_bp_mutex);
+ 
+-	toggle_bp_slot(bp, false);
++	__release_bp_slot(bp);
+ 
+ 	mutex_unlock(&nr_bp_mutex);
+ }
+ 
++/*
++ * Allow the kernel debugger to reserve breakpoint slots without
++ * taking a lock using the dbg_* variant of for the reserve and
++ * release breakpoint slots.
++ */
++int dbg_reserve_bp_slot(struct perf_event *bp)
++{
++	if (mutex_is_locked(&nr_bp_mutex))
++		return -1;
++
++	return __reserve_bp_slot(bp);
++}
++
++int dbg_release_bp_slot(struct perf_event *bp)
++{
++	if (mutex_is_locked(&nr_bp_mutex))
++		return -1;
++
++	__release_bp_slot(bp);
++
++	return 0;
++}
+ 
+ int register_perf_hw_breakpoint(struct perf_event *bp)
+ {
 -- 
-js
+1.6.4.rc1
+
