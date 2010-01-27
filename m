@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458Ab0A0PjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490Ab0A0Pl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755458Ab0A0PjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 10:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390Ab0A0PjS
+	id S1755490Ab0A0Pl0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 10:41:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353Ab0A0PlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 10:39:18 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:33157 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754047Ab0A0PjR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 10:39:17 -0500
+	Wed, 27 Jan 2010 10:41:25 -0500
+Received: from mail.cs.nmsu.edu ([128.123.64.3]:45730 "EHLO mail.cs.nmsu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932150Ab0A0PlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 10:41:23 -0500
+Message-ID: <75047b2add1f00d12eeb359b9645bd90.squirrel@intranet.cs.nmsu.edu>
+In-Reply-To: <201001271635.26295.oliver@neukum.org>
+References: <3026aa4769d53c108ee0671f2b17c668.squirrel@intranet.cs.nmsu.edu>
+    <alpine.LRH.2.00.1001270018570.15694@twin.jikos.cz>
+    <fd35fcc83b1a4ae5dd4daba3cf596c5d.squirrel@intranet.cs.nmsu.edu>
+    <201001271635.26295.oliver@neukum.org>
+Date: Wed, 27 Jan 2010 08:41:15 -0700
+Subject: Re: usbhid driver: replacing resume or using a post resume function
+From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+To: "Oliver Neukum" <oliver@neukum.org>
+Cc: "Jiri Kosina" <jkosina@suse.cz>, "Linux" <linux-kernel@vger.kernel.org>,
+       "Linux USB" <linux-usb@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-X-Originating-IP: [66.187.234.200]
-In-Reply-To: <aacba7e1001261621v6abb4270i996a28d19c9f7d7@mail.gmail.com>
-References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
-	 <20100126160243.018b87e3@lxorguk.ukuu.org.uk>
-	 <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
-	 <72dbd3151001261251s606ebf00h86c2ce63293305b6@mail.gmail.com>
-	 <aacba7e1001261621v6abb4270i996a28d19c9f7d7@mail.gmail.com>
-Date: Wed, 27 Jan 2010 10:39:16 -0500
-Message-ID: <be3a4a1001270739u2c0cecfevd87269d947ff7dc0@mail.gmail.com>
-Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
-From: Jarod Wilson <jarod@wilsonet.com>
-To: Vishal Rao <vishalrao@gmail.com>
-Cc: David Rees <drees76@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, trivial@kernel.org, stable@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 7:21 PM, Vishal Rao <vishalrao@gmail.com> wrote:
-> 2010/1/27 David Rees <drees76@gmail.com>:
->> Have there been any other reports of NCQ issues with similar Crucial
->> drives or Indilinx?
+Oliver Neukum wrote:
+> Am Mittwoch, 27. Januar 2010 15:57:48 schrieb Rick L. Vinyard, Jr.:
+>> I think the most common case would be for something like the G13 to
+>> re-establish settings, which from the few devices I'm familiar with
+>> would
+>> need to restart the hid subsystem first and then re-establish through
+>> feature reports, et. al. after the hid_resume().
+>>
+>> Also, that means that usbhid's hid_resume() doesn't need to be exposed
+>> in
+>> the API, or even need to be usb specific.
 >
-> I haven't personally seen reports of NCQ specific issues. I have seen
-> people (online) reporting "issues" with Linux distro installations
-> hanging/freezing etc. and some prior attempts at SMART fixes which
-> I also initially tried but did not work for me.
+> If you do do this please document that you may use only GFP_NOIO
+> and GFP_ATOMIC in that context.
 >
-> I have tried to "publicise" this issue (forum, blog, mailing list posts)
-> in the hope more users may search and identify the correct issue
-> so that it may be better verified.
+> 	Regards
+> 		Oliver
 >
-> Unfortunately, the Crucial ID string is not model-agnostic (if thats
-> the right term)... meaning the patch has 3 lines to ID the 3 current
-> models that I know of including my own 128 GB model.
->
-> Not sure if there's a better, more generic way to match a whole group
-> of SSDs (same model family or various vendors) which trigger NCQ errors?
 
-How to define a group gets... Messy. Just as a data point, my own
-Barefoot-based SSD, an OCZ Vertex, has no NCQ-related problems
-whatsoever, so far as I know. Its currently hooked to a Zotac ION
-board, which has ahci-driven sata controllers of some sort, was
-previously in a Dell Studio Hybrid, where it also worked just fine.
+Will do.
 
--- 
-Jarod Wilson
-jarod@wilsonet.com
