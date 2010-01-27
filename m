@@ -1,316 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220Ab0A0HFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288Ab0A0HIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220Ab0A0HFu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 02:05:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078Ab0A0HFt
+	id S1754288Ab0A0HIJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 02:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269Ab0A0HIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 02:05:49 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:49656 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750703Ab0A0HFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 02:05:48 -0500
-Date: Wed, 27 Jan 2010 18:05:42 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for January 27
-Message-Id: <20100127180542.f71a58af.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__27_Jan_2010_18_05_42_+1100_zsCHkC2HyHtGZQnB"
+	Wed, 27 Jan 2010 02:08:07 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57886 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753614Ab0A0HIH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 02:08:07 -0500
+Date: Wed, 27 Jan 2010 08:07:53 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Greg KH <greg@kroah.com>, Jonathan Cameron <kernel@jic23.retrosnub.co.uk>,
+       Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Manuel Stahl <manuel.stahl@iis.fraunhofer.de>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
+       "Getz, Robin" <Robin.Getz@analog.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
+       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
+       Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [RFC] Staging:IIO: New ABI
+Message-ID: <20100127070752.GB16672@ucw.cz>
+References: <4B571DA4.6070603@cam.ac.uk> <20100120153748.GA29401@kroah.com> <4B573501.9090001@jic23.retrosnub.co.uk> <20100122204718.GA15759@kroah.com> <20100123001414.GB14538@core.coreip.homeip.net> <20100123003112.GA7836@kroah.com> <20100126093422.GA3480@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100126093422.GA3480@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__27_Jan_2010_18_05_42_+1100_zsCHkC2HyHtGZQnB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+> > > Nope. And I am also interested in this since I am sittign on a bunch of
+> > > accelerometers, magnetometers, etc drivers that are trying to plug into
+> > > input sysbsystem and quite unsure what to do with them.
+> > > 
+> > > It was OK whch HDAPS and friends when they were using input for
+> > > secondary, toyish purposes, but these new drivers trying to use input
+> > > devnts as primary API and I am unsure if it is the best solution.
+> > > Accelerometer might be used as an input device but not always an input
+> > > device.
+> > 
+> > Yeah, I see it using a joystick interface, which might be acceptable for
+> > "toy" devices like you say.
+> > 
+> > But for "real" ones, we should do something else.
+> > 
+> > Maybe, for devices that are going to be used by x.org, like the "toy"
+> > ones, we stick with the current input interface, but for others, we use
+> > a "real" interface, probably through hwmon, so that users can get the
+> > real data out in a consistant manner.
+> 
+> I'd rather have all of them use real interface and then have a bridge
+> to input module to enable toyish mode (unless the device in question
+> is really truly an input device).
 
-Changes since 20100125:
-
-Removed tree: mtd-current (at maintainer's request)
-
-The ceph tree lost its conflict.
-
-The gfs2 tree gained a conflict against the vfs tree.
-
-The vfs tree gained a build failure so I used the version from
-next-20100125.
-
-The pci tree gained a build failure for which I (re)applied a patch.
-
-The vl4-dvb tree lost its conflict, but gained a build failure for which
-I applied a patch.
-
-The kvm tree gained a conflict against Linus' tree.
-
-The net tree gained a build failure for which I applied a merge fixup.
-
-The input tree lost its build failure.
-
-The pcmcia tree lost its build failure.
-
-The mfd tree lost its conflicts.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 156 trees (counting Linus' and 22 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/for-linus
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-CONFLICT (content): Merge conflict in arch/arm/Makefile
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging samsung/next-samsung
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-CONFLICT (content): Merge conflict in fs/gfs2/super.c
-Merging jfs/next
-Merging logfs/master
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-CONFLICT (add/add): Merge conflict in fs/9p/cache.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in fs/gfs2/ops_inode.c
-Applying: logfs: fixup for write_inode API change
-$ git reset --hard HEAD^
-Merging refs/next/20100125/vfs
-CONFLICT (content): Merge conflict in fs/gfs2/ops_inode.c
-Merging pci/linux-next
-Applying: logfs: fixup for write_inode API change
-Merging hid/for-next
-Merging quilt/i2c
-Merging bjdooks-i2c/next-i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging kbuild/for-next
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-CONFLICT (content): Merge conflict in arch/x86/kvm/mmu.c
-CONFLICT (content): Merge conflict in arch/x86/kvm/x86.c
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Applying: net: merge fixup for qlge_main
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging tmio-mmc/linux-next
-CONFLICT (content): Merge conflict in drivers/mfd/asic3.c
-CONFLICT (content): Merge conflict in drivers/mfd/t7l66xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6387xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6393xb.c
-CONFLICT (add/add): Merge conflict in drivers/mfd/tmio_core.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.h
-CONFLICT (content): Merge conflict in include/linux/mfd/tmio.h
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_fsnotify.c
-CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_user.c
-CONFLICT (content): Merge conflict in include/linux/fs.h
-CONFLICT (content): Merge conflict in include/linux/fsnotify.h
-Merging irda/for-next
-CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in include/linux/Kbuild
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging spi/next-spi
-Merging limits/writable_limits
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-Merging omap_dss2/for-next
-Merging als/for-next
-Merging tip/auto-latest
-Merging edac-amd/for-next
-Merging oprofile/for-next
-Merging percpu/for-next
-Applying: slab: update for percpu API change
-Merging workqueues/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging sysctl/master
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-CONFLICT (delete/modify): drivers/staging/sm7xx/smtc2d.c deleted in quilt/s=
-taging and modified in HEAD. Version HEAD of drivers/staging/sm7xx/smtc2d.c=
- left in tree.
-CONFLICT (delete/modify): drivers/staging/sm7xx/smtc2d.h deleted in quilt/s=
-taging and modified in HEAD. Version HEAD of drivers/staging/sm7xx/smtc2d.h=
- left in tree.
-$ git rm -f drivers/staging/sm7xx/smtc2d.c drivers/staging/sm7xx/smtc2d.h
-Merging scsi-post-merge/master
-Applying: pci: PCIE_PME seems to depend on ACPI
-Applying: V4L/DVB: using vmalloc requires include of linux/vmalloc.h
-
---Signature=_Wed__27_Jan_2010_18_05_42_+1100_zsCHkC2HyHtGZQnB
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktf5cYACgkQjjKRsyhoI8wMYwCfSFNXCun+LCXiS+vWRU3+IfRn
-DdAAoKHV78zK9oB4hutZ+XudtFzE3nND
-=yEXy
------END PGP SIGNATURE-----
-
---Signature=_Wed__27_Jan_2010_18_05_42_+1100_zsCHkC2HyHtGZQnB--
+Well, if you look at the PDA class devices, they really use
+magnetometers and accelerometers for input. I guess we should look at
+better support in input...
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
