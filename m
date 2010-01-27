@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288Ab0A0HIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357Ab0A0HKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754288Ab0A0HIJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 02:08:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269Ab0A0HIH
+	id S1754357Ab0A0HKE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 02:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329Ab0A0HKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 02:08:07 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57886 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753614Ab0A0HIH (ORCPT
+	Wed, 27 Jan 2010 02:10:00 -0500
+Received: from ernst.netinsight.se ([194.16.221.21]:51465 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754302Ab0A0HKA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 02:08:07 -0500
-Date: Wed, 27 Jan 2010 08:07:53 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg KH <greg@kroah.com>, Jonathan Cameron <kernel@jic23.retrosnub.co.uk>,
-       Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Manuel Stahl <manuel.stahl@iis.fraunhofer.de>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
-       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
-       "Getz, Robin" <Robin.Getz@analog.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
-       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
-       Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [RFC] Staging:IIO: New ABI
-Message-ID: <20100127070752.GB16672@ucw.cz>
-References: <4B571DA4.6070603@cam.ac.uk> <20100120153748.GA29401@kroah.com> <4B573501.9090001@jic23.retrosnub.co.uk> <20100122204718.GA15759@kroah.com> <20100123001414.GB14538@core.coreip.homeip.net> <20100123003112.GA7836@kroah.com> <20100126093422.GA3480@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100126093422.GA3480@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 Jan 2010 02:10:00 -0500
+Date: Wed, 27 Jan 2010 08:09:50 +0100
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Provide ways of crashing the kernel through debugfs
+Message-ID: <20100127080950.15685695@marrow.netinsight.se>
+In-Reply-To: <2375c9f91001261853t1158a66aw86546a61e613338f@mail.gmail.com>
+References: <20100126105640.6bf9488c@marrow.netinsight.se>
+	<2375c9f91001260208t31379702tb49cb57d12d5890b@mail.gmail.com>
+	<20100126111853.10890fc6@marrow.netinsight.se>
+	<2375c9f91001261853t1158a66aw86546a61e613338f@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 27 Jan 2010 10:53:23 +0800
+Américo Wang <xiyou.wangcong@gmail.com> wrote:
 
-> > > Nope. And I am also interested in this since I am sittign on a bunch of
-> > > accelerometers, magnetometers, etc drivers that are trying to plug into
-> > > input sysbsystem and quite unsure what to do with them.
-> > > 
-> > > It was OK whch HDAPS and friends when they were using input for
-> > > secondary, toyish purposes, but these new drivers trying to use input
-> > > devnts as primary API and I am unsure if it is the best solution.
-> > > Accelerometer might be used as an input device but not always an input
-> > > device.
-> > 
-> > Yeah, I see it using a joystick interface, which might be acceptable for
-> > "toy" devices like you say.
-> > 
-> > But for "real" ones, we should do something else.
-> > 
-> > Maybe, for devices that are going to be used by x.org, like the "toy"
-> > ones, we stick with the current input interface, but for others, we use
-> > a "real" interface, probably through hwmon, so that users can get the
-> > real data out in a consistant manner.
+> >> Hey, we already have /proc/sysrq-trigger, you need to state why
+> >> it is better than using /proc/sysrq-trigger.
+> >
+> > Well, it provides a few more ways of crashing the kernel. That's
+> > basically the only additional feature you'll get.
 > 
-> I'd rather have all of them use real interface and then have a bridge
-> to input module to enable toyish mode (unless the device in question
-> is really truly an input device).
+> Yeah, I can see that, but why do I need to care how I crash the kernel
+> as long as I can crash it in a way.
 
-Well, if you look at the PDA class devices, they really use
-magnetometers and accelerometers for input. I guess we should look at
-better support in input...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I understand what you mean, and I'm fine if this doesn't get merged.
+
+Thanks for the comments!
+
+// Simon
