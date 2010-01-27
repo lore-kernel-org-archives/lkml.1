@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354Ab0A0TX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572Ab0A0TXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754354Ab0A0TX0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 14:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107Ab0A0TXZ
+	id S1754572Ab0A0TXh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 14:23:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498Ab0A0TXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 14:23:25 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:37945 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753991Ab0A0TXV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 14:23:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aUOAQCz4z11y1H9y3tSF4mJGNXjD/wYorEgbzDvzaD+81Yxd4YbgchSmU1TkidLkmU
-         zWaIS6n3svJ6/63kJB533MTqjMACJv13/LXFhAXIuj4vJncb2IKTAltQTyI6DqPIhmDY
-         kCJK5AKUmEIyROjXzQ0aAR/rHOQ2QdAenCRss=
-Date: Wed, 27 Jan 2010 20:23:12 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-Message-ID: <20100127192312.GA3135@del.dom.local>
-References: <4B5A33D8.90501@majjas.com>
- <20100122234656.GC3105@del.dom.local>
- <4B5A39BD.8020305@majjas.com>
- <20100123232133.GA3487@del.dom.local>
- <4B605D1B.60402@majjas.com>
- <20100127085049.5b5048e9@nehalam>
- <4B60707F.1000608@majjas.com>
- <20100127095614.14313677@nehalam>
- <4B608128.7090607@majjas.com>
- <4B6089C7.4010803@majjas.com>
+	Wed, 27 Jan 2010 14:23:35 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:56124 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754492Ab0A0TXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 14:23:33 -0500
+Message-ID: <4B60919E.1020900@zytor.com>
+Date: Wed, 27 Jan 2010 11:18:54 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B6089C7.4010803@majjas.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Peter Zijlstra <peterz@infradead.org>, Tom Tromey <tromey@redhat.com>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       utrace-devel@redhat.com, Thomas Gleixner <tglx@linutronix.de>,
+       JimKeniston <jkenisto@us.ibm.com>
+Subject: Re: linux-next: add utrace tree
+References: <20100121013822.28781960.sfr@canb.auug.org.au>  <20100122005147.GD22003@redhat.com>  <20100121170541.7425ff10.akpm@linux-foundation.org>  <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>  <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com>  <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>  <20100122221348.GA4263@redhat.com>  <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>  <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>  <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>  <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>  <m33a1tnbd9.fsf@fleche.redhat.com>  <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>  <m3636oh2rt.fsf@fleche.redhat.com>  <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain> <1264575134.4283.1983.camel@laptop> <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 01:45:27PM -0500, Michael Breuer wrote:
-> On 1/27/2010 1:08 PM, Michael Breuer wrote:
-> >On 01/27/2010 12:56 PM, Stephen Hemminger wrote:
-> >>--- a/drivers/net/sky2.c    2010-01-27 09:46:10.940005248 -0800
-> >>+++ b/drivers/net/sky2.c    2010-01-27 09:53:47.141267850 -0800
-> >>@@ -2257,13 +2257,16 @@ static struct sk_buff *receive_copy(stru
-> >>
-> >>      skb = netdev_alloc_skb_ip_align(sky2->netdev, length);
-> >>      if (likely(skb)) {
-> >>+        unsigned dma_align = dma_get_cache_alignment();
-> >>+        unsigned dma_size = ALIGN(length+1, dma_align);
-> >>+
-> >>          pci_dma_sync_single_for_cpu(sky2->hw->pdev, re->data_addr,
-> >>-                        length, PCI_DMA_FROMDEVICE);
-> >>+                        dma_size, PCI_DMA_FROMDEVICE);
-> >>          skb_copy_from_linear_data(re->skb, skb->data, length);
-> >>          skb->ip_summed = re->skb->ip_summed;
-> >>          skb->csum = re->skb->csum;
-> >>          pci_dma_sync_single_for_device(sky2->hw->pdev, re->data_addr,
-> >>-                           length, PCI_DMA_FROMDEVICE);
-> >>+                           dma_size, PCI_DMA_FROMDEVICE);
-> >>          re->skb->ip_summed = CHECKSUM_NONE;
-> >>          skb_put(skb, length);
-> >>      }
-> >This doesn't apply - I'm missing some intermediate patch.
-> >
-> >I've got (both in 2.6.32.4 and 2.6.33-rc5: pci_unmap_len(re,
-> >data_size) vs., "length." I assume that I can just replace the
-> >pci_unmap_len with dma_size... but perhaps the intermediate change
-> >may have affected this as well?
-> >
-> Never mind - that was from one of the earlier patches I had been
-> trying out. will try the above patch after reestablishing that the
-> system still crashes without copybreak=1.
+On 01/27/2010 02:43 AM, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 27 Jan 2010, Peter Zijlstra wrote:
+>>
+>> Right, so you're going to love uprobes, which does exactly that. The
+>> current proposal is overwriting the target instruction with an INT3 and
+>> injecting an extra vma into the target process's address space
+>> containing the original instruction(s) and possible jumps back to the
+>> old code stream.
+> 
+> Just out of interest, how does it handle the threading issue?
+> 
+> Last I saw, at least some CPU people were _very_ nervous about overwriting 
+> instructions if another CPU might be just about to execute them.
+> 
+> Even the "overwrite only the first byte with 'int3'" made them go "umm, I 
+> need to talk to some core CPU people to see if that's ok". They mumble 
+> about possible CPU errata, I$ coherency, instruction retry etc.
 > 
 
-Stephen, I'm not sure this patch can show much after the patch with
-"legal" dma_size == re->data_addr didn't help. It looks like David
-was right: dma_sync can't affect dmar, because it doesn't use it at
-all.
+We actually went through a review of that here at Intel.  We do not yet
+have an *official* answer (in order for us to have that we have to have
+it approved by the architecture committee and published in the SDM), but
+to the best of our current knowledge (and I'm allowed to say this) the
+int3 method followed by global IPIs should be safe for modifying *one
+(atomic) instruction*.  This is a specific case of a more general rule,
+but I don't want to disclose the whole rule until it has been officially
+approved.
 
-Then I'd rather suggest to test if using copybreak more often, e.g.
-with copybreak=1000 or even more can trigger these errors faster.
+> I realize kprobes does this very thing, but kprobes is esoteric stuff and 
+> doesn't have much choice. In user space, you _could_ do the modification 
+> on a different physical page and then just switch the page table entry 
+> instead, and not get into the whole D$/I$ coherency thing at all.
 
-Jarek P.
+On the more general rule of interpretation: I'm really concerned about
+having a bunch of partially-capable x86 interpreters all over the
+kernel.  x86 is *hard* to emulate, and it will only get harder as the
+architecture evolves.
+
+	-hpa
