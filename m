@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489Ab0A0Ajw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176Ab0A0AtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489Ab0A0Ajw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:39:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361Ab0A0Aju
+	id S1755176Ab0A0AtM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:49:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912Ab0A0AtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:39:50 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:14263 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754301Ab0A0Ajs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:39:48 -0500
-To: Tom Tromey <tromey@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-References: <20100121013822.28781960.sfr@canb.auug.org.au>
-	<20100122005147.GD22003@redhat.com>
-	<20100121170541.7425ff10.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
-	<20100122182827.GA13185@redhat.com>
-	<20100122200129.GG22003@redhat.com>
-	<alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
-	<20100122221348.GA4263@redhat.com>
-	<alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
-	<alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
-	<f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
-	<alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>
-	<m33a1tnbd9.fsf@fleche.redhat.com>
-	<alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
-	<m3636oh2rt.fsf@fleche.redhat.com>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Tue, 26 Jan 2010 19:38:45 -0500
-In-Reply-To: <m3636oh2rt.fsf@fleche.redhat.com> (Tom Tromey's message of "Tue, 26 Jan 2010 16:20:22 -0700")
-Message-ID: <y0m1vhcfkkq.fsf@fche.csb>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Tue, 26 Jan 2010 19:49:10 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:56050 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754909Ab0A0AtI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 19:49:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=w4/LZcFsEhE1Cw76VA9UOnNF1rqAneL/WGQA4BbpwsxEJcXb525+LdWP/jZqCz9N7i
+         k/iMyTtT71byEGvwLql5oBQB39xLb9i5dAyFZiOYGsOnQtg5w1z579aPgSyZToZvGbEZ
+         4WcBOrWiCt9AxGHwIL8aLvpemEYkgbjqdr7MQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <72dbd3151001261632t7bbe43d0nb7490eae02185c81@mail.gmail.com>
+References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
+	 <20100126160243.018b87e3@lxorguk.ukuu.org.uk>
+	 <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>
+	 <72dbd3151001261251s606ebf00h86c2ce63293305b6@mail.gmail.com>
+	 <aacba7e1001261621v6abb4270i996a28d19c9f7d7@mail.gmail.com>
+	 <72dbd3151001261632t7bbe43d0nb7490eae02185c81@mail.gmail.com>
+Date: Wed, 27 Jan 2010 06:19:05 +0530
+Message-ID: <aacba7e1001261649v6f5cc037h41adcf253b978386@mail.gmail.com>
+Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
+From: Vishal Rao <vishalrao@gmail.com>
+To: David Rees <drees76@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, stable@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2010/1/27 David Rees <drees76@gmail.com>:
+> So my concern is that you're proposing to black list NCQ for all users
+> of those particular models of SSD when it's more likely at this point
+> that it's a problem with your specific setup.
 
-tromey wrote:
+Yes, a valid concern. I guess I didn't delve more because it's working
+fine on my copy of Windows 7 RC (on the same hardware) with no sign
+of error logs and pretty much the same perf as Linux with NCQ forced off.
 
-> [...]
-> In non-stop mode (where you can stop one thread but leave the others
-> running), gdb wants to have the breakpoints always inserted.  So,
-> something must emulate the displaced instruction.
+What I can do personally is plug in my SSD into my tablet PC sitting next
+to me and do a few more tests and get back to you all - it could be a couple
+of days. I know its still just one user (me) reporting though.
 
-This sounds like the sort of thing that kernel kprobes do, which the
-uprobes patch does for userspace.  The gdbstub prototype can use
-uprobes for such "displaced" breakpoints, and single-step-out-of-line
-to execute them on a few platforms like x86-*.  This is already
-prototyped / working.  (gdbstub currently restricts itself to
-single-threaded programs only, but that's another todo.)
+FYI I had posted on the manufacturer's website/forums (quite active with
+a lot of owners) and got NO response indicating there aren't too many
+Linux users with this model - again "can't prove a negative" sort of way.
 
-- FChE
+In any case, the workaround (should anyone face this issue) is to simply
+add " libata.force=noncq " to the kernel boot options.
