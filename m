@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800Ab0A0Jnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913Ab0A0Jnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800Ab0A0Jnd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 04:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260Ab0A0Jnc
+	id S1753913Ab0A0Jnq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 04:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847Ab0A0Jnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 04:43:32 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:23326 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752536Ab0A0Jnb (ORCPT
+	Wed, 27 Jan 2010 04:43:45 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:43022 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753827Ab0A0Jno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 04:43:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=RZTp2hqsIIx3UFmMkrnSTpj4NJp9J6wX8sQB/iPe0dROClei15qzxsHm3yaK6Voewx
-         NbMCDGwhSZHu1qpd8apkZM9bjUFZeGKvhtMFLBrIJ5UKD+6ifDjCUp4vlRJZI2goSx1C
-         et7uLYn3J+uohAX4RHKqnlIMP4KoRDMubQzng=
-Message-ID: <4B600AB7.3070705@gmail.com>
-Date: Wed, 27 Jan 2010 10:43:19 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
+	Wed, 27 Jan 2010 04:43:44 -0500
+Date: Wed, 27 Jan 2010 10:43:36 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH RFC tip/core/rcu] accelerate grace period if last
+	non-dynticked CPU
+Message-ID: <20100127094336.GA12522@basil.fritz.box>
+References: <20100125034816.GA14043@linux.vnet.ibm.com> <873a1sft9q.fsf@basil.nowhere.org> <20100127052050.GC6807@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org, mm-commits@vger.kernel.org, joe@perches.com,
-       bzolnier@gmail.com, jens.axboe@oracle.com, marcin.slusarz@gmail.com,
-       shemminger@vyatta.com
-Subject: Re: + drivers-block-floppyc-remove-copyin-copyout-and-ecall-macros.patch
- added to -mm tree
-References: <201001270037.o0R0bqQC032566@imap1.linux-foundation.org>
-In-Reply-To: <201001270037.o0R0bqQC032566@imap1.linux-foundation.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100127052050.GC6807@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/27/2010 01:37 AM, akpm@linux-foundation.org wrote:
-> @@ -3145,7 +3136,9 @@ static inline int raw_cmd_copyout(int cm
->  	int ret;
->  
->  	while (ptr) {
-> -		COPYOUT(*ptr);
-> +		ret = copy_to_user((void __user *)param, ptr, sizeof(*ptr));
-> +		if (ret)
-> +			return -EFAULT;
->  		param += sizeof(struct floppy_raw_cmd);
->  		if ((ptr->flags & FD_RAW_READ) && ptr->buffer_length) {
->  			if (ptr->length >= 0 &&
-> @@ -3195,7 +3188,9 @@ static inline int raw_cmd_copyin(int cmd
->  		if (!ptr)
->  			return -ENOMEM;
->  		*rcmd = ptr;
-> -		COPYIN(*ptr);
-> +		ret = copy_from_user(ptr, (void __user *)param, sizeof(*ptr));
+On Tue, Jan 26, 2010 at 09:20:50PM -0800, Paul E. McKenney wrote:
+> On Tue, Jan 26, 2010 at 10:30:57PM +0100, Andi Kleen wrote:
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+> > 
+> > Kind of offtopic to the original patch, but I couldn't 
+> > resist...
+> > 
+> > > +config RCU_FAST_NO_HZ
+> > > +	bool "Accelerate last non-dyntick-idle CPU's grace periods"
+> > > +	depends on TREE_RCU && NO_HZ && SMP
+> > 
+> > Having such a thing as a config option doesn't really make 
+> > any sense to me. Who would want to recompile their kernel
+> > to enable/disable this? If anything it should be runtime, or better
+> > just unconditionally on.
+> 
+> It adds significant overhead on entry to dyntick-idle mode for systems
+> with large numbers of CPUs.  :-(
 
-Actually the casts are not needed anymore, are they?
+Can't you simply check that at runtime then?
+
+if (num_possible_cpus() > 20) 
+	...
+
+BTW the new small is large. This years high end desktop PC will come with 
+upto 12 CPU threads. It would likely be challenging to find a good
+number for 20 that holds up with the future.
+
+Or better perhaps have some threshold that you don't do it 
+that often, or only do it when you expect to be idle for a long
+enough time that the CPU can enter deeper idle states
+
+(I higher idle states some more wakeups typically don't matter
+that much)
+
+The cpufreq/cstate governour have a reasonable good idea
+now how "idle" the system is and will be. Maybe you can reuse
+that information somehow.
+	
+-Andi
 
 -- 
-js
+ak@linux.intel.com -- Speaking for myself only.
