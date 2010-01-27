@@ -1,38 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932234Ab0A0Xf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932254Ab0A0XgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932234Ab0A0Xf7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 18:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431Ab0A0Xf6
+	id S932254Ab0A0XgT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 18:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932245Ab0A0XgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 18:35:58 -0500
-Received: from mailhub2.otago.ac.nz ([139.80.64.247]:47039 "EHLO
-	mailhub2.otago.ac.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719Ab0A0Xf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 18:35:58 -0500
-X-Greylist: delayed 1151 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jan 2010 18:35:57 EST
-Message-Id: <A1D71FDC-3176-4792-83ED-3ACAA3D61CFF@cs.otago.ac.nz>
-From: zhiyi <zhuang@cs.otago.ac.nz>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Wed, 27 Jan 2010 18:36:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48265 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932243Ab0A0XgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 18:36:15 -0500
+Message-ID: <4B60CD99.7020305@kernel.org>
+Date: Wed, 27 Jan 2010 15:34:49 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeff Garrett <jeff@jgarrett.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with pci=use_crs)
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <201001271345.54454.bjorn.helgaas@hp.com> <alpine.LFD.2.00.1001271247450.3570@localhost.localdomain> <201001271403.41955.bjorn.helgaas@hp.com>
+In-Reply-To: <201001271403.41955.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: nr_cpu_ids incorrect on AMD Quad-Core Opteron 8380
-Date: Thu, 28 Jan 2010 12:16:44 +1300
-Cc: Zhiyi Huang <hzy@cs.otago.ac.nz>
-X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I have just found the value of nr_cpu_ids is 32, instead of 16 on my  
-new Dell PowerEdge R905 which has 16 cpus (4 quad-core Opteron 8380).  
-However, /proc/cpuinfo displays the right number (16).
-I have searched the archive but found no related subject.  Is there  
-any patch already available to fix the problem?
-I am using 2.6.31-4 and verified this incorrect value (32) using a  
-module.
-Please CC responses to my personal email.
-Cheers,
-Zhiyi
+On 01/27/2010 01:03 PM, Bjorn Helgaas wrote:
+> On Wednesday 27 January 2010 01:50:12 pm Linus Torvalds wrote:
+>>
+>> On Wed, 27 Jan 2010, Bjorn Helgaas wrote:
+>>>
+>>> Without intel_bus.c, we essentially assume config 1 all the time.
+>>> If we keep intel_bus.c and this patch for .33, things should work
+>>> for configs 1 and 4.  Adding support for config 4 is good.
+>>
+>> Quite frankly, is there any major downside to just disabling/removing 
+>> intel_bus.c for 2.6.33? If we're not planning on having it in the long run 
+>> anyway - or even if we are, but we can't be really happy about the state 
+>> of it as it would be in 2.6.33, not using it at all seems to be the 
+>> smaller headache.
+>>
+>> The machines that it helps are also the machines where you can fix things 
+>> up with 'use_csr', no? And they are pretty rare, and they didn't use to 
+>> work without that use_csr in 2.6.32 either, so it's not even a regression.
+>>
+>> Am I missing something?
+> 
+> Only that when we added intel_bus.c, Yinghai reported that the reason
+> was because a machine had a broken _CRS, so "pci=use_crs" wouldn't help.
+> 
+> At the time, Windows hadn't been brought up on that box.  My
+> speculation is that by now, they've done that bringup and probably
+> fixed the _CRS issue, so it might work now.
+> 
+> If that's the case, we could drop intel_bus.c from .33 and just use
+> "pci=use_crs" on those boxes until we can figure out how to turn it
+> on automatically.
+
+BIOS fixed that problem already. but
+1. how to turn that pci=use_crs for that box automatically ?
+how about our other kind of boxes?
+2. how about when apci is disabled?
+
+let's apply that patch at first, and wait for intel give us info about which bit is used to enable routing set up.
+
+YH
+
