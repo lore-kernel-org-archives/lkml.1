@@ -1,72 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438Ab0A0LNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474Ab0A0LPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754438Ab0A0LNi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 06:13:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427Ab0A0LNh
+	id S1754474Ab0A0LPq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 06:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459Ab0A0LPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 06:13:37 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:45297 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754413Ab0A0LNg (ORCPT
+	Wed, 27 Jan 2010 06:15:45 -0500
+Received: from mga06.intel.com ([134.134.136.21]:54886 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754453Ab0A0LPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 06:13:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=BR+Uzg5ODh9iS7kFSQY/idTBFSccn8usudxkefQ14wItLaIx/5Z7hBJyUFrmmqOj/C
-         llfkRa/Wl24OAmhucuJqC8wg/4180n3WbiF/SYWgam1CAvnRhyxycYNFQu4Ix/fSbs4K
-         vADn7LHYuArbsl/hx3O8eZcFfX969kV5Q3eLw=
-Date: Wed, 27 Jan 2010 14:13:25 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: bug list: assigning negative values to unsigned variables
-Message-ID: <20100127111325.GC24796@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Julia Lawall <julia@diku.dk>, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20100127104011.GA24796@bicker> <Pine.LNX.4.64.1001271155430.20256@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.1001271155430.20256@ask.diku.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 27 Jan 2010 06:15:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,352,1262592000"; 
+   d="scan'208";a="487433209"
+From: Chris Wilson <chris@chris-wilson.co.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Roman Jarosz <kedgedev@gmail.com>,
+       A Rojas <nqn1976list@gmail.com>,
+       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
+       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
+       linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+       Chris Wilson <chris@chris-wilson.co.uk>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       stable@kernel.org
+Subject: [PATCH] drm/i915: Selectively enable self-reclaim
+Date: Wed, 27 Jan 2010 11:14:04 +0000
+Message-Id: <1264590844-22972-1-git-send-email-chris@chris-wilson.co.uk>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <alpine.LFD.2.00.1001270252290.24253@localhost.localdomain>
+References: <alpine.LFD.2.00.1001270252290.24253@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 11:57:06AM +0100, Julia Lawall wrote:
-> On Wed, 27 Jan 2010, Dan Carpenter wrote:
-> 
-> > Fixing the places which assign negative values to unsigned variables is a good janitor task.
-> 
-> I had the impression that assignment to -1 was done sometimes as a 
-> portable way to initialize the variable to 0xffff (for any number of f's).  
-> So perhaps it is not so trivial to fix.
-> 
-> julia
-> 
+Having missed the ENOMEM return via i915_gem_fault(), there are probably
+other paths that I also missed. By not enabling NORETRY by default these
+paths can run the shrinker and take memory from the system (but not from
+our own inactive lists because our shrinker can not run whilst we hold
+the struct mutex) and this may allow the system to survive a little longer
+whilst our drivers consume all available memory.
 
-The grep removed those.
+References:
+  OOM killer unexpectedly called with kernel 2.6.32
+  http://bugzilla.kernel.org/show_bug.cgi?id=14933
 
-> > This list is from smatch:  grep -w "fit into 0" warns.txt | grep -v "\-1" | tee err-list
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Eric Anholt <eric@anholt.net>
+Cc: stable@kernel.org
+---
+ drivers/gpu/drm/drm_gem.c       |   13 -------------
+ drivers/gpu/drm/i915/i915_gem.c |   22 ++++++++++------------
+ 2 files changed, 10 insertions(+), 25 deletions(-)
 
-Also it removed some other real bugs as well, which I have listed below.  It 
-should have been:  grep -w "fit into 0" warns.txt | grep -vw "\-1" | tee err-list
+diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
+index e9dbb48..8bf3770 100644
+--- a/drivers/gpu/drm/drm_gem.c
++++ b/drivers/gpu/drm/drm_gem.c
+@@ -142,19 +142,6 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
+ 	if (IS_ERR(obj->filp))
+ 		goto free;
+ 
+-	/* Basically we want to disable the OOM killer and handle ENOMEM
+-	 * ourselves by sacrificing pages from cached buffers.
+-	 * XXX shmem_file_[gs]et_gfp_mask()
+-	 */
+-	mapping_set_gfp_mask(obj->filp->f_path.dentry->d_inode->i_mapping,
+-			     GFP_HIGHUSER |
+-			     __GFP_COLD |
+-			     __GFP_FS |
+-			     __GFP_RECLAIMABLE |
+-			     __GFP_NORETRY |
+-			     __GFP_NOWARN |
+-			     __GFP_NOMEMALLOC);
+-
+ 	kref_init(&obj->refcount);
+ 	kref_init(&obj->handlecount);
+ 	obj->size = size;
+diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+index 28b8f03..1ef5b54 100644
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -336,25 +336,25 @@ i915_gem_object_set_page_gfp_mask (struct drm_gem_object *obj, gfp_t gfp)
+ static int
+ i915_gem_object_get_pages_or_evict(struct drm_gem_object *obj)
+ {
++	gfp_t gfp;
+ 	int ret;
+ 
++	gfp = i915_gem_object_get_page_gfp_mask(obj);
++	i915_gem_object_set_page_gfp_mask(obj, gfp | __GFP_NORETRY | __GFP_NOWARN);
+ 	ret = i915_gem_object_get_pages(obj);
++	i915_gem_object_set_page_gfp_mask (obj, gfp);
+ 
+ 	/* If we've insufficient memory to map in the pages, attempt
+ 	 * to make some space by throwing out some old buffers.
+ 	 */
+ 	if (ret == -ENOMEM) {
+ 		struct drm_device *dev = obj->dev;
+-		gfp_t gfp;
+ 
+ 		ret = i915_gem_evict_something(dev, obj->size);
+ 		if (ret)
+ 			return ret;
+ 
+-		gfp = i915_gem_object_get_page_gfp_mask(obj);
+-		i915_gem_object_set_page_gfp_mask(obj, gfp & ~__GFP_NORETRY);
+ 		ret = i915_gem_object_get_pages(obj);
+-		i915_gem_object_set_page_gfp_mask (obj, gfp);
+ 	}
+ 
+ 	return ret;
+@@ -2580,6 +2580,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+ 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+ 	struct drm_mm_node *free_space;
+ 	bool retry_alloc = false;
++	gfp_t gfp;
+ 	int ret;
+ 
+ 	if (obj_priv->madv != I915_MADV_WILLNEED) {
+@@ -2623,15 +2624,12 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+ 	DRM_INFO("Binding object of size %zd at 0x%08x\n",
+ 		 obj->size, obj_priv->gtt_offset);
+ #endif
+-	if (retry_alloc) {
+-		i915_gem_object_set_page_gfp_mask (obj,
+-						   i915_gem_object_get_page_gfp_mask (obj) & ~__GFP_NORETRY);
+-	}
++	gfp = i915_gem_object_get_page_gfp_mask(obj);
++	if (! retry_alloc)
++		i915_gem_object_set_page_gfp_mask (obj, gfp | __GFP_NORETRY | __GFP_NOWARN);
+ 	ret = i915_gem_object_get_pages(obj);
+-	if (retry_alloc) {
+-		i915_gem_object_set_page_gfp_mask (obj,
+-						   i915_gem_object_get_page_gfp_mask (obj) | __GFP_NORETRY);
+-	}
++	i915_gem_object_set_page_gfp_mask (obj, gfp);
++
+ 	if (ret) {
+ 		drm_mm_put_block(obj_priv->gtt_space);
+ 		obj_priv->gtt_space = NULL;
+-- 
+1.6.6
 
-But you are right assigning -1 is idiomatic.  I'll push a change tomorrow so 
-the grep isn't needed.
-
-regards,
-dan carpenter
-
-drivers/net/bnx2x_link.c +864 bnx2x_cl45_write(38) warn: value -14 can't fit into 0 'rc'
-drivers/net/bnx2x_link.c +884 bnx2x_cl45_write(58) warn: value -14 can't fit into 0 'rc'
-drivers/net/bnx2x_link.c +934 bnx2x_cl45_read(40) warn: value -14 can't fit into 0 'rc'
-drivers/net/bnx2x_link.c +957 bnx2x_cl45_read(63) warn: value -14 can't fit into 0 'rc'
-drivers/pci/hotplug/ibmphp_hpc.c +391 pci_ctrl_write(2) warn: value -19 can't fit into 0 'rc'
-drivers/usb/serial/iuu_phoenix.c +573 iuu_clk(133) warn: value -124 can't fit into 0 '*(priv->buf+Count++)'
-net/llc/llc_station.c +691 llc_station_init(2) warn: value -105 can't fit into 0 'rc'
-net/wireless/wext-compat.c +175 cfg80211_wext_giwrange(34) warn: value -110 can't fit into 0 'range->max_qual.level'
