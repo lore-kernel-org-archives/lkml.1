@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405Ab0A0Wtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430Ab0A0Wua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756405Ab0A0Wtx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 17:49:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756368Ab0A0Wtw
+	id S1756430Ab0A0Wua (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 17:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415Ab0A0Wu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 17:49:52 -0500
-Received: from ironport2-out.teksavvy.com ([206.248.154.181]:61239 "EHLO
-	ironport2-out.pppoe.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756318Ab0A0Wtv (ORCPT
+	Wed, 27 Jan 2010 17:50:29 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58128 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756385Ab0A0Wu2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 17:49:51 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: An8CALhRYEtLd/sX/2dsb2JhbAAIgzGWZa5hj1+BKoI3WAQ
-X-IronPort-AV: E=Sophos;i="4.49,356,1262581200"; 
-   d="scan'208";a="54711038"
-Message-ID: <4B60C30D.4040203@teksavvy.com>
-Date: Wed, 27 Jan 2010 17:49:49 -0500
-From: Mark Lord <kernel@teksavvy.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 27 Jan 2010 17:50:28 -0500
+Date: Wed, 27 Jan 2010 22:43:09 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: adharmap@codeaurora.org
+Cc: linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@elte.hu>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Yinghai Lu <yinghai@kernel.org>, Tony Lindgren <tony@atomide.com>,
+       Santosh Shilimkar <santosh.shilimkar@ti.com>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Kalle Valo <kalle.valo@iki.fi>, Jean Pihet <jpihet@mvista.com>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Colin Tuckley <colin.tuckley@arm.com>,
+       Philby John <pjohn@in.mvista.com>,
+       Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+       Alessandro Rubini <rubini@unipv.it>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       Abhijeet Dharmapurikar <adharmap@quicinc.com>
+Subject: Re: [PATCH 1/5] gic: prevent gic from crossing NR_IRQ
+Message-ID: <20100127224309.GD29665@n2100.arm.linux.org.uk>
+References: <1264620749-24527-1-git-send-email-adharmap@codeaurora.org> <1264620749-24527-2-git-send-email-adharmap@codeaurora.org>
 MIME-Version: 1.0
-To: Vishal Rao <vishalrao@gmail.com>
-CC: Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, stable@kernel.org
-Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
-References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>	 <20100126160243.018b87e3@lxorguk.ukuu.org.uk>	 <aacba7e1001260819k24088c81m14b4c702fccddd29@mail.gmail.com>	 <4B5F62C2.4000800@pobox.com> <aacba7e1001261624m4358e4ebwcf8e2305b0c5fc16@mail.gmail.com>
-In-Reply-To: <aacba7e1001261624m4358e4ebwcf8e2305b0c5fc16@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264620749-24527-2-git-send-email-adharmap@codeaurora.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vishal Rao wrote:
-> 2010/1/27 Jeff Garzik <jgarzik@pobox.com>:
->> On 01/26/2010 11:19 AM, Vishal Rao wrote:
->>> 2010/1/26 Alan Cox<alan@lxorguk.ukuu.org.uk>:
->>>> What controllers did you test with ?
->>> Tested with my own Crucial CT128M225 model which has the IndiLinx
->>> Barefoot controller.
->> By controller, I think Alan meant the host controller (ata_piix, ahci,
->> etc.)?
+On Wed, Jan 27, 2010 at 11:32:25AM -0800, adharmap@codeaurora.org wrote:
+> From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
 > 
-> Oh I see, I have an Intel DP35DP motherboard with onboard IDE controller
-> with AHCI enabled. I hope thats sufficient information for now. I did read
-..
+> The gic code tries to initialize interrupts beyond NR_IRQ. Prevent
+> code from doing that.
 
-Okay, that's ICH9.  I'll see if I have an ICH9 kicking around here
-that I can put an OCZ/Indilinx drive onto.  The current v1.5 OCZ firmware
-is probably pretty close to the 1916 build version that your Crucial has.
+NAK.  This is completely the wrong approach.
 
--ml
+        /*
+         * Find out how many interrupts are supported.
+         */
+        max_irq = readl(base + GIC_DIST_CTR) & 0x1f;
+        max_irq = (max_irq + 1) * 32;
+
+        /*
+         * The GIC only supports up to 1020 interrupt sources.
+         * Limit this to either the architected maximum, or the
+         * platform maximum.
+         */
+        if (max_irq > max(1020, NR_IRQS))
+                max_irq = max(1020, NR_IRQS);
+...
+        for (i = irq_start; i < gic_data[gic_nr].irq_offset + max_irq; i++) {
+
+This function is broken if irq_start != 0, and needs fixing - max_irq
+needs to be limited to the _minimum_ of 1020 or NR_IRQS - irq_start.
