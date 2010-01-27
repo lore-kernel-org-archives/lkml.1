@@ -1,154 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482Ab0A0ABg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679Ab0A0ABw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482Ab0A0ABg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:01:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755584Ab0A0AB0
+	id S1755679Ab0A0ABw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388Ab0A0ABs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:01:26 -0500
-Received: from kroah.org ([198.145.64.141]:35173 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754189Ab0AZXnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 18:43:20 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan 26 15:39:24 2010
-Message-Id: <20100126233924.283455757@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 26 Jan 2010 15:33:52 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+	Tue, 26 Jan 2010 19:01:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40926 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755661Ab0A0ABq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 19:01:46 -0500
+Date: Tue, 26 Jan 2010 16:00:16 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Greg KH <gregkh@suse.de>
+cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Karel Zak <kzak@redhat.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: [26/98] partitions: use sector size for EFI GPT
-In-Reply-To: <20100126233950.GA5372@kroah.com>
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: [61/98] Input: i8042 - remove identification strings from DMI
+ tables
+In-Reply-To: <20100126233928.894956940@mini.kroah.org>
+Message-ID: <alpine.LFD.2.00.1001261559240.17519@localhost.localdomain>
+References: <20100126233928.894956940@mini.kroah.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
-
-------------------
-
-From: Karel Zak <kzak@redhat.com>
-
-commit 7d13af3279985f554784a45cc961f706dbcdbdd1 upstream.
-
-Currently, kernel uses strictly 512-byte sectors for EFI GPT parsing.
-That's wrong.
-
-UEFI standard (version 2.3, May 2009, 5.3.1 GUID Format overview, page
-95) defines that LBA is always based on the logical block size. It
-means bdev_logical_block_size() (aka BLKSSZGET) for Linux.
-
-This patch removes static sector size from EFI GPT parser.
-
-The problem is reproducible with the latest GNU Parted:
-
- # modprobe scsi_debug dev_size_mb=50 sector_size=4096
-
-  # ./parted /dev/sdb print
-  Model: Linux scsi_debug (scsi)
-  Disk /dev/sdb: 52.4MB
-  Sector size (logical/physical): 4096B/4096B
-  Partition Table: gpt
-
-  Number  Start   End     Size    File system  Name     Flags
-   1      24.6kB  3002kB  2978kB               primary
-   2      3002kB  6001kB  2998kB               primary
-   3      6001kB  9003kB  3002kB               primary
-
-  # blockdev --rereadpt /dev/sdb
-  # dmesg | tail -1
-   sdb: unknown partition table      <---- !!!
-
-with this patch:
-
-  # blockdev --rereadpt /dev/sdb
-  # dmesg | tail -1
-   sdb: sdb1 sdb2 sdb3
-
-Signed-off-by: Karel Zak <kzak@redhat.com>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/partitions/efi.c |   23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
-
---- a/fs/partitions/efi.c
-+++ b/fs/partitions/efi.c
-@@ -1,7 +1,9 @@
- /************************************************************
-  * EFI GUID Partition Table handling
-- * Per Intel EFI Specification v1.02
-- * http://developer.intel.com/technology/efi/efi.htm
-+ *
-+ * http://www.uefi.org/specs/
-+ * http://www.intel.com/technology/efi/
-+ *
-  * efi.[ch] by Matt Domsch <Matt_Domsch@dell.com>
-  *   Copyright 2000,2001,2002,2004 Dell Inc.
-  *
-@@ -92,6 +94,7 @@
-  *
-  ************************************************************/
- #include <linux/crc32.h>
-+#include <linux/math64.h>
- #include "check.h"
- #include "efi.h"
- 
-@@ -141,7 +144,8 @@ last_lba(struct block_device *bdev)
- {
- 	if (!bdev || !bdev->bd_inode)
- 		return 0;
--	return (bdev->bd_inode->i_size >> 9) - 1ULL;
-+	return div_u64(bdev->bd_inode->i_size,
-+		       bdev_logical_block_size(bdev)) - 1ULL;
- }
- 
- static inline int
-@@ -188,6 +192,7 @@ static size_t
- read_lba(struct block_device *bdev, u64 lba, u8 * buffer, size_t count)
- {
- 	size_t totalreadcount = 0;
-+	sector_t n = lba * (bdev_logical_block_size(bdev) / 512);
- 
- 	if (!bdev || !buffer || lba > last_lba(bdev))
-                 return 0;
-@@ -195,7 +200,7 @@ read_lba(struct block_device *bdev, u64 
- 	while (count) {
- 		int copied = 512;
- 		Sector sect;
--		unsigned char *data = read_dev_sector(bdev, lba++, &sect);
-+		unsigned char *data = read_dev_sector(bdev, n++, &sect);
- 		if (!data)
- 			break;
- 		if (copied > count)
-@@ -602,6 +607,7 @@ efi_partition(struct parsed_partitions *
- 	gpt_header *gpt = NULL;
- 	gpt_entry *ptes = NULL;
- 	u32 i;
-+	unsigned ssz = bdev_logical_block_size(bdev) / 512;
- 
- 	if (!find_valid_gpt(bdev, &gpt, &ptes) || !gpt || !ptes) {
- 		kfree(gpt);
-@@ -612,13 +618,14 @@ efi_partition(struct parsed_partitions *
- 	pr_debug("GUID Partition Table is valid!  Yea!\n");
- 
- 	for (i = 0; i < le32_to_cpu(gpt->num_partition_entries) && i < state->limit-1; i++) {
-+		u64 start = le64_to_cpu(ptes[i].starting_lba);
-+		u64 size = le64_to_cpu(ptes[i].ending_lba) -
-+			   le64_to_cpu(ptes[i].starting_lba) + 1ULL;
-+
- 		if (!is_pte_valid(&ptes[i], last_lba(bdev)))
- 			continue;
- 
--		put_partition(state, i+1, le64_to_cpu(ptes[i].starting_lba),
--				 (le64_to_cpu(ptes[i].ending_lba) -
--                                  le64_to_cpu(ptes[i].starting_lba) +
--				  1ULL));
-+		put_partition(state, i+1, start * ssz, size * ssz);
- 
- 		/* If this is a RAID volume, tell md */
- 		if (!efi_guidcmp(ptes[i].partition_type_guid,
 
 
+On Tue, 26 Jan 2010, Greg KH wrote:
+>
+> 2.6.32-stable review patch.  If anyone has any objections, please let us know.
+> 
+> ------------------
+> 
+> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> 
+> commit f909b1df0a068f30e252d8dc3e9d45ca25bf266f upstream.
+> 
+> The driver does not reference identification strings in DMI tables and
+> since these strings are no longer required by DMI core we can safely
+> remove them and save some memory.
+> 
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+
+This seems to have lost your sign-off?
+
+		Linus
