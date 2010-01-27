@@ -1,61 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127Ab0A0OM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249Ab0A0OUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755127Ab0A0OM4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 09:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925Ab0A0OMz
+	id S1755249Ab0A0OUA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 09:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230Ab0A0OT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 09:12:55 -0500
-Received: from esgaroth.petrovitsch.at ([78.47.184.11]:60116 "EHLO
-	esgaroth.petrovitsch.priv.at" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752576Ab0A0OMy (ORCPT
+	Wed, 27 Jan 2010 09:19:59 -0500
+Received: from mail-pz0-f189.google.com ([209.85.222.189]:52459 "EHLO
+	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754017Ab0A0OT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 09:12:54 -0500
-X-DKIM: Sendmail DKIM Filter v2.8.3 unknown-host o0RECn3S017625
-Subject: Re: bug list: assigning negative values to unsigned variables
-From: Bernd Petrovitsch <bernd@petrovitsch.priv.at>
-To: Julia Lawall <julia@diku.dk>
-Cc: Dan Carpenter <error27@gmail.com>, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.1001271329460.20256@ask.diku.dk>
-References: <20100127104011.GA24796@bicker>
-	 <Pine.LNX.4.64.1001271155430.20256@ask.diku.dk>
-	 <1264590586.9749.2.camel@localhost>
-	 <Pine.LNX.4.64.1001271329460.20256@ask.diku.dk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 15:12:49 +0100
-Message-ID: <1264601569.10795.131.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
-X-DCC-SIHOPE-DCC-3-Metrics: esgaroth.petrovitsch.priv.at; whitelist
+	Wed, 27 Jan 2010 09:19:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=LRG5OU/w+ljy45gJ2TkOtSroHYqSfKWfsZkxF36kUo0/k7AK85wGcVyus+RbLIM+yz
+         ZxpBsL8DJ5odphr4FvPVmyMliYUZtygRjf6tZ3T3/Oy1PowDcHwMdVirVlXd6BpGEvpq
+         PnIHjL+ElbH88QadQezYh6TZBFch8iflOYYiQ=
+Message-ID: <4B604B86.9040307@gmail.com>
+Date: Wed, 27 Jan 2010 22:19:50 +0800
+From: Liuwenyi <qingshenlwy@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: "Yan, Zheng " <yanzheng@21cn.com>
+CC: chris.mason@oracle.com, jbacik@redhat.com, jens.axboe@oracle.com,
+       linux-btrfs <linux-btrfs@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       strongzgy@gmail.com
+Subject: Re: [PATCH]btrfs: avoid comparing with NULL pointer
+References: <4B5FDCD1.8060806@gmail.com> <3d0408631001270000w49fc9100yb1e3b59df2e032e9@mail.gmail.com>
+In-Reply-To: <3d0408631001270000w49fc9100yb1e3b59df2e032e9@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mit, 2010-01-27 at 13:30 +0100, Julia Lawall wrote:
-> On Wed, 27 Jan 2010, Bernd Petrovitsch wrote:
-> > On Mit, 2010-01-27 at 11:57 +0100, Julia Lawall wrote:
-> > > On Wed, 27 Jan 2010, Dan Carpenter wrote:
-> > > 
-> > > > Fixing the places which assign negative values to unsigned variables is a good janitor task.
-> > > 
-> > > I had the impression that assignment to -1 was done sometimes as a 
-> > > portable way to initialize the variable to 0xffff (for any number of f's).  
-Hmm, perhaps some experienced language lawyer can comment on the
-"portable".
-> > > So perhaps it is not so trivial to fix.
-> > Any particular reason that ~0U, ~0UL, and ~0ULL shouldn't do the same
-> > (without relying on conversion from signed to unsigned)?
-> 
-> Then the constant specifies the type?
-Yes. And it is necessary as "~0U" assigned to a "unsigned long long int"
-won't give "~0ULL".
-Otherwise "0" would be a signed int and from then on (starting with
-"~0") we are in the C hell of type promotion/conversion from signed to
-unsigned and/or back - at least in theory.
+于 2010年01月27日 16:00, Yan, Zheng 写道:
+> 2010/1/27 Liuwenyi<qingshenlwy@gmail.com>:
+>    
+>> In this patch, I adjust the seqence of if-conditions.
+>> It will assess the page->private situation.
+>> First, we make sure the page->private is not null.
+>> And then, we can do some with this page->private.
+>>
+>> ---
+>> Signed-off-by: Liuwenyi<qingshenlwy@gmail.com>
+>> Cc: Chris Mason<chris.mason@oracle.com>
+>> Cc: Yan Zheng<zheng.yan@oracle.com>
+>> Cc: Josef Bacik<jbacik@redhat.com>
+>> Cc: Jens Axboe<jens.axboe@oracle.com>
+>> Cc: linux-btrfs@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>>
+>> ---
+>> fs/btrfs/disk-io.c | 4 ++--
+>> 1 files changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+>> index 009e3bd..a300dca 100644
+>> --- a/fs/btrfs/disk-io.c
+>> +++ b/fs/btrfs/disk-io.c
+>> @@ -1407,11 +1407,11 @@ static int bio_ready_for_csum(struct bio *bio)
+>>
+>> bio_for_each_segment(bvec, bio, i) {
+>> page = bvec->bv_page;
+>> - if (page->private == EXTENT_PAGE_PRIVATE) {
+>> + if (!page->private) {
+>> length += bvec->bv_len;
+>> continue;
+>> }
+>> - if (!page->private) {
+>> + if (page->private == EXTENT_PAGE_PRIVATE) {
+>> length += bvec->bv_len;
+>> continue;
+>> }
+>> --
+>>      
+> Why do you want to do this? The code is perfect safe even
+> page->private is NULL. Furthermore, your patch is malformed.
+>
+> Yan, Zheng
+>    
+Yes, I agree with you, this code is safe.
+But I think we should check whether the pointer is available first.
+It is unnecessary judge the "(page->private == EXTENT_PAGE_PRIVATE)"
+while page->private is null.
 
-	Bernd
--- 
-Bernd Petrovitsch                  Email : bernd@petrovitsch.priv.at
-                     LUGA : http://www.luga.at
+
+---
+Best Regards,
+Liuwenyi
+2010-1-27
 
