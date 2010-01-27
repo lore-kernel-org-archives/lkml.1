@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008Ab0A0Juc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992Ab0A0Jvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008Ab0A0Juc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 04:50:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249Ab0A0Jub
+	id S1753992Ab0A0Jvt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 04:51:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820Ab0A0Jvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 04:50:31 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:4835 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751866Ab0A0Ju3 (ORCPT
+	Wed, 27 Jan 2010 04:51:49 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44265 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753249Ab0A0Jvs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 04:50:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=content-type:to:cc:subject:references:date:mime-version
-         :content-transfer-encoding:from:message-id:in-reply-to:user-agent;
-        b=Vpg466dFhiG1nxWSYwI9ih6KkjyBUU7AIhfD0hBfMlGBgPRCUPKFoZL9fOgls4WHEP
-         3JJI/z/+VOhjf5fQnbVQfJGediORUo4pJ+WXq4bJFGR00mPT0aHlNhuJaDTtgdTIQTR4
-         C4besAFYdjtjFgYqAeVshW42SVlr07IfSOj7E=
-Content-Type: text/plain; charset=utf-8; format=flowed; delsp=yes
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, "A Rojas" <nqn1976list@gmail.com>,
-       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
-       "A. Boulan" <arnaud.boulan@libertysurf.fr>, michael@reinelt.co.at,
-       jcnengel@googlemail.com, rientjes@google.com, earny@net4u.de,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Eric Anholt" <eric@anholt.net>,
-       "Chris Wilson" <chris@chris-wilson.co.uk>
-Subject: Re: OOM-Killer kills too much with 2.6.32.2
-References: <20100126183412.6AC9.A69D9226@jp.fujitsu.com>
- <op.u646z3e7asvm2a@kedge> <20100127091354.6ACF.A69D9226@jp.fujitsu.com>
-Date: Wed, 27 Jan 2010 10:53:03 +0100
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-From: "Roman Jarosz" <kedgedev@gmail.com>
-Message-ID: <op.u66q2pjuasvm2a@kedge>
-In-Reply-To: <20100127091354.6ACF.A69D9226@jp.fujitsu.com>
-User-Agent: Opera Mail/10.10 (Linux)
+	Wed, 27 Jan 2010 04:51:48 -0500
+Subject: Re: [PATCH RFC tip/core/rcu] accelerate grace period if last
+ non-dynticked CPU
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+In-Reply-To: <20100127094336.GA12522@basil.fritz.box>
+References: <20100125034816.GA14043@linux.vnet.ibm.com>
+	 <873a1sft9q.fsf@basil.nowhere.org>
+	 <20100127052050.GC6807@linux.vnet.ibm.com>
+	 <20100127094336.GA12522@basil.fritz.box>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Jan 2010 10:50:50 +0100
+Message-ID: <1264585850.4283.1992.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010 01:14:44 +0100, KOSAKI Motohiro  
-<kosaki.motohiro@jp.fujitsu.com> wrote:
+On Wed, 2010-01-27 at 10:43 +0100, Andi Kleen wrote:
+> 
+> Can't you simply check that at runtime then?
+> 
+> if (num_possible_cpus() > 20) 
+>         ...
+> 
+> BTW the new small is large. This years high end desktop PC will come with 
+> upto 12 CPU threads. It would likely be challenging to find a good
+> number for 20 that holds up with the future. 
 
->> > -	mapping_set_gfp_mask(obj->filp->f_path.dentry->d_inode->i_mapping,
->> > -			     GFP_HIGHUSER |
->> > -			     __GFP_COLD |
->> > -			     __GFP_FS |
->> > -			     __GFP_RECLAIMABLE |
->> > -			     __GFP_NORETRY |
->> > -			     __GFP_NOWARN |
->> > -			     __GFP_NOMEMALLOC);
->> > -
->> >  	kref_init(&obj->refcount);
->> >  	kref_init(&obj->handlecount);
->> >  	obj->size = size;
->>
->> I've applied this patch and I'm testing it right now.
->> Btw. what this patch will do from user(my) point of view?
->
-> OOM Killer disappear :)
+If only scalability were that easy :/
 
-Looks like the patch works... no oom kills so far.
+These massive core/thread count things are causing more problems as
+well, the cpus/node ratios are constantly growing, giving grief in the
+page allocator as well as other places that used to scale per node.
 
-Thanks!
+As to the current problem, the call_rcu() interface doesn't make a hard
+promise that the callback will be done on the same cpu, right? So why
+not simply move the callback list over to a more active cpu?
+
