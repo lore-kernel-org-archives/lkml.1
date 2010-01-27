@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033Ab0A0ARR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748Ab0A0AUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753033Ab0A0ARR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jan 2010 19:17:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297Ab0A0ARP
+	id S1753748Ab0A0AUY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jan 2010 19:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503Ab0A0AUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jan 2010 19:17:15 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57439 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752033Ab0A0ARP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jan 2010 19:17:15 -0500
-Date: Wed, 27 Jan 2010 11:17:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Al Viro <viro@zeniv.linux.org.uk>
-Subject: linux-next: manual merge of the gfs2 tree with the vfs tree
-Message-Id: <20100127111708.ed39215c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+	Tue, 26 Jan 2010 19:20:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45854 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751953Ab0A0AUV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jan 2010 19:20:21 -0500
+Date: Tue, 26 Jan 2010 16:19:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
+       minchan.kim@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
+Message-Id: <20100126161952.ee267d1c.akpm@linux-foundation.org>
+In-Reply-To: <20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100126151202.75bd9347.akpm@linux-foundation.org>
+	<20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__27_Jan_2010_11_17_08_+1100_7lWEqtcz2vC1a57G"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__27_Jan_2010_11_17_08_+1100_7lWEqtcz2vC1a57G
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 27 Jan 2010 08:53:55 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Hi Steven,
+> > Hardly anyone will know to enable
+> > it so the feature won't get much testing and this binary decision
+> > fractures the testing effort.  It would be much better if we can get
+> > everyone running the same code.  I mean, if there are certain workloads
+> > on certain machines with which the oom-killer doesn't behave correctly
+> > then fix it!
+> Yes, I think you're right. But "breaking current behaviro of our servers!"
+> arguments kills all proposal to this area and this oom-killer or vmscan is
+> a feature should be tested by real users. (I'll write fork-bomb detector
+> and RSS based OOM again.)
 
-Today's linux-next merge of the gfs2 tree got a conflict in
-fs/gfs2/super.c between commit 716c28c0bc8bcbdd26e819f38dfc8fdfaafc0289
-("pass writeback_control to ->write_inode") from the vfs tree and commit
-56c79d55103b5d0943e063d036e7ebf8a7a1c21b ("GFS2: Wait for unlock
-completion on umount") from the gfs2 tree.
+Well don't break their servers then ;)
 
-Just simple overlapping additions.  I fixed up (see below) and can carry
-the fix as necessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+What I'm not understanding is: why is it not possible to improve the
+behaviour on the affected machines without affecting the behaviour on
+other machines?
 
-diff --cc fs/gfs2/super.c
-index effa35a,e2bf19f..0000000
---- a/fs/gfs2/super.c
-+++ b/fs/gfs2/super.c
-@@@ -21,7 -21,7 +21,8 @@@
-  #include <linux/gfs2_ondisk.h>
-  #include <linux/crc32.h>
-  #include <linux/time.h>
- +#include <linux/writeback.h>
-+ #include <linux/wait.h>
- =20
-  #include "gfs2.h"
-  #include "incore.h"
+What are these "servers" to which you refer?  x86_32 servers, I assume
+- the patch shouldn't affect 64-bit machines.  Why don't they also want
+this treatment and in what way does the patch "break" them?
 
---Signature=_Wed__27_Jan_2010_11_17_08_+1100_7lWEqtcz2vC1a57G
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktfhgQACgkQjjKRsyhoI8x74wCfV+SRxdmXTFMdLnNa2SxPmpLE
-lpkAn3XTC4Vi6XXX/NhQap5F+2aOHD67
-=KBMt
------END PGP SIGNATURE-----
-
---Signature=_Wed__27_Jan_2010_11_17_08_+1100_7lWEqtcz2vC1a57G--
