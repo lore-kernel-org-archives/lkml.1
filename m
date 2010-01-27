@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747Ab0A0QZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671Ab0A0Q2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747Ab0A0QZv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 11:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522Ab0A0QZu
+	id S1754671Ab0A0Q2c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 11:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436Ab0A0Q2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 11:25:50 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:54134 "EHLO poutre.nerim.net"
+	Wed, 27 Jan 2010 11:28:31 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53457 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754238Ab0A0QZt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 11:25:49 -0500
-Date: Wed, 27 Jan 2010 17:25:46 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: Jonathan Cameron <kernel@jic23.retrosnub.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       giometti@linux.it
-Subject: Re: [PATCH 2/2] als: tsl2550: Remove spurious check against a
- maximum  lux value.
-Message-ID: <20100127172546.42e09e1f@hyperion.delvare>
-In-Reply-To: <4B60535F.5020400@cam.ac.uk>
-References: <4B23D029.9080004@cam.ac.uk>
-	<20100126105138.1006aaad@hyperion.delvare>
-	<4B5F38A3.1030208@cam.ac.uk>
-	<4B5F3961.3090103@jic23.retrosnub.co.uk>
-	<4B5F3AFE.7020404@cam.ac.uk>
-	<20100127143659.784201ef@hyperion.delvare>
-	<4B605000.8050500@jic23.retrosnub.co.uk>
-	<4B6052A0.9090907@cam.ac.uk>
-	<4B60535F.5020400@cam.ac.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1753020Ab0A0Q2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 11:28:31 -0500
+Message-ID: <4B606920.8000306@zytor.com>
+Date: Wed, 27 Jan 2010 08:26:08 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Dean Nelson <dnelson@redhat.com>,
+       Russ Anderson <rja@sgi.com>, ozan@pardus.org.tr,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai Lu <yinghai@kernel.org>,
+       Gene Heskett <gene.heskett@verizon.net>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Mark Hounschell <markh@compro.net>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       David Rientjes <rientjes@google.com>,
+       Haicheng Li <haicheng.li@linux.intel.com>
+Subject: Re: [GIT PULL] x86 fixes for 2.6.33-rc6
+References: <201001270833.o0R8X7ZN018729@terminus.zytor.com> <alpine.LFD.2.00.1001270249190.24253@localhost.localdomain> <20100127112446.GA19613@elte.hu>
+In-Reply-To: <20100127112446.GA19613@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010 14:53:19 +0000, Jonathan Cameron wrote:
+On 01/27/2010 03:24 AM, Ingo Molnar wrote:
 > 
-> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+>> On Wed, 27 Jan 2010, H. Peter Anvin wrote:
+>>>
+>>>   git://git.kernel.org/pub/scm/linux/kernel/x86/linux-2.6-tip.git x86-fixes-for-linus
+>>
+>> That doesn't work for me at all.
+> 
+> i think Peter typoed it and the git/ portion went missing, it should have 
+> been:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git x86-fixes-for-linus
+> 
+>> I assume you meant
+>>
+>>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+>>
+>> (note the "git/tip" instead of "x86")
+> 
+> Yes, that works too. The x86 repo is symlinked to the tip repo.
+> 
 
-Acked-by: Jean Delvare <khali@linux-fr.org>
+Sorry about that.  Get it done before bed syndrome.
 
-> ---
-> 
-> As Jean Delvare observed, this check is ineffective so lets clear it out whilst
-> we are working on this driver.
-> 
->  drivers/als/tsl2550.c |    5 +----
->  1 files changed, 1 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/als/tsl2550.c b/drivers/als/tsl2550.c
-> index b911e9c..27745a5 100644
-> --- a/drivers/als/tsl2550.c
-> +++ b/drivers/als/tsl2550.c
-> @@ -116,8 +116,6 @@ static int tsl2550_get_adc_value(struct i2c_client *client, u8 cmd)
->   * of infrared level and visible light levels.
->   */
->  
-> -#define	TSL2550_MAX_LUX		1846
-> -
->  static const u8 ratio_lut[] = {
->  	100, 100, 100, 100, 100, 100, 100, 100,
->  	100, 100, 100, 100, 100, 100, 99, 99,
-> @@ -187,8 +185,7 @@ static int tsl2550_calculate_lux(u8 ch0, u8 ch1)
->  	else
->  		return -EAGAIN;
->  
-> -	/* LUX range check */
-> -	return lux > TSL2550_MAX_LUX ? TSL2550_MAX_LUX : lux;
-> +	return lux;
->  }
->  
->  /*
-
+	-hpa
 
 -- 
-Jean Delvare
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
