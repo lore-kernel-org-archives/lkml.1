@@ -1,138 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429Ab0A0Rpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708Ab0A0RsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755429Ab0A0Rpu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 12:45:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045Ab0A0Rpt
+	id S1755708Ab0A0RsV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 12:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490Ab0A0RsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 12:45:49 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:44147 "EHLO mail.vyatta.com"
+	Wed, 27 Jan 2010 12:48:19 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:43924 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753344Ab0A0Rps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 12:45:48 -0500
-Date: Wed, 27 Jan 2010 09:45:31 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-Message-ID: <20100127094531.53c85aa7@nehalam>
-In-Reply-To: <4B60707F.1000608@majjas.com>
-References: <20100120094103.GA6225@ff.dom.local>
-	<4B58B217.8030001@majjas.com>
-	<20100121204133.GB3085@del.dom.local>
-	<4B59E7EB.3050605@majjas.com>
-	<20100122215304.GA3105@del.dom.local>
-	<4B5A2362.6000306@majjas.com>
-	<20100122230605.GB3105@del.dom.local>
-	<4B5A33D8.90501@majjas.com>
-	<20100122234656.GC3105@del.dom.local>
-	<4B5A39BD.8020305@majjas.com>
-	<20100123232133.GA3487@del.dom.local>
-	<4B605D1B.60402@majjas.com>
-	<20100127085049.5b5048e9@nehalam>
-	<4B60707F.1000608@majjas.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754697Ab0A0RsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 12:48:18 -0500
+Message-ID: <4B607B1A.3080007@zytor.com>
+Date: Wed, 27 Jan 2010 09:42:50 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: rostedt@goodmis.org
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Tom Tromey <tromey@redhat.com>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       utrace-devel@redhat.com, Thomas Gleixner <tglx@linutronix.de>,
+       JimKeniston <jkenisto@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: linux-next: add utrace tree
+References: <20100121013822.28781960.sfr@canb.auug.org.au>	 <20100122005147.GD22003@redhat.com>	 <20100121170541.7425ff10.akpm@linux-foundation.org>	 <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>	 <20100122182827.GA13185@redhat.com> <20100122200129.GG22003@redhat.com>	 <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>	 <20100122221348.GA4263@redhat.com>	 <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>	 <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>	 <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>	 <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>	 <m33a1tnbd9.fsf@fleche.redhat.com>	 <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>	 <m3636oh2rt.fsf@fleche.redhat.com>	 <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain>	 <1264575134.4283.1983.camel@laptop>	 <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain> <1264600792.31321.464.camel@gandalf.stny.rr.com>
+In-Reply-To: <1264600792.31321.464.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010 11:57:35 -0500
-Michael Breuer <mbreuer@majjas.com> wrote:
-
-> On 1/27/2010 11:50 AM, Stephen Hemminger wrote:
-> > On Wed, 27 Jan 2010 10:34:51 -0500
-> > Michael Breuer<mbreuer@majjas.com>  wrote:
-> >
-> >    
-> >> On 01/23/2010 06:21 PM, Jarek Poplawski wrote:
-> >>      
-> >>> On Fri, Jan 22, 2010 at 06:50:21PM -0500, Michael Breuer wrote:
-> >>>
-> >>>        
-> >>>> When the packets were dropped, there was a different sequence in the
-> >>>> log - DISCOVER/OFFER repeated. The "normal" is that the sequence
-> >>>> appeared correct and complete - DISCOVER/OFFER/REQUEST/ACK - or
-> >>>> INFORM/ACK (vs. INFORM repeatedly sans ACK) as the case may be.
-> >>>>
-> >>>>          
-> >>> Anyway, I'd be intersted if the switch matters here.
-> >>>
-> >>> Plus one more test: could you try to load sky2 with the parameter:
-> >>> "copybreak=1" (the rest as in any recent test, which gave you dmar
-> >>> errors; any switch).
-> >>>
-> >>> Thanks,
-> >>> Jarek P.
-> >>>
-> >>>        
-> >> Ok - now up 80+ hours with copybreak=1. I'm going to redo w/o copybreak
-> >> to confirm that I haven't inadvertently fixed something. However, given
-> >> that it might be copybreak-related, I looked at sky2.c again and I'm
-> >> wondering about the copybreak max size in sky2_rx_start:
-> >>
-> >>     size = roundup(sky2->netdev->mtu + ETH_HLEN + VLAN_HLEN, 8);
-> >>
-> >>           /* Stopping point for hardware truncation */
-> >>           thresh = (size - 8) / sizeof(u32);
-> >>
-> >>           sky2->rx_nfrags = size>>  PAGE_SHIFT;
-> >>           BUG_ON(sky2->rx_nfrags>  ARRAY_SIZE(re->frag_addr));
-> >>
-> >>           /* Compute residue after pages */
-> >>           size -= sky2->rx_nfrags<<  PAGE_SHIFT;
-> >>
-> >>           /* Optimize to handle small packets and headers */
-> >>           if (size<  copybreak)
-> >>                   size = copybreak;
-> >>           if (size<  ETH_HLEN)
-> >>                   size = ETH_HLEN;
-> >>
-> >>
-> >> Why would increasing size to copybreak be valid here?
-> >>
-> >> Guessing a bit as I'm not sure about rx_nfrags, but if I read this
-> >> correctly, if size is ever less than copybreak it's because there isn't
-> >> enough space left for anything larger. If so, wouldn't increasing size
-> >> potentially corrupt something? I'd further guess that the resulting
-> >> condition manifests sooner (or at least with a more visible effect) when
-> >> using DMAR.
-> >>
-> >> In any event, why "copybreak" as the minimum buffer size? I'd suggest
-> >> that if it isn't possible to allocate at least MTU + overhead that
-> >> sky2_rx_start ought to be delayed until there is room.
-> >>      
-> > This code is where driver decides how much data will be received in skb
-> > data area and the remaining data spills over into skb frags.
-> > Copybreak is the threshold so that packets less than size are copied
-> > to a new skb.  The code doing the copying there assumes the data is
-> > totally contained in the skb (not in frags). The size increase there
-> > is to make sure that assumption is always true.  I suppose you
-> > could do something perverse like setting copybreak really huge
-> > and confuse driver, but that is a user error.
-> >
-> >    
-> Ok - but I'm wondering under what circumstances size would be < 
-> copybreak in the first place after computing the residue. If size ends 
-> up being unreasonably small, is simply increasing the number to whatever 
-> copybreak is correct? Assuming my testing is correct, then the crash 
-> I've been experiencing when using dmar (only) seems related to the value 
-> of copybreak. I don't think the other use (skb reuse) is the issue (but 
-> hey, I could have missed something). The crash occurs when copybreak is 
-> the default of 128, didn't happen when I set copybreak to 1.
+On 01/27/2010 05:59 AM, Steven Rostedt wrote:
+> [ Added Arjan ]
+> 
+> On Wed, 2010-01-27 at 02:43 -0800, Linus Torvalds wrote:
+>>
+>> On Wed, 27 Jan 2010, Peter Zijlstra wrote:
+>>>
+>>> Right, so you're going to love uprobes, which does exactly that. The
+>>> current proposal is overwriting the target instruction with an INT3 and
+>>> injecting an extra vma into the target process's address space
+>>> containing the original instruction(s) and possible jumps back to the
+>>> old code stream.
+>>
+>> Just out of interest, how does it handle the threading issue?
+>>
+>> Last I saw, at least some CPU people were _very_ nervous about overwriting 
+>> instructions if another CPU might be just about to execute them.
+> 
+> I think the issue was that ring 0 was never meant to do that, where as,
+> ring 3 does it all the time. Doesn't the dynamic library modify its
+> text?
 > 
 
-Setting it to 1 causes driver to never go through the dma_sync_single/memcpy
-path.  Perhaps the code for DMAR doesn't do dma_sync_single_for_cpu
-properly, or the value passed to sync_single_for_cpu doesn't account for
-all the overhead of padding and/or ether header.
+No, it has nothing to do with ring.  It has to do with modifying code
+that another CPU could be executing at the same time, and with modifying
+code on the same processor through another virtual alias (they are
+different issues.)  The same issues apply regardless of the CPL of the
+processor.
+
+	-hpa
 
 -- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
