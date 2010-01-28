@@ -1,86 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299Ab0A1Wn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962Ab0A1WqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299Ab0A1Wn3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 17:43:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221Ab0A1Wn2
+	id S1754962Ab0A1WqJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 17:46:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600Ab0A1WqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 17:43:28 -0500
-Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:57185 "EHLO
-	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932142Ab0A1Wn2 (ORCPT
+	Thu, 28 Jan 2010 17:46:08 -0500
+Received: from ch-smtp03.sth.basefarm.net ([80.76.149.214]:56754 "EHLO
+	ch-smtp03.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754537Ab0A1WqH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 17:43:28 -0500
-Date: Thu, 28 Jan 2010 17:43:34 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-In-reply-to: <20100128223447.GC3109@del.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B621316.8070308@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B605D1B.60402@majjas.com> <20100127085049.5b5048e9@nehalam>
- <4B60707F.1000608@majjas.com> <20100127095614.14313677@nehalam>
- <4B608128.7090607@majjas.com> <4B6089C7.4010803@majjas.com>
- <4B61ADF1.7060705@majjas.com> <4B61BEA4.1030905@majjas.com>
- <20100128090835.0d93e53a@nehalam> <4B61DB79.4080703@majjas.com>
- <20100128223447.GC3109@del.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	Thu, 28 Jan 2010 17:46:07 -0500
+From: "Henrik Rydberg" <rydberg@euromail.se>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jy0922.shim@samsung.com,
+       mika.kuoppala@nokia.com, peter.hutterer@who-t.net,
+       Henrik Rydberg <rydberg@euromail.se>
+Subject: [PATCH 2/2] input: mt: update the multi-touch protocol documentation
+Date: Thu, 28 Jan 2010 23:42:49 +0100
+Message-Id: <1264718569-9772-2-git-send-email-rydberg@euromail.se>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1264718569-9772-1-git-send-email-rydberg@euromail.se>
+References: <1264718569-9772-1-git-send-email-rydberg@euromail.se>
+X-Originating-IP: 83.248.196.134
+X-Scan-Result: No virus found in message 1Nad7a-0001eZ-Bh.
+X-Scan-Signature: ch-smtp03.sth.basefarm.net 1Nad7a-0001eZ-Bh 392816e8f2156ecb18794f038b6276bb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/28/2010 5:34 PM, Jarek Poplawski wrote:
-> On Thu, Jan 28, 2010 at 01:46:17PM -0500, Michael Breuer wrote:
->    
->> On 1/28/2010 12:08 PM, Stephen Hemminger wrote:
->>      
->>> --- a/lib/dma-debug.c	2010-01-20 15:22:55.919519883 -0800
->>> +++ b/lib/dma-debug.c	2010-01-20 15:26:31.648895638 -0800
->>> @@ -285,11 +285,9 @@ static struct dma_debug_entry *hash_buck
->>>   	}
->>>
->>>   	/*
->>> -	 * If we have multiple matches but no perfect-fit, just return
->>> -	 * NULL.
->>> +	 * If we have multiple matches but no perfect-fit
->>> +	 * return best value and let caller deal with it.
->>>   	 */
->>> -	ret = (matches == 1) ? ret : NULL;
->>> -
->>>   	return ret;
->>>   }
->>>
->>>        
->> Ok - applied. Noise gone... however I'm not sure whether I'll be
->> able to keep dma-debug going long enough to catch anything.
->> num_free_entries keeps dropping... looks like entries are not freed.
->> I'm running with a huge number for now&  sky2 as the driver filter.
->> Is there a reason that entries wouldn't be unmapped, or is
->> dma-debug.c just not processing the unmap correctly?
->>      
-> Do you mean it's after this patch or earlier too? I think you might
-> use my sky2/receive_copy/pci_unmap_len patch instead to get rid of
-> this warning.
->
-> Btw, since 1000 was too much, maybe you could try copybreak=256 yet,
-> plus additional ping or some other source of shorter packets. And how
-> about trying this new switch?
->
-> Jarek P.
->    
-This is with the pci_unmap_len patch as well as the dma-debug patch. I'm 
-not getting any warnings - but dma-debug num-free-entries drops until 
-zero and then debugging is disabled. I started with 8,000,000 about 
-three hours ago - without load I'm already down to less than half that. 
-Again - only looking at sky2. Looks like the dma-debug hash table is 
-reducing one entry for every packet, but never increasing the 
-num_entries (no unmap perhaps).
+This patch documents a new ABS_MT parameter and adds further text to
+clarify some points around the MT protocol.
+
+Requested-by: Yoonyoung Shim <jy0922.shim@samsung.com>
+Requested-by: Mika Kuoppala <mika.kuoppala@nokia.com>
+Requested-by: Peter Hutterer <peter.hutterer@who-t.net>
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+ Documentation/input/multi-touch-protocol.txt |   48 +++++++++++++++++++++----
+ 1 files changed, 40 insertions(+), 8 deletions(-)
+
+diff --git a/Documentation/input/multi-touch-protocol.txt b/Documentation/input/multi-touch-protocol.txt
+index a12ea3b..8490480 100644
+--- a/Documentation/input/multi-touch-protocol.txt
++++ b/Documentation/input/multi-touch-protocol.txt
+@@ -27,12 +27,30 @@ set of events/packets.
+ 
+ A set of ABS_MT events with the desired properties is defined. The events
+ are divided into categories, to allow for partial implementation.  The
+-minimum set consists of ABS_MT_TOUCH_MAJOR, ABS_MT_POSITION_X and
+-ABS_MT_POSITION_Y, which allows for multiple fingers to be tracked.  If the
+-device supports it, the ABS_MT_WIDTH_MAJOR may be used to provide the size
+-of the approaching finger. Anisotropy and direction may be specified with
+-ABS_MT_TOUCH_MINOR, ABS_MT_WIDTH_MINOR and ABS_MT_ORIENTATION.  The
+-ABS_MT_TOOL_TYPE may be used to specify whether the touching tool is a
++minimum set consists of ABS_MT_POSITION_X and ABS_MT_POSITION_Y, which
++allows for multiple fingers to be tracked.  If the device supports it, the
++ABS_MT_TOUCH_MAJOR and ABS_MT_WIDTH_MAJOR may be used to provide the size
++of the contact area and approaching finger, respectively.
++
++The TOUCH and WIDTH parameters have a geometrical interpretation; imagine
++looking through a window at someone gently holding a finger against the
++glass.  You will see two regions, one inner region consisting of the part
++of the finger actually touching the glass, and one outer region formed by
++the perimeter of the finger. The diameter of the inner region is the
++ABS_MT_TOUCH_MAJOR, the diameter of the outer region is
++ABS_MT_WIDTH_MAJOR. Now imagine the person pressing the finger harder
++against the glass. The inner region will increase, and in general, the
++ratio ABS_MT_TOUCH_MAJOR / ABS_MT_WIDTH_MAJOR, which is always smaller than
++unity, is related to the finger pressure. For pressure-based devices,
++ABS_MT_PRESSURE may be used to provide the pressure on the contact area
++instead.
++
++In addition to the MAJOR parameters, the oval shape of the finger can be
++described by adding the MINOR parameters, such that MAJOR and MINOR are the
++major and minor axis of an ellipse. Finally, the orientation of the oval
++shape can be describe with the ORIENTATION parameter.
++
++The ABS_MT_TOOL_TYPE may be used to specify whether the touching tool is a
+ finger or a pen or something else.  Devices with more granular information
+ may specify general shapes as blobs, i.e., as a sequence of rectangular
+ shapes grouped together by an ABS_MT_BLOB_ID. Finally, for the few devices
+@@ -42,11 +60,9 @@ report finger tracking from hardware [5].
+ Here is what a minimal event sequence for a two-finger touch would look
+ like:
+ 
+-   ABS_MT_TOUCH_MAJOR
+    ABS_MT_POSITION_X
+    ABS_MT_POSITION_Y
+    SYN_MT_REPORT
+-   ABS_MT_TOUCH_MAJOR
+    ABS_MT_POSITION_X
+    ABS_MT_POSITION_Y
+    SYN_MT_REPORT
+@@ -87,6 +103,12 @@ the contact. The ratio ABS_MT_TOUCH_MAJOR / ABS_MT_WIDTH_MAJOR approximates
+ the notion of pressure. The fingers of the hand and the palm all have
+ different characteristic widths [1].
+ 
++ABS_MT_PRESSURE
++
++The pressure, in arbitrary units, on the contact area. May be used instead
++of TOUCH and WIDTH for pressure-based devices or any device with a spatial
++signal intensity distribution.
++
+ ABS_MT_ORIENTATION
+ 
+ The orientation of the ellipse. The value should describe a signed quarter
+@@ -170,6 +192,16 @@ There are a few devices that support trackingID in hardware. User space can
+ make use of these native identifiers to reduce bandwidth and cpu usage.
+ 
+ 
++Gestures
++--------
++
++In the specific application of creating gesture events, the TOUCH and WIDTH
++parameters can be used to, e.g., approximate finger pressure or distinguish
++between index finger and thumb. With the addition of the MINOR parameters,
++one can also distinguish between a sweeping finger and a pointing finger,
++and with ORIENTATION, one can detect twisting of fingers.
++
++
+ Notes
+ -----
+ 
+-- 
+1.6.3.3
+
