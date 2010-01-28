@@ -1,76 +1,370 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044Ab0A1CMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020Ab0A1CVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044Ab0A1CMg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 21:12:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756005Ab0A1CMf
+	id S1756020Ab0A1CVn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 21:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755887Ab0A1CVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 21:12:35 -0500
-Received: from mail-pz0-f190.google.com ([209.85.222.190]:59778 "EHLO
-	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755858Ab0A1CMe (ORCPT
+	Wed, 27 Jan 2010 21:21:42 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:47704 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753734Ab0A1CVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 21:12:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=JtswIHWo0o+LexBf6dGbg38p7091G7sGruS0YQEFh25oCVGbIwFQ3o3JhG/9sKPqN5
-         pcME5eWIxT602vHHdozeNsKyzYT3HTjF8E2Zct2J/TF/gUDqP2fC88/wU9y6ofANPkn+
-         /fFbu9dX3ohdLJMJWmVzOVqLE5Ba8HyLpMI5A=
+	Wed, 27 Jan 2010 21:21:41 -0500
+Message-ID: <4B60F435.9000904@vflare.org>
+Date: Thu, 28 Jan 2010 07:49:33 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-In-Reply-To: <aacba7e1001271624r4111908ch7a54e315ede54bbb@mail.gmail.com>
-References: <aacba7e1001260704m27c99a0dy6c3f50c38ce6b430@mail.gmail.com>
-	 <72dbd3151001261251s606ebf00h86c2ce63293305b6@mail.gmail.com>
-	 <aacba7e1001261621v6abb4270i996a28d19c9f7d7@mail.gmail.com>
-	 <72dbd3151001261632t7bbe43d0nb7490eae02185c81@mail.gmail.com>
-	 <20100127010204.7976c38b@lxorguk.ukuu.org.uk>
-	 <aacba7e1001261714n42a68824k62c411cd1e5d7893@mail.gmail.com>
-	 <4B60C1C0.8050402@teksavvy.com>
-	 <aacba7e1001271516k3bb82a0fq7e019b28f3b8972f@mail.gmail.com>
-	 <72dbd3151001271541l7026389fgd2c91f9ee6502472@mail.gmail.com>
-	 <aacba7e1001271624r4111908ch7a54e315ede54bbb@mail.gmail.com>
-Date: Thu, 28 Jan 2010 07:42:33 +0530
-Message-ID: <aacba7e1001271812o3e53ba6cq3c00c95c28f48382@mail.gmail.com>
-Subject: Re: [PATCH] ata: Disable NCQ for Crucial M225 brand SSDs
-From: Vishal Rao <vishalrao@gmail.com>
-To: David Rees <drees76@gmail.com>
-Cc: Mark Lord <kernel@teksavvy.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, trivial@kernel.org, stable@kernel.org
+To: Greg KH <greg@kroah.com>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3][resend] use lock for 64-bit stats
+References: <1264602246-12880-1-git-send-email-ngupta@vflare.org> <1264602246-12880-2-git-send-email-ngupta@vflare.org>
+In-Reply-To: <1264602246-12880-2-git-send-email-ngupta@vflare.org>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/28 Vishal Rao <vishalrao@gmail.com>:
-> 2010/1/28 David Rees <drees76@gmail.com>:
->>
->> badblocks <name of partition>
->>
->> See the man page for more details, but that should do a read test -
->> may want to boot from a rescue disk or from another disk if possible
->> to run the test.
->
-> The first "badblocks /dev/sda7" run went ahead with no output.
+64-bit stats corruption was observed when ramzswap was
+used on SMP systems. To prevent this, use separate spinlock
+to protect these stats.
 
-here's the output, let me know if im doing something incorrect and/or
-any of you need further info/testing from me:
+Also, replace stat_*() with rzs_stat*() to avoid possible
+conflict with core kernel code.
 
-vishal@thunderbird:~$ sudo badblocks -nv /dev/sda7 | tee badblocks.txt
-[sudo] password for vishal:
-Checking for bad blocks in non-destructive read-write mode
->From block 0 to 25173822
-Testing with random pattern: Pass completed, 0 bad blocks found.
-vishal@thunderbird:~$ cat badblocks.txt
-vishal@thunderbird:~$ dmesg | grep ata1
-[    0.890636] ata1: SATA max UDMA/133 abar m2048@0xe3225000 port
-0xe3225100 irq 30
-[    1.420680] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[    1.420952] ata1.00: HPA unlocked: 250067567 -> 250069680, native 250069680
-[    1.420959] ata1.00: ATA-8: CRUCIAL_CT128M225, 1916, max UDMA/133
-[    1.420962] ata1.00: 250069680 sectors, multi 1: LBA48 NCQ (not used)
-[    1.421629] ata1.00: configured for UDMA/133
-vishal@thunderbird:~$ uname -a
-Linux thunderbird 2.6.32-11-generic #16~vishalrao2 SMP Tue Jan 26
-19:03:33 IST 2010 x86_64 GNU/Linux
-vishal@thunderbird:~$
+Eventually, these will be converted to per-cpu counters
+if this driver finds use on large scale systems and this
+locking is found to affect scalability.
+
+Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+---
+ drivers/staging/ramzswap/ramzswap_drv.c   |   58 +++++++++++++++--------------
+ drivers/staging/ramzswap/ramzswap_drv.h   |   59 ++++++++++++++++++++++++-----
+ drivers/staging/ramzswap/ramzswap_ioctl.h |    1 +
+ 3 files changed, 80 insertions(+), 38 deletions(-)
+
+diff --git a/drivers/staging/ramzswap/ramzswap_drv.c b/drivers/staging/ramzswap/ramzswap_drv.c
+index baf7572..05273c0 100644
+--- a/drivers/staging/ramzswap/ramzswap_drv.c
++++ b/drivers/staging/ramzswap/ramzswap_drv.c
+@@ -24,7 +24,6 @@
+ #include <linux/genhd.h>
+ #include <linux/highmem.h>
+ #include <linux/lzo.h>
+-#include <linux/mutex.h>
+ #include <linux/string.h>
+ #include <linux/swap.h>
+ #include <linux/swapops.h>
+@@ -239,7 +238,8 @@ void ramzswap_ioctl_get_stats(struct ramzswap *rzs,
+
+ 	mem_used = xv_get_total_size_bytes(rzs->mem_pool)
+ 			+ (rs->pages_expand << PAGE_SHIFT);
+-	succ_writes = rs->num_writes - rs->failed_writes;
++	succ_writes = rzs_stat64_read(rzs, &rs->num_writes) -
++			rzs_stat64_read(rzs, &rs->failed_writes);
+
+ 	if (succ_writes && rs->pages_stored) {
+ 		good_compress_perc = rs->good_compress * 100
+@@ -248,11 +248,12 @@ void ramzswap_ioctl_get_stats(struct ramzswap *rzs,
+ 					/ rs->pages_stored;
+ 	}
+
+-	s->num_reads = rs->num_reads;
+-	s->num_writes = rs->num_writes;
+-	s->failed_reads = rs->failed_reads;
+-	s->failed_writes = rs->failed_writes;
+-	s->invalid_io = rs->invalid_io;
++	s->num_reads = rzs_stat64_read(rzs, &rs->num_reads);
++	s->num_writes = rzs_stat64_read(rzs, &rs->num_writes);
++	s->failed_reads = rzs_stat64_read(rzs, &rs->failed_reads);
++	s->failed_writes = rzs_stat64_read(rzs, &rs->failed_writes);
++	s->invalid_io = rzs_stat64_read(rzs, &rs->invalid_io);
++	s->notify_free = rzs_stat64_read(rzs, &rs->notify_free);
+ 	s->pages_zero = rs->pages_zero;
+
+ 	s->good_compress_pct = good_compress_perc;
+@@ -264,8 +265,8 @@ void ramzswap_ioctl_get_stats(struct ramzswap *rzs,
+ 	s->compr_data_size = rs->compr_size;
+ 	s->mem_used_total = mem_used;
+
+-	s->bdev_num_reads = rs->bdev_num_reads;
+-	s->bdev_num_writes = rs->bdev_num_writes;
++	s->bdev_num_reads = rzs_stat64_read(rzs, &rs->bdev_num_reads);
++	s->bdev_num_writes = rzs_stat64_read(rzs, &rs->bdev_num_writes);
+ 	}
+ #endif /* CONFIG_RAMZSWAP_STATS */
+ }
+@@ -594,7 +595,7 @@ static void ramzswap_free_page(struct ramzswap *rzs, size_t index)
+ 	if (unlikely(!page)) {
+ 		if (rzs_test_flag(rzs, index, RZS_ZERO)) {
+ 			rzs_clear_flag(rzs, index, RZS_ZERO);
+-			stat_dec(rzs->stats.pages_zero);
++			rzs_stat_dec(&rzs->stats.pages_zero);
+ 		}
+ 		return;
+ 	}
+@@ -603,7 +604,7 @@ static void ramzswap_free_page(struct ramzswap *rzs, size_t index)
+ 		clen = PAGE_SIZE;
+ 		__free_page(page);
+ 		rzs_clear_flag(rzs, index, RZS_UNCOMPRESSED);
+-		stat_dec(rzs->stats.pages_expand);
++		rzs_stat_dec(&rzs->stats.pages_expand);
+ 		goto out;
+ 	}
+
+@@ -613,11 +614,11 @@ static void ramzswap_free_page(struct ramzswap *rzs, size_t index)
+
+ 	xv_free(rzs->mem_pool, page, offset);
+ 	if (clen <= PAGE_SIZE / 2)
+-		stat_dec(rzs->stats.good_compress);
++		rzs_stat_dec(&rzs->stats.good_compress);
+
+ out:
+ 	rzs->stats.compr_size -= clen;
+-	stat_dec(rzs->stats.pages_stored);
++	rzs_stat_dec(&rzs->stats.pages_stored);
+
+ 	rzs->table[index].page = NULL;
+ 	rzs->table[index].offset = 0;
+@@ -679,8 +680,8 @@ static int handle_ramzswap_fault(struct ramzswap *rzs, struct bio *bio)
+ 	 */
+ 	if (rzs->backing_swap) {
+ 		u32 pagenum;
+-		stat_dec(rzs->stats.num_reads);
+-		stat_inc(rzs->stats.bdev_num_reads);
++		rzs_stat64_dec(rzs, &rzs->stats.num_reads);
++		rzs_stat64_inc(rzs, &rzs->stats.bdev_num_reads);
+ 		bio->bi_bdev = rzs->backing_swap;
+
+ 		/*
+@@ -718,7 +719,7 @@ static int ramzswap_read(struct ramzswap *rzs, struct bio *bio)
+ 	struct zobj_header *zheader;
+ 	unsigned char *user_mem, *cmem;
+
+-	stat_inc(rzs->stats.num_reads);
++	rzs_stat64_inc(rzs, &rzs->stats.num_reads);
+
+ 	page = bio->bi_io_vec[0].bv_page;
+ 	index = bio->bi_sector >> SECTORS_PER_PAGE_SHIFT;
+@@ -752,7 +753,7 @@ static int ramzswap_read(struct ramzswap *rzs, struct bio *bio)
+ 	if (unlikely(ret != LZO_E_OK)) {
+ 		pr_err("Decompression failed! err=%d, page=%u\n",
+ 			ret, index);
+-		stat_inc(rzs->stats.failed_reads);
++		rzs_stat64_inc(rzs, &rzs->stats.failed_reads);
+ 		goto out;
+ 	}
+
+@@ -776,7 +777,7 @@ static int ramzswap_write(struct ramzswap *rzs, struct bio *bio)
+ 	struct page *page, *page_store;
+ 	unsigned char *user_mem, *cmem, *src;
+
+-	stat_inc(rzs->stats.num_writes);
++	rzs_stat64_inc(rzs, &rzs->stats.num_writes);
+
+ 	page = bio->bi_io_vec[0].bv_page;
+ 	index = bio->bi_sector >> SECTORS_PER_PAGE_SHIFT;
+@@ -796,7 +797,7 @@ static int ramzswap_write(struct ramzswap *rzs, struct bio *bio)
+ 	 * Simply clear zero page flag.
+ 	 */
+ 	if (rzs_test_flag(rzs, index, RZS_ZERO)) {
+-		stat_dec(rzs->stats.pages_zero);
++		rzs_stat_dec(&rzs->stats.pages_zero);
+ 		rzs_clear_flag(rzs, index, RZS_ZERO);
+ 	}
+
+@@ -806,7 +807,7 @@ static int ramzswap_write(struct ramzswap *rzs, struct bio *bio)
+ 	if (page_zero_filled(user_mem)) {
+ 		kunmap_atomic(user_mem, KM_USER0);
+ 		mutex_unlock(&rzs->lock);
+-		stat_inc(rzs->stats.pages_zero);
++		rzs_stat_inc(&rzs->stats.pages_zero);
+ 		rzs_set_flag(rzs, index, RZS_ZERO);
+
+ 		set_bit(BIO_UPTODATE, &bio->bi_flags);
+@@ -830,7 +831,7 @@ static int ramzswap_write(struct ramzswap *rzs, struct bio *bio)
+ 	if (unlikely(ret != LZO_E_OK)) {
+ 		mutex_unlock(&rzs->lock);
+ 		pr_err("Compression failed! err=%d\n", ret);
+-		stat_inc(rzs->stats.failed_writes);
++		rzs_stat64_inc(rzs, &rzs->stats.failed_writes);
+ 		goto out;
+ 	}
+
+@@ -853,13 +854,13 @@ static int ramzswap_write(struct ramzswap *rzs, struct bio *bio)
+ 			mutex_unlock(&rzs->lock);
+ 			pr_info("Error allocating memory for incompressible "
+ 				"page: %u\n", index);
+-			stat_inc(rzs->stats.failed_writes);
++			rzs_stat64_inc(rzs, &rzs->stats.failed_writes);
+ 			goto out;
+ 		}
+
+ 		offset = 0;
+ 		rzs_set_flag(rzs, index, RZS_UNCOMPRESSED);
+-		stat_inc(rzs->stats.pages_expand);
++		rzs_stat_inc(&rzs->stats.pages_expand);
+ 		rzs->table[index].page = page_store;
+ 		src = kmap_atomic(page, KM_USER0);
+ 		goto memstore;
+@@ -871,7 +872,7 @@ static int ramzswap_write(struct ramzswap *rzs, struct bio *bio)
+ 		mutex_unlock(&rzs->lock);
+ 		pr_info("Error allocating memory for compressed "
+ 			"page: %u, size=%zu\n", index, clen);
+-		stat_inc(rzs->stats.failed_writes);
++		rzs_stat64_inc(rzs, &rzs->stats.failed_writes);
+ 		if (rzs->backing_swap)
+ 			fwd_write_request = 1;
+ 		goto out;
+@@ -900,9 +901,9 @@ memstore:
+
+ 	/* Update stats */
+ 	rzs->stats.compr_size += clen;
+-	stat_inc(rzs->stats.pages_stored);
++	rzs_stat_inc(&rzs->stats.pages_stored);
+ 	if (clen <= PAGE_SIZE / 2)
+-		stat_inc(rzs->stats.good_compress);
++		rzs_stat_inc(&rzs->stats.good_compress);
+
+ 	mutex_unlock(&rzs->lock);
+
+@@ -912,7 +913,7 @@ memstore:
+
+ out:
+ 	if (fwd_write_request) {
+-		stat_inc(rzs->stats.bdev_num_writes);
++		rzs_stat64_inc(rzs, &rzs->stats.bdev_num_writes);
+ 		bio->bi_bdev = rzs->backing_swap;
+ #if 0
+ 		/*
+@@ -974,7 +975,7 @@ static int ramzswap_make_request(struct request_queue *queue, struct bio *bio)
+ 	}
+
+ 	if (!valid_swap_request(rzs, bio)) {
+-		stat_inc(rzs->stats.invalid_io);
++		rzs_stat64_inc(rzs, &rzs->stats.invalid_io);
+ 		bio_io_error(bio);
+ 		return 0;
+ 	}
+@@ -1295,6 +1296,7 @@ static struct block_device_operations ramzswap_devops = {
+ static int create_device(struct ramzswap *rzs, int device_id)
+ {
+ 	mutex_init(&rzs->lock);
++	spin_lock_init(&rzs->stat64_lock);
+ 	INIT_LIST_HEAD(&rzs->backing_swap_extent_list);
+
+ 	rzs->queue = blk_alloc_queue(GFP_KERNEL);
+diff --git a/drivers/staging/ramzswap/ramzswap_drv.h b/drivers/staging/ramzswap/ramzswap_drv.h
+index 7ba98bf..5b67222 100644
+--- a/drivers/staging/ramzswap/ramzswap_drv.h
++++ b/drivers/staging/ramzswap/ramzswap_drv.h
+@@ -15,6 +15,9 @@
+ #ifndef _RAMZSWAP_DRV_H_
+ #define _RAMZSWAP_DRV_H_
+
++#include <linux/spinlock.h>
++#include <linux/mutex.h>
++
+ #include "ramzswap_ioctl.h"
+ #include "xvmalloc.h"
+
+@@ -71,15 +74,6 @@ static const unsigned max_zpage_size_nobdev = PAGE_SIZE / 4 * 3;
+ #define SECTORS_PER_PAGE_SHIFT	(PAGE_SHIFT - SECTOR_SHIFT)
+ #define SECTORS_PER_PAGE	(1 << SECTORS_PER_PAGE_SHIFT)
+
+-/* Debugging and Stats */
+-#if defined(CONFIG_RAMZSWAP_STATS)
+-#define stat_inc(stat)	((stat)++)
+-#define stat_dec(stat)	((stat)--)
+-#else
+-#define stat_inc(x)
+-#define stat_dec(x)
+-#endif
+-
+ /* Flags for ramzswap pages (table[page_no].flags) */
+ enum rzs_pageflags {
+ 	/* Page is stored uncompressed */
+@@ -124,6 +118,7 @@ struct ramzswap_stats {
+ 	u64 failed_reads;	/* should NEVER! happen */
+ 	u64 failed_writes;	/* can happen when memory is too low */
+ 	u64 invalid_io;		/* non-swap I/O requests */
++	u64 notify_free;	/* no. of swap slot free notifications */
+ 	u32 pages_zero;		/* no. of zero filled pages */
+ 	u32 pages_stored;	/* no. of pages currently stored */
+ 	u32 good_compress;	/* % of pages with compression ratio<=50% */
+@@ -138,6 +133,7 @@ struct ramzswap {
+ 	void *compress_workmem;
+ 	void *compress_buffer;
+ 	struct table *table;
++	spinlock_t stat64_lock;	/* protect 64-bit stats */
+ 	struct mutex lock;
+ 	struct request_queue *queue;
+ 	struct gendisk *disk;
+@@ -167,5 +163,48 @@ struct ramzswap {
+
+ /*-- */
+
+-#endif
++/* Debugging and Stats */
++#if defined(CONFIG_RAMZSWAP_STATS)
++static void rzs_stat_inc(u32 *v)
++{
++	*v = *v + 1;
++}
++
++static void rzs_stat_dec(u32 *v)
++{
++	*v = *v - 1;
++}
++
++static void rzs_stat64_inc(struct ramzswap *rzs, u64 *v)
++{
++	spin_lock(&rzs->stat64_lock);
++	*v = *v + 1;
++	spin_unlock(&rzs->stat64_lock);
++}
++
++static void rzs_stat64_dec(struct ramzswap *rzs, u64 *v)
++{
++	spin_lock(&rzs->stat64_lock);
++	*v = *v - 1;
++	spin_unlock(&rzs->stat64_lock);
++}
++
++static u64 rzs_stat64_read(struct ramzswap *rzs, u64 *v)
++{
++	u64 val;
++
++	spin_lock(&rzs->stat64_lock);
++	val = *v;
++	spin_unlock(&rzs->stat64_lock);
++
++	return val;
++}
++#else
++#define rzs_stat_inc(v)
++#define rzs_stat_dec(v)
++#define rzs_stat64_inc(r, v)
++#define rzs_stat64_dec(r, v)
++#define rzs_stat64_read(r, v)
++#endif /* CONFIG_RAMZSWAP_STATS */
+
++#endif
+diff --git a/drivers/staging/ramzswap/ramzswap_ioctl.h b/drivers/staging/ramzswap/ramzswap_ioctl.h
+index 1bc54e2..1edaeba 100644
+--- a/drivers/staging/ramzswap/ramzswap_ioctl.h
++++ b/drivers/staging/ramzswap/ramzswap_ioctl.h
+@@ -27,6 +27,7 @@ struct ramzswap_ioctl_stats {
+ 	u64 failed_reads;	/* should NEVER! happen */
+ 	u64 failed_writes;	/* can happen when memory is too low */
+ 	u64 invalid_io;		/* non-swap I/O requests */
++	u64 notify_free;	/* no. of swap slot free notifications */
+ 	u32 pages_zero;		/* no. of zero filled pages */
+ 	u32 good_compress_pct;	/* no. of pages with compression ratio<=50% */
+ 	u32 pages_expand_pct;	/* no. of incompressible pages */
+--
+1.6.2.5
+
