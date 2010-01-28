@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755118Ab0A1W42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212Ab0A1W6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755118Ab0A1W42 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 17:56:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577Ab0A1W42
+	id S1755212Ab0A1W6l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 17:58:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456Ab0A1W6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 17:56:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:52944 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753456Ab0A1W41 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 17:56:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OzniiB+E7yhkweRpfI93V+3D7wAyHcfcXNZYBzBB0wehZC9S4qs2xZTg04GFFj3PCQ
-         SuHPXEIr1xWszeVKHZ19+O9N80xYARIgWv0G2WIcDznnE8A3oiNOZCtvPXc6XSYi0pIy
-         oh7qtxeNIszMwLY7s6QfUTr/RsZqRU9BHyW9I=
-Date: Thu, 28 Jan 2010 23:56:21 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-Message-ID: <20100128225621.GD3109@del.dom.local>
-References: <4B60707F.1000608@majjas.com>
- <20100127095614.14313677@nehalam>
- <4B608128.7090607@majjas.com>
- <4B6089C7.4010803@majjas.com>
- <4B61ADF1.7060705@majjas.com>
- <4B61BEA4.1030905@majjas.com>
- <20100128090835.0d93e53a@nehalam>
- <4B61DB79.4080703@majjas.com>
- <20100128223447.GC3109@del.dom.local>
- <4B621316.8070308@majjas.com>
+	Thu, 28 Jan 2010 17:58:40 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56861 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751923Ab0A1W6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 17:58:40 -0500
+Date: Thu, 28 Jan 2010 23:58:38 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tree-wide: trivial typo fixes: s/lenght/length/g
+In-Reply-To: <1264664231-28338-1-git-send-email-daniel@caiaq.de>
+Message-ID: <alpine.LNX.2.00.1001282357190.356@pobox.suse.cz>
+References: <1264664231-28338-1-git-send-email-daniel@caiaq.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B621316.8070308@majjas.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 05:43:34PM -0500, Michael Breuer wrote:
-> This is with the pci_unmap_len patch as well as the dma-debug patch.
-> I'm not getting any warnings - but dma-debug num-free-entries drops
-> until zero and then debugging is disabled. I started with 8,000,000
-> about three hours ago - without load I'm already down to less than
-> half that. Again - only looking at sky2. Looks like the dma-debug
-> hash table is reducing one entry for every packet, but never
-> increasing the num_entries (no unmap perhaps).
+On Thu, 28 Jan 2010, Daniel Mack wrote:
 
-OK, then, until there is some new fix you better turn it off.
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Cc: Jiri Kosina <trivial@kernel.org>
+> ---
+>  arch/arm/mach-at91/include/mach/at91_mci.h  |    2 +-
+>  arch/s390/crypto/sha_common.c               |    2 +-
+>  drivers/crypto/hifn_795x.c                  |    2 +-
+>  drivers/isdn/mISDN/l1oip_core.c             |    2 +-
+>  drivers/net/ppp_generic.c                   |    2 +-
+>  drivers/net/r6040.c                         |    2 +-
+>  drivers/net/stmmac/common.h                 |    2 +-
+>  drivers/net/stmmac/gmac.c                   |    4 ++--
+>  drivers/net/stmmac/mac100.c                 |    2 +-
+>  drivers/net/stmmac/stmmac_ethtool.c         |    2 +-
+>  drivers/net/wimax/i2400m/i2400m-usb.h       |    2 +-
+>  drivers/net/wireless/p54/p54spi.c           |    2 +-
+>  drivers/net/wireless/wl12xx/wl1251_cmd.c    |    2 +-
+>  drivers/net/wireless/wl12xx/wl1251_rx.c     |    2 +-
+>  drivers/net/wireless/wl12xx/wl1271_cmd.c    |    2 +-
+>  drivers/staging/comedi/drivers/usbdux.c     |    2 +-
+>  drivers/staging/comedi/drivers/usbduxfast.c |    2 +-
+>  drivers/staging/dream/camera/msm_camera.c   |    2 +-
+>  drivers/staging/rt2860/common/cmm_sanity.c  |    4 ++--
+>  drivers/staging/rt2860/common/cmm_wpa.c     |    2 +-
+>  drivers/staging/rt2860/rt_linux.c           |    2 +-
+>  drivers/staging/rt2860/sta/rtmp_data.c      |    2 +-
+>  drivers/staging/rtl8187se/r8180_core.c      |    2 +-
+>  drivers/staging/wlags49_h2/hcf.c            |    2 +-
+>  drivers/staging/wlags49_h2/wl_util.c        |    4 ++--
+>  drivers/usb/wusbcore/wusbhc.h               |    2 +-
+>  drivers/uwb/uwbd.c                          |    2 +-
+>  fs/cifs/asn1.c                              |    2 +-
+>  fs/ext4/mballoc.c                           |    2 +-
+>  fs/udf/inode.c                              |    2 +-
+>  kernel/trace/trace.h                        |    2 +-
+>  net/dccp/ackvec.h                           |    2 +-
+>  32 files changed, 35 insertions(+), 35 deletions(-)
 
-Jarek P.
+Please take out the drivers/staging part and push that one individually to 
+Greg. I'll then merge the remaining bits through my tree.
+
+The code in staging tree is supposed to be changing rapidly, so we'll be
+getting conflicts in linux-next very often.
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
