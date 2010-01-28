@@ -1,717 +1,418 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392Ab0A1RkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932221Ab0A1Rpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756392Ab0A1RkY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 12:40:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756332Ab0A1RkY
+	id S932221Ab0A1Rpo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 12:45:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256Ab0A1Rpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 12:40:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:5763 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756327Ab0A1RkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 12:40:23 -0500
-Date: Thu, 28 Jan 2010 19:34:38 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Or Gerlitz <ogerlitz@voltaire.com>, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] net: macvtap driver
-Message-ID: <20100128173438.GA3476@redhat.com>
-References: <201001271104.20607.arnd@arndb.de> <201001272209.27361.arnd@arndb.de>
+	Thu, 28 Jan 2010 12:45:43 -0500
+Received: from mail.windriver.com ([147.11.1.11]:52946 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756025Ab0A1Rpn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 12:45:43 -0500
+Message-ID: <4B61CD14.7000901@windriver.com>
+Date: Thu, 28 Jan 2010 11:44:52 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001272209.27361.arnd@arndb.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/4] x86,hw_breakpoint,kgdb: kgdb to use hw_breakpointAPI
+References: <1264480000-6997-1-git-send-email-jason.wessel@windriver.com> <1264480000-6997-2-git-send-email-jason.wessel@windriver.com> <20100128171050.GA18683@nowhere>
+In-Reply-To: <20100128171050.GA18683@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jan 2010 17:44:52.0317 (UTC) FILETIME=[985F20D0:01CAA041]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 10:09:27PM +0100, Arnd Bergmann wrote:
-> In order to use macvlan with qemu and other tools that require
-> a tap file descriptor, the macvtap driver adds a small backend
-> with a character device with the same interface as the tun
-> driver, with a minimum set of features.
-> 
-> Macvtap interfaces are created in the same way as macvlan
-> interfaces using ip link, but the netif is just used as a
-> handle for configuration and accounting, while the data
-> goes through the chardev. Each macvtap interface has its
-> own character device, simplifying permission management
-> significantly over the generic tun/tap driver.
-> 
-> Cc: Patrick McHardy <kaber@trash.net>
-> Cc: Stephen Hemminger <shemminger@linux-foundation.org>
-> Cc: David S. Miller" <davem@davemloft.net>
-> Cc: "Michael S. Tsirkin" <mst@redhat.com>
-> Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> Cc: Or Gerlitz <ogerlitz@voltaire.com>
-> Cc: netdev@vger.kernel.org
-> Cc: bridge@lists.linux-foundation.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/net/Kconfig        |   12 +
->  drivers/net/Makefile       |    1 +
->  drivers/net/macvtap.c      |  572 ++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/if_macvlan.h |    1 +
->  4 files changed, 586 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/net/macvtap.c
-> 
-> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> index cb0e534..411e207 100644
-> --- a/drivers/net/Kconfig
-> +++ b/drivers/net/Kconfig
-> @@ -90,6 +90,18 @@ config MACVLAN
->  	  To compile this driver as a module, choose M here: the module
->  	  will be called macvlan.
->  
-> +config MACVTAP
-> +	tristate "MAC-VLAN based tap driver (EXPERIMENTAL)"
-> +	depends on MACVLAN
-> +	help
-> +	  This adds a specialized tap character device driver that is based
-> +	  on the MAC-VLAN network interface, called macvtap. A macvtap device
-> +	  can be added in the same way as a macvlan device, using 'type
-> +	  macvlan', and then be accessed through the tap user space interface.
-> +
-> +	  To compile this driver as a module, choose M here: the module
-> +	  will be called macvtap.
-> +
->  config EQUALIZER
->  	tristate "EQL (serial line load balancing) support"
->  	---help---
-> diff --git a/drivers/net/Makefile b/drivers/net/Makefile
-> index 0b763cb..9595803 100644
-> --- a/drivers/net/Makefile
-> +++ b/drivers/net/Makefile
-> @@ -169,6 +169,7 @@ obj-$(CONFIG_XEN_NETDEV_FRONTEND) += xen-netfront.o
->  obj-$(CONFIG_DUMMY) += dummy.o
->  obj-$(CONFIG_IFB) += ifb.o
->  obj-$(CONFIG_MACVLAN) += macvlan.o
-> +obj-$(CONFIG_MACVTAP) += macvtap.o
->  obj-$(CONFIG_DE600) += de600.o
->  obj-$(CONFIG_DE620) += de620.o
->  obj-$(CONFIG_LANCE) += lance.o
-> diff --git a/drivers/net/macvtap.c b/drivers/net/macvtap.c
-> new file mode 100644
-> index 0000000..2916202
-> --- /dev/null
-> +++ b/drivers/net/macvtap.c
-> @@ -0,0 +1,572 @@
-> +#include <linux/etherdevice.h>
-> +#include <linux/if_macvlan.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/nsproxy.h>
-> +#include <linux/compat.h>
-> +#include <linux/if_tun.h>
-> +#include <linux/module.h>
-> +#include <linux/skbuff.h>
-> +#include <linux/cache.h>
-> +#include <linux/sched.h>
-> +#include <linux/types.h>
-> +#include <linux/init.h>
-> +#include <linux/wait.h>
-> +#include <linux/cdev.h>
-> +#include <linux/fs.h>
-> +
-> +#include <net/net_namespace.h>
-> +#include <net/rtnetlink.h>
-> +#include <net/sock.h>
-> +
-> +/*
-> + * A macvtap queue is the central object of this driver, it connects
-> + * an open character device to a macvlan interface. There can be
-> + * multiple queues on one interface, which map back to queues
-> + * implemented in hardware on the underlying device.
-> + *
-> + * macvtap_proto is used to allocate queues through the sock allocation
-> + * mechanism.
-> + *
-> + * TODO: multiqueue support is currently not implemented, even though
-> + * macvtap is basically prepared for that. We will need to add this
-> + * here as well as in virtio-net and qemu to get line rate on 10gbit
-> + * adapters from a guest.
-> + */
-> +struct macvtap_queue {
-> +	struct sock sk;
-> +	struct socket sock;
-> +	struct macvlan_dev *vlan;
-> +	struct file *file;
-> +};
-> +
-> +static struct proto macvtap_proto = {
-> +	.name = "macvtap",
-> +	.owner = THIS_MODULE,
-> +	.obj_size = sizeof (struct macvtap_queue),
-> +};
-> +
-> +/*
-> + * Minor number matches netdev->ifindex, so need a potentially
-> + * large value. This also makes it possible to split the
-> + * tap functionality out again in the future by offering it
-> + * from other drivers besides macvtap. As long as every device
-> + * only has one tap, the interface numbers assure that the
-> + * device nodes are unique.
-> + */
-> +static unsigned int macvtap_major;
-> +#define MACVTAP_NUM_DEVS 65536
-> +static struct class *macvtap_class;
-> +static struct cdev macvtap_cdev;
-> +
-> +/*
-> + * RCU usage:
-> + * The macvtap_queue is referenced both from the chardev struct file
-> + * and from the struct macvlan_dev using rcu_read_lock.
-> + *
-> + * We never actually update the contents of a macvtap_queue atomically
-> + * with RCU but it is used for race-free destruction of a queue when
-> + * either the file or the macvlan_dev goes away. Pointers back to
-> + * the dev and the file are implicitly valid as long as the queue
-> + * exists.
-> + *
-> + * The callbacks from macvlan are always done with rcu_read_lock held
-> + * already, while in the file_operations, we get it ourselves.
-> + *
-> + * When destroying a queue, we remove the pointers from the file and
-> + * from the dev and then synchronize_rcu to make sure no thread is
-> + * still using the queue. There may still be references to the struct
-> + * sock inside of the queue from outbound SKBs, but these never
-> + * reference back to the file or the dev. The data structure is freed
-> + * through __sk_free when both our references and any pending SKBs
-> + * are gone.
-> + *
-> + * macvtap_lock is only used to prevent multiple concurrent open()
-> + * calls to assign a new vlan->tap pointer. It could be moved into
-> + * the macvlan_dev itself but is extremely rarely used.
-> + */
-> +static DEFINE_SPINLOCK(macvtap_lock);
-> +
-> +/*
-> + * Choose the next free queue, for now there is only one
-> + */
-> +static int macvtap_set_queue(struct net_device *dev, struct file *file,
-> +				struct macvtap_queue *q)
-> +{
-> +	struct macvlan_dev *vlan = netdev_priv(dev);
-> +	int err = -EBUSY;
-> +
-> +	spin_lock(&macvtap_lock);
-> +	if (rcu_dereference(vlan->tap))
-> +		goto out;
-> +
-> +	err = 0;
-> +	q->vlan = vlan;
-> +	rcu_assign_pointer(vlan->tap, q);
-> +
-> +	q->file = file;
-> +	rcu_assign_pointer(file->private_data, q);
-> +
-> +out:
-> +	spin_unlock(&macvtap_lock);
-> +	return err;
-> +}
-> +
-> +/*
-> + * We must destroy each queue exactly once, when either
-> + * the netdev or the file go away.
-> + *
-> + * Using the spinlock makes sure that we don't get
-> + * to the queue again after destroying it.
-> + *
-> + * synchronize_rcu serializes with the packet flow
-> + * that uses rcu_read_lock.
-> + */
-> +static void macvtap_del_queue(struct macvtap_queue **qp)
-> +{
-> +	struct macvtap_queue *q;
-> +
-> +	spin_lock(&macvtap_lock);
-> +	q = rcu_dereference(*qp);
-> +	if (!q) {
-> +		spin_unlock(&macvtap_lock);
-> +		return;
-> +	}
-> +
-> +	rcu_assign_pointer(q->vlan->tap, NULL);
-> +	rcu_assign_pointer(q->file->private_data, NULL);
-> +	spin_unlock(&macvtap_lock);
-> +
-> +	synchronize_rcu();
-> +	sock_put(&q->sk);
-> +}
-> +
-> +/*
-> + * Since we only support one queue, just dereference the pointer.
-> + */
-> +static struct macvtap_queue *macvtap_get_queue(struct net_device *dev,
-> +					       struct sk_buff *skb)
-> +{
-> +	struct macvlan_dev *vlan = netdev_priv(dev);
-> +
-> +	return rcu_dereference(vlan->tap);
-> +}
-> +
-> +static void macvtap_del_queues(struct net_device *dev)
-> +{
-> +	struct macvlan_dev *vlan = netdev_priv(dev);
-> +	macvtap_del_queue(&vlan->tap);
-> +}
-> +
-> +static inline struct macvtap_queue *macvtap_file_get_queue(struct file *file)
-> +{
-> +	rcu_read_lock_bh();
-> +	return rcu_dereference(file->private_data);
-> +}
-> +
-> +static inline void macvtap_file_put_queue(void)
-> +{
-> +	rcu_read_unlock_bh();
-> +}
-> +
+Frederic Weisbecker wrote:
+> On Mon, Jan 25, 2010 at 10:26:37PM -0600, Jason Wessel wrote:
+>   
+>> @@ -466,7 +466,7 @@ static int __kprobes hw_breakpoint_handler(struct die_args *args)
+>>  {
+>>  	int i, cpu, rc = NOTIFY_STOP;
+>>  	struct perf_event *bp;
+>> -	unsigned long dr7, dr6;
+>> +	unsigned long dr6;
+>>  	unsigned long *dr6_p;
+>>  
+>>  	/* The DR6 value is pointed by args->err */
+>> @@ -477,7 +477,6 @@ static int __kprobes hw_breakpoint_handler(struct die_args *args)
+>>  	if ((dr6 & DR_TRAP_BITS) == 0)
+>>  		return NOTIFY_DONE;
+>>  
+>> -	get_debugreg(dr7, 7);
+>>  	/* Disable breakpoints during exception handling */
+>>  	set_debugreg(0UL, 7);
+>>  	/*
+>> @@ -525,7 +524,7 @@ static int __kprobes hw_breakpoint_handler(struct die_args *args)
+>>  	if (dr6 & (~DR_TRAP_BITS))
+>>  		rc = NOTIFY_DONE;
+>>  
+>> -	set_debugreg(dr7, 7);
+>> +	set_debugreg(__get_cpu_var(cpu_dr7), 7);
+>>  	put_cpu();
+>>     
+>
+>
+>
+> Good simplification, but that doesn't appear related to kgdb,
+> this should be done in a separate patch, for the perf/core tree.
+>
+>
+>
+>   
 
-I find such wrappers around rcu obscure this,
-already sufficiently complex, pattern.
-Might be just me.
+Specifically this is required so that kgdb can modify the state of dr7
+by installing and removing breakpoints.  Without this change, on return
+from the callback the dr7 was not correct.
 
-> +/*
-> + * Forward happens for data that gets sent from one macvlan
-> + * endpoint to another one in bridge mode. We just take
-> + * the skb and put it into the receive queue.
-> + */
-> +static int macvtap_forward(struct net_device *dev, struct sk_buff *skb)
-> +{
-> +	struct macvtap_queue *q = macvtap_get_queue(dev, skb);
-> +	if (!q)
-> +		return -ENOLINK;
-> +
-> +	skb_queue_tail(&q->sk.sk_receive_queue, skb);
-> +	wake_up(q->sk.sk_sleep);
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Receive is for data from the external interface (lowerdev),
-> + * in case of macvtap, we can treat that the same way as
-> + * forward, which macvlan cannot.
-> + */
-> +static int macvtap_receive(struct sk_buff *skb)
-> +{
-> +	skb_push(skb, ETH_HLEN);
-> +	return macvtap_forward(skb->dev, skb);
-> +}
-> +
-> +static int macvtap_newlink(struct net *src_net,
-> +			   struct net_device *dev,
-> +			   struct nlattr *tb[],
-> +			   struct nlattr *data[])
-> +{
-> +	struct device *classdev;
-> +	dev_t devt;
-> +	int err;
-> +
-> +	err = macvlan_common_newlink(src_net, dev, tb, data,
-> +				     macvtap_receive, macvtap_forward);
-> +	if (err)
-> +		goto out;
-> +
-> +	devt = MKDEV(MAJOR(macvtap_major), dev->ifindex);
-> +
-> +	classdev = device_create(macvtap_class, &dev->dev, devt,
-> +				 dev, "tap%d", dev->ifindex);
-> +	if (IS_ERR(classdev)) {
-> +		err = PTR_ERR(classdev);
-> +		macvtap_del_queues(dev);
-> +	}
-> +
-> +out:
-> +	return err;
-> +}
-> +
-> +static void macvtap_dellink(struct net_device *dev,
-> +			    struct list_head *head)
-> +{
-> +	device_destroy(macvtap_class,
-> +		       MKDEV(MAJOR(macvtap_major), dev->ifindex));
-> +
-> +	macvtap_del_queues(dev);
-> +	macvlan_dellink(dev, head);
-> +}
-> +
-> +static struct rtnl_link_ops macvtap_link_ops __read_mostly = {
-> +	.kind		= "macvtap",
-> +	.newlink	= macvtap_newlink,
-> +	.dellink	= macvtap_dellink,
-> +};
-> +
-> +
-> +static void macvtap_sock_write_space(struct sock *sk)
-> +{
-> +	if (!sock_writeable(sk) ||
-> +	    !test_and_clear_bit(SOCK_ASYNC_NOSPACE, &sk->sk_socket->flags))
-> +		return;
-> +
-> +	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +		wake_up_interruptible_sync(sk->sk_sleep);
-> +}
-> +
-> +static int macvtap_open(struct inode *inode, struct file *file)
-> +{
-> +	struct net *net = current->nsproxy->net_ns;
-> +	struct net_device *dev = dev_get_by_index(net, iminor(inode));
-> +	struct macvtap_queue *q;
-> +	int err;
-> +
+As far as I know, only kgdb was altering the dr registers during a call
+back..
 
-This seems to keep reference to device as long as character device is
-open, which, if I understand correctly, will start printing error
-messages to kernel log about once a second if you try to remove the
-device.
+>
+>>  	}
+>> -	if (correctit)
+>> -		set_debugreg(dr7, 7);
+>> +	hw_breakpoint_restore();
+>>     
+>
+>
+>
+> hw_breakpoint_restore() is used by KVM only, for now.
+> The cpu var cpu_debugreg[] contains values that
+> are only saved when KVM switches to a guest, then
+> this function is called when KVM switches back to the
+> host. I bet this is not the function you need.
+> In fact, I don't know what you intended to do there.
+>
+>   
 
-I suspect the best way to fix this issue would be to use some kind
-of notifier so that macvtap can disconnect on device removal.
+I was looking to restore the proper contents of the debug registers when
+resuming the general kernel execution.
+
+As far as I could tell it looked like the right function because
+arch_install_breakpoint() uses the per_cpu vars.  If there is a save
+function that I need to call first that is a different issue.
+
+IE:
+    __get_cpu_var(cpu_debugreg[i]) = info->address;
 
 
-> +	err = -ENODEV;
-> +	if (!dev)
-> +		goto out;
-> +
-> +	/* check if this is a macvtap device */
-> +	err = -EINVAL;
-> +	if (dev->rtnl_link_ops != &macvtap_link_ops)
-> +		goto out;
-> +
-> +	err = -ENOMEM;
-> +	q = (struct macvtap_queue *)sk_alloc(net, AF_UNSPEC, GFP_KERNEL,
-> +					     &macvtap_proto);
-> +	if (!q)
-> +		goto out;
-> +
-> +	init_waitqueue_head(&q->sock.wait);
-> +	q->sock.type = SOCK_RAW;
-> +	q->sock.state = SS_CONNECTED;
-> +	sock_init_data(&q->sock, &q->sk);
-> +	q->sk.sk_allocation = GFP_ATOMIC; /* for now */
-> +	q->sk.sk_write_space = macvtap_sock_write_space;
-> +
-> +	err = macvtap_set_queue(dev, file, q);
-> +	if (err)
-> +		sock_put(&q->sk);
-> +
-> +out:
-> +	return err;
-> +}
-> +
-> +static int macvtap_release(struct inode *inode, struct file *file)
-> +{
-> +	macvtap_del_queue((struct macvtap_queue **)&file->private_data);
-> +	return 0;
-> +}
-> +
-> +static unsigned int macvtap_poll(struct file *file, poll_table * wait)
-> +{
-> +	struct macvtap_queue *q = macvtap_file_get_queue(file);
-> +	unsigned int mask = POLLERR;
-> +
-> +	if (!q)
-> +		goto out;
-> +
-> +	mask = 0;
-> +	poll_wait(file, &q->sock.wait, wait);
-> +
-> +	if (!skb_queue_empty(&q->sk.sk_receive_queue))
-> +		mask |= POLLIN | POLLRDNORM;
-> +
-> +	if (sock_writeable(&q->sk) ||
-> +	    (!test_and_set_bit(SOCK_ASYNC_NOSPACE, &q->sock.flags) &&
-> +	     sock_writeable(&q->sk)))
-> +		mask |= POLLOUT | POLLWRNORM;
-> +
-> +out:
-> +	macvtap_file_put_queue();
-> +	return mask;
-> +}
-> +
-> +/* Get packet from user space buffer */
-> +static ssize_t macvtap_get_user(struct macvtap_queue *q,
-> +				const struct iovec *iv, size_t count,
-> +				int noblock)
-> +{
-> +	struct sk_buff *skb;
-> +	size_t len = count;
-> +	int err;
-> +
-> +	if (unlikely(len < ETH_HLEN))
-> +		return -EINVAL;
-> +
-> +	skb = sock_alloc_send_skb(&q->sk, NET_IP_ALIGN + len, noblock, &err);
-> +
-> +	if (!skb) {
-> +		macvlan_count_rx(q->vlan, 0, false, false);
-> +		return err;
-> +	}
-> +
-> +	skb_reserve(skb, NET_IP_ALIGN);
-> +	skb_put(skb, count);
-> +
-> +	if (skb_copy_datagram_from_iovec(skb, 0, iv, 0, len)) {
-> +		macvlan_count_rx(q->vlan, 0, false, false);
-> +		kfree_skb(skb);
-> +		return -EFAULT;
-> +	}
-> +
-> +	skb_set_network_header(skb, ETH_HLEN);
-> +
-> +	macvlan_start_xmit(skb, q->vlan->dev);
-> +
-> +	return count;
-> +}
-> +
+I admit I did not test running a kvm instance, so I don't know what kind
+of conflict there would be here.  I went and further looked at the kvm
+code, and they call the function for the same reason kgdb does.  They
+want the original system values back on resuming normal kernel
+execution.  KVM can modify dr7 or other regs directly on entry for its
+guest execution.  Kgdb does the same sort of thing so as to prevent the
+debugger from interrupting itself.
 
-I am surprised there's no GSO support.  Would it be a good idea to share
-code with tun driver? That already has GSO ...
-Also, network header pointer seems off for vlan packets?
 
-> +static ssize_t macvtap_aio_write(struct kiocb *iocb, const struct iovec *iv,
-> +				 unsigned long count, loff_t pos)
-> +{
-> +	struct file *file = iocb->ki_filp;
-> +	ssize_t result = -ENOLINK;
-> +	struct macvtap_queue *q = macvtap_file_get_queue(file);
-> +
-> +	if (!q)
-> +		goto out;
-> +
-> +	result = macvtap_get_user(q, iv, iov_length(iv, count),
-> +			      file->f_flags & O_NONBLOCK);
-> +out:
-> +	macvtap_file_put_queue();
-> +	return result;
-> +}
-> +
-> +/* Put packet to the user space buffer */
-> +static ssize_t macvtap_put_user(struct macvtap_queue *q,
-> +				const struct sk_buff *skb,
-> +				const struct iovec *iv, int len)
-> +{
-> +	struct macvlan_dev *vlan = q->vlan;
-> +	int ret;
-> +
-> +	len = min_t(int, skb->len, len);
-> +
-> +	ret = skb_copy_datagram_const_iovec(skb, 0, iv, 0, len);
-> +
-> +	macvlan_count_rx(vlan, len, ret == 0, 0);
-> +
-> +	return ret ? ret : len;
-> +}
-> +
-> +static ssize_t macvtap_aio_read(struct kiocb *iocb, const struct iovec *iv,
-> +				unsigned long count, loff_t pos)
-> +{
-> +	struct file *file = iocb->ki_filp;
-> +	struct macvtap_queue *q = macvtap_file_get_queue(file);
-> +
-> +	DECLARE_WAITQUEUE(wait, current);
-> +	struct sk_buff *skb;
-> +	ssize_t len, ret = 0;
-> +
-> +	if (!q) {
-> +		ret = -ENOLINK;
-> +		goto out;
-> +	}
-> +
-> +	len = iov_length(iv, count);
-> +	if (len < 0) {
-> +		ret = -EINVAL;
-> +		goto out;
-> +	}
-> +
-> +	add_wait_queue(q->sk.sk_sleep, &wait);
-> +	while (len) {
-> +		current->state = TASK_INTERRUPTIBLE;
-> +
-> +		/* Read frames from the queue */
-> +		skb = skb_dequeue(&q->sk.sk_receive_queue);
-> +		if (!skb) {
-> +			if (file->f_flags & O_NONBLOCK) {
-> +				ret = -EAGAIN;
-> +				break;
-> +			}
-> +			if (signal_pending(current)) {
-> +				ret = -ERESTARTSYS;
-> +				break;
-> +			}
-> +			/* Nothing to read, let's sleep */
-> +			schedule();
-> +			continue;
-> +		}
-> +		ret = macvtap_put_user(q, skb, iv, len);
-> +		kfree_skb(skb);
-> +		break;
-> +	}
-> +
-> +	current->state = TASK_RUNNING;
-> +	remove_wait_queue(q->sk.sk_sleep, &wait);
-> +
-> +out:
-> +	macvtap_file_put_queue();
-> +	return ret;
-> +}
-> +
+>
+>   
+>> @@ -278,27 +285,38 @@ kgdb_set_hw_break(unsigned long addr, int len, enum kgdb_bptype bptype)
+>>  
+>>  	switch (bptype) {
+>>  	case BP_HARDWARE_BREAKPOINT:
+>> -		type = 0;
+>> -		len  = 1;
+>> +		len = 1;
+>> +		breakinfo[i].type = X86_BREAKPOINT_EXECUTE;
+>>  		break;
+>>  	case BP_WRITE_WATCHPOINT:
+>> -		type = 1;
+>> +		breakinfo[i].type = X86_BREAKPOINT_WRITE;
+>>  		break;
+>>  	case BP_ACCESS_WATCHPOINT:
+>> -		type = 3;
+>> +		breakinfo[i].type = X86_BREAKPOINT_RW;
+>>  		break;
+>>     
+>
+>
+>
+> Would be nice to have bptype set to the generic flags
+> we have already in linux/hw_breakpoint.h:
+>
+> enum {
+> 	HW_BREAKPOINT_R = 1,
+> 	HW_BREAKPOINT_W = 2,
+> 	HW_BREAKPOINT_X = 4,
+> };
+>
+>
+>   
 
-Same GSO comment here.
+These numbers have to get translated somewhere from the GDB version
+which it handed off via the gdb serial protocol.  They could be
+translated in the gdb stub, but for now they are in the arch specific
+stub.  Or you can choose to use the same numbering scheme as gdb for the
+breakpoint types and the values could be used directly.
 
-> +/*
-> + * provide compatibility with generic tun/tap interface
-> + */
-> +static long macvtap_ioctl(struct file *file, unsigned int cmd,
-> +			  unsigned long arg)
-> +{
+> We have functions in x86 to do the conversion to
+> x86 values in arch/x86/kernel/hw_breakpoint.c
+>
+> Nothing urgent though, as this patch is a regression fix,
+> this can be done later.
+>
+>
+>
+>   
+>> +	switch (len) {
+>> +	case 1:
+>> +		breakinfo[i].len = X86_BREAKPOINT_LEN_1;
+>> +		break;
+>> +	case 2:
+>> +		breakinfo[i].len = X86_BREAKPOINT_LEN_2;
+>> +		break;
+>> +	case 4:
+>> +		breakinfo[i].len = X86_BREAKPOINT_LEN_4;
+>> +		break;
+>> +#ifdef CONFIG_X86_64
+>> +	case 8:
+>> +	breakinfo[i].len = X86_BREAKPOINT_LEN_8;
+>> +		break;
+>> +#endif
+>>     
+>
+>
+>
+> Same here, see arch_build_bp_info().
+> Actually, arch_validate_hwbkpt_settings() would do all
+> that for you. May require few changes though to adapt.
+>
+> Actually, I don't understand why you encumber with this
+> breakinfo thing. Why not just keeping a per cpu array
+> of perf events? You have everything you need inside:
+> the generic breakpoint attributes in the attrs and
+> the arch info in the hw_perf_event struct inside.
+>   
 
-All of these seem to be stubs, and tun has many more that you didn't
-stub out. So, why do you bother to support any ioctls at all?
+I think the break info thing will go away via a refactor.  For now I was
+really looking to make it work.   There was no way to tell at the time
+what values were safe to use in attr struct provided by perf.  I would
+have further preferred to be able to use the simple -1 cpu in the bp
+type and let perf do all the work, but there is no way to allocate a
+perf hw wide break like this at the moment.
 
-> +	struct macvtap_queue *q;
-> +	void __user *argp = (void __user *)arg;
-> +	struct ifreq __user *ifr = argp;
-> +	unsigned int __user *up = argp;
-> +	unsigned int u;
-> +	int err;
-> +
-> +	switch (cmd) {
-> +	case TUNSETIFF:
-> +		/* ignore the name, just look at flags */
-> +		if (get_user(u, &ifr->ifr_flags))
-> +			return -EFAULT;
-> +		if (u != (IFF_TAP | IFF_NO_PI))
-> +			return -EINVAL;
-> +		return 0;
-> +
-> +	case TUNGETIFF:
-> +		q = macvtap_file_get_queue(file);
-> +		if (!q)
-> +			return -ENOLINK;
-> +		err = 0;
-> +		if (copy_to_user(&ifr->ifr_name, q->vlan->dev->name, IFNAMSIZ) ||
-> +		    put_user((TUN_TAP_DEV | TUN_NO_PI), &ifr->ifr_flags))
-> +			err = -EFAULT;
-> +		macvtap_file_put_queue();
-> +		return err;
-> +
-> +	case TUNGETFEATURES:
-> +		if (put_user((IFF_TAP | IFF_NO_PI), up))
-> +			return -EFAULT;
-> +		return 0;
-> +
-> +	case TUNSETSNDBUF:
-> +		/* ignore */
-> +		return 0;
-> +
-> +	case TUNSETOFFLOAD:
-> +		/* let the user check for future flags */
-> +		if (arg & ~(TUN_F_CSUM | TUN_F_TSO4 | TUN_F_TSO6 |
-> +			  TUN_F_TSO_ECN | TUN_F_UFO))
-> +			return -EINVAL;
-> +
-> +		/* TODO: add support for these, so far we don't
-> +			 support any offload */
-> +		if (arg & (TUN_F_CSUM | TUN_F_TSO4 | TUN_F_TSO6 |
-> +			 TUN_F_TSO_ECN | TUN_F_UFO))
-> +			return -EINVAL;
-> +
-> +		return 0;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +#ifdef CONFIG_COMPAT
-> +static long macvtap_compat_ioctl(struct file *file, unsigned int cmd,
-> +				 unsigned long arg)
-> +{
-> +	return macvtap_ioctl(file, cmd, (unsigned long)compat_ptr(arg));
-> +}
-> +#endif
-> +
-> +static const struct file_operations macvtap_fops = {
-> +	.owner		= THIS_MODULE,
-> +	.open		= macvtap_open,
-> +	.release	= macvtap_release,
-> +	.aio_read	= macvtap_aio_read,
-> +	.aio_write	= macvtap_aio_write,
-> +	.poll		= macvtap_poll,
-> +	.llseek		= no_llseek,
-> +	.unlocked_ioctl	= macvtap_ioctl,
-> +#ifdef CONFIG_COMPAT
-> +	.compat_ioctl	= macvtap_compat_ioctl,
-> +#endif
-> +};
-> +
-> +static int macvtap_init(void)
-> +{
-> +	int err;
-> +
-> +	err = alloc_chrdev_region(&macvtap_major, 0,
-> +				MACVTAP_NUM_DEVS, "macvtap");
-> +	if (err)
-> +		goto out1;
-> +
-> +	cdev_init(&macvtap_cdev, &macvtap_fops);
-> +	err = cdev_add(&macvtap_cdev, macvtap_major, MACVTAP_NUM_DEVS);
-> +	if (err)
-> +		goto out2;
-> +
-> +	macvtap_class = class_create(THIS_MODULE, "macvtap");
-> +	if (IS_ERR(macvtap_class)) {
-> +		err = PTR_ERR(macvtap_class);
-> +		goto out3;
-> +	}
-> +
-> +	err = macvlan_link_register(&macvtap_link_ops);
-> +	if (err)
-> +		goto out4;
-> +
-> +	return 0;
-> +
-> +out4:
-> +	class_unregister(macvtap_class);
-> +out3:
-> +	cdev_del(&macvtap_cdev);
-> +out2:
-> +	unregister_chrdev_region(macvtap_major, MACVTAP_NUM_DEVS);
-> +out1:
-> +	return err;
-> +}
-> +module_init(macvtap_init);
-> +
-> +static void macvtap_exit(void)
-> +{
-> +	rtnl_link_unregister(&macvtap_link_ops);
-> +	class_unregister(macvtap_class);
-> +	cdev_del(&macvtap_cdev);
-> +	unregister_chrdev_region(macvtap_major, MACVTAP_NUM_DEVS);
-> +}
-> +module_exit(macvtap_exit);
-> +
-> +MODULE_ALIAS_RTNL_LINK("macvtap");
-> +MODULE_AUTHOR("Arnd Bergmann <arnd@arndb.de>");
-> +MODULE_LICENSE("GPL");
-> diff --git a/include/linux/if_macvlan.h b/include/linux/if_macvlan.h
-> index 9a11544..51f1512 100644
-> --- a/include/linux/if_macvlan.h
-> +++ b/include/linux/if_macvlan.h
-> @@ -34,6 +34,7 @@ struct macvlan_dev {
->  	enum macvlan_mode	mode;
->  	int (*receive)(struct sk_buff *skb);
->  	int (*forward)(struct net_device *dev, struct sk_buff *skb);
-> +	struct macvtap_queue	*tap;
->  };
->  
->  static inline void macvlan_count_rx(const struct macvlan_dev *vlan,
-> -- 
-> 1.6.3.3
+Realize that what is here is well tested, and aimed to first correct the
+regression.
+
+> Hence you would be able to use the x86 breakpoint API
+> we have already, arch_validate_hwbkpt_settings() does
+> everything for you. This is going to shrink your code
+> and then make it a stronger argument to pull request
+> as a not-that-one-liner regression fix late in the
+> process (which I must confess is my bad, firstly: I
+> did the regression and secondly: I should have
+> reviewed these fixes sooner).
+>
+>
+>
+>   
+>> @@ -313,8 +331,21 @@ kgdb_set_hw_break(unsigned long addr, int len, enum kgdb_bptype bptype)
+>>   */
+>>  void kgdb_disable_hw_debug(struct pt_regs *regs)
+>>  {
+>> +	int i;
+>> +	int cpu = raw_smp_processor_id();
+>> +	struct perf_event *bp;
+>> +
+>>  	/* Disable hardware debugging while we are in kgdb: */
+>>  	set_debugreg(0UL, 7);
+>> +	for (i = 0; i < 4; i++) {
+>> +		if (!breakinfo[i].enabled)
+>>     
+>
+>
+>
+> See? Here you could use simply bp->attr.disabled instead
+> of playing with this breakinfo.
+>
+>
+>   
+
+Right now, no because the disabled attribute was separately tracking if
+it was installed or not.  The breakinfo thing crudely tracked the kgdb
+breakpoint list while in kgdb, and then it is synced with the real
+install state.
+
+Yes, I'd like to get rid of it, but it is more changes than I want to
+make at the moment.
+
+>> @@ -378,7 +409,6 @@ int kgdb_arch_handle_exception(int e_vector, int signo, int err_code,
+>>  			       struct pt_regs *linux_regs)
+>>  {
+>>  	unsigned long addr;
+>> -	unsigned long dr6;
+>>  	char *ptr;
+>>  	int newPC;
+>>  
+>> @@ -448,10 +464,12 @@ single_step_cont(struct pt_regs *regs, struct die_args *args)
+>>  }
+>>  
+>>  static int was_in_debug_nmi[NR_CPUS];
+>> +static int recieved_hw_brk[NR_CPUS];
+>>  
+>>  static int __kgdb_notify(struct die_args *args, unsigned long cmd)
+>>  {
+>>  	struct pt_regs *regs = args->regs;
+>> +	unsigned long *dr6_p;
+>>  
+>>  	switch (cmd) {
+>>  	case DIE_NMI:
+>> @@ -485,16 +503,24 @@ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
+>>  		break;
+>>  
+>>  	case DIE_DEBUG:
+>> -		if (atomic_read(&kgdb_cpu_doing_single_step) ==
+>> -		    raw_smp_processor_id()) {
+>> +		dr6_p = (unsigned long *)ERR_PTR(args->err);
+>> +		if (atomic_read(&kgdb_cpu_doing_single_step) != -1) {
+>> +			if (dr6_p && (*dr6_p & DR_STEP) == 0)
+>> +				return NOTIFY_DONE;
+>>  			if (user_mode(regs))
+>>  				return single_step_cont(regs, args);
+>>  			break;
+>> -		} else if (test_thread_flag(TIF_SINGLESTEP))
+>> +		} else if (test_thread_flag(TIF_SINGLESTEP)) {
+>>  			/* This means a user thread is single stepping
+>>  			 * a system call which should be ignored
+>>  			 */
+>>  			return NOTIFY_DONE;
+>> +		} else if (recieved_hw_brk[raw_smp_processor_id()] == 1) {
+>> +			recieved_hw_brk[raw_smp_processor_id()] = 0;
+>> +			return NOTIFY_STOP;
+>> +		} else if (dr6_p && (*dr6_p & DR_TRAP_BITS) == 0) {
+>> +			return NOTIFY_DONE;
+>> +		}
+>>     
+>
+>
+>
+> So this is the debug handler, right?
+>
+>
+>   
+
+This ugly bit is all because the patch I had for returning something
+from the event call back was tossed.
+
+Because perf does not honor the return code from a call back there is no
+way to dismiss an event in the die notifier.  The forces the debug
+handler to do very nasty tricks so as not to handle the same event twice.
+
+>>  
+>> +static void kgdb_hw_bp(struct perf_event *bp, int nmi,
+>> +		       struct perf_sample_data *data,
+>> +		       struct pt_regs *regs)
+>> +{
+>> +	struct die_args args;
+>> +	int cpu = raw_smp_processor_id();
+>> +
+>> +	args.trapnr = 0;
+>> +	args.signr = 5;
+>> +	args.err = 0;
+>> +	args.regs = regs;
+>> +	args.str = "debug";
+>> +	recieved_hw_brk[cpu] = 0;
+>> +	if (__kgdb_notify(&args, DIE_DEBUG) == NOTIFY_STOP)
+>> +		recieved_hw_brk[cpu] = 1;
+>> +	else
+>> +		recieved_hw_brk[cpu] = 0;
+>> +}
+>>     
+>
+>
+>
+> And this looks like the perf event handler.
+>
+> I'm confused by the logic here. We have the x86 breakpoint
+> handler which calls perf_bp_event which in turn will call
+> the above. The above calls __kgdb_notify(), but it will
+> also be called later as it is a debug notifier.
+>
+>
+>   
+
+Perf was eating my events if I had no call back.  If you know a way
+around this let me know.
+
+
+>   
+>> +
+>>  /**
+>>   *	kgdb_arch_init - Perform any architecture specific initalization.
+>>   *
+>> @@ -539,7 +584,43 @@ static struct notifier_block kgdb_notifier = {
+>>   */
+>>  int kgdb_arch_init(void)
+>>  {
+>> -	return register_die_notifier(&kgdb_notifier);
+>> +	int i, cpu;
+>> +	int ret;
+>> +	struct perf_event_attr attr;
+>> +	struct perf_event **pevent;
+>> +
+>> +	ret = register_die_notifier(&kgdb_notifier);
+>> +	if (ret != 0)
+>> +		return ret;
+>> +	/*
+>> +	 * Pre-allocate the hw breakpoint structions in the non-atomic
+>> +	 * portion of kgdb because this operation requires mutexs to
+>> +	 * complete.
+>> +	 */
+>> +	attr.bp_addr = (unsigned long)kgdb_arch_init;
+>> +	attr.type = PERF_TYPE_BREAKPOINT;
+>> +	attr.bp_len = HW_BREAKPOINT_LEN_1;
+>> +	attr.bp_type = HW_BREAKPOINT_X;
+>> +	attr.disabled = 1;
+>> +	for (i = 0; i < 4; i++) {
+>> +		breakinfo[i].pev = register_wide_hw_breakpoint(&attr,
+>> +							       kgdb_hw_bp);
+>>     
+>
+>
+>
+> By calling this, you are reserving all the breakpoint slots.
+>
+>   
+
+Looking down further you will see only 1 slot is used because it is
+immediately released.
+
+>
+>   
+>> +		if (IS_ERR(breakinfo[i].pev)) {
+>> +			printk(KERN_ERR "kgdb: Could not allocate hw breakpoints\n");
+>> +			breakinfo[i].pev = NULL;
+>> +			kgdb_arch_exit();
+>> +			return -1;
+>> +		}
+>> +		for_each_online_cpu(cpu) {
+>> +			pevent = per_cpu_ptr(breakinfo[i].pev, cpu);
+>> +			pevent[0]->hw.sample_period = 1;
+>> +			if (pevent[0]->destroy != NULL) {
+>> +				pevent[0]->destroy = NULL;
+>> +				release_bp_slot(*pevent);
+>>     
+>
+>
+>
+> And then you release these, ok. We should find a proper
+> way for that later, but for now it should work.
+>
+>   
+
+Previously, I was unable to convince anyone that the kernel debugger
+needed to be able to do this.  I had an API change to perf for it, but
+it was dismissed along with the notify return value on the call back. 
+This is merely a work around to correct the regression.
+
+Jason.
+
