@@ -1,128 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742Ab0A1SQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755751Ab0A1STP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742Ab0A1SQl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 13:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673Ab0A1SQj
+	id S1755751Ab0A1STP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 13:19:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554Ab0A1STO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 13:16:39 -0500
-Received: from mbox1.netikka.net ([213.250.81.202]:47502 "EHLO
-	mbox1.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755666Ab0A1SQi (ORCPT
+	Thu, 28 Jan 2010 13:19:14 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:51650 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754964Ab0A1STN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 13:16:38 -0500
-Message-ID: <4B61D482.4080907@mandriva.org>
-Date: Thu, 28 Jan 2010 20:16:34 +0200
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100122 Mandriva/3.0.1-2mdv2010.1 (2010.1) Thunderbird/3.0.1
+	Thu, 28 Jan 2010 13:19:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=content-type:to:cc:subject:references:date:mime-version
+         :content-transfer-encoding:from:message-id:in-reply-to:user-agent;
+        b=Z9Lv5NmdYl2tCM2cYOMpDLhESq6c8tUAGYFt4mFoYil8fvyMkWg2JGkp4yMZiBrOhN
+         raPKypJGNwgAaraSxHXy9YRCD/t549+8hrdmmAW+TsA1epmZbrPeSTanraaDEgHOy8jb
+         fuz0q1BjTeC+2DTXLys/eZdxK6+aGU52E+igA=
+Content-Type: text/plain; charset=utf-8; format=flowed; delsp=yes
+To: "Michael Reinelt" <michael@reinelt.co.at>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>
+Cc: "Chris Wilson" <chris@chris-wilson.co.uk>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "A Rojas" <nqn1976list@gmail.com>,
+       "A. Boulan" <arnaud.boulan@libertysurf.fr>, jcnengel@googlemail.com,
+       rientjes@google.com, earny@net4u.de, linux-kernel@vger.kernel.org,
+       intel-gfx@lists.freedesktop.org,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Eric Anholt" <eric@anholt.net>, stable@kernel.org
+Subject: Re: [PATCH] drm/i915: Selectively enable self-reclaim
+References: <alpine.LFD.2.00.1001270252290.24253@localhost.localdomain>
+ <1264590844-22972-1-git-send-email-chris@chris-wilson.co.uk>
+ <4B602186.8050303@cs.helsinki.fi> <4B610134.9020109@reinelt.co.at>
+Date: Thu, 28 Jan 2010 19:21:47 +0100
 MIME-Version: 1.0
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-CC: =?ISO-8859-1?Q?Fran=E7ois_Figarola?= 
-	<francois.figarola@i-consult.fr>,
-       hch@infradead.org, device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [dm-devel] [BUG] kernel 2.6.32.x hangs during boot process
-References: <d2deb3241001160158r4baed1e1t7e8f6642de018b4c@mail.gmail.com>	<20100122160740.6c16c22d.akpm@linux-foundation.org> <20100128134205.352044bd@notabene> <4B612F89.7020503@ce.jp.nec.com>
-In-Reply-To: <4B612F89.7020503@ce.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+From: "Roman Jarosz" <kedgedev@gmail.com>
+Message-ID: <op.u689ajucasvm2a@kedge>
+In-Reply-To: <4B610134.9020109@reinelt.co.at>
+User-Agent: Opera Mail/10.10 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-28.01.2010 08:32, Jun'ichi Nomura skrev:
->>> On Sat, 16 Jan 2010 10:58:30 +0100
->>> Fran__ois Figarola<francois.figarola@i-consult.fr>  wrote:
->>>> Since I've tried to boot 2.6.32.x kernel, my system hangs during the
->>>> boot process, and I think it could be related to the problem reported
->>>> earlier by Megastorage (http://lkml.org/lkml/2010/1/10/92).
->>>>
->>>> The hardware is a Dell PowerEdge 2950 which runs fine with the
->>>> 2.6.31.x kernel series (actually running with the latest 2.6.31.11),
->>>> and the system is debian etch.
->>>>
->>>> Here is the trace of the bug I've got (using netconsole) with a
->>>> 2.6.32.3 kernel :
->>>>
->>>> BUG: Dentry ffff880667690000{i=41a46,n=sleep} still in use (8)
->>>> [unmount of ext3 dm-4]
->>>> ------------[ cut here ]------------
->>>> kernel BUG at fs/dcache.c:670!
->
-> I can reproduce this when suspend/resume read-only mounted dm device.
->
-> When MS_RDONLY, both freeze_bdev and thaw_bdev call deactivate_locked_super,
-> which seems wrong. The change was introduced with the commit below:
->
->    commit 4504230a71566785a05d3e6b53fa1ee071b864eb
->    Author: Christoph Hellwig<hch@lst.de>
->    Date:   Mon Aug 3 23:28:35 2009 +0200
->
->    freeze_bdev: grab active reference to frozen superblocks
->
-> With the attached patch, both remount-ro and remount-rw are
-> rejected as EBUSY on freezed device as expected.
->
-> Christoph, do you think this is the right fix?
->
+On Thu, 28 Jan 2010 04:15:00 +0100, Michael Reinelt  
+<michael@reinelt.co.at> wrote:
 
-I can confirm that both reverting the above patch, or applying the fix 
-below fixes the issue on both 2.6.32 and 2.6.33-rc5
+>
+>
+> Pekka Enberg schrieb:
+>> Chris Wilson kirjoitti:
+>>> Having missed the ENOMEM return via i915_gem_fault(), there are  
+>>> probably
+>>> other paths that I also missed. By not enabling NORETRY by default  
+>>> these
+>>> paths can run the shrinker and take memory from the system (but not  
+>>> from
+>>> our own inactive lists because our shrinker can not run whilst we hold
+>>> the struct mutex) and this may allow the system to survive a little
+>>> longer
+>>> whilst our drivers consume all available memory.
+>>>
+>>> References:
+>>>   OOM killer unexpectedly called with kernel 2.6.32
+>>>   http://bugzilla.kernel.org/show_bug.cgi?id=14933
+>>>
+>>> Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+>>> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>>> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+>>> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+>>> Cc: Eric Anholt <eric@anholt.net>
+>>> Cc: stable@kernel.org
+>>
+>> Roman, can you give this patch a spin?
+>
+> Applied to 2.6.33-rc5, stress-test under heavy load, no problem so far.  
+> Looks fine!
 
-So if it's considered the correct fix, it needs to be cc stable@ for 2.6.32
+Here it works too, thanks!
 
-(I reported this same issue this morning here:
-  http://marc.info/?l=linux-kernel&m=126467195500908&w=2,
-  but then I found this thread/fix)
+Roman
 
-The system I have tested on is a 4-disk dmraid10 connected to an Intel 
-ICH10R on an Asus P7P55D Deluxe running x86_64
-
-> Jun'ichi Nomura, NEC Corporation
->
->
-> If MS_RDONLY, freeze_bdev should just up_write(s_umount) instead of
-> deactivate_locked_super().
-> Also, keep sb->s_frozen consistent so that remount can check the frozen state.
->
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-   Tested-by: Thomas Backlund <tmb@mandriva.org>
->
-> diff --git a/fs/block_dev.c b/fs/block_dev.c
-> index 73d6a73..600261f 100644
-> --- a/fs/block_dev.c
-> +++ b/fs/block_dev.c
-> @@ -246,7 +246,9 @@ struct super_block *freeze_bdev(struct block_device *bdev)
->  	if (!sb)
->  		goto out;
->  	if (sb->s_flags & MS_RDONLY) {
-> -		deactivate_locked_super(sb);
-> +		sb->s_frozen = SB_FREEZE_TRANS;
-> +		smp_wmb();
-> +		up_write(&sb->s_umount);
->  		mutex_unlock(&bdev->bd_fsfreeze_mutex);
->  		return sb;
->  	}
-> @@ -307,7 +309,7 @@ int thaw_bdev(struct block_device *bdev, struct super_block *sb)
->  	BUG_ON(sb->s_bdev != bdev);
->  	down_write(&sb->s_umount);
->  	if (sb->s_flags & MS_RDONLY)
-> -		goto out_deactivate;
-> +		goto out_unfrozen;
->
->  	if (sb->s_op->unfreeze_fs) {
->  		error = sb->s_op->unfreeze_fs(sb);
-> @@ -321,11 +323,11 @@ int thaw_bdev(struct block_device *bdev, struct super_block *sb)
->  		}
->  	}
->
-> +out_unfrozen:
->  	sb->s_frozen = SB_UNFROZEN;
->  	smp_wmb();
->  	wake_up(&sb->s_wait_unfrozen);
->
-> -out_deactivate:
->  	if (sb)
->  		deactivate_locked_super(sb);
->  out_unlock:
