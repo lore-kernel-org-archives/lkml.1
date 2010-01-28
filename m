@@ -1,198 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814Ab0A1W1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550Ab0A1W1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814Ab0A1W1t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 17:27:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646Ab0A1W1s
+	id S1754550Ab0A1W1b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 17:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307Ab0A1W1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 17:27:48 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:62640 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754583Ab0A1W1r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 17:27:47 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Ql6b26wn6gDQ5SBppUYHFIv+PuZLOkycSjSdTqfQ5fA3ukc199YjqPAJbIYPRLUD6
-	n6yRJfO1pDoEau9Qju2Gg==
-Date: Thu, 28 Jan 2010 14:27:39 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/7] Export unusable free space index via
- /proc/pagetypeinfo
-In-Reply-To: <1262795169-9095-3-git-send-email-mel@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.1001281411290.30252@chino.kir.corp.google.com>
-References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie> <1262795169-9095-3-git-send-email-mel@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 28 Jan 2010 17:27:30 -0500
+Received: from ozlabs.org ([203.10.76.45]:44383 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751741Ab0A1W13 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 17:27:29 -0500
+Date: Fri, 29 Jan 2010 09:27:13 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] perf: Add util/include/linux/config.h for including
+ generated autoconf.h of kernel
+Message-ID: <20100128222713.GC2585@brick.ozlabs.ibm.com>
+References: <4B6133DF.9080207@dcl.info.waseda.ac.jp>
+ <1264688928-12861-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264688928-12861-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jan 2010, Mel Gorman wrote:
+On Thu, Jan 28, 2010 at 11:28:48PM +0900, Hitoshi Mitake wrote:
 
-> Unusuable free space index is a measure of external fragmentation that
-> takes the allocation size into account. For the most part, the huge page
-> size will be the size of interest but not necessarily so it is exported
-> on a per-order and per-zone basis via /proc/pagetypeinfo.
+> I'd like to add util/include/linux/config.h,
+> this header file includes autoconf.h which is generated
+> by build phase of kernel.
 > 
-> The index is normally calculated as a value between 0 and 1 which is
-> obviously unsuitable within the kernel. Instead, the first three decimal
-> places are used as a value between 0 and 1000 for an integer approximation.
+> This makes building of perf depend on building of kernel.
+> It's a little dirty. But perf has tight relation
+> of its kernel, so I don't think that it is a serious problem.
 > 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> ---
->  mm/vmstat.c |   99 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 99 insertions(+), 0 deletions(-)
+> My original purpose of making this patch is
+> knowing size of void *.
+> If config.h is available,
+> CONFIG_ARCH_PHYS_ADDR_T_64BIT will be provided for source of perf,
+> we can know size of void * by this config.
 > 
-> diff --git a/mm/vmstat.c b/mm/vmstat.c
-> index 6051fba..e1ea2d5 100644
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -451,6 +451,104 @@ static int frag_show(struct seq_file *m, void *arg)
->  	return 0;
->  }
->  
-> +
-> +struct config_page_info {
-> +	unsigned long free_pages;
-> +	unsigned long free_blocks_total;
-> +	unsigned long free_blocks_suitable;
-> +};
-> +
-> +/*
-> + * Calculate the number of free pages in a zone, how many contiguous
-> + * pages are free and how many are large enough to satisfy an allocation of
-> + * the target size. Note that this function makes to attempt to estimate
-> + * how many suitable free blocks there *might* be if MOVABLE pages were
-> + * migrated. Calculating that is possible, but expensive and can be
-> + * figured out from userspace
-> + */
-> +static void fill_contig_page_info(struct zone *zone,
-> +				unsigned int suitable_order,
-> +				struct config_page_info *info)
+> How do you think?
 
-There's a descrepency between the name of the function and the name of the 
-struct, I think they were probably both meant to be contig_page_info.
+How will this work if I built the kernel in a separate object
+directory (e.g., using "make O=../builddir vmlinux")?  I think that
+trying to include generated files will fail in that case.
 
-> +{
-> +	unsigned int order;
-> +
-> +	info->free_pages = 0;
-> +	info->free_blocks_total = 0;
-> +	info->free_blocks_suitable = 0;
-> +
-> +	for (order = 0; order < MAX_ORDER; order++) {
-> +		unsigned long blocks;
-> +
-> +		/* Count number of free blocks */
-> +		blocks = zone->free_area[order].nr_free;
-> +		info->free_blocks_total += blocks;
-> +
-> +		/* Count free base pages */
-> +		info->free_pages += blocks << order;
-> +
-> +		/* Count the suitable free blocks */
-> +		if (order >= suitable_order)
-> +			info->free_blocks_suitable += blocks <<
-> +						(order - suitable_order);
-> +	}
-> +}
-> +
-> +/*
-> + * Return an index indicating how much of the available free memory is
-> + * unusable for an allocation of the requested size.
-> + */
-> +int unusable_free_index(struct zone *zone,
-> +				unsigned int order,
-> +				struct config_page_info *info)
+In general I think that tying perf to the kernel config is a bad idea.
 
-Should be static?
-
-> +{
-> +	/* No free memory is interpreted as all free memory is unusable */
-> +	if (info->free_pages == 0)
-> +		return 100;
-> +
-> +	/*
-> +	 * Index should be a value between 0 and 1. Return a value to 3
-> +	 * decimal places.
-> +	 *
-> +	 * 0 => no fragmentation
-> +	 * 1 => high fragmentation
-> +	 */
-> +	return ((info->free_pages - (info->free_blocks_suitable << order)) * 1000) / info->free_pages;
-> +
-
-This value is only for userspace consumption via /proc/pagetypeinfo, so 
-I'm wondering why it needs to be exported as an index.  Other than a loss 
-of precision, wouldn't this be easier to understand (especially when 
-coupled with the free page counts already exported) if it were multipled 
-by 100 rather than 1000 and shown as a percent of _usable_ free memory at 
-each order?  Otherwise, we're left doing this "free - unusuable" 
-calculation while the number of unusuable pages at an order isn't 
-necessarily of great interest as a vanilla value.
-
-> +}
-> +
-> +static void pagetypeinfo_showunusable_print(struct seq_file *m,
-> +					pg_data_t *pgdat, struct zone *zone)
-> +{
-> +	unsigned int order;
-> +
-> +	/* Alloc on stack as interrupts are disabled for zone walk */
-> +	struct config_page_info info;
-> +
-> +	seq_printf(m, "Node %4d, zone %8s %19s",
-> +				pgdat->node_id,
-> +				zone->name, " ");
-> +	for (order = 0; order < MAX_ORDER; ++order) {
-> +		fill_contig_page_info(zone, order, &info);
-
-It's a shame we can't keep this data for the fragmentation index exported 
-subsequently in patch 3.
-
-> +		seq_printf(m, "%6d ", unusable_free_index(zone, order, &info));
-> +	}
-> +
-> +	seq_putc(m, '\n');
-> +}
-> +
-> +/*
-> + * Display unusable free space index
-> + * XXX: Could be a lot more efficient, but it's not a critical path
-> + */
-> +static int pagetypeinfo_showunusable(struct seq_file *m, void *arg)
-> +{
-> +	pg_data_t *pgdat = (pg_data_t *)arg;
-> +
-> +	seq_printf(m, "\nUnusable free space index at order\n");
-> +	walk_zones_in_node(m, pgdat, pagetypeinfo_showunusable_print);
-> +
-> +	return 0;
-> +}
-> +
->  static void pagetypeinfo_showfree_print(struct seq_file *m,
->  					pg_data_t *pgdat, struct zone *zone)
->  {
-> @@ -558,6 +656,7 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
->  	seq_printf(m, "Pages per block:  %lu\n", pageblock_nr_pages);
->  	seq_putc(m, '\n');
->  	pagetypeinfo_showfree(m, pgdat);
-> +	pagetypeinfo_showunusable(m, pgdat);
->  	pagetypeinfo_showblockcount(m, pgdat);
->  
->  	return 0;
-
-/proc/pagetypeinfo isn't documented, but that's been fine until now 
-because all of the fields dealing with "free pages" and "number of blocks" 
-are easily understood.  That changes now because there is no clear 
-understanding of "fragmentation index" in userspace, so we'll probably 
-need some kind of memory compaction documentation eventually.
+Paul.
