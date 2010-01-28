@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677Ab0A1LOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543Ab0A1LVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754677Ab0A1LOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 06:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543Ab0A1LOW
+	id S1754543Ab0A1LVL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 06:21:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469Ab0A1LVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 06:14:22 -0500
-Received: from e28smtp05.in.ibm.com ([122.248.162.5]:34536 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754469Ab0A1LOT (ORCPT
+	Thu, 28 Jan 2010 06:21:10 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:42651 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741Ab0A1LVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 06:14:19 -0500
-Date: Thu, 28 Jan 2010 16:44:15 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jan Kiszka <jan.kiszka@siemens.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 2/2 v2] Return proper code to notifier chain in
-	hw_breakpoint_handler
-Message-ID: <20100128111415.GC13935@in.ibm.com>
-References: <20100128110936.399448739@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=fix_notify_code_02
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 28 Jan 2010 06:21:09 -0500
+Subject: Re: PROBLEM: reproducible crash KVM+nf_conntrack all recent 2.6 
+ kernels
+From: Jon Masters <jonathan@jonmasters.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <b6fcc0a1001280119t1394d956paa4865c078b52c9f@mail.gmail.com>
+References: <b6fcc0a1001280119t1394d956paa4865c078b52c9f@mail.gmail.com>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Thu, 28 Jan 2010 06:21:00 -0500
+Message-Id: <1264677660.2793.128.camel@tonnant>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Processing of debug exceptions (in do_debug()) can stop if it originated from
-a hw-breakpoint exception (return NOTIFY_STOP). For certain cases such as
-a) user-space breakpoints with pending SIGTRAP signal delivery (as in the case
-of ptrace induced breakpoints) and b) exceptions due to multiple causes (other
-than breakpoints) we will continue to process the exception (by returning
-NOTIFY_DONE).
+On Thu, 2010-01-28 at 11:19 +0200, Alexey Dobriyan wrote:
+> > RIP: 0010:[<ffffffff813b4115>]  [<ffffffff813b4115>] destroy_conntrack+0x82/0x114
+> 
+> Rebuild kernel with CONFIG_DEBUG_INFO=y.
+> Double sure conntracking is compiled-in.
+> Then run
+> 
+>     addr2line -e vmlinux $RIP
+> 
+> it will tell exact line where kernel is oopsing.
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- arch/x86/kernel/hw_breakpoint.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+I posted a followup with that detail later in the thread. In every case
+the kernel has CONFIG_DEBUG_INFO set, and in the latter example I posted
+I had turned on almost every other debugging option. I currently have a
+kernel with netfilter debugging turned on but that's proving harder to
+cause to fall over (likely because I changed several other options, so I
+will rebuild it to be identical to earlier with just NF debug on).
 
-Index: linux-2.6-tip.bugfix_perf_hbkpt/arch/x86/kernel/hw_breakpoint.c
-===================================================================
---- linux-2.6-tip.bugfix_perf_hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
-+++ linux-2.6-tip.bugfix_perf_hbkpt/arch/x86/kernel/hw_breakpoint.c
-@@ -502,8 +502,6 @@ static int __kprobes hw_breakpoint_handl
- 		rcu_read_lock();
- 
- 		bp = per_cpu(bp_per_reg[i], cpu);
--		if (bp)
--			rc = NOTIFY_DONE;
- 		/*
- 		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
- 		 * exception handling
-@@ -522,7 +520,13 @@ static int __kprobes hw_breakpoint_handl
- 
- 		rcu_read_unlock();
- 	}
--	if (dr6 & (~DR_TRAP_BITS))
-+	/*
-+	 * Further processing in do_debug() is needed for a) user-space
-+	 * breakpoints (to generate signals) and b) when the system has
-+	 * taken exception due to multiple causes
-+	 */
-+	if ((current->thread.debugreg6 & DR_TRAP_BITS) ||
-+	    (dr6 & (~DR_TRAP_BITS)))
- 		rc = NOTIFY_DONE;
- 
- 	set_debugreg(dr7, 7);
+Jon.
+
 
