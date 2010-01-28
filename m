@@ -1,89 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808Ab0A1Gyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870Ab0A1G54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808Ab0A1Gyp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 01:54:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059Ab0A1Gyo
+	id S1754870Ab0A1G54 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 01:57:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656Ab0A1G54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 01:54:44 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:48199 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759Ab0A1Gyn (ORCPT
+	Thu, 28 Jan 2010 01:57:56 -0500
+Received: from smtpauth.net4india.com ([202.71.129.41]:48494 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751034Ab0A1G5z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 01:54:43 -0500
-X-IronPort-AV: E=Sophos;i="4.49,359,1262581200"; 
-   d="scan'208";a="10806432"
-From: Yi Li <yi.li@analog.com>
-To: jkacur@redhat.com
-CC: williams@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Yi Li <yi.li@analog.com>
-Subject: [PATCH] cyclictest: set "tracing_thresh" optionally (resend)
-Date: Thu, 28 Jan 2010 14:50:59 +0800
-Message-ID: <1264661459-16850-1-git-send-email-yi.li@analog.com>
-X-Mailer: git-send-email 1.6.0.4
-X-OriginalArrivalTime: 28 Jan 2010 06:51:05.0810 (UTC) FILETIME=[438D2B20:01CA9FE6]
+	Thu, 28 Jan 2010 01:57:55 -0500
+Message-ID: <4B613586.306@xenontk.org>
+Date: Thu, 28 Jan 2010 12:28:14 +0530
+From: David John <davidjon@xenontk.org>
+Reply-To: davidjon@xenontk.org
+User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1.7) Gecko/20100120 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: yakui.zhao@intel.com, linux-kernel@vger.kernel.org,
+       Eric Anholt <eric@anholt.net>, stable@kernel.org
+Subject: Re: [PATCH] Disable SR when more than one pipe is enabled
+References: <4B60080E.2000508@xenontk.org>	<1264585748-16929-1-BlackWidow-davidjon@xenontk.org> <20100127085103.317e5ad8@jbarnes-piketon>
+In-Reply-To: <20100127085103.317e5ad8@jbarnes-piketon>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an option "--tracing_thresh=THRESH" to set "tracing_thresh" of
-current tracer, so it is not set to "tracelimit" by default.
+On 01/27/2010 10:21 PM, Jesse Barnes wrote:
+> On Wed, 27 Jan 2010 15:19:08 +0530
+> David John <davidjon@xenontk.org> wrote:
+> 
+>> Self Refresh should be disabled on dual plane configs.
+>> Otherwise, as the SR watermark is not calculated for
+>> such configs, switching to non VGA mode causes FIFO
+>> underrun and display flicker.
+>>
+>> This fixes Korg Bug # 14897.
+>>
+>> Signed-off-by: David John <davidjon@xenontk.org>
+>>
+>> diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
+>> index 45da78e..46d7c0c 100644
+>> --- a/drivers/gpu/drm/i915/intel_display.c
+>> +++ b/drivers/gpu/drm/i915/intel_display.c
+>> @@ -2519,6 +2519,10 @@ static void g4x_update_wm(struct drm_device *dev,  int planea_clock,
+>>  		sr_entries = roundup(sr_entries / cacheline_size, 1);
+>>  		DRM_DEBUG("self-refresh entries: %d\n", sr_entries);
+>>  		I915_WRITE(FW_BLC_SELF, FW_BLC_SELF_EN);
+>> +	} else {
+>> +		/* Turn off self refresh if both pipes are enabled */
+>> +		I915_WRITE(FW_BLC_SELF, I915_READ(FW_BLC_SELF)
+>> +					& ~FW_BLC_SELF_EN);
+>>  	}
+>>  
+>>  	DRM_DEBUG("Setting FIFO watermarks - A: %d, B: %d, SR %d\n",
+>> @@ -2562,6 +2566,10 @@ static void i965_update_wm(struct drm_device *dev, int planea_clock,
+>>  			srwm = 1;
+>>  		srwm &= 0x3f;
+>>  		I915_WRITE(FW_BLC_SELF, FW_BLC_SELF_EN);
+>> +	} else {
+>> +		/* Turn off self refresh if both pipes are enabled */
+>> +		I915_WRITE(FW_BLC_SELF, I915_READ(FW_BLC_SELF)
+>> +					& ~FW_BLC_SELF_EN);
+>>  	}
+>>  
+>>  	DRM_DEBUG_KMS("Setting FIFO watermarks - A: 8, B: 8, C: 8, SR %d\n",
+>> @@ -2630,6 +2638,10 @@ static void i9xx_update_wm(struct drm_device *dev, int planea_clock,
+>>  		if (srwm < 0)
+>>  			srwm = 1;
+>>  		I915_WRITE(FW_BLC_SELF, FW_BLC_SELF_EN | (srwm & 0x3f));
+>> +	} else {
+>> +		/* Turn off self refresh if both pipes are enabled */
+>> +		I915_WRITE(FW_BLC_SELF, I915_READ(FW_BLC_SELF)
+>> +					& ~FW_BLC_SELF_EN);
+>>  	}
+>>  
+>>  	DRM_DEBUG_KMS("Setting FIFO watermarks - A: %d, B: %d, C: %d, SR %d\n",
+>>
+> 
+> Great!  Looks like the docs were a bit misleading here.  Disabling
+> self-refresh for dual plane configs is the safest thing to do.
+> 
+> Eric, please apply asap.  Should probably go to stable as well.
+> 
+> Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> 
 
-Signed-off-by: Yi Li <yi.li@analog.com>
----
- src/cyclictest/cyclictest.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+[ Adding Eric and stable (for 2.6.32 series) to CC]
 
-diff --git a/src/cyclictest/cyclictest.c b/src/cyclictest/cyclictest.c
-index dc86b49..1d32ec4 100644
---- a/src/cyclictest/cyclictest.c
-+++ b/src/cyclictest/cyclictest.c
-@@ -146,6 +146,7 @@ struct thread_stat {
- 
- static int shutdown;
- static int tracelimit = 0;
-+static int tracing_thresh = 0;
- static int ftrace = 0;
- static int kernelversion;
- static int verbose = 0;
-@@ -387,8 +388,10 @@ static void setup_tracer(void)
- 		char buffer[32];
- 		int ret;
- 
--		sprintf(buffer, "%d", tracelimit);
--		setkernvar("tracing_thresh", buffer);
-+		if (tracing_thresh >= 0 && tracing_thresh <= tracelimit) {
-+			sprintf(buffer, "%d", tracing_thresh);
-+			setkernvar("tracing_thresh", buffer);
-+		}
- 
- 		/* ftrace_enabled is a sysctl variable */
- 		fileprefix = procfileprefix;
-@@ -770,6 +773,7 @@ static void display_help(int error)
- 	       "                           without -t default = 1\n"
- 	       "-T TRACE --tracer=TRACER   set tracing function\n"
- 	       "    configured tracers: %s\n"
-+	       "--tracing_thresh=THRESH    set tracing_thresh of current tracer to THRESH\n"
- 	       "-u       --unbuffered      force unbuffered output for live processing\n"
- 	       "-v       --verbose         output values on stdout for statistics\n"
- 	       "                           format: n:c:v n=tasknum c=count v=value in us\n"
-@@ -903,6 +907,7 @@ static void process_options (int argc, char *argv[])
- 			{"help", no_argument, NULL, '?'},
- 			{"tracer", required_argument, NULL, 'T'},
- 			{"traceopt", required_argument, NULL, 'O'},
-+			{"tracing_thresh", required_argument, NULL, 1},
- 			{"smp", no_argument, NULL, 'S'},
- 			{"numa", no_argument, NULL, 'U'},
- 			{NULL, 0, NULL, 0}
-@@ -995,6 +1000,7 @@ static void process_options (int argc, char *argv[])
- #endif
- 			break;
- 		case '?': display_help(0); break;
-+		case 1: tracing_thresh = atoi(optarg); break;
- 		}
- 	}
- 
--- 
-1.6.0.4
-
+Regards,
+David.
