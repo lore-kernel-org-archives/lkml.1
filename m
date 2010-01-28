@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386Ab0A1THp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932297Ab0A1TMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756386Ab0A1THp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 14:07:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780Ab0A1THo
+	id S932297Ab0A1TMk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 14:12:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756336Ab0A1TMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 14:07:44 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60060 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753575Ab0A1THn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 14:07:43 -0500
-Subject: Re: [RFC] perf_events: support for uncore a.k.a. nest units
-From: Peter Zijlstra <peterz@infradead.org>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Dan Terpstra <terpstra@eecs.utk.edu>, Philip Mucci <mucci@eecs.utk.edu>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-In-Reply-To: <4B61D0CB.4090809@linux.vnet.ibm.com>
-References: <4B560ACD.4040206@linux.vnet.ibm.com>
-	 <1263994448.4283.1052.camel@laptop> <1264023204.4283.1124.camel@laptop>
-	 <4B57907E.5000207@linux.vnet.ibm.com> <20100121072118.GA10585@elte.hu>
-	 <4B58A750.2060607@linux.vnet.ibm.com> <4B58AAF7.60507@linux.vnet.ibm.com>
-	 <20100127102834.GA27357@elte.hu>  <4B60990C.1030804@linux.vnet.ibm.com>
-	 <1264676244.4283.2093.camel@laptop>  <4B61D0CB.4090809@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 28 Jan 2010 20:06:47 +0100
-Message-ID: <1264705607.4283.2120.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 28 Jan 2010 14:12:39 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34872 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753641Ab0A1TMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 14:12:38 -0500
+Message-ID: <4B61E116.6050208@kernel.org>
+Date: Thu, 28 Jan 2010 11:10:14 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Jeff Garrett <jeff@jgarrett.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH -v2] x86/pci: print ioh resources only
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <201001261348.59508.rjw@sisk.pl> <201001261032.37053.bjorn.helgaas@hp.com> <201001261902.13911.rjw@sisk.pl> <20100126101752.78196900@jbarnes-piketon> <4B5F735B.2040308@kernel.org> <alpine.LFD.2.00.1001271748300.3570@localhost.localdomain> <20100127192409.79af96db@jbarnes-piketon> <20100128040226.GB8964@jgarrett.org> <20100128082432.05a97ebc@jbarnes-piketon> <4B61D7C4.1050405@kernel.org> <alpine.LFD.2.00.1001281052510.22433@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1001281052510.22433@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-28 at 10:00 -0800, Corey Ashford wrote:
-> 
-> I don't quite get what you're saying here.  Perhaps you are thinking 
-> that all uncore units are associated with a particular cpu node, or a 
-> set of cpu nodes?  And that there's only one uncore unit per cpu (or set 
-> of cpus) that needs to be addressed, i.e. no ambiguity?
 
-Well, I was initially thinking of the intel uncore thing which is memory
-controller, so node, level.
+don't use them for peer pci root bus resource yet.
+so could cross check _CRS results
 
-But all system topology bound pmus can be done that way.
+-v2: dont put info struct in stack according to Linus.
+     because that is kbytes big
 
-> That is not going to be the case for all systems.  We can have uncore 
-> units that are associated with the entire system,
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Right, but that's simple too.
+---
+ arch/x86/pci/intel_bus.c |    8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-> for example PMUs in an I/O device.  
-
-> And we can have multiple uncore units of a particular 
-> type, for example multiple vector coprocessors, each with its own PMU, 
-> and are associated with a single cpu or a set of cpus.
-> 
-> perf_events needs an addressing scheme that covers these cases. 
-
-You could possible add a u64 pmu_id field to perf_event_attr and use
-that together with things like:
-
-  PERF_TYPE_PCI, attr.pmu_id = domain:bus:device:function encoding
-  PERF_TYPE_SPU, attr.pmu_id = spu-id
-
-But before we go there the perf core needs to be extended to deal with
-multiple hardware pmus, something which isn't too hard but we need to be
-careful not to bloat the normal code paths for these somewhat esoteric
-use cases.
-
-
-
+Index: linux-2.6/arch/x86/pci/intel_bus.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/intel_bus.c
++++ linux-2.6/arch/x86/pci/intel_bus.c
+@@ -53,13 +53,9 @@ static void __devinit pci_root_bus_res(s
+ 	if (dev->cfg_size < 0x120)
+ 		return;
+ 
+-	if (pci_root_num >= PCI_ROOT_NR) {
+-		printk(KERN_DEBUG "intel_bus.c: PCI_ROOT_NR is too small\n");
++	info = kmalloc(sizeof(struct pci_root_info), GFP_KERNEL);
++	if (!info)
+ 		return;
+-	}
+-
+-	info = &pci_root_info[pci_root_num];
+-	pci_root_num++;
+ 
+ 	pci_read_config_word(dev, IOH_LCFGBUS, &word);
+ 	bus_base = (word & 0xff);
