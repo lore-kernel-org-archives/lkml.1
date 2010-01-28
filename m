@@ -1,75 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744Ab0A1Uk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055Ab0A1Uno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754744Ab0A1Uk2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 15:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052Ab0A1Uk1
+	id S1755055Ab0A1Uno (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 15:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946Ab0A1Unn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 15:40:27 -0500
-Received: from mail.windriver.com ([147.11.1.11]:54540 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753782Ab0A1Uk0 (ORCPT
+	Thu, 28 Jan 2010 15:43:43 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:65084 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123Ab0A1Unn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 15:40:26 -0500
-Message-ID: <4B61F5B2.70600@windriver.com>
-Date: Thu, 28 Jan 2010 14:38:10 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 28 Jan 2010 15:43:43 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH 3/3] net: macvtap driver
+Date: Thu, 28 Jan 2010 21:18:08 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc5; KDE/4.3.2; x86_64; ; )
+Cc: David Miller <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Patrick McHardy <kaber@trash.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Or Gerlitz <ogerlitz@voltaire.com>, netdev@vger.kernel.org,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <201001271104.20607.arnd@arndb.de> <201001272209.27361.arnd@arndb.de> <20100128173438.GA3476@redhat.com>
+In-Reply-To: <20100128173438.GA3476@redhat.com>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 3/3] perf,hw_breakpoint,kgdb: No mutex taken forkerneldebugger
-References: <1264631124-4837-1-git-send-email-jason.wessel@windriver.com> <1264631124-4837-4-git-send-email-jason.wessel@windriver.com> <20100128173307.GB18683@nowhere> <4B61CE1A.8090001@windriver.com> <20100128200951.GD18683@nowhere>
-In-Reply-To: <20100128200951.GD18683@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jan 2010 20:38:10.0262 (UTC) FILETIME=[CE079F60:01CAA059]
+Message-Id: <201001282118.09164.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18xZAPrmH4kGu7aFvflcWBMU2EVWXk6lPgK54Q
+ iVH7TGXCYS1zM9NYrHuffhYHyTn3iyv9iMGfixvGQ50aZmaq5m
+ GRcymZNlg3TtMjyhNhPiw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-
->> If it fails the debugger tried to remove it again later.   It seems to
->> me like it is a don't care corner case.   You get a printk if it ever
->> does happen (which it really shouldn't).
+On Thursday 28 January 2010, Michael S. Tsirkin wrote:
+> On Wed, Jan 27, 2010 at 10:09:27PM +0100, Arnd Bergmann wrote:
+> > +static inline struct macvtap_queue *macvtap_file_get_queue(struct file *file)
+> > +{
+> > +	rcu_read_lock_bh();
+> > +	return rcu_dereference(file->private_data);
+> > +}
+> > +
+> > +static inline void macvtap_file_put_queue(void)
+> > +{
+> > +	rcu_read_unlock_bh();
+> > +}
+> > +
 > 
+> I find such wrappers around rcu obscure this,
+> already sufficiently complex, pattern.
+> Might be just me.
+
+Obviously I find them useful here, but if more people feel the
+same as you, I'll just open-code them.
+
+> > +static int macvtap_open(struct inode *inode, struct file *file)
+> > +{
+> > +	struct net *net = current->nsproxy->net_ns;
+> > +	struct net_device *dev = dev_get_by_index(net, iminor(inode));
+> > +	struct macvtap_queue *q;
+> > +	int err;
+> > +
 > 
+> This seems to keep reference to device as long as character device is
+> open, which, if I understand correctly, will start printing error
+> messages to kernel log about once a second if you try to remove the
+> device.
 > 
-> Yeah truly it's a corner case, especially if the debugger can handle that
-> later.
+> I suspect the best way to fix this issue would be to use some kind
+> of notifier so that macvtap can disconnect on device removal.
+
+I think I'm just missing the put in the open function, the code
+already handles the netif and the file disappearing independently.
+
+Thanks for spotting this one, I'll fix that in the next post.
+
+> > +	skb_reserve(skb, NET_IP_ALIGN);
+> > +	skb_put(skb, count);
+> > +
+> > +	if (skb_copy_datagram_from_iovec(skb, 0, iv, 0, len)) {
+> > +		macvlan_count_rx(q->vlan, 0, false, false);
+> > +		kfree_skb(skb);
+> > +		return -EFAULT;
+> > +	}
+> > +
+> > +	skb_set_network_header(skb, ETH_HLEN);
+> > +
+> > +	macvlan_start_xmit(skb, q->vlan->dev);
+> > +
+> > +	return count;
+> > +}
+> > +
 > 
-> May be just add a comment so that future reviewers don't stick to
-> this part.
+> I am surprised there's no GSO support.  Would it be a good idea to share
+> code with tun driver? That already has GSO ...
 
+The driver still only does the minimum feature set to get things going.
+GSO is an obvious extension, but I wanted the code to be as simple
+as possible to find all the basic bugs before we do anything fancy.
 
-If you approve, I'll add your ack.
+> Also, network header pointer seems off for vlan packets?
 
+That may well be, I haven't tried vlan. What do you think it should do
+then?
 
-It looks like this now:
+> > +/*
+> > + * provide compatibility with generic tun/tap interface
+> > + */
+> > +static long macvtap_ioctl(struct file *file, unsigned int cmd,
+> > +			  unsigned long arg)
+> > +{
+> 
+> All of these seem to be stubs, and tun has many more that you didn't
+> stub out. So, why do you bother to support any ioctls at all?
 
+Again, minimum features to get things going. qemu fails to open
+the device if these ioctls are not implemented, but any of the
+more advanced features are left out.
 
-+static int hw_break_release_slot(int breakno)
-+{
-+	struct perf_event **pevent;
-+	int cpu;
-+
-+	for_each_online_cpu(cpu) {
-+		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
-+		if (dbg_release_bp_slot(*pevent))
-+			/*
-+			 * The debugger is responisble for handing the retry on
-+			 * remove failure.
-+			 */
-+			return -1;
-+	}
-+	return 0;
-+}
-+
+Thansk for the review,
 
+	Arnd
 
-
-Thanks,
-Jason.
