@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704Ab0A1Gva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808Ab0A1Gyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704Ab0A1Gva (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 01:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021Ab0A1Gva
+	id S1754808Ab0A1Gyp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 01:54:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059Ab0A1Gyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 01:51:30 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:58649 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303Ab0A1Gv3 (ORCPT
+	Thu, 28 Jan 2010 01:54:44 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:48199 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759Ab0A1Gyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 01:51:29 -0500
-Message-ID: <4B6133DF.9080207@dcl.info.waseda.ac.jp>
-Date: Thu, 28 Jan 2010 15:51:11 +0900
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091211 Shredder/3.0
+	Thu, 28 Jan 2010 01:54:43 -0500
+X-IronPort-AV: E=Sophos;i="4.49,359,1262581200"; 
+   d="scan'208";a="10806432"
+From: Yi Li <yi.li@analog.com>
+To: jkacur@redhat.com
+CC: williams@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, Yi Li <yi.li@analog.com>
+Subject: [PATCH] cyclictest: set "tracing_thresh" optionally (resend)
+Date: Thu, 28 Jan 2010 14:50:59 +0800
+Message-ID: <1264661459-16850-1-git-send-email-yi.li@analog.com>
+X-Mailer: git-send-email 1.6.0.4
+X-OriginalArrivalTime: 28 Jan 2010 06:51:05.0810 (UTC) FILETIME=[438D2B20:01CA9FE6]
 MIME-Version: 1.0
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>, Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 11/12] perf lock: New subcommand "perf lock", for analyzing
- lock statistics
-References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp> <1264167553-6510-12-git-send-email-mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <1264167553-6510-12-git-send-email-mitake@dcl.info.waseda.ac.jp>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010年01月22日 22:39, Hitoshi Mitake wrote:
+Add an option "--tracing_thresh=THRESH" to set "tracing_thresh" of
+current tracer, so it is not set to "tracelimit" by default.
 
-Hi Ingo,
-I have a trivial but difficult problem on this 11th patch.
+Signed-off-by: Yi Li <yi.li@analog.com>
+---
+ src/cyclictest/cyclictest.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
- > +static void
- > +process_lock_acquire_event(void *data,
- > +			   struct event *event __used,
- > +			   int cpu __used,
- > +			   u64 timestamp __used,
- > +			   struct thread *thread __used)
- > +{
- > +	struct trace_acquire_event acquire_event;
- > +	u64 tmp;		/* this is required for casting... */
- > +
- > +	tmp = raw_field_value(event, "lockdep_addr", data);
- > +	acquire_event.addr = (void *)tmp;   # <- type of addr is void *
+diff --git a/src/cyclictest/cyclictest.c b/src/cyclictest/cyclictest.c
+index dc86b49..1d32ec4 100644
+--- a/src/cyclictest/cyclictest.c
++++ b/src/cyclictest/cyclictest.c
+@@ -146,6 +146,7 @@ struct thread_stat {
+ 
+ static int shutdown;
+ static int tracelimit = 0;
++static int tracing_thresh = 0;
+ static int ftrace = 0;
+ static int kernelversion;
+ static int verbose = 0;
+@@ -387,8 +388,10 @@ static void setup_tracer(void)
+ 		char buffer[32];
+ 		int ret;
+ 
+-		sprintf(buffer, "%d", tracelimit);
+-		setkernvar("tracing_thresh", buffer);
++		if (tracing_thresh >= 0 && tracing_thresh <= tracelimit) {
++			sprintf(buffer, "%d", tracing_thresh);
++			setkernvar("tracing_thresh", buffer);
++		}
+ 
+ 		/* ftrace_enabled is a sysctl variable */
+ 		fileprefix = procfileprefix;
+@@ -770,6 +773,7 @@ static void display_help(int error)
+ 	       "                           without -t default = 1\n"
+ 	       "-T TRACE --tracer=TRACER   set tracing function\n"
+ 	       "    configured tracers: %s\n"
++	       "--tracing_thresh=THRESH    set tracing_thresh of current tracer to THRESH\n"
+ 	       "-u       --unbuffered      force unbuffered output for live processing\n"
+ 	       "-v       --verbose         output values on stdout for statistics\n"
+ 	       "                           format: n:c:v n=tasknum c=count v=value in us\n"
+@@ -903,6 +907,7 @@ static void process_options (int argc, char *argv[])
+ 			{"help", no_argument, NULL, '?'},
+ 			{"tracer", required_argument, NULL, 'T'},
+ 			{"traceopt", required_argument, NULL, 'O'},
++			{"tracing_thresh", required_argument, NULL, 1},
+ 			{"smp", no_argument, NULL, 'S'},
+ 			{"numa", no_argument, NULL, 'U'},
+ 			{NULL, 0, NULL, 0}
+@@ -995,6 +1000,7 @@ static void process_options (int argc, char *argv[])
+ #endif
+ 			break;
+ 		case '?': display_help(0); break;
++		case 1: tracing_thresh = atoi(optarg); break;
+ 		}
+ 	}
+ 
+-- 
+1.6.0.4
 
-In the above function,
-the statement:
-     raw_field_value(event, "lockdep_addr", data);
-reads member of event which is type of void *.
-
-But, direct assigning like
-     acquire_event.addr = (void *)raw_field_value(event, "lockdep_addr", 
-data);
-produces warning and it is treated as error on build environment of perf.
-GCC says "cast from function call of type ‘long long unsigned int’ to 
-non-matching type ‘void *’".
-# Why is tmp to acquire_event.addr allowed? It's mysterious...
-
-So I declared "u64 tmp" as temporary place for casting.
-But next, this tmp causes compile error on x86_32.
-Because it is u64. tmp should be u32 on x86_32.
-
-I have to switch type of tmp u64 or u32 based on environment.
-Don't you know some good preprocessor flag or some other avoiding methods?
-I seeked but not found...
-
-Thanks,
-	Hitoshi
