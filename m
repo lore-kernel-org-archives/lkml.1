@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914Ab0A1F7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932194Ab0A1GOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753914Ab0A1F7e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 00:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191Ab0A1F7d
+	id S932194Ab0A1GOx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 01:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592Ab0A1GOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 00:59:33 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:44996 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884Ab0A1F7c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 00:59:32 -0500
-X-Greylist: delayed 804 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jan 2010 00:59:32 EST
-Subject: Re: PROBLEM: reproducible crash KVM+nf_conntrack all recent 2.6
- kernels
-From: Jon Masters <jonathan@jonmasters.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: netdev <netdev@vger.kernel.org>, netfilter-devel@vger.kernel.org
-In-Reply-To: <1264657559.2793.103.camel@tonnant>
-References: <1264657559.2793.103.camel@tonnant>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Thu, 28 Jan 2010 00:59:24 -0500
-Message-Id: <1264658364.2793.105.camel@tonnant>
+	Thu, 28 Jan 2010 01:14:52 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54832 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752483Ab0A1GOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 01:14:51 -0500
+Date: Thu, 28 Jan 2010 17:14:46 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: pci tree build failure
+Message-Id: <20100128171446.baf7e475.sfr@canb.auug.org.au>
+In-Reply-To: <20100127093113.70203e4d@jbarnes-piketon>
+References: <20100127174900.e2f8fcf9.sfr@canb.auug.org.au>
+	<20100127093113.70203e4d@jbarnes-piketon>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__28_Jan_2010_17_14_46_+1100_RGp8O8Ny7Rekkgl0"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-28 at 00:46 -0500, Jon Masters wrote:
+--Signature=_Thu__28_Jan_2010_17_14_46_+1100_RGp8O8Ny7Rekkgl0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> A number of people seem to have reported this crash in various forms,
-> but I have yet to see a solution, and can reproduce on 2.6.33-rc5 this
-> evening so I know it's still present in the latest upstream kernels too.
-> Userspace is Fedora 12, and this happens on both all recent F12 kernels
-> (sporadic in 2.6.31 until recently, solidly reproducible on 2.6.32) and
-> upstream 2.6.32, and 2.6.33-rc5 also - hard to find a "known good".
+Hi Jesse,
 
-Now I can capture the panic()s, I'm rebuilding the 2.6.33-rc5 kernel
-with some better debugging options to at least get some more data.
+On Wed, 27 Jan 2010 09:31:13 -0800 Jesse Barnes <jbarnes@virtuousgeek.org> =
+wrote:
+>
+> Sorry about that.  Sometimes I point git in the wrong direction and it
+> takes of a limb or two.  Should be fixed now.
 
-Jon.
+Yep, thanks.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Thu__28_Jan_2010_17_14_46_+1100_RGp8O8Ny7Rekkgl0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkthK1YACgkQjjKRsyhoI8ye2ACgjsPm4RknLVqwoIL+7oIQMO49
++YYAniIXp/fRNdUI26AxnBRM0Xc2Z/uC
+=1twv
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__28_Jan_2010_17_14_46_+1100_RGp8O8Ny7Rekkgl0--
