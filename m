@@ -1,55 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946Ab0A1SZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255Ab0A1Sak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755946Ab0A1SZr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 13:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796Ab0A1SZq
+	id S1756255Ab0A1Sak (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 13:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529Ab0A1Saj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 13:25:46 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34124 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755567Ab0A1SZn (ORCPT
+	Thu, 28 Jan 2010 13:30:39 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54033 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755302Ab0A1Saj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 13:25:43 -0500
-Date: Thu, 28 Jan 2010 13:25:28 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Cc: Fran?ois Figarola <francois.figarola@i-consult.fr>, hch@infradead.org,
-       device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [dm-devel] [BUG] kernel 2.6.32.x hangs during boot process
-Message-ID: <20100128182528.GA29926@infradead.org>
-References: <d2deb3241001160158r4baed1e1t7e8f6642de018b4c@mail.gmail.com> <20100122160740.6c16c22d.akpm@linux-foundation.org> <20100128134205.352044bd@notabene> <4B612F89.7020503@ce.jp.nec.com>
+	Thu, 28 Jan 2010 13:30:39 -0500
+Date: Thu, 28 Jan 2010 16:29:51 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 4/9] perf session: Create kernel maps in the constructor
+Message-ID: <20100128182951.GB2499@ghostprotocols.net>
+References: <1264633557-17597-1-git-send-email-acme@infradead.org>
+ <1264633557-17597-4-git-send-email-acme@infradead.org>
+ <4B60C9A6.10704@redhat.com>
+ <20100127232936.GI12567@ghostprotocols.net>
+ <4B61BB2D.70802@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4B612F89.7020503@ce.jp.nec.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4B61BB2D.70802@redhat.com>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 03:32:41PM +0900, Jun'ichi Nomura wrote:
-> When MS_RDONLY, both freeze_bdev and thaw_bdev call deactivate_locked_super,
-> which seems wrong. The change was introduced with the commit below:
-> 
->   commit 4504230a71566785a05d3e6b53fa1ee071b864eb
->   Author: Christoph Hellwig <hch@lst.de>
->   Date:   Mon Aug 3 23:28:35 2009 +0200
-> 
->   freeze_bdev: grab active reference to frozen superblocks
-> 
-> With the attached patch, both remount-ro and remount-rw are
-> rejected as EBUSY on freezed device as expected.
-> 
-> Christoph, do you think this is the right fix?
+Em Thu, Jan 28, 2010 at 11:28:29AM -0500, Masami Hiramatsu escreveu:
 
-Indeed, this looks wrong in my original code, and the patch looks like
-the correct fix.  Thanks a lot!
+> Yeah, and if you can separate an interface only for handling symbols
+> from debug/elf binaries, it will be helpful for me too.
 
+It was done on this same series, now you can do as the patch at the end
+of this message, that will be on my next series, does.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Testing with this patch:
+
+[root@doppio ~]# perf probe --list
+[root@doppio ~]# perf probe schedule
+Added new event:
+  probe:schedule                           (on schedule+0)
+
+You can now use it on all perf tools, such as:
+
+	perf record -e probe:schedule -a sleep 1
+
+[root@doppio ~]# perf record -e probe:schedule -a sleep 1
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.158 MB perf.data (~6923 samples) ]
+[root@doppio ~]# perf report | head -9
+# Samples: 4
+#
+# Overhead          Command          Shared Object  Symbol
+# ........  ...............  .....................  ......
+#
+    25.00%             perf  libc-2.10.2.so         [.] __GI___libc_read
+    25.00%      kondemand/1  [kernel.kallsyms]      [k] kernel_thread_helper
+    25.00%      kondemand/0  [kernel.kallsyms]      [k] kernel_thread_helper
+[root@doppio ~]#
+
+And what about support for modules? You have everything you need there
+as well :-)
+
+If you do:
+
+	struct map *mod;
+	struct symbol *sym;
+
+	mod = map_groups__find_by_name(&session.kmap_groups,
+				       MAP__FUNCTION, "[ipv6]");
+
+	sym = map__find_symbol_by_name(module, "ip6_xmit");
+
+you'll get ipv6.ko located and loaded, mod->dso->long_name thus will
+have the file to use with libdwarf and sym->start will have the
+unrelocated address, and mod->start will have where ipv6 is loaded in
+kernel space.
+
+Also you should be able to find variables by name or address too, just
+use MAP__VARIABLE where above you see MAP__FUNCTION.
+
+- Arnaldo
+
+>From 387ab05301cce32c8b091ba9feb94c906124e8a8 Mon Sep 17 00:00:00 2001
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Date: Thu, 28 Jan 2010 16:12:31 -0200
+Subject: [PATCH 1/1] perf probe: Don't use a perf_session instance just to resolve symbols
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+With the recent modifications done to untie the session and symbol
+layers, 'perf probe' now can use just the symbols layer.
+
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-probe.c |   15 +++++++++------
+ 1 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
+index 4fa73ec..cd45e02 100644
+--- a/tools/perf/builtin-probe.c
++++ b/tools/perf/builtin-probe.c
+@@ -41,7 +41,6 @@
+ #include "util/debugfs.h"
+ #include "util/symbol.h"
+ #include "util/thread.h"
+-#include "util/session.h"
+ #include "util/parse-options.h"
+ #include "util/parse-events.h"	/* For debugfs_path */
+ #include "util/probe-finder.h"
+@@ -59,7 +58,8 @@ static struct {
+ 	int nr_probe;
+ 	struct probe_point probes[MAX_PROBES];
+ 	struct strlist *dellist;
+-	struct perf_session *psession;
++	struct map_groups kmap_groups;
++	struct map *kmaps[MAP__NR_TYPES];
+ 	struct map *kmap;
+ 	struct line_range line_range;
+ } session;
+@@ -212,10 +212,13 @@ static void init_vmlinux(void)
+ 		pr_debug("Use vmlinux: %s\n", symbol_conf.vmlinux_name);
+ 	if (symbol__init() < 0)
+ 		die("Failed to init symbol map.");
+-	session.psession = perf_session__new(NULL, O_WRONLY, false);
+-	if (session.psession == NULL)
+-		die("Failed to init perf_session.");
+-	session.kmap = session.psession->vmlinux_maps[MAP__FUNCTION];
++
++	map_groups__init(&session.kmap_groups);
++	if (map_groups__create_kernel_maps(&session.kmap_groups,
++					   session.kmaps) < 0)
++		die("Failed to create kernel maps.");
++
++	session.kmap = session.kmaps[MAP__FUNCTION];
+ 	if (!session.kmap)
+ 		die("Could not find kernel map.\n");
+ }
+-- 
+1.6.2.5
 
