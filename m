@@ -1,94 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394Ab0A1UKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171Ab0A1UMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754394Ab0A1UKA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 15:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801Ab0A1UJ7
+	id S1754171Ab0A1UMH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 15:12:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590Ab0A1UMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 15:09:59 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:44719 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932159Ab0A1UJ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 15:09:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LxSYclceO9ly4oaW6t42FfR4LiRVuXZ0lIRh4HFIYLeX8W6aCnviP12I8AuOXCjzME
-         yyUHcOkRFhNiPREk9c5JwQxa5MoAEofxB1xTKOnChWvD38RWxcQlR5CCRNXu9RlcSgmj
-         gJDQw5Febu1UdoG7M6EraTy+laS5fUdCRohKk=
-Date: Thu, 28 Jan 2010 21:09:56 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 3/3] perf,hw_breakpoint,kgdb: No mutex taken for
-	kerneldebugger
-Message-ID: <20100128200951.GD18683@nowhere>
-References: <1264631124-4837-1-git-send-email-jason.wessel@windriver.com> <1264631124-4837-4-git-send-email-jason.wessel@windriver.com> <20100128173307.GB18683@nowhere> <4B61CE1A.8090001@windriver.com>
+	Thu, 28 Jan 2010 15:12:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39408 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752088Ab0A1UMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 15:12:03 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/2] PM / Runtime: Clean up pm_runtime_disable()
+Date: Thu, 28 Jan 2010 21:12:48 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc5-rjw; KDE/4.3.5; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.1001281037120.1384-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1001281037120.1384-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B61CE1A.8090001@windriver.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001282112.48214.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 11:49:14AM -0600, Jason Wessel wrote:
-> Frederic Weisbecker wrote:
-> >> +static int hw_break_release_slot(int breakno)
-> >> +{
-> >> +	struct perf_event **pevent;
-> >> +	int ret;
-> >> +	int cpu;
-> >> +
-> >> +	for_each_online_cpu(cpu) {
-> >> +		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
-> >> +		ret = dbg_release_bp_slot(*pevent);
-> >>     
-> >
-> >
-> >
-> > So, you are missing some return errors there. Actually, a slot
-> > release shouldn't return an error.
-> >
-> >
-> >   
+On Thursday 28 January 2010, Alan Stern wrote:
+> On Thu, 28 Jan 2010, Rafael J. Wysocki wrote:
 > 
-> This is a trick so to speak.   Either all the slot releases will return
-> 0 or -1 depending on if the mutex is available, so it is not really
-> missed. 
-
-
-
-Oh right, I forgot everything was freezed here :)
-
-
- 
-> > Ok, best effort fits well for reserve, but is certainly not
-> > suitable for release. We can't leave a fake occupied slot like
-> > this. If it fails, we should do this asynchronously, using the
-> > usual release_bp_slot, may be toward the workqueues.
-> >
-> >
-> >
-> >   
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Remove the second argument of __pm_runtime_disable(), which is not
+> > necessary any more, and rename this funtion to pm_runtime_disable().
+> > Accordingly, drop the static inline definition of
+> > pm_runtime_disable() using __pm_runtime_disable() and export
+> > pm_runtime_disable() as appropriate.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/base/power/runtime.c |   31 ++++---------------------------
+> >  include/linux/pm_runtime.h   |    9 ++-------
+> >  2 files changed, 6 insertions(+), 34 deletions(-)
+> > 
+> > Index: linux-2.6/drivers/base/power/runtime.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/base/power/runtime.c
+> > +++ linux-2.6/drivers/base/power/runtime.c
+> > @@ -943,20 +943,15 @@ int pm_runtime_barrier(struct device *de
+> >  EXPORT_SYMBOL_GPL(pm_runtime_barrier);
+> >  
+> >  /**
+> > - * __pm_runtime_disable - Disable run-time PM of a device.
+> > + * pm_runtime_disable - Disable run-time PM of a device.
+> >   * @dev: Device to handle.
+> > - * @check_resume: If set, check if there's a resume request for the device.
+> >   *
+> >   * Increment power.disable_depth for the device and if was zero previously,
+> >   * cancel all pending run-time PM requests for the device and wait for all
+> >   * operations in progress to complete.  The device can be either active or
+> >   * suspended after its run-time PM has been disabled.
+> > - *
+> > - * If @check_resume is set and there's a resume request pending when
+> > - * __pm_runtime_disable() is called and power.disable_depth is zero, the
+> > - * function will wake up the device before disabling its run-time PM.
+> >   */
+> > -void __pm_runtime_disable(struct device *dev, bool check_resume)
+> > +void pm_runtime_disable(struct device *dev)
+> >  {
 > 
-> If it fails the debugger tried to remove it again later.   It seems to
-> me like it is a don't care corner case.   You get a printk if it ever
-> does happen (which it really shouldn't).
+> Why did you decide to remove the check_resume argument?  That decision 
+> should be explained in the patch description.
 
+Well, I thought the "which is not necessary any more" would be a sufficient
+explanation ...
 
-
-Yeah truly it's a corner case, especially if the debugger can handle that
-later.
-
-May be just add a comment so that future reviewers don't stick to
-this part.
-
- 
-Thanks!
-
+Rafael
