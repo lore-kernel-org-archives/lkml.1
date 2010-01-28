@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936Ab0A1QBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969Ab0A1QEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936Ab0A1QBJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 11:01:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615Ab0A1QBI
+	id S1755969Ab0A1QEt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 11:04:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907Ab0A1QEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 11:01:08 -0500
-Received: from khc.piap.pl ([195.187.100.11]:41545 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755493Ab0A1QBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 11:01:08 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, apw@canonical.com,
-       jschopp@austin.ibm.com, davej@redhat.com
-Subject: Re: [PATCH] checkpatch.pl: remove the 80 charactes punch card limit
-References: <1264597747.3607.29.camel@wall-e>
-Date: Thu, 28 Jan 2010 17:01:04 +0100
-In-Reply-To: <1264597747.3607.29.camel@wall-e> (Stefani Seibold's message of
-	"Wed, 27 Jan 2010 14:09:07 +0100")
-Message-ID: <m3r5pagqwv.fsf@intrepid.localdomain>
+	Thu, 28 Jan 2010 11:04:48 -0500
+Received: from snt0-omc4-s5.snt0.hotmail.com ([65.55.90.208]:52492 "EHLO
+	snt0-omc4-s5.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755580Ab0A1QEs convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 11:04:48 -0500
+Message-ID: <SNT125-W6118DC2C4ABACE1C193593C35C0@phx.gbl>
+X-Originating-IP: [164.116.126.146]
+From: Yuhong Bao <yuhongbao_386@hotmail.com>
+To: <haraldwelte@viatech.com>
+CC: <andi@firstfloor.org>, <hpa@zytor.com>, <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: RE: [RFP] Narrowing the VIA DAC blacklist
+Date: Thu, 28 Jan 2010 08:04:47 -0800
+Importance: Normal
+In-Reply-To: <20100128111050.GI30395@prithivi.gnumonks.org>
+References: <SNT125-W25F149A31BAAD4DAE0C606C35C0@phx.gbl>,<20100128111050.GI30395@prithivi.gnumonks.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 28 Jan 2010 16:04:47.0495 (UTC) FILETIME=[9D380170:01CAA033]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefani Seibold <stefani@seibold.net> writes:
 
-> The time of 80 characters punch card and terminals are over, so i would
-> be a good thing to set the line length limit to 120. Every display today
-> should be able handle this. 
 
-I thought it's been already agreed that the limit is lifted altogether?
-Not even the 132 that was considered by some people sane enough.
-
-The other thing is that fine "code complexity", but I think checkpatch
-can't check it ATM, can it?
--- 
-Krzysztof Halasa
+> Your e-mail ended here. Did you want to write more?
+Yep, I mean that right now there is a broad blacklist preventing all VIA chipsets from doing DAC.I was thinking that it should be narrowed now that VIA just released the VN1000 with support for more than 4GB of RAM.
+Yuhong Bao 		 	   		  
+_________________________________________________________________
+Your E-mail and More On-the-Go. Get Windows Live Hotmail Free.
+http://clk.atdmt.com/GBL/go/196390709/direct/01/
