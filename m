@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940Ab0A1HXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992Ab0A1HY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754940Ab0A1HXo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 02:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086Ab0A1HXm
+	id S1754992Ab0A1HY3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 02:24:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880Ab0A1HY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 02:23:42 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:53955 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752786Ab0A1HXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 02:23:42 -0500
-Date: Thu, 28 Jan 2010 18:23:34 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jonathan Cameron <jic23@cam.ac.uk>, Zhang Rui <rui.zhang@intel.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jean Delvare <khali@linux-fr.org>
-Subject: linux-next:als tree build failure
-Message-Id: <20100128182334.7226bdf6.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__28_Jan_2010_18_23_34_+1100_2Sml073+WS1ipErH"
+	Thu, 28 Jan 2010 02:24:28 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36344 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754023Ab0A1HY1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 02:24:27 -0500
+Date: Thu, 28 Jan 2010 08:24:26 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+Cc: Jiri Kosina <jkosina@suse.cz>, Oliver Neukum <oliver@neukum.org>,
+       linux-kernel@vger.kernel.org, felipe.balbi@nokia.com,
+       jayakumar.lkml@gmail.com, linux-fbdev@vger.kernel.org,
+       krzysztof.h1@wp.pl, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, linux-input@vger.kernel.org,
+       dmitry.torokhov@gmail.com
+Subject: Re: [PATCH] hid: Logitech G13 driver 0.0.4
+Message-ID: <20100128072425.GA25633@atrey.karlin.mff.cuni.cz>
+References: <201001202047.o0KKlMTr014003@mustang.cs.nmsu.edu> <201001202219.12058.oliver@neukum.org> <acd6dfcf4391c081f861d430c0b45311.squirrel@intranet.cs.nmsu.edu> <alpine.LNX.2.00.1001251758230.30977@pobox.suse.cz> <8512e098224714ed7d54c62b46346796.squirrel@intranet.cs.nmsu.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8512e098224714ed7d54c62b46346796.squirrel@intranet.cs.nmsu.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__28_Jan_2010_18_23_34_+1100_2Sml073+WS1ipErH
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi!
 
-Hi all,
+> is because it appears there are two conditions that fb_sys_write() will
+> continue on to the copy_from_user() but still return an error code. In
+> these cases -EFBIG and -ENOSPEC are returned but it is possible the buffer
+> has still been modified.
+> 
+> Again, like I said, I don't have a problem changing it. If it's wrong,
+> it's wrong no matter how many other drivers may take the same
+> approach.
 
-Today's linux-next build (powerpc allnoconfig) failed like this:
+I believe it is wrong.
 
-ld: drivers/i2c/chips/built-in.o: No such file: No such file or directory
+> My intuition tells me it's wrong, but at the same time I'd like to know if
+> there's a reason behind the other drivers also ignoring the EFAULT. Or,
+> perhaps it simply started in one driver and everyone else patterned after
+> it just like I did the g13 driver.
 
-Caused by commit b75349f118718a435f2bb7b6e675572ecd591627 ("tsl2550: Move
-form i2c/chips to als and update interfaces").  This removes the last
-driver from drivers/i2c/chips/ .  Maybe it needs to remove the directory
-completely and the references to it from drivers/i2c as well.
+I guess it is indeed a copy&paste problem...
 
-I have reverted that commit for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__28_Jan_2010_18_23_34_+1100_2Sml073+WS1ipErH
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkthO3YACgkQjjKRsyhoI8w3TQCgtaMaBFPbDCb5+cr0D4NF3XwC
-d3EAniZnbIuW74qkLoDNh9XXIwhizbNC
-=PUOL
------END PGP SIGNATURE-----
-
---Signature=_Thu__28_Jan_2010_18_23_34_+1100_2Sml073+WS1ipErH--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
