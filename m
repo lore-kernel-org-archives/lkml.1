@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562Ab0A1Pho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601Ab0A1PpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562Ab0A1Pho (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 10:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179Ab0A1Phn
+	id S1755601Ab0A1PpH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 10:45:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463Ab0A1PpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 10:37:43 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:41679 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754640Ab0A1Phn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 10:37:43 -0500
-Date: Thu, 28 Jan 2010 10:37:41 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] PM / Runtime: Clean up pm_runtime_disable()
-In-Reply-To: <201001280011.06055.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.1001281037120.1384-100000@iolanthe.rowland.org>
+	Thu, 28 Jan 2010 10:45:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35491 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752714Ab0A1PpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 10:45:03 -0500
+Date: Thu, 28 Jan 2010 10:44:48 -0500
+From: Don Zickus <dzickus@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, gorcunov@gmail.com, aris@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] [RFC] nmi_watchdog: config option to enable new
+ nmi_watchdog
+Message-ID: <20100128154448.GV4472@redhat.com>
+References: <1264622622-5778-1-git-send-email-dzickus@redhat.com>
+ <1264622622-5778-4-git-send-email-dzickus@redhat.com>
+ <1264690494.4283.2103.camel@laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264690494.4283.2103.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jan 2010, Rafael J. Wysocki wrote:
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thu, Jan 28, 2010 at 03:54:54PM +0100, Peter Zijlstra wrote:
+> On Wed, 2010-01-27 at 15:03 -0500, Don Zickus wrote:
+> > These are the bits that enable the new nmi_watchdog and safely isolate the
+> > old nmi_watchdog.  Only one or the other can run, not both at the same
+> > time.
 > 
-> Remove the second argument of __pm_runtime_disable(), which is not
-> necessary any more, and rename this funtion to pm_runtime_disable().
-> Accordingly, drop the static inline definition of
-> pm_runtime_disable() using __pm_runtime_disable() and export
-> pm_runtime_disable() as appropriate.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/base/power/runtime.c |   31 ++++---------------------------
->  include/linux/pm_runtime.h   |    9 ++-------
->  2 files changed, 6 insertions(+), 34 deletions(-)
-> 
-> Index: linux-2.6/drivers/base/power/runtime.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/runtime.c
-> +++ linux-2.6/drivers/base/power/runtime.c
-> @@ -943,20 +943,15 @@ int pm_runtime_barrier(struct device *de
->  EXPORT_SYMBOL_GPL(pm_runtime_barrier);
->  
->  /**
-> - * __pm_runtime_disable - Disable run-time PM of a device.
-> + * pm_runtime_disable - Disable run-time PM of a device.
->   * @dev: Device to handle.
-> - * @check_resume: If set, check if there's a resume request for the device.
->   *
->   * Increment power.disable_depth for the device and if was zero previously,
->   * cancel all pending run-time PM requests for the device and wait for all
->   * operations in progress to complete.  The device can be either active or
->   * suspended after its run-time PM has been disabled.
-> - *
-> - * If @check_resume is set and there's a resume request pending when
-> - * __pm_runtime_disable() is called and power.disable_depth is zero, the
-> - * function will wake up the device before disabling its run-time PM.
->   */
-> -void __pm_runtime_disable(struct device *dev, bool check_resume)
-> +void pm_runtime_disable(struct device *dev)
->  {
+> perf disables the lapic watchdog when it wants the pmu, so there
+> shouldn't be a problem having both built in.
 
-Why did you decide to remove the check_resume argument?  That decision 
-should be explained in the patch description.
+Yes it does disable but does not prevent nmi_watchdog_tick from running
+nor the /proc interface from being loaded.  So perhaps my description
+isn't very good.  The idea with the new watchdog was to re-use some of the
+bits of the old one, but having them both compiled in seemed to stomp on
+each other.  That is what I was trying to prevent.
 
-Alan Stern
+I can certainly change the behaviour, just makes the code a little more
+messy I think.
 
+Cheers,
+Don
