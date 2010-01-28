@@ -1,139 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437Ab0A1Rq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442Ab0A1RuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756437Ab0A1Rq4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 12:46:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756370Ab0A1Rqy
+	id S1756442Ab0A1RuS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 12:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414Ab0A1RuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 12:46:54 -0500
-Received: from thinktradellc.com ([66.17.177.171]:23071 "EHLO
-	old.thinktradellc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756369Ab0A1Rqx (ORCPT
+	Thu, 28 Jan 2010 12:50:17 -0500
+Received: from mail.windriver.com ([147.11.1.11]:53768 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754446Ab0A1RuQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 12:46:53 -0500
-Message-ID: <4B61CD8A.50601@memeplex.com>
-Date: Thu, 28 Jan 2010 12:46:50 -0500
-From: Andrew Athan <aathan@memeplex.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 28 Jan 2010 12:50:16 -0500
+Message-ID: <4B61CE1A.8090001@windriver.com>
+Date: Thu, 28 Jan 2010 11:49:14 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Darren Hart <dvhltc@us.ibm.com>
-CC: Andrew Athan <linux_kernel_aathan@memeplex.com>,
-       =?UTF-8?B?QW3DqXJpY28=?= =?UTF-8?B?IFdhbmc=?= 
-	<xiyou.wangcong@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Gong Cheng <chengg11@yahoo.com>
-Subject: Re: Futex hang/lockup problem in 2.6.30+ on AMD64
-References: <4B4C3E4F.9060001@memeplex.com> <20100112145213.GB3925@hack> <1263308127.4244.142.camel@laptop> <2375c9f91001120700r4c2e1e05l5e5be3ddc6a13da2@mail.gmail.com> <4B4CA27F.1060102@memeplex.com> <4B568C3A.4080301@memeplex.com> <4B574359.9080308@us.ibm.com>
-In-Reply-To: <4B574359.9080308@us.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 3/3] perf,hw_breakpoint,kgdb: No mutex taken for kerneldebugger
+References: <1264631124-4837-1-git-send-email-jason.wessel@windriver.com> <1264631124-4837-4-git-send-email-jason.wessel@windriver.com> <20100128173307.GB18683@nowhere>
+In-Reply-To: <20100128173307.GB18683@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jan 2010 17:49:14.0304 (UTC) FILETIME=[34872C00:01CAA042]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darren Hart wrote:
-> Andrew Athan wrote:
->> Andrew Athan wrote:
->>> Américo Wang wrote:
->>>> On Tue, Jan 12, 2010 at 10:55 PM, Peter Zijlstra 
->>>> <peterz@infradead.org> wrote:
->>>>  
->>>>> On Tue, 2010-01-12 at 22:52 +0800, Américo Wang wrote:
->>>>>
->>>>>  
->>>>>>> $ uname -a
->>>>>>> Linux UK22 2.6.30-2-amd64 #1 SMP Fri Sep 25 22:16:56 UTC 2009 
->>>>>>> x86_64
->>>>>>> GNU/Linux
->>>>>>>         
->>>>> Does a recent kernel work?
->>>>>
->>>>>
->>>>>     
->>>>
->>>> Ah, I just wanted to ask the same question, adding the original 
->>>> reporter
->>>> Gong Cheng into Cc...
->>>>
->>>> Gong, could you reproduce it on the latest kernel? And what is your 
->>>> .config?
->>>>
->>>> Thanks!
->>>> -- 
->>>> To unsubscribe from this list: send the line "unsubscribe 
->>>> linux-kernel" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>> Please read the FAQ at  http://www.tux.org/lkml/
->>>>   
->>> Due to remote location of the hardware and I haven't been able to 
->>> test a more recent (or older) kernel.  Remote hands have put a KVM 
->>> on the box as of an hour ago, so I hope to have some information for 
->>> you in a day or two.
->>>
->>> A.
->>>
+Frederic Weisbecker wrote:
+> On Wed, Jan 27, 2010 at 04:25:24PM -0600, Jason Wessel wrote:
+>   
+>> The kernel debugger cannot use any mutex_lock() calls because it can
+>> start the kernel running from an invalid context.
 >>
+>> The possibility for a breakpoint reservation to be concurrently
+>> processed at the time that kgdb interrupts the system is improbable.
+>> As a safety check against this condition the kernel debugger will
+>> prohibit updating the hardware breakpoint reservations and an error
+>> will be returned to the end user.
 >>
->> I wanted to report that although I have had no luck (so far) running 
->> anything more recent than 2.6.30, I was able to revert to 2.6.26.  
->> Unfortunately, the application hang still occurs.  I also saw a 
->> similar hang of the application running on a 32 bit Intel box, also 
->> under 2.6.26.  So far, the hang *always* involves threads stuck on 
->> pthread_cond_broadcast()'s  condition variable's internal lock while 
->> other threads are waiting on the outer "public" lock.
->
->
-> Are you using real-time scheduling policy or priority inheritance 
-> (PTHREAD_PRIO_INHERIT)? It is possible to suffer an unbounded priority 
-> inversion on the internal condvar data lock in the current distro 
-> implementations of glibc.
->
->
->> These other threads are *not* yet (nor about to) 
->> pthread_cond_wait().  I saw a message from Darren Hart (subject "Re: 
->> Problems with futex") in response to someone who apparently was 
->> having futex problems in 2.6.27, so I'm still operating under the 
->> assumption that this is not an application bug.
->
-> Those all turned out to be application issues with one exception which 
-> had already been fixed upstream.
->
->
->> Over the next couple of days, I will be running a version of the 
->> application in which I replaced the pthread_cond calls with simpler 
->> locks, in the hopes that it won't hang (because I'm hoping the 
->> underlying implementation in pthreads uses a different set of futex 
->> opcodes).
+>> Any time the kernel debugger reserves a hardware breakpoint it will be
+>> a system wide reservation.
 >>
->> Andrew Athan
+>> CC: Frederic Weisbecker <fweisbec@gmail.com>
+>> CC: Ingo Molnar <mingo@elte.hu>
+>> CC: K.Prasad <prasad@linux.vnet.ibm.com>
+>> CC: Peter Zijlstra <peterz@infradead.org>
+>> CC: Alan Stern <stern@rowland.harvard.edu>
+>> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+>> ---
+>>  arch/x86/kernel/kgdb.c        |   49 +++++++++++++++++++++++++++++++++++++-
+>>  include/linux/hw_breakpoint.h |    2 +
+>>  kernel/hw_breakpoint.c        |   52 +++++++++++++++++++++++++++++++++--------
+>>  3 files changed, 92 insertions(+), 11 deletions(-)
 >>
+>> diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+>> index 9f47cd3..7c3e929 100644
+>> --- a/arch/x86/kernel/kgdb.c
+>> +++ b/arch/x86/kernel/kgdb.c
+>> @@ -239,6 +239,45 @@ static void kgdb_correct_hw_break(void)
+>>  	hw_breakpoint_restore();
+>>  }
+>>  
+>> +static int hw_break_reserve_slot(int breakno)
+>> +{
+>> +	int cpu;
+>> +	int cnt = 0;
+>> +	struct perf_event **pevent;
+>> +
+>> +	for_each_online_cpu(cpu) {
+>> +		cnt++;
+>> +		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
+>> +		if (dbg_reserve_bp_slot(*pevent))
+>> +			goto fail;
+>> +	}
+>> +
+>> +	return 0;
+>> +
+>> +fail:
+>> +	for_each_online_cpu(cpu) {
+>> +		cnt--;
+>> +		if (!cnt)
+>> +			break;
+>> +		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
+>> +		dbg_release_bp_slot(*pevent);
+>> +	}
+>> +	return -1;
+>> +}
+>> +
+>> +static int hw_break_release_slot(int breakno)
+>> +{
+>> +	struct perf_event **pevent;
+>> +	int ret;
+>> +	int cpu;
+>> +
+>> +	for_each_online_cpu(cpu) {
+>> +		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
+>> +		ret = dbg_release_bp_slot(*pevent);
+>>     
 >
 >
+>
+> So, you are missing some return errors there. Actually, a slot
+> release shouldn't return an error.
+>
+>
+>   
 
-I wanted to report that this application hang is certainly related to 
-pthread_cond_* calls.  With them in place, it consistently hangs.  
-Without, it consistently does not.  Whether pthread_cond_* is 
-misbehaving due to memory corruption or another application bug I 
-suppose is an open question.
+This is a trick so to speak.   Either all the slot releases will return
+0 or -1 depending on if the mutex is available, so it is not really
+missed. 
 
-We have now experienced several lockups where even a kill -9 of the 
-application won't get rid of it.  Does this say anything about the 
-nature of the hang?
+Certainly I can change this to just quit immediately on error.
 
-By the way, majordomo stopped sending me emails as of 1/17 so I have not 
-seen any updates to this thread sent after this date.  Not sure why this 
-happened, as I never asked to be unsubscribed.  I've resubscribed, but 
-not sure I will get anything.  Please make sure I am directly cc:ed on 
-any responses.
+>   
+>> +/*
+>> + * Allow the kernel debugger to reserve breakpoint slots without
+>> + * taking a lock using the dbg_* variant of for the reserve and
+>> + * release breakpoint slots.
+>> + */
+>> +int dbg_reserve_bp_slot(struct perf_event *bp)
+>> +{
+>> +	if (mutex_is_locked(&nr_bp_mutex))
+>> +		return -1;
+>> +
+>> +	return __reserve_bp_slot(bp);
+>> +}
+>> +
+>> +int dbg_release_bp_slot(struct perf_event *bp)
+>> +{
+>> +	if (mutex_is_locked(&nr_bp_mutex))
+>> +		return -1;
+>> +
+>> +	__release_bp_slot(bp);
+>> +
+>> +	return 0;
+>> +}
+>>     
+>
+>
+>
+> Ok, best effort fits well for reserve, but is certainly not
+> suitable for release. We can't leave a fake occupied slot like
+> this. If it fails, we should do this asynchronously, using the
+> usual release_bp_slot, may be toward the workqueues.
+>
+>
+>
+>   
 
-carlinux138:~# uname -a
-Linux carlinux138.thinktradellc.com 2.6.26-2-686 #1 SMP Sun Jun 21 
-04:57:38 UTC 2009 i686 GNU/Linux
+If it fails the debugger tried to remove it again later.   It seems to
+me like it is a don't care corner case.   You get a printk if it ever
+does happen (which it really shouldn't).
 
-(I have to go look up what the best way to give a system config snapshot 
-is, e.g., all major library version etc ... )
 
-Thanks,
-Andrew Athan
+>   
+>>  
+>>  int register_perf_hw_breakpoint(struct perf_event *bp)
+>>  {
+>> -- 
+>> 1.6.4.rc1
+>>
+>>     
+>
+>   
 
