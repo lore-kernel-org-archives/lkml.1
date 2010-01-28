@@ -1,97 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165Ab0A1NlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170Ab0A1Nnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165Ab0A1NlY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 08:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756089Ab0A1NlY
+	id S1756170Ab0A1Nnp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 08:43:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943Ab0A1Nno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 08:41:24 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:12050 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756041Ab0A1NlX (ORCPT
+	Thu, 28 Jan 2010 08:43:44 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58693
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755718Ab0A1Nno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 08:41:23 -0500
-X-SpamScore: -28
-X-BigFish: VPS-28(zz1432R98dN936eM9371Pzz1202hzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KWYM0N-01-JBC-02
-X-M-MSG: 
-Date: Thu, 28 Jan 2010 14:41:09 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Mark Hounschell <markh@compro.net>
-CC: Andreas Herrmann <andreas.herrmann3@amd.com>, dmarkh@cfl.rr.com,
-       Yuhong Bao <yuhongbao_386@hotmail.com>, venkatesh.pallipadi@intel.com,
-       andi@firstfloor.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       alain@knaff.lu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Disable HPET MSI on ATI SB700/SB800
-Message-ID: <20100128134109.GE26322@aftab>
-References: <4B32565E.6000501@compro.net>
- <20091223191806.GA3336@linux-os.sc.intel.com>
- <4B3270FE.5090607@compro.net>
- <1261600243.16916.56.camel@localhost.localdomain>
- <4B476E8D.1030308@compro.net>
- <20100121190952.GA32523@linux-os.sc.intel.com>
- <SNT125-W12BC46C506A5BB777A06B5C3610@phx.gbl>
- <20100125171059.GB5041@alberich.amd.com>
- <4B61562C.1010103@cfl.rr.com>
- <4B619043.1070806@compro.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <4B619043.1070806@compro.net>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 28 Jan 2010 13:41:08.0630 (UTC) FILETIME=[8BF99360:01CAA01F]
-X-Reverse-DNS: ausb3extmailp02.amd.com
+	Thu, 28 Jan 2010 08:43:44 -0500
+Date: Thu, 28 Jan 2010 05:43:55 -0800 (PST)
+Message-Id: <20100128.054355.206229204.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2010-01-27
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100127213511.GK2962@tuxdriver.com>
+References: <20100127213511.GK2962@tuxdriver.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 08:25:23AM -0500, Mark Hounschell wrote:
-> On 01/28/2010 04:17 AM, Mark Hounschell wrote:
-> > On 01/25/2010 12:10 PM, Andreas Herrmann wrote:
-> >> On Fri, Jan 22, 2010 at 11:21:06PM -0800, Yuhong Bao wrote:
-> >>>
-> >>>> HPET MSI on platforms with ATI SB700/SB800 as they seem to have some
-> >>>> side-effects on floppy DMA. Do not use HPET MSI on such platforms.
-> >>
-> >> Argh, will see what information I can find about this problem ...
-> >>
-> >>> I think somebody from AMD should review the situation.Clearly
-> >>   something is happening inside their southbridge.CCing Andreas
-> >>   Herrmann from AMD.
-> >>
-> >> I have the feeling that this problem should rather be fixed with a DMI
-> >> quirk instead of disabling HPET MSI for the entire chipset.
-> >>
-> >> Was the latest available BIOS installed on the affected system?
-> >>
-> > 
-> > You mean "systems" of different manufactures?  I will check today. Due to
-> > mis configured filters I didn't see this until today. Sorry.
-> > 
-> > Mark
-> > 
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Wed, 27 Jan 2010 16:35:12 -0500
+
+> Dave,
 > 
-> My BIOS were below rev on all my affected boards but updating did not help
-> with the problem.
+> Here is another small collections of fixes intended for 2.6.33.
+> Included are a NULL pointer dereference fix, a buffer leak fix,
+> a warning fix, and a correction of an ath9k initialization change
+> that was improperly limited to only dual-band hardware.
+> 
+> Please let me know if there are problems!
 
-Hi,
-
-can you post the BIOS vendors of the boards along with the respective
-BIOS versions?
-
-Thanks.
-
--- 
-Regards/Gruss,
-Boris.
-
---
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
-
+Pulled, thanks a lot John.
