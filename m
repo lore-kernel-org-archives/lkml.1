@@ -1,91 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191Ab0A1W0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814Ab0A1W1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754191Ab0A1W0E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 17:26:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620Ab0A1W0D
+	id S1754814Ab0A1W1t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 17:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646Ab0A1W1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 17:26:03 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28837 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752468Ab0A1W0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 17:26:00 -0500
-Date: Thu, 28 Jan 2010 20:24:55 -0200
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Avi Kivity <avi@redhat.com>, David Woodhouse <dwmw2@infradead.org>,
-       kvm@vger.kernel.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/11] kvm: Change kvm_iommu_map_pages to map large pages
-Message-ID: <20100128222455.GA26274@amt.cnet>
-References: <1264678682-30655-1-git-send-email-joerg.roedel@amd.com>
- <1264678682-30655-7-git-send-email-joerg.roedel@amd.com>
+	Thu, 28 Jan 2010 17:27:48 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:62640 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754583Ab0A1W1r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 17:27:47 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Ql6b26wn6gDQ5SBppUYHFIv+PuZLOkycSjSdTqfQ5fA3ukc199YjqPAJbIYPRLUD6
+	n6yRJfO1pDoEau9Qju2Gg==
+Date: Thu, 28 Jan 2010 14:27:39 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/7] Export unusable free space index via
+ /proc/pagetypeinfo
+In-Reply-To: <1262795169-9095-3-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.1001281411290.30252@chino.kir.corp.google.com>
+References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie> <1262795169-9095-3-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264678682-30655-7-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 12:37:57PM +0100, Joerg Roedel wrote:
-> This patch changes the implementation of of
-> kvm_iommu_map_pages to map the pages with the host page size
-> into the io virtual address space.
+On Wed, 6 Jan 2010, Mel Gorman wrote:
+
+> Unusuable free space index is a measure of external fragmentation that
+> takes the allocation size into account. For the most part, the huge page
+> size will be the size of interest but not necessarily so it is exported
+> on a per-order and per-zone basis via /proc/pagetypeinfo.
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> The index is normally calculated as a value between 0 and 1 which is
+> obviously unsuitable within the kernel. Instead, the first three decimal
+> places are used as a value between 0 and 1000 for an integer approximation.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 > ---
->  virt/kvm/iommu.c |  106 ++++++++++++++++++++++++++++++++++++++++++-----------
->  1 files changed, 84 insertions(+), 22 deletions(-)
+>  mm/vmstat.c |   99 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 99 insertions(+), 0 deletions(-)
 > 
-> diff --git a/virt/kvm/iommu.c b/virt/kvm/iommu.c
-> index 65a5143..92a434d 100644
-> --- a/virt/kvm/iommu.c
-> +++ b/virt/kvm/iommu.c
-> @@ -32,12 +32,27 @@ static int kvm_iommu_unmap_memslots(struct kvm *kvm);
->  static void kvm_iommu_put_pages(struct kvm *kvm,
->  				gfn_t base_gfn, unsigned long npages);
->  
-> +static pfn_t kvm_pin_pages(struct kvm *kvm, struct kvm_memory_slot *slot,
-> +			   gfn_t gfn, unsigned long size)
-> +{
-> +	gfn_t end_gfn;
-> +	pfn_t pfn;
-> +
-> +	pfn     = gfn_to_pfn_memslot(kvm, slot, gfn);
-
-If gfn_to_pfn_memslot returns pfn of bad_page, you might create a
-large iommu translation for it?
-
-> +		/* Map into IO address space */
-> +		r = iommu_map(domain, gfn_to_gpa(gfn), pfn_to_hpa(pfn),
-> +			      get_order(page_size), flags);
-> +
-> +		gfn += page_size >> PAGE_SHIFT;
-
-Should increase gfn after checking for failure, otherwise wrong
-npages is passed to kvm_iommu_put_pages.
-
->  
-> -		pfn = gfn_to_pfn_memslot(kvm, slot, gfn);
-> -		r = iommu_map_range(domain,
-> -				    gfn_to_gpa(gfn),
-> -				    pfn_to_hpa(pfn),
-> -				    PAGE_SIZE, flags);
->  		if (r) {
->  			printk(KERN_ERR "kvm_iommu_map_address:"
->  			       "iommu failed to map pfn=%lx\n", pfn);
->  			goto unmap_pages;
->  		}
-> -		gfn++;
-> +
->  	}
-> +
+> diff --git a/mm/vmstat.c b/mm/vmstat.c
+> index 6051fba..e1ea2d5 100644
+> --- a/mm/vmstat.c
+> +++ b/mm/vmstat.c
+> @@ -451,6 +451,104 @@ static int frag_show(struct seq_file *m, void *arg)
 >  	return 0;
->  
->  unmap_pages:
-> -	kvm_iommu_put_pages(kvm, slot->base_gfn, i);
-> +	kvm_iommu_put_pages(kvm, slot->base_gfn, gfn);
->  	return r;
 >  }
+>  
+> +
+> +struct config_page_info {
+> +	unsigned long free_pages;
+> +	unsigned long free_blocks_total;
+> +	unsigned long free_blocks_suitable;
+> +};
+> +
+> +/*
+> + * Calculate the number of free pages in a zone, how many contiguous
+> + * pages are free and how many are large enough to satisfy an allocation of
+> + * the target size. Note that this function makes to attempt to estimate
+> + * how many suitable free blocks there *might* be if MOVABLE pages were
+> + * migrated. Calculating that is possible, but expensive and can be
+> + * figured out from userspace
+> + */
+> +static void fill_contig_page_info(struct zone *zone,
+> +				unsigned int suitable_order,
+> +				struct config_page_info *info)
 
+There's a descrepency between the name of the function and the name of the 
+struct, I think they were probably both meant to be contig_page_info.
+
+> +{
+> +	unsigned int order;
+> +
+> +	info->free_pages = 0;
+> +	info->free_blocks_total = 0;
+> +	info->free_blocks_suitable = 0;
+> +
+> +	for (order = 0; order < MAX_ORDER; order++) {
+> +		unsigned long blocks;
+> +
+> +		/* Count number of free blocks */
+> +		blocks = zone->free_area[order].nr_free;
+> +		info->free_blocks_total += blocks;
+> +
+> +		/* Count free base pages */
+> +		info->free_pages += blocks << order;
+> +
+> +		/* Count the suitable free blocks */
+> +		if (order >= suitable_order)
+> +			info->free_blocks_suitable += blocks <<
+> +						(order - suitable_order);
+> +	}
+> +}
+> +
+> +/*
+> + * Return an index indicating how much of the available free memory is
+> + * unusable for an allocation of the requested size.
+> + */
+> +int unusable_free_index(struct zone *zone,
+> +				unsigned int order,
+> +				struct config_page_info *info)
+
+Should be static?
+
+> +{
+> +	/* No free memory is interpreted as all free memory is unusable */
+> +	if (info->free_pages == 0)
+> +		return 100;
+> +
+> +	/*
+> +	 * Index should be a value between 0 and 1. Return a value to 3
+> +	 * decimal places.
+> +	 *
+> +	 * 0 => no fragmentation
+> +	 * 1 => high fragmentation
+> +	 */
+> +	return ((info->free_pages - (info->free_blocks_suitable << order)) * 1000) / info->free_pages;
+> +
+
+This value is only for userspace consumption via /proc/pagetypeinfo, so 
+I'm wondering why it needs to be exported as an index.  Other than a loss 
+of precision, wouldn't this be easier to understand (especially when 
+coupled with the free page counts already exported) if it were multipled 
+by 100 rather than 1000 and shown as a percent of _usable_ free memory at 
+each order?  Otherwise, we're left doing this "free - unusuable" 
+calculation while the number of unusuable pages at an order isn't 
+necessarily of great interest as a vanilla value.
+
+> +}
+> +
+> +static void pagetypeinfo_showunusable_print(struct seq_file *m,
+> +					pg_data_t *pgdat, struct zone *zone)
+> +{
+> +	unsigned int order;
+> +
+> +	/* Alloc on stack as interrupts are disabled for zone walk */
+> +	struct config_page_info info;
+> +
+> +	seq_printf(m, "Node %4d, zone %8s %19s",
+> +				pgdat->node_id,
+> +				zone->name, " ");
+> +	for (order = 0; order < MAX_ORDER; ++order) {
+> +		fill_contig_page_info(zone, order, &info);
+
+It's a shame we can't keep this data for the fragmentation index exported 
+subsequently in patch 3.
+
+> +		seq_printf(m, "%6d ", unusable_free_index(zone, order, &info));
+> +	}
+> +
+> +	seq_putc(m, '\n');
+> +}
+> +
+> +/*
+> + * Display unusable free space index
+> + * XXX: Could be a lot more efficient, but it's not a critical path
+> + */
+> +static int pagetypeinfo_showunusable(struct seq_file *m, void *arg)
+> +{
+> +	pg_data_t *pgdat = (pg_data_t *)arg;
+> +
+> +	seq_printf(m, "\nUnusable free space index at order\n");
+> +	walk_zones_in_node(m, pgdat, pagetypeinfo_showunusable_print);
+> +
+> +	return 0;
+> +}
+> +
+>  static void pagetypeinfo_showfree_print(struct seq_file *m,
+>  					pg_data_t *pgdat, struct zone *zone)
+>  {
+> @@ -558,6 +656,7 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
+>  	seq_printf(m, "Pages per block:  %lu\n", pageblock_nr_pages);
+>  	seq_putc(m, '\n');
+>  	pagetypeinfo_showfree(m, pgdat);
+> +	pagetypeinfo_showunusable(m, pgdat);
+>  	pagetypeinfo_showblockcount(m, pgdat);
+>  
+>  	return 0;
+
+/proc/pagetypeinfo isn't documented, but that's been fine until now 
+because all of the fields dealing with "free pages" and "number of blocks" 
+are easily understood.  That changes now because there is no clear 
+understanding of "fragmentation index" in userspace, so we'll probably 
+need some kind of memory compaction documentation eventually.
