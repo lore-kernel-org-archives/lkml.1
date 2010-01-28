@@ -1,158 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025Ab0A1Bgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974Ab0A1BlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025Ab0A1Bgg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 20:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999Ab0A1Bgf
+	id S1755974Ab0A1BlQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 20:41:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918Ab0A1BlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 20:36:35 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53691 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754420Ab0A1Bge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 20:36:34 -0500
-Message-ID: <4B60E9A3.2040505@cn.fujitsu.com>
-Date: Thu, 28 Jan 2010 09:34:27 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [RESEND][PATCH 2/2 v2] tracing/kprobe: cleanup unused return value
- of function
-References: <4B60E92D.9000808@cn.fujitsu.com>
-In-Reply-To: <4B60E92D.9000808@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 20:41:15 -0500
+Received: from mga03.intel.com ([143.182.124.21]:27422 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752291Ab0A1BlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 20:41:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="237629875"
+Subject: Re: kernel error : 'find /proc/ -type f | xargs -n 1 head -c 10
+ >/dev/null'
+From: Zhang Rui <rui.zhang@intel.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <alpine.LRH.2.00.1001261416430.15694@twin.jikos.cz>
+References: <201001212017.00160.toralf.foerster@gmx.de>
+	 <20100121203535.GA5133@x200> <201001212219.03718.toralf.foerster@gmx.de>
+	 <alpine.LRH.2.00.1001261416430.15694@twin.jikos.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 28 Jan 2010 09:39:27 +0800
+Message-ID: <1264642767.22448.633.camel@rzhang1-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Those function's return value is meaningless
+On Tue, 2010-01-26 at 21:17 +0800, Jiri Kosina wrote:
+> [ adding relevant CCs ]
+> 
+> On Thu, 21 Jan 2010, Toralf Förster wrote:
+> 
+> > Alexey Dobriyan wrote at 21:35:35
+> > > On Thu, Jan 21, 2010 at 08:16:59PM +0100, Toralf Förster wrote:
+> > > > I was inspired by http://article.gmane.org/gmane.linux.kernel/941115 .
+> > > >
+> > > > Running the command (se subject) as a normal user at a 2.6.32.4 kernel
+> > > > gives this in /var/log/messages:
+> > > >
+> > > > head: page allocation failure. order:9, mode:0xd0
+> > > > Pid: 2324, comm: head Not tainted 2.6.32.4 #1
+> > > > Call Trace:
+> > > > [<c106e2cc>] ? __alloc_pages_nodemask+0x4bc/0x5a0
+> > > > [<c108cf5a>] ? cache_alloc_refill+0x2ba/0x510
+> > > > [<c108d299>] ? __kmalloc+0xe9/0xf0
+> > > > [<c10aa755>] ? seq_read+0x195/0x370
+> > > 
+> > > Please, find out which file is causing this, if it's reproducible.
+> > > 
+> > I reproduced the msg :
+> > "ACPI: Please implement acpi_video_bus_ROM_seq_show" by :
+> > by
+> > $> head -c 10 /proc/acpi/video/VID/info
+> > 
+this is just a KERN_INFO message that suggests the
+acpi_video_bus_ROM_seq_show method is not actually implemented right
+now.
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- kernel/trace/trace_kprobe.c |   28 ++++++++++++++--------------
- 1 files changed, 14 insertions(+), 14 deletions(-)
+I don't think it has anything to do with the trace. :)
 
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 2714d23..de2cf85 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -942,7 +942,7 @@ static const struct file_operations kprobe_profile_ops = {
- };
- 
- /* Kprobe handler */
--static __kprobes int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
-+static __kprobes void kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
- {
- 	struct trace_probe *tp = container_of(kp, struct trace_probe, rp.kp);
- 	struct kprobe_trace_entry *entry;
-@@ -962,7 +962,7 @@ static __kprobes int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
- 	event = trace_current_buffer_lock_reserve(&buffer, call->id, size,
- 						  irq_flags, pc);
- 	if (!event)
--		return 0;
-+		return ;
- 
- 	entry = ring_buffer_event_data(event);
- 	entry->nargs = tp->nr_args;
-@@ -972,11 +972,11 @@ static __kprobes int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
- 
- 	if (!filter_current_check_discard(buffer, call, entry, event))
- 		trace_nowake_buffer_unlock_commit(buffer, event, irq_flags, pc);
--	return 0;
-+	return ;
- }
- 
- /* Kretprobe handler */
--static __kprobes int kretprobe_trace_func(struct kretprobe_instance *ri,
-+static __kprobes void kretprobe_trace_func(struct kretprobe_instance *ri,
- 					  struct pt_regs *regs)
- {
- 	struct trace_probe *tp = container_of(ri->rp, struct trace_probe, rp);
-@@ -995,7 +995,7 @@ static __kprobes int kretprobe_trace_func(struct kretprobe_instance *ri,
- 	event = trace_current_buffer_lock_reserve(&buffer, call->id, size,
- 						  irq_flags, pc);
- 	if (!event)
--		return 0;
-+		return ;
- 
- 	entry = ring_buffer_event_data(event);
- 	entry->nargs = tp->nr_args;
-@@ -1007,7 +1007,7 @@ static __kprobes int kretprobe_trace_func(struct kretprobe_instance *ri,
- 	if (!filter_current_check_discard(buffer, call, entry, event))
- 		trace_nowake_buffer_unlock_commit(buffer, event, irq_flags, pc);
- 
--	return 0;
-+	return ;
- }
- 
- /* Event entry printers */
-@@ -1217,7 +1217,7 @@ static int set_print_fmt(struct trace_probe *tp)
- #ifdef CONFIG_PERF_EVENTS
- 
- /* Kprobe profile handler */
--static __kprobes int kprobe_profile_func(struct kprobe *kp,
-+static __kprobes void kprobe_profile_func(struct kprobe *kp,
- 					 struct pt_regs *regs)
- {
- 	struct trace_probe *tp = container_of(kp, struct trace_probe, rp.kp);
-@@ -1232,11 +1232,11 @@ static __kprobes int kprobe_profile_func(struct kprobe *kp,
- 	size -= sizeof(u32);
- 	if (WARN_ONCE(size > FTRACE_MAX_PROFILE_SIZE,
- 		     "profile buffer not large enough"))
--		return 0;
-+		return ;
- 
- 	entry = ftrace_perf_buf_prepare(size, call->id, &rctx, &irq_flags);
- 	if (!entry)
--		return 0;
-+		return ;
- 
- 	entry->nargs = tp->nr_args;
- 	entry->ip = (unsigned long)kp->addr;
-@@ -1245,11 +1245,11 @@ static __kprobes int kprobe_profile_func(struct kprobe *kp,
- 
- 	ftrace_perf_buf_submit(entry, size, rctx, entry->ip, 1, irq_flags);
- 
--	return 0;
-+	return ;
- }
- 
- /* Kretprobe profile handler */
--static __kprobes int kretprobe_profile_func(struct kretprobe_instance *ri,
-+static __kprobes void kretprobe_profile_func(struct kretprobe_instance *ri,
- 					    struct pt_regs *regs)
- {
- 	struct trace_probe *tp = container_of(ri->rp, struct trace_probe, rp);
-@@ -1264,11 +1264,11 @@ static __kprobes int kretprobe_profile_func(struct kretprobe_instance *ri,
- 	size -= sizeof(u32);
- 	if (WARN_ONCE(size > FTRACE_MAX_PROFILE_SIZE,
- 		     "profile buffer not large enough"))
--		return 0;
-+		return ;
- 
- 	entry = ftrace_perf_buf_prepare(size, call->id, &rctx, &irq_flags);
- 	if (!entry)
--		return 0;
-+		return ;
- 
- 	entry->nargs = tp->nr_args;
- 	entry->func = (unsigned long)tp->rp.kp.addr;
-@@ -1278,7 +1278,7 @@ static __kprobes int kretprobe_profile_func(struct kretprobe_instance *ri,
- 
- 	ftrace_perf_buf_submit(entry, size, rctx, entry->ret_ip, 1, irq_flags);
- 
--	return 0;
-+	return ;
- }
- 
- static int probe_profile_enable(struct ftrace_event_call *call)
--- 
-1.6.1.2
+thanks,
+rui
+
+> > After suspend to disk and wakeup however the file /proc/acpi/video/VID/ROM was 
+> > the culprit.
+> > 
+> > The trace however I can't reproduce until now.
+> > 
+> > 
+> > 
+> 
 
 
