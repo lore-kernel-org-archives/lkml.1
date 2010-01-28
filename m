@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193Ab0A1Dcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454Ab0A1Dtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193Ab0A1Dcs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 22:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165Ab0A1Dcs
+	id S1753454Ab0A1Dtq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 22:49:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836Ab0A1Dtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 22:32:48 -0500
-Received: from ironport2-out.teksavvy.com ([206.248.154.181]:38868 "EHLO
-	ironport2-out.pppoe.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752108Ab0A1Dcr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 22:32:47 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AscAAIKUYEtLd/sX/2dsb2JhbAAIgzHEd490gSp6gT1YBA
-X-IronPort-AV: E=Sophos;i="4.49,357,1262581200"; 
-   d="scan'208";a="54722813"
-Message-ID: <4B61055C.8040604@teksavvy.com>
-Date: Wed, 27 Jan 2010 22:32:44 -0500
-From: Mark Lord <kernel@teksavvy.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 27 Jan 2010 22:49:45 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:38107 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751854Ab0A1Dtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 22:49:45 -0500
+Date: Wed, 27 Jan 2010 21:49:44 -0600
+From: Robin Holt <holt@sgi.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       cl@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] - Fix unmap_vma() bug related to mmu_notifiers
+Message-ID: <20100128034943.GH6616@sgi.com>
+References: <20100125174556.GA23003@sgi.com>
+ <20100125190052.GF5756@random.random>
+ <20100125211033.GA24272@sgi.com>
+ <20100125211615.GH5756@random.random>
+ <20100126212904.GE6653@sgi.com>
+ <20100126213853.GY30452@random.random>
+ <20100128031841.GG6616@sgi.com>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Mel Gorman <mel@csn.ul.ie>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: 2.6.32.5 regression: page allocation failure. order:1,
-References: <4B5FA147.5040802@teksavvy.com> <20100127120820.GB25750@csn.ul.ie> <4B60C0A7.7090501@teksavvy.com> <alpine.DEB.2.00.1001271701170.17513@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1001271701170.17513@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100128031841.GG6616@sgi.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> On Wed, 27 Jan 2010, Mark Lord wrote:
->> It's rock solid again with 2.6.31.12 on it now.
->>
+On Wed, Jan 27, 2010 at 09:18:42PM -0600, Robin Holt wrote:
+> On Tue, Jan 26, 2010 at 10:38:53PM +0100, Andrea Arcangeli wrote:
+> > On Tue, Jan 26, 2010 at 03:29:04PM -0600, Robin Holt wrote:
+> > > On Mon, Jan 25, 2010 at 10:16:15PM +0100, Andrea Arcangeli wrote:
+> > > > The old patches are in my ftp area, they should still apply, you
+> > > > should concentrate testing with those additional ones applied, then it
+> > > > will work for xpmem too ;)
+> > > 
+> > > Andrea, could you point me at your ftp area?
+> > 
+> > Sure, this is the very latest version I maintained:
+> > 
+> > http://www.kernel.org/pub/linux/kernel/people/andrea/patches/v2.6/2.6.26-rc7/mmu-notifier-v18/
 > 
-> Is there something specific about the workload that makes it easily 
-> reproducible?  Are you saying that 2.6.31.12 is "rock solid" because it 
-> has survived a certain workload that caused these page allocation failures 
-> with 2.6.32.5, or simply because it has a longer uptime and hasn't shown 
-> a problem?  It would be very helpful to describe the load so that we can 
-> attempt to reproduce it locally without a sacrifice to your server.
-..
+> Let me start with what XPMEM currently has.
+> 
+> We adjusted xpmem so that the mmu_notifier_invalidate_page() callout
+> does not need to sleep.  It takes the arguments passed in and adds them
+> to a queue for clearing the pages.  We added a seperate kernel thread
+> which manages this clearing.
+> 
+> The mmu_notifier_invalidate_range_end() likewise does not really need
+> to sleep either.
+> 
+> That leaves the mmu_notifier_invalidate_range_start() callout.  This does
+> not need to drop the mm_sem.  It does need to be able to sleep waiting
+> for the invalidations to complete on the other process.  That other
+> process may be on a different SSI connected to the same Numalink fabric.
+> 
+> I think that with the SRCU patch, we have enough.  Is that true or have
+> I missed something?
 
-Good questions, and I do "feel for you" here.  :)
+I wasn't quite complete in my previous email.  Your srcu patch
+plus Jack's patch to move the tlb_gather_mmu to after the
+mmu_notifier_invalidate_range_start().
 
-That machine has a light workload.  Web server, email server,
-dhcp for the small local network, name server, etc.
-
-It sits at one end of a 6mb/1.5mb DSL connection, hardly busy at all.
-
-But the logfile posted shows many of those "allocation failures"
-within the first (only)36 hours of running 2.6.32.5:
-
-  mirrordir (doing a backup to a USB drive)
-  apcupsd  (UPS monitoring; hardly an intensive activity)
-  apache2  (the web server receives rather light use, and no fancy php or anything)
-  apache2  (again!)
-  apache2  (and again)
-  apache2  (another)
-  apache2  (yet again)
-  ...
-  apache2  (and again again)
-  vim      (hey, can't a guy edit his driver sources ??)
-  cc1      (or compile them?)
-
-So, not much happening, really.
-It's a slow machine, a 600Mhz C7 ("VIA Samuel 2"), with only 512MB of RAM.
-
-We've got 2.6.32.5 running on several other machines here with nary a glitch,
-but all of those have 2-4GB of RAM.
-
-Cheers
+Robin
