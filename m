@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297Ab0A1VZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925Ab0A1Vit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754297Ab0A1VZZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 16:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898Ab0A1VZZ
+	id S1754925Ab0A1Vit (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 16:38:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445Ab0A1Vis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 16:25:25 -0500
-Received: from mail.windriver.com ([147.11.1.11]:61405 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752159Ab0A1VZY (ORCPT
+	Thu, 28 Jan 2010 16:38:48 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:51466 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754415Ab0A1Vir (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 16:25:24 -0500
-Message-ID: <4B61F231.4030108@windriver.com>
-Date: Thu, 28 Jan 2010 14:23:13 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 28 Jan 2010 16:38:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=au10w/YqdS2ERT6Dcs8Xu/ayzT+ublzpXJeeKoHUtM9vCub8KqsnC633SL9GdcVG/r
+         JGFSS3/FzciM1cFNgwY6oB/m713B3Y4AAnLLN693f9zf5BWiobvTcb/dy4URUnUgeG3h
+         NzNE2ZImqS9x6GpoKNpPzpckO11s9tETfvaDk=
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/4] x86,hw_breakpoint,kgdb: kgdb to usehw_breakpointAPI
-References: <1264480000-6997-1-git-send-email-jason.wessel@windriver.com> <1264480000-6997-2-git-send-email-jason.wessel@windriver.com> <20100128171050.GA18683@nowhere> <4B61CD14.7000901@windriver.com> <4B61EC62.6030103@windriver.com> <20100128201745.GE18683@nowhere>
-In-Reply-To: <20100128201745.GE18683@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jan 2010 20:23:13.0579 (UTC) FILETIME=[B790A7B0:01CAA057]
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Thu, 28 Jan 2010 13:38:27 -0800
+Message-ID: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
+Subject: Linux wireless GSoC 2010 project ideas
+To: linux-wireless <linux-wireless@vger.kernel.org>
+Cc: Till Kamppeter <till.kamppeter@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, lsb-discuss@lists.linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Thu, Jan 28, 2010 at 01:58:26PM -0600, Jason Wessel wrote:
->   
->> New version which loses the call back registration, because if we
->> register as a different breakpoint type, perf won't reject it.
->>     
->
->
->
-> I don't understand what you mean here.
->
->
->
->   
+Google has confirmed it will have a Google Summer of Code for 2010
+[1]. Last year we had a few projects suggested (4) and accepted (3)
+under the Linux Foundation sponsoring organization umbrella [2].
+Unfortunately out of the three projects that were approved only one
+completed successfully, that of the adding AP support to Network
+Manger. I haven't seen specific updates to the progress of that but I
+do know some patches were indeed submitted to help with this effort.
+Perhaps the student can elaborate more.
 
-This was the change:
+The other projects that did not pass are up as suggestion for this
+year again, but am hoping there are more. If you do have a project
+idea please just go ahead and add your idea to the list of possible
+projects [3]; you don't have to fill out a full page for it for now
+but the more details you can add the better. If the Linux Foundation
+does give us a few slots I recommend we be a little more strict about
+acceptance criteria since our failure rate was pretty high (2/3) and
+it would be better to see other projects get accepted if we do not
+have the confidence our projects will be completed. One possibility to
+help with the success rate of our projects might be to narrow the
+scope down a little more. I think the testing and GeoClue project
+might have been a little too ambitious and although we did have pretty
+excited students we saw no progress at all.
 
--       attr.bp_type = HW_BREAKPOINT_X;
-+       attr.bp_type = HW_BREAKPOINT_W;
+If you have ideas for projects just feel free to add to the wiki. We
+should strive to get all project ideas finalized by the middle of
+February, latest the end of February. Hopefully towards the end of
+February we can see who would be willing to mentor each project.
+Google plans on starting to accept would-be-mentor organization
+applications on  March 8th so we'll need our ideas finalized well
+before that so we can send them as suggestions to the Linux Foundation
+to see if we can get a few good project candidates accepted.
 
-The perf API had extra constraint checks when you did not have a call
-back function and the type was HW_BREAKPOINT_X.   Using the
-HW_BREAKPOINT_W type avoids the extra checks that would not allow me to
-register without providing a call back.  
+[1] http://groups.google.com/group/google-summer-of-code-discuss/browse_thread/thread/d839c0b02ac15b3f
+[2] http://wireless.kernel.org/en/developers/GSoC/2009
+[3] http://wireless.kernel.org/en/developers/GSoC/2010
 
-This issue will go away entirely if we allow the allocation of an event
-that is disabled for the purpose of the kernel debugger.  No matter how
-you look at it, it is still a work around at the current time.
->>  I didn't
->> see that loop hole in the API the first time around.
->>
->> Also the dr7 fixup in hw_breakpoint.c is not needed.
->>
->> The trickery for entering twice into the __kgdb_notify is gone too.
->>
->> All the regression tests are still passing.
->>     
->
->
->
-> Ok. Well, let's go for it, as it's a regression that
-> needs to be fixed anyway.
->
-> But we'll need to sanitize various things after that :)
->   
-
-
-Agreed. 
-
-Can I take that to mean you have acked this version of the patch?
-
-Thanks,
-Jason.
+  Luis
