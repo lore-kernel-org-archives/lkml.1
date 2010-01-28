@@ -1,44 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422Ab0A1AbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191Ab0A1AlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422Ab0A1AbL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 19:31:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023Ab0A1AbK
+	id S1754191Ab0A1AlE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 19:41:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635Ab0A1AlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 19:31:10 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:47203 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751914Ab0A1AbI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 19:31:08 -0500
-Subject: Re: [PATCH] x86: add Dell OptiPlex 760 reboot quirk
-From: Leann Ogasawara <leann.ogasawara@canonical.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, x86@kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B60DA05.8020509@zytor.com>
-References: <1264634958.27335.1091.camel@emiko> <4B60DA05.8020509@zytor.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 16:29:55 -0800
-Message-ID: <1264638595.27335.1092.camel@emiko>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jan 2010 19:41:03 -0500
+Received: from trinity.fluff.org ([89.16.178.74]:47993 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752221Ab0A1AlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 19:41:00 -0500
+Date: Thu, 28 Jan 2010 00:39:14 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: adharmap@codeaurora.org
+Cc: linux-arm-kernel@lists.infradead.org, Kalle Valo <kalle.valo@iki.fi>,
+       Russell King <linux@arm.linux.org.uk>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Jean Pihet <jpihet@mvista.com>,
+       Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>,
+       Tony Lindgren <tony@atomide.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Abhijeet Dharmapurikar <adharmap@quicinc.com>,
+       linux-kernel@vger.kernel.org,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Santosh Shilimkar <santosh.shilimkar@ti.com>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       Colin Tuckley <colin.tuckley@arm.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-omap@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Philby John <pjohn@in.mvista.com>, Alessandro Rubini <rubini@unipv.it>
+Subject: Re: [PATCH 0/5] Arm Gic Changes
+Message-ID: <20100128003914.GM9153@trinity.fluff.org>
+References: <1264620749-24527-1-git-send-email-adharmap@codeaurora.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264620749-24527-1-git-send-email-adharmap@codeaurora.org>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-27 at 16:27 -0800, H. Peter Anvin wrote:
-> On 01/27/2010 03:29 PM, Leann Ogasawara wrote:
-> > Hi All,
-> > 
-> > A bug reporter noted their Dell OptiPlex 760 hangs on reboot unless
-> > reboot=bios is specified.  They have confirmed the following reboot
-> > quirk resolves the issue.  Please consider applying for 2.6.33.
-> > 
+On Wed, Jan 27, 2010 at 11:32:24AM -0800, adharmap@codeaurora.org wrote:
+> From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
 > 
-> Could we find out if reboot=acpi works on this machine?
+> Few fixes and improvements to arch/arm/common/gic.c file.
 
-Sure, I'll ask the reporter to confirm.
+both ARM and GIC in the title should be all in capitals, they are
+abbreviations of something longer.
 
-Leann
+I think it would be nicer to make GIC in all the patch titles all capital
+instead of all lower case.
+ 
+> Abhijeet Dharmapurikar (5):
+>   gic: prevent gic from crossing NR_IRQ
+>   gic: add callback for mask_ack
+>   gic: Add set_type callback
+>   gic: dont disable INT in ack callback
+>   gic: initialize interrupts as per argument
+> 
+>  arch/arm/common/gic.c                    |  114 ++++++++++++++++++++++++-----
+>  arch/arm/include/asm/hardware/gic.h      |    3 +-
+>  arch/arm/mach-omap2/board-4430sdp.c      |    3 +-
+>  arch/arm/mach-realview/realview_eb.c     |   10 ++-
+>  arch/arm/mach-realview/realview_pb1176.c |    7 ++-
+>  arch/arm/mach-realview/realview_pb11mp.c |    7 ++-
+>  arch/arm/mach-realview/realview_pba8.c   |    4 +-
+>  arch/arm/mach-realview/realview_pbx.c    |    5 +-
+>  arch/arm/mach-ux500/cpu-u8500.c          |    2 +-
+>  9 files changed, 122 insertions(+), 33 deletions(-)
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+-- 
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
