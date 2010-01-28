@@ -1,90 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225Ab0A1Fy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546Ab0A1FzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225Ab0A1Fy3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 00:54:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831Ab0A1Fy2
+	id S1753546Ab0A1FzY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 00:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804Ab0A1FzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 00:54:28 -0500
-Received: from ohm.utp.edu.co ([200.21.217.54]:57804 "EHLO ohm.utp.edu.co"
+	Thu, 28 Jan 2010 00:55:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55251 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752721Ab0A1Fy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 00:54:27 -0500
-X-Greylist: delayed 1518 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jan 2010 00:54:26 EST
-From: "FEDEX COURIER COMPANY" <FEDEXCOURIERCOMPANY@YAHOO.COM>
-Reply-To: fedexcourierservice33@hotmail.com
-Subject: Info
-Date: Thu, 28 Jan 2010 00:41:10 -0500
-Message-Id: <20100128054115.M76510@YAHOO.COM>
-X-Mailer: Open WebMail 2.30 20040414
-X-OriginatingIP: 10.1.2.50 (aorozco)
+	id S1751833Ab0A1FzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 00:55:22 -0500
+Message-ID: <4B61266F.1060600@kernel.org>
+Date: Wed, 27 Jan 2010 21:53:51 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=windows-1252
-To: unlisted-recipients:; (no To-header on input)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeff Garrett <jeff@jgarrett.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with	pci=use_crs)
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>	 <201001271345.54454.bjorn.helgaas@hp.com>	 <alpine.LFD.2.00.1001271247450.3570@localhost.localdomain>	 <201001271403.41955.bjorn.helgaas@hp.com>  <4B60CD99.7020305@kernel.org> <1264652762.24020.5.camel@dc7800.home>
+In-Reply-To: <1264652762.24020.5.camel@dc7800.home>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FEDEX COURIER COMPANY
-Plot 2356 Palm Groove.
-London United Kingdom,
+On 01/27/2010 08:26 PM, Bjorn Helgaas wrote:
+> On Wed, 2010-01-27 at 15:34 -0800, Yinghai Lu wrote:
+>> On 01/27/2010 01:03 PM, Bjorn Helgaas wrote:
+>>> On Wednesday 27 January 2010 01:50:12 pm Linus Torvalds wrote:
+>>>>
+>>>> On Wed, 27 Jan 2010, Bjorn Helgaas wrote:
+>>>>>
+>>>>> Without intel_bus.c, we essentially assume config 1 all the time.
+>>>>> If we keep intel_bus.c and this patch for .33, things should work
+>>>>> for configs 1 and 4.  Adding support for config 4 is good.
+>>>>
+>>>> Quite frankly, is there any major downside to just disabling/removing 
+>>>> intel_bus.c for 2.6.33? If we're not planning on having it in the long run 
+>>>> anyway - or even if we are, but we can't be really happy about the state 
+>>>> of it as it would be in 2.6.33, not using it at all seems to be the 
+>>>> smaller headache.
+>>>>
+>>>> The machines that it helps are also the machines where you can fix things 
+>>>> up with 'use_csr', no? And they are pretty rare, and they didn't use to 
+>>>> work without that use_csr in 2.6.32 either, so it's not even a regression.
+>>>>
+>>>> Am I missing something?
+>>>
+>>> Only that when we added intel_bus.c, Yinghai reported that the reason
+>>> was because a machine had a broken _CRS, so "pci=use_crs" wouldn't help.
+>>>
+>>> At the time, Windows hadn't been brought up on that box.  My
+>>> speculation is that by now, they've done that bringup and probably
+>>> fixed the _CRS issue, so it might work now.
+>>>
+>>> If that's the case, we could drop intel_bus.c from .33 and just use
+>>> "pci=use_crs" on those boxes until we can figure out how to turn it
+>>> on automatically.
+>>
+>> BIOS fixed that problem already. but
+>> 1. how to turn that pci=use_crs for that box automatically ?
+>> how about our other kind of boxes?
+> 
+> Yes, we need a way to turn on "pci=use_crs" automatically.  My first
+> thought is to turn it on for all BIOSes with dates of 2010 or later, and
+> in addition, have a whitelist of the pre-2010 machines that require it.
+> 
+>> 2. how about when apci is disabled?
+> 
+> When ACPI is disabled, I think we just have to accept that we lose some
+> functionality.  I don't see the need for alternate ways to accomplish
+> everything that ACPI does.  It's becoming less and less useful to
+> disable ACPI; I think it's only interesting as a debugging tool, and
+> even then it's a sledgehammer.
 
+some systems when acpi is enabled could have interrupt storm. 
+and have to disable acpi.
 
-Good Day Customer.
+YH
 
-I am Mr. Tony Brown Of the FedEx Courier Company,I have a
-Confirm able bank draft of GBP 500.000.00 (Five Hundred Thousand
-Great British Pounds) in your name from the shell Petroleum,
-it was deposited the Draft with FED EX COURIER SERVICE,United Kingdom,
-I travelled out of the country for my holidays and I
-will not retire back until the end of january.
-
-I want you to try all your best and contact the FED EX COURIER
-SERVICE as soon as possible to know when you will get this
-package to you because of the expiring date.For your
-information, I have paid for the security Keeping Fee,Insurance
-premium and Clearance Certificate Fee of the Cheque showing
-that it is not a Drug Money or meant to sponsor Terrorist
-attackin your Country.
-
-The only money you will send to the FEDEX COURIER SERVICE to
-deliver your Draft direct to your postal Address in your
-country is 50.00 pounds only Delivery Charge Fee of the Courier
-Company so far.Again,don't be deceived by any person to pay any
-other money except 50.00 pounds you are to pay the
-Delivering Charge .I would have paid that but they said no
-because they don't know when you will contact them and in case
-of demurrage. You have to contact the FEDEX COURIER SERVICE now
-for the delivery of your Draft with this below information.
-
-=======================================
-Contact Person: Mr. Tony Brown, 
-Email Address:fedexcourierservice33@hotmail.com 
-Shipment Code:CPEL/OWN/9876 Parcel Number:EG2272-UK
-=======================================
-
-Lastly, You are advice to send the below information to the
-Courier Company so they cross check with the details they have in their
-office before deliver so no mistake would be made.
-
-Your Full Name:......................
-Your Sex:............................
-Postal address:......................
-Occupation:...........................
-Direct telephone number:.............
-
-Do send it to them again to avoid any mistake on the Delivery
-and ask them to give you the tracking number to enable you
-track your package over there and know when it will get to your
-address.
-
-Yours Faithfully,
-Mrs. Monalisa Wright
-_____________________________________________________________
-Ingenieria Electrica
-UNIVERSIDAD TECNOLOGICA DE PEREIRA
-La Julita, Pereira, Risaralda
-[http://ohm.utp.edu.co]  Tels: +57(6)3137122 7153 7154 7329
-                          Fax: ext 116
-_____________________________________________________________
 
