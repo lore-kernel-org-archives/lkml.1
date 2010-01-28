@@ -1,119 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382Ab0A1RZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089Ab0A1RdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382Ab0A1RZj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 12:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756368Ab0A1RZi
+	id S1756089Ab0A1RdN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 12:33:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650Ab0A1RdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 12:25:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38575 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756366Ab0A1RZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 12:25:37 -0500
-Message-ID: <4B61C83A.20301@redhat.com>
-Date: Thu, 28 Jan 2010 12:24:10 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+	Thu, 28 Jan 2010 12:33:12 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:64116 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753719Ab0A1RdL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 12:33:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=e41nGCgYCbDLkGpYfYGwWG2ngjzejwC8UsuTxdc5FRxENmo91pwtt24qYJ1w1LWjN/
+         1ASELJGCEnmEO4Dr5frZKbtXtrtkeswjArss4ujmxDqnB9UA5lK5/Skea3CsuzUBJK/q
+         98Iewaguxju1y+qsonZn71Ked9964YfJoP6WQ=
+Date: Thu, 28 Jan 2010 18:33:10 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 3/3] perf,hw_breakpoint,kgdb: No mutex taken for kernel
+	debugger
+Message-ID: <20100128173307.GB18683@nowhere>
+References: <1264631124-4837-1-git-send-email-jason.wessel@windriver.com> <1264631124-4837-4-git-send-email-jason.wessel@windriver.com>
 MIME-Version: 1.0
-To: Minchan Kim <minchan.kim@gmail.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
-       akpm@linux-foundation.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       aarcange@redhat.com
-Subject: Re: [PATCH -mm] change anon_vma linking to fix multi-process server
- scalability issue
-References: <20100128002000.2bf5e365@annuminas.surriel.com> <1264696641.17063.32.camel@barrios-desktop>
-In-Reply-To: <1264696641.17063.32.camel@barrios-desktop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264631124-4837-4-git-send-email-jason.wessel@windriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/28/2010 11:37 AM, Minchan Kim wrote:
-> On Thu, 2010-01-28 at 00:20 -0500, Rik van Riel wrote:
+On Wed, Jan 27, 2010 at 04:25:24PM -0600, Jason Wessel wrote:
+> The kernel debugger cannot use any mutex_lock() calls because it can
+> start the kernel running from an invalid context.
+> 
+> The possibility for a breakpoint reservation to be concurrently
+> processed at the time that kgdb interrupts the system is improbable.
+> As a safety check against this condition the kernel debugger will
+> prohibit updating the hardware breakpoint reservations and an error
+> will be returned to the end user.
+> 
+> Any time the kernel debugger reserves a hardware breakpoint it will be
+> a system wide reservation.
+> 
+> CC: Frederic Weisbecker <fweisbec@gmail.com>
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: K.Prasad <prasad@linux.vnet.ibm.com>
+> CC: Peter Zijlstra <peterz@infradead.org>
+> CC: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> ---
+>  arch/x86/kernel/kgdb.c        |   49 +++++++++++++++++++++++++++++++++++++-
+>  include/linux/hw_breakpoint.h |    2 +
+>  kernel/hw_breakpoint.c        |   52 +++++++++++++++++++++++++++++++++--------
+>  3 files changed, 92 insertions(+), 11 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+> index 9f47cd3..7c3e929 100644
+> --- a/arch/x86/kernel/kgdb.c
+> +++ b/arch/x86/kernel/kgdb.c
+> @@ -239,6 +239,45 @@ static void kgdb_correct_hw_break(void)
+>  	hw_breakpoint_restore();
+>  }
+>  
+> +static int hw_break_reserve_slot(int breakno)
+> +{
+> +	int cpu;
+> +	int cnt = 0;
+> +	struct perf_event **pevent;
+> +
+> +	for_each_online_cpu(cpu) {
+> +		cnt++;
+> +		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
+> +		if (dbg_reserve_bp_slot(*pevent))
+> +			goto fail;
+> +	}
+> +
+> +	return 0;
+> +
+> +fail:
+> +	for_each_online_cpu(cpu) {
+> +		cnt--;
+> +		if (!cnt)
+> +			break;
+> +		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
+> +		dbg_release_bp_slot(*pevent);
+> +	}
+> +	return -1;
+> +}
+> +
+> +static int hw_break_release_slot(int breakno)
+> +{
+> +	struct perf_event **pevent;
+> +	int ret;
+> +	int cpu;
+> +
+> +	for_each_online_cpu(cpu) {
+> +		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
+> +		ret = dbg_release_bp_slot(*pevent);
 
->> This patch changes the way anon_vmas and VMAs are linked, which
->> allows us to associate multiple anon_vmas with a VMA.  At fork
->> time, each child process gets its own anon_vmas, in which its
->> COWed pages will be instantiated.  The parents' anon_vma is also
->> linked to the VMA, because non-COWed pages could be present in
->> any of the children.
->
-> any of the children?
->
-> IMHO, "parent" is right. :)
-> Do I miss something? Could you elaborate it?
 
-I am talking about an anonymous page that is shared by parent
-and children processes and has not been COW copied yet.
 
->> -void vma_adjust(struct vm_area_struct *vma, unsigned long start,
->> +int vma_adjust(struct vm_area_struct *vma, unsigned long start,
->>   	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert)
->>   {
->>   	struct mm_struct *mm = vma->vm_mm;
->> @@ -542,6 +541,29 @@ again:			remove_next = 1 + (end>  next->vm_end);
->>   		}
->>   	}
->>
->> +	/*
->> +	 * When changing only vma->vm_end, we don't really need
->> +	 * anon_vma lock.
->> +	 */
->> +	if (vma->anon_vma&&  (insert || importer || start != vma->vm_start))
->> +		anon_vma = vma->anon_vma;
->> +	if (anon_vma) {
->> +		/*
->> +		 * Easily overlooked: when mprotect shifts the boundary,
->> +		 * make sure the expanding vma has anon_vma set if the
->> +		 * shrinking vma had, to cover any anon pages imported.
->> +		 */
->> +		if (importer&&  !importer->anon_vma) {
->> +			/* Block reverse map lookups until things are set up. */
->> +			importer->vm_flags |= VM_LOCK_RMAP;
->> +			if (anon_vma_clone(importer, vma)) {
->> +				importer->vm_flags&= ~VM_LOCK_RMAP;
->> +				return -ENOMEM;
->
-> If we fail in here during progressing on next vmas in case of mprotect case 6,
-> the previous vmas would become inconsistent state.
+So, you are missing some return errors there. Actually, a slot
+release shouldn't return an error.
 
-I've re-read the code, but I don't see what you are referring
-to.  If vma_adjust bails out early, no VMAs will be adjusted
-and all the VMAs will stay the way they were before mprotect
-was called.
 
-What am I overlooking?
 
->> @@ -2260,6 +2306,12 @@ struct vm_area_struct *copy_vma(struct vm_area_struct **vmap,
->>   		}
->>   	}
->>   	return new_vma;
->> +
->> + out_free_mempol:
->> +	mpol_put(pol);
->> + out_free_vma:
->> +	kmem_cache_free(vm_area_cachep, new_vma);
->> +	return NULL;
->>   }
->
->
-> As I said previously, I have a concern about memory footprint.
-> It adds anon_vma_chain and increases anon_vma's size for KSM.
->
-> I think it will increase 3 times more than only anon_vma.
->
-> Although you think it's not big in normal machine,
-> it's not good in embedded system which is no anon_vma scalability issue
-> and even no-swap. so I wanted you to make it configurable.
+> +/*
+> + * Allow the kernel debugger to reserve breakpoint slots without
+> + * taking a lock using the dbg_* variant of for the reserve and
+> + * release breakpoint slots.
+> + */
+> +int dbg_reserve_bp_slot(struct perf_event *bp)
+> +{
+> +	if (mutex_is_locked(&nr_bp_mutex))
+> +		return -1;
+> +
+> +	return __reserve_bp_slot(bp);
+> +}
+> +
+> +int dbg_release_bp_slot(struct perf_event *bp)
+> +{
+> +	if (mutex_is_locked(&nr_bp_mutex))
+> +		return -1;
+> +
+> +	__release_bp_slot(bp);
+> +
+> +	return 0;
+> +}
 
-That is a fair point.  With CONFIG_SWAP=n we do not need the
-anon_vma structs or anon_vma_chain structs at all.
 
-I would be happy to integrate a patch into my series that
-stubs out all of that code for CONFIG_SWAP=n, but I am going
-to work on something else myself right now :)
 
--- 
-All rights reversed.
+Ok, best effort fits well for reserve, but is certainly not
+suitable for release. We can't leave a fake occupied slot like
+this. If it fails, we should do this asynchronously, using the
+usual release_bp_slot, may be toward the workqueues.
+
+
+
+
+>  
+>  int register_perf_hw_breakpoint(struct perf_event *bp)
+>  {
+> -- 
+> 1.6.4.rc1
+> 
+
