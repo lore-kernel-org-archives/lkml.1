@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828Ab0A1KEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190Ab0A1KVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828Ab0A1KEj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 05:04:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187Ab0A1KEh
+	id S932190Ab0A1KVL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 05:21:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479Ab0A1KVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 05:04:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15254 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308Ab0A1KEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 05:04:37 -0500
-Date: Thu, 28 Jan 2010 11:03:27 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Jack Steiner <steiner@sgi.com>, cl@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] - Fix unmap_vma() bug related to mmu_notifiers
-Message-ID: <20100128100327.GF24242@random.random>
-References: <20100125174556.GA23003@sgi.com>
- <20100125190052.GF5756@random.random>
- <20100125211033.GA24272@sgi.com>
- <20100125211615.GH5756@random.random>
- <20100126212904.GE6653@sgi.com>
- <20100126213853.GY30452@random.random>
- <20100128031841.GG6616@sgi.com>
- <20100128034943.GH6616@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100128034943.GH6616@sgi.com>
+	Thu, 28 Jan 2010 05:21:10 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:46180 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753402Ab0A1KVI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 05:21:08 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] regulator: Convert fixed voltage regulator to use enable_time()
+Date: Thu, 28 Jan 2010 10:21:05 +0000
+Message-Id: <1264674065-21852-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 09:49:44PM -0600, Robin Holt wrote:
-> > I think that with the SRCU patch, we have enough.  Is that true or have
-> > I missed something?
-> 
-> I wasn't quite complete in my previous email.  Your srcu patch
-> plus Jack's patch to move the tlb_gather_mmu to after the
-> mmu_notifier_invalidate_range_start().
+It had an open coded version in enable().
 
-My pmdp_clear_flush_notify with transparent hugepage will give some
-trouble because it's using mmu_notifier_invalidate_range_start to
-provide backwards compatible API to mmu notifier users like GRU that
-may be mapping physical hugepages with 4k secondary tlb mappings
-(which have to be all invalidated not only the first one). So that
-would still require the full series as it's like if the rmap code
-would be using mmu_notifier_invalidate_range_start. But we can
-probably get away by forcing all mmu notifier methods to provide a
-mmu_notifier_invalidate_hugepage.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/fixed.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-But in addition to srcu surely you also need i_mmap_lock_to_sem for
-unmap_mapping_range_vma taking i_mmap_lock, basically you missed
-truncate. Which then in cascade requires free_pgtables,
-rwsem-contended, unmap_vmas (the latter are for the tlb gather
-required to be in atomic context to avoid scheduling to other cpus
-while holding the tlb gather).
+diff --git a/drivers/regulator/fixed.c b/drivers/regulator/fixed.c
+index ee3e7eb..a3d3bfc 100644
+--- a/drivers/regulator/fixed.c
++++ b/drivers/regulator/fixed.c
+@@ -50,8 +50,6 @@ static int fixed_voltage_enable(struct regulator_dev *dev)
+ 	if (gpio_is_valid(data->gpio)) {
+ 		gpio_set_value_cansleep(data->gpio, data->enable_high);
+ 		data->is_enabled = 1;
+-		if (data->startup_delay)
+-			udelay(data->startup_delay);
+ 	}
+ 
+ 	return 0;
+@@ -69,6 +67,13 @@ static int fixed_voltage_disable(struct regulator_dev *dev)
+ 	return 0;
+ }
+ 
++static int fixed_voltage_enable_time(struct regulator_dev *dev)
++{
++	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
++
++	return data->startup_delay;
++}
++
+ static int fixed_voltage_get_voltage(struct regulator_dev *dev)
+ {
+ 	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
+@@ -91,6 +96,7 @@ static struct regulator_ops fixed_voltage_ops = {
+ 	.is_enabled = fixed_voltage_is_enabled,
+ 	.enable = fixed_voltage_enable,
+ 	.disable = fixed_voltage_disable,
++	.enable_time = fixed_voltage_enable_time,
+ 	.get_voltage = fixed_voltage_get_voltage,
+ 	.list_voltage = fixed_voltage_list_voltage,
+ };
+-- 
+1.6.6
 
-So you only avoid the need of anon-vma switching to rwsem (because
-there's no range-vmtruncate but only rmap uses it on a page-by-page
-basis with mmu_notifier_invalidate_page). So at that point IMHO you
-can as well add a CONFIG_MMU_NOTIFIER_SLEEPABLE and allow scheduling
-everywhere in mmu notifier IMHO, but if you prefer to avoid changing
-anon_vma lock to rwsem and add refcounting that is ok with me too. I
-just think it'd be cleaner to switch them all to sleepable code if we
-have to provide for it and most of the work on the i_mmap_lock side is
-mandatory anyway.
