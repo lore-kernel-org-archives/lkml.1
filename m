@@ -1,128 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962Ab0A1WqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694Ab0A1Wsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962Ab0A1WqJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 17:46:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600Ab0A1WqI
+	id S1754694Ab0A1Wsp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 17:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502Ab0A1Wso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 17:46:08 -0500
-Received: from ch-smtp03.sth.basefarm.net ([80.76.149.214]:56754 "EHLO
-	ch-smtp03.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754537Ab0A1WqH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 17:46:07 -0500
-From: "Henrik Rydberg" <rydberg@euromail.se>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jy0922.shim@samsung.com,
-       mika.kuoppala@nokia.com, peter.hutterer@who-t.net,
-       Henrik Rydberg <rydberg@euromail.se>
-Subject: [PATCH 2/2] input: mt: update the multi-touch protocol documentation
-Date: Thu, 28 Jan 2010 23:42:49 +0100
-Message-Id: <1264718569-9772-2-git-send-email-rydberg@euromail.se>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1264718569-9772-1-git-send-email-rydberg@euromail.se>
-References: <1264718569-9772-1-git-send-email-rydberg@euromail.se>
-X-Originating-IP: 83.248.196.134
-X-Scan-Result: No virus found in message 1Nad7a-0001eZ-Bh.
-X-Scan-Signature: ch-smtp03.sth.basefarm.net 1Nad7a-0001eZ-Bh 392816e8f2156ecb18794f038b6276bb
+	Thu, 28 Jan 2010 17:48:44 -0500
+Received: from kroah.org ([198.145.64.141]:58917 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752221Ab0A1Wsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 17:48:43 -0500
+Date: Thu, 28 Jan 2010 14:32:33 -0800
+From: Greg KH <greg@kroah.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com, gregkh@suse.de,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial
+ writes" causes gobi_loader to hang
+Message-ID: <20100128223233.GA1358@kroah.com>
+References: <20100117025535.GB7045@srcf.ucam.org>
+ <201001191420.29652.oliver@neukum.org>
+ <20100128174546.GC19871@kroah.com>
+ <201001281940.12173.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001281940.12173.oliver@neukum.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch documents a new ABS_MT parameter and adds further text to
-clarify some points around the MT protocol.
+On Thu, Jan 28, 2010 at 07:40:12PM +0100, Oliver Neukum wrote:
+> Am Donnerstag, 28. Januar 2010 18:45:46 schrieb Greg KH:
+> > On Tue, Jan 19, 2010 at 02:20:29PM +0100, Oliver Neukum wrote:
+> > > Am Montag, 18. Januar 2010 21:14:16 schrieb Matthew Garrett:
+> > > 
+> > > > drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 1565 
+> > > > bytes
+> > > > drivers/usb/serial/generic.c: usb_serial_generic_write - put 0 bytes 
+> > > > into fifo
+> > > > drivers/usb/serial/generic.c: usb_serial_generic_read_bulk_callback - 
+> > > > port 0
+> > > 
+> > > If the FIFO is full we can do nothing. Please try the attached patch.
+> > 
+> > Did we ever determine if the patch below is needed or not?
+> 
+> No. Further discussion cast serious doubt on it, but we have no
+> experimental evidence I am aware of.
 
-Requested-by: Yoonyoung Shim <jy0922.shim@samsung.com>
-Requested-by: Mika Kuoppala <mika.kuoppala@nokia.com>
-Requested-by: Peter Hutterer <peter.hutterer@who-t.net>
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
----
- Documentation/input/multi-touch-protocol.txt |   48 +++++++++++++++++++++----
- 1 files changed, 40 insertions(+), 8 deletions(-)
+Ok, thanks for letting me know.
 
-diff --git a/Documentation/input/multi-touch-protocol.txt b/Documentation/input/multi-touch-protocol.txt
-index a12ea3b..8490480 100644
---- a/Documentation/input/multi-touch-protocol.txt
-+++ b/Documentation/input/multi-touch-protocol.txt
-@@ -27,12 +27,30 @@ set of events/packets.
- 
- A set of ABS_MT events with the desired properties is defined. The events
- are divided into categories, to allow for partial implementation.  The
--minimum set consists of ABS_MT_TOUCH_MAJOR, ABS_MT_POSITION_X and
--ABS_MT_POSITION_Y, which allows for multiple fingers to be tracked.  If the
--device supports it, the ABS_MT_WIDTH_MAJOR may be used to provide the size
--of the approaching finger. Anisotropy and direction may be specified with
--ABS_MT_TOUCH_MINOR, ABS_MT_WIDTH_MINOR and ABS_MT_ORIENTATION.  The
--ABS_MT_TOOL_TYPE may be used to specify whether the touching tool is a
-+minimum set consists of ABS_MT_POSITION_X and ABS_MT_POSITION_Y, which
-+allows for multiple fingers to be tracked.  If the device supports it, the
-+ABS_MT_TOUCH_MAJOR and ABS_MT_WIDTH_MAJOR may be used to provide the size
-+of the contact area and approaching finger, respectively.
-+
-+The TOUCH and WIDTH parameters have a geometrical interpretation; imagine
-+looking through a window at someone gently holding a finger against the
-+glass.  You will see two regions, one inner region consisting of the part
-+of the finger actually touching the glass, and one outer region formed by
-+the perimeter of the finger. The diameter of the inner region is the
-+ABS_MT_TOUCH_MAJOR, the diameter of the outer region is
-+ABS_MT_WIDTH_MAJOR. Now imagine the person pressing the finger harder
-+against the glass. The inner region will increase, and in general, the
-+ratio ABS_MT_TOUCH_MAJOR / ABS_MT_WIDTH_MAJOR, which is always smaller than
-+unity, is related to the finger pressure. For pressure-based devices,
-+ABS_MT_PRESSURE may be used to provide the pressure on the contact area
-+instead.
-+
-+In addition to the MAJOR parameters, the oval shape of the finger can be
-+described by adding the MINOR parameters, such that MAJOR and MINOR are the
-+major and minor axis of an ellipse. Finally, the orientation of the oval
-+shape can be describe with the ORIENTATION parameter.
-+
-+The ABS_MT_TOOL_TYPE may be used to specify whether the touching tool is a
- finger or a pen or something else.  Devices with more granular information
- may specify general shapes as blobs, i.e., as a sequence of rectangular
- shapes grouped together by an ABS_MT_BLOB_ID. Finally, for the few devices
-@@ -42,11 +60,9 @@ report finger tracking from hardware [5].
- Here is what a minimal event sequence for a two-finger touch would look
- like:
- 
--   ABS_MT_TOUCH_MAJOR
-    ABS_MT_POSITION_X
-    ABS_MT_POSITION_Y
-    SYN_MT_REPORT
--   ABS_MT_TOUCH_MAJOR
-    ABS_MT_POSITION_X
-    ABS_MT_POSITION_Y
-    SYN_MT_REPORT
-@@ -87,6 +103,12 @@ the contact. The ratio ABS_MT_TOUCH_MAJOR / ABS_MT_WIDTH_MAJOR approximates
- the notion of pressure. The fingers of the hand and the palm all have
- different characteristic widths [1].
- 
-+ABS_MT_PRESSURE
-+
-+The pressure, in arbitrary units, on the contact area. May be used instead
-+of TOUCH and WIDTH for pressure-based devices or any device with a spatial
-+signal intensity distribution.
-+
- ABS_MT_ORIENTATION
- 
- The orientation of the ellipse. The value should describe a signed quarter
-@@ -170,6 +192,16 @@ There are a few devices that support trackingID in hardware. User space can
- make use of these native identifiers to reduce bandwidth and cpu usage.
- 
- 
-+Gestures
-+--------
-+
-+In the specific application of creating gesture events, the TOUCH and WIDTH
-+parameters can be used to, e.g., approximate finger pressure or distinguish
-+between index finger and thumb. With the addition of the MINOR parameters,
-+one can also distinguish between a sweeping finger and a pointing finger,
-+and with ORIENTATION, one can detect twisting of fingers.
-+
-+
- Notes
- -----
- 
--- 
-1.6.3.3
-
+greg k-h
