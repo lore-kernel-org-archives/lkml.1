@@ -1,50 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475Ab0A1PQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536Ab0A1PVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475Ab0A1PQM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 10:16:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974Ab0A1PQL
+	id S1755536Ab0A1PVM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 10:21:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529Ab0A1PVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 10:16:11 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:41347 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004Ab0A1PQJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 10:16:09 -0500
-From: Nitin Gupta <ngupta@vflare.org>
-To: Greg KH <greg@kroah.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/7][linux-next v2] ramzswap: bug fixes and some cleanups
-Date: Thu, 28 Jan 2010 20:43:43 +0530
-Message-Id: <1264691630-27604-1-git-send-email-ngupta@vflare.org>
-X-Mailer: git-send-email 1.6.2.5
+	Thu, 28 Jan 2010 10:21:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27769 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754524Ab0A1PVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 10:21:08 -0500
+Date: Thu, 28 Jan 2010 16:20:48 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Jack Steiner <steiner@sgi.com>, cl@linux-foundation.org, mingo@elte.hu,
+       tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] - Fix unmap_vma() bug related to mmu_notifiers
+Message-ID: <20100128152048.GA1217@random.random>
+References: <20100125174556.GA23003@sgi.com>
+ <20100125190052.GF5756@random.random>
+ <20100125211033.GA24272@sgi.com>
+ <20100125211615.GH5756@random.random>
+ <20100126212904.GE6653@sgi.com>
+ <20100126213853.GY30452@random.random>
+ <20100128031841.GG6616@sgi.com>
+ <20100128034943.GH6616@sgi.com>
+ <20100128100327.GF24242@random.random>
+ <20100128132503.GJ6616@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100128132503.GJ6616@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ramzswap driver creates virtual block devices which can
-be used (only) as swap disks. Pages swapped to these disks
-are compressed and stored in memory itself. Project home:
-http://code.google.com/p/compcache/
+On Thu, Jan 28, 2010 at 07:25:03AM -0600, Robin Holt wrote:
+> The GRU is using a hardware TLB of 2MB page size when the
+> is_vm_hugetlb_page() indicates it is a 2MB vma.  From my reading of it,
+> your callout to mmu_notifier_invalidate_page() will work for gru and I
+> think it will work for XPMEM as well, but I am not certain of that yet.
+> I am certain that it can be made to work for XPMEM.  I think using the
+> range callouts are actually worse because now we are mixing the conceptual
+> uses of page and range.
 
-These patches apply to linux-next.
+KVM also will obviously be fine, the whole point of transparent
+hugepage support is to allow mapping 2M tlb and 2M shadow pages in the
+spmd... In fact I'm already calling the 4k callout for the 2M
+pmdp_flush_clear_young_notify... because worst case that won't cash
+but only swap less smart. However at the moment start/stop is just
+safer... and gives more peace of mind and they can't schedule
+anyway... but I surely would prefer a single call too, if nothing else
+for performance reasons. Said that it's definitely not a fast path
+worth worrying about for KVM.
 
-Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+Even the tlb_flush of pmdp_*flush on x86 is a range flush in
+transparent huegepage support because I found errata that invlpg isn't
+ok to flush PSE tlb on some cpus but then I didn't check the details,
+I just wanted less risk right now, later it can be optimized (worst
+case dependent on cpuid).
 
-Nitin Gupta (7):
-  Use lock for 64-bit stats
-  Flush block device before reset
-  Set block size to PAGE_SIZE
-  Return proper error code on device create failure
-  Remove redundant check for zero page
-  Handle case for invalid backing swap
-  Update copyright notice
+Note also that pmdp_splitting_flush_notify probably can drop the
+_notify part. As long as there is symmetry with the "pages" returned
+by gup and their respective put_page and you only use the "page" to do
+put_page and get its physical address, there is no need to be notified
+about a split_huge_page. At the moment it seems just a little more
+paranoid but again not a requirement by design because hugepages are
+stable, and only thing that can require an invalidate is a physical
+relocation that only happens during swap (or similar). split_huge_page
+doesn't affect _physical_ at all, and in turn there is in theory no
+need to modify the secondary mmu mappings, when the primary mmu
+mappings are altered. One of the reasons of altering the primary mmu
+mappings is to avoid confusing the code that can't handle huge pmd
+natively and would crash on them, so we virtually split the page to
+show to that code an environment it won't find itself lost.
 
- drivers/staging/ramzswap/ramzswap_drv.c   |  148 +++++++++++++++++------------
- drivers/staging/ramzswap/ramzswap_drv.h   |   61 ++++++++++--
- drivers/staging/ramzswap/ramzswap_ioctl.h |    3 +-
- drivers/staging/ramzswap/xvmalloc.c       |    2 +-
- drivers/staging/ramzswap/xvmalloc.h       |    2 +-
- drivers/staging/ramzswap/xvmalloc_int.h   |    2 +-
- 6 files changed, 141 insertions(+), 77 deletions(-)
+> I must be missing something key here.  I thought unmap_mapping_range_vma
+> would percolate down to calling mmu_notifier_invalidate_page() which
+> xpmem can sleep in.  Based upon that assumption, I don't see the
+> need for the other patches.
 
+unmap_mapping_range takes i_mmap_lock (spinlock) and then calls
+zap_page_range that calls unmap_vmas under spinlock, that leads to
+mmu_notifier_invalidate_range_start under i_mmap_lock. That only
+happens for truncate... That was also the reason that Christioph's
+first patchset had a sleep parameter in its version of
+mmu_notifier_invalidate_something(sleep) (and sleep=0 was passed when
+it was called inside truncate IIRC).
+
+> I don't see the mandatory part here.  Maybe it is your broken english
+
+Eheh, my english so bad ah... :(. And my writing is probably better
+than my pronunciation ;)
+
+> combined with my ignorance, but I do not see what the statement
+> "i_mmap_lock side is mandatory" is based upon.  It looks to me like
+
+Tried to explain again above, hope it is clearer this time.
