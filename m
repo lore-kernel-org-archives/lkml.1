@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466Ab0A1UUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932318Ab0A1UVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466Ab0A1UUx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 15:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553Ab0A1UUw
+	id S932318Ab0A1UVR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 15:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932283Ab0A1UVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 15:20:52 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:19183 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751968Ab0A1UUv (ORCPT
+	Thu, 28 Jan 2010 15:21:16 -0500
+Received: from mail-iw0-f172.google.com ([209.85.223.172]:63620 "EHLO
+	mail-iw0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932297Ab0A1UVO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 15:20:51 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with pci=use_crs)
-Date: Thu, 28 Jan 2010 13:20:47 -0700
-User-Agent: KMail/1.9.10
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jeff Garrett <jeff@jgarrett.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <201001280909.46043.bjorn.helgaas@hp.com> <4B61D554.9000003@kernel.org>
-In-Reply-To: <4B61D554.9000003@kernel.org>
+	Thu, 28 Jan 2010 15:21:14 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001281320.48907.bjorn.helgaas@hp.com>
+X-Originating-IP: [66.187.234.200]
+In-Reply-To: <2375c9f91001261834l1e267a8bp61633f63b3752f6f@mail.gmail.com>
+References: <20100126222041.GR4472@redhat.com>
+	 <2375c9f91001261834l1e267a8bp61633f63b3752f6f@mail.gmail.com>
+Date: Thu, 28 Jan 2010 15:21:13 -0500
+Message-ID: <be3a4a1001281221m47d5fae8v55aa18b7de1aedff@mail.gmail.com>
+Subject: Re: [scripts] python: change scripts to use system python instead of 
+	env
+From: Jarod Wilson <jarod@wilsonet.com>
+To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Cc: Don Zickus <dzickus@redhat.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 January 2010 11:20:04 am Yinghai Lu wrote:
-> On 01/28/2010 08:09 AM, Bjorn Helgaas wrote:
-> > On Wednesday 27 January 2010 10:53:51 pm Yinghai Lu wrote:
-> >> On 01/27/2010 08:26 PM, Bjorn Helgaas wrote:
-> >>> On Wed, 2010-01-27 at 15:34 -0800, Yinghai Lu wrote:
-> > 
-> >>>> 2. how about when apci is disabled?
-> >>>
-> >>> When ACPI is disabled, I think we just have to accept that we lose some
-> >>> functionality.  I don't see the need for alternate ways to accomplish
-> >>> everything that ACPI does.  It's becoming less and less useful to
-> >>> disable ACPI; I think it's only interesting as a debugging tool, and
-> >>> even then it's a sledgehammer.
-> >>
-> >> some systems when acpi is enabled could have interrupt storm. 
-> >> and have to disable acpi.
-> > 
-> > We should fix that problem rather than just covering it up by
-> > disabling ACPI.  Can you provide any details?
-> that is not covering problem. acpi just cause too many problems.
-> 
-> systems using acpi hotplug support, and use acpi aml code to monitor the hotplug status instead of HW
-> and after one or two days will have interrupt storm with sci/acpi interrupt aka 9.
+On Tue, Jan 26, 2010 at 9:34 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> On Wed, Jan 27, 2010 at 6:20 AM, Don Zickus <dzickus@redhat.com> wrote:
+>> Doh. Typo in the To: field
+>>
+>> ----- Forwarded message from Don Zickus <dzickus@redhat.com> -----
+>>
+>> Date: Fri, 22 Jan 2010 16:32:10 -0500
+>> From: Don Zickus <dzickus@redhat.com>
+>> To: lkml@vger.kernel.org
+>> Cc: akpm@linux-foundation.org, tglx@linutronix.de, tony.luck@intel.com,
+>>        kmcmartin@redhat.com, Don Zickus <dzickus@redhat.com>
+>> Subject: [scripts] python: change scripts to use system python instead of env
+>> Message-Id: <1264195930-15815-1-git-send-email-dzickus@redhat.com>
+>>
+>> Just a small change to a couple of scripts to go from
+>>
+>>  #!/usr/bin/env python
+>>
+>> to
+>>
+>>  #!/usr/bin/python
+>>
+>> This shouldn't effect anyone, unless they don't install python there.
+>>
+>> In preparation for python3, Fedora is doing a big push to change the scripts
+>> to use the system python.  This allows developers to put the python3 in
+>> their path without fear of breaking existing scripts.
+>>
+>> Now I am pretty sure anyone using python3 for testing purposes will probably
+>> not run any of the scripts I changed, but Fedora has this automated tool
+>> that checks for this stuff so I thought I would try to push it upstream.
+>
+>
+> Hmm, so python3 will be installed in /usr/local/bin?
 
-If you just want to whine about problems without helping us figure
-them out and fix them, I think there's another mailing list for that.
+No, it will be /usr/bin/python3, but its possible a user would
+configure their environment to have their default python interpreter
+be python3, in which case env python would be using /usr/bin/python3
+rather than /usr/bin/python, which can lead to things mysteriously
+running differently or not running at all.
 
-I really don't have time to deal with unsubstantiated rumor-mongering
-like this.
+Acked-by: Jarod Wilson <jarod@redhat.com>
 
-Bjorn
+-- 
+Jarod Wilson
+jarod@wilsonet.com
