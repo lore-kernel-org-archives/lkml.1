@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546Ab0A1FzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914Ab0A1F7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753546Ab0A1FzY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 00:55:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804Ab0A1FzX
+	id S1753914Ab0A1F7e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 00:59:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191Ab0A1F7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 00:55:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55251 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751833Ab0A1FzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 00:55:22 -0500
-Message-ID: <4B61266F.1060600@kernel.org>
-Date: Wed, 27 Jan 2010 21:53:51 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jeff Garrett <jeff@jgarrett.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with	pci=use_crs)
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>	 <201001271345.54454.bjorn.helgaas@hp.com>	 <alpine.LFD.2.00.1001271247450.3570@localhost.localdomain>	 <201001271403.41955.bjorn.helgaas@hp.com>  <4B60CD99.7020305@kernel.org> <1264652762.24020.5.camel@dc7800.home>
-In-Reply-To: <1264652762.24020.5.camel@dc7800.home>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 28 Jan 2010 00:59:33 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:44996 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884Ab0A1F7c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 00:59:32 -0500
+X-Greylist: delayed 804 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jan 2010 00:59:32 EST
+Subject: Re: PROBLEM: reproducible crash KVM+nf_conntrack all recent 2.6
+ kernels
+From: Jon Masters <jonathan@jonmasters.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: netdev <netdev@vger.kernel.org>, netfilter-devel@vger.kernel.org
+In-Reply-To: <1264657559.2793.103.camel@tonnant>
+References: <1264657559.2793.103.camel@tonnant>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Thu, 28 Jan 2010 00:59:24 -0500
+Message-Id: <1264658364.2793.105.camel@tonnant>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/27/2010 08:26 PM, Bjorn Helgaas wrote:
-> On Wed, 2010-01-27 at 15:34 -0800, Yinghai Lu wrote:
->> On 01/27/2010 01:03 PM, Bjorn Helgaas wrote:
->>> On Wednesday 27 January 2010 01:50:12 pm Linus Torvalds wrote:
->>>>
->>>> On Wed, 27 Jan 2010, Bjorn Helgaas wrote:
->>>>>
->>>>> Without intel_bus.c, we essentially assume config 1 all the time.
->>>>> If we keep intel_bus.c and this patch for .33, things should work
->>>>> for configs 1 and 4.  Adding support for config 4 is good.
->>>>
->>>> Quite frankly, is there any major downside to just disabling/removing 
->>>> intel_bus.c for 2.6.33? If we're not planning on having it in the long run 
->>>> anyway - or even if we are, but we can't be really happy about the state 
->>>> of it as it would be in 2.6.33, not using it at all seems to be the 
->>>> smaller headache.
->>>>
->>>> The machines that it helps are also the machines where you can fix things 
->>>> up with 'use_csr', no? And they are pretty rare, and they didn't use to 
->>>> work without that use_csr in 2.6.32 either, so it's not even a regression.
->>>>
->>>> Am I missing something?
->>>
->>> Only that when we added intel_bus.c, Yinghai reported that the reason
->>> was because a machine had a broken _CRS, so "pci=use_crs" wouldn't help.
->>>
->>> At the time, Windows hadn't been brought up on that box.  My
->>> speculation is that by now, they've done that bringup and probably
->>> fixed the _CRS issue, so it might work now.
->>>
->>> If that's the case, we could drop intel_bus.c from .33 and just use
->>> "pci=use_crs" on those boxes until we can figure out how to turn it
->>> on automatically.
->>
->> BIOS fixed that problem already. but
->> 1. how to turn that pci=use_crs for that box automatically ?
->> how about our other kind of boxes?
-> 
-> Yes, we need a way to turn on "pci=use_crs" automatically.  My first
-> thought is to turn it on for all BIOSes with dates of 2010 or later, and
-> in addition, have a whitelist of the pre-2010 machines that require it.
-> 
->> 2. how about when apci is disabled?
-> 
-> When ACPI is disabled, I think we just have to accept that we lose some
-> functionality.  I don't see the need for alternate ways to accomplish
-> everything that ACPI does.  It's becoming less and less useful to
-> disable ACPI; I think it's only interesting as a debugging tool, and
-> even then it's a sledgehammer.
+On Thu, 2010-01-28 at 00:46 -0500, Jon Masters wrote:
 
-some systems when acpi is enabled could have interrupt storm. 
-and have to disable acpi.
+> A number of people seem to have reported this crash in various forms,
+> but I have yet to see a solution, and can reproduce on 2.6.33-rc5 this
+> evening so I know it's still present in the latest upstream kernels too.
+> Userspace is Fedora 12, and this happens on both all recent F12 kernels
+> (sporadic in 2.6.31 until recently, solidly reproducible on 2.6.32) and
+> upstream 2.6.32, and 2.6.33-rc5 also - hard to find a "known good".
 
-YH
+Now I can capture the panic()s, I'm rebuilding the 2.6.33-rc5 kernel
+with some better debugging options to at least get some more data.
+
+Jon.
 
 
