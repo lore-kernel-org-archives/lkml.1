@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076Ab0A1Icg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814Ab0A1Ily@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755076Ab0A1Icg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 03:32:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754422Ab0A1Icf
+	id S1755814Ab0A1Ily (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 03:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755618Ab0A1Ilx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 03:32:35 -0500
-Received: from abydos.nerdbox.net ([216.151.149.55]:51304 "EHLO
-	abydos.NerdBox.Net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752920Ab0A1Icf (ORCPT
+	Thu, 28 Jan 2010 03:41:53 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:49653 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754673Ab0A1Ilw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 03:32:35 -0500
-Date: Thu, 28 Jan 2010 00:32:32 -0800 (PST)
-From: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Chris Frost <frost@cs.ucla.edu>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Benny Halevy <bhalevy@panasas.com>, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fs: add fincore(2) (mincore(2) for file descriptors)
-In-Reply-To: <20100128002313.2b94344e.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.00.1001280028160.2909@abydos.NerdBox.Net>
-References: <20100120215712.GO27212@frostnet.net> <20100126141229.e1a81b29.akpm@linux-foundation.org> <alpine.DEB.1.00.1001272319530.2909@abydos.NerdBox.Net> <20100128002313.2b94344e.akpm@linux-foundation.org>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Thu, 28 Jan 2010 03:41:52 -0500
+Date: Thu, 28 Jan 2010 09:41:50 +0100
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: "Zhu, Yi" <yi.zhu@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>
+Subject: Re: [ipw3945-devel] hang on 2.6.33-rc4
+Message-ID: <20100128084150.GI1148@gamma.logic.tuwien.ac.at>
+References: <20100115152215.GC2541@gamma.logic.tuwien.ac.at> <1263576588.2751.455.camel@rc-desk> <20100119054715.GA10780@gamma.logic.tuwien.ac.at> <1263979965.10275.2.camel@debian> <20100127153741.GA26011@gamma.logic.tuwien.ac.at> <1264611262.32142.4.camel@rchatre-DESK>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264611262.32142.4.camel@rchatre-DESK>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jan 2010, Andrew Morton wrote:
+On Mi, 27 Jan 2010, reinette chatre wrote:
+> > Should we move that to a bugzilla entry?
+> > 
+> 
+> Please do. Thank you very much
 
-> On Wed, 27 Jan 2010 23:42:35 -0800 (PST) Steve VanDeBogart <vandebo-lkml@NerdBox.Net> wrote:
->
->>> Is it likely that these changes to SQLite and Gimp would be merged into
->>> the upstream applications?
->>
->> Changes to the GIMP fit nicely into the code structure, so it's feasible
->> to push this kind of optimization upstream.  The changes in SQLite are
->> a bit more focused on the benchmark, but a more general approach is not
->> conceptually difficult.  SQLite may not want the added complexity, but
->> other database may be interested in the performance improvement.
->>
->> Of course, these kernel changes are needed before any application can
->> optimize its IO as we did with libprefetch.
->
-> That didn't really answer my question.
->
-> If there's someone signed up and motivated to do the hard work of
-> getting these changes integrated into the upstream applications then
-> that makes us more interested.  If, however it was some weekend
-> proof-of-concept hack which shortly dies an instadeath then...  meh,
-> not so much.
+Done that,
+http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=2155
 
-Sorry I misunderstood.  The maintainer of GraphicsMagick has already
-contacted us about making changes similar to our GIMP changes.  So yes,
-there is interest in really using these changes.
+Should that be a bug in the kernel bugzilla as regression, too?
+I mean 2.6.32.N does not suffer from that.
 
---
-Steve
+Best wishes
+
+Norbert
+------------------------------------------------------------------------
+Norbert Preining            preining@{jaist.ac.jp, logic.at, debian.org}
+JAIST, Japan            TU Wien, Austria           Debian TeX Task Force
+DSA: 0x09C5B094   fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+------------------------------------------------------------------------
+OSHKOSH (n., vb.)
+The noise made by someone who has just been grossly flattered and is
+trying to make light of it.
+			--- Douglas Adams, The Meaning of Liff
