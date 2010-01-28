@@ -1,133 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426Ab0A1XY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756478Ab0A1XZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756426Ab0A1XY4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 18:24:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826Ab0A1XY4
+	id S1756478Ab0A1XZv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 18:25:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386Ab0A1XZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 18:24:56 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:49283 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756306Ab0A1XYz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 18:24:55 -0500
-Subject: [PATCHv3 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Joel Schopp <jschopp@austin.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: ego@in.ibm.com, linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
-In-Reply-To: <1264720855.9660.22.camel@jschopp-laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	 <1264017847.5717.132.camel@jschopp-laptop>
-	 <1264548495.12239.56.camel@jschopp-laptop>
-	 <1264720855.9660.22.camel@jschopp-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 28 Jan 2010 17:24:48 -0600
-Message-ID: <1264721088.10385.1.camel@jschopp-laptop>
+	Thu, 28 Jan 2010 18:25:50 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:39220 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756347Ab0A1XZt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 18:25:49 -0500
+Date: Fri, 29 Jan 2010 10:25:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: sparc tree build warning
+Message-Id: <20100129102543.7af32673.sfr@canb.auug.org.au>
+In-Reply-To: <20100128.052432.251700168.davem@davemloft.net>
+References: <20091214163338.f811722f.sfr@canb.auug.org.au>
+	<20100128184423.40ce38fb.sfr@canb.auug.org.au>
+	<20100128.052432.251700168.davem@davemloft.net>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__29_Jan_2010_10_25_43_+1100_tYJ9dg8obKDZEjX4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
-there is performance benefit to idling the higher numbered threads in
-the core.  
+--Signature=_Fri__29_Jan_2010_10_25_43_+1100_tYJ9dg8obKDZEjX4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This patch implements arch_scale_smt_power to dynamically update smt
-thread power in these idle cases in order to prefer threads 0,1 over
-threads 2,3 within a core.
+Hi Dave,
 
+On Thu, 28 Jan 2010 05:24:32 -0800 (PST) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Thu, 28 Jan 2010 18:44:23 +1100
+>=20
+> > I am still seeing these.  Is it my compiler version (gcc4.4.0)?
+>=20
+> You can't turn on DEBUG_STRICT_USER_COPY_CHECKS and
+> expect a successful build.  It's for developers to
+> look at the errors that are generated and audit those
+> cases in detail.
 
-Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
----
-Version 2 addresses style and optimization, same basic functionality
-Version 3 adds a comment, resent due to mailing format error
-Index: linux-2.6.git/arch/powerpc/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/kernel/smp.c
-+++ linux-2.6.git/arch/powerpc/kernel/smp.c
-@@ -620,3 +620,59 @@ void __cpu_die(unsigned int cpu)
- 		smp_ops->cpu_die(cpu);
- }
- #endif
-+
-+unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
-+{
-+	int sibling;
-+	int idle_count = 0;
-+	int thread;
-+
-+	/* Setup the default weight and smt_gain used by most cpus for SMT
-+	 * Power.  Doing this right away covers the default case and can be
-+	 * used by cpus that modify it dynamically.
-+	 */
-+	struct cpumask *sibling_map = sched_domain_span(sd);
-+	unsigned long weight = cpumask_weight(sibling_map);
-+	unsigned long smt_gain = sd->smt_gain;
-+
-+
-+	if (cpu_has_feature(CPU_FTR_ASYNC_SMT4) && weight == 4) {
-+		for_each_cpu(sibling, sibling_map) {
-+			if (idle_cpu(sibling))
-+				idle_count++;
-+		}
-+
-+		/* the following section attempts to tweak cpu power based
-+		 * on current idleness of the threads dynamically at runtime
-+		 */
-+		if (idle_count > 1) {
-+			thread = cpu_thread_in_core(cpu);
-+			if (thread < 2) {
-+				/* add 75 % to thread power */
-+				smt_gain += (smt_gain >> 1) + (smt_gain >> 2);
-+			} else {
-+				 /* subtract 75 % to thread power */
-+				smt_gain = smt_gain >> 2;
-+			}
-+		}
-+	}
-+
-+	/* default smt gain is 1178, weight is # of SMT threads */
-+	switch (weight) {
-+	case 1:
-+		/*divide by 1, do nothing*/
-+		break;
-+	case 2:
-+		smt_gain = smt_gain >> 1;
-+		break;
-+	case 4:
-+		smt_gain = smt_gain >> 2;
-+		break;
-+	default:
-+		smt_gain /= weight;
-+		break;
-+	}
-+
-+	return smt_gain;
-+
-+}
-Index: linux-2.6.git/arch/powerpc/include/asm/cputable.h
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/include/asm/cputable.h
-+++ linux-2.6.git/arch/powerpc/include/asm/cputable.h
-@@ -195,6 +195,7 @@ extern const char *powerpc_base_platform
- #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
- #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
- #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
-+#define CPU_FTR_ASYNC_SMT4		LONG_ASM_CONST(0x0100000000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -409,7 +410,7 @@ extern const char *powerpc_base_platform
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
--	    CPU_FTR_DSCR | CPU_FTR_SAO)
-+	    CPU_FTR_DSCR | CPU_FTR_SAO | CPU_FTR_ASYNC_SMT4)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+These are defconfig builds and CONFIG_DEBUG_STRICT_USER_COPY_CHECKS is
+not set in either case.
 
+> You'll get the same exact errors as on i386.
 
+I only do an i386 defconfig build and I don't get these warnings.
 
+> Please just elide the option from your test builds.
+
+I would if I could :-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__29_Jan_2010_10_25_43_+1100_tYJ9dg8obKDZEjX4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktiHPcACgkQjjKRsyhoI8x6PwCgqx7eiYxGk/2fLdT88Hp2UzDj
+txcAoJuTF6nFMgi8yu6ONL5B5RFqT2bY
+=HsMS
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__29_Jan_2010_10_25_43_+1100_tYJ9dg8obKDZEjX4--
