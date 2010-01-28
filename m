@@ -1,119 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093Ab0A1N0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165Ab0A1NlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756093Ab0A1N0T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 08:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681Ab0A1N0R
+	id S1756165Ab0A1NlY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 08:41:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756089Ab0A1NlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 08:26:17 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:42565 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628Ab0A1N0Q convert rfc822-to-8bit (ORCPT
+	Thu, 28 Jan 2010 08:41:24 -0500
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:12050 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756041Ab0A1NlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 08:26:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Xop//TNlRD9TLIhQXI6Fy/UgOZVc7JzfKyt5XQTmku1TSh/4wubneyBh0rOnNf9T6D
-         6pwEdyuT94UzRfTj/0MxngbDDEalIZHDqA5cMLTsHW9XhVWAsG1DTHxns9Z2asIoYHVR
-         kpc3cdMzd1QkZAKcIxtstA/nlrcKtDe3zFjjY=
+	Thu, 28 Jan 2010 08:41:23 -0500
+X-SpamScore: -28
+X-BigFish: VPS-28(zz1432R98dN936eM9371Pzz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KWYM0N-01-JBC-02
+X-M-MSG: 
+Date: Thu, 28 Jan 2010 14:41:09 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Mark Hounschell <markh@compro.net>
+CC: Andreas Herrmann <andreas.herrmann3@amd.com>, dmarkh@cfl.rr.com,
+       Yuhong Bao <yuhongbao_386@hotmail.com>, venkatesh.pallipadi@intel.com,
+       andi@firstfloor.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       alain@knaff.lu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Disable HPET MSI on ATI SB700/SB800
+Message-ID: <20100128134109.GE26322@aftab>
+References: <4B32565E.6000501@compro.net>
+ <20091223191806.GA3336@linux-os.sc.intel.com>
+ <4B3270FE.5090607@compro.net>
+ <1261600243.16916.56.camel@localhost.localdomain>
+ <4B476E8D.1030308@compro.net>
+ <20100121190952.GA32523@linux-os.sc.intel.com>
+ <SNT125-W12BC46C506A5BB777A06B5C3610@phx.gbl>
+ <20100125171059.GB5041@alberich.amd.com>
+ <4B61562C.1010103@cfl.rr.com>
+ <4B619043.1070806@compro.net>
 MIME-Version: 1.0
-In-Reply-To: <201001281253.54878.paul@codesourcery.com>
-References: <201001281253.54878.paul@codesourcery.com>
-Date: Thu, 28 Jan 2010 14:26:14 +0100
-Message-ID: <71cd59b01001280526m54ddbd82t7803629a2149fa2c@mail.gmail.com>
-Subject: Re: [PATCH] EeePC 1005PE rfkill fix
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Paul Brook <paul@codesourcery.com>
-Cc: acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux acpi <linux-acpi@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <4B619043.1070806@compro.net>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 28 Jan 2010 13:41:08.0630 (UTC) FILETIME=[8BF99360:01CAA01F]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 1:53 PM, Paul Brook <paul@codesourcery.com> wrote:
-> The EeePC 1005PE has the wireless card on PCI bus 2.
->
-> Signed-off-by: Paul Brook <paul@codesourcery.com>
-> ---
-> Same as before, but without mail client mangling the patch.
->
-> I couldn't figure out a smart way of figuring out the correct bus, so I
-> hardcoded the device name. lspci and acpi dumps available at
-> http://www.pbrook80.webspace.virginmedia.com/
->
-> My guess is that the 1005HA is configured similarly, however I don't have
-> hardware to test. The preceding comments imply that the 1005HA does not
-> require the pci hotplug bits. On my 1005PE the hotplug bits are definitely
-> required (the device stops responding when the rfkill is activated), we just
-> need to make sure we disable the right bus. PCI bus 1 contains the wired
-> Ethernet controller.
->
->  drivers/platform/x86/eeepc-laptop.c |   15 ++++++++++++---
->  1 files changed, 12 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
-> index e2be6bb..6b53701 100644
-> --- a/drivers/platform/x86/eeepc-laptop.c
-> +++ b/drivers/platform/x86/eeepc-laptop.c
-> @@ -161,6 +161,7 @@ struct eeepc_laptop {
->                                           by this BIOS */
->        bool cpufv_disabled;
->        bool hotplug_disabled;
-> +       int hotplug_bus;
->        u16 event_count[128];           /* count for each event */
->
->        struct platform_device *platform_device;
-> @@ -585,9 +586,10 @@ static void eeepc_rfkill_hotplug(struct eeepc_laptop *eeepc)
->        mutex_lock(&eeepc->hotplug_lock);
->
->        if (eeepc->hotplug_slot) {
-> -               bus = pci_find_bus(0, 1);
-> +               bus = pci_find_bus(0, eeepc->hotplug_bus);
->                if (!bus) {
-> -                       pr_warning("Unable to find PCI bus 1?\n");
-> +                       pr_warning("Unable to find PCI bus %d?\n",
-> +                                  eeepc->hotplug_bus);
->                        goto out_unlock;
->                }
->
-> @@ -695,7 +697,7 @@ static struct hotplug_slot_ops eeepc_hotplug_slot_ops = {
->  static int eeepc_setup_pci_hotplug(struct eeepc_laptop *eeepc)
->  {
->        int ret = -ENOMEM;
-> -       struct pci_bus *bus = pci_find_bus(0, 1);
-> +       struct pci_bus *bus = pci_find_bus(0, eeepc->hotplug_bus);
->
->        if (!bus) {
->                pr_err("Unable to find wifi PCI bus\n");
-> @@ -1281,6 +1283,13 @@ static void eeepc_dmi_check(struct eeepc_laptop *eeepc)
->                eeepc->hotplug_disabled = true;
->                pr_info("wlan hotplug disabled\n");
->        }
-> +
-> +       /* The eeepc 1005PE has the wireless chip on the second PCIe bus.  */
-> +       if (strcmp(model, "1005PE") == 0) {
-> +           eeepc->hotplug_bus = 2;
-> +       } else {
-> +           eeepc->hotplug_bus = 1;
-> +       }
->  }
->
->  static void cmsg_quirk(struct eeepc_laptop *eeepc, int cm, const char *name)
-> --
-> 1.6.6
+On Thu, Jan 28, 2010 at 08:25:23AM -0500, Mark Hounschell wrote:
+> On 01/28/2010 04:17 AM, Mark Hounschell wrote:
+> > On 01/25/2010 12:10 PM, Andreas Herrmann wrote:
+> >> On Fri, Jan 22, 2010 at 11:21:06PM -0800, Yuhong Bao wrote:
+> >>>
+> >>>> HPET MSI on platforms with ATI SB700/SB800 as they seem to have some
+> >>>> side-effects on floppy DMA. Do not use HPET MSI on such platforms.
+> >>
+> >> Argh, will see what information I can find about this problem ...
+> >>
+> >>> I think somebody from AMD should review the situation.Clearly
+> >>   something is happening inside their southbridge.CCing Andreas
+> >>   Herrmann from AMD.
+> >>
+> >> I have the feeling that this problem should rather be fixed with a DMI
+> >> quirk instead of disabling HPET MSI for the entire chipset.
+> >>
+> >> Was the latest available BIOS installed on the affected system?
+> >>
+> > 
+> > You mean "systems" of different manufactures?  I will check today. Due to
+> > mis configured filters I didn't see this until today. Sorry.
+> > 
+> > Mark
+> > 
+> 
+> My BIOS were below rev on all my affected boards but updating did not help
+> with the problem.
 
-Hi Paul,
-First did you try your patch with an updated bios ?
-It's weird that 1005HA and 1005PE don't have the same behavior :/.
-Any objection about this patch someone ?
-If not, I'll add it to acpi4asus tree, but it may not be included in 2.6.33.
-Thanks,
+Hi,
+
+can you post the BIOS vendors of the boards along with the respective
+BIOS versions?
+
+Thanks.
 
 -- 
-Corentin Chary
-http://xf.iksaif.net
+Regards/Gruss,
+Boris.
+
+--
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
+
