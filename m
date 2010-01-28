@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752931Ab0A1VtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203Ab0A1Vur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752931Ab0A1VtY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 16:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707Ab0A1VtX
+	id S1753203Ab0A1Vur (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 16:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009Ab0A1Vuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 16:49:23 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:49425 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228Ab0A1VtW (ORCPT
+	Thu, 28 Jan 2010 16:50:46 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:44977 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832Ab0A1Vuq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 16:49:22 -0500
-Subject: Re: PROBLEM: reproducible crash KVM+nf_conntrack all recent 2.6
- kernels
-From: Jon Masters <jonathan@jonmasters.org>
-To: Patrick McHardy <kaber@trash.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, netfilter-devel@vger.kernel.org
-In-Reply-To: <4B6180D1.6050609@trash.net>
-References: <1264657559.2793.103.camel@tonnant>
-	 <1264658364.2793.105.camel@tonnant>  <4B6180D1.6050609@trash.net>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Thu, 28 Jan 2010 16:49:14 -0500
-Message-Id: <1264715354.2793.156.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Thu, 28 Jan 2010 16:50:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=rei0sZDzEpiGs/Lbx+KpfywsHApXzG5vCEOwfQncdeVcsov5zzG2ilG7rjYGvh5TF/
+         0IEPLTHDQMXNz/UmxBfwoM7Mn9E+T7eANWolmoW8D/bk03pgVH5UJ0pnqBXkjJS1C4kM
+         hbVzqN9X0ndtSsxeLF10Gr7yMqv9sa5uNb3sk=
+Date: Thu, 28 Jan 2010 22:50:41 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/4] x86,hw_breakpoint,kgdb: kgdb to usehw_breakpointAPI
+Message-ID: <20100128215040.GF18683@nowhere>
+References: <1264480000-6997-1-git-send-email-jason.wessel@windriver.com> <1264480000-6997-2-git-send-email-jason.wessel@windriver.com> <20100128171050.GA18683@nowhere> <4B61CD14.7000901@windriver.com> <20100128200418.GC18683@nowhere> <4B61F34A.20305@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B61F34A.20305@windriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-28 at 13:19 +0100, Patrick McHardy wrote:
-> ip6tables -t raw -I PREROUTING -j TRACE
+On Thu, Jan 28, 2010 at 02:27:54PM -0600, Jason Wessel wrote:
+> I'll move this to the gdbstub in the next merge window, because it looks
+> like there might also be other archs that gain the
+> arch/*/kernel/hw_breakpoint.c.
 
-I'm not seeing anything on the console - is there additional conntrack
-debugging I can enable? I will try building in netfilter debug again.
 
-But I did just get this crash while testing again:
+Yeah, PowerPc, S390 and ARM are in progress.
 
-BUG: unable to handle kernel paging request at ffff8802aae52f20
-IP: [<ffffffff813b1e7d>] __nf_conntrack_find+0x53/0xb1
-PGD 1a3c063 PUD 0 
-Oops: 0000 [#1] SMP 
-last sysfs file: /sys/kernel/mm/ksm/run
-CPU 5 
-Pid: 2012, comm: qemu-kvm Not tainted 2.6.33-rc5 #1 0F9382/Precision
-WorkStation 490    
-RIP: 0010:[<ffffffff813b1e7d>]  [<ffffffff813b1e7d>] __nf_conntrack_find
-+0x53/0xb1
-RSP: 0018:ffff880172893778  EFLAGS: 00010282
-RAX: ffff8802aae52f20 RBX: ffff880172893878 RCX: 00000000eb883b77
-RDX: 000000000001d710 RSI: 0000000081af2f90 RDI: 000000003b9ab4e4
-RBP: ffff8801728937b8 R08: 000000008a6bf028 R09: 00000000a2d26753
-R10: 0000000067d81e2b R11: ffff88017289389c R12: ffffffff81ddace0
-R13: ffff880172893878 R14: ffffffff81ddace0 R15: 00000000137f25e4
-FS:  00007f002fe16780(0000) GS:ffff880028340000(0000)
-knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: ffff8802aae52f20 CR3: 00000001717dd000 CR4: 00000000000026e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process qemu-kvm (pid: 2012, threadinfo ffff880172892000, task
-ffff8801702bc5f0)
 
-Jon.
+> I can also move the logic for the install / remove to be owned by either
+> hw_breakpoint.c or the debug core because that will become arch
+> independent as well as more archs pickup the hw_breakpoint.c methodology.
 
+
+
+Indeed.
 
