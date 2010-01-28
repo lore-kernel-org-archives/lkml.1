@@ -1,122 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969Ab0A1KuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053Ab0A1Kv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753969Ab0A1KuZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 05:50:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550Ab0A1KuZ
+	id S1754053Ab0A1Kv3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 05:51:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483Ab0A1Kv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 05:50:25 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60948 "EHLO mx1.suse.de"
+	Thu, 28 Jan 2010 05:51:29 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36648 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751079Ab0A1KuY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 05:50:24 -0500
-Date: Thu, 28 Jan 2010 21:50:15 +1100
-From: Neil Brown <neilb@suse.de>
-To: "Ing. Daniel =?UTF-8?B?Um96c255w7M=?=" <daniel@rozsnyo.com>
-Cc: Milan Broz <mbroz@redhat.com>, Marti Raudsepp <marti@juffo.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: bio too big - in nested raid setup
-Message-ID: <20100128215015.0e0ed3a8@notabene>
-In-Reply-To: <4B6157DB.6080502@rozsnyo.com>
-References: <4B5C963D.8040802@rozsnyo.com>
-	<5ec358371001250725l40b13060md880001c96be165f@mail.gmail.com>
-	<4B5DE2A9.4030500@redhat.com>
-	<20100128132812.2d01f211@notabene>
-	<4B6157DB.6080502@rozsnyo.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1751728Ab0A1Kv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 05:51:28 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mark Lord <kernel@teksavvy.com>
+Subject: Re: 2.6.32.5 regression: page allocation failure. order:1,
+Date: Thu, 28 Jan 2010 11:52:20 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc5-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Mel Gorman <mel@csn.ul.ie>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+References: <4B5FA147.5040802@teksavvy.com> <4B610FDA.50104@teksavvy.com> <4B6113C7.201@teksavvy.com>
+In-Reply-To: <4B6113C7.201@teksavvy.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001281152.20352.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jan 2010 10:24:43 +0100
-"Ing. Daniel Rozsnyó" <daniel@rozsnyo.com> wrote:
-
-> Neil Brown wrote:
-> > On Mon, 25 Jan 2010 19:27:53 +0100
-> > Milan Broz <mbroz@redhat.com> wrote:
-> > 
-> >> On 01/25/2010 04:25 PM, Marti Raudsepp wrote:
-> >>> 2010/1/24 "Ing. Daniel Rozsnyó" <daniel@rozsnyo.com>:
-> >>>> Hello,
-> >>>>  I am having troubles with nested RAID - when one array is added to the
-> >>>> other, the "bio too big device md0" messages are appearing:
+On Thursday 28 January 2010, Mark Lord wrote:
+> Mark Lord wrote:
+> > Mark Lord wrote:
+> >> Mel Gorman wrote:
+> >>> On Tue, Jan 26, 2010 at 09:13:27PM -0500, Mark Lord wrote:
+> >>>> I recently upgraded our 24/7 server from 2.6.31.5 to 2.6.32.5.
 > >>>>
-> >>>> bio too big device md0 (144 > 8)
-> >>>> bio too big device md0 (248 > 8)
-> >>>> bio too big device md0 (32 > 8)
-> >>> I *think* this is the same bug that I hit years ago when mixing
-> >>> different disks and 'pvmove'
+> >>>> Now, suddenly the logs are full of "page allocation failure. order:1",
+> >>>> and the odd "page allocation failure. order:4" failures.
+> >>>>
+> >>>> Wow.  WTF happened in 2.6.32 ???
+> >>>>
 > >>>
-> >>> It's a design flaw in the DM/MD frameworks; see comment #3 from Milan Broz:
-> >>> http://bugzilla.kernel.org/show_bug.cgi?id=9401#c3
-> >> Hm. I don't think it is the same problem, you are only adding device to md array...
-> >> (adding cc: Neil, this seems to me like MD bug).
+> >>> There was one bug related to MIGRATE_RESERVE that might be affecting
+> >>> you. It reported as impacting swap-orientated workloads but it could
+> >>> easily affect drivers that depend on high-order atomic allocations.
+> >>> Unfortunately, the fix is not signed-off yet but I expect it to make its
+> >>> way towards mainline when it is.
+> >>>
+> >>> Here is the patch with a slightly-altered changelog. Can you test if it
+> >>> makes a difference please?
+> >> ..
 > >>
-> >> (original report for reference is here http://lkml.org/lkml/2010/1/24/60 )
+> >> We don't like to reboot our 24/7 server very often,
+> >> and certainly not for debugging buggy kernels.
+> >>
+> >> It's rock solid again with 2.6.31.12 on it now.
+> >>
+> >> The defining characteristic of that machine, is that it has only 512MB
+> >> of physical RAM.  So perhaps I'll try booting a different machine here
+> >> with mem=512M and see how that behaves.  If the problem shows up on that,
+> >> then I'll try the patch.
+> > ..
 > > 
-> > No, I think it is the same problem.
+> > Sod it.  2.6.32 is simply too broken for us here on 32-bit non-SMP.
 > > 
-> > When you have a stack of devices, the top level client needs to know the
-> > maximum restrictions imposed by lower level devices to ensure it doesn't
-> > violate them.
-> > However there is no mechanism for a device to report that its restrictions
-> > have changed.
-> > So when md0 gains a linear leg and so needs to reduce the max size for
-> > requests, there is no way to tell DM, so DM doesn't know.  And as the
-> > filesystem only asks DM for restrictions, it never finds out about the
-> > new restrictions.
+> > Attempting to boot a 32-bit kernel with "nosmp mem=512M" on my notebook
+> > locks up at boot time with several repeated messages like this:
+> > 
+> >   request_module: runaway loop modprobe binfmt_464c
+> > 
+> > Useless kernel on 32-bit.  I hope 2.6.33 ends up less buggy.
+> ..
 > 
-> Neil, why does it even reduce its block size? I've tried with both 
-> "linear" and "raid0" (as they are the only way to get 2T from 4x500G) 
-> and both behave the same (sda has 512, md0 127, linear 127 and raid0 has 
-> 512 kb block size).
+> I rebuilt it (again!), this time as a pure UP (non-SMP) kernel,
+> and it still locks at boot, with or without the mem=512M parameter.
 > 
-> I do not see the mechanism how 512:127 or 512:512 leads to 4 kb limit
+> This is one really bad kernel release for 32-bit x86.
 
-Both raid0 and linear register a 'bvec_mergeable' function (or whatever it is
-called today).
-This allows for the fact that these devices have restrictions that cannot be
-expressed simply with request sizes.  In particular they only handle requests
-that don't cross a chunk boundary.
+Have you attached a (2.6.31.x) dmesg output from the failing box somewhere
+or have I just missed it?
 
-As raid1 never calls the bvec_mergeable function of it's components (it would
-be very hard to get that to work reliably, maybe impossible), it treats any
-device with a bvec_mergeable function as though the max_sectors were one page.
-This is because the interface guarantees that a one page request will always
-be handled.
-
-> 
-> Is it because:
->   - of rebuilding the array?
->   - of non-multiplicative max block size
->   - of non-multiplicative total device size
->   - of nesting?
->   - of some other fallback to 1 page?
-
-The last I guess.
-
-> 
-> I ask because I can not believe that a pre-assembled nested stack would 
-> result in 4kb max limit. But I haven't tried yet (e.g. from a live cd).
-
-When people say "I can not believe" I always chuckle to myself.  You just
-aren't trying hard enough.  There is adequate evidence that people can
-believe whatever they want to believe :-)
-
-> 
-> The block device should not do this kind of "magic", unless the higher 
-> layers support it. Which one has proper support then?
->   - standard partition table?
->   - LVM?
->   - filesystem drivers?
-> 
-
-I don't understand this question, sorry.
-
-Yes, there is definitely something broken here.  Unfortunately fixing it is
-non-trivial.
-
-NeilBrown
+Rafael
