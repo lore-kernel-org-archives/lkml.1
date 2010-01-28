@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204Ab0A1Ton@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641Ab0A1UAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204Ab0A1Ton (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 14:44:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600Ab0A1Tom
+	id S1753641Ab0A1UAJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 15:00:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503Ab0A1UAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 14:44:42 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:45456 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196Ab0A1Tom (ORCPT
+	Thu, 28 Jan 2010 15:00:07 -0500
+Received: from mail-ausfall.charite.de ([193.175.72.31]:60016 "EHLO
+	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752339Ab0A1UAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 14:44:42 -0500
-Message-ID: <4B61E91B.3070204@linux.vnet.ibm.com>
-Date: Thu, 28 Jan 2010 11:44:27 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Thu, 28 Jan 2010 15:00:06 -0500
+X-Greylist: delayed 624 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jan 2010 15:00:06 EST
+Date: Thu, 28 Jan 2010 20:49:41 +0100
+From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.31 oops
+Message-ID: <20100128194940.GJ14574@charite.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Dan Terpstra <terpstra@eecs.utk.edu>, Philip Mucci <mucci@eecs.utk.edu>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [RFC] perf_events: support for uncore a.k.a. nest units
-References: <4B560ACD.4040206@linux.vnet.ibm.com> <1263994448.4283.1052.camel@laptop> <1264023204.4283.1124.camel@laptop> <4B57907E.5000207@linux.vnet.ibm.com> <20100121072118.GA10585@elte.hu> <4B58A750.2060607@linux.vnet.ibm.com> <4B58AAF7.60507@linux.vnet.ibm.com> <20100127102834.GA27357@elte.hu>  <4B60990C.1030804@linux.vnet.ibm.com> <1264676244.4283.2093.camel@laptop>  <4B61D0CB.4090809@linux.vnet.ibm.com> <1264705607.4283.2120.camel@laptop>
-In-Reply-To: <1264705607.4283.2120.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/28/2010 11:06 AM, Peter Zijlstra wrote:
-> On Thu, 2010-01-28 at 10:00 -0800, Corey Ashford wrote:
->>
->> I don't quite get what you're saying here.  Perhaps you are thinking
->> that all uncore units are associated with a particular cpu node, or a
->> set of cpu nodes?  And that there's only one uncore unit per cpu (or set
->> of cpus) that needs to be addressed, i.e. no ambiguity?
->
-> Well, I was initially thinking of the intel uncore thing which is memory
-> controller, so node, level.
->
-> But all system topology bound pmus can be done that way.
->
->> That is not going to be the case for all systems.  We can have uncore
->> units that are associated with the entire system,
->
-> Right, but that's simple too.
->
->> for example PMUs in an I/O device.
->
->> And we can have multiple uncore units of a particular
->> type, for example multiple vector coprocessors, each with its own PMU,
->> and are associated with a single cpu or a set of cpus.
->>
->> perf_events needs an addressing scheme that covers these cases.
->
-> You could possible add a u64 pmu_id field to perf_event_attr and use
-> that together with things like:
->
->    PERF_TYPE_PCI, attr.pmu_id = domain:bus:device:function encoding
->    PERF_TYPE_SPU, attr.pmu_id = spu-id
->
+This is on a dovecot mailbox server which extensively uses inotify...
 
-Thank you for that clarification.
+[61834.696727] ------------[ cut here ]------------
+[61834.698645] WARNING: at
+/tmp/buildd/linux-2.6-2.6.31/debian/build/source_i386_none/fs/notify/inotify/inotify_fsnotify.c:129
+idr_callback+0x39/0x6c()
+[61834.699107] Hardware name: VMware Virtual Platform
+[61834.699337] inotify closing but id=0 for entry=c646a514 in group=c99498c0 still in idr.  Probably leaking memory
+[61834.699689] Modules linked in: acpiphp ext4 jbd2 crc16 parport_pc parport evdev serio_raw psmouse snd_pcsp snd_pcm snd_timer snd
+soundcore snd_page_alloc ac container processor button vmci i2c_piix4 shpchp pci_hotplug i2c_core ext3 jbd mbcache dm_mod ide_cd_mod cdrom
+sd_mod crc_t10dif ata_generic libata ide_pci_generic mptspi mptscsih mptbase scsi_transport_spi pcnet32 floppy mii scsi_mod piix ide_core
+intel_agp agpgart thermal fan thermal_sys [last unloaded: scsi_wait_scan]
+[61834.701741] Pid: 5168, comm: imap Not tainted 2.6.31-1-686-bigmem #1
+[61834.701962] Call Trace:
+[61834.702379]  [<c103fc1a>] ? warn_slowpath_common+0x6c/0xaa
+[61834.702568]  [<c103fcba>] ? warn_slowpath_fmt+0x34/0x4c
+[61834.702731]  [<c10fe06c>] ? idr_callback+0x39/0x6c
+[61834.703000]  [<c116a850>] ? idr_for_each+0x68/0xb2
+[61834.703161]  [<c10fe033>] ? idr_callback+0x0/0x6c
+[61834.703328]  [<c10fe012>] ? inotify_free_group_priv+0x20/0x41
+[61834.703497]  [<c10fc1f9>] ? fsnotify_final_destroy_group+0x26/0x40
+[61834.703669]  [<c10fe276>] ? inotify_release+0x24/0x42
+[61834.703833]  [<c10d3480>] ? __fput+0xe1/0x19b
+[61834.703984]  [<c10cffda>] ? filp_close+0x5c/0x74
+[61834.704202]  [<c10d005a>] ? sys_close+0x68/0xad
+[61834.704367]  [<c10087fb>] ? sysenter_do_call+0x12/0x28
+[61834.704629] ---[ end trace 8f9d51f75f799189 ]---
+[61834.704854] entry->group=(null) inode=(null) wd=1024
+[61834.769078] ------------[ cut here ]------------
 
-One of Ingo's comments was that he wants perf to be able to expose all of the 
-available PMUs via the perf tool.  That perf should be able to parse some data 
-structure (somewhere) that would contain all of the info the user would need to 
-choose a particular PMU.  Do you have some ideas about how that could be 
-accomplished using the above encoding scheme?  I can see how it would be fairly 
-easy to come up with a PERF_TYPE_* encoding per-topology, and then interpret all 
-of those bits correctly within the kernel (which is saavy to that topology), but 
-I don't see how there would be a straight-forward way to expose that structure 
-to perf.  How would perf know which of those encodings apply to the current 
-system, how many PMUs there are of each type, etc.
-
-That's why I'm leaning toward a /sys/devices-style pseudo fs at the moment.  If 
-there's a simpler, better way, I'm open to it.
-
-> But before we go there the perf core needs to be extended to deal with
-> multiple hardware pmus, something which isn't too hard but we need to be
-> careful not to bloat the normal code paths for these somewhat esoteric
-> use cases.
-
-Is this something you are looking into?
-
-- Corey
-
+-- 
+Ralf Hildebrandt
+  Geschäftsbereich IT | Abteilung Netzwerk
+  Charité - Universitätsmedizin Berlin
+  Campus Benjamin Franklin
+  Hindenburgdamm 30 | D-12203 Berlin
+  Tel. +49 30 450 570 155 | Fax: +49 30 450 570 962
+  ralf.hildebrandt@charite.de | http://www.charite.de
+	    
