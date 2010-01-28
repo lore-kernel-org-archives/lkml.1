@@ -1,118 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606Ab0A1Kpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969Ab0A1KuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753606Ab0A1Kpt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 05:45:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881Ab0A1Kpt
+	id S1753969Ab0A1KuZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 05:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550Ab0A1KuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 05:45:49 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:57955 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752823Ab0A1Kps (ORCPT
+	Thu, 28 Jan 2010 05:50:25 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60948 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751079Ab0A1KuY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 05:45:48 -0500
-Date: Thu, 28 Jan 2010 11:45:45 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: John Williams <john.williams@petalogix.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Grant Likely <grant.likely@secretlab.ca>, magnus.damm@gmail.com,
-       hjk@linutronix.de, gregkh@suse.de, linuxppc-dev@lists.ozlabs.org,
-       devicetree-discuss <devicetree-discuss@lists.ozlabs.org>
-Subject: Re: UIO / of_genirq driver
-Message-ID: <20100128104545.GA3105@pengutronix.de>
-References: <1d3f23371001272313i62fc9158se4cd9173f196fb12@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
-Content-Disposition: inline
-In-Reply-To: <1d3f23371001272313i62fc9158se4cd9173f196fb12@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Thu, 28 Jan 2010 05:50:24 -0500
+Date: Thu, 28 Jan 2010 21:50:15 +1100
+From: Neil Brown <neilb@suse.de>
+To: "Ing. Daniel =?UTF-8?B?Um96c255w7M=?=" <daniel@rozsnyo.com>
+Cc: Milan Broz <mbroz@redhat.com>, Marti Raudsepp <marti@juffo.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: bio too big - in nested raid setup
+Message-ID: <20100128215015.0e0ed3a8@notabene>
+In-Reply-To: <4B6157DB.6080502@rozsnyo.com>
+References: <4B5C963D.8040802@rozsnyo.com>
+	<5ec358371001250725l40b13060md880001c96be165f@mail.gmail.com>
+	<4B5DE2A9.4030500@redhat.com>
+	<20100128132812.2d01f211@notabene>
+	<4B6157DB.6080502@rozsnyo.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 28 Jan 2010 10:24:43 +0100
+"Ing. Daniel Rozsnyó" <daniel@rozsnyo.com> wrote:
 
---UugvWAfsgieZRqgk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Neil Brown wrote:
+> > On Mon, 25 Jan 2010 19:27:53 +0100
+> > Milan Broz <mbroz@redhat.com> wrote:
+> > 
+> >> On 01/25/2010 04:25 PM, Marti Raudsepp wrote:
+> >>> 2010/1/24 "Ing. Daniel Rozsnyó" <daniel@rozsnyo.com>:
+> >>>> Hello,
+> >>>>  I am having troubles with nested RAID - when one array is added to the
+> >>>> other, the "bio too big device md0" messages are appearing:
+> >>>>
+> >>>> bio too big device md0 (144 > 8)
+> >>>> bio too big device md0 (248 > 8)
+> >>>> bio too big device md0 (32 > 8)
+> >>> I *think* this is the same bug that I hit years ago when mixing
+> >>> different disks and 'pvmove'
+> >>>
+> >>> It's a design flaw in the DM/MD frameworks; see comment #3 from Milan Broz:
+> >>> http://bugzilla.kernel.org/show_bug.cgi?id=9401#c3
+> >> Hm. I don't think it is the same problem, you are only adding device to md array...
+> >> (adding cc: Neil, this seems to me like MD bug).
+> >>
+> >> (original report for reference is here http://lkml.org/lkml/2010/1/24/60 )
+> > 
+> > No, I think it is the same problem.
+> > 
+> > When you have a stack of devices, the top level client needs to know the
+> > maximum restrictions imposed by lower level devices to ensure it doesn't
+> > violate them.
+> > However there is no mechanism for a device to report that its restrictions
+> > have changed.
+> > So when md0 gains a linear leg and so needs to reduce the max size for
+> > requests, there is no way to tell DM, so DM doesn't know.  And as the
+> > filesystem only asks DM for restrictions, it never finds out about the
+> > new restrictions.
+> 
+> Neil, why does it even reduce its block size? I've tried with both 
+> "linear" and "raid0" (as they are the only way to get 2T from 4x500G) 
+> and both behave the same (sda has 512, md0 127, linear 127 and raid0 has 
+> 512 kb block size).
+> 
+> I do not see the mechanism how 512:127 or 512:512 leads to 4 kb limit
 
-John,
+Both raid0 and linear register a 'bvec_mergeable' function (or whatever it is
+called today).
+This allows for the fact that these devices have restrictions that cannot be
+expressed simply with request sizes.  In particular they only handle requests
+that don't cross a chunk boundary.
 
-> I came across this thread/patchset from around June last year:
->=20
-> http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-June/073086.html
->=20
-> where Wolfgang proposed a generic OF-driven UIO driver.  The
+As raid1 never calls the bvec_mergeable function of it's components (it would
+be very hard to get that to work reliably, maybe impossible), it treats any
+device with a bvec_mergeable function as though the max_sectors were one page.
+This is because the interface guarantees that a one page request will always
+be handled.
 
-Wolfram, please ;)
+> 
+> Is it because:
+>   - of rebuilding the array?
+>   - of non-multiplicative max block size
+>   - of non-multiplicative total device size
+>   - of nesting?
+>   - of some other fallback to 1 page?
 
-> discussion seemed to stall after Grant Likely indicated he didn't like
-> the use of a linux-specific compatible binding in the device tree
-> (compatible=3D"generic-uio").
+The last I guess.
 
-I agree with him on that.
+> 
+> I ask because I can not believe that a pre-assembled nested stack would 
+> result in 4kb max limit. But I haven't tried yet (e.g. from a live cd).
 
-> I guess I have a couple of questions:
->=20
->  * did this patchset go anywhere?  I've been using it here the last
-> few days and it works great.
+When people say "I can not believe" I always chuckle to myself.  You just
+aren't trying hard enough.  There is adequate evidence that people can
+believe whatever they want to believe :-)
 
-The idea was to create a mechanism to instantiate bindings at runtime, simi=
-lar
-to new_id for PCI/PCMCIA, e.g.:
+> 
+> The block device should not do this kind of "magic", unless the higher 
+> layers support it. Which one has proper support then?
+>   - standard partition table?
+>   - LVM?
+>   - filesystem drivers?
+> 
 
-$ echo "commodore,c64" > /sys/bus/of_platform/drivers/of_uio_genirq/new_com=
-patible
+I don't understand this question, sorry.
 
-so we don't have to maintain an ever growing list of hardcoded
-compatible-properties for those UIO-devices.
+Yes, there is definitely something broken here.  Unfortunately fixing it is
+non-trivial.
 
->  * Is there a better way to handle the OF bindings for this sort of thing?
-
-Run-time instantiation might help in a couple of other cases; still, in the
-progress of unifying/extending the OF-support, it was discussed if it was
-possible to get rid of of_platform entirely. It looks like a very challengi=
-ng
-task, but seems to be favoured designwise (at least I do).
-
-> However, the device-tree guys complain whenever anyone tries to encode
-> anything non-hardware related into the DTS itself.
-
-Well, if I get a device tree including special properties for Linux and BSD=
- and
-whatever may follow, that could get quite confusing :)
-
-> I guess I'd like to just open up a discussion, see if there's been any
-> progress towards a general solution.
-
-I decided to wait for the outcome of the of_platform-removal-idea. Though, I
-have to admit that in the last weeks I haven't followed of-related things d=
-ue
-to other commitments.
-
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---UugvWAfsgieZRqgk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkthatkACgkQD27XaX1/VRvjrACgketVU/GiUf+uHBeK1ACqDNbo
-xpwAoMw9nB8eMvfqMgCwl8PXG1TqgmXk
-=qPOC
------END PGP SIGNATURE-----
-
---UugvWAfsgieZRqgk--
+NeilBrown
