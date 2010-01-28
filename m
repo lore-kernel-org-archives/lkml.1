@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017Ab0A1UfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744Ab0A1Uk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017Ab0A1UfR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 15:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343Ab0A1UfP
+	id S1754744Ab0A1Uk2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 15:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052Ab0A1Uk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 15:35:15 -0500
-Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:35088 "HELO
-	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753313Ab0A1UfO (ORCPT
+	Thu, 28 Jan 2010 15:40:27 -0500
+Received: from mail.windriver.com ([147.11.1.11]:54540 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753782Ab0A1Uk0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 15:35:14 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=Tl9Qec6WmTBG23WTA++moBk6TbcOyrmdb9t1SwnGgVU0GWymDrnsLKlPyC5LQ1Kua/xa4w+cJJCo1Yul3o0I39Z7pmgO8r8WVwTbG44yyCaBAmWTmD/VUyD0OyTzivmJ;
-Date: Thu, 28 Jan 2010 12:35:07 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garrett <jeff@jgarrett.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with
- pci=use_crs)
-Message-ID: <20100128123507.2d6a3b33@jbarnes-piketon>
-In-Reply-To: <201001282128.33389.rjw@sisk.pl>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
-	<4B61D554.9000003@kernel.org>
-	<20100128110331.61455a15@jbarnes-piketon>
-	<201001282128.33389.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Jan 2010 15:40:26 -0500
+Message-ID: <4B61F5B2.70600@windriver.com>
+Date: Thu, 28 Jan 2010 14:38:10 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 3/3] perf,hw_breakpoint,kgdb: No mutex taken forkerneldebugger
+References: <1264631124-4837-1-git-send-email-jason.wessel@windriver.com> <1264631124-4837-4-git-send-email-jason.wessel@windriver.com> <20100128173307.GB18683@nowhere> <4B61CE1A.8090001@windriver.com> <20100128200951.GD18683@nowhere>
+In-Reply-To: <20100128200951.GD18683@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+X-OriginalArrivalTime: 28 Jan 2010 20:38:10.0262 (UTC) FILETIME=[CE079F60:01CAA059]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jan 2010 21:28:33 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > But disabling it gets us into trouble too.  When platforms are
-> > designed for Linux, they may be designed to have ACPI disabled
-> > (though this is probably rare for general purpose PCs and servers).
+Frederic Weisbecker wrote:
+
+>> If it fails the debugger tried to remove it again later.   It seems to
+>> me like it is a don't care corner case.   You get a printk if it ever
+>> does happen (which it really shouldn't).
 > 
-> Well, not quite.  On recent SMP systems it's next to impossible to
-> get all of the necessary system configuration information without
-> ACPI, since it only is provided by the ACPI tables (the configuration
-> of APICs, interrupt routing, CPU C states, other stuff).
 > 
-> [BTW, I think it's better to CC linux-acpi and Len at this point.]
+> 
+> Yeah truly it's a corner case, especially if the debugger can handle that
+> later.
+> 
+> May be just add a comment so that future reviewers don't stick to
+> this part.
 
-I was thinking more of custom designed low power servers or something,
-possibly running LinuxBIOS or some other custom BIOS.  For a general
-purpose machine though I'm 100% agreed.  ACPI is required these days
-for PCs.
 
-I was trying to make a point that we shouldn't disable ACPI on
-platforms that support it.  Rather, we should fix any bugs we discover
-in handling ACPI correctly, rather than working around it by turning it
-off.
+If you approve, I'll add your ack.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+
+It looks like this now:
+
+
++static int hw_break_release_slot(int breakno)
++{
++	struct perf_event **pevent;
++	int cpu;
++
++	for_each_online_cpu(cpu) {
++		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
++		if (dbg_release_bp_slot(*pevent))
++			/*
++			 * The debugger is responisble for handing the retry on
++			 * remove failure.
++			 */
++			return -1;
++	}
++	return 0;
++}
++
+
+
+
+Thanks,
+Jason.
