@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932291Ab0A1Sj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932297Ab0A1Sof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932291Ab0A1Sj7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 13:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796Ab0A1Sj6
+	id S932297Ab0A1Sof (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 13:44:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756332Ab0A1Soe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 13:39:58 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:53389 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599Ab0A1Sj6 (ORCPT
+	Thu, 28 Jan 2010 13:44:34 -0500
+Received: from mail-gx0-f224.google.com ([209.85.217.224]:45793 "EHLO
+	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756310Ab0A1Sod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 13:39:58 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
-Date: Thu, 28 Jan 2010 19:40:12 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com, gregkh@suse.de,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20100117025535.GB7045@srcf.ucam.org> <201001191420.29652.oliver@neukum.org> <20100128174546.GC19871@kroah.com>
-In-Reply-To: <20100128174546.GC19871@kroah.com>
+	Thu, 28 Jan 2010 13:44:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=lAdt7o8bIylcmAuKCiZZ5gz3xqXsgDIRm8OH5cG4Qt61Zplsxa9HDSqL7Ov6C/WaCX
+         DqTWkMBKDF5se+K7tJt1bM7IS1A07Ezay9yWNX3EOhVEVjFRyM0KUYYPewVz/JeqO09A
+         lFuMwtO4zENbBUwQY7SoY9Ijk6CUUEQu7XlJg=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001281940.12173.oliver@neukum.org>
+Date: Fri, 29 Jan 2010 02:44:32 +0800
+Message-ID: <8e678d3f1001281044xb0a4be6n32383971ee5be101@mail.gmail.com>
+Subject: [kernel build bug]
+From: Robin Steven <armrobin@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 28. Januar 2010 18:45:46 schrieb Greg KH:
-> On Tue, Jan 19, 2010 at 02:20:29PM +0100, Oliver Neukum wrote:
-> > Am Montag, 18. Januar 2010 21:14:16 schrieb Matthew Garrett:
-> > 
-> > > drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 1565 
-> > > bytes
-> > > drivers/usb/serial/generic.c: usb_serial_generic_write - put 0 bytes 
-> > > into fifo
-> > > drivers/usb/serial/generic.c: usb_serial_generic_read_bulk_callback - 
-> > > port 0
-> > 
-> > If the FIFO is full we can do nothing. Please try the attached patch.
-> 
-> Did we ever determine if the patch below is needed or not?
+Hi:
 
-No. Further discussion cast serious doubt on it, but we have no
-experimental evidence I am aware of.
+I am hacking TPS65930 codec driver for my OMAP3 based board, start at
+git tag v2.6.31.
+I can not find option to build the twl4030 codec driver
+(CONFIG_SND_SOC_TWL4030) in menuconfig interface,
+after I set the CONFIG_SND_SOC as "M", the CONFIG_SND_SOC_TWL4030 will
+be set as module automatically.
+while I run `make uImage && make modules`, build process arise error:
 
-	Regards
-		Oliver
+ERROR: "omap_ctrl_writel" [sound/soc/omap/snd-soc-omap-mcbsp.ko] undefined!
+ERROR: "omap_ctrl_readl" [sound/soc/omap/snd-soc-omap-mcbsp.ko] undefined!
+
+It's a bug?
+
+Robin
