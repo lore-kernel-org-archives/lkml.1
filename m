@@ -1,78 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372Ab0A1Xox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570Ab0A1XwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755372Ab0A1Xox (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 18:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096Ab0A1Xov
+	id S1755570Ab0A1XwJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 18:52:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272Ab0A1XwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 18:44:51 -0500
-Received: from ozlabs.org ([203.10.76.45]:37442 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755185Ab0A1Xov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 18:44:51 -0500
-Date: Fri, 29 Jan 2010 10:41:25 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2010-01-28-01-36 uploaded (sched.c + percpu)
-Message-ID: <20100128234125.GH2996@kryten>
-References: <201001281002.o0SA2G0k002220@imap1.linux-foundation.org>
- <4B61DD8F.6020507@oracle.com>
+	Thu, 28 Jan 2010 18:52:08 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:47836 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751465Ab0A1XwG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 18:52:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=C6jRXAeoOf00dBZCN/PR1DqGHA2Nv8D77kIyCszhGhV/t4DnM3hdURAlKj7czrEKZk
+         zuwkY09V4EwNuXXZNBDSq1F8x1xDHEAQyW+syT7JIxz6L+OTI9Jmmla37iNpAv/X8Tee
+         hPWuqtghTiyYcJqvdU3+G10HOYWLsFPaiTApw=
+Message-ID: <4B62231F.5080104@gmail.com>
+Date: Fri, 29 Jan 2010 00:51:59 +0100
+From: Till Kamppeter <till.kamppeter@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B61DD8F.6020507@oracle.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       lsb-discuss@lists.linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Linux wireless GSoC 2010 project ideas
+References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com> 	<20100128231545.GH18683@nowhere> <43e72e891001281523s56707279x896ab059e6d4e530@mail.gmail.com>
+In-Reply-To: <43e72e891001281523s56707279x896ab059e6d4e530@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-Hi Randy,
+No problem for students to suggest topics. We are not restricted to 
+wireless in terms of kernel. We support kernel projects in general.
 
-> when CONFIG_SMP is not enabled:
+Please give your suggestion as answer to this e-mail, doing "Reply to 
+all", as I am not a kernel export, the other participants of this thread 
+should have a look at the student's project ideas and help finding mentors.
+
+    Till
+
+Luis R. Rodriguez wrote:
+> On Thu, Jan 28, 2010 at 3:15 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+>> I'm sorry if I'm a bit off-topic. But as I see this announce,
+>> I'm wondering about the topics for the google summer of code
+>> in the wider scope of the entire kernel.
+>>
+>> I'm a student and there are fair chances I'll be free for this
+>> summer so I start to think about applying.
+>>
+>> Are there currently some plans concerning other kernel areas?
 > 
-> kernel/sched.c:10915: error: 'percpu_counter_batch' undeclared (first use in this function)
-
-Did 1/2 make it into mmotm? 
-
-Anton
-
----
-
-[PATCH 1/2] percpu_counter: Make __percpu_counter_add an inline function on UP
-
-Even though batch isn't used on UP, we may want to pass one in to keep the
-SMP and UP code paths similar. Convert __percpu_counter_add to an inline
-function so we wont get variable unused warnings if we do.
- 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-index a7684a5..794662b 100644
---- a/include/linux/percpu_counter.h
-+++ b/include/linux/percpu_counter.h
-@@ -98,9 +98,6 @@ static inline void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
- 	fbc->count = amount;
- }
- 
--#define __percpu_counter_add(fbc, amount, batch) \
--	percpu_counter_add(fbc, amount)
--
- static inline void
- percpu_counter_add(struct percpu_counter *fbc, s64 amount)
- {
-@@ -109,6 +106,12 @@ percpu_counter_add(struct percpu_counter *fbc, s64 amount)
- 	preempt_enable();
- }
- 
-+static inline void
-+__percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
-+{
-+	percpu_counter_add(fbc, amount);
-+}
-+
- static inline s64 percpu_counter_read(struct percpu_counter *fbc)
- {
- 	return fbc->count;
+> These would be under the Linux Foundation umbrella, the wireless stuff
+> I just posted is just for wireless. I do not believe we have a common
+> forum yet for general linux stuff. Till?
+> 
+>> That doesn't mean I wouldn't be interested in a wireless project :)
+>> but there are many other areas that could host a Gsoc project too
+>> and I don't want to miss the whole variety of proposals.
+> 
+> The LF projects will be posted on the LF site.
+> 
+>> I guess we also can, as applying students, propose subjects too.
+>> Provided we find a mentor for the given project, which makes the
+>> things harder in this direction I fear.
+> 
+> I don't see why not.
+> 
+>> Anyway, what would be the right place to submit such proposals? I
+>> have various ideas in mind, in topics such as tracing/profiling,
+>> realtime, among other things... (could be: "Do as much bkl bashing
+>> as you can in two months, have fun, be brave...").
+> 
+> I'll let Till answer :D
+> 
+>   Luis
+> 
 
