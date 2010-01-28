@@ -1,98 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974Ab0A1NZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077Ab0A1NZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974Ab0A1NZL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 08:25:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761Ab0A1NZK
+	id S1756077Ab0A1NZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 08:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770Ab0A1NZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 08:25:10 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:56997 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752022Ab0A1NZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 08:25:07 -0500
-Date: Thu, 28 Jan 2010 07:25:03 -0600
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       cl@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] - Fix unmap_vma() bug related to mmu_notifiers
-Message-ID: <20100128132503.GJ6616@sgi.com>
-References: <20100125174556.GA23003@sgi.com>
- <20100125190052.GF5756@random.random>
- <20100125211033.GA24272@sgi.com>
- <20100125211615.GH5756@random.random>
- <20100126212904.GE6653@sgi.com>
- <20100126213853.GY30452@random.random>
- <20100128031841.GG6616@sgi.com>
- <20100128034943.GH6616@sgi.com>
- <20100128100327.GF24242@random.random>
+	Thu, 28 Jan 2010 08:25:27 -0500
+Received: from mx2.compro.net ([12.186.155.4]:3357 "EHLO mx2.compro.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755674Ab0A1NZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 08:25:26 -0500
+X-IronPort-AV: E=Sophos;i="4.49,359,1262581200"; 
+   d="scan'208";a="4920709"
+Message-ID: <4B619043.1070806@compro.net>
+Date: Thu, 28 Jan 2010 08:25:23 -0500
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100128100327.GF24242@random.random>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+CC: dmarkh@cfl.rr.com, Yuhong Bao <yuhongbao_386@hotmail.com>,
+       venkatesh.pallipadi@intel.com, andi@firstfloor.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, alain@knaff.lu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Disable HPET MSI on ATI SB700/SB800
+References: <87bphpd4rt.fsf@basil.nowhere.org> <4B32565E.6000501@compro.net> <20091223191806.GA3336@linux-os.sc.intel.com> <4B3270FE.5090607@compro.net> <1261600243.16916.56.camel@localhost.localdomain> <4B476E8D.1030308@compro.net> <20100121190952.GA32523@linux-os.sc.intel.com> <SNT125-W12BC46C506A5BB777A06B5C3610@phx.gbl> <20100125171059.GB5041@alberich.amd.com> <4B61562C.1010103@cfl.rr.com>
+In-Reply-To: <4B61562C.1010103@cfl.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 11:03:27AM +0100, Andrea Arcangeli wrote:
-> On Wed, Jan 27, 2010 at 09:49:44PM -0600, Robin Holt wrote:
-> > > I think that with the SRCU patch, we have enough.  Is that true or have
-> > > I missed something?
-> > 
-> > I wasn't quite complete in my previous email.  Your srcu patch
-> > plus Jack's patch to move the tlb_gather_mmu to after the
-> > mmu_notifier_invalidate_range_start().
+On 01/28/2010 04:17 AM, Mark Hounschell wrote:
+> On 01/25/2010 12:10 PM, Andreas Herrmann wrote:
+>> On Fri, Jan 22, 2010 at 11:21:06PM -0800, Yuhong Bao wrote:
+>>>
+>>>> HPET MSI on platforms with ATI SB700/SB800 as they seem to have some
+>>>> side-effects on floppy DMA. Do not use HPET MSI on such platforms.
+>>
+>> Argh, will see what information I can find about this problem ...
+>>
+>>> I think somebody from AMD should review the situation.Clearly
+>>   something is happening inside their southbridge.CCing Andreas
+>>   Herrmann from AMD.
+>>
+>> I have the feeling that this problem should rather be fixed with a DMI
+>> quirk instead of disabling HPET MSI for the entire chipset.
+>>
+>> Was the latest available BIOS installed on the affected system?
+>>
 > 
-> My pmdp_clear_flush_notify with transparent hugepage will give some
-> trouble because it's using mmu_notifier_invalidate_range_start to
-> provide backwards compatible API to mmu notifier users like GRU that
-> may be mapping physical hugepages with 4k secondary tlb mappings
-> (which have to be all invalidated not only the first one). So that
-> would still require the full series as it's like if the rmap code
-> would be using mmu_notifier_invalidate_range_start. But we can
-> probably get away by forcing all mmu notifier methods to provide a
-> mmu_notifier_invalidate_hugepage.
-
-The GRU is using a hardware TLB of 2MB page size when the
-is_vm_hugetlb_page() indicates it is a 2MB vma.  From my reading of it,
-your callout to mmu_notifier_invalidate_page() will work for gru and I
-think it will work for XPMEM as well, but I am not certain of that yet.
-I am certain that it can be made to work for XPMEM.  I think using the
-range callouts are actually worse because now we are mixing the conceptual
-uses of page and range.
-
-> But in addition to srcu surely you also need i_mmap_lock_to_sem for
-> unmap_mapping_range_vma taking i_mmap_lock, basically you missed
-> truncate. Which then in cascade requires free_pgtables,
-
-I must be missing something key here.  I thought unmap_mapping_range_vma
-would percolate down to calling mmu_notifier_invalidate_page() which
-xpmem can sleep in.  Based upon that assumption, I don't see the
-need for the other patches.
-
-> rwsem-contended, unmap_vmas (the latter are for the tlb gather
-> required to be in atomic context to avoid scheduling to other cpus
-> while holding the tlb gather).
+> You mean "systems" of different manufactures?  I will check today. Due to
+> mis configured filters I didn't see this until today. Sorry.
 > 
-> So you only avoid the need of anon-vma switching to rwsem (because
-> there's no range-vmtruncate but only rmap uses it on a page-by-page
-> basis with mmu_notifier_invalidate_page). So at that point IMHO you
-> can as well add a CONFIG_MMU_NOTIFIER_SLEEPABLE and allow scheduling
-> everywhere in mmu notifier IMHO, but if you prefer to avoid changing
-> anon_vma lock to rwsem and add refcounting that is ok with me too. I
-> just think it'd be cleaner to switch them all to sleepable code if we
-> have to provide for it and most of the work on the i_mmap_lock side is
-> mandatory anyway.
+> Mark
+> 
 
-I don't see the mandatory part here.  Maybe it is your broken english
-combined with my ignorance, but I do not see what the statement
-"i_mmap_lock side is mandatory" is based upon.  It looks to me like
-everywhere that is calling an mmu_notifier_invalidate_* while holding
-the i_mmap_lock is calling mmu_notifier_invalidate_page().  That is
-currently safe for sleeping as far as XPMEM is concerned.  Is there a
-place that is calling mmu_notifier_invalidate_range_*() while holding
-the i_mmap_lock which I have missed?
+My BIOS were below rev on all my affected boards but updating did not help
+with the problem.
 
-Thanks,
-Robin
+Andreas, while I have your ear, I am also having another issue with this
+chip set doing peer to peer bus transfers between pci buses and pci-e buses
+and from pci-e to pci-e buses. I've read the chip set specs and they _seem_
+to imply that it may not be allowed due to "Trusted Computing" something or
+another. I've posed the issue to the AMD forums with no luck, and
+I can't figure out why this doesn't work using these chip sets.
+
+Sorry to change the subject. I just figured I'd ask someone from AMD while
+I had the chance.
+
+Thanks and Regards
+Mark
