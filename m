@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755698Ab0A1LjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736Ab0A1LjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755698Ab0A1LjY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 06:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744Ab0A1LjV
+	id S1755736Ab0A1LjU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 06:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852Ab0A1LjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 06:39:21 -0500
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:28829 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932204Ab0A1Lij (ORCPT
+	Thu, 28 Jan 2010 06:39:17 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:16943
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932208Ab0A1Lij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 28 Jan 2010 06:38:39 -0500
-X-SpamScore: 8
-X-BigFish: VPS8(z1857rzab9bh936eMzz1202hzzz32i6bh87h43j61h)
-X-Spam-TCS-SCL: 0:0
+X-SpamScore: 5
+X-BigFish: VPS5(z2d9bozab9bh936eMzz1202hzzz32i87h6bh43j65h)
+X-Spam-TCS-SCL: 4:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KWYGC1-01-FXY-02
+X-WSS-ID: 0KWYGC1-01-FXX-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
        David Woodhouse <dwmw2@infradead.org>
 CC: kvm@vger.kernel.org, iommu@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 06/11] kvm: Change kvm_iommu_map_pages to map large pages
-Date: Thu, 28 Jan 2010 12:37:57 +0100
-Message-ID: <1264678682-30655-7-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 11/11] iommu-api: Remove iommu_{un}map_range functions
+Date: Thu, 28 Jan 2010 12:38:02 +0100
+Message-ID: <1264678682-30655-12-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264678682-30655-1-git-send-email-joerg.roedel@amd.com>
 References: <1264678682-30655-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 28 Jan 2010 11:38:20.0945 (UTC) FILETIME=[647E1010:01CAA00E]
+X-OriginalArrivalTime: 28 Jan 2010 11:38:21.0008 (UTC) FILETIME=[6487AD00:01CAA00E]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: unknown
@@ -35,176 +35,179 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes the implementation of of
-kvm_iommu_map_pages to map the pages with the host page size
-into the io virtual address space.
+These functions are not longer used and can be removed
+savely. There functionality is now provided by the
+iommu_{un}map functions which are also capable of multiple
+page sizes.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- virt/kvm/iommu.c |  106 ++++++++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 84 insertions(+), 22 deletions(-)
+ arch/x86/kernel/amd_iommu.c |   48 -------------------------------------------
+ drivers/base/iommu.c        |   26 +---------------------
+ include/linux/iommu.h       |   20 -----------------
+ 3 files changed, 2 insertions(+), 92 deletions(-)
 
-diff --git a/virt/kvm/iommu.c b/virt/kvm/iommu.c
-index 65a5143..92a434d 100644
---- a/virt/kvm/iommu.c
-+++ b/virt/kvm/iommu.c
-@@ -32,12 +32,27 @@ static int kvm_iommu_unmap_memslots(struct kvm *kvm);
- static void kvm_iommu_put_pages(struct kvm *kvm,
- 				gfn_t base_gfn, unsigned long npages);
- 
-+static pfn_t kvm_pin_pages(struct kvm *kvm, struct kvm_memory_slot *slot,
-+			   gfn_t gfn, unsigned long size)
-+{
-+	gfn_t end_gfn;
-+	pfn_t pfn;
-+
-+	pfn     = gfn_to_pfn_memslot(kvm, slot, gfn);
-+	end_gfn = gfn + (size >> PAGE_SHIFT);
-+	gfn    += 1;
-+
-+	while (gfn < end_gfn)
-+		gfn_to_pfn_memslot(kvm, slot, gfn++);
-+
-+	return pfn;
-+}
-+
- int kvm_iommu_map_pages(struct kvm *kvm, struct kvm_memory_slot *slot)
- {
--	gfn_t gfn = slot->base_gfn;
--	unsigned long npages = slot->npages;
-+	gfn_t gfn, end_gfn;
- 	pfn_t pfn;
--	int i, r = 0;
-+	int r = 0;
- 	struct iommu_domain *domain = kvm->arch.iommu_domain;
- 	int flags;
- 
-@@ -45,31 +60,58 @@ int kvm_iommu_map_pages(struct kvm *kvm, struct kvm_memory_slot *slot)
- 	if (!domain)
- 		return 0;
- 
-+	gfn     = slot->base_gfn;
-+	end_gfn = gfn + slot->npages;
-+
- 	flags = IOMMU_READ | IOMMU_WRITE;
- 	if (kvm->arch.iommu_flags & KVM_IOMMU_CACHE_COHERENCY)
- 		flags |= IOMMU_CACHE;
- 
--	for (i = 0; i < npages; i++) {
--		/* check if already mapped */
--		if (iommu_iova_to_phys(domain, gfn_to_gpa(gfn)))
-+
-+	while (gfn < end_gfn) {
-+		unsigned long page_size;
-+
-+		/* Check if already mapped */
-+		if (iommu_iova_to_phys(domain, gfn_to_gpa(gfn))) {
-+			gfn += 1;
- 			continue;
-+		}
-+
-+		/* Get the page size we could use to map */
-+		page_size = kvm_host_page_size(kvm, gfn);
-+
-+		/* Make sure the page_size does not exceed the memslot */
-+		while ((gfn + (page_size >> PAGE_SHIFT)) > end_gfn)
-+			page_size >>= 1;
-+
-+		/* Make sure gfn is aligned to the page size we want to map */
-+		while ((gfn << PAGE_SHIFT) & (page_size - 1))
-+			page_size >>= 1;
-+
-+		/*
-+		 * Pin all pages we are about to map in memory. This is
-+		 * important because we unmap and unpin in 4kb steps later.
-+		 */
-+		pfn = kvm_pin_pages(kvm, slot, gfn, page_size);
-+
-+		/* Map into IO address space */
-+		r = iommu_map(domain, gfn_to_gpa(gfn), pfn_to_hpa(pfn),
-+			      get_order(page_size), flags);
-+
-+		gfn += page_size >> PAGE_SHIFT;
- 
--		pfn = gfn_to_pfn_memslot(kvm, slot, gfn);
--		r = iommu_map_range(domain,
--				    gfn_to_gpa(gfn),
--				    pfn_to_hpa(pfn),
--				    PAGE_SIZE, flags);
- 		if (r) {
- 			printk(KERN_ERR "kvm_iommu_map_address:"
- 			       "iommu failed to map pfn=%lx\n", pfn);
- 			goto unmap_pages;
- 		}
--		gfn++;
-+
- 	}
-+
- 	return 0;
- 
- unmap_pages:
--	kvm_iommu_put_pages(kvm, slot->base_gfn, i);
-+	kvm_iommu_put_pages(kvm, slot->base_gfn, gfn);
- 	return r;
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index 0e068c9..d8da998 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -2506,52 +2506,6 @@ static int amd_iommu_attach_device(struct iommu_domain *dom,
+ 	return ret;
  }
  
-@@ -186,27 +228,47 @@ out_unmap:
- 	return r;
- }
- 
-+static void kvm_unpin_pages(struct kvm *kvm, pfn_t pfn, unsigned long npages)
-+{
-+	unsigned long i;
-+
-+	for (i = 0; i < npages; ++i)
-+		kvm_release_pfn_clean(pfn + i);
-+}
-+
- static void kvm_iommu_put_pages(struct kvm *kvm,
- 				gfn_t base_gfn, unsigned long npages)
- {
--	gfn_t gfn = base_gfn;
-+	struct iommu_domain *domain;
-+	gfn_t end_gfn, gfn;
- 	pfn_t pfn;
--	struct iommu_domain *domain = kvm->arch.iommu_domain;
--	unsigned long i;
- 	u64 phys;
- 
-+	domain  = kvm->arch.iommu_domain;
-+	end_gfn = base_gfn + npages;
-+	gfn     = base_gfn;
-+
- 	/* check if iommu exists and in use */
- 	if (!domain)
- 		return;
- 
--	for (i = 0; i < npages; i++) {
-+	while (gfn < end_gfn) {
-+		unsigned long unmap_pages;
-+		int order;
-+
-+		/* Get physical address */
- 		phys = iommu_iova_to_phys(domain, gfn_to_gpa(gfn));
--		pfn = phys >> PAGE_SHIFT;
--		kvm_release_pfn_clean(pfn);
--		gfn++;
+-static int amd_iommu_map_range(struct iommu_domain *dom,
+-			       unsigned long iova, phys_addr_t paddr,
+-			       size_t size, int iommu_prot)
+-{
+-	struct protection_domain *domain = dom->priv;
+-	unsigned long i,  npages = iommu_num_pages(paddr, size, PAGE_SIZE);
+-	int prot = 0;
+-	int ret;
+-
+-	if (iommu_prot & IOMMU_READ)
+-		prot |= IOMMU_PROT_IR;
+-	if (iommu_prot & IOMMU_WRITE)
+-		prot |= IOMMU_PROT_IW;
+-
+-	iova  &= PAGE_MASK;
+-	paddr &= PAGE_MASK;
+-
+-	for (i = 0; i < npages; ++i) {
+-		ret = iommu_map_page(domain, iova, paddr, prot, PAGE_SIZE);
+-		if (ret)
+-			return ret;
+-
+-		iova  += PAGE_SIZE;
+-		paddr += PAGE_SIZE;
 -	}
-+		pfn  = phys >> PAGE_SHIFT;
-+
-+		/* Unmap address from IO address space */
-+		order       = iommu_unmap(domain, gfn_to_gpa(gfn), PAGE_SIZE);
-+		unmap_pages = 1ULL << order;
+-
+-	return 0;
+-}
+-
+-static void amd_iommu_unmap_range(struct iommu_domain *dom,
+-				  unsigned long iova, size_t size)
+-{
+-
+-	struct protection_domain *domain = dom->priv;
+-	unsigned long i,  npages = iommu_num_pages(iova, size, PAGE_SIZE);
+-
+-	iova  &= PAGE_MASK;
+-
+-	for (i = 0; i < npages; ++i) {
+-		iommu_unmap_page(domain, iova, PAGE_SIZE);
+-		iova  += PAGE_SIZE;
+-	}
+-
+-	iommu_flush_tlb_pde(domain);
+-}
+-
+ static int amd_iommu_map(struct iommu_domain *dom, unsigned long iova,
+ 			 phys_addr_t paddr, int gfp_order, int iommu_prot)
+ {
+@@ -2616,8 +2570,6 @@ static struct iommu_ops amd_iommu_ops = {
+ 	.detach_dev = amd_iommu_detach_device,
+ 	.map = amd_iommu_map,
+ 	.unmap = amd_iommu_unmap,
+-	.map_range = amd_iommu_map_range,
+-	.unmap_range = amd_iommu_unmap_range,
+ 	.iova_to_phys = amd_iommu_iova_to_phys,
+ 	.domain_has_cap = amd_iommu_domain_has_cap,
+ };
+diff --git a/drivers/base/iommu.c b/drivers/base/iommu.c
+index 55d37e4..6e6b6a1 100644
+--- a/drivers/base/iommu.c
++++ b/drivers/base/iommu.c
+@@ -80,20 +80,6 @@ void iommu_detach_device(struct iommu_domain *domain, struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(iommu_detach_device);
  
--	iommu_unmap_range(domain, gfn_to_gpa(base_gfn), PAGE_SIZE * npages);
-+		/* Unpin all pages we just unmapped to not leak any memory */
-+		kvm_unpin_pages(kvm, pfn, unmap_pages);
-+
-+		gfn += unmap_pages;
-+	}
+-int iommu_map_range(struct iommu_domain *domain, unsigned long iova,
+-		    phys_addr_t paddr, size_t size, int prot)
+-{
+-	return iommu_ops->map_range(domain, iova, paddr, size, prot);
+-}
+-EXPORT_SYMBOL_GPL(iommu_map_range);
+-
+-void iommu_unmap_range(struct iommu_domain *domain, unsigned long iova,
+-		      size_t size)
+-{
+-	iommu_ops->unmap_range(domain, iova, size);
+-}
+-EXPORT_SYMBOL_GPL(iommu_unmap_range);
+-
+ phys_addr_t iommu_iova_to_phys(struct iommu_domain *domain,
+ 			       unsigned long iova)
+ {
+@@ -119,10 +105,7 @@ int iommu_map(struct iommu_domain *domain, unsigned long iova,
+ 
+ 	BUG_ON((iova | paddr) & invalid_mask);
+ 
+-	if (iommu_ops->map)
+-		return iommu_ops->map(domain, iova, paddr, gfp_order, prot);
+-
+-	return iommu_ops->map_range(domain, iova, paddr, size, prot);
++	return iommu_ops->map(domain, iova, paddr, gfp_order, prot);
+ }
+ EXPORT_SYMBOL_GPL(iommu_map);
+ 
+@@ -136,11 +119,6 @@ int iommu_unmap(struct iommu_domain *domain, unsigned long iova, int gfp_order)
+ 
+ 	BUG_ON(iova & invalid_mask);
+ 
+-	if (iommu_ops->unmap)
+-		return iommu_ops->unmap(domain, iova, gfp_order);
+-
+-	iommu_ops->unmap_range(domain, iova, size);
+-
+-	return gfp_order;
++	return iommu_ops->unmap(domain, iova, gfp_order);
+ }
+ EXPORT_SYMBOL_GPL(iommu_unmap);
+diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+index 5a7a3d8..be22ad8 100644
+--- a/include/linux/iommu.h
++++ b/include/linux/iommu.h
+@@ -40,10 +40,6 @@ struct iommu_ops {
+ 		   phys_addr_t paddr, int gfp_order, int prot);
+ 	int (*unmap)(struct iommu_domain *domain, unsigned long iova,
+ 		     int gfp_order);
+-	int (*map_range)(struct iommu_domain *domain, unsigned long iova,
+-			 phys_addr_t paddr, size_t size, int prot);
+-	void (*unmap_range)(struct iommu_domain *domain, unsigned long iova,
+-			    size_t size);
+ 	phys_addr_t (*iova_to_phys)(struct iommu_domain *domain,
+ 				    unsigned long iova);
+ 	int (*domain_has_cap)(struct iommu_domain *domain,
+@@ -60,10 +56,6 @@ extern int iommu_attach_device(struct iommu_domain *domain,
+ 			       struct device *dev);
+ extern void iommu_detach_device(struct iommu_domain *domain,
+ 				struct device *dev);
+-extern int iommu_map_range(struct iommu_domain *domain, unsigned long iova,
+-			   phys_addr_t paddr, size_t size, int prot);
+-extern void iommu_unmap_range(struct iommu_domain *domain, unsigned long iova,
+-			      size_t size);
+ extern int iommu_map(struct iommu_domain *domain, unsigned long iova,
+ 		     phys_addr_t paddr, int gfp_order, int prot);
+ extern int iommu_unmap(struct iommu_domain *domain, unsigned long iova,
+@@ -104,18 +96,6 @@ static inline void iommu_detach_device(struct iommu_domain *domain,
+ {
  }
  
- static int kvm_iommu_unmap_memslots(struct kvm *kvm)
+-static inline int iommu_map_range(struct iommu_domain *domain,
+-				  unsigned long iova, phys_addr_t paddr,
+-				  size_t size, int prot)
+-{
+-	return -ENODEV;
+-}
+-
+-static inline void iommu_unmap_range(struct iommu_domain *domain,
+-				     unsigned long iova, size_t size)
+-{
+-}
+-
+ static inline int iommu_map(struct iommu_domain *domain, unsigned long iova,
+ 			    phys_addr_t paddr, int gfp_order, int prot)
+ {
 -- 
 1.6.6
 
