@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855Ab0A1Xyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932170Ab0A1X4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855Ab0A1Xyr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 18:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229Ab0A1Xyr
+	id S932170Ab0A1X4l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 18:56:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694Ab0A1X4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 18:54:47 -0500
-Received: from mail.anarazel.de ([217.115.131.40]:60956 "EHLO mail.anarazel.de"
+	Thu, 28 Jan 2010 18:56:40 -0500
+Received: from gate.crashing.org ([63.228.1.57]:44747 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752406Ab0A1Xyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 18:54:46 -0500
-From: Andres Freund <andres@anarazel.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fs: add fincore(2) (mincore(2) for file descriptors)
-Date: Fri, 29 Jan 2010 00:54:40 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.33-rc5-andres-00243-g6ea299e; KDE/4.3.95; x86_64; ; )
-Cc: Steve VanDeBogart <vandebo-lkml@nerdbox.net>,
-       Chris Frost <frost@cs.ucla.edu>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Benny Halevy <bhalevy@panasas.com>, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <20100120215712.GO27212@frostnet.net> <alpine.DEB.1.00.1001272319530.2909@abydos.NerdBox.Net> <20100128002313.2b94344e.akpm@linux-foundation.org>
-In-Reply-To: <20100128002313.2b94344e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1753169Ab0A1X4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 18:56:40 -0500
+Subject: Re: linux-next: add utrace tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kyle Moffett <kyle@moffetthome.net>, tytso@mit.edu,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain>
+References: <alpine.LFD.2.00.1001211724500.13231@localhost.localdomain>
+	 <20100122200129.GG22003@redhat.com>
+	 <alpine.LFD.2.00.1001221355250.13231@localhost.localdomain>
+	 <20100122221348.GA4263@redhat.com>
+	 <alpine.LFD.2.00.1001221604190.13231@localhost.localdomain>
+	 <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain>
+	 <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
+	 <20100123112333.GA15455@elte.hu> <20100123114729.GA7828@redhat.com>
+	 <20100123194820.GM21263@thunk.org>
+	 <f73f7ab81001241742t1f827ddetd958e1949787020f@mail.gmail.com>
+	 <alpine.LFD.2.00.1001250845180.3574@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 29 Jan 2010 10:53:06 +1100
+Message-ID: <1264722786.20211.15.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001290054.42246.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 January 2010 09:23:13 Andrew Morton wrote:
-> On Wed, 27 Jan 2010 23:42:35 -0800 (PST) Steve VanDeBogart <vandebo-
-lkml@NerdBox.Net> wrote:
-> > > Is it likely that these changes to SQLite and Gimp would be merged into
-> > > the upstream applications?
-> > 
-> > Changes to the GIMP fit nicely into the code structure, so it's feasible
-> > to push this kind of optimization upstream.  The changes in SQLite are
-> > a bit more focused on the benchmark, but a more general approach is not
-> > conceptually difficult.  SQLite may not want the added complexity, but
-> > other database may be interested in the performance improvement.
-> > 
-> > Of course, these kernel changes are needed before any application can
-> > optimize its IO as we did with libprefetch.
-> That didn't really answer my question.
-> If there's someone signed up and motivated to do the hard work of
-> getting these changes integrated into the upstream applications then
-> that makes us more interested.  If, however it was some weekend
-> proof-of-concept hack which shortly dies an instadeath then...  meh,
-> not so much.
-There is somebody working on a POC contrib module for postgres to deliver 
-better cost estimates using mincore - as postgres doesnt use mmap itself 
-something like fincore would be rather nice there.
+On Mon, 2010-01-25 at 08:52 -0800, Linus Torvalds wrote:
+> 
+> That said, I also suspect that people should still look seriously at 
+> simply just improving ptrace. For example, I suspect that the biggest 
+> problem with ptrace is really just the signalling, and that creating a
+> new 
+> extension for JUST THAT, and then having a model where you can choose
+> - at 
+> PTRACE_ATTACH time - how to wait for events would be a good thing.
 
-(While currently it would be contrib module the plan is to be able too hook it 
-into it without modifications to core pg code)
+like returning a fd to poll() on ? :-)
 
-Andres
+Cheers,
+Ben.
+
+
