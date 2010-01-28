@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219Ab0A1N4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276Ab0A1OBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219Ab0A1N4r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 08:56:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192Ab0A1N4q
+	id S1756276Ab0A1OBs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 09:01:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213Ab0A1OBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 08:56:46 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:57975 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756190Ab0A1N4p (ORCPT
+	Thu, 28 Jan 2010 09:01:47 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51471
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756031Ab0A1OBq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 08:56:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=tGA0vuVsYDoxRcqxaP01dEL4BBrzQo859S9KZBzoQfSVfqis0deljlGSurEFOJOt/b
-         HmyBaEVFiFzCq6pfuwUqm8GhyoDkxzy+DeIgrd8QtwSiGtMeoF5or9BD3EgHosxwunoA
-         LSvcoPQBkq7uhmGiwygQthZn4UNmQV8y0k3F8=
-MIME-Version: 1.0
-In-Reply-To: <4B60BE7F.8070304@gmail.com>
-References: <201001152359.o0FNxVne006113@imap1.linux-foundation.org>
-	 <4B5AF1E5.1070304@gmail.com>
-	 <20100127142400.5657a7fe.akpm@linux-foundation.org>
-	 <4B60BE7F.8070304@gmail.com>
-Date: Thu, 28 Jan 2010 14:56:43 +0100
-Message-ID: <8a883f731001280556p214d9b8ao6f4c4c9005825d04@mail.gmail.com>
-Subject: Re: i915: gpu wedged [was: mmotm 2010-01-15-15-34 uploaded]
-From: Johannes Engel <jcnengel@googlemail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Thu, 28 Jan 2010 09:01:46 -0500
+Date: Thu, 28 Jan 2010 06:01:59 -0800 (PST)
+Message-Id: <20100128.060159.182910438.davem@davemloft.net>
+To: adobriyan@gmail.com
+Cc: geert@linux-m68k.org, linux-next@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] netdev: remove more HAVE_ leftovers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100127201741.GA4855@x200>
+References: <20100126191727.GA5454@x200>
+	<20100126.163256.196562963.davem@davemloft.net>
+	<20100127201741.GA4855@x200>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, forgot to reply to all lists last time...
+From: Alexey Dobriyan <adobriyan@gmail.com>
+Date: Wed, 27 Jan 2010 22:17:41 +0200
 
-Looks like bug #15004 (kernel) or #25475 (Xorg).
+> [PATCH] netdev: remove more HAVE_ leftovers 
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-Cheers, Johannes
+Applied, thanks Alexey.
