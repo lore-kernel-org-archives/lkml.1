@@ -1,94 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369Ab0A1U2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754258Ab0A1Uah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754369Ab0A1U2A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 15:28:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742Ab0A1U16
+	id S1754258Ab0A1Uah (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 15:30:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968Ab0A1Uag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 15:27:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39513 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752871Ab0A1U15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 15:27:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with pci=use_crs)
-Date: Thu, 28 Jan 2010 21:28:33 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc5-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garrett <jeff@jgarrett.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <4B61D554.9000003@kernel.org> <20100128110331.61455a15@jbarnes-piketon>
-In-Reply-To: <20100128110331.61455a15@jbarnes-piketon>
+	Thu, 28 Jan 2010 15:30:36 -0500
+Received: from mail.windriver.com ([147.11.1.11]:52691 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600Ab0A1Uag (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 15:30:36 -0500
+Message-ID: <4B61F34A.20305@windriver.com>
+Date: Thu, 28 Jan 2010 14:27:54 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/4] x86,hw_breakpoint,kgdb: kgdb to usehw_breakpointAPI
+References: <1264480000-6997-1-git-send-email-jason.wessel@windriver.com> <1264480000-6997-2-git-send-email-jason.wessel@windriver.com> <20100128171050.GA18683@nowhere> <4B61CD14.7000901@windriver.com> <20100128200418.GC18683@nowhere>
+In-Reply-To: <20100128200418.GC18683@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001282128.33389.rjw@sisk.pl>
+X-OriginalArrivalTime: 28 Jan 2010 20:27:53.0864 (UTC) FILETIME=[5EA0C080:01CAA058]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 January 2010, Jesse Barnes wrote:
-> On Thu, 28 Jan 2010 10:20:04 -0800
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> 
-> > On 01/28/2010 08:09 AM, Bjorn Helgaas wrote:
-> > > On Wednesday 27 January 2010 10:53:51 pm Yinghai Lu wrote:
-> > >> On 01/27/2010 08:26 PM, Bjorn Helgaas wrote:
-> > >>> On Wed, 2010-01-27 at 15:34 -0800, Yinghai Lu wrote:
-> > > 
-> > >>>> 2. how about when apci is disabled?
-> > >>>
-> > >>> When ACPI is disabled, I think we just have to accept that we
-> > >>> lose some functionality.  I don't see the need for alternate ways
-> > >>> to accomplish everything that ACPI does.  It's becoming less and
-> > >>> less useful to disable ACPI; I think it's only interesting as a
-> > >>> debugging tool, and even then it's a sledgehammer.
-> > >>
-> > >> some systems when acpi is enabled could have interrupt storm. 
-> > >> and have to disable acpi.
-> > > 
-> > > We should fix that problem rather than just covering it up by
-> > > disabling ACPI.  Can you provide any details?
-> > that is not covering problem. acpi just cause too many problems.
-> > 
-> > systems using acpi hotplug support, and use acpi aml code to monitor
-> > the hotplug status instead of HW and after one or two days will have
-> > interrupt storm with sci/acpi interrupt aka 9.
-> 
-> 
-> But disabling it gets us into trouble too.  When platforms are designed
-> for Linux, they may be designed to have ACPI disabled (though this is
-> probably rare for general purpose PCs and servers).
+Frederic Weisbecker wrote:
+> On Thu, Jan 28, 2010 at 11:44:52AM -0600, Jason Wessel wrote:
+>   
+>> Frederic Weisbecker wrote:
+>>     
+>>> Good simplification, but that doesn't appear related to kgdb,
+>>> this should be done in a separate patch, for the perf/core tree.
+>>>
+>>>   
+>>>       
+>> Specifically this is required so that kgdb can modify the state of dr7
+>> by installing and removing breakpoints.  Without this change, on return
+>> from the callback the dr7 was not correct.
+>>
+>> As far as I know, only kgdb was altering the dr registers during a call
+>> back..
+>>     
+>
+>
+>
+> Ok. Well not sure how/where it needs to modify dr7 directly.
+>
+>   
 
-Well, not quite.  On recent SMP systems it's next to impossible to get all of
-the necessary system configuration information without ACPI, since it only is
-provided by the ACPI tables (the configuration of APICs, interrupt routing,
-CPU C states, other stuff).
+This is not needed any more with the patch I already followed up with. 
 
-[BTW, I think it's better to CC linux-acpi and Len at this point.]
 
-> However when they're designed for Windows, they're generally designed to use
-> ACPI, so if we disable it we run the risk of hitting all sorts of bugs since
-> we're running in an untested configuration.
+To provide an explanation though, dr7 got updated as a result of
+installing some breakpoints while in kgdb while in the call back.   And
+that value got squashed by what ever was saved on the stack as a local
+in the perf breakpoint handler.
 
-I guess without ACPI we're guaranteed to run into troubles on many modern
-hardware configurations.
+>  
+>   
+>> I admit I did not test running a kvm instance, so I don't know what kind
+>> of conflict there would be here.  I went and further looked at the kvm
+>> code, and they call the function for the same reason kgdb does.  They
+>> want the original system values back on resuming normal kernel
+>> execution.  KVM can modify dr7 or other regs directly on entry for its
+>> guest execution.  Kgdb does the same sort of thing so as to prevent the
+>> debugger from interrupting itself.
+>>     
+>
+>
+>
+> You mean kgdb needs to disable dr7 while handling a breakpoint to
+> avoid recursion? In this case this is something already done
+> from the x86 breakpoint handler.
+>
+>
+>   
 
-> So fixing the issues with ACPI enabled seems like a better idea; after
-> all, presumably Windows works on this platform with ACPI enabled, why
-> shouldn't we?
-> 
-> But I'm speaking in general here; we'd have to dig into the details of
-> the particular problem you mention to figure out the best course of
-> action (but I'm still pretty sure it's not "disable ACPI").
+True, that is done for the master core, but not the slave cores, which
+we stop dead in their tracks with a nmi, so they have not had dr7 zeroed
+out.
 
-Agreed.
+Obviously we restore it on resume.
 
-Rafael
+>  
+>   
+>>> Would be nice to have bptype set to the generic flags
+>>> we have already in linux/hw_breakpoint.h:
+>>>
+>>> enum {
+>>> 	HW_BREAKPOINT_R = 1,
+>>> 	HW_BREAKPOINT_W = 2,
+>>> 	HW_BREAKPOINT_X = 4,
+>>> };
+>>>
+>>>
+>>>   
+>>>       
+>> These numbers have to get translated somewhere from the GDB version
+>> which it handed off via the gdb serial protocol.  They could be
+>> translated in the gdb stub, but for now they are in the arch specific
+>> stub.  Or you can choose to use the same numbering scheme as gdb for the
+>> breakpoint types and the values could be used directly.
+>>     
+>
+>
+>
+> Ah ok. Well, translating gdb <-> generic values will make you
+> move this code from x86 to core at least.
+>
+>   
+
+
+I'll move this to the gdbstub in the next merge window, because it looks
+like there might also be other archs that gain the
+arch/*/kernel/hw_breakpoint.c.
+
+I can also move the logic for the install / remove to be owned by either
+hw_breakpoint.c or the debug core because that will become arch
+independent as well as more archs pickup the hw_breakpoint.c methodology.
+
+
+Thanks,
+Jason.
