@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211Ab0A1EcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220Ab0A1EeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754211Ab0A1EcA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 23:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549Ab0A1Eb7
+	id S1754220Ab0A1EeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 23:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549Ab0A1EeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 23:31:59 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:31751 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490Ab0A1Eb6 (ORCPT
+	Wed, 27 Jan 2010 23:34:18 -0500
+Received: from ironport2-out.teksavvy.com ([206.248.154.183]:12794 "EHLO
+	ironport2-out.pppoe.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752803Ab0A1EeS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 23:31:58 -0500
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with
-	pci=use_crs)
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jeff Garrett <jeff@jgarrett.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4B60CD99.7020305@kernel.org>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
-	 <201001271345.54454.bjorn.helgaas@hp.com>
-	 <alpine.LFD.2.00.1001271247450.3570@localhost.localdomain>
-	 <201001271403.41955.bjorn.helgaas@hp.com>  <4B60CD99.7020305@kernel.org>
-Content-Type: text/plain
-Date: Wed, 27 Jan 2010 21:26:02 -0700
-Message-Id: <1264652762.24020.5.camel@dc7800.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 27 Jan 2010 23:34:18 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AscAAJCiYEtLd/sX/2dsb2JhbAAIgzHEdY95gSqCN1gE
+X-IronPort-AV: E=Sophos;i="4.49,358,1262581200"; 
+   d="scan'208";a="54724710"
+Message-ID: <4B6113C7.201@teksavvy.com>
+Date: Wed, 27 Jan 2010 23:34:15 -0500
+From: Mark Lord <kernel@teksavvy.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: 2.6.32.5 regression: page allocation failure. order:1,
+References: <4B5FA147.5040802@teksavvy.com> <20100127120820.GB25750@csn.ul.ie> <4B60C0A7.7090501@teksavvy.com> <4B610FDA.50104@teksavvy.com>
+In-Reply-To: <4B610FDA.50104@teksavvy.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-27 at 15:34 -0800, Yinghai Lu wrote:
-> On 01/27/2010 01:03 PM, Bjorn Helgaas wrote:
-> > On Wednesday 27 January 2010 01:50:12 pm Linus Torvalds wrote:
-> >>
-> >> On Wed, 27 Jan 2010, Bjorn Helgaas wrote:
-> >>>
-> >>> Without intel_bus.c, we essentially assume config 1 all the time.
-> >>> If we keep intel_bus.c and this patch for .33, things should work
-> >>> for configs 1 and 4.  Adding support for config 4 is good.
-> >>
-> >> Quite frankly, is there any major downside to just disabling/removing 
-> >> intel_bus.c for 2.6.33? If we're not planning on having it in the long run 
-> >> anyway - or even if we are, but we can't be really happy about the state 
-> >> of it as it would be in 2.6.33, not using it at all seems to be the 
-> >> smaller headache.
-> >>
-> >> The machines that it helps are also the machines where you can fix things 
-> >> up with 'use_csr', no? And they are pretty rare, and they didn't use to 
-> >> work without that use_csr in 2.6.32 either, so it's not even a regression.
-> >>
-> >> Am I missing something?
-> > 
-> > Only that when we added intel_bus.c, Yinghai reported that the reason
-> > was because a machine had a broken _CRS, so "pci=use_crs" wouldn't help.
-> > 
-> > At the time, Windows hadn't been brought up on that box.  My
-> > speculation is that by now, they've done that bringup and probably
-> > fixed the _CRS issue, so it might work now.
-> > 
-> > If that's the case, we could drop intel_bus.c from .33 and just use
-> > "pci=use_crs" on those boxes until we can figure out how to turn it
-> > on automatically.
+Mark Lord wrote:
+> Mark Lord wrote:
+>> Mel Gorman wrote:
+>>> On Tue, Jan 26, 2010 at 09:13:27PM -0500, Mark Lord wrote:
+>>>> I recently upgraded our 24/7 server from 2.6.31.5 to 2.6.32.5.
+>>>>
+>>>> Now, suddenly the logs are full of "page allocation failure. order:1",
+>>>> and the odd "page allocation failure. order:4" failures.
+>>>>
+>>>> Wow.  WTF happened in 2.6.32 ???
+>>>>
+>>>
+>>> There was one bug related to MIGRATE_RESERVE that might be affecting
+>>> you. It reported as impacting swap-orientated workloads but it could
+>>> easily affect drivers that depend on high-order atomic allocations.
+>>> Unfortunately, the fix is not signed-off yet but I expect it to make its
+>>> way towards mainline when it is.
+>>>
+>>> Here is the patch with a slightly-altered changelog. Can you test if it
+>>> makes a difference please?
+>> ..
+>>
+>> We don't like to reboot our 24/7 server very often,
+>> and certainly not for debugging buggy kernels.
+>>
+>> It's rock solid again with 2.6.31.12 on it now.
+>>
+>> The defining characteristic of that machine, is that it has only 512MB
+>> of physical RAM.  So perhaps I'll try booting a different machine here
+>> with mem=512M and see how that behaves.  If the problem shows up on that,
+>> then I'll try the patch.
+> ..
 > 
-> BIOS fixed that problem already. but
-> 1. how to turn that pci=use_crs for that box automatically ?
-> how about our other kind of boxes?
+> Sod it.  2.6.32 is simply too broken for us here on 32-bit non-SMP.
+> 
+> Attempting to boot a 32-bit kernel with "nosmp mem=512M" on my notebook
+> locks up at boot time with several repeated messages like this:
+> 
+>   request_module: runaway loop modprobe binfmt_464c
+> 
+> Useless kernel on 32-bit.  I hope 2.6.33 ends up less buggy.
+..
 
-Yes, we need a way to turn on "pci=use_crs" automatically.  My first
-thought is to turn it on for all BIOSes with dates of 2010 or later, and
-in addition, have a whitelist of the pre-2010 machines that require it.
+I rebuilt it (again!), this time as a pure UP (non-SMP) kernel,
+and it still locks at boot, with or without the mem=512M parameter.
 
-> 2. how about when apci is disabled?
+This is one really bad kernel release for 32-bit x86.
 
-When ACPI is disabled, I think we just have to accept that we lose some
-functionality.  I don't see the need for alternate ways to accomplish
-everything that ACPI does.  It's becoming less and less useful to
-disable ACPI; I think it's only interesting as a debugging tool, and
-even then it's a sledgehammer.
-
-Bjorn
-
-
+-ml
