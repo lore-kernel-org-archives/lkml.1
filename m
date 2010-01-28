@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532Ab0A1Mx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684Ab0A1Myr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532Ab0A1Mx5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 07:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388Ab0A1Mx4
+	id S1755684Ab0A1Myr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 07:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702Ab0A1Myq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 07:53:56 -0500
-Received: from mail-yx0-f193.google.com ([209.85.210.193]:41991 "EHLO
-	mail-yx0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755391Ab0A1Mxz (ORCPT
+	Thu, 28 Jan 2010 07:54:46 -0500
+Received: from mail.codesourcery.com ([38.113.113.100]:34292 "EHLO
+	mail.codesourcery.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753122Ab0A1Myp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 07:53:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=jftKWekBbcjN7cR9kUqD2HevsOGbYfe1Zb79duG1CYNRm+B/ZygmPTVGkDrTzJZJ9J
-         9PrMUWbEDZiQvkyeOgJLM1MnJBmaMhFV7fe7sL79askDyX+Rz3AQSeEYAU8ZLOeWffjw
-         LhhDbisLzE0ilyERrTSm0x02jmz/5mjnvIUUQ=
-From: Magnus Damm <magnus.damm@gmail.com>
-To: linux@arm.linux.org.uk
-Cc: eric.y.miao@gmail.com, tony@atomide.com, linux-kernel@vger.kernel.org,
-       khilman@deeprootsystems.com, lethal@linux-sh.org, ben-linux@fluff.org,
-       Magnus Damm <magnus.damm@gmail.com>,
-       linux-arm-kernel@lists.infradead.org
-Date: Thu, 28 Jan 2010 21:41:12 +0900
-Message-Id: <20100128124112.8982.731.sendpatchset@rxone.opensource.se>
-In-Reply-To: <20100128124028.8982.16123.sendpatchset@rxone.opensource.se>
-References: <20100128124028.8982.16123.sendpatchset@rxone.opensource.se>
-Subject: [PATCH 04/06] sh: Build drivers/sh for SuperH Mobile ARM
+	Thu, 28 Jan 2010 07:54:45 -0500
+Subject: [PATCH] EeePC 1005PE rfkill fix
+To: acpi4asus-user@lists.sourceforge.net
+From: Paul Brook <paul@codesourcery.com>
+Organization: CodeSourcery
+Date: Thu, 28 Jan 2010 12:53:54 +0000
+Cc: Corentin Chary <corentincj@iksaif.net>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001281253.54878.paul@codesourcery.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Magnus Damm <damm@opensource.se>
+The EeePC 1005PE has the wireless card on PCI bus 2.
 
-Build drivers/sh in the case for SuperH Mobile ARM.
-Shared code for the interrupt controller (INTC) and
-the gpio/pinmux (PFC) is located there.
-
-Signed-off-by: Magnus Damm <damm@opensource.se>
+Signed-off-by: Paul Brook <paul@codesourcery.com>
 ---
+Same as before, but without mail client mangling the patch.
 
- drivers/Makefile |    1 +
- 1 file changed, 1 insertion(+)
+I couldn't figure out a smart way of figuring out the correct bus, so I 
+hardcoded the device name. lspci and acpi dumps available at 
+http://www.pbrook80.webspace.virginmedia.com/
 
---- 0001/drivers/Makefile
-+++ work/drivers/Makefile	2010-01-19 15:39:21.000000000 +0900
-@@ -99,6 +99,7 @@ obj-$(CONFIG_SGI_SN)		+= sn/
- obj-y				+= firmware/
- obj-$(CONFIG_CRYPTO)		+= crypto/
- obj-$(CONFIG_SUPERH)		+= sh/
-+obj-$(CONFIG_ARCH_SHMOBILE)	+= sh/
- obj-$(CONFIG_GENERIC_TIME)	+= clocksource/
- obj-$(CONFIG_DMA_ENGINE)	+= dma/
- obj-$(CONFIG_DCA)		+= dca/
+My guess is that the 1005HA is configured similarly, however I don't have 
+hardware to test. The preceding comments imply that the 1005HA does not 
+require the pci hotplug bits. On my 1005PE the hotplug bits are definitely 
+required (the device stops responding when the rfkill is activated), we just 
+need to make sure we disable the right bus. PCI bus 1 contains the wired 
+Ethernet controller.
+
+ drivers/platform/x86/eeepc-laptop.c |   15 ++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
+index e2be6bb..6b53701 100644
+--- a/drivers/platform/x86/eeepc-laptop.c
++++ b/drivers/platform/x86/eeepc-laptop.c
+@@ -161,6 +161,7 @@ struct eeepc_laptop {
+ 					   by this BIOS */
+ 	bool cpufv_disabled;
+ 	bool hotplug_disabled;
++	int hotplug_bus;
+ 	u16 event_count[128];		/* count for each event */
+ 
+ 	struct platform_device *platform_device;
+@@ -585,9 +586,10 @@ static void eeepc_rfkill_hotplug(struct eeepc_laptop *eeepc)
+ 	mutex_lock(&eeepc->hotplug_lock);
+ 
+ 	if (eeepc->hotplug_slot) {
+-		bus = pci_find_bus(0, 1);
++		bus = pci_find_bus(0, eeepc->hotplug_bus);
+ 		if (!bus) {
+-			pr_warning("Unable to find PCI bus 1?\n");
++			pr_warning("Unable to find PCI bus %d?\n",
++				   eeepc->hotplug_bus);
+ 			goto out_unlock;
+ 		}
+ 
+@@ -695,7 +697,7 @@ static struct hotplug_slot_ops eeepc_hotplug_slot_ops = {
+ static int eeepc_setup_pci_hotplug(struct eeepc_laptop *eeepc)
+ {
+ 	int ret = -ENOMEM;
+-	struct pci_bus *bus = pci_find_bus(0, 1);
++	struct pci_bus *bus = pci_find_bus(0, eeepc->hotplug_bus);
+ 
+ 	if (!bus) {
+ 		pr_err("Unable to find wifi PCI bus\n");
+@@ -1281,6 +1283,13 @@ static void eeepc_dmi_check(struct eeepc_laptop *eeepc)
+ 		eeepc->hotplug_disabled = true;
+ 		pr_info("wlan hotplug disabled\n");
+ 	}
++
++	/* The eeepc 1005PE has the wireless chip on the second PCIe bus.  */
++	if (strcmp(model, "1005PE") == 0) {
++	    eeepc->hotplug_bus = 2;
++	} else {
++	    eeepc->hotplug_bus = 1;
++	}
+ }
+ 
+ static void cmsg_quirk(struct eeepc_laptop *eeepc, int cm, const char *name)
+-- 
+1.6.6
+
