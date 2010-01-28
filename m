@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293Ab0A1FVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752316Ab0A1FZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752293Ab0A1FVX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 00:21:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465Ab0A1FVV
+	id S1752316Ab0A1FZF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 00:25:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863Ab0A1FZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 00:21:21 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:37172 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932185Ab0A1FVU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 00:21:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=YerWeyX8qQ8WntLe1txaCHmvmk6Yubkgs2eGWsihudmNfd41hmwpY8ABL+NjErH2xn
-         /UN9kAN45nBxiiUZQqA06xJUUeLSnRVqUc6NFGa1sI4mtBY+2Elyg2H4NJy/l8leCbDQ
-         rRW1SLQ4hWJpt53en8U+rFckptS15YKRUHHUA=
-MIME-Version: 1.0
-In-Reply-To: <20100127132212.cd43cd94.akpm@linux-foundation.org>
-References: <20100118044142.GS12666@kryten>
-	 <tip-43f85eab1411905afe5db510fbf9841b516e7e6a@git.kernel.org>
-	 <661de9471001270534ve6f7bf0nb58ef58f9a6ff10e@mail.gmail.com>
-	 <20100127132212.cd43cd94.akpm@linux-foundation.org>
-Date: Thu, 28 Jan 2010 10:51:16 +0530
-X-Google-Sender-Auth: c5c3305d54894d49
-Message-ID: <661de9471001272121v70870f0dvc7bd2d4e95dc860a@mail.gmail.com>
-Subject: Re: [tip:sched/urgent] sched: cpuacct: Use bigger percpu counter 
-	batch values for stats counters
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mingo@redhat.com, hpa@zytor.com, anton@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 28 Jan 2010 00:25:04 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:35736 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750843Ab0A1FZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 00:25:03 -0500
+Date: Thu, 28 Jan 2010 16:24:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Andy Walls <awalls@radix.net>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Devin Heitmueller <dheitmueller@kernellabs.com>
+Subject: Re: linux-next: v4l-dvb tree build failure
+Message-Id: <20100128162456.41fff1d9.sfr@canb.auug.org.au>
+In-Reply-To: <4B60EE44.7080508@infradead.org>
+References: <20100127175917.5d690f52.sfr@canb.auug.org.au>
+	<1264634688.3088.1.camel@palomino.walls.org>
+	<4B60EE44.7080508@infradead.org>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__28_Jan_2010_16_24_56_+1100_Bbg0aUsaadDy=KQY"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> > __ __ __ __ __ __ __ __ca = ca->parent;
->> > __ __ __ __} while (ca);
->> > __ __ __ __rcu_read_unlock();
+--Signature=_Thu__28_Jan_2010_16_24_56_+1100_Bbg0aUsaadDy=KQY
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Mauro, Andy,
+
+On Wed, 27 Jan 2010 23:54:12 -0200 Mauro Carvalho Chehab <mchehab@infradead=
+.org> wrote:
 >
-> ^^ your email client inexplicably fills emails with 0xa0
->
+> Andy Walls wrote:
+> > Looks good to me.
+> >=20
+> > Acked-by: Andy Walls <awalls@radix.net>
+>=20
+> Added at the tree.
 
-I am going to be changing my email client soon, back to the good old
-text client.
+Thanks guys.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
->> IIRC, Andrew picked up this patch as well and applied some checkpatch
->> fixes too..
->
-> No, I have no changes.
->
+--Signature=_Thu__28_Jan_2010_16_24_56_+1100_Bbg0aUsaadDy=KQY
+Content-Type: application/pgp-signature
 
-Sorry, I was confused, the changes you had were for getdelays.c
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> Last I heard, Anton was "working on a useful comment" and will be
-> redoing the patch.
+iEYEARECAAYFAkthH6gACgkQjjKRsyhoI8wD0gCgux0CnuAYs53O9VKUc99+6CME
+BroAnjIDZCQ//6wKNHWwp17OeCm6OSZx
+=XAEh
+-----END PGP SIGNATURE-----
 
-Yep, lets wait on him.
-
-Three Cheers,
-Balbir
+--Signature=_Thu__28_Jan_2010_16_24_56_+1100_Bbg0aUsaadDy=KQY--
