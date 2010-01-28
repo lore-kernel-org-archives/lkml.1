@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779Ab0A1HNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895Ab0A1HN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779Ab0A1HNE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 02:13:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609Ab0A1HND
+	id S1754895Ab0A1HN0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 02:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857Ab0A1HNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 02:13:03 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:53443 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752298Ab0A1HNC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 02:13:02 -0500
+	Thu, 28 Jan 2010 02:13:24 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47922 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754852Ab0A1HNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 02:13:22 -0500
+Date: Thu, 28 Jan 2010 07:12:46 GMT
+From: tip-bot for Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, elendil@planet.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, elendil@planet.nl, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <201001251456.34996.elendil@planet.nl>
+References: <201001251456.34996.elendil@planet.nl>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] sched: Correct printk whitespace in warning from cpu down task check
+Message-ID: <tip-9d3cfc4c1d17c6d3bc1373e3b954c56b92607755@git.kernel.org>
+Git-Commit-ID: 9d3cfc4c1d17c6d3bc1373e3b954c56b92607755
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Date: Thu, 28 Jan 2010 17:13:00 +1000
-Message-ID: <1d3f23371001272313i62fc9158se4cd9173f196fb12@mail.gmail.com>
-Subject: UIO / of_genirq driver
-From: John Williams <john.williams@petalogix.com>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Cc: Grant Likely <grant.likely@secretlab.ca>, w.sang@pengutronix.de,
-       magnus.damm@gmail.com, hjk@linutronix.de, gregkh@suse.de,
-       linuxppc-dev@lists.ozlabs.org,
-       devicetree-discuss <devicetree-discuss@lists.ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 28 Jan 2010 07:12:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Commit-ID:  9d3cfc4c1d17c6d3bc1373e3b954c56b92607755
+Gitweb:     http://git.kernel.org/tip/9d3cfc4c1d17c6d3bc1373e3b954c56b92607755
+Author:     Frans Pop <elendil@planet.nl>
+AuthorDate: Mon, 25 Jan 2010 14:56:34 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 28 Jan 2010 06:59:55 +0100
 
-I came across this thread/patchset from around June last year:
+sched: Correct printk whitespace in warning from cpu down task check
 
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-June/073086.html
+Due to an incorrect line break the output currently contains tabs.
+Also remove trailing space.
 
-where Wolfgang proposed a generic OF-driven UIO driver.  The
-discussion seemed to stall after Grant Likely indicated he didn't like
-the use of a linux-specific compatible binding in the device tree
-(compatible="generic-uio").
+The actual output that logcheck sent me looked like this:
+ Task events/1 (pid = 10) is on cpu 1^I^I^I^I(state = 1, flags = 84208040)
 
-I guess I have a couple of questions:
+After this patch it becomes:
+ Task events/1 (pid = 10) is on cpu 1 (state = 1, flags = 84208040)
 
- * did this patchset go anywhere?  I've been using it here the last
-few days and it works great.
+Signed-off-by: Frans Pop <elendilplanet.nl>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <201001251456.34996.elendil@planet.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/cpu.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-and more generally:
-
- * Is there a better way to handle the OF bindings for this sort of thing?
-
-Grant's complaint seems to come up often - when you have generic
-controllers in a system (SPI/I2C also spring to mind), we need a way
-of signalling somehow to the kernel that each instance has a
-particular usage intended.
-
-However, the device-tree guys complain whenever anyone tries to encode
-anything non-hardware related into the DTS itself.
-
-I guess I'd like to just open up a discussion, see if there's been any
-progress towards a general solution.
-
-Thanks,
-
-John
--- 
-John Williams
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 08e54e7..677f253 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -154,10 +154,10 @@ static inline void check_for_tasks(int cpu)
+ 		if (task_cpu(p) == cpu && p->state == TASK_RUNNING &&
+ 		    (!cputime_eq(p->utime, cputime_zero) ||
+ 		     !cputime_eq(p->stime, cputime_zero)))
+-			printk(KERN_WARNING "Task %s (pid = %d) is on cpu %d\
+-				(state = %ld, flags = %x) \n",
+-				 p->comm, task_pid_nr(p), cpu,
+-				 p->state, p->flags);
++			printk(KERN_WARNING "Task %s (pid = %d) is on cpu %d "
++				"(state = %ld, flags = %x)\n",
++				p->comm, task_pid_nr(p), cpu,
++				p->state, p->flags);
+ 	}
+ 	write_unlock_irq(&tasklist_lock);
+ }
