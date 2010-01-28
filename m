@@ -1,107 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919Ab0A1WIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150Ab0A1WI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919Ab0A1WIZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 17:08:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620Ab0A1WIY
+	id S1754150Ab0A1WI4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 17:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928Ab0A1WI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 17:08:24 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:34685 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487Ab0A1WIX (ORCPT
+	Thu, 28 Jan 2010 17:08:56 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33726 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752308Ab0A1WIz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 17:08:23 -0500
-Message-ID: <4B620AD4.8000108@linux.vnet.ibm.com>
-Date: Thu, 28 Jan 2010 14:08:20 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Thu, 28 Jan 2010 17:08:55 -0500
+Date: Thu, 28 Jan 2010 22:08:35 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: eric.y.miao@gmail.com, tony@atomide.com, linux-kernel@vger.kernel.org,
+       khilman@deeprootsystems.com, lethal@linux-sh.org, ben-linux@fluff.org,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 01/06] ARM: SuperH Mobile ARM, sh7367 and G3EVM support
+Message-ID: <20100128220835.GA23471@n2100.arm.linux.org.uk>
+References: <20100128124028.8982.16123.sendpatchset@rxone.opensource.se> <20100128124038.8982.82995.sendpatchset@rxone.opensource.se>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Dan Terpstra <terpstra@eecs.utk.edu>, Philip Mucci <mucci@eecs.utk.edu>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [RFC] perf_events: support for uncore a.k.a. nest units
-References: <4B560ACD.4040206@linux.vnet.ibm.com> <1263994448.4283.1052.camel@laptop> <1264023204.4283.1124.camel@laptop> <4B57907E.5000207@linux.vnet.ibm.com> <20100121072118.GA10585@elte.hu> <4B58A750.2060607@linux.vnet.ibm.com> <4B58AAF7.60507@linux.vnet.ibm.com> <20100127102834.GA27357@elte.hu>  <4B60990C.1030804@linux.vnet.ibm.com> <1264676244.4283.2093.camel@laptop>  <4B61D0CB.4090809@linux.vnet.ibm.com> <1264705607.4283.2120.camel@laptop>
-In-Reply-To: <1264705607.4283.2120.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100128124038.8982.82995.sendpatchset@rxone.opensource.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/28/2010 11:06 AM, Peter Zijlstra wrote:
-> On Thu, 2010-01-28 at 10:00 -0800, Corey Ashford wrote:
->>
->> I don't quite get what you're saying here.  Perhaps you are thinking
->> that all uncore units are associated with a particular cpu node, or a
->> set of cpu nodes?  And that there's only one uncore unit per cpu (or set
->> of cpus) that needs to be addressed, i.e. no ambiguity?
->
-> Well, I was initially thinking of the intel uncore thing which is memory
-> controller, so node, level.
->
-> But all system topology bound pmus can be done that way.
->
->> That is not going to be the case for all systems.  We can have uncore
->> units that are associated with the entire system,
->
-> Right, but that's simple too.
->
->> for example PMUs in an I/O device.
->
->> And we can have multiple uncore units of a particular
->> type, for example multiple vector coprocessors, each with its own PMU,
->> and are associated with a single cpu or a set of cpus.
->>
->> perf_events needs an addressing scheme that covers these cases.
->
-> You could possible add a u64 pmu_id field to perf_event_attr and use
-> that together with things like:
->
->    PERF_TYPE_PCI, attr.pmu_id = domain:bus:device:function encoding
->    PERF_TYPE_SPU, attr.pmu_id = spu-id
->
+On Thu, Jan 28, 2010 at 09:40:38PM +0900, Magnus Damm wrote:
+> --- 0001/arch/arm/Kconfig
+> +++ work/arch/arm/Kconfig	2010-01-20 18:59:55.000000000 +0900
+> @@ -740,6 +740,11 @@ config ARCH_U8500
+>  	help
+>  	  Support for ST-Ericsson's Ux500 architecture
+>  
+> +config ARCH_SHMOBILE
+> +	bool "Renesas SH-Mobile"
+> +	help
+> +	  Support for Renesas's SH-Mobile ARM platforms
+> +
 
-Thank you for the clarification.
+The entries in this choice menu are sorted by option text - please
+place your new option appropriately to avoid conflicts.
 
-One of Ingo's comments in this thread was that he wants perf to be able to 
-display to the user the available PMUs along with their respect events.  That 
-perf would parse some machine-independent data structure (somewhere) to get this 
-info.   This same info would provide the user a method of specifying which PMU 
-he wants to address.  He'd also like all of the event info data to reside in the 
-same place.  I hope I am paraphrasing him correctly.
+>  endchoice
+>  
+>  source "arch/arm/mach-aaec2000/Kconfig"
+> @@ -851,6 +856,8 @@ source "arch/arm/mach-versatile/Kconfig"
+>  
+>  source "arch/arm/mach-w90x900/Kconfig"
+>  
+> +source "arch/arm/mach-shmobile/Kconfig"
 
-I can see that with the scheme you have proposed above, it would be 
-straight-forward to encode PMU ids for a particular new PERF_TYPE_* system 
-topology, but I don't see a clear way of providng perf with enough information 
-to tell it which particular topology is being used, how many units of each PMU 
-type exist, and so on.  Do you have any ideas as to how to accomplish this goal 
-with the method you are suggesting?
+Ditto, except ordered alphabetically by filename.
 
-This is one of the reasons why I am leaning toward a /sys/devices-style data 
-structure; the kernel could easily build it based on the pmus that it discovers 
-(through whatever means), and the user can fairly easily choose a pmu from this 
-structure to open, and it's unambiguous to the kernel as to which pmu the user 
-really wants.
+> +static struct sh_timer_config cmt10_platform_data = {
+> +	.name = "CMT10",
+> +	.channel_offset = 0x10,
+> +	.timer_bit = 0,
+> +	.clk = "r_clk",
 
-I am not convinced that this is the right place to put the event info for each PMU.
-
- > But before we go there the perf core needs to be extended to deal with
- > multiple hardware pmus, something which isn't too hard but we need to be
- > careful not to bloat the normal code paths for these somewhat esoteric
- > use cases.
- >
-
-Is this something you've looked into?  If so, what sort of issues have you 
-discovered?
-
-Thanks,
-
-- Corey
-
+I guess you can't do a lot about this because of arch/sh, but over in ARM
+land, we use clkdev to get the clock primerily by the device name rather
+than a string passed around; this is how the clk API is meant to be used.
