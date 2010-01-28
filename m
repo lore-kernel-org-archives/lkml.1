@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183Ab0A1NvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175Ab0A1NyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183Ab0A1NvO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 08:51:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944Ab0A1NvO
+	id S1756175Ab0A1NyN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 08:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031Ab0A1NyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 08:51:14 -0500
-Received: from ironport2-out.teksavvy.com ([206.248.154.181]:57624 "EHLO
-	ironport2-out.pppoe.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932208Ab0A1NvN (ORCPT
+	Thu, 28 Jan 2010 08:54:11 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36158 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755114Ab0A1NyK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 08:51:13 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjQBAJskYUtLd/sX/2dsb2JhbAAIgy/HPoIZAY1DgSqCOVkE
-X-IronPort-AV: E=Sophos;i="4.49,359,1262581200"; 
-   d="scan'208";a="54736741"
-Message-ID: <4B61964F.6060307@teksavvy.com>
-Date: Thu, 28 Jan 2010 08:51:11 -0500
-From: Mark Lord <kernel@teksavvy.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 28 Jan 2010 08:54:10 -0500
+Date: Thu, 28 Jan 2010 14:54:05 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
+Subject: PNP PS/2 probing racy?
+Message-ID: <20100128135405.GA28931@basil.fritz.box>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Mel Gorman <mel@csn.ul.ie>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: 2.6.32.5 regression: page allocation failure. order:1,
-References: <4B5FA147.5040802@teksavvy.com> <4B610FDA.50104@teksavvy.com> <4B6113C7.201@teksavvy.com> <201001281152.20352.rjw@sisk.pl>
-In-Reply-To: <201001281152.20352.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> Have you attached a (2.6.31.x) dmesg output from the failing box somewhere
-> or have I just missed it?
-..
 
-The log from failing on 2.6.32.5 was linked to originally:
+Hi,
 
-   http://rtr.ca/2.6.32_page_alloc_fail_logs.txt 
+I noticed that on one test system of machine when booting the same
+kernel I get:
 
-Here's the subsequent revert reboot back to 2.6.32.12:
+PNP: No PS/2 controller found. Probing ports directly.
+serio: i8042 KBD port at 0x60,0x64 irq 1
+serio: i8042 AUX port at 0x60,0x64 irq 12
 
-   http://rtr.ca/2.6.31.12_ok_logs.txt
+and sometimes on another boot
 
-In the time available thus far, I haven't managed to get 2.6.32.5
-to boot/run on anything else, using either a UP kernel, or "nosmp",
-along with "mem=512M".
+PNP: PS/2 Controller [PNP0303:PS2K,PNP0f03:PS2M] at 0x60,0x64 irq 1,12
 
-With a bit of luck, I'll have another similar VIA C7 box delivered here by tonight,
-and should be able to boot/run that off a cloned disk image from the original system.
+Since I presume the BIOS does not change, is it possible the Linux
+procedure for this PNP probe is racy? I haven't checked the code so far.
 
-Then we can poke at things a bit more.
-If the box works, it will be 100% at our disposal.
+Full boot logs for both cases:
 
-Note that it's far too slow for practical direct use of git-bisect,
-taking hours to rebuild its own kernels.  It might be possible,
-with a fair bit of effort, to arrange a quad-core box to do the
-kernel compiles for it, though.
+http://halobates.de/config/dmesg-pnprace-1
+http://halobates.de/config/dmesg-pnprace-2
 
-Cheers 
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
