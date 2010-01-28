@@ -1,109 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400Ab0A1SqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932208Ab0A1S4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756400Ab0A1SqS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 13:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386Ab0A1SqR
+	id S932208Ab0A1S4S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 13:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203Ab0A1S4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 13:46:17 -0500
-Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:43601 "EHLO
-	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755191Ab0A1SqQ (ORCPT
+	Thu, 28 Jan 2010 13:56:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42897 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755946Ab0A1S4P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 13:46:16 -0500
-Date: Thu, 28 Jan 2010 13:46:17 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-In-reply-to: <20100128090835.0d93e53a@nehalam>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B61DB79.4080703@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100120094103.GA6225@ff.dom.local> <4B58B217.8030001@majjas.com>
- <20100121204133.GB3085@del.dom.local> <4B59E7EB.3050605@majjas.com>
- <20100122215304.GA3105@del.dom.local> <4B5A2362.6000306@majjas.com>
- <20100122230605.GB3105@del.dom.local> <4B5A33D8.90501@majjas.com>
- <20100122234656.GC3105@del.dom.local> <4B5A39BD.8020305@majjas.com>
- <20100123232133.GA3487@del.dom.local> <4B605D1B.60402@majjas.com>
- <20100127085049.5b5048e9@nehalam> <4B60707F.1000608@majjas.com>
- <20100127095614.14313677@nehalam> <4B608128.7090607@majjas.com>
- <4B6089C7.4010803@majjas.com> <4B61ADF1.7060705@majjas.com>
- <4B61BEA4.1030905@majjas.com> <20100128090835.0d93e53a@nehalam>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	Thu, 28 Jan 2010 13:56:15 -0500
+Date: Thu, 28 Jan 2010 10:54:03 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Jeff Garrett <jeff@jgarrett.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86/pci: print ioh resources only
+In-Reply-To: <4B61D7C4.1050405@kernel.org>
+Message-ID: <alpine.LFD.2.00.1001281052510.22433@localhost.localdomain>
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <201001261348.59508.rjw@sisk.pl> <201001261032.37053.bjorn.helgaas@hp.com> <201001261902.13911.rjw@sisk.pl> <20100126101752.78196900@jbarnes-piketon> <4B5F735B.2040308@kernel.org> <alpine.LFD.2.00.1001271748300.3570@localhost.localdomain>
+ <20100127192409.79af96db@jbarnes-piketon> <20100128040226.GB8964@jgarrett.org> <20100128082432.05a97ebc@jbarnes-piketon> <4B61D7C4.1050405@kernel.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/28/2010 12:08 PM, Stephen Hemminger wrote:
-> On Thu, 28 Jan 2010 11:43:16 -0500
-> Michael Breuer<mbreuer@majjas.com>  wrote:
->
->    
->> Update: I played with dma-debug. Was being disabled due to lack of
->> memory. I forced it back on while pumping traffic through and got this:
->> Jan 28 11:39:30 mail kernel: ------------[ cut here ]------------
->> Jan 28 11:39:30 mail kernel: WARNING: at lib/dma-debug.c:902
->> check_sync+0xc1/0x43f()
->> Jan 28 11:39:30 mail kernel: Hardware name: System Product Name
->> Jan 28 11:39:30 mail kernel: sky2 0000:06:00.0: DMA-API: device driver
->> tries to sync DMA memory it has not allocated [device
->>      
-> This test in dma-debug is bogus. Because the debug code matches
-> dma based on address and size; and is perfectly valid to sync a value
-> less than size. This is the patch I sent earlier, it isn't 100%
-> correct but it will let you keep testing
-> ....................................
->
->
-> This should fix the dma-debug API code (and documentation), to
-> avoid false positives when sync is done on a partial map.
->
-> Signed-off-by: Stephen Hemminger<shemminger@vyatta.com>
->
-> --- a/Documentation/DMA-API.txt	2010-01-20 15:17:01.390143729 -0800
-> +++ b/Documentation/DMA-API.txt	2010-01-20 15:18:48.967875255 -0800
-> @@ -377,9 +377,10 @@ void
->   pci_dma_sync_sg(struct pci_dev *hwdev, struct scatterlist *sg,
->   		       int nelems, int direction)
->
-> -Synchronise a single contiguous or scatter/gather mapping.  All the
-> -parameters must be the same as those passed into the single mapping
-> -API.
-> +Synchronise a single contiguous or scatter/gather mapping.  The
-> +device and handle must be the same as those passed into the single mapping
-> +API. The size can be less than the original mapping if only part
-> +of the mapping needs to be accessed.
->
->   Notes:  You must do this:
->
-> --- a/lib/dma-debug.c	2010-01-20 15:22:55.919519883 -0800
-> +++ b/lib/dma-debug.c	2010-01-20 15:26:31.648895638 -0800
-> @@ -285,11 +285,9 @@ static struct dma_debug_entry *hash_buck
->   	}
->
->   	/*
-> -	 * If we have multiple matches but no perfect-fit, just return
-> -	 * NULL.
-> +	 * If we have multiple matches but no perfect-fit
-> +	 * return best value and let caller deal with it.
->   	 */
-> -	ret = (matches == 1) ? ret : NULL;
-> -
->   	return ret;
->   }
->
->    
-Ok - applied. Noise gone... however I'm not sure whether I'll be able to 
-keep dma-debug going long enough to catch anything. num_free_entries 
-keeps dropping... looks like entries are not freed. I'm running with a 
-huge number for now & sky2 as the driver filter. Is there a reason that 
-entries wouldn't be unmapped, or is dma-debug.c just not processing the 
-unmap correctly?
+
+
+On Thu, 28 Jan 2010, Yinghai Lu wrote:
+> @@ -43,7 +43,7 @@ static void __devinit pci_root_bus_res(s
+>  {
+>  	u16 word;
+>  	u32 dword;
+> -	struct pci_root_info *info;
+> +	struct pci_root_info info;
+
+That structure is something like a kilobyte in size, please don't put 
+those things on the stack (sixteen "struct resource" entries).
+
+		Linus
