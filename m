@@ -1,54 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694Ab0A1Wsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322Ab0A1W4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694Ab0A1Wsp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 17:48:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502Ab0A1Wso
+	id S1755322Ab0A1W4x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 17:56:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253Ab0A1W4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 17:48:44 -0500
-Received: from kroah.org ([198.145.64.141]:58917 "EHLO coco.kroah.org"
+	Thu, 28 Jan 2010 17:56:52 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34627 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752221Ab0A1Wsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 17:48:43 -0500
-Date: Thu, 28 Jan 2010 14:32:33 -0800
-From: Greg KH <greg@kroah.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com, gregkh@suse.de,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial
- writes" causes gobi_loader to hang
-Message-ID: <20100128223233.GA1358@kroah.com>
-References: <20100117025535.GB7045@srcf.ucam.org>
- <201001191420.29652.oliver@neukum.org>
- <20100128174546.GC19871@kroah.com>
- <201001281940.12173.oliver@neukum.org>
+	id S1755209Ab0A1W4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 17:56:51 -0500
+Date: Thu, 28 Jan 2010 23:56:49 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tree-wide: trivial typo fixes: s/widht/width/g
+In-Reply-To: <1264666311-7284-1-git-send-email-daniel@caiaq.de>
+Message-ID: <alpine.LNX.2.00.1001282356340.356@pobox.suse.cz>
+References: <1264666311-7284-1-git-send-email-daniel@caiaq.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001281940.12173.oliver@neukum.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 07:40:12PM +0100, Oliver Neukum wrote:
-> Am Donnerstag, 28. Januar 2010 18:45:46 schrieb Greg KH:
-> > On Tue, Jan 19, 2010 at 02:20:29PM +0100, Oliver Neukum wrote:
-> > > Am Montag, 18. Januar 2010 21:14:16 schrieb Matthew Garrett:
-> > > 
-> > > > drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 1565 
-> > > > bytes
-> > > > drivers/usb/serial/generic.c: usb_serial_generic_write - put 0 bytes 
-> > > > into fifo
-> > > > drivers/usb/serial/generic.c: usb_serial_generic_read_bulk_callback - 
-> > > > port 0
-> > > 
-> > > If the FIFO is full we can do nothing. Please try the attached patch.
-> > 
-> > Did we ever determine if the patch below is needed or not?
+On Thu, 28 Jan 2010, Daniel Mack wrote:
+
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Cc: Jiri Kosina <trivial@kernel.org>
+> ---
+>  arch/m68k/include/asm/fbio.h  |    2 +-
+>  arch/sparc/include/asm/fbio.h |    2 +-
+>  drivers/net/skfp/ess.c        |    2 +-
+>  drivers/video/68328fb.c       |    2 +-
+>  drivers/video/pm2fb.c         |    2 +-
+>  5 files changed, 5 insertions(+), 5 deletions(-)
 > 
-> No. Further discussion cast serious doubt on it, but we have no
-> experimental evidence I am aware of.
+> diff --git a/arch/m68k/include/asm/fbio.h b/arch/m68k/include/asm/fbio.h
+> index b9215a0..0a21da8 100644
+> --- a/arch/m68k/include/asm/fbio.h
+> +++ b/arch/m68k/include/asm/fbio.h
+> @@ -173,7 +173,7 @@ struct mdi_cfginfo {
+>  	int     mdi_ncluts;     /* Number of implemented CLUTs in this MDI */
+>          int     mdi_type;       /* FBTYPE name */
+>          int     mdi_height;     /* height */
+> -        int     mdi_width;      /* widht */
+> +        int     mdi_width;      /* width */
+>          int     mdi_size;       /* available ram */
+>          int     mdi_mode;       /* 8bpp, 16bpp or 32bpp */
+>          int     mdi_pixfreq;    /* pixel clock (from PROM) */
+> diff --git a/arch/sparc/include/asm/fbio.h b/arch/sparc/include/asm/fbio.h
+> index b9215a0..0a21da8 100644
+> --- a/arch/sparc/include/asm/fbio.h
+> +++ b/arch/sparc/include/asm/fbio.h
+> @@ -173,7 +173,7 @@ struct mdi_cfginfo {
+>  	int     mdi_ncluts;     /* Number of implemented CLUTs in this MDI */
+>          int     mdi_type;       /* FBTYPE name */
+>          int     mdi_height;     /* height */
+> -        int     mdi_width;      /* widht */
+> +        int     mdi_width;      /* width */
+>          int     mdi_size;       /* available ram */
+>          int     mdi_mode;       /* 8bpp, 16bpp or 32bpp */
+>          int     mdi_pixfreq;    /* pixel clock (from PROM) */
+> diff --git a/drivers/net/skfp/ess.c b/drivers/net/skfp/ess.c
+> index a85efcf..e8387d2 100644
+> --- a/drivers/net/skfp/ess.c
+> +++ b/drivers/net/skfp/ess.c
+> @@ -557,7 +557,7 @@ static void ess_send_alc_req(struct s_smc *smc)
+>  
+>  	/*
+>  	 * send never allocation request where the requested payload and
+> -	 * overhead is zero or deallocate bandwidht when no bandwidth is
+> +	 * overhead is zero or deallocate bandwidth when no bandwidth is
+>  	 * parsed
+>  	 */
+>  	if (!smc->mib.fddiESSPayload) {
+> diff --git a/drivers/video/68328fb.c b/drivers/video/68328fb.c
+> index 0b17824..2110556 100644
+> --- a/drivers/video/68328fb.c
+> +++ b/drivers/video/68328fb.c
+> @@ -308,7 +308,7 @@ static int mc68x328fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+>  	 * Pseudocolor:
+>  	 *    uses offset = 0 && length = RAMDAC register width.
+>  	 *    var->{color}.offset is 0
+> -	 *    var->{color}.length contains widht of DAC
+> +	 *    var->{color}.length contains width of DAC
+>  	 *    cmap is not used
+>  	 *    RAMDAC[X] is programmed to (red, green, blue)
+>  	 * Truecolor:
+> diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
+> index 36436ee..27f93aa 100644
+> --- a/drivers/video/pm2fb.c
+> +++ b/drivers/video/pm2fb.c
+> @@ -896,7 +896,7 @@ static int pm2fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+>  	 * Pseudocolor:
+>  	 *    uses offset = 0 && length = DAC register width.
+>  	 *    var->{color}.offset is 0
+> -	 *    var->{color}.length contains widht of DAC
+> +	 *    var->{color}.length contains width of DAC
+>  	 *    cmap is not used
+>  	 *    DAC[X] is programmed to (red, green, blue)
+>  	 * Truecolor:
 
-Ok, thanks for letting me know.
+Applied, thanks Daniel.
 
-greg k-h
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
