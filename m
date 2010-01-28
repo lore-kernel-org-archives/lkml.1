@@ -1,109 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322Ab0A1W4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755118Ab0A1W42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322Ab0A1W4x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 17:56:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253Ab0A1W4w
+	id S1755118Ab0A1W42 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 17:56:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577Ab0A1W42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 17:56:52 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34627 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755209Ab0A1W4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 17:56:51 -0500
-Date: Thu, 28 Jan 2010 23:56:49 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tree-wide: trivial typo fixes: s/widht/width/g
-In-Reply-To: <1264666311-7284-1-git-send-email-daniel@caiaq.de>
-Message-ID: <alpine.LNX.2.00.1001282356340.356@pobox.suse.cz>
-References: <1264666311-7284-1-git-send-email-daniel@caiaq.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Thu, 28 Jan 2010 17:56:28 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:52944 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753456Ab0A1W41 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 17:56:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OzniiB+E7yhkweRpfI93V+3D7wAyHcfcXNZYBzBB0wehZC9S4qs2xZTg04GFFj3PCQ
+         SuHPXEIr1xWszeVKHZ19+O9N80xYARIgWv0G2WIcDznnE8A3oiNOZCtvPXc6XSYi0pIy
+         oh7qtxeNIszMwLY7s6QfUTr/RsZqRU9BHyW9I=
+Date: Thu, 28 Jan 2010 23:56:21 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
+ lib/dma-debug.c:902 check_sync)
+Message-ID: <20100128225621.GD3109@del.dom.local>
+References: <4B60707F.1000608@majjas.com>
+ <20100127095614.14313677@nehalam>
+ <4B608128.7090607@majjas.com>
+ <4B6089C7.4010803@majjas.com>
+ <4B61ADF1.7060705@majjas.com>
+ <4B61BEA4.1030905@majjas.com>
+ <20100128090835.0d93e53a@nehalam>
+ <4B61DB79.4080703@majjas.com>
+ <20100128223447.GC3109@del.dom.local>
+ <4B621316.8070308@majjas.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B621316.8070308@majjas.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jan 2010, Daniel Mack wrote:
+On Thu, Jan 28, 2010 at 05:43:34PM -0500, Michael Breuer wrote:
+> This is with the pci_unmap_len patch as well as the dma-debug patch.
+> I'm not getting any warnings - but dma-debug num-free-entries drops
+> until zero and then debugging is disabled. I started with 8,000,000
+> about three hours ago - without load I'm already down to less than
+> half that. Again - only looking at sky2. Looks like the dma-debug
+> hash table is reducing one entry for every packet, but never
+> increasing the num_entries (no unmap perhaps).
 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Jiri Kosina <trivial@kernel.org>
-> ---
->  arch/m68k/include/asm/fbio.h  |    2 +-
->  arch/sparc/include/asm/fbio.h |    2 +-
->  drivers/net/skfp/ess.c        |    2 +-
->  drivers/video/68328fb.c       |    2 +-
->  drivers/video/pm2fb.c         |    2 +-
->  5 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/m68k/include/asm/fbio.h b/arch/m68k/include/asm/fbio.h
-> index b9215a0..0a21da8 100644
-> --- a/arch/m68k/include/asm/fbio.h
-> +++ b/arch/m68k/include/asm/fbio.h
-> @@ -173,7 +173,7 @@ struct mdi_cfginfo {
->  	int     mdi_ncluts;     /* Number of implemented CLUTs in this MDI */
->          int     mdi_type;       /* FBTYPE name */
->          int     mdi_height;     /* height */
-> -        int     mdi_width;      /* widht */
-> +        int     mdi_width;      /* width */
->          int     mdi_size;       /* available ram */
->          int     mdi_mode;       /* 8bpp, 16bpp or 32bpp */
->          int     mdi_pixfreq;    /* pixel clock (from PROM) */
-> diff --git a/arch/sparc/include/asm/fbio.h b/arch/sparc/include/asm/fbio.h
-> index b9215a0..0a21da8 100644
-> --- a/arch/sparc/include/asm/fbio.h
-> +++ b/arch/sparc/include/asm/fbio.h
-> @@ -173,7 +173,7 @@ struct mdi_cfginfo {
->  	int     mdi_ncluts;     /* Number of implemented CLUTs in this MDI */
->          int     mdi_type;       /* FBTYPE name */
->          int     mdi_height;     /* height */
-> -        int     mdi_width;      /* widht */
-> +        int     mdi_width;      /* width */
->          int     mdi_size;       /* available ram */
->          int     mdi_mode;       /* 8bpp, 16bpp or 32bpp */
->          int     mdi_pixfreq;    /* pixel clock (from PROM) */
-> diff --git a/drivers/net/skfp/ess.c b/drivers/net/skfp/ess.c
-> index a85efcf..e8387d2 100644
-> --- a/drivers/net/skfp/ess.c
-> +++ b/drivers/net/skfp/ess.c
-> @@ -557,7 +557,7 @@ static void ess_send_alc_req(struct s_smc *smc)
->  
->  	/*
->  	 * send never allocation request where the requested payload and
-> -	 * overhead is zero or deallocate bandwidht when no bandwidth is
-> +	 * overhead is zero or deallocate bandwidth when no bandwidth is
->  	 * parsed
->  	 */
->  	if (!smc->mib.fddiESSPayload) {
-> diff --git a/drivers/video/68328fb.c b/drivers/video/68328fb.c
-> index 0b17824..2110556 100644
-> --- a/drivers/video/68328fb.c
-> +++ b/drivers/video/68328fb.c
-> @@ -308,7 +308,7 @@ static int mc68x328fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
->  	 * Pseudocolor:
->  	 *    uses offset = 0 && length = RAMDAC register width.
->  	 *    var->{color}.offset is 0
-> -	 *    var->{color}.length contains widht of DAC
-> +	 *    var->{color}.length contains width of DAC
->  	 *    cmap is not used
->  	 *    RAMDAC[X] is programmed to (red, green, blue)
->  	 * Truecolor:
-> diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
-> index 36436ee..27f93aa 100644
-> --- a/drivers/video/pm2fb.c
-> +++ b/drivers/video/pm2fb.c
-> @@ -896,7 +896,7 @@ static int pm2fb_setcolreg(unsigned regno, unsigned red, unsigned green,
->  	 * Pseudocolor:
->  	 *    uses offset = 0 && length = DAC register width.
->  	 *    var->{color}.offset is 0
-> -	 *    var->{color}.length contains widht of DAC
-> +	 *    var->{color}.length contains width of DAC
->  	 *    cmap is not used
->  	 *    DAC[X] is programmed to (red, green, blue)
->  	 * Truecolor:
+OK, then, until there is some new fix you better turn it off.
 
-Applied, thanks Daniel.
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Jarek P.
