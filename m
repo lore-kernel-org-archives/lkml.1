@@ -1,84 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600Ab0A1Hob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678Ab0A1Hri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600Ab0A1Hob (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 02:44:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468Ab0A1Ho3
+	id S1755678Ab0A1Hri (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 02:47:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220Ab0A1Hrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 02:44:29 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43859 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755205Ab0A1Ho3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 02:44:29 -0500
-Date: Thu, 28 Jan 2010 18:44:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: sparc tree build warning
-Message-Id: <20100128184423.40ce38fb.sfr@canb.auug.org.au>
-In-Reply-To: <20091214163338.f811722f.sfr@canb.auug.org.au>
-References: <20091214163338.f811722f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__28_Jan_2010_18_44_23_+1100_ltIe824W9k3/l5yp"
+	Thu, 28 Jan 2010 02:47:37 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:40166 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753943Ab0A1Hrg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 02:47:36 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] hid: Logitech G13 driver 0.0.4
+Date: Thu, 28 Jan 2010 08:47:50 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>,
+       Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       felipe.balbi@nokia.com, jayakumar.lkml@gmail.com,
+       linux-fbdev@vger.kernel.org, krzysztof.h1@wp.pl,
+       akpm@linux-foundation.org, linux-usb@vger.kernel.org,
+       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com
+References: <201001202047.o0KKlMTr014003@mustang.cs.nmsu.edu> <8512e098224714ed7d54c62b46346796.squirrel@intranet.cs.nmsu.edu> <20100128072425.GA25633@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20100128072425.GA25633@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001280847.50445.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__28_Jan_2010_18_44_23_+1100_ltIe824W9k3/l5yp
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ Am Donnerstag, 28. Januar 2010 08:24:26 schrieben Sie:
+> > Again, like I said, I don't have a problem changing it. If it's wrong,
+> > it's wrong no matter how many other drivers may take the same
+> > approach.
+> 
+> I believe it is wrong.
 
-Hi Dave,
+So do I. You need not fail if copy_to_user() fails, but if you go
+that route you need to evaluate the return value of copy_to_user()
+and return:
 
-On Mon, 14 Dec 2009 16:33:38 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> Today's linux-next build (sparc defconfig) produced this warning:
->=20
-> In file included from arch/sparc/include/asm/uaccess.h:7,
->                  from include/net/checksum.h:26,
->                  from include/linux/skbuff.h:29,
->                  from net/core/pktgen.c:141:
-> In function 'copy_from_user',
->     inlined from 'pktgen_if_write' at net/core/pktgen.c:867:
-> arch/sparc/include/asm/uaccess_32.h:276: warning: call to 'copy_from_user=
-_overflow' declared with attribute warning: copy_from_user() buffer size is=
- not provably correct
->=20
-> and many more.
->=20
-> The sparc64 defconfig build produced many similar warnings:
->=20
-> In file included from arch/sparc/include/asm/uaccess.h:5,
->                  from include/linux/uaccess.h:6,
->                  from include/linux/highmem.h:7,
->                  from include/linux/pagemap.h:11,
->                  from include/linux/mempolicy.h:63,
->                  from mm/mempolicy.c:69:
-> arch/sparc/include/asm/uaccess_64.h: In function 'compat_sys_get_mempolic=
-y':
-> arch/sparc/include/asm/uaccess_64.h:232: warning: call to 'copy_from_user=
-_overflow' declared with attribute warning: copy_from_user() buffer size is=
- not provably correct
+not_written = copy_to_user(...);
+return to_be_written - not_written ? to_be_written - not_written : -EFAULT;
 
-I am still seeing these.  Is it my compiler version (gcc4.4.0)?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__28_Jan_2010_18_44_23_+1100_ltIe824W9k3/l5yp
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkthQFcACgkQjjKRsyhoI8ze2wCgmGhxSREblfcz2f68tiC0Abnr
-kbAAoIJkdJlOFOfT4mA/EC6S1FdyuUzw
-=/Xeh
------END PGP SIGNATURE-----
-
---Signature=_Thu__28_Jan_2010_18_44_23_+1100_ltIe824W9k3/l5yp--
+	Regards
+		Oliver
