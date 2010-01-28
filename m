@@ -1,216 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396Ab0A1Lis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755698Ab0A1LjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396Ab0A1Lis (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 06:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841Ab0A1Liq
+	id S1755698Ab0A1LjY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 06:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744Ab0A1LjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 06:38:46 -0500
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:52148
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754767Ab0A1Lig (ORCPT
+	Thu, 28 Jan 2010 06:39:21 -0500
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:28829 "EHLO
+	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932204Ab0A1Lij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 06:38:36 -0500
-X-SpamScore: -4
-X-BigFish: VPS-4(zzab9bh936eMzz1202hzzz32i6bh87h62h)
-X-Spam-TCS-SCL: 1:0
+	Thu, 28 Jan 2010 06:38:39 -0500
+X-SpamScore: 8
+X-BigFish: VPS8(z1857rzab9bh936eMzz1202hzzz32i6bh87h43j61h)
+X-Spam-TCS-SCL: 0:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KWYGBZ-01-FXU-02
+X-WSS-ID: 0KWYGC1-01-FXY-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
        David Woodhouse <dwmw2@infradead.org>
 CC: kvm@vger.kernel.org, iommu@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 07/11] x86/amd-iommu: Make iommu_map_page and alloc_pte aware of page sizes
-Date: Thu, 28 Jan 2010 12:37:58 +0100
-Message-ID: <1264678682-30655-8-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 06/11] kvm: Change kvm_iommu_map_pages to map large pages
+Date: Thu, 28 Jan 2010 12:37:57 +0100
+Message-ID: <1264678682-30655-7-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1264678682-30655-1-git-send-email-joerg.roedel@amd.com>
 References: <1264678682-30655-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 28 Jan 2010 11:38:20.0961 (UTC) FILETIME=[64808110:01CAA00E]
+X-OriginalArrivalTime: 28 Jan 2010 11:38:20.0945 (UTC) FILETIME=[647E1010:01CAA00E]
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Reverse-DNS: ausb3extmailp02.amd.com
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes the old map_size parameter of alloc_pte
-to a page_size parameter which can be used more easily to
-alloc a pte for intermediate page sizes.
+This patch changes the implementation of of
+kvm_iommu_map_pages to map the pages with the host page size
+into the io virtual address space.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/amd_iommu_types.h |   28 +++++++++++++++++
- arch/x86/kernel/amd_iommu.c            |   53 ++++++++++++++++++++------------
- 2 files changed, 61 insertions(+), 20 deletions(-)
+ virt/kvm/iommu.c |  106 ++++++++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 84 insertions(+), 22 deletions(-)
 
-diff --git a/arch/x86/include/asm/amd_iommu_types.h b/arch/x86/include/asm/amd_iommu_types.h
-index ba19ad4..5e8da56 100644
---- a/arch/x86/include/asm/amd_iommu_types.h
-+++ b/arch/x86/include/asm/amd_iommu_types.h
-@@ -172,6 +172,34 @@
- 				(~((1ULL << (12 + ((lvl) * 9))) - 1)))
- #define PM_ALIGNED(lvl, addr)	((PM_MAP_MASK(lvl) & (addr)) == (addr))
+diff --git a/virt/kvm/iommu.c b/virt/kvm/iommu.c
+index 65a5143..92a434d 100644
+--- a/virt/kvm/iommu.c
++++ b/virt/kvm/iommu.c
+@@ -32,12 +32,27 @@ static int kvm_iommu_unmap_memslots(struct kvm *kvm);
+ static void kvm_iommu_put_pages(struct kvm *kvm,
+ 				gfn_t base_gfn, unsigned long npages);
  
-+/*
-+ * Returns the page table level to use for a given page size
-+ * Pagesize is expected to be a power-of-two
-+ */
-+#define PAGE_SIZE_LEVEL(pagesize) \
-+		((__ffs(pagesize) - 12) / 9)
-+/*
-+ * Returns the number of ptes to use for a given page size
-+ * Pagesize is expected to be a power-of-two
-+ */
-+#define PAGE_SIZE_PTE_COUNT(pagesize) \
-+		(1ULL << ((__ffs(pagesize) - 12) % 9))
++static pfn_t kvm_pin_pages(struct kvm *kvm, struct kvm_memory_slot *slot,
++			   gfn_t gfn, unsigned long size)
++{
++	gfn_t end_gfn;
++	pfn_t pfn;
 +
-+/*
-+ * Aligns a given io-virtual address to a given page size
-+ * Pagesize is expected to be a power-of-two
-+ */
-+#define PAGE_SIZE_ALIGN(address, pagesize) \
-+		((address) & ~((pagesize) - 1))
-+/*
-+ * Creates an IOMMU PTE for an address an a given pagesize
-+ * The PTE has no permission bits set
-+ * Pagesize is expected to be a power-of-two larger than 4096
-+ */
-+#define PAGE_SIZE_PTE(address, pagesize)		\
-+		(((address) | ((pagesize) - 1)) &	\
-+		 (~(pagesize >> 1)) & PM_ADDR_MASK)
++	pfn     = gfn_to_pfn_memslot(kvm, slot, gfn);
++	end_gfn = gfn + (size >> PAGE_SHIFT);
++	gfn    += 1;
 +
- #define IOMMU_PTE_P  (1ULL << 0)
- #define IOMMU_PTE_TV (1ULL << 1)
- #define IOMMU_PTE_U  (1ULL << 59)
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 59cae7c..4170031 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -730,18 +730,22 @@ static bool increase_address_space(struct protection_domain *domain,
- 
- static u64 *alloc_pte(struct protection_domain *domain,
- 		      unsigned long address,
--		      int end_lvl,
-+		      unsigned long page_size,
- 		      u64 **pte_page,
- 		      gfp_t gfp)
++	while (gfn < end_gfn)
++		gfn_to_pfn_memslot(kvm, slot, gfn++);
++
++	return pfn;
++}
++
+ int kvm_iommu_map_pages(struct kvm *kvm, struct kvm_memory_slot *slot)
  {
-+	int level, end_lvl;
- 	u64 *pte, *page;
--	int level;
+-	gfn_t gfn = slot->base_gfn;
+-	unsigned long npages = slot->npages;
++	gfn_t gfn, end_gfn;
+ 	pfn_t pfn;
+-	int i, r = 0;
++	int r = 0;
+ 	struct iommu_domain *domain = kvm->arch.iommu_domain;
+ 	int flags;
+ 
+@@ -45,31 +60,58 @@ int kvm_iommu_map_pages(struct kvm *kvm, struct kvm_memory_slot *slot)
+ 	if (!domain)
+ 		return 0;
+ 
++	gfn     = slot->base_gfn;
++	end_gfn = gfn + slot->npages;
 +
-+	BUG_ON(!is_power_of_2(page_size));
+ 	flags = IOMMU_READ | IOMMU_WRITE;
+ 	if (kvm->arch.iommu_flags & KVM_IOMMU_CACHE_COHERENCY)
+ 		flags |= IOMMU_CACHE;
  
- 	while (address > PM_LEVEL_SIZE(domain->mode))
- 		increase_address_space(domain, gfp);
+-	for (i = 0; i < npages; i++) {
+-		/* check if already mapped */
+-		if (iommu_iova_to_phys(domain, gfn_to_gpa(gfn)))
++
++	while (gfn < end_gfn) {
++		unsigned long page_size;
++
++		/* Check if already mapped */
++		if (iommu_iova_to_phys(domain, gfn_to_gpa(gfn))) {
++			gfn += 1;
+ 			continue;
++		}
++
++		/* Get the page size we could use to map */
++		page_size = kvm_host_page_size(kvm, gfn);
++
++		/* Make sure the page_size does not exceed the memslot */
++		while ((gfn + (page_size >> PAGE_SHIFT)) > end_gfn)
++			page_size >>= 1;
++
++		/* Make sure gfn is aligned to the page size we want to map */
++		while ((gfn << PAGE_SHIFT) & (page_size - 1))
++			page_size >>= 1;
++
++		/*
++		 * Pin all pages we are about to map in memory. This is
++		 * important because we unmap and unpin in 4kb steps later.
++		 */
++		pfn = kvm_pin_pages(kvm, slot, gfn, page_size);
++
++		/* Map into IO address space */
++		r = iommu_map(domain, gfn_to_gpa(gfn), pfn_to_hpa(pfn),
++			      get_order(page_size), flags);
++
++		gfn += page_size >> PAGE_SHIFT;
  
--	level =  domain->mode - 1;
--	pte   = &domain->pt_root[PM_LEVEL_INDEX(level, address)];
-+	level   = domain->mode - 1;
-+	pte     = &domain->pt_root[PM_LEVEL_INDEX(level, address)];
-+	address = PAGE_SIZE_ALIGN(address, page_size);
-+	end_lvl = PAGE_SIZE_LEVEL(page_size);
- 
- 	while (level > end_lvl) {
- 		if (!IOMMU_PTE_PRESENT(*pte)) {
-@@ -751,6 +755,10 @@ static u64 *alloc_pte(struct protection_domain *domain,
- 			*pte = PM_LEVEL_PDE(level, virt_to_phys(page));
+-		pfn = gfn_to_pfn_memslot(kvm, slot, gfn);
+-		r = iommu_map_range(domain,
+-				    gfn_to_gpa(gfn),
+-				    pfn_to_hpa(pfn),
+-				    PAGE_SIZE, flags);
+ 		if (r) {
+ 			printk(KERN_ERR "kvm_iommu_map_address:"
+ 			       "iommu failed to map pfn=%lx\n", pfn);
+ 			goto unmap_pages;
  		}
- 
-+		/* No level skipping support yet */
-+		if (PM_PTE_LEVEL(*pte) != level)
-+			return NULL;
+-		gfn++;
 +
- 		level -= 1;
+ 	}
++
+ 	return 0;
  
- 		pte = IOMMU_PTE_PAGE(*pte);
-@@ -806,31 +814,36 @@ static int iommu_map_page(struct protection_domain *dom,
- 			  unsigned long bus_addr,
- 			  unsigned long phys_addr,
- 			  int prot,
--			  int map_size)
-+			  unsigned long page_size)
+ unmap_pages:
+-	kvm_iommu_put_pages(kvm, slot->base_gfn, i);
++	kvm_iommu_put_pages(kvm, slot->base_gfn, gfn);
+ 	return r;
+ }
+ 
+@@ -186,27 +228,47 @@ out_unmap:
+ 	return r;
+ }
+ 
++static void kvm_unpin_pages(struct kvm *kvm, pfn_t pfn, unsigned long npages)
++{
++	unsigned long i;
++
++	for (i = 0; i < npages; ++i)
++		kvm_release_pfn_clean(pfn + i);
++}
++
+ static void kvm_iommu_put_pages(struct kvm *kvm,
+ 				gfn_t base_gfn, unsigned long npages)
  {
- 	u64 __pte, *pte;
--
--	bus_addr  = PAGE_ALIGN(bus_addr);
--	phys_addr = PAGE_ALIGN(phys_addr);
--
--	BUG_ON(!PM_ALIGNED(map_size, bus_addr));
--	BUG_ON(!PM_ALIGNED(map_size, phys_addr));
-+	int i, count;
+-	gfn_t gfn = base_gfn;
++	struct iommu_domain *domain;
++	gfn_t end_gfn, gfn;
+ 	pfn_t pfn;
+-	struct iommu_domain *domain = kvm->arch.iommu_domain;
+-	unsigned long i;
+ 	u64 phys;
  
- 	if (!(prot & IOMMU_PROT_MASK))
- 		return -EINVAL;
- 
--	pte = alloc_pte(dom, bus_addr, map_size, NULL, GFP_KERNEL);
-+	bus_addr  = PAGE_ALIGN(bus_addr);
-+	phys_addr = PAGE_ALIGN(phys_addr);
-+	count     = PAGE_SIZE_PTE_COUNT(page_size);
-+	pte       = alloc_pte(dom, bus_addr, page_size, NULL, GFP_KERNEL);
++	domain  = kvm->arch.iommu_domain;
++	end_gfn = base_gfn + npages;
++	gfn     = base_gfn;
 +
-+	for (i = 0; i < count; ++i)
-+		if (IOMMU_PTE_PRESENT(pte[i]))
-+			return -EBUSY;
+ 	/* check if iommu exists and in use */
+ 	if (!domain)
+ 		return;
  
--	if (IOMMU_PTE_PRESENT(*pte))
--		return -EBUSY;
-+	if (page_size > PAGE_SIZE) {
-+		__pte = PAGE_SIZE_PTE(phys_addr, page_size);
-+		__pte |= PM_LEVEL_ENC(7) | IOMMU_PTE_P | IOMMU_PTE_FC;
-+	} else
-+		__pte = phys_addr | IOMMU_PTE_P | IOMMU_PTE_FC;
+-	for (i = 0; i < npages; i++) {
++	while (gfn < end_gfn) {
++		unsigned long unmap_pages;
++		int order;
++
++		/* Get physical address */
+ 		phys = iommu_iova_to_phys(domain, gfn_to_gpa(gfn));
+-		pfn = phys >> PAGE_SHIFT;
+-		kvm_release_pfn_clean(pfn);
+-		gfn++;
+-	}
++		pfn  = phys >> PAGE_SHIFT;
++
++		/* Unmap address from IO address space */
++		order       = iommu_unmap(domain, gfn_to_gpa(gfn), PAGE_SIZE);
++		unmap_pages = 1ULL << order;
  
--	__pte = phys_addr | IOMMU_PTE_P;
- 	if (prot & IOMMU_PROT_IR)
- 		__pte |= IOMMU_PTE_IR;
- 	if (prot & IOMMU_PROT_IW)
- 		__pte |= IOMMU_PTE_IW;
+-	iommu_unmap_range(domain, gfn_to_gpa(base_gfn), PAGE_SIZE * npages);
++		/* Unpin all pages we just unmapped to not leak any memory */
++		kvm_unpin_pages(kvm, pfn, unmap_pages);
++
++		gfn += unmap_pages;
++	}
+ }
  
--	*pte = __pte;
-+	for (i = 0; i < count; ++i)
-+		pte[i] = __pte;
- 
- 	update_domain(dom);
- 
-@@ -877,7 +890,7 @@ static int dma_ops_unity_map(struct dma_ops_domain *dma_dom,
- 	for (addr = e->address_start; addr < e->address_end;
- 	     addr += PAGE_SIZE) {
- 		ret = iommu_map_page(&dma_dom->domain, addr, addr, e->prot,
--				     PM_MAP_4k);
-+				     PAGE_SIZE);
- 		if (ret)
- 			return ret;
- 		/*
-@@ -1005,7 +1018,7 @@ static int alloc_new_range(struct dma_ops_domain *dma_dom,
- 		u64 *pte, *pte_page;
- 
- 		for (i = 0; i < num_ptes; ++i) {
--			pte = alloc_pte(&dma_dom->domain, address, PM_MAP_4k,
-+			pte = alloc_pte(&dma_dom->domain, address, PAGE_SIZE,
- 					&pte_page, gfp);
- 			if (!pte)
- 				goto out_free;
-@@ -1711,7 +1724,7 @@ static u64* dma_ops_get_pte(struct dma_ops_domain *dom,
- 
- 	pte = aperture->pte_pages[APERTURE_PAGE_INDEX(address)];
- 	if (!pte) {
--		pte = alloc_pte(&dom->domain, address, PM_MAP_4k, &pte_page,
-+		pte = alloc_pte(&dom->domain, address, PAGE_SIZE, &pte_page,
- 				GFP_ATOMIC);
- 		aperture->pte_pages[APERTURE_PAGE_INDEX(address)] = pte_page;
- 	} else
-@@ -2457,7 +2470,7 @@ static int amd_iommu_map_range(struct iommu_domain *dom,
- 	paddr &= PAGE_MASK;
- 
- 	for (i = 0; i < npages; ++i) {
--		ret = iommu_map_page(domain, iova, paddr, prot, PM_MAP_4k);
-+		ret = iommu_map_page(domain, iova, paddr, prot, PAGE_SIZE);
- 		if (ret)
- 			return ret;
- 
+ static int kvm_iommu_unmap_memslots(struct kvm *kvm)
 -- 
 1.6.6
 
