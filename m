@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029Ab0A1Voo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752931Ab0A1VtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752029Ab0A1Voo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 16:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863Ab0A1Vok
+	id S1752931Ab0A1VtY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 16:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707Ab0A1VtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 16:44:40 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:57507 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759Ab0A1Voj (ORCPT
+	Thu, 28 Jan 2010 16:49:23 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:49425 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228Ab0A1VtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 16:44:39 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: chris.mason@oracle.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com, linux-btrfs@vger.kernel.org
-Subject: [PATCH 1/1] FS: btrfs, use helpers for rlimits
-Date: Thu, 28 Jan 2010 22:44:35 +0100
-Message-Id: <1264715075-7383-1-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.6.1
+	Thu, 28 Jan 2010 16:49:22 -0500
+Subject: Re: PROBLEM: reproducible crash KVM+nf_conntrack all recent 2.6
+ kernels
+From: Jon Masters <jonathan@jonmasters.org>
+To: Patrick McHardy <kaber@trash.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, netfilter-devel@vger.kernel.org
+In-Reply-To: <4B6180D1.6050609@trash.net>
+References: <1264657559.2793.103.camel@tonnant>
+	 <1264658364.2793.105.camel@tonnant>  <4B6180D1.6050609@trash.net>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Thu, 28 Jan 2010 16:49:14 -0500
+Message-Id: <1264715354.2793.156.camel@tonnant>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sure compiler won't do weird things with limits. E.g. fetching
-them twice may return 2 different values after writable limits are
-implemented.
+On Thu, 2010-01-28 at 13:19 +0100, Patrick McHardy wrote:
+> ip6tables -t raw -I PREROUTING -j TRACE
 
-I.e. either use rlimit helpers added in
-3e10e716abf3c71bdb5d86b8f507f9e72236c9cd
-or ACCESS_ONCE if not applicable.
+I'm not seeing anything on the console - is there additional conntrack
+debugging I can enable? I will try building in netfilter debug again.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Chris Mason <chris.mason@oracle.com>
-Cc: linux-btrfs@vger.kernel.org
----
- fs/btrfs/inode.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+But I did just get this crash while testing again:
 
-diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
-index bbdc870..45bd8a2 100644
---- a/fs/btrfs/inode.c
-+++ b/fs/btrfs/inode.c
-@@ -3297,8 +3297,7 @@ static int btrfs_setattr_size(struct inode *inode, struct iattr *attr)
- 		return 0;
- 
- 	if (attr->ia_size > inode->i_size) {
--		unsigned long limit;
--		limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
-+		unsigned long limit = rlimit(RLIMIT_FSIZE);
- 		if (attr->ia_size > inode->i_sb->s_maxbytes)
- 			return -EFBIG;
- 		if (limit != RLIM_INFINITY && attr->ia_size > limit) {
--- 
-1.6.6.1
+BUG: unable to handle kernel paging request at ffff8802aae52f20
+IP: [<ffffffff813b1e7d>] __nf_conntrack_find+0x53/0xb1
+PGD 1a3c063 PUD 0 
+Oops: 0000 [#1] SMP 
+last sysfs file: /sys/kernel/mm/ksm/run
+CPU 5 
+Pid: 2012, comm: qemu-kvm Not tainted 2.6.33-rc5 #1 0F9382/Precision
+WorkStation 490    
+RIP: 0010:[<ffffffff813b1e7d>]  [<ffffffff813b1e7d>] __nf_conntrack_find
++0x53/0xb1
+RSP: 0018:ffff880172893778  EFLAGS: 00010282
+RAX: ffff8802aae52f20 RBX: ffff880172893878 RCX: 00000000eb883b77
+RDX: 000000000001d710 RSI: 0000000081af2f90 RDI: 000000003b9ab4e4
+RBP: ffff8801728937b8 R08: 000000008a6bf028 R09: 00000000a2d26753
+R10: 0000000067d81e2b R11: ffff88017289389c R12: ffffffff81ddace0
+R13: ffff880172893878 R14: ffffffff81ddace0 R15: 00000000137f25e4
+FS:  00007f002fe16780(0000) GS:ffff880028340000(0000)
+knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: ffff8802aae52f20 CR3: 00000001717dd000 CR4: 00000000000026e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process qemu-kvm (pid: 2012, threadinfo ffff880172892000, task
+ffff8801702bc5f0)
+
+Jon.
+
 
