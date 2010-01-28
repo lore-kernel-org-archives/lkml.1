@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165Ab0A1QY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190Ab0A1Q3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165Ab0A1QY6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 11:24:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936Ab0A1QY5
+	id S1756190Ab0A1Q3N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 11:29:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615Ab0A1Q3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 11:24:57 -0500
-Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:52197 "HELO
-	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755122Ab0A1QY4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 11:24:56 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=SERE+TXuNSJiTy4dH6Q1pMjWweOWNhddswVxy1d4o9SZaX/MwfSphN7HdKYtG2KF8nJZr0nKtXRj8IiHg4OARfj99Pd665SpQrbIWwLIKycIJQMrEMsVQbLPHGL/bFqC;
-Date: Thu, 28 Jan 2010 08:24:32 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: jeff@jgarrett.org (Jeff Garrett)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with
- pci=use_crs)
-Message-ID: <20100128082432.05a97ebc@jbarnes-piketon>
-In-Reply-To: <20100128040226.GB8964@jgarrett.org>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
-	<201001261348.59508.rjw@sisk.pl>
-	<201001261032.37053.bjorn.helgaas@hp.com>
-	<201001261902.13911.rjw@sisk.pl>
-	<20100126101752.78196900@jbarnes-piketon>
-	<4B5F735B.2040308@kernel.org>
-	<alpine.LFD.2.00.1001271748300.3570@localhost.localdomain>
-	<20100127192409.79af96db@jbarnes-piketon>
-	<20100128040226.GB8964@jgarrett.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Jan 2010 11:29:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51909 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755588Ab0A1Q3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 11:29:11 -0500
+Message-ID: <4B61BB2D.70802@redhat.com>
+Date: Thu, 28 Jan 2010 11:28:29 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 4/9] perf session: Create kernel maps in the constructor
+References: <1264633557-17597-1-git-send-email-acme@infradead.org> <1264633557-17597-4-git-send-email-acme@infradead.org> <4B60C9A6.10704@redhat.com> <20100127232936.GI12567@ghostprotocols.net>
+In-Reply-To: <20100127232936.GI12567@ghostprotocols.net>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010 22:02:26 -0600
-jeff@jgarrett.org (Jeff Garrett) wrote:
-
-> On Wed, Jan 27, 2010 at 07:24:09PM -0800, Jesse Barnes wrote:
-> > On Wed, 27 Jan 2010 17:50:17 -0800 (PST)
-> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > On Tue, 26 Jan 2010, Yinghai Lu wrote:
-> > > > 
-> > > > [PATCH] x86/pci: don't use ioh resource if only have one ioh
-> > > 
-> > > Please, no.
-> > > 
-> > > This patch is too ugly to live.
-> > > 
-> > > And it's totally unacceptable to probe every single possible PCI device 
-> > > for something like this.
-> > > 
-> > > If we don't know enough about the hardware workings of those Intel bridges 
-> > > to know when they are active and how they decode things, then please let's 
-> > > just disable intel_bus.c entirely.
-> > > 
-> > > There's no excuse for hacky tests like this.
-> > 
-> > Ok, we'll just kill it entirely then.  I'll send a patch tomorrow
-> > unless Yinghai beats me to it.
+Arnaldo Carvalho de Melo wrote:
+> Em Wed, Jan 27, 2010 at 06:17:58PM -0500, Masami Hiramatsu escreveu:
+>> Arnaldo Carvalho de Melo wrote:
+>>> From: Arnaldo Carvalho de Melo <acme@redhat.com>
+>>>
+>>> Removing one extra step needed in the tools that need this, fixing a bug
+>>> in 'perf probe' where this was not being done.
+>>
+>> Thanks,
+>> BTW, when O_WRONLY should be used? I guess I might misunderstand something
+>> in builtin-probe.c, and it should use O_RDONLY ...
 > 
-> What about something like this (works for me, without pci=use_crs)?
-> 
-> ---
->     Remove intel_bus.c Intel-specific PCI/IOH logic
->     
->     Signed-off-by: Jeff Garrett <jeff@jgarrett.org>
+> O_RDONLY only when you have a perf.data file, O_WRONLY was thought for
+> 'perf record', then for tools that want only to do symbol lookup it was
+> reused...
 
-Yeah, looks good.  I'll push to Linus today.
+Ah, so that is the mode for perf.data.
 
-Thanks,
-Jesse
+> I think we should have a proper enum and more clearly specify these
+> semantics, as well as adding a MMAP mode so that we can lift the code
+> now in perf top somehow.
+
+Yeah, and if you can separate an interface only for handling symbols
+from debug/elf binaries, it will be helpful for me too.
+
+> But for now using O_WRONLY provides what 'perf probe' needs, I guess :-)
+
+I think so ;-)
+
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+
+Thank you,
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
