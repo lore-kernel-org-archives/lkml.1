@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932194Ab0A1GOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333Ab0A1GXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932194Ab0A1GOx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 01:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592Ab0A1GOw
+	id S1754333Ab0A1GXZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 01:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884Ab0A1GXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 01:14:52 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:54832 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752483Ab0A1GOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 01:14:51 -0500
-Date: Thu, 28 Jan 2010 17:14:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: pci tree build failure
-Message-Id: <20100128171446.baf7e475.sfr@canb.auug.org.au>
-In-Reply-To: <20100127093113.70203e4d@jbarnes-piketon>
-References: <20100127174900.e2f8fcf9.sfr@canb.auug.org.au>
-	<20100127093113.70203e4d@jbarnes-piketon>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__28_Jan_2010_17_14_46_+1100_RGp8O8Ny7Rekkgl0"
+	Thu, 28 Jan 2010 01:23:25 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:34557 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801Ab0A1GXY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 01:23:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=FoMJE9Yb/y45c7seEiagBbQkleJR0DiMQ3vQW9TpuCdE5+XVcmIag8F4LeMfI/UCcE
+         06S4B98oCi8fPcYmcEeTeSEDzDUfoP2EidDHPZoTOFor4aBUQSGv6Qbd509Z/9Uo3HJe
+         qjLPC55/wlGe7zvFwH10u1sD6nE1cE693WVgM=
+Message-ID: <4B612D57.4080604@gmail.com>
+Date: Thu, 28 Jan 2010 07:23:19 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/2] core: posix-cpu-timers, cleanup rlimits usage
+References: <1264610071-24794-1-git-send-email-jslaby@suse.cz> <20100127171335.7edf041d.akpm@linux-foundation.org>
+In-Reply-To: <20100127171335.7edf041d.akpm@linux-foundation.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__28_Jan_2010_17_14_46_+1100_RGp8O8Ny7Rekkgl0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 01/28/2010 02:13 AM, Andrew Morton wrote:
+> posix-timersc-dont-export-local-functions.patch
+> cpu-timers-simplify-rlimit_cpu-handling.patch
+> cpu-timers-cleanup-arm_timer.patch
+> cpu-timers-return-correct-previous-timer-reload-value.patch
+> cpu-timers-change-sigev_none-timer-implementation.patch
+> cpu-timers-assure-to-not-iterate-over-all-threads-in-fastpath_timer_check.patch
+> cpu-timers-optimize-run_posix_cpu_timers.patch
 
-Hi Jesse,
+I don't have these in the current mmotm.
 
-On Wed, 27 Jan 2010 09:31:13 -0800 Jesse Barnes <jbarnes@virtuousgeek.org> =
-wrote:
->
-> Sorry about that.  Sometimes I point git in the wrong direction and it
-> takes of a limb or two.  Should be fixed now.
+> (The above patches are up to six months old.  Something isn't working right).
 
-Yep, thanks.
+Could you submit a new mmotm, please?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__28_Jan_2010_17_14_46_+1100_RGp8O8Ny7Rekkgl0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkthK1YACgkQjjKRsyhoI8ye2ACgjsPm4RknLVqwoIL+7oIQMO49
-+YYAniIXp/fRNdUI26AxnBRM0Xc2Z/uC
-=1twv
------END PGP SIGNATURE-----
-
---Signature=_Thu__28_Jan_2010_17_14_46_+1100_RGp8O8Ny7Rekkgl0--
+-- 
+js
