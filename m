@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932283Ab0A1SXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946Ab0A1SZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932283Ab0A1SXN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 13:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386Ab0A1SXM
+	id S1755946Ab0A1SZr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 13:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796Ab0A1SZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 13:23:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59056 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754221Ab0A1SXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 13:23:11 -0500
-Message-ID: <4B61D554.9000003@kernel.org>
-Date: Thu, 28 Jan 2010 10:20:04 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Thu, 28 Jan 2010 13:25:46 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34124 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755567Ab0A1SZn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 13:25:43 -0500
+Date: Thu, 28 Jan 2010 13:25:28 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Cc: Fran?ois Figarola <francois.figarola@i-consult.fr>, hch@infradead.org,
+       device-mapper development <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [dm-devel] [BUG] kernel 2.6.32.x hangs during boot process
+Message-ID: <20100128182528.GA29926@infradead.org>
+References: <d2deb3241001160158r4baed1e1t7e8f6642de018b4c@mail.gmail.com> <20100122160740.6c16c22d.akpm@linux-foundation.org> <20100128134205.352044bd@notabene> <4B612F89.7020503@ce.jp.nec.com>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jeff Garrett <jeff@jgarrett.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with pci=use_crs)
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <1264652762.24020.5.camel@dc7800.home> <4B61266F.1060600@kernel.org> <201001280909.46043.bjorn.helgaas@hp.com>
-In-Reply-To: <201001280909.46043.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B612F89.7020503@ce.jp.nec.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/28/2010 08:09 AM, Bjorn Helgaas wrote:
-> On Wednesday 27 January 2010 10:53:51 pm Yinghai Lu wrote:
->> On 01/27/2010 08:26 PM, Bjorn Helgaas wrote:
->>> On Wed, 2010-01-27 at 15:34 -0800, Yinghai Lu wrote:
+On Thu, Jan 28, 2010 at 03:32:41PM +0900, Jun'ichi Nomura wrote:
+> When MS_RDONLY, both freeze_bdev and thaw_bdev call deactivate_locked_super,
+> which seems wrong. The change was introduced with the commit below:
 > 
->>>> 2. how about when apci is disabled?
->>>
->>> When ACPI is disabled, I think we just have to accept that we lose some
->>> functionality.  I don't see the need for alternate ways to accomplish
->>> everything that ACPI does.  It's becoming less and less useful to
->>> disable ACPI; I think it's only interesting as a debugging tool, and
->>> even then it's a sledgehammer.
->>
->> some systems when acpi is enabled could have interrupt storm. 
->> and have to disable acpi.
+>   commit 4504230a71566785a05d3e6b53fa1ee071b864eb
+>   Author: Christoph Hellwig <hch@lst.de>
+>   Date:   Mon Aug 3 23:28:35 2009 +0200
 > 
-> We should fix that problem rather than just covering it up by
-> disabling ACPI.  Can you provide any details?
-that is not covering problem. acpi just cause too many problems.
-
-systems using acpi hotplug support, and use acpi aml code to monitor the hotplug status instead of HW
-and after one or two days will have interrupt storm with sci/acpi interrupt aka 9.
+>   freeze_bdev: grab active reference to frozen superblocks
 > 
-> I think it's crazy to add code to work around Problem B that only
-> occurs because we disabled ACPI to work around Problem A.  We should
-> just fix Problem A instead.
+> With the attached patch, both remount-ro and remount-rw are
+> rejected as EBUSY on freezed device as expected.
+> 
+> Christoph, do you think this is the right fix?
 
-that is not point. fix BIOS or HW or OS?
+Indeed, this looks wrong in my original code, and the patch looks like
+the correct fix.  Thanks a lot!
 
-check many systems have broken acpi?
-some system acpi code even clear pci bar when just enable acpi at the first point.
 
-YH
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+
