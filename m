@@ -1,47 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465Ab0A1SIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487Ab0A1SOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755465Ab0A1SIl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 13:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068Ab0A1SIk
+	id S1755487Ab0A1SOt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 13:14:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447Ab0A1SOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 13:08:40 -0500
-Received: from lo.gmane.org ([80.91.229.12]:35263 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754067Ab0A1SIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 13:08:40 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Alexander Clouter <alex@digriz.org.uk>
-Subject: Re: [PATCH] checkpatch.pl: remove the 80 charactes punch card limit
-Date: Thu, 28 Jan 2010 16:39:29 +0000
-Message-ID: <17r837-m29.ln1@chipmunk.wormnet.eu>
-References: <1264597747.3607.29.camel@wall-e> <87hbq6dy2k.fsf@basil.nowhere.org>
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: chipmunk.wormnet.eu
-User-Agent: tin/1.9.3-20080506 ("Dalintober") (UNIX) (Linux/2.6.26-2-sparc64-smp (sparc64))
+	Thu, 28 Jan 2010 13:14:48 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:38106 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753984Ab0A1SOr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 13:14:47 -0500
+Date: Thu, 28 Jan 2010 19:12:40 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Hui Zhu <hui.zhu@windriver.com>, Michal Marek <mmarek@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, ozan@pardus.org.tr,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org,
+       teawater@gmail.com
+Subject: Re: [PATCH] markup_oops.pl: fix get "No matching code found" when
+	first line of range is the faulting instruction
+Message-ID: <20100128181240.GA9174@merkur.ravnborg.org>
+References: <4B61357A.5080001@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B61357A.5080001@windriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> wrote:
-> 
->> The time of 80 characters punch card and terminals are over, so i would
->> be a good thing to set the line length limit to 120. Every display today
->> should be able handle this. 
->>   
->> Signed-off-by: Stefani Seibold <stefani@seibold.net>
-> 
-> Full Ack!
-> 
-NACK Attack!
+On Thu, Jan 28, 2010 at 02:58:02PM +0800, Hui Zhu wrote:
+> Sorry guys, the prev mail for this patch is ugly.
+> I make a new mail for it.
 
-There is a reason Knuth only put so many words on a line with TeX.
+Random updates to scripts/* historically often go
+in via the kbuild tree, so Michal added.
 
-Eugh.
+	Sam
 
-Cheers
+[Kept rest of mail so Michal can see it]
 
--- 
-Alexander Clouter
-.sigmonster says: Keep out of reach of children.
-
+>
+> I got a "No matching code found" when I use markup_oops.pl parse a error in a x8664 module.
+>
+> cat e.c
+> #include <linux/version.h>
+> #include <linux/kernel.h>
+> #include <linux/module.h>
+>
+>
+> int init_module(void)
+> {
+> 	char	*buf = 0;
+>
+> 	buf[0] = 3;
+>
+> 	return 0;
+> }
+>
+> void cleanup_module(void)
+> {
+> 	//char	*buf = 0;
+>
+> 	//buf[0] = 3;
+> }
+>
+> MODULE_AUTHOR("Hui Zhu");
+> MODULE_LICENSE("GPL");
+>
+>
+> 0000000000000000 <init_module>:
+> init_module():
+> /home/teawater/study/kernel/stack2core/example/e.c:10
+>   0:	c6 04 25 00 00 00 00 	movb   $0x3,0x0
+>   7:	03 /home/teawater/study/kernel/stack2core/example/e.c:13
+>   8:	31 c0                	xor    %eax,%eax
+>   a:	c3                   	retq     b:	0f 1f 44 00 00       	nopl   
+> 0x0(%rax,%rax,1)
+>
+> 0000000000000010 <cleanup_module>:
+> cleanup_module():
+> /home/teawater/study/kernel/stack2core/example/e.c:20
+>  10:	f3 c3                	repz retq  12:	90                   	nop     
+> 13:	90                   	nop    Disassembly of section .modinfo:
+>
+> This is because the faulting instruction "movb   $0x3,0x0" is the first line of the range.
+>
+> In the markup_oops.pl:
+> main::(./scripts/markup_oops.pl:245):
+> 245:				if (InRange($1, $target)) {
+>  DB<2> p $line
+> ffffffffa001b000:	c6 04 25 00 00 00 00 	movb   $0x3,0x0
+>  DB<3> p $counter
+> 0
+>
+> It just set $center in next loop.
+> So it cannot get the $center.
+>
+> And even if $center is set to the right value 0.
+> if ($center == 0) {
+> 	print "No matching code found \n";
+> 	exit;
+> }
+>
+> So I make a patch change this part to:
+> 	}
+> 	if ($state == 1) {
+> And this is another part is not OK too:
+> if ($center == 0) {
+> The first line $center will be 0, so I change the default value and decide to:
+> my $center  = -1;
+> if ($center == -1) {
+>
+> Thanks,
+> Hui
+>
+> Signed-off-by: Hui Zhu <teawater@gmail.com>
+>
+> ---
+> scripts/markup_oops.pl |    7 ++++---
+> 1 file changed, 4 insertions(+), 3 deletions(-)
+>
+> --- a/scripts/markup_oops.pl
+> +++ b/scripts/markup_oops.pl
+> @@ -214,7 +214,7 @@ if ($module ne "") {
+>
+> my $counter = 0;
+> my $state   = 0;
+> -my $center  = 0;
+> +my $center  = -1;
+> my @lines;
+> my @reglines;
+>
+> @@ -246,7 +246,8 @@ while (<FILE>) {
+> 				$state = 1;
+> 			}
+> 		}
+> -	} else {
+> +	}
+> +	if ($state == 1) {
+> 		if ($line =~ /^([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]+)\:/) {
+> 			my $val = $1;
+> 			if (!InRange($val, $target)) {
+> @@ -269,7 +270,7 @@ if ($counter == 0) {
+> 	exit;
+> }
+>
+> -if ($center == 0) {
+> +if ($center == -1) {
+> 	print "No matching code found \n";
+> 	exit;
+> }
+>
