@@ -1,98 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536Ab0A1PVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566Ab0A1PcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536Ab0A1PVM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 10:21:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529Ab0A1PVL
+	id S1755566Ab0A1PcP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 10:32:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446Ab0A1PcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 10:21:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:27769 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754524Ab0A1PVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 10:21:08 -0500
-Date: Thu, 28 Jan 2010 16:20:48 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Jack Steiner <steiner@sgi.com>, cl@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] - Fix unmap_vma() bug related to mmu_notifiers
-Message-ID: <20100128152048.GA1217@random.random>
-References: <20100125174556.GA23003@sgi.com>
- <20100125190052.GF5756@random.random>
- <20100125211033.GA24272@sgi.com>
- <20100125211615.GH5756@random.random>
- <20100126212904.GE6653@sgi.com>
- <20100126213853.GY30452@random.random>
- <20100128031841.GG6616@sgi.com>
- <20100128034943.GH6616@sgi.com>
- <20100128100327.GF24242@random.random>
- <20100128132503.GJ6616@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100128132503.GJ6616@sgi.com>
+	Thu, 28 Jan 2010 10:32:14 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:59306 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752792Ab0A1PcN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 10:32:13 -0500
+Date: Thu, 28 Jan 2010 10:32:01 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
+ lib/dma-debug.c:902 check_sync)
+In-reply-to: <4B6089C7.4010803@majjas.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Message-id: <4B61ADF1.7060705@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100120094103.GA6225@ff.dom.local> <4B58B217.8030001@majjas.com>
+ <20100121204133.GB3085@del.dom.local> <4B59E7EB.3050605@majjas.com>
+ <20100122215304.GA3105@del.dom.local> <4B5A2362.6000306@majjas.com>
+ <20100122230605.GB3105@del.dom.local> <4B5A33D8.90501@majjas.com>
+ <20100122234656.GC3105@del.dom.local> <4B5A39BD.8020305@majjas.com>
+ <20100123232133.GA3487@del.dom.local> <4B605D1B.60402@majjas.com>
+ <20100127085049.5b5048e9@nehalam> <4B60707F.1000608@majjas.com>
+ <20100127095614.14313677@nehalam> <4B608128.7090607@majjas.com>
+ <4B6089C7.4010803@majjas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7)
+ Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 07:25:03AM -0600, Robin Holt wrote:
-> The GRU is using a hardware TLB of 2MB page size when the
-> is_vm_hugetlb_page() indicates it is a 2MB vma.  From my reading of it,
-> your callout to mmu_notifier_invalidate_page() will work for gru and I
-> think it will work for XPMEM as well, but I am not certain of that yet.
-> I am certain that it can be made to work for XPMEM.  I think using the
-> range callouts are actually worse because now we are mixing the conceptual
-> uses of page and range.
+On 01/27/2010 01:45 PM, Michael Breuer wrote:
+> On 1/27/2010 1:08 PM, Michael Breuer wrote:
+>>
+>>
+>> I've got (both in 2.6.32.4 and 2.6.33-rc5: pci_unmap_len(re, 
+>> data_size) vs., "length." I assume that I can just replace the 
+>> pci_unmap_len with dma_size... but perhaps the intermediate change 
+>> may have affected this as well?
+>>
+> Never mind - that was from one of the earlier patches I had been 
+> trying out. will try the above patch after reestablishing that the 
+> system still crashes without copybreak=1.
+Just FYI - still crashes with default copybreak.  Didn't get the netdev 
+watchdog this time - just DMAR and then HW watchdog reboot (see below).
 
-KVM also will obviously be fine, the whole point of transparent
-hugepage support is to allow mapping 2M tlb and 2M shadow pages in the
-spmd... In fact I'm already calling the 4k callout for the 2M
-pmdp_flush_clear_young_notify... because worst case that won't cash
-but only swap less smart. However at the moment start/stop is just
-safer... and gives more peace of mind and they can't schedule
-anyway... but I surely would prefer a single call too, if nothing else
-for performance reasons. Said that it's definitely not a fast path
-worth worrying about for KVM.
+So what's known to be required to cause this crash:
 
-Even the tlb_flush of pmdp_*flush on x86 is a range flush in
-transparent huegepage support because I found errata that invlpg isn't
-ok to flush PSE tlb on some cpus but then I didn't check the details,
-I just wanted less risk right now, later it can be optimized (worst
-case dependent on cpuid).
+1) sky2 @ 1Gb
+2) High sustained RX load (> 40MBps)
+3) Uptime (I can't cause this to happen just after boot).
+4) DMAR enabled (doesn't crash w/o DMAR).
+5) copybreak != 1
 
-Note also that pmdp_splitting_flush_notify probably can drop the
-_notify part. As long as there is symmetry with the "pages" returned
-by gup and their respective put_page and you only use the "page" to do
-put_page and get its physical address, there is no need to be notified
-about a split_huge_page. At the moment it seems just a little more
-paranoid but again not a requirement by design because hugepages are
-stable, and only thing that can require an invalidate is a physical
-relocation that only happens during swap (or similar). split_huge_page
-doesn't affect _physical_ at all, and in turn there is in theory no
-need to modify the secondary mmu mappings, when the primary mmu
-mappings are altered. One of the reasons of altering the primary mmu
-mappings is to avoid confusing the code that can't handle huge pmd
-natively and would crash on them, so we virtually split the page to
-show to that code an environment it won't find itself lost.
+What might be required but is unproven:
+1) cifs traffic (I've only seen this when the high traffic was due to a 
+Win7 box doing backup). I've tried but have been unable to recreate by 
+just copying large files. Backups done from a Mac OS laptop don't 
+trigger the issue even though that machine is also connecting with CIFS 
+(TimeMachine works better that way).
+2) DHCP traffic. There has always been some sort of DHCP exchange in the 
+log before the first indication of a problem (DMAR).
+3) Total throughput since boot. DK about this - however the uptime 
+component before the latest crash was the shortest yet. In preparation I 
+moved a bunch of large files around on the Windows box to ensure a 
+larger than normal backup run. I also ran manually before going to bed 
+(then moved the files around again). Didn't crash when I was watching - 
+but did overnight. Total uptime before this crash was only about 6 
+hours. Previously (with less backup data) the system didn't crash until 
+24-36 hours.
 
-> I must be missing something key here.  I thought unmap_mapping_range_vma
-> would percolate down to calling mmu_notifier_invalidate_page() which
-> xpmem can sleep in.  Based upon that assumption, I don't see the
-> need for the other patches.
+Observations:
 
-unmap_mapping_range takes i_mmap_lock (spinlock) and then calls
-zap_page_range that calls unmap_vmas under spinlock, that leads to
-mmu_notifier_invalidate_range_start under i_mmap_lock. That only
-happens for truncate... That was also the reason that Christioph's
-first patchset had a sleep parameter in its version of
-mmu_notifier_invalidate_something(sleep) (and sleep=0 was passed when
-it was called inside truncate IIRC).
+Copybreak: I did play for an hour or so yesterday with copybreak=1000. 
+Ran traffic, etc. No crash, but throughput was lower and the system was 
+clearly working way harder than normal. Given the whine of the fans I'm 
+not keen on leaving the system in that state for any extended period of 
+time.
 
-> I don't see the mandatory part here.  Maybe it is your broken english
+MTU: Increasing the MTU to 9000 yesterday after the system had been up 
+for some time (copybreak=1) crashed the system immediately. Subsequently 
+I have been able to change the mtu without crashes (although the driver 
+does end up in some sort of state that requires a restart after lowering 
+the mtu). I suspect that over time something is being corrupted 
+resulting in the crash when changing mtu. Whatever it becoming corrupted 
+is probably related to the other crash as well. That suggests to me that 
+copybreak=1 is preventing or delaying the manifestation of the 
+underlying issue but is unrelated to the source of corruption.
 
-Eheh, my english so bad ah... :(. And my writing is probably better
-than my pronunciation ;)
+[no messages in the prior three minutes - there was a dhcp exchange 
+(request/ack) at 06:02:27]
+Jan 28 06:05:58 mail kernel: DRHD: handling fault status reg 2
+Jan 28 06:05:58 mail kernel: DMAR:[DMA Read] Request device [06:00.0] 
+fault addr ffdd06bfe000
+Jan 28 06:05:58 mail kernel: DMAR:[fault reason 06] PTE Read access is 
+not set
+Jan 28 06:05:58 mail kernel: sky2 0000:06:00.0: error interrupt 
+status=0x80000000
+Jan 28 06:05:58 mail kernel: sky2 0000:06:00.0: PCI hardware error (0x2010)
+[No further messages until restart at 06:09:46.]
 
-> combined with my ignorance, but I do not see what the statement
-> "i_mmap_lock side is mandatory" is based upon.  It looks to me like
-
-Tried to explain again above, hope it is clearer this time.
