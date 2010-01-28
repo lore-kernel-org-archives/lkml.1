@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925Ab0A1Pqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962Ab0A1Pq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925Ab0A1Pqe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 10:46:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907Ab0A1Pqd
+	id S1755962Ab0A1Pq4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 10:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755752Ab0A1PqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 10:46:33 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:25896 "EHLO
+	Thu, 28 Jan 2010 10:46:16 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:61828 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755626Ab0A1Pqb (ORCPT
+	with ESMTP id S1755704Ab0A1PqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 10:46:31 -0500
+	Thu, 28 Jan 2010 10:46:14 -0500
 From: Nitin Gupta <ngupta@vflare.org>
 To: Greg KH <greg@kroah.com>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
        linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/7] Remove redundant check for zero page
-Date: Thu, 28 Jan 2010 21:13:41 +0530
-Message-Id: <1264693423-2694-6-git-send-email-ngupta@vflare.org>
+Subject: [PATCH 2/7] Flush block device before reset
+Date: Thu, 28 Jan 2010 21:13:38 +0530
+Message-Id: <1264693423-2694-3-git-send-email-ngupta@vflare.org>
 X-Mailer: git-send-email 1.6.2.5
 In-Reply-To: <1264693423-2694-1-git-send-email-ngupta@vflare.org>
 References: <1264693423-2694-1-git-send-email-ngupta@vflare.org>
@@ -24,49 +24,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ramzswap_free_page() already handles the case for zero filled
-pages. So, remove redundant logic for the same in ramzswap_write().
+Make sure we flush block device before freeing all metadata
+during reset ioctl.
 
-Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+Signed-off-by: Nitin Gupta <ngupta@vflar.org>
 ---
- drivers/staging/ramzswap/ramzswap_drv.c |   15 +++++----------
- 1 files changed, 5 insertions(+), 10 deletions(-)
+ drivers/staging/ramzswap/ramzswap_drv.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/staging/ramzswap/ramzswap_drv.c b/drivers/staging/ramzswap/ramzswap_drv.c
-index 3035add..7e0a3fa 100644
+index 05273c0..3567ee3 100644
 --- a/drivers/staging/ramzswap/ramzswap_drv.c
 +++ b/drivers/staging/ramzswap/ramzswap_drv.c
-@@ -593,6 +593,10 @@ static void ramzswap_free_page(struct ramzswap *rzs, size_t index)
- 	u32 offset = rzs->table[index].offset;
+@@ -1000,6 +1000,9 @@ static void reset_device(struct ramzswap *rzs)
+ 	unsigned entries_per_page;
+ 	unsigned long num_table_pages, entry = 0;
  
- 	if (unlikely(!page)) {
-+		/*
-+		 * No memory is allocated for zero filled pages.
-+		 * Simply clear zero page flag.
-+		 */
- 		if (rzs_test_flag(rzs, index, RZS_ZERO)) {
- 			rzs_clear_flag(rzs, index, RZS_ZERO);
- 			rzs_stat_dec(&rzs->stats.pages_zero);
-@@ -789,18 +793,9 @@ static int ramzswap_write(struct ramzswap *rzs, struct bio *bio)
- 	 * is no longer referenced by any process. So, its now safe
- 	 * to free the memory that was allocated for this page.
- 	 */
--	if (rzs->table[index].page)
-+	if (rzs->table[index].page || rzs_test_flag(rzs, index, RZS_ZERO))
- 		ramzswap_free_page(rzs, index);
++	/* Do not accept any new I/O request */
++	rzs->init_done = 0;
++
+ 	if (rzs->backing_swap && !rzs->num_extents)
+ 		is_backing_blkdev = 1;
  
--	/*
--	 * No memory is allocated for zero filled pages.
--	 * Simply clear zero page flag.
--	 */
--	if (rzs_test_flag(rzs, index, RZS_ZERO)) {
--		rzs_stat_dec(&rzs->stats.pages_zero);
--		rzs_clear_flag(rzs, index, RZS_ZERO);
--	}
+@@ -1073,9 +1076,6 @@ static void reset_device(struct ramzswap *rzs)
+ 
+ 	rzs->disksize = 0;
+ 	rzs->memlimit = 0;
 -
- 	mutex_lock(&rzs->lock);
+-	/* Back to uninitialized state */
+-	rzs->init_done = 0;
+ }
  
- 	user_mem = kmap_atomic(page, KM_USER0);
+ static int ramzswap_ioctl_init_device(struct ramzswap *rzs)
+@@ -1276,6 +1276,11 @@ static int ramzswap_ioctl(struct block_device *bdev, fmode_t mode,
+ 			ret = -EBUSY;
+ 			goto out;
+ 		}
++
++		/* Make sure all pending I/O is finished */
++		if (bdev)
++			fsync_bdev(bdev);
++
+ 		ret = ramzswap_ioctl_reset_device(rzs);
+ 		break;
+ 
 -- 
 1.6.2.5
 
