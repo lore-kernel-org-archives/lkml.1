@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755610Ab0A1XC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713Ab0A1XDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755610Ab0A1XC7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 18:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539Ab0A1XC6
+	id S1755713Ab0A1XDt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 18:03:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213Ab0A1XDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 18:02:58 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:32880 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755468Ab0A1XC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 18:02:58 -0500
-Subject: [PATCH]  ntp: Make time_esterror and time_maxerror static
-From: john stultz <johnstul@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, richard@rsk.demon.co.uk,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 28 Jan 2010 15:02:41 -0800
-Message-ID: <1264719761.3437.47.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Jan 2010 18:03:48 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:48533 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754181Ab0A1XDs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 18:03:48 -0500
+X-Greylist: delayed 1247 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jan 2010 18:03:48 EST
+From: "Henrik Rydberg" <rydberg@euromail.se>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jy0922.shim@samsung.com,
+       mika.kuoppala@nokia.com, peter.hutterer@who-t.net,
+       Henrik Rydberg <rydberg@euromail.se>
+Subject: [PATCH 1/2] input: mt: add the ABS_MT_PRESSURE event
+Date: Thu, 28 Jan 2010 23:42:48 +0100
+Message-Id: <1264718569-9772-1-git-send-email-rydberg@euromail.se>
+X-Mailer: git-send-email 1.6.3.3
+X-Originating-IP: 83.248.196.134
+X-Scan-Result: No virus found in message 1Nad6R-0007Ek-4p.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1Nad6R-0007Ek-4p c582cf2e51d67f20899d97e41d5127d9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Inspired by Richard's earlier email, I noticed the ntp.c has a few
-global values that could be static. This trivial patch cleans that up.
+For pressure-based multi-touch devices, a direct way to send sensor
+intensity data per finger is needed. This patch adds the ABS_MT_PRESSURE
+event to the MT protocol.
 
-thanks
--john
+Requested-by: Yoonyoung Shim <jy0922.shim@samsung.com>
+Requested-by: Mika Kuoppala <mika.kuoppala@nokia.com>
+Requested-by: Peter Hutterer <peter.hutterer@who-t.net>
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+ drivers/input/input.c |    1 +
+ include/linux/input.h |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-    
-Make time_esterror and time_maxerror static as no one uses them outside
-of ntp.c
-    
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/include/linux/timex.h b/include/linux/timex.h
-index 94f8fae..7a082b3 100644
---- a/include/linux/timex.h
-+++ b/include/linux/timex.h
-@@ -238,9 +238,6 @@ extern int tickadj;			/* amount of adjustment per tick */
-  * phase-lock loop variables
-  */
- extern int time_status;		/* clock synchronization status bits */
--extern long time_maxerror;	/* maximum error */
--extern long time_esterror;	/* estimated error */
--
- extern long time_adjust;	/* The amount of adjtime left */
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index 30b503b..86cb2d2 100644
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -46,6 +46,7 @@ static unsigned int input_abs_bypass_init_data[] __initdata = {
+ 	ABS_MT_TOOL_TYPE,
+ 	ABS_MT_BLOB_ID,
+ 	ABS_MT_TRACKING_ID,
++	ABS_MT_PRESSURE,
+ 	0
+ };
+ static unsigned long input_abs_bypass[BITS_TO_LONGS(ABS_CNT)];
+diff --git a/include/linux/input.h b/include/linux/input.h
+index 7be8a65..735ceaf 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -660,6 +660,7 @@ struct input_absinfo {
+ #define ABS_MT_TOOL_TYPE	0x37	/* Type of touching device */
+ #define ABS_MT_BLOB_ID		0x38	/* Group a set of packets as a blob */
+ #define ABS_MT_TRACKING_ID	0x39	/* Unique ID of initiated contact */
++#define ABS_MT_PRESSURE		0x3a	/* Pressure on contact area */
  
- extern void ntp_init(void);
-diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
-index 4800f93..74b1b37 100644
---- a/kernel/time/ntp.c
-+++ b/kernel/time/ntp.c
-@@ -58,10 +58,10 @@ static s64			time_offset;
- static long			time_constant = 2;
- 
- /* maximum error (usecs):						*/
--long				time_maxerror = NTP_PHASE_LIMIT;
-+static long			time_maxerror = NTP_PHASE_LIMIT;
- 
- /* estimated error (usecs):						*/
--long				time_esterror = NTP_PHASE_LIMIT;
-+static long			time_esterror = NTP_PHASE_LIMIT;
- 
- /* frequency offset (scaled nsecs/secs):				*/
- static s64			time_freq;
-
+ #define ABS_MAX			0x3f
+ #define ABS_CNT			(ABS_MAX+1)
+-- 
+1.6.3.3
 
