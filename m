@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755751Ab0A1STP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932283Ab0A1SXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755751Ab0A1STP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 13:19:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554Ab0A1STO
+	id S932283Ab0A1SXN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 13:23:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386Ab0A1SXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 13:19:14 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:51650 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754964Ab0A1STN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 13:19:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=content-type:to:cc:subject:references:date:mime-version
-         :content-transfer-encoding:from:message-id:in-reply-to:user-agent;
-        b=Z9Lv5NmdYl2tCM2cYOMpDLhESq6c8tUAGYFt4mFoYil8fvyMkWg2JGkp4yMZiBrOhN
-         raPKypJGNwgAaraSxHXy9YRCD/t549+8hrdmmAW+TsA1epmZbrPeSTanraaDEgHOy8jb
-         fuz0q1BjTeC+2DTXLys/eZdxK6+aGU52E+igA=
-Content-Type: text/plain; charset=utf-8; format=flowed; delsp=yes
-To: "Michael Reinelt" <michael@reinelt.co.at>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Chris Wilson" <chris@chris-wilson.co.uk>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "A Rojas" <nqn1976list@gmail.com>,
-       "A. Boulan" <arnaud.boulan@libertysurf.fr>, jcnengel@googlemail.com,
-       rientjes@google.com, earny@net4u.de, linux-kernel@vger.kernel.org,
-       intel-gfx@lists.freedesktop.org,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Eric Anholt" <eric@anholt.net>, stable@kernel.org
-Subject: Re: [PATCH] drm/i915: Selectively enable self-reclaim
-References: <alpine.LFD.2.00.1001270252290.24253@localhost.localdomain>
- <1264590844-22972-1-git-send-email-chris@chris-wilson.co.uk>
- <4B602186.8050303@cs.helsinki.fi> <4B610134.9020109@reinelt.co.at>
-Date: Thu, 28 Jan 2010 19:21:47 +0100
+	Thu, 28 Jan 2010 13:23:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59056 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754221Ab0A1SXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 13:23:11 -0500
+Message-ID: <4B61D554.9000003@kernel.org>
+Date: Thu, 28 Jan 2010 10:20:04 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-From: "Roman Jarosz" <kedgedev@gmail.com>
-Message-ID: <op.u689ajucasvm2a@kedge>
-In-Reply-To: <4B610134.9020109@reinelt.co.at>
-User-Agent: Opera Mail/10.10 (Linux)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeff Garrett <jeff@jgarrett.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with pci=use_crs)
+References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <1264652762.24020.5.camel@dc7800.home> <4B61266F.1060600@kernel.org> <201001280909.46043.bjorn.helgaas@hp.com>
+In-Reply-To: <201001280909.46043.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jan 2010 04:15:00 +0100, Michael Reinelt  
-<michael@reinelt.co.at> wrote:
-
->
->
-> Pekka Enberg schrieb:
->> Chris Wilson kirjoitti:
->>> Having missed the ENOMEM return via i915_gem_fault(), there are  
->>> probably
->>> other paths that I also missed. By not enabling NORETRY by default  
->>> these
->>> paths can run the shrinker and take memory from the system (but not  
->>> from
->>> our own inactive lists because our shrinker can not run whilst we hold
->>> the struct mutex) and this may allow the system to survive a little
->>> longer
->>> whilst our drivers consume all available memory.
+On 01/28/2010 08:09 AM, Bjorn Helgaas wrote:
+> On Wednesday 27 January 2010 10:53:51 pm Yinghai Lu wrote:
+>> On 01/27/2010 08:26 PM, Bjorn Helgaas wrote:
+>>> On Wed, 2010-01-27 at 15:34 -0800, Yinghai Lu wrote:
+> 
+>>>> 2. how about when apci is disabled?
 >>>
->>> References:
->>>   OOM killer unexpectedly called with kernel 2.6.32
->>>   http://bugzilla.kernel.org/show_bug.cgi?id=14933
->>>
->>> Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
->>> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->>> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
->>> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
->>> Cc: Eric Anholt <eric@anholt.net>
->>> Cc: stable@kernel.org
+>>> When ACPI is disabled, I think we just have to accept that we lose some
+>>> functionality.  I don't see the need for alternate ways to accomplish
+>>> everything that ACPI does.  It's becoming less and less useful to
+>>> disable ACPI; I think it's only interesting as a debugging tool, and
+>>> even then it's a sledgehammer.
 >>
->> Roman, can you give this patch a spin?
->
-> Applied to 2.6.33-rc5, stress-test under heavy load, no problem so far.  
-> Looks fine!
+>> some systems when acpi is enabled could have interrupt storm. 
+>> and have to disable acpi.
+> 
+> We should fix that problem rather than just covering it up by
+> disabling ACPI.  Can you provide any details?
+that is not covering problem. acpi just cause too many problems.
 
-Here it works too, thanks!
+systems using acpi hotplug support, and use acpi aml code to monitor the hotplug status instead of HW
+and after one or two days will have interrupt storm with sci/acpi interrupt aka 9.
+> 
+> I think it's crazy to add code to work around Problem B that only
+> occurs because we disabled ACPI to work around Problem A.  We should
+> just fix Problem A instead.
 
-Roman
+that is not point. fix BIOS or HW or OS?
 
+check many systems have broken acpi?
+some system acpi code even clear pci bar when just enable acpi at the first point.
+
+YH
