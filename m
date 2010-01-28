@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932208Ab0A1S4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412Ab0A1S5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932208Ab0A1S4S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 13:56:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203Ab0A1S4Q
+	id S1756412Ab0A1S5k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 13:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822Ab0A1S5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 13:56:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42897 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755946Ab0A1S4P (ORCPT
+	Thu, 28 Jan 2010 13:57:39 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:48427 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754111Ab0A1S5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 13:56:15 -0500
-Date: Thu, 28 Jan 2010 10:54:03 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Jeff Garrett <jeff@jgarrett.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86/pci: print ioh resources only
-In-Reply-To: <4B61D7C4.1050405@kernel.org>
-Message-ID: <alpine.LFD.2.00.1001281052510.22433@localhost.localdomain>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <201001261348.59508.rjw@sisk.pl> <201001261032.37053.bjorn.helgaas@hp.com> <201001261902.13911.rjw@sisk.pl> <20100126101752.78196900@jbarnes-piketon> <4B5F735B.2040308@kernel.org> <alpine.LFD.2.00.1001271748300.3570@localhost.localdomain>
- <20100127192409.79af96db@jbarnes-piketon> <20100128040226.GB8964@jgarrett.org> <20100128082432.05a97ebc@jbarnes-piketon> <4B61D7C4.1050405@kernel.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 28 Jan 2010 13:57:38 -0500
+Message-ID: <4B61DD8F.6020507@oracle.com>
+Date: Thu, 28 Jan 2010 10:55:11 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>
+Subject: Re: mmotm 2010-01-28-01-36 uploaded (sched.c + percpu)
+References: <201001281002.o0SA2G0k002220@imap1.linux-foundation.org>
+In-Reply-To: <201001281002.o0SA2G0k002220@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4B61DDDF.0075:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/28/10 01:36, akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2010-01-28-01-36 has been uploaded to
+>
+>     http://userweb.kernel.org/~akpm/mmotm/
+>
+> and will soon be available at
+>
+>     git://zen-kernel.org/kernel/mmotm.git
+>
+> It contains the following patches against 2.6.33-rc5:
 
 
-On Thu, 28 Jan 2010, Yinghai Lu wrote:
-> @@ -43,7 +43,7 @@ static void __devinit pci_root_bus_res(s
->  {
->  	u16 word;
->  	u32 dword;
-> -	struct pci_root_info *info;
-> +	struct pci_root_info info;
+when CONFIG_SMP is not enabled:
 
-That structure is something like a kilobyte in size, please don't put 
-those things on the stack (sixteen "struct resource" entries).
+kernel/sched.c:10915: error: 'percpu_counter_batch' undeclared (first use in this function)
 
-		Linus
+
+
+-- 
+~Randy
