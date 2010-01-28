@@ -1,97 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997Ab0A1UMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589Ab0A1UQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754997Ab0A1UMX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 15:12:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415Ab0A1UMV
+	id S1754589Ab0A1UQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 15:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276Ab0A1UQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 15:12:21 -0500
-Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:46231 "HELO
-	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932301Ab0A1UMU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 15:12:20 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=o+vwKYqC9G0dPm9bbMJ7cadXEfrzJQ9mkE/zafgFJgv+KXUjvtff1mbXmm4MLgdIzjbyZJnk/7oUDONO24NatnHzZjVIyiZZp9fecL/i6vIGWAQ+zhV42zMgxX2eaI5A;
-Date: Thu, 28 Jan 2010 12:12:16 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jeff Garrett <jeff@jgarrett.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with
- pci=use_crs)
-Message-ID: <20100128121216.717ca66a@jbarnes-piketon>
-In-Reply-To: <4B61D3C6.1050104@kernel.org>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
-	<201001261348.59508.rjw@sisk.pl>
-	<201001261032.37053.bjorn.helgaas@hp.com>
-	<201001261902.13911.rjw@sisk.pl>
-	<20100126101752.78196900@jbarnes-piketon>
-	<4B5F735B.2040308@kernel.org>
-	<alpine.LFD.2.00.1001271748300.3570@localhost.localdomain>
-	<20100127192409.79af96db@jbarnes-piketon>
-	<20100128040226.GB8964@jgarrett.org>
-	<20100128082432.05a97ebc@jbarnes-piketon>
-	<4B61D3C6.1050104@kernel.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Thu, 28 Jan 2010 15:16:26 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:60506 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751254Ab0A1UQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 15:16:25 -0500
+Subject: Re: [PATCH] kernel/timekeeping:  move xtime_cache to be in the
+ same cache line as the lock
+From: john stultz <johnstul@us.ibm.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1264594226.2059.47.camel@localhost>
+References: <1264088361.2082.45.camel@localhost>
+	 <20100126152822.d05b5487.akpm@linux-foundation.org>
+	 <1264594226.2059.47.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 28 Jan 2010 12:16:14 -0800
+Message-ID: <1264709774.3437.39.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Jan 2010 10:13:26 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
-
-> On 01/28/2010 08:24 AM, Jesse Barnes wrote:
-> > On Wed, 27 Jan 2010 22:02:26 -0600
-> > jeff@jgarrett.org (Jeff Garrett) wrote:
+On Wed, 2010-01-27 at 12:10 +0000, Richard Kennedy wrote:
+> On Tue, 2010-01-26 at 15:28 -0800, Andrew Morton wrote:
+> > On Thu, 21 Jan 2010 15:39:21 +0000
+> > Richard Kennedy <richard@rsk.demon.co.uk> wrote:
 > > 
-> >> On Wed, Jan 27, 2010 at 07:24:09PM -0800, Jesse Barnes wrote:
-> >>> On Wed, 27 Jan 2010 17:50:17 -0800 (PST)
-> >>> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> >>>> On Tue, 26 Jan 2010, Yinghai Lu wrote:
-> >>>>>
-> >>>>> [PATCH] x86/pci: don't use ioh resource if only have one ioh
-> >>>>
-> >>>> Please, no.
-> >>>>
-> >>>> This patch is too ugly to live.
-> >>>>
-> >>>> And it's totally unacceptable to probe every single possible PCI
-> >>>> device for something like this.
-> >>>>
-> >>>> If we don't know enough about the hardware workings of those
-> >>>> Intel bridges to know when they are active and how they decode
-> >>>> things, then please let's just disable intel_bus.c entirely.
-> >>>>
-> >>>> There's no excuse for hacky tests like this.
-> >>>
-> >>> Ok, we'll just kill it entirely then.  I'll send a patch tomorrow
-> >>> unless Yinghai beats me to it.
-> >>
-> >> What about something like this (works for me, without pci=use_crs)?
-> >>
-> >> ---
-> >>     Remove intel_bus.c Intel-specific PCI/IOH logic
-> >>     
-> >>     Signed-off-by: Jeff Garrett <jeff@jgarrett.org>
+> > > move xtime_cache to be in the same cache line as the lock
+> > >     
+> > > allowing current_kernel_time() to access only one cache line
 > > 
-> > Yeah, looks good.  I'll push to Linus today.
-> > 
+> > Sentences start with capital letters, please.
 > 
-> please don't. will send you another patch, to keep the print out so
-> we can cross check the _CRS.
+> Sorry about that, I will try harder in future ;)
+> 
+> 
+> > 
+> > I don't know how reliable this is.  I _think_ the compiler and linker
+> > are free to place variables of this nature in any old place.  Whether
+> > any of the current tools actually do that I don't know.  Note that one
+> > of these variables has file-static scope and the other does not, which
+> > perhaps increases the risk that the compiler or linker will go and
+> > fiddle with them.
+> > 
+> > To do this reliably one would need to put them in a struct:
+> > 
+> > time.h:
+> > 
+> > extern struct xtime_stuff {
+> > 	seqlock_t _xtime_lock,
+> > 	struct timespec _xtime_cache,
+> > } xtime_stuff;
+> > 
+> > #define xtime_lock xtime_stuff._xtime_lock
+> > 
+> > 
+> > timekeeping.c:
+> > 
+> > struct xtime_stuff {
+> > 	._xtime_lock = __SEQLOCK_UNLOCKED(xtime_stuff._xtime_lock),
+> > };
+> Thank you, yes that looks like a much better approach.
+> I can do this if it's needed, but John Stultz said he's going to kill
+> the xtime_cache anyway, so it may not be worth it?
+> 
+> However I do wonder if we should move all, or at least some, of the
+> variables protected by that xtime_lock into that structure? Then we can
+> manage their placement and they would be easier to find. After only a
+> brief look I see variables in ntp, tick &  timekeeping that seem to be
+> protected by that seqlock.
 
-I don't think there's much point due to the points we discussed
-earlier, I'd rather just get rid of it.
+The xtime lock has been used to protect quite a bit, but that has been
+slowly cleaned up. Luckily process accounting is no longer done under it
+(although load time accounting still is - not that its used on the
+read-side if I recall), but jiffies, tick_next_period, almost all of the
+values in ntp.c, and the timekeeper structure and friends are all
+covered by it.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Personally I'd love to see the timekeeper structure gain a lock that
+protects its elements, further removing the need for the external
+xtime_lock. The timekeeper structure should also pull in xtime and
+wall_to_monotonic, but there's still quite a bit of arch specific code
+that needs to be fixed first (see my arch_gettimeoffset patches and
+read/update_persistent_clock patches from end of December).
+
+Trying to resolve the ntp.c and timekeeping.c xtime_lock usage is a
+little harder. Keeping those files and structures separate makes the
+time code slightly less confusing (though maybe not as much as I'd
+hope), but the functionality is so tightly coupled that splitting the
+xtime lock into two separate locks seems like a little too much. But
+maybe you have some interesting ideas there?
+
+So by all means, please take a shot at it. I'm probably prone to being
+too conservative with making changes in the hopes that we don't cause
+too many regressions and if we do they're easy to find. But folks like
+Martin have been able to make some great cleanups without the world
+falling apart, so maybe my turtle's pace is unwarranted.
+
+thanks
+-john
+
