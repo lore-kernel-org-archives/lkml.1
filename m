@@ -1,93 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344Ab0A1GtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673Ab0A1Gtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754344Ab0A1GtH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 01:49:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226Ab0A1GtG
+	id S1754673Ab0A1Gtp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 01:49:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303Ab0A1Gto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 01:49:06 -0500
-Received: from ohm.utp.edu.co ([200.21.217.54]:52180 "EHLO ohm.utp.edu.co"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752186Ab0A1GtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 01:49:05 -0500
-From: "FEDEX COURIER COMPANY" <FEDEXCOURIERCOMPANY@YAHOO.COM>
-Reply-To: tonybrownclaims2009@iraq.ir
-Subject: Good Day Customer
-Date: Thu, 28 Jan 2010 00:08:38 -0500
-Message-Id: <20100128051143.M10901@YAHOO.COM>
-X-Mailer: Open WebMail 2.30 20040414
-X-OriginatingIP: 10.1.2.50 (aorozco)
+	Thu, 28 Jan 2010 01:49:44 -0500
+Received: from mail-pz0-f190.google.com ([209.85.222.190]:39248 "EHLO
+	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752186Ab0A1Gtn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 01:49:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :content-type:content-transfer-encoding;
+        b=OX7joHHGri2DKwYeUlMP1sp4UcHNYGmTcl2wkKIAVZ4TFohj7A3N1Rp4V6/jTwmKlG
+         /sRGPs37uYwceXSLMDrwlRY2sgCL5oU/GTclgm0YaMektauONM8wc5kKp3FgQA60JgND
+         FjMHKocRHE+Xpyc4ExbAbOaaQRTerJfBOhbXI=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=windows-1252
-To: unlisted-recipients:; (no To-header on input)
+In-Reply-To: <daef60381001170536k2028f80bo7505a035cd7d637a@mail.gmail.com>
+References: <daef60381001170536k2028f80bo7505a035cd7d637a@mail.gmail.com>
+From: Hui Zhu <teawater@gmail.com>
+Date: Thu, 28 Jan 2010 14:49:23 +0800
+Message-ID: <daef60381001272249v7bbc5ed5je41cd4dfc2db3470@mail.gmail.com>
+Subject: Re: [PATCH] Fix bug of markup_oops.pl when first line of range is the 
+	faulting instruction
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       =?ISO-8859-1?Q?Ozan_=C7aglayan?= <ozan@pardus.org.tr>,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FEDEX COURIER COMPANY
-Plot 2356 Palm Groove.
-London United Kingdom,
-Telephone: +44 7045749893
+Please ignore this mail.
 
-Good Day Customer.
+I just sent a mail "[PATCH] markup_oops.pl: fix get "No matching code
+found" when first line of range is the faulting instruction" for it.
 
-I am Mr. Tony Brown Of the FedEx Courier Company,I have a
-Confirm able bank draft of GBP 500.000.00 (Five Hundred Thousand
-Great British Pounds) in your name from the shell Petroleum,
-it was deposited the Draft with FED EX COURIER SERVICE,United Kingdom,
-I travelled out of the country for my holidays and I
-will not retire back until the end of january.
+Thanks,
+Hui
 
-I want you to try all your best and contact the FED EX COURIER
-SERVICE as soon as possible to know when you will get this
-package to you because of the expiring date.For your
-information, I have paid for the security Keeping Fee,Insurance
-premium and Clearance Certificate Fee of the Cheque showing
-that it is not a Drug Money or meant to sponsor Terrorist
-attackin your Country.
-
-The only money you will send to the FEDEX COURIER SERVICE to
-deliver your Draft direct to your postal Address in your
-country is 50.00 pounds only Delivery Charge Fee of the Courier
-Company so far.Again,don't be deceived by any person to pay any
-other money except 50.00 pounds you are to pay the
-Delivering Charge .I would have paid that but they said no
-because they don't know when you will contact them and in case
-of demurrage. You have to contact the FEDEX COURIER SERVICE now
-for the delivery of your Draft with this below information.
-
-=======================================
-Contact Person: Mr. Tony Brown, Email Address:
-tonybrownclaims2009@iraq.ir Telephone: +44 7045749893
-Shipment Code:CPEL/OWN/9876 Parcel Number:EG2272-UK
-=======================================
-
-Lastly, You are advice to send the below information to the
-Courier
-Company so they cross check with the details they have in their
-office
-before deliver so no mistake would be made.
-
-Your Full Name:......................
-Your Sex:............................
-Postal address:......................
-Occupation:...........................
-Direct telephone number:.............
-
-Do send it to them again to avoid any mistake on the Delivery
-and ask them to give you the tracking number to enable you
-track your package over there and know when it will get to your
-address.
-
-Yours Faithfully,
-Mrs. Monalisa Wright
-
-Your Info Needed (Call +44 7045749893)
-_____________________________________________________________
-Ingenieria Electrica
-UNIVERSIDAD TECNOLOGICA DE PEREIRA
-La Julita, Pereira, Risaralda
-[http://ohm.utp.edu.co]  Tels: +57(6)3137122 7153 7154 7329
-                          Fax: ext 116
-_____________________________________________________________
-
+On Sun, Jan 17, 2010 at 21:36, Hui Zhu <teawater@gmail.com> wrote:
+> I got a "No matching code found" when I use markup_oops.pl parse a
+> error in a x8664 module.
+>
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+> IP: [<ffffffffa0000000>] init_module+0x0/0x10 [e]
+> PGD 610a067 PUD 610b067 PMD 0
+> Oops: 0002 [1] PREEMPT SMP
+> CPU 0
+> Modules linked in: e(+)
+> Pid: 2064, comm: insmod Not tainted
+> 2.6.27.39-WR3.0.2zz_standard-00073-g6471dad-dirty #3
+> RIP: 0010:[<ffffffffa0000000>]  [<ffffffffa0000000>] init_module+0x0/0x10 [e]
+> RSP: 0018:ffff8800060f5ef0  EFLAGS: 00000246
+> RAX: ffff8800060f5fd8 RBX: ffffffffa0000340 RCX: 0000000000000000
+> RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffffffa0000000
+> RBP: ffffffffa0000000 R08: 0000000000000000 R09: ffff880001101000
+> R10: 0000000000000002 R11: 0000000000000472 R12: 0000000000000000
+> R13: 00000000006905b0 R14: 00007fff7c934f15 R15: 0000000000000003
+> FS:  000000000068f850(0063) GS:ffffffff80749040(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 0000000000000000 CR3: 0000000006108000 CR4: 00000000000006a0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 0000000000004000 DR7: 0000000000000000
+> Process insmod (pid: 2064, threadinfo ffff8800060f4000, task ffff8800079078e0)
+> Stack:  ffffffff8020903b 0000000000000000 ffffffff803a2fa1 0000000000000000
+>  ffffffff8058ab82 0000000000000000 ffffffff80253e15 0000000000000001
+>  ffffffffa0000340 000000000000c4ce ffffffffa0000340 000000000000c4ce
+> Call Trace:
+>  [<ffffffff8020903b>] ? _stext+0x3b/0x160
+>  [<ffffffff803a2fa1>] ? __up_read+0x21/0xb0
+>  [<ffffffff8058ab82>] ? _spin_unlock_irqrestore+0x12/0x40
+>  [<ffffffff80253e15>] ? __blocking_notifier_call_chain+0x65/0x90
+>  [<ffffffff80261e55>] ? sys_init_module+0xb5/0x210
+>  [<ffffffff8020bb0b>] ? system_call_done+0x0/0x5
+>
+>
+> Code: <c6> 04 25 00 00 00 00 03 31 c0 c3 0f 1f 44 00 00 f3 c3 90 90 04 00
+> RIP  [<ffffffffa0000000>] init_module+0x0/0x10 [e]
+>  RSP <ffff8800060f5ef0>
+> CR2: 0000000000000000
+> ---[ end trace 1f34257349e749de ]---
+>
+>
+> 0000000000000000 <init_module>:
+> init_module():
+> /home/teawater/study/kernel/stack2core/example/e.c:10
+>   0:   c6 04 25 00 00 00 00    movb   $0x3,0x0
+>   7:   03
+> /home/teawater/study/kernel/stack2core/example/e.c:13
+>   8:   31 c0                   xor    %eax,%eax
+>   a:   c3                      retq
+>   b:   0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+>
+> 0000000000000010 <cleanup_module>:
+> cleanup_module():
+> /home/teawater/study/kernel/stack2core/example/e.c:20
+>  10:   f3 c3                   repz retq
+>  12:   90                      nop
+>  13:   90                      nop
+> Disassembly of section .modinfo:
+>
+> This is because the faulting instruction "movb   $0x3,0x0" is the
+> first line of the range.
+>
+> In the markup_oops.pl:
+> open(FILE, "objdump -dS --adjust-vma=$vmaoffset
+> --start-address=$decodestart --stop-address=$decodestop $filename |")
+> || die "Cannot start objdump";
+>
+> while (<FILE>) {
+>        my $line = $_;
+>        chomp($line);
+>        if ($state == 0) {
+>                if ($line =~ /^([a-f0-9]+)\:/) {
+>                        if (InRange($1, $target)) {
+>                                $state = 1;
+>                        }
+>                }
+>        } else {
+>                if ($line =~ /^([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]+)\:/) {
+>                        my $val = $1;
+>                        if (!InRange($val, $target)) {
+>                                last;
+>                        }
+>                        if ($val eq $target) {
+>                                $center = $counter;
+>                        }
+>                }
+> The first line cannot be eq, so $center cannot be set. I make a patch to fix it.
+>
+> Thanks,
+> Hui
+>
+> Signed-off-by: Hui Zhu <teawater@gmail.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Arjan van de Ven <arjan@linux.intel.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Ozan Çaglayan <ozan@pardus.org.tr>
+> Cc: Matthew Wilcox <willy@linux.intel.com>
+>
+> ---
+>  scripts/markup_oops.pl |    7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+>
+> --- a/scripts/markup_oops.pl
+> +++ b/scripts/markup_oops.pl
+> @@ -204,7 +204,7 @@ if ($module ne "") {
+>
+>  my $counter = 0;
+>  my $state   = 0;
+> -my $center  = 0;
+> +my $center  = -1;
+>  my @lines;
+>  my @reglines;
+>
+> @@ -236,7 +236,8 @@ while (<FILE>) {
+>                                $state = 1;
+>                        }
+>                }
+> -       } else {
+> +       }
+> +       if ($state == 1) {
+>                if ($line =~ /^([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]+)\:/) {
+>                        my $val = $1;
+>                        if (!InRange($val, $target)) {
+> @@ -259,7 +260,7 @@ if ($counter == 0) {
+>        exit;
+>  }
+>
+> -if ($center == 0) {
+> +if ($center == -1) {
+>        print "No matching code found \n";
+>        exit;
+>  }
+>
