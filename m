@@ -1,66 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497Ab0A1XdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835Ab0A1Xg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756497Ab0A1XdB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 18:33:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349Ab0A1XdA
+	id S1755835Ab0A1Xg4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 18:36:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698Ab0A1Xgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 18:33:00 -0500
-Received: from kroah.org ([198.145.64.141]:38794 "EHLO coco.kroah.org"
+	Thu, 28 Jan 2010 18:36:55 -0500
+Received: from cantor.suse.de ([195.135.220.2]:58143 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755546Ab0A1Xc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 18:32:58 -0500
-Date: Thu, 28 Jan 2010 15:31:50 -0800
-From: Greg KH <greg@kroah.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Till Kamppeter <till.kamppeter@gmail.com>, linux-kernel@vger.kernel.org,
-       lsb-discuss@lists.linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux wireless GSoC 2010 project ideas
-Message-ID: <20100128233150.GB31884@kroah.com>
-References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
- <20100128231545.GH18683@nowhere>
- <43e72e891001281523s56707279x896ab059e6d4e530@mail.gmail.com>
+	id S1754646Ab0A1Xgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 18:36:55 -0500
+Date: Fri, 29 Jan 2010 00:36:49 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       =?ISO-8859-15?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>,
+       jfs-discussion@lists.sourceforge.net
+Subject: Re: [PATCH] jfs_dmap.[ch]: trivial typo fix: s/heigth/height/g
+In-Reply-To: <1264666381-7770-1-git-send-email-daniel@caiaq.de>
+Message-ID: <alpine.LNX.2.00.1001290036010.356@pobox.suse.cz>
+References: <1264666381-7770-1-git-send-email-daniel@caiaq.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <43e72e891001281523s56707279x896ab059e6d4e530@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 03:23:15PM -0800, Luis R. Rodriguez wrote:
-> On Thu, Jan 28, 2010 at 3:15 PM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > I'm sorry if I'm a bit off-topic. But as I see this announce,
-> > I'm wondering about the topics for the google summer of code
-> > in the wider scope of the entire kernel.
-> >
-> > I'm a student and there are fair chances I'll be free for this
-> > summer so I start to think about applying.
-> >
-> > Are there currently some plans concerning other kernel areas?
+On Thu, 28 Jan 2010, Daniel Mack wrote:
+
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Cc: Jiri Kosina <trivial@kernel.org>
+> Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> Cc: André Goddard Rosa <andre.goddard@gmail.com>
+> Cc: jfs-discussion@lists.sourceforge.net
+> ---
+>  fs/jfs/jfs_dmap.c |   16 ++++++++--------
+>  fs/jfs/jfs_dmap.h |    6 +++---
+>  2 files changed, 11 insertions(+), 11 deletions(-)
 > 
-> These would be under the Linux Foundation umbrella, the wireless stuff
-> I just posted is just for wireless. I do not believe we have a common
-> forum yet for general linux stuff. Till?
+> diff --git a/fs/jfs/jfs_dmap.c b/fs/jfs/jfs_dmap.c
+> index d9b031c..7e19d2f 100644
+> --- a/fs/jfs/jfs_dmap.c
+> +++ b/fs/jfs/jfs_dmap.c
+> @@ -195,7 +195,7 @@ int dbMount(struct inode *ipbmap)
+>  	bmp->db_maxag = le32_to_cpu(dbmp_le->dn_maxag);
+>  	bmp->db_agpref = le32_to_cpu(dbmp_le->dn_agpref);
+>  	bmp->db_aglevel = le32_to_cpu(dbmp_le->dn_aglevel);
+> -	bmp->db_agheigth = le32_to_cpu(dbmp_le->dn_agheigth);
+> +	bmp->db_agheight = le32_to_cpu(dbmp_le->dn_agheight);
+>  	bmp->db_agwidth = le32_to_cpu(dbmp_le->dn_agwidth);
+>  	bmp->db_agstart = le32_to_cpu(dbmp_le->dn_agstart);
+>  	bmp->db_agl2size = le32_to_cpu(dbmp_le->dn_agl2size);
+> @@ -287,7 +287,7 @@ int dbSync(struct inode *ipbmap)
+>  	dbmp_le->dn_maxag = cpu_to_le32(bmp->db_maxag);
+>  	dbmp_le->dn_agpref = cpu_to_le32(bmp->db_agpref);
+>  	dbmp_le->dn_aglevel = cpu_to_le32(bmp->db_aglevel);
+> -	dbmp_le->dn_agheigth = cpu_to_le32(bmp->db_agheigth);
+> +	dbmp_le->dn_agheight = cpu_to_le32(bmp->db_agheight);
+>  	dbmp_le->dn_agwidth = cpu_to_le32(bmp->db_agwidth);
+>  	dbmp_le->dn_agstart = cpu_to_le32(bmp->db_agstart);
+>  	dbmp_le->dn_agl2size = cpu_to_le32(bmp->db_agl2size);
+> @@ -1440,7 +1440,7 @@ dbAllocAG(struct bmap * bmp, int agno, s64 nblocks, int l2nb, s64 * results)
+>  	 * tree index of this allocation group within the control page.
+>  	 */
+>  	agperlev =
+> -	    (1 << (L2LPERCTL - (bmp->db_agheigth << 1))) / bmp->db_agwidth;
+> +	    (1 << (L2LPERCTL - (bmp->db_agheight << 1))) / bmp->db_agwidth;
+>  	ti = bmp->db_agstart + bmp->db_agwidth * (agno & (agperlev - 1));
+>  
+>  	/* dmap control page trees fan-out by 4 and a single allocation
+> @@ -1459,7 +1459,7 @@ dbAllocAG(struct bmap * bmp, int agno, s64 nblocks, int l2nb, s64 * results)
+>  		 * the subtree to find the leftmost leaf that describes this
+>  		 * free space.
+>  		 */
+> -		for (k = bmp->db_agheigth; k > 0; k--) {
+> +		for (k = bmp->db_agheight; k > 0; k--) {
+>  			for (n = 0, m = (ti << 2) + 1; n < 4; n++) {
+>  				if (l2nb <= dcp->stree[m + n]) {
+>  					ti = m + n;
+> @@ -3606,7 +3606,7 @@ void dbFinalizeBmap(struct inode *ipbmap)
+>  	}
+>  
+>  	/*
+> -	 * compute db_aglevel, db_agheigth, db_width, db_agstart:
+> +	 * compute db_aglevel, db_agheight, db_width, db_agstart:
+>  	 * an ag is covered in aglevel dmapctl summary tree,
+>  	 * at agheight level height (from leaf) with agwidth number of nodes
+>  	 * each, which starts at agstart index node of the smmary tree node
+> @@ -3615,9 +3615,9 @@ void dbFinalizeBmap(struct inode *ipbmap)
+>  	bmp->db_aglevel = BMAPSZTOLEV(bmp->db_agsize);
+>  	l2nl =
+>  	    bmp->db_agl2size - (L2BPERDMAP + bmp->db_aglevel * L2LPERCTL);
+> -	bmp->db_agheigth = l2nl >> 1;
+> -	bmp->db_agwidth = 1 << (l2nl - (bmp->db_agheigth << 1));
+> -	for (i = 5 - bmp->db_agheigth, bmp->db_agstart = 0, n = 1; i > 0;
+> +	bmp->db_agheight = l2nl >> 1;
+> +	bmp->db_agwidth = 1 << (l2nl - (bmp->db_agheight << 1));
+> +	for (i = 5 - bmp->db_agheight, bmp->db_agstart = 0, n = 1; i > 0;
+>  	     i--) {
+>  		bmp->db_agstart += n;
+>  		n <<= 2;
+> diff --git a/fs/jfs/jfs_dmap.h b/fs/jfs/jfs_dmap.h
+> index 1a6eb41..6dcb906 100644
+> --- a/fs/jfs/jfs_dmap.h
+> +++ b/fs/jfs/jfs_dmap.h
+> @@ -210,7 +210,7 @@ struct dbmap_disk {
+>  	__le32 dn_maxag;	/* 4: max active alloc group number	*/
+>  	__le32 dn_agpref;	/* 4: preferred alloc group (hint)	*/
+>  	__le32 dn_aglevel;	/* 4: dmapctl level holding the AG	*/
+> -	__le32 dn_agheigth;	/* 4: height in dmapctl of the AG	*/
+> +	__le32 dn_agheight;	/* 4: height in dmapctl of the AG	*/
+>  	__le32 dn_agwidth;	/* 4: width in dmapctl of the AG	*/
+>  	__le32 dn_agstart;	/* 4: start tree index at AG height	*/
+>  	__le32 dn_agl2size;	/* 4: l2 num of blks per alloc group	*/
+> @@ -229,7 +229,7 @@ struct dbmap {
+>  	int dn_maxag;		/* max active alloc group number	*/
+>  	int dn_agpref;		/* preferred alloc group (hint)		*/
+>  	int dn_aglevel;		/* dmapctl level holding the AG		*/
+> -	int dn_agheigth;	/* height in dmapctl of the AG		*/
+> +	int dn_agheight;	/* height in dmapctl of the AG		*/
+>  	int dn_agwidth;		/* width in dmapctl of the AG		*/
+>  	int dn_agstart;		/* start tree index at AG height	*/
+>  	int dn_agl2size;	/* l2 num of blks per alloc group	*/
+> @@ -255,7 +255,7 @@ struct bmap {
+>  #define	db_agsize	db_bmap.dn_agsize
+>  #define	db_agl2size	db_bmap.dn_agl2size
+>  #define	db_agwidth	db_bmap.dn_agwidth
+> -#define	db_agheigth	db_bmap.dn_agheigth
+> +#define	db_agheight	db_bmap.dn_agheight
+>  #define	db_agstart	db_bmap.dn_agstart
+>  #define	db_numag	db_bmap.dn_numag
+>  #define	db_maxlevel	db_bmap.dn_maxlevel
 
-Traditionally, PSU (Portland State University) handles a number of Linux
-kernel related projects for GSoC due to the Linux kernel developers who
-are mentors for them, and the faculty who are very clued into the kernel
-and x.org and general open source development.
+I have now applied this to my tree.
 
-Also, the way that PSU handles the projects, is it relies on the
-students to propose the projects, not the other way around.  Due to
-that, the success rate is very high as people do not generally propose
-things that they do not have some kind of interest in :)
+Dave, if you want to take it through your tree, or just Ack/Nack it, 
+please let me know.
 
-So if you have a kernel related project you wish to do, feel free to
-submit it to the PSU group.
+Thanks,
 
-thanks,
-
-greg k-h
-
-p.s. I've been a mentor for the PSU GSoC group for many years now.
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
