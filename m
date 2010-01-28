@@ -1,70 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993Ab0A1BgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025Ab0A1Bgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993Ab0A1BgO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jan 2010 20:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971Ab0A1BgM
+	id S1756025Ab0A1Bgg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jan 2010 20:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999Ab0A1Bgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 20:36:12 -0500
-Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:58185 "HELO
-	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755967Ab0A1BgL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 20:36:11 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=V2c52K79rX8WlYDR8oOrlHLlaImrGJhvGM92S26Xc95QbCBLvUfV7pNhe1ANYTxJpmroF0R7gA3jfimiRFcyax8IXqcANLsRt1LJrEvedWyMXQj5rox4y7E01WLMROQG;
-Date: Wed, 27 Jan 2010 17:35:50 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jeff Garrett <jeff@jgarrett.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Myron Stowe <myron.stowe@hp.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with
- pci=use_crs)
-Message-ID: <20100127173550.14737320@jbarnes-piketon>
-In-Reply-To: <4B5F735B.2040308@kernel.org>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera>
-	<201001261348.59508.rjw@sisk.pl>
-	<201001261032.37053.bjorn.helgaas@hp.com>
-	<201001261902.13911.rjw@sisk.pl>
-	<20100126101752.78196900@jbarnes-piketon>
-	<4B5F735B.2040308@kernel.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 27 Jan 2010 20:36:35 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53691 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754420Ab0A1Bge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jan 2010 20:36:34 -0500
+Message-ID: <4B60E9A3.2040505@cn.fujitsu.com>
+Date: Thu, 28 Jan 2010 09:34:27 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RESEND][PATCH 2/2 v2] tracing/kprobe: cleanup unused return value
+ of function
+References: <4B60E92D.9000808@cn.fujitsu.com>
+In-Reply-To: <4B60E92D.9000808@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jan 2010 14:57:31 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+Those function's return value is meaningless
 
-> On 01/26/2010 10:17 AM, Jesse Barnes wrote:
-> 
-> > 
-> > For 2.6.33 I'd like a minimal fix though, can you disable it for all
-> > but the multi-IOH case perhaps?
-> > 
-> please check,
-> 
-> [PATCH] x86/pci: don't use ioh resource if only have one ioh
-> 
-> some system could use reosurce out of IOH resources when only one ioh is there.
-> 
-> could be BIOS have wrong IOH resources and not enable them.
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ kernel/trace/trace_kprobe.c |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
 
-I applied this one to my for-linus branch.  Jeff can you confirm it
-works for you?  I'd like to push it to Linus tomorrow.
-
-Thanks,
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index 2714d23..de2cf85 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -942,7 +942,7 @@ static const struct file_operations kprobe_profile_ops = {
+ };
+ 
+ /* Kprobe handler */
+-static __kprobes int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
++static __kprobes void kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
+ {
+ 	struct trace_probe *tp = container_of(kp, struct trace_probe, rp.kp);
+ 	struct kprobe_trace_entry *entry;
+@@ -962,7 +962,7 @@ static __kprobes int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
+ 	event = trace_current_buffer_lock_reserve(&buffer, call->id, size,
+ 						  irq_flags, pc);
+ 	if (!event)
+-		return 0;
++		return ;
+ 
+ 	entry = ring_buffer_event_data(event);
+ 	entry->nargs = tp->nr_args;
+@@ -972,11 +972,11 @@ static __kprobes int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
+ 
+ 	if (!filter_current_check_discard(buffer, call, entry, event))
+ 		trace_nowake_buffer_unlock_commit(buffer, event, irq_flags, pc);
+-	return 0;
++	return ;
+ }
+ 
+ /* Kretprobe handler */
+-static __kprobes int kretprobe_trace_func(struct kretprobe_instance *ri,
++static __kprobes void kretprobe_trace_func(struct kretprobe_instance *ri,
+ 					  struct pt_regs *regs)
+ {
+ 	struct trace_probe *tp = container_of(ri->rp, struct trace_probe, rp);
+@@ -995,7 +995,7 @@ static __kprobes int kretprobe_trace_func(struct kretprobe_instance *ri,
+ 	event = trace_current_buffer_lock_reserve(&buffer, call->id, size,
+ 						  irq_flags, pc);
+ 	if (!event)
+-		return 0;
++		return ;
+ 
+ 	entry = ring_buffer_event_data(event);
+ 	entry->nargs = tp->nr_args;
+@@ -1007,7 +1007,7 @@ static __kprobes int kretprobe_trace_func(struct kretprobe_instance *ri,
+ 	if (!filter_current_check_discard(buffer, call, entry, event))
+ 		trace_nowake_buffer_unlock_commit(buffer, event, irq_flags, pc);
+ 
+-	return 0;
++	return ;
+ }
+ 
+ /* Event entry printers */
+@@ -1217,7 +1217,7 @@ static int set_print_fmt(struct trace_probe *tp)
+ #ifdef CONFIG_PERF_EVENTS
+ 
+ /* Kprobe profile handler */
+-static __kprobes int kprobe_profile_func(struct kprobe *kp,
++static __kprobes void kprobe_profile_func(struct kprobe *kp,
+ 					 struct pt_regs *regs)
+ {
+ 	struct trace_probe *tp = container_of(kp, struct trace_probe, rp.kp);
+@@ -1232,11 +1232,11 @@ static __kprobes int kprobe_profile_func(struct kprobe *kp,
+ 	size -= sizeof(u32);
+ 	if (WARN_ONCE(size > FTRACE_MAX_PROFILE_SIZE,
+ 		     "profile buffer not large enough"))
+-		return 0;
++		return ;
+ 
+ 	entry = ftrace_perf_buf_prepare(size, call->id, &rctx, &irq_flags);
+ 	if (!entry)
+-		return 0;
++		return ;
+ 
+ 	entry->nargs = tp->nr_args;
+ 	entry->ip = (unsigned long)kp->addr;
+@@ -1245,11 +1245,11 @@ static __kprobes int kprobe_profile_func(struct kprobe *kp,
+ 
+ 	ftrace_perf_buf_submit(entry, size, rctx, entry->ip, 1, irq_flags);
+ 
+-	return 0;
++	return ;
+ }
+ 
+ /* Kretprobe profile handler */
+-static __kprobes int kretprobe_profile_func(struct kretprobe_instance *ri,
++static __kprobes void kretprobe_profile_func(struct kretprobe_instance *ri,
+ 					    struct pt_regs *regs)
+ {
+ 	struct trace_probe *tp = container_of(ri->rp, struct trace_probe, rp);
+@@ -1264,11 +1264,11 @@ static __kprobes int kretprobe_profile_func(struct kretprobe_instance *ri,
+ 	size -= sizeof(u32);
+ 	if (WARN_ONCE(size > FTRACE_MAX_PROFILE_SIZE,
+ 		     "profile buffer not large enough"))
+-		return 0;
++		return ;
+ 
+ 	entry = ftrace_perf_buf_prepare(size, call->id, &rctx, &irq_flags);
+ 	if (!entry)
+-		return 0;
++		return ;
+ 
+ 	entry->nargs = tp->nr_args;
+ 	entry->func = (unsigned long)tp->rp.kp.addr;
+@@ -1278,7 +1278,7 @@ static __kprobes int kretprobe_profile_func(struct kretprobe_instance *ri,
+ 
+ 	ftrace_perf_buf_submit(entry, size, rctx, entry->ret_ip, 1, irq_flags);
+ 
+-	return 0;
++	return ;
+ }
+ 
+ static int probe_profile_enable(struct ftrace_event_call *call)
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+1.6.1.2
+
+
