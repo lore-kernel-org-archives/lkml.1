@@ -1,42 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653Ab0A2Stb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746Ab0A2SzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653Ab0A2Stb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 13:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766Ab0A2Sta
+	id S1753746Ab0A2SzB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 13:55:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837Ab0A2SzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 13:49:30 -0500
-Received: from mail.perches.com ([173.55.12.10]:1600 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752661Ab0A2St3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 13:49:29 -0500
-Subject: Re: [PATCH] checkpatch.pl: remove the 80 charactes punch card limit
-From: Joe Perches <joe@perches.com>
-To: tytso@mit.edu, Andy Whitcroft <apw@canonical.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexander Clouter <alex@digriz.org.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <20100129051953.GM28459@thunk.org>
-References: <1264597747.3607.29.camel@wall-e>
-	 <87hbq6dy2k.fsf@basil.nowhere.org> <17r837-m29.ln1@chipmunk.wormnet.eu>
-	 <20100129051953.GM28459@thunk.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 29 Jan 2010 10:49:28 -0800
-Message-ID: <1264790968.25140.25.camel@Joe-Laptop.home>
+	Fri, 29 Jan 2010 13:55:00 -0500
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:58374
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752513Ab0A2Sy7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 13:54:59 -0500
+Date: Fri, 29 Jan 2010 10:54:34 -0800
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: USB mass storage and ARM cache coherency
+Message-ID: <20100129185434.GH19501@one-eyed-alien.net>
+Mail-Followup-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <1264775655.4242.85.camel@pc1117.cambridge.arm.com> <d82e647a1001290823s1c651e4am113f843bef4ff9e2@mail.gmail.com> <1264782843.4242.91.camel@pc1117.cambridge.arm.com> <4B632033.2010309@ru.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Fnm8lRGFTVS/3GuM"
+Content-Disposition: inline
+In-Reply-To: <4B632033.2010309@ru.mvista.com>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2010 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Fri, 29 Jan 2010 10:54:35 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-29 at 00:19 -0500, tytso@mit.edu wrote:
-> Linus has already agreed that the 80 character limit is stupid.  Let's
-> just nuke this check from checkpatch.pl and move on.
 
-Andy, can you update checkpatch please?
+--Fnm8lRGFTVS/3GuM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I proposed this: http://lkml.org/lkml/2009/12/18/3
+On Fri, Jan 29, 2010 at 08:51:47PM +0300, Sergei Shtylyov wrote:
+> Catalin Marinas wrote:
+>=20
+> >That would be a more general solution rather than going through each HCD
+> >driver since my understanding is that flush_dcache_page() is only needed
+> >together with the mass storage support.
+>=20
+>   Note that DMA capable driver can be doing some transfers in PIO mode=20
+> or falling back to PIO mode if DMA mode transfer is unsuccessful (the=20
+> musb driver is an example of the latter and if the DMA rewrite patches=20
+> will get accepted, it'll do short transfers in PIO mode).
 
-If you're too busy, I can collect the several
-additional patches that have been suggested and
-push them to you or to Andrew Morton.
+Given that an HCD can choose, on the fly, if it's using DMA or PIO, the HCD
+driver is the only place to reasonably put any cache-synchronization code.
 
+That said, what do the other SCSI HCDs do?  I'm guessing the question gets
+kinda muddy there, since the other SCSI HCDs all talk directly to some
+piece of hardware, and thus are responsible for the cache management
+themselves.
+
+Based on that, one could argue that ub and usb-storage should be doing
+this.
+
+HOWEVER, I firmly believe that the cache-management functions belong with
+the driver that actually talks to the low-level hardware, as that's the
+only place where you can be 100% certain of what cache operations are
+needed.  After all, I think someone is working on a USB-over-IP transport,
+and trying to manage cache at the usb-storage level in that scenario is
+just silly.
+
+So, let's put this in the HCD drivers and be done with it.
+
+Matt
+
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+I see you've been reading alt.sex.chubby.sheep voraciously.
+					-- Tanya
+User Friendly, 11/24/97
+
+--Fnm8lRGFTVS/3GuM
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFLYy7qHL9iwnUZqnkRAjUDAJ9wzMgoR+804NmVVnTrwUDT2+cp8QCfd98g
+E6MoxRpFd4QJTitILM3K+Jo=
+=++Vu
+-----END PGP SIGNATURE-----
+
+--Fnm8lRGFTVS/3GuM--
