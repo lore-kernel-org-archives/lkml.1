@@ -1,222 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452Ab0A2Uxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493Ab0A2Uww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755452Ab0A2Uxd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 15:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801Ab0A2UvS
+	id S1755493Ab0A2Uww (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 15:52:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755270Ab0A2Uwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 15:51:18 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42647 "EHLO
+	Fri, 29 Jan 2010 15:52:32 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42789 "EHLO
 	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754424Ab0A2UvL (ORCPT
+	with ESMTP id S1754550Ab0A2UvU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 15:51:11 -0500
-Message-Id: <20100129205004.405949705@quilx.com>
-References: <20100129204931.789743493@quilx.com>
+	Fri, 29 Jan 2010 15:51:20 -0500
+Message-Id: <20100129204931.789743493@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 29 Jan 2010 14:49:42 -0600
+Date: Fri, 29 Jan 2010 14:49:31 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Andi Kleen <andi@firstfloor.org>
-Cc: Dave Chinner <david@fromorbit.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>
+Cc: Dave Chinner <david@fromorbit.com>
 Cc: Rik van Riel <riel@redhat.com>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: akpm@linux-foundation.org
+Cc: Miklos Szeredi <miklos@szeredi.hu>
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>
 Cc: Hugh Dickins <hugh@veritas.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: inodes: Support generic defragmentation
-Content-Disposition: inline; filename=defrag_fs_generic
+Subject: Slab Fragmentation Reduction V15
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implements the ability to remove inodes in a particular slab
-from inode caches. In order to remove an inode we may have to write out
-the pages of an inode, the inode itself and remove the dentries referring
-to the node.
+This is one of these year long projects to address fundamental issues in the
+Linux VM. The problem is that sparse use of objects in slab caches can cause
+large amounts of memory to become unusable. The first ideas to address this
+were developed in 2005 by various people. Some of the issues with SLAB that
+we discovered while prototyping these ideas also contributed to the locking
+design in SLUB which is highly decentralized and allows stabilizing the object
+state slab wise by taking a per slab lock.
 
-Provide generic functionality that can be used by filesystems that have
-their own inode caches to also tie into the defragmentation functions
-that are made available here.
+This patchset was first proposed in the beginning of 2007. It was almost merged
+in 2008 when last minute objections arose in the way this interacts with
+filesystem objects (inode/dentry).
 
-FIXES NEEDED!
+Andi has asked that we reconsider this issue. So I have updated the patchset
+to apply against current upstream (and also -next with a special patch
+at the end). The issues with icache/dentry locking remain. In order
+for this to be merged we would have to come up with a revised dentry/inode
+locking code that can
 
-Note Miklos comments on the patch at http://lkml.indiana.edu/hypermail/linux/kernel/0810.1/2003.html
+	1. Establish a reference to an dentry/inode so that it is pinned.
+           Hopefully in a way that is not too expensive (i.e. no superblock
+           lock)
 
-The way we obtain a reference to a inode entry may be unreliable since inode
-refcounting works in different ways. Also a reference to the superblock is necessary
-in order to be able to operate on the inodes.
+	2. A means to free a dentry/inode objects from the VM reclaim context.
 
-Cc: Miklos Szeredi <miklos@szeredi.hu>
-Cc: Alexander Viro <viro@ftp.linux.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+Both of those do not need to work reliably and can fail. Reclaim is a heuristic
+process after all. Failure to reclaim will make the allocator skip the slab on
+future scans and use it for allocations instead. When all objects in a slab have
+been used and an object is freed then the slab becomes subject to
+VM reclaim scans again.
 
----
- fs/inode.c         |  123 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fs.h |    6 ++
- 2 files changed, 129 insertions(+)
+The other objection against this patchset was that it does not support
+reclaim through SLAB. It is possible to add this type of support to SLAB too
+but one would have to take the node l3 lock to lock down all objects on
+a node (and purge the percpu caches beforehand). This would stop all
+allocations during a reclaim pass on a slab and make targeted reclaim
+much more expensive.
 
-Index: linux-2.6/fs/inode.c
-===================================================================
---- linux-2.6.orig/fs/inode.c	2010-01-29 12:03:04.000000000 -0600
-+++ linux-2.6/fs/inode.c	2010-01-29 12:03:25.000000000 -0600
-@@ -1538,6 +1538,128 @@ static int __init set_ihash_entries(char
- __setup("ihash_entries=", set_ihash_entries);
- 
- /*
-+ * Obtain a refcount on a list of struct inodes pointed to by v. If the
-+ * inode is in the process of being freed then zap the v[] entry so that
-+ * we skip the freeing attempts later.
-+ *
-+ * This is a generic function for the ->get slab defrag callback.
-+ */
-+void *get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	int i;
-+
-+	spin_lock(&inode_lock);
-+	for (i = 0; i < nr; i++) {
-+		struct inode *inode = v[i];
-+
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
-+			v[i] = NULL;
-+		else
-+			__iget(inode);
-+	}
-+	spin_unlock(&inode_lock);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(get_inodes);
-+
-+/*
-+ * Function for filesystems that embedd struct inode into their own
-+ * fs inode. The offset is the offset of the struct inode in the fs inode.
-+ *
-+ * The function adds to the pointers in v[] in order to make them point to
-+ * struct inode. Then get_inodes() is used to get the refcount.
-+ * The converted v[] pointers can then also be passed to the kick() callback
-+ * without further processing.
-+ */
-+void *fs_get_inodes(struct kmem_cache *s, int nr, void **v,
-+						unsigned long offset)
-+{
-+	int i;
-+
-+	for (i = 0; i < nr; i++)
-+		v[i] += offset;
-+
-+	return get_inodes(s, nr, v);
-+}
-+EXPORT_SYMBOL(fs_get_inodes);
-+
-+/*
-+ * Generic callback function slab defrag ->kick methods. Takes the
-+ * array with inodes where we obtained refcounts using fs_get_inodes()
-+ * or get_inodes() and tries to free them.
-+ */
-+void kick_inodes(struct kmem_cache *s, int nr, void **v, void *private)
-+{
-+	struct inode *inode;
-+	int i;
-+	int abort = 0;
-+	LIST_HEAD(freeable);
-+	int active;
-+
-+	for (i = 0; i < nr; i++) {
-+		inode = v[i];
-+		if (!inode)
-+			continue;
-+
-+		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
-+			if (remove_inode_buffers(inode))
-+				/*
-+				 * Should we really be doing this? Or
-+				 * limit the writeback here to only a few pages?
-+				 *
-+				 * Possibly an expensive operation but we
-+				 * cannot reclaim the inode if the pages
-+				 * are still present.
-+				 */
-+				invalidate_mapping_pages(&inode->i_data,
-+								0, -1);
-+		}
-+
-+		/* Invalidate children and dentry */
-+		if (S_ISDIR(inode->i_mode)) {
-+			struct dentry *d = d_find_alias(inode);
-+
-+			if (d) {
-+				d_invalidate(d);
-+				dput(d);
-+			}
-+		}
-+
-+		if (inode->i_state & I_DIRTY)
-+			write_inode_now(inode, 1);
-+
-+		d_prune_aliases(inode);
-+	}
-+
-+	mutex_lock(&iprune_mutex);
-+	for (i = 0; i < nr; i++) {
-+		inode = v[i];
-+
-+		if (!inode)
-+			/* inode is alrady being freed */
-+			continue;
-+
-+		active = inode->i_sb->s_flags & MS_ACTIVE;
-+		iput(inode);
-+		if (abort || !active)
-+			continue;
-+
-+		spin_lock(&inode_lock);
-+		abort =  !can_unuse(inode);
-+
-+		if (!abort) {
-+			list_move(&inode->i_list, &freeable);
-+			inode->i_state |= I_FREEING;
-+			inodes_stat.nr_unused--;
-+		}
-+		spin_unlock(&inode_lock);
-+	}
-+	dispose_list(&freeable);
-+	mutex_unlock(&iprune_mutex);
-+}
-+EXPORT_SYMBOL(kick_inodes);
-+
-+/*
-  * Initialize the waitqueues and inode hash table.
-  */
- void __init inode_init_early(void)
-@@ -1576,6 +1698,7 @@ void __init inode_init(void)
- 					 SLAB_MEM_SPREAD),
- 					 init_once);
- 	register_shrinker(&icache_shrinker);
-+	kmem_cache_setup_defrag(inode_cachep, get_inodes, kick_inodes);
- 
- 	/* Hash may have been set up in inode_init_early */
- 	if (!hashdist)
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2010-01-29 12:03:04.000000000 -0600
-+++ linux-2.6/include/linux/fs.h	2010-01-29 12:03:25.000000000 -0600
-@@ -2466,5 +2466,11 @@ int __init get_filesystem_list(char *buf
- #define ACC_MODE(x) ("\004\002\006\006"[(x)&O_ACCMODE])
- #define OPEN_FMODE(flag) ((__force fmode_t)((flag + 1) & O_ACCMODE))
- 
-+/* Helper functions for inode defragmentation support in filesystems */
-+extern void kick_inodes(struct kmem_cache *, int, void **, void *);
-+extern void *get_inodes(struct kmem_cache *, int nr, void **);
-+extern void *fs_get_inodes(struct kmem_cache *, int nr, void **,
-+						unsigned long offset);
-+
- #endif /* __KERNEL__ */
- #endif /* _LINUX_FS_H */
+
+     Patch description
+
+Slab fragmentation is mainly an issue if Linux is used as a fileserver
+and large amounts of dentries, inodes and buffer heads accumulate. In some
+load situations the slabs become very sparsely populated so that a lot of
+memory is wasted by slabs that only contain one or a few objects. In
+extreme cases the performance of a machine will become sluggish since
+we are continually running reclaim without much succes.
+Slab defragmentation adds the capability to recover the memory that
+is wasted.
+
+Memory reclaim for the following slab caches is possible:
+
+1. dentry cache
+2. inode cache (with a generic interface to allow easy setup of more
+   filesystems than the currently supported ext2/3/4 reiserfs, XFS
+   and proc)
+3. buffer_heads
+
+One typical mechanism that triggers slab defragmentation on my systems
+is the daily run of
+
+	updatedb
+
+Updatedb scans all files on the system which causes a high inode and dentry
+use. After updatedb is complete we need to go back to the regular use
+patterns (typical on my machine: kernel compiles). Those need the memory now
+for different purposes. The inodes and dentries used for updatedb will
+gradually be aged by the dentry/inode reclaim algorithm which will free
+up the dentries and inode entries randomly through the slabs that were
+allocated. As a result the slabs will become sparsely populated. If they
+become empty then they can be freed but a lot of them will remain sparsely
+populated. That is where slab defrag comes in: It removes the objects from
+the slabs with just a few entries reclaiming more memory for other uses.
+In the simplest case (as provided here) this is done by simply reclaiming
+the objects.
+
+However, if the logic in the kick() function is made more
+sophisticated then we will be able to move the objects out of the slabs.
+Allocations of objects is possible if a slab is fragmented without the use of
+the page allocator because a large number of free slots are available. Moving
+an object will reduce fragmentation in the slab the object is moved to.
+
+V14->V15
+- Provide missing Documentation/ABI documentation pieces
+- Add -next transition patch
+- Re-add the dentry patch
+- Put warnings into the patches with issues
+
+V13->V14
+- Rediff against linux-next on request of Andrew
+- TestSetPageLocked -> trylock_page conversion.
+
+V12->v13:
+- Rebase onto Linux 2.6.27-rc1 (deal with page flags conversion, ctor parameters etc)
+- Fix unitialized variable issue
+
+V11->V12:
+- Pekka and me fixed various minor issues pointed out by Andrew.
+- Split ext2/3/4 defrag support patches.
+- Add more documentation
+- Revise the way that slab defrag is triggered from reclaim. No longer
+  use a timeout but track the amount of slab reclaim done by the shrinkers.
+  Add a field in /proc/sys/vm/slab_defrag_limit to control the threshold.
+- Display current slab_defrag_counters in /proc/zoneinfo (for a zone) and
+  /proc/sys/vm/slab_defrag_count (for global reclaim).
+- Add new config vaue slab_defrag_limit to /proc/sys/vm/slab_defrag_limit
+- Add a patch that obsoletes SLAB and explains why SLOB does not support
+  defrag (Either of those could be theoretically equipped to support
+  slab defrag in some way but it seems that Andrew/Linus want to reduce
+  the number of slab allocators).
+
+V10->V11
+- Simplify determination when to reclaim: Just scan over all partials
+  and check if they are sparsely populated.
+- Add support for performance counters
+- Rediff on top of current slab-mm.
+- Reduce frequency of scanning. A look at the stats showed that we
+  were calling into reclaim very frequently when the system was under
+  memory pressure which slowed things down. Various measures to
+  avoid scanning the partial list too frequently were added and the
+  earlier (expensive) method of determining the defrag ratio of the slab
+  cache as a whole was dropped. I think this addresses the issues that
+  Mel saw with V10.
+
+V9->V10
+- Rediff against upstream
+
+V8->V9
+- Rediff against 2.6.24-rc6-mm1
+
+V7->V8
+- Rediff against 2.6.24-rc3-mm2
+
+V6->V7
+- Rediff against 2.6.24-rc2-mm1
+- Remove lumpy reclaim support. No point anymore given that the antifrag
+  handling in 2.6.24-rc2 puts reclaimable slabs into different sections.
+  Targeted reclaim never triggers. This has to wait until we make
+  slabs movable or we need to perform a special version of lumpy reclaim
+  in SLUB while we scan the partial lists for slabs to kick out.
+  Removal simplifies handling significantly since we
+  get to slabs in a more controlled way via the partial lists.
+  The patchset now provides pure reduction of fragmentation levels.
+- SLAB/SLOB: Provide inlines that do nothing
+- Fix various smaller issues that were brought up during review of V6.
+
+V5->V6
+- Rediff against 2.6.24-rc2 + mm slub patches.
+- Add reviewed by lines.
+- Take out the experimental code to make slab pages movable. That
+  has to wait until this has been considered by Mel.
+
+V4->V5:
+- Support lumpy reclaim for slabs
+- Support reclaim via slab_shrink()
+- Add constructors to insure a consistent object state at all times.
+
+V3->V4:
+- Optimize scan for slabs that need defragmentation
+- Add /sys/slab/*/defrag_ratio to allow setting defrag limits
+  per slab.
+- Add support for buffer heads.
+- Describe how the cleanup after the daily updatedb can be
+  improved by slab defragmentation.
+
+V2->V3
+- Support directory reclaim
+- Add infrastructure to trigger defragmentation after slab shrinking if we
+  have slabs with a high degree of fragmentation.
+
+V1->V2
+- Clean up control flow using a state variable. Simplify API. Back to 2
+  functions that now take arrays of objects.
+- Inode defrag support for a set of filesystems
+- Fix up dentry defrag support to work on negative dentries by adding
+  a new dentry flag that indicates that a dentry is not in the process
+  of being freed or allocated.
+
 
 -- 
