@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558Ab0A2Crz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575Ab0A2Cup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756558Ab0A2Crz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 21:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246Ab0A2Crz
+	id S1756575Ab0A2Cup (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 21:50:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246Ab0A2Cuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 21:47:55 -0500
-Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:58264 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755227Ab0A2Cry (ORCPT
+	Thu, 28 Jan 2010 21:50:44 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:38433 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754299Ab0A2Cuo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 21:47:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:cc:subject
-	:references:from:date:in-reply-to:message-id:mime-version
-	:content-type; q=dns; s=sasl; b=tOUhrnV3rnL1FaBsgJwGRyh7tM0ic8zP
-	+n3whF4yseJ0UNS0APsQgQlVHqYm7eWXq42g24WhU1MKJRcxOBsIFt/rIR5Z5gfU
-	hnuH8iHBSXSUm0+KzvuxifOpFUCQFxesqG/mxKPEqE2BPcPIMrtqVDuzPkY9ylvQ
-	M7JPx3/yam0=
-To: Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org, Jiri Kosina <trivial@kernel.org>
-Subject: Re: [PATCH] tree-wide: trivial typo fixes: s/lenght/length/g
-References: <alpine.LNX.2.00.1001282357190.356@pobox.suse.cz>
- <1264730438-2218-1-git-send-email-daniel@caiaq.de>
-From: Junio C Hamano <gitster@pobox.com>
-Date: Thu, 28 Jan 2010 18:47:44 -0800
-In-Reply-To: <1264730438-2218-1-git-send-email-daniel@caiaq.de> (Daniel
- Mack's message of "Fri\, 29 Jan 2010 10\:00\:38 +0800")
-Message-ID: <7vy6jhk4of.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 28 Jan 2010 21:50:44 -0500
+Date: Fri, 29 Jan 2010 11:50:41 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux@arm.linux.org.uk, eric.y.miao@gmail.com, tony@atomide.com,
+       linux-kernel@vger.kernel.org, khilman@deeprootsystems.com,
+       ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 05/06] sh: Let INTC set IRQF_VALID on ARM platforms
+Message-ID: <20100129025041.GB7396@linux-sh.org>
+References: <20100128124028.8982.16123.sendpatchset@rxone.opensource.se> <20100128124121.8982.71803.sendpatchset@rxone.opensource.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: B057162E-0C80-11DF-9268-6AF7ED7EF46B-77302942!a-pb-sasl-quonix.pobox.com
+Content-Disposition: inline
+In-Reply-To: <20100128124121.8982.71803.sendpatchset@rxone.opensource.se>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Mack <daniel@caiaq.de> writes:
-
-> diff --git a/drivers/net/ppp_generic.c b/drivers/net/ppp_generic.c
-> index 2282e72..fba9145 100644
-> --- a/drivers/net/ppp_generic.c
-> +++ b/drivers/net/ppp_generic.c
-> @@ -1437,7 +1437,7 @@ static int ppp_mp_explode(struct ppp *ppp, struct sk_buff *skb)
+On Thu, Jan 28, 2010 at 09:41:21PM +0900, Magnus Damm wrote:
+> From: Magnus Damm <damm@opensource.se>
+> 
+> Reuse the SuperH INTC code on ARM by using set_irq_flags()
+> to set IRQF_VALID on ARM platforms. Reworking the shared ARM
+> interrupt code and removing IRQF_VALID is another option.
+> 
+> Signed-off-by: Magnus Damm <damm@opensource.se>
+> ---
+> 
+>  drivers/sh/intc.c |    5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> --- 0001/drivers/sh/intc.c
+> +++ work/drivers/sh/intc.c	2010-01-21 19:53:15.000000000 +0900
+> @@ -658,6 +658,11 @@ static void __init intc_register_irq(str
 >  
->  		/*
->  		 *check	if we are on the last channel or
-> -		 *we exceded the lenght	of the data	to
-> +		 *we exceded the length	of the data	to
->  		 *fragment
->  		 */
-
-How about inserting an SP after asterisks while you are at it?
-
-> diff --git a/drivers/net/stmmac/gmac.c b/drivers/net/stmmac/gmac.c
-> index 52586ee..467dc46 100644
-> --- a/drivers/net/stmmac/gmac.c
-> +++ b/drivers/net/stmmac/gmac.c
-> @@ -257,7 +257,7 @@ static int gmac_coe_rdes0(int ipc_err, int type, int payload_err)
+>  	if (desc->ack_regs)
+>  		ack_handle[irq] = intc_ack_data(desc, d, enum_id);
+> +
+> +	/* Set IRQF_VALID to enable IRQ on ARM systems */
+> +#ifdef CONFIG_ARCH_SHMOBILE
+> +	set_irq_flags(irq, IRQF_VALID);
+> +#endif
+>  }
 >  
->  	/* bits 5 7 0 | Frame status
->  	 * ----------------------------------------------------------
-> -	 *      0 0 0 | IEEE 802.3 Type frame (lenght < 1536 octects)
-> +	 *      0 0 0 | IEEE 802.3 Type frame (length < 1536 octects)
-
-"octets"?
+This should be CONFIG_ARM rather than ARCH_SHMOBILE, as it's hardly
+SH-Mobile specific.
