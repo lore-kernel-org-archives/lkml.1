@@ -1,72 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978Ab0A2R16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187Ab0A2RdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978Ab0A2R16 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 12:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316Ab0A2R15
+	id S1752187Ab0A2RdL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 12:33:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442Ab0A2RdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 12:27:57 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:60398 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752161Ab0A2R15 (ORCPT
+	Fri, 29 Jan 2010 12:33:07 -0500
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:50634 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751344Ab0A2RdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 12:27:57 -0500
-X-Trace: 336164763/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.93.110/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.93.110
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
-X-IP-BHB: Once
+	Fri, 29 Jan 2010 12:33:05 -0500
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtwAAPeoYktPRV1u/2dsb2JhbAAI2kCEQgQ
-X-IronPort-AV: E=Sophos;i="4.49,369,1262563200"; 
-   d="scan'208";a="336164763"
-Date: Fri, 29 Jan 2010 17:27:56 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Mark Lord <kernel@teksavvy.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.32.5 regression: page allocation failure. order:1, 
-In-Reply-To: <20100129154653.GJ7139@csn.ul.ie>
-Message-ID: <alpine.LSU.2.00.1001291716520.10968@sister.anvils>
-References: <4B5FA147.5040802@teksavvy.com> <4B610FDA.50104@teksavvy.com> <4B6113C7.201@teksavvy.com> <201001281152.20352.rjw@sisk.pl> <4B61964F.6060307@teksavvy.com> <4B619C6D.9030205@teksavvy.com> <20100128142437.GA7139@csn.ul.ie> <4B62E904.9020401@teksavvy.com>
- <20100129154653.GJ7139@csn.ul.ie>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-IronPort-Anti-Spam-Result: AikFAH6lYktGGNtq/2dsb2JhbACBNNknhEIE
+Date: Fri, 29 Jan 2010 12:27:57 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Fr??d??ric Weisbecker" <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [PATCH tracing/kprobes] kprobes: Disable booster when
+	CONFIG_PREEMPT=y
+Message-ID: <20100129172757.GA4281@Krystal>
+References: <4B5E476C.9030303@redhat.com> <20100127215531.24775.26807.stgit@dhcp-100-2-132.bos.redhat.com> <20100129092135.GE10878@elte.hu> <4B62F61D.5060203@redhat.com> <20100129170817.GA2283@Krystal> <1264785338.24455.14.camel@laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1264785338.24455.14.camel@laptop>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 12:23:43 up 44 days,  1:42,  5 users,  load average: 0.12, 0.23,
+	0.18
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jan 2010, Mel Gorman wrote:
-> On Fri, Jan 29, 2010 at 08:56:20AM -0500, Mark Lord wrote:
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Fri, 2010-01-29 at 12:08 -0500, Mathieu Desnoyers wrote:
+> > 
+> > If a task is set as stopped, and the preempted before calling schedule,
+> > can this result in a preempted task staying in that state for an
+> > arbitrary long period of time ? Or is there some mechanism prohibiting
+> > that in the scheduler ? 
 > 
-> > I'll leave it running for another day or so, and then perhaps revert
-> > the one patch to see which of the two things (new kernel, or patch)
-> > is responsible for the difference.
-> >
+> PREEMPT_ACTIVE does that:
 > 
-> Thanks, I'd appreciate it. While I'm reasonably confident the problem is
-> with MIGRATE_RESERVE not being free as intended and that the patch fixes
-> it, I'd like more proof.
-
-You're more confident about that than I am!  It will be very satisfying
-if my patch turns out to make the difference, but still surprising to me.
-
-Thank you for taking the time on this, Mark: I too would appreciate it
-if you could later determine whether it's new kernel or patch solving it.
-
+> preempt_schedule()
+>                 add_preempt_count(PREEMPT_ACTIVE);
+>                 schedule();
 > 
-> Hugh, can I get a signed-off-by on that patch please? I can improve the
-> changelog if you like and send it to Andrew for merging if you like.
+> 
+> schedule()
+>         if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+>                 if (unlikely(signal_pending_state(prev->state, prev)))
+>                         prev->state = TASK_RUNNING;
+>                 else
+>                         deactivate_task(rq, prev, 1);
+>                 switch_count = &prev->nvcsw;
+>         }
 
-I was adjusting the changelog and about to send direct to Linus Cc stable
-in a few minutes, since I'm guessing there might be a 33-rc6 today, which
-would be a pity to miss.
+OK, it looks safe for preemption. Is there any unforeseen weird way a
+task can be scheduled out and stopped that would permit it to either:
 
-Whatever my reluctance to assume it's the fix to Mark's problem (which I'm
-not mentioning in the changelog), we are both sure it's a valid bugfix.
+- stall the algorithm forever (DoS)
+- appear as quiescent to the algorithm while its stack would hold return
+  pointers to incorrect locations
 
-Hugh
+?
+
+I'm concerned about page faults here.
+
+Thanks,
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
