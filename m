@@ -1,134 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876Ab0A2JcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869Ab0A2Jcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876Ab0A2JcJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 04:32:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817Ab0A2JcF
+	id S1756869Ab0A2Jcj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 04:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884Ab0A2Jcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 04:32:05 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:41244 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755272Ab0A2JcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 04:32:01 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: airlied@linux.ie
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-pci@vger.kernel.org
-Subject: [PATCH -resend 1/1] AGP: amd64, fix pci reference leaks
-Date: Fri, 29 Jan 2010 10:31:59 +0100
-Message-Id: <1264757519-711-1-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.6.1
+	Fri, 29 Jan 2010 04:32:36 -0500
+Received: from 8bytes.org ([88.198.83.132]:49606 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755620Ab0A2Jce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 04:32:34 -0500
+Date: Fri, 29 Jan 2010 10:32:33 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, Avi Kivity <avi@redhat.com>,
+       David Woodhouse <dwmw2@infradead.org>, kvm@vger.kernel.org,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/11] kvm: Change kvm_iommu_map_pages to map large
+	pages
+Message-ID: <20100129093233.GU17809@8bytes.org>
+References: <1264678682-30655-1-git-send-email-joerg.roedel@amd.com> <1264678682-30655-7-git-send-email-joerg.roedel@amd.com> <20100128222455.GA26274@amt.cnet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100128222455.GA26274@amt.cnet>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+On Thu, Jan 28, 2010 at 08:24:55PM -0200, Marcelo Tosatti wrote:
+> On Thu, Jan 28, 2010 at 12:37:57PM +0100, Joerg Roedel wrote:
+> > +static pfn_t kvm_pin_pages(struct kvm *kvm, struct kvm_memory_slot *slot,
+> > +			   gfn_t gfn, unsigned long size)
+> > +{
+> > +	gfn_t end_gfn;
+> > +	pfn_t pfn;
+> > +
+> > +	pfn     = gfn_to_pfn_memslot(kvm, slot, gfn);
+> 
+> If gfn_to_pfn_memslot returns pfn of bad_page, you might create a
+> large iommu translation for it?
 
-Stanse found pci reference leaks in uli_agp_init and
-nforce3_agp_init initialization functions.
+Right. But that was broken even before this patch. Anyway, I will fix
+it.
 
-The PCI devices are bridges, so it's not critical, but still
-worth fixing.
+> > +		/* Map into IO address space */
+> > +		r = iommu_map(domain, gfn_to_gpa(gfn), pfn_to_hpa(pfn),
+> > +			      get_order(page_size), flags);
+> > +
+> > +		gfn += page_size >> PAGE_SHIFT;
+> 
+> Should increase gfn after checking for failure, otherwise wrong
+> npages is passed to kvm_iommu_put_pages.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: David Airlie <airlied@linux.ie>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-pci@vger.kernel.org
----
- drivers/char/agp/amd64-agp.c |   28 ++++++++++++++++++----------
- 1 files changed, 18 insertions(+), 10 deletions(-)
+True. Will fix that too.
 
-diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
-index 1afb896..909d3b9 100644
---- a/drivers/char/agp/amd64-agp.c
-+++ b/drivers/char/agp/amd64-agp.c
-@@ -383,7 +383,7 @@ static int __devinit uli_agp_init(struct pci_dev *pdev)
- {
- 	u32 httfea,baseaddr,enuscr;
- 	struct pci_dev *dev1;
--	int i;
-+	int i, ret;
- 	unsigned size = amd64_fetch_size();
- 
- 	dev_info(&pdev->dev, "setting up ULi AGP\n");
-@@ -399,15 +399,18 @@ static int __devinit uli_agp_init(struct pci_dev *pdev)
- 
- 	if (i == ARRAY_SIZE(uli_sizes)) {
- 		dev_info(&pdev->dev, "no ULi size found for %d\n", size);
--		return -ENODEV;
-+		ret = -ENODEV;
-+		goto put;
- 	}
- 
- 	/* shadow x86-64 registers into ULi registers */
- 	pci_read_config_dword (k8_northbridges[0], AMD64_GARTAPERTUREBASE, &httfea);
- 
- 	/* if x86-64 aperture base is beyond 4G, exit here */
--	if ((httfea & 0x7fff) >> (32 - 25))
--		return -ENODEV;
-+	if ((httfea & 0x7fff) >> (32 - 25)) {
-+		ret = -ENODEV;
-+		goto put;
-+	}
- 
- 	httfea = (httfea& 0x7fff) << 25;
- 
-@@ -419,9 +422,10 @@ static int __devinit uli_agp_init(struct pci_dev *pdev)
- 	enuscr= httfea+ (size * 1024 * 1024) - 1;
- 	pci_write_config_dword(dev1, ULI_X86_64_HTT_FEA_REG, httfea);
- 	pci_write_config_dword(dev1, ULI_X86_64_ENU_SCR_REG, enuscr);
--
-+	ret = 0;
-+put:
- 	pci_dev_put(dev1);
--	return 0;
-+	return ret;
- }
- 
- 
-@@ -440,7 +444,7 @@ static int nforce3_agp_init(struct pci_dev *pdev)
- {
- 	u32 tmp, apbase, apbar, aplimit;
- 	struct pci_dev *dev1;
--	int i;
-+	int i, ret;
- 	unsigned size = amd64_fetch_size();
- 
- 	dev_info(&pdev->dev, "setting up Nforce3 AGP\n");
-@@ -457,7 +461,8 @@ static int nforce3_agp_init(struct pci_dev *pdev)
- 
- 	if (i == ARRAY_SIZE(nforce3_sizes)) {
- 		dev_info(&pdev->dev, "no NForce3 size found for %d\n", size);
--		return -ENODEV;
-+		ret = -ENODEV;
-+		goto put;
- 	}
- 
- 	pci_read_config_dword(dev1, NVIDIA_X86_64_1_APSIZE, &tmp);
-@@ -471,7 +476,8 @@ static int nforce3_agp_init(struct pci_dev *pdev)
- 	/* if x86-64 aperture base is beyond 4G, exit here */
- 	if ( (apbase & 0x7fff) >> (32 - 25) ) {
- 		dev_info(&pdev->dev, "aperture base > 4G\n");
--		return -ENODEV;
-+		ret = -ENODEV;
-+		goto put;
- 	}
- 
- 	apbase = (apbase & 0x7fff) << 25;
-@@ -487,9 +493,11 @@ static int nforce3_agp_init(struct pci_dev *pdev)
- 	pci_write_config_dword(dev1, NVIDIA_X86_64_1_APBASE2, apbase);
- 	pci_write_config_dword(dev1, NVIDIA_X86_64_1_APLIMIT2, aplimit);
- 
-+	ret = 0;
-+put:
- 	pci_dev_put(dev1);
- 
--	return 0;
-+	return ret;
- }
- 
- static int __devinit agp_amd64_probe(struct pci_dev *pdev,
--- 
-1.6.6.1
+Thanks,
 
+	Joerg
