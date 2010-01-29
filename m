@@ -1,38 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683Ab0A2Ore@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755805Ab0A2OuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755683Ab0A2Ore (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 09:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231Ab0A2Orc
+	id S1755805Ab0A2OuS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 09:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447Ab0A2OuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 09:47:32 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39984 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755378Ab0A2Ora (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 09:47:30 -0500
-Date: Fri, 29 Jan 2010 14:47:28 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Derek Atkins <warlord@mit.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Re-enabling non-GPL driver access to disk partition information
-Message-ID: <20100129144728.GS19799@ZenIV.linux.org.uk>
-References: <sjmd40t3slu.fsf@pgpdev.ihtfp.org>
+	Fri, 29 Jan 2010 09:50:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:19861 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754406Ab0A2OuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 09:50:16 -0500
+Message-ID: <4B62F61D.5060203@redhat.com>
+Date: Fri, 29 Jan 2010 09:52:13 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <sjmd40t3slu.fsf@pgpdev.ihtfp.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Subject: Re: [PATCH tracing/kprobes] kprobes: Disable booster when CONFIG_PREEMPT=y
+References: <4B5E476C.9030303@redhat.com> <20100127215531.24775.26807.stgit@dhcp-100-2-132.bos.redhat.com> <20100129092135.GE10878@elte.hu>
+In-Reply-To: <20100129092135.GE10878@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 29, 2010 at 09:15:09AM -0500, Derek Atkins wrote:
+Ingo Molnar wrote:
+> 
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> 
+>> Disable kprobe booster when CONFIG_PREEMPT=y, because it can't ensure that 
+>> all kernel threads preempted on kprobe's boosted slot run out from the slot 
+>> even using freeze_processes().
+> 
+> hm, this really sucks as it makes preemptible kernels perform worse. Is there 
+> no better solution?
+> 
+>> The booster on preemptive kernel will be resumed if synchronize_tasks() or 
+>> something like that is introduced.
+> 
+> such as this one?
 
-> In particular, there is now no way for a proprietary driver to access
-> the gendisk partition array, to enumerate the existing partitions, or to
-> get information about existing partitions.  All those interfaces are now
-> GPL-Only, (whereas access to the structure members before were perfectly
-> legal for non-GPL modules).  But now the partition structure is sitting
-> behind the GPL-Only RCU abstraction.
+Yes, I think this synchronize_tasks(), which just (sleeping) wait until
+all currently preempted tasks are wake up and scheduled, can ensure safety.
 
-Why the hell does disk driver care about partitioning in the first place?
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
