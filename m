@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567Ab0A2QlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700Ab0A2QmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567Ab0A2QlG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 11:41:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406Ab0A2QlE
+	id S1753700Ab0A2QmG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 11:42:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105Ab0A2QmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 11:41:04 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:44375 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239Ab0A2QlB (ORCPT
+	Fri, 29 Jan 2010 11:42:05 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55546 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751893Ab0A2QmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 11:41:01 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: USB mass storage and ARM cache coherency
-Date: Fri, 29 Jan 2010 17:41:11 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Ming Lei <tom.leiming@gmail.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       linux-usb@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <1264775655.4242.85.camel@pc1117.cambridge.arm.com> <d82e647a1001290823s1c651e4am113f843bef4ff9e2@mail.gmail.com> <1264782843.4242.91.camel@pc1117.cambridge.arm.com>
-In-Reply-To: <1264782843.4242.91.camel@pc1117.cambridge.arm.com>
+	Fri, 29 Jan 2010 11:42:03 -0500
+Message-ID: <5a0e6098f900aa36993b2b7f2320f927.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20100129163030.1109ce78@lxorguk.ukuu.org.uk>
+References: <f8c9aca9c98db8ae7df3ac2d7ac8d922.squirrel@webmail-b.css.fujitsu.com>
+    <20100129162137.79b2a6d4@lxorguk.ukuu.org.uk>
+    <c6c48fdf7f746add49bb9cc058b513ae.squirrel@webmail-b.css.fujitsu.com>
+    <20100129163030.1109ce78@lxorguk.ukuu.org.uk>
+Date: Sat, 30 Jan 2010 01:41:58 +0900 (JST)
+Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       vedran.furac@gmail.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
+       minchan.kim@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001291741.11786.oliver@neukum.org>
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 29. Januar 2010 17:34:03 schrieb Catalin Marinas:
+Alan Cox wrote:
+>> > Ultimately it is policy. The kernel simply can't read minds.
+>> >
+>> If so, all heuristics other than vm_size should be purged, I think.
+>> ...Or victim should be just determined by the class of application
+>> user sets. oom_adj other than OOM_DISABLE, searching victim process
+>> by black magic are all garbage.
+>
+> oom_adj by value makes sense as do some of the basic heuristics - but a
+> lot of the complexity I would agree is completely nonsensical.
+>
+> There are folks who use oom_adj weightings to influence things (notably
+> embedded and desktop). The embedded world would actually benefit on the
+> whole if the oom_adj was an absolute value because they usually know
+> precisely what they want to die and in what order.
+>
+okay...I guess the cause of the problem Vedran met came from
+this calculation.
+==
+ 109         /*
+ 110          * Processes which fork a lot of child processes are likely
+ 111          * a good choice. We add half the vmsize of the children if they
+ 112          * have an own mm. This prevents forking servers to flood the
+ 113          * machine with an endless amount of children. In case a single
+ 114          * child is eating the vast majority of memory, adding only half
+ 115          * to the parents will make the child our kill candidate of
+choice.
+ 116          */
+ 117         list_for_each_entry(child, &p->children, sibling) {
+ 118                 task_lock(child);
+ 119                 if (child->mm != mm && child->mm)
+ 120                         points += child->mm->total_vm/2 + 1;
+ 121                 task_unlock(child);
+ 122         }
+ 123
+==
+This makes task launcher(the fist child of some daemon.) first victim.
+And...I wonder this is not good for oom_adj,
+I think it's set per task with regard to personal memory usage.
 
-> I was thinking about checking dev->bus->controller->dma_mask which the
-> code (though not the storage one) seems to imply that if the dma_mask is
-> 0, the HCD driver is only capable of PIO.
+But I'm not sure why this code is used now. Does anyone remember
+history or the benefit of this calculation ?
 
-That a HCD is capable of DMA need not imply that DMA is used for every
-transfer.
- 
-> That would be a more general solution rather than going through each HCD
-> driver since my understanding is that flush_dcache_page() is only needed
-> together with the mass storage support.
+Thanks,
+-Kame
 
-What about ub, nfs or nbd over a USB<->ethernet converter?
-This, I am afraid is best solved at the HCD or glue layer.
 
-	Regards
-		Oliver
+
+
