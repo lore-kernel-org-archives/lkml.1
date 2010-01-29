@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651Ab0A2EDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670Ab0A2EL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756651Ab0A2EDX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 23:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613Ab0A2EDV
+	id S1756670Ab0A2EL4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 23:11:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756660Ab0A2ELz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 23:03:21 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:33588 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756611Ab0A2EDV convert rfc822-to-8bit (ORCPT
+	Thu, 28 Jan 2010 23:11:55 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52691
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756659Ab0A2ELy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 23:03:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=FXHvQdOJTHCmrVoDndKA0mS6gEAidFzLvNqXO8ASh80YHH6cRbfnVCklQCH/pCATi3
-         i6zi8f5dZynU3Mi/ATddljI+R3UVgnpw+uZQZ/4+s2JcKKz43MrlY1ETFOayrVkLqffA
-         B+xb986urKYZB+tq5l7K7u8CWhGDwOdQ2UPE0=
-MIME-Version: 1.0
-In-Reply-To: <20100128181240.GA9174@merkur.ravnborg.org>
-References: <4B61357A.5080001@windriver.com> <20100128181240.GA9174@merkur.ravnborg.org>
-From: Hui Zhu <teawater@gmail.com>
-Date: Fri, 29 Jan 2010 12:03:00 +0800
-Message-ID: <daef60381001282003q4d43c01dk91c53ec5be17fdf2@mail.gmail.com>
-Subject: Re: [PATCH] markup_oops.pl: fix get "No matching code found" when 
-	first line of range is the faulting instruction
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Hui Zhu <hui.zhu@windriver.com>, Michal Marek <mmarek@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, ozan@pardus.org.tr,
-       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 28 Jan 2010 23:11:54 -0500
+Date: Thu, 28 Jan 2010 20:12:06 -0800 (PST)
+Message-Id: <20100128.201206.257650090.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: sparc tree build warning
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100129102543.7af32673.sfr@canb.auug.org.au>
+References: <20100128184423.40ce38fb.sfr@canb.auug.org.au>
+	<20100128.052432.251700168.davem@davemloft.net>
+	<20100129102543.7af32673.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 29, 2010 at 02:12, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Thu, Jan 28, 2010 at 02:58:02PM +0800, Hui Zhu wrote:
->> Sorry guys, the prev mail for this patch is ugly.
->> I make a new mail for it.
->
-> Random updates to scripts/* historically often go
-> in via the kbuild tree, so Michal added.
->
->        Sam
->
-> [Kept rest of mail so Michal can see it]
->
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 29 Jan 2010 10:25:43 +1100
+
+> Hi Dave,
+> 
+> On Thu, 28 Jan 2010 05:24:32 -0800 (PST) David Miller <davem@davemloft.net> wrote:
 >>
+>> From: Stephen Rothwell <sfr@canb.auug.org.au>
+>> Date: Thu, 28 Jan 2010 18:44:23 +1100
+>> 
+>> > I am still seeing these.  Is it my compiler version (gcc4.4.0)?
+>> 
+>> You can't turn on DEBUG_STRICT_USER_COPY_CHECKS and
+>> expect a successful build.  It's for developers to
+>> look at the errors that are generated and audit those
+>> cases in detail.
+> 
+> These are defconfig builds and CONFIG_DEBUG_STRICT_USER_COPY_CHECKS is
+> not set in either case.
 
-Thanks Sam.  And I make a small patch to make get_script.pl can output
-Michal Marek.
+Simply ignore the warning then, I thought you were reporting
+a build failure.
 
-Hui
+> I only do an i386 defconfig build and I don't get these warnings.
 
-Signed-off-by: Hui Zhu <teawater@gmail.com>
----
- MAINTAINERS |    4 ++++
- 1 file changed, 4 insertions(+)
+Looking at the specific case of net/core/pktgen.c:867
 
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3086,6 +3086,10 @@ L:	autofs@linux.kernel.org
- S:	Maintained
- F:	fs/autofs4/
+"len" is variable in the net/core/pktgen.c line that emits the
+warning
 
-+KERNEL SCRIPT
-+M:	Michal Marek <mmarek@suse.cz>
-+F:	scripts/*
-+
- KERNEL BUILD
- M:	Michal Marek <mmarek@suse.cz>
- T:	git git://repo.or.cz/linux-kbuild.git for-next
+Even though it is limited to "sizeof(name) - 1" via strn_len()'s
+third argument, that's a lot to expect the compiler to dig into
+and be able to conclude invariants from.
+
+Please just ignore the warnings.
+
+Thanks.
+
+
