@@ -1,144 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818Ab0A2Vqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257Ab0A2VsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818Ab0A2Vqs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 16:46:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814Ab0A2Vqp
+	id S1755257Ab0A2VsM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 16:48:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185Ab0A2VsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 16:46:45 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:3611 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754638Ab0A2VpY (ORCPT
+	Fri, 29 Jan 2010 16:48:10 -0500
+Received: from mail-yw0-f189.google.com ([209.85.211.189]:43117 "EHLO
+	mail-yw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753367Ab0A2VsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 16:45:24 -0500
-Subject: [PATCH 5/7] IB/uverbs: increase maximum devices supported
-To: rdreier@cisco.com
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
-       linux-kernel@vger.kernel.org
-Date: Fri, 29 Jan 2010 14:45:23 -0700
-Message-ID: <20100129214523.17745.50686.stgit@bob.kio>
-In-Reply-To: <20100129214039.17745.38679.stgit@bob.kio>
-References: <20100129214039.17745.38679.stgit@bob.kio>
-User-Agent: StGit/0.15
+	Fri, 29 Jan 2010 16:48:08 -0500
+X-Greylist: delayed 436 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jan 2010 16:48:07 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=HLokORn5xEAFuxDmWK1ZTaVV0bkH5JpZQQXxKDR8llIBRQGdTEk5PIdpPt5O0igLSj
+         8ouE0xABhNOAJsF4gaTtqU7QnKROI8OB3gtaDKspbI5JGzOEMn0TPVnjmML084ZquQ4U
+         xArt2hG90YrD9wGXlmsD2YGbC7DkVt9r5BFY8=
+Message-ID: <4B6355DF.9050001@garzik.org>
+Date: Fri, 29 Jan 2010 16:40:47 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/68] ide2libata
+References: <20100129160308.21495.14120.sendpatchset@localhost>
+In-Reply-To: <20100129160308.21495.14120.sendpatchset@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some large systems may support more than IB_UVERBS_MAX_DEVICES
-(currently 32).
+On 01/29/2010 11:03 AM, Bartlomiej Zolnierkiewicz wrote:
+> Hi,
+>
+> Here is a patchset (on top of atang-v3.1 tree) applying "out-of-the-box"
+> thinking to duplicated libata PATA and IDE subsystem host driver sets.
+> Namely, it modifies IDE API slightly to match libata's one more, adds
+> a tiny source-code level translation layer (ide2libata.h header file
+> which consists of only 17 lines of code) and then converts host drivers
+> to use shared source code for low-level operations (all drivers have
+> been carefully audited during porting to minimize the probability of
+> adding regressions accidentally).  As an end result it is much easier
+> to maintain both driver sets (differences between 'new'/'old' drivers
+> are now apparent and there is no longer a need to manually back-port
+> many classes of bugfixes) and over 2500 LOC are gone.
 
-This change allows us to support more devices in a backwards-compatible
-manner. The first IB_UVERBS_MAX_DEVICES keep the same major/minor
-device numbers that they've always had.
+Interesting.
 
-If there are more than IB_UVERBS_MAX_DEVICES, we then dynamically
-request a new major device number (new minors start at 0).
+I'm fine with applying patches 2-5, but I am definitely interested to 
+hear what others think about this.  Clearly, LOC is reduced, but that's 
+not the only factor in code maintenance.
 
-This change increases the maximum number of HCAs to 64 (from 32).
+With regards to libata and old-IDE, I have always thought the ideal 
+scenario was to leave old-IDE in bugfix-only mode, with next-to-no API 
+or driver churn besides that which is absolutely required for the fix.
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
+En masse backporting bug fixes is what's known as a one-time cost.  Once 
+the majority of libata PATA drivers reach bugfix and feature parity, the 
+need for code sharing is reduced greatly.
 
- drivers/infiniband/core/uverbs_main.c |   56 +++++++++++++++++++++++++++++----
- 1 files changed, 50 insertions(+), 6 deletions(-)
+The ide2libata proposal creates on-going costs, not just a one-time 
+cost, because the old-IDE drivers will have -increased- potential for 
+problems when a libata PATA driver is modified.  Such is the -cost- of 
+heavily intertwined code sharing.  A single header change implies that 
+two, not one, drivers might break.  That weakens the "leave it alone" 
+stability promise of old-IDE.
 
-diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
-index a5d441d..0555460 100644
---- a/drivers/infiniband/core/uverbs_main.c
-+++ b/drivers/infiniband/core/uverbs_main.c
-@@ -728,6 +728,34 @@ static ssize_t show_abi_version(struct class *class, char *buf)
- }
- static CLASS_ATTR(abi_version, S_IRUGO, show_abi_version, NULL);
- 
-+static dev_t oflo_maj;
-+static DECLARE_BITMAP(oflo_map, IB_UVERBS_MAX_DEVICES);
-+
-+/*
-+ * If we have more than IB_UVERBS_MAX_DEVICES, dynamically overflow by
-+ * requesting a new major number and doubling the number of max devices we
-+ * support. It's stupid, but simple.
-+ */
-+static int find_oflo_devnum(void)
-+{
-+	int ret;
-+
-+	if (!oflo_maj) {
-+		ret = alloc_chrdev_region(&oflo_maj, 0, IB_UVERBS_MAX_DEVICES,
-+					  "infiniband_verbs");
-+		if (ret) {
-+			printk(KERN_ERR "user_verbs: couldn't register dynamic device number\n");
-+			return ret;
-+		}
-+	}
-+
-+	ret = find_first_zero_bit(oflo_map, IB_UVERBS_MAX_DEVICES);
-+	if (ret >= IB_UVERBS_MAX_DEVICES)
-+		return -1;
-+
-+	return ret;
-+}
-+
- static void ib_uverbs_add_one(struct ib_device *device)
- {
- 	int devnum, base;
-@@ -747,11 +775,19 @@ static void ib_uverbs_add_one(struct ib_device *device)
- 	devnum = find_first_zero_bit(dev_map, IB_UVERBS_MAX_DEVICES);
- 	if (devnum >= IB_UVERBS_MAX_DEVICES) {
- 		spin_unlock(&map_lock);
--		goto err;
-+		devnum = find_oflo_devnum();
-+		if (devnum < 0)
-+			goto err;
-+
-+		spin_lock(&map_lock);
-+		uverbs_dev->devnum = devnum + IB_UVERBS_MAX_DEVICES;
-+		base = devnum + oflo_maj;
-+		set_bit(devnum, oflo_map);
-+	} else {
-+		uverbs_dev->devnum = devnum;
-+		base = devnum + IB_UVERBS_BASE_DEV;
-+		set_bit(devnum, dev_map);
- 	}
--	uverbs_dev->devnum = devnum;
--	base = devnum + IB_UVERBS_BASE_DEV;
--	set_bit(devnum, dev_map);
- 	spin_unlock(&map_lock);
- 
- 	uverbs_dev->ib_dev           = device;
-@@ -784,7 +820,10 @@ err_class:
- 
- err_cdev:
- 	cdev_del(&uverbs_dev->cdev);
--	clear_bit(devnum, dev_map);
-+	if (oflo_maj)
-+		clear_bit(devnum, oflo_map);
-+	else
-+		clear_bit(devnum, dev_map);
- 
- err:
- 	kref_put(&uverbs_dev->ref, ib_uverbs_release_dev);
-@@ -804,7 +843,10 @@ static void ib_uverbs_remove_one(struct ib_device *device)
- 	device_destroy(uverbs_class, uverbs_dev->cdev.dev);
- 	cdev_del(&uverbs_dev->cdev);
- 
--	clear_bit(uverbs_dev->devnum, dev_map);
-+	if (uverbs_dev->devnum < IB_UVERBS_MAX_DEVICES)
-+		clear_bit(uverbs_dev->devnum, dev_map);
-+	else
-+		clear_bit(uverbs_dev->devnum - IB_UVERBS_MAX_DEVICES, oflo_map);
- 
- 	kref_put(&uverbs_dev->ref, ib_uverbs_release_dev);
- 	wait_for_completion(&uverbs_dev->comp);
-@@ -894,6 +936,8 @@ static void __exit ib_uverbs_cleanup(void)
- 	unregister_filesystem(&uverbs_event_fs);
- 	class_destroy(uverbs_class);
- 	unregister_chrdev_region(IB_UVERBS_BASE_DEV, IB_UVERBS_MAX_DEVICES);
-+	if (oflo_maj)
-+		unregister_chrdev_region(oflo_maj, IB_UVERBS_MAX_DEVICES);
- 	idr_destroy(&ib_uverbs_pd_idr);
- 	idr_destroy(&ib_uverbs_mr_idr);
- 	idr_destroy(&ib_uverbs_mw_idr);
+Waiting for other comments...  this patchset is not an onerous burden to 
+libata, but I think it creates nasty cross-tree issues, potentially 
+perturbing old-IDE.
+
+	Jeff
+
 
