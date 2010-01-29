@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902Ab0A2KOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914Ab0A2KOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756902Ab0A2KOL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 05:14:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081Ab0A2KOK
+	id S1756914Ab0A2KOz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 05:14:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889Ab0A2KOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 05:14:10 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54898 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751335Ab0A2KOI (ORCPT
+	Fri, 29 Jan 2010 05:14:54 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:63415 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756849Ab0A2KOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 05:14:08 -0500
-Subject: Re: [PATCHv3 2/2] powerpc: implement arch_scale_smt_power for
- Power7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Joel Schopp <jschopp@austin.ibm.com>, ego@in.ibm.com,
-       linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	Fri, 29 Jan 2010 05:14:53 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/3] net: maintain namespace isolation between vlan and real device
+Date: Fri, 29 Jan 2010 11:12:05 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc5; KDE/4.3.2; x86_64; ; )
+Cc: shemminger@linux-foundation.org, kaber@trash.net, mst@redhat.com,
+       herbert@gondor.apana.org.au, ogerlitz@voltaire.com,
+       netdev@vger.kernel.org, bridge@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <1264728185.20211.34.camel@pasglop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	 <1264017847.5717.132.camel@jschopp-laptop>
-	 <1264548495.12239.56.camel@jschopp-laptop>
-	 <1264720855.9660.22.camel@jschopp-laptop>
-	 <1264721088.10385.1.camel@jschopp-laptop>
-	 <1264728185.20211.34.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 29 Jan 2010 11:13:47 +0100
-Message-ID: <1264760027.4283.2164.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+References: <201001271104.20607.arnd@arndb.de> <201001271105.15733.arnd@arndb.de> <20100128.213344.226776729.davem@davemloft.net>
+In-Reply-To: <20100128.213344.226776729.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001291112.05278.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18Lo85M3RhkoR21n/kQimF6V8fO3KRa6EDnNx3
+ 0/HYBWclExtRR4bfs7ht2oVLScrORPtlpaladNW0EIbW6ZzUTs
+ G4NrkqgkRSuiamEYMSgvA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-29 at 12:23 +1100, Benjamin Herrenschmidt wrote:
-> On machine that don't have SMT, I would like to avoid calling
-> arch_scale_smt_power() at all if possible (in addition to not compiling
-> it in if SMT is not enabled in .config).
+On Friday 29 January 2010, David Miller wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> Date: Wed, 27 Jan 2010 11:05:15 +0100
 > 
-> Now, I must say I'm utterly confused by how the domains are setup and I
-> haven't quite managed to sort it out... it looks to me that
-> SD_SHARE_CPUPOWER is always going to be set on all CPUs when the config
-> option is set (though each CPU will have its own domain) or am I
-> misguided ? IE. Is there any sense in having at least a fast exit path
-> out of arch_scale_smt_power() for non-SMT CPUs ?
+> > + * skb_dev_set -- assign a buffer to a new device
+> 
+> My english is terrible, but I think this should be
+> "assign a new device to a buffer".
 
-The sched_domain creation code is a f'ing stink pile that hurts
-everybody's brain.
+Right, that seems clearer.
 
-The AMD magny-cours people sort of cleaned it up a bit but didn't go
-nearly far enough. Doing so is somewhere on my todo list, but sadly that
-thing is way larger than my spare time.
+> If you agree, please fix this up when you resubmit patches #1 and #2
+> along with the fix you already plan to make to patch #3.
 
-Now SD_SHARE_CPUPOWER _should_ only be set for SMT domains, because only
-SMT siblings share cpupower.
+Ok, will do.
 
-SD_SHARE_PKG_RESOURCES _should_ be set for both SMT and MC, because they
-all share the same cache domain.
+Thanks,
 
-If it all works out that way in practice on powerpc is another question
-entirely ;-)
-
-That said, I'm still not entirely convinced I like this usage of
-cpupower, its supposed to be a normalization scale for load-balancing,
-not a placement hook.
-
-I'd be much happier with a SD_GROUP_ORDER or something like that, that
-works together with SD_PREFER_SIBLING to pack active tasks to cpus in
-ascending group order.
-
+	Arnd
