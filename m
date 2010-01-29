@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786Ab0A2Lh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569Ab0A2Lu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786Ab0A2Lh3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 06:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728Ab0A2Lh2
+	id S1754569Ab0A2Lu6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 06:50:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932176Ab0A2Lu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 06:37:28 -0500
-Received: from mail1.radix.net ([207.192.128.31]:64769 "EHLO mail1.radix.net"
+	Fri, 29 Jan 2010 06:50:57 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52671 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755956Ab0A2Lh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 06:37:27 -0500
-Subject: Re: how do YOU hack the linux kernel ?
-From: Andy Walls <awalls@radix.net>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: Ramagudi Naziir <naziirr@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20100129081010.GA30756@buzzloop.caiaq.de>
-References: <dfb262381001190452k3bad790ax14bbdbe92210b2d3@mail.gmail.com>
-	 <20100129081010.GA30756@buzzloop.caiaq.de>
-Content-Type: text/plain
-Date: Fri, 29 Jan 2010 06:37:01 -0500
-Message-Id: <1264765021.3084.9.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1753670Ab0A2Lu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 06:50:56 -0500
+Message-ID: <4B62CBA1.3060001@suse.cz>
+Date: Fri, 29 Jan 2010 12:50:57 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Jarod Wilson <jarod@wilsonet.com>
+Cc: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Don Zickus <dzickus@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [scripts] python: change scripts to use system python instead
+ of  env
+References: <20100126222041.GR4472@redhat.com>	 <2375c9f91001261834l1e267a8bp61633f63b3752f6f@mail.gmail.com> <be3a4a1001281221m47d5fae8v55aa18b7de1aedff@mail.gmail.com>
+In-Reply-To: <be3a4a1001281221m47d5fae8v55aa18b7de1aedff@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-29 at 09:10 +0100, Daniel Mack wrote:
-> On Tue, Jan 19, 2010 at 02:52:57PM +0200, Ramagudi Naziir wrote:
-> > do you use vim ?
-> > 
-> > If so, how do you open files you want to read/edit ?
-> > Assuming you don't remember their exact name/location, you'd need to
-> > use something like 'find . -iname '*pattern*'. which is slow.
-> > You can also ":tabnew ." and just browse the folders, but that's super slow too.
+Jarod Wilson napsal(a):
+> On Tue, Jan 26, 2010 at 9:34 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+>> On Wed, Jan 27, 2010 at 6:20 AM, Don Zickus <dzickus@redhat.com> wrote:
+>>> Just a small change to a couple of scripts to go from
+>>>
+>>>  #!/usr/bin/env python
+>>>
+>>> to
+>>>
+>>>  #!/usr/bin/python
+...
+>>
+>> Hmm, so python3 will be installed in /usr/local/bin?
 > 
-> Just use ctags to index your tree. Vim can then use this index to
-> directly drop you at the definition of a symbol. Works very well.
-
-
-Yup.  That's what I use.
-
->  Just
-> google around to find tutorials to describe that in detail.
-
-$ man ctags
-$ vim
-:help tags
-
-for those who don't wish to rely on the Goggle.
-
-Regards,
-Andy
-
-> LXR is also a nice help sometimes: http://lxr.linux.no/linux/
+> No, it will be /usr/bin/python3, but its possible a user would
+> configure their environment to have their default python interpreter
+> be python3, in which case env python would be using /usr/bin/python3
+> rather than /usr/bin/python, which can lead to things mysteriously
+> running differently or not running at all.
 > 
-> Other than that you might develop a feeling for where to search, so you
-> can narrow your 'git grep' to specific places.
-> 
-> HTH,
-> Daniel
+> Acked-by: Jarod Wilson <jarod@redhat.com>
 
+OK, and we have other python scripts that already use #!/usr/bin/python,
+so this patch makes sense regardless of python3. I added it to the
+kbuild tree.
 
+Michal
