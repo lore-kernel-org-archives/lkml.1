@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053Ab0A2Wym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067Ab0A2Wzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756053Ab0A2Wym (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 17:54:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943Ab0A2Wyl
+	id S1756067Ab0A2Wzl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 17:55:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783Ab0A2Wzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 17:54:41 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:63287 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752339Ab0A2Wyk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 17:54:40 -0500
-Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAIr2YkurR7H+/2dsb2JhbADDGpdOhEIE
-X-IronPort-AV: E=Sophos;i="4.49,371,1262563200"; 
-   d="scan'208";a="475123963"
-From: Roland Dreier <rdreier@cisco.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Increase maximum Infiniband HCAs per-system
-References: <20100129214039.17745.38679.stgit@bob.kio>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 29 Jan 2010 14:54:36 -0800
-In-Reply-To: <20100129214039.17745.38679.stgit@bob.kio> (Alex Chiang's message
-	of "Fri, 29 Jan 2010 14:44:57 -0700")
-Message-ID: <adar5p8ldxv.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Fri, 29 Jan 2010 17:55:40 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47774 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750703Ab0A2Wzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 17:55:40 -0500
+Message-ID: <4B636646.50605@zytor.com>
+Date: Fri, 29 Jan 2010 14:50:46 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, mingo@redhat.com,
+       eranian@google.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/core] bitops: Provide compile time HWEIGHT{8,16,32,64}
+References: <20100122155535.797688466@chello.nl>	 <tip-9f41699ed067fa695faff8e2e9981b2550abec62@git.kernel.org>	 <20100129020128.716af8fb.akpm@linux-foundation.org> <1264763023.4283.2213.camel@laptop>
+In-Reply-To: <1264763023.4283.2213.camel@laptop>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Justin Chen discovered that Linux "only" supports 32 IB cards in
- > a single system when testing a larger system with 40 cards and
- > discovered that OFED only reported 32 HCAs.
- > 
- > This patchset doubles the number of HCAs allowed per system in a
- > backwards-compatible manner.
+On 01/29/2010 03:03 AM, Peter Zijlstra wrote:
+> 
+> *sigh* and here I though it being placed right next to hweight_long()
+> which uses the arch hweightN() would be clue enough.
+> 
+> If people are so clueless, who says they'll read a comment.. but sure I
+> guess I can add one.
+> 
 
-Looks like a really great start, some nice cleanups as well the added
-functionality.  I've been meaning to use pahole for a while...
+I would personally say that the Right Way[TM] to do this is to call
+these __constant_hweightX() -- so the name reflects the function -- and
+then have
 
-Have you considered drivers/infiniband/core/user_mad.c and ucm.c?  I
-think user_mad.c is somewhat more important, as that is what allows an
-adapter to be used for running the SM.  So I think we're still left with
-some potential issues around lots of adapters in one system.  (I think
-use of ucm by real apps is minimal to nonexistent, but someday we should
-deal with that too)
+#define hweight(x) (__builtin_constant_p(x) ? __constant_hweight(x) :
+__arch_hweight(x))
 
- - R.
+[example does not reflect actual naming]
+
+	-hpa
