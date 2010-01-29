@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432Ab0A2TuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673Ab0A2UBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432Ab0A2TuI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 14:50:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523Ab0A2TuH
+	id S1754673Ab0A2UBX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 15:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011Ab0A2UBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 14:50:07 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:61402 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754217Ab0A2TuG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 14:50:06 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH 3/3] net: macvtap driver
-Date: Fri, 29 Jan 2010 20:49:52 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc5; KDE/4.3.2; x86_64; ; )
-Cc: David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Or Gerlitz <ogerlitz@voltaire.com>, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <201001271104.20607.arnd@arndb.de> <201001282118.09164.arnd@arndb.de> <20100129112141.GA6548@redhat.com>
-In-Reply-To: <20100129112141.GA6548@redhat.com>
+	Fri, 29 Jan 2010 15:01:22 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44808 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754445Ab0A2UBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 15:01:19 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/2] PM / Runtime: Clean up pm_runtime_disable()
+Date: Fri, 29 Jan 2010 21:01:45 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc5-rjw; KDE/4.3.5; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.1001291435290.23361-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1001291435290.23361-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001292049.52308.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18YNVinf38FFo5HMN4KFKlaohEMkRfcMJlo5VP
- HayuI1YEIQiTju/g2RMv/zFBWpjiLHYWtQGwJ+M0KjXlpjQxIz
- VxNSk87omZldjk/KEF6OQ==
+Message-Id: <201001292101.45553.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 29 January 2010, Michael S. Tsirkin wrote:
-> > That may well be, I haven't tried vlan. What do you think it should do
-> > then?
+On Friday 29 January 2010, Alan Stern wrote:
+> On Fri, 29 Jan 2010, Rafael J. Wysocki wrote:
 > 
-> Look at eth_type for a more complete packet parsing.
-
-ok. I initially called that but it crashed because the skb was not initialized
-properly at that point. I'll have a look.
-
-> > > > +/*
-> > > > + * provide compatibility with generic tun/tap interface
-> > > > + */
-> > > > +static long macvtap_ioctl(struct file *file, unsigned int cmd,
-> > > > +                   unsigned long arg)
-> > > > +{
+> > On Friday 29 January 2010, Alan Stern wrote:
+> > > On Thu, 28 Jan 2010, Rafael J. Wysocki wrote:
 > > > 
-> > > All of these seem to be stubs, and tun has many more that you didn't
-> > > stub out. So, why do you bother to support any ioctls at all?
+> > > > > > - * If @check_resume is set and there's a resume request pending when
+> > > > > > - * __pm_runtime_disable() is called and power.disable_depth is zero, the
+> > > > > > - * function will wake up the device before disabling its run-time PM.
+> > > > > >   */
+> > > > > > -void __pm_runtime_disable(struct device *dev, bool check_resume)
+> > > > > > +void pm_runtime_disable(struct device *dev)
+> > > > > >  {
+> > > > > 
+> > > > > Why did you decide to remove the check_resume argument?  That decision 
+> > > > > should be explained in the patch description.
+> > > > 
+> > > > Well, I thought the "which is not necessary any more" would be a sufficient
+> > > > explanation ...
+> > > 
+> > > But why is it not necessary now,
 > > 
-> > Again, minimum features to get things going. qemu fails to open
-> > the device if these ioctls are not implemented, but any of the
-> > more advanced features are left out.
+> > Well, all of the existing callers use only one value of it, which is 'false'
+> > (perhaps I should write that in the changelog).
 > 
-> This is strange, could be application bug.  E.g. send buf size is
-> relatively new and apps should handle failure gracefully.  IMO,
-> returning success and ignoring the value is not a good idea.  How about
-> we just fix qemu?  What about other apps?
+> I don't understand.  Isn't the existing version of pm_runtime_disable()
+> a caller which sets check_resume to 'true'?  There certainly are places 
+> that call pm_runtime_disable().
 
-Ok, I'll go through the ioctls again and make sure they behave correctly
-they way you said. I haven't tried against against anything but qemu and
-cat.
+Sorry, you're absolutely right, so the patch is wrong.
 
-	Arnd
+Rafael
