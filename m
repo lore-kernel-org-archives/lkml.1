@@ -1,51 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502Ab0A2Ukv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053Ab0A2UlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753502Ab0A2Ukv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 15:40:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241Ab0A2Ujg
+	id S1755053Ab0A2UlK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 15:41:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755270Ab0A2UlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 15:39:36 -0500
-Received: from mga05.intel.com ([192.55.52.89]:42801 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754917Ab0A2Uje (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 15:39:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,370,1262592000"; 
-   d="scan'208";a="535880012"
-Date: Fri, 29 Jan 2010 21:41:01 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Dmitry Artamonow <mad_soft@inbox.ru>
-Subject: [GIT] [2.6.33] MFD pull request
-Message-ID: <20100129204100.GA29150@sortiz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 29 Jan 2010 15:41:06 -0500
+Received: from www.tglx.de ([62.245.132.106]:44761 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755057Ab0A2UjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 15:39:15 -0500
+Message-Id: <20100129203613.591137914@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Fri, 29 Jan 2010 20:38:55 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [patch 06/10] affs: Convert semaphores to mutexes
+References: <20100129203549.526478432@linutronix.de>
+Content-Disposition: inline; filename=affs-convert-sema.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+These semaphores are plain mutexes. Convert them to struct mutex.
 
-I have one remaining mfd fix for 2.6.33, that slipped through my last pull
-request. It's an asic3 build failure, thanks in advance for pulling.
+Map affs_[un]lock_dir() to affs_[un]lock_ext() instead of the "#define
+i_hash_lock i_ext_lock" magic.
 
-The following changes since commit 499a2673713c85734a54c37dd90b4b729de399c4:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../dtor/input
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 
-are available in the git repository at:
+---
+ fs/affs/affs.h  |   26 +++++++++-----------------
+ fs/affs/super.c |    4 ++--
+ 2 files changed, 11 insertions(+), 19 deletions(-)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/sameo/mfd-2.6.git for-linus
+Index: linux-2.6-tip/fs/affs/affs.h
+===================================================================
+--- linux-2.6-tip.orig/fs/affs/affs.h
++++ linux-2.6-tip/fs/affs/affs.h
+@@ -50,9 +50,8 @@ struct affs_ext_key {
+  */
+ struct affs_inode_info {
+ 	atomic_t i_opencnt;
+-	struct semaphore i_link_lock;		/* Protects internal inode access. */
+-	struct semaphore i_ext_lock;		/* Protects internal inode access. */
+-#define i_hash_lock i_ext_lock
++	struct mutex i_link_lock;		/* Protects internal inode access. */
++	struct mutex i_ext_lock;		/* Protects internal inode access. */
+ 	u32	 i_blkcnt;			/* block count */
+ 	u32	 i_extcnt;			/* extended block count */
+ 	u32	*i_lc;				/* linear cache of extended blocks */
+@@ -275,30 +274,23 @@ affs_adjust_bitmapchecksum(struct buffer
+ static inline void
+ affs_lock_link(struct inode *inode)
+ {
+-	down(&AFFS_I(inode)->i_link_lock);
++	mutex_lock(&AFFS_I(inode)->i_link_lock);
+ }
+ static inline void
+ affs_unlock_link(struct inode *inode)
+ {
+-	up(&AFFS_I(inode)->i_link_lock);
+-}
+-static inline void
+-affs_lock_dir(struct inode *inode)
+-{
+-	down(&AFFS_I(inode)->i_hash_lock);
+-}
+-static inline void
+-affs_unlock_dir(struct inode *inode)
+-{
+-	up(&AFFS_I(inode)->i_hash_lock);
++	mutex_unlock(&AFFS_I(inode)->i_link_lock);
+ }
+ static inline void
+ affs_lock_ext(struct inode *inode)
+ {
+-	down(&AFFS_I(inode)->i_ext_lock);
++	mutex_lock(&AFFS_I(inode)->i_ext_lock);
+ }
+ static inline void
+ affs_unlock_ext(struct inode *inode)
+ {
+-	up(&AFFS_I(inode)->i_ext_lock);
++	mutex_unlock(&AFFS_I(inode)->i_ext_lock);
+ }
++
++#define affs_lock_dir(i)	affs_lock_ext(i)
++#define affs_unlock_dir(i)	affs_unlock_ext(i)
+Index: linux-2.6-tip/fs/affs/super.c
+===================================================================
+--- linux-2.6-tip.orig/fs/affs/super.c
++++ linux-2.6-tip/fs/affs/super.c
+@@ -113,8 +113,8 @@ static void init_once(void *foo)
+ {
+ 	struct affs_inode_info *ei = (struct affs_inode_info *) foo;
+ 
+-	init_MUTEX(&ei->i_link_lock);
+-	init_MUTEX(&ei->i_ext_lock);
++	mutex_init(&ei->i_link_lock);
++	mutex_init(&ei->i_ext_lock);
+ 	inode_init_once(&ei->vfs_inode);
+ }
+ 
 
-Dmitry Artamonow (1):
-      mfd: Fix asic3 build
 
- drivers/mfd/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
