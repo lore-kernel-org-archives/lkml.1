@@ -1,179 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730Ab0A2Vvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171Ab0A2V7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755730Ab0A2Vvp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 16:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121Ab0A2Vvn
+	id S1754171Ab0A2V7h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 16:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331Ab0A2V7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 16:51:43 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:56223 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754838Ab0A2Vvm (ORCPT
+	Fri, 29 Jan 2010 16:59:36 -0500
+Received: from web55003.mail.re4.yahoo.com ([206.190.58.137]:45258 "HELO
+	web55003.mail.re4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752709Ab0A2V7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 16:51:42 -0500
-Subject: Re: PROBLEM: reproducible crash KVM+nf_conntrack all recent 2.6
- kernels
-From: Jon Masters <jonathan@jonmasters.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Patrick McHardy <kaber@trash.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, netfilter-devel@vger.kernel.org
-In-Reply-To: <1264762655.2793.409.camel@tonnant>
-References: <1264657559.2793.103.camel@tonnant>
-	 <1264658364.2793.105.camel@tonnant>  <4B6180D1.6050609@trash.net>
-	 <1264720891.2793.205.camel@tonnant>  <1264727492.2793.207.camel@tonnant>
-	 <1264754565.2793.405.camel@tonnant>
-	 <1264756232.3184.10.camel@edumazet-laptop>
-	 <1264762655.2793.409.camel@tonnant>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Fri, 29 Jan 2010 16:51:31 -0500
-Message-Id: <1264801891.2793.426.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Fri, 29 Jan 2010 16:59:36 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
+  b=IKQq7PtkJPiow7RuvUf2uhZjrxYhgR1EQLDI0x4cfvWLcg+e8SYh8TYOGUx2NrnbdmlV+2W8YxEtIP88mshZiqIbLVwpuXjCATM6ErTloyY4Hq1XOwZVJrCUHbyM0heU5GERmC3ZVUfCklO3wiS3KnQZZzOGItiZudI54Ffot/s=;
+Message-ID: <202042.73614.qm@web55003.mail.re4.yahoo.com>
+X-YMail-OSG: tUsNdEIVM1nnOuaEzQXUKkpeRwDrzZ95Z.ljc5kJOPKHambYgSEL2Ecr41jk3uJS9T.fiRZQH1Ol75Yrb5dvAK6MLYzm._06pSadz_Qm9DdfMcf5OjMvc5V.6ovPhzA0Tw.HYZKXcPyr6jhtgb4.nNF3dIq.s7.BlGIvU2Tk3cXI7dgy_goW5Z3DskJYsD74gw6dQJVOuA_JfCAJXaoGhO_wh8HI07RA9cVrl_0-
+X-Mailer: YahooMailClassic/9.1.10 YahooMailWebService/0.8.100.260964
+Date: Fri, 29 Jan 2010 13:59:35 -0800 (PST)
+From: john smith <whalajam@yahoo.com>
+Subject: Re: perf report for .ko files
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100129191558.GA9990@ghostprotocols.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-29 at 05:57 -0500, Jon Masters wrote:
-> On Fri, 2010-01-29 at 10:10 +0100, Eric Dumazet wrote:
+> > I did setup attr->exclude_hv, exclude_idle,
+> exclude_user = 1 in
+> > create_counter() just before "try_again:" label, no
+> difference in
+> > results, on a 2.6.31 (too old? "perf buildid-list" is
+> not available)
+> > kernel version:
+>  
+> > # perf record -f -e cycles fio fio_script
 > 
-> > Jon, do you have multiple network namespace active on your machine, when
-> > crash occurs ?
+> > (for more than a minute, I increased the sample
+> frequency with
+> > different -c values, some locked the machine -
+> expectedly)
+> > and
+> > # perf report --verbose
+> --dso=/my_module_path/my_module.ko
+> > (--verbose doesn't provide any more info)
 > 
-> I don't believe so. I just built in Jason's latest kgdb/kdb patches and
-> am going to give them a whirl to see if I can get anything more out of
-> this panic than I currently have.
+> This isn't going to work, you need to do:
+> 
+> perf report --verbose --dso='[my_module]'
+> 
+> I.e. as it appear on /proc/modules + brackets. Arguably we
+> need to get
+> it to work also with both 'my_module.ko' and the full
+> path.
 
-So, the latest crash was in here:
+I've tried:
+"perf report --verbose --dso='[my_module]'"
+and also:
+"perf report --verbose --dso='[sg]'"
+same result as before.
 
-/* delete all expectations for this conntrack */
-void nf_ct_remove_expectations(struct nf_conn *ct)
+New question:
+
+Is this the minimal set of api that I can use from within the kernel (for specific module sections of interest) to read the counters? 
+
 {
-        struct nf_conn_help *help = nfct_help(ct);
-        struct nf_conntrack_expect *exp;
-        struct hlist_node *n, *next;
-
-        /* Optimization: most connection never expect any others. */
-        if (!help)
-                return;
-
-        hlist_for_each_entry_safe(exp, n, next, &help->expectations,
-lnode) {
-                if (del_timer(&exp->timeout)) {
-                        nf_ct_unlink_expect(exp);
-                        nf_ct_expect_put(exp);
-                }
-        }
+int perf_event_release_kernel(struct perf_event *event);
+struct perf_event *perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu);
+u64 perf_event_read_value(struct perf_event *event);
 }
-EXPORT_SYMBOL_GPL(nf_ct_remove_expectations);
 
-Specifically, in that hlist_for_each_entry_safe iteration, the list of
-expectations is already NULL:
+Any good example of useage of these api's (struct initialization)?
 
-    at net/netfilter/nf_conntrack_expect.c:174
-174             hlist_for_each_entry_safe(exp, n, next,
-&help->expectations, lnode) {
-
-(gdb) bt
-#0  nf_ct_remove_expectations (ct=<value optimized out>)
-    at net/netfilter/nf_conntrack_expect.c:174
-#1  0xffffffff813e4db9 in destroy_conntrack (nfct=0xffffffff81b04e60)
-    at net/netfilter/nf_conntrack_core.c:202
-#2  0xffffffff813e2af8 in nf_conntrack_destroy (nfct=<value optimized
-out>)
-    at net/netfilter/core.c:243
-#3  0xffffffff813bc209 in nf_conntrack_put (skb=0xffff88018fb97f00)
-    at include/linux/skbuff.h:1924
-#4  skb_release_head_state (skb=0xffff88018fb97f00) at
-net/core/skbuff.c:402
-#5  0xffffffff813bbf6b in skb_release_all (skb=0xffff88018fb97f00)
-    at net/core/skbuff.c:420
-#6  __kfree_skb (skb=0xffff88018fb97f00) at net/core/skbuff.c:435
-#7  0xffffffff813bc070 in kfree_skb (skb=0xffff88018fb97f00)
-    at net/core/skbuff.c:456
-#8  0xffffffffa03fa0a1 in ?? ()
-#9  0x0000000000000050 in ?? ()
-#10 0xffff8801de810780 in ?? ()
-#11 0x0000000000000000 in ?? ()
-
-(gdb) frame 1
-#1  0xffffffff813e4db9 in destroy_conntrack (nfct=0xffffffff81b04e60)
-    at net/netfilter/nf_conntrack_core.c:202
-202             nf_ct_remove_expectations(ct);
-(gdb) print ct
-$5 = (struct nf_conn *) 0xffffffff81b04e60
-(gdb) print ct->
-ct_general  ext         mark        proto       status      tuplehash
-ct_net      lock        master      secmark     timeout     
-
-(gdb) print ct->ext
-$10 = (struct nf_ct_ext *) 0xffff8801de3369c0
-
-(gdb) print (struct nf_conn_help *)(ct->ext +
-ct->ext->offset[NF_CT_EXT_HELPER]) 
-$22 = (struct nf_conn_help *) 0xffff8801de337a40
-
-(gdb) print $22->helper
-$23 = (struct nf_conntrack_helper *) 0xffff8801de337a00
-(gdb) print $22->help
-$24 = {ct_ftp_info = {seq_aft_nl = {{0, 0}, {269970752, 4294936578}}, 
-    seq_aft_nl_num = {323805184, 32555}}, ct_pptp_info = {
-    sstate = PPTP_SESSION_NONE, cstate = PPTP_CALL_NONE, pac_call_id =
-27968, 
-    pns_call_id = 4119, keymap = {0x7f2b134ce000, 0xb65e2965}}, 
-  ct_h323_info = {sig_port = {0, 0}, rtp_port = {{0, 0}, {27968, 4119},
-{
-        34818, 65535}, {57344, 4940}}, {timeout = 32555, tpkt_len =
-{32555, 
-        0}}}, ct_sane_info = {state = SANE_STATE_NORMAL}, ct_sip_info =
-{
-    register_cseq = 0, invite_cseq = 0}}
-(gdb) print $22->expectations
-$25 = {first = 0x0}
-(gdb) print $22->expecting
-$26 = "\000\000"
-
-(gdb) print $22->helper->hnode
-$28 = {next = 0xffff8801de3379c0, pprev = 0x0}
-
-(gdb) print $22->helper->name
-$31 = 0xffff880210176d40 "\300\235\363\020\002\210\377\377\020\027\b\022
-\002\210\377\377p\236\363\020\002\210\377\377T", <incomplete sequence
-\337>
-(gdb) print $22->helper->me
-$32 = (struct module *) 0x7f2b134cf000
-
-(gdb) print $22->helper->tuple 
-$36 = {src = {u3 = {all = {0, 0, 0, 0}, ip = 0, ip6 = {0, 0, 0, 0}, in =
-{
-        s_addr = 0}, in6 = {in6_u = {u6_addr8 = '\000' <repeats 15
-times>, 
-          u6_addr16 = {0, 0, 0, 0, 0, 0, 0, 0}, u6_addr32 = {0, 0, 0,
-0}}}}, 
-    u = {all = 0, tcp = {port = 0}, udp = {port = 0}, icmp = {id = 0},
-dccp = {
-        port = 0}, sctp = {port = 0}, gre = {key = 0}}, l3num = 0}, dst
-= {
-    u3 = {all = {0, 3727915520, 4294936577, 0}, ip = 0, ip6 = {0,
-3727915520, 
-        4294936577, 0}, in = {s_addr = 0}, in6 = {in6_u = {
-          u6_addr8 = "\000\000\000\000\000z3\336\001\210\377\377\000\000
-\000", 
-          u6_addr16 = {0, 0, 31232, 56883, 34817, 65535, 0, 0},
-u6_addr32 = {
-            0, 3727915520, 4294936577, 0}}}}, u = {all = 0, tcp = {port
-= 0}, 
-      udp = {port = 0}, icmp = {type = 0 '\000', code = 0 '\000'}, dccp
-= {
-        port = 0}, sctp = {port = 0}, gre = {key = 0}}, protonum = 0
-'\000', 
-    dir = 0 '\000'}}
-
-Jon.
+John
+  
 
 
+
+      
