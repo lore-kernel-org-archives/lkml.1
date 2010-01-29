@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440Ab0A2Sew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546Ab0A2Sin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753440Ab0A2Sew (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 13:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974Ab0A2Sev
+	id S1753546Ab0A2Sin (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 13:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755Ab0A2Sim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 13:34:51 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:43654 "EHLO e9.ny.us.ibm.com"
+	Fri, 29 Jan 2010 13:38:42 -0500
+Received: from thunk.org ([69.25.196.29]:38564 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751923Ab0A2Seu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 13:34:50 -0500
-Message-ID: <4B632A47.4070103@austin.ibm.com>
-Date: Fri, 29 Jan 2010 12:34:47 -0600
-From: Joel Schopp <jschopp@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1752139Ab0A2Sim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 13:38:42 -0500
+Date: Fri, 29 Jan 2010 00:19:53 -0500
+From: tytso@mit.edu
+To: Alexander Clouter <alex@digriz.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] checkpatch.pl: remove the 80 charactes punch card limit
+Message-ID: <20100129051953.GM28459@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Alexander Clouter <alex@digriz.org.uk>,
+	linux-kernel@vger.kernel.org
+References: <1264597747.3607.29.camel@wall-e>
+ <87hbq6dy2k.fsf@basil.nowhere.org>
+ <17r837-m29.ln1@chipmunk.wormnet.eu>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, ego@in.ibm.com,
-       linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv3 2/2] powerpc: implement arch_scale_smt_power for Power7
-References: <1264017638.5717.121.camel@jschopp-laptop>	 <1264017847.5717.132.camel@jschopp-laptop>	 <1264548495.12239.56.camel@jschopp-laptop>	 <1264720855.9660.22.camel@jschopp-laptop>	 <1264721088.10385.1.camel@jschopp-laptop>	 <1264728185.20211.34.camel@pasglop> <1264760027.4283.2164.camel@laptop>
-In-Reply-To: <1264760027.4283.2164.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17r837-m29.ln1@chipmunk.wormnet.eu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 28, 2010 at 04:39:29PM +0000, Alexander Clouter wrote:
+> Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> >> The time of 80 characters punch card and terminals are over, so i would
+> >> be a good thing to set the line length limit to 120. Every display today
+> >> should be able handle this. 
+> >>   
+> >> Signed-off-by: Stefani Seibold <stefani@seibold.net>
+> > 
+> > Full Ack!
+> > 
+> NACK Attack!
+> 
+> There is a reason Knuth only put so many words on a line with TeX.
 
-> That said, I'm still not entirely convinced I like this usage of
-> cpupower, its supposed to be a normalization scale for load-balancing,
-> not a placement hook.
->   
-Even if you do a placement hook you'll need to address it in the load 
-balancing as well.  Consider a single 4 thread SMT core with 4 running 
-tasks.  If 2 of them exit the remaining 2 will need to be load balanced 
-within the core in a way that takes into account the dynamic nature of 
-the thread power.  This patch does that.
-> I'd be much happier with a SD_GROUP_ORDER or something like that, that
-> works together with SD_PREFER_SIBLING to pack active tasks to cpus in
-> ascending group order.
->
->   
-I don't see this load-balancing patch as mutually exclusive with a patch 
-to fix placement.  But even if it is a mutually exclusive solution there 
-is no reason we can't fix things now with this patch and then later take 
-it out when it's fixed another way.  This patch series is 
-straightforward, non-intrusive, and without it the scheduler is broken 
-on this processor. 
+Linus has already agreed that the 80 character limit is stupid.  Let's
+just nuke this check from checkpatch.pl and move on.
+
+     	       	     	  		    - Ted
