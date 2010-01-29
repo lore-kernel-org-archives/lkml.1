@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230Ab0A2UwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246Ab0A2UxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755230Ab0A2UwN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 15:52:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123Ab0A2UwJ
+	id S1755246Ab0A2UxO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 15:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062Ab0A2UvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 15:52:09 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:43355 "EHLO
+	Fri, 29 Jan 2010 15:51:19 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42685 "EHLO
 	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755310Ab0A2UwC (ORCPT
+	with ESMTP id S1754677Ab0A2UvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 15:52:02 -0500
-Message-Id: <20100129205007.248543650@quilx.com>
+	Fri, 29 Jan 2010 15:51:14 -0500
+Message-Id: <20100129205006.657323814@quilx.com>
 References: <20100129204931.789743493@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 29 Jan 2010 14:49:47 -0600
+Date: Fri, 29 Jan 2010 14:49:46 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Andi Kleen <andi@firstfloor.org>
-Cc: Dave Chinner <david@fromorbit.com>, Alexey Dobriyan <adobriyan@sw.ru>,
-       Christoph Lameter <clameter@sgi.com>
+Cc: Dave Chinner <david@fromorbit.com>, Christoph Lameter <clameter@sgi.com>
 Cc: Rik van Riel <riel@redhat.com>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: akpm@linux-foundation.org
@@ -25,48 +24,34 @@ Cc: Miklos Szeredi <miklos@szeredi.hu>
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>
 Cc: Hugh Dickins <hugh@veritas.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Filesystems: /proc filesystem support for slab defrag
-Content-Disposition: inline; filename=defrag_proc
+Subject: Filesystem: XFS slab defragmentation
+Content-Disposition: inline; filename=xfs_defrag
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support procfs inode defragmentation
+Support inode defragmentation for xfs
 
-Cc: Alexey Dobriyan <adobriyan@sw.ru>
 Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- fs/proc/inode.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ fs/xfs/linux-2.6/xfs_super.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Index: linux-2.6/fs/proc/inode.c
+Index: slab-2.6/fs/xfs/linux-2.6/xfs_super.c
 ===================================================================
---- linux-2.6.orig/fs/proc/inode.c	2009-12-18 13:13:24.000000000 -0600
-+++ linux-2.6/fs/proc/inode.c	2010-01-29 10:33:22.000000000 -0600
-@@ -77,6 +77,12 @@ static void init_once(void *foo)
- 	inode_init_once(&ei->vfs_inode);
- }
+--- slab-2.6.orig/fs/xfs/linux-2.6/xfs_super.c	2010-01-22 15:09:43.000000000 -0600
++++ slab-2.6/fs/xfs/linux-2.6/xfs_super.c	2010-01-22 16:23:51.000000000 -0600
+@@ -1608,6 +1608,8 @@ xfs_init_zones(void)
+ 	if (!xfs_ioend_zone)
+ 		goto out;
  
-+static void *proc_get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	return fs_get_inodes(s, nr, v,
-+		offsetof(struct proc_inode, vfs_inode));
-+}
++	kmem_cache_setup_defrag(xfs_vnode_zone, get_inodes, kick_inodes);
 +
- void __init proc_init_inodecache(void)
- {
- 	proc_inode_cachep = kmem_cache_create("proc_inode_cache",
-@@ -84,6 +90,8 @@ void __init proc_init_inodecache(void)
- 					     0, (SLAB_RECLAIM_ACCOUNT|
- 						SLAB_MEM_SPREAD|SLAB_PANIC),
- 					     init_once);
-+	kmem_cache_setup_defrag(proc_inode_cachep,
-+				proc_get_inodes, kick_inodes)
- }
- 
- static const struct super_operations proc_sops = {
+ 	xfs_ioend_pool = mempool_create_slab_pool(4 * MAX_BUF_PER_PAGE,
+ 						  xfs_ioend_zone);
+ 	if (!xfs_ioend_pool)
 
 -- 
