@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752450Ab0A2SPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642Ab0A2SPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752450Ab0A2SPF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 13:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246Ab0A2SPE
+	id S1752642Ab0A2SPU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 13:15:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502Ab0A2SPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 13:15:04 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:33528 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123Ab0A2SPD (ORCPT
+	Fri, 29 Jan 2010 13:15:16 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56064 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752484Ab0A2SPL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 13:15:03 -0500
-Date: Fri, 29 Jan 2010 18:15:00 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] WM8994 core driver
-Message-ID: <20100129181500.GD19270@sirena.org.uk>
-References: <20100125192554.GA11200@rakim.wolfsonmicro.main>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100125192554.GA11200@rakim.wolfsonmicro.main>
-X-Cookie: no maintenance:
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Fri, 29 Jan 2010 13:15:11 -0500
+Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Greg KH <gregkh@suse.de>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Cong Wang <amwang@redhat.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Miles Lane <miles.lane@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>, akpm@linux-foundation.org
+In-Reply-To: <20100129181024.GA12934@suse.de>
+References: <20100129070516.4058.77227.sendpatchset@localhost.localdomain>
+	 <m1eil9v0j9.fsf@fess.ebiederm.org> <4B629E7F.5020200@redhat.com>
+	 <m1zl3xt49k.fsf@fess.ebiederm.org> <20100129142223.GB12539@suse.de>
+	 <1264787848.24455.31.camel@laptop>  <20100129181024.GA12934@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 29 Jan 2010 19:14:20 +0100
+Message-ID: <1264788860.24455.35.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 25, 2010 at 07:25:54PM +0000, Mark Brown wrote:
-> This patch series implements core support for the WM8994 audio CODEC.
-> Since the WM8994 is a large device and includes both GPIOs and
-> integrated LDOs which need be represented via the relevant subsystems
-> for integration with the rest of the kernel a MFD core device is
-> provided to manage chip access.
+On Fri, 2010-01-29 at 10:10 -0800, Greg KH wrote:
+> On Fri, Jan 29, 2010 at 06:57:28PM +0100, Peter Zijlstra wrote:
+> > On Fri, 2010-01-29 at 06:22 -0800, Greg KH wrote:
+> > > 
+> > > Heh, this whole mess is the very reason we didn't add lockdep support to
+> > > the driver core.  Nested devices that all look alike from the driver
+> > > core, are really different objects and the locking lifetimes are
+> > > separate, but lockdep can't see that. 
+> > 
+> > And here I through Alan Stern had a handle on making the driver core
+> > play nice.
+> 
+> It's not the driver core that is the issue here, it's that lockdep can't
+> handle the tree structure of devices that is represented in the kernel.
+> 
+> I don't think it is a driver core problem, but rather, a lockdep issue.
 
-Unfortunately I discovered another sync issue with the platform data.
-I'll resend the series shortly with that corrected, please ignore this
-posting.
+Right, we've been over that and I think I added enough lockdep
+annotations to make it work for the device tree. At least, Alan and I
+seemed to agree on that last time we talked about it.
+
+
+
