@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932332Ab0A2HGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714Ab0A2HHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932332Ab0A2HGm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 02:06:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932320Ab0A2HGk
+	id S1756714Ab0A2HHY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 02:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893Ab0A2HHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 02:06:40 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:60337 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932316Ab0A2HGh (ORCPT
+	Fri, 29 Jan 2010 02:07:21 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:21370 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755407Ab0A2HG1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 02:06:37 -0500
-Message-ID: <4B6288F5.7060508@i-consult.fr>
-Date: Fri, 29 Jan 2010 08:06:29 +0100
-From: =?ISO-8859-1?Q?Fran=E7ois_Figarola?= 
-	<francois.figarola@i-consult.fr>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-CC: hch@infradead.org, device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [dm-devel] [BUG] kernel 2.6.32.x hangs during boot process
-References: <d2deb3241001160158r4baed1e1t7e8f6642de018b4c@mail.gmail.com>	<20100122160740.6c16c22d.akpm@linux-foundation.org> <20100128134205.352044bd@notabene> <4B612F89.7020503@ce.jp.nec.com>
-In-Reply-To: <4B612F89.7020503@ce.jp.nec.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Fri, 29 Jan 2010 02:06:27 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5875"; a="33015133"
+From: adharmap@codeaurora.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: linux-arm-msm@lists.infradead.org, Russell King <linux@arm.linux.org.uk>,
+       Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Abhijeet Dharmapurikar <adharmap@quicinc.com>
+Subject: [PATCH v2 4/4] GIC: Dont disable INT in ack callback
+Date: Thu, 28 Jan 2010 23:06:04 -0800
+Message-Id: <1264748764-5319-5-git-send-email-adharmap@codeaurora.org>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1264748764-5319-1-git-send-email-adharmap@codeaurora.org>
+References: <1264748764-5319-1-git-send-email-adharmap@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jun'ichi Nomura a écrit :
->>> On Sat, 16 Jan 2010 10:58:30 +0100
->>> Fran__ois Figarola  <francois.figarola@i-consult.fr> wrote:
->>>       
->>>> Since I've tried to boot 2.6.32.x kernel, my system hangs during the
->>>> boot process, and I think it could be related to the problem reported
->>>> earlier by Megastorage (http://lkml.org/lkml/2010/1/10/92).
->>>>
->>>> The hardware is a Dell PowerEdge 2950 which runs fine with the
->>>> 2.6.31.x kernel series (actually running with the latest 2.6.31.11),
->>>> and the system is debian etch.
->>>>
->>>> Here is the trace of the bug I've got (using netconsole) with a
->>>> 2.6.32.3 kernel :
->>>>
->>>> BUG: Dentry ffff880667690000{i=41a46,n=sleep} still in use (8)
->>>> [unmount of ext3 dm-4]
->>>> ------------[ cut here ]------------
->>>> kernel BUG at fs/dcache.c:670!
->>>>         
->
-> I can reproduce this when suspend/resume read-only mounted dm device.
->
-> When MS_RDONLY, both freeze_bdev and thaw_bdev call deactivate_locked_super,
-> which seems wrong. The change was introduced with the commit below:
->
->   commit 4504230a71566785a05d3e6b53fa1ee071b864eb
->   Author: Christoph Hellwig <hch@lst.de>
->   Date:   Mon Aug 3 23:28:35 2009 +0200
->
->   freeze_bdev: grab active reference to frozen superblocks
->
-> With the attached patch, both remount-ro and remount-rw are
-> rejected as EBUSY on freezed device as expected.
->
-> Christoph, do you think this is the right fix?
->
->   
-With the fix from Jun'ichi Nomura, a 2.6.32.5 kernel
-boots now correctly.
+From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
 
-Thanks.
+Unless gic_ack_irq is called from __do_IRQ, interrupt should not
+be disabled in the ack function. Disabling the interrupt causes
+handle_edge_irq to never enable it again.
+
+Signed-off-by: Abhijeet Dharmapurikar <adharmap@quicinc.com>
+---
+ arch/arm/common/gic.c |   31 ++++++++++++++++++-------------
+ 1 files changed, 18 insertions(+), 13 deletions(-)
+
+diff --git a/arch/arm/common/gic.c b/arch/arm/common/gic.c
+index 240f6b6..f44167c 100644
+--- a/arch/arm/common/gic.c
++++ b/arch/arm/common/gic.c
+@@ -67,25 +67,30 @@ static inline unsigned int gic_irq(unsigned int irq)
+ 
+ /*
+  * Routines to acknowledge, disable and enable interrupts
+- *
+- * Linux assumes that when we're done with an interrupt we need to
+- * unmask it, in the same way we need to unmask an interrupt when
+- * we first enable it.
+- *
+- * The GIC has a separate notion of "end of interrupt" to re-enable
+- * an interrupt after handling, in order to support hardware
+- * prioritisation.
+- *
+- * We can make the GIC behave in the way that Linux expects by making
+- * our "acknowledge" routine disable the interrupt, then mark it as
+- * complete.
+  */
+ static void gic_ack_irq(unsigned int irq)
+ {
+-	u32 mask = 1 << (irq % 32);
+ 
+ 	spin_lock(&irq_controller_lock);
++
++#ifndef CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ
++	u32 mask = 1 << (irq % 32);
++
++	 /*
++	  * Linux assumes that when we're done with an interrupt we need to
++	  * unmask it, in the same way we need to unmask an interrupt when
++	  * we first enable it.
++	  *
++	  * The GIC has a separate notion of "end of interrupt" to re-enable
++	  * an interrupt after handling, in order to support hardware
++	  * prioritisation.
++	  *
++	  * We can make the GIC behave in the way that Linux expects by making
++	  * our "acknowledge" routine disable the interrupt, then mark it as
++	  * complete.
++	  */
+ 	writel(mask, gic_dist_base(irq) + GIC_DIST_ENABLE_CLEAR + (gic_irq(irq) / 32) * 4);
++#endif
+ 	writel(gic_irq(irq), gic_cpu_base(irq) + GIC_CPU_EOI);
+ 	spin_unlock(&irq_controller_lock);
+ }
+-- 
+1.5.6.3
 
