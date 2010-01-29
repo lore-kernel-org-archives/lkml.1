@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759Ab0A2Lf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786Ab0A2Lh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756759Ab0A2Lf4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 06:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728Ab0A2Lfz
+	id S1756786Ab0A2Lh3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 06:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728Ab0A2Lh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 06:35:55 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:40190 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756651Ab0A2Lfy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 06:35:54 -0500
-Date: Fri, 29 Jan 2010 22:35:44 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Jeff Angielski <jeff@theptrgroup.com>, Matt Mackall <mpm@selenic.com>,
-       linux-mtd@lists.infradead.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: UBIFS assert failed in ubifs_dirty_inode
-Message-ID: <20100129113544.GC1309@gondor.apana.org.au>
-References: <4B591573.60602@theptrgroup.com> <1264480808.2401.78.camel@localhost.localdomain> <1264484928.3536.1017.camel@calx> <1264500214.3867.21.camel@localhost> <4B5F9A78.7080000@theptrgroup.com> <1264558433.3536.1543.camel@calx> <4B5FADE8.30803@theptrgroup.com> <1264566010.2401.143.camel@localhost.localdomain> <20100129112757.GA1309@gondor.apana.org.au> <1264764729.4371.12.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264764729.4371.12.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 29 Jan 2010 06:37:28 -0500
+Received: from mail1.radix.net ([207.192.128.31]:64769 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755956Ab0A2Lh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 06:37:27 -0500
+Subject: Re: how do YOU hack the linux kernel ?
+From: Andy Walls <awalls@radix.net>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: Ramagudi Naziir <naziirr@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100129081010.GA30756@buzzloop.caiaq.de>
+References: <dfb262381001190452k3bad790ax14bbdbe92210b2d3@mail.gmail.com>
+	 <20100129081010.GA30756@buzzloop.caiaq.de>
+Content-Type: text/plain
+Date: Fri, 29 Jan 2010 06:37:01 -0500
+Message-Id: <1264765021.3084.9.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 29, 2010 at 01:32:09PM +0200, Artem Bityutskiy wrote:
+On Fri, 2010-01-29 at 09:10 +0100, Daniel Mack wrote:
+> On Tue, Jan 19, 2010 at 02:52:57PM +0200, Ramagudi Naziir wrote:
+> > do you use vim ?
+> > 
+> > If so, how do you open files you want to read/edit ?
+> > Assuming you don't remember their exact name/location, you'd need to
+> > use something like 'find . -iname '*pattern*'. which is slow.
+> > You can also ":tabnew ." and just browse the folders, but that's super slow too.
 > 
-> I've just cloned:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6
-> 
-> and do not see it there.
+> Just use ctags to index your tree. Vim can then use this index to
+> directly drop you at the definition of a symbol. Works very well.
 
-Should show up soon once my push makes it through.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Yup.  That's what I use.
+
+>  Just
+> google around to find tutorials to describe that in detail.
+
+$ man ctags
+$ vim
+:help tags
+
+for those who don't wish to rely on the Goggle.
+
+Regards,
+Andy
+
+> LXR is also a nice help sometimes: http://lxr.linux.no/linux/
+> 
+> Other than that you might develop a feeling for where to search, so you
+> can narrow your 'git grep' to specific places.
+> 
+> HTH,
+> Daniel
+
+
