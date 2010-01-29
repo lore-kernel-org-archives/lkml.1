@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791Ab0A2J32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782Ab0A2J3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756791Ab0A2J32 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 04:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756434Ab0A2J3Y
+	id S1756782Ab0A2J3j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 04:29:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460Ab0A2J3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 04:29:24 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:53133 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756409Ab0A2J3S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 04:29:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=DvMbDo8RhphupMRCqQFrPGL+8GY/5m3YWKwIcXzF0vq2QKmnlUvkE1RpmDrz8R2IpJ
-         40Denzjt+MRiYTmZ77WG/oS529G/qy0DehnRaI50e3LZvPCNmL+aDIuoksXwax/BHLNk
-         8OS72nr0OO7uo0ZRZ//HW/EZJ+bE/yISX2gS0=
-Message-ID: <4B62ABC8.7080607@gmail.com>
-Date: Fri, 29 Jan 2010 10:35:04 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	Fri, 29 Jan 2010 04:29:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57449 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756061Ab0A2J3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 04:29:09 -0500
+Date: Fri, 29 Jan 2010 09:28:35 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, eranian@google.com, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20100122155535.963944926@chello.nl>
+References: <20100122155535.963944926@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf_event: x86: Optimize constraint weight computation
+Message-ID: <tip-272d30be622c9c6cbd514b1211ff359292001baa@git.kernel.org>
+Git-Commit-ID: 272d30be622c9c6cbd514b1211ff359292001baa
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] mtd: Change positive error return into negative in mtd_do_writeoob()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 29 Jan 2010 09:28:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The error return should be negative
+Commit-ID:  272d30be622c9c6cbd514b1211ff359292001baa
+Gitweb:     http://git.kernel.org/tip/272d30be622c9c6cbd514b1211ff359292001baa
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Fri, 22 Jan 2010 16:32:17 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 29 Jan 2010 09:01:41 +0100
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+perf_event: x86: Optimize constraint weight computation
+
+Add a weight member to the constraint structure and avoid recomputing the
+weight at runtime.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Stephane Eranian <eranian@google.com>
+LKML-Reference: <20100122155535.963944926@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/mtd/mtdchar.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/kernel/cpu/perf_event.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
-index 5b081cb..01d5837 100644
---- a/drivers/mtd/mtdchar.c
-+++ b/drivers/mtd/mtdchar.c
-@@ -373,7 +373,7 @@ static int mtd_do_writeoob(struct file *file, struct mtd_info *mtd,
- 	if (!mtd->write_oob)
- 		ret = -EOPNOTSUPP;
- 	else
--		ret = access_ok(VERIFY_READ, ptr, length) ? 0 : EFAULT;
-+		ret = access_ok(VERIFY_READ, ptr, length) ? 0 : -EFAULT;
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index 092ad56..2c22ce4 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -23,6 +23,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/highmem.h>
+ #include <linux/cpu.h>
++#include <linux/bitops.h>
  
- 	if (ret)
- 		return ret;
+ #include <asm/apic.h>
+ #include <asm/stacktrace.h>
+@@ -76,6 +77,7 @@ struct event_constraint {
+ 	};
+ 	int	code;
+ 	int	cmask;
++	int	weight;
+ };
+ 
+ struct cpu_hw_events {
+@@ -95,6 +97,7 @@ struct cpu_hw_events {
+ 	{ .idxmsk64[0] = (n) },		\
+ 	.code = (c),			\
+ 	.cmask = (m),			\
++	.weight = HWEIGHT64((u64)(n)),	\
+ }
+ 
+ #define INTEL_EVENT_CONSTRAINT(c, n)	\
+@@ -1242,8 +1245,7 @@ static inline int is_x86_event(struct perf_event *event)
+ 
+ static int x86_schedule_events(struct cpu_hw_events *cpuc, int n, int *assign)
+ {
+-	int i, j , w, num;
+-	int weight, wmax;
++	int i, j, w, num, wmax;
+ 	struct event_constraint *c, *constraints[X86_PMC_IDX_MAX];
+ 	unsigned long used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
+ 	struct hw_perf_event *hwc;
+@@ -1320,8 +1322,7 @@ static int x86_schedule_events(struct cpu_hw_events *cpuc, int n, int *assign)
+ 			c = constraints[i];
+ 			hwc = &cpuc->event_list[i]->hw;
+ 
+-			weight = bitmap_weight(c->idxmsk, X86_PMC_IDX_MAX);
+-			if (weight != w)
++			if (c->weight != w)
+ 				continue;
+ 
+ 			for_each_bit(j, c->idxmsk, X86_PMC_IDX_MAX) {
