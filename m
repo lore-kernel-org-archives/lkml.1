@@ -1,105 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593Ab0A2RgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942Ab0A2RhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753593Ab0A2RgF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 12:36:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171Ab0A2RgE
+	id S1753942Ab0A2RhO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 12:37:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191Ab0A2RhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 12:36:04 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:31115 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752802Ab0A2RgB (ORCPT
+	Fri, 29 Jan 2010 12:37:12 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:53070 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751035Ab0A2RhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 12:36:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=D7tVKpHcIs84+9U+qe1JX7Nw3siSFgWVnOWj7jiOEVVkEoSI3uLJTaeKgvJj1SI+Fd
-         SQhH1w1Cld2hutPVt8ynHwzHE68YGk4UGoGEgNaCAiJBSq1HI9efvrsuf7Cd/vGY+47T
-         F0kmQc0sUKEBhXiXWuAC/FaE3cNE71IGOusw0=
-Date: Fri, 29 Jan 2010 18:29:41 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       tglx@linutronix.de, gregkh@suse.de
-Subject: Re: [PATCH] Add type of locks to lock trace events
-Message-ID: <20100129172939.GD5047@nowhere>
-References: <1263799219.4283.0.camel@laptop> <1264485404-6410-1-git-send-email-mitake@dcl.info.waseda.ac.jp> <1264674113.4283.2086.camel@laptop>
+	Fri, 29 Jan 2010 12:37:10 -0500
+Date: Fri, 29 Jan 2010 12:35:25 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-btrfs@vger.kernel.org
+Subject: [GIT PULL] Btrfs updates for 2.6.33
+Message-ID: <20100129173525.GA2819@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-btrfs@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1264674113.4283.2086.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4B631CA1.00F4:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 11:21:53AM +0100, Peter Zijlstra wrote:
-> On Tue, 2010-01-26 at 14:56 +0900, Hitoshi Mitake wrote:
-> > # Sorry, I wrote wrong Cc address. Previous mail was rejected by mailer-daemon.
-> > # This is second time sending, if you already received this, please discard it...
-> > 
-> > There's no need to add any member to lockdep_map
-> > for adding information of type of locks to lock trace events.
-> > 
-> > Example of perf trace:
-> > |       init-0     [001]   335.078670: lock_acquired: 0xffff8800059d6bd8 &rq->lock kernel/lockdep.c:2973 (0 ns)
-> > |       rb_consumer-424   [001]   335.078673: lock_acquire: 0xffff8800059d6bd8 1 &rq->lock kernel/lockdep.c:2973
-> > |                                                                            # ^ &rq->lock is spin lock!
-> > |       rb_consumer-424   [001]   335.078677: lock_acquire: 0xffff8800bba5e8e8 1 buffer->reader_lock_key kernel/trace/ring_
-> > |       rb_consumer-424   [001]   335.078679: lock_acquired: 0xffff8800bba5e8e8 buffer->reader_lock_key kernel/trace/ring_b
-> > |       rb_consumer-424   [001]   335.078684: lock_acquire: 0xffff8800059d12e8 1 &q->lock kernel/smp.c:83
-> > 
-> > Of course, as you told, type of lock dealing with is clear for human.
-> > But it is not clear for programs like perf lock.
-> > 
-> > What I want to do is limiting types of lock focus on.
-> > e.g. perf lock prof --type spin,rwlock
-> > 
-> > How do you think, Peter?
-> 
-> I still don't see the use for it, surely you're going to be familiar
-> with the code if you're looking at lock statistics?
+Hello everyone,
 
+The btrfs-unstable master branch has some updates:
 
+git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git master
 
-Comparing the avg/max time locks are acquired/waited between same
-types of locks is interesting, but doing so between spinlocks and mutexes
-is definetly pointless.
+It will pull into either 2.6.32 or 2.6.33-git.
 
-spinlocks will always be in the bottom of the report while their measures
-should be taken in an utterly different order of magnitude.
+These are bug fixes, mostly around btrfs multi-device code and replacing
+failed drives.  It also includes a fix for the orphan cleanup fix in the
+last pull, this version is much better.
 
-Each lock nature should be reported separately. An rwlock won't have
-the same behaviour pattern than a spinlock. It may spin less in average
-but more in the maximum snapshot, and still that depends on a write_lock
-or a read_lock operations.
+Outside of fixes, this adds mount -o compress-force, which won't back
+off compressing files when part of the file doesn't compress well.
 
-That said I don't think this is the right approach. We only need this
-information when the lock is initialized. That's the same for the
-file and line things, especially since these add 1/5 more overhead.
-And that's even the same for the name of the lock.
+Aneesh Kumar K.V (1) commits (+9/-4):
+    Btrfs: Use correct values when updating inode i_size on fallocate
 
-Actually we need a lock_init event that brings:
+Chris Mason (1) commits (+11/-2):
+    Btrfs: Add mount -o compress-force
 
-- lock addr
-- lock name
-- lock type
-- file/line
+Josef Bacik (4) commits (+15/-10):
+    Btrfs: do not mark the chunk as readonly if in degraded mode (+5/-0)
+    Btrfs: check total number of devices when removing missing (+2/-2)
+    Btrfs: check return value of open_bdev_exclusive properly (+2/-2)
+    Btrfs: run orphan cleanup on default fs root (+6/-6)
 
-This can be triggered on spinlock_init(), mutex_init(), etc..
-for the dynamic cases and use a synthetize_lock_events()
-from perf tools that could work toward events injection
-through perf ioctl, for the static cases.
-Or/and we could use a debugfs file for that, otherwise only
-perf will be able to use the lock events. Or this can be
-an event injection from ftrace.
+Miao Xie (1) commits (+0/-14):
+    Btrfs: remove tree_search() in extent_map.c
 
-And all other lock events should not be giving anymore the
-name, type, or file/line. We should deduce it from the
-lock_init events and the lock addr in each lock events.
+Yang Hongyang (1) commits (+1/-0):
+    Btrfs: fix a memory leak in btrfs_init_acl
 
-I think this becomes critical, given the high overhead nature
-of lock events and their impact in profiling them.
+Total: (8) commits
 
+ fs/btrfs/acl.c        |    1 +
+ fs/btrfs/ctree.h      |    1 +
+ fs/btrfs/disk-io.c    |    6 ++++++
+ fs/btrfs/extent_map.c |   14 --------------
+ fs/btrfs/inode.c      |   22 +++++++++++-----------
+ fs/btrfs/super.c      |    9 ++++++++-
+ fs/btrfs/volumes.c    |   13 +++++++++----
+ 7 files changed, 36 insertions(+), 30 deletions(-)
