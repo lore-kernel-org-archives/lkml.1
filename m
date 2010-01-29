@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883Ab0A2Kg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275Ab0A2KmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883Ab0A2Kg2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 05:36:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927Ab0A2Kg1
+	id S1755275Ab0A2KmQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 05:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445Ab0A2KmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 05:36:27 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:61805 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039Ab0A2Kg0 (ORCPT
+	Fri, 29 Jan 2010 05:42:15 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:51794 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753227Ab0A2KmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 05:36:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=t/MEPVZF/D37skOFLJYyRb3dWJCQ57Cj2DWltVokG0Xyi20NK/51o11QYpXHKmtHR0
-         eL7iJj16kRhpdmA2kRG5X+FHOjNyCACl9f+hiKdbL9emM0ySW+6WMCCUwTOfS6Clc1mg
-         sHwfCWrecsruwyNYGROLqyRKok8ReAC6qmcp4=
-Message-ID: <4B62BB83.7030907@gmail.com>
-Date: Fri, 29 Jan 2010 11:42:11 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>, linux-btrfs@vger.kernel.org,
+	Fri, 29 Jan 2010 05:42:14 -0500
+Date: Fri, 29 Jan 2010 12:39:16 +0200
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Roel Kluin <roel.kluin@gmail.com>
+Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Btrfs: make error return negative in btrfs_sync_file()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] musb: Test always evaluates to false
+Message-ID: <20100129103916.GB9865@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <4B4871DD.5070505@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <4B4871DD.5070505@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 29 Jan 2010 10:41:28.0005 (UTC) FILETIME=[9CA27F50:01CAA0CF]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It appears the error return should be negative
+On Sat, Jan 09, 2010 at 01:09:01PM +0100, ext Roel Kluin wrote:
+>The removed part always evaluates to false.
+>
+>Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-But I fail to see how ret can be positive, unless maybe when we already
-did a BUG()?
+Acked-by: Felipe Balbi <felipe.balbi@nokia.com>
 
-diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
-index c020335..9d08096 100644
---- a/fs/btrfs/file.c
-+++ b/fs/btrfs/file.c
-@@ -1133,7 +1133,7 @@ int btrfs_sync_file(struct file *file, struct dentry *dentry, int datasync)
- 	}
- 	mutex_lock(&dentry->d_inode->i_mutex);
- out:
--	return ret > 0 ? EIO : ret;
-+	return ret > 0 ? -EIO : ret;
- }
- 
- static const struct vm_operations_struct btrfs_file_vm_ops = {
+-- 
+balbi
