@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818Ab0A2REW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175Ab0A2RGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752818Ab0A2REW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 12:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308Ab0A2REV
+	id S1753175Ab0A2RGM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 12:06:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599Ab0A2RGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 12:04:21 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:52419 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185Ab0A2REV convert rfc822-to-8bit (ORCPT
+	Fri, 29 Jan 2010 12:06:11 -0500
+Received: from smtpo1.dc-uoit.net ([205.211.181.195]:46629 "EHLO
+	smtpo1.dc-uoit.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108Ab0A2RGL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 12:04:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=xIC9NhkqmGq8Q7D0pmDimDMPzfvf8rwl0J6fT8OwosIVyeRvfUO6lUuEke1W5wX1y/
-         Et5faodpHS8AbZlrY7PPbUPAQSNWkB5NHy37HIGMLDj9AE31qZiOKUYHiXF7x8r6eKAb
-         3SkHFdKqpAKx7i9VViw2fE5v1udsWm3UwBb/k=
+	Fri, 29 Jan 2010 12:06:11 -0500
+X-Greylist: delayed 2182 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jan 2010 12:06:10 EST
+From: Shirley Smith <Shirley.Smith@uoit.ca>
+Date: Fri, 29 Jan 2010 10:52:38 -0500
+Subject: Webmail Account Verification Update ! ! !
+Thread-Topic: Webmail Account Verification Update ! ! !
+Thread-Index: AQHKoPsUsslz1KkvBkG9AiSgErggzw==
+Message-ID: <CBEAE0FBF5EFC3489201DFA044C9213202A697CD8DE6@ITOMSCPP01.oncampus.local>
+Accept-Language: en-US, en-CA
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US, en-CA
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-In-Reply-To: <20100129162155.709756286@gmail.com>
-References: <20100129162029.998540038@gmail.com>
-	 <20100129162155.709756286@gmail.com>
-Date: Fri, 29 Jan 2010 18:04:19 +0100
-X-Google-Sender-Auth: e9c7cf3e79afe996
-Message-ID: <3efb10971001290904p74b1919aif8ff013f050123a9@mail.gmail.com>
-Subject: Re: [patch v2 1/2] at91_udc.c read_fifo timing issue
-From: Remy Bohmer <linux@bohmer.net>
-To: Harro Haan <hrhaan@gmail.com>
-Cc: Ryan Mallon <ryan@bluewatersys.com>, Andrew Victor <avictor.za@gmail.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       H Hartley Sweeten <hartleys@visionengravers.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 29 Jan 2010 15:52:39.0039 (UTC) FILETIME=[157030F0:01CAA0FB]
+X-DC-UOIT-MailScanner-ID: o0TFroxO032052
+X-DC-UOIT-MailScanner: Found to be clean
+X-DC-UOIT-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
+	score=-1.307, required 5, BAYES_00 -2.60, MISSING_HEADERS 1.29)
+X-DC-UOIT-MailScanner-From: shirley.smith@uoit.ca
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harro,
+Your mailbox quota has been exceeded the storage limit which is 20GB
+as set by your administrator, you are currently running on 20.9GB.
 
-2010/1/29 Harro Haan <hrhaan@gmail.com>:
-> This solves the read_fifo timing issue for example seen with CDC Ethernet.
-> See the comments below for more info.
->
-> Signed-off-by: Harro Haan <hrhaan@gmail.com>
-> ---
->  drivers/usb/gadget/at91_udc.c |   46 ++++++++++++++++++++++++++++++++++++++----
->  1 file changed, 42 insertions(+), 4 deletions(-)
->
-Acked-by: Remy Bohmer <linux@bohmer.net>
+You may not be able to send or receive new mails until you re-validate
+your mailbox.
+
+To re-activate your account please click the link and login with the
+username and password provided for you below:
+
+http://www.eformit.com/eform.aspx?authentication
+
+Thanks and we are sorry for the inconveniences.
+
+System Administrator.
