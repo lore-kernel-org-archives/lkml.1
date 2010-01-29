@@ -1,132 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157Ab0A2Rlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052Ab0A2Rqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157Ab0A2Rlh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 12:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983Ab0A2Rlf
+	id S1754052Ab0A2Rqh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 12:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666Ab0A2Rqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 12:41:35 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:34121 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754017Ab0A2Rlf (ORCPT
+	Fri, 29 Jan 2010 12:46:36 -0500
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:34627 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751017Ab0A2Rqf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 12:41:35 -0500
-Subject: Re: [PATCH] kmemleak: Do not enable KMEMCHECK_PARTIAL_OK
-	if	DEBUG_KMEMLEAK
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christian Casteyde <casteyde.christian@free.fr>,
-       vegard.nossum@gmail.com
-In-Reply-To: <4B60573E.7080108@cs.helsinki.fi>
-References: <4B60573E.7080108@cs.helsinki.fi>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 29 Jan 2010 17:40:56 +0000
-Message-Id: <1264786856.4242.115.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jan 2010 17:40:57.0603 (UTC) FILETIME=[36E25D30:01CAA10A]
+	Fri, 29 Jan 2010 12:46:35 -0500
+X-Trace: 332132371/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.93.110/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.93.110
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtwAADmtYktPRV1u/2dsb2JhbAAI2lqEQgQ
+X-IronPort-AV: E=Sophos;i="4.49,369,1262563200"; 
+   d="scan'208";a="332132371"
+Date: Fri, 29 Jan 2010 17:46:34 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Mel Gorman <mel@csn.ul.ie>, Mark Lord <kernel@teksavvy.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] mm: fix migratetype bug which slowed swapping
+In-Reply-To: <20100129173430.GK7139@csn.ul.ie>
+Message-ID: <alpine.LSU.2.00.1001291742150.12906@sister.anvils>
+References: <4B5FA147.5040802@teksavvy.com> <4B610FDA.50104@teksavvy.com> <4B6113C7.201@teksavvy.com> <201001281152.20352.rjw@sisk.pl> <4B61964F.6060307@teksavvy.com> <4B619C6D.9030205@teksavvy.com> <20100128142437.GA7139@csn.ul.ie> <4B62E904.9020401@teksavvy.com>
+ <20100129154653.GJ7139@csn.ul.ie> <alpine.LSU.2.00.1001291716520.10968@sister.anvils> <20100129173430.GK7139@csn.ul.ie>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-27 at 15:09 +0000, Pekka Enberg wrote:
-> Catalin Marinas wrote:
-> > diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-> > index 5b069e4..dfd39ba 100644
-> > --- a/mm/kmemleak.c
-> > +++ b/mm/kmemleak.c
-> > @@ -948,6 +948,25 @@ EXPORT_SYMBOL(kmemleak_no_scan);
-> >  /*
-> >   * Update an object's checksum and return true if it was modified.
-> >   */
-> > +#ifdef CONFIG_KMEMCHECK_PARTIAL_OK
-> > +static bool update_checksum(struct kmemleak_object *object)
-> > +{
-> > +     u32 crc = 0;
-> > +     unsigned long ptr;
-> > +
-> > +     for (ptr = ALIGN(object->pointer, 4);
-> > +          ptr < ((object->pointer + object->size) & ~3); ptr += 4) {
-> > +             if (!kmemcheck_is_obj_initialized(ptr, 4))
-> > +                     continue;
-> > +             crc = crc32(crc, (void *)ptr, 4);
-> > +     }
-> > +
-> > +     if (object->checksum == crc)
-> > +             return false;
-> > +     object->checksum = crc;
-> > +     return true;
-> 
-> I think it would be better to add a function to _kmemcheck_ that checks
-> the full object regardless of CONFIG_KMEMCHECK_PARTIAL_OK and use it here.
+After memory pressure has forced it to dip into the reserves, 2.6.32's
+5f8dcc21211a3d4e3a7a5ca366b469fb88117f61 "page-allocator: split per-cpu
+list into one-list-per-migrate-type" has been returning MIGRATE_RESERVE
+pages to the MIGRATE_MOVABLE free_list: in some sense depleting reserves.
 
-IIRC, it's only kmemleak using kmemcheck_is_obj_initialized(), we could
-convert this to check the full object. Something like below (again, not
-tested yet but if you are ok with the idea I'll test it a bit more and
-add a commit log):
+Fix that in the most straightforward way (which, considering the overheads
+of alternative approaches, is Mel's preference): the right migratetype is
+already in page_private(page), but free_pcppages_bulk() wasn't using it.
 
+How did this bug show up?  As a 20% slowdown in my tmpfs loop kbuild
+swapping tests, on PowerMac G5 with SLUB allocator.  Bisecting to that
+commit was easy, but explaining the magnitude of the slowdown not easy.
 
-diff --git a/arch/x86/mm/kmemcheck/kmemcheck.c b/arch/x86/mm/kmemcheck/kmemcheck.c
-index 8cc1833..b3b531a 100644
---- a/arch/x86/mm/kmemcheck/kmemcheck.c
-+++ b/arch/x86/mm/kmemcheck/kmemcheck.c
-@@ -337,7 +337,7 @@ bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
- 	if (!shadow)
- 		return true;
- 
--	status = kmemcheck_shadow_test(shadow, size);
-+	status = kmemcheck_shadow_test_all(shadow, size);
- 
- 	return status == KMEMCHECK_SHADOW_INITIALIZED;
- }
-diff --git a/arch/x86/mm/kmemcheck/shadow.c b/arch/x86/mm/kmemcheck/shadow.c
-index 3f66b82..16c6d9f 100644
---- a/arch/x86/mm/kmemcheck/shadow.c
-+++ b/arch/x86/mm/kmemcheck/shadow.c
-@@ -139,13 +139,25 @@ enum kmemcheck_shadow kmemcheck_shadow_test(void *shadow, unsigned int size)
- 		if (x[i] == KMEMCHECK_SHADOW_INITIALIZED)
- 			return x[i];
+The same effect appears, but much less markedly, with SLAB, and even
+less markedly on other machines (the PowerMac divides into fewer zones
+than x86, I think that may be a factor).  We guess that lumpy reclaim
+of short-lived high-order pages is implicated in some way, and probably
+this bug has been tickling a poor decision somewhere in page reclaim.
+
+But instrumentation hasn't told me much, I've run out of time and
+imagination to determine exactly what's going on, and shouldn't hold up
+the fix any longer: it's valid, and might even fix other misbehaviours.
+
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+Cc: stable@kernel.org
+---
+
+ mm/page_alloc.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- 2.6.33-rc5/mm/page_alloc.c	2010-01-22 12:36:18.000000000 +0000
++++ linux/mm/page_alloc.c	2010-01-22 12:53:38.000000000 +0000
+@@ -556,8 +556,9 @@ static void free_pcppages_bulk(struct zo
+ 			page = list_entry(list->prev, struct page, lru);
+ 			/* must delete as __free_one_page list manipulates */
+ 			list_del(&page->lru);
+-			__free_one_page(page, zone, 0, migratetype);
+-			trace_mm_page_pcpu_drain(page, 0, migratetype);
++			/* MIGRATE_MOVABLE list may include MIGRATE_RESERVEs */
++			__free_one_page(page, zone, 0, page_private(page));
++			trace_mm_page_pcpu_drain(page, 0, page_private(page));
+ 		} while (--count && --batch_free && !list_empty(list));
  	}
-+
-+	return x[0];
- #else
-+	return kmemcheck_shadow_test_all(shadow, size);
-+#endif
-+}
-+
-+enum kmemcheck_shadow kmemcheck_shadow_test_all(void *shadow, unsigned int size)
-+{
-+	uint8_t *x;
-+	unsigned int i;
-+
-+	x = shadow;
-+
- 	/* All bytes must be initialized. */
- 	for (i = 0; i < size; ++i) {
- 		if (x[i] != KMEMCHECK_SHADOW_INITIALIZED)
- 			return x[i];
- 	}
--#endif
- 
- 	return x[0];
- }
-diff --git a/arch/x86/mm/kmemcheck/shadow.h b/arch/x86/mm/kmemcheck/shadow.h
-index af46d9a..ff0b2f7 100644
---- a/arch/x86/mm/kmemcheck/shadow.h
-+++ b/arch/x86/mm/kmemcheck/shadow.h
-@@ -11,6 +11,8 @@ enum kmemcheck_shadow {
- void *kmemcheck_shadow_lookup(unsigned long address);
- 
- enum kmemcheck_shadow kmemcheck_shadow_test(void *shadow, unsigned int size);
-+enum kmemcheck_shadow kmemcheck_shadow_test_all(void *shadow,
-+						unsigned int size);
- void kmemcheck_shadow_set(void *shadow, unsigned int size);
- 
- #endif
-
-
--- 
-Catalin
-
+ 	spin_unlock(&zone->lock);
