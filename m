@@ -1,634 +1,350 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523Ab0A2Brh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903Ab0A2CB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752523Ab0A2Brh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 20:47:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183Ab0A2Brg
+	id S1754903Ab0A2CB1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 21:01:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482Ab0A2CB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 20:47:36 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50763 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752166Ab0A2Brf (ORCPT
+	Thu, 28 Jan 2010 21:01:26 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:60837 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754380Ab0A2CB0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 20:47:35 -0500
-Date: Fri, 29 Jan 2010 10:47:21 +0900 (JST)
-Message-Id: <20100129.104721.193704212.d.hatayama@jp.fujitsu.com>
-To: randy.dunlap@oracle.com, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2010-01-28-01-36 uploaded (elfcore/compat_binfmt_elf)
-From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-In-Reply-To: <20100128124829.cb4bccb9.randy.dunlap@oracle.com>
-References: <201001281002.o0SA2G0k002220@imap1.linux-foundation.org>
-	<20100128124829.cb4bccb9.randy.dunlap@oracle.com>
-X-Mailer: Mew version 6.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Jan 2010 21:01:26 -0500
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: Daniel Mack <daniel@caiaq.de>, Jiri Kosina <trivial@kernel.org>
+Subject: [PATCH] tree-wide: trivial typo fixes: s/lenght/length/g
+Date: Fri, 29 Jan 2010 10:00:38 +0800
+Message-Id: <1264730438-2218-1-git-send-email-daniel@caiaq.de>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <alpine.LNX.2.00.1001282357190.356@pobox.suse.cz>
+References: <alpine.LNX.2.00.1001282357190.356@pobox.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: mmotm 2010-01-28-01-36 uploaded (elfcore/compat_binfmt_elf)
-Date: Thu, 28 Jan 2010 12:48:29 -0800
-
-> On Thu, 28 Jan 2010 01:36:55 -0800 akpm@linux-foundation.org wrote:
-> 
->> The mm-of-the-moment snapshot 2010-01-28-01-36 has been uploaded to
->> 
->>    http://userweb.kernel.org/~akpm/mmotm/
->> 
->> and will soon be available at
->> 
->>    git://zen-kernel.org/kernel/mmotm.git
->> 
->> It contains the following patches against 2.6.33-rc5:
-> 
-> 
->> elf-coredump-replace-elf_core_extra_-macros-by-functions.patch
->> elf-coredump-make-offset-calculation-process-and-writing-process-explicit.patch
->> elf-coredump-add-extended-numbering-support.patch
-> 
-> 
-> These patches can cause build errors.  See arch/x86/Kconfig:
-> 
-> config IA32_EMULATION
-> 	bool "IA32 Emulation"
-> 	depends on X86_64
-> 	select COMPAT_BINFMT_ELF
-> 
-> COMPAT_BINFMT_ELF can be enabled (selected) even when BINFMT_ELF is not
-> enabled (due to "select" not looking at dependencies).
-> 
-> That causes the kernel/Makefile of elfcore not to be built:
-> 
-> diff -puN arch/ia64/kernel/Makefile~elf-coredump-replace-elf_core_extra_-macros-by-functions arch/ia64/kernel/Makefile
-> --- a/arch/ia64/kernel/Makefile~elf-coredump-replace-elf_core_extra_-macros-by-functions
-> +++ a/arch/ia64/kernel/Makefile
-> @@ -47,6 +47,8 @@ endif
->  obj-$(CONFIG_DMAR)		+= pci-dma.o
->  obj-$(CONFIG_SWIOTLB)		+= pci-swiotlb.o
->  
-> +obj-$(CONFIG_BINFMT_ELF)	+= elfcore.o
-> 
-> since only COMPAT_BINFMT_ELF is enabled but not BINFMT_ELF.
-> 
-> So then the errors are:
-> 
-> fs/built-in.o: In function `elf_core_dump':
-> compat_binfmt_elf.c:(.text+0x551e8): undefined reference to `elf_core_extra_phdrs'
-> compat_binfmt_elf.c:(.text+0x55413): undefined reference to `elf_core_extra_data_size'
-> compat_binfmt_elf.c:(.text+0x556c4): undefined reference to `elf_core_write_extra_phdrs'
-> compat_binfmt_elf.c:(.text+0x559fd): undefined reference to `elf_core_write_extra_data'
-
-It seems exactly as you say. I overlooked the case where
-CONFIG_COMPAT_BINFMT_ELF is enabled but CONFIG_BINFMT_ELF disabled.
-
-I've attached the patch reflecting the suggestion from Randy
-to elf-coredump-replace-elf_core_extra_-macros-by-functions.patch.
-
-Thanks.
-HATAYAMA, Daisuke
-==
-elf_core_dump() and elf_fdpic_core_dump() use #ifdef and the
-corresponding macro for hiding _multiline_ logics in functions. This
-patch removes architectures not implemeonting ELF_CORE_EXTRA_*, we use
-weak functions in order to reduce a range of modification.
-
-This cleanup is for my next patches, but I think this cleanup itself
-is worth doing regardless of my firnal purpose.
-
-Signed-off-by: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>
-Cc: Jeff Dike <jdike@addtoit.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Greg Ungerer <gerg@snapgear.com>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: <linux-arch@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Jiri Kosina <trivial@kernel.org>
 ---
- arch/ia64/ia32/binfmt_elf32.c |    1 +
- arch/ia64/ia32/elfcore32.h    |   17 ++++++++++
- arch/ia64/include/asm/elf.h   |   48 -----------------------------
- arch/ia64/kernel/Makefile     |    2 +
- arch/ia64/kernel/elfcore.c    |   64 +++++++++++++++++++++++++++++++++++++++
- arch/um/sys-i386/Makefile     |    2 +
- arch/um/sys-i386/asm/elf.h    |   43 --------------------------
- arch/um/sys-i386/elfcore.c    |   67 +++++++++++++++++++++++++++++++++++++++++
- fs/binfmt_elf.c               |   14 +++-----
- fs/binfmt_elf_fdpic.c         |   14 +++-----
- include/linux/elf.h           |    2 +
- include/linux/elfcore.h       |   16 ++++++++++
- kernel/Makefile               |    3 ++
- kernel/elfcore.c              |   23 ++++++++++++++
- 14 files changed, 207 insertions(+), 109 deletions(-)
- create mode 100644 arch/ia64/kernel/elfcore.c
- create mode 100644 arch/um/sys-i386/elfcore.c
- create mode 100644 kernel/elfcore.c
+ arch/arm/mach-at91/include/mach/at91_mci.h |    2 +-
+ arch/s390/crypto/sha_common.c              |    2 +-
+ drivers/crypto/hifn_795x.c                 |    2 +-
+ drivers/isdn/mISDN/l1oip_core.c            |    2 +-
+ drivers/net/ppp_generic.c                  |    2 +-
+ drivers/net/r6040.c                        |    2 +-
+ drivers/net/stmmac/common.h                |    2 +-
+ drivers/net/stmmac/gmac.c                  |    4 ++--
+ drivers/net/stmmac/mac100.c                |    2 +-
+ drivers/net/stmmac/stmmac_ethtool.c        |    2 +-
+ drivers/net/wimax/i2400m/i2400m-usb.h      |    2 +-
+ drivers/net/wireless/p54/p54spi.c          |    2 +-
+ drivers/net/wireless/wl12xx/wl1251_cmd.c   |    2 +-
+ drivers/net/wireless/wl12xx/wl1251_rx.c    |    2 +-
+ drivers/net/wireless/wl12xx/wl1271_cmd.c   |    2 +-
+ drivers/usb/wusbcore/wusbhc.h              |    2 +-
+ drivers/uwb/uwbd.c                         |    2 +-
+ fs/cifs/asn1.c                             |    2 +-
+ fs/ext4/mballoc.c                          |    2 +-
+ fs/udf/inode.c                             |    2 +-
+ kernel/trace/trace.h                       |    2 +-
+ net/dccp/ackvec.h                          |    2 +-
+ 22 files changed, 23 insertions(+), 23 deletions(-)
 
-diff --git a/arch/ia64/ia32/binfmt_elf32.c b/arch/ia64/ia32/binfmt_elf32.c
-index c69552b..2328f44 100644
---- a/arch/ia64/ia32/binfmt_elf32.c
-+++ b/arch/ia64/ia32/binfmt_elf32.c
-@@ -43,6 +43,7 @@ randomize_stack_top(unsigned long stack_top);
- #undef SET_PERSONALITY
- #define SET_PERSONALITY(ex)	elf32_set_personality()
+diff --git a/arch/arm/mach-at91/include/mach/at91_mci.h b/arch/arm/mach-at91/include/mach/at91_mci.h
+index 550d503..57f8ee1 100644
+--- a/arch/arm/mach-at91/include/mach/at91_mci.h
++++ b/arch/arm/mach-at91/include/mach/at91_mci.h
+@@ -77,7 +77,7 @@
  
-+#undef elf_read_implies_exec
- #define elf_read_implies_exec(ex, have_pt_gnu_stack)	(!(have_pt_gnu_stack))
+ #define AT91_MCI_BLKR		0x18		/* Block Register */
+ #define		AT91_MCI_BLKR_BCNT(n)	((0xffff & (n)) << 0)	/* Block count */
+-#define		AT91_MCI_BLKR_BLKLEN(n)	((0xffff & (n)) << 16)	/* Block lenght */
++#define		AT91_MCI_BLKR_BLKLEN(n)	((0xffff & (n)) << 16)	/* Block length */
  
- /* Ugly but avoids duplication */
-diff --git a/arch/ia64/ia32/elfcore32.h b/arch/ia64/ia32/elfcore32.h
-index 6577257..7877601 100644
---- a/arch/ia64/ia32/elfcore32.h
-+++ b/arch/ia64/ia32/elfcore32.h
-@@ -8,6 +8,8 @@
- #ifndef _ELFCORE32_H_
- #define _ELFCORE32_H_
+ #define AT91_MCI_RSPR(n)	(0x20 + ((n) * 4))	/* Response Registers 0-3 */
+ #define AT91_MCR_RDR		0x30		/* Receive Data Register */
+diff --git a/arch/s390/crypto/sha_common.c b/arch/s390/crypto/sha_common.c
+index 7903ec4..f42dbab 100644
+--- a/arch/s390/crypto/sha_common.c
++++ b/arch/s390/crypto/sha_common.c
+@@ -79,7 +79,7 @@ int s390_sha_final(struct shash_desc *desc, u8 *out)
+ 	memset(ctx->buf + index, 0x00, end - index - 8);
  
-+#include <linux/elf.h>
-+
- #include <asm/intrinsics.h>
- #include <asm/uaccess.h>
- 
-@@ -145,4 +147,19 @@ elf_core_copy_task_xfpregs(struct task_struct *tsk, elf_fpxregset_t *xfpu)
- 	return 1;
- }
- 
-+/*
-+ * These functions parameterize elf_core_dump in fs/binfmt_elf.c to write out
-+ * extra segments containing the gate DSO contents.  Dumping its
-+ * contents makes post-mortem fully interpretable later without matching up
-+ * the same kernel and hardware config to see what PC values meant.
-+ * Dumping its extra ELF program headers includes all the other information
-+ * a debugger needs to easily find how the gate DSO was being used.
-+ */
-+extern Elf32_Half elf_core_extra_phdrs(void);
-+extern int
-+elf_core_write_extra_phdrs(struct file *file, loff_t offset, size_t *size,
-+			   unsigned long limit);
-+extern int
-+elf_core_write_extra_data(struct file *file, size_t *size, unsigned long limit);
-+
- #endif /* _ELFCORE32_H_ */
-diff --git a/arch/ia64/include/asm/elf.h b/arch/ia64/include/asm/elf.h
-index e14108b..60af1ef 100644
---- a/arch/ia64/include/asm/elf.h
-+++ b/arch/ia64/include/asm/elf.h
-@@ -217,54 +217,6 @@ do {										\
- 	NEW_AUX_ENT(AT_SYSINFO_EHDR, (unsigned long) GATE_EHDR);		\
- } while (0)
- 
--
--/*
-- * These macros parameterize elf_core_dump in fs/binfmt_elf.c to write out
-- * extra segments containing the gate DSO contents.  Dumping its
-- * contents makes post-mortem fully interpretable later without matching up
-- * the same kernel and hardware config to see what PC values meant.
-- * Dumping its extra ELF program headers includes all the other information
-- * a debugger needs to easily find how the gate DSO was being used.
-- */
--#define ELF_CORE_EXTRA_PHDRS		(GATE_EHDR->e_phnum)
--#define ELF_CORE_WRITE_EXTRA_PHDRS						\
--do {										\
--	const struct elf_phdr *const gate_phdrs =			      \
--		(const struct elf_phdr *) (GATE_ADDR + GATE_EHDR->e_phoff);   \
--	int i;									\
--	Elf64_Off ofs = 0;						      \
--	for (i = 0; i < GATE_EHDR->e_phnum; ++i) {				\
--		struct elf_phdr phdr = gate_phdrs[i];			      \
--		if (phdr.p_type == PT_LOAD) {					\
--			phdr.p_memsz = PAGE_ALIGN(phdr.p_memsz);	      \
--			phdr.p_filesz = phdr.p_memsz;			      \
--			if (ofs == 0) {					      \
--				ofs = phdr.p_offset = offset;		      \
--			offset += phdr.p_filesz;				\
--		}							      \
--		else							      \
--				phdr.p_offset = ofs;			      \
--		}							      \
--		else							      \
--			phdr.p_offset += ofs;					\
--		phdr.p_paddr = 0; /* match other core phdrs */			\
--		DUMP_WRITE(&phdr, sizeof(phdr));				\
--	}									\
--} while (0)
--#define ELF_CORE_WRITE_EXTRA_DATA					\
--do {									\
--	const struct elf_phdr *const gate_phdrs =			      \
--		(const struct elf_phdr *) (GATE_ADDR + GATE_EHDR->e_phoff);   \
--	int i;								\
--	for (i = 0; i < GATE_EHDR->e_phnum; ++i) {			\
--		if (gate_phdrs[i].p_type == PT_LOAD) {			      \
--			DUMP_WRITE((void *) gate_phdrs[i].p_vaddr,	      \
--				   PAGE_ALIGN(gate_phdrs[i].p_memsz));	      \
--			break;						      \
--		}							      \
--	}								\
--} while (0)
--
- /*
-  * format for entries in the Global Offset Table
-  */
-diff --git a/arch/ia64/kernel/Makefile b/arch/ia64/kernel/Makefile
-index e123634..3bdfe80 100644
---- a/arch/ia64/kernel/Makefile
-+++ b/arch/ia64/kernel/Makefile
-@@ -47,6 +47,8 @@ endif
- obj-$(CONFIG_DMAR)		+= pci-dma.o
- obj-$(CONFIG_SWIOTLB)		+= pci-swiotlb.o
- 
-+obj-$(CONFIG_BINFMT_ELF)	+= elfcore.o
-+
- # fp_emulate() expects f2-f5,f16-f31 to contain the user-level state.
- CFLAGS_traps.o  += -mfixed-range=f2-f5,f16-f31
- 
-diff --git a/arch/ia64/kernel/elfcore.c b/arch/ia64/kernel/elfcore.c
-new file mode 100644
-index 0000000..57a2298
---- /dev/null
-+++ b/arch/ia64/kernel/elfcore.c
-@@ -0,0 +1,64 @@
-+#include <linux/elf.h>
-+#include <linux/coredump.h>
-+#include <linux/fs.h>
-+#include <linux/mm.h>
-+
-+#include <asm/elf.h>
-+
-+
-+Elf64_Half elf_core_extra_phdrs(void)
-+{
-+	return GATE_EHDR->e_phnum;
-+}
-+
-+int elf_core_write_extra_phdrs(struct file *file, loff_t offset, size_t *size,
-+			       unsigned long limit)
-+{
-+	const struct elf_phdr *const gate_phdrs =
-+		(const struct elf_phdr *) (GATE_ADDR + GATE_EHDR->e_phoff);
-+	int i;
-+	Elf64_Off ofs = 0;
-+
-+	for (i = 0; i < GATE_EHDR->e_phnum; ++i) {
-+		struct elf_phdr phdr = gate_phdrs[i];
-+
-+		if (phdr.p_type == PT_LOAD) {
-+			phdr.p_memsz = PAGE_ALIGN(phdr.p_memsz);
-+			phdr.p_filesz = phdr.p_memsz;
-+			if (ofs == 0) {
-+				ofs = phdr.p_offset = offset;
-+				offset += phdr.p_filesz;
-+			} else {
-+				phdr.p_offset = ofs;
-+			}
-+		} else {
-+			phdr.p_offset += ofs;
-+		}
-+		phdr.p_paddr = 0; /* match other core phdrs */
-+		*size += sizeof(phdr);
-+		if (*size > limit || !dump_write(file, &phdr, sizeof(phdr)))
-+			return 0;
-+	}
-+	return 1;
-+}
-+
-+int elf_core_write_extra_data(struct file *file, size_t *size,
-+			      unsigned long limit)
-+{
-+	const struct elf_phdr *const gate_phdrs =
-+		(const struct elf_phdr *) (GATE_ADDR + GATE_EHDR->e_phoff);
-+	int i;
-+
-+	for (i = 0; i < GATE_EHDR->e_phnum; ++i) {
-+		if (gate_phdrs[i].p_type == PT_LOAD) {
-+			void *addr = (void *)gate_phdrs[i].p_vaddr;
-+			size_t memsz = PAGE_ALIGN(gate_phdrs[i].p_memsz);
-+
-+			*size += memsz;
-+			if (*size > limit || !dump_write(file, addr, memsz))
-+				return 0;
-+			break;
-+		}
-+	}
-+	return 1;
-+}
-diff --git a/arch/um/sys-i386/Makefile b/arch/um/sys-i386/Makefile
-index 1b549bc..804b28d 100644
---- a/arch/um/sys-i386/Makefile
-+++ b/arch/um/sys-i386/Makefile
-@@ -6,6 +6,8 @@ obj-y = bug.o bugs.o checksum.o delay.o fault.o ksyms.o ldt.o ptrace.o \
- 	ptrace_user.o setjmp.o signal.o stub.o stub_segv.o syscalls.o sysrq.o \
- 	sys_call_table.o tls.o
- 
-+obj-$(CONFIG_BINFMT_ELF) += elfcore.o
-+
- subarch-obj-y = lib/semaphore_32.o lib/string_32.o
- subarch-obj-$(CONFIG_HIGHMEM) += mm/highmem_32.o
- subarch-obj-$(CONFIG_MODULES) += kernel/module.o
-diff --git a/arch/um/sys-i386/asm/elf.h b/arch/um/sys-i386/asm/elf.h
-index 7708854..e64cd41 100644
---- a/arch/um/sys-i386/asm/elf.h
-+++ b/arch/um/sys-i386/asm/elf.h
-@@ -116,47 +116,4 @@ do {								\
- 	}							\
- } while (0)
- 
--/*
-- * These macros parameterize elf_core_dump in fs/binfmt_elf.c to write out
-- * extra segments containing the vsyscall DSO contents.  Dumping its
-- * contents makes post-mortem fully interpretable later without matching up
-- * the same kernel and hardware config to see what PC values meant.
-- * Dumping its extra ELF program headers includes all the other information
-- * a debugger needs to easily find how the vsyscall DSO was being used.
-- */
--#define ELF_CORE_EXTRA_PHDRS						      \
--	(vsyscall_ehdr ? (((struct elfhdr *)vsyscall_ehdr)->e_phnum) : 0 )
--
--#define ELF_CORE_WRITE_EXTRA_PHDRS					      \
--if ( vsyscall_ehdr ) {							      \
--	const struct elfhdr *const ehdrp = (struct elfhdr *)vsyscall_ehdr;    \
--	const struct elf_phdr *const phdrp =				      \
--		(const struct elf_phdr *) (vsyscall_ehdr + ehdrp->e_phoff);   \
--	int i;								      \
--	Elf32_Off ofs = 0;						      \
--	for (i = 0; i < ehdrp->e_phnum; ++i) {				      \
--		struct elf_phdr phdr = phdrp[i];			      \
--		if (phdr.p_type == PT_LOAD) {				      \
--			ofs = phdr.p_offset = offset;			      \
--			offset += phdr.p_filesz;			      \
--		}							      \
--		else							      \
--			phdr.p_offset += ofs;				      \
--		phdr.p_paddr = 0; /* match other core phdrs */		      \
--		DUMP_WRITE(&phdr, sizeof(phdr));			      \
--	}								      \
--}
--#define ELF_CORE_WRITE_EXTRA_DATA					      \
--if ( vsyscall_ehdr ) {							      \
--	const struct elfhdr *const ehdrp = (struct elfhdr *)vsyscall_ehdr;    \
--	const struct elf_phdr *const phdrp =				      \
--		(const struct elf_phdr *) (vsyscall_ehdr + ehdrp->e_phoff);   \
--	int i;								      \
--	for (i = 0; i < ehdrp->e_phnum; ++i) {				      \
--		if (phdrp[i].p_type == PT_LOAD)				      \
--			DUMP_WRITE((void *) phdrp[i].p_vaddr,		      \
--				   phdrp[i].p_filesz);			      \
--	}								      \
--}
--
- #endif
-diff --git a/arch/um/sys-i386/elfcore.c b/arch/um/sys-i386/elfcore.c
-new file mode 100644
-index 0000000..30cac52
---- /dev/null
-+++ b/arch/um/sys-i386/elfcore.c
-@@ -0,0 +1,67 @@
-+#include <linux/elf.h>
-+#include <linux/coredump.h>
-+#include <linux/fs.h>
-+#include <linux/mm.h>
-+
-+#include <asm/elf.h>
-+
-+
-+Elf32_Half elf_core_extra_phdrs(void)
-+{
-+	return vsyscall_ehdr ? (((struct elfhdr *)vsyscall_ehdr)->e_phnum) : 0;
-+}
-+
-+int elf_core_write_extra_phdrs(struct file *file, loff_t offset, size_t *size,
-+			       unsigned long limit)
-+{
-+	if ( vsyscall_ehdr ) {
-+		const struct elfhdr *const ehdrp =
-+			(struct elfhdr *) vsyscall_ehdr;
-+		const struct elf_phdr *const phdrp =
-+			(const struct elf_phdr *) (vsyscall_ehdr + ehdrp->e_phoff);
-+		int i;
-+		Elf32_Off ofs = 0;
-+
-+		for (i = 0; i < ehdrp->e_phnum; ++i) {
-+			struct elf_phdr phdr = phdrp[i];
-+
-+			if (phdr.p_type == PT_LOAD) {
-+				ofs = phdr.p_offset = offset;
-+				offset += phdr.p_filesz;
-+			} else {
-+				phdr.p_offset += ofs;
-+			}
-+			phdr.p_paddr = 0; /* match other core phdrs */
-+			*size += sizeof(phdr);
-+			if (*size > limit
-+			    || !dump_write(file, &phdr, sizeof(phdr)))
-+				return 0;
-+		}
-+	}
-+	return 1;
-+}
-+
-+int elf_core_write_extra_data(struct file *file, size_t *size,
-+			      unsigned long limit)
-+{
-+	if ( vsyscall_ehdr ) {
-+		const struct elfhdr *const ehdrp =
-+			(struct elfhdr *) vsyscall_ehdr;
-+		const struct elf_phdr *const phdrp =
-+			(const struct elf_phdr *) (vsyscall_ehdr + ehdrp->e_phoff);
-+		int i;
-+
-+		for (i = 0; i < ehdrp->e_phnum; ++i) {
-+			if (phdrp[i].p_type == PT_LOAD) {
-+				void *addr = (void *) phdrp[i].p_vaddr;
-+				size_t filesz = phdrp[i].p_filesz;
-+
-+				*size += filesz;
-+				if (*size > limit
-+				    || !dump_write(file, addr, filesz))
-+					return 0;
-+			}
-+		}
-+	}
-+	return 1;
-+}
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index a0fe475..1b7e9de 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1901,9 +1901,7 @@ static int elf_core_dump(struct coredump_params *cprm)
- 	 * Please check DEFAULT_MAX_MAP_COUNT definition when you modify here.
+ 	/*
+-	 * Append message length. Well, SHA-512 wants a 128 bit lenght value,
++	 * Append message length. Well, SHA-512 wants a 128 bit length value,
+ 	 * nevertheless we use u64, should be enough for now...
  	 */
- 	segs = current->mm->map_count;
--#ifdef ELF_CORE_EXTRA_PHDRS
--	segs += ELF_CORE_EXTRA_PHDRS;
--#endif
-+	segs += elf_core_extra_phdrs();
+ 	bits = ctx->count * 8;
+diff --git a/drivers/crypto/hifn_795x.c b/drivers/crypto/hifn_795x.c
+index 09ad915..73e8b17 100644
+--- a/drivers/crypto/hifn_795x.c
++++ b/drivers/crypto/hifn_795x.c
+@@ -321,7 +321,7 @@ static atomic_t hifn_dev_number;
+ #define	HIFN_PUBOPLEN_MOD_M	0x0000007f	/* modulus length mask */
+ #define	HIFN_PUBOPLEN_MOD_S	0		/* modulus length shift */
+ #define	HIFN_PUBOPLEN_EXP_M	0x0003ff80	/* exponent length mask */
+-#define	HIFN_PUBOPLEN_EXP_S	7		/* exponent lenght shift */
++#define	HIFN_PUBOPLEN_EXP_S	7		/* exponent length shift */
+ #define	HIFN_PUBOPLEN_RED_M	0x003c0000	/* reducend length mask */
+ #define	HIFN_PUBOPLEN_RED_S	18		/* reducend length shift */
  
- 	gate_vma = get_gate_vma(current);
- 	if (gate_vma != NULL)
-@@ -1981,9 +1979,8 @@ static int elf_core_dump(struct coredump_params *cprm)
- 			goto end_coredump;
+diff --git a/drivers/isdn/mISDN/l1oip_core.c b/drivers/isdn/mISDN/l1oip_core.c
+index f1e8af5..2d319bf 100644
+--- a/drivers/isdn/mISDN/l1oip_core.c
++++ b/drivers/isdn/mISDN/l1oip_core.c
+@@ -477,7 +477,7 @@ l1oip_socket_parse(struct l1oip *hc, struct sockaddr_in *sin, u8 *buf, int len)
+ 		printk(KERN_DEBUG "%s: received frame, parsing... (%d)\n",
+ 			__func__, len);
+ 
+-	/* check lenght */
++	/* check length */
+ 	if (len < 1+1+2) {
+ 		printk(KERN_WARNING "%s: packet error - length %d below "
+ 			"4 bytes\n", __func__, len);
+diff --git a/drivers/net/ppp_generic.c b/drivers/net/ppp_generic.c
+index 2282e72..fba9145 100644
+--- a/drivers/net/ppp_generic.c
++++ b/drivers/net/ppp_generic.c
+@@ -1437,7 +1437,7 @@ static int ppp_mp_explode(struct ppp *ppp, struct sk_buff *skb)
+ 
+ 		/*
+ 		 *check	if we are on the last channel or
+-		 *we exceded the lenght	of the data	to
++		 *we exceded the length	of the data	to
+ 		 *fragment
+ 		 */
+ 		if ((nfree <= 0) || (flen > len))
+diff --git a/drivers/net/r6040.c b/drivers/net/r6040.c
+index f03e2e4..a3f9c3f 100644
+--- a/drivers/net/r6040.c
++++ b/drivers/net/r6040.c
+@@ -578,7 +578,7 @@ static int r6040_rx(struct net_device *dev, int limit)
+ 			/* RX dribble */
+ 			if (err & DSC_RX_ERR_DRI)
+ 				dev->stats.rx_frame_errors++;
+-			/* Buffer lenght exceeded */
++			/* Buffer length exceeded */
+ 			if (err & DSC_RX_ERR_BUF)
+ 				dev->stats.rx_length_errors++;
+ 			/* Packet too long */
+diff --git a/drivers/net/stmmac/common.h b/drivers/net/stmmac/common.h
+index e49e518..81e5def 100644
+--- a/drivers/net/stmmac/common.h
++++ b/drivers/net/stmmac/common.h
+@@ -169,7 +169,7 @@ struct stmmac_extra_stats {
+ 	unsigned long rx_toolong;
+ 	unsigned long rx_collision;
+ 	unsigned long rx_crc;
+-	unsigned long rx_lenght;
++	unsigned long rx_length;
+ 	unsigned long rx_mii;
+ 	unsigned long rx_multicast;
+ 	unsigned long rx_gmac_overflow;
+diff --git a/drivers/net/stmmac/gmac.c b/drivers/net/stmmac/gmac.c
+index 52586ee..467dc46 100644
+--- a/drivers/net/stmmac/gmac.c
++++ b/drivers/net/stmmac/gmac.c
+@@ -257,7 +257,7 @@ static int gmac_coe_rdes0(int ipc_err, int type, int payload_err)
+ 
+ 	/* bits 5 7 0 | Frame status
+ 	 * ----------------------------------------------------------
+-	 *      0 0 0 | IEEE 802.3 Type frame (lenght < 1536 octects)
++	 *      0 0 0 | IEEE 802.3 Type frame (length < 1536 octects)
+ 	 *      1 0 0 | IPv4/6 No CSUM errorS.
+ 	 *      1 0 1 | IPv4/6 CSUM PAYLOAD error
+ 	 *      1 1 0 | IPv4/6 CSUM IP HR error
+@@ -358,7 +358,7 @@ static int gmac_get_rx_frame_status(void *data, struct stmmac_extra_stats *x,
  	}
- 
--#ifdef ELF_CORE_WRITE_EXTRA_PHDRS
--	ELF_CORE_WRITE_EXTRA_PHDRS;
--#endif
-+	if (!elf_core_write_extra_phdrs(cprm->file, offset, &size, cprm->limit))
-+		goto end_coredump;
- 
-  	/* write out the notes section */
- 	if (!write_note_info(&info, cprm->file, &foffset))
-@@ -2022,9 +2019,8 @@ static int elf_core_dump(struct coredump_params *cprm)
- 		}
+ 	if (unlikely(p->des01.erx.length_error)) {
+ 		DBG(KERN_ERR "GMAC RX: length_error error\n");
+-		x->rx_lenght++;
++		x->rx_length++;
+ 		ret = discard_frame;
  	}
+ #ifdef STMMAC_VLAN_TAG_USED
+diff --git a/drivers/net/stmmac/mac100.c b/drivers/net/stmmac/mac100.c
+index 625171b..1f6b608 100644
+--- a/drivers/net/stmmac/mac100.c
++++ b/drivers/net/stmmac/mac100.c
+@@ -262,7 +262,7 @@ static int mac100_get_rx_frame_status(void *data, struct stmmac_extra_stats *x,
+ 		ret = discard_frame;
  
--#ifdef ELF_CORE_WRITE_EXTRA_DATA
--	ELF_CORE_WRITE_EXTRA_DATA;
--#endif
-+	if (!elf_core_write_extra_data(cprm->file, &size, cprm->limit))
-+		goto end_coredump;
- 
- end_coredump:
- 	set_fs(fs);
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index f587bc4..e2163b4 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -1661,9 +1661,7 @@ static int elf_fdpic_core_dump(struct coredump_params *cprm)
- 	elf_core_copy_regs(&prstatus->pr_reg, cprm->regs);
- 
- 	segs = current->mm->map_count;
--#ifdef ELF_CORE_EXTRA_PHDRS
--	segs += ELF_CORE_EXTRA_PHDRS;
--#endif
-+	segs += elf_core_extra_phdrs();
- 
- 	/* Set up header */
- 	fill_elf_fdpic_header(elf, segs + 1);	/* including notes section */
-@@ -1770,9 +1768,8 @@ static int elf_fdpic_core_dump(struct coredump_params *cprm)
- 			goto end_coredump;
+ 	if (unlikely(p->des01.rx.length_error)) {
+-		x->rx_lenght++;
++		x->rx_length++;
+ 		ret = discard_frame;
  	}
+ 	if (unlikely(p->des01.rx.mii_error)) {
+diff --git a/drivers/net/stmmac/stmmac_ethtool.c b/drivers/net/stmmac/stmmac_ethtool.c
+index 694ebe6..9edda5d 100644
+--- a/drivers/net/stmmac/stmmac_ethtool.c
++++ b/drivers/net/stmmac/stmmac_ethtool.c
+@@ -61,7 +61,7 @@ static const struct  stmmac_stats stmmac_gstrings_stats[] = {
+ 	STMMAC_STAT(rx_toolong),
+ 	STMMAC_STAT(rx_collision),
+ 	STMMAC_STAT(rx_crc),
+-	STMMAC_STAT(rx_lenght),
++	STMMAC_STAT(rx_length),
+ 	STMMAC_STAT(rx_mii),
+ 	STMMAC_STAT(rx_multicast),
+ 	STMMAC_STAT(rx_gmac_overflow),
+diff --git a/drivers/net/wimax/i2400m/i2400m-usb.h b/drivers/net/wimax/i2400m/i2400m-usb.h
+index 2d7c96d..77e63d9 100644
+--- a/drivers/net/wimax/i2400m/i2400m-usb.h
++++ b/drivers/net/wimax/i2400m/i2400m-usb.h
+@@ -105,7 +105,7 @@ static inline void edc_init(struct edc *edc)
+  *
+  * @edc: pointer to error density counter.
+  * @max_err: maximum number of errors we can accept over the timeframe
+- * @timeframe: lenght of the timeframe (in jiffies).
++ * @timeframe: length of the timeframe (in jiffies).
+  *
+  * Returns: !0 1 if maximum acceptable errors per timeframe has been
+  *     exceeded. 0 otherwise.
+diff --git a/drivers/net/wireless/p54/p54spi.c b/drivers/net/wireless/p54/p54spi.c
+index afd26bf..c4e4121 100644
+--- a/drivers/net/wireless/p54/p54spi.c
++++ b/drivers/net/wireless/p54/p54spi.c
+@@ -279,7 +279,7 @@ static void p54spi_power_on(struct p54s_priv *priv)
+ 	enable_irq(gpio_to_irq(p54spi_gpio_irq));
  
--#ifdef ELF_CORE_WRITE_EXTRA_PHDRS
--	ELF_CORE_WRITE_EXTRA_PHDRS;
--#endif
-+	if (!elf_core_write_extra_phdrs(cprm->file, offset, &size, cprm->limit))
-+		goto end_coredump;
- 
-  	/* write out the notes section */
- 	for (i = 0; i < numnote; i++)
-@@ -1796,9 +1793,8 @@ static int elf_fdpic_core_dump(struct coredump_params *cprm)
- 				    mm_flags) < 0)
- 		goto end_coredump;
- 
--#ifdef ELF_CORE_WRITE_EXTRA_DATA
--	ELF_CORE_WRITE_EXTRA_DATA;
--#endif
-+	if (!elf_core_write_extra_data(cprm->file, &size, cprm->limit))
-+		goto end_coredump;
- 
- 	if (cprm->file->f_pos != offset) {
- 		/* Sanity check */
-diff --git a/include/linux/elf.h b/include/linux/elf.h
-index 0cc4d55..f26e67a 100644
---- a/include/linux/elf.h
-+++ b/include/linux/elf.h
-@@ -386,6 +386,7 @@ extern Elf32_Dyn _DYNAMIC [];
- #define elf_phdr	elf32_phdr
- #define elf_note	elf32_note
- #define elf_addr_t	Elf32_Off
-+#define Elf_Half	Elf32_Half
- 
- #else
- 
-@@ -394,6 +395,7 @@ extern Elf64_Dyn _DYNAMIC [];
- #define elf_phdr	elf64_phdr
- #define elf_note	elf64_note
- #define elf_addr_t	Elf64_Off
-+#define Elf_Half	Elf64_Half
- 
- #endif
- 
-diff --git a/include/linux/elfcore.h b/include/linux/elfcore.h
-index 00d6a68..cfda74f 100644
---- a/include/linux/elfcore.h
-+++ b/include/linux/elfcore.h
-@@ -8,6 +8,8 @@
- #include <linux/user.h>
- #endif
- #include <linux/ptrace.h>
-+#include <linux/elf.h>
-+#include <linux/fs.h>
- 
- struct elf_siginfo
+ 	/*
+-	 * need to wait a while before device can be accessed, the lenght
++	 * need to wait a while before device can be accessed, the length
+ 	 * is just a guess
+ 	 */
+ 	msleep(10);
+diff --git a/drivers/net/wireless/wl12xx/wl1251_cmd.c b/drivers/net/wireless/wl12xx/wl1251_cmd.c
+index 770f260..ff446a0 100644
+--- a/drivers/net/wireless/wl12xx/wl1251_cmd.c
++++ b/drivers/net/wireless/wl12xx/wl1251_cmd.c
+@@ -103,7 +103,7 @@ int wl1251_cmd_test(struct wl1251 *wl, void *buf, size_t buf_len, u8 answer)
+  * @wl: wl struct
+  * @id: acx id
+  * @buf: buffer for the response, including all headers, must work with dma
+- * @len: lenght of buf
++ * @len: length of buf
+  */
+ int wl1251_cmd_interrogate(struct wl1251 *wl, u16 id, void *buf, size_t len)
  {
-@@ -150,5 +152,19 @@ static inline int elf_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregse
+diff --git a/drivers/net/wireless/wl12xx/wl1251_rx.c b/drivers/net/wireless/wl12xx/wl1251_rx.c
+index f84cc89..0a45528 100644
+--- a/drivers/net/wireless/wl12xx/wl1251_rx.c
++++ b/drivers/net/wireless/wl12xx/wl1251_rx.c
+@@ -135,7 +135,7 @@ static void wl1251_rx_body(struct wl1251 *wl,
+ 	rx_buffer = skb_put(skb, length);
+ 	wl1251_mem_read(wl, rx_packet_ring_addr, rx_buffer, length);
  
- #endif /* __KERNEL__ */
+-	/* The actual lenght doesn't include the target's alignment */
++	/* The actual length doesn't include the target's alignment */
+ 	skb->len = desc->length  - PLCP_HEADER_LENGTH;
  
-+/*
-+ * These functions parameterize elf_core_dump in fs/binfmt_elf.c to write out
-+ * extra segments containing the gate DSO contents.  Dumping its
-+ * contents makes post-mortem fully interpretable later without matching up
-+ * the same kernel and hardware config to see what PC values meant.
-+ * Dumping its extra ELF program headers includes all the other information
-+ * a debugger needs to easily find how the gate DSO was being used.
-+ */
-+extern Elf_Half elf_core_extra_phdrs(void);
-+extern int
-+elf_core_write_extra_phdrs(struct file *file, loff_t offset, size_t *size,
-+			   unsigned long limit);
-+extern int
-+elf_core_write_extra_data(struct file *file, size_t *size, unsigned long limit);
+ 	fc = (u16 *)skb->data;
+diff --git a/drivers/net/wireless/wl12xx/wl1271_cmd.c b/drivers/net/wireless/wl12xx/wl1271_cmd.c
+index c3385b3..1e3d4b0 100644
+--- a/drivers/net/wireless/wl12xx/wl1271_cmd.c
++++ b/drivers/net/wireless/wl12xx/wl1271_cmd.c
+@@ -437,7 +437,7 @@ int wl1271_cmd_test(struct wl1271 *wl, void *buf, size_t buf_len, u8 answer)
+  * @wl: wl struct
+  * @id: acx id
+  * @buf: buffer for the response, including all headers, must work with dma
+- * @len: lenght of buf
++ * @len: length of buf
+  */
+ int wl1271_cmd_interrogate(struct wl1271 *wl, u16 id, void *buf, size_t len)
+ {
+diff --git a/drivers/usb/wusbcore/wusbhc.h b/drivers/usb/wusbcore/wusbhc.h
+index fd2fd4e..759cda5 100644
+--- a/drivers/usb/wusbcore/wusbhc.h
++++ b/drivers/usb/wusbcore/wusbhc.h
+@@ -198,7 +198,7 @@ struct wusb_port {
+  *                 ports) this HC will take. Read-only.
+  *
+  * @port      	   Array of port status for each fake root port. Guaranteed to
+- *                 always be the same lenght during device existence
++ *                 always be the same length during device existence
+  *                 [this allows for some unlocked but referenced reading].
+  *
+  * @mmcies_max	   Max number of Information Elements this HC can send
+diff --git a/drivers/uwb/uwbd.c b/drivers/uwb/uwbd.c
+index 5a777d8..6210fe1 100644
+--- a/drivers/uwb/uwbd.c
++++ b/drivers/uwb/uwbd.c
+@@ -43,7 +43,7 @@
+  *
+  * EVENTS
+  *
+- * Events have a type, a subtype, a lenght, some other stuff and the
++ * Events have a type, a subtype, a length, some other stuff and the
+  * data blob, which depends on the event. The header is 'struct
+  * uwb_event'; for payloads, see 'struct uwbd_evt_*'.
+  *
+diff --git a/fs/cifs/asn1.c b/fs/cifs/asn1.c
+index 20692fb..a20bea5 100644
+--- a/fs/cifs/asn1.c
++++ b/fs/cifs/asn1.c
+@@ -136,7 +136,7 @@ asn1_enum_decode(struct asn1_ctx *ctx, __le32 *val)
+ 		return 0;
+ 	}
  
- #endif /* _LINUX_ELFCORE_H */
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 702260a..77c2e87 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -91,6 +91,9 @@ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
- obj-$(CONFIG_TRACEPOINTS) += tracepoint.o
- obj-$(CONFIG_LATENCYTOP) += latencytop.o
-+obj-$(CONFIG_BINFMT_ELF) += elfcore.o
-+obj-$(CONFIG_COMPAT_BINFMT_ELF) += elfcore.o
-+obj-$(CONFIG_BINFMT_ELF_FDPIC) += elfcore.o
- obj-$(CONFIG_FUNCTION_TRACER) += trace/
- obj-$(CONFIG_TRACING) += trace/
- obj-$(CONFIG_X86_DS) += trace/
-diff --git a/kernel/elfcore.c b/kernel/elfcore.c
-new file mode 100644
-index 0000000..5445741
---- /dev/null
-+++ b/kernel/elfcore.c
-@@ -0,0 +1,23 @@
-+#include <linux/elf.h>
-+#include <linux/fs.h>
-+#include <linux/mm.h>
-+
-+#include <asm/elf.h>
-+
-+
-+Elf_Half __weak elf_core_extra_phdrs(void)
-+{
-+	return 0;
-+}
-+
-+int __weak elf_core_write_extra_phdrs(struct file *file, loff_t offset, size_t *size,
-+				      unsigned long limit)
-+{
-+	return 1;
-+}
-+
-+int __weak elf_core_write_extra_data(struct file *file, size_t *size,
-+				     unsigned long limit)
-+{
-+	return 1;
-+}
+-	ch = *(ctx->pointer)++; /* ch has 0xa, ptr points to lenght octet */
++	ch = *(ctx->pointer)++; /* ch has 0xa, ptr points to length octet */
+ 	if ((ch) == ASN1_ENUM)  /* if ch value is ENUM, 0xa */
+ 		*val = *(++(ctx->pointer)); /* value has enum value */
+ 	else
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index d34afad..b794dd8 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -69,7 +69,7 @@
+  *
+  * pa_lstart -> the logical start block for this prealloc space
+  * pa_pstart -> the physical start block for this prealloc space
+- * pa_len    -> lenght for this prealloc space
++ * pa_len    -> length for this prealloc space
+  * pa_free   ->  free space available in this prealloc space
+  *
+  * The inode preallocation space is used looking at the _logical_ start
+diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+index f90231e..772a4fa 100644
+--- a/fs/udf/inode.c
++++ b/fs/udf/inode.c
+@@ -102,7 +102,7 @@ void udf_clear_inode(struct inode *inode)
+ 	if (iinfo->i_alloc_type != ICBTAG_FLAG_AD_IN_ICB &&
+ 	    inode->i_size != iinfo->i_lenExtents) {
+ 		printk(KERN_WARNING "UDF-fs (%s): Inode %lu (mode %o) has "
+-			"inode size %llu different from extent lenght %llu. "
++			"inode size %llu different from extent length %llu. "
+ 			"Filesystem need not be standards compliant.\n",
+ 			inode->i_sb->s_id, inode->i_ino, inode->i_mode,
+ 			(unsigned long long)inode->i_size,
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 4df6a77..e4b32c8 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -549,7 +549,7 @@ static inline int ftrace_trace_task(struct task_struct *task)
+  * struct trace_parser - servers for reading the user input separated by spaces
+  * @cont: set if the input is not complete - no final space char was found
+  * @buffer: holds the parsed user input
+- * @idx: user input lenght
++ * @idx: user input length
+  * @size: buffer size
+  */
+ struct trace_parser {
+diff --git a/net/dccp/ackvec.h b/net/dccp/ackvec.h
+index 7ea557b..fd278d8 100644
+--- a/net/dccp/ackvec.h
++++ b/net/dccp/ackvec.h
+@@ -73,7 +73,7 @@ struct dccp_ackvec {
+  * @avr_ack_ackno - sequence number being acknowledged
+  * @avr_ack_ptr - pointer into av_buf where this record starts
+  * @avr_ack_nonce - av_ack_nonce at the time this record was sent
+- * @avr_sent_len - lenght of the record in av_buf
++ * @avr_sent_len - length of the record in av_buf
+  */
+ struct dccp_ackvec_record {
+ 	struct list_head avr_node;
 -- 
-1.6.5.1
+1.6.3.3
 
