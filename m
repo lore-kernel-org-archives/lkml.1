@@ -1,87 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700Ab0A2QmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927Ab0A2Qo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753700Ab0A2QmG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 11:42:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105Ab0A2QmF
+	id S1753927Ab0A2Qo0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 11:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909Ab0A2QoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 11:42:05 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55546 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893Ab0A2QmD (ORCPT
+	Fri, 29 Jan 2010 11:44:25 -0500
+Received: from exprod6og116.obsmtp.com ([64.18.1.37]:42693 "HELO
+	exprod6og116.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752456Ab0A2QoY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 11:42:03 -0500
-Message-ID: <5a0e6098f900aa36993b2b7f2320f927.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20100129163030.1109ce78@lxorguk.ukuu.org.uk>
-References: <f8c9aca9c98db8ae7df3ac2d7ac8d922.squirrel@webmail-b.css.fujitsu.com>
-    <20100129162137.79b2a6d4@lxorguk.ukuu.org.uk>
-    <c6c48fdf7f746add49bb9cc058b513ae.squirrel@webmail-b.css.fujitsu.com>
-    <20100129163030.1109ce78@lxorguk.ukuu.org.uk>
-Date: Sat, 30 Jan 2010 01:41:58 +0900 (JST)
-Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       vedran.furac@gmail.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
-       minchan.kim@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-User-Agent: SquirrelMail/1.4.16
+	Fri, 29 Jan 2010 11:44:24 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: [PATCH] drivers/media/common: remove unnecessary casts of void *
+Date: Fri, 29 Jan 2010 11:44:15 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909020E96EC@mi8nycmail19.Mi8.com>
+In-Reply-To: <4B626B19.5000609@infradead.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] drivers/media/common: remove unnecessary casts of void *
+Thread-Index: Acqgn8wRRkZ4hnHQQwmdkmN2zABGyQAYfuAg
+References: <201001081551.42264.hartleys@visionengravers.com> <4B626B19.5000609@infradead.org>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       <linux-media@vger.kernel.org>, <michael@mihu.de>
+X-OriginalArrivalTime: 29 Jan 2010 16:44:17.0568 (UTC) FILETIME=[4C4E3200:01CAA102]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o0TGj654026687
 
-Alan Cox wrote:
->> > Ultimately it is policy. The kernel simply can't read minds.
->> >
->> If so, all heuristics other than vm_size should be purged, I think.
->> ...Or victim should be just determined by the class of application
->> user sets. oom_adj other than OOM_DISABLE, searching victim process
->> by black magic are all garbage.
+On Thursday, January 28, 2010 9:59 PM, Mauro Carvalho Chehab wrote:
+> H Hartley Sweeten wrote:
+>> drivers/media/common: Remove unnecessary casts of void *
+>> 
+>> void pointers do not need to be cast to other pointer types.
+>> 
+
+>> diff --git a/drivers/media/common/saa7146_vbi.c b/drivers/media/common/saa7146_vbi.c
+>> index 74e2b56..301a795 100644
+>> --- a/drivers/media/common/saa7146_vbi.c
+>> +++ b/drivers/media/common/saa7146_vbi.c
+>> @@ -3,7 +3,7 @@
+>>  static int vbi_pixel_to_capture = 720 * 2;
+>>  
+>>  static int vbi_workaround(struct saa7146_dev *dev)
+>> -{
+>> +{.remove_casts.hhs~
 >
-> oom_adj by value makes sense as do some of the basic heuristics - but a
-> lot of the complexity I would agree is completely nonsensical.
->
-> There are folks who use oom_adj weightings to influence things (notably
-> embedded and desktop). The embedded world would actually benefit on the
-> whole if the oom_adj was an absolute value because they usually know
-> precisely what they want to die and in what order.
->
-okay...I guess the cause of the problem Vedran met came from
-this calculation.
-==
- 109         /*
- 110          * Processes which fork a lot of child processes are likely
- 111          * a good choice. We add half the vmsize of the children if they
- 112          * have an own mm. This prevents forking servers to flood the
- 113          * machine with an endless amount of children. In case a single
- 114          * child is eating the vast majority of memory, adding only half
- 115          * to the parents will make the child our kill candidate of
-choice.
- 116          */
- 117         list_for_each_entry(child, &p->children, sibling) {
- 118                 task_lock(child);
- 119                 if (child->mm != mm && child->mm)
- 120                         points += child->mm->total_vm/2 + 1;
- 121                 task_unlock(child);
- 122         }
- 123
-==
-This makes task launcher(the fist child of some daemon.) first victim.
-And...I wonder this is not good for oom_adj,
-I think it's set per task with regard to personal memory usage.
+> What's this? It seems that your patch got corrupted somehow.
 
-But I'm not sure why this code is used now. Does anyone remember
-history or the benefit of this calculation ?
-
-Thanks,
--Kame
+Oops... Not sure how that happened... Following is the corrected patch.
 
 
 
 
+drivers/media/common: Remove unnecessary casts of void *
+
+void pointers do not need to be cast to other pointer types.
+
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Michael Hunold <michael@mihu.de>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+
+---
+
+ drivers/media/common/saa7146_vbi.c   |    4 ++--
+ drivers/media/common/saa7146_video.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/media/common/saa7146_vbi.c b/drivers/media/common/saa7146_vbi.c
+index 74e2b56..8224c30 100644
+--- a/drivers/media/common/saa7146_vbi.c
++++ b/drivers/media/common/saa7146_vbi.c
+@@ -375,7 +375,7 @@ static void vbi_init(struct saa7146_dev *dev, struct saa7146_vv *vv)
+ 
+ static int vbi_open(struct saa7146_dev *dev, struct file *file)
+ {
+-	struct saa7146_fh *fh = (struct saa7146_fh *)file->private_data;
++	struct saa7146_fh *fh = file->private_data;
+ 
+ 	u32 arbtr_ctrl	= saa7146_read(dev, PCI_BT_V1);
+ 	int ret = 0;
+@@ -437,7 +437,7 @@ static int vbi_open(struct saa7146_dev *dev, struct file *file)
+ 
+ static void vbi_close(struct saa7146_dev *dev, struct file *file)
+ {
+-	struct saa7146_fh *fh = (struct saa7146_fh *)file->private_data;
++	struct saa7146_fh *fh = file->private_data;
+ 	struct saa7146_vv *vv = dev->vv_data;
+ 	DEB_VBI(("dev:%p, fh:%p\n",dev,fh));
+ 
+diff --git a/drivers/media/common/saa7146_video.c b/drivers/media/common/saa7146_video.c
+index becbaad..cfc8634 100644
+--- a/drivers/media/common/saa7146_video.c
++++ b/drivers/media/common/saa7146_video.c
+@@ -1368,7 +1368,7 @@ static void video_init(struct saa7146_dev *dev, struct saa7146_vv *vv)
+ 
+ static int video_open(struct saa7146_dev *dev, struct file *file)
+ {
+-	struct saa7146_fh *fh = (struct saa7146_fh *)file->private_data;
++	struct saa7146_fh *fh = file->private_data;
+ 	struct saa7146_format *sfmt;
+ 
+ 	fh->video_fmt.width = 384;
+@@ -1392,7 +1392,7 @@ static int video_open(struct saa7146_dev *dev, struct file *file)
+ 
+ static void video_close(struct saa7146_dev *dev, struct file *file)
+ {
+-	struct saa7146_fh *fh = (struct saa7146_fh *)file->private_data;
++	struct saa7146_fh *fh = file->private_data;
+ 	struct saa7146_vv *vv = dev->vv_data;
+ 	struct videobuf_queue *q = &fh->video_q;
+ 	int err;
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
