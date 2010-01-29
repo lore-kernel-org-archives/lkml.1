@@ -1,124 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823Ab0A2AYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445Ab0A2AZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755823Ab0A2AYV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 19:24:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726Ab0A2AYU
+	id S1755445Ab0A2AZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 19:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335Ab0A2AZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 19:24:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:40505 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754815Ab0A2AYU (ORCPT
+	Thu, 28 Jan 2010 19:25:25 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:42801 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751788Ab0A2AZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 19:24:20 -0500
+	Thu, 28 Jan 2010 19:25:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=JYA1SFtW/7heai9zZJT8H7M/fd9yjSQpGV/Xu8OCIA8hppitpMJkoEe3TzhXaChksC
-         d/6nN6tI5cuNJXF+5mFxzlErVcnhOme0hlkckboMrw1/7C/0R5UHfm2esgscplLeV7f0
-         uwMXVHyhYKJ15/NT++j6YgFUVzV+QqyhlhXhE=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [GIT PULL] tracing core patchlet
-Date: Fri, 29 Jan 2010 01:24:18 +0100
-Message-Id: <1264724658-12991-1-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+        h=message-id:date:from:reply-to:user-agent:mime-version:newsgroups:to
+         :cc:subject:references:in-reply-to:x-enigmail-version:x-age
+         :x-location:x-os:x-face:content-type:content-transfer-encoding;
+        b=Y6WHpVoGjhOmCEbrOe8nynBFXXYyryV9+vHklNBaxlWqasNz8CK7NGn6fzVvuHCplP
+         pmFCi1crOS1iBccgsX4Dr8QTNIgwkaITQ7opU+1pie7ykTlv2jUuGRrwpvHmgdQFg606
+         NGq1F3iBp1qJXEJWcQneE4cN7Xu107QQ9CUR4=
+Message-ID: <4B622AEE.3080906@gmail.com>
+Date: Fri, 29 Jan 2010 01:25:18 +0100
+From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
+Reply-To: vedran.furac@gmail.com
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20091109 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+Newsgroups: gmane.linux.kernel.mm
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
+       minchan.kim@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
+References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>	<20100126151202.75bd9347.akpm@linux-foundation.org>	<20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>	<20100126161952.ee267d1c.akpm@linux-foundation.org>	<20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com> <20100128001636.2026a6bc@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100128001636.2026a6bc@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.7
+X-Age: 25
+X-Location: Lovran, Croatia
+X-OS: Debian GNU/Linux
+X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+Alan Cox wrote:
 
-Please pull the tracing/core branch that can be found at:
+> Am I missing something fundamental here ?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-	tracing/core
+Yes, the fact linux mm currently sucks. How else would you explain
+possibility of killing random (often root owned) processes using a 5
+lines program started by an ordinary user? Killed process could be an
+apache web server or X server on a desktop. I demonstrated this flaw few
+months ago here and only Kame tried to find a way to fix it but
+encountered noncooperation.
 
-Thanks,
-	Frederic
----
+I don't know what to say, really. Sad... Actually funny, when you know
+that competition OS, often ridiculed by linux users, doesn't suffer any
+consequences when that same 5 line program is run.
 
-Lai Jiangshan (1):
-      tracing: Simplify test for function_graph tracing start point
+Regards,
+Vedran
 
 
- kernel/trace/trace.h                 |    2 +-
- kernel/trace/trace_functions_graph.c |    8 ++------
- 2 files changed, 3 insertions(+), 7 deletions(-)
-
----
-commit ea2c68a08fedb5053ba312d661e47df9f4d72411
-Author: Lai Jiangshan <laijs@cn.fujitsu.com>
-Date:   Wed Jan 13 19:38:30 2010 +0800
-
-    tracing: Simplify test for function_graph tracing start point
-    
-    In the function graph tracer, a calling function is to be traced
-    only when it is enabled through the set_graph_function file,
-    or when it is nested in an enabled function.
-    
-    Current code uses TSK_TRACE_FL_GRAPH to test whether it is nested
-    or not. Looking at the code, we can get this:
-    (trace->depth > 0) <==> (TSK_TRACE_FL_GRAPH is set)
-    
-    trace->depth is more explicit to tell that it is nested.
-    So we use trace->depth directly and simplify the code.
-    
-    No functionality is changed.
-    TSK_TRACE_FL_GRAPH is not removed yet, it is left for future usage.
-    
-    Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-    Cc: Ingo Molnar <mingo@elte.hu>
-    Cc: Steven Rostedt <rostedt@goodmis.org>
-    LKML-Reference: <4B4DB0B6.7040607@cn.fujitsu.com>
-    Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 4df6a77..ce077fb 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -504,7 +504,7 @@ static inline int ftrace_graph_addr(unsigned long addr)
- {
- 	int i;
- 
--	if (!ftrace_graph_count || test_tsk_trace_graph(current))
-+	if (!ftrace_graph_count)
- 		return 1;
- 
- 	for (i = 0; i < ftrace_graph_count; i++) {
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index f225229..616b135 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -215,7 +215,8 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
- 	if (!ftrace_trace_task(current))
- 		return 0;
- 
--	if (!ftrace_graph_addr(trace->func))
-+	/* trace it when it is-nested-in or is a function enabled. */
-+	if (!(trace->depth || ftrace_graph_addr(trace->func)))
- 		return 0;
- 
- 	local_irq_save(flags);
-@@ -228,9 +229,6 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
- 	} else {
- 		ret = 0;
- 	}
--	/* Only do the atomic if it is not already set */
--	if (!test_tsk_trace_graph(current))
--		set_tsk_trace_graph(current);
- 
- 	atomic_dec(&data->disabled);
- 	local_irq_restore(flags);
-@@ -278,8 +276,6 @@ void trace_graph_return(struct ftrace_graph_ret *trace)
- 		pc = preempt_count();
- 		__trace_graph_return(tr, trace, flags, pc);
- 	}
--	if (!trace->depth)
--		clear_tsk_trace_graph(current);
- 	atomic_dec(&data->disabled);
- 	local_irq_restore(flags);
- }
+-- 
+http://vedranf.net | a8e7a7783ca0d460fee090cc584adc12
