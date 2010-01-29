@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840Ab0A2ULL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765Ab0A2UWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840Ab0A2ULL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 15:11:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793Ab0A2ULJ
+	id S1754765Ab0A2UWw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 15:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088Ab0A2UWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 15:11:09 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44318 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754785Ab0A2ULI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 15:11:08 -0500
-Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Greg KH <gregkh@suse.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Cong Wang <amwang@redhat.com>,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>, akpm@linux-foundation.org
-In-Reply-To: <20100129182114.GA13219@suse.de>
-References: <20100129070516.4058.77227.sendpatchset@localhost.localdomain>
-	 <m1eil9v0j9.fsf@fess.ebiederm.org> <4B629E7F.5020200@redhat.com>
-	 <m1zl3xt49k.fsf@fess.ebiederm.org> <20100129142223.GB12539@suse.de>
-	 <1264787848.24455.31.camel@laptop> <20100129181024.GA12934@suse.de>
-	 <1264788860.24455.35.camel@laptop>  <20100129182114.GA13219@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 29 Jan 2010 21:10:34 +0100
-Message-ID: <1264795834.24455.43.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Fri, 29 Jan 2010 15:22:51 -0500
+Received: from isrv.corpit.ru ([81.13.33.159]:52139 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932169Ab0A2UWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 15:22:50 -0500
+Message-ID: <4B634396.5000809@msgid.tls.msk.ru>
+Date: Fri, 29 Jan 2010 23:22:46 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.31 oops
+References: <20100128194940.GJ14574@charite.de>
+In-Reply-To: <20100128194940.GJ14574@charite.de>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=804465C5
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-29 at 10:21 -0800, Greg KH wrote:
-> On Fri, Jan 29, 2010 at 07:14:20PM +0100, Peter Zijlstra wrote:
-> > On Fri, 2010-01-29 at 10:10 -0800, Greg KH wrote:
-> > > On Fri, Jan 29, 2010 at 06:57:28PM +0100, Peter Zijlstra wrote:
-> > > > On Fri, 2010-01-29 at 06:22 -0800, Greg KH wrote:
-> > > > > 
-> > > > > Heh, this whole mess is the very reason we didn't add lockdep support to
-> > > > > the driver core.  Nested devices that all look alike from the driver
-> > > > > core, are really different objects and the locking lifetimes are
-> > > > > separate, but lockdep can't see that. 
-> > > > 
-> > > > And here I through Alan Stern had a handle on making the driver core
-> > > > play nice.
-> > > 
-> > > It's not the driver core that is the issue here, it's that lockdep can't
-> > > handle the tree structure of devices that is represented in the kernel.
-> > > 
-> > > I don't think it is a driver core problem, but rather, a lockdep issue.
-> > 
-> > Right, we've been over that and I think I added enough lockdep
-> > annotations to make it work for the device tree. At least, Alan and I
-> > seemed to agree on that last time we talked about it.
-> 
-> Ah, I didn't realize that, very nice.
-> 
-> If so, then this sysfs lock stuff should be able to use those
-> annotations and we shouldn't have this issue, right?
+Ralf Hildebrandt wrote:
+> This is on a dovecot mailbox server which extensively uses inotify...
 
-I really wouldn't know, I've not yet looked at sysfs to see what the
-particular issue is. But possibly, if you say the problem space is
-similar.
+Ralf, this is quite old bug, fixed by commit 9f0d793b52eb2266359661369ef6303838904855.
 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=9f0d793b52eb2266359661369ef6303838904855
+
+It should be in 2.6.31.y somewhere too, and fixed in 2.6.32.
+
+I hit it with dovecot too.  It should be in redhat bugzilla too.
+
+/mjt
+
+> [61834.698645] WARNING: at
+> /tmp/buildd/linux-2.6-2.6.31/debian/build/source_i386_none/fs/notify/inotify/inotify_fsnotify.c:129
+> idr_callback+0x39/0x6c()
+> [61834.699107] Hardware name: VMware Virtual Platform
+> [61834.699337] inotify closing but id=0 for entry=c646a514 in group=c99498c0 still in idr.  Probably leaking memory
+> [61834.699689] Modules linked in: acpiphp ext4 jbd2 crc16 parport_pc parport evdev serio_raw psmouse snd_pcsp snd_pcm snd_timer snd
+> soundcore snd_page_alloc ac container processor button vmci i2c_piix4 shpchp pci_hotplug i2c_core ext3 jbd mbcache dm_mod ide_cd_mod cdrom
+> sd_mod crc_t10dif ata_generic libata ide_pci_generic mptspi mptscsih mptbase scsi_transport_spi pcnet32 floppy mii scsi_mod piix ide_core
+> intel_agp agpgart thermal fan thermal_sys [last unloaded: scsi_wait_scan]
+> [61834.701741] Pid: 5168, comm: imap Not tainted 2.6.31-1-686-bigmem #1
+...
