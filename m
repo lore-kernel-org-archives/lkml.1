@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592Ab0A2Jsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812Ab0A2Jvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592Ab0A2Jsb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 04:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326Ab0A2Jsa
+	id S1756812Ab0A2Jvg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 04:51:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756467Ab0A2Jvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 04:48:30 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:57639 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754275Ab0A2Js2 (ORCPT
+	Fri, 29 Jan 2010 04:51:35 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:59032 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756451Ab0A2Jve (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 04:48:28 -0500
+	Fri, 29 Jan 2010 04:51:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=BXq/1wKJhwrKpxqZsXV8k6MJPDce1IisMYdMntupkwT78+ul9dj5wezlbPBdibwisf
-         Qj9ggRRDh2zD5XymElSZoq9ZIb82qk1uPMgqSY3wJNvLyDe+lNQvdN+6NQu38vUFsRn+
-         PmYbtDrigiVOsI5wnof049HGiZobgzVjquR9o=
-Date: Fri, 29 Jan 2010 10:48:22 +0100
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>
-Subject: [2.6.33-rc5] kernel BUG at include/net/netns/generic.h:41!
-Message-ID: <20100129094822.GA8294@nb-core2.darkstar.lan>
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=v8CmOiFtUZXJfaAn+EeRLCF3Xp40xTFOHjYf9rQe6HToX/xIrh1/2TcEveJoQKp/Vd
+         E4tntycnaeSrTPkqL5L+km9GTqdKGNNPMzBcMGlb5vnfzCppZrX5Cg1Qch28tAgx/yaR
+         1UlhsA90+J0wBWyv/pT7d1Kb7zwlxV8brQuW0=
+Message-ID: <4B62B100.9090308@gmail.com>
+Date: Fri, 29 Jan 2010 10:57:20 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] mISDN: positive error return should be negative in mode_hfcmulti()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-with recent kernels I'm seeing this BUG - triggered by racoon - at boot:
+The error return should be negative. Its only caller that acts upon its return,
+handle_bmsg(), transmits the positive error but can also return negative errors.
 
-NET: Registered protocol family 15
-------------[ cut here ]------------
-kernel BUG at /home/kronos/src/linux-2.6.git/include/net/netns/generic.h:43!
-invalid opcode: 0000 [#1] PREEMPT SMP 
-last sysfs file: /sys/kernel/uevent_seqnum
-CPU 1 
-Pid: 1941, comm: racoon Not tainted 2.6.33-rc5-00271-gbe8cde8-dirty #238 F3Sa      /F3Sa                
-RIP: 0010:[<ffffffffa03035be>]  [<ffffffffa03035be>] pfkey_create+0x36/0x18b [af_key]
-RSP: 0018:ffff88013ddebe98  EFLAGS: 00010246
-RAX: ffff88013f894480 RBX: ffff88013f44de40 RCX: 0000000000000000
-RDX: 0000000000000002 RSI: ffff88013f44de40 RDI: 0000000000000001
-RBP: ffff88013ddebeb8 R08: ffff88013ddea000 R09: dead000000200200
-R10: dead000000100100 R11: ffff88013ddebd80 R12: 0000000000000000
-R13: ffffffff81771860 R14: 0000000000000002 R15: 0000000000000000
-FS:  00007f02c3e1f710(0000) GS:ffff880028300000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000000794f38 CR3: 000000013d98d000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process racoon (pid: 1941, threadinfo ffff88013ddea000, task ffff88013dffd880)
-Stack:
- 000000000000000f ffff88013f44de40 0000000000000003 ffffffffa0304a80
-<0> ffff88013ddebf28 ffffffff81220802 ffff88013ddebee8 00007f02c3a22e80
-<0> ffffffff00000001 ffff88013ddebf60 ffffffff81771860 0000000200000001
-Call Trace:
- [<ffffffff81220802>] __sock_create+0x242/0x3dd
- [<ffffffff812209e9>] sock_create+0x2b/0x2d
- [<ffffffff81220b91>] sys_socket+0x26/0x57
- [<ffffffff8129fe0f>] ? page_fault+0x1f/0x30
- [<ffffffff81002a2b>] system_call_fastpath+0x16/0x1b
-Code: 49 89 fd 41 54 bf 01 00 00 00 53 44 8b 25 27 19 00 00 48 89 f3 e8 4f f1 f9 e0 49 8b 85 48 08 00 00 45 85 e4 74 05 44 3b 20 76 04 <0f> 0b eb fe 4d 63 e4 4e 8b 64 e0 10 bf 01 00 00 00 e8 aa f0 f9 
-RIP  [<ffffffffa03035be>] pfkey_create+0x36/0x18b [af_key]
- RSP <ffff88013ddebe98>
----[ end trace 78cabe73779ec9df ]---
-note: racoon[1941] exited with preempt_count 1
-
-It looks like a bug I reported a while ago[1] and which was fixed by Eric. The
-fix is still in place, but the bug has resurfaced recently, probably in .33.
-It's quiet elusive, i.e. it happens maybe once every 5 boots; restarting racoon
-doesn't seem to trigger it...
-
-Luca
-[1] http://bugzilla.kernel.org/show_bug.cgi?id=13838
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
+index 1a1420d..ad36df9 100644
+--- a/drivers/isdn/hardware/mISDN/hfcmulti.c
++++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
+@@ -2846,7 +2846,7 @@ mode_hfcmulti(struct hfc_multi *hc, int ch, int protocol, int slot_tx,
+ 	int conf;
+ 
+ 	if (ch < 0 || ch > 31)
+-		return EINVAL;
++		return -EINVAL;
+ 	oslot_tx = hc->chan[ch].slot_tx;
+ 	oslot_rx = hc->chan[ch].slot_rx;
+ 	conf = hc->chan[ch].conf;
