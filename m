@@ -1,141 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870Ab0A2RBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818Ab0A2REW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752870Ab0A2RBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 12:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701Ab0A2RBP
+	id S1752818Ab0A2REW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 12:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308Ab0A2REV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 12:01:15 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:37077 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752523Ab0A2RBL (ORCPT
+	Fri, 29 Jan 2010 12:04:21 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:52419 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751185Ab0A2REV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 12:01:11 -0500
+	Fri, 29 Jan 2010 12:04:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:content-type:organization:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=w93/bBP0bgI8oGvTEJGSZcnbiClDkwBLr6SocpkC4TE/Ia8nhw+mCnGm01qKe7rzsF
-         74buIZ1yNFRp2xu/Itrqd60dOpvHt89TjYDVldRoXIhubb85vuJibK/KVwuAYZjde5qv
-         grR8Ml75gEAqYaEHEp7VLRgLJnySE7fEH6jfU=
-Subject: SCHED_DEADLINE for MIPS
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: loongson-dev <loongson-dev@googlegroups.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: faggioli@etis.sssup.it, raistlin@inux.it,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>, Qingguo Zhou <zhouqg@gmail.com>,
-       zhangfx <zhangfx@lemote.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Sat, 30 Jan 2010 00:54:52 +0800
-Message-ID: <1264784092.21670.81.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=xIC9NhkqmGq8Q7D0pmDimDMPzfvf8rwl0J6fT8OwosIVyeRvfUO6lUuEke1W5wX1y/
+         Et5faodpHS8AbZlrY7PPbUPAQSNWkB5NHy37HIGMLDj9AE31qZiOKUYHiXF7x8r6eKAb
+         3SkHFdKqpAKx7i9VViw2fE5v1udsWm3UwBb/k=
+MIME-Version: 1.0
+In-Reply-To: <20100129162155.709756286@gmail.com>
+References: <20100129162029.998540038@gmail.com>
+	 <20100129162155.709756286@gmail.com>
+Date: Fri, 29 Jan 2010 18:04:19 +0100
+X-Google-Sender-Auth: e9c7cf3e79afe996
+Message-ID: <3efb10971001290904p74b1919aif8ff013f050123a9@mail.gmail.com>
+Subject: Re: [patch v2 1/2] at91_udc.c read_fifo timing issue
+From: Remy Bohmer <linux@bohmer.net>
+To: Harro Haan <hrhaan@gmail.com>
+Cc: Ryan Mallon <ryan@bluewatersys.com>, Andrew Victor <avictor.za@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       H Hartley Sweeten <hartleys@visionengravers.com>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, All
+Hi Harro,
 
-Just made SCHED_DEADLINE run on my YeeLoong laptop ;)
-
-SCHED_DEADLINE made by Dario Faggioli and Michael Trimarchi, is "a new
-scheduling class called SCHED_DEADLINE for the Linux kernel. The
-scheduling class implements the real-time scheduling algorithm called
-Earliest Deadline First (EDF), one of the most common real-time
-scheduling algorithms."
-
-Its homepage:
-
-http://www.evidence.eu.com/content/view/313/390/
-
-and more information about it is available here:
-
-http://gitorious.org/sched_deadline/pages/Home
-
-Thanks very much to the authors, I just cloned it and did some necessary
-modification for MIPS to make it work on my YeeLoong laptop with debian
-6.0(squeeze), at last, I got a really "deterministic" laptop.
-
-And the information about "SCHED_DEADLINE for MIPS" is listed as
-follows:
-
-1. sched_deadline for MIPS
-
-I have put it here:
-
-git://dev.lemote.com/rt4ls.git rt/2.6.31/sched-deadline
-
-It is based on:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-rt/2.6.31
-
-and
-
-git://gitorious.org/sched_deadline/linux-deadline.git rt-deadline
-
-and the following commits are added(please get more info from the git
-repo.):
-
-	SCHED_DEADLINE: added system calls for MIPS
-	SCHED_DEADLINE: Fixup of "BUG: scheduling while atomic"
-
-NOTE: If you plan to run it on your board, please remember to add your
-board specific RT-preempt support at first.
-
-2. sched_tool for MIPS
-
-git://dev.lemote.com/rt4ls.git rt/schedtool-deadline
-
-The schedtool is based on:
-
-git://gitorious.org/sched_deadline/schedtool-deadline.git
-
-To make the schedtool work on MIPS machine with debian O32 ABI system, I
-have fixed the timespec struct and of course, the related system calls'
-numbers are added in.
-
-3. Usage (only use YeeLoong as an example)
-
-3.1 Get the latest kernel with RT-preempt and SCHED_DEADLINE support
-
-git://dev.lemote.com/rt4ls.git rt/2.6.31/loongson
-
-3.2 Compile the kernel
-
-A minimal defconfig is provided:
-
-arch/mips/configs/yeeloong_rt_defconfig
-
-and please refer to:
-
-http://www.gitorious.org/sched_deadline/pages/Compile
-http://dev.lemote.com/code/rt4ls/wiki/linux-loongson-howto
-
-3.3 Get the schedtool with SCHED_DEADLINE support and compile it
-
-git://dev.lemote.com/rt4ls.git rt/schedtool-deadline
-
-3.4 Run your application with the SCHED_DEADLINE
-
-$ ./schedtool -E -d 100000 -b 10000 -e yes
-
--E using the SCHED_DEADLINE policy(the old name is SCHED_EDF)
--d deadline
--b budget(runtime)
--e start command with specified policy/priority
-
-Did you want to do some benchmarking on the RT-preempt and
-SCHED_DEADLINE for MIPS? please refer to the "Benchmarks and Test Cases
-" part of http://rt.wiki.kernel.org and the "Usage, Evaluation,
-Examples" parts of http://gitorious.org/sched_deadline/pages/Home
-
-That's all, Enjoy it!
-
-Best Regards,
-	Wu Zhangjin
-
+2010/1/29 Harro Haan <hrhaan@gmail.com>:
+> This solves the read_fifo timing issue for example seen with CDC Ethernet.
+> See the comments below for more info.
+>
+> Signed-off-by: Harro Haan <hrhaan@gmail.com>
+> ---
+>  drivers/usb/gadget/at91_udc.c |   46 ++++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 42 insertions(+), 4 deletions(-)
+>
+Acked-by: Remy Bohmer <linux@bohmer.net>
