@@ -1,85 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861Ab0A2Uax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704Ab0A2Uec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861Ab0A2Uax (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 15:30:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029Ab0A2Uaw
+	id S1754704Ab0A2Uec (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 15:34:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335Ab0A2Ueb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 15:30:52 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:34690 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090Ab0A2Uav (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 15:30:51 -0500
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Greg KH <gregkh@suse.de>, Cong Wang <amwang@redhat.com>,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>, akpm@linux-foundation.org
-Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
-References: <20100129070516.4058.77227.sendpatchset@localhost.localdomain>
-	<m1eil9v0j9.fsf@fess.ebiederm.org> <4B629E7F.5020200@redhat.com>
-	<m1zl3xt49k.fsf@fess.ebiederm.org> <20100129142223.GB12539@suse.de>
-	<1264787848.24455.31.camel@laptop> <20100129181024.GA12934@suse.de>
-	<1264788860.24455.35.camel@laptop> <20100129182114.GA13219@suse.de>
-	<1264795834.24455.43.camel@laptop>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 29 Jan 2010 12:30:46 -0800
-In-Reply-To: <1264795834.24455.43.camel@laptop> (Peter Zijlstra's message of "Fri\, 29 Jan 2010 21\:10\:34 +0100")
-Message-ID: <m1y6jgpsax.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+	Fri, 29 Jan 2010 15:34:31 -0500
+Received: from mail.perches.com ([173.55.12.10]:1608 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750940Ab0A2Ueb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 15:34:31 -0500
+Subject: [PATCH] MAINTAINERS: Make BEFS an orphan
+From: Joe Perches <joe@perches.com>
+To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
+       Sergey Kostyliov <rathamahata@gmail.com>
+Cc: linux-kernel@vger.kernel.org, siccegge@i4.informatik.uni-erlangen.de,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20100129134230.GA14155@faui49.informatik.uni-erlangen.de>
+References: <20100129134230.GA14155@faui49.informatik.uni-erlangen.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 29 Jan 2010 12:34:29 -0800
+Message-ID: <1264797270.25140.82.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <peterz@infradead.org> writes:
+On Fri, 2010-01-29 at 14:42 +0100, Christoph Egger wrote:
+> 	Just noticed that the E-Mail Address for BEFS' Maintainer[0]
+> doesn't work any more[1]. Maybe the Address could be fixed if someone
+> knows the correct (as in wanted) E-Mail Address (I assume @gmail.com
+> could be fine).
+> [0] Sergey S. Kostyliov <rathamahata@php4.ru> (maintainer:BEFS FILE SYSTEM)
+> [1]
+>   <rathamahata@php4.ru>: host mail.php4.ru[62.90.175.121] said: 553 5.3.0
+>     <rathamahata@php4.ru>... No such user here (in reply to RCPT TO command)
 
-> On Fri, 2010-01-29 at 10:21 -0800, Greg KH wrote:
->> On Fri, Jan 29, 2010 at 07:14:20PM +0100, Peter Zijlstra wrote:
->> > On Fri, 2010-01-29 at 10:10 -0800, Greg KH wrote:
->> > > On Fri, Jan 29, 2010 at 06:57:28PM +0100, Peter Zijlstra wrote:
->> > > > On Fri, 2010-01-29 at 06:22 -0800, Greg KH wrote:
->> > > > > 
->> > > > > Heh, this whole mess is the very reason we didn't add lockdep support to
->> > > > > the driver core.  Nested devices that all look alike from the driver
->> > > > > core, are really different objects and the locking lifetimes are
->> > > > > separate, but lockdep can't see that. 
->> > > > 
->> > > > And here I through Alan Stern had a handle on making the driver core
->> > > > play nice.
->> > > 
->> > > It's not the driver core that is the issue here, it's that lockdep can't
->> > > handle the tree structure of devices that is represented in the kernel.
->> > > 
->> > > I don't think it is a driver core problem, but rather, a lockdep issue.
->> > 
->> > Right, we've been over that and I think I added enough lockdep
->> > annotations to make it work for the device tree. At least, Alan and I
->> > seemed to agree on that last time we talked about it.
->> 
->> Ah, I didn't realize that, very nice.
->> 
->> If so, then this sysfs lock stuff should be able to use those
->> annotations and we shouldn't have this issue, right?
->
-> I really wouldn't know, I've not yet looked at sysfs to see what the
-> particular issue is. But possibly, if you say the problem space is
-> similar.
+Hello Sergey.
 
-We get false positives when the code of a sysfs attribute
-synchronously removes other sysfs attributes.  In general that is not
-safe due to hotplug etc, but there are specific instances of static
-sysfs entries like the pm_core where it appears to be safe.
+You haven't submitted or acked a patch for quite awhile.
+Do you still want to be listed as a maintainer for BEFS?
 
-I am not familiar with the device core lockdep issues.  Are they similar?
+Perhaps this is appropriate?
 
-Eric
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index f19e098..9ca645a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1189,8 +1189,7 @@ S:	Maintained
+ F:	drivers/net/hamradio/baycom*
+ 
+ BEFS FILE SYSTEM
+-M:	"Sergey S. Kostyliov" <rathamahata@php4.ru>
+-S:	Maintained
++S:	Orphan
+ F:	Documentation/filesystems/befs.txt
+ F:	fs/befs/
+ 
 
 
