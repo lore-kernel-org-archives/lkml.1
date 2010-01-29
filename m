@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753Ab0A2JKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778Ab0A2JLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753Ab0A2JKj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 04:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870Ab0A2JKi
+	id S1756778Ab0A2JLk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 04:11:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670Ab0A2JLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 04:10:38 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:41039 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540Ab0A2JKh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 04:10:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tt6KIL6w0IDUy1RdRR6D4pOvlNbDktlD7rT4ZuKsQYPVGl8debr1THaJSAv/fwYFfH
-         S9TtDXf9OEy7l2PmNJVCClMvE6aFzviSATIhPRHYagUjwpu+AlnH7VNCh3d9SjyClimb
-         Xu3zkxJvDIM+YXu+u1DWc4jW3C20W9cSKQ7kk=
-Subject: Re: PROBLEM: reproducible crash KVM+nf_conntrack all recent 2.6
- kernels
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: Patrick McHardy <kaber@trash.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, netfilter-devel@vger.kernel.org
-In-Reply-To: <1264754565.2793.405.camel@tonnant>
-References: <1264657559.2793.103.camel@tonnant>
-	 <1264658364.2793.105.camel@tonnant>  <4B6180D1.6050609@trash.net>
-	 <1264720891.2793.205.camel@tonnant>  <1264727492.2793.207.camel@tonnant>
-	 <1264754565.2793.405.camel@tonnant>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 29 Jan 2010 10:10:32 +0100
-Message-ID: <1264756232.3184.10.camel@edumazet-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Fri, 29 Jan 2010 04:11:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41534 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754675Ab0A2JLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 04:11:37 -0500
+Date: Fri, 29 Jan 2010 10:11:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tom Tromey <tromey@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100129091116.GB10878@elte.hu>
+References: <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
+ <m3636oh2rt.fsf@fleche.redhat.com>
+ <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain>
+ <1264575134.4283.1983.camel@laptop>
+ <20100127085442.GA28422@elte.hu>
+ <1264643539.5068.62.camel@localhost.localdomain>
+ <20100128085502.GA7713@elte.hu>
+ <1264726768.4933.50.camel@localhost.localdomain>
+ <20100129073907.GF14636@elte.hu>
+ <20100129075240.GF16920@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100129075240.GF16920@in.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le vendredi 29 janvier 2010 à 03:42 -0500, Jon Masters a écrit :
-> Hi,
-> 
-> So I did some poking (still trying to figure out netfilter a little
-> internally) and looked over the handling of connection tracking. The
-> oops reports I have been getting generally lie in __nf_conntrack_find,
-> specifically within a hlist iterator that looks up the information for
-> the current connection in a per-net namespace hashtable (under RCU, it's
-> been locked already by the time we get in here). Here's the piece:
-> 
->         hlist_nulls_for_each_entry_rcu(h, n, &net->ct.hash[hash],
-> hnnode) {
->                 if (nf_ct_tuple_equal(tuple, &h->tuple)) {
->                         NF_CT_STAT_INC(net, found);
->                         local_bh_enable();
->                         return h;
->                 }
->                 NF_CT_STAT_INC(net, searched);
->         }
-> 
-> Instrumenting the kernel at the moment and then setting up more of a
-> debugging environment to poke at what goes wrong here. Perhaps there's
-> some broken RCU assumption - I just spent the last few hours reading
-> over netfilter source and Paul's RCU docs again to brush up.
-> 
-> Perhaps you netdev folks can let me know if there's a handy netfilter
-> debugging guide somewhere.
-> 
-> Jon.
-> 
-> 
 
-Jon, do you have multiple network namespace active on your machine, when
-crash occurs ?
+* Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
 
+> On Fri, Jan 29, 2010 at 08:39:07AM +0100, Ingo Molnar wrote:
+> 
+> ...
+> 
+> > When we merged kprobes ~10 years ago we made the (rather bad) mistake of 
+> > merging a raw, opaque facility and leaving 'the rest' up to some other entity. 
+> > IBM kprobes hackers vanished the day the original kprobes code went upstream 
+> > and the high level entity never truly materialized in-kernel, for nearly a 
+> > decade!
+> 
+> I don't know what you are referring to here... Kprobes was merged in 2.6.9 
+> (~August 2004 -- less than 6 years ago). [...]
 
+Ok, 6 years then :-)
 
+> [...] Since then, we did work on ports to powerpc and s390. We implemented 
+> kretprobes. We made it much scalable using RCU; we did the powerpc booster 
+> to skip single-step when possible, not to mention various bug fixes over the 
+> years.
+
+Except it had no real in-kernel user.
+
+> Yes, we did not do the perf integration, but perf did not exist then, 
+> either.
+> 
+> Its simply wrong to say people 'vanished'.
+
+It has certainly was a bit stale for years - and with no real users that's 
+certainly not a surprise. That has changed recently so i'm not complaining. We 
+just dont want to repeat the same mistake with uprobes.
+
+	Ingo
