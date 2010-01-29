@@ -1,90 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092Ab0A2Rhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750956Ab0A2RlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092Ab0A2Rhh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 12:37:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007Ab0A2Rhg
+	id S1750956Ab0A2RlZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 12:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915Ab0A2RlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 12:37:36 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:53488 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753191Ab0A2Rhf (ORCPT
+	Fri, 29 Jan 2010 12:41:24 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44840 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751802Ab0A2RlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 12:37:35 -0500
-Message-ID: <4B631C7E.1080101@oracle.com>
-Date: Fri, 29 Jan 2010 09:35:58 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2010-01-28-01-36 uploaded (sched.c + percpu)
-References: <201001281002.o0SA2G0k002220@imap1.linux-foundation.org> <4B61DD8F.6020507@oracle.com> <20100128234125.GH2996@kryten>
-In-Reply-To: <20100128234125.GH2996@kryten>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 29 Jan 2010 12:41:23 -0500
+Subject: Re: [PATCH] Add type of locks to lock trace events
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       tglx@linutronix.de, gregkh@suse.de
+In-Reply-To: <20100129172939.GD5047@nowhere>
+References: <1263799219.4283.0.camel@laptop>
+	 <1264485404-6410-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	 <1264674113.4283.2086.camel@laptop>  <20100129172939.GD5047@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 29 Jan 2010 18:41:05 +0100
+Message-ID: <1264786865.24455.22.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B631C99.01AE:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/28/10 15:41, Anton Blanchard wrote:
->
-> Hi Randy,
->
->> when CONFIG_SMP is not enabled:
->>
->> kernel/sched.c:10915: error: 'percpu_counter_batch' undeclared (first use in this function)
->
-> Did 1/2 make it into mmotm?
+On Fri, 2010-01-29 at 18:29 +0100, Frederic Weisbecker wrote:
 
-I only see one patch from you in mmotm.
+> > I still don't see the use for it, surely you're going to be familiar
+> > with the code if you're looking at lock statistics?
 
+> Comparing the avg/max time locks are acquired/waited between same
+> types of locks is interesting, but doing so between spinlocks and mutexes
+> is definetly pointless. 
 
-> Anton
->
-> ---
->
-> [PATCH 1/2] percpu_counter: Make __percpu_counter_add an inline function on UP
->
-> Even though batch isn't used on UP, we may want to pass one in to keep the
-> SMP and UP code paths similar. Convert __percpu_counter_add to an inline
-> function so we wont get variable unused warnings if we do.
->
-> Signed-off-by: Anton Blanchard<anton@samba.org>
-> ---
->
-> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-> index a7684a5..794662b 100644
-> --- a/include/linux/percpu_counter.h
-> +++ b/include/linux/percpu_counter.h
-> @@ -98,9 +98,6 @@ static inline void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
->   	fbc->count = amount;
->   }
->
-> -#define __percpu_counter_add(fbc, amount, batch) \
-> -	percpu_counter_add(fbc, amount)
-> -
->   static inline void
->   percpu_counter_add(struct percpu_counter *fbc, s64 amount)
->   {
-> @@ -109,6 +106,12 @@ percpu_counter_add(struct percpu_counter *fbc, s64 amount)
->   	preempt_enable();
->   }
->
-> +static inline void
-> +__percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
-> +{
-> +	percpu_counter_add(fbc, amount);
-> +}
-> +
->   static inline s64 percpu_counter_read(struct percpu_counter *fbc)
->   {
->   	return fbc->count;
->
+Sure, never claimed otherwise, but:
+ 1) if you're looking at lock behaviour you should also look at the code
+    otherwise you have no context to place the contention behaviour in.
 
+ 2) exactly because these hold/acquire times differ so much its hard to
+    mistake mistake them for anything else.
 
--- 
-~Randy
+The concern I have is adding the storage (avoided by not doing it at
+init like you suggested) and the event size overhead. Jens' report
+confirms that we need to be very careful here, because lock sites are
+very high frequent.
+
+So again, _why_? If you're looking at these things its easy (and I'd say
+rather crucial) to look up the code.
+
+There simply is no point in looking at these stats if you're not also
+going to look at the code. If you're looking at them in a quick
+diagnostic way, then the difference against the baseline is important.
+
