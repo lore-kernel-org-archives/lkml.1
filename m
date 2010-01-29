@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883Ab0A2KCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932354Ab0A2KDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883Ab0A2KCL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 05:02:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979Ab0A2KCJ
+	id S932354Ab0A2KDY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 05:03:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849Ab0A2KDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 05:02:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32869 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754706Ab0A2KCI (ORCPT
+	Fri, 29 Jan 2010 05:03:23 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:24328 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755884Ab0A2KDW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 05:02:08 -0500
-Date: Fri, 29 Jan 2010 02:01:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-Cc: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       eranian@google.com, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Subject: Re: [tip:perf/core] bitops: Provide compile time
- HWEIGHT{8,16,32,64}
-Message-Id: <20100129020128.716af8fb.akpm@linux-foundation.org>
-In-Reply-To: <tip-9f41699ed067fa695faff8e2e9981b2550abec62@git.kernel.org>
-References: <20100122155535.797688466@chello.nl>
-	<tip-9f41699ed067fa695faff8e2e9981b2550abec62@git.kernel.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 29 Jan 2010 05:03:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=PiflraFM5WPXlGIuPPg7zGdpWRZ0sOFHGIB3C77BPqSdxqADMxP2Ig1bQQMCmkGOT4
+         yRrUQylH2btX7yasQnidiFTwwE4crWn16eh4mCtKZVM7YMkAWfBY6GusmT/00zoatO8u
+         pdjYIVPp1i3oIdWVIioJQgmRqqADAw2qqPrxQ=
+Message-ID: <4B62B3C6.5090903@gmail.com>
+Date: Fri, 29 Jan 2010 11:09:10 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: James Smart <james.smart@emulex.com>, linux-scsi@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] lpfc: Positive error return into negative
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jan 2010 09:28:04 GMT tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+In the comment on top of lpfc_sli_hbq_setup() and of its caller which
+transmits this error, lpfc_sli_hba_setup(), it is stated that the
+function should return a negative error code.
 
-> +#define HWEIGHT8(w)			\
-> +      (	(!!((w) & (1ULL << 0))) +	\
-> +	(!!((w) & (1ULL << 1))) +	\
-> +	(!!((w) & (1ULL << 2))) +	\
-> +	(!!((w) & (1ULL << 3))) +	\
-> +	(!!((w) & (1ULL << 4))) +	\
-> +	(!!((w) & (1ULL << 5))) +	\
-> +	(!!((w) & (1ULL << 6))) +	\
-> +	(!!((w) & (1ULL << 7)))	)
-> +
-> +#define HWEIGHT16(w) (HWEIGHT8(w)  + HWEIGHT8(w >> 8))
-> +#define HWEIGHT32(w) (HWEIGHT16(w) + HWEIGHT16(w >> 16))
-> +#define HWEIGHT64(w) (HWEIGHT32(w) + HWEIGHT32(w >> 32))
-
-Would be nice if it had a comment explaining why it exists.  If people
-accidentally use this with non-constant arguments, the generated code
-will be pretty ghastly.
-
-Or add some barf-if-not-__constant_p() thing, perhaps.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
+index 589549b..a960736 100644
+--- a/drivers/scsi/lpfc/lpfc_sli.c
++++ b/drivers/scsi/lpfc/lpfc_sli.c
+@@ -3709,7 +3709,7 @@ lpfc_sli_hbq_setup(struct lpfc_hba *phba)
+ 
+ 			phba->link_state = LPFC_HBA_ERROR;
+ 			mempool_free(pmb, phba->mbox_mem_pool);
+-			return ENXIO;
++			return -ENXIO;
+ 		}
+ 	}
+ 	phba->hbq_count = hbq_count;
