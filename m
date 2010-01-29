@@ -1,519 +1,538 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870Ab0A2QRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004Ab0A2QQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870Ab0A2QRa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 11:17:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937Ab0A2QR0
+	id S1752004Ab0A2QQf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 11:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689Ab0A2QQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 11:17:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:23261 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754466Ab0A2QGY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 11:06:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=jQKnuWJ+WGMNVZk+QafRxPRYn0QO6na3WumRxlxB+ObWIYeflQhDwpHuV6sqCqY9cR
-         PT95CxgfKT8+yG3xzEk6+0/wiForLATd71LOE14lzBef5mxlSRudmWHvGBa6HpP0rdYq
-         cIMBw9diaug719vp8eHKpLvught+XhMck/CGs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Fri, 29 Jan 2010 17:06:16 +0100
-Message-Id: <20100129160616.21495.19482.sendpatchset@localhost>
-In-Reply-To: <20100129160308.21495.14120.sendpatchset@localhost>
-References: <20100129160308.21495.14120.sendpatchset@localhost>
-Subject: [PATCH 29/68] ata_piix: move code to be re-used by ide2libata to ata_piix.h
+	Fri, 29 Jan 2010 11:16:23 -0500
+Received: from usul.overt.org ([204.11.33.43]:51330 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754852Ab0A2QHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 11:07:06 -0500
+Date: Fri, 29 Jan 2010 08:06:39 -0800
+From: Philip Langdale <philipl@overt.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Wolfram Sang <w.sang@pengutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pierre Ossman <pierre@ossman.eu>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-mmc@vger.kernel.org
+Subject: Re: [PATCH v3] port ricoh_mmc to pci quirk
+Message-ID: <20100129080639.3b484a59@fido2.homeip.net>
+In-Reply-To: <1264772255.4620.3.camel@maxim-laptop>
+References: <20091125085324.1ef9ae1f@fido2.homeip.net>
+	<20091125113501.1f4d42b9.akpm@linux-foundation.org>
+	<1259192401.15916.48.camel@maxim-laptop>
+	<20091125173019.74d0ddb9@fido2.homeip.net>
+	<1259279520.3991.5.camel@maxim-laptop>
+	<1259279584.3991.6.camel@maxim-laptop>
+	<20091126235551.2db699e3@fido2.homeip.net>
+	<1262964284.12577.27.camel@maxim-laptop>
+	<20100108074001.5df6c997@fido2.homeip.net>
+	<20100112154350.8fa96829.akpm@linux-foundation.org>
+	<20100113064657.GB10955@pengutronix.de>
+	<1264772255.4620.3.camel@maxim-laptop>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-slackware-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ata_piix: move code to be re-used by ide2libata to ata_piix.h
+On Fri, 29 Jan 2010 15:37:35 +0200
+Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ata/ata_piix.c |  220 -----------------------------------------------
- drivers/ata/ata_piix.h |  226 +++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 226 insertions(+), 220 deletions(-)
+> Here, updated patch with your comments addressed.
+> This is also tested with real MMC card.
 
-Index: b/drivers/ata/ata_piix.c
-===================================================================
---- a/drivers/ata/ata_piix.c
-+++ b/drivers/ata/ata_piix.c
-@@ -629,178 +629,6 @@ static int piix_pata_prereset(struct ata
- 	return ata_sff_prereset(link, deadline);
- }
- 
--static DEFINE_SPINLOCK(piix_lock);
--
--static void piix_set_timings(struct ata_port *ap, struct ata_device *adev,
--			     u8 pio, bool use_mwdma)
--{
--	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
--	unsigned long flags;
--	unsigned int is_slave	= (adev->devno != 0);
--	unsigned int master_port= ap->port_no ? 0x42 : 0x40;
--	unsigned int slave_port	= 0x44;
--	u16 master_data;
--	u8 slave_data;
--	u8 udma_enable;
--	int control = 0;
--
--	/*
--	 *	See Intel Document 298600-004 for the timing programing rules
--	 *	for ICH controllers.
--	 */
--
--	static const	 /* ISP  RTC */
--	u8 timings[][2]	= { { 0, 0 },
--			    { 0, 0 },
--			    { 1, 0 },
--			    { 2, 1 },
--			    { 2, 3 }, };
--
--	if (pio >= 2 || use_mwdma)
--		control |= 1;	/* TIME1 enable */
--	if (ata_pio_need_iordy(adev) || use_mwdma)
--		control |= 2;	/* IE enable */
--	/* Intel specifies that the PPE functionality is for disk only */
--	if (adev->class == ATA_DEV_ATA)
--		control |= 4;	/* PPE enable */
--	/* If the drive MWDMA is faster than it can do PIO then
--	   we must force PIO into PIO0 */
--	if (use_mwdma && adev->pio_mode < (XFER_PIO_0 + pio))
--		/* Enable DMA timing only */
--		control |= 8;	/* PIO cycles in PIO0 */
--
--	spin_lock_irqsave(&piix_lock, flags);
--
--	/* PIO configuration clears DTE unconditionally.  It will be
--	 * programmed in set_dmamode which is guaranteed to be called
--	 * after set_piomode if any DMA mode is available.
--	 */
--	pci_read_config_word(dev, master_port, &master_data);
--	if (is_slave) {
--		/* clear TIME1|IE1|PPE1|DTE1 */
--		master_data &= 0xff0f;
--		/* Enable SITRE (separate slave timing register) */
--		master_data |= 0x4000;
--		/* enable PPE1, IE1 and TIME1 as needed */
--		master_data |= (control << 4);
--		pci_read_config_byte(dev, slave_port, &slave_data);
--		slave_data &= (ap->port_no ? 0x0f : 0xf0);
--		/* Load the timing nibble for this slave */
--		slave_data |= ((timings[pio][0] << 2) | timings[pio][1])
--						<< (ap->port_no ? 4 : 0);
--	} else {
--		/* clear ISP|RCT|TIME0|IE0|PPE0|DTE0 */
--		master_data &= 0xccf0;
--		/* Enable PPE, IE and TIME as appropriate */
--		master_data |= control;
--		/* load ISP and RCT */
--		master_data |=
--			(timings[pio][0] << 12) |
--			(timings[pio][1] << 8);
--	}
--	pci_write_config_word(dev, master_port, master_data);
--	if (is_slave)
--		pci_write_config_byte(dev, slave_port, slave_data);
--
--	/* Ensure the UDMA bit is off - it will be turned back on if
--	   UDMA is selected */
--
--	if (ap->udma_mask) {
--		pci_read_config_byte(dev, 0x48, &udma_enable);
--		udma_enable &= ~(1 << (2 * ap->port_no + adev->devno));
--		pci_write_config_byte(dev, 0x48, udma_enable);
--	}
--
--	spin_unlock_irqrestore(&piix_lock, flags);
--}
--
--/**
-- *	piix_set_piomode - Initialize host controller PATA PIO timings
-- *	@ap: Port whose timings we are configuring
-- *	@adev: Drive in question
-- *
-- *	Set PIO mode for device, in host controller PCI config space.
-- *
-- *	LOCKING:
-- *	None (inherited from caller).
-- */
--
--static void piix_set_piomode(struct ata_port *ap, struct ata_device *adev)
--{
--	piix_set_timings(ap, adev, adev->pio_mode - XFER_PIO_0, 0);
--}
--
--/**
-- *	do_pata_set_dmamode - Initialize host controller PATA PIO timings
-- *	@ap: Port whose timings we are configuring
-- *	@adev: Drive in question
-- *	@isich: set if the chip is an ICH device
-- *
-- *	Set UDMA mode for device, in host controller PCI config space.
-- *
-- *	LOCKING:
-- *	None (inherited from caller).
-- */
--
--static void do_pata_set_dmamode(struct ata_port *ap, struct ata_device *adev, int isich)
--{
--	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
--	unsigned long flags;
--	u8 speed		= adev->dma_mode;
--	int devid		= adev->devno + 2 * ap->port_no;
--	u8 udma_enable		= 0;
--
--	if (speed >= XFER_UDMA_0) {
--		unsigned int udma = speed - XFER_UDMA_0;
--		u16 udma_timing;
--		u16 ideconf;
--		int u_clock, u_speed;
--
--		spin_lock_irqsave(&piix_lock, flags);
--
--		pci_read_config_byte(dev, 0x48, &udma_enable);
--
--		/*
--		 * UDMA is handled by a combination of clock switching and
--		 * selection of dividers
--		 *
--		 * Handy rule: Odd modes are UDMATIMx 01, even are 02
--		 *	       except UDMA0 which is 00
--		 */
--		u_speed = min(2 - (udma & 1), udma);
--		if (udma == 5)
--			u_clock = 0x1000;	/* 100Mhz */
--		else if (udma > 2)
--			u_clock = 1;		/* 66Mhz */
--		else
--			u_clock = 0;		/* 33Mhz */
--
--		udma_enable |= (1 << devid);
--
--		/* Load the CT/RP selection */
--		pci_read_config_word(dev, 0x4A, &udma_timing);
--		udma_timing &= ~(3 << (4 * devid));
--		udma_timing |= u_speed << (4 * devid);
--		pci_write_config_word(dev, 0x4A, udma_timing);
--
--		if (isich) {
--			/* Select a 33/66/100Mhz clock */
--			pci_read_config_word(dev, 0x54, &ideconf);
--			ideconf &= ~(0x1001 << devid);
--			ideconf |= u_clock << devid;
--			/* For ICH or later we should set bit 10 for better
--			   performance (WR_PingPong_En) */
--			pci_write_config_word(dev, 0x54, ideconf);
--		}
--
--		pci_write_config_byte(dev, 0x48, udma_enable);
--
--		spin_unlock_irqrestore(&piix_lock, flags);
--	} else
--		/* MWDMA is driven by the PIO timings. */
--		piix_set_timings(ap, adev, ata_mwdma_to_pio(speed), 1);
--}
--
- /**
-  *	piix_set_dmamode - Initialize host controller PATA DMA timings
-  *	@ap: Port whose timings we are configuring
-@@ -817,22 +645,6 @@ static void piix_set_dmamode(struct ata_
- 	do_pata_set_dmamode(ap, adev, 0);
- }
- 
--/**
-- *	ich_set_dmamode - Initialize host controller PATA DMA timings
-- *	@ap: Port whose timings we are configuring
-- *	@adev: um
-- *
-- *	Set MW/UDMA mode for device, in host controller PCI config space.
-- *
-- *	LOCKING:
-- *	None (inherited from caller).
-- */
--
--static void ich_set_dmamode(struct ata_port *ap, struct ata_device *adev)
--{
--	do_pata_set_dmamode(ap, adev, 1);
--}
--
- /*
-  * Serial ATA Index/Data Pair Superset Registers access
-  *
-@@ -1145,38 +957,6 @@ static int piix_disable_ahci(struct pci_
- 	return rc;
- }
- 
--/**
-- *	piix_check_450nx_errata	-	Check for problem 450NX setup
-- *	@ata_dev: the PCI device to check
-- *
-- *	Check for the present of 450NX errata #19 and errata #25. If
-- *	they are found return an error code so we can turn off DMA
-- */
--
--static int __devinit piix_check_450nx_errata(struct pci_dev *ata_dev)
--{
--	struct pci_dev *pdev = NULL;
--	u16 cfg;
--	int no_piix_dma = 0;
--
--	while ((pdev = pci_get_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82454NX, pdev)) != NULL) {
--		/* Look for 450NX PXB. Check for problem configurations
--		   A PCI quirk checks bit 6 already */
--		pci_read_config_word(pdev, 0x41, &cfg);
--		/* Only on the original revision: IDE DMA can hang */
--		if (pdev->revision == 0x00)
--			no_piix_dma = 1;
--		/* On all revisions below 5 PXB bus lock must be disabled for IDE */
--		else if (cfg & (1<<14) && pdev->revision < 5)
--			no_piix_dma = 2;
--	}
--	if (no_piix_dma)
--		dev_printk(KERN_WARNING, &ata_dev->dev, "450NX errata present, disabling IDE DMA.\n");
--	if (no_piix_dma == 2)
--		dev_printk(KERN_WARNING, &ata_dev->dev, "A BIOS update may resolve this.\n");
--	return no_piix_dma;
--}
--
- static void __devinit piix_init_pcs(struct ata_host *host,
- 				    const struct piix_map_db *map_db)
- {
-Index: b/drivers/ata/ata_piix.h
-===================================================================
---- a/drivers/ata/ata_piix.h
-+++ b/drivers/ata/ata_piix.h
-@@ -43,3 +43,229 @@ static int ich_short_ata40(struct pci_de
- 
- 	return 0;
- }
-+
-+#ifdef __LINUX_LIBATA_H__
-+static DEFINE_SPINLOCK(piix_lock);
-+
-+static void piix_set_timings(struct ata_port *ap, struct ata_device *adev,
-+			     u8 pio, bool use_mwdma)
-+{
-+	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
-+	unsigned long flags;
-+	unsigned int is_slave	= (adev->devno != 0);
-+	unsigned int master_port = ap->port_no ? 0x42 : 0x40;
-+	unsigned int slave_port	 = 0x44;
-+	u16 master_data;
-+	u8 slave_data;
-+	u8 udma_enable;
-+	int control = 0;
-+
-+	/*
-+	 *	See Intel Document 298600-004 for the timing programing rules
-+	 *	for ICH controllers.
-+	 */
-+
-+	static const	 /* ISP  RTC */
-+	u8 timings[][2]	= { { 0, 0 },
-+			    { 0, 0 },
-+			    { 1, 0 },
-+			    { 2, 1 },
-+			    { 2, 3 }, };
-+
-+	if (pio >= 2 || use_mwdma)
-+		control |= 1;	/* TIME1 enable */
-+	if (ata_pio_need_iordy(adev) || use_mwdma)
-+		control |= 2;	/* IE enable */
-+	/* Intel specifies that the PPE functionality is for disk only */
-+	if (adev->class == ATA_DEV_ATA)
-+		control |= 4;	/* PPE enable */
-+	/* If the drive MWDMA is faster than it can do PIO then
-+	   we must force PIO into PIO0 */
-+	if (use_mwdma && adev->pio_mode < (XFER_PIO_0 + pio))
-+		/* Enable DMA timing only */
-+		control |= 8;	/* PIO cycles in PIO0 */
-+
-+	spin_lock_irqsave(&piix_lock, flags);
-+
-+	/* PIO configuration clears DTE unconditionally.  It will be
-+	 * programmed in set_dmamode which is guaranteed to be called
-+	 * after set_piomode if any DMA mode is available.
-+	 */
-+	pci_read_config_word(dev, master_port, &master_data);
-+	if (is_slave) {
-+		/* clear TIME1|IE1|PPE1|DTE1 */
-+		master_data &= 0xff0f;
-+		/* Enable SITRE (separate slave timing register) */
-+		master_data |= 0x4000;
-+		/* enable PPE1, IE1 and TIME1 as needed */
-+		master_data |= (control << 4);
-+		pci_read_config_byte(dev, slave_port, &slave_data);
-+		slave_data &= (ap->port_no ? 0x0f : 0xf0);
-+		/* Load the timing nibble for this slave */
-+		slave_data |= ((timings[pio][0] << 2) | timings[pio][1])
-+						<< (ap->port_no ? 4 : 0);
-+	} else {
-+		/* clear ISP|RCT|TIME0|IE0|PPE0|DTE0 */
-+		master_data &= 0xccf0;
-+		/* Enable PPE, IE and TIME as appropriate */
-+		master_data |= control;
-+		/* load ISP and RCT */
-+		master_data |=
-+			(timings[pio][0] << 12) |
-+			(timings[pio][1] << 8);
-+	}
-+	pci_write_config_word(dev, master_port, master_data);
-+	if (is_slave)
-+		pci_write_config_byte(dev, slave_port, slave_data);
-+
-+	/* Ensure the UDMA bit is off - it will be turned back on if
-+	   UDMA is selected */
-+
-+	if (ap->udma_mask) {
-+		pci_read_config_byte(dev, 0x48, &udma_enable);
-+		udma_enable &= ~(1 << (2 * ap->port_no + adev->devno));
-+		pci_write_config_byte(dev, 0x48, udma_enable);
-+	}
-+
-+	spin_unlock_irqrestore(&piix_lock, flags);
-+}
-+
-+/**
-+ *	piix_set_piomode - Initialize host controller PATA PIO timings
-+ *	@ap: Port whose timings we are configuring
-+ *	@adev: Drive in question
-+ *
-+ *	Set PIO mode for device, in host controller PCI config space.
-+ *
-+ *	LOCKING:
-+ *	None (inherited from caller).
-+ */
-+
-+static void piix_set_piomode(struct ata_port *ap, struct ata_device *adev)
-+{
-+	piix_set_timings(ap, adev, adev->pio_mode - XFER_PIO_0, 0);
-+}
-+
-+/**
-+ *	do_pata_set_dmamode - Initialize host controller PATA PIO timings
-+ *	@ap: Port whose timings we are configuring
-+ *	@adev: Drive in question
-+ *	@isich: set if the chip is an ICH device
-+ *
-+ *	Set UDMA mode for device, in host controller PCI config space.
-+ *
-+ *	LOCKING:
-+ *	None (inherited from caller).
-+ */
-+
-+static void do_pata_set_dmamode(struct ata_port *ap, struct ata_device *adev,
-+				int isich)
-+{
-+	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
-+	unsigned long flags;
-+	u8 speed		= adev->dma_mode;
-+	int devid		= adev->devno + 2 * ap->port_no;
-+	u8 udma_enable		= 0;
-+
-+	if (speed >= XFER_UDMA_0) {
-+		unsigned int udma = speed - XFER_UDMA_0;
-+		u16 udma_timing;
-+		u16 ideconf;
-+		int u_clock, u_speed;
-+
-+		spin_lock_irqsave(&piix_lock, flags);
-+
-+		pci_read_config_byte(dev, 0x48, &udma_enable);
-+
-+		/*
-+		 * UDMA is handled by a combination of clock switching and
-+		 * selection of dividers
-+		 *
-+		 * Handy rule: Odd modes are UDMATIMx 01, even are 02
-+		 *	       except UDMA0 which is 00
-+		 */
-+		u_speed = min(2 - (udma & 1), udma);
-+		if (udma == 5)
-+			u_clock = 0x1000;	/* 100Mhz */
-+		else if (udma > 2)
-+			u_clock = 1;		/* 66Mhz */
-+		else
-+			u_clock = 0;		/* 33Mhz */
-+
-+		udma_enable |= (1 << devid);
-+
-+		/* Load the CT/RP selection */
-+		pci_read_config_word(dev, 0x4A, &udma_timing);
-+		udma_timing &= ~(3 << (4 * devid));
-+		udma_timing |= u_speed << (4 * devid);
-+		pci_write_config_word(dev, 0x4A, udma_timing);
-+
-+		if (isich) {
-+			/* Select a 33/66/100Mhz clock */
-+			pci_read_config_word(dev, 0x54, &ideconf);
-+			ideconf &= ~(0x1001 << devid);
-+			ideconf |= u_clock << devid;
-+			/* For ICH or later we should set bit 10 for better
-+			   performance (WR_PingPong_En) */
-+			pci_write_config_word(dev, 0x54, ideconf);
-+		}
-+
-+		pci_write_config_byte(dev, 0x48, udma_enable);
-+
-+		spin_unlock_irqrestore(&piix_lock, flags);
-+	} else
-+		/* MWDMA is driven by the PIO timings. */
-+		piix_set_timings(ap, adev, ata_mwdma_to_pio(speed), 1);
-+}
-+
-+/**
-+ *	ich_set_dmamode - Initialize host controller PATA DMA timings
-+ *	@ap: Port whose timings we are configuring
-+ *	@adev: um
-+ *
-+ *	Set MW/UDMA mode for device, in host controller PCI config space.
-+ *
-+ *	LOCKING:
-+ *	None (inherited from caller).
-+ */
-+
-+static void ich_set_dmamode(struct ata_port *ap, struct ata_device *adev)
-+{
-+	do_pata_set_dmamode(ap, adev, 1);
-+}
-+
-+/**
-+ *	piix_check_450nx_errata	-	Check for problem 450NX setup
-+ *	@ata_dev: the PCI device to check
-+ *
-+ *	Check for the present of 450NX errata #19 and errata #25. If
-+ *	they are found return an error code so we can turn off DMA
-+ */
-+
-+static int __devinit piix_check_450nx_errata(struct pci_dev *ata_dev)
-+{
-+	struct pci_dev *pdev = NULL;
-+	u16 cfg;
-+	int no_piix_dma = 0;
-+
-+	while ((pdev = pci_get_device(PCI_VENDOR_ID_INTEL,
-+				PCI_DEVICE_ID_INTEL_82454NX, pdev)) != NULL) {
-+		/* Look for 450NX PXB. Check for problem configurations
-+		   A PCI quirk checks bit 6 already */
-+		pci_read_config_word(pdev, 0x41, &cfg);
-+		/* Only on the original revision: IDE DMA can hang */
-+		if (pdev->revision == 0x00)
-+			no_piix_dma = 1;
-+		/* On all revs below 5 PXB bus lock must be disabled for IDE */
-+		else if (cfg & (1<<14) && pdev->revision < 5)
-+			no_piix_dma = 2;
-+	}
-+	if (no_piix_dma)
-+		dev_printk(KERN_WARNING, &ata_dev->dev,
-+			   "450NX errata present, disabling IDE DMA.\n");
-+	if (no_piix_dma == 2)
-+		dev_printk(KERN_WARNING, &ata_dev->dev,
-+			   "A BIOS update may resolve this.\n");
-+	return no_piix_dma;
-+}
-+#endif
+Actual code gets my thumbs up.
+
+> This adds some > 80 chars lines, but I hope that is ok.
+
+It's against the coding style and as far as I can see, the only
+lines that are > 80 are the dev_notice and DECLARE_FIXUP lines - both
+of which can be trivially split across multiple lines, so please just
+do that.
+
+Thanks,
+
+--phil
+
+> ---
+> 
+> >From 9b208770b2421eae50e46d826f08a4084c2bcdb9 Mon Sep 17 00:00:00
+> >2001
+> From: Maxim Levitsky <maximlevitsky@gmail.com>
+> Date: Fri, 29 Jan 2010 15:30:46 +0200
+> Subject: [PATCH] Port ricoh_mmc to pci quirk
+> 
+> This patch solves nasty problem original driver had.
+> Original goal of the ricoh_mmc, was to disable this device because
+> then, mmc cards can be read using standard SDHCI controller,
+> thus avoiding the need in yet another driver.
+> However, the act of disablement, makes other pci functions that
+> belong to this controller (xD and memstick) shift up one level, thus
+> pci core has now wrong idea about these devices.
+> 
+> To fix this issue, this patch moves the driver into pci quirk
+> section, thus it is executed before the pci is enumerated, and
+> therefore solve that issue, also the same is preformed on resume for
+> same reasons.
+> 
+> Also regardless of the above, this way is cleaner.
+> 
+> You still need to set CONFIG_MMC_RICOH_MMC
+> to enable this quirk
+> 
+> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+> ---
+>  drivers/mmc/host/Kconfig     |   10 +-
+>  drivers/mmc/host/Makefile    |    1 -
+>  drivers/mmc/host/ricoh_mmc.c |  262
+> ------------------------------------------
+> drivers/pci/quirks.c         |   82 +++++++++++++ 4 files changed, 85
+> insertions(+), 270 deletions(-) delete mode 100644
+> drivers/mmc/host/ricoh_mmc.c
+> 
+> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+> index ce1d288..6bc3ecb 100644
+> --- a/drivers/mmc/host/Kconfig
+> +++ b/drivers/mmc/host/Kconfig
+> @@ -69,20 +69,16 @@ config MMC_SDHCI_PCI
+>  	  If unsure, say N.
+>  
+>  config MMC_RICOH_MMC
+> -	tristate "Ricoh MMC Controller Disabler  (EXPERIMENTAL)"
+> +	bool "Ricoh MMC Controller Disabler  (EXPERIMENTAL)"
+>  	depends on MMC_SDHCI_PCI
+>  	help
+> -	  This selects the disabler for the Ricoh MMC Controller.
+> This
+> +	  This adds a pci quirk to disable Ricoh MMC Controller. This
+>  	  proprietary controller is unnecessary because the SDHCI
+> driver supports MMC cards on the SD controller, but if it is not
+>  	  disabled, it will steal the MMC cards away - rendering them
+> -	  useless. It is safe to select this driver even if you don't
+> +	  useless. It is safe to select this even if you don't
+>  	  have a Ricoh based card reader.
+>  
+> -
+> -	  To compile this driver as a module, choose M here:
+> -	  the module will be called ricoh_mmc.
+> -
+>  	  If unsure, say Y.
+>  
+>  config MMC_SDHCI_OF
+> diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
+> index 3d253dd..f480397 100644
+> --- a/drivers/mmc/host/Makefile
+> +++ b/drivers/mmc/host/Makefile
+> @@ -12,7 +12,6 @@ obj-$(CONFIG_MMC_IMX)		+= imxmmc.o
+>  obj-$(CONFIG_MMC_MXC)		+= mxcmmc.o
+>  obj-$(CONFIG_MMC_SDHCI)		+= sdhci.o
+>  obj-$(CONFIG_MMC_SDHCI_PCI)	+= sdhci-pci.o
+> -obj-$(CONFIG_MMC_RICOH_MMC)	+= ricoh_mmc.o
+>  obj-$(CONFIG_MMC_SDHCI_PLTFM)	+= sdhci-pltfm.o
+>  obj-$(CONFIG_MMC_SDHCI_S3C)	+= sdhci-s3c.o
+>  obj-$(CONFIG_MMC_WBSD)		+= wbsd.o
+> diff --git a/drivers/mmc/host/ricoh_mmc.c
+> b/drivers/mmc/host/ricoh_mmc.c deleted file mode 100644
+> index f627905..0000000
+> --- a/drivers/mmc/host/ricoh_mmc.c
+> +++ /dev/null
+> @@ -1,262 +0,0 @@
+> -/*
+> - *  ricoh_mmc.c - Dummy driver to disable the Rioch MMC controller.
+> - *
+> - *  Copyright (C) 2007 Philip Langdale, All Rights Reserved.
+> - *
+> - * This program is free software; you can redistribute it and/or
+> modify
+> - * it under the terms of the GNU General Public License as published
+> by
+> - * the Free Software Foundation; either version 2 of the License, or
+> (at
+> - * your option) any later version.
+> - */
+> -
+> -/*
+> - * This is a conceptually ridiculous driver, but it is required by
+> the way
+> - * the Ricoh multi-function chips (R5CXXX) work. These chips
+> implement
+> - * the four main memory card controllers (SD, MMC, MS, xD) and one
+> or both
+> - * of cardbus or firewire. It happens that they implement SD and MMC
+> - * support as separate controllers (and PCI functions). The linux
+> SDHCI
+> - * driver supports MMC cards but the chip detects MMC cards in
+> hardware
+> - * and directs them to the MMC controller - so the SDHCI driver
+> never sees
+> - * them. To get around this, we must disable the useless MMC
+> controller.
+> - * At that point, the SDHCI controller will start seeing them. As a
+> bonus,
+> - * a detection event occurs immediately, even if the MMC card is
+> already
+> - * in the reader.
+> - *
+> - * It seems to be the case that the relevant PCI registers to
+> deactivate the
+> - * MMC controller live on PCI function 0, which might be the cardbus
+> controller
+> - * or the firewire controller, depending on the particular chip in
+> question. As
+> - * such, it makes what this driver has to do unavoidably ugly. Such
+> is life.
+> - */
+> -
+> -#include <linux/pci.h>
+> -
+> -#define DRIVER_NAME "ricoh-mmc"
+> -
+> -static const struct pci_device_id pci_ids[] __devinitdata = {
+> -	{
+> -		.vendor		= PCI_VENDOR_ID_RICOH,
+> -		.device		= PCI_DEVICE_ID_RICOH_R5C843,
+> -		.subvendor	= PCI_ANY_ID,
+> -		.subdevice	= PCI_ANY_ID,
+> -	},
+> -	{ /* end: all zeroes */ },
+> -};
+> -
+> -MODULE_DEVICE_TABLE(pci, pci_ids);
+> -
+> -static int ricoh_mmc_disable(struct pci_dev *fw_dev)
+> -{
+> -	u8 write_enable;
+> -	u8 write_target;
+> -	u8 disable;
+> -
+> -	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
+> -		/* via RL5C476 */
+> -
+> -		pci_read_config_byte(fw_dev, 0xB7, &disable);
+> -		if (disable & 0x02) {
+> -			printk(KERN_INFO DRIVER_NAME
+> -				": Controller already disabled. " \
+> -				"Nothing to do.\n");
+> -			return -ENODEV;
+> -		}
+> -
+> -		pci_read_config_byte(fw_dev, 0x8E, &write_enable);
+> -		pci_write_config_byte(fw_dev, 0x8E, 0xAA);
+> -		pci_read_config_byte(fw_dev, 0x8D, &write_target);
+> -		pci_write_config_byte(fw_dev, 0x8D, 0xB7);
+> -		pci_write_config_byte(fw_dev, 0xB7, disable | 0x02);
+> -		pci_write_config_byte(fw_dev, 0x8E, write_enable);
+> -		pci_write_config_byte(fw_dev, 0x8D, write_target);
+> -	} else {
+> -		/* via R5C832 */
+> -
+> -		pci_read_config_byte(fw_dev, 0xCB, &disable);
+> -		if (disable & 0x02) {
+> -			printk(KERN_INFO DRIVER_NAME
+> -			       ": Controller already disabled. " \
+> -				"Nothing to do.\n");
+> -			return -ENODEV;
+> -		}
+> -
+> -		pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+> -		pci_write_config_byte(fw_dev, 0xCA, 0x57);
+> -		pci_write_config_byte(fw_dev, 0xCB, disable | 0x02);
+> -		pci_write_config_byte(fw_dev, 0xCA, write_enable);
+> -	}
+> -
+> -	printk(KERN_INFO DRIVER_NAME
+> -	       ": Controller is now disabled.\n");
+> -
+> -	return 0;
+> -}
+> -
+> -static int ricoh_mmc_enable(struct pci_dev *fw_dev)
+> -{
+> -	u8 write_enable;
+> -	u8 write_target;
+> -	u8 disable;
+> -
+> -	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
+> -		/* via RL5C476 */
+> -
+> -		pci_read_config_byte(fw_dev, 0x8E, &write_enable);
+> -		pci_write_config_byte(fw_dev, 0x8E, 0xAA);
+> -		pci_read_config_byte(fw_dev, 0x8D, &write_target);
+> -		pci_write_config_byte(fw_dev, 0x8D, 0xB7);
+> -		pci_read_config_byte(fw_dev, 0xB7, &disable);
+> -		pci_write_config_byte(fw_dev, 0xB7, disable & ~0x02);
+> -		pci_write_config_byte(fw_dev, 0x8E, write_enable);
+> -		pci_write_config_byte(fw_dev, 0x8D, write_target);
+> -	} else {
+> -		/* via R5C832 */
+> -
+> -		pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+> -		pci_read_config_byte(fw_dev, 0xCB, &disable);
+> -		pci_write_config_byte(fw_dev, 0xCA, 0x57);
+> -		pci_write_config_byte(fw_dev, 0xCB, disable & ~0x02);
+> -		pci_write_config_byte(fw_dev, 0xCA, write_enable);
+> -	}
+> -
+> -	printk(KERN_INFO DRIVER_NAME
+> -	       ": Controller is now re-enabled.\n");
+> -
+> -	return 0;
+> -}
+> -
+> -static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+> -				     const struct pci_device_id *ent)
+> -{
+> -	u8 rev;
+> -	u8 ctrlfound = 0;
+> -
+> -	struct pci_dev *fw_dev = NULL;
+> -
+> -	BUG_ON(pdev == NULL);
+> -	BUG_ON(ent == NULL);
+> -
+> -	pci_read_config_byte(pdev, PCI_CLASS_REVISION, &rev);
+> -
+> -	printk(KERN_INFO DRIVER_NAME
+> -		": Ricoh MMC controller found at %s [%04x:%04x] (rev
+> %x)\n",
+> -		pci_name(pdev), (int)pdev->vendor, (int)pdev->device,
+> -		(int)rev);
+> -
+> -	while ((fw_dev =
+> -		pci_get_device(PCI_VENDOR_ID_RICOH,
+> -			PCI_DEVICE_ID_RICOH_RL5C476, fw_dev))) {
+> -		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn)
+> &&
+> -		    PCI_FUNC(fw_dev->devfn) == 0 &&
+> -		    pdev->bus == fw_dev->bus) {
+> -			if (ricoh_mmc_disable(fw_dev) != 0)
+> -				return -ENODEV;
+> -
+> -			pci_set_drvdata(pdev, fw_dev);
+> -
+> -			++ctrlfound;
+> -			break;
+> -		}
+> -	}
+> -
+> -	fw_dev = NULL;
+> -
+> -	while (!ctrlfound &&
+> -	    (fw_dev = pci_get_device(PCI_VENDOR_ID_RICOH,
+> -					PCI_DEVICE_ID_RICOH_R5C832,
+> fw_dev))) {
+> -		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn)
+> &&
+> -		    PCI_FUNC(fw_dev->devfn) == 0 &&
+> -		    pdev->bus == fw_dev->bus) {
+> -			if (ricoh_mmc_disable(fw_dev) != 0)
+> -				return -ENODEV;
+> -
+> -			pci_set_drvdata(pdev, fw_dev);
+> -
+> -			++ctrlfound;
+> -		}
+> -	}
+> -
+> -	if (!ctrlfound) {
+> -		printk(KERN_WARNING DRIVER_NAME
+> -		       ": Main Ricoh function not found. Cannot
+> disable controller.\n");
+> -		return -ENODEV;
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+> -static void __devexit ricoh_mmc_remove(struct pci_dev *pdev)
+> -{
+> -	struct pci_dev *fw_dev = NULL;
+> -
+> -	fw_dev = pci_get_drvdata(pdev);
+> -	BUG_ON(fw_dev == NULL);
+> -
+> -	ricoh_mmc_enable(fw_dev);
+> -
+> -	pci_set_drvdata(pdev, NULL);
+> -}
+> -
+> -static int ricoh_mmc_suspend_late(struct pci_dev *pdev, pm_message_t
+> state) -{
+> -	struct pci_dev *fw_dev = NULL;
+> -
+> -	fw_dev = pci_get_drvdata(pdev);
+> -	BUG_ON(fw_dev == NULL);
+> -
+> -	printk(KERN_INFO DRIVER_NAME ": Suspending.\n");
+> -
+> -	ricoh_mmc_enable(fw_dev);
+> -
+> -	return 0;
+> -}
+> -
+> -static int ricoh_mmc_resume_early(struct pci_dev *pdev)
+> -{
+> -	struct pci_dev *fw_dev = NULL;
+> -
+> -	fw_dev = pci_get_drvdata(pdev);
+> -	BUG_ON(fw_dev == NULL);
+> -
+> -	printk(KERN_INFO DRIVER_NAME ": Resuming.\n");
+> -
+> -	ricoh_mmc_disable(fw_dev);
+> -
+> -	return 0;
+> -}
+> -
+> -static struct pci_driver ricoh_mmc_driver = {
+> -	.name = 	DRIVER_NAME,
+> -	.id_table =	pci_ids,
+> -	.probe = 	ricoh_mmc_probe,
+> -	.remove =	__devexit_p(ricoh_mmc_remove),
+> -	.suspend_late =	ricoh_mmc_suspend_late,
+> -	.resume_early =	ricoh_mmc_resume_early,
+> -};
+> -
+> -/*****************************************************************************\
+> -
+> *
+> *
+> - * Driver
+> init/exit                                                          *
+> -
+> *
+> *
+> -\*****************************************************************************/
+> - -static int __init ricoh_mmc_drv_init(void) -{
+> -	printk(KERN_INFO DRIVER_NAME
+> -		": Ricoh MMC Controller disabling driver\n");
+> -	printk(KERN_INFO DRIVER_NAME ": Copyright(c) Philip
+> Langdale\n"); -
+> -	return pci_register_driver(&ricoh_mmc_driver);
+> -}
+> -
+> -static void __exit ricoh_mmc_drv_exit(void)
+> -{
+> -	pci_unregister_driver(&ricoh_mmc_driver);
+> -}
+> -
+> -module_init(ricoh_mmc_drv_init);
+> -module_exit(ricoh_mmc_drv_exit);
+> -
+> -MODULE_AUTHOR("Philip Langdale <philipl@alumni.utexas.net>");
+> -MODULE_DESCRIPTION("Ricoh MMC Controller disabling driver");
+> -MODULE_LICENSE("GPL");
+> -
+> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> index c746943..df08a2c 100644
+> --- a/drivers/pci/quirks.c
+> +++ b/drivers/pci/quirks.c
+> @@ -2520,6 +2520,88 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,
+> 0x150d, quirk_i82576_sriov); 
+>  #endif	/* CONFIG_PCI_IOV */
+>  
+> +/*
+> + * This is a quirk for Ricoh MMC controller found as a part of
+> + * multifunction chip.
+> +
+> + * This is very similar and based on ricoh_mmc driver written by
+> + * Philip Langdale. Thank you for these magic sequences.
+> + *
+> + * These chips implement the four main memory card
+> + * controllers (SD, MMC, MS, xD) and one or both
+> + * of cardbus or firewire. It happens that they implement SD and MMC
+> + * support as separate controllers (and PCI functions). The linux
+> SDHCI
+> + * driver supports MMC cards but the chip detects MMC cards in
+> hardware
+> + * and directs them to the MMC controller - so the SDHCI driver
+> never sees
+> + * them. To get around this, we must disable the useless MMC
+> controller.
+> + * At that point, the SDHCI controller will start seeing them
+> + * It seems to be the case that the relevant PCI registers to
+> deactivate the
+> + * MMC controller live on PCI function 0, which might be the cardbus
+> controller
+> + * or the firewire controller, depending on the particular chip in
+> question +
+> + * This has to be done early, because as soon as we disable the MMC
+> controller
+> + * other pci functions shift up one level, e.g. function #2 becomes
+> function
+> + * #1, and this will confuse the pci core.
+> + */
+> +
+> +#ifdef CONFIG_MMC_RICOH_MMC
+> +static void ricoh_mmc_fixup_rl5c476(struct pci_dev *dev)
+> +{
+> +	/* disable via cardbus interface */
+> +	u8 write_enable;
+> +	u8 write_target;
+> +	u8 disable;
+> +
+> +	/* disable must be done via function #0 */
+> +	if (PCI_FUNC(dev->devfn))
+> +		return;
+> +
+> +	pci_read_config_byte(dev, 0xB7, &disable);
+> +	if (disable & 0x02)
+> +		return;
+> +
+> +	pci_read_config_byte(dev, 0x8E, &write_enable);
+> +	pci_write_config_byte(dev, 0x8E, 0xAA);
+> +	pci_read_config_byte(dev, 0x8D, &write_target);
+> +	pci_write_config_byte(dev, 0x8D, 0xB7);
+> +	pci_write_config_byte(dev, 0xB7, disable | 0x02);
+> +	pci_write_config_byte(dev, 0x8E, write_enable);
+> +	pci_write_config_byte(dev, 0x8D, write_target);
+> +
+> +	dev_notice(&dev->dev, "proprietary Ricoh mmc controller
+> disabled (via cardbus function)\n");
+> +	dev_notice(&dev->dev, "MMC cards are now supported by
+> standard SDHCI controller\n"); +}
+> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_RICOH,
+> PCI_DEVICE_ID_RICOH_RL5C476, ricoh_mmc_fixup_rl5c476);
+> +DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_RICOH,
+> PCI_DEVICE_ID_RICOH_RL5C476, ricoh_mmc_fixup_rl5c476); + +static void
+> ricoh_mmc_fixup_r5c832(struct pci_dev *dev) +{
+> +	/* disable via firewire interface */
+> +	u8 write_enable;
+> +	u8 disable;
+> +
+> +	/* disable must be done via function #0 */
+> +	if (PCI_FUNC(dev->devfn))
+> +		return;
+> +
+> +	pci_read_config_byte(dev, 0xCB, &disable);
+> +
+> +	if (disable & 0x02)
+> +		return;
+> +
+> +	pci_read_config_byte(dev, 0xCA, &write_enable);
+> +	pci_write_config_byte(dev, 0xCA, 0x57);
+> +	pci_write_config_byte(dev, 0xCB, disable | 0x02);
+> +	pci_write_config_byte(dev, 0xCA, write_enable);
+> +
+> +	dev_notice(&dev->dev, "proprietary Ricoh mmc controller
+> disabled (via firewire function)\n");
+> +	dev_notice(&dev->dev, "MMC cards are now supported by
+> standard SDHCI controller\n"); +}
+> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_RICOH,
+> PCI_DEVICE_ID_RICOH_R5C832, ricoh_mmc_fixup_r5c832);
+> +DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_RICOH,
+> PCI_DEVICE_ID_RICOH_R5C832, ricoh_mmc_fixup_r5c832);
+> +#endif /*CONFIG_MMC_RICOH_MMC*/ + +
+>  static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f,
+>  			  struct pci_fixup *end)
+>  {
+
+
+
+
+--phil
