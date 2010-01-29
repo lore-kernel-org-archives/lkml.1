@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948Ab0A2RQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700Ab0A2R12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753948Ab0A2RQn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 12:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541Ab0A2RQn
+	id S1753700Ab0A2R12 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 12:27:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777Ab0A2R11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 12:16:43 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33031 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751058Ab0A2RQm (ORCPT
+	Fri, 29 Jan 2010 12:27:27 -0500
+Received: from exprod6ob111.obsmtp.com ([64.18.1.26]:51961 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751055Ab0A2R10 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 12:16:42 -0500
-Subject: Re: [PATCH tracing/kprobes] kprobes: Disable booster when
- CONFIG_PREEMPT=y
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-In-Reply-To: <20100129170817.GA2283@Krystal>
-References: <4B5E476C.9030303@redhat.com>
-	 <20100127215531.24775.26807.stgit@dhcp-100-2-132.bos.redhat.com>
-	 <20100129092135.GE10878@elte.hu> <4B62F61D.5060203@redhat.com>
-	 <20100129170817.GA2283@Krystal>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 29 Jan 2010 18:15:38 +0100
-Message-ID: <1264785338.24455.14.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Jan 2010 12:27:26 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [patch v2 2/2] at91_udc.c use spinlocks instead of local_irq_xxx
+Date: Fri, 29 Jan 2010 12:27:21 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909020E96FA@mi8nycmail19.Mi8.com>
+In-Reply-To: <20100129162155.824407360@gmail.com>>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch v2 2/2] at91_udc.c use spinlocks instead of local_irq_xxx
+Thread-Index: AcqhAm+OFMyMLra4RkWWYhfr7Xr8UQABBXog
+References: <20100129162029.998540038@gmail.com>> <20100129162155.824407360@gmail.com>>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Harro Haan" <hrhaan@gmail.com>, "Ryan Mallon" <ryan@bluewatersys.com>,
+       "Remy Bohmer" <linux@bohmer.net>,
+       "Andrew Victor" <avictor.za@gmail.com>,
+       "David Brownell" <dbrownell@users.sourceforge.net>
+Cc: <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 29 Jan 2010 17:27:24.0750 (UTC) FILETIME=[5262D6E0:01CAA108]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-29 at 12:08 -0500, Mathieu Desnoyers wrote:
-> 
-> If a task is set as stopped, and the preempted before calling schedule,
-> can this result in a preempted task staying in that state for an
-> arbitrary long period of time ? Or is there some mechanism prohibiting
-> that in the scheduler ? 
+On Friday, January 29, 2010 9:21 AM, Harro Haan wrote:
+>
+> The locking code of this driver is reworked for preempt-rt.
+>
+> Signed-off-by: Harro Haan <hrhaan@gmail.com>
+> ---
+>  drivers/usb/gadget/at91_udc.c |  139 ++++++++++++++++++++++++++++--------------
+>  drivers/usb/gadget/at91_udc.h |    1 
+>  2 files changed, 94 insertions(+), 46 deletions(-)
 
-PREEMPT_ACTIVE does that:
-
-preempt_schedule()
-                add_preempt_count(PREEMPT_ACTIVE);
-                schedule();
-
-
-schedule()
-        if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
-                if (unlikely(signal_pending_state(prev->state, prev)))
-                        prev->state = TASK_RUNNING;
-                else
-                        deactivate_task(rq, prev, 1);
-                switch_count = &prev->nvcsw;
-        }
-
-
+Reviewed-by: H Hartley Sweeten <hsweeten@visionengravers.com>
