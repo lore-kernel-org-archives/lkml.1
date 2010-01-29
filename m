@@ -1,45 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896Ab0A2Wga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958Ab0A2Wn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896Ab0A2Wga (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 17:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834Ab0A2Wg3
+	id S1755958Ab0A2Wn0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 17:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944Ab0A2WnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 17:36:29 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33595 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755756Ab0A2Wg3 (ORCPT
+	Fri, 29 Jan 2010 17:43:25 -0500
+Received: from p01c12o147.mxlogic.net ([208.65.145.70]:45735 "EHLO
+	p01c12o147.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754004Ab0A2WnY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 17:36:29 -0500
-Date: Fri, 29 Jan 2010 17:36:27 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [patch 06/10] affs: Convert semaphores to mutexes
-Message-ID: <20100129223627.GB18752@infradead.org>
-References: <20100129203549.526478432@linutronix.de> <20100129203613.591137914@linutronix.de>
+	Fri, 29 Jan 2010 17:43:24 -0500
+X-Greylist: delayed 339 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jan 2010 17:43:24 EST
+X-MXL-Hash: 4b63648c13e15cdb-833094056f584d742dd10a5875160bf75c451a62
+X-MXL-Hash: 4b6363e56b302e86-e8c067e875b5495d65f348bc2a57d34c4b7f4c23
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100129203613.591137914@linutronix.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH 2.6.33 2/4] net: Kconfig change for KSZ884X driver
+Date: Fri, 29 Jan 2010 14:40:34 -0800
+Message-ID: <14385191E87B904DBD836449AA30269D021A4E@MORGANITE.micrel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.33 2/4] net: Kconfig change for KSZ884X driver
+Thread-Index: AcqhNBHBnUKSIGToTEW6ZDguTRywiA==
+From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+To: "Dave Miller" <davem@davemloft.net>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 29 Jan 2010 22:40:34.0392 (UTC) FILETIME=[11E2AD80:01CAA134]
+X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2010011101)]
+X-MAIL-FROM: <tristram.ha@micrel.com>
+X-SOURCE-IP: [65.218.208.2]
+X-AnalysisOut: [v=1.0 c=1 a=8PPP1YHBDycA:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
+X-AnalysisOut: [a=Q4n7fi2PAAAA:8 a=VYfMdWa_kRON_9sugdgA:9 a=1ljP9evXTYvjWx]
+X-AnalysisOut: [Uq1mGxlsZ3TUYA:4 a=yJsD6ztlz_8A:10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 29, 2010 at 08:38:55PM -0000, Thomas Gleixner wrote:
-> These semaphores are plain mutexes. Convert them to struct mutex.
+From: Tristram Ha <Tristram.Ha@micrel.com>
 
-Looks good.
+Add Micrel KSZ8841/KSZ8842 PCI Ethernet chip support.
 
-> Map affs_[un]lock_dir() to affs_[un]lock_ext() instead of the "#define
-> i_hash_lock i_ext_lock" magic.
+Some users like to use KSZ8842 switch to run Spanning Tree Protocol.  As a result a hardware STP support was implemented so that the host does not waste CPU time forwarding each and every packet.
 
-I'm not sure which of the remapping tricks is the worth one..
+Signed-off-by: Tristram Ha <Tristram.Ha@micrel.com>
+---
+This is a resubmission of the Micrel KSZ8841/2 PCI Ethernet driver.
 
-Btw, if we don't want lockdep to complain we'll need annotations on
-affs_lock_dir as it's taken both on parent and child.
-
+--- linux-2.6.33-rc3.old/drivers/net/Kconfig	2010-01-05 16:02:46.000000000 -0800
++++ linux-2.6.33-rc3.new/drivers/net/Kconfig	2010-01-13 12:17:42.000000000 -0800
+@@ -1368,6 +1368,27 @@ config AC3200
+ 	  To compile this driver as a module, choose M here. The module
+ 	  will be called ac3200.
+ 
++config KSZ884X_PCI
++	tristate "Micrel KSZ8841/2 PCI"
++	depends on NET_PCI && PCI
++	select MII
++	select CRC32
++	help
++	  This PCI driver is for Micrel KSZ8841/KSZ8842 PCI Ethernet chip.
++
++	  To compile this driver as a module, choose M here. The module
++	  will be called ksz884x.
++
++config KSZ8842_STP
++	bool "STP support (EXPERIMENTAL)"
++	depends on KSZ884X_PCI && EXPERIMENTAL
++	help
++	  This enables a feature to aid KSZ8842 running Spanning Tree Protocol.
++	  To actually use it pass the stp=1 parameter to the driver.
++
++	  This feature is experimental and may not work correctly compared to
++	  the Linux bridge using STP.
++
+ config APRICOT
+ 	tristate "Apricot Xen-II on board Ethernet"
+ 	depends on NET_PCI && ISA
