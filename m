@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354Ab0A2TnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754457Ab0A2TrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754354Ab0A2TnF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 14:43:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792Ab0A2TnD
+	id S1754457Ab0A2TrS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 14:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217Ab0A2TrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 14:43:03 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:58257 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752339Ab0A2TnB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 14:43:01 -0500
-Date: Fri, 29 Jan 2010 14:43:01 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] PM / Runtime: Clean up pm_runtime_disable()
-In-Reply-To: <201001291601.37812.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.1001291435290.23361-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 29 Jan 2010 14:47:17 -0500
+Received: from mga14.intel.com ([143.182.124.37]:19478 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753132Ab0A2TrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 14:47:16 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="238373700"
+Message-Id: <20100129194330.207790269@sbs-t61.sc.intel.com>
+User-Agent: quilt/0.47-1
+Date: Fri, 29 Jan 2010 11:42:20 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, lizf@cn.fujitsu.com
+Subject: [patch 1/2] x86, irq: update the vector domain for legacy irqs handled by io-apic
+Content-Disposition: inline; filename=update_legacyirq_cfg_domains_handled_by_ioapic.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jan 2010, Rafael J. Wysocki wrote:
+In the recent change of not reserving IRQ0_VECTOR..IRQ15_VECTOR's on all
+cpu's, we start with irq 0..15 getting directed to (and handled on) cpu-0.
 
-> On Friday 29 January 2010, Alan Stern wrote:
-> > On Thu, 28 Jan 2010, Rafael J. Wysocki wrote:
-> > 
-> > > > > - * If @check_resume is set and there's a resume request pending when
-> > > > > - * __pm_runtime_disable() is called and power.disable_depth is zero, the
-> > > > > - * function will wake up the device before disabling its run-time PM.
-> > > > >   */
-> > > > > -void __pm_runtime_disable(struct device *dev, bool check_resume)
-> > > > > +void pm_runtime_disable(struct device *dev)
-> > > > >  {
-> > > > 
-> > > > Why did you decide to remove the check_resume argument?  That decision 
-> > > > should be explained in the patch description.
-> > > 
-> > > Well, I thought the "which is not necessary any more" would be a sufficient
-> > > explanation ...
-> > 
-> > But why is it not necessary now,
-> 
-> Well, all of the existing callers use only one value of it, which is 'false'
-> (perhaps I should write that in the changelog).
+In the logical flat mode, once the AP's are online (and before irqbalance
+comes into picture), kernel intends to handle these IRQ's on any cpu (as the
+logical flat mode allows to specify multiple cpu's for the irq destination and
+the chipset based routing can deliver to the interrupt to any one of
+the specified cpu's). This was broken with our recent change, which was ending
+up using only cpu 0 as the destination, even when the kernel was specifying to
+use all online cpu's for the logical flat mode case.
 
-I don't understand.  Isn't the existing version of pm_runtime_disable()
-a caller which sets check_resume to 'true'?  There certainly are places 
-that call pm_runtime_disable().
+Fix this by updating vector allocation domain (cfg->domain) for legacy irqs,
+when the IO-APIC handles them.
 
-> > given that apparently it was necessary before?  What has changed to make
-> > it unnecessary?
-> 
-> It was used in the system suspend code path in main.c (in dpm_prepare()) IIRC,
-> but it was replaced by the current code.
-> 
-> I don't really think it's useful to try to recall why it was used at one point.
-> It's not used now and I don't have a usage case for it.  If no one else knows
-> it will be necessary, removing it is the right thing to do.
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Tested-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+---
 
-A particularly important usage case for pm_runtime_disable() is when a
-bus subsystem or driver does when resuming from system sleep and the
-device was already runtime-suspended when the sleep began.  However in 
-this case (and all the other cases I'm aware of) there's no need to 
-check whether a resume request is pending before doing the 
-runtime_disable.
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 0cc7022..a18bab0 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -1428,6 +1428,14 @@ static void setup_IO_APIC_irq(int apic_id, int pin, unsigned int irq, struct irq
+ 
+ 	cfg = desc->chip_data;
+ 
++	/*
++ 	 * For legacy irqs, cfg->domain starts with cpu 0 for legacy
++ 	 * controllers like 8259. Now that IO-APIC can handle this irq, update
++ 	 * the cfg->domain.
++ 	 */
++	if (irq < nr_legacy_irqs && cpumask_test_cpu(0, cfg->domain))
++		apic->vector_allocation_domain(0, cfg->domain);
++
+ 	if (assign_irq_vector(irq, cfg, apic->target_cpus()))
+ 		return;
+ 
 
-I wasn't saying that the patch is wrong, just asking the reason for it.
-
-Alan Stern
 
