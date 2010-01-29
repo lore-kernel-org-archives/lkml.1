@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941Ab0A2KTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478Ab0A2KcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756941Ab0A2KTd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 05:19:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716Ab0A2KTd
+	id S1754478Ab0A2KcF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 05:32:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877Ab0A2KcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 05:19:33 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:42032 "EHLO
+	Fri, 29 Jan 2010 05:32:04 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:56377 "EHLO
 	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751041Ab0A2KTb (ORCPT
+	with ESMTP id S1753663Ab0A2KcD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 05:19:31 -0500
+	Fri, 29 Jan 2010 05:32:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=BfenbMVJGxkejytYGXiVQjmBf92X00zSM67ZSYdcT/cE4gQ0PrLhdu4QquOLTJftiF
-         PFPL2vjbXeiQGWIndJJ/ZhMcjQSV5825kxLU4aF/MxJ4IrDhlw8K2iTnDc8+BvgIKSuv
-         u7LMquBKMMUEe/wRjgFZzyftHRwq1t2LVCnI8=
-Message-ID: <4B62B78F.2010404@gmail.com>
-Date: Fri, 29 Jan 2010 11:25:19 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Q4yCrQOGTMRdnL3E5u3fh/WCtzx+RbOOJBRcExrX+FSTErZhZxTfPK/N+oAuzITxyq
+         I9uxeuJyPhRbJySD52yjSHbKvgxPgdxjFslu9vSnQX1HQCu/T2CuydGy9WnFf5yWCSyi
+         Y6IUBK2k6Po5kV96aQT43/6GIUPPRu1PkGhTI=
 MIME-Version: 1.0
-To: Andrew Vasquez <andrew.vasquez@qlogic.com>, linux-driver@qlogic.com,
-       linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] qla2xxx: negative error return in qla2x00_change_queue_depth()
+In-Reply-To: <20100122155535.797688466@chello.nl>
+References: <20100122155044.391857484@chello.nl>
+	 <20100122155535.797688466@chello.nl>
+Date: Fri, 29 Jan 2010 11:32:00 +0100
+X-Google-Sender-Auth: f47124efd4e5f81b
+Message-ID: <520f0cf11001290232p38140fb2sa5da1b7f8e2704cc@mail.gmail.com>
+Subject: Re: [PATCH 07/10] bitops: Provide compile time HWEIGHT{8,16,32,64}
+From: John Kacur <jkacur@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: eranian@google.com, fweisbec@gmail.com, paulus@samba.org, mingo@elte.hu,
+       davem@davemloft.net, robert.richter@amd.com,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The *change_queue_depth functions usually return a negative error return.
+On Fri, Jan 22, 2010 at 4:50 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> Provide compile time versions of hweight.
+>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> LKML-Reference: <new-submission>
+> ---
+>  include/linux/bitops.h |   14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>
+> Index: linux-2.6/include/linux/bitops.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/bitops.h
+> +++ linux-2.6/include/linux/bitops.h
+> @@ -45,6 +45,20 @@ static inline unsigned long hweight_long
+>        return sizeof(w) == 4 ? hweight32(w) : hweight64(w);
+>  }
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
-index 8529eb1..0753877 100644
---- a/drivers/scsi/qla2xxx/qla_os.c
-+++ b/drivers/scsi/qla2xxx/qla_os.c
-@@ -1258,7 +1258,7 @@ qla2x00_change_queue_depth(struct scsi_device *sdev, int qdepth, int reason)
- 		qla2x00_adjust_sdev_qdepth_up(sdev, qdepth);
- 		break;
- 	default:
--		return EOPNOTSUPP;
-+		return -EOPNOTSUPP;
- 	}
- 
- 	return sdev->queue_depth;
+I like it. Maybe provide a comment that this provides the Hamming weight, it
+took me a second to realize what this was.
+
+>
+> +#define HWEIGHT8(w)                    \
+> +      (        (!!((w) & (1ULL << 0))) +       \
+> +       (!!((w) & (1ULL << 1))) +       \
+> +       (!!((w) & (1ULL << 2))) +       \
+> +       (!!((w) & (1ULL << 3))) +       \
+> +       (!!((w) & (1ULL << 4))) +       \
+> +       (!!((w) & (1ULL << 5))) +       \
+> +       (!!((w) & (1ULL << 6))) +       \
+> +       (!!((w) & (1ULL << 7))) )
+> +
+> +#define HWEIGHT16(w) (HWEIGHT8(w)  + HWEIGHT8(w >> 8))
+> +#define HWEIGHT32(w) (HWEIGHT16(w) + HWEIGHT16(w >> 16))
+> +#define HWEIGHT64(w) (HWEIGHT32(w) + HWEIGHT32(w >> 32))
+> +
+>  /**
+>  * rol32 - rotate a 32-bit value left
+>  * @word: value to rotate
+>
+> --
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
