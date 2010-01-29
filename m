@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990Ab0A2Rdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365Ab0A2Reo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752990Ab0A2Rdu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 12:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151Ab0A2Rdt
+	id S1753365Ab0A2Reo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 12:34:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071Ab0A2Reo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 12:33:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48132 "EHLO mx1.redhat.com"
+	Fri, 29 Jan 2010 12:34:44 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:40344 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751807Ab0A2Rdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 12:33:49 -0500
-Message-ID: <4B631BCA.9010304@redhat.com>
-Date: Fri, 29 Jan 2010 12:32:58 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1752022Ab0A2Ren (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 12:34:43 -0500
+Date: Fri, 29 Jan 2010 17:34:30 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Mark Lord <kernel@teksavvy.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.32.5 regression: page allocation failure. order:1,
+Message-ID: <20100129173430.GK7139@csn.ul.ie>
+References: <4B5FA147.5040802@teksavvy.com> <4B610FDA.50104@teksavvy.com> <4B6113C7.201@teksavvy.com> <201001281152.20352.rjw@sisk.pl> <4B61964F.6060307@teksavvy.com> <4B619C6D.9030205@teksavvy.com> <20100128142437.GA7139@csn.ul.ie> <4B62E904.9020401@teksavvy.com> <20100129154653.GJ7139@csn.ul.ie> <alpine.LSU.2.00.1001291716520.10968@sister.anvils>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH tracing/kprobes] kprobes: Disable booster when	CONFIG_PREEMPT=y
-References: <4B5E476C.9030303@redhat.com> <20100127215531.24775.26807.stgit@dhcp-100-2-132.bos.redhat.com> <20100129092135.GE10878@elte.hu> <4B62F61D.5060203@redhat.com> <20100129170817.GA2283@Krystal> <1264785338.24455.14.camel@laptop> <20100129172757.GA4281@Krystal>
-In-Reply-To: <20100129172757.GA4281@Krystal>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.LSU.2.00.1001291716520.10968@sister.anvils>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
->> On Fri, 2010-01-29 at 12:08 -0500, Mathieu Desnoyers wrote:
->>>
->>> If a task is set as stopped, and the preempted before calling schedule,
->>> can this result in a preempted task staying in that state for an
->>> arbitrary long period of time ? Or is there some mechanism prohibiting
->>> that in the scheduler ? 
->>
->> PREEMPT_ACTIVE does that:
->>
->> preempt_schedule()
->>                 add_preempt_count(PREEMPT_ACTIVE);
->>                 schedule();
->>
->>
->> schedule()
->>         if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
->>                 if (unlikely(signal_pending_state(prev->state, prev)))
->>                         prev->state = TASK_RUNNING;
->>                 else
->>                         deactivate_task(rq, prev, 1);
->>                 switch_count = &prev->nvcsw;
->>         }
+On Fri, Jan 29, 2010 at 05:27:56PM +0000, Hugh Dickins wrote:
+> On Fri, 29 Jan 2010, Mel Gorman wrote:
+> > On Fri, Jan 29, 2010 at 08:56:20AM -0500, Mark Lord wrote:
+> > 
+> > > I'll leave it running for another day or so, and then perhaps revert
+> > > the one patch to see which of the two things (new kernel, or patch)
+> > > is responsible for the difference.
+> > >
+> > 
+> > Thanks, I'd appreciate it. While I'm reasonably confident the problem is
+> > with MIGRATE_RESERVE not being free as intended and that the patch fixes
+> > it, I'd like more proof.
 > 
-> OK, it looks safe for preemption. Is there any unforeseen weird way a
-> task can be scheduled out and stopped that would permit it to either:
+> You're more confident about that than I am!  It will be very satisfying
+> if my patch turns out to make the difference, but still surprising to me.
 > 
-> - stall the algorithm forever (DoS)
-> - appear as quiescent to the algorithm while its stack would hold return
->   pointers to incorrect locations
-> 
-> ?
-> 
-> I'm concerned about page faults here.
 
-booster also checks whether the instruction can cause page-fault,
-if it will cause it, kprobes doesn't boost it.
+My confidence/delusion is in part due to the reasons MIGRATE_RESERVE
+exists in the first place. Specifically, certain wireless network drivers
+were doing GFP_ATOMIC order-2 allocation a lot and failing miserably when
+anti-fragmentation was first introduced. The problem came down to a property
+of the buddy allocator implementation that kept min_free_kbytes worth of pages
+free at the lower addresses of the zone and this is where order-2 allocations
+were being made from and quickly freed meaning the area was generally available
+for a lot of time.  MIGRATE_RESERVE was introduced to preserve that property
+of the buddy allocator and the allocation failure problems went away.
 
-Thank you,
+Mark's problem feels very similar to the wireless network drivers problem.
+
+Maybe I'm deluding myself.
+
+> Thank you for taking the time on this, Mark: I too would appreciate it
+> if you could later determine whether it's new kernel or patch solving it.
+> 
+> > 
+> > Hugh, can I get a signed-off-by on that patch please? I can improve the
+> > changelog if you like and send it to Andrew for merging if you like.
+> 
+> I was adjusting the changelog and about to send direct to Linus Cc stable
+> in a few minutes, since I'm guessing there might be a 33-rc6 today, which
+> would be a pity to miss.
+> 
+
+Great.
+
+> Whatever my reluctance to assume it's the fix to Mark's problem (which I'm
+> not mentioning in the changelog), we are both sure it's a valid bugfix.
+> 
+
+Indeed. Thanks.
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
