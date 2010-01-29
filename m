@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534Ab0A2IVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609Ab0A2IVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534Ab0A2IVK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 03:21:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755270Ab0A2IVI
+	id S1756609Ab0A2IVf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 03:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232Ab0A2IVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 03:21:08 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:27179 "EHLO
+	Fri, 29 Jan 2010 03:21:34 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:27195 "EHLO
 	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754903Ab0A2IVH convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1750869Ab0A2IVd convert rfc822-to-8bit (ORCPT
 	<rfc822;groupwise-JBeulich@novell.com;4:1>);
-	Fri, 29 Jan 2010 03:21:07 -0500
-Message-Id: <4B62A3BD020000780002CA83@vpn.id2.novell.com>
+	Fri, 29 Jan 2010 03:21:33 -0500
+Message-Id: <4B62A3E5020000780002CA96@vpn.id2.novell.com>
 X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Fri, 29 Jan 2010 08:00:45 +0000
+Date: Fri, 29 Jan 2010 08:01:25 +0000
 From: "Jan Beulich" <JBeulich@novell.com>
 To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
 Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] x86: enlightenment for ticket spinlocks - base
+Subject: [PATCH 2/3] x86: enlightenment for ticket spinlocks - Xen
 	 implementation
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,608 +26,421 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add optional (alternative instructions based) callout hooks to the
-contended ticket lock and the ticket unlock paths, to allow hypervisor
-specific code to be used for reducing/eliminating the bad effects
-ticket locks have on performance when running virtualized.
-
-The only additional overhead this introduces for native execution is
-the writing of the owning CPU in the lock acquire paths, and a nop in
-the release paths. If the former is considered a problem, even that
-code could be eliminated for native execution (by further alternative
-instruction patching). For the latter, if considered undesirable, a
-subsequent (optional) patch will eliminate those nop-s again.
-
-For the moment, this isn't intended to be used together with pv-ops,
-but this is just to simplify initial integration. The ultimate goal
-for this should still be to replace pv-ops spinlocks.
-
-This requires adjustments to the alternative instruction patching,
-since locked instructions may now both get patched out and reside in
-replacement code.
+Use the (alternative instructions based) callout hooks to the ticket
+spinlock code to enlighten ticket locks when running fully virtualized
+on Xen. Ultimately, this code might also be a candidate to be used
+when running para-virtualized.
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
 ---
- arch/x86/Kconfig                      |    8 +
- arch/x86/include/asm/alternative.h    |   17 +--
- arch/x86/include/asm/cpufeature.h     |    1 
- arch/x86/include/asm/spinlock.h       |  188 ++++++++++++++++++++++++++++++++--
- arch/x86/include/asm/spinlock_types.h |   22 +++
- arch/x86/kernel/alternative.c         |   30 +++++
- arch/x86/kernel/cpu/hypervisor.c      |    9 +
- arch/x86/kernel/module.c              |    8 -
- arch/x86/lib/thunk_32.S               |   31 +++++
- arch/x86/lib/thunk_64.S               |   54 +++++++++
- 10 files changed, 346 insertions(+), 22 deletions(-)
+ arch/x86/include/asm/processor.h |    1 
+ arch/x86/include/asm/xen.h       |    7 +
+ arch/x86/include/asm/xen/cpuid.h |   68 ++++++++++
+ arch/x86/kernel/cpu/Makefile     |    2 
+ arch/x86/kernel/cpu/hypervisor.c |   11 +
+ arch/x86/kernel/cpu/xen.c        |  259 +++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 345 insertions(+), 3 deletions(-)
 
---- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/Kconfig
-+++ 2.6.33-rc5-virt-spinlocks/arch/x86/Kconfig
-@@ -568,6 +568,14 @@ config PARAVIRT_DEBUG
- 	  Enable to debug paravirt_ops internals.  Specifically, BUG if
- 	  a paravirt_op is missing when it is called.
+--- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/include/asm/processor.h
++++ 2.6.33-rc5-virt-spinlocks/arch/x86/include/asm/processor.h
+@@ -129,6 +129,7 @@ struct cpuinfo_x86 {
  
-+config ENLIGHTEN_SPINLOCKS
-+	bool "enlighten spinlocks"
-+	depends on SMP && !PARAVIRT_GUEST
-+	help
-+	  Provide a mechanism for enlightening (para-virtualizing) spin locks
-+	  in the absence of full pv-ops support (i.e. for "fully" virtualized
-+	  guests).
-+
- config MEMTEST
- 	bool "Memtest"
- 	---help---
---- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/include/asm/alternative.h
-+++ 2.6.33-rc5-virt-spinlocks/arch/x86/include/asm/alternative.h
-@@ -29,11 +29,11 @@
+ #define X86_HYPER_VENDOR_NONE  0
+ #define X86_HYPER_VENDOR_VMWARE 1
++#define X86_HYPER_VENDOR_XEN   2
  
- #ifdef CONFIG_SMP
- #define LOCK_PREFIX \
--		".section .smp_locks,\"a\"\n"	\
-+		".pushsection .smp_locks,\"a\"\n" \
- 		_ASM_ALIGN "\n"			\
--		_ASM_PTR "661f\n" /* address */	\
--		".previous\n"			\
--		"661:\n\tlock; "
-+		_ASM_PTR "669f\n" /* address */	\
-+		".popsection\n"			\
-+		"669:\n\tlock; "
- 
- #else /* ! CONFIG_SMP */
- #define LOCK_PREFIX ""
-@@ -55,7 +55,12 @@ struct alt_instr {
- };
- 
- extern void alternative_instructions(void);
--extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
-+#ifndef CONFIG_SMP
-+#define apply_alternatives(alt_start, alt_end, smp_start, smp_end) \
-+	apply_alternatives(alt_start, alt_end)
-+#endif
-+extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end,
-+			       u8 **smp_start, u8 **smp_end);
- 
- struct module;
- 
-@@ -129,7 +134,7 @@ static inline void alternatives_smp_swit
-  * use this macro(s) if you need more than one output parameter
-  * in alternative_io
-  */
--#define ASM_OUTPUT2(a, b) a, b
-+#define ASM_OUTPUT2(a...) a
- 
- struct paravirt_patch_site;
- #ifdef CONFIG_PARAVIRT
---- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/include/asm/cpufeature.h
-+++ 2.6.33-rc5-virt-spinlocks/arch/x86/include/asm/cpufeature.h
-@@ -97,6 +97,7 @@
- #define X86_FEATURE_EXTD_APICID	(3*32+26) /* has extended APICID (8 bits) */
- #define X86_FEATURE_AMD_DCM     (3*32+27) /* multi-node processor */
- #define X86_FEATURE_APERFMPERF	(3*32+28) /* APERFMPERF */
-+#define X86_FEATURE_SPINLOCK_YIELD (3*32+31) /* hypervisor yield interface */
- 
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
- #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
---- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/include/asm/spinlock.h
-+++ 2.6.33-rc5-virt-spinlocks/arch/x86/include/asm/spinlock.h
-@@ -7,6 +7,20 @@
- #include <asm/processor.h>
- #include <linux/compiler.h>
- #include <asm/paravirt.h>
-+
-+#ifdef CONFIG_ENLIGHTEN_SPINLOCKS
-+#include <asm/alternative.h>
-+#include <asm/nops.h>
-+/* Including asm/smp.h here causes a cyclic include dependency. */
-+#include <asm/percpu.h>
-+DECLARE_PER_CPU(int, cpu_number);
-+
-+extern void (*virt_spin_lock)(volatile struct arch_spinlock *, unsigned int);
-+extern void (*virt_spin_unlock)(volatile struct arch_spinlock *, unsigned int);
-+extern void virt_spin_lock_stub(void);
-+extern void virt_spin_unlock_stub(void);
-+#endif
-+
  /*
-  * Your basic SMP spinlocks, allowing only a single CPU anywhere
-  *
-@@ -22,9 +36,11 @@
- #ifdef CONFIG_X86_32
- # define LOCK_PTR_REG "a"
- # define REG_PTR_MODE "k"
-+# define REG_PTR_PREFIX "e"
- #else
- # define LOCK_PTR_REG "D"
- # define REG_PTR_MODE "q"
-+# define REG_PTR_PREFIX "r"
- #endif
- 
- #if defined(CONFIG_X86_32) && \
-@@ -62,19 +78,54 @@ static __always_inline void __ticket_spi
- {
- 	short inc = 0x0100;
- 
-+#ifndef CONFIG_ENLIGHTEN_SPINLOCKS
- 	asm volatile (
-+#else
-+	alternative_io(
-+		".L%=orig:\n\t"
-+#endif
- 		LOCK_PREFIX "xaddw %w0, %1\n"
- 		"1:\t"
- 		"cmpb %h0, %b0\n\t"
--		"je 2f\n\t"
-+		"je .L%=done\n\t"
- 		"rep ; nop\n\t"
- 		"movb %1, %b0\n\t"
- 		/* don't need lfence here, because loads are in-order */
- 		"jmp 1b\n"
--		"2:"
--		: "+Q" (inc), "+m" (lock->slock)
-+		".L%=done:"
-+#ifndef CONFIG_ENLIGHTEN_SPINLOCKS
- 		:
-+#else
-+		, ".L%=alt:\n\t"
-+		  /* Prevent using rip-relative addressing here. */
-+		  LOCK_PREFIX "xaddw %w0, %P1\n\t"
-+		  "cmpb %h0, %b0\n\t"
-+		  /* jne .L%=callout */
-+		  ".byte 0x0f, 0x85\n\t"
-+		  ".long (.L%=callout - .L%=orig) - (. + 4 - .L%=alt)\n"
-+		  ".previous\n"
-+		  ".subsection 1\n"
-+		  ".L%=callout:\n\t"
-+		  "push $.L%=done\n\t"
-+		  "push %%" REG_PTR_PREFIX "bp\n\t"
-+		  "push %" REG_PTR_MODE "0\n\t"
-+		  "lea %1, %%" REG_PTR_PREFIX "bp\n\t"
-+		  "call %P[stub]\n\t"
-+		  ".subsection 0\n\t"
-+		  ".section .altinstr_replacement",
-+		X86_FEATURE_SPINLOCK_YIELD,
-+#endif
-+		ASM_OUTPUT2("+Q" (inc), "+m" (lock->slock))
-+#ifndef CONFIG_ENLIGHTEN_SPINLOCKS
-+		:
-+#else
-+		, [stub] "i" (virt_spin_lock_stub)
-+#endif
- 		: "memory", "cc");
+  * capabilities of CPUs
+--- /dev/null
++++ 2.6.33-rc5-virt-spinlocks/arch/x86/include/asm/xen.h
+@@ -0,0 +1,7 @@
++#ifndef ASM_X86__XEN_H
++#define ASM_X86__XEN_H
 +
-+#ifdef CONFIG_ENLIGHTEN_SPINLOCKS
-+	lock->owner = percpu_read(cpu_number);
-+#endif
- }
- 
- static __always_inline int __ticket_spin_trylock(arch_spinlock_t *lock)
-@@ -93,14 +144,54 @@ static __always_inline int __ticket_spin
- 		     :
- 		     : "memory", "cc");
- 
-+#ifdef CONFIG_ENLIGHTEN_SPINLOCKS
-+	if (tmp)
-+		lock->owner = percpu_read(cpu_number);
-+#endif
++extern int xen_platform(void);
++extern void xen_set_feature_bits(struct cpuinfo_x86 *c);
 +
- 	return tmp;
- }
- 
- static __always_inline void __ticket_spin_unlock(arch_spinlock_t *lock)
- {
--	asm volatile(UNLOCK_LOCK_PREFIX "incb %0"
-+#ifndef CONFIG_ENLIGHTEN_SPINLOCKS
-+	asm volatile(
-+#else
-+	unsigned int token;
++#endif
+--- /dev/null
++++ 2.6.33-rc5-virt-spinlocks/arch/x86/include/asm/xen/cpuid.h
+@@ -0,0 +1,68 @@
++/******************************************************************************
++ * arch-x86/cpuid.h
++ *
++ * CPUID interface to Xen.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to
++ * deal in the Software without restriction, including without limitation the
++ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++ * sell copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ *
++ * Copyright (c) 2007 Citrix Systems, Inc.
++ *
++ * Authors:
++ *    Keir Fraser <keir.fraser@citrix.com>
++ */
 +
-+	alternative_io(
-+		     ".L%=orig:\n\t"
-+#endif
-+		     UNLOCK_LOCK_PREFIX "incb %0"
-+#ifndef CONFIG_ENLIGHTEN_SPINLOCKS
- 		     : "+m" (lock->slock)
- 		     :
-+#else
-+		     "\n\t"
-+		     ASM_NOP3
-+		     ".L%=done:",
-+		     ".L%=alt:\n\t"
-+		     /* jmp .L%=callout */
-+		     ".byte 0xe9\n\t"
-+		     ".long (.L%=callout - .L%=orig) - (. + 4 - .L%=alt)\n\t"
-+		     ".previous\n\t"
-+		     ".subsection 1\n"
-+		     ".L%=callout:\n\t"
-+		     UNLOCK_LOCK_PREFIX "incb %0\n\t"
-+		     "movzwl %0, %1\n\t"
-+		     "cmpb %h1, %b1\n\t"
-+		     "je .L%=done\n\t"
-+		     "push $.L%=done\n\t"
-+		     "push %%" REG_PTR_PREFIX "bp\n\t"
-+		     "push %" REG_PTR_MODE "1\n\t"
-+		     "lea %0, %%" REG_PTR_PREFIX "bp\n\t"
-+		     "call %P[stub]\n\t"
-+		     ".subsection 0\n\t"
-+		     ".section .altinstr_replacement",
-+		     X86_FEATURE_SPINLOCK_YIELD,
-+		     ASM_OUTPUT2("+m" (lock->slock), "=&Q" (token)),
-+		     [stub] "i" (virt_spin_unlock_stub)
-+#endif
- 		     : "memory", "cc");
- }
- #else
-@@ -111,20 +202,58 @@ static __always_inline void __ticket_spi
- 	int inc = 0x00010000;
- 	int tmp;
- 
--	asm volatile(LOCK_PREFIX "xaddl %0, %1\n"
-+#ifndef CONFIG_ENLIGHTEN_SPINLOCKS
-+	asm volatile(
-+#else
-+	alternative_io(
-+		     ".L%=orig:\n\t"
-+#endif
-+		     LOCK_PREFIX "xaddl %0, %1\n"
- 		     "movzwl %w0, %2\n\t"
- 		     "shrl $16, %0\n\t"
- 		     "1:\t"
- 		     "cmpl %0, %2\n\t"
--		     "je 2f\n\t"
-+		     "je .L%=done\n\t"
- 		     "rep ; nop\n\t"
- 		     "movzwl %1, %2\n\t"
- 		     /* don't need lfence here, because loads are in-order */
- 		     "jmp 1b\n"
--		     "2:"
--		     : "+r" (inc), "+m" (lock->slock), "=&r" (tmp)
-+		     ".L%=done:"
-+#ifndef CONFIG_ENLIGHTEN_SPINLOCKS
- 		     :
-+#else
-+		     , ".L%=alt:\n\t"
-+		       /* Prevent using rip-relative addressing here. */
-+		       LOCK_PREFIX "xaddl %0, %P1\n\t"
-+		       "movzwl %w0, %2\n\t"
-+		       "shrl $16, %0\n\t"
-+		       "cmpl %0, %2\n\t"
-+		       /* jne .L%=callout */
-+		       ".byte 0x0f, 0x85\n\t"
-+		       ".long (.L%=callout - .L%=orig) - (. + 4 - .L%=alt)\n"
-+		       ".previous\n"
-+		       ".subsection 1\n"
-+		       ".L%=callout:\n\t"
-+		       "push $.L%=done\n\t"
-+		       "push %%" REG_PTR_PREFIX "bp\n\t"
-+		       "push %" REG_PTR_MODE "0\n\t"
-+		       "lea %1, %%" REG_PTR_PREFIX "bp\n\t"
-+		       "call %P[stub]\n\t"
-+		       ".subsection 0\n\t"
-+		       ".section .altinstr_replacement",
-+		     X86_FEATURE_SPINLOCK_YIELD,
-+#endif
-+		     ASM_OUTPUT2("+r" (inc), "+m" (lock->slock), "=&r" (tmp))
-+#ifndef CONFIG_ENLIGHTEN_SPINLOCKS
-+		     :
-+#else
-+		     , [stub] "i" (virt_spin_lock_stub)
-+#endif
- 		     : "memory", "cc");
++#ifndef __XEN_PUBLIC_ARCH_X86_CPUID_H__
++#define __XEN_PUBLIC_ARCH_X86_CPUID_H__
 +
-+#ifdef CONFIG_ENLIGHTEN_SPINLOCKS
-+	lock->owner = percpu_read(cpu_number);
-+#endif
- }
- 
- static __always_inline int __ticket_spin_trylock(arch_spinlock_t *lock)
-@@ -146,14 +275,55 @@ static __always_inline int __ticket_spin
- 		     :
- 		     : "memory", "cc");
- 
-+#ifdef CONFIG_ENLIGHTEN_SPINLOCKS
-+	if (tmp)
-+		lock->owner = percpu_read(cpu_number);
-+#endif
++/* Xen identification leaves start at 0x40000000. */
++#define XEN_CPUID_FIRST_LEAF 0x40000000
++#define XEN_CPUID_LEAF(i)    (XEN_CPUID_FIRST_LEAF + (i))
 +
- 	return tmp;
- }
- 
- static __always_inline void __ticket_spin_unlock(arch_spinlock_t *lock)
- {
--	asm volatile(UNLOCK_LOCK_PREFIX "incw %0"
-+#ifndef CONFIG_ENLIGHTEN_SPINLOCKS
-+	asm volatile(
-+#else
-+	unsigned int token, tmp;
++/*
++ * Leaf 1 (0x40000000)
++ * EAX: Largest Xen-information leaf. All leaves up to an including @EAX
++ *      are supported by the Xen host.
++ * EBX-EDX: "XenVMMXenVMM" signature, allowing positive identification
++ *      of a Xen host.
++ */
++#define XEN_CPUID_SIGNATURE_EBX 0x566e6558 /* "XenV" */
++#define XEN_CPUID_SIGNATURE_ECX 0x65584d4d /* "MMXe" */
++#define XEN_CPUID_SIGNATURE_EDX 0x4d4d566e /* "nVMM" */
 +
-+	alternative_io(
-+		     ".L%=orig:\n\t"
-+#endif
-+		     UNLOCK_LOCK_PREFIX "incw %0"
-+#ifndef CONFIG_ENLIGHTEN_SPINLOCKS
- 		     : "+m" (lock->slock)
- 		     :
-+#else
-+		     "\n\t"
-+		     ASM_NOP2
-+		     ".L%=done:",
-+		     ".L%=alt:\n\t"
-+		     /* jmp .L%=callout */
-+		     ".byte 0xe9\n\t"
-+		     ".long (.L%=callout - .L%=orig) - (. + 4 - .L%=alt)\n\t"
-+		     ".previous\n\t"
-+		     ".subsection 1\n"
-+		     ".L%=callout:\n\t"
-+		     UNLOCK_LOCK_PREFIX "incw %0\n\t"
-+		     "movl %0, %1\n\t"
-+		     "shldl $16, %1, %2\n\t"
-+		     "cmpw %w2, %w1\n\t"
-+		     "je .L%=done\n\t"
-+		     "push $.L%=done\n\t"
-+		     "push %%" REG_PTR_PREFIX "bp\n\t"
-+		     "push %" REG_PTR_MODE "1\n\t"
-+		     "lea %0, %%" REG_PTR_PREFIX "bp\n\t"
-+		     "call %P[stub]\n\t"
-+		     ".subsection 0\n\t"
-+		     ".section .altinstr_replacement",
-+		     X86_FEATURE_SPINLOCK_YIELD,
-+		     ASM_OUTPUT2("+m" (lock->slock), "=&r" (token), "=&r" (tmp)),
-+		     [stub] "i" (virt_spin_unlock_stub)
-+#endif
- 		     : "memory", "cc");
- }
- #endif
---- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/include/asm/spinlock_types.h
-+++ 2.6.33-rc5-virt-spinlocks/arch/x86/include/asm/spinlock_types.h
-@@ -5,11 +5,29 @@
- # error "please don't include this file directly"
- #endif
- 
-+#include <asm/types.h>
++/*
++ * Leaf 2 (0x40000001)
++ * EAX[31:16]: Xen major version.
++ * EAX[15: 0]: Xen minor version.
++ * EBX-EDX: Reserved (currently all zeroes).
++ */
 +
- typedef struct arch_spinlock {
--	unsigned int slock;
-+	union {
-+		unsigned int slock;
-+#ifdef CONFIG_ENLIGHTEN_SPINLOCKS
-+		struct {
-+# if CONFIG_NR_CPUS < 256
-+			u8 cur, seq;
-+# else
-+			u16 cur, seq;
-+# endif
-+# if CONFIG_NR_CPUS <= 256
-+			u8 owner;
-+# else
-+			u16 owner;
-+# endif
-+		};
-+#endif
-+	};
- } arch_spinlock_t;
- 
--#define __ARCH_SPIN_LOCK_UNLOCKED	{ 0 }
-+#define __ARCH_SPIN_LOCK_UNLOCKED	{ { 0 } }
- 
- typedef struct {
- 	unsigned int lock;
---- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/kernel/alternative.c
-+++ 2.6.33-rc5-virt-spinlocks/arch/x86/kernel/alternative.c
-@@ -202,7 +202,8 @@ static void *text_poke_early(void *addr,
-    Tough. Make sure you disable such features by hand. */
- 
- void __init_or_module apply_alternatives(struct alt_instr *start,
--					 struct alt_instr *end)
-+					 struct alt_instr *end,
-+					 u8 **smp_start, u8 **smp_end)
- {
- 	struct alt_instr *a;
- 	char insnbuf[MAX_PATCH_LEN];
-@@ -226,6 +227,30 @@ void __init_or_module apply_alternatives
- 		add_nops(insnbuf + a->replacementlen,
- 			 a->instrlen - a->replacementlen);
- 		text_poke_early(instr, insnbuf, a->instrlen);
++/*
++ * Leaf 3 (0x40000002)
++ * EAX: Number of hypercall transfer pages. This register is always guaranteed
++ *      to specify one hypercall page.
++ * EBX: Base address of Xen-specific MSRs.
++ * ECX: Features 1. Unused bits are set to zero.
++ * EDX: Features 2. Unused bits are set to zero.
++ */
 +
-+#ifdef CONFIG_SMP
-+		/*
-+		 * Must fix up SMP locks pointers pointing into overwritten
-+		 * code, and should fix up SMP locks pointers pointing into
-+		 * replacement code (as those would otherwise not take effect).
-+		 */
-+		if (smp_start) {
-+			u8 **ptr;
++/* Does the host support MMU_PT_UPDATE_PRESERVE_AD for this guest? */
++#define _XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD 0
++#define XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD  (1u<<0)
 +
-+			for (ptr = smp_start; ptr < smp_end; ptr++) {
-+				if (*ptr >= instr && *ptr < instr + a->instrlen) {
-+					DPRINTK("invalidating smp lock @ %p\n", *ptr);
-+					*ptr = NULL;
-+				}
-+				if (*ptr >= a->replacement
-+				    && *ptr < a->replacement + a->replacementlen) {
-+					DPRINTK("relocating smp lock %p -> %p\n",
-+						*ptr, *ptr + (instr - a->replacement));
-+					*ptr += instr - a->replacement;
-+				}
-+			}
-+		}
-+#endif
- 	}
- }
++#endif /* __XEN_PUBLIC_ARCH_X86_CPUID_H__ */
+--- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/kernel/cpu/Makefile
++++ 2.6.33-rc5-virt-spinlocks/arch/x86/kernel/cpu/Makefile
+@@ -14,7 +14,7 @@ CFLAGS_common.o		:= $(nostackp)
  
-@@ -440,7 +465,8 @@ void __init alternative_instructions(voi
- 	 * patching.
- 	 */
+ obj-y			:= intel_cacheinfo.o addon_cpuid_features.o
+ obj-y			+= proc.o capflags.o powerflags.o common.o
+-obj-y			+= vmware.o hypervisor.o sched.o
++obj-y			+= vmware.o xen.o hypervisor.o sched.o
  
--	apply_alternatives(__alt_instructions, __alt_instructions_end);
-+	apply_alternatives(__alt_instructions, __alt_instructions_end,
-+			   __smp_locks, __smp_locks_end);
- 
- 	/* switch to patch-once-at-boottime-only mode and free the
- 	 * tables in case we know the number of CPUs will never ever
+ obj-$(CONFIG_X86_32)	+= bugs.o cmpxchg.o
+ obj-$(CONFIG_X86_64)	+= bugs_64.o
 --- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/kernel/cpu/hypervisor.c
 +++ 2.6.33-rc5-virt-spinlocks/arch/x86/kernel/cpu/hypervisor.c
-@@ -25,6 +25,15 @@
+@@ -23,6 +23,7 @@
+ 
+ #include <asm/processor.h>
  #include <asm/vmware.h>
++#include <asm/xen.h>
  #include <asm/hypervisor.h>
  
-+#ifdef CONFIG_ENLIGHTEN_SPINLOCKS
-+#include <linux/cache.h>
-+#include <linux/module.h>
-+#include <linux/spinlock.h>
-+void (*__read_mostly virt_spin_lock)(volatile struct arch_spinlock *, unsigned int);
-+void (*__read_mostly virt_spin_unlock)(volatile struct arch_spinlock *, unsigned int);
-+EXPORT_SYMBOL(virt_spin_unlock_stub);
-+#endif
-+
- static inline void __cpuinit
- detect_hypervisor_vendor(struct cpuinfo_x86 *c)
+ #ifdef CONFIG_ENLIGHTEN_SPINLOCKS
+@@ -39,6 +40,8 @@ detect_hypervisor_vendor(struct cpuinfo_
  {
---- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/kernel/module.c
-+++ 2.6.33-rc5-virt-spinlocks/arch/x86/kernel/module.c
-@@ -208,6 +208,7 @@ int module_finalize(const Elf_Ehdr *hdr,
- 	const Elf_Shdr *s, *text = NULL, *alt = NULL, *locks = NULL,
- 		*para = NULL;
- 	char *secstrings = (void *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
-+	void *lseg;
- 
- 	for (s = sechdrs; s < sechdrs + hdr->e_shnum; s++) {
- 		if (!strcmp(".text", secstrings + s->sh_name))
-@@ -220,13 +221,14 @@ int module_finalize(const Elf_Ehdr *hdr,
- 			para = s;
+ 	if (vmware_platform())
+ 		c->x86_hyper_vendor = X86_HYPER_VENDOR_VMWARE;
++	else if (xen_platform())
++		c->x86_hyper_vendor = X86_HYPER_VENDOR_XEN;
+ 	else
+ 		c->x86_hyper_vendor = X86_HYPER_VENDOR_NONE;
+ }
+@@ -46,9 +49,13 @@ detect_hypervisor_vendor(struct cpuinfo_
+ static inline void __cpuinit
+ hypervisor_set_feature_bits(struct cpuinfo_x86 *c)
+ {
+-	if (boot_cpu_data.x86_hyper_vendor == X86_HYPER_VENDOR_VMWARE) {
++	switch (boot_cpu_data.x86_hyper_vendor) {
++	case X86_HYPER_VENDOR_VMWARE:
+ 		vmware_set_feature_bits(c);
+-		return;
++		break;
++	case X86_HYPER_VENDOR_XEN:
++		xen_set_feature_bits(c);
++		break;
  	}
+ }
  
-+	lseg = locks && text ? (void *)locks->sh_addr : NULL;
- 	if (alt) {
- 		/* patch .altinstructions */
- 		void *aseg = (void *)alt->sh_addr;
--		apply_alternatives(aseg, aseg + alt->sh_size);
-+		apply_alternatives(aseg, aseg + alt->sh_size,
-+				   lseg, lseg ? lseg + locks->sh_size : NULL);
- 	}
--	if (locks && text) {
--		void *lseg = (void *)locks->sh_addr;
-+	if (lseg) {
- 		void *tseg = (void *)text->sh_addr;
- 		alternatives_smp_module_add(me, me->name,
- 					    lseg, lseg + locks->sh_size,
---- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/lib/thunk_32.S
-+++ 2.6.33-rc5-virt-spinlocks/arch/x86/lib/thunk_32.S
-@@ -45,3 +45,34 @@
- 	thunk_ra trace_hardirqs_on_thunk,trace_hardirqs_on_caller
- 	thunk_ra trace_hardirqs_off_thunk,trace_hardirqs_off_caller
- #endif
+--- /dev/null
++++ 2.6.33-rc5-virt-spinlocks/arch/x86/kernel/cpu/xen.c
+@@ -0,0 +1,259 @@
++#define __XEN_INTERFACE_VERSION__ 0x00030207
++#include <linux/bootmem.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/percpu.h>
++#include <linux/smp.h>
++#include <linux/spinlock.h>
++#include <linux/stringify.h>
++#include <asm/sync_bitops.h>
++#include <asm/xen.h>
++#include <asm/xen/cpuid.h>
++#include <asm/xen/hypercall.h>
++#include <xen/interface/event_channel.h>
++#include <xen/interface/memory.h>
++#include <xen/interface/vcpu.h>
 +
 +#ifdef CONFIG_ENLIGHTEN_SPINLOCKS
-+#include <asm/dwarf2.h>
-+	.macro virt_spin_stub what, _stub=_stub
-+ENTRY(virt_spin_\what\_stub)
-+	CFI_STARTPROC simple
-+	CFI_DEF_CFA esp, 16
-+	CFI_OFFSET eip, -4
-+	CFI_OFFSET ebp, -8
-+	movl	%edx, (%esp)			# don't need this return address
-+	movl	4(%esp), %edx			# token
-+	movl	%eax, 4(%esp)
-+	movl	%ebp, %eax			# lock pointer
-+	movl	8(%esp), %ebp
-+	CFI_RESTORE ebp
-+	movl	%ecx, 8(%esp)
-+	call	*virt_spin_\what
-+	popl	%edx
-+	CFI_ADJUST_CFA_OFFSET -4
-+	popl	%eax
-+	CFI_ADJUST_CFA_OFFSET -4
-+	popl	%ecx
-+	CFI_ADJUST_CFA_OFFSET -4
-+	ret
-+	CFI_ENDPROC
-+ENDPROC(virt_spin_\what\_stub)
-+	.endm
-+virt_spin_stub lock
-+virt_spin_stub unlock
-+	.purgem virt_spin_stub
-+#endif
---- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/lib/thunk_64.S
-+++ 2.6.33-rc5-virt-spinlocks/arch/x86/lib/thunk_64.S
-@@ -79,3 +79,57 @@ restore_norax:	
- 	RESTORE_ARGS 1
- 	ret
- 	CFI_ENDPROC
++struct spinning {
++	volatile struct arch_spinlock *lock;
++	unsigned int ticket;
++	struct spinning *prev;
++};
 +
-+#ifdef CONFIG_ENLIGHTEN_SPINLOCKS
-+	.text
-+	.macro virt_spin_stub what, _stub=_stub
-+ENTRY(virt_spin_\what\_stub)
-+	CFI_STARTPROC simple
-+	CFI_DEF_CFA rsp, 32
-+	CFI_OFFSET rip, -8
-+	CFI_OFFSET rbp, -16
-+	movq	%rsi, (%rsp)			# don't need this return address
-+	movl	8(%rsp), %esi			# token
-+	movq	%rdi, 8(%rsp)
-+	movq	%rbp, %rdi			# lock pointer
-+	movq	16(%rsp), %rbp
-+	movq	%rax, 16(%rsp)
-+	pushq	%rcx
-+	CFI_ADJUST_CFA_OFFSET 8
-+	pushq	%rdx
-+	CFI_ADJUST_CFA_OFFSET 8
-+	pushq	%r8
-+	CFI_ADJUST_CFA_OFFSET 8
-+	pushq	%r9
-+	CFI_ADJUST_CFA_OFFSET 8
-+	pushq	%r10
-+	CFI_ADJUST_CFA_OFFSET 8
-+	pushq	%r11
-+	CFI_ADJUST_CFA_OFFSET 8
-+	call	*virt_spin_\what(%rip)
-+	popq	%r11
-+	CFI_ADJUST_CFA_OFFSET -8
-+	popq	%r10
-+	CFI_ADJUST_CFA_OFFSET -8
-+	popq	%r9
-+	CFI_ADJUST_CFA_OFFSET -8
-+	popq	%r8
-+	CFI_ADJUST_CFA_OFFSET -8
-+	popq	%rdx
-+	CFI_ADJUST_CFA_OFFSET -8
-+	popq	%rcx
-+	CFI_ADJUST_CFA_OFFSET -8
-+	popq	%rsi
-+	CFI_ADJUST_CFA_OFFSET -8
-+	popq	%rdi
-+	CFI_ADJUST_CFA_OFFSET -8
-+	popq	%rax
-+	CFI_ADJUST_CFA_OFFSET -8
-+	ret
-+	CFI_ENDPROC
-+ENDPROC(virt_spin_\what\_stub)
-+	.endm
-+virt_spin_stub lock
-+virt_spin_stub unlock
-+	.purgem virt_spin_stub
++static struct shared_info *__read_mostly xen_shared_info;
++EXPORT_SYMBOL_GPL(xen_shared_info);
++
++static DEFINE_PER_CPU(struct vcpu_runstate_info, runstate);
++static DEFINE_PER_CPU(evtchn_port_t, poll_evtchn);
++static DEFINE_PER_CPU(struct spinning *, spinning);
++/*
++ * Protect removal of objects: Insertion can be done lockless, and even
++ * removal itself doesn't need protection - what needs to be prevented is
++ * removed objects going out of scope (as they're living on the stack).
++ */
++static DEFINE_PER_CPU(arch_rwlock_t, spinning_rm_lock) = __ARCH_RW_LOCK_UNLOCKED;
++
++static unsigned int __read_mostly spin_count = 1000;
++static int __init setup_spin_count(char *s)
++{
++	if (!s)
++		return -EINVAL;
++	spin_count = simple_strtoul(s, &s, 0);
++	return !*s ? 0 : -EINVAL;
++}
++early_param("spin_count", setup_spin_count);
++
++#ifndef CONFIG_XEN
++__asm__(".pushsection .text, \"ax\", @progbits\n"
++	".p2align " __stringify(PAGE_SHIFT) "\n"
++	"hypercall_page:\n"
++	".skip 1 << " __stringify(PAGE_SHIFT) "\n"
++	".popsection");
 +#endif
++
++static void xen_spin_lock(volatile struct arch_spinlock *lock,
++			  unsigned int token)
++{
++	arch_rwlock_t *rm_lock;
++	unsigned long flags;
++	unsigned int count;
++	struct spinning spinning;
++
++	if (unlikely(percpu_read(runstate.state) != RUNSTATE_running))
++		xen_set_feature_bits(&__get_cpu_var(cpu_info));
++
++	token >>= TICKET_SHIFT;
++	spinning.ticket = token;
++	spinning.lock = lock;
++	spinning.prev = percpu_read(spinning);
++	smp_wmb();
++	percpu_write(spinning, &spinning);
++
++	sync_clear_bit(percpu_read(poll_evtchn),
++		       xen_shared_info->evtchn_pending);
++
++	for (count = spin_count; lock->cur != token; )
++		if (likely(cpu_online(raw_smp_processor_id()))
++		    && (per_cpu(runstate.state, lock->owner) != RUNSTATE_running
++			|| unlikely(!--count))) {
++			struct sched_poll sched_poll;
++
++			set_xen_guest_handle(sched_poll.ports,
++					     &__get_cpu_var(poll_evtchn));
++			sched_poll.nr_ports = 1;
++			sched_poll.timeout = 0;
++			HYPERVISOR_sched_op(SCHEDOP_poll, &sched_poll);
++			count = spin_count;
++		} else
++			cpu_relax();
++
++	/*
++	 * If we interrupted another spinlock while it was blocking, make
++	 * sure it doesn't block (again) without re-checking the lock.
++	 */
++	if (spinning.prev)
++		sync_set_bit(percpu_read(poll_evtchn),
++			     xen_shared_info->evtchn_pending);
++
++	percpu_write(spinning, spinning.prev);
++	rm_lock = &__get_cpu_var(spinning_rm_lock);
++	raw_local_irq_save(flags);
++	arch_write_lock(rm_lock);
++	arch_write_unlock(rm_lock);
++	raw_local_irq_restore(flags);
++}
++
++static void xen_spin_unlock(volatile struct arch_spinlock *lock,
++			    unsigned int token)
++{
++	unsigned int cpu;
++
++	token &= (1U << TICKET_SHIFT) - 1;
++	for_each_online_cpu(cpu) {
++		arch_rwlock_t *rm_lock;
++		unsigned long flags;
++		struct spinning *spinning;
++
++		if (cpu == raw_smp_processor_id())
++			continue;
++
++		rm_lock = &per_cpu(spinning_rm_lock, cpu);
++		raw_local_irq_save(flags);
++		arch_read_lock(rm_lock);
++
++		spinning = per_cpu(spinning, cpu);
++		smp_rmb();
++		if (spinning
++		    && (spinning->lock != lock || spinning->ticket != token))
++			spinning = NULL;
++
++		arch_read_unlock(rm_lock);
++		raw_local_irq_restore(flags);
++
++		if (unlikely(spinning)) {
++			struct evtchn_send send;
++
++			send.port = per_cpu(poll_evtchn, cpu);
++			HYPERVISOR_event_channel_op(EVTCHNOP_send, &send);
++			return;
++		}
++	}
++}
++
++static void __init _prepare_shared_info_page(void)
++{
++	struct xen_add_to_physmap xatp;
++
++	xen_shared_info = alloc_bootmem_pages(PAGE_SIZE);
++
++	xatp.domid = DOMID_SELF;
++	xatp.idx = 0;
++	xatp.space = XENMAPSPACE_shared_info;
++	xatp.gpfn = __pa(xen_shared_info) >> PAGE_SHIFT;
++	if (HYPERVISOR_memory_op(XENMEM_add_to_physmap, &xatp))
++		BUG();
++}
++
++static void __ref prepare_shared_info_page(void)
++{
++	_prepare_shared_info_page();
++}
++#endif
++
++int __cpuinit xen_platform(void)
++{
++	unsigned int first = XEN_CPUID_FIRST_LEAF;
++
++#if 0 /* So far, Xen sets this only for PV guests. */
++	if (!cpu_has_hypervisor)
++		return 0;
++#endif
++
++	while (first < XEN_CPUID_LEAF(0x10000)) {
++		unsigned int eax, ebx, ecx, edx;
++
++		cpuid(first, &eax, &ebx, &ecx, &edx);
++		if (ebx == XEN_CPUID_SIGNATURE_EBX
++		    && ecx == XEN_CPUID_SIGNATURE_ECX
++		    && edx == XEN_CPUID_SIGNATURE_EDX) {
++			if (!smp_processor_id()) {
++				cpuid(first + 1, &eax, &ebx, &ecx, &edx);
++				printk(KERN_INFO "Running on Xen %u.%u\n",
++				       eax >> 16, eax & 0xffff);
++			}
++			return 1;
++		}
++		first += 0x100;
++	}
++
++	return 0;
++}
++
++void xen_set_feature_bits(struct cpuinfo_x86 *c)
++{
++#ifdef CONFIG_ENLIGHTEN_SPINLOCKS
++	unsigned int msr, eax, ebx, ecx, edx;
++	unsigned int first = XEN_CPUID_FIRST_LEAF;
++	int ret;
++	struct vcpu_register_runstate_memory_area vrrma;
++
++	if (num_possible_cpus() <= 1
++	    || !spin_count
++	    || (c != &boot_cpu_data
++		&& !boot_cpu_has(X86_FEATURE_SPINLOCK_YIELD)))
++		return;
++
++	while (first < XEN_CPUID_LEAF(0x10000)) {
++		cpuid(first, &eax, &ebx, &ecx, &edx);
++		if (ebx == XEN_CPUID_SIGNATURE_EBX
++		    && ecx == XEN_CPUID_SIGNATURE_ECX
++		    && edx == XEN_CPUID_SIGNATURE_EDX)
++			break;
++		first += 0x100;
++	}
++	BUG_ON(first >= XEN_CPUID_LEAF(0x10000));
++
++	cpuid(first + 2, &eax, &msr, &ecx, &edx);
++	BUG_ON(!eax);
++	wrmsrl(msr, __pa_symbol(hypercall_page));
++
++	if (!xen_shared_info)
++		prepare_shared_info_page();
++
++	memset(&vrrma, 0, sizeof(vrrma));
++	set_xen_guest_handle(vrrma.addr.h, &__get_cpu_var(runstate));
++	ret = HYPERVISOR_vcpu_op(VCPUOP_register_runstate_memory_area,
++				 c->cpu_index, &vrrma);
++	if (ret) {
++		printk(KERN_WARNING
++		       "Could not register runstate area for CPU%u: %d\n",
++		       c->cpu_index, ret);
++		BUG_ON(boot_cpu_has(X86_FEATURE_SPINLOCK_YIELD));
++		return;
++	}
++
++	if (c != &boot_cpu_data || !percpu_read(poll_evtchn)) {
++		struct evtchn_bind_ipi bind_ipi;
++
++		bind_ipi.vcpu = c->cpu_index;
++		ret = HYPERVISOR_event_channel_op(EVTCHNOP_bind_ipi,
++						  &bind_ipi);
++		if (ret) {
++			printk(KERN_WARNING
++			       "Could not bind event channel for CPU%u: %d\n",
++			       c->cpu_index, ret);
++			BUG_ON(boot_cpu_has(X86_FEATURE_SPINLOCK_YIELD));
++			return;
++		}
++		sync_set_bit(bind_ipi.port, xen_shared_info->evtchn_mask);
++		percpu_write(poll_evtchn, bind_ipi.port);
++		printk(KERN_INFO "CPU%u spinlock poll event channel: %u\n",
++		       c->cpu_index, bind_ipi.port);
++	}
++
++	virt_spin_lock = xen_spin_lock;
++	virt_spin_unlock = xen_spin_unlock;
++	set_cpu_cap(c, X86_FEATURE_SPINLOCK_YIELD);
++#endif
++}
 
 
