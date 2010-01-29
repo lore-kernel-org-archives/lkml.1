@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857Ab0A2Jbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861Ab0A2Jb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857Ab0A2Jbm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 04:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853Ab0A2Jbh
+	id S1756861Ab0A2Jb7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 04:31:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272Ab0A2Jb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 04:31:37 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57592 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756817Ab0A2Jbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 04:31:35 -0500
-Date: Fri, 29 Jan 2010 09:30:56 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       peterz@infradead.org, fweisbec@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       peterz@infradead.org, efault@gmx.de, fweisbec@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1264752266.4283.2121.camel@laptop>
-References: <1264752266.4283.2121.camel@laptop>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_events: Fix sample_period transfer on inherit
-Message-ID: <tip-75c9f3284a7ff957829f44baace82406a6354ceb@git.kernel.org>
-Git-Commit-ID: 75c9f3284a7ff957829f44baace82406a6354ceb
-X-Mailer: tip-git-log-daemon
+	Fri, 29 Jan 2010 04:31:57 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:44999 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754222Ab0A2Jbx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 04:31:53 -0500
+Date: Fri, 29 Jan 2010 15:01:36 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jim Keniston <jkenisto@us.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tom Tromey <tromey@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100129093136.GH16920@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <m3636oh2rt.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain> <1264575134.4283.1983.camel@laptop> <20100127085442.GA28422@elte.hu> <1264643539.5068.62.camel@localhost.localdomain> <20100128085502.GA7713@elte.hu> <1264726768.4933.50.camel@localhost.localdomain> <20100129073907.GF14636@elte.hu> <20100129075240.GF16920@in.ibm.com> <20100129091116.GB10878@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 29 Jan 2010 09:30:57 +0000 (UTC)
+In-Reply-To: <20100129091116.GB10878@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  75c9f3284a7ff957829f44baace82406a6354ceb
-Gitweb:     http://git.kernel.org/tip/75c9f3284a7ff957829f44baace82406a6354ceb
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Fri, 29 Jan 2010 09:04:26 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 29 Jan 2010 09:15:26 +0100
+On Fri, Jan 29, 2010 at 10:11:16AM +0100, Ingo Molnar wrote:
+> 
+> * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+> 
+> > On Fri, Jan 29, 2010 at 08:39:07AM +0100, Ingo Molnar wrote:
+> > 
+> > ...
+> > 
+> > > When we merged kprobes ~10 years ago we made the (rather bad) mistake of 
+> > > merging a raw, opaque facility and leaving 'the rest' up to some other entity. 
+> > > IBM kprobes hackers vanished the day the original kprobes code went upstream 
+> > > and the high level entity never truly materialized in-kernel, for nearly a 
+> > > decade!
+> > 
+> > I don't know what you are referring to here... Kprobes was merged in 2.6.9 
+> > (~August 2004 -- less than 6 years ago). [...]
+> 
+> Ok, 6 years then :-)
+>
+> > [...] Since then, we did work on ports to powerpc and s390. We implemented 
+> > kretprobes. We made it much scalable using RCU; we did the powerpc booster 
+> > to skip single-step when possible, not to mention various bug fixes over the 
+> > years.
+> 
+> Except it had no real in-kernel user.
 
-perf_events: Fix sample_period transfer on inherit
+Not that I want to rebut you Ingo, but there were in-kernel users since 2006
+(net/ipv4/tcp_probe.c) :-)
 
-One problem with frequency driven counters is that we cannot
-predict the rate at which they trigger, therefore we have to
-start them at period=1, this causes a ramp up effect. However,
-if we fail to propagate the stable state on fork each new child
-will have to ramp up again. This can lead to significant
-artifacts in sample data.
+Aside, I am also glad that we have more flexibility with the perf
+integration.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: eranian@google.com
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1264752266.4283.2121.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/perf_event.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 251fb95..53dc2a3 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -5002,8 +5002,15 @@ inherit_event(struct perf_event *parent_event,
- 	else
- 		child_event->state = PERF_EVENT_STATE_OFF;
- 
--	if (parent_event->attr.freq)
--		child_event->hw.sample_period = parent_event->hw.sample_period;
-+	if (parent_event->attr.freq) {
-+		u64 sample_period = parent_event->hw.sample_period;
-+		struct hw_perf_event *hwc = &child_event->hw;
-+
-+		hwc->sample_period = sample_period;
-+		hwc->last_period   = sample_period;
-+
-+		atomic64_set(&hwc->period_left, sample_period);
-+	}
- 
- 	child_event->overflow_handler = parent_event->overflow_handler;
- 
+Ananth
