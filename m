@@ -1,81 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169Ab0A2U16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709Ab0A2U3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169Ab0A2U16 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 15:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300Ab0A2U15
+	id S1754709Ab0A2U3Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 15:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893Ab0A2U3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 15:27:57 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34930 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751079Ab0A2U15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 15:27:57 -0500
-Message-ID: <4B6344CA.10504@suse.cz>
-Date: Fri, 29 Jan 2010 21:27:54 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 29 Jan 2010 15:29:24 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:34194 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751247Ab0A2U3X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 15:29:23 -0500
+Message-ID: <4B634540.9070306@gawab.com>
+Date: Fri, 29 Jan 2010 12:29:52 -0800
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091215 Shredder/3.0
 MIME-Version: 1.0
-To: Hui Zhu <hui.zhu@windriver.com>
-Cc: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
-       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org,
-       teawater@gmail.com
-Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation
-  environments
-References: <4B5E5D4F.50803@windriver.com>	 <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com>	 <4B5E9BE9.2030702@windriver.com> <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com> <4B5EB223.60307@windriver.com>
-In-Reply-To: <4B5EB223.60307@windriver.com>
-Content-Type: text/plain; charset=UTF-8
+To: lkml <linux-kernel@vger.kernel.org>, Willy Tarreau <w@1wt.eu>
+Subject: Forward porting 2.4 driver
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26.1.2010 10:13, Hui Zhu wrote:
-> +# Get options
-> +Getopt::Long::GetOptions(
-> +    'cross-compile|c=s'    => \$cross_compile,
-> +    'module|m=s'    => \$modulefile,
-> +    'help|h'        => \&usage,
-> +);
+I have this Belkin router with the default firmware running 2.4.30. 
+Belkin provided the source code as specified by the GPL. I was wondering 
+how hard it would be to upgrade the kernel from 2.4.30 to 2.4.37.7. I 
+know that 2.6 would be extremely hard because the driver model has 
+changed so much. But, what changes happened between .30 and .37 that 
+would make it difficult to upgrade the code? Did the driver model or 
+other drastic changes happen? Could I just do a file diff; import the 
+new files Belkin added and update the make files and kconfig?
 
-You should check the return code of GetOptions() and abort on invalid
-options.
+The CPU and wireless card are based on the Ralink 2880/2860 or something 
+like that.
 
-
-> +my $vmlinux_name = $ARGV[$#ARGV];
-
-GetOptions() deletes the recognized options from @ARGV, so you can say
-$ARGV[0] as before (and maybe check if there aren't any superfluous
-arguments).
-
-
-> # if it's a module, we need to find the .ko file and calculate a load
-> offset
-> if ($module ne "") {
-> -    my $modulefile = `modinfo $module | grep '^filename:' | awk '{
-> print \$2 }'`;
-> -    chomp($modulefile);
-> +    if ($modulefile eq "") {
-> +        my $modulefile = `modinfo $module | grep '^filename:' | awk '{
-> print \$2 }'`;
-
-I know you didn't add this, but while at it, could you replace the
-pipeline with just `modinfo -F filename $module`?
-
-
-> +sub usage {
-> +    print <<EOT;
-> +Usage:
-> +  dmesg | perl $0 [OPTION] [VMLINUX]
-> +
-> +OPTION:
-> +  -c, --cross-compile CROSS_COMPILE    Specify the prefix used for
-> toolchain.
-> +  -m, --module MODULE_DIRNAME        Specify the module directory name.
-
-Here and in the changelog you talk about "module directory name", but in
-fact this is the module filename.
-
-Thanks,
-Michal
+Justin Madru
