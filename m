@@ -1,101 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746Ab0A2SzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894Ab0A2SzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753746Ab0A2SzB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 13:55:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837Ab0A2SzA
+	id S1753894Ab0A2SzV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 13:55:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872Ab0A2SzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 13:55:00 -0500
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:58374
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752513Ab0A2Sy7 (ORCPT
+	Fri, 29 Jan 2010 13:55:17 -0500
+Received: from web55007.mail.re4.yahoo.com ([206.190.58.141]:45377 "HELO
+	web55007.mail.re4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753864Ab0A2SzP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 13:54:59 -0500
-Date: Fri, 29 Jan 2010 10:54:34 -0800
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100129185434.GH19501@one-eyed-alien.net>
-Mail-Followup-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <1264775655.4242.85.camel@pc1117.cambridge.arm.com> <d82e647a1001290823s1c651e4am113f843bef4ff9e2@mail.gmail.com> <1264782843.4242.91.camel@pc1117.cambridge.arm.com> <4B632033.2010309@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Fnm8lRGFTVS/3GuM"
-Content-Disposition: inline
-In-Reply-To: <4B632033.2010309@ru.mvista.com>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2010 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Fri, 29 Jan 2010 10:54:35 -0800 (PST)
+	Fri, 29 Jan 2010 13:55:15 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
+  b=Fi3Ah6+sVyFLLGaExgvMyqn2RLvi9Nki9gBQ8tpLnghN6CQrP5csMic6dx29wXQnYpCt3FqE/7sLo5iv5TBs8R+z4n+7tkK0vGiS0tQ8oGMu95CkkZDwg1XyOBkePASqyhMdfg36sbiXuziJV552Vu7fvMeryBAjswX4B36akgQ=;
+Message-ID: <229562.61603.qm@web55007.mail.re4.yahoo.com>
+X-YMail-OSG: 8O9gqvUVM1lQEpUzlK5dmUYukrf.We4cKxyuIlb1OihDBt6IP6o0iY3SZsaMWGB.MAUJFFNl2.TBmvNoXNVNUadC3j07Is3b23noDjvzVcEMXWDKpqb61ett2a61Dif39oAquJoQ5iTdd_I0UlFJHbzQMC7QDZpdplG6vW9AordyHPATLh3FqF8RHKwl_ah3ptGCzFhTznqFqKSwUnR3SvhrnYEoFLZSgUYsz6wHezNItRBpuWCIq8bu_WF09fNe6._KiB7eofwYdPZ0kUBsmJcZIj.4U5SoR.inJ5g-
+X-Mailer: YahooMailClassic/9.1.10 YahooMailWebService/0.8.100.260964
+Date: Fri, 29 Jan 2010 10:55:13 -0800 (PST)
+From: john smith <whalajam@yahoo.com>
+Subject: Re: perf report for .ko files
+To: Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20100126210552.GA12567@ghostprotocols.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Problem1: 
 
---Fnm8lRGFTVS/3GuM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Well, you could reduce the number of samples collected by
+> asking perf record to
+> include only kernel samples by fiddling with these
+> perf_event_attr fields:
+> 
+>  
+>    exclude_user   :  1, /* don't count user      */
+>    exclude_kernel :  1, /* ditto kernel          */
+>    exclude_hv     :  1, /* ditto hypervisor      */
+>    exclude_idle   :  1, /* don't count when idle */
+> 
+> I.e. setting exclude_user, exclude_hv and exclude_idle to
+> 1, but this requires
+> a patch for tools/perf/builtin-record.c as this is not
+> exposed yet.
 
-On Fri, Jan 29, 2010 at 08:51:47PM +0300, Sergei Shtylyov wrote:
-> Catalin Marinas wrote:
->=20
-> >That would be a more general solution rather than going through each HCD
-> >driver since my understanding is that flush_dcache_page() is only needed
-> >together with the mass storage support.
->=20
->   Note that DMA capable driver can be doing some transfers in PIO mode=20
-> or falling back to PIO mode if DMA mode transfer is unsuccessful (the=20
-> musb driver is an example of the latter and if the DMA rewrite patches=20
-> will get accepted, it'll do short transfers in PIO mode).
+I did setup attr->exclude_hv, exclude_idle, exclude_user = 1 in create_counter() just before "try_again:" label, no difference in results,
+on a 2.6.31 (too old? "perf buildid-list" is not available) kernel version:
 
-Given that an HCD can choose, on the fly, if it's using DMA or PIO, the HCD
-driver is the only place to reasonably put any cache-synchronization code.
+# perf record -f -e cycles fio fio_script
+(for more than a minute, I increased the sample frequency with different -c values, some locked the machine - expectedly)
+and
+# perf report --verbose --dso=/my_module_path/my_module.ko
+(--verbose doesn't provide any more info)
 
-That said, what do the other SCSI HCDs do?  I'm guessing the question gets
-kinda muddy there, since the other SCSI HCDs all talk directly to some
-piece of hardware, and thus are responsible for the cache management
-themselves.
+return the same "# Samples: 0":
 
-Based on that, one could argue that ub and usb-storage should be doing
-this.
+"
+# dso: /my_module_path/my_module.ko
+# Samples: 0
+#...
+"
 
-HOWEVER, I firmly believe that the cache-management functions belong with
-the driver that actually talks to the low-level hardware, as that's the
-only place where you can be 100% certain of what cache operations are
-needed.  After all, I think someone is working on a USB-over-IP transport,
-and trying to manage cache at the usb-storage level in that scenario is
-just silly.
+> [root@doppio linux-2.6-tip]# perf report --dsos '[e1000e]'
+> # dso: [e1000e]
+> # Samples: 110518812
 
-So, let's put this in the HCD drivers and be done with it.
+'e1000e' module may be be sampled more often than the scsi modules but ...
 
-Matt
+> > not sure why that is, /proc/kallsyms does seem to
+> > include some iwlagn symbols.
 
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
+/proc/kallsyms includes all syms I need, so is a problem not finding the symbols, does this (Samples: 0) make sens?
 
-I see you've been reading alt.sex.chubby.sheep voraciously.
-					-- Tanya
-User Friendly, 11/24/97
+"perf report --sort comm,dso,symbol" report has my module symbols.
 
---Fnm8lRGFTVS/3GuM
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Problem2: 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+If I try "perf annotate -l -k /my_module_path/my_module.ko my_symbol" has all the percentages "0.00" where I would expect a % breakdown (considering the total function counter 100%), even if the function represents a small overall counter % compared to the others, any ideas?
 
-iD8DBQFLYy7qHL9iwnUZqnkRAjUDAJ9wzMgoR+804NmVVnTrwUDT2+cp8QCfd98g
-E6MoxRpFd4QJTitILM3K+Jo=
-=++Vu
------END PGP SIGNATURE-----
+John
 
---Fnm8lRGFTVS/3GuM--
+
+
+      
