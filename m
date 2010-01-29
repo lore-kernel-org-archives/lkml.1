@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969Ab0A2OwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009Ab0A2PBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755969Ab0A2OwM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 09:52:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918Ab0A2OwI
+	id S1756009Ab0A2PBM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 10:01:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440Ab0A2PBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 09:52:08 -0500
-Received: from mail.windriver.com ([147.11.1.11]:49187 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755536Ab0A2OwF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 09:52:05 -0500
-Message-ID: <4B62F5F6.3040401@windriver.com>
-Date: Fri, 29 Jan 2010 08:51:34 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 29 Jan 2010 10:01:10 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43995 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754193Ab0A2PBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 10:01:08 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/2] PM / Runtime: Clean up pm_runtime_disable()
+Date: Fri, 29 Jan 2010 16:01:37 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc5-rjw; KDE/4.3.5; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.1001282129150.5247-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1001282129150.5247-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       kgdb-bugreport@lists.sourceforge.net,
-       "Deng, Dongdong" <Dongdong.Deng@windriver.com>, peterz@infradead.org
-Subject: Re: [PATCH 1/3] softlockup: add sched_clock_tick() to avoid kernel
- warning on kgdb resume
-References: <1264631124-4837-1-git-send-email-jason.wessel@windriver.com> <1264631124-4837-2-git-send-email-jason.wessel@windriver.com> <20100129080706.GJ14636@elte.hu>
-In-Reply-To: <20100129080706.GJ14636@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jan 2010 14:51:35.0456 (UTC) FILETIME=[8DC5CA00:01CAA0F2]
+Message-Id: <201001291601.37812.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jason Wessel <jason.wessel@windriver.com> wrote:
->
->   
->> @@ -118,6 +125,14 @@ void softlockup_tick(void)
->>  	}
->>  
->>  	if (touch_ts == 0) {
->> +		if (unlikely(per_cpu(softlock_touch_sync, this_cpu))) {
->> +			/*
->> +			 * If the time stamp was touched atomically
->> +			 * make sure the scheduler tick is up to date.
->> +			 */
->> +			per_cpu(softlock_touch_sync, this_cpu) = false;
->> +			sched_clock_tick();
->> +		}
->>  		__touch_softlockup_watchdog();
->>  		return;
->>     
->
-> Shouldnt just all of touch_softlockup_watchdog() gain this new 
-> sched_clock_tick() call, instead of doing this ugly flaggery? Or would that 
-> lock up or misbehave in other ways in some cases?
->
-> That would also make the patch much simpler i guess, as we'd only have the 
-> chunk above.
->   
+On Friday 29 January 2010, Alan Stern wrote:
+> On Thu, 28 Jan 2010, Rafael J. Wysocki wrote:
+> 
+> > > > - * If @check_resume is set and there's a resume request pending when
+> > > > - * __pm_runtime_disable() is called and power.disable_depth is zero, the
+> > > > - * function will wake up the device before disabling its run-time PM.
+> > > >   */
+> > > > -void __pm_runtime_disable(struct device *dev, bool check_resume)
+> > > > +void pm_runtime_disable(struct device *dev)
+> > > >  {
+> > > 
+> > > Why did you decide to remove the check_resume argument?  That decision 
+> > > should be explained in the patch description.
+> > 
+> > Well, I thought the "which is not necessary any more" would be a sufficient
+> > explanation ...
+> 
+> But why is it not necessary now,
 
-We have already been down that road, and it breaks other cases. 
+Well, all of the existing callers use only one value of it, which is 'false'
+(perhaps I should write that in the changelog).
 
-http://lkml.org/lkml/2009/7/28/204
+> given that apparently it was necessary before?  What has changed to make
+> it unnecessary?
 
-Specifically the test case of:
+It was used in the system suspend code path in main.c (in dpm_prepare()) IIRC,
+but it was replaced by the current code.
 
-echo 3 > /proc/sys/kernel/softlockup_thresh
+I don't really think it's useful to try to recall why it was used at one point.
+It's not used now and I don't have a usage case for it.  If no one else knows
+it will be necessary, removing it is the right thing to do.
 
-And then some kernel code in a thread like:
-        local_irq_disable();
-        printk("Disable local irq for 11 seconds\n");
-        mdelay(11000);
-        local_irq_enable();
-
-
-I could consider calling sched_cpu_clock() before returning the kernel
-to normal execution, but that didn't look very safe to call from the
-exception context, which is why it was delayed until the next time the
-soft lockup code ran.
-
-Resuming from a long sleep is a ugly problem, so I am open to short term
-and long term suggestions, including a polling time API (obviously we
-would prefer not to go down that rat hole :-)
-
-Jason.
+Rafael
