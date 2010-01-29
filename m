@@ -1,79 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331Ab0A2LCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575Ab0A2LEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756331Ab0A2LCg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 06:02:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744Ab0A2LCf
+	id S1756575Ab0A2LEO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 06:04:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551Ab0A2LEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 06:02:35 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58812 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751144Ab0A2LCe (ORCPT
+	Fri, 29 Jan 2010 06:04:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58684 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753141Ab0A2LEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 06:02:34 -0500
-Date: Fri, 29 Jan 2010 11:03:21 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: vedran.furac@gmail.com
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
-       minchan.kim@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
-Message-ID: <20100129110321.564cb866@lxorguk.ukuu.org.uk>
-In-Reply-To: <4B62327F.3010208@gmail.com>
-References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100126151202.75bd9347.akpm@linux-foundation.org>
-	<20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100126161952.ee267d1c.akpm@linux-foundation.org>
-	<20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100128001636.2026a6bc@lxorguk.ukuu.org.uk>
-	<4B622AEE.3080906@gmail.com>
-	<20100129003547.521a1da9@lxorguk.ukuu.org.uk>
-	<4B62327F.3010208@gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+	Fri, 29 Jan 2010 06:04:12 -0500
+Subject: Re: [tip:perf/core] bitops: Provide compile time
+ HWEIGHT{8,16,32,64}
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
+In-Reply-To: <20100129020128.716af8fb.akpm@linux-foundation.org>
+References: <20100122155535.797688466@chello.nl>
+	 <tip-9f41699ed067fa695faff8e2e9981b2550abec62@git.kernel.org>
+	 <20100129020128.716af8fb.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 29 Jan 2010 12:03:43 +0100
+Message-ID: <1264763023.4283.2213.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> off by default. Problem is that it breaks java and some other stuff that
-> allocates much more memory than it needs. Very quickly Committed_AS hits
-> CommitLimit and one cannot allocate any more while there is plenty of
-> memory still unused.
-
-So how about you go and have a complain at the people who are causing
-your problem, rather than the kernel.
-
-> > theoretical limit, but you generally need more swap (it's one of the
-> > reasons why things like BSD historically have a '3 * memory' rule).
+On Fri, 2010-01-29 at 02:01 -0800, Andrew Morton wrote:
+> On Fri, 29 Jan 2010 09:28:04 GMT tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> Say I have 8GB of memory and there's always some free, why would I need
-> swap?
-
-So that all the applications that allocate tons of address space and
-don't use it can swap when you hit that corner case, and as a result you
-don't need to go OOM. You should only get an OOM when you run out of
-memory + swap.
-
-> > So sounds to me like a problem between the keyboard and screen (coupled
+> > +#define HWEIGHT8(w)			\
+> > +      (	(!!((w) & (1ULL << 0))) +	\
+> > +	(!!((w) & (1ULL << 1))) +	\
+> > +	(!!((w) & (1ULL << 2))) +	\
+> > +	(!!((w) & (1ULL << 3))) +	\
+> > +	(!!((w) & (1ULL << 4))) +	\
+> > +	(!!((w) & (1ULL << 5))) +	\
+> > +	(!!((w) & (1ULL << 6))) +	\
+> > +	(!!((w) & (1ULL << 7)))	)
+> > +
+> > +#define HWEIGHT16(w) (HWEIGHT8(w)  + HWEIGHT8(w >> 8))
+> > +#define HWEIGHT32(w) (HWEIGHT16(w) + HWEIGHT16(w >> 16))
+> > +#define HWEIGHT64(w) (HWEIGHT32(w) + HWEIGHT32(w >> 32))
 > 
-> Unfortunately it is not. Give me ssh access to your computer (leave
-> overcommit on) and I'll kill your X with anything running on it.
+> Would be nice if it had a comment explaining why it exists.  If people
+> accidentally use this with non-constant arguments, the generated code
+> will be pretty ghastly.
 
-If you have overcommit on then you can cause stuff to get killed. Thats
-what the option enables.
+*sigh* and here I though it being placed right next to hweight_long()
+which uses the arch hweightN() would be clue enough.
 
-It's really very simple: overcommit off you must have enough RAM and swap
-to hold all allocations requested. Overcommit on - you don't need this
-but if you do use more than is available on the system something has to
-go.
+If people are so clueless, who says they'll read a comment.. but sure I
+guess I can add one.
 
-It's kind of like banking  overcommit off is proper banking, overcommit
-on is modern western banking.
+> Or add some barf-if-not-__constant_p() thing, perhaps.
 
-Alan
+I've actually sneaked one non-constant usage in, but since its in an
+init path I didn't care to fix that, but I guess here goes:
+
+---
+Subject: bitops: Dummyify the compile-time hweight versions
+
+Because it seems allowed to not think and write kernel code.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
++++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
+@@ -93,13 +93,16 @@ struct cpu_hw_events {
+ 	struct perf_event	*event_list[X86_PMC_IDX_MAX]; /* in enabled order */
+ };
+ 
+-#define EVENT_CONSTRAINT(c, n, m) {	\
++#define __EVENT_CONSTRAINT(c, n, m, w) {\
+ 	{ .idxmsk64[0] = (n) },		\
+ 	.code = (c),			\
+ 	.cmask = (m),			\
+-	.weight = HWEIGHT64((u64)(n)),	\
++	.weight = (w),			\
+ }
+ 
++#define EVENT_CONSTRAINT(c, n, m)	\
++	__EVENT_CONSTRAINT(c, n, m, HWEIGHT(n))
++
+ #define INTEL_EVENT_CONSTRAINT(c, n)	\
+ 	EVENT_CONSTRAINT(c, n, INTEL_ARCH_EVTSEL_MASK)
+ 
+@@ -2646,7 +2649,8 @@ void __init init_hw_perf_events(void)
+ 	register_die_notifier(&perf_event_nmi_notifier);
+ 
+ 	unconstrained = (struct event_constraint)
+-		EVENT_CONSTRAINT(0, (1ULL << x86_pmu.num_events) - 1, 0);
++		__EVENT_CONSTRAINT(0, (1ULL << x86_pmu.num_events) - 1, 
++				   0, x86_pmu.num_events);
+ 
+ 	pr_info("... version:                %d\n",     x86_pmu.version);
+ 	pr_info("... bit width:              %d\n",     x86_pmu.event_bits);
+Index: linux-2.6/include/linux/bitops.h
+===================================================================
+--- linux-2.6.orig/include/linux/bitops.h
++++ linux-2.6/include/linux/bitops.h
+@@ -45,19 +45,29 @@ static inline unsigned long hweight_long
+ 	return sizeof(w) == 4 ? hweight32(w) : hweight64(w);
+ }
+ 
+-#define HWEIGHT8(w)			\
+-      (	(!!((w) & (1ULL << 0))) +	\
+-	(!!((w) & (1ULL << 1))) +	\
+-	(!!((w) & (1ULL << 2))) +	\
+-	(!!((w) & (1ULL << 3))) +	\
+-	(!!((w) & (1ULL << 4))) +	\
+-	(!!((w) & (1ULL << 5))) +	\
+-	(!!((w) & (1ULL << 6))) +	\
++/*
++ * Clearly slow versions of the hweightN() functions, their benefit is
++ * of course compile time evaluation of constant arguments.
++ */
++#define HWEIGHT8(w)					\
++      (	BUILD_BUG_ON_ZERO(!__builtin_constant_p(w)) +	\
++	(!!((w) & (1ULL << 0))) +			\
++	(!!((w) & (1ULL << 1))) +			\
++	(!!((w) & (1ULL << 2))) +			\
++	(!!((w) & (1ULL << 3))) +			\
++	(!!((w) & (1ULL << 4))) +			\
++	(!!((w) & (1ULL << 5))) +			\
++	(!!((w) & (1ULL << 6))) +			\
+ 	(!!((w) & (1ULL << 7)))	)
+ 
+-#define HWEIGHT16(w) (HWEIGHT8(w)  + HWEIGHT8(w >> 8))
+-#define HWEIGHT32(w) (HWEIGHT16(w) + HWEIGHT16(w >> 16))
+-#define HWEIGHT64(w) (HWEIGHT32(w) + HWEIGHT32(w >> 32))
++#define HWEIGHT16(w) (HWEIGHT8(w)  + HWEIGHT8((w) >> 8))
++#define HWEIGHT32(w) (HWEIGHT16(w) + HWEIGHT16((w) >> 16))
++#define HWEIGHT64(w) (HWEIGHT32(w) + HWEIGHT32((w) >> 32))
++
++/*
++ * For us lazy bastards
++ */
++#define HWEIGHT(w)   HWEIGHT64((u64)(w))
+ 
+ /**
+  * rol32 - rotate a 32-bit value left
+
+
