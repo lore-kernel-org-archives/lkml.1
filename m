@@ -1,85 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102Ab0A2QLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646Ab0A2QNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102Ab0A2QLh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 11:11:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838Ab0A2QLW
+	id S1754646Ab0A2QNj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 11:13:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481Ab0A2QNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 11:11:22 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54937 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754036Ab0A2QLU (ORCPT
+	Fri, 29 Jan 2010 11:13:34 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:58575 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752699Ab0A2QNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 11:11:20 -0500
-Message-ID: <f8c9aca9c98db8ae7df3ac2d7ac8d922.squirrel@webmail-b.css.fujitsu.com>
-Date: Sat, 30 Jan 2010 01:11:17 +0900 (JST)
-Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: vedran.furac@gmail.com,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
-       minchan.kim@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-User-Agent: SquirrelMail/1.4.16
+	Fri, 29 Jan 2010 11:13:32 -0500
+Subject: [PATCH] Call flush_dcache_page around PIO data transfers in
+	libata-aff.c
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
+Date: Fri, 29 Jan 2010 16:10:26 +0000
+Message-ID: <20100129160150.22571.28609.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.15-36-g53e3
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Jan 2010 16:10:26.0828 (UTC) FILETIME=[91E3DCC0:01CAA0FD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> off by default. Problem is that it breaks java and some other stuff that
->> allocates much more memory than it needs. Very quickly Committed_AS hits
->> CommitLimit and one cannot allocate any more while there is plenty of
->> memory still unused.
->
-> So how about you go and have a complain at the people who are causing
-> your problem, rather than the kernel.
->
-Alan, please allow me to talk about my concern.
+Depending on the direction of the transfer, flush_dcache_page() must be
+called either before (ATA_TFLAG_WRITE) or after (!ATA_TFLAG_WRITE) the
+data copying to avoid D-cache aliasing with user space or I-D cache
+coherency issues (when reading data from an ATA device using PIO, the
+kernel dirties the D-cache but there is no flush_dcache_page() required
+on Harvard architectures).
 
-At first, I think all OOM-killer are bad and there are no chance
-to implement innocent, good OOM-Killer. The best way we can do is
-"never cause OOM-Kill". But we're human being, OOM-Killer can happen
-by _mistake_....
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>
+---
 
-For example, a customer runs 1000+ process of Oracle without using
-HugeTLB and the total size of page table goes up to 10GByes. Hahaha.
-(Of course, We asked him  to use Hugetlb ;) We can't ask him to
- use overcommit memory if much proprietaty applications runs on it.)
+This patch allows the ARM boards to use a rootfs on CompactFlash with
+the PATA platform driver.
 
-So, I believe there is a cirtial situation OOM-Killer has to run even
-if it's bad. Even in corner case.
-Now, in OOM situaion, sshd or X-server or some task launcher is killed at
-first if oom_adj is not tweaked. IIUC, OOM-Killer is for giving a chance
-to administrator to recover his system, safe reboot. But if sshd/X is
-kiiled, this is no help.
+As Anfei Zhou mentioned in a recent patch ("flush dcache before writing
+into page to avoid alias"), on some architectures there may be a
+performance benefit in differentiating the flush_dcache_page() calls
+based on whether the kernel or the user page needs flushing.
 
-My first purpose was to prevent killing some daemons or task launchers.
-The first patch was nacked ;).
+IMHO, we should differentiate based on the direction (kernel reading
+or writing from/to such page). In the ARM case with PIPT Harvard caches
+(newer processors), the kernel reading from a page that may be mapped in
+user space shouldn't need cache flushing. The kernel writing to such
+page would require D-cache flushing because of coherency with the
+I-cache. Currently on ARM, the latter happens in both cases.
 
-On that way, I tried to add lowmem counting because it was also
-my concern. This was nacked ;(
-
-I stop this because of my personal reason. For my enviroment,
-panic_on_oom=1 works enough well.For Vedran's, overcommit memory will work
-well. But oom-killer kills very bad process if not tweaked.
-So, I think some improvement should be done.
-
-And we have memcg even if it's called as ugly workaround.
-Sorry for all the noise.
-
-Bye,
--Kame
+Thanks.
 
 
+ drivers/ata/libata-sff.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-
-
-
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index 741065c..3d3c854 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -874,6 +874,9 @@ static void ata_pio_sector(struct ata_queued_cmd *qc)
+ 
+ 	DPRINTK("data %s\n", qc->tf.flags & ATA_TFLAG_WRITE ? "write" : "read");
+ 
++	if (do_write)
++		flush_dcache_page(page);
++
+ 	if (PageHighMem(page)) {
+ 		unsigned long flags;
+ 
+@@ -893,6 +896,9 @@ static void ata_pio_sector(struct ata_queued_cmd *qc)
+ 				       do_write);
+ 	}
+ 
++	if (!do_write)
++		flush_dcache_page(page);
++
+ 	qc->curbytes += qc->sect_size;
+ 	qc->cursg_ofs += qc->sect_size;
+ 
 
