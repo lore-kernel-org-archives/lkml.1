@@ -1,562 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229Ab0A2Ujh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446Ab0A2Ujy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229Ab0A2Ujh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 15:39:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964Ab0A2Ujd
+	id S1752446Ab0A2Ujy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 15:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966Ab0A2Ujs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 15:39:33 -0500
-Received: from www.tglx.de ([62.245.132.106]:44782 "EHLO www.tglx.de"
+	Fri, 29 Jan 2010 15:39:48 -0500
+Received: from www.tglx.de ([62.245.132.106]:44839 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755158Ab0A2UjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 15:39:22 -0500
-Message-Id: <20100129203613.665951035@linutronix.de>
+	id S1754974Ab0A2Ujr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 15:39:47 -0500
+Message-Id: <20100129203613.703416262@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Fri, 29 Jan 2010 20:39:02 -0000
+Date: Fri, 29 Jan 2010 20:39:07 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Christoph Hellwig <hch@infradead.org>,
        Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 08/10] drivers/base: Convert dev->sem to mutex
+       Lars Ellenberg <drbd-dev@lists.linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>,
+       Jens Axboe <axboe@kernel.dk>, drbd-user@lists.linbit.com
+Subject: [patch 09/10] block: drbd: Convert semaphore to mutex
 References: <20100129203549.526478432@linutronix.de>
-Content-Disposition: inline; filename=drivers-base-convert-sema.patch
+Content-Disposition: inline; filename=drivers-block-drbd-use-mutex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The semaphore is semantically a mutex. Convert it to a real mutex and
-clean up all users outside of drivers/base as well.
+The bm_change semaphore is semantically a mutex. Convert it to a real
+mutex.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/base/bus.c             |   20 ++++++++++----------
- drivers/base/core.c            |    3 +--
- drivers/base/dd.c              |   38 +++++++++++++++++++-------------------
- drivers/base/power/main.c      |   20 ++++++++++----------
- drivers/firewire/core-device.c |    4 ++--
- drivers/ieee1394/nodemgr.c     |    4 ++--
- drivers/net/mlx4/mlx4.h        |    1 +
- drivers/pci/bus.c              |    4 ++--
- drivers/pci/pci.c              |    4 ++--
- drivers/pcmcia/ds.c            |    8 ++++----
- drivers/usb/core/driver.c      |    4 ++--
- drivers/usb/core/usb.c         |    2 +-
- drivers/uwb/umc-bus.c          |    4 ++--
- drivers/uwb/uwb-internal.h     |    4 ++--
- include/linux/device.h         |    5 ++---
- include/linux/usb.h            |    6 +++---
- 16 files changed, 65 insertions(+), 66 deletions(-)
+Cc: Lars Ellenberg <drbd-dev@lists.linbit.com>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: drbd-user@lists.linbit.com
 
-Index: linux-2.6-tip/drivers/base/bus.c
+---
+ drivers/block/drbd/drbd_bitmap.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+Index: linux-2.6-tip/drivers/block/drbd/drbd_bitmap.c
 ===================================================================
---- linux-2.6-tip.orig/drivers/base/bus.c
-+++ linux-2.6-tip/drivers/base/bus.c
-@@ -173,10 +173,10 @@ static ssize_t driver_unbind(struct devi
- 	dev = bus_find_device_by_name(bus, NULL, buf);
- 	if (dev && dev->driver == drv) {
- 		if (dev->parent)	/* Needed for USB */
--			down(&dev->parent->sem);
-+			mutex_lock(&dev->parent->mutex);
- 		device_release_driver(dev);
- 		if (dev->parent)
--			up(&dev->parent->sem);
-+			mutex_unlock(&dev->parent->mutex);
- 		err = count;
- 	}
- 	put_device(dev);
-@@ -200,12 +200,12 @@ static ssize_t driver_bind(struct device
- 	dev = bus_find_device_by_name(bus, NULL, buf);
- 	if (dev && dev->driver == NULL && driver_match_device(drv, dev)) {
- 		if (dev->parent)	/* Needed for USB */
--			down(&dev->parent->sem);
--		down(&dev->sem);
-+			mutex_lock(&dev->parent->mutex);
-+		mutex_lock(&dev->mutex);
- 		err = driver_probe_device(drv, dev);
--		up(&dev->sem);
-+		mutex_unlock(&dev->mutex);
- 		if (dev->parent)
--			up(&dev->parent->sem);
-+			mutex_unlock(&dev->parent->mutex);
+--- linux-2.6-tip.orig/drivers/block/drbd/drbd_bitmap.c
++++ linux-2.6-tip/drivers/block/drbd/drbd_bitmap.c
+@@ -66,7 +66,7 @@ struct drbd_bitmap {
+ 	size_t   bm_words;
+ 	size_t   bm_number_of_pages;
+ 	sector_t bm_dev_capacity;
+-	struct semaphore bm_change; /* serializes resize operations */
++	struct mutex bm_change; /* serializes resize operations */
  
- 		if (err > 0) {
- 			/* success */
-@@ -744,10 +744,10 @@ static int __must_check bus_rescan_devic
- 
- 	if (!dev->driver) {
- 		if (dev->parent)	/* Needed for USB */
--			down(&dev->parent->sem);
-+			mutex_lock(&dev->parent->mutex);
- 		ret = device_attach(dev);
- 		if (dev->parent)
--			up(&dev->parent->sem);
-+			mutex_unlock(&dev->parent->mutex);
- 	}
- 	return ret < 0 ? ret : 0;
- }
-@@ -779,10 +779,10 @@ int device_reprobe(struct device *dev)
- {
- 	if (dev->driver) {
- 		if (dev->parent)        /* Needed for USB */
--			down(&dev->parent->sem);
-+			mutex_lock(&dev->parent->mutex);
- 		device_release_driver(dev);
- 		if (dev->parent)
--			up(&dev->parent->sem);
-+			mutex_unlock(&dev->parent->mutex);
- 	}
- 	return bus_rescan_devices_helper(dev, NULL);
- }
-Index: linux-2.6-tip/drivers/base/core.c
-===================================================================
---- linux-2.6-tip.orig/drivers/base/core.c
-+++ linux-2.6-tip/drivers/base/core.c
-@@ -20,7 +20,6 @@
- #include <linux/notifier.h>
- #include <linux/genhd.h>
- #include <linux/kallsyms.h>
--#include <linux/semaphore.h>
- #include <linux/mutex.h>
- #include <linux/async.h>
- 
-@@ -564,7 +563,7 @@ void device_initialize(struct device *de
- 	dev->kobj.kset = devices_kset;
- 	kobject_init(&dev->kobj, &device_ktype);
- 	INIT_LIST_HEAD(&dev->dma_pools);
--	init_MUTEX(&dev->sem);
-+	mutex_init(&dev->mutex);
- 	spin_lock_init(&dev->devres_lock);
- 	INIT_LIST_HEAD(&dev->devres_head);
- 	device_init_wakeup(dev, 0);
-Index: linux-2.6-tip/drivers/base/dd.c
-===================================================================
---- linux-2.6-tip.orig/drivers/base/dd.c
-+++ linux-2.6-tip/drivers/base/dd.c
-@@ -85,7 +85,7 @@ static void driver_sysfs_remove(struct d
-  * for before calling this. (It is ok to call with no other effort
-  * from a driver's probe() method.)
-  *
-- * This function must be called with @dev->sem held.
-+ * This function must be called with @dev->mutex held.
-  */
- int device_bind_driver(struct device *dev)
- {
-@@ -190,8 +190,8 @@ EXPORT_SYMBOL_GPL(wait_for_device_probe)
-  * This function returns -ENODEV if the device is not registered,
-  * 1 if the device is bound successfully and 0 otherwise.
-  *
-- * This function must be called with @dev->sem held.  When called for a
-- * USB interface, @dev->parent->sem must be held as well.
-+ * This function must be called with @dev->mutex  held.  When called for a
-+ * USB interface, @dev->parent->mutex must be held as well.
-  */
- int driver_probe_device(struct device_driver *drv, struct device *dev)
- {
-@@ -233,13 +233,13 @@ static int __device_attach(struct device
-  * 0 if no matching driver was found;
-  * -ENODEV if the device is not registered.
-  *
-- * When called for a USB interface, @dev->parent->sem must be held.
-+ * When called for a USB interface, @dev->parent->mutex must be held.
-  */
- int device_attach(struct device *dev)
- {
- 	int ret = 0;
- 
--	down(&dev->sem);
-+	mutex_lock(&dev->mutex);
- 	if (dev->driver) {
- 		ret = device_bind_driver(dev);
- 		if (ret == 0)
-@@ -253,7 +253,7 @@ int device_attach(struct device *dev)
- 		ret = bus_for_each_drv(dev->bus, NULL, dev, __device_attach);
- 		pm_runtime_put_sync(dev);
- 	}
--	up(&dev->sem);
-+	mutex_unlock(&dev->mutex);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(device_attach);
-@@ -276,13 +276,13 @@ static int __driver_attach(struct device
- 		return 0;
- 
- 	if (dev->parent)	/* Needed for USB */
--		down(&dev->parent->sem);
--	down(&dev->sem);
-+		mutex_lock(&dev->parent->mutex);
-+	mutex_lock(&dev->mutex);
- 	if (!dev->driver)
- 		driver_probe_device(drv, dev);
--	up(&dev->sem);
-+	mutex_unlock(&dev->mutex);
- 	if (dev->parent)
--		up(&dev->parent->sem);
-+		mutex_unlock(&dev->parent->mutex);
- 
- 	return 0;
- }
-@@ -303,8 +303,8 @@ int driver_attach(struct device_driver *
- EXPORT_SYMBOL_GPL(driver_attach);
- 
- /*
-- * __device_release_driver() must be called with @dev->sem held.
-- * When called for a USB interface, @dev->parent->sem must be held as well.
-+ * __device_release_driver() must be called with @dev->mutex held.
-+ * When called for a USB interface, @dev->parent->mutex must be held as well.
-  */
- static void __device_release_driver(struct device *dev)
- {
-@@ -343,7 +343,7 @@ static void __device_release_driver(stru
-  * @dev: device.
-  *
-  * Manually detach device from driver.
-- * When called for a USB interface, @dev->parent->sem must be held.
-+ * When called for a USB interface, @dev->parent->mutex must be held.
-  */
- void device_release_driver(struct device *dev)
- {
-@@ -352,9 +352,9 @@ void device_release_driver(struct device
- 	 * within their ->remove callback for the same device, they
- 	 * will deadlock right here.
- 	 */
--	down(&dev->sem);
-+	mutex_lock(&dev->mutex);
- 	__device_release_driver(dev);
--	up(&dev->sem);
-+	mutex_unlock(&dev->mutex);
- }
- EXPORT_SYMBOL_GPL(device_release_driver);
- 
-@@ -381,13 +381,13 @@ void driver_detach(struct device_driver 
- 		spin_unlock(&drv->p->klist_devices.k_lock);
- 
- 		if (dev->parent)	/* Needed for USB */
--			down(&dev->parent->sem);
--		down(&dev->sem);
-+			mutex_lock(&dev->parent->mutex);
-+		mutex_lock(&dev->mutex);
- 		if (dev->driver == drv)
- 			__device_release_driver(dev);
--		up(&dev->sem);
-+		mutex_unlock(&dev->mutex);
- 		if (dev->parent)
--			up(&dev->parent->sem);
-+			mutex_unlock(&dev->parent->mutex);
- 		put_device(dev);
- 	}
- }
-Index: linux-2.6-tip/drivers/base/power/main.c
-===================================================================
---- linux-2.6-tip.orig/drivers/base/power/main.c
-+++ linux-2.6-tip/drivers/base/power/main.c
-@@ -34,8 +34,8 @@
-  * because children are guaranteed to be discovered after parents, and
-  * are inserted at the back of the list on discovery.
-  *
-- * Since device_pm_add() may be called with a device semaphore held,
-- * we must never try to acquire a device semaphore while holding
-+ * Since device_pm_add() may be called with a device mutex held,
-+ * we must never try to acquire a device mutex while holding
-  * dpm_list_mutex.
-  */
- 
-@@ -476,7 +476,7 @@ static int device_resume(struct device *
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
--	down(&dev->sem);
-+	mutex_lock(&dev->mutex);
- 
- 	if (dev->bus) {
- 		if (dev->bus->pm) {
-@@ -509,7 +509,7 @@ static int device_resume(struct device *
- 		}
- 	}
-  End:
--	up(&dev->sem);
-+	mutex_unlock(&dev->mutex);
- 
- 	TRACE_RESUME(error);
- 	return error;
-@@ -564,7 +564,7 @@ static void dpm_resume(pm_message_t stat
-  */
- static void device_complete(struct device *dev, pm_message_t state)
- {
--	down(&dev->sem);
-+	mutex_lock(&dev->mutex);
- 
- 	if (dev->class && dev->class->pm && dev->class->pm->complete) {
- 		pm_dev_dbg(dev, state, "completing class ");
-@@ -581,7 +581,7 @@ static void device_complete(struct devic
- 		dev->bus->pm->complete(dev);
+ 	atomic_t bm_async_io;
+ 	wait_queue_head_t bm_io_wait;
+@@ -114,7 +114,7 @@ void drbd_bm_lock(struct drbd_conf *mdev
+ 		return;
  	}
  
--	up(&dev->sem);
-+	mutex_unlock(&dev->mutex);
- }
+-	trylock_failed = down_trylock(&b->bm_change);
++	trylock_failed = !mutex_trylock(&b->bm_change);
  
- /**
-@@ -740,7 +740,7 @@ static int device_suspend(struct device 
- {
- 	int error = 0;
- 
--	down(&dev->sem);
-+	mutex_lock(&dev->mutex);
- 
- 	if (dev->class) {
- 		if (dev->class->pm) {
-@@ -773,7 +773,7 @@ static int device_suspend(struct device 
- 		}
+ 	if (trylock_failed) {
+ 		dev_warn(DEV, "%s going to '%s' but bitmap already locked for '%s' by %s\n",
+@@ -125,7 +125,7 @@ void drbd_bm_lock(struct drbd_conf *mdev
+ 		    b->bm_task == mdev->receiver.task ? "receiver" :
+ 		    b->bm_task == mdev->asender.task  ? "asender"  :
+ 		    b->bm_task == mdev->worker.task   ? "worker"   : "?");
+-		down(&b->bm_change);
++		mutex_lock(&b->bm_change);
  	}
-  End:
--	up(&dev->sem);
-+	mutex_unlock(&dev->mutex);
+ 	if (__test_and_set_bit(BM_LOCKED, &b->bm_flags))
+ 		dev_err(DEV, "FIXME bitmap already locked in bm_lock\n");
+@@ -147,7 +147,7 @@ void drbd_bm_unlock(struct drbd_conf *md
  
- 	return error;
- }
-@@ -828,7 +828,7 @@ static int device_prepare(struct device 
- {
- 	int error = 0;
- 
--	down(&dev->sem);
-+	mutex_lock(&dev->mutex);
- 
- 	if (dev->bus && dev->bus->pm && dev->bus->pm->prepare) {
- 		pm_dev_dbg(dev, state, "preparing ");
-@@ -852,7 +852,7 @@ static int device_prepare(struct device 
- 		suspend_report_result(dev->class->pm->prepare, error);
- 	}
-  End:
--	up(&dev->sem);
-+	mutex_unlock(&dev->mutex);
- 
- 	return error;
- }
-Index: linux-2.6-tip/drivers/firewire/core-device.c
-===================================================================
---- linux-2.6-tip.orig/drivers/firewire/core-device.c
-+++ linux-2.6-tip/drivers/firewire/core-device.c
-@@ -762,9 +762,9 @@ static int update_unit(struct device *de
- 	struct fw_driver *driver = (struct fw_driver *)dev->driver;
- 
- 	if (is_fw_unit(dev) && driver != NULL && driver->update != NULL) {
--		down(&dev->sem);
-+		mutex_lock(&dev->mutex);
- 		driver->update(unit);
--		up(&dev->sem);
-+		mutex_unlock(&dev->mutex);
- 	}
- 
- 	return 0;
-Index: linux-2.6-tip/drivers/ieee1394/nodemgr.c
-===================================================================
---- linux-2.6-tip.orig/drivers/ieee1394/nodemgr.c
-+++ linux-2.6-tip/drivers/ieee1394/nodemgr.c
-@@ -1397,9 +1397,9 @@ static int update_pdrv(struct device *de
- 			pdrv = container_of(drv, struct hpsb_protocol_driver,
- 					    driver);
- 			if (pdrv->update) {
--				down(&ud->device.sem);
-+				mutex_lock(&ud->device.mutex);
- 				error = pdrv->update(ud);
--				up(&ud->device.sem);
-+				mutex_unlock(&ud->device.mutex);
- 			}
- 			if (error)
- 				device_release_driver(&ud->device);
-Index: linux-2.6-tip/drivers/net/mlx4/mlx4.h
-===================================================================
---- linux-2.6-tip.orig/drivers/net/mlx4/mlx4.h
-+++ linux-2.6-tip/drivers/net/mlx4/mlx4.h
-@@ -40,6 +40,7 @@
- #include <linux/mutex.h>
- #include <linux/radix-tree.h>
- #include <linux/timer.h>
-+#include <linux/semaphore.h>
- #include <linux/workqueue.h>
- 
- #include <linux/mlx4/device.h>
-Index: linux-2.6-tip/drivers/pci/bus.c
-===================================================================
---- linux-2.6-tip.orig/drivers/pci/bus.c
-+++ linux-2.6-tip/drivers/pci/bus.c
-@@ -240,9 +240,9 @@ void pci_walk_bus(struct pci_bus *top, i
- 			next = dev->bus_list.next;
- 
- 		/* Run device routines with the device locked */
--		down(&dev->dev.sem);
-+		mutex_lock(&dev->dev.mutex);
- 		retval = cb(dev, userdata);
--		up(&dev->dev.sem);
-+		mutex_unlock(&dev->dev.mutex);
- 		if (retval)
- 			break;
- 	}
-Index: linux-2.6-tip/drivers/pci/pci.c
-===================================================================
---- linux-2.6-tip.orig/drivers/pci/pci.c
-+++ linux-2.6-tip/drivers/pci/pci.c
-@@ -2304,7 +2304,7 @@ static int pci_dev_reset(struct pci_dev 
- 	if (!probe) {
- 		pci_block_user_cfg_access(dev);
- 		/* block PM suspend, driver probe, etc. */
--		down(&dev->dev.sem);
-+		mutex_lock(&dev->dev.mutex);
- 	}
- 
- 	rc = pci_dev_specific_reset(dev, probe);
-@@ -2326,7 +2326,7 @@ static int pci_dev_reset(struct pci_dev 
- 	rc = pci_parent_bus_reset(dev, probe);
- done:
- 	if (!probe) {
--		up(&dev->dev.sem);
-+		mutex_unlock(&dev->dev.mutex);
- 		pci_unblock_user_cfg_access(dev);
- 	}
- 
-Index: linux-2.6-tip/drivers/pcmcia/ds.c
-===================================================================
---- linux-2.6-tip.orig/drivers/pcmcia/ds.c
-+++ linux-2.6-tip/drivers/pcmcia/ds.c
-@@ -964,9 +964,9 @@ static int runtime_suspend(struct device
- {
- 	int rc;
- 
--	down(&dev->sem);
-+	mutex_lock(&dev->mutex);
- 	rc = pcmcia_dev_suspend(dev, PMSG_SUSPEND);
--	up(&dev->sem);
-+	mutex_unlock(&dev->mutex);
- 	return rc;
+ 	b->bm_why  = NULL;
+ 	b->bm_task = NULL;
+-	up(&b->bm_change);
++	mutex_unlock(&b->bm_change);
  }
  
-@@ -974,9 +974,9 @@ static void runtime_resume(struct device
- {
- 	int rc;
+ /* word offset to long pointer */
+@@ -295,7 +295,7 @@ int drbd_bm_init(struct drbd_conf *mdev)
+ 	if (!b)
+ 		return -ENOMEM;
+ 	spin_lock_init(&b->bm_lock);
+-	init_MUTEX(&b->bm_change);
++	mutex_init(&b->bm_change);
+ 	init_waitqueue_head(&b->bm_io_wait);
  
--	down(&dev->sem);
-+	mutex_lock(&dev->mutex);
- 	rc = pcmcia_dev_resume(dev);
--	up(&dev->sem);
-+	mutex_unlock(&dev->mutex);
- }
- 
- /************************ per-device sysfs output ***************************/
-Index: linux-2.6-tip/drivers/usb/core/driver.c
-===================================================================
---- linux-2.6-tip.orig/drivers/usb/core/driver.c
-+++ linux-2.6-tip/drivers/usb/core/driver.c
-@@ -470,10 +470,10 @@ void usb_driver_release_interface(struct
- 	if (device_is_registered(dev)) {
- 		device_release_driver(dev);
- 	} else {
--		down(&dev->sem);
-+		mutex_lock(&dev->mutex);
- 		usb_unbind_interface(dev);
- 		dev->driver = NULL;
--		up(&dev->sem);
-+		mutex_unlock(&dev->mutex);
- 	}
- }
- EXPORT_SYMBOL_GPL(usb_driver_release_interface);
-Index: linux-2.6-tip/drivers/usb/core/usb.c
-===================================================================
---- linux-2.6-tip.orig/drivers/usb/core/usb.c
-+++ linux-2.6-tip/drivers/usb/core/usb.c
-@@ -601,7 +601,7 @@ int usb_lock_device_for_reset(struct usb
- 			iface->condition == USB_INTERFACE_UNBOUND))
- 		return -EINTR;
- 
--	while (usb_trylock_device(udev) != 0) {
-+	while (!usb_trylock_device(udev)) {
- 
- 		/* If we can't acquire the lock after waiting one second,
- 		 * we're probably deadlocked */
-Index: linux-2.6-tip/drivers/uwb/umc-bus.c
-===================================================================
---- linux-2.6-tip.orig/drivers/uwb/umc-bus.c
-+++ linux-2.6-tip/drivers/uwb/umc-bus.c
-@@ -62,12 +62,12 @@ int umc_controller_reset(struct umc_dev 
- 	struct device *parent = umc->dev.parent;
- 	int ret = 0;
- 
--	if(down_trylock(&parent->sem))
-+	if (!mutex_trylock(&parent->mutex))
- 		return -EAGAIN;
- 	ret = device_for_each_child(parent, parent, umc_bus_pre_reset_helper);
- 	if (ret >= 0)
- 		ret = device_for_each_child(parent, parent, umc_bus_post_reset_helper);
--	up(&parent->sem);
-+	mutex_unlock(&parent->mutex);
- 
- 	return ret;
- }
-Index: linux-2.6-tip/drivers/uwb/uwb-internal.h
-===================================================================
---- linux-2.6-tip.orig/drivers/uwb/uwb-internal.h
-+++ linux-2.6-tip/drivers/uwb/uwb-internal.h
-@@ -366,12 +366,12 @@ struct dentry *uwb_dbg_create_pal_dir(st
- 
- static inline void uwb_dev_lock(struct uwb_dev *uwb_dev)
- {
--	down(&uwb_dev->dev.sem);
-+	mutex_lock(&uwb_dev->dev.mutex);
- }
- 
- static inline void uwb_dev_unlock(struct uwb_dev *uwb_dev)
- {
--	up(&uwb_dev->dev.sem);
-+	mutex_unlock(&uwb_dev->dev.mutex);
- }
- 
- #endif /* #ifndef __UWB_INTERNAL_H__ */
-Index: linux-2.6-tip/include/linux/device.h
-===================================================================
---- linux-2.6-tip.orig/include/linux/device.h
-+++ linux-2.6-tip/include/linux/device.h
-@@ -22,7 +22,6 @@
- #include <linux/types.h>
- #include <linux/module.h>
- #include <linux/pm.h>
--#include <linux/semaphore.h>
- #include <asm/atomic.h>
- #include <asm/device.h>
- 
-@@ -106,7 +105,7 @@ extern int bus_unregister_notifier(struc
- 
- /* All 4 notifers below get called with the target struct device *
-  * as an argument. Note that those functions are likely to be called
-- * with the device semaphore held in the core, so be careful.
-+ * with the device mutex held in the core, so be careful.
-  */
- #define BUS_NOTIFY_ADD_DEVICE		0x00000001 /* device added */
- #define BUS_NOTIFY_DEL_DEVICE		0x00000002 /* device removed */
-@@ -385,7 +384,7 @@ struct device {
- 	const char		*init_name; /* initial name of the device */
- 	struct device_type	*type;
- 
--	struct semaphore	sem;	/* semaphore to synchronize calls to
-+	struct mutex		mutex;	/* mutex to synchronize calls to
- 					 * its driver.
- 					 */
- 
-Index: linux-2.6-tip/include/linux/usb.h
-===================================================================
---- linux-2.6-tip.orig/include/linux/usb.h
-+++ linux-2.6-tip/include/linux/usb.h
-@@ -527,9 +527,9 @@ extern struct usb_device *usb_get_dev(st
- extern void usb_put_dev(struct usb_device *dev);
- 
- /* USB device locking */
--#define usb_lock_device(udev)		down(&(udev)->dev.sem)
--#define usb_unlock_device(udev)		up(&(udev)->dev.sem)
--#define usb_trylock_device(udev)	down_trylock(&(udev)->dev.sem)
-+#define usb_lock_device(udev)		mutex_lock(&(udev)->dev.mutex)
-+#define usb_unlock_device(udev)		mutex_unlock(&(udev)->dev.mutex)
-+#define usb_trylock_device(udev)	mutex_trylock(&(udev)->dev.mutex)
- extern int usb_lock_device_for_reset(struct usb_device *udev,
- 				     const struct usb_interface *iface);
- 
+ 	mdev->bitmap = b;
 
 
