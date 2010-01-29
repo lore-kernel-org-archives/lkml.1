@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409Ab0A2Uvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087Ab0A2UvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409Ab0A2Uvn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 15:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246Ab0A2Uvb
+	id S1755087Ab0A2UvU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 15:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992Ab0A2UvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 15:51:31 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42822 "EHLO
+	Fri, 29 Jan 2010 15:51:18 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42650 "EHLO
 	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755211Ab0A2UvW (ORCPT
+	with ESMTP id S1754453Ab0A2UvL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 15:51:22 -0500
-Message-Id: <20100129204959.074588549@quilx.com>
+	Fri, 29 Jan 2010 15:51:11 -0500
+Message-Id: <20100129205005.552853163@quilx.com>
 References: <20100129204931.789743493@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 29 Jan 2010 14:49:33 -0600
+Date: Fri, 29 Jan 2010 14:49:44 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Andi Kleen <andi@firstfloor.org>
-Cc: Dave Chinner <david@fromorbit.com>, Christoph Lameter <clameter@sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Dave Chinner <david@fromorbit.com>, Christoph Lameter <clameter@sgi.com>
 Cc: Rik van Riel <riel@redhat.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: akpm@linux-foundation.org
 Cc: Miklos Szeredi <miklos@szeredi.hu>
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>
 Cc: Hugh Dickins <hugh@veritas.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: slub: Replace ctor field with ops field in /sys/slab/*
-Content-Disposition: inline; filename=slub_replace_ctor_field
+Subject: Filesystem: Ext3 filesystem defrag
+Content-Disposition: inline; filename=ext3-defrag
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create an ops field in /sys/slab/*/ops to contain all the operations defined
-on a slab. This will be used to display the additional operations that will
-be defined soon.
+Support defragmentation for ext3 filesystem inodes
 
 Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- mm/slub.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ fs/ext3/super.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Index: linux-2.6/mm/slub.c
+Index: linux-next/fs/ext3/super.c
 ===================================================================
---- linux-2.6.orig/mm/slub.c	2010-01-29 10:27:09.000000000 -0600
-+++ linux-2.6/mm/slub.c	2010-01-29 10:27:14.000000000 -0600
-@@ -4089,16 +4089,18 @@ static ssize_t min_partial_store(struct 
+--- linux-next.orig/fs/ext3/super.c	2008-08-11 07:42:10.348607875 -0700
++++ linux-next/fs/ext3/super.c	2008-08-11 07:47:05.042348829 -0700
+@@ -484,6 +484,12 @@ static void init_once(void *foo)
+ 	inode_init_once(&ei->vfs_inode);
  }
- SLAB_ATTR(min_partial);
  
--static ssize_t ctor_show(struct kmem_cache *s, char *buf)
-+static ssize_t ops_show(struct kmem_cache *s, char *buf)
++static void *ext3_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct ext3_inode_info, vfs_inode));
++}
++
+ static int init_inodecache(void)
  {
--	if (s->ctor) {
--		int n = sprint_symbol(buf, (unsigned long)s->ctor);
-+	int x = 0;
- 
--		return n + sprintf(buf + n, "\n");
-+	if (s->ctor) {
-+		x += sprintf(buf + x, "ctor : ");
-+		x += sprint_symbol(buf + x, (unsigned long)s->ctor);
-+		x += sprintf(buf + x, "\n");
- 	}
--	return 0;
-+	return x;
+ 	ext3_inode_cachep = kmem_cache_create("ext3_inode_cache",
+@@ -493,6 +499,8 @@ static int init_inodecache(void)
+ 					     init_once);
+ 	if (ext3_inode_cachep == NULL)
+ 		return -ENOMEM;
++	kmem_cache_setup_defrag(ext3_inode_cachep,
++			ext3_get_inodes, kick_inodes);
+ 	return 0;
  }
--SLAB_ATTR_RO(ctor);
-+SLAB_ATTR_RO(ops);
  
- static ssize_t aliases_show(struct kmem_cache *s, char *buf)
- {
-@@ -4448,7 +4450,7 @@ static struct attribute *slab_attrs[] = 
- 	&slabs_attr.attr,
- 	&partial_attr.attr,
- 	&cpu_slabs_attr.attr,
--	&ctor_attr.attr,
-+	&ops_attr.attr,
- 	&aliases_attr.attr,
- 	&align_attr.attr,
- 	&sanity_checks_attr.attr,
 
 -- 
