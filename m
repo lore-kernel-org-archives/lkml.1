@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171Ab0A2V7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676Ab0A2WBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171Ab0A2V7h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 16:59:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331Ab0A2V7g
+	id S1754676Ab0A2WBM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 17:01:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581Ab0A2WBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 16:59:36 -0500
-Received: from web55003.mail.re4.yahoo.com ([206.190.58.137]:45258 "HELO
-	web55003.mail.re4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752709Ab0A2V7g (ORCPT
+	Fri, 29 Jan 2010 17:01:10 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37579 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754550Ab0A2WBJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 16:59:36 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
-  b=IKQq7PtkJPiow7RuvUf2uhZjrxYhgR1EQLDI0x4cfvWLcg+e8SYh8TYOGUx2NrnbdmlV+2W8YxEtIP88mshZiqIbLVwpuXjCATM6ErTloyY4Hq1XOwZVJrCUHbyM0heU5GERmC3ZVUfCklO3wiS3KnQZZzOGItiZudI54Ffot/s=;
-Message-ID: <202042.73614.qm@web55003.mail.re4.yahoo.com>
-X-YMail-OSG: tUsNdEIVM1nnOuaEzQXUKkpeRwDrzZ95Z.ljc5kJOPKHambYgSEL2Ecr41jk3uJS9T.fiRZQH1Ol75Yrb5dvAK6MLYzm._06pSadz_Qm9DdfMcf5OjMvc5V.6ovPhzA0Tw.HYZKXcPyr6jhtgb4.nNF3dIq.s7.BlGIvU2Tk3cXI7dgy_goW5Z3DskJYsD74gw6dQJVOuA_JfCAJXaoGhO_wh8HI07RA9cVrl_0-
-X-Mailer: YahooMailClassic/9.1.10 YahooMailWebService/0.8.100.260964
-Date: Fri, 29 Jan 2010 13:59:35 -0800 (PST)
-From: john smith <whalajam@yahoo.com>
-Subject: Re: perf report for .ko files
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20100129191558.GA9990@ghostprotocols.net>
+	Fri, 29 Jan 2010 17:01:09 -0500
+Date: Fri, 29 Jan 2010 22:00:44 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Dave Chinner <david@fromorbit.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: dentries: dentry defragmentation
+Message-ID: <20100129220044.GA31305@ZenIV.linux.org.uk>
+References: <20100129204931.789743493@quilx.com>
+ <20100129205007.832823807@quilx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100129205007.832823807@quilx.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I did setup attr->exclude_hv, exclude_idle,
-> exclude_user = 1 in
-> > create_counter() just before "try_again:" label, no
-> difference in
-> > results, on a 2.6.31 (too old? "perf buildid-list" is
-> not available)
-> > kernel version:
->  
-> > # perf record -f -e cycles fio fio_script
-> 
-> > (for more than a minute, I increased the sample
-> frequency with
-> > different -c values, some locked the machine -
-> expectedly)
-> > and
-> > # perf report --verbose
-> --dso=/my_module_path/my_module.ko
-> > (--verbose doesn't provide any more info)
-> 
-> This isn't going to work, you need to do:
-> 
-> perf report --verbose --dso='[my_module]'
-> 
-> I.e. as it appear on /proc/modules + brackets. Arguably we
-> need to get
-> it to work also with both 'my_module.ko' and the full
-> path.
+On Fri, Jan 29, 2010 at 02:49:48PM -0600, Christoph Lameter wrote:
+> +		if ((d_unhashed(dentry) && list_empty(&dentry->d_lru)) ||
+> +		   (!d_unhashed(dentry) && hlist_unhashed(&dentry->d_hash)) ||
+> +		   (dentry->d_inode &&
+> +		   !mapping_cap_writeback_dirty(dentry->d_inode->i_mapping)))
+> +			/* Ignore this dentry */
+> +			v[i] = NULL;
+> +		else
+> +			/* dget_locked will remove the dentry from the LRU */
+> +			dget_locked(dentry);
+> +	}
+> +	spin_unlock(&dcache_lock);
+> +	return NULL;
+> +}
 
-I've tried:
-"perf report --verbose --dso='[my_module]'"
-and also:
-"perf report --verbose --dso='[sg]'"
-same result as before.
+No.  As the matter of fact - fuck, no.  For one thing, it's going to race
+with umount.  For another, kicking busy dentry out of hash is worse than
+useless - you are just asking to get more and more copies of that sucker
+in dcache.  This is fundamentally bogus, especially since there is a 100%
+safe time for killing dentry - when dput() drives the refcount to 0 and
+you *are* doing dput() on the references you've acquired.  If anything, I'd
+suggest setting a flag that would trigger immediate freeing on the final
+dput().
 
-New question:
-
-Is this the minimal set of api that I can use from within the kernel (for specific module sections of interest) to read the counters? 
-
-{
-int perf_event_release_kernel(struct perf_event *event);
-struct perf_event *perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu);
-u64 perf_event_read_value(struct perf_event *event);
-}
-
-Any good example of useage of these api's (struct initialization)?
-
-John
-  
-
-
-
-      
+And that does not cover the umount races.  You *can't* go around grabbing
+dentries without making sure that superblock won't be shut down under
+you.  And no, I don't know how to deal with that cleanly - simply bumping
+superblock ->s_count under sb_lock is enough to make sure it's not freed
+under you, but what you want is more than that.  An active reference would
+be enough, except that you'd get sudden "oh, sorry, now there's no way
+to make sure that superblock is shut down at umount(2), no matter what kind
+of setup you have".  So you really need to get ->s_umount held shared,
+which is, not particulary locking-order-friendly, to put it mildly.
