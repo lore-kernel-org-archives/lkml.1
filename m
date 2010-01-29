@@ -1,359 +1,424 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459Ab0A2QIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329Ab0A2QII@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459Ab0A2QIm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 11:08:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434Ab0A2QIj
+	id S1755329Ab0A2QII (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 11:08:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242Ab0A2QIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 11:08:39 -0500
+	Fri, 29 Jan 2010 11:08:00 -0500
 Received: from mail-fx0-f220.google.com ([209.85.220.220]:53041 "EHLO
 	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755424Ab0A2QIh (ORCPT
+	with ESMTP id S1755233Ab0A2QH5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 11:08:37 -0500
+	Fri, 29 Jan 2010 11:07:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=gIAItMZ832/ts8Wpx6g9P9YTHVbD+0FigY+AbJaSiL4vgo8ZiMKzk8N+P9imc+rjVb
-         YWocYCqGgzqzMxDBa5VKe3zz7fV2CVuCo3gSAG4aI3RQR6qpkSvc8iLYDkUlS9H8hOkV
-         MGeP4IzHcadQnQcIYxJJr5IvQjN5BwRyJqAO8=
+        b=XDEezuDvoYAz942GT0sjTZ7WVFZdEEVjV59RZztV6WD9U3q1EPXUKx2t481H/mQR3S
+         LO9Uhf36/TyF2hH1HbGJ0Ap61dfI2N+UDbDXL5vn11v/miGtVUx094nsVkUMdxlFEoYb
+         saKScQvTpcHr6RvlHtO0TFUayKcirBgiCcHeQ=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 29 Jan 2010 17:08:29 +0100
-Message-Id: <20100129160829.21495.39844.sendpatchset@localhost>
+Date: Fri, 29 Jan 2010 17:07:50 +0100
+Message-Id: <20100129160750.21495.96663.sendpatchset@localhost>
 In-Reply-To: <20100129160308.21495.14120.sendpatchset@localhost>
 References: <20100129160308.21495.14120.sendpatchset@localhost>
-Subject: [PATCH 50/68] pata_efar: move code to be re-used by ide2libata to pata_efar.h
+Subject: [PATCH 44/68] pata_cs5530: move code to be re-used by ide2libata to pata_cs5530.h
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_efar: move code to be re-used by ide2libata to pata_efar.h
+Subject: [PATCH] pata_cs5530: move code to be re-used by ide2libata to pata_cs5530.h
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ata/pata_efar.c |  151 -----------------------------------------------
- drivers/ata/pata_efar.h |  152 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 153 insertions(+), 150 deletions(-)
+ drivers/ata/pata_cs5530.c |  178 --------------------------------------------
+ drivers/ata/pata_cs5530.h |  183 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 184 insertions(+), 177 deletions(-)
 
-Index: b/drivers/ata/pata_efar.c
+Index: b/drivers/ata/pata_cs5530.c
 ===================================================================
---- a/drivers/ata/pata_efar.c
-+++ b/drivers/ata/pata_efar.c
-@@ -49,156 +49,7 @@ static int efar_pre_reset(struct ata_lin
- 	return ata_sff_prereset(link, deadline);
+--- a/drivers/ata/pata_cs5530.c
++++ b/drivers/ata/pata_cs5530.c
+@@ -43,93 +43,7 @@ static void __iomem *cs5530_port_base(st
+ 	return (void __iomem *)((bmdma & ~0x0F) + 0x20 + 0x10 * ap->port_no);
  }
  
 -/**
-- *	efar_cable_detect	-	check for 40/80 pin
-- *	@ap: Port
+- *	cs5530_set_piomode		-	PIO setup
+- *	@ap: ATA interface
+- *	@adev: device on the interface
 - *
-- *	Perform cable detection for the EFAR ATA interface. This is
-- *	different to the PIIX arrangement
+- *	Set our PIO requirements. This is fairly simple on the CS5530
+- *	chips.
 - */
 -
--static int efar_cable_detect(struct ata_port *ap)
+-static void cs5530_set_piomode(struct ata_port *ap, struct ata_device *adev)
 -{
--	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
--	u8 tmp;
+-	static const unsigned int cs5530_pio_timings[2][5] = {
+-		{0x00009172, 0x00012171, 0x00020080, 0x00032010, 0x00040010},
+-		{0xd1329172, 0x71212171, 0x30200080, 0x20102010, 0x00100010}
+-	};
+-	void __iomem *base = cs5530_port_base(ap);
+-	u32 tuning;
+-	int format;
 -
--	pci_read_config_byte(pdev, 0x47, &tmp);
--	if (tmp & (2 >> ap->port_no))
--		return ATA_CBL_PATA40;
--	return ATA_CBL_PATA80;
+-	/* Find out which table to use */
+-	tuning = ioread32(base + 0x04);
+-	format = (tuning & 0x80000000UL) ? 1 : 0;
+-
+-	/* Now load the right timing register */
+-	if (adev->devno)
+-		base += 0x08;
+-
+-	iowrite32(cs5530_pio_timings[format][adev->pio_mode - XFER_PIO_0], base);
 -}
 -
--static DEFINE_SPINLOCK(efar_lock);
+-/**
+- *	cs5530_set_dmamode		-	DMA timing setup
+- *	@ap: ATA interface
+- *	@adev: Device being configured
+- *
+- *	We cannot mix MWDMA and UDMA without reloading timings each switch
+- *	master to slave. We track the last DMA setup in order to minimise
+- *	reloads.
+- */
 -
--static void efar_set_timings(struct ata_port *ap, struct ata_device *adev,
--			     u8 pio, bool use_mwdma)
+-static void cs5530_set_dmamode(struct ata_port *ap, struct ata_device *adev)
 -{
--	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
--	unsigned long flags;
--	unsigned int is_slave	= (adev->devno != 0);
--	u8 master_port		= ap->port_no ? 0x42 : 0x40;
--	u16 master_data;
--	u8 slave_data;
--	u8 udma_enable;
--	int control = 0;
+-	void __iomem *base = cs5530_port_base(ap);
+-	u32 tuning, timing = 0;
+-	u8 reg;
 -
--	/*
--	 *	See Intel Document 298600-004 for the timing programing rules
--	 *	for PIIX/ICH. The EFAR is a clone so very similar
--	 */
+-	/* Find out which table to use */
+-	tuning = ioread32(base + 0x04);
 -
--	static const	 /* ISP  RTC */
--	u8 timings[][2]	= { { 0, 0 },
--			    { 0, 0 },
--			    { 1, 0 },
--			    { 2, 1 },
--			    { 2, 3 }, };
--
--	if (pio > 1 || use_mwdma)
--		control |= 1;	/* TIME */
--	if (ata_pio_need_iordy(adev) || use_mwdma)
--		control |= 2;	/* IE */
--	/* Intel specifies that the prefetch/posting is for disk only */
--	if (adev->class == ATA_DEV_ATA)
--		control |= 4;	/* PPE */
--	/* If the drive MWDMA is faster than it can do PIO then
--	   we must force PIO into PIO0 */
--	if (use_mwdma && adev->pio_mode < (XFER_PIO_0 + pio))
--		/* Enable DMA timing only */
--		control |= 8;	/* PIO cycles in PIO0 */
--
--	spin_lock_irqsave(&efar_lock, flags);
--
--	pci_read_config_word(dev, master_port, &master_data);
--
--	/* Set PPE, IE, and TIME as appropriate */
--	if (is_slave == 0) {
--		master_data &= 0xCCF0;
--		master_data |= control;
--		master_data |= (timings[pio][0] << 12) |
--			(timings[pio][1] << 8);
--	} else {
--		int shift = 4 * ap->port_no;
--
--		master_data &= 0xFF0F;
--		master_data |= (control << 4);
--
--		/* Slave timing in separate register */
--		pci_read_config_byte(dev, 0x44, &slave_data);
--		slave_data &= ap->port_no ? 0x0F : 0xF0;
--		slave_data |= ((timings[pio][0] << 2) | timings[pio][1]) << shift;
+-	switch(adev->dma_mode) {
+-		case XFER_UDMA_0:
+-			timing  = 0x00921250;break;
+-		case XFER_UDMA_1:
+-			timing  = 0x00911140;break;
+-		case XFER_UDMA_2:
+-			timing  = 0x00911030;break;
+-		case XFER_MW_DMA_0:
+-			timing  = 0x00077771;break;
+-		case XFER_MW_DMA_1:
+-			timing  = 0x00012121;break;
+-		case XFER_MW_DMA_2:
+-			timing  = 0x00002020;break;
+-		default:
+-			BUG();
+-	}
+-	/* Merge in the PIO format bit */
+-	timing |= (tuning & 0x80000000UL);
+-	if (adev->devno == 0) /* Master */
+-		iowrite32(timing, base + 0x04);
+-	else {
+-		if (timing & 0x00100000)
+-			tuning |= 0x00100000;	/* UDMA for both */
+-		else
+-			tuning &= ~0x00100000;	/* MWDMA for both */
+-		iowrite32(tuning, base + 0x04);
+-		iowrite32(timing, base + 0x0C);
 -	}
 -
--	master_data |= 0x4000;	/* Ensure SITRE is set */
--	pci_write_config_word(dev, master_port, master_data);
--	if (is_slave)
--		pci_write_config_byte(dev, 0x44, slave_data);
+-	/* Set the DMA capable bit in the BMDMA area */
+-	reg = ioread8(ap->ioaddr.bmdma_addr + ATA_DMA_STATUS);
+-	reg |= (1 << (5 + adev->devno));
+-	iowrite8(reg, ap->ioaddr.bmdma_addr + ATA_DMA_STATUS);
 -
--	pci_read_config_byte(dev, 0x48, &udma_enable);
--	udma_enable &= ~(1 << (2 * ap->port_no + adev->devno));
--	pci_write_config_byte(dev, 0x48, udma_enable);
+-	/* Remember the last DMA setup we did */
 -
--	spin_unlock_irqrestore(&efar_lock, flags);
+-	ap->private_data = adev;
 -}
--
--/**
-- *	efar_set_piomode - Initialize host controller PATA PIO timings
-- *	@ap: Port whose timings we are configuring
-- *	@adev: Device to program
-- *
-- *	Set PIO mode for device, in host controller PCI config space.
-- *
-- *	LOCKING:
-- *	None (inherited from caller).
-- */
--
--static void efar_set_piomode(struct ata_port *ap, struct ata_device *adev)
--{
--	efar_set_timings(ap, adev, adev->pio_mode - XFER_PIO_0, 0);
--}
--
--/**
-- *	efar_set_dmamode - Initialize host controller PATA DMA timings
-- *	@ap: Port whose timings we are configuring
-- *	@adev: Device to program
-- *
-- *	Set UDMA/MWDMA mode for device, in host controller PCI config space.
-- *
-- *	LOCKING:
-- *	None (inherited from caller).
-- */
--
--static void efar_set_dmamode (struct ata_port *ap, struct ata_device *adev)
--{
--	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
--	unsigned long flags;
--	u8 speed		= adev->dma_mode;
--	int devid		= adev->devno + 2 * ap->port_no;
--	u8 udma_enable;
--
--	if (speed >= XFER_UDMA_0) {
--		unsigned int udma = speed - XFER_UDMA_0;
--		u16 udma_timing;
--
--		spin_lock_irqsave(&efar_lock, flags);
--
--		pci_read_config_byte(dev, 0x48, &udma_enable);
--
--		udma_enable |= (1 << devid);
--
--		/* Load the UDMA mode number */
--		pci_read_config_word(dev, 0x4A, &udma_timing);
--		udma_timing &= ~(7 << (4 * devid));
--		udma_timing |= udma << (4 * devid);
--		pci_write_config_word(dev, 0x4A, udma_timing);
--
--		pci_write_config_byte(dev, 0x48, udma_enable);
--
--		spin_unlock_irqrestore(&efar_lock, flags);
--	} else
--		/* MWDMA is driven by the PIO timings. */
--		efar_set_timings(ap, adev, ata_mwdma_to_pio(speed), 1);
--}
-+#include "pata_efar.h"
++#include "pata_cs5530.h"
  
- static struct scsi_host_template efar_sht = {
- 	ATA_BMDMA_SHT(DRV_NAME),
-Index: b/drivers/ata/pata_efar.h
+ /**
+  *	cs5530_qc_issue		-	command issue
+@@ -195,96 +109,6 @@ static int cs5530_is_palmax(void)
+ 	return 0;
+ }
+ 
+-
+-/**
+- *	cs5530_init_chip	-	Chipset init
+- *	@gendev: device
+- *
+- *	Perform the chip initialisation work that is shared between both
+- *	setup and resume paths
+- */
+-
+-static int cs5530_init_chip(struct device *gendev)
+-{
+-	struct pci_dev *master_0 = NULL, *cs5530_0 = NULL, *dev = NULL;
+-
+-	while ((dev = pci_get_device(PCI_VENDOR_ID_CYRIX, PCI_ANY_ID, dev)) != NULL) {
+-		switch (dev->device) {
+-			case PCI_DEVICE_ID_CYRIX_PCI_MASTER:
+-				master_0 = pci_dev_get(dev);
+-				break;
+-			case PCI_DEVICE_ID_CYRIX_5530_LEGACY:
+-				cs5530_0 = pci_dev_get(dev);
+-				break;
+-		}
+-	}
+-	if (!master_0) {
+-		printk(KERN_ERR DRV_NAME ": unable to locate PCI MASTER function\n");
+-		goto fail_put;
+-	}
+-	if (!cs5530_0) {
+-		printk(KERN_ERR DRV_NAME ": unable to locate CS5530 LEGACY function\n");
+-		goto fail_put;
+-	}
+-
+-	pci_set_master(cs5530_0);
+-	pci_try_set_mwi(cs5530_0);
+-
+-	/*
+-	 * Set PCI CacheLineSize to 16-bytes:
+-	 * --> Write 0x04 into 8-bit PCI CACHELINESIZE reg of function 0 of the cs5530
+-	 *
+-	 * Note: This value is constant because the 5530 is only a Geode companion
+-	 */
+-
+-	pci_write_config_byte(cs5530_0, PCI_CACHE_LINE_SIZE, 0x04);
+-
+-	/*
+-	 * Disable trapping of UDMA register accesses (Win98 hack):
+-	 * --> Write 0x5006 into 16-bit reg at offset 0xd0 of function 0 of the cs5530
+-	 */
+-
+-	pci_write_config_word(cs5530_0, 0xd0, 0x5006);
+-
+-	/*
+-	 * Bit-1 at 0x40 enables MemoryWriteAndInvalidate on internal X-bus:
+-	 * The other settings are what is necessary to get the register
+-	 * into a sane state for IDE DMA operation.
+-	 */
+-
+-	pci_write_config_byte(master_0, 0x40, 0x1e);
+-
+-	/*
+-	 * Set max PCI burst size (16-bytes seems to work best):
+-	 *	   16bytes: set bit-1 at 0x41 (reg value of 0x16)
+-	 *	all others: clear bit-1 at 0x41, and do:
+-	 *	  128bytes: OR 0x00 at 0x41
+-	 *	  256bytes: OR 0x04 at 0x41
+-	 *	  512bytes: OR 0x08 at 0x41
+-	 *	 1024bytes: OR 0x0c at 0x41
+-	 */
+-
+-	pci_write_config_byte(master_0, 0x41, 0x14);
+-
+-	/*
+-	 * These settings are necessary to get the chip
+-	 * into a sane state for IDE DMA operation.
+-	 */
+-
+-	pci_write_config_byte(master_0, 0x42, 0x00);
+-	pci_write_config_byte(master_0, 0x43, 0xc1);
+-
+-	pci_dev_put(master_0);
+-	pci_dev_put(cs5530_0);
+-	return 0;
+-fail_put:
+-	if (master_0)
+-		pci_dev_put(master_0);
+-	if (cs5530_0)
+-		pci_dev_put(cs5530_0);
+-	return -EIO;
+-}
+-
+ /**
+  *	cs5530_init_one		-	Initialise a CS5530
+  *	@dev: PCI device
+Index: b/drivers/ata/pata_cs5530.h
 ===================================================================
 --- /dev/null
-+++ b/drivers/ata/pata_efar.h
-@@ -0,0 +1,152 @@
++++ b/drivers/ata/pata_cs5530.h
+@@ -0,0 +1,183 @@
 +
 +/**
-+ *	efar_cable_detect	-	check for 40/80 pin
-+ *	@ap: Port
++ *	cs5530_set_piomode		-	PIO setup
++ *	@ap: ATA interface
++ *	@adev: device on the interface
 + *
-+ *	Perform cable detection for the EFAR ATA interface. This is
-+ *	different to the PIIX arrangement
++ *	Set our PIO requirements. This is fairly simple on the CS5530
++ *	chips.
 + */
 +
-+static int efar_cable_detect(struct ata_port *ap)
++static void cs5530_set_piomode(struct ata_port *ap, struct ata_device *adev)
 +{
-+	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
-+	u8 tmp;
++	static const unsigned int cs5530_pio_timings[2][5] = {
++		{0x00009172, 0x00012171, 0x00020080, 0x00032010, 0x00040010},
++		{0xd1329172, 0x71212171, 0x30200080, 0x20102010, 0x00100010}
++	};
++	void __iomem *base = cs5530_port_base(ap);
++	u32 tuning;
++	int format;
 +
-+	pci_read_config_byte(pdev, 0x47, &tmp);
-+	if (tmp & (2 >> ap->port_no))
-+		return ATA_CBL_PATA40;
-+	return ATA_CBL_PATA80;
++	/* Find out which table to use */
++	tuning = ioread32(base + 0x04);
++	format = (tuning & 0x80000000UL) ? 1 : 0;
++
++	/* Now load the right timing register */
++	if (adev->devno)
++		base += 0x08;
++
++	iowrite32(cs5530_pio_timings[format][adev->pio_mode - XFER_PIO_0],
++		  base);
 +}
 +
-+static DEFINE_SPINLOCK(efar_lock);
++/**
++ *	cs5530_set_dmamode		-	DMA timing setup
++ *	@ap: ATA interface
++ *	@adev: Device being configured
++ *
++ *	We cannot mix MWDMA and UDMA without reloading timings each switch
++ *	master to slave. We track the last DMA setup in order to minimise
++ *	reloads.
++ */
 +
-+static void efar_set_timings(struct ata_port *ap, struct ata_device *adev,
-+			     u8 pio, bool use_mwdma)
++static void cs5530_set_dmamode(struct ata_port *ap, struct ata_device *adev)
 +{
-+	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
-+	unsigned long flags;
-+	unsigned int is_slave	= (adev->devno != 0);
-+	u8 master_port		= ap->port_no ? 0x42 : 0x40;
-+	u16 master_data;
-+	u8 slave_data;
-+	u8 udma_enable;
-+	int control = 0;
++	void __iomem *base = cs5530_port_base(ap);
++	u32 tuning, timing = 0;
++	u8 reg;
 +
-+	/*
-+	 *	See Intel Document 298600-004 for the timing programing rules
-+	 *	for PIIX/ICH. The EFAR is a clone so very similar
-+	 */
++	/* Find out which table to use */
++	tuning = ioread32(base + 0x04);
 +
-+	static const	 /* ISP  RTC */
-+	u8 timings[][2]	= { { 0, 0 },
-+			    { 0, 0 },
-+			    { 1, 0 },
-+			    { 2, 1 },
-+			    { 2, 3 }, };
-+
-+	if (pio > 1 || use_mwdma)
-+		control |= 1;	/* TIME */
-+	if (ata_pio_need_iordy(adev) || use_mwdma)
-+		control |= 2;	/* IE */
-+	/* Intel specifies that the prefetch/posting is for disk only */
-+	if (adev->class == ATA_DEV_ATA)
-+		control |= 4;	/* PPE */
-+	/* If the drive MWDMA is faster than it can do PIO then
-+	   we must force PIO into PIO0 */
-+	if (use_mwdma && adev->pio_mode < (XFER_PIO_0 + pio))
-+		/* Enable DMA timing only */
-+		control |= 8;	/* PIO cycles in PIO0 */
-+
-+	spin_lock_irqsave(&efar_lock, flags);
-+
-+	pci_read_config_word(dev, master_port, &master_data);
-+
-+	/* Set PPE, IE, and TIME as appropriate */
-+	if (is_slave == 0) {
-+		master_data &= 0xCCF0;
-+		master_data |= control;
-+		master_data |= (timings[pio][0] << 12) |
-+			(timings[pio][1] << 8);
-+	} else {
-+		int shift = 4 * ap->port_no;
-+
-+		master_data &= 0xFF0F;
-+		master_data |= (control << 4);
-+
-+		/* Slave timing in separate register */
-+		pci_read_config_byte(dev, 0x44, &slave_data);
-+		slave_data &= ap->port_no ? 0x0F : 0xF0;
-+		slave_data |=
-+			((timings[pio][0] << 2) | timings[pio][1]) << shift;
++	switch (adev->dma_mode) {
++	case XFER_UDMA_0:
++		timing  = 0x00921250; break;
++	case XFER_UDMA_1:
++		timing  = 0x00911140; break;
++	case XFER_UDMA_2:
++		timing  = 0x00911030; break;
++	case XFER_MW_DMA_0:
++		timing  = 0x00077771; break;
++	case XFER_MW_DMA_1:
++		timing  = 0x00012121; break;
++	case XFER_MW_DMA_2:
++		timing  = 0x00002020; break;
++	default:
++		BUG();
++	}
++	/* Merge in the PIO format bit */
++	timing |= (tuning & 0x80000000UL);
++	if (adev->devno == 0) /* Master */
++		iowrite32(timing, base + 0x04);
++	else {
++		if (timing & 0x00100000)
++			tuning |= 0x00100000;	/* UDMA for both */
++		else
++			tuning &= ~0x00100000;	/* MWDMA for both */
++		iowrite32(tuning, base + 0x04);
++		iowrite32(timing, base + 0x0C);
 +	}
 +
-+	master_data |= 0x4000;	/* Ensure SITRE is set */
-+	pci_write_config_word(dev, master_port, master_data);
-+	if (is_slave)
-+		pci_write_config_byte(dev, 0x44, slave_data);
++	/* Set the DMA capable bit in the BMDMA area */
++	reg = ioread8(ap->ioaddr.bmdma_addr + ATA_DMA_STATUS);
++	reg |= (1 << (5 + adev->devno));
++	iowrite8(reg, ap->ioaddr.bmdma_addr + ATA_DMA_STATUS);
 +
-+	pci_read_config_byte(dev, 0x48, &udma_enable);
-+	udma_enable &= ~(1 << (2 * ap->port_no + adev->devno));
-+	pci_write_config_byte(dev, 0x48, udma_enable);
++	/* Remember the last DMA setup we did */
 +
-+	spin_unlock_irqrestore(&efar_lock, flags);
++	ap->private_data = adev;
 +}
 +
-+/**
-+ *	efar_set_piomode - Initialize host controller PATA PIO timings
-+ *	@ap: Port whose timings we are configuring
-+ *	@adev: Device to program
-+ *
-+ *	Set PIO mode for device, in host controller PCI config space.
-+ *
-+ *	LOCKING:
-+ *	None (inherited from caller).
-+ */
-+
-+static void efar_set_piomode(struct ata_port *ap, struct ata_device *adev)
-+{
-+	efar_set_timings(ap, adev, adev->pio_mode - XFER_PIO_0, 0);
-+}
 +
 +/**
-+ *	efar_set_dmamode - Initialize host controller PATA DMA timings
-+ *	@ap: Port whose timings we are configuring
-+ *	@adev: Device to program
++ *	cs5530_init_chip	-	Chipset init
++ *	@gendev: device
 + *
-+ *	Set UDMA/MWDMA mode for device, in host controller PCI config space.
-+ *
-+ *	LOCKING:
-+ *	None (inherited from caller).
++ *	Perform the chip initialisation work that is shared between both
++ *	setup and resume paths
 + */
 +
-+static void efar_set_dmamode(struct ata_port *ap, struct ata_device *adev)
++static int cs5530_init_chip(struct device *gendev)
 +{
-+	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
-+	unsigned long flags;
-+	u8 speed		= adev->dma_mode;
-+	int devid		= adev->devno + 2 * ap->port_no;
-+	u8 udma_enable;
++	struct pci_dev *master_0 = NULL, *cs5530_0 = NULL, *dev = NULL;
 +
-+	if (speed >= XFER_UDMA_0) {
-+		unsigned int udma = speed - XFER_UDMA_0;
-+		u16 udma_timing;
++	while ((dev = pci_get_device(PCI_VENDOR_ID_CYRIX,
++					PCI_ANY_ID, dev)) != NULL) {
++		switch (dev->device) {
++		case PCI_DEVICE_ID_CYRIX_PCI_MASTER:
++			master_0 = pci_dev_get(dev);
++			break;
++		case PCI_DEVICE_ID_CYRIX_5530_LEGACY:
++			cs5530_0 = pci_dev_get(dev);
++			break;
++		}
++	}
++	if (!master_0) {
++		printk(KERN_ERR DRV_NAME
++			": unable to locate PCI MASTER function\n");
++		goto fail_put;
++	}
++	if (!cs5530_0) {
++		printk(KERN_ERR DRV_NAME
++			": unable to locate CS5530 LEGACY function\n");
++		goto fail_put;
++	}
 +
-+		spin_lock_irqsave(&efar_lock, flags);
++	pci_set_master(cs5530_0);
++	pci_try_set_mwi(cs5530_0);
 +
-+		pci_read_config_byte(dev, 0x48, &udma_enable);
++	/*
++	 * Set PCI CacheLineSize to 16-bytes:
++	 * --> Write 0x04 into 8-bit PCI CACHELINESIZE reg of function 0
++	 *
++	 * Note:
++	 * This value is constant because the 5530 is only a Geode companion
++	 */
 +
-+		udma_enable |= (1 << devid);
++	pci_write_config_byte(cs5530_0, PCI_CACHE_LINE_SIZE, 0x04);
 +
-+		/* Load the UDMA mode number */
-+		pci_read_config_word(dev, 0x4A, &udma_timing);
-+		udma_timing &= ~(7 << (4 * devid));
-+		udma_timing |= udma << (4 * devid);
-+		pci_write_config_word(dev, 0x4A, udma_timing);
++	/*
++	 * Disable trapping of UDMA register accesses (Win98 hack):
++	 * --> Write 0x5006 into 16-bit reg at offset 0xd0 of function 0
++	 */
 +
-+		pci_write_config_byte(dev, 0x48, udma_enable);
++	pci_write_config_word(cs5530_0, 0xd0, 0x5006);
 +
-+		spin_unlock_irqrestore(&efar_lock, flags);
-+	} else
-+		/* MWDMA is driven by the PIO timings. */
-+		efar_set_timings(ap, adev, ata_mwdma_to_pio(speed), 1);
++	/*
++	 * Bit-1 at 0x40 enables MemoryWriteAndInvalidate on internal X-bus:
++	 * The other settings are what is necessary to get the register
++	 * into a sane state for IDE DMA operation.
++	 */
++
++	pci_write_config_byte(master_0, 0x40, 0x1e);
++
++	/*
++	 * Set max PCI burst size (16-bytes seems to work best):
++	 *	   16bytes: set bit-1 at 0x41 (reg value of 0x16)
++	 *	all others: clear bit-1 at 0x41, and do:
++	 *	  128bytes: OR 0x00 at 0x41
++	 *	  256bytes: OR 0x04 at 0x41
++	 *	  512bytes: OR 0x08 at 0x41
++	 *	 1024bytes: OR 0x0c at 0x41
++	 */
++
++	pci_write_config_byte(master_0, 0x41, 0x14);
++
++	/*
++	 * These settings are necessary to get the chip
++	 * into a sane state for IDE DMA operation.
++	 */
++
++	pci_write_config_byte(master_0, 0x42, 0x00);
++	pci_write_config_byte(master_0, 0x43, 0xc1);
++
++	pci_dev_put(master_0);
++	pci_dev_put(cs5530_0);
++	return 0;
++fail_put:
++	if (master_0)
++		pci_dev_put(master_0);
++	if (cs5530_0)
++		pci_dev_put(cs5530_0);
++	return -EIO;
 +}
