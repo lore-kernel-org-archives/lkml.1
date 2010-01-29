@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224Ab0A2WHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638Ab0A2WKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224Ab0A2WHH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 17:07:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523Ab0A2WHG
+	id S1754638Ab0A2WKk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 17:10:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607Ab0A2WKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 17:07:06 -0500
-Received: from cantor.suse.de ([195.135.220.2]:37461 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752465Ab0A2WHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 17:07:05 -0500
-Date: Fri, 29 Jan 2010 14:07:21 -0800
-From: Greg KH <gregkh@suse.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 07/10] usb: gadgetfs: Convert semaphore to mutex
-Message-ID: <20100129220721.GA19935@suse.de>
-References: <20100129203549.526478432@linutronix.de> <20100129203613.628793121@linutronix.de> <20100129211410.GB7265@suse.de> <alpine.LFD.2.00.1001292248180.5926@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001292248180.5926@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 29 Jan 2010 17:10:39 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:51373 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752303Ab0A2WKi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 17:10:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=LlGHvX+n3tlxD7En/IACvgiE1jX6q4QYC7dj/6QQ8MNM9erB1dYuKUYCoU56DWPQ5c
+         dFKYRsuzz7W5yVJAzqqVKq455IpawywuxxyI5iaYsqEd1+e0IwXpg5I+jYZccOUxg+si
+         P8NLJNIAyl2+fs1u38HrhUPfiUslgc28zaRVU=
+Subject: Re: [PATCH v3] port ricoh_mmc to pci quirk
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Philip Langdale <philipl@overt.org>
+Cc: Wolfram Sang <w.sang@pengutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pierre Ossman <pierre@ossman.eu>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-mmc@vger.kernel.org
+In-Reply-To: <20100129080639.3b484a59@fido2.homeip.net>
+References: <20091125085324.1ef9ae1f@fido2.homeip.net>
+	 <20091125113501.1f4d42b9.akpm@linux-foundation.org>
+	 <1259192401.15916.48.camel@maxim-laptop>
+	 <20091125173019.74d0ddb9@fido2.homeip.net>
+	 <1259279520.3991.5.camel@maxim-laptop>
+	 <1259279584.3991.6.camel@maxim-laptop>
+	 <20091126235551.2db699e3@fido2.homeip.net>
+	 <1262964284.12577.27.camel@maxim-laptop>
+	 <20100108074001.5df6c997@fido2.homeip.net>
+	 <20100112154350.8fa96829.akpm@linux-foundation.org>
+	 <20100113064657.GB10955@pengutronix.de>
+	 <1264772255.4620.3.camel@maxim-laptop>
+	 <20100129080639.3b484a59@fido2.homeip.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 30 Jan 2010 00:10:33 +0200
+Message-ID: <1264803033.7095.4.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 29, 2010 at 10:48:36PM +0100, Thomas Gleixner wrote:
-> On Fri, 29 Jan 2010, Greg KH wrote:
+On Fri, 2010-01-29 at 08:06 -0800, Philip Langdale wrote: 
+> On Fri, 29 Jan 2010 15:37:35 +0200
+> Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 > 
-> > On Fri, Jan 29, 2010 at 08:38:59PM -0000, Thomas Gleixner wrote:
-> > > The semaphore data->lock is semantically a mutex. Convert it to a real
-> > > mutex.
-> > > 
-> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > > Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > Here, updated patch with your comments addressed.
+> > This is also tested with real MMC card.
 > 
-> Can you take that via your usb tree or do you want me to push it
-> linuswards for .34 ?
+> Actual code gets my thumbs up.
+> 
+> > This adds some > 80 chars lines, but I hope that is ok.
+> 
+> It's against the coding style and as far as I can see, the only
+> lines that are > 80 are the dev_notice and DECLARE_FIXUP lines - both
+> of which can be trivially split across multiple lines, so please just
+> do that.
+Well, I have nothing against this, but, even Linus himself stated that
+he dislikes broken printk lines.
 
-I tried to do this last time the patches were posted, but the core mutex
-changes were not in Linus's tree yet, so I could not as it broke my
-build.
+I also noticed that some DECLARE_FIXUP in this file are longer that 80,
+and since breaking this doesn't add any value, I thought that is ok.
+Remember that main purpose of 80 char limit is to make code simpler.
 
-Has this changed?  If so, I would be glad to do so.  If not, I can't :(
+However, I don't really care if you insist.
 
-thanks,
+Best regards,
+Maxim Levitsky
 
-greg k-h
