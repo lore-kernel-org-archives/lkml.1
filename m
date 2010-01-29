@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932365Ab0A2KL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902Ab0A2KOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932365Ab0A2KL1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 05:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932338Ab0A2KL0
+	id S1756902Ab0A2KOL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 05:14:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081Ab0A2KOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 05:11:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:9858 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932316Ab0A2KLY (ORCPT
+	Fri, 29 Jan 2010 05:14:10 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54898 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751335Ab0A2KOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 05:11:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:content-transfer-encoding
-         :message-id;
-        b=VosjKkGVvWO6/9qySnKoehSOqV0fLW5d/DkromOCl1R+qxLh1xEzwJsnP1uSmJNDWh
-         nrKRJDnI6pvauf7pdNmbaK3ieddodOhpZGl0xOXgvgPXci/1WFKoH7/RXWZzY2wqdBqP
-         XgGK2o3oXHLbDNXECqix9CTyE3fOHyWolawwI=
-From: Marek Vasut <marek.vasut@gmail.com>
-Organization: Hack&Dev
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] power_supply: Clean up wm97xx_battery warnings
-Date: Fri, 29 Jan 2010 11:11:11 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.31-1-amd64; KDE/4.3.4; x86_64; ; )
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linux-kernel@vger.kernel.org
-References: <1264625135-4075-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1264625135-4075-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Fri, 29 Jan 2010 05:14:08 -0500
+Subject: Re: [PATCHv3 2/2] powerpc: implement arch_scale_smt_power for
+ Power7
+From: Peter Zijlstra <peterz@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Joel Schopp <jschopp@austin.ibm.com>, ego@in.ibm.com,
+       linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1264728185.20211.34.camel@pasglop>
+References: <1264017638.5717.121.camel@jschopp-laptop>
+	 <1264017847.5717.132.camel@jschopp-laptop>
+	 <1264548495.12239.56.camel@jschopp-laptop>
+	 <1264720855.9660.22.camel@jschopp-laptop>
+	 <1264721088.10385.1.camel@jschopp-laptop>
+	 <1264728185.20211.34.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 29 Jan 2010 11:13:47 +0100
+Message-ID: <1264760027.4283.2164.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001291111.11133.marek.vasut@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dne St 27. ledna 2010 21:45:35 Mark Brown napsal(a):
-> Staticise work_lock (nothing outside the driver has any reason to
-> see it) and specify dev when requesting the charger IRQ (since that's
-> what we pass in when we free it).
+On Fri, 2010-01-29 at 12:23 +1100, Benjamin Herrenschmidt wrote:
+> On machine that don't have SMT, I would like to avoid calling
+> arch_scale_smt_power() at all if possible (in addition to not compiling
+> it in if SMT is not enabled in .config).
 > 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Now, I must say I'm utterly confused by how the domains are setup and I
+> haven't quite managed to sort it out... it looks to me that
+> SD_SHARE_CPUPOWER is always going to be set on all CPUs when the config
+> option is set (though each CPU will have its own domain) or am I
+> misguided ? IE. Is there any sense in having at least a fast exit path
+> out of arch_scale_smt_power() for non-SMT CPUs ?
 
-Hi, thanks.
+The sched_domain creation code is a f'ing stink pile that hurts
+everybody's brain.
 
-Acked-by: Marek Vasut <marek.vasut@gmail.com>
+The AMD magny-cours people sort of cleaned it up a bit but didn't go
+nearly far enough. Doing so is somewhere on my todo list, but sadly that
+thing is way larger than my spare time.
 
-> ---
->  drivers/power/wm97xx_battery.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/power/wm97xx_battery.c
->  b/drivers/power/wm97xx_battery.c index 6ea3cb5..23eed35 100644
-> --- a/drivers/power/wm97xx_battery.c
-> +++ b/drivers/power/wm97xx_battery.c
-> @@ -26,7 +26,7 @@
-> 
->  static DEFINE_MUTEX(bat_lock);
->  static struct work_struct bat_work;
-> -struct mutex work_lock;
-> +static struct mutex work_lock;
->  static int bat_status = POWER_SUPPLY_STATUS_UNKNOWN;
->  static struct wm97xx_batt_info *gpdata;
->  static enum power_supply_property *prop;
-> @@ -203,7 +203,7 @@ static int __devinit wm97xx_bat_probe(struct
->  platform_device *dev) goto err2;
->  		ret = request_irq(gpio_to_irq(pdata->charge_gpio),
->  				wm97xx_chrg_irq, IRQF_DISABLED,
-> -				"AC Detect", 0);
-> +				"AC Detect", dev);
->  		if (ret)
->  			goto err2;
->  		props++;	/* POWER_SUPPLY_PROP_STATUS */
-> 
+Now SD_SHARE_CPUPOWER _should_ only be set for SMT domains, because only
+SMT siblings share cpupower.
+
+SD_SHARE_PKG_RESOURCES _should_ be set for both SMT and MC, because they
+all share the same cache domain.
+
+If it all works out that way in practice on powerpc is another question
+entirely ;-)
+
+That said, I'm still not entirely convinced I like this usage of
+cpupower, its supposed to be a normalization scale for load-balancing,
+not a placement hook.
+
+I'd be much happier with a SD_GROUP_ORDER or something like that, that
+works together with SD_PREFER_SIBLING to pack active tasks to cpus in
+ascending group order.
+
