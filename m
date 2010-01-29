@@ -1,128 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295Ab0A2LZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553Ab0A2L0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756295Ab0A2LZS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 06:25:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113Ab0A2LZR
+	id S1756553Ab0A2L0h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 06:26:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017Ab0A2L0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 06:25:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16184 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379Ab0A2LZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 06:25:15 -0500
-Date: Fri, 29 Jan 2010 13:21:41 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Or Gerlitz <ogerlitz@voltaire.com>, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] net: macvtap driver
-Message-ID: <20100129112141.GA6548@redhat.com>
-References: <201001271104.20607.arnd@arndb.de> <201001272209.27361.arnd@arndb.de> <20100128173438.GA3476@redhat.com> <201001282118.09164.arnd@arndb.de>
+	Fri, 29 Jan 2010 06:26:37 -0500
+Received: from mail-pz0-f189.google.com ([209.85.222.189]:51921 "EHLO
+	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755896Ab0A2L0g convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 06:26:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ezFOnN/mhuE/JpbhxHZbyQbs0FGB5jgVEuG8Rfz9onAiT+cHOutmwyJ0H1JII+VquJ
+         ezeZ1vcf3vq7F6ip/oZuaxp4iwzZlR0PMyAqXQtT3BfjWezDqGf6zEThVXqLUcH8gtA4
+         4MptrW4FQv34aYv18EhYQ+DhYuCtdSmBdq6kE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001282118.09164.arnd@arndb.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20100128220835.GA23471@n2100.arm.linux.org.uk>
+References: <20100128124028.8982.16123.sendpatchset@rxone.opensource.se>
+	 <20100128124038.8982.82995.sendpatchset@rxone.opensource.se>
+	 <20100128220835.GA23471@n2100.arm.linux.org.uk>
+Date: Fri, 29 Jan 2010 20:26:34 +0900
+Message-ID: <aec7e5c31001290326q76036a49p44fe5a5b31f5cd53@mail.gmail.com>
+Subject: Re: [PATCH 01/06] ARM: SuperH Mobile ARM, sh7367 and G3EVM support
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: eric.y.miao@gmail.com, tony@atomide.com, linux-kernel@vger.kernel.org,
+       khilman@deeprootsystems.com, lethal@linux-sh.org, ben-linux@fluff.org,
+       linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 09:18:08PM +0100, Arnd Bergmann wrote:
-> On Thursday 28 January 2010, Michael S. Tsirkin wrote:
-> > On Wed, Jan 27, 2010 at 10:09:27PM +0100, Arnd Bergmann wrote:
-> > > +static inline struct macvtap_queue *macvtap_file_get_queue(struct file *file)
-> > > +{
-> > > +	rcu_read_lock_bh();
-> > > +	return rcu_dereference(file->private_data);
-> > > +}
-> > > +
-> > > +static inline void macvtap_file_put_queue(void)
-> > > +{
-> > > +	rcu_read_unlock_bh();
-> > > +}
-> > > +
-> > 
-> > I find such wrappers around rcu obscure this,
-> > already sufficiently complex, pattern.
-> > Might be just me.
-> 
-> Obviously I find them useful here, but if more people feel the
-> same as you, I'll just open-code them.
-> 
-> > > +static int macvtap_open(struct inode *inode, struct file *file)
-> > > +{
-> > > +	struct net *net = current->nsproxy->net_ns;
-> > > +	struct net_device *dev = dev_get_by_index(net, iminor(inode));
-> > > +	struct macvtap_queue *q;
-> > > +	int err;
-> > > +
-> > 
-> > This seems to keep reference to device as long as character device is
-> > open, which, if I understand correctly, will start printing error
-> > messages to kernel log about once a second if you try to remove the
-> > device.
-> > 
-> > I suspect the best way to fix this issue would be to use some kind
-> > of notifier so that macvtap can disconnect on device removal.
-> 
-> I think I'm just missing the put in the open function, the code
-> already handles the netif and the file disappearing independently.
-> 
-> Thanks for spotting this one, I'll fix that in the next post.
-> 
-> > > +	skb_reserve(skb, NET_IP_ALIGN);
-> > > +	skb_put(skb, count);
-> > > +
-> > > +	if (skb_copy_datagram_from_iovec(skb, 0, iv, 0, len)) {
-> > > +		macvlan_count_rx(q->vlan, 0, false, false);
-> > > +		kfree_skb(skb);
-> > > +		return -EFAULT;
-> > > +	}
-> > > +
-> > > +	skb_set_network_header(skb, ETH_HLEN);
-> > > +
-> > > +	macvlan_start_xmit(skb, q->vlan->dev);
-> > > +
-> > > +	return count;
-> > > +}
-> > > +
-> > 
-> > I am surprised there's no GSO support.  Would it be a good idea to share
-> > code with tun driver? That already has GSO ...
-> 
-> The driver still only does the minimum feature set to get things going.
-> GSO is an obvious extension, but I wanted the code to be as simple
-> as possible to find all the basic bugs before we do anything fancy.
-> 
-> > Also, network header pointer seems off for vlan packets?
-> 
-> That may well be, I haven't tried vlan. What do you think it should do
-> then?
+On Fri, Jan 29, 2010 at 7:08 AM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> The entries in this choice menu are sorted by option text - please
+> place your new option appropriately to avoid conflicts.
 
-Look at eth_type for a more complete packet parsing.
+Ok, will make sure it gets sorted properly.
 
-> > > +/*
-> > > + * provide compatibility with generic tun/tap interface
-> > > + */
-> > > +static long macvtap_ioctl(struct file *file, unsigned int cmd,
-> > > +			  unsigned long arg)
-> > > +{
-> > 
-> > All of these seem to be stubs, and tun has many more that you didn't
-> > stub out. So, why do you bother to support any ioctls at all?
-> 
-> Again, minimum features to get things going. qemu fails to open
-> the device if these ioctls are not implemented, but any of the
-> more advanced features are left out.
+>> +static struct sh_timer_config cmt10_platform_data = {
+>> +     .name = "CMT10",
+>> +     .channel_offset = 0x10,
+>> +     .timer_bit = 0,
+>> +     .clk = "r_clk",
+>
+> I guess you can't do a lot about this because of arch/sh, but over in ARM
+> land, we use clkdev to get the clock primerily by the device name rather
+> than a string passed around; this is how the clk API is meant to be used.
 
-This is strange, could be application bug.  E.g. send buf size is
-relatively new and apps should handle failure gracefully.  IMO,
-returning success and ignoring the value is not a good idea.  How about
-we just fix qemu?  What about other apps?
+At this early stage there is not so much to do. When I get around to
+implement the clock framework and runtime pm for SuperH Mobile ARM
+then I'll have a close look at clkdev.
 
-> Thansk for the review,
-> 
-> 	Arnd
+I'll update and resend these patches next week.
+
+Thanks!
+
+/ magnus
