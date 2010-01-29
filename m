@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607Ab0A2Uxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429Ab0A2Uwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607Ab0A2Uxx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 15:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524Ab0A2Uxr
+	id S1755429Ab0A2Uwe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 15:52:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755280Ab0A2Uwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 15:53:47 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42699 "EHLO
+	Fri, 29 Jan 2010 15:52:31 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42796 "EHLO
 	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754917Ab0A2UvP (ORCPT
+	with ESMTP id S1755145Ab0A2UvV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 15:51:15 -0500
-Message-Id: <20100129205002.638310262@quilx.com>
+	Fri, 29 Jan 2010 15:51:21 -0500
+Message-Id: <20100129205003.209111052@quilx.com>
 References: <20100129204931.789743493@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 29 Jan 2010 14:49:39 -0600
+Date: Fri, 29 Jan 2010 14:49:40 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Andi Kleen <andi@firstfloor.org>
 Cc: Dave Chinner <david@fromorbit.com>, Christoph Lameter <clameter@sgi.com>,
@@ -24,252 +24,259 @@ Cc: Miklos Szeredi <miklos@szeredi.hu>
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>
 Cc: Hugh Dickins <hugh@veritas.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: slub/slabinfo: add defrag statistics
-Content-Disposition: inline; filename=slub_add_defrag_stats
+Subject: slub: Trigger defragmentation from memory reclaim
+Content-Disposition: inline; filename=slub_vmscan_trigger
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add statistics counters for slab defragmentation.
+This patch triggers slab defragmentation from memory reclaim. The logical
+point for this is after slab shrinking was performed in vmscan.c. At that point
+the fragmentation ratio of a slab was increased because objects were freed via
+the LRU lists maitained for various slab caches.
+So we call kmem_cache_defrag() from there.
 
+shrink_slab() is called in some contexts to do global shrinking
+of slabs and in others to do shrinking for a particular zone. Pass the zone to
+shrink_slab(), so that slab_shrink() can call kmem_cache_defrag() and restrict
+the defragmentation to the node that is under memory pressure.
+
+The callback frequency into slab reclaim can be controlled by a new field
+/proc/sys/vm/slab_defrag_limit.
+
+Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- Documentation/vm/slabinfo.c |   45 ++++++++++++++++++++++++++++++++++++--------
- include/linux/slub_def.h    |    6 +++++
- mm/slub.c                   |   24 ++++++++++++++++++++++-
- 3 files changed, 66 insertions(+), 9 deletions(-)
+ Documentation/sysctl/vm.txt |   10 +++++++
+ fs/drop_caches.c            |    2 -
+ include/linux/mm.h          |    3 --
+ include/linux/mmzone.h      |    1 
+ include/linux/swap.h        |    3 ++
+ kernel/sysctl.c             |   20 +++++++++++++++
+ mm/vmscan.c                 |   58 ++++++++++++++++++++++++++++++++++++++++----
+ 7 files changed, 90 insertions(+), 7 deletions(-)
 
-Index: slab-2.6/Documentation/vm/slabinfo.c
+Index: linux-2.6/fs/drop_caches.c
 ===================================================================
---- slab-2.6.orig/Documentation/vm/slabinfo.c	2010-01-22 15:53:03.000000000 -0600
-+++ slab-2.6/Documentation/vm/slabinfo.c	2010-01-22 15:53:21.000000000 -0600
-@@ -41,6 +41,9 @@ struct slabinfo {
- 	unsigned long cpuslab_flush, deactivate_full, deactivate_empty;
- 	unsigned long deactivate_to_head, deactivate_to_tail;
- 	unsigned long deactivate_remote_frees, order_fallback;
-+	unsigned long shrink_calls, shrink_attempt_defrag, shrink_empty_slab;
-+	unsigned long shrink_slab_skipped, shrink_slab_reclaimed;
-+	unsigned long shrink_object_reclaim_failed;
- 	int numa[MAX_NODES];
- 	int numa_partial[MAX_NODES];
- } slabinfo[MAX_SLABS];
-@@ -79,6 +82,7 @@ int sort_active = 0;
- int set_debug = 0;
- int show_ops = 0;
- int show_activity = 0;
-+int show_defragcount = 0;
+--- linux-2.6.orig/fs/drop_caches.c	2009-11-13 09:34:25.000000000 -0600
++++ linux-2.6/fs/drop_caches.c	2010-01-29 10:27:32.000000000 -0600
+@@ -58,7 +58,7 @@ static void drop_slab(void)
+ 	int nr_objects;
  
- /* Debug options */
- int sanity = 0;
-@@ -113,6 +117,7 @@ static void usage(void)
- 		"-e|--empty             Show empty slabs\n"
- 		"-f|--first-alias       Show first alias\n"
- 		"-F|--defrag            Show defragmentable caches\n"
-+		"-G:--display-defrag    Display defrag counters\n"
- 		"-h|--help              Show usage information\n"
- 		"-i|--inverted          Inverted list\n"
- 		"-l|--slabs             Show slabs\n"
-@@ -300,6 +305,8 @@ static void first_line(void)
- {
- 	if (show_activity)
- 		printf("Name                   Objects      Alloc       Free   %%Fast Fallb O\n");
-+	else if (show_defragcount)
-+		printf("Name                   Objects DefragRQ  Slabs Success   Empty Skipped  Failed\n");
- 	else
- 		printf("Name                   Objects Objsize    Space "
- 			"Slabs/Part/Cpu  O/S O %%Ra %%Ef Flg\n");
-@@ -466,22 +473,28 @@ static void slab_stats(struct slabinfo *
- 
- 	printf("Total                %8lu %8lu\n\n", total_alloc, total_free);
- 
--	if (s->cpuslab_flush)
--		printf("Flushes %8lu\n", s->cpuslab_flush);
--
--	if (s->alloc_refill)
--		printf("Refill %8lu\n", s->alloc_refill);
-+	if (s->cpuslab_flush || s->alloc_refill)
-+		printf("CPU Slab  : Flushes=%lu Refills=%lu\n",
-+			s->cpuslab_flush, s->alloc_refill);
- 
- 	total = s->deactivate_full + s->deactivate_empty +
- 			s->deactivate_to_head + s->deactivate_to_tail;
- 
- 	if (total)
--		printf("Deactivate Full=%lu(%lu%%) Empty=%lu(%lu%%) "
-+		printf("Deactivate: Full=%lu(%lu%%) Empty=%lu(%lu%%) "
- 			"ToHead=%lu(%lu%%) ToTail=%lu(%lu%%)\n",
- 			s->deactivate_full, (s->deactivate_full * 100) / total,
- 			s->deactivate_empty, (s->deactivate_empty * 100) / total,
- 			s->deactivate_to_head, (s->deactivate_to_head * 100) / total,
- 			s->deactivate_to_tail, (s->deactivate_to_tail * 100) / total);
-+
-+	if (s->shrink_calls)
-+		printf("Shrink    : Calls=%lu Attempts=%lu Empty=%lu Successful=%lu\n",
-+			s->shrink_calls, s->shrink_attempt_defrag,
-+			s->shrink_empty_slab, s->shrink_slab_reclaimed);
-+	if (s->shrink_slab_skipped || s->shrink_object_reclaim_failed)
-+		printf("Defrag    : Slabs skipped=%lu Object reclaim failed=%lu\n",
-+		s->shrink_slab_skipped, s->shrink_object_reclaim_failed);
+ 	do {
+-		nr_objects = shrink_slab(1000, GFP_KERNEL, 1000);
++		nr_objects = shrink_slab(1000, GFP_KERNEL, 1000, NULL);
+ 	} while (nr_objects > 10);
  }
  
- static void report(struct slabinfo *s)
-@@ -598,7 +611,12 @@ static void slabcache(struct slabinfo *s
- 			total_alloc ? (s->alloc_fastpath * 100 / total_alloc) : 0,
- 			total_free ? (s->free_fastpath * 100 / total_free) : 0,
- 			s->order_fallback, s->order);
--	}
-+	} else
-+	if (show_defragcount)
-+		printf("%-21s %8ld %7d %7d %7d %7d %7d %7d\n",
-+			s->name, s->objects, s->shrink_calls, s->shrink_attempt_defrag,
-+			s->shrink_slab_reclaimed, s->shrink_empty_slab,
-+			s->shrink_slab_skipped, s->shrink_object_reclaim_failed);
- 	else
- 		printf("%-21s %8ld %7d %8s %14s %4d %1d %3ld %3ld %s\n",
- 			s->name, s->objects, s->object_size, size_str, dist_str,
-@@ -1210,6 +1228,13 @@ static void read_slab_dir(void)
- 			slab->deactivate_to_tail = get_obj("deactivate_to_tail");
- 			slab->deactivate_remote_frees = get_obj("deactivate_remote_frees");
- 			slab->order_fallback = get_obj("order_fallback");
-+			slab->shrink_calls = get_obj("shrink_calls");
-+			slab->shrink_attempt_defrag = get_obj("shrink_attempt_defrag");
-+			slab->shrink_empty_slab = get_obj("shrink_empty_slab");
-+			slab->shrink_slab_skipped = get_obj("shrink_slab_skipped");
-+			slab->shrink_slab_reclaimed = get_obj("shrink_slab_reclaimed");
-+			slab->shrink_object_reclaim_failed =
-+					get_obj("shrink_object_reclaim_failed");
- 			slab->defrag_ratio = get_obj("defrag_ratio");
- 			slab->remote_node_defrag_ratio =
- 					get_obj("remote_node_defrag_ratio");
-@@ -1274,6 +1299,7 @@ struct option opts[] = {
- 	{ "ctor", 0, NULL, 'C' },
- 	{ "debug", 2, NULL, 'd' },
- 	{ "display-activity", 0, NULL, 'D' },
-+	{ "display-defrag", 0, NULL, 'G' },
- 	{ "empty", 0, NULL, 'e' },
- 	{ "first-alias", 0, NULL, 'f' },
- 	{ "defrag", 0, NULL, 'F' },
-@@ -1299,7 +1325,7 @@ int main(int argc, char *argv[])
- 
- 	page_size = getpagesize();
- 
--	while ((c = getopt_long(argc, argv, "aACd::DefFhil1noprstvzTS",
-+	while ((c = getopt_long(argc, argv, "aACd::DefFGhil1noprstvzTS",
- 						opts, NULL)) != -1)
- 		switch (c) {
- 		case '1':
-@@ -1325,6 +1351,9 @@ int main(int argc, char *argv[])
- 		case 'f':
- 			show_first_alias = 1;
- 			break;
-+		case 'G':
-+			show_defragcount = 1;
-+			break;
- 		case 'h':
- 			usage();
- 			return 0;
-Index: slab-2.6/include/linux/slub_def.h
+Index: linux-2.6/include/linux/mm.h
 ===================================================================
---- slab-2.6.orig/include/linux/slub_def.h	2010-01-22 15:41:35.000000000 -0600
-+++ slab-2.6/include/linux/slub_def.h	2010-01-22 15:53:21.000000000 -0600
-@@ -32,6 +32,12 @@ enum stat_item {
- 	DEACTIVATE_TO_TAIL,	/* Cpu slab was moved to the tail of partials */
- 	DEACTIVATE_REMOTE_FREES,/* Slab contained remotely freed objects */
- 	ORDER_FALLBACK,		/* Number of times fallback was necessary */
-+	SHRINK_CALLS,		/* Number of invocations of kmem_cache_shrink */
-+	SHRINK_ATTEMPT_DEFRAG,	/* Slabs that were attempted to be reclaimed */
-+	SHRINK_EMPTY_SLAB,	/* Shrink encountered and freed empty slab */
-+	SHRINK_SLAB_SKIPPED,	/* Slab reclaim skipped an slab (busy etc) */
-+	SHRINK_SLAB_RECLAIMED,	/* Successfully reclaimed slabs */
-+	SHRINK_OBJECT_RECLAIM_FAILED, /* Callbacks signaled busy objects */
- 	NR_SLUB_STAT_ITEMS };
- 
- struct kmem_cache_cpu {
-Index: slab-2.6/mm/slub.c
+--- linux-2.6.orig/include/linux/mm.h	2010-01-20 11:39:58.000000000 -0600
++++ linux-2.6/include/linux/mm.h	2010-01-29 10:27:32.000000000 -0600
+@@ -1308,8 +1308,7 @@ int in_gate_area_no_task(unsigned long a
+ int drop_caches_sysctl_handler(struct ctl_table *, int,
+ 					void __user *, size_t *, loff_t *);
+ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+-			unsigned long lru_pages);
+-
++				unsigned long lru_pages, struct zone *z);
+ #ifndef CONFIG_MMU
+ #define randomize_va_space 0
+ #else
+Index: linux-2.6/mm/vmscan.c
 ===================================================================
---- slab-2.6.orig/mm/slub.c	2010-01-22 15:51:32.000000000 -0600
-+++ slab-2.6/mm/slub.c	2010-01-22 15:53:21.000000000 -0600
-@@ -2906,6 +2906,7 @@ static int kmem_cache_vacate(struct page
- 	void *private;
- 	unsigned long flags;
- 	unsigned long objects;
-+	struct kmem_cache_cpu *c;
+--- linux-2.6.orig/mm/vmscan.c	2010-01-19 12:38:15.000000000 -0600
++++ linux-2.6/mm/vmscan.c	2010-01-29 10:27:32.000000000 -0600
+@@ -181,6 +181,14 @@ void unregister_shrinker(struct shrinker
+ EXPORT_SYMBOL(unregister_shrinker);
  
- 	local_irq_save(flags);
- 	slab_lock(page);
-@@ -2954,9 +2955,13 @@ out:
- 	 * Check the result and unfreeze the slab
- 	 */
- 	leftover = page->inuse;
--	if (leftover)
-+	c = get_cpu_slab(s, smp_processor_id());
-+	if (leftover) {
- 		/* Unsuccessful reclaim. Avoid future reclaim attempts. */
-+		stat(c, SHRINK_OBJECT_RECLAIM_FAILED);
- 		__ClearPageSlubKickable(page);
-+	} else
-+		stat(c, SHRINK_SLAB_RECLAIMED);
- 	unfreeze_slab(s, page, leftover > 0);
- 	local_irq_restore(flags);
- 	return leftover;
-@@ -3007,11 +3012,14 @@ static unsigned long __kmem_cache_shrink
- 	LIST_HEAD(zaplist);
- 	int freed = 0;
- 	struct kmem_cache_node *n = get_node(s, node);
-+	struct kmem_cache_cpu *c;
+ #define SHRINK_BATCH 128
++
++/*
++ * Trigger a call into slab defrag if the sum of the returns from
++ * shrinkers cross this value.
++ */
++int slab_defrag_limit = 1000;
++int slab_defrag_counter;
++
+ /*
+  * Call the shrink functions to age shrinkable caches
+  *
+@@ -198,10 +206,18 @@ EXPORT_SYMBOL(unregister_shrinker);
+  * are eligible for the caller's allocation attempt.  It is used for balancing
+  * slab reclaim versus page reclaim.
+  *
++ * zone is the zone for which we are shrinking the slabs. If the intent
++ * is to do a global shrink then zone may be NULL. Specification of a
++ * zone is currently only used to limit slab defragmentation to a NUMA node.
++ * The performace of shrink_slab would be better (in particular under NUMA)
++ * if it could be targeted as a whole to the zone that is under memory
++ * pressure but the VFS infrastructure does not allow that at the present
++ * time.
++ *
+  * Returns the number of slab objects which we shrunk.
+  */
+ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+-			unsigned long lru_pages)
++			unsigned long lru_pages, struct zone *zone)
+ {
+ 	struct shrinker *shrinker;
+ 	unsigned long ret = 0;
+@@ -259,6 +275,39 @@ unsigned long shrink_slab(unsigned long 
+ 		shrinker->nr += total_scan;
+ 	}
+ 	up_read(&shrinker_rwsem);
++
++
++	/* Avoid dirtying cachelines */
++	if (!ret)
++		return 0;
++
++	/*
++	 * "ret" doesnt really contain the freed object count. The shrinkers
++	 * fake it. Gotta go with what we are getting though.
++	 *
++	 * Handling of the defrag_counter is also racy. If we get the
++	 * wrong counts then we may unnecessarily do a defrag pass or defer
++	 * one. "ret" is already faked. So this is just increasing
++	 * the already existing fuzziness to get some notion as to when
++	 * to initiate slab defrag which will hopefully be okay.
++	 */
++	if (zone) {
++		/* balance_pgdat running on a zone so we only scan one node */
++		zone->slab_defrag_counter += ret;
++		if (zone->slab_defrag_counter > slab_defrag_limit &&
++						(gfp_mask & __GFP_FS)) {
++			zone->slab_defrag_counter = 0;
++			kmem_cache_defrag(zone_to_nid(zone));
++		}
++	} else {
++		/* Direct (and thus global) reclaim. Scan all nodes */
++		slab_defrag_counter += ret;
++		if (slab_defrag_counter > slab_defrag_limit &&
++						(gfp_mask & __GFP_FS)) {
++			slab_defrag_counter = 0;
++			kmem_cache_defrag(-1);
++		}
++	}
+ 	return ret;
+ }
  
- 	if (n->nr_partial <= limit)
- 		return 0;
+@@ -1768,7 +1817,7 @@ static unsigned long do_try_to_free_page
+ 		 * over limit cgroups
+ 		 */
+ 		if (scanning_global_lru(sc)) {
+-			shrink_slab(sc->nr_scanned, sc->gfp_mask, lru_pages);
++			shrink_slab(sc->nr_scanned, sc->gfp_mask, lru_pages, NULL);
+ 			if (reclaim_state) {
+ 				sc->nr_reclaimed += reclaim_state->reclaimed_slab;
+ 				reclaim_state->reclaimed_slab = 0;
+@@ -2084,7 +2133,7 @@ loop_again:
+ 				shrink_zone(priority, zone, &sc);
+ 			reclaim_state->reclaimed_slab = 0;
+ 			nr_slab = shrink_slab(sc.nr_scanned, GFP_KERNEL,
+-						lru_pages);
++						lru_pages, zone);
+ 			sc.nr_reclaimed += reclaim_state->reclaimed_slab;
+ 			total_scanned += sc.nr_scanned;
+ 			if (zone_is_all_unreclaimable(zone))
+@@ -2578,7 +2627,8 @@ static int __zone_reclaim(struct zone *z
+ 		 * Note that shrink_slab will free memory on all zones and may
+ 		 * take a long time.
+ 		 */
+-		while (shrink_slab(sc.nr_scanned, gfp_mask, order) &&
++		while (shrink_slab(sc.nr_scanned, gfp_mask, order,
++						zone) &&
+ 			zone_page_state(zone, NR_SLAB_RECLAIMABLE) >
+ 				slab_reclaimable - nr_pages)
+ 			;
+Index: linux-2.6/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.orig/include/linux/mmzone.h	2010-01-20 11:39:58.000000000 -0600
++++ linux-2.6/include/linux/mmzone.h	2010-01-29 10:27:32.000000000 -0600
+@@ -340,6 +340,7 @@ struct zone {
+ 	struct zone_reclaim_stat reclaim_stat;
  
- 	spin_lock_irqsave(&n->list_lock, flags);
-+	c = get_cpu_slab(s, smp_processor_id());
-+	stat(c, SHRINK_CALLS);
- 	list_for_each_entry_safe(page, page2, &n->partial, lru) {
- 		if (!slab_trylock(page))
- 			/* Busy slab. Get out of the way */
-@@ -3031,12 +3039,14 @@ static unsigned long __kmem_cache_shrink
+ 	unsigned long		pages_scanned;	   /* since last reclaim */
++	unsigned long		slab_defrag_counter; /* since last defrag */
+ 	unsigned long		flags;		   /* zone flags, see below */
  
- 			list_move(&page->lru, &zaplist);
- 			if (s->kick) {
-+				stat(c, SHRINK_ATTEMPT_DEFRAG);
- 				n->nr_partial--;
- 				__SetPageSlubFrozen(page);
- 			}
- 			slab_unlock(page);
- 		} else {
- 			/* Empty slab page */
-+			stat(c, SHRINK_EMPTY_SLAB);
- 			list_del(&page->lru);
- 			n->nr_partial--;
- 			slab_unlock(page);
-@@ -4503,6 +4513,12 @@ STAT_ATTR(DEACTIVATE_TO_HEAD, deactivate
- STAT_ATTR(DEACTIVATE_TO_TAIL, deactivate_to_tail);
- STAT_ATTR(DEACTIVATE_REMOTE_FREES, deactivate_remote_frees);
- STAT_ATTR(ORDER_FALLBACK, order_fallback);
-+STAT_ATTR(SHRINK_CALLS, shrink_calls);
-+STAT_ATTR(SHRINK_ATTEMPT_DEFRAG, shrink_attempt_defrag);
-+STAT_ATTR(SHRINK_EMPTY_SLAB, shrink_empty_slab);
-+STAT_ATTR(SHRINK_SLAB_SKIPPED, shrink_slab_skipped);
-+STAT_ATTR(SHRINK_SLAB_RECLAIMED, shrink_slab_reclaimed);
-+STAT_ATTR(SHRINK_OBJECT_RECLAIM_FAILED, shrink_object_reclaim_failed);
- #endif
+ 	/* Zone statistics */
+Index: linux-2.6/include/linux/swap.h
+===================================================================
+--- linux-2.6.orig/include/linux/swap.h	2009-12-18 13:13:24.000000000 -0600
++++ linux-2.6/include/linux/swap.h	2010-01-29 10:27:32.000000000 -0600
+@@ -252,6 +252,9 @@ extern unsigned long mem_cgroup_shrink_n
+ extern int __isolate_lru_page(struct page *page, int mode, int file);
+ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
++extern int slab_defrag_limit;
++extern int slab_defrag_counter;
++
+ extern int remove_mapping(struct address_space *mapping, struct page *page);
+ extern long vm_total_pages;
  
- static struct attribute *slab_attrs[] = {
-@@ -4558,6 +4574,12 @@ static struct attribute *slab_attrs[] = 
- 	&deactivate_to_tail_attr.attr,
- 	&deactivate_remote_frees_attr.attr,
- 	&order_fallback_attr.attr,
-+	&shrink_calls_attr.attr,
-+	&shrink_attempt_defrag_attr.attr,
-+	&shrink_empty_slab_attr.attr,
-+	&shrink_slab_skipped_attr.attr,
-+	&shrink_slab_reclaimed_attr.attr,
-+	&shrink_object_reclaim_failed_attr.attr,
- #endif
- 	NULL
- };
+Index: linux-2.6/kernel/sysctl.c
+===================================================================
+--- linux-2.6.orig/kernel/sysctl.c	2009-12-18 13:13:24.000000000 -0600
++++ linux-2.6/kernel/sysctl.c	2010-01-29 10:27:32.000000000 -0600
+@@ -1167,6 +1167,26 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= proc_dointvec,
+ 		.extra1		= &zero,
+ 	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "slab_defrag_limit",
++		.data		= &slab_defrag_limit,
++		.maxlen		= sizeof(slab_defrag_limit),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++		.strategy	= &sysctl_intvec,
++		.extra1		= &one_hundred,
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "slab_defrag_count",
++		.data		= &slab_defrag_counter,
++		.maxlen		= sizeof(slab_defrag_counter),
++		.mode		= 0444,
++		.proc_handler	= &proc_dointvec,
++		.strategy	= &sysctl_intvec,
++		.extra1		= &zero,
++	},
+ #ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
+ 	{
+ 		.procname	= "legacy_va_layout",
+Index: linux-2.6/Documentation/sysctl/vm.txt
+===================================================================
+--- linux-2.6.orig/Documentation/sysctl/vm.txt	2009-12-10 12:18:32.000000000 -0600
++++ linux-2.6/Documentation/sysctl/vm.txt	2010-01-29 10:27:32.000000000 -0600
+@@ -50,6 +50,7 @@ Currently, these files are in /proc/sys/
+ - page-cluster
+ - panic_on_oom
+ - percpu_pagelist_fraction
++- slab_defrag_limit
+ - stat_interval
+ - swappiness
+ - vfs_cache_pressure
+@@ -597,6 +598,15 @@ The initial value is zero.  Kernel does 
+ the high water marks for each per cpu page list.
+ 
+ ==============================================================
++slab_defrag_limit
++
++Determines the frequency of calls from reclaim into slab defragmentation.
++Slab defrag reclaims objects from sparsely populates slab pages.
++The default is 1000. Increase if slab defragmentation occurs
++too frequently. Decrease if more slab defragmentation passes
++are needed. The slabinfo tool can report on the frequency of the callbacks.
++
++==============================================================
+ 
+ stat_interval
+ 
 
 -- 
