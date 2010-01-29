@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932345Ab0A2JeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932355Ab0A2Je2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932345Ab0A2JeO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 04:34:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932333Ab0A2JeK
+	id S932355Ab0A2Je2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 04:34:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932348Ab0A2JeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 04:34:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36807 "EHLO hera.kernel.org"
+	Fri, 29 Jan 2010 04:34:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36814 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932329Ab0A2JeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 04:34:06 -0500
-Date: Fri, 29 Jan 2010 09:33:33 GMT
-From: tip-bot for john stultz <johnstul@us.ibm.com>
+	id S932346Ab0A2JeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 04:34:21 -0500
+Date: Fri, 29 Jan 2010 09:33:49 GMT
+From: tip-bot for John Stultz <johnstul@us.ibm.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        johnstul@us.ibm.com, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        johnstul@us.ibm.com, tglx@linutronix.de
-In-Reply-To: <1264719761.3437.47.camel@localhost.localdomain>
-References: <1264719761.3437.47.camel@localhost.localdomain>
+In-Reply-To: <1264738844-21935-1-git-send-email-johnstul@us.ibm.com>
+References: <1264738844-21935-1-git-send-email-johnstul@us.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] ntp: Make time_esterror and time_maxerror static
-Message-ID: <tip-1f5b8f8a2031ae9507eb67743cad4d424739bfff@git.kernel.org>
-Git-Commit-ID: 1f5b8f8a2031ae9507eb67743cad4d424739bfff
+Subject: [tip:timers/core] ntp: Cleanup xtime references in ntp.c
+Message-ID: <tip-7e1b584774c6168ca5b27c340fbeff8f67651e4f@git.kernel.org>
+Git-Commit-ID: 7e1b584774c6168ca5b27c340fbeff8f67651e4f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 29 Jan 2010 09:33:34 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 29 Jan 2010 09:33:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1f5b8f8a2031ae9507eb67743cad4d424739bfff
-Gitweb:     http://git.kernel.org/tip/1f5b8f8a2031ae9507eb67743cad4d424739bfff
-Author:     john stultz <johnstul@us.ibm.com>
-AuthorDate: Thu, 28 Jan 2010 15:02:41 -0800
+Commit-ID:  7e1b584774c6168ca5b27c340fbeff8f67651e4f
+Gitweb:     http://git.kernel.org/tip/7e1b584774c6168ca5b27c340fbeff8f67651e4f
+Author:     John Stultz <johnstul@us.ibm.com>
+AuthorDate: Thu, 28 Jan 2010 20:20:44 -0800
 Committer:  Thomas Gleixner <tglx@linutronix.de>
 CommitDate: Fri, 29 Jan 2010 10:15:19 +0100
 
-ntp: Make time_esterror and time_maxerror static
+ntp: Cleanup xtime references in ntp.c
 
-Make time_esterror and time_maxerror static as no one uses them
-outside of ntp.c
-    
+ntp.c doesn't need to access timekeeping internals directly, so change
+xtime references to use the get_seconds() timekeeping interface.
+
 Signed-off-by: John Stultz <johnstul@us.ibm.com>
 Cc: richard@rsk.demon.co.uk
-LKML-Reference: <1264719761.3437.47.camel@localhost.localdomain>
+LKML-Reference: <1264738844-21935-1-git-send-email-johnstul@us.ibm.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
 ---
- include/linux/timex.h |    3 ---
- kernel/time/ntp.c     |    4 ++--
- 2 files changed, 2 insertions(+), 5 deletions(-)
+ kernel/time/ntp.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/timex.h b/include/linux/timex.h
-index 94f8fae..7a082b3 100644
---- a/include/linux/timex.h
-+++ b/include/linux/timex.h
-@@ -238,9 +238,6 @@ extern int tickadj;			/* amount of adjustment per tick */
-  * phase-lock loop variables
-  */
- extern int time_status;		/* clock synchronization status bits */
--extern long time_maxerror;	/* maximum error */
--extern long time_esterror;	/* estimated error */
--
- extern long time_adjust;	/* The amount of adjtime left */
- 
- extern void ntp_init(void);
 diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
-index 4800f93..74b1b37 100644
+index 74b1b37..7c0f180 100644
 --- a/kernel/time/ntp.c
 +++ b/kernel/time/ntp.c
-@@ -58,10 +58,10 @@ static s64			time_offset;
- static long			time_constant = 2;
+@@ -142,11 +142,11 @@ static void ntp_update_offset(long offset)
+ 	 * Select how the frequency is to be controlled
+ 	 * and in which mode (PLL or FLL).
+ 	 */
+-	secs = xtime.tv_sec - time_reftime;
++	secs = get_seconds() - time_reftime;
+ 	if (unlikely(time_status & STA_FREQHOLD))
+ 		secs = 0;
  
- /* maximum error (usecs):						*/
--long				time_maxerror = NTP_PHASE_LIMIT;
-+static long			time_maxerror = NTP_PHASE_LIMIT;
+-	time_reftime = xtime.tv_sec;
++	time_reftime = get_seconds();
  
- /* estimated error (usecs):						*/
--long				time_esterror = NTP_PHASE_LIMIT;
-+static long			time_esterror = NTP_PHASE_LIMIT;
+ 	offset64    = offset;
+ 	freq_adj    = (offset64 * secs) <<
+@@ -368,7 +368,7 @@ static inline void process_adj_status(struct timex *txc, struct timespec *ts)
+ 	 * reference time to current time.
+ 	 */
+ 	if (!(time_status & STA_PLL) && (txc->status & STA_PLL))
+-		time_reftime = xtime.tv_sec;
++		time_reftime = get_seconds();
  
- /* frequency offset (scaled nsecs/secs):				*/
- static s64			time_freq;
+ 	/* only set allowed bits */
+ 	time_status &= STA_RONLY;
