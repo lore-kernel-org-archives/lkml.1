@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615Ab0A2Vps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671Ab0A2Vp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755615Ab0A2Vps (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 16:45:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461Ab0A2Vpq
+	id S1754671Ab0A2Vp0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 16:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086Ab0A2VpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 16:45:46 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:3660 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755421Ab0A2Vpo (ORCPT
+	Fri, 29 Jan 2010 16:45:23 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:17065 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753326Ab0A2VpT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 16:45:44 -0500
-Subject: [PATCH 7/7] IB/core: pack struct ib_device a little tighter
+	Fri, 29 Jan 2010 16:45:19 -0500
+Subject: [PATCH 2/7] IB/uverbs: remove dev_table
 To: rdreier@cisco.com
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
        linux-kernel@vger.kernel.org
-Date: Fri, 29 Jan 2010 14:45:33 -0700
-Message-ID: <20100129214533.17745.73219.stgit@bob.kio>
+Date: Fri, 29 Jan 2010 14:45:07 -0700
+Message-ID: <20100129214507.17745.96622.stgit@bob.kio>
 In-Reply-To: <20100129214039.17745.38679.stgit@bob.kio>
 References: <20100129214039.17745.38679.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -27,38 +27,87 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A small change to reduce the size of ib_device to 1112 bytes
-(from 1128).
+dev_table's raison d'etre was to associate an inode back to a
+struct ib_uverbs_device.
+
+However, now that we've converted ib_uverbs_device to contain
+an embedded cdev (instead of a *cdev), we can use the container_of()
+macro and cast back to the containing device.
+
+There's no longer any need for dev_table, so get rid of it.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- include/rdma/ib_verbs.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/infiniband/core/uverbs_main.c |   24 +++++-------------------
+ 1 files changed, 5 insertions(+), 19 deletions(-)
 
-diff --git a/include/rdma/ib_verbs.h b/include/rdma/ib_verbs.h
-index 09509ed..a585e0f 100644
---- a/include/rdma/ib_verbs.h
-+++ b/include/rdma/ib_verbs.h
-@@ -984,9 +984,9 @@ struct ib_device {
- 	struct list_head              event_handler_list;
- 	spinlock_t                    event_handler_lock;
+diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
+index 5da9a73..3f11292 100644
+--- a/drivers/infiniband/core/uverbs_main.c
++++ b/drivers/infiniband/core/uverbs_main.c
+@@ -74,7 +74,6 @@ DEFINE_IDR(ib_uverbs_qp_idr);
+ DEFINE_IDR(ib_uverbs_srq_idr);
  
-+	spinlock_t                    client_data_lock;
- 	struct list_head              core_list;
- 	struct list_head              client_data_list;
--	spinlock_t                    client_data_lock;
+ static DEFINE_SPINLOCK(map_lock);
+-static struct ib_uverbs_device *dev_table[IB_UVERBS_MAX_DEVICES];
+ static DECLARE_BITMAP(dev_map, IB_UVERBS_MAX_DEVICES);
  
- 	struct ib_cache               cache;
- 	int                          *pkey_tbl_len;
-@@ -1144,8 +1144,8 @@ struct ib_device {
- 		IB_DEV_UNREGISTERED
- 	}                            reg_state;
+ static ssize_t (*uverbs_cmd_table[])(struct ib_uverbs_file *file,
+@@ -616,14 +615,12 @@ static int ib_uverbs_mmap(struct file *filp, struct vm_area_struct *vma)
+ /*
+  * ib_uverbs_open() does not need the BKL:
+  *
+- *  - dev_table[] accesses are protected by map_lock, the
+- *    ib_uverbs_device structures are properly reference counted, and
++ *  - the ib_uverbs_device structures are properly reference counted and
+  *    everything else is purely local to the file being created, so
+  *    races against other open calls are not a problem;
+  *  - there is no ioctl method to race against;
+- *  - the device is added to dev_table[] as the last part of module
+- *    initialization, the open method will either immediately run
+- *    -ENXIO, or all required initialization will be done.
++ *  - the open method will either immediately run -ENXIO, or all
++ *    required initialization will be done.
+  */
+ static int ib_uverbs_open(struct inode *inode, struct file *filp)
+ {
+@@ -631,13 +628,10 @@ static int ib_uverbs_open(struct inode *inode, struct file *filp)
+ 	struct ib_uverbs_file *file;
+ 	int ret;
  
--	u64			     uverbs_cmd_mask;
- 	int			     uverbs_abi_ver;
-+	u64			     uverbs_cmd_mask;
+-	spin_lock(&map_lock);
+-	dev = dev_table[iminor(inode) - IB_UVERBS_BASE_MINOR];
++	dev = container_of(inode->i_cdev, struct ib_uverbs_device, cdev);
+ 	if (dev)
+ 		kref_get(&dev->ref);
+-	spin_unlock(&map_lock);
+-
+-	if (!dev)
++	else
+ 		return -ENXIO;
  
- 	char			     node_desc[64];
- 	__be64			     node_guid;
+ 	if (!try_module_get(dev->ib_dev->owner)) {
+@@ -778,10 +772,6 @@ static void ib_uverbs_add_one(struct ib_device *device)
+ 	if (device_create_file(uverbs_dev->dev, &dev_attr_abi_version))
+ 		goto err_class;
+ 
+-	spin_lock(&map_lock);
+-	dev_table[uverbs_dev->devnum] = uverbs_dev;
+-	spin_unlock(&map_lock);
+-
+ 	ib_set_client_data(device, &uverbs_client, uverbs_dev);
+ 
+ 	return;
+@@ -811,10 +801,6 @@ static void ib_uverbs_remove_one(struct ib_device *device)
+ 	device_destroy(uverbs_class, uverbs_dev->cdev.dev);
+ 	cdev_del(&uverbs_dev->cdev);
+ 
+-	spin_lock(&map_lock);
+-	dev_table[uverbs_dev->devnum] = NULL;
+-	spin_unlock(&map_lock);
+-
+ 	clear_bit(uverbs_dev->devnum, dev_map);
+ 
+ 	kref_put(&uverbs_dev->ref, ib_uverbs_release_dev);
 
