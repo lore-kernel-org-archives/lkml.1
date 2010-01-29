@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739Ab0A2ICr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017Ab0A2IEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756739Ab0A2ICr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 03:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409Ab0A2ICq
+	id S1756017Ab0A2IEj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 03:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406Ab0A2IEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 03:02:46 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:55349 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754169Ab0A2ICp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 03:02:45 -0500
-Date: Fri, 29 Jan 2010 09:02:44 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       whalajam@yahoo.com
-Subject: Re: Added in stricter no merge semantics for block I/O
-Message-ID: <20100129080244.GF13771@kernel.dk>
-References: <1264518884.3278.15.camel@cail>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264518884.3278.15.camel@cail>
+	Fri, 29 Jan 2010 03:04:38 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34883 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751194Ab0A2IEi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 03:04:38 -0500
+Subject: [PATCH 5/4] perf_events: Fix sample_period transfer on inherit
+From: Peter Zijlstra <peterz@infradead.org>
+To: mingo@elte.hu
+Cc: eranian@google.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20100127220745.027096123@chello.nl>
+References: <20100127220745.027096123@chello.nl>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 29 Jan 2010 09:04:26 +0100
+Message-ID: <1264752266.4283.2121.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26 2010, Alan D. Brunelle wrote:
-> Added in stricter no merge semantics for block I/O
-> 
-> Updated 'nomerges' tunable to accept a value of '2' - indicating that _no_
-> merges at all are to be attempted (not even the simple one-hit cache).
-> 
-> The following table illustrates the additional benefit - 5 minute runs of
-> a random I/O load were applied to a dozen devices on a 16-way x86_64 system.
-> 
-> nomerges        Throughput      %System         Improvement (tput / %sys)
-> --------        ------------    -----------     -------------------------
-> 0               12.45 MB/sec    0.669365609
-> 1               12.50 MB/sec    0.641519199     0.40% / 2.71%
-> 2               12.52 MB/sec    0.639849750     0.56% / 2.96%
-> 
-> Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
-> Cc: jens.axboe@oracle.com
-> ---
->  Documentation/ABI/testing/sysfs-block |   14 ++++++++++++++
->  Documentation/block/queue-sysfs.txt   |   10 +++++-----
->  block/blk-sysfs.c                     |   11 +++++++----
->  block/elevator.c                      |   11 ++++++++++-
->  include/linux/blkdev.h                |    3 +++
->  5 files changed, 39 insertions(+), 10 deletions(-)
+Subject: perf_events: Fix sample_period transfer on inherit
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Thu Jan 28 12:34:07 CET 2010
 
-Thanks Alan, I think this is a good addition, I have often before hacked
-up the "no merges at all" logic for testing purposes as well. I have
-queued it up for 2.6.34.
+One problem with frequency driven counters is that we cannot predict
+the rate at which they trigger, therefore we have to start them at
+period=1, this causes a ramp up effect. However, if we fail to
+propagate the stable state on fork each new child will have to ramp up
+again. This can lead to significant artifacts in sample data.
 
--- 
-Jens Axboe
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/perf_event.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/kernel/perf_event.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_event.c
++++ linux-2.6/kernel/perf_event.c
+@@ -5011,8 +5011,15 @@ inherit_event(struct perf_event *parent_
+ 	else
+ 		child_event->state = PERF_EVENT_STATE_OFF;
+ 
+-	if (parent_event->attr.freq)
+-		child_event->hw.sample_period = parent_event->hw.sample_period;
++	if (parent_event->attr.freq) {
++		u64 sample_period = parent_event->hw.sample_period;
++		struct hw_perf_event *hwc = &child_event->hw;
++
++		hwc->sample_period = sample_period;
++		hwc->last_period   = sample_period;
++
++		atomic64_set(&hwc->period_left, sample_period);
++	}
+ 
+ 	child_event->overflow_handler = parent_event->overflow_handler;
+
 
