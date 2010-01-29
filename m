@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716Ab0A2E7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751153Ab0A2Fde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716Ab0A2E7M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 23:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756702Ab0A2E7L
+	id S1751153Ab0A2Fde (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 00:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017Ab0A2Fdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 23:59:11 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34997 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756674Ab0A2E7K (ORCPT
+	Fri, 29 Jan 2010 00:33:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55104
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750950Ab0A2Fdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 23:59:10 -0500
-Message-ID: <4B626B19.5000609@infradead.org>
-Date: Fri, 29 Jan 2010 02:59:05 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org,
-       michael@mihu.de
-Subject: Re: [PATCH] drivers/media/common: remove unnecessary casts of void
- *
-References: <201001081551.42264.hartleys@visionengravers.com>
-In-Reply-To: <201001081551.42264.hartleys@visionengravers.com>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 29 Jan 2010 00:33:32 -0500
+Date: Thu, 28 Jan 2010 21:33:44 -0800 (PST)
+Message-Id: <20100128.213344.226776729.davem@davemloft.net>
+To: arnd@arndb.de
+Cc: shemminger@linux-foundation.org, kaber@trash.net, mst@redhat.com,
+       herbert@gondor.apana.org.au, ogerlitz@voltaire.com,
+       netdev@vger.kernel.org, bridge@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] net: maintain namespace isolation between vlan and
+ real device
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <201001271105.15733.arnd@arndb.de>
+References: <201001271104.20607.arnd@arndb.de>
+	<201001271105.15733.arnd@arndb.de>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H Hartley Sweeten wrote:
-> drivers/media/common: Remove unnecessary casts of void *
-> 
-> void pointers do not need to be cast to other pointer types.
-> 
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 27 Jan 2010 11:05:15 +0100
 
-> diff --git a/drivers/media/common/saa7146_vbi.c b/drivers/media/common/saa7146_vbi.c
-> index 74e2b56..301a795 100644
-> --- a/drivers/media/common/saa7146_vbi.c
-> +++ b/drivers/media/common/saa7146_vbi.c
-> @@ -3,7 +3,7 @@
->  static int vbi_pixel_to_capture = 720 * 2;
->  
->  static int vbi_workaround(struct saa7146_dev *dev)
-> -{
-> +{.remove_casts.hhs~
+> + * skb_dev_set -- assign a buffer to a new device
 
-What's this? It seems that your patch got corrupted somehow.
+My english is terrible, but I think this should be
+"assign a new device to a buffer".
 
-Cheers,
-Mauro
+If you agree, please fix this up when you resubmit patches #1 and #2
+along with the fix you already plan to make to patch #3.
 
+Thanks!
