@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295Ab0A2QZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052Ab0A2Q0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295Ab0A2QZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 11:25:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700Ab0A2QZs
+	id S1753052Ab0A2Q0a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 11:26:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708Ab0A2Q02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 11:25:48 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51126 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752483Ab0A2QZq (ORCPT
+	Fri, 29 Jan 2010 11:26:28 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:41906 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752483Ab0A2Q01 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 11:25:46 -0500
-Date: Fri, 29 Jan 2010 08:24:31 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, mingo@redhat.com, hpa@zytor.com,
-       eranian@google.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perf/core] bitops: Provide compile time
- HWEIGHT{8,16,32,64}
-In-Reply-To: <1264763023.4283.2213.camel@laptop>
-Message-ID: <alpine.LFD.2.00.1001290822280.3768@localhost.localdomain>
-References: <20100122155535.797688466@chello.nl>  <tip-9f41699ed067fa695faff8e2e9981b2550abec62@git.kernel.org>  <20100129020128.716af8fb.akpm@linux-foundation.org> <1264763023.4283.2213.camel@laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 29 Jan 2010 11:26:27 -0500
+Message-ID: <4B630C27.1060405@austin.ibm.com>
+Date: Fri, 29 Jan 2010 10:26:15 -0600
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gabriel Paubert <paubert@iram.es>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, ego@in.ibm.com,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCHv3 2/2] powerpc: implement arch_scale_smt_power for	Power7
+References: <1264017638.5717.121.camel@jschopp-laptop> <1264017847.5717.132.camel@jschopp-laptop> <1264548495.12239.56.camel@jschopp-laptop> <1264720855.9660.22.camel@jschopp-laptop> <20100129122536.GA11156@iram.es>
+In-Reply-To: <20100129122536.GA11156@iram.es>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 29 Jan 2010, Peter Zijlstra wrote:
-> 
-> *sigh* and here I though it being placed right next to hweight_long()
-> which uses the arch hweightN() would be clue enough.
-
-No. People who add new uses may be copying old uses, without looking at 
-the definition.
-
-Also, people who _change_ uses may be changing a value that used to be a 
-constant into a variable when something is made more dynamic. At which 
-point it really makes sense to have a function that requires a constant to 
-_check_ that it gets a constant.
-
-> If people are so clueless, who says they'll read a comment.. but sure I
-> guess I can add one.
-
-The comment nobody cares about. But surprisingly crap code generation? 
-That's bad.
-
-> Subject: bitops: Dummyify the compile-time hweight versions
-> 
-> Because it seems allowed to not think and write kernel code.
-
-I would suggest you look in the mirror at some point.
-
-		Linus
+Gabriel Paubert wrote:
+> On Thu, Jan 28, 2010 at 05:20:55PM -0600, Joel Schopp wrote:
+>   
+>> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
+>> there is performance benefit to idling the higher numbered threads in
+>> the core.  
+>>
+>>     
+>
+> Really 2, 3, or 4? When you have 4 idle threads out of 4, performance
+> becomes a minor concern, no? ;-)
+>
+> 	Gabriel
+>   
+Yes, but going from 4 idle to 3 idle you want to keep the slanted 
+weights.  If you ignored 4 you'd place wrong and then correct it after 
+the fact.
