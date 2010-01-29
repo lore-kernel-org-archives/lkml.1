@@ -1,84 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755751Ab0A2Amz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021Ab0A2AzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755751Ab0A2Amz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 19:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456Ab0A2Amy
+	id S1756021Ab0A2AzR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 19:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756033Ab0A2AzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 19:42:54 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41330 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157Ab0A2Amy (ORCPT
+	Thu, 28 Jan 2010 19:55:15 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:35046 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755372Ab0A2AzO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 19:42:54 -0500
-Date: Thu, 28 Jan 2010 22:42:42 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 4/9] perf session: Create kernel maps in the constructor
-Message-ID: <20100129004242.GC2499@ghostprotocols.net>
-References: <1264633557-17597-1-git-send-email-acme@infradead.org>
- <1264633557-17597-4-git-send-email-acme@infradead.org>
- <4B60C9A6.10704@redhat.com>
- <20100127232936.GI12567@ghostprotocols.net>
- <4B61BB2D.70802@redhat.com>
- <20100128182951.GB2499@ghostprotocols.net>
- <4B61FABA.6000600@redhat.com>
+	Thu, 28 Jan 2010 19:55:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=aRWHkA62SwzRSSNgvczRwcz8vCYXpeg2yp7BXaWJ3E4/jNWpm7aSZPsfuuXd6cj8xe
+         IxyjeqAUGs3BsMSO13LahKzYY1rmObtBXBmf42lCv+7VPFWB8y1ghzoRdvqYGfn80+uS
+         t9aIKSplsB/O4IJ/DYpgSD+9blAVjft64XEkQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B61FABA.6000600@redhat.com>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <4B61C83A.20301@redhat.com>
+References: <20100128002000.2bf5e365@annuminas.surriel.com>
+	 <1264696641.17063.32.camel@barrios-desktop>
+	 <4B61C83A.20301@redhat.com>
+Date: Fri, 29 Jan 2010 09:55:04 +0900
+Message-ID: <28c262361001281655x70e5f77awf4d890d20f57ca83@mail.gmail.com>
+Subject: Re: [PATCH -mm] change anon_vma linking to fix multi-process server 
+	scalability issue
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
+       akpm@linux-foundation.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       aarcange@redhat.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Jan 28, 2010 at 03:59:38PM -0500, Masami Hiramatsu escreveu:
-> Arnaldo Carvalho de Melo wrote:
-> > Em Thu, Jan 28, 2010 at 11:28:29AM -0500, Masami Hiramatsu escreveu:
+On Fri, Jan 29, 2010 at 2:24 AM, Rik van Riel <riel@redhat.com> wrote:
+>>> -void vma_adjust(struct vm_area_struct *vma, unsigned long start,
+>>> +int vma_adjust(struct vm_area_struct *vma, unsigned long start,
+>>>        unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert)
+>>>  {
+>>>        struct mm_struct *mm = vma->vm_mm;
+>>> @@ -542,6 +541,29 @@ again:                     remove_next = 1 + (end>
+>>>  next->vm_end);
+>>>                }
+>>>        }
+>>>
+>>> +       /*
+>>> +        * When changing only vma->vm_end, we don't really need
+>>> +        * anon_vma lock.
+>>> +        */
+>>> +       if (vma->anon_vma&&  (insert || importer || start !=
+>>> vma->vm_start))
+>>> +               anon_vma = vma->anon_vma;
+>>> +       if (anon_vma) {
+>>> +               /*
+>>> +                * Easily overlooked: when mprotect shifts the boundary,
+>>> +                * make sure the expanding vma has anon_vma set if the
+>>> +                * shrinking vma had, to cover any anon pages imported.
+>>> +                */
+>>> +               if (importer&&  !importer->anon_vma) {
+>>> +                       /* Block reverse map lookups until things are set
+>>> up. */
+>>> +                       importer->vm_flags |= VM_LOCK_RMAP;
+>>> +                       if (anon_vma_clone(importer, vma)) {
+>>> +                               importer->vm_flags&= ~VM_LOCK_RMAP;
+>>> +                               return -ENOMEM;
+>>
+>> If we fail in here during progressing on next vmas in case of mprotect
+>> case 6,
+>> the previous vmas would become inconsistent state.
+>
+> I've re-read the code, but I don't see what you are referring
+> to.  If vma_adjust bails out early, no VMAs will be adjusted
+> and all the VMAs will stay the way they were before mprotect
+> was called.
+>
+> What am I overlooking?
 
-> >> Yeah, and if you can separate an interface only for handling symbols
-> >> from debug/elf binaries, it will be helpful for me too.
+I also look at the code more detail and found me wrong.
+In mprotect case 6,  the importer is fixed as head of vmas while next
+is marched
+on forward. So anon_vma_clone is just called once at first time.
+So as what you said, It's no problem.
+Totally, my mistake. Sorry for that, Rik.
 
-> > It was done on this same series, now you can do as the patch at the end
-> > of this message, that will be on my next series, does.
- 
-> Great! thank you!
-<SNIP>
-> > you'll get ipv6.ko located and loaded, mod->dso->long_name thus will
-> > have the file to use with libdwarf and sym->start will have the
-> > unrelocated address, and mod->start will have where ipv6 is loaded in
-> > kernel space
-
-> Oh, nice :-) Is that available for the modules which aren't loaded?
-
-No it isn't, what usecase do you see where you would like to look at non
-loaded modules? Traversing the /lib/modules passed can be made to just
-create DSOs, not maps if we need it. Maps when created using one of these
-DSOs would find them on the list.
-
-> And yeah, I'd like to support modules and it will requires some
-> enhancement in kprobe-tracer too.
-
-Ok
-
-<SNIP>
-> > With the recent modifications done to untie the session and symbol
-> > layers, 'perf probe' now can use just the symbols layer.
-
-> Could you remove session.kmap too?
-> other parts look good to me.
-
-I'll haven't done that just to keep the patch as small as possible :-)
-But will do before submitting.
- 
-> Thank you,
-
-You're welcome,
-
-- Arnaldo
+-- 
+Kind regards,
+Minchan Kim
