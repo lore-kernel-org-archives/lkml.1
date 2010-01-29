@@ -1,118 +1,30 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754712Ab0A0NR7 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Wed, 27 Jan 2010 08:17:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648Ab0A0NRu
+	id S1752311Ab0A3LIm (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 30 Jan 2010 06:08:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928Ab0A3LIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jan 2010 08:17:50 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60562 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754608Ab0A0NRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jan 2010 08:17:48 -0500
-Date: Wed, 27 Jan 2010 13:17:31 GMT
-From: tip-bot for Dimitri Sivanich <sivanich@sgi.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-        steiner@sgi.com, tglx@linutronix.de, sivanich@sgi.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-        steiner@sgi.com, tglx@linutronix.de, sivanich@sgi.com, mingo@elte.hu
-In-Reply-To: <20100122154140.GB4975@sgi.com>
-References: <20100122154140.GB4975@sgi.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86, UV: Fix RTC latency bug by reading replicated cachelines
-Message-ID: <tip-aca3bb5910119d4cf6c28568a642582efb4cc14a@git.kernel.org>
-Git-Commit-ID: aca3bb5910119d4cf6c28568a642582efb4cc14a
-X-Mailer: tip-git-log-daemon
+	Sat, 30 Jan 2010 06:08:41 -0500
+Received: from toroondcbmts06-srv.bellnexxia.net ([207.236.237.40]:42386 "EHLO
+	toroondcbmts06-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751902Ab0A3LIl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 06:08:41 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=3aHXMZy4U0MA:10 a=O30Bv9UURQ5RDKxTXlkA:9 a=izbuhdZ3YxLNYrGvs3EA:7 a=wRKeehktZ90I2J5xQSO6iT3BvB0A:4 a=qLwxicW4MIAA:10 a=-hJg1tCh9CgA:10
+Message-ID: <20100129145108.EZMY6.1303.root@toroondcbfep01>
+Date: Fri, 29 Jan 2010 14:51:08 -0500
+From: "Mr. Bernard Thompson" <danceworks@bellnet.ca>
+Reply-To: mr.bernardthom01@yahoo.co.nz
+Subject: 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 27 Jan 2010 13:17:31 +0000 (UTC)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+X-Originating-IP: from 41.204.224.130 by webmail.en.bellnet.ca; Fri, 29 Jan 2010 14:51:08 -0500
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  aca3bb5910119d4cf6c28568a642582efb4cc14a
-Gitweb:     http://git.kernel.org/tip/aca3bb5910119d4cf6c28568a642582efb4cc14a
-Author:     Dimitri Sivanich <sivanich@sgi.com>
-AuthorDate: Fri, 22 Jan 2010 09:41:40 -0600
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 27 Jan 2010 11:33:53 +0100
-
-x86, UV: Fix RTC latency bug by reading replicated cachelines
-
-For SGI UV node controllers (HUB) rev 2.0 or greater, use
-replicated cachelines to read the RTC timer.  This optimization
-allows faster simulataneous reads from a given socket.
-
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-Cc: Jack Steiner <steiner@sgi.com>
-LKML-Reference: <20100122154140.GB4975@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/uv_time.c |   13 ++++++++++++-
- drivers/char/uv_mmtimer.c |   18 +++++++++++-------
- 2 files changed, 23 insertions(+), 8 deletions(-)
-
-diff --git a/arch/x86/kernel/uv_time.c b/arch/x86/kernel/uv_time.c
-index 3c84aa0..2b75ef6 100644
---- a/arch/x86/kernel/uv_time.c
-+++ b/arch/x86/kernel/uv_time.c
-@@ -282,10 +282,21 @@ static int uv_rtc_unset_timer(int cpu, int force)
- 
- /*
-  * Read the RTC.
-+ *
-+ * Starting with HUB rev 2.0, the UV RTC register is replicated across all
-+ * cachelines of it's own page.  This allows faster simultaneous reads
-+ * from a given socket.
-  */
- static cycle_t uv_read_rtc(struct clocksource *cs)
- {
--	return (cycle_t)uv_read_local_mmr(UVH_RTC);
-+	unsigned long offset;
-+
-+	if (uv_get_min_hub_revision_id() == 1)
-+		offset = 0;
-+	else
-+		offset = (uv_blade_processor_id() * L1_CACHE_BYTES) % PAGE_SIZE;
-+
-+	return (cycle_t)uv_read_local_mmr(UVH_RTC | offset);
- }
- 
- /*
-diff --git a/drivers/char/uv_mmtimer.c b/drivers/char/uv_mmtimer.c
-index 867b67b..c7072ba 100644
---- a/drivers/char/uv_mmtimer.c
-+++ b/drivers/char/uv_mmtimer.c
-@@ -89,13 +89,17 @@ static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
- 	switch (cmd) {
- 	case MMTIMER_GETOFFSET:	/* offset of the counter */
- 		/*
--		 * UV RTC register is on its own page
-+		 * Starting with HUB rev 2.0, the UV RTC register is
-+		 * replicated across all cachelines of it's own page.
-+		 * This allows faster simultaneous reads from a given socket.
-+		 *
-+		 * The offset returned is in 64 bit units.
- 		 */
--		if (PAGE_SIZE <= (1 << 16))
--			ret = ((UV_LOCAL_MMR_BASE | UVH_RTC) & (PAGE_SIZE-1))
--				/ 8;
-+		if (uv_get_min_hub_revision_id() == 1)
-+			ret = 0;
- 		else
--			ret = -ENOSYS;
-+			ret = ((uv_blade_processor_id() * L1_CACHE_BYTES) %
-+					PAGE_SIZE) / 8;
- 		break;
- 
- 	case MMTIMER_GETRES: /* resolution of the clock in 10^-15 s */
-@@ -115,8 +119,8 @@ static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
- 		ret = hweight64(UVH_RTC_REAL_TIME_CLOCK_MASK);
- 		break;
- 
--	case MMTIMER_MMAPAVAIL: /* can we mmap the clock into userspace? */
--		ret = (PAGE_SIZE <= (1 << 16)) ? 1 : 0;
-+	case MMTIMER_MMAPAVAIL:
-+		ret = 1;
- 		break;
- 
- 	case MMTIMER_GETCOUNTER:
+I am Mr Bernard Thompson of B&T lenders. We give out any kind of loan to any part of the world with low interest rate as low as 2%. If you are interested, send your Name and Address via email to E-mail; tmrbernard@yahoo.co.uk
