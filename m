@@ -1,60 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451Ab0A2AN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850Ab0A2ANp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451Ab0A2AN4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 19:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873Ab0A2ANx
+	id S1753850Ab0A2ANp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 19:13:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143Ab0A2ANo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 19:13:53 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:39092 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753143Ab0A2ANs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 19:13:48 -0500
-Date: Fri, 29 Jan 2010 11:13:42 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: linux-next: manual merge of the davinci tree with the arm tree
-Message-Id: <20100129111342.203358d9.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+	Thu, 28 Jan 2010 19:13:44 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:46124 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752583Ab0A2ANo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jan 2010 19:13:44 -0500
+Subject: Re: [PATCH]PCIE AER: PCI access remove spinlock protection in
+ aer_inject
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: "Youquan,Song" <youquan.song@linux.intel.com>
+Cc: jbarnes@virtuousgeek.org, andi@firstfloor.org, ying.huang@intel.com,
+       youquan.song@intel.com, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+In-Reply-To: <20100128163405.GA2944@youquan-linux.bj.intel.com>
+References: <20100128163405.GA2944@youquan-linux.bj.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 28 Jan 2010 17:13:42 -0700
+Message-ID: <1264724022.13212.175.camel@bluto.andrew>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__29_Jan_2010_11_13_42_+1100_.=Lo5Tqwm.Kh3Q6o"
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__29_Jan_2010_11_13_42_+1100_.=Lo5Tqwm.Kh3Q6o
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2010-01-28 at 11:34 -0500, Youquan,Song wrote:
+> Move the PCI configuration access code out of the spin_lock protection because
+> pci_read_aer already includes spin_lock protection which will replace the PCI
+> access method if have aer error injected.
+> 
+> Signed-off-by: Youquan, Song <youquan.song@intel.com>
+> ---
+> 
 
-Hi Kevin,
+I posted a similar patch on the linux-pci mailing list -- details at:
 
-Today's linux-next merge of the davinci tree got a conflict in
-arch/arm/mach-bcmring/core.c between commit
-dd84ce18c8f522d26aef6e9e9c05c32485b667a7 ("ARM: Consolidate
-clks_register() and similar") from the arm tree and commit
-25c692215f5dfc4992b11c4fb57538d1139d6636 ("Consolidate clks_register()
-and similar") from the davinci tree.
+http://www.spinics.net/lists/linux-pci/msg07609.html
 
-The davinci tree version has a typo (ARRAY_SIEZ v. ARRAY_SIZE) so I used
-the arm tree version.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This version has already been accepted in the linux-pci tree.  I should
+have cc'd lkml.
 
---Signature=_Fri__29_Jan_2010_11_13_42_+1100_.=Lo5Tqwm.Kh3Q6o
-Content-Type: application/pgp-signature
+Andrew
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> 
+> diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
+> index 8c30a95..953a0b9 100644
+> --- a/drivers/pci/pcie/aer/aer_inject.c
+> +++ b/drivers/pci/pcie/aer/aer_inject.c
+> @@ -357,6 +357,22 @@ static int aer_inject(struct aer_error_inj *einj)
+>  		goto out_put;
+>  	}
+>  
+> +	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_COR_MASK, &mask);
+> +	if (einj->cor_status && !(einj->cor_status & ~mask)) {
+> +		ret = -EINVAL;
+> +		printk(KERN_WARNING "The correctable error(s) is masked "
+> +				"by device\n");
+> +		goto out_put;
+> +	}
+> +
+> +	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_UNCOR_MASK, &mask);
+> +	if (einj->uncor_status && !(einj->uncor_status & ~mask)) {
+> +		ret = -EINVAL;
+> +		printk(KERN_WARNING "The uncorrectable error(s) is masked "
+> +				"by device\n");
+> +		goto out_put;
+> +	}
+> +
+>  	spin_lock_irqsave(&inject_lock, flags);
+>  
+>  	err = __find_aer_error_by_dev(dev);
+> @@ -374,24 +390,6 @@ static int aer_inject(struct aer_error_inj *einj)
+>  	err->header_log2 = einj->header_log2;
+>  	err->header_log3 = einj->header_log3;
+>  
+> -	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_COR_MASK, &mask);
+> -	if (einj->cor_status && !(einj->cor_status & ~mask)) {
+> -		ret = -EINVAL;
+> -		printk(KERN_WARNING "The correctable error(s) is masked "
+> -				"by device\n");
+> -		spin_unlock_irqrestore(&inject_lock, flags);
+> -		goto out_put;
+> -	}
+> -
+> -	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_UNCOR_MASK, &mask);
+> -	if (einj->uncor_status && !(einj->uncor_status & ~mask)) {
+> -		ret = -EINVAL;
+> -		printk(KERN_WARNING "The uncorrectable error(s) is masked "
+> -				"by device\n");
+> -		spin_unlock_irqrestore(&inject_lock, flags);
+> -		goto out_put;
+> -	}
+> -
+>  	rperr = __find_aer_error_by_dev(rpdev);
+>  	if (!rperr) {
+>  		rperr = rperr_alloc;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-iEYEARECAAYFAktiKDYACgkQjjKRsyhoI8wVUgCgwIk7mnhk9fqJLSo+B0YSGebG
-9S0An1gIiclShYebdgyxK7/pD3jZPWlz
-=rQqn
------END PGP SIGNATURE-----
 
---Signature=_Fri__29_Jan_2010_11_13_42_+1100_.=Lo5Tqwm.Kh3Q6o--
+-- 
+Andrew Patterson
+Hewlett-Packard
+
