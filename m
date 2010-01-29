@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523Ab0A2G6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792Ab0A2G71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753523Ab0A2G6t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 01:58:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785Ab0A2G6s
+	id S1753792Ab0A2G71 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 01:59:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990Ab0A2G70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 01:58:48 -0500
-Received: from mail-pz0-f189.google.com ([209.85.222.189]:35779 "EHLO
-	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752656Ab0A2G6r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 01:58:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=CDxnMZVMD2HwkXrLr8RrmSWlcOYjHuRc/2Xwz8XTH2ujS7qKYlS5dLlFCdx83cndMi
-         4R558/Z8yWyhgd8wSI2Lk0XppK+7dSiIJF4+ovAlJZtt5evSFN4P2gN64XomJAdZmYVB
-         8O3VNccnVh4TCq9h3Wc8j+WZxv9Shi7pUePec=
+	Fri, 29 Jan 2010 01:59:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27019 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752465Ab0A2G70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 01:59:26 -0500
+Message-ID: <4B6287E6.8020403@redhat.com>
+Date: Fri, 29 Jan 2010 02:01:58 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Date: Fri, 29 Jan 2010 14:58:47 +0800
-Message-ID: <2674af741001282258q38781619u653ca4a7dd267347@mail.gmail.com>
-Subject: [RFC PATCH 2/2] sched: remove member rt_se from struct rt_rq
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, rusty <rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 4/9] perf session: Create kernel maps in the constructor
+References: <1264633557-17597-1-git-send-email-acme@infradead.org> <1264633557-17597-4-git-send-email-acme@infradead.org> <4B60C9A6.10704@redhat.com> <20100127232936.GI12567@ghostprotocols.net> <4B61BB2D.70802@redhat.com> <20100128182951.GB2499@ghostprotocols.net> <4B61FABA.6000600@redhat.com> <20100129004242.GC2499@ghostprotocols.net>
+In-Reply-To: <20100129004242.GC2499@ghostprotocols.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's a duplicate of tg->rt_se[cpu] and the only usage is
-sched_rt_rq_dequeue() and sched_rt_rq_enqueue(). After the
-first patch to those two function. rt_se can be removed.
+Arnaldo Carvalho de Melo wrote:
+> Em Thu, Jan 28, 2010 at 03:59:38PM -0500, Masami Hiramatsu escreveu:
+>>> you'll get ipv6.ko located and loaded, mod->dso->long_name thus will
+>>> have the file to use with libdwarf and sym->start will have the
+>>> unrelocated address, and mod->start will have where ipv6 is loaded in
+>>> kernel space
+> 
+>> Oh, nice :-) Is that available for the modules which aren't loaded?
+> 
+> No it isn't, what usecase do you see where you would like to look at non
+> loaded modules? Traversing the /lib/modules passed can be made to just
+> create DSOs, not maps if we need it. Maps when created using one of these
+> DSOs would find them on the list.
 
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
----
- kernel/sched.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+One usecase I thought is probing module init code for checking/debugging
+driver initialization routine. For this purpose, build-id checking also
+should be solved. If the module is not loaded, we can't check build-id
+in that time. I think we can compare it when loading the module,
+in kernel, if we can pass target build-id to kprobe-tracer.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 4508fe7..dc04041 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -478,7 +478,6 @@ struct rt_rq {
- 	struct rq *rq;
- 	struct list_head leaf_rt_rq_list;
- 	struct task_group *tg;
--	struct sched_rt_entity *rt_se;
- #endif
- };
 
-@@ -9437,7 +9436,6 @@ static void init_tg_rt_entry(struct task_group
-*tg, struct rt_rq *rt_rq,
- 	tg->rt_rq[cpu] = rt_rq;
- 	init_rt_rq(rt_rq, rq);
- 	rt_rq->tg = tg;
--	rt_rq->rt_se = rt_se;
- 	rt_rq->rt_runtime = tg->rt_bandwidth.rt_runtime;
- 	if (add)
- 		list_add(&rt_rq->leaf_rt_rq_list, &rq->leaf_rt_rq_list);
+>> And yeah, I'd like to support modules and it will requires some
+>> enhancement in kprobe-tracer too.
+> 
+> Ok
+> 
+> <SNIP>
+>>> With the recent modifications done to untie the session and symbol
+>>> layers, 'perf probe' now can use just the symbols layer.
+> 
+>> Could you remove session.kmap too?
+>> other parts look good to me.
+> 
+> I'll haven't done that just to keep the patch as small as possible :-)
+> But will do before submitting.
+
+Thanks! :-)
+
 -- 
-1.6.3.3
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
