@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445Ab0A2AZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203Ab0A2AZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445Ab0A2AZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jan 2010 19:25:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335Ab0A2AZZ
+	id S1756203Ab0A2AZw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jan 2010 19:25:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999Ab0A2AZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jan 2010 19:25:25 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:42801 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751788Ab0A2AZY (ORCPT
+	Thu, 28 Jan 2010 19:25:51 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:37634 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752583Ab0A2AZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jan 2010 19:25:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:newsgroups:to
-         :cc:subject:references:in-reply-to:x-enigmail-version:x-age
-         :x-location:x-os:x-face:content-type:content-transfer-encoding;
-        b=Y6WHpVoGjhOmCEbrOe8nynBFXXYyryV9+vHklNBaxlWqasNz8CK7NGn6fzVvuHCplP
-         pmFCi1crOS1iBccgsX4Dr8QTNIgwkaITQ7opU+1pie7ykTlv2jUuGRrwpvHmgdQFg606
-         NGq1F3iBp1qJXEJWcQneE4cN7Xu107QQ9CUR4=
-Message-ID: <4B622AEE.3080906@gmail.com>
-Date: Fri, 29 Jan 2010 01:25:18 +0100
-From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
-Reply-To: vedran.furac@gmail.com
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20091109 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel.mm
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
-       minchan.kim@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
-References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>	<20100126151202.75bd9347.akpm@linux-foundation.org>	<20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>	<20100126161952.ee267d1c.akpm@linux-foundation.org>	<20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com> <20100128001636.2026a6bc@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100128001636.2026a6bc@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.7
-X-Age: 25
-X-Location: Lovran, Croatia
-X-OS: Debian GNU/Linux
-X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
-Content-Type: text/plain; charset=UTF-8
+	Thu, 28 Jan 2010 19:25:50 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Subject:Message-ID:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=mp5MnA3zW6bm66gnOhonKpDY11usGj5KfWiGIy79mCSFO1Nau24CXa2iNgTr9dKTcHGZdHU0dNrFdAfG71O2ntqS3iyVnEUgWqL0Z64IGSwZPm5TRtQ4NffMTdoPnPv3;
+Date: Thu, 28 Jan 2010 16:25:44 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [git pull] PCI fixes
+Message-ID: <20100128162544.3ec49105@jbarnes-piketon>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
 
-> Am I missing something fundamental here ?
+The following changes since commit 61c39bb354a1f791ba6f562b766a72e508a036ee:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git390.marist.edu/pub/scm/linux-2.6
 
-Yes, the fact linux mm currently sucks. How else would you explain
-possibility of killing random (often root owned) processes using a 5
-lines program started by an ordinary user? Killed process could be an
-apache web server or X server on a desktop. I demonstrated this flaw few
-months ago here and only Kame tried to find a way to fix it but
-encountered noncooperation.
+are available in the git repository at:
 
-I don't know what to say, really. Sad... Actually funny, when you know
-that competition OS, often ridiculed by linux users, doesn't suffer any
-consequences when that same 5 line program is run.
+  git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 for-linus
 
-Regards,
-Vedran
+Just a couple this time, the most controversial being the removal of
+intel_bus.c.  We tried, but it's looking like a long idea in the log
+term.  The machine it was intended to serve has working _CRS support
+now, so they can boot with pci=use_crs.  For 2.6.34 we'll try using
+more _CRS data by default, I'm hoping if we can get it right that it'll
+fix a few other resource issues (though we have yet to address the
+issue that broke things last time: huge numbers of _CRS resources on
+some machines; should be easy to fix though).
 
+Andrew Patterson (1):
+      PCI: fix nested spinlock hang in aer_inject
+
+Jeff Garrett (1):
+      x86/PCI: remove IOH range fetching
+
+ arch/x86/pci/Makefile             |    2 +-
+ arch/x86/pci/intel_bus.c          |   94 -------------------------------------
+ drivers/pci/pcie/aer/aer_inject.c |   12 ++--
+ 3 files changed, 7 insertions(+), 101 deletions(-)
+ delete mode 100644 arch/x86/pci/intel_bus.c
 
 -- 
-http://vedranf.net | a8e7a7783ca0d460fee090cc584adc12
+Jesse Barnes, Intel Open Source Technology Center
