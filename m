@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756323Ab0A2J23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783Ab0A2J2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756323Ab0A2J23 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 04:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966Ab0A2J2Z
+	id S1756783Ab0A2J2h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 04:28:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550Ab0A2J2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 04:28:25 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57417 "EHLO hera.kernel.org"
+	Fri, 29 Jan 2010 04:28:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57414 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756358Ab0A2J2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 04:28:21 -0500
-Date: Fri, 29 Jan 2010 09:27:33 GMT
+	id S1756409Ab0A2J2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 04:28:20 -0500
+Date: Fri, 29 Jan 2010 09:27:48 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, eranian@google.com, hpa@zytor.com,
        mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
@@ -17,152 +17,141 @@ Cc: linux-kernel@vger.kernel.org, eranian@google.com, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20100122155535.595961269@chello.nl>
-References: <20100122155535.595961269@chello.nl>
+In-Reply-To: <20100122155535.688730371@chello.nl>
+References: <20100122155535.688730371@chello.nl>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_event: x86: Clean up some of the u64/long bitmask casting
-Message-ID: <tip-c91e0f5da81c6f3a611a1bd6d0cca6717c90fdab@git.kernel.org>
-Git-Commit-ID: c91e0f5da81c6f3a611a1bd6d0cca6717c90fdab
+Subject: [tip:perf/core] perf_event: x86: Reduce some overly long lines with some MACROs
+Message-ID: <tip-8433be1184e4f22c37d4b8ed36cde529a47882f4@git.kernel.org>
+Git-Commit-ID: 8433be1184e4f22c37d4b8ed36cde529a47882f4
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 29 Jan 2010 09:27:33 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 29 Jan 2010 09:27:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c91e0f5da81c6f3a611a1bd6d0cca6717c90fdab
-Gitweb:     http://git.kernel.org/tip/c91e0f5da81c6f3a611a1bd6d0cca6717c90fdab
+Commit-ID:  8433be1184e4f22c37d4b8ed36cde529a47882f4
+Gitweb:     http://git.kernel.org/tip/8433be1184e4f22c37d4b8ed36cde529a47882f4
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 22 Jan 2010 15:25:59 +0100
+AuthorDate: Fri, 22 Jan 2010 15:38:26 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 29 Jan 2010 09:01:37 +0100
+CommitDate: Fri, 29 Jan 2010 09:01:38 +0100
 
-perf_event: x86: Clean up some of the u64/long bitmask casting
+perf_event: x86: Reduce some overly long lines with some MACROs
 
-We need this to be u64 for direct assigment, but the bitmask functions
-all work on unsigned long, leading to cast heaven, solve this by using a
-union.
+Introduce INTEL_EVENT_CONSTRAINT and FIXED_EVENT_CONSTRAINT to reduce
+some line length and typing work.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Stephane Eranian <eranian@google.com>
-LKML-Reference: <20100122155535.595961269@chello.nl>
+LKML-Reference: <20100122155535.688730371@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/cpu/perf_event.c |   47 ++++++++++++++++++-------------------
- 1 files changed, 23 insertions(+), 24 deletions(-)
+ arch/x86/kernel/cpu/perf_event.c |   68 ++++++++++++++++++++-----------------
+ 1 files changed, 37 insertions(+), 31 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index 7e181a5..921bbf7 100644
+index 921bbf7..4d1ed10 100644
 --- a/arch/x86/kernel/cpu/perf_event.c
 +++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -69,10 +69,11 @@ struct debug_store {
- 	u64	pebs_event_reset[MAX_PEBS_EVENTS];
- };
+@@ -97,6 +97,12 @@ struct cpu_hw_events {
+ 	.cmask = (m),			\
+ }
  
--#define BITS_TO_U64(nr) DIV_ROUND_UP(nr, BITS_PER_BYTE * sizeof(u64))
--
- struct event_constraint {
--	u64	idxmsk[BITS_TO_U64(X86_PMC_IDX_MAX)];
-+	union {
-+		unsigned long	idxmsk[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
-+		u64		idxmsk64[1];
-+	};
- 	int	code;
- 	int	cmask;
- };
-@@ -90,13 +91,14 @@ struct cpu_hw_events {
- 	struct perf_event	*event_list[X86_PMC_IDX_MAX]; /* in enabled order */
- };
- 
--#define EVENT_CONSTRAINT(c, n, m) { \
--	.code = (c),	\
--	.cmask = (m),	\
--	.idxmsk[0] = (n) }
-+#define EVENT_CONSTRAINT(c, n, m) { 	\
-+	{ .idxmsk64[0] = (n) },		\
-+	.code = (c),			\
-+	.cmask = (m),			\
-+}
- 
++#define INTEL_EVENT_CONSTRAINT(c, n)	\
++	EVENT_CONSTRAINT(c, n, INTEL_ARCH_EVENT_MASK)
++
++#define FIXED_EVENT_CONSTRAINT(c, n)	\
++	EVENT_CONSTRAINT(c, n, INTEL_ARCH_FIXED_MASK)
++
  #define EVENT_CONSTRAINT_END \
--	{ .code = 0, .cmask = 0, .idxmsk[0] = 0 }
-+	EVENT_CONSTRAINT(0, 0, 0)
+ 	EVENT_CONSTRAINT(0, 0, 0)
  
- #define for_each_event_constraint(e, c) \
- 	for ((e) = (c); (e)->cmask; (e)++)
-@@ -126,8 +128,11 @@ struct x86_pmu {
- 	u64		intel_ctrl;
- 	void		(*enable_bts)(u64 config);
- 	void		(*disable_bts)(void);
--	void		(*get_event_constraints)(struct cpu_hw_events *cpuc, struct perf_event *event, u64 *idxmsk);
--	void		(*put_event_constraints)(struct cpu_hw_events *cpuc, struct perf_event *event);
-+	void		(*get_event_constraints)(struct cpu_hw_events *cpuc,
-+						 struct perf_event *event,
-+						 unsigned long *idxmsk);
-+	void		(*put_event_constraints)(struct cpu_hw_events *cpuc,
-+						 struct perf_event *event);
- 	const struct event_constraint *event_constraints;
+@@ -192,12 +198,12 @@ static u64 p6_pmu_raw_event(u64 hw_event)
+ 
+ static struct event_constraint intel_p6_event_constraints[] =
+ {
+-	EVENT_CONSTRAINT(0xc1, 0x1, INTEL_ARCH_EVENT_MASK),	/* FLOPS */
+-	EVENT_CONSTRAINT(0x10, 0x1, INTEL_ARCH_EVENT_MASK),	/* FP_COMP_OPS_EXE */
+-	EVENT_CONSTRAINT(0x11, 0x1, INTEL_ARCH_EVENT_MASK),	/* FP_ASSIST */
+-	EVENT_CONSTRAINT(0x12, 0x2, INTEL_ARCH_EVENT_MASK),	/* MUL */
+-	EVENT_CONSTRAINT(0x13, 0x2, INTEL_ARCH_EVENT_MASK),	/* DIV */
+-	EVENT_CONSTRAINT(0x14, 0x1, INTEL_ARCH_EVENT_MASK),	/* CYCLES_DIV_BUSY */
++	INTEL_EVENT_CONSTRAINT(0xc1, 0x1),	/* FLOPS */
++	INTEL_EVENT_CONSTRAINT(0x10, 0x1),	/* FP_COMP_OPS_EXE */
++	INTEL_EVENT_CONSTRAINT(0x11, 0x1),	/* FP_ASSIST */
++	INTEL_EVENT_CONSTRAINT(0x12, 0x2),	/* MUL */
++	INTEL_EVENT_CONSTRAINT(0x13, 0x2),	/* DIV */
++	INTEL_EVENT_CONSTRAINT(0x14, 0x1),	/* CYCLES_DIV_BUSY */
+ 	EVENT_CONSTRAINT_END
  };
  
-@@ -2144,14 +2149,11 @@ perf_event_nmi_handler(struct notifier_block *self,
- 	return NOTIFY_STOP;
- }
+@@ -217,41 +223,41 @@ static const u64 intel_perfmon_event_map[] =
  
--static struct event_constraint bts_constraint = {
--	.code = 0,
--	.cmask = 0,
--	.idxmsk[0] = 1ULL << X86_PMC_IDX_FIXED_BTS
--};
-+static struct event_constraint bts_constraint =
-+	EVENT_CONSTRAINT(0, 1ULL << X86_PMC_IDX_FIXED_BTS, 0);
- 
- static int intel_special_constraints(struct perf_event *event,
--				     u64 *idxmsk)
-+				     unsigned long *idxmsk)
+ static struct event_constraint intel_core_event_constraints[] =
  {
- 	unsigned int hw_event;
+-	EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32)), INTEL_ARCH_FIXED_MASK), /* INSTRUCTIONS_RETIRED */
+-	EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33)), INTEL_ARCH_FIXED_MASK), /* UNHALTED_CORE_CYCLES */
+-	EVENT_CONSTRAINT(0x10, 0x1, INTEL_ARCH_EVENT_MASK), /* FP_COMP_OPS_EXE */
+-	EVENT_CONSTRAINT(0x11, 0x2, INTEL_ARCH_EVENT_MASK), /* FP_ASSIST */
+-	EVENT_CONSTRAINT(0x12, 0x2, INTEL_ARCH_EVENT_MASK), /* MUL */
+-	EVENT_CONSTRAINT(0x13, 0x2, INTEL_ARCH_EVENT_MASK), /* DIV */
+-	EVENT_CONSTRAINT(0x14, 0x1, INTEL_ARCH_EVENT_MASK), /* CYCLES_DIV_BUSY */
+-	EVENT_CONSTRAINT(0x18, 0x1, INTEL_ARCH_EVENT_MASK), /* IDLE_DURING_DIV */
+-	EVENT_CONSTRAINT(0x19, 0x2, INTEL_ARCH_EVENT_MASK), /* DELAYED_BYPASS */
+-	EVENT_CONSTRAINT(0xa1, 0x1, INTEL_ARCH_EVENT_MASK), /* RS_UOPS_DISPATCH_CYCLES */
+-	EVENT_CONSTRAINT(0xcb, 0x1, INTEL_ARCH_EVENT_MASK), /* MEM_LOAD_RETIRED */
++	FIXED_EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32))), /* INSTRUCTIONS_RETIRED */
++	FIXED_EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33))), /* UNHALTED_CORE_CYCLES */
++	INTEL_EVENT_CONSTRAINT(0x10, 0x1), /* FP_COMP_OPS_EXE */
++	INTEL_EVENT_CONSTRAINT(0x11, 0x2), /* FP_ASSIST */
++	INTEL_EVENT_CONSTRAINT(0x12, 0x2), /* MUL */
++	INTEL_EVENT_CONSTRAINT(0x13, 0x2), /* DIV */
++	INTEL_EVENT_CONSTRAINT(0x14, 0x1), /* CYCLES_DIV_BUSY */
++	INTEL_EVENT_CONSTRAINT(0x18, 0x1), /* IDLE_DURING_DIV */
++	INTEL_EVENT_CONSTRAINT(0x19, 0x2), /* DELAYED_BYPASS */
++	INTEL_EVENT_CONSTRAINT(0xa1, 0x1), /* RS_UOPS_DISPATCH_CYCLES */
++	INTEL_EVENT_CONSTRAINT(0xcb, 0x1), /* MEM_LOAD_RETIRED */
+ 	EVENT_CONSTRAINT_END
+ };
  
-@@ -2171,14 +2173,14 @@ static int intel_special_constraints(struct perf_event *event,
- 
- static void intel_get_event_constraints(struct cpu_hw_events *cpuc,
- 					struct perf_event *event,
--					u64 *idxmsk)
-+					unsigned long *idxmsk)
+ static struct event_constraint intel_nehalem_event_constraints[] =
  {
- 	const struct event_constraint *c;
+-	EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32)), INTEL_ARCH_FIXED_MASK), /* INSTRUCTIONS_RETIRED */
+-	EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33)), INTEL_ARCH_FIXED_MASK), /* UNHALTED_CORE_CYCLES */
+-	EVENT_CONSTRAINT(0x40, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_CACHE_LD */
+-	EVENT_CONSTRAINT(0x41, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_CACHE_ST */
+-	EVENT_CONSTRAINT(0x42, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_CACHE_LOCK */
+-	EVENT_CONSTRAINT(0x43, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_ALL_REF */
+-	EVENT_CONSTRAINT(0x4e, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_PREFETCH */
+-	EVENT_CONSTRAINT(0x4c, 0x3, INTEL_ARCH_EVENT_MASK), /* LOAD_HIT_PRE */
+-	EVENT_CONSTRAINT(0x51, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D */
+-	EVENT_CONSTRAINT(0x52, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_CACHE_PREFETCH_LOCK_FB_HIT */
+-	EVENT_CONSTRAINT(0x53, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_CACHE_LOCK_FB_HIT */
+-	EVENT_CONSTRAINT(0xc5, 0x3, INTEL_ARCH_EVENT_MASK), /* CACHE_LOCK_CYCLES */
++	FIXED_EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32))), /* INSTRUCTIONS_RETIRED */
++	FIXED_EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33))), /* UNHALTED_CORE_CYCLES */
++	INTEL_EVENT_CONSTRAINT(0x40, 0x3), /* L1D_CACHE_LD */
++	INTEL_EVENT_CONSTRAINT(0x41, 0x3), /* L1D_CACHE_ST */
++	INTEL_EVENT_CONSTRAINT(0x42, 0x3), /* L1D_CACHE_LOCK */
++	INTEL_EVENT_CONSTRAINT(0x43, 0x3), /* L1D_ALL_REF */
++	INTEL_EVENT_CONSTRAINT(0x4e, 0x3), /* L1D_PREFETCH */
++	INTEL_EVENT_CONSTRAINT(0x4c, 0x3), /* LOAD_HIT_PRE */
++	INTEL_EVENT_CONSTRAINT(0x51, 0x3), /* L1D */
++	INTEL_EVENT_CONSTRAINT(0x52, 0x3), /* L1D_CACHE_PREFETCH_LOCK_FB_HIT */
++	INTEL_EVENT_CONSTRAINT(0x53, 0x3), /* L1D_CACHE_LOCK_FB_HIT */
++	INTEL_EVENT_CONSTRAINT(0xc5, 0x3), /* CACHE_LOCK_CYCLES */
+ 	EVENT_CONSTRAINT_END
+ };
  
- 	/*
- 	 * cleanup bitmask
- 	 */
--	bitmap_zero((unsigned long *)idxmsk, X86_PMC_IDX_MAX);
-+	bitmap_zero(idxmsk, X86_PMC_IDX_MAX);
- 
- 	if (intel_special_constraints(event, idxmsk))
- 		return;
-@@ -2186,10 +2188,7 @@ static void intel_get_event_constraints(struct cpu_hw_events *cpuc,
- 	if (x86_pmu.event_constraints) {
- 		for_each_event_constraint(c, x86_pmu.event_constraints) {
- 			if ((event->hw.config & c->cmask) == c->code) {
--
--				bitmap_copy((unsigned long *)idxmsk,
--					    (unsigned long *)c->idxmsk,
--					    X86_PMC_IDX_MAX);
-+				bitmap_copy(idxmsk, c->idxmsk, X86_PMC_IDX_MAX);
- 				return;
- 			}
- 		}
-@@ -2200,10 +2199,10 @@ static void intel_get_event_constraints(struct cpu_hw_events *cpuc,
- 
- static void amd_get_event_constraints(struct cpu_hw_events *cpuc,
- 				      struct perf_event *event,
--				      u64 *idxmsk)
-+				      unsigned long *idxmsk)
+ static struct event_constraint intel_gen_event_constraints[] =
  {
- 	/* no constraints, means supports all generic counters */
--	bitmap_fill((unsigned long *)idxmsk, x86_pmu.num_events);
-+	bitmap_fill(idxmsk, x86_pmu.num_events);
- }
+-	EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32)), INTEL_ARCH_FIXED_MASK), /* INSTRUCTIONS_RETIRED */
+-	EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33)), INTEL_ARCH_FIXED_MASK), /* UNHALTED_CORE_CYCLES */
++	FIXED_EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32))), /* INSTRUCTIONS_RETIRED */
++	FIXED_EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33))), /* UNHALTED_CORE_CYCLES */
+ 	EVENT_CONSTRAINT_END
+ };
  
- static int x86_event_sched_in(struct perf_event *event,
