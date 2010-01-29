@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831Ab0A2Jag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840Ab0A2Jat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756831Ab0A2Jag (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 04:30:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787Ab0A2JaJ
+	id S1756840Ab0A2Jat (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 04:30:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824Ab0A2Jaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 04:30:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57515 "EHLO hera.kernel.org"
+	Fri, 29 Jan 2010 04:30:46 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57548 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756806Ab0A2JaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 04:30:05 -0500
-Date: Fri, 29 Jan 2010 09:29:37 GMT
+	id S1754979Ab0A2Jao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 04:30:44 -0500
+Date: Fri, 29 Jan 2010 09:29:53 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, eranian@google.com, hpa@zytor.com,
        mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
@@ -17,110 +17,79 @@ Cc: linux-kernel@vger.kernel.org, eranian@google.com, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
+In-Reply-To: <20100127221121.967610372@chello.nl>
+References: <20100127221121.967610372@chello.nl>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_event: x86: Deduplicate the disable code
-Message-ID: <tip-2e8418736dff9c6fdadb2f87dcc2087cebf32167@git.kernel.org>
-Git-Commit-ID: 2e8418736dff9c6fdadb2f87dcc2087cebf32167
+Subject: [tip:perf/core] perf_events, x86: Fix event constraint masks
+Message-ID: <tip-ed8777fc132e589d48a0ba854fdbb5d8203b58e5@git.kernel.org>
+Git-Commit-ID: ed8777fc132e589d48a0ba854fdbb5d8203b58e5
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 29 Jan 2010 09:29:38 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 29 Jan 2010 09:29:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2e8418736dff9c6fdadb2f87dcc2087cebf32167
-Gitweb:     http://git.kernel.org/tip/2e8418736dff9c6fdadb2f87dcc2087cebf32167
+Commit-ID:  ed8777fc132e589d48a0ba854fdbb5d8203b58e5
+Gitweb:     http://git.kernel.org/tip/ed8777fc132e589d48a0ba854fdbb5d8203b58e5
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 25 Jan 2010 15:58:43 +0100
+AuthorDate: Wed, 27 Jan 2010 23:07:46 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 29 Jan 2010 09:01:45 +0100
+CommitDate: Fri, 29 Jan 2010 09:01:46 +0100
 
-perf_event: x86: Deduplicate the disable code
+perf_events, x86: Fix event constraint masks
 
-Share the meat of the x86_pmu_disable() code with hw_perf_enable().
-
-Also remove the barrier() from that code, since I could not convince
-myself we actually need it.
+Since constraints are specified on the event number, not number
+and unit mask shorten the constraint masks so that we'll
+actually match something.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Stephane Eranian <eranian@google.com>
-LKML-Reference: <new-submission>
+LKML-Reference: <20100127221121.967610372@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/cpu/perf_event.c |   29 +++++++++++++----------------
- 1 files changed, 13 insertions(+), 16 deletions(-)
+ arch/x86/include/asm/perf_event.h |    2 +-
+ arch/x86/kernel/cpu/perf_event.c  |   13 +++++++++----
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
+diff --git a/arch/x86/include/asm/perf_event.h b/arch/x86/include/asm/perf_event.h
+index dbc0826..ff5ede1 100644
+--- a/arch/x86/include/asm/perf_event.h
++++ b/arch/x86/include/asm/perf_event.h
+@@ -49,7 +49,7 @@
+ 	 INTEL_ARCH_INV_MASK| \
+ 	 INTEL_ARCH_EDGE_MASK|\
+ 	 INTEL_ARCH_UNIT_MASK|\
+-	 INTEL_ARCH_EVENT_MASK)
++	 INTEL_ARCH_EVTSEL_MASK)
+ 
+ #define ARCH_PERFMON_UNHALTED_CORE_CYCLES_SEL		      0x3c
+ #define ARCH_PERFMON_UNHALTED_CORE_CYCLES_UMASK		(0x00 << 8)
 diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index fdbe248..07fa0c2 100644
+index 07fa0c2..951213a 100644
 --- a/arch/x86/kernel/cpu/perf_event.c
 +++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -1401,6 +1401,8 @@ static inline void x86_assign_hw_event(struct perf_event *event,
- 	}
+@@ -100,12 +100,17 @@ struct cpu_hw_events {
+ 	.weight = HWEIGHT64((u64)(n)),	\
  }
  
-+static void __x86_pmu_disable(struct perf_event *event, struct cpu_hw_events *cpuc);
+-#define INTEL_EVENT_CONSTRAINT(c, n)		EVENT_CONSTRAINT(c, n, INTEL_ARCH_EVENT_MASK)
+-#define FIXED_EVENT_CONSTRAINT(c, n)		EVENT_CONSTRAINT(c, n, INTEL_ARCH_FIXED_MASK)
++#define INTEL_EVENT_CONSTRAINT(c, n)	\
++	EVENT_CONSTRAINT(c, n, INTEL_ARCH_EVTSEL_MASK)
+ 
+-#define EVENT_CONSTRAINT_END			EVENT_CONSTRAINT(0, 0, 0)
++#define FIXED_EVENT_CONSTRAINT(c, n)	\
++	EVENT_CONSTRAINT(c, n, INTEL_ARCH_FIXED_MASK)
+ 
+-#define for_each_event_constraint(e, c)		for ((e) = (c); (e)->cmask; (e)++)
++#define EVENT_CONSTRAINT_END		\
++	EVENT_CONSTRAINT(0, 0, 0)
 +
- void hw_perf_enable(void)
- {
- 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
-@@ -1426,13 +1428,7 @@ void hw_perf_enable(void)
- 			if (hwc->idx == -1 || hwc->idx == cpuc->assign[i])
- 				continue;
++#define for_each_event_constraint(e, c)	\
++	for ((e) = (c); (e)->cmask; (e)++)
  
--			x86_pmu.disable(hwc, hwc->idx);
--
--			clear_bit(hwc->idx, cpuc->active_mask);
--			barrier();
--			cpuc->events[hwc->idx] = NULL;
--
--			x86_perf_event_update(event, hwc, hwc->idx);
-+			__x86_pmu_disable(event, cpuc);
- 
- 			hwc->idx = -1;
- 		}
-@@ -1822,11 +1818,10 @@ static void intel_pmu_drain_bts_buffer(struct cpu_hw_events *cpuc)
- 	event->pending_kill = POLL_IN;
- }
- 
--static void x86_pmu_disable(struct perf_event *event)
-+static void __x86_pmu_disable(struct perf_event *event, struct cpu_hw_events *cpuc)
- {
--	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
- 	struct hw_perf_event *hwc = &event->hw;
--	int i, idx = hwc->idx;
-+	int idx = hwc->idx;
- 
- 	/*
- 	 * Must be done before we disable, otherwise the nmi handler
-@@ -1836,12 +1831,6 @@ static void x86_pmu_disable(struct perf_event *event)
- 	x86_pmu.disable(hwc, idx);
- 
- 	/*
--	 * Make sure the cleared pointer becomes visible before we
--	 * (potentially) free the event:
--	 */
--	barrier();
--
--	/*
- 	 * Drain the remaining delta count out of a event
- 	 * that we are disabling:
- 	 */
-@@ -1852,6 +1841,14 @@ static void x86_pmu_disable(struct perf_event *event)
- 		intel_pmu_drain_bts_buffer(cpuc);
- 
- 	cpuc->events[idx] = NULL;
-+}
-+
-+static void x86_pmu_disable(struct perf_event *event)
-+{
-+	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
-+	int i;
-+
-+	__x86_pmu_disable(event, cpuc);
- 
- 	for (i = 0; i < cpuc->n_events; i++) {
- 		if (event == cpuc->event_list[i]) {
+ /*
+  * struct x86_pmu - generic x86 pmu
