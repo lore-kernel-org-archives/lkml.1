@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728Ab0A2HHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704Ab0A2HMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728Ab0A2HHx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 02:07:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381Ab0A2HHw
+	id S1756704Ab0A2HMh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 02:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366Ab0A2HMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 02:07:52 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:21364 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755382Ab0A2HG1 (ORCPT
+	Fri, 29 Jan 2010 02:12:36 -0500
+Received: from mail-pz0-f189.google.com ([209.85.222.189]:57731 "EHLO
+	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752977Ab0A2HMg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 02:06:27 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5875"; a="33015132"
-From: adharmap@codeaurora.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: linux-arm-msm@lists.infradead.org, Russell King <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Abhijeet Dharmapurikar <adharmap@quicinc.com>
-Subject: [PATCH v2 3/4] GIC: Add callback for mask_ack
-Date: Thu, 28 Jan 2010 23:06:03 -0800
-Message-Id: <1264748764-5319-4-git-send-email-adharmap@codeaurora.org>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1264748764-5319-1-git-send-email-adharmap@codeaurora.org>
-References: <1264748764-5319-1-git-send-email-adharmap@codeaurora.org>
+	Fri, 29 Jan 2010 02:12:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:content-transfer-encoding:user-agent;
+        b=iWtO7AcDpgthzhXWRuQNXsDvQY49QPDyuSYVWxAm6Xg9N2yfBNnYmPsMHHxNQyXam7
+         SEtJW5kgBUyCAbkJ1tjRrp7taxvfpwgppvRwoq6LNeWz3kcw+KddoqrVSEQHzk+bIKTL
+         uFvP+UcGOxh15YUhPlscBfAg8irNVJYF59l48=
+Date: Thu, 28 Jan 2010 23:12:30 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.33-rc5
+Message-ID: <20100129071230.GE4177@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
+Hi Linus,
 
-Add gic_mask_ack for faster processing of interrupts.
+Please pull from:
 
-Signed-off-by: Abhijeet Dharmapurikar <adharmap@quicinc.com>
----
- arch/arm/common/gic.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-diff --git a/arch/arm/common/gic.c b/arch/arm/common/gic.c
-index 8a2bfae..240f6b6 100644
---- a/arch/arm/common/gic.c
-+++ b/arch/arm/common/gic.c
-@@ -108,6 +108,15 @@ static void gic_unmask_irq(unsigned int irq)
- 	spin_unlock(&irq_controller_lock);
- }
- 
-+static void gic_mask_ack_irq(unsigned int irq)
-+{
-+	u32 mask = 1 << (irq % 32);
-+	spin_lock(&irq_controller_lock);
-+	writel(mask, gic_dist_base(irq) + GIC_DIST_ENABLE_CLEAR + (gic_irq(irq) / 32) * 4);
-+	writel(gic_irq(irq), gic_cpu_base(irq) + GIC_CPU_EOI);
-+	spin_unlock(&irq_controller_lock);
-+}
-+
- #ifdef CONFIG_SMP
- static int gic_set_cpu(unsigned int irq, const struct cpumask *mask_val)
- {
-@@ -160,6 +169,7 @@ static struct irq_chip gic_chip = {
- 	.name		= "GIC",
- 	.ack		= gic_ack_irq,
- 	.mask		= gic_mask_irq,
-+	.mask_ack	= gic_mask_ack_irq,
- 	.unmask		= gic_unmask_irq,
- #ifdef CONFIG_SMP
- 	.set_affinity	= gic_set_cpu,
+to receive updates for the input subsystem. The ad7879 update is a bit
+big to my taste but users want to use standard GPIO interface with the
+driver and we don't want to continue carrying old sysfs interface for
+another release.
+
+Changelog:
+---------
+
+David Härdeman (1):
+      Input: winbond-cir - remove dmesg spam
+
+Henrik Rydberg (2):
+      Input: add the ABS_MT_PRESSURE event
+      Input: update multi-touch protocol documentation
+
+Jon Dodgson (1):
+      Input: lifebook - add another Lifebook DMI signature
+
+Michael Hennerich (1):
+      Input: ad7879 - support auxiliary GPIOs via gpiolib
+
+
+Diffstat:
+--------
+
+ Documentation/input/multi-touch-protocol.txt |   48 +++++-
+ drivers/input/input.c                        |    1 +
+ drivers/input/misc/winbond-cir.c             |    2 +-
+ drivers/input/mouse/lifebook.c               |    6 +
+ drivers/input/touchscreen/ad7879.c           |  197 ++++++++++++++++++--------
+ include/linux/input.h                        |    1 +
+ include/linux/spi/ad7879.h                   |   12 +-
+ 7 files changed, 198 insertions(+), 69 deletions(-)
+
 -- 
-1.5.6.3
+Dmitry
 
