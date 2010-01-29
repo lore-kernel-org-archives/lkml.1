@@ -1,71 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417Ab0A2Uyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456Ab0A2VHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417Ab0A2Uyr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 15:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576Ab0A2UvJ
+	id S1755456Ab0A2VHM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 16:07:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887Ab0A2VHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 15:51:09 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42606 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752484Ab0A2UvI (ORCPT
+	Fri, 29 Jan 2010 16:07:11 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:9751 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754420Ab0A2VHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 15:51:08 -0500
-Message-Id: <20100129205004.998259643@quilx.com>
-References: <20100129204931.789743493@quilx.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 29 Jan 2010 14:49:43 -0600
-From: Christoph Lameter <cl@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Dave Chinner <david@fromorbit.com>, Christoph Lameter <clameter@sgi.com>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: akpm@linux-foundation.org
-Cc: Miklos Szeredi <miklos@szeredi.hu>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Hugh Dickins <hugh@veritas.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Filesystem: Ext2 filesystem defrag
-Content-Disposition: inline; filename=ext2-defrag
+	Fri, 29 Jan 2010 16:07:10 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=AXUh47vKHqTMNuwH9RD4oKdjLodwPG7+3dJMhKIYmtqT8hOdTpbaudaZVO2D/t4/+
+	TGe2b+VpEylASsxyJPFQg==
+Date: Fri, 29 Jan 2010 13:07:01 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, vedran.furac@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, minchan.kim@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
+In-Reply-To: <5a0e6098f900aa36993b2b7f2320f927.squirrel@webmail-b.css.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1001291258490.2938@chino.kir.corp.google.com>
+References: <f8c9aca9c98db8ae7df3ac2d7ac8d922.squirrel@webmail-b.css.fujitsu.com> <20100129162137.79b2a6d4@lxorguk.ukuu.org.uk> <c6c48fdf7f746add49bb9cc058b513ae.squirrel@webmail-b.css.fujitsu.com> <20100129163030.1109ce78@lxorguk.ukuu.org.uk>
+ <5a0e6098f900aa36993b2b7f2320f927.squirrel@webmail-b.css.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support defragmentation for ext2 filesystem inodes
+On Sat, 30 Jan 2010, KAMEZAWA Hiroyuki wrote:
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> okay...I guess the cause of the problem Vedran met came from
+> this calculation.
+> ==
+>  109         /*
+>  110          * Processes which fork a lot of child processes are likely
+>  111          * a good choice. We add half the vmsize of the children if they
+>  112          * have an own mm. This prevents forking servers to flood the
+>  113          * machine with an endless amount of children. In case a single
+>  114          * child is eating the vast majority of memory, adding only half
+>  115          * to the parents will make the child our kill candidate of
+> choice.
+>  116          */
+>  117         list_for_each_entry(child, &p->children, sibling) {
+>  118                 task_lock(child);
+>  119                 if (child->mm != mm && child->mm)
+>  120                         points += child->mm->total_vm/2 + 1;
+>  121                 task_unlock(child);
+>  122         }
+>  123
+> ==
+> This makes task launcher(the fist child of some daemon.) first victim.
 
----
- fs/ext2/super.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+That "victim", p, is passed to oom_kill_process() which does this:
 
-Index: slab-2.6/fs/ext2/super.c
-===================================================================
---- slab-2.6.orig/fs/ext2/super.c	2010-01-22 15:09:43.000000000 -0600
-+++ slab-2.6/fs/ext2/super.c	2010-01-22 16:20:46.000000000 -0600
-@@ -174,6 +174,12 @@ static void init_once(void *foo)
- 	inode_init_once(&ei->vfs_inode);
- }
- 
-+static void *ext2_get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	return fs_get_inodes(s, nr, v,
-+		offsetof(struct ext2_inode_info, vfs_inode));
-+}
-+
- static int init_inodecache(void)
- {
- 	ext2_inode_cachep = kmem_cache_create("ext2_inode_cache",
-@@ -183,6 +189,9 @@ static int init_inodecache(void)
- 					     init_once);
- 	if (ext2_inode_cachep == NULL)
- 		return -ENOMEM;
-+
-+	kmem_cache_setup_defrag(ext2_inode_cachep,
-+			ext2_get_inodes, kick_inodes);
- 	return 0;
- }
- 
+	/* Try to kill a child first */
+	list_for_each_entry(c, &p->children, sibling) {
+		if (c->mm == p->mm)
+			continue;
+		if (!oom_kill_task(c))
+			return 0;
+	}
+	return oom_kill_task(p);
 
--- 
+which prevents your example of the task launcher from getting killed 
+unless it itself is using such an egregious amount of memory that its VM 
+size has caused the heuristic to select the daemon in the first place.  
+We only look at a single level of children, and attempt to kill one of 
+those children not sharing memory with the selected task first, so your 
+example is exaggerated for dramatic value.
+
+The oom killer has been doing this for years and I haven't noticed a huge 
+surge in complaints about it killing X specifically because of that code 
+in oom_kill_process().
