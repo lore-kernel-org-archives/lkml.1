@@ -1,538 +1,391 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004Ab0A2QQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370Ab0A2QRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752004Ab0A2QQf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 11:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689Ab0A2QQX
+	id S1755370Ab0A2QRu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 11:17:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369Ab0A2QGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 11:16:23 -0500
-Received: from usul.overt.org ([204.11.33.43]:51330 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754852Ab0A2QHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 11:07:06 -0500
-Date: Fri, 29 Jan 2010 08:06:39 -0800
-From: Philip Langdale <philipl@overt.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Wolfram Sang <w.sang@pengutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pierre Ossman <pierre@ossman.eu>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-mmc@vger.kernel.org
-Subject: Re: [PATCH v3] port ricoh_mmc to pci quirk
-Message-ID: <20100129080639.3b484a59@fido2.homeip.net>
-In-Reply-To: <1264772255.4620.3.camel@maxim-laptop>
-References: <20091125085324.1ef9ae1f@fido2.homeip.net>
-	<20091125113501.1f4d42b9.akpm@linux-foundation.org>
-	<1259192401.15916.48.camel@maxim-laptop>
-	<20091125173019.74d0ddb9@fido2.homeip.net>
-	<1259279520.3991.5.camel@maxim-laptop>
-	<1259279584.3991.6.camel@maxim-laptop>
-	<20091126235551.2db699e3@fido2.homeip.net>
-	<1262964284.12577.27.camel@maxim-laptop>
-	<20100108074001.5df6c997@fido2.homeip.net>
-	<20100112154350.8fa96829.akpm@linux-foundation.org>
-	<20100113064657.GB10955@pengutronix.de>
-	<1264772255.4620.3.camel@maxim-laptop>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-slackware-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-RunX1: Yes
+	Fri, 29 Jan 2010 11:06:10 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:53041 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754340Ab0A2QFw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 11:05:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=jw1gtcWdSRZGVrCMxFwnyUI7VE/MxfEKhl2f3xCWGsoqnu12YLJuN/szSXuuYvSaAc
+         o5cTz2QbJC33awqdSv3ngtr8t8PRNf4H4bZRA1/7ugt5KJwlmnHSoPv6Stww+0S32hpc
+         kpOKCf0wrb6d2KGhZjMN7uky4f0VQmoquNBfI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Fri, 29 Jan 2010 17:05:44 +0100
+Message-Id: <20100129160544.21495.34179.sendpatchset@localhost>
+In-Reply-To: <20100129160308.21495.14120.sendpatchset@localhost>
+References: <20100129160308.21495.14120.sendpatchset@localhost>
+Subject: [PATCH 24/68] ide: change ->cable_detect method return type to 'int'
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jan 2010 15:37:35 +0200
-Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide: change ->cable_detect method return type to 'int'
 
-> Here, updated patch with your comments addressed.
-> This is also tested with real MMC card.
+Change ->cable_detect method return type to match ->cable_detect method
+used in struct ata_port_operations.
 
-Actual code gets my thumbs up.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/aec62xx.c      |    2 +-
+ drivers/ide/alim15x3.c     |    2 +-
+ drivers/ide/amd74xx.c      |    2 +-
+ drivers/ide/atiixp.c       |    2 +-
+ drivers/ide/cmd64x.c       |    2 +-
+ drivers/ide/cs5535.c       |    2 +-
+ drivers/ide/cs5536.c       |    2 +-
+ drivers/ide/hpt366.c       |    2 +-
+ drivers/ide/it8213.c       |    2 +-
+ drivers/ide/it821x.c       |    2 +-
+ drivers/ide/jmicron.c      |    2 +-
+ drivers/ide/palm_bk3710.c  |    2 +-
+ drivers/ide/pdc202xx_new.c |    2 +-
+ drivers/ide/pdc202xx_old.c |    2 +-
+ drivers/ide/piix.c         |    2 +-
+ drivers/ide/pmac.c         |    2 +-
+ drivers/ide/scc_pata.c     |    2 +-
+ drivers/ide/serverworks.c  |    2 +-
+ drivers/ide/siimage.c      |    2 +-
+ drivers/ide/sis5513.c      |    2 +-
+ drivers/ide/slc90e66.c     |    2 +-
+ drivers/ide/tc86c001.c     |    2 +-
+ drivers/ide/tx4939ide.c    |    2 +-
+ drivers/ide/via82cxxx.c    |    2 +-
+ include/linux/ide.h        |    2 +-
+ 25 files changed, 25 insertions(+), 25 deletions(-)
 
-> This adds some > 80 chars lines, but I hope that is ok.
-
-It's against the coding style and as far as I can see, the only
-lines that are > 80 are the dev_notice and DECLARE_FIXUP lines - both
-of which can be trivially split across multiple lines, so please just
-do that.
-
-Thanks,
-
---phil
-
-> ---
-> 
-> >From 9b208770b2421eae50e46d826f08a4084c2bcdb9 Mon Sep 17 00:00:00
-> >2001
-> From: Maxim Levitsky <maximlevitsky@gmail.com>
-> Date: Fri, 29 Jan 2010 15:30:46 +0200
-> Subject: [PATCH] Port ricoh_mmc to pci quirk
-> 
-> This patch solves nasty problem original driver had.
-> Original goal of the ricoh_mmc, was to disable this device because
-> then, mmc cards can be read using standard SDHCI controller,
-> thus avoiding the need in yet another driver.
-> However, the act of disablement, makes other pci functions that
-> belong to this controller (xD and memstick) shift up one level, thus
-> pci core has now wrong idea about these devices.
-> 
-> To fix this issue, this patch moves the driver into pci quirk
-> section, thus it is executed before the pci is enumerated, and
-> therefore solve that issue, also the same is preformed on resume for
-> same reasons.
-> 
-> Also regardless of the above, this way is cleaner.
-> 
-> You still need to set CONFIG_MMC_RICOH_MMC
-> to enable this quirk
-> 
-> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-> ---
->  drivers/mmc/host/Kconfig     |   10 +-
->  drivers/mmc/host/Makefile    |    1 -
->  drivers/mmc/host/ricoh_mmc.c |  262
-> ------------------------------------------
-> drivers/pci/quirks.c         |   82 +++++++++++++ 4 files changed, 85
-> insertions(+), 270 deletions(-) delete mode 100644
-> drivers/mmc/host/ricoh_mmc.c
-> 
-> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> index ce1d288..6bc3ecb 100644
-> --- a/drivers/mmc/host/Kconfig
-> +++ b/drivers/mmc/host/Kconfig
-> @@ -69,20 +69,16 @@ config MMC_SDHCI_PCI
->  	  If unsure, say N.
->  
->  config MMC_RICOH_MMC
-> -	tristate "Ricoh MMC Controller Disabler  (EXPERIMENTAL)"
-> +	bool "Ricoh MMC Controller Disabler  (EXPERIMENTAL)"
->  	depends on MMC_SDHCI_PCI
->  	help
-> -	  This selects the disabler for the Ricoh MMC Controller.
-> This
-> +	  This adds a pci quirk to disable Ricoh MMC Controller. This
->  	  proprietary controller is unnecessary because the SDHCI
-> driver supports MMC cards on the SD controller, but if it is not
->  	  disabled, it will steal the MMC cards away - rendering them
-> -	  useless. It is safe to select this driver even if you don't
-> +	  useless. It is safe to select this even if you don't
->  	  have a Ricoh based card reader.
->  
-> -
-> -	  To compile this driver as a module, choose M here:
-> -	  the module will be called ricoh_mmc.
-> -
->  	  If unsure, say Y.
->  
->  config MMC_SDHCI_OF
-> diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-> index 3d253dd..f480397 100644
-> --- a/drivers/mmc/host/Makefile
-> +++ b/drivers/mmc/host/Makefile
-> @@ -12,7 +12,6 @@ obj-$(CONFIG_MMC_IMX)		+= imxmmc.o
->  obj-$(CONFIG_MMC_MXC)		+= mxcmmc.o
->  obj-$(CONFIG_MMC_SDHCI)		+= sdhci.o
->  obj-$(CONFIG_MMC_SDHCI_PCI)	+= sdhci-pci.o
-> -obj-$(CONFIG_MMC_RICOH_MMC)	+= ricoh_mmc.o
->  obj-$(CONFIG_MMC_SDHCI_PLTFM)	+= sdhci-pltfm.o
->  obj-$(CONFIG_MMC_SDHCI_S3C)	+= sdhci-s3c.o
->  obj-$(CONFIG_MMC_WBSD)		+= wbsd.o
-> diff --git a/drivers/mmc/host/ricoh_mmc.c
-> b/drivers/mmc/host/ricoh_mmc.c deleted file mode 100644
-> index f627905..0000000
-> --- a/drivers/mmc/host/ricoh_mmc.c
-> +++ /dev/null
-> @@ -1,262 +0,0 @@
-> -/*
-> - *  ricoh_mmc.c - Dummy driver to disable the Rioch MMC controller.
-> - *
-> - *  Copyright (C) 2007 Philip Langdale, All Rights Reserved.
-> - *
-> - * This program is free software; you can redistribute it and/or
-> modify
-> - * it under the terms of the GNU General Public License as published
-> by
-> - * the Free Software Foundation; either version 2 of the License, or
-> (at
-> - * your option) any later version.
-> - */
-> -
-> -/*
-> - * This is a conceptually ridiculous driver, but it is required by
-> the way
-> - * the Ricoh multi-function chips (R5CXXX) work. These chips
-> implement
-> - * the four main memory card controllers (SD, MMC, MS, xD) and one
-> or both
-> - * of cardbus or firewire. It happens that they implement SD and MMC
-> - * support as separate controllers (and PCI functions). The linux
-> SDHCI
-> - * driver supports MMC cards but the chip detects MMC cards in
-> hardware
-> - * and directs them to the MMC controller - so the SDHCI driver
-> never sees
-> - * them. To get around this, we must disable the useless MMC
-> controller.
-> - * At that point, the SDHCI controller will start seeing them. As a
-> bonus,
-> - * a detection event occurs immediately, even if the MMC card is
-> already
-> - * in the reader.
-> - *
-> - * It seems to be the case that the relevant PCI registers to
-> deactivate the
-> - * MMC controller live on PCI function 0, which might be the cardbus
-> controller
-> - * or the firewire controller, depending on the particular chip in
-> question. As
-> - * such, it makes what this driver has to do unavoidably ugly. Such
-> is life.
-> - */
-> -
-> -#include <linux/pci.h>
-> -
-> -#define DRIVER_NAME "ricoh-mmc"
-> -
-> -static const struct pci_device_id pci_ids[] __devinitdata = {
-> -	{
-> -		.vendor		= PCI_VENDOR_ID_RICOH,
-> -		.device		= PCI_DEVICE_ID_RICOH_R5C843,
-> -		.subvendor	= PCI_ANY_ID,
-> -		.subdevice	= PCI_ANY_ID,
-> -	},
-> -	{ /* end: all zeroes */ },
-> -};
-> -
-> -MODULE_DEVICE_TABLE(pci, pci_ids);
-> -
-> -static int ricoh_mmc_disable(struct pci_dev *fw_dev)
-> -{
-> -	u8 write_enable;
-> -	u8 write_target;
-> -	u8 disable;
-> -
-> -	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
-> -		/* via RL5C476 */
-> -
-> -		pci_read_config_byte(fw_dev, 0xB7, &disable);
-> -		if (disable & 0x02) {
-> -			printk(KERN_INFO DRIVER_NAME
-> -				": Controller already disabled. " \
-> -				"Nothing to do.\n");
-> -			return -ENODEV;
-> -		}
-> -
-> -		pci_read_config_byte(fw_dev, 0x8E, &write_enable);
-> -		pci_write_config_byte(fw_dev, 0x8E, 0xAA);
-> -		pci_read_config_byte(fw_dev, 0x8D, &write_target);
-> -		pci_write_config_byte(fw_dev, 0x8D, 0xB7);
-> -		pci_write_config_byte(fw_dev, 0xB7, disable | 0x02);
-> -		pci_write_config_byte(fw_dev, 0x8E, write_enable);
-> -		pci_write_config_byte(fw_dev, 0x8D, write_target);
-> -	} else {
-> -		/* via R5C832 */
-> -
-> -		pci_read_config_byte(fw_dev, 0xCB, &disable);
-> -		if (disable & 0x02) {
-> -			printk(KERN_INFO DRIVER_NAME
-> -			       ": Controller already disabled. " \
-> -				"Nothing to do.\n");
-> -			return -ENODEV;
-> -		}
-> -
-> -		pci_read_config_byte(fw_dev, 0xCA, &write_enable);
-> -		pci_write_config_byte(fw_dev, 0xCA, 0x57);
-> -		pci_write_config_byte(fw_dev, 0xCB, disable | 0x02);
-> -		pci_write_config_byte(fw_dev, 0xCA, write_enable);
-> -	}
-> -
-> -	printk(KERN_INFO DRIVER_NAME
-> -	       ": Controller is now disabled.\n");
-> -
-> -	return 0;
-> -}
-> -
-> -static int ricoh_mmc_enable(struct pci_dev *fw_dev)
-> -{
-> -	u8 write_enable;
-> -	u8 write_target;
-> -	u8 disable;
-> -
-> -	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
-> -		/* via RL5C476 */
-> -
-> -		pci_read_config_byte(fw_dev, 0x8E, &write_enable);
-> -		pci_write_config_byte(fw_dev, 0x8E, 0xAA);
-> -		pci_read_config_byte(fw_dev, 0x8D, &write_target);
-> -		pci_write_config_byte(fw_dev, 0x8D, 0xB7);
-> -		pci_read_config_byte(fw_dev, 0xB7, &disable);
-> -		pci_write_config_byte(fw_dev, 0xB7, disable & ~0x02);
-> -		pci_write_config_byte(fw_dev, 0x8E, write_enable);
-> -		pci_write_config_byte(fw_dev, 0x8D, write_target);
-> -	} else {
-> -		/* via R5C832 */
-> -
-> -		pci_read_config_byte(fw_dev, 0xCA, &write_enable);
-> -		pci_read_config_byte(fw_dev, 0xCB, &disable);
-> -		pci_write_config_byte(fw_dev, 0xCA, 0x57);
-> -		pci_write_config_byte(fw_dev, 0xCB, disable & ~0x02);
-> -		pci_write_config_byte(fw_dev, 0xCA, write_enable);
-> -	}
-> -
-> -	printk(KERN_INFO DRIVER_NAME
-> -	       ": Controller is now re-enabled.\n");
-> -
-> -	return 0;
-> -}
-> -
-> -static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
-> -				     const struct pci_device_id *ent)
-> -{
-> -	u8 rev;
-> -	u8 ctrlfound = 0;
-> -
-> -	struct pci_dev *fw_dev = NULL;
-> -
-> -	BUG_ON(pdev == NULL);
-> -	BUG_ON(ent == NULL);
-> -
-> -	pci_read_config_byte(pdev, PCI_CLASS_REVISION, &rev);
-> -
-> -	printk(KERN_INFO DRIVER_NAME
-> -		": Ricoh MMC controller found at %s [%04x:%04x] (rev
-> %x)\n",
-> -		pci_name(pdev), (int)pdev->vendor, (int)pdev->device,
-> -		(int)rev);
-> -
-> -	while ((fw_dev =
-> -		pci_get_device(PCI_VENDOR_ID_RICOH,
-> -			PCI_DEVICE_ID_RICOH_RL5C476, fw_dev))) {
-> -		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn)
-> &&
-> -		    PCI_FUNC(fw_dev->devfn) == 0 &&
-> -		    pdev->bus == fw_dev->bus) {
-> -			if (ricoh_mmc_disable(fw_dev) != 0)
-> -				return -ENODEV;
-> -
-> -			pci_set_drvdata(pdev, fw_dev);
-> -
-> -			++ctrlfound;
-> -			break;
-> -		}
-> -	}
-> -
-> -	fw_dev = NULL;
-> -
-> -	while (!ctrlfound &&
-> -	    (fw_dev = pci_get_device(PCI_VENDOR_ID_RICOH,
-> -					PCI_DEVICE_ID_RICOH_R5C832,
-> fw_dev))) {
-> -		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn)
-> &&
-> -		    PCI_FUNC(fw_dev->devfn) == 0 &&
-> -		    pdev->bus == fw_dev->bus) {
-> -			if (ricoh_mmc_disable(fw_dev) != 0)
-> -				return -ENODEV;
-> -
-> -			pci_set_drvdata(pdev, fw_dev);
-> -
-> -			++ctrlfound;
-> -		}
-> -	}
-> -
-> -	if (!ctrlfound) {
-> -		printk(KERN_WARNING DRIVER_NAME
-> -		       ": Main Ricoh function not found. Cannot
-> disable controller.\n");
-> -		return -ENODEV;
-> -	}
-> -
-> -	return 0;
-> -}
-> -
-> -static void __devexit ricoh_mmc_remove(struct pci_dev *pdev)
-> -{
-> -	struct pci_dev *fw_dev = NULL;
-> -
-> -	fw_dev = pci_get_drvdata(pdev);
-> -	BUG_ON(fw_dev == NULL);
-> -
-> -	ricoh_mmc_enable(fw_dev);
-> -
-> -	pci_set_drvdata(pdev, NULL);
-> -}
-> -
-> -static int ricoh_mmc_suspend_late(struct pci_dev *pdev, pm_message_t
-> state) -{
-> -	struct pci_dev *fw_dev = NULL;
-> -
-> -	fw_dev = pci_get_drvdata(pdev);
-> -	BUG_ON(fw_dev == NULL);
-> -
-> -	printk(KERN_INFO DRIVER_NAME ": Suspending.\n");
-> -
-> -	ricoh_mmc_enable(fw_dev);
-> -
-> -	return 0;
-> -}
-> -
-> -static int ricoh_mmc_resume_early(struct pci_dev *pdev)
-> -{
-> -	struct pci_dev *fw_dev = NULL;
-> -
-> -	fw_dev = pci_get_drvdata(pdev);
-> -	BUG_ON(fw_dev == NULL);
-> -
-> -	printk(KERN_INFO DRIVER_NAME ": Resuming.\n");
-> -
-> -	ricoh_mmc_disable(fw_dev);
-> -
-> -	return 0;
-> -}
-> -
-> -static struct pci_driver ricoh_mmc_driver = {
-> -	.name = 	DRIVER_NAME,
-> -	.id_table =	pci_ids,
-> -	.probe = 	ricoh_mmc_probe,
-> -	.remove =	__devexit_p(ricoh_mmc_remove),
-> -	.suspend_late =	ricoh_mmc_suspend_late,
-> -	.resume_early =	ricoh_mmc_resume_early,
-> -};
-> -
-> -/*****************************************************************************\
-> -
-> *
-> *
-> - * Driver
-> init/exit                                                          *
-> -
-> *
-> *
-> -\*****************************************************************************/
-> - -static int __init ricoh_mmc_drv_init(void) -{
-> -	printk(KERN_INFO DRIVER_NAME
-> -		": Ricoh MMC Controller disabling driver\n");
-> -	printk(KERN_INFO DRIVER_NAME ": Copyright(c) Philip
-> Langdale\n"); -
-> -	return pci_register_driver(&ricoh_mmc_driver);
-> -}
-> -
-> -static void __exit ricoh_mmc_drv_exit(void)
-> -{
-> -	pci_unregister_driver(&ricoh_mmc_driver);
-> -}
-> -
-> -module_init(ricoh_mmc_drv_init);
-> -module_exit(ricoh_mmc_drv_exit);
-> -
-> -MODULE_AUTHOR("Philip Langdale <philipl@alumni.utexas.net>");
-> -MODULE_DESCRIPTION("Ricoh MMC Controller disabling driver");
-> -MODULE_LICENSE("GPL");
-> -
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index c746943..df08a2c 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -2520,6 +2520,88 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,
-> 0x150d, quirk_i82576_sriov); 
->  #endif	/* CONFIG_PCI_IOV */
->  
-> +/*
-> + * This is a quirk for Ricoh MMC controller found as a part of
-> + * multifunction chip.
-> +
-> + * This is very similar and based on ricoh_mmc driver written by
-> + * Philip Langdale. Thank you for these magic sequences.
-> + *
-> + * These chips implement the four main memory card
-> + * controllers (SD, MMC, MS, xD) and one or both
-> + * of cardbus or firewire. It happens that they implement SD and MMC
-> + * support as separate controllers (and PCI functions). The linux
-> SDHCI
-> + * driver supports MMC cards but the chip detects MMC cards in
-> hardware
-> + * and directs them to the MMC controller - so the SDHCI driver
-> never sees
-> + * them. To get around this, we must disable the useless MMC
-> controller.
-> + * At that point, the SDHCI controller will start seeing them
-> + * It seems to be the case that the relevant PCI registers to
-> deactivate the
-> + * MMC controller live on PCI function 0, which might be the cardbus
-> controller
-> + * or the firewire controller, depending on the particular chip in
-> question +
-> + * This has to be done early, because as soon as we disable the MMC
-> controller
-> + * other pci functions shift up one level, e.g. function #2 becomes
-> function
-> + * #1, and this will confuse the pci core.
-> + */
-> +
-> +#ifdef CONFIG_MMC_RICOH_MMC
-> +static void ricoh_mmc_fixup_rl5c476(struct pci_dev *dev)
-> +{
-> +	/* disable via cardbus interface */
-> +	u8 write_enable;
-> +	u8 write_target;
-> +	u8 disable;
-> +
-> +	/* disable must be done via function #0 */
-> +	if (PCI_FUNC(dev->devfn))
-> +		return;
-> +
-> +	pci_read_config_byte(dev, 0xB7, &disable);
-> +	if (disable & 0x02)
-> +		return;
-> +
-> +	pci_read_config_byte(dev, 0x8E, &write_enable);
-> +	pci_write_config_byte(dev, 0x8E, 0xAA);
-> +	pci_read_config_byte(dev, 0x8D, &write_target);
-> +	pci_write_config_byte(dev, 0x8D, 0xB7);
-> +	pci_write_config_byte(dev, 0xB7, disable | 0x02);
-> +	pci_write_config_byte(dev, 0x8E, write_enable);
-> +	pci_write_config_byte(dev, 0x8D, write_target);
-> +
-> +	dev_notice(&dev->dev, "proprietary Ricoh mmc controller
-> disabled (via cardbus function)\n");
-> +	dev_notice(&dev->dev, "MMC cards are now supported by
-> standard SDHCI controller\n"); +}
-> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_RICOH,
-> PCI_DEVICE_ID_RICOH_RL5C476, ricoh_mmc_fixup_rl5c476);
-> +DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_RICOH,
-> PCI_DEVICE_ID_RICOH_RL5C476, ricoh_mmc_fixup_rl5c476); + +static void
-> ricoh_mmc_fixup_r5c832(struct pci_dev *dev) +{
-> +	/* disable via firewire interface */
-> +	u8 write_enable;
-> +	u8 disable;
-> +
-> +	/* disable must be done via function #0 */
-> +	if (PCI_FUNC(dev->devfn))
-> +		return;
-> +
-> +	pci_read_config_byte(dev, 0xCB, &disable);
-> +
-> +	if (disable & 0x02)
-> +		return;
-> +
-> +	pci_read_config_byte(dev, 0xCA, &write_enable);
-> +	pci_write_config_byte(dev, 0xCA, 0x57);
-> +	pci_write_config_byte(dev, 0xCB, disable | 0x02);
-> +	pci_write_config_byte(dev, 0xCA, write_enable);
-> +
-> +	dev_notice(&dev->dev, "proprietary Ricoh mmc controller
-> disabled (via firewire function)\n");
-> +	dev_notice(&dev->dev, "MMC cards are now supported by
-> standard SDHCI controller\n"); +}
-> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_RICOH,
-> PCI_DEVICE_ID_RICOH_R5C832, ricoh_mmc_fixup_r5c832);
-> +DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_RICOH,
-> PCI_DEVICE_ID_RICOH_R5C832, ricoh_mmc_fixup_r5c832);
-> +#endif /*CONFIG_MMC_RICOH_MMC*/ + +
->  static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f,
->  			  struct pci_fixup *end)
->  {
-
-
-
-
---phil
+Index: b/drivers/ide/aec62xx.c
+===================================================================
+--- a/drivers/ide/aec62xx.c
++++ b/drivers/ide/aec62xx.c
+@@ -160,7 +160,7 @@ static int init_chipset_aec62xx(struct p
+ 	return 0;
+ }
+ 
+-static u8 atp86x_cable_detect(ide_hwif_t *hwif)
++static int atp86x_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+ 	u8 ata66 = 0, mask = hwif->channel ? 0x02 : 0x01;
+Index: b/drivers/ide/alim15x3.c
+===================================================================
+--- a/drivers/ide/alim15x3.c
++++ b/drivers/ide/alim15x3.c
+@@ -317,7 +317,7 @@ out:
+  *	of UDMA66 transfers. It doesn't check the drives.
+  */
+ 
+-static u8 ali_cable_detect(ide_hwif_t *hwif)
++static int ali_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+ 	u8 cbl = ATA_CBL_PATA40, tmpbyte;
+Index: b/drivers/ide/amd74xx.c
+===================================================================
+--- a/drivers/ide/amd74xx.c
++++ b/drivers/ide/amd74xx.c
+@@ -178,7 +178,7 @@ static int init_chipset_amd74xx(struct p
+ 	return 0;
+ }
+ 
+-static u8 amd_cable_detect(ide_hwif_t *hwif)
++static int amd_cable_detect(ide_hwif_t *hwif)
+ {
+ 	if ((amd_80w >> hwif->channel) & 1)
+ 		return ATA_CBL_PATA80;
+Index: b/drivers/ide/atiixp.c
+===================================================================
+--- a/drivers/ide/atiixp.c
++++ b/drivers/ide/atiixp.c
+@@ -120,7 +120,7 @@ static void atiixp_set_dma_mode(ide_hwif
+ 	spin_unlock_irqrestore(&atiixp_lock, flags);
+ }
+ 
+-static u8 atiixp_cable_detect(ide_hwif_t *hwif)
++static int atiixp_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(hwif->dev);
+ 	u8 udma_mode = 0, ch = hwif->channel;
+Index: b/drivers/ide/cmd64x.c
+===================================================================
+--- a/drivers/ide/cmd64x.c
++++ b/drivers/ide/cmd64x.c
+@@ -312,7 +312,7 @@ static int init_chipset_cmd64x(struct pc
+ 	return 0;
+ }
+ 
+-static u8 cmd64x_cable_detect(ide_hwif_t *hwif)
++static int cmd64x_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev  *dev	= to_pci_dev(hwif->dev);
+ 	u8 bmidecsr = 0, mask	= hwif->channel ? 0x02 : 0x01;
+Index: b/drivers/ide/cs5535.c
+===================================================================
+--- a/drivers/ide/cs5535.c
++++ b/drivers/ide/cs5535.c
+@@ -153,7 +153,7 @@ static void cs5535_set_pio_mode(ide_hwif
+ 	cs5535_set_speed(drive, drive->pio_mode);
+ }
+ 
+-static u8 cs5535_cable_detect(ide_hwif_t *hwif)
++static int cs5535_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+ 	u8 bit;
+Index: b/drivers/ide/cs5536.c
+===================================================================
+--- a/drivers/ide/cs5536.c
++++ b/drivers/ide/cs5536.c
+@@ -110,7 +110,7 @@ static void cs5536_program_dtc(ide_drive
+  *	Returns a cable type.
+  */
+ 
+-static u8 cs5536_cable_detect(ide_hwif_t *hwif)
++static int cs5536_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(hwif->dev);
+ 	u32 cfg;
+Index: b/drivers/ide/hpt366.c
+===================================================================
+--- a/drivers/ide/hpt366.c
++++ b/drivers/ide/hpt366.c
+@@ -1215,7 +1215,7 @@ static int init_chipset_hpt366(struct pc
+ 	return 0;
+ }
+ 
+-static u8 hpt3xx_cable_detect(ide_hwif_t *hwif)
++static int hpt3xx_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev	*dev	= to_pci_dev(hwif->dev);
+ 	struct hpt_info *info	= hpt3xx_get_info(hwif->dev);
+Index: b/drivers/ide/it8213.c
+===================================================================
+--- a/drivers/ide/it8213.c
++++ b/drivers/ide/it8213.c
+@@ -140,7 +140,7 @@ static void it8213_set_dma_mode(ide_hwif
+ 	}
+ }
+ 
+-static u8 it8213_cable_detect(ide_hwif_t *hwif)
++static int it8213_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+ 	u8 reg42h = 0;
+Index: b/drivers/ide/it821x.c
+===================================================================
+--- a/drivers/ide/it821x.c
++++ b/drivers/ide/it821x.c
+@@ -423,7 +423,7 @@ static void it821x_set_dma_mode(ide_hwif
+  *	the needed logic onboard.
+  */
+ 
+-static u8 it821x_cable_detect(ide_hwif_t *hwif)
++static int it821x_cable_detect(ide_hwif_t *hwif)
+ {
+ 	/* The reference driver also only does disk side */
+ 	return ATA_CBL_PATA80;
+Index: b/drivers/ide/jmicron.c
+===================================================================
+--- a/drivers/ide/jmicron.c
++++ b/drivers/ide/jmicron.c
+@@ -26,7 +26,7 @@ typedef enum {
+  *	Returns the cable type.
+  */
+ 
+-static u8 jmicron_cable_detect(ide_hwif_t *hwif)
++static int jmicron_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(hwif->dev);
+ 
+Index: b/drivers/ide/palm_bk3710.c
+===================================================================
+--- a/drivers/ide/palm_bk3710.c
++++ b/drivers/ide/palm_bk3710.c
+@@ -274,7 +274,7 @@ static void __devinit palm_bk3710_chipin
+ 	palm_bk3710_setpiomode(base, NULL, 1, 600, 0);
+ }
+ 
+-static u8 palm_bk3710_cable_detect(ide_hwif_t *hwif)
++static int palm_bk3710_cable_detect(ide_hwif_t *hwif)
+ {
+ 	return ATA_CBL_PATA80;
+ }
+Index: b/drivers/ide/pdc202xx_new.c
+===================================================================
+--- a/drivers/ide/pdc202xx_new.c
++++ b/drivers/ide/pdc202xx_new.c
+@@ -180,7 +180,7 @@ static void pdcnew_set_pio_mode(ide_hwif
+ 	}
+ }
+ 
+-static u8 pdcnew_cable_detect(ide_hwif_t *hwif)
++static int pdcnew_cable_detect(ide_hwif_t *hwif)
+ {
+ 	if (get_indexed_reg(hwif, 0x0b) & 0x04)
+ 		return ATA_CBL_PATA40;
+Index: b/drivers/ide/pdc202xx_old.c
+===================================================================
+--- a/drivers/ide/pdc202xx_old.c
++++ b/drivers/ide/pdc202xx_old.c
+@@ -103,7 +103,7 @@ static int pdc202xx_test_irq(ide_hwif_t
+ 	}
+ }
+ 
+-static u8 pdc2026x_cable_detect(ide_hwif_t *hwif)
++static int pdc2026x_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+ 	u16 CIS, mask = hwif->channel ? (1 << 11) : (1 << 10);
+Index: b/drivers/ide/piix.c
+===================================================================
+--- a/drivers/ide/piix.c
++++ b/drivers/ide/piix.c
+@@ -243,7 +243,7 @@ static void ich_clear_irq(ide_drive_t *d
+ 
+ #include "../ata/ata_piix.h"
+ 
+-static u8 piix_cable_detect(ide_hwif_t *hwif)
++static int piix_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(hwif->dev);
+ 	u8 reg54h = 0, mask = hwif->channel ? 0xc0 : 0x30;
+Index: b/drivers/ide/pmac.c
+===================================================================
+--- a/drivers/ide/pmac.c
++++ b/drivers/ide/pmac.c
+@@ -912,7 +912,7 @@ static int pmac_ide_do_resume(pmac_ide_h
+ 	return 0;
+ }
+ 
+-static u8 pmac_ide_cable_detect(ide_hwif_t *hwif)
++static int pmac_ide_cable_detect(ide_hwif_t *hwif)
+ {
+ 	pmac_ide_hwif_t *pmif =
+ 		(pmac_ide_hwif_t *)dev_get_drvdata(hwif->gendev.parent);
+Index: b/drivers/ide/scc_pata.c
+===================================================================
+--- a/drivers/ide/scc_pata.c
++++ b/drivers/ide/scc_pata.c
+@@ -754,7 +754,7 @@ static int __devinit scc_init_dma(ide_hw
+ 	return ide_allocate_dma_engine(hwif);
+ }
+ 
+-static u8 scc_cable_detect(ide_hwif_t *hwif)
++static int scc_cable_detect(ide_hwif_t *hwif)
+ {
+ 	return ATA_CBL_PATA80;
+ }
+Index: b/drivers/ide/serverworks.c
+===================================================================
+--- a/drivers/ide/serverworks.c
++++ b/drivers/ide/serverworks.c
+@@ -301,7 +301,7 @@ static u8 ata66_svwks_cobalt(ide_hwif_t
+ 	return ATA_CBL_PATA40;
+ }
+ 
+-static u8 svwks_cable_detect(ide_hwif_t *hwif)
++static int svwks_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+ 
+Index: b/drivers/ide/siimage.c
+===================================================================
+--- a/drivers/ide/siimage.c
++++ b/drivers/ide/siimage.c
+@@ -667,7 +667,7 @@ static void __devinit init_iops_siimage(
+  *	Check for the presence of an ATA66 capable cable on the interface.
+  */
+ 
+-static u8 sil_cable_detect(ide_hwif_t *hwif)
++static int sil_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev	= to_pci_dev(hwif->dev);
+ 	unsigned long addr	= siimage_selreg(hwif, 0);
+Index: b/drivers/ide/sis5513.c
+===================================================================
+--- a/drivers/ide/sis5513.c
++++ b/drivers/ide/sis5513.c
+@@ -508,7 +508,7 @@ static int init_chipset_sis5513(struct p
+ 
+ #include "../ata/pata_sis.h"
+ 
+-static u8 sis_cable_detect(ide_hwif_t *hwif)
++static int sis_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(hwif->dev);
+ 	u8 ata66 = 0;
+Index: b/drivers/ide/slc90e66.c
+===================================================================
+--- a/drivers/ide/slc90e66.c
++++ b/drivers/ide/slc90e66.c
+@@ -115,7 +115,7 @@ static void slc90e66_set_dma_mode(ide_hw
+ 	}
+ }
+ 
+-static u8 slc90e66_cable_detect(ide_hwif_t *hwif)
++static int slc90e66_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+ 	u8 reg47 = 0, mask = hwif->channel ? 0x01 : 0x02;
+Index: b/drivers/ide/tc86c001.c
+===================================================================
+--- a/drivers/ide/tc86c001.c
++++ b/drivers/ide/tc86c001.c
+@@ -130,7 +130,7 @@ static void tc86c001_dma_start(ide_drive
+ 	ide_dma_start(drive);
+ }
+ 
+-static u8 tc86c001_cable_detect(ide_hwif_t *hwif)
++static int tc86c001_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = to_pci_dev(hwif->dev);
+ 	unsigned long sc_base = pci_resource_start(dev, 5);
+Index: b/drivers/ide/tx4939ide.c
+===================================================================
+--- a/drivers/ide/tx4939ide.c
++++ b/drivers/ide/tx4939ide.c
+@@ -189,7 +189,7 @@ static void tx4939ide_clear_irq(ide_driv
+ 	tx4939ide_writew(ctl, base, TX4939IDE_Int_Ctl);
+ }
+ 
+-static u8 tx4939ide_cable_detect(ide_hwif_t *hwif)
++static int tx4939ide_cable_detect(ide_hwif_t *hwif)
+ {
+ 	void __iomem *base = TX4939IDE_BASE(hwif);
+ 
+Index: b/drivers/ide/via82cxxx.c
+===================================================================
+--- a/drivers/ide/via82cxxx.c
++++ b/drivers/ide/via82cxxx.c
+@@ -352,7 +352,7 @@ static int init_chipset_via82cxxx(struct
+ 
+ #include "../ata/pata_via.h"
+ 
+-static u8 via82cxxx_cable_detect(ide_hwif_t *hwif)
++static int via82cxxx_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(hwif->dev);
+ 	struct ide_host *host = pci_get_drvdata(pdev);
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -644,7 +644,7 @@ struct ide_port_ops {
+ 	u8	(*mdma_filter)(ide_drive_t *);
+ 	u8	(*udma_filter)(ide_drive_t *);
+ 
+-	u8	(*cable_detect)(struct hwif_s *);
++	int	(*cable_detect)(struct hwif_s *);
+ };
+ 
+ struct ide_dma_ops {
