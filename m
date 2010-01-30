@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480Ab0A3UrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576Ab0A3Ura@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480Ab0A3UrY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 15:47:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397Ab0A3UrV
+	id S1754576Ab0A3Ura (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 15:47:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488Ab0A3Ur1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 15:47:21 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:43920 "EHLO
+	Sat, 30 Jan 2010 15:47:27 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:43930 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754228Ab0A3UrS (ORCPT
+	with ESMTP id S1754410Ab0A3Ur0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 15:47:18 -0500
+	Sat, 30 Jan 2010 15:47:26 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <greg@kroah.com>
@@ -17,9 +17,9 @@ Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, linux-kernel@vger.kernel.org,
        Sam Ravnborg <sam@ravnborg.org>, Rusty Russell <rusty@rustcorp.com.au>,
        Sean MacLennan <smaclennan@pikatech.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 4/7] modpost: pass around const struct sectioncheck * instead of enum mismatch
-Date: Sat, 30 Jan 2010 21:46:49 +0100
-Message-Id: <1264884412-6173-4-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 1/7] modpost: members of *driver structs should not point to __init functions
+Date: Sat, 30 Jan 2010 21:46:46 +0100
+Message-Id: <1264884412-6173-1-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100130204425.GA16345@pengutronix.de>
 References: <20100130204425.GA16345@pengutronix.de>
@@ -34,73 +34,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This prepares having a per-check whitelist of symbol names.
+Either the functions referred to in a driver struct should live in
+.devinit or the driver should be registered using platform_driver_probe
+(or equivalent for different driver types) with ->probe being NULL.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- scripts/mod/modpost.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
+ scripts/mod/modpost.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 598d54a..3f0380b 100644
+index 2092361..713b62e 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -933,7 +933,8 @@ const struct sectioncheck sectioncheck[] = {
- }
- };
- 
--static int section_mismatch(const char *fromsec, const char *tosec)
-+static const struct sectioncheck *section_mismatch(
-+		const char *fromsec, const char *tosec)
- {
- 	int i;
- 	int elems = sizeof(sectioncheck) / sizeof(struct sectioncheck);
-@@ -942,10 +943,10 @@ static int section_mismatch(const char *fromsec, const char *tosec)
- 	for (i = 0; i < elems; i++) {
- 		if (match(fromsec, check->fromsec) &&
- 		    match(tosec, check->tosec))
--			return check->mismatch;
-+			return check;
- 		check++;
- 	}
--	return NO_MISMATCH;
-+	return NULL;
- }
- 
- /**
-@@ -1158,7 +1159,8 @@ static int is_function(Elf_Sym *sym)
-  * Try to find symbols near it so user can find it.
-  * Check whitelist before warning - it may be a false positive.
-  */
--static void report_sec_mismatch(const char *modname, enum mismatch mismatch,
-+static void report_sec_mismatch(const char *modname,
-+				const struct sectioncheck *mismatch,
-                                 const char *fromsec,
-                                 unsigned long long fromaddr,
-                                 const char *fromsym,
-@@ -1189,7 +1191,7 @@ static void report_sec_mismatch(const char *modname, enum mismatch mismatch,
- 	     modname, fromsec, fromaddr, from, fromsym, from_p, to, tosec,
- 	     tosym, to_p);
- 
--	switch (mismatch) {
-+	switch (mismatch->mismatch) {
- 	case TEXT_TO_ANY_INIT:
- 		fprintf(stderr,
- 		"The function %s%s() references\n"
-@@ -1289,11 +1291,11 @@ static void check_section_mismatch(const char *modname, struct elf_info *elf,
-                                    Elf_Rela *r, Elf_Sym *sym, const char *fromsec)
- {
- 	const char *tosec;
--	enum mismatch mismatch;
-+	const struct sectioncheck *mismatch;
- 
- 	tosec = sec_name(elf, sym->st_shndx);
- 	mismatch = section_mismatch(fromsec, tosec);
--	if (mismatch != NO_MISMATCH) {
-+	if (mismatch) {
- 		Elf_Sym *to;
- 		Elf_Sym *from;
- 		const char *tosym;
+@@ -961,7 +961,7 @@ static int section_mismatch(const char *fromsec, const char *tosec)
+  * Pattern 2:
+  *   Many drivers utilise a *driver container with references to
+  *   add, remove, probe functions etc.
+- *   These functions may often be marked __init and we do not want to
++ *   These functions may often be marked __devinit and we do not want to
+  *   warn here.
+  *   the pattern is identified by:
+  *   tosec   = init or exit section
 -- 
 1.6.6
 
