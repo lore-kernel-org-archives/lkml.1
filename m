@@ -1,130 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327Ab0A3JjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118Ab0A3JxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327Ab0A3JjG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 04:39:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214Ab0A3JjB
+	id S1753118Ab0A3JxW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 04:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877Ab0A3JxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 04:39:01 -0500
-Received: from mga14.intel.com ([143.182.124.37]:23468 "EHLO mga14.intel.com"
+	Sat, 30 Jan 2010 04:53:22 -0500
+Received: from mga01.intel.com ([192.55.52.88]:46174 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753052Ab0A3Jik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 04:38:40 -0500
+	id S1752600Ab0A3JxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 04:53:21 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="238540078"
-Message-Id: <20100130093703.718660392@intel.com>
+X-IronPort-AV: E=Sophos;i="4.49,373,1262592000"; 
+   d="scan'208";a="768609401"
+Message-Id: <20100130094957.560789869@intel.com>
 User-Agent: quilt/0.48-1
-Date: Sat, 30 Jan 2010 17:25:10 +0800
+Date: Sat, 30 Jan 2010 17:45:16 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-to: Andi Kleen <andi@firstfloor.org>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Greg KH <greg@kroah.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Wu Fengguang <fengguang.wu@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-cc: Linux Memory Management List <linux-mm@kvack.org>
-Subject: [PATCH 1/4] hwpoison: prevent /dev/kmem from accessing hwpoison pages
-References: <20100130092509.793222613@intel.com>
-Content-Disposition: inline; filename=hwpoison-dev-kmem.patch
+Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       Eric Paris <eparis@redhat.com>
+cc: Al Viro <viro@ZenIV.linux.org.uk>
+cc: <linux-fsdevel@vger.kernel.org>
+Subject: [PATCH 1/5] fanotify: fix FMODE_NONOTIFY bit number
+References: <20100130094515.475881280@intel.com>
+Content-Disposition: inline; filename=fanotify-bit-fix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When /dev/kmem read()/write() encounters hwpoison page, stop it
-and return the amount of work done till now, or return -EIO if
-nothing have been copied.
+FMODE_NONOTIFY=0x800000 collides with __O_SYNC in sparc,
+so change it to 0x1000000.
 
-For simplicity, hwpoison pages accessed by vmalloc address are
-siliently skipped, instead of returning -EIO.
-
-CC: Greg KH <greg@kroah.com>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Christoph Lameter <cl@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Tejun Heo <tj@kernel.org>
-CC: Nick Piggin <npiggin@suse.de>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Eric Paris <eparis@redhat.com>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- drivers/char/mem.c |   18 ++++++++++++++----
- mm/vmalloc.c       |    4 ++--
- 2 files changed, 16 insertions(+), 6 deletions(-)
+ include/asm-generic/fcntl.h |    2 +-
+ include/linux/fs.h          |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- linux-mm.orig/drivers/char/mem.c	2010-01-30 17:14:12.000000000 +0800
-+++ linux-mm/drivers/char/mem.c	2010-01-30 17:20:18.000000000 +0800
-@@ -426,6 +426,9 @@ static ssize_t read_kmem(struct file *fi
- 			 */
- 			kbuf = xlate_dev_kmem_ptr((char *)p);
+--- linux-mm.orig/include/asm-generic/fcntl.h	2010-01-13 10:16:27.000000000 +0800
++++ linux-mm/include/asm-generic/fcntl.h	2010-01-30 17:40:48.000000000 +0800
+@@ -5,7 +5,7 @@
  
-+			if (unlikely(virt_addr_valid(kbuf) &&
-+				     PageHWPoison(virt_to_page(kbuf))))
-+				return -EIO;
- 			if (copy_to_user(buf, kbuf, sz))
- 				return -EFAULT;
- 			buf += sz;
-@@ -471,6 +474,7 @@ do_write_kmem(unsigned long p, const cha
- {
- 	ssize_t written, sz;
- 	unsigned long copied;
-+	int err = 0;
+ /*
+  * FMODE_EXEC is 0x20
+- * FMODE_NONOTIFY is 0x800000
++ * FMODE_NONOTIFY is 0x1000000
+  * These cannot be used by userspace O_* until internal and external open
+  * flags are split.
+  * -Eric Paris
+--- linux-mm.orig/include/linux/fs.h	2010-01-30 17:14:14.000000000 +0800
++++ linux-mm/include/linux/fs.h	2010-01-30 17:41:04.000000000 +0800
+@@ -91,7 +91,7 @@ struct inodes_stat_t {
+ #define FMODE_RANDOM		((__force fmode_t)0x1000)
  
- 	written = 0;
- #ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
-@@ -497,13 +501,19 @@ do_write_kmem(unsigned long p, const cha
- 		 */
- 		ptr = xlate_dev_kmem_ptr((char *)p);
+ /* File was opened by fanotify and shouldn't generate fanotify events */
+-#define FMODE_NONOTIFY		((__force fmode_t)0x800000)
++#define FMODE_NONOTIFY		((__force fmode_t)0x1000000)
  
-+		if (unlikely(virt_addr_valid(ptr) &&
-+			     PageHWPoison(virt_to_page(ptr)))) {
-+			err = -EIO;
-+			break;
-+		}
-+
- 		copied = copy_from_user(ptr, buf, sz);
- 		if (copied) {
- 			written += sz - copied;
--			if (written)
--				break;
--			return -EFAULT;
-+			err = -EFAULT;
-+			break;
- 		}
-+
- 		buf += sz;
- 		p += sz;
- 		count -= sz;
-@@ -511,7 +521,7 @@ do_write_kmem(unsigned long p, const cha
- 	}
- 
- 	*ppos += written;
--	return written;
-+	return written ? written : err;
- }
- 
- 
---- linux-mm.orig/mm/vmalloc.c	2010-01-30 17:14:15.000000000 +0800
-+++ linux-mm/mm/vmalloc.c	2010-01-30 17:20:18.000000000 +0800
-@@ -1669,7 +1669,7 @@ static int aligned_vread(char *buf, char
- 		 * interface, rarely used. Instead of that, we'll use
- 		 * kmap() and get small overhead in this access function.
- 		 */
--		if (p) {
-+		if (p && !PageHWPoison(p)) {
- 			/*
- 			 * we can expect USER0 is not used (see vread/vwrite's
- 			 * function description)
-@@ -1708,7 +1708,7 @@ static int aligned_vwrite(char *buf, cha
- 		 * interface, rarely used. Instead of that, we'll use
- 		 * kmap() and get small overhead in this access function.
- 		 */
--		if (p) {
-+		if (p && !PageHWPoison(p)) {
- 			/*
- 			 * we can expect USER0 is not used (see vread/vwrite's
- 			 * function description)
+ /*
+  * The below are the various read and write types that we support. Some of
 
 
