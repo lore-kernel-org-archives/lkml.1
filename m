@@ -1,221 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628Ab0A3Uri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751070Ab0A3Uru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628Ab0A3Uri (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 15:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316Ab0A3Urg
+	id S1751070Ab0A3Uru (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 15:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316Ab0A3Urq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 15:47:36 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:43937 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754488Ab0A3Ure (ORCPT
+	Sat, 30 Jan 2010 15:47:46 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:47370 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753886Ab0A3Urm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 15:47:34 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Greg KH <greg@kroah.com>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Sean MacLennan <smaclennan@pikatech.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 6/7] modpost: make symbol white list a per mismatch type variable
-Date: Sat, 30 Jan 2010 21:46:51 +0100
-Message-Id: <1264884412-6173-6-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <20100130204425.GA16345@pengutronix.de>
-References: <20100130204425.GA16345@pengutronix.de>
+	Sat, 30 Jan 2010 15:47:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sXn+b5ix6TE/3BTyRXykfDLUg03O9P/J79YjnUuCBalfH7KueI+wg8ZtVAK/Hzxasd
+         wcJcypNzDjlaH/6qk/K+sWfJMPLV6mDlgzfUHOUSr6PtiZXm7aJj7mM486dIAj28r8UU
+         38hayU8khkLXonc67b6AQ+wfhflfFNGP/8Krg=
+Date: Sat, 30 Jan 2010 21:47:38 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [RFC PATCH 05/10] ftrace: Drop buffer check in function
+	profiler callbacks
+Message-ID: <20100130204737.GF5675@nowhere>
+References: <1264122982-1553-1-git-send-regression-fweisbec@gmail.com> <1264122982-1553-6-git-send-regression-fweisbec@gmail.com> <4B5D3779.2040807@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B5D3779.2040807@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- scripts/mod/modpost.c |   49 +++++++++++++++++++++++++++++++------------------
- 1 files changed, 31 insertions(+), 18 deletions(-)
+On Mon, Jan 25, 2010 at 02:17:29PM +0800, Lai Jiangshan wrote:
+> Frederic Weisbecker wrote:
+> > Drop the null check on hlist->hash. It is wasteful because
+> > we don't register the tracer if the buffer allocation failed,
+> > and the memory barrier in register_ftrace_graph() ensure it
+> > is visible to the callbacks right away.
+> > 
+> 
+> When it is on a cpu which is just came up, hlist->hash is not
+> allocated either.
+> 
+> See ftrace_profile_init().
+> 
+> function_profile_call(), profile_graph_entry() and profile_graph_return()
+> on a just online cpu are wasteful. I think we need call
+> ftrace_profile_init_cpu()(if ftrace_profile_enabled=1) when CPU_UP_PREPARE.
 
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index a94bd10..5dbe4db 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -817,18 +817,15 @@ static const char *data_sections[] = { DATA_SECTIONS, NULL };
- 
- 
- /* symbols in .data that may refer to init/exit sections */
--static const char *symbol_white_list[] =
--{
--	"*driver",
--	"*_template", /* scsi uses *_template a lot */
--	"*_timer",    /* arm uses ops structures named _timer a lot */
--	"*_sht",      /* scsi also used *_sht to some extent */
--	"*_ops",
--	"*_probe",
--	"*_probe_one",
--	"*_console",
--	NULL
--};
-+#define DEFAULT_SYMBOL_WHITE_LIST					\
-+	"*driver",							\
-+	"*_template", /* scsi uses *_template a lot */			\
-+	"*_timer",    /* arm uses ops structures named _timer a lot */	\
-+	"*_sht",      /* scsi also used *_sht to some extent */		\
-+	"*_ops",							\
-+	"*_probe",							\
-+	"*_probe_one",							\
-+	"*_console"
- 
- static const char *head_sections[] = { ".head.text*", NULL };
- static const char *linker_symbols[] =
-@@ -850,6 +847,7 @@ struct sectioncheck {
- 	const char *fromsec[20];
- 	const char *tosec[20];
- 	enum mismatch mismatch;
-+	const char *symbol_white_list[20];
- };
- 
- const struct sectioncheck sectioncheck[] = {
-@@ -860,75 +858,88 @@ const struct sectioncheck sectioncheck[] = {
- 	.fromsec = { TEXT_SECTIONS, NULL },
- 	.tosec   = { ALL_INIT_SECTIONS, NULL },
- 	.mismatch = TEXT_TO_ANY_INIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- {
- 	.fromsec = { DATA_SECTIONS, NULL },
- 	.tosec   = { ALL_INIT_SECTIONS, NULL },
- 	.mismatch = DATA_TO_ANY_INIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- {
- 	.fromsec = { TEXT_SECTIONS, NULL },
- 	.tosec   = { ALL_EXIT_SECTIONS, NULL },
- 	.mismatch = TEXT_TO_ANY_EXIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- {
- 	.fromsec = { DATA_SECTIONS, NULL },
- 	.tosec   = { ALL_EXIT_SECTIONS, NULL },
- 	.mismatch = DATA_TO_ANY_EXIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- /* Do not reference init code/data from devinit/cpuinit/meminit code/data */
- {
- 	.fromsec = { ALL_XXXINIT_SECTIONS, NULL },
- 	.tosec   = { INIT_SECTIONS, NULL },
- 	.mismatch = XXXINIT_TO_SOME_INIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- /* Do not reference cpuinit code/data from meminit code/data */
- {
- 	.fromsec = { MEM_INIT_SECTIONS, NULL },
- 	.tosec   = { CPU_INIT_SECTIONS, NULL },
- 	.mismatch = XXXINIT_TO_SOME_INIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- /* Do not reference meminit code/data from cpuinit code/data */
- {
- 	.fromsec = { CPU_INIT_SECTIONS, NULL },
- 	.tosec   = { MEM_INIT_SECTIONS, NULL },
- 	.mismatch = XXXINIT_TO_SOME_INIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- /* Do not reference exit code/data from devexit/cpuexit/memexit code/data */
- {
- 	.fromsec = { ALL_XXXEXIT_SECTIONS, NULL },
- 	.tosec   = { EXIT_SECTIONS, NULL },
- 	.mismatch = XXXEXIT_TO_SOME_EXIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- /* Do not reference cpuexit code/data from memexit code/data */
- {
- 	.fromsec = { MEM_EXIT_SECTIONS, NULL },
- 	.tosec   = { CPU_EXIT_SECTIONS, NULL },
- 	.mismatch = XXXEXIT_TO_SOME_EXIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- /* Do not reference memexit code/data from cpuexit code/data */
- {
- 	.fromsec = { CPU_EXIT_SECTIONS, NULL },
- 	.tosec   = { MEM_EXIT_SECTIONS, NULL },
- 	.mismatch = XXXEXIT_TO_SOME_EXIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- /* Do not use exit code/data from init code */
- {
- 	.fromsec = { ALL_INIT_SECTIONS, NULL },
- 	.tosec   = { ALL_EXIT_SECTIONS, NULL },
- 	.mismatch = ANY_INIT_TO_ANY_EXIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- /* Do not use init code/data from exit code */
- {
- 	.fromsec = { ALL_EXIT_SECTIONS, NULL },
- 	.tosec   = { ALL_INIT_SECTIONS, NULL },
- 	.mismatch = ANY_EXIT_TO_ANY_INIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- },
- /* Do not export init/exit functions or data */
- {
- 	.fromsec = { "__ksymtab*", NULL },
- 	.tosec   = { INIT_SECTIONS, EXIT_SECTIONS, NULL },
--	.mismatch = EXPORT_TO_INIT_EXIT
-+	.mismatch = EXPORT_TO_INIT_EXIT,
-+	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
- }
- };
- 
-@@ -985,7 +996,8 @@ static const struct sectioncheck *section_mismatch(
-  *   refsymname = __init_begin, _sinittext, _einittext
-  *
-  **/
--static int secref_whitelist(const char *fromsec, const char *fromsym,
-+static int secref_whitelist(const struct sectioncheck *mismatch,
-+			    const char *fromsec, const char *fromsym,
- 			    const char *tosec, const char *tosym)
- {
- 	/* Check for pattern 1 */
-@@ -997,7 +1009,7 @@ static int secref_whitelist(const char *fromsec, const char *fromsym,
- 	/* Check for pattern 2 */
- 	if (match(tosec, init_exit_sections) &&
- 	    match(fromsec, data_sections) &&
--	    match(fromsym, symbol_white_list))
-+	    match(fromsym, mismatch->symbol_white_list))
- 		return 0;
- 
- 	/* Check for pattern 3 */
-@@ -1202,7 +1214,7 @@ static void report_sec_mismatch(const char *modname,
- 		fromsym, sec2annotation(tosec), tosym);
- 		break;
- 	case DATA_TO_ANY_INIT: {
--		const char **s = symbol_white_list;
-+		const char *const *s = mismatch->symbol_white_list;
- 		fprintf(stderr,
- 		"The variable %s references\n"
- 		"the %s %s%s%s\n"
-@@ -1223,7 +1235,7 @@ static void report_sec_mismatch(const char *modname,
- 		fromsym, to, to, tosym, to_p, sec2annotation(tosec), tosym);
- 		break;
- 	case DATA_TO_ANY_EXIT: {
--		const char **s = symbol_white_list;
-+		const char *const *s = mismatch->symbol_white_list;
- 		fprintf(stderr,
- 		"The variable %s references\n"
- 		"the %s %s%s%s\n"
-@@ -1304,7 +1316,8 @@ static void check_section_mismatch(const char *modname, struct elf_info *elf,
- 		tosym = sym_name(elf, to);
- 
- 		/* check whitelist - we may ignore it */
--		if (secref_whitelist(fromsec, fromsym, tosec, tosym)) {
-+		if (secref_whitelist(mismatch,
-+					fromsec, fromsym, tosec, tosym)) {
- 			report_sec_mismatch(modname, mismatch,
- 			   fromsec, r->r_offset, fromsym,
- 			   is_function(from), tosec, tosym,
--- 
-1.6.6
+
+
+May be yeah, or perhaps we should play with cpu_possible_mask()
+instead of cpu_online. Whatever, the patch is also buggy for the reasons
+given by Steve, I'm going to drop it until we have a sane implementation
+of synchronize_preempted_tasks().
 
