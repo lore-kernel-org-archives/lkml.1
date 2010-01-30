@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888Ab0A3PM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157Ab0A3PYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888Ab0A3PM6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 10:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674Ab0A3PM4
+	id S1754157Ab0A3PYz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 10:24:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115Ab0A3PYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 10:12:56 -0500
-Received: from mail1.radix.net ([207.192.128.31]:65052 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753057Ab0A3PM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 10:12:56 -0500
-Subject: Re: [PATCH] cx25840: Fix composite detection.
-From: Andy Walls <awalls@radix.net>
-To: Kusanagi Kouichi <slash@ac.auone-net.jp>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+	Sat, 30 Jan 2010 10:24:54 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:57254 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754112Ab0A3PYx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 10:24:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=i4o9mXgJFqmD0YSVq67MVZL4aQLYXbbxKm9wn1rymV8gNM1NNcyCkx8OenpWFGtDNz
+         H0I2J7kcdIVZ7WwDO73+8uVLLOHi36+VqSibSRMbDAkDHAIStZBxuGeMs/Cz+PJCJIme
+         yd0Doyt4ciduKRMyRI4xyjjpypqvfQGHbb86Q=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 00/68] ide2libata
+Date: Sat, 30 Jan 2010 16:24:10 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20100110003117.30E3C15C033@msa104.auone-net.jp>
-References: <20100110003117.30E3C15C033@msa104.auone-net.jp>
-Content-Type: text/plain
-Date: Sat, 30 Jan 2010 10:12:28 -0500
-Message-Id: <1264864348.4748.16.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+References: <20100129160308.21495.14120.sendpatchset@localhost> <4B6355DF.9050001@garzik.org> <20100129232540.41f6c4f6@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100129232540.41f6c4f6@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Message-Id: <201001301624.10174.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-10 at 09:31 +0900, Kusanagi Kouichi wrote:
-> If CX25840_VIN1_CH1 and the like is used, input is not detected as composite.
-> 
-> Signed-off-by: Kusanagi Kouichi <slash@ac.auone-net.jp>
+On Saturday 30 January 2010 12:25:40 am Alan Cox wrote:
 
-This patch is fine for fixing the identified problem.  Thanks.
+> So I think its an extremely useful exercise to figure out what subtle
+> differences there are between the drivers. It's not then a trivial
+> assumption that they can just be pasted over. The include stuff though is
 
-Reviewed-by: Andy Walls <awalls@radix.net>
-Acked-by: Andy Walls <awalls@radix.net>
+Fully agreed, that is why a fair deal of review work went into making
+sure that porting of a each driver to ide2libata doesn't cause functionality
+changes.
 
-Note: I have not reviewed the correctness of the previous patch that
-added component video input.  Not to say that it is right or wrong, just
-that I have not reviewed it.
+> too ugly to merge even if its an excellent research project to identify
+> the differences and quirks.
 
+Well, looks acceptable to me when the alternative is a duplicated code
+(though I don't insists on getting it merged anyway)..
 
-I really need to streamline this set_input() function in cx25840-core.c
-module to be more like this version of set_input() the cx18-av-core.c
-file:
-
-http://linuxtv.org/hg/~awalls/cx18-pvr2100-component/file/9d3394f49a90/linux/drivers/media/video/cx18/cx18-av-core.c#l570
-
-because the logic in the former is really getting convoluted, making
-bugs hard to spot.
-
-Regards,
-Andy
-
-
-> ---
->  drivers/media/video/cx25840/cx25840-core.c |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/media/video/cx25840/cx25840-core.c b/drivers/media/video/cx25840/cx25840-core.c
-> index 385ecd5..764c811 100644
-> --- a/drivers/media/video/cx25840/cx25840-core.c
-> +++ b/drivers/media/video/cx25840/cx25840-core.c
-> @@ -734,10 +734,8 @@ static int set_input(struct i2c_client *client, enum cx25840_video_input vid_inp
->  		v4l_dbg(1, cx25840_debug, client, "vid_input 0x%x\n",
->  			vid_input);
->  		reg = vid_input & 0xff;
-> -		if ((vid_input & CX25840_SVIDEO_ON) == CX25840_SVIDEO_ON)
-> -			is_composite = 0;
-> -		else if ((vid_input & CX25840_COMPONENT_ON) == 0)
-> -			is_composite = 1;
-> +		is_composite = !is_component &&
-> +			((vid_input & CX25840_SVIDEO_ON) != CX25840_SVIDEO_ON);
->  
->  		v4l_dbg(1, cx25840_debug, client, "mux cfg 0x%x comp=%d\n",
->  			reg, is_composite);
-
+--
+Bartlomiej Zolnierkiewicz
