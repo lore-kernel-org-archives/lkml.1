@@ -1,72 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360Ab0A3Wxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671Ab0A3Wx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360Ab0A3Wxq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 17:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978Ab0A3Wxp
+	id S1754671Ab0A3Wx5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 17:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427Ab0A3Wxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 17:53:45 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:36895 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181Ab0A3Wxo (ORCPT
+	Sat, 30 Jan 2010 17:53:55 -0500
+Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:62760 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754563Ab0A3Wxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 17:53:44 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:content-id:x-system-of-record;
-	b=s1r2HRxts0wVmqfWrqkWqvcknfBIr7zWbCkTzO1pBmzCgQyv5AI98EcX/sL5l7/5q
-	DfjB5ZKibQeGGrEN0rxcw==
-Date: Sat, 30 Jan 2010 14:53:36 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: vedran.furac@gmail.com
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, minchan.kim@gmail.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
-In-Reply-To: <4B642A40.1020709@gmail.com>
-Message-ID: <alpine.DEB.2.00.1001301444480.16189@chino.kir.corp.google.com>
-References: <f8c9aca9c98db8ae7df3ac2d7ac8d922.squirrel@webmail-b.css.fujitsu.com> <20100129162137.79b2a6d4@lxorguk.ukuu.org.uk> <c6c48fdf7f746add49bb9cc058b513ae.squirrel@webmail-b.css.fujitsu.com> <20100129163030.1109ce78@lxorguk.ukuu.org.uk>
- <5a0e6098f900aa36993b2b7f2320f927.squirrel@webmail-b.css.fujitsu.com> <alpine.DEB.2.00.1001291258490.2938@chino.kir.corp.google.com> <4B642A40.1020709@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 30 Jan 2010 17:53:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
+	:date:message-id:mime-version:content-type; q=dns; s=sasl; b=fCc
+	56m11bNPAs51ws6oHSd96Dd9i6+rcBSPjqmWGEH/upt5h4nT8hEdajV8XuirqXwj
+	/SNbWOkm1HvRXVk4kYeDSKjRsuXeO0S+tNIsa4Qty+fOj+ws+k868FcKbojyvthw
+	rHvXIxS9RJSR5GgCPmitsPRJLAW3YJjRNPl2NG9A=
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] Git 1.7.0.rc1
+From: Junio C Hamano <gitster@pobox.com>
+Date: Sat, 30 Jan 2010 14:53:34 -0800
+Message-ID: <7vaavvi4r5.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Content-ID: <alpine.DEB.2.00.1001301445031.16189@chino.kir.corp.google.com>
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: 506D945E-0DF2-11DF-BE10-6AF7ED7EF46B-77302942!a-pb-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 Jan 2010, Vedran Furac wrote:
+A release candidate Git 1.7.0.rc1 is available at the usual places
+for testing:
 
-> > The oom killer has been doing this for years and I haven't noticed a huge 
-> > surge in complaints about it killing X specifically because of that code 
-> > in oom_kill_process().
-> 
-> Well you said it yourself, you won't see a surge because "oom killer has
-> been doing this *for years*". So you'll have a more/less constant number
-> of complains over the years. Just google for: linux, random, kill, memory;
-> 
+  http://www.kernel.org/pub/software/scm/git/
 
-You snipped the code segment where I demonstrated that the selected task 
-for oom kill is not necessarily the one chosen to die: if there is a child 
-with disjoint memory that is killable, it will be selected instead.  If 
-Xorg or sshd is being chosen for kill, then you should investigate why 
-that is, but there is nothing random about how the oom killer chooses 
-tasks to kill.
+  git-1.7.0.rc1.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.7.0.rc1.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.7.0.rc1.tar.{gz,bz2}		(preformatted docs)
 
-The facts that you're completely ignoring are that changing the heuristic 
-baseline to rss is not going to prevent Xorg or sshd from being selected 
-(in fact, I even showed that it makes Xorg _more_ preferrable when I 
-reviewed the patch), and you have complete power of disabling oom killing 
-for selected tasks and that trait is inheritable to children.
+The RPM binary packages for a few architectures are found in:
 
-I agree that we can do a better job than needlessly killing innocent tasks 
-when we have a lowmem oom.  I suggested killing current in such a scenario 
-since ZONE_DMA memory was not reclaimable (and, soon, not migratable) and 
-all memory is pinned for such purposes.  However, saying we need to change 
-the baseline for that particular case and completely misinterpret the 
-oom_adj values for all system-wide tasks is simply not an option.  And 
-when that point is raised, it doesn't help for people to take their ball 
-and go home if their motivation is to improve the oom killer.
+  testing/git-*-1.7.0.rc1-1.fc11.$arch.rpm	(RPM)
+
+
+Git v1.7.0 Release Notes (draft)
+================================
+
+Notes on behaviour change
+-------------------------
+
+ * "git push" into a branch that is currently checked out (i.e. pointed by
+   HEAD in a repository that is not bare) is refused by default.
+
+   Similarly, "git push $there :$killed" to delete the branch $killed
+   in a remote repository $there, when $killed branch is the current
+   branch pointed at by its HEAD, will be refused by default.
+
+   Setting the configuration variables receive.denyCurrentBranch and
+   receive.denyDeleteCurrent to 'ignore' in the receiving repository
+   can be used to override these safety features.
+
+ * "git send-email" does not make deep threads by default when sending a
+   patch series with more than two messages.  All messages will be sent
+   as a reply to the first message, i.e. cover letter.
+
+   It has been possible to configure send-email to send "shallow thread"
+   by setting sendemail.chainreplyto configuration variable to false.  The
+   only thing this release does is to change the default when you haven't
+   configured that variable.
+
+ * "git status" is not "git commit --dry-run" anymore.  This change does
+   not affect you if you run the command without pathspec.
+
+ * "git diff" traditionally treated various "ignore whitespace" options
+   only as a way to filter the patch output.  "git diff --exit-code -b"
+   exited with non-zero status even if all changes were about changing the
+   ammount of whitespace and nothing else.  and "git diff -b" showed the
+   "diff --git" header line for such a change without patch text.
+
+   In this release, the "ignore whitespaces" options affect the semantics
+   of the diff operation.  A change that does not affect anything but
+   whitespaces is reported with zero exit status when run with
+   --exit-code, and there is no "diff --git" header for such a change.
+
+
+Updates since v1.6.6
+--------------------
+
+(subsystems)
+
+ * "git fast-import" updates; adds "option" and "feature" to detect the
+   mismatch between fast-import and the frontends that produce the input
+   stream.
+
+ * "git svn" support of subversion "merge tickets" and miscellaneous fixes.
+
+ * "gitk" updates.
+
+(portability)
+
+ * Some more MSVC portability patches for msysgit port.
+
+ * Minimum Pthreads emulation for msysgit port.
+
+(performance)
+
+ * More performance improvement patches for msysgit port.
+
+(usability, bells and whistles)
+
+ * More commands learned "--quiet" and "--[no-]progress" options.
+
+ * Various commands given by the end user (e.g. diff.type.textconv,
+   and GIT_EDITOR) can be specified with command line arguments.  E.g. it
+   is now possible to say "[diff "utf8doc"] textconv = nkf -w".
+
+ * "sparse checkout" feature allows only part of the work tree to be
+   checked out.
+
+ * HTTP transfer can use authentication scheme other than basic
+   (i.e./e.g. digest).
+
+ * Switching from a version of superproject that used to have a submodule
+   to another version of superproject that no longer has it did not remove
+   the submodule directory when it should (namely, when you are not
+   interested in the submodule at all and didn't clone/checkout).
+
+ * A new attribute conflict-marker-size can be used to change the size of
+   the conflict markers from the default 7; this is useful when tracked
+   contents (e.g. git-merge documentation) have strings that resemble the
+   conflict markers.
+
+ * A new syntax "<branch>@{upstream}" can be used on the command line to
+   substitute the name of the "upstream" of the branch.  Missing branch
+   defaults to the current branch, so "git fetch && git merge @{upstream}"
+   will be equivalent to "git pull".
+
+ * "git branch --set-upstream" can be used to update the (surprise!) upstream
+   i.e. where the branch is supposed to pull and merge from (or rebase onto).
+
+ * "git checkout A...B" is a way to detach HEAD at the merge base between
+   A and B.
+
+ * "git checkout -m path" to reset the work tree file back into the
+   conflicted state works even when you already ran "git add path" and
+   resolved the conflicts.
+
+ * "git commit --date='<date>'" can be used to override the author date
+   just like "git commit --author='<name> <email>'" can be used to
+   override the author identity.
+
+ * "git commit --no-status" can be used to omit the listing of the index
+   and the work tree status in the editor used to prepare the log message.
+
+ * "git commit" warns a bit more aggressively until you configure user.email,
+   whose default value almost always is not (and fundamentally cannot be)
+   what you want.
+
+ * "git difftool" has been extended to make it easier to integrate it
+   with gitk.
+
+ * "git fetch --all" can now be used in place of "git remote update".
+
+ * "git grep" does not rely on external grep anymore.  It can use more than
+   one threads to accelerate the operation.
+
+ * "git grep" learned "--no-index" option, to search inside contents that
+   are not managed by git.
+
+ * "git grep" learned "--quiet" option.
+
+ * "git log" and friends learned "--glob=heads/*" syntax that is a more
+   flexible way to complement "--branches/--tags/--remotes".
+
+ * "git merge" learned to pass options specific to strategy-backends.  E.g.
+
+    - "git merge -Xsubtree=path/to/directory" can be used to tell the subtree
+      strategy how much to shift the trees explicitly.
+
+    - "git merge -Xtheirs" can be used to auto-merge as much as possible,
+      while discarding your own changes and taking merged version in
+      conflicted regions.
+
+ * "git push" learned "git push origin --delete branch", a syntactic sugar
+   for "git push origin :branch".
+
+ * "git push" learned "git push --set-upstream origin forker:forkee" that
+   lets you configure your "forker" branch to later pull from "forkee"
+   branch at "origin".
+
+ * "git rebase --onto A...B" means the history is replayed on top of the
+   merge base between A and B.
+
+ * "git rebase -i" learned new action "fixup", that squashes the change
+   but does not affect existing log message.
+
+ * "git rebase -i" also learned --autosquash option, that is useful
+   together with the new "fixup" action.
+
+ * "git remote" learned set-url subcommand, to update (surprise!) url
+   for an existing remote nickname.
+
+ * "git rerere" learned "forget path" subcommand.  Together with "git
+   checkout -m path" it will be useful when you recorded a wrong
+   resolution.
+
+ * Use of "git reset --merge" has become easier when resetting away a
+   conflicted mess left in the work tree.
+
+ * "git rerere" had rerere.autoupdate configuration but there was no way
+   to countermand it from the command line; --no-rerere-autoupdate option
+   given to "merge", "revert", etc. fixes this.
+
+ * "git status" learned "-s(hort)" output format.
+
+(developers)
+
+ * The infrastructure to build foreign SCM interface has been updated.
+
+ * Many more commands are now built-in.
+
+Fixes since v1.6.6
+------------------
+
+All of the fixes in v1.6.6.X maintenance series are included in this
+release, unless otherwise noted.
+
+ * "git branch -d branch" used to refuse deleting the branch even when
+   the branch is fully merged to its upstream branch if it is not merged
+   to the current branch.  It now deletes it in such a case.
+
+ * "git config -f <relative path>" run from a subdirectory misbehaved.
+   65807ee (builtin-config: Fix crash when using "-f <relative path>"
+   from non-root dir, 2010-01-26) may be merged to older maintenance
+   branches.
+
+ * When "git diff" is asked to compare the work tree with something,
+   it used to consider that a checked-out submodule with uncommitted
+   changes is not modified; this could cause people to forget committing
+   these changes in the submodule before committing in the superproject.
+   It now considers such a change as a modification.
+
