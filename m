@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751854Ab0A3E7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751249Ab0A3FbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751854Ab0A3E7x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 23:59:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194Ab0A3E7w
+	id S1751249Ab0A3FbT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 00:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117Ab0A3FbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 23:59:52 -0500
-Received: from ozlabs.org ([203.10.76.45]:60744 "EHLO ozlabs.org"
+	Sat, 30 Jan 2010 00:31:18 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50292 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751147Ab0A3E7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 23:59:52 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] virtio_blk: add block topology support
-Date: Sat, 30 Jan 2010 15:29:49 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-17-generic; KDE/4.3.2; i686; ; )
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-References: <20100129190158.GA25122@lst.de>
-In-Reply-To: <20100129190158.GA25122@lst.de>
+	id S1751104Ab0A3FbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 00:31:18 -0500
+Date: Fri, 29 Jan 2010 21:26:49 -0800
+From: Greg KH <gregkh@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 08/10] drivers/base: Convert dev->sem to mutex
+Message-ID: <20100130052649.GA22459@suse.de>
+References: <20100129203549.526478432@linutronix.de> <20100129203613.665951035@linutronix.de> <20100129211358.GA7265@suse.de> <alpine.LFD.2.00.1001292246580.5926@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001301529.49848.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1001292246580.5926@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 Jan 2010 05:31:58 am Christoph Hellwig wrote:
-> Allow reading various alignment values from the config page.  This
-> allows the guest to much better align I/O requests depending on the
-> storage topology.
+On Fri, Jan 29, 2010 at 10:48:08PM +0100, Thomas Gleixner wrote:
+> On Fri, 29 Jan 2010, Greg KH wrote:
 > 
-> Note that the formats for the config values appear a bit messed up,
-> but we follow the formats used by ATA and SCSI so they are expected in
-> the storage world.
+> > On Fri, Jan 29, 2010 at 08:39:02PM -0000, Thomas Gleixner wrote:
+> > > The semaphore is semantically a mutex. Convert it to a real mutex and
+> > > clean up all users outside of drivers/base as well.
+> > > 
+> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > > Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> Can you take that via your drivers tree or do you want me to push it
+> linuswards for .34 ?
 
-I bow to your expertise on that.  My only query is the __u16 for min_io_size; is that likely to restrict us?
+I will take it.
 
-Also, patch seems to be based on a prior one?
+thanks,
 
->  	/* Use topology information if available */
-> -	err = virtio_config_val(vdev, VIRTIO_BLK_F_BLK_TOPOLOGY,
-> +	err = virtio_config_val(vdev, VIRTIO_BLK_F_TOPOLOGY,
-> +			offsetof(struct virtio_blk_config, physical_block_exp),
-> +			&physical_block_exp);
-
-Thanks,
-Rusty.
+greg k-h
