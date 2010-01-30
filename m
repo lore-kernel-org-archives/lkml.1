@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395Ab0A3KsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752924Ab0A3Lno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752395Ab0A3KsP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 05:48:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265Ab0A3KsP
+	id S1752924Ab0A3Lno (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 06:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583Ab0A3Lnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 05:48:15 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:38824 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256Ab0A3KsO (ORCPT
+	Sat, 30 Jan 2010 06:43:42 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52218 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104Ab0A3Lni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 05:48:14 -0500
-Date: Sat, 30 Jan 2010 11:48:12 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Dave Chinner <david@fromorbit.com>,
-       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       akpm@linux-foundation.org, Miklos Szeredi <miklos@szeredi.hu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
-Subject: Re: Slab Fragmentation Reduction V15
-Message-ID: <20100130104812.GE29555@one.firstfloor.org>
-References: <20100129204931.789743493@quilx.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100129204931.789743493@quilx.com>
-User-Agent: Mutt/1.4.2.2i
+	Sat, 30 Jan 2010 06:43:38 -0500
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Subject: [PATCH 00/12 v2] perf lock: New subcommand "perf lock", for analyzing lock statistics
+Date: Sat, 30 Jan 2010 20:43:22 +0900
+Message-Id: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+X-Mailer: git-send-email 1.6.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 29, 2010 at 02:49:31PM -0600, Christoph Lameter wrote:
-> This patchset was first proposed in the beginning of 2007. It was almost merged
-> in 2008 when last minute objections arose in the way this interacts with
-> filesystem objects (inode/dentry).
-> 
-> Andi has asked that we reconsider this issue. So I have updated the patchset
+Adding new subcommand "perf lock" to perf.
 
-Thanks for reposting.
+I made this patch series on
+latest perf/core of tip (ef12a141306c90336a3a10d40213ecd98624d274),
+so please apply this series to perf/core.
 
-My motivation here is to improve hwpoison soft offlining, but I think
-having this would be a general improvement.
+This patch is version 2.
+I removed lack of util/include/linux/hash.h
+and compile error of builtin-lock.c on 32bit env.
 
-> to apply against current upstream (and also -next with a special patch
-> at the end). The issues with icache/dentry locking remain. In order
-> for this to be merged we would have to come up with a revised dentry/inode
-> locking code that can
-> 
-> 	1. Establish a reference to an dentry/inode so that it is pinned.
->            Hopefully in a way that is not too expensive (i.e. no superblock
->            lock)
-> 
-> 	2. A means to free a dentry/inode objects from the VM reclaim context.
+Sorry for my slow work, Frederic and Ingo.
+I have a lot of rest ToDos,
+but finally perf lock can provide minimal functions for analyzing lock statistics.
 
+This series requires one more revirting patch.
+But it is very temporary solution,
+so I cannot make this series include it.
+I'll send it as reply to this cover letter later only for testing,
+if you are interested in testing this series,
+you need to apply it.
 
-Al, do you have a suggestions on a good way to do that?
+Hitoshi Mitake (11):
+  perf tools: Add __data_loc support
+  perf: Add util/include/linuxhash.h to include hash.h of kernel
+  lockdep: Add information of file and line where lock inited to struct
+    lockdep_map
+  lockdep: Add file and line to initialize sequence of spinlock
+  lockdep: Add file and line to initialize sequence of rwlock
+  lockdep:  Add file and line to initialize sequence of rwsem
+  lockdep:  Add file and line to initialize sequence of rwsem (x86)
+  lockdep: Add file and line to initialize sequence of mutex
+  lockdep: Fix the way to initialize class_mutex for information of
+    file and line
+  perf lock: Enhance information of lock trace events
+  perf lock: New subcommand "perf lock", for analyzing lock statistics
 
-I guess the problem could be simplified by ignoring dentries in "unusual"
-states?
+ arch/x86/include/asm/rwsem.h         |    9 +-
+ drivers/base/class.c                 |    3 +-
+ include/linux/lockdep.h              |   20 +-
+ include/linux/mutex-debug.h          |    2 +-
+ include/linux/mutex.h                |   12 +-
+ include/linux/rwlock.h               |    6 +-
+ include/linux/rwlock_types.h         |    6 +-
+ include/linux/rwsem-spinlock.h       |   11 +-
+ include/linux/spinlock.h             |    6 +-
+ include/linux/spinlock_types.h       |    6 +-
+ include/trace/events/lock.h          |   49 ++-
+ kernel/lockdep.c                     |   10 +-
+ kernel/mutex-debug.c                 |    5 +-
+ kernel/mutex-debug.h                 |    3 +-
+ kernel/mutex.c                       |    5 +-
+ kernel/mutex.h                       |    2 +-
+ lib/rwsem-spinlock.c                 |    5 +-
+ lib/rwsem.c                          |    5 +-
+ lib/spinlock_debug.c                 |   12 +-
+ tools/perf/Makefile                  |    2 +
+ tools/perf/builtin-lock.c            |  724 ++++++++++++++++++++++++++++++++++
+ tools/perf/builtin.h                 |    1 +
+ tools/perf/perf.c                    |    1 +
+ tools/perf/util/include/linux/hash.h |    5 +
+ tools/perf/util/trace-event-parse.c  |    7 +
+ 25 files changed, 870 insertions(+), 47 deletions(-)
+ create mode 100644 tools/perf/builtin-lock.c
+ create mode 100644 tools/perf/util/include/linux/hash.h
 
-> The other objection against this patchset was that it does not support
-> reclaim through SLAB. It is possible to add this type of support to SLAB too
-
-I think not supporting SLAB/SLOB is fine.
-
--Andi
