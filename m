@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545Ab0A3SKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676Ab0A3SRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545Ab0A3SKe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 13:10:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322Ab0A3SKe
+	id S1753676Ab0A3SRv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 13:17:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443Ab0A3SRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 13:10:34 -0500
-Received: from 1wt.eu ([62.212.114.60]:55150 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753114Ab0A3SKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 13:10:33 -0500
-Date: Sat, 30 Jan 2010 19:09:29 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Jie Yang <jie.yang@atheros.com>, stable-review@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       "David S. Miller" <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [20/98] atl1c:use common_task instead of reset_task and link_chg_task
-Message-ID: <20100130180928.GA8245@1wt.eu>
-References: <20100126233950.GA5372@kroah.com> <20100126233923.487128431@mini.kroah.org> <20100127052531.GK20093@1wt.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100127052531.GK20093@1wt.eu>
-User-Agent: Mutt/1.5.11
+	Sat, 30 Jan 2010 13:17:50 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:29011 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592Ab0A3SRu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 13:17:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:organization:user-agent:mime-version
+         :to:cc:subject:references:in-reply-to:x-enigmail-version
+         :content-type;
+        b=StgUZ9Dqm46tMiq1m8BJs0X/7fyYKbzi+ctX3F1M9m4zQAyPh8yxWcNHkLdx5dx8sn
+         Kr/kFYaFOoGeKEh0cdBqds/23/wVdWZHQTc1QnmM6lqY2loJ4I9Qw1sRKYEqs9hcuLzp
+         /HGcJHGgrbJug3+sL869e2KGFFLbikH2nAy78=
+Message-ID: <4B6477C7.70508@gmail.com>
+Date: Sat, 30 Jan 2010 19:17:43 +0100
+From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
+Reply-To: vedran.furac@gmail.com
+Organization: Home
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20091109 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
+       minchan.kim@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
+References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>	<20100126151202.75bd9347.akpm@linux-foundation.org>	<20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>	<20100126161952.ee267d1c.akpm@linux-foundation.org>	<20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com>	<20100128001636.2026a6bc@lxorguk.ukuu.org.uk>	<4B622AEE.3080906@gmail.com>	<20100129003547.521a1da9@lxorguk.ukuu.org.uk>	<4B62327F.3010208@gmail.com>	<20100129110321.564cb866@lxorguk.ukuu.org.uk>	<4B64272D.8020509@gmail.com>	<20100130125917.600beb51@lxorguk.ukuu.org.uk>	<4B646CBE.6050404@gmail.com> <20100130174516.2257d7fa@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100130174516.2257d7fa@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------050309020409040608090004"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 06:25:31AM +0100, Willy Tarreau wrote:
-> On Tue, Jan 26, 2010 at 03:33:46PM -0800, Greg KH wrote:
-> > From: Jie Yang <jie.yang@atheros.com>
-> > 
-> > commit cb19054697e92a793f336380fd72c588521178ff upstream.
-> > 
-> > use common_task instead of reset_task and link_chg_task, so it fix "call cancel_work_sync
-> > from the work itself".
-> > 
-> > Signed-off-by: Jie Yang <jie.yang@atheros.com>
-> > Signed-off-by: David S. Miller <davem@davemloft.net>
-> > Cc: Ben Hutchings <ben@decadent.org.uk>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+This is a multi-part message in MIME format.
+--------------050309020409040608090004
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Alan Cox wrote:
+
+>> http://vedranf.net/tmp/oom.ogv  (you can watch it using VLC for example)
+>>
+>> Actually anyone receiving this mail should see it. What do you think,
+>> what will customers rather choose if they see this?
 > 
-> I'm going to test this one. I'm randomly seeing my ASUS 1005HA
-> hanging after I replug the network cable. I noticed that the
-> driver from the Atheros site doesn't have the issue at all. I
-> spent a week-end trying to eliminate almost all of the diffs
-> between the two drivers to try to spot the faulty code chunk,
-> until I realized that I went past the failure point without
-> noticing in time because the issue was too much random :-(
-> 
-> Clearly a non-bisectable issue. But with just this fix, I'll
-> be able to tell if the problem is definitely over.
+> Address that to the distributions. Their customers. Systems I set up for
+> people always have no overcommit enabled.
 
-For the record, this patch has fixed my issue, the machine no
-longer hangs when I plug the cable. However, now when I unplug
-then replug the link, it normally takes 1 second to get back up,
-until I suspend. After the first suspend/resume cycle, it always
-takes 16 seconds to get the link up every time I unplug/replug
-it. If I wait before replugging, it gets up later (by the amount
-of time spent unplugged). Same if I unplug, wait a bit, then
-replug/unplug then replug. It still takes 16 seconds after the
-moment I last plugged the wire to get the link up. The link on
-the switch goes up at the same time as the message appears.
+And distros say that's a bug in kernel. Result: nothing gets done and
+users will continue to swear at linux after it kills their work...
 
-It makes no difference whether I use S2R or S2D.
 
-It's not dramatical, but I suspect it's a bug in the suspend/
-resume code which maybe does not reinitialize a hardware timer,
-though I have no idea where to look for.
+-- 
+http://vedranf.net | a8e7a7783ca0d460fee090cc584adc12
 
-Anyway, the most important is that it does not freeze anymore !
+--------------050309020409040608090004
+Content-Type: text/x-vcard; charset=utf-8;
+ name="vedran_furac.vcf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="vedran_furac.vcf"
 
-Thanks,
-Willy
-
+YmVnaW46dmNhcmQNCmZuO3F1b3RlZC1wcmludGFibGU6VmVkcmFuIEZ1cmE9QzQ9OEQNCm47
+cXVvdGVkLXByaW50YWJsZTpGdXJhPUM0PThEO1ZlZHJhbg0KYWRyOjs7Ozs7O0Nyb2F0aWEN
+CmVtYWlsO2ludGVybmV0OnZlZHJhbi5mdXJhY0BnbWFpbC5jb20NCngtbW96aWxsYS1odG1s
+OkZBTFNFDQp1cmw6aHR0cDovL3ZlZHJhbmYubmV0DQp2ZXJzaW9uOjIuMQ0KZW5kOnZjYXJk
+DQoNCg==
+--------------050309020409040608090004--
