@@ -1,97 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927Ab0A3XqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033Ab0A3Xtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752927Ab0A3XqW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 18:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543Ab0A3XqV
+	id S1753033Ab0A3Xtf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 18:49:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655Ab0A3Xte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 18:46:21 -0500
-Received: from mail-iw0-f173.google.com ([209.85.223.173]:51628 "EHLO
-	mail-iw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752450Ab0A3XqU (ORCPT
+	Sat, 30 Jan 2010 18:49:34 -0500
+Received: from mail-yx0-f193.google.com ([209.85.210.193]:59142 "EHLO
+	mail-yx0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511Ab0A3Xtd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 18:46:20 -0500
+	Sat, 30 Jan 2010 18:49:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=keoTml1HqeqIhuZ189OpDheYH+B+pfG9U1r++D+4OHnIVL9jAzyTLEjlZPd19iSs9U
-         yoZdBKgTKYBXzvpqhqGsEVvMkVEQlesz8hCMEdX2gDOg+sMpPlk5d0JR4wuPWzlYoL/V
-         yKNXUmuhAgkVMNi5N7ONDyC4lSgKnDXV7rlAQ=
-Date: Sat, 30 Jan 2010 17:45:51 -0600
-From: Shawn Bohrer <shawn.bohrer@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Subject: High scheduler wake up times
-Message-ID: <20100130234551.GA27390@mediacenter.gateway.2wire.net>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=BDkG4cLKtHzWfbLnFuYLd/8WoYN5G2PkmnKKXao/Hb6ZzKgsAYFUFMaf5DUbH+grdO
+         AOZhqJ2ulXYvSFk6YgGkrTYT1snROEVpeRwZWGVCerPDvcyvTcfZg7wh7/whR52sOvA4
+         E3u2JkFQ++CxwLfdZqGfNuJTUFclYqBjMth5s=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.2.00.1001301100450.3006@localhost.localdomain>
+References: <524f69651001292008g39c796a7j6f41c04b599752c7@mail.gmail.com>
+	 <alpine.LFD.2.00.1001301100450.3006@localhost.localdomain>
+Date: Sat, 30 Jan 2010 17:49:31 -0600
+Message-ID: <524f69651001301549v2db7e155tfdb3ce18cfae035@mail.gmail.com>
+Subject: Re: [patch 05/10] cifs: convert semaphore to mutex
+From: Steve French <smfrench@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Christoph Hellwig <hch@infradead.org>, Jeff Layton <jlayton@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sat, Jan 30, 2010 at 4:03 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Fri, 29 Jan 2010, Steve French wrote:
+>> > Looks good, but I'm pretty sure I've seen an equivalent patch on the
+>> > linux-cifs-client list before.
+>> >
+>> >
+>> > Reviewed-by: Christoph Hellwig <hch@lst.de>
+>>
+>> Jeff and I acked the cifs part of the patch series in July - not sure
+>> why the series didn't go in.
+>>
+>> http://marc.info/?l=linux-kernel&m=124859649902788&w=2 looks like the
+>> original post
+>
+> Yeah, the patch was part of a larger series which had problems here
+> and there. I forgot to split it out and push it seperately.
+>
+> Steve, can you pick that up and push it via the cifs tree ? It's
+> completely stand alone and does not depend on other patches.
 
-Currently we have a workload that depends on around 50 processes that
-wake up 1000 times a second do a small amount of work and go back to
-sleep.  This works great on RHEL 5 (2.6.18-164.6.1.el5), but on recent
-kernels we are unable to achieve 1000 iterations per second.  Using
-the simple test application below on RHEL 5 2.6.18-164.6.1.el5 I can run
-500 of these processes on and still achieve 999.99 iterations per
-second.  Running just 10 of these processes on the same machine with
-2.6.32.6 produces results like:
+np - will queue for 2.6.34
 
-...
-Iterations Per Sec: 905.659667
-Iterations Per Sec: 805.099068
-Iterations Per Sec: 925.195578
-Iterations Per Sec: 759.310773
-Iterations Per Sec: 702.849261
-Iterations Per Sec: 782.157292
-Iterations Per Sec: 917.138031
-Iterations Per Sec: 834.770391
-Iterations Per Sec: 850.543755
-...
 
-I've tried playing with some of the cfs tunables in /proc/sys/kernel/
-without success.  Are there any suggestions on how to achieve the
-results we are looking for using a recent kernel?
-
+-- 
 Thanks,
-Shawn
 
-
-#include <sys/epoll.h>
-#include <sys/time.h>
-#include <stdio.h>
-#include <unistd.h>
-
-int main ()
-{
-	int epfd = epoll_create(1);
-	int i, j;
-	struct timeval tv;
-	unsigned long start, end;
-	const unsigned int count = 60000;
-
-	while (1) {
-		gettimeofday(&tv, NULL);
-		start = tv.tv_sec * 1000000 + tv.tv_usec;
-
-		for (i = 0; i < count; ++i) {
-			if (epoll_wait(epfd, 0, 1, 1) == -1)
-				perror("epoll failed");
-
-			for (j = 0; j < 10000; ++j)
-				/* simulate work */;
-		}
-		gettimeofday(&tv, NULL);
-		end = tv.tv_sec * 1000000 + tv.tv_usec;
-
-		printf("Iterations Per Sec: %f\n", count/((double)(end - start)/1000000));
-	}
-
-	close(epfd);
-}
-
+Steve
