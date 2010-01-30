@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407Ab0A3KGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395Ab0A3KsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407Ab0A3KGG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 05:06:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253Ab0A3KGF
+	id S1752395Ab0A3KsP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 05:48:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265Ab0A3KsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 05:06:05 -0500
-Received: from www.tglx.de ([62.245.132.106]:46359 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752677Ab0A3KGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 05:06:04 -0500
-Date: Sat, 30 Jan 2010 11:03:13 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Steve French <smfrench@gmail.com>
-cc: Christoph Hellwig <hch@infradead.org>, Jeff Layton <jlayton@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch 05/10] cifs: convert semaphore to mutex
-In-Reply-To: <524f69651001292008g39c796a7j6f41c04b599752c7@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1001301100450.3006@localhost.localdomain>
-References: <524f69651001292008g39c796a7j6f41c04b599752c7@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 30 Jan 2010 05:48:15 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:38824 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751256Ab0A3KsO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 05:48:14 -0500
+Date: Sat, 30 Jan 2010 11:48:12 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Dave Chinner <david@fromorbit.com>,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       akpm@linux-foundation.org, Miklos Szeredi <miklos@szeredi.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+Subject: Re: Slab Fragmentation Reduction V15
+Message-ID: <20100130104812.GE29555@one.firstfloor.org>
+References: <20100129204931.789743493@quilx.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100129204931.789743493@quilx.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Jan 2010, Steve French wrote:
-> > Looks good, but I'm pretty sure I've seen an equivalent patch on the
-> > linux-cifs-client list before.
-> >
-> >
-> > Reviewed-by: Christoph Hellwig <hch@lst.de>
+On Fri, Jan 29, 2010 at 02:49:31PM -0600, Christoph Lameter wrote:
+> This patchset was first proposed in the beginning of 2007. It was almost merged
+> in 2008 when last minute objections arose in the way this interacts with
+> filesystem objects (inode/dentry).
 > 
-> Jeff and I acked the cifs part of the patch series in July - not sure
-> why the series didn't go in.
+> Andi has asked that we reconsider this issue. So I have updated the patchset
+
+Thanks for reposting.
+
+My motivation here is to improve hwpoison soft offlining, but I think
+having this would be a general improvement.
+
+> to apply against current upstream (and also -next with a special patch
+> at the end). The issues with icache/dentry locking remain. In order
+> for this to be merged we would have to come up with a revised dentry/inode
+> locking code that can
 > 
-> http://marc.info/?l=linux-kernel&m=124859649902788&w=2 looks like the
-> original post
+> 	1. Establish a reference to an dentry/inode so that it is pinned.
+>            Hopefully in a way that is not too expensive (i.e. no superblock
+>            lock)
+> 
+> 	2. A means to free a dentry/inode objects from the VM reclaim context.
 
-Yeah, the patch was part of a larger series which had problems here
-and there. I forgot to split it out and push it seperately.
 
-Steve, can you pick that up and push it via the cifs tree ? It's
-completely stand alone and does not depend on other patches.
+Al, do you have a suggestions on a good way to do that?
 
-Thanks,
+I guess the problem could be simplified by ignoring dentries in "unusual"
+states?
 
-	tglx
+> The other objection against this patchset was that it does not support
+> reclaim through SLAB. It is possible to add this type of support to SLAB too
+
+I think not supporting SLAB/SLOB is fine.
+
+-Andi
