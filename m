@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645Ab0A3Idm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542Ab0A3Inj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752645Ab0A3Idm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 03:33:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319Ab0A3Idl
+	id S1752542Ab0A3Inj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 03:43:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567Ab0A3Ini
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 03:33:41 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:51668 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752014Ab0A3Idl (ORCPT
+	Sat, 30 Jan 2010 03:43:38 -0500
+Received: from casper.infradead.org ([85.118.1.10]:47206 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750773Ab0A3Ini (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 03:33:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ICR+HxUbTPniM2uhhAQNeiZGdiobP865PnFhUVrR7I+1RvS1jbzBp8Uchgv3tA7Hsq
-         k/BusjB/kiA8XLAvQh5QPQ4MqyZpk0NSDzMLPD9NABd524BpMZQE4h27wFIdCs+V3trC
-         M6G0Xkvw/YiA4OKq+379kQ/440uQQqqyxmXqQ=
-Subject: Re: debug: nt_conntrack and KVM crash
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       Patrick McHardy <kaber@trash.net>
-In-Reply-To: <1264836971.7499.4.camel@tonnant>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant>  <1264816777.2793.510.camel@tonnant>
-	 <1264834704.2919.3.camel@edumazet-laptop> <1264836971.7499.4.camel@tonnant>
+	Sat, 30 Jan 2010 03:43:38 -0500
+Subject: Re: [RFC] perf_events: support for uncore a.k.a. nest units
+From: Peter Zijlstra <peterz@infradead.org>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Dan Terpstra <terpstra@eecs.utk.edu>, Philip Mucci <mucci@eecs.utk.edu>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <4B6369B2.1060508@linux.vnet.ibm.com>
+References: <4B560ACD.4040206@linux.vnet.ibm.com>
+	 <1263994448.4283.1052.camel@laptop> <1264023204.4283.1124.camel@laptop>
+	 <4B57907E.5000207@linux.vnet.ibm.com> <20100121072118.GA10585@elte.hu>
+	 <4B58A750.2060607@linux.vnet.ibm.com> <4B58AAF7.60507@linux.vnet.ibm.com>
+	 <20100127102834.GA27357@elte.hu>  <4B60990C.1030804@linux.vnet.ibm.com>
+	 <1264676244.4283.2093.camel@laptop>  <4B61D0CB.4090809@linux.vnet.ibm.com>
+	 <1264705607.4283.2120.camel@laptop>  <4B620AD4.8000108@linux.vnet.ibm.com>
+	 <1264758747.4283.2150.camel@laptop>  <4B6369B2.1060508@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 30 Jan 2010 09:33:35 +0100
-Message-ID: <1264840415.2919.19.camel@edumazet-laptop>
+Date: Sat, 30 Jan 2010 09:42:59 +0100
+Message-ID: <1264840979.24455.51.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le samedi 30 janvier 2010 à 02:36 -0500, Jon Masters a écrit :
+On Fri, 2010-01-29 at 15:05 -0800, Corey Ashford wrote:
+> So you'd read the id from the sysfs topology tree, and then pass that id to the 
+> interface?  That's an interesting approach that eliminates the need to pass a 
+> string pmu path to the kernel. 
 
-> I'll play later. Right now, I'm looking over every iptables/ip call
-> libvirt makes - it explicitly plays with the netns for the loopback,
-> which looks interesting. Supposing it does cause the hashtables to get
-> unintentionally zereod or the sizing to get wiped out, we should also
-> nonetheless catch the case that the hash function generates a whacko
-> number or that the hash size is set to zero when we want to use it.
-> 
+No, the attr.pmu_id would reflect the location in the tree (pci
+location, or spu number), the pmu id reported would identify the kind of
+pmu driver used for that particular device.
 
-I asked you if you had multiple namespaces, because I was not sure
-conntracking hash was global (shared by all namespaces), or local.
-
-If it is local, then we have a bug, because nf_conntrack_cachep 
-is still shared.
-
-Because of SLAB_DESTROY_BY_RCU constraint, we must use a distinct
-cachep, or an object can be freed from a namespace and immediatly reused
-into another namespace, without lookups being able to notice.
+I realized this confusion after sending but didn't clarify, we should
+come up with a good alternative name for either (or both) uses.
 
 
 
