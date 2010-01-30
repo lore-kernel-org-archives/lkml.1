@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601Ab0A3PE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042Ab0A3PFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601Ab0A3PE4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 10:04:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878Ab0A3PDZ
+	id S1754042Ab0A3PFi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 10:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063Ab0A3PDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 10:03:25 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:51842 "EHLO
+	Sat, 30 Jan 2010 10:03:20 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:55839 "EHLO
 	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753823Ab0A3PDT (ORCPT
+	with ESMTP id S1753742Ab0A3PDO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 10:03:19 -0500
+	Sat, 30 Jan 2010 10:03:14 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=GYvaAXXLlaweyG0FW8Fv4RKkebT0Q+K33PV/+/vGow6PLt1Ha7xlcVYUbNajbDQv6r
-         d9fPOqT/6S1etEJAXgRtVsYjekv+LFczhhrrcdYwcUu6AmIVa2ayKfKyZmJuc3khamki
-         mcaAb6K7vZcJUfrUp+hp1lMBCfXIfwcMTj3zs=
+        b=H2zhnTyUCSyKD284G/5mnInp9qD2AIuOMlqzBvb1+fxtvkGVfDX7TVRkOJ0joG7fqd
+         zq8Jl5Yr7EfJijz9WHf8kV6p4lwMJNO4xKmTlgIzmITTkOidUMSRboHAE1OfFANjxhCD
+         bCil0s04NuojF9j0detPhTMjBS0/Qdh5W4vEw=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: Artem Bityutskiy <dedekind1@gmail.com>,
@@ -24,9 +24,9 @@ Cc: Artem Bityutskiy <dedekind1@gmail.com>,
        Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 10/17] MTD: nand: make reads using MTD_OOB_RAW affect only ECC validation
-Date: Sat, 30 Jan 2010 17:02:41 +0200
-Message-Id: <1264863768-27606-11-git-send-email-maximlevitsky@gmail.com>
+Subject: [PATCH 07/17] blktrans: allow FTL drivers to export sysfs attributes
+Date: Sat, 30 Jan 2010 17:02:38 +0200
+Message-Id: <1264863768-27606-8-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1264863768-27606-1-git-send-email-maximlevitsky@gmail.com>
 References: <1264863768-27606-1-git-send-email-maximlevitsky@gmail.com>
@@ -34,101 +34,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This changes the behavier of MTD_OOB_RAW. It used to read both OOB and data
-to the data buffer, however you would still need to specify the dummy oob buffer.
-
-This is only used in one place, but makes it hard to read data+oob without ECC
-test, thus I removed that behavier, and fixed the user.
-
-Now MTD_OOB_RAW behaves like MTD_OOB_PLACE, but doesn't do ECC validation
+This patch add ability to export sysfs attributes below
+block disk device.
+This can be used to pass UDEV information about the FTL
+and could include vendor, serial, version, etc...
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/nand/nand_base.c |    5 -----
- drivers/mtd/nand/nand_bbt.c  |   26 ++++++++++++++++++++++----
- include/linux/mtd/mtd.h      |    4 +---
- 3 files changed, 23 insertions(+), 12 deletions(-)
+ drivers/mtd/mtd_blkdevs.c    |   11 ++++++++++-
+ include/linux/mtd/blktrans.h |    2 ++
+ 2 files changed, 12 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
-index 405c538..8ff36be 100644
---- a/drivers/mtd/nand/nand_base.c
-+++ b/drivers/mtd/nand/nand_base.c
-@@ -1286,8 +1286,6 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index a65eb07..1c4e615 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -317,7 +317,6 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
  
- 			if (unlikely(oob)) {
+ 	set_capacity(gd, (new->size * tr->blksize) >> 9);
  
--				/* Raw mode does data:oob:data:oob */
--				if (ops->mode != MTD_OOB_RAW) {
- 					int toread = min(oobreadlen,
- 								max_oobsize);
- 					if (toread) {
-@@ -1295,9 +1293,6 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
- 							oob, ops, toread);
- 						oobreadlen -= toread;
- 					}
--				} else
--					buf = nand_transfer_oob(chip,
--						buf, ops, mtd->oobsize);
- 			}
+-
+ 	/* Create the request queue */
+ 	spin_lock_init(&new->queue_lock);
+ 	new->rq = blk_init_queue(mtd_blktrans_request, &new->queue_lock);
+@@ -350,6 +349,11 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
+ 	new->open = 0;
+ 	add_disk(gd);
  
- 			if (!(chip->options & NAND_NO_READRDY)) {
-diff --git a/drivers/mtd/nand/nand_bbt.c b/drivers/mtd/nand/nand_bbt.c
-index 55c23e5..387c45c 100644
---- a/drivers/mtd/nand/nand_bbt.c
-+++ b/drivers/mtd/nand/nand_bbt.c
-@@ -237,15 +237,33 @@ static int scan_read_raw(struct mtd_info *mtd, uint8_t *buf, loff_t offs,
- 			 size_t len)
- {
- 	struct mtd_oob_ops ops;
-+	int res;
- 
- 	ops.mode = MTD_OOB_RAW;
- 	ops.ooboffs = 0;
- 	ops.ooblen = mtd->oobsize;
--	ops.oobbuf = buf;
--	ops.datbuf = buf;
--	ops.len = len;
- 
--	return mtd->read_oob(mtd, offs, &ops);
++	if (new->disk_attributes)
++		sysfs_create_group(&disk_to_dev(gd)->kobj,
++					new->disk_attributes);
 +
-+	while (len > 0) {
-+		if (len <= mtd->writesize) {
-+			ops.oobbuf = buf + len;
-+			ops.datbuf = buf;
-+			ops.len = len;
-+			return mtd->read_oob(mtd, offs, &ops);
-+		} else {
-+			ops.oobbuf = buf + mtd->writesize;
-+			ops.datbuf = buf;
-+			ops.len = mtd->writesize;
-+			res = mtd->read_oob(mtd, offs, &ops);
 +
-+			if (res)
-+				return res;
-+		}
-+
-+		buf += mtd->oobsize + mtd->writesize;
-+		len -= mtd->writesize;
-+	}
-+	return 0;
- }
+ 	return 0;
+ error4:
+ 	blk_cleanup_queue(new->rq);
+@@ -376,6 +380,11 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
+ 	/* stop new requests to arrive */
+ 	del_gendisk(old->disk);
  
- /*
-diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
-index 662d747..84bb375 100644
---- a/include/linux/mtd/mtd.h
-+++ b/include/linux/mtd/mtd.h
-@@ -61,9 +61,7 @@ struct mtd_erase_region_info {
-  * MTD_OOB_PLACE:	oob data are placed at the given offset
-  * MTD_OOB_AUTO:	oob data are automatically placed at the free areas
-  *			which are defined by the ecclayout
-- * MTD_OOB_RAW:		mode to read raw data+oob in one chunk. The oob data
-- *			is inserted into the data. Thats a raw image of the
-- *			flash contents.
-+ * MTD_OOB_RAW:		mode to read oob and data without doing ECC checking
-  */
- typedef enum {
- 	MTD_OOB_PLACE,
++
++	if (old->disk_attributes)
++		sysfs_remove_group(&disk_to_dev(old->disk)->kobj,
++						old->disk_attributes);
++
+ 	/* flush current requests */
+ 	spin_lock_irqsave(&old->queue_lock, flags);
+ 	old->deleted = 1;
+diff --git a/include/linux/mtd/blktrans.h b/include/linux/mtd/blktrans.h
+index e276aca..faf1e54 100644
+--- a/include/linux/mtd/blktrans.h
++++ b/include/linux/mtd/blktrans.h
+@@ -9,6 +9,7 @@
+ #define __MTD_TRANS_H__
+ 
+ #include <linux/mutex.h>
++#include <linux/sysfs.h>
+ 
+ struct hd_geometry;
+ struct mtd_info;
+@@ -27,6 +28,7 @@ struct mtd_blktrans_dev {
+ 	int deleted;
+ 	int open;
+ 	struct gendisk *disk;
++	struct attribute_group *disk_attributes;
+ 	struct task_struct *thread;
+ 	struct request_queue *rq;
+ 	spinlock_t queue_lock;
 -- 
 1.6.3.3
 
