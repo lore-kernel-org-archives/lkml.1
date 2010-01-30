@@ -1,106 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619Ab0A3VYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753734Ab0A3V07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619Ab0A3VYQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 16:24:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287Ab0A3VYP
+	id S1753734Ab0A3V07 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 16:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232Ab0A3V06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 16:24:15 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:58648 "EHLO
+	Sat, 30 Jan 2010 16:26:58 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:36380 "EHLO
 	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642Ab0A3VYP (ORCPT
+	with ESMTP id S1751592Ab0A3V05 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 16:24:15 -0500
+	Sat, 30 Jan 2010 16:26:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=KYH+NQliVwDS+yXQHcS4sye2YYT5VAwrYy3Tftevp/cfdpEsImKG1vQvoPvSg9Dxrj
-         iB4jWCQkkb/BDJ6tKh/aCHWKhJEXVmVkbuoY9Da2DNcWoEi71uyzkyHVlkDbWIz1sZCP
-         za5DW39wKd6VuUpdXtXv4c2ixQg0pDqCTwrI4=
-Date: Sat, 30 Jan 2010 22:24:11 +0100
+        b=gF4QdNTy/CjPGmYfPN9YEWJAcKH+Vw6N0DN5AMPM3fpaFOAKoO2X/nSq2N7xRSi72L
+         i4KUcWsR9CQ6InlYmai/rf6+I2i23F3mouDaA4B0Rbr+DZeuUwbei5cs7Hqd1hX2z7ey
+         YDlenRAKRI8/BznxHqCDxZ9cKUMIt1iGp8s1A=
+Date: Sat, 30 Jan 2010 22:26:54 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
        Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 5/6] tracing: reduce latency and remove percpu trace_seq
-Message-ID: <20100130212410.GI5675@nowhere>
-References: <4B55607E.8070403@cn.fujitsu.com> <20100120192225.GC6194@nowhere> <4B5E5C59.2080203@cn.fujitsu.com>
+Subject: Re: [PATCH 1/6] : bug fix, remove partial zero out
+Message-ID: <20100130212652.GJ5675@nowhere>
+References: <4B556064.7080700@cn.fujitsu.com> <20100120175205.GA5017@nowhere> <4B5E622E.9090106@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B5E5C59.2080203@cn.fujitsu.com>
+In-Reply-To: <4B5E622E.9090106@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 11:07:05AM +0800, Lai Jiangshan wrote:
+On Tue, Jan 26, 2010 at 11:31:58AM +0800, Lai Jiangshan wrote:
 > Frederic Weisbecker wrote:
-> > On Tue, Jan 19, 2010 at 03:34:22PM +0800, Lai Jiangshan wrote:
-> >> __print_flags() and __print_symbolic() use percpu trace_seq:
+> > On Tue, Jan 19, 2010 at 03:33:56PM +0800, Lai Jiangshan wrote:
+> >> partial-zero-out a struct is very dangerous, we should zero out
+> >> field by field directly when need.
 > >>
-> >> 1) Its memory is preallocated, it wastes memory when we don't use tracing.
-> >> 2) It wastes memory for multi-cpus system.
-> >> 3) It disables preemption when it executes its core routine
-> >>    "trace_seq_printf(s, "%s: ", #call);" and introduce latency
-> >>    for more important process.
+> >> partial-zero-out for struct trace_iterator exists when ftrace
+> >> was first introduced into mainline kernel. But in this few years,
+> >> the code of ftrace is changed a lot, and:
 > >>
-> >> So we move this trace_seq to struct trace_iterator.
+> >> 1) partial-zero-out for struct trace_iterator has a bug now,
+> >>    cpumask_var_t started should not be zeroed out.
+> >>
+> >> 2) I viewed the codes and found that fields below
+> >>    "/* The below is zeroed out in pipe_read */"
+> >>    don't need to be zeroed out or initialized now.
+> >>
+> >> So, we remove the code of "partial zero out"
 > >>
 > >> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 > >> ---
 > >> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> >> index be9ece5..348500d 100644
+> >> index 3ca9485..c6d0e1a 100644
 > >> --- a/include/linux/ftrace_event.h
 > >> +++ b/include/linux/ftrace_event.h
-> >> @@ -12,9 +12,6 @@ struct dentry;
+> >> @@ -54,7 +54,6 @@ struct trace_iterator {
+> >>  	struct ring_buffer_iter	*buffer_iter[NR_CPUS];
+> >>  	unsigned long		iter_flags;
 > >>  
-> >>  #define FTRACE_SEQ_BUFSIZE PAGE_SIZE
-> >>  
-> >> -DECLARE_PER_CPU(struct trace_seq, ftrace_event_seq);
-> >> -DECLARE_PER_CPU(unsigned char[FTRACE_SEQ_BUFSIZE], ftrace_event_buffer);
-> >> -
-> >>  struct trace_print_flags {
-> >>  	unsigned long		mask;
-> >>  	const char		*name;
-> >> @@ -60,6 +57,10 @@ struct trace_iterator {
+> >> -	/* The below is zeroed out in pipe_read */
 > >>  	struct trace_seq	seq;
-> >>  	unsigned char		buffer[FTRACE_SEQ_BUFSIZE];
+> >>  	struct trace_entry	*ent;
+> >>  	int			leftover;
+> >> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> >> index 5314c90..27fecf8 100644
+> >> --- a/kernel/trace/trace.c
+> >> +++ b/kernel/trace/trace.c
+> >> @@ -3124,12 +3124,6 @@ waitagain:
+> >>  	if (cnt >= PAGE_SIZE)
+> >>  		cnt = PAGE_SIZE - 1;
 > >>  
-> >> +	/* trace_seq for __print_flags() and __print_symbolic() */
-> >> +	struct trace_seq	tmp_seq;
-> >> +	unsigned char 		tmp_buffer[FTRACE_SEQ_BUFSIZE];
+> >> -	/* reset all but tr, trace, and overruns */
+> >> -	memset(&iter->seq, 0,
+> >> -	       sizeof(struct trace_iterator) -
+> >> -	       offsetof(struct trace_iterator, seq));
+> >> -	iter->pos = -1;
+> >> -
 > > 
 > > 
 > > 
+> > I'm not sure exaclty why we needed to zero the seq here.
+> > We already reset it in trace_seq_init().
 > > 
-> > Well, I don't like much that because it's a temporary buffer
-> > in trace iter only used by few events.
-> > But the problem is indeed tricky.
+> > We might do it again on waitagain. I lost track how we could
+> > ever need to goto waitagain. It was about a tricky bug to fix
+> > but I'm don't remember exactly the details.
 > > 
-> > May be should we use a kmalloc in raw_output?
+> > That said, if trace_seq_to_user returns -EBUSY, we
+> > re-init the seq buffer, so it should be fine I guess.
+> 
+> Yes, -EBUSY is strange here.
+> but any way, trace_seq_init() is called.
+> 
+> > 
+> > But concerning the need of setting iter->pos to -1, I'm not
+> > sure we need to remove it. Shouldn't it be set to 0 btw?
 > > 
 > 
-> But we have to preallocate it before raw_output().
-> a kmalloc in raw_output make ftrace_dump() unhappy.
+> ->pos is not used here, ->idx is just increased here,
+> so we don't need to initialize them.
 
 
-Ah, right.
-
-
-> 
-> At real system, tracepoints are used more frequently,
-> So it is not "only used by few events."
-
-
-No I mean, print_flags and print_symbolic are used by few
-events.
-
-
-> But maybe FTRACE_SEQ_BUFSIZE is too large, 128 is enough.
-
-
-May be. Anyway, we should perhaps indeed make this change.
-
-Steve?
+Ok.
 
