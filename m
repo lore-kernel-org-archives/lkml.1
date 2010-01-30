@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894Ab0A3GqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060Ab0A3G6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894Ab0A3GqG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 01:46:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498Ab0A3GqF
+	id S1752060Ab0A3G6a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 01:58:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719Ab0A3G63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 01:46:05 -0500
-Received: from mail.gmx.net ([213.165.64.20]:54858 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932065Ab0A3GqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 01:46:04 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18HIRVlXFQHGSQsypMcMDeqQs8d/Wl2KTAgvKwtHT
-	1YHPnYi5KtSAQM
-Subject: Re: perf report for .ko files
-From: Mike Galbraith <efault@gmx.de>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Cc: john smith <whalajam@yahoo.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20100129191558.GA9990@ghostprotocols.net>
-References: <20100126210552.GA12567@ghostprotocols.net>
-	 <229562.61603.qm@web55007.mail.re4.yahoo.com>
-	 <20100129191558.GA9990@ghostprotocols.net>
-Content-Type: text/plain
-Date: Sat, 30 Jan 2010 07:45:54 +0100
-Message-Id: <1264833954.6097.13.camel@marge.simson.net>
+	Sat, 30 Jan 2010 01:58:29 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:47764 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751617Ab0A3G62 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 01:58:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=aSvWxhjObvyEGCrOW4v7yc0I0DQVmeciGeFOrl4tcsTU68H7301OkxG88XLaSgYg0w
+         tHweI0URp0iK/RMblRSv3c4BDq1PSQ4V3OiK3xWTA8CA3+7ID3XMcBpRH0hzIMjr0SHY
+         x9L6hkAPuSnyt/cr3B6lfPhGW19tgi2QNV4lo=
+Subject: Re: debug: nt_conntrack and KVM crash
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       Patrick McHardy <kaber@trash.net>
+In-Reply-To: <1264816777.2793.510.camel@tonnant>
+References: <1264813832.2793.446.camel@tonnant>
+	 <1264816634.2793.505.camel@tonnant>  <1264816777.2793.510.camel@tonnant>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 30 Jan 2010 07:58:24 +0100
+Message-ID: <1264834704.2919.3.camel@edumazet-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.56999999999999995
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-29 at 17:15 -0200, Arnaldo Carvalho de Melo wrote:
+Le vendredi 29 janvier 2010 à 20:59 -0500, Jon Masters a écrit :
+> On Fri, 2010-01-29 at 20:57 -0500, Jon Masters wrote:
+> 
+> > Ah so I should have realized before but I wasn't looking at valid values
+> > for the range of the hashtable yet, nf_conntrack_htable_size is getting
+> > wildly out of whack. It goes from:
+> > 
+> > (gdb) print nf_conntrack_hash_rnd
+> > $1 = 2688505299
+> > (gdb) print nf_conntrack_htable_size
+> > $2 = 16384
+> > 
+> > nf_conntrack_events: 1
+> > nf_conntrack_max: 65536
+> > 
+> > Shortly after booting, before being NULLed shortly after starting some
+> > virtual machines (the hash isn't reset, whereas it is recomputed if the
+> > hashtable is re-initialized after an intentional resizing operation):
+> 
+> I mean the *seed* isn't changed, so I don't think it was resized
+> intentionally. I wonder where else htable_size is fiddled with.
+> 
+> Jon.
+> 
+> 
 
-> I actually never tried doing annotation with a module, will try.
+This rings a bell here, since another crash analysis on another problem
+suggested to me a potential problem with read_mostly and modules, but I
+had no time to confirm the thing yet.
 
-Seems it went south again in both .git and .tip.  32 works.
+Could you try changing
 
-ed52ce2e3c33dc7626a40fa2da766d1a6460e543 is the first bad commit                             
-commit ed52ce2e3c33dc7626a40fa2da766d1a6460e543                                              
-Author: Arnaldo Carvalho de Melo <acme@redhat.com>                                           
-Date:   Mon Oct 19 17:17:57 2009 -0200                                                       
 
-    perf tools: Add ->unmap_ip operation to struct map
-                                                      
-    We need this because we get section relative addresses when
-    reading the symtabs, but when a tool like 'perf annotate' needs
-    to match these address to what 'objdump -dS' produces we need
-    the address + section back again.
+net/netfilter/nf_conntrack_core.c:57:unsigned int nf_conntrack_htable_size __read_mostly;
+to
+net/netfilter/nf_conntrack_core.c:57:unsigned int nf_conntrack_htable_size ;
 
-    So in annotate now we look at the 'struct hist_entry' instances
-    (that weren't really being used) so that we iterate only over
-    the symbols that had some hit and get the map where that
-    particular hit happened so that we can get the right address to
-    match with annotate.
-
-    Verified that at least:
-
-     perf annotate mmap_read_counter # Uses the ~/bin/perf binary
-     perf annotate --vmlinux /home/acme/git/build/perf/vmlinux intel_pmu_enable_all
-
-    on a 'perf record perf top' session seems to work.
-
-    Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-    Cc: Frederic Weisbecker <fweisbec@gmail.com>
-    Cc: Peter Zijlstra <peterz@infradead.org>
-    Cc: Paul Mackerras <paulus@samba.org>
-    Cc: Mike Galbraith <efault@gmx.de>
-    LKML-Reference: <1255979877-12533-1-git-send-email-acme@redhat.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
