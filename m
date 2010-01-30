@@ -1,120 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752214Ab0A3X3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589Ab0A3Xey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752214Ab0A3X3W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 18:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928Ab0A3X3V
+	id S1752589Ab0A3Xey (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 18:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131Ab0A3Xey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 18:29:21 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47636 "EHLO ogre.sisk.pl"
+	Sat, 30 Jan 2010 18:34:54 -0500
+Received: from gate.crashing.org ([63.228.1.57]:43299 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751484Ab0A3X3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 18:29:20 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: [RFC][RFT][PATCH] ACPI: Protection from suspending in the middle of EC transaction
-Date: Sun, 31 Jan 2010 00:29:48 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>, Len Brown <lenb@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Thomas Renninger <trenn@suse.de>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	id S1751915Ab0A3Xex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 18:34:53 -0500
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 31 Jan 2010 10:34:40 +1100
+Message-ID: <1264894480.8287.7.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001310029.48717.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Linus !
 
-While Maxim is testing if the patch below helps with
-http://bugzilla.kernel.org/show_bug.cgi?id=14668
-I think it's necessary anyway.
+Here are some more defconfig updates that I missed before LCA and a
+few PCI related fixes, some of them actually fixing regressions and
+one of them (the 4xx one) trivial enough that's really not worth
+delaying it.
 
-The problem is that currently there's nothing to prevent us from suspending in
-the middle of an EC transaction in progress, at least as far as I can see.
-As a result, we can suspend with the ACPI global lock held or something like
-this, which leads to problems especially for hibernation (if the resume kernel
-passes control to the image kernel in the middle of an EC transaction, things
-aren't nice).  For this reason I think we should wait until there are no EC
-transactions in progress before we suspend and we should prevent any new
-EC transactions from starting after that point.  The patch below does that.
+Cheers,
+Ben.
 
-However, it does that in the EC's suspend callback, which may be too early,
-because there still is _PTS to run, so it might be necessary to do that later.
-On the other hand, the mechanics behind the ACPI global lock, which is
-acquired in acpi_ec_transaction(), requires that interrupts work, because
-otherwise there may be a problem if the global lock is not actually acquired
-after ACPI_ACQUIRE_GLOBAL_LOCK(), so the last place in which to
-wait for EC transactions to complete seems to be the platform suspend
-.prepare() callback.  Unfortunately, it's not implemented at the moment for
-ACPI and it doesn't have a hibernate counterpart and that's why I'd rather use
-the patch below, unless it's known to break things for someone.  So, if you
-can, please test it and tell me if you have any problems with it.
+The following changes since commit b04da8bfdfbbd79544cab2fadfdc12e87eb01600:
+  Greg Kroah-Hartman (1):
+        fnctl: f_modown should call write_lock_irqsave/restore
 
-Of course, comments are welcome as well.
+are available in the git repository at:
 
-Thanks,
-Rafael
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
----
- drivers/acpi/ec.c |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+Benjamin Herrenschmidt (4):
+      powerpc/pci: Add calls to set_pcie_port_type() and set_pcie_hotplug_bridge()
+      powerpc/pci: Add missing hookup to pci_slot
+      powerpc/pci: Add missing call to header fixup
+      Merge commit 'jwb/merge' into merge
 
-Index: linux-2.6/drivers/acpi/ec.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/ec.c
-+++ linux-2.6/drivers/acpi/ec.c
-@@ -76,8 +76,9 @@ enum ec_command {
- enum {
- 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
- 	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
--	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
-+	EC_FLAGS_HANDLERS_INSTALLED,	/* Handlers for GPE and
- 					 * OpReg are installed */
-+	EC_FLAGS_SUSPENDED,		/* Driver is suspended */
- };
- 
- /* If we find an EC via the ECDT, we need to keep a ptr to its context */
-@@ -291,6 +292,10 @@ static int acpi_ec_transaction(struct ac
- 	if (t->rdata)
- 		memset(t->rdata, 0, t->rlen);
- 	mutex_lock(&ec->lock);
-+	if (test_bit(EC_FLAGS_SUSPENDED, &ec->flags)) {
-+		status = -EBUSY;
-+		goto unlock;
-+	}
- 	if (ec->global_lock) {
- 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
- 		if (ACPI_FAILURE(status)) {
-@@ -1059,16 +1064,26 @@ error:
- static int acpi_ec_suspend(struct acpi_device *device, pm_message_t state)
- {
- 	struct acpi_ec *ec = acpi_driver_data(device);
-+
-+	mutex_lock(&ec->lock);
-+	/* Prevent transactions from happening while suspended */
-+	set_bit(EC_FLAGS_SUSPENDED, &ec->flags);
- 	/* Stop using GPE */
- 	acpi_disable_gpe(NULL, ec->gpe);
-+	mutex_unlock(&ec->lock);
- 	return 0;
- }
- 
- static int acpi_ec_resume(struct acpi_device *device)
- {
- 	struct acpi_ec *ec = acpi_driver_data(device);
-+
-+	mutex_lock(&ec->lock);
- 	/* Enable use of GPE back */
- 	acpi_enable_gpe(NULL, ec->gpe);
-+	/* Allow transactions to happen again */
-+	set_bit(EC_FLAGS_SUSPENDED, &ec->flags);
-+	mutex_unlock(&ec->lock);
- 	return 0;
- }
- 
+Josh Boyer (2):
+      powerpc/44x: Update PowerPC 44x board defconfigs
+      powerpc/40x: Update the PowerPC 40x board defconfigs
+
+Stef van Os (1):
+      powerpc/4xx: Add pcix type 1 transactions
+
+ arch/powerpc/configs/40x/acadia_defconfig      |  241 ++++++++++++++-----
+ arch/powerpc/configs/40x/ep405_defconfig       |  307 ++++++++++++++++++------
+ arch/powerpc/configs/40x/hcu4_defconfig        |  256 +++++++++++++++-----
+ arch/powerpc/configs/40x/kilauea_defconfig     |  140 ++++++++---
+ arch/powerpc/configs/40x/makalu_defconfig      |  190 ++++++++++-----
+ arch/powerpc/configs/40x/walnut_defconfig      |  257 +++++++++++++++-----
+ arch/powerpc/configs/44x/arches_defconfig      |  135 ++++++++---
+ arch/powerpc/configs/44x/bamboo_defconfig      |  255 +++++++++++++++-----
+ arch/powerpc/configs/44x/canyonlands_defconfig |  141 ++++++++---
+ arch/powerpc/configs/44x/ebony_defconfig       |  258 +++++++++++++++-----
+ arch/powerpc/configs/44x/eiger_defconfig       |  128 +++++++---
+ arch/powerpc/configs/44x/katmai_defconfig      |  253 +++++++++++++++-----
+ arch/powerpc/configs/44x/rainier_defconfig     |  254 +++++++++++++++-----
+ arch/powerpc/configs/44x/redwood_defconfig     |  274 +++++++++++++++------
+ arch/powerpc/configs/44x/sam440ep_defconfig    |  284 +++++++++++++++-------
+ arch/powerpc/configs/44x/sequoia_defconfig     |  202 +++++++++++-----
+ arch/powerpc/configs/44x/taishan_defconfig     |  258 +++++++++++++++-----
+ arch/powerpc/configs/44x/warp_defconfig        |  228 ++++++++++++------
+ arch/powerpc/configs/ppc40x_defconfig          |  292 ++++++++++++++++-------
+ arch/powerpc/configs/ppc44x_defconfig          |  309 +++++++++++++++++-------
+ arch/powerpc/kernel/pci_of_scan.c              |   10 +
+ arch/powerpc/sysdev/ppc4xx_pci.c               |    3 +-
+ drivers/pci/probe.c                            |    4 +-
+ include/linux/pci.h                            |    4 +
+ 24 files changed, 3409 insertions(+), 1274 deletions(-)
+
+
