@@ -1,87 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446Ab0A3Hks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752564Ab0A3H5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752446Ab0A3Hks (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 02:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034Ab0A3Hkr
+	id S1752564Ab0A3H5J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 02:57:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338Ab0A3H5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 02:40:47 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:54214 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751886Ab0A3Hkq convert rfc822-to-8bit (ORCPT
+	Sat, 30 Jan 2010 02:57:08 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:42349 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751810Ab0A3H5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 02:40:46 -0500
-Subject: Re: debug: nt_conntrack and KVM crash
-From: Jon Masters <jonathan@jonmasters.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       Patrick McHardy <kaber@trash.net>
-In-Reply-To: <1264836971.7499.4.camel@tonnant>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant>  <1264816777.2793.510.camel@tonnant>
-	 <1264834704.2919.3.camel@edumazet-laptop> <1264836971.7499.4.camel@tonnant>
-Content-Type: text/plain; charset="UTF-8"
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Sat, 30 Jan 2010 02:40:37 -0500
-Message-Id: <1264837237.7499.5.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8BIT
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Sat, 30 Jan 2010 02:57:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ba/6w+rOBVD+3ddKQ5tlNWt+fEjFDW49X8fnZFA1ztCJRtdJsjWDshgo6815/iSa9o
+         Fh9nBzmm/ONLqk1PVeXWU0PNhxDGQKJ2nNWqe5Ph/RVQ//ndtWc2Qqdrp5jgfm6k7GL4
+         8FBWkgsLcLMsnAbi/+qNfc7Aw8D1O8VgtNdzg=
+Date: Fri, 29 Jan 2010 23:57:02 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: remove BKL from uinput open function
+Message-ID: <20100130075702.GC30378@core.coreip.homeip.net>
+References: <1264800197-29523-1-git-send-email-cascardo@holoscopio.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264800197-29523-1-git-send-email-cascardo@holoscopio.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-01-30 at 02:36 -0500, Jon Masters wrote:
-> On Sat, 2010-01-30 at 07:58 +0100, Eric Dumazet wrote:
-> > Le vendredi 29 janvier 2010 à 20:59 -0500, Jon Masters a écrit :
-> > > On Fri, 2010-01-29 at 20:57 -0500, Jon Masters wrote:
-> > > 
-> > > > Ah so I should have realized before but I wasn't looking at valid values
-> > > > for the range of the hashtable yet, nf_conntrack_htable_size is getting
-> > > > wildly out of whack. It goes from:
-> > > > 
-> > > > (gdb) print nf_conntrack_hash_rnd
-> > > > $1 = 2688505299
-> > > > (gdb) print nf_conntrack_htable_size
-> > > > $2 = 16384
-> > > > 
-> > > > nf_conntrack_events: 1
-> > > > nf_conntrack_max: 65536
-> > > > 
-> > > > Shortly after booting, before being NULLed shortly after starting some
-> > > > virtual machines (the hash isn't reset, whereas it is recomputed if the
-> > > > hashtable is re-initialized after an intentional resizing operation):
-> > > 
-> > > I mean the *seed* isn't changed, so I don't think it was resized
-> > > intentionally. I wonder where else htable_size is fiddled with.
+On Fri, Jan 29, 2010 at 07:23:16PM -0200, Thadeu Lima de Souza Cascardo wrote:
+> Commit 8702965848ed4bee27486a3e3d2ae34ebba6dd83 has push down the BKL
+> into uinput open function. However, there's nothing that needs locking
+> in there.
 > 
-> > This rings a bell here, since another crash analysis on another problem
-> > suggested to me a potential problem with read_mostly and modules, but I
-> > had no time to confirm the thing yet.
-> > 
-> > Could you try changing
-> > 
-> > 
-> > net/netfilter/nf_conntrack_core.c:57:unsigned int nf_conntrack_htable_size __read_mostly;
-> > to
-> > net/netfilter/nf_conntrack_core.c:57:unsigned int nf_conntrack_htable_size ;
-> 
-> I'll play later. Right now, I'm looking over every iptables/ip call
-> libvirt makes - it explicitly plays with the netns for the loopback,
-> which looks interesting. Supposing it does cause the hashtables to get
-> unintentionally zereod or the sizing to get wiped out, we should also
-> nonetheless catch the case that the hash function generates a whacko
-> number or that the hash size is set to zero when we want to use it.
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 
-Oh, btw, it's definitely a localized corruption, I did memory dumps of
-the offending page before and after - it's only the two hashing sizes
-that get screwed around with, so it's "intentional".
+Applied to next, thank you.
 
-Jon.
-
-
+-- 
+Dmitry
