@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978Ab0A3PDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913Ab0A3PD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978Ab0A3PDc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 10:03:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837Ab0A3PDY
+	id S1753913Ab0A3PD1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 10:03:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567Ab0A3PDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 10:03:24 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:59769 "EHLO
+	Sat, 30 Jan 2010 10:03:21 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:59637 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753767Ab0A3PDS (ORCPT
+	with ESMTP id S1753329Ab0A3PDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 10:03:18 -0500
+	Sat, 30 Jan 2010 10:03:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=p5oc2RmPvQSpcFAJcIG9NPjlz6gKsfu+mBZodNIs3GoU1hSG6PB+WJYr/O3Xrsbepz
-         RPtKA0xDIU64YKpZK8ISEqZJ+fAUDZOLeY31ciQN8nGqjoN3C5CPrBc5ad4G8AymScad
-         nNNu0NQsaHBL++wonUJlcUOTbGS6H1PuHtznA=
+        b=W1pGD5KJiKZcXH2Xn0L7gNggeZQhhIWDFdkm4vsERZEwk3gGpwhkhTH8vLLMRPrmSn
+         vSv5oBtsYApKO7px9lrh2VkBVd2tI3W7/12J+l8uZK89cHaHRHr2AthqLKB39DuABYRp
+         fM+RYtnLFRSZIOca3BH3JXVOXA0XMQtD90Rjw=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: Artem Bityutskiy <dedekind1@gmail.com>,
@@ -24,9 +24,9 @@ Cc: Artem Bityutskiy <dedekind1@gmail.com>,
        Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 09/17] MTD: nand: make MTD_OOB_PLACE work correctly.
-Date: Sat, 30 Jan 2010 17:02:40 +0200
-Message-Id: <1264863768-27606-10-git-send-email-maximlevitsky@gmail.com>
+Subject: [PATCH 08/17] MTD: call remove notifiers before removing the device
+Date: Sat, 30 Jan 2010 17:02:39 +0200
+Message-Id: <1264863768-27606-9-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1264863768-27606-1-git-send-email-maximlevitsky@gmail.com>
 References: <1264863768-27606-1-git-send-email-maximlevitsky@gmail.com>
@@ -34,42 +34,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MTD_OOB_PLACE is supposed to read/write raw oob data similiar to MTD_OOB_RAW
-however due to a bug, currently its not possible to read more data that
-specified in oob 'free' regions
+Now that mtd block common layer is prepared for proper hotplug support, enable it here
+Now all users of the mtd device have a chance to put the mtd device
+when they are notified to do so, and they have to do so to make hotplug work.
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/nand/nand_base.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+ drivers/mtd/mtdcore.c |   21 +++++++++++----------
+ 1 files changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
-index 8f2958f..405c538 100644
---- a/drivers/mtd/nand/nand_base.c
-+++ b/drivers/mtd/nand/nand_base.c
-@@ -1232,6 +1232,9 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
- 	int ret = 0;
- 	uint32_t readlen = ops->len;
- 	uint32_t oobreadlen = ops->ooblen;
-+	uint32_t max_oobsize = ops->mode == MTD_OOB_AUTO ?
-+		mtd->oobavail : mtd->oobsize;
-+
- 	uint8_t *bufpoi, *oob, *buf;
+diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+index 3bdb7e8..0e86208 100644
+--- a/drivers/mtd/mtdcore.c
++++ b/drivers/mtd/mtdcore.c
+@@ -341,31 +341,32 @@ int add_mtd_device(struct mtd_info *mtd)
+ int del_mtd_device (struct mtd_info *mtd)
+ {
+ 	int ret;
++	struct mtd_notifier *not;
  
- 	stats = mtd->ecc_stats;
-@@ -1282,10 +1285,11 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
- 			buf += bytes;
+ 	mutex_lock(&mtd_table_mutex);
  
- 			if (unlikely(oob)) {
+ 	if (mtd_table[mtd->index] != mtd) {
+ 		ret = -ENODEV;
+-	} else if (mtd->usecount) {
++		goto out_error;
++	}
 +
- 				/* Raw mode does data:oob:data:oob */
- 				if (ops->mode != MTD_OOB_RAW) {
- 					int toread = min(oobreadlen,
--						chip->ecc.layout->oobavail);
-+								max_oobsize);
- 					if (toread) {
- 						oob = nand_transfer_oob(chip,
- 							oob, ops, toread);
++	/* No need to get a refcount on the module containing
++		the notifier, since we hold the mtd_table_mutex */
++	list_for_each_entry(not, &mtd_notifiers, list)
++		not->remove(mtd);
++
++	if (mtd->usecount) {
+ 		printk(KERN_NOTICE "Removing MTD device #%d (%s) with use count %d\n",
+ 		       mtd->index, mtd->name, mtd->usecount);
+ 		ret = -EBUSY;
+ 	} else {
+-		struct mtd_notifier *not;
+-
+ 		device_unregister(&mtd->dev);
+-
+-		/* No need to get a refcount on the module containing
+-		   the notifier, since we hold the mtd_table_mutex */
+-		list_for_each_entry(not, &mtd_notifiers, list)
+-			not->remove(mtd);
+-
+ 		mtd_table[mtd->index] = NULL;
+-
+ 		module_put(THIS_MODULE);
+ 		ret = 0;
+ 	}
+ 
++out_error:
+ 	mutex_unlock(&mtd_table_mutex);
+ 	return ret;
+ }
 -- 
 1.6.3.3
 
