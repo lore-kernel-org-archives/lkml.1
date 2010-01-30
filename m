@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338Ab0A3UrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480Ab0A3UrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338Ab0A3UrP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 15:47:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228Ab0A3UrM
+	id S1754480Ab0A3UrY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 15:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397Ab0A3UrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 15:47:12 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:43913 "EHLO
+	Sat, 30 Jan 2010 15:47:21 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:43920 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754212Ab0A3UrK (ORCPT
+	with ESMTP id S1754228Ab0A3UrS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 15:47:10 -0500
+	Sat, 30 Jan 2010 15:47:18 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <greg@kroah.com>
@@ -17,9 +17,9 @@ Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, linux-kernel@vger.kernel.org,
        Sam Ravnborg <sam@ravnborg.org>, Rusty Russell <rusty@rustcorp.com.au>,
        Sean MacLennan <smaclennan@pikatech.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 5/7] modpost: remove now unused NO_MISMATCH constant
-Date: Sat, 30 Jan 2010 21:46:50 +0100
-Message-Id: <1264884412-6173-5-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 4/7] modpost: pass around const struct sectioncheck * instead of enum mismatch
+Date: Sat, 30 Jan 2010 21:46:49 +0100
+Message-Id: <1264884412-6173-4-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100130204425.GA16345@pengutronix.de>
 References: <20100130204425.GA16345@pengutronix.de>
@@ -34,32 +34,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This prepares having a per-check whitelist of symbol names.
+
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- scripts/mod/modpost.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ scripts/mod/modpost.c |   16 +++++++++-------
+ 1 files changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 3f0380b..a94bd10 100644
+index 598d54a..3f0380b 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -835,7 +835,6 @@ static const char *linker_symbols[] =
- 	{ "__init_begin", "_sinittext", "_einittext", NULL };
+@@ -933,7 +933,8 @@ const struct sectioncheck sectioncheck[] = {
+ }
+ };
  
- enum mismatch {
--	NO_MISMATCH,
- 	TEXT_TO_ANY_INIT,
- 	DATA_TO_ANY_INIT,
- 	TEXT_TO_ANY_EXIT,
-@@ -1280,8 +1279,6 @@ static void report_sec_mismatch(const char *modname,
- 		"Fix this by removing the %sannotation of %s "
- 		"or drop the export.\n",
- 		tosym, sec2annotation(tosec), sec2annotation(tosec), tosym);
--	case NO_MISMATCH:
--		/* To get warnings on missing members */
- 		break;
+-static int section_mismatch(const char *fromsec, const char *tosec)
++static const struct sectioncheck *section_mismatch(
++		const char *fromsec, const char *tosec)
+ {
+ 	int i;
+ 	int elems = sizeof(sectioncheck) / sizeof(struct sectioncheck);
+@@ -942,10 +943,10 @@ static int section_mismatch(const char *fromsec, const char *tosec)
+ 	for (i = 0; i < elems; i++) {
+ 		if (match(fromsec, check->fromsec) &&
+ 		    match(tosec, check->tosec))
+-			return check->mismatch;
++			return check;
+ 		check++;
  	}
- 	fprintf(stderr, "\n");
+-	return NO_MISMATCH;
++	return NULL;
+ }
+ 
+ /**
+@@ -1158,7 +1159,8 @@ static int is_function(Elf_Sym *sym)
+  * Try to find symbols near it so user can find it.
+  * Check whitelist before warning - it may be a false positive.
+  */
+-static void report_sec_mismatch(const char *modname, enum mismatch mismatch,
++static void report_sec_mismatch(const char *modname,
++				const struct sectioncheck *mismatch,
+                                 const char *fromsec,
+                                 unsigned long long fromaddr,
+                                 const char *fromsym,
+@@ -1189,7 +1191,7 @@ static void report_sec_mismatch(const char *modname, enum mismatch mismatch,
+ 	     modname, fromsec, fromaddr, from, fromsym, from_p, to, tosec,
+ 	     tosym, to_p);
+ 
+-	switch (mismatch) {
++	switch (mismatch->mismatch) {
+ 	case TEXT_TO_ANY_INIT:
+ 		fprintf(stderr,
+ 		"The function %s%s() references\n"
+@@ -1289,11 +1291,11 @@ static void check_section_mismatch(const char *modname, struct elf_info *elf,
+                                    Elf_Rela *r, Elf_Sym *sym, const char *fromsec)
+ {
+ 	const char *tosec;
+-	enum mismatch mismatch;
++	const struct sectioncheck *mismatch;
+ 
+ 	tosec = sec_name(elf, sym->st_shndx);
+ 	mismatch = section_mismatch(fromsec, tosec);
+-	if (mismatch != NO_MISMATCH) {
++	if (mismatch) {
+ 		Elf_Sym *to;
+ 		Elf_Sym *from;
+ 		const char *tosym;
 -- 
 1.6.6
 
