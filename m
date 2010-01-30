@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088Ab0A3LpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588Ab0A3LpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753088Ab0A3LpA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 06:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462Ab0A3Lov
+	id S1753588Ab0A3LpY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 06:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509Ab0A3Lou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 06:44:51 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52276 "EHLO
+	Sat, 30 Jan 2010 06:44:50 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52309 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642Ab0A3Lnn (ORCPT
+	with ESMTP id S1753435Ab0A3Lot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 06:43:43 -0500
+	Sat, 30 Jan 2010 06:44:49 -0500
+Message-ID: <4B641BAD.7060102@dcl.info.waseda.ac.jp>
+Date: Sat, 30 Jan 2010 20:44:45 +0900
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; ja; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH v2 07/11] lockdep:  Add file and line to initialize sequence of rwsem (x86)
-Date: Sat, 30 Jan 2010 20:43:29 +0900
-Message-Id: <1264851813-8413-8-git-send-email-mitake@dcl.info.waseda.ac.jp>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] perf: Add util/include/linux/config.h for including generated
+ autoconf.h of kernel
+References: <4B6133DF.9080207@dcl.info.waseda.ac.jp>	 <1264688928-12861-1-git-send-email-mitake@dcl.info.waseda.ac.jp> <1264689878.4283.2101.camel@laptop>
+In-Reply-To: <1264689878.4283.2101.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds __FILE__ and __LINE__ to lockdep_map of rw_semaphore.
-This patch only affects to x86 architecture dependent rwsem.
+(2010年01月28日 23:44), Peter Zijlstra wrote:
+> On Thu, 2010-01-28 at 23:28 +0900, Hitoshi Mitake wrote:
+>    
+>> I'd like to add util/include/linux/config.h,
+>> this header file includes autoconf.h which is generated
+>> by build phase of kernel.
+>>
+>> This makes building of perf depend on building of kernel.
+>> It's a little dirty. But perf has tight relation
+>> of its kernel, so I don't think that it is a serious problem.
+>>
+>> My original purpose of making this patch is
+>> knowing size of void *.
+>> If config.h is available,
+>> CONFIG_ARCH_PHYS_ADDR_T_64BIT will be provided for source of perf,
+>> we can know size of void * by this config.
+>>
+>> How do you think?
+>>      
+> I think sizeof(void *).
+>
+>
+>    
 
-If this patch is accepted, I'll prepare and send the patch
-adds __FILE__ and __LINE__ to rw_semaphore of other architectures
-which provides architecture dependent rwsem.h .
+I've told about preprocessor level method.
+But thanks for your advice,
+I found the way to use memcpy()!
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- arch/x86/include/asm/rwsem.h |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/rwsem.h b/arch/x86/include/asm/rwsem.h
-index ca7517d..24cbe3a 100644
---- a/arch/x86/include/asm/rwsem.h
-+++ b/arch/x86/include/asm/rwsem.h
-@@ -74,7 +74,12 @@ struct rw_semaphore {
- };
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
--# define __RWSEM_DEP_MAP_INIT(lockname) , .dep_map = { .name = #lockname }
-+# define __RWSEM_DEP_MAP_INIT(lockname)			\
-+	, .dep_map = {					\
-+		.file = __FILE__,			\
-+		.line = __LINE__,			\
-+		.name = #lockname,			\
-+	}
- #else
- # define __RWSEM_DEP_MAP_INIT(lockname)
- #endif
-@@ -96,7 +101,7 @@ extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
- do {								\
- 	static struct lock_class_key __key;			\
- 								\
--	__init_rwsem((sem), #sem, &__key);			\
-+	__init_rwsem((sem), #sem, &__key, __FILE__, __LINE__);	\
- } while (0)
- 
- /*
--- 
-1.6.5.2
+Thanks
+     Hitoshi
 
