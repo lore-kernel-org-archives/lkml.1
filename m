@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072Ab0A3Tz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292Ab0A3T5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072Ab0A3Tz4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 14:55:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104Ab0A3Tzz
+	id S1754292Ab0A3T5J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 14:57:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588Ab0A3T5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 14:55:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57336 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752275Ab0A3Tzz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 14:55:55 -0500
-Date: Sat, 30 Jan 2010 11:54:55 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-cc: Kevin Winchester <kjwinchester@gmail.com>, Dave Airlie <airlied@linux.ie>,
-       dri-devel <dri-devel@lists.sf.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Deucher <alexdeucher@gmail.com>,
-       Jerome Glisse <jglisse@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: Radeon KMS regression still present in 2.6.33-rc6
-In-Reply-To: <201001302050.11897.johannes.hirte@fem.tu-ilmenau.de>
-Message-ID: <alpine.LFD.2.00.1001301153390.4206@localhost.localdomain>
-References: <1264871899.1533.6.camel@localhost.localdomain> <alpine.LFD.2.00.1001300929260.4206@localhost.localdomain> <201001302050.11897.johannes.hirte@fem.tu-ilmenau.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 30 Jan 2010 14:57:08 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:47229 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752415Ab0A3T5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 14:57:05 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: Regressionhung task during raid rebuild 2.6.33 rc5 was: Re: 2.6.33RC3 hung task - jbd2/dm-1-8 (during raid rebuild)
+Date: Sat, 30 Jan 2010 20:57:59 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <4B4A4AD7.5090800@majjas.com> <4B6486A7.8030404@majjas.com>
+In-Reply-To: <4B6486A7.8030404@majjas.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001302057.59529.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 30 Jan 2010, Johannes Hirte wrote:
+On Saturday 30 January 2010, Michael Breuer wrote:
+> On 1/10/2010 4:47 PM, Michael Breuer wrote:
+> > System crashed (watchdog reset).
+> >
+> > Was doing a raid rebuild at the time (raid6).
+> >
+> > I typed, 'yumdownloader --source virtlib' ... system froze, then 
+> > rebooted on the watchdog reset.
+> >
+> > I've attached the log extract from the event as well as dmesg.
+> >
+> >
+> Hit this again - system doesn't crash now - just get the hung task 
+> warning (log extract attached). System seems to keep running (albeit the 
+> rebuild is incredibly slow on 2.6.33 rc5 - approx 6500K/sec vs. about 
+> 80,000K/sec on 2.6.32.4.
 > 
-> This is caused by commit 42590a75019a50012f25a962246498dead42843
-> 
-> Fix is already posted:
-> 
-> http://marc.info/?l=linux-kernel&m=126428141429200&w=2
+> Looks like it may be triggered by disk io during the rebuild. This time 
+> I had typed, "sync." "sync" hung for a long while but did eventually 
+> complete.
 
-Goodie. Kevin, can you test the patch from FUJITA Tomonori in that thread 
-("http://marc.info/?l=linux-kernel&m=126439631307219&w=2" to be exact).
+Is this the bug tracked as http://bugzilla.kernel.org/show_bug.cgi?id=15125 ?
 
-		Linus
+Rafael
