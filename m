@@ -1,85 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589Ab0A3Xey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927Ab0A3XqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752589Ab0A3Xey (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 18:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131Ab0A3Xey
+	id S1752927Ab0A3XqW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 18:46:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543Ab0A3XqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 18:34:54 -0500
-Received: from gate.crashing.org ([63.228.1.57]:43299 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751915Ab0A3Xex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 18:34:53 -0500
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 31 Jan 2010 10:34:40 +1100
-Message-ID: <1264894480.8287.7.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 30 Jan 2010 18:46:21 -0500
+Received: from mail-iw0-f173.google.com ([209.85.223.173]:51628 "EHLO
+	mail-iw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752450Ab0A3XqU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 18:46:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=keoTml1HqeqIhuZ189OpDheYH+B+pfG9U1r++D+4OHnIVL9jAzyTLEjlZPd19iSs9U
+         yoZdBKgTKYBXzvpqhqGsEVvMkVEQlesz8hCMEdX2gDOg+sMpPlk5d0JR4wuPWzlYoL/V
+         yKNXUmuhAgkVMNi5N7ONDyC4lSgKnDXV7rlAQ=
+Date: Sat, 30 Jan 2010 17:45:51 -0600
+From: Shawn Bohrer <shawn.bohrer@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+Subject: High scheduler wake up times
+Message-ID: <20100130234551.GA27390@mediacenter.gateway.2wire.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus !
+Hello,
 
-Here are some more defconfig updates that I missed before LCA and a
-few PCI related fixes, some of them actually fixing regressions and
-one of them (the 4xx one) trivial enough that's really not worth
-delaying it.
+Currently we have a workload that depends on around 50 processes that
+wake up 1000 times a second do a small amount of work and go back to
+sleep.  This works great on RHEL 5 (2.6.18-164.6.1.el5), but on recent
+kernels we are unable to achieve 1000 iterations per second.  Using
+the simple test application below on RHEL 5 2.6.18-164.6.1.el5 I can run
+500 of these processes on and still achieve 999.99 iterations per
+second.  Running just 10 of these processes on the same machine with
+2.6.32.6 produces results like:
 
-Cheers,
-Ben.
+...
+Iterations Per Sec: 905.659667
+Iterations Per Sec: 805.099068
+Iterations Per Sec: 925.195578
+Iterations Per Sec: 759.310773
+Iterations Per Sec: 702.849261
+Iterations Per Sec: 782.157292
+Iterations Per Sec: 917.138031
+Iterations Per Sec: 834.770391
+Iterations Per Sec: 850.543755
+...
 
-The following changes since commit b04da8bfdfbbd79544cab2fadfdc12e87eb01600:
-  Greg Kroah-Hartman (1):
-        fnctl: f_modown should call write_lock_irqsave/restore
+I've tried playing with some of the cfs tunables in /proc/sys/kernel/
+without success.  Are there any suggestions on how to achieve the
+results we are looking for using a recent kernel?
 
-are available in the git repository at:
+Thanks,
+Shawn
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-Benjamin Herrenschmidt (4):
-      powerpc/pci: Add calls to set_pcie_port_type() and set_pcie_hotplug_bridge()
-      powerpc/pci: Add missing hookup to pci_slot
-      powerpc/pci: Add missing call to header fixup
-      Merge commit 'jwb/merge' into merge
+#include <sys/epoll.h>
+#include <sys/time.h>
+#include <stdio.h>
+#include <unistd.h>
 
-Josh Boyer (2):
-      powerpc/44x: Update PowerPC 44x board defconfigs
-      powerpc/40x: Update the PowerPC 40x board defconfigs
+int main ()
+{
+	int epfd = epoll_create(1);
+	int i, j;
+	struct timeval tv;
+	unsigned long start, end;
+	const unsigned int count = 60000;
 
-Stef van Os (1):
-      powerpc/4xx: Add pcix type 1 transactions
+	while (1) {
+		gettimeofday(&tv, NULL);
+		start = tv.tv_sec * 1000000 + tv.tv_usec;
 
- arch/powerpc/configs/40x/acadia_defconfig      |  241 ++++++++++++++-----
- arch/powerpc/configs/40x/ep405_defconfig       |  307 ++++++++++++++++++------
- arch/powerpc/configs/40x/hcu4_defconfig        |  256 +++++++++++++++-----
- arch/powerpc/configs/40x/kilauea_defconfig     |  140 ++++++++---
- arch/powerpc/configs/40x/makalu_defconfig      |  190 ++++++++++-----
- arch/powerpc/configs/40x/walnut_defconfig      |  257 +++++++++++++++-----
- arch/powerpc/configs/44x/arches_defconfig      |  135 ++++++++---
- arch/powerpc/configs/44x/bamboo_defconfig      |  255 +++++++++++++++-----
- arch/powerpc/configs/44x/canyonlands_defconfig |  141 ++++++++---
- arch/powerpc/configs/44x/ebony_defconfig       |  258 +++++++++++++++-----
- arch/powerpc/configs/44x/eiger_defconfig       |  128 +++++++---
- arch/powerpc/configs/44x/katmai_defconfig      |  253 +++++++++++++++-----
- arch/powerpc/configs/44x/rainier_defconfig     |  254 +++++++++++++++-----
- arch/powerpc/configs/44x/redwood_defconfig     |  274 +++++++++++++++------
- arch/powerpc/configs/44x/sam440ep_defconfig    |  284 +++++++++++++++-------
- arch/powerpc/configs/44x/sequoia_defconfig     |  202 +++++++++++-----
- arch/powerpc/configs/44x/taishan_defconfig     |  258 +++++++++++++++-----
- arch/powerpc/configs/44x/warp_defconfig        |  228 ++++++++++++------
- arch/powerpc/configs/ppc40x_defconfig          |  292 ++++++++++++++++-------
- arch/powerpc/configs/ppc44x_defconfig          |  309 +++++++++++++++++-------
- arch/powerpc/kernel/pci_of_scan.c              |   10 +
- arch/powerpc/sysdev/ppc4xx_pci.c               |    3 +-
- drivers/pci/probe.c                            |    4 +-
- include/linux/pci.h                            |    4 +
- 24 files changed, 3409 insertions(+), 1274 deletions(-)
+		for (i = 0; i < count; ++i) {
+			if (epoll_wait(epfd, 0, 1, 1) == -1)
+				perror("epoll failed");
 
+			for (j = 0; j < 10000; ++j)
+				/* simulate work */;
+		}
+		gettimeofday(&tv, NULL);
+		end = tv.tv_sec * 1000000 + tv.tv_usec;
+
+		printf("Iterations Per Sec: %f\n", count/((double)(end - start)/1000000));
+	}
+
+	close(epfd);
+}
 
