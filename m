@@ -1,138 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399Ab0A3AfD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706Ab0A3Axo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399Ab0A3AfD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 19:35:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783Ab0A3AfA
+	id S1755706Ab0A3Axo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 19:53:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953Ab0A3Axn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 19:35:00 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4100 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754614Ab0A3Ae6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 19:34:58 -0500
-Date: Fri, 29 Jan 2010 19:34:10 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, aarcange@redhat.com
-Subject: [PATCH -mm] remove VM_LOCK_RMAP code
-Message-ID: <20100129193410.7ce915d0@annuminas.surriel.com>
-In-Reply-To: <20100129151423.8b71b88e.akpm@linux-foundation.org>
-References: <20100128002000.2bf5e365@annuminas.surriel.com>
-	<20100129151423.8b71b88e.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Jan 2010 19:53:43 -0500
+Received: from na3sys009aog111.obsmtp.com ([74.125.149.205]:37296 "HELO
+	na3sys009aog111.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752620Ab0A3Axn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 19:53:43 -0500
+X-Greylist: delayed 419 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Jan 2010 19:53:42 EST
+From: Michael Poole <mdpoole@troilus.org>
+To: Bastien Nocera <hadess@hadess.net>, Marcel Holtmann <marcel@holtmann.org>
+Cc: Jiri Kosina <jkosina@suse.cz>, "Gunn\, Brian" <bgunn@solekai.com>,
+       Ping <pinglinux@gmail.com>, linux-kernel@vger.kernel.org,
+       BlueZ development <linux-bluetooth@vger.kernel.org>
+Subject: Re: [PATCH 0/3] HID: make raw output callback more flexible
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>
+	<1264783166.29532.5302.camel@localhost.localdomain>
+Date: Fri, 29 Jan 2010 19:46:39 -0500
+In-Reply-To: <1264783166.29532.5302.camel@localhost.localdomain> (Bastien
+	Nocera's message of "Fri, 29 Jan 2010 16:39:26 +0000")
+Message-ID: <87iqakifm8.fsf@troilus.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a VMA is in an inconsistent state during setup or teardown, the
-worst that can happen is that the rmap code will not be able to find
-the page.
+Bastien Nocera writes:
 
-It is also impossible for the rmap code to follow a pointer to an
-already freed VMA, because the rmap code holds the anon_vma->lock,
-which the VMA teardown code needs to take before the VMA is removed
-from the anon_vma chain.
+> On Fri, 2010-01-29 at 15:20 +0100, Jiri Kosina wrote:
+>> Hi,
+>> 
+>> this is a followup to the thread
+>> 
+>> 	"Implement Bluetooth Wacom tablet's mode change in the kernel"
+>> 
+>> First patch alters the raw output API so that it is able to actually 
+>> distinguish between feature and output reports (and modifies low-level 
+>> drivers accordingly), and the two followup patches make use of this for 
+>> in-kernel mode setting of Sony and Wacom bluetooth devices.
+>> 
+>> Marcel, could you please review the Bluetooth part?
 
-Hence, we should not need the VM_LOCK_RMAP locking at all.
+Count this as another vote for review, please -- I have a similar
+patch[1] that I would prefer to drop.
 
-Sent as a separate patch because I would appreciate it if others
-could verify my logic :)
+[1]- http://www.spinics.net/lists/linux-input/msg06768.html
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
----
- include/linux/mm.h |    4 ----
- mm/mmap.c          |   15 ---------------
- mm/rmap.c          |   12 ------------
- 3 files changed, 0 insertions(+), 31 deletions(-)
+> Patches 1 and 2 work as expected (minus the hidp parsing issue[1]).
+> Couldn't test patch 3 for the Sony Sixaxis right now.
+>
+> Cheers
+>
+> [1]: Comments on the patch at
+> http://thread.gmane.org/gmane.linux.bluez.kernel/4279 would be
+> appreciated
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 93bbb70..5866e0c 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -96,11 +96,7 @@ extern unsigned int kobjsize(const void *objp);
- #define VM_NORESERVE	0x00200000	/* should the VM suppress accounting */
- #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
- #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
--#ifdef CONFIG_MMU
--#define VM_LOCK_RMAP	0x01000000	/* Do not follow this rmap (mmu mmap) */
--#else
- #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
--#endif
- #define VM_INSERTPAGE	0x02000000	/* The vma has had "vm_insert_page()" done on it */
- #define VM_ALWAYSDUMP	0x04000000	/* Always include in core dumps */
- 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 58a3d72..de9e953 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -554,9 +554,7 @@ again:			remove_next = 1 + (end > next->vm_end);
- 		 */
- 		if (importer && !importer->anon_vma) {
- 			/* Block reverse map lookups until things are set up. */
--			importer->vm_flags |= VM_LOCK_RMAP;
- 			if (anon_vma_clone(importer, vma)) {
--				importer->vm_flags &= ~VM_LOCK_RMAP;
- 				return -ENOMEM;
- 			}
- 			importer->anon_vma = anon_vma;
-@@ -618,11 +616,6 @@ again:			remove_next = 1 + (end > next->vm_end);
- 		__vma_unlink(mm, next, vma);
- 		if (file)
- 			__remove_shared_vm_struct(next, file, mapping);
--		/*
--		 * This VMA is now dead, no need for rmap to follow it.
--		 * Call anon_vma_merge below, outside of i_mmap_lock.
--		 */
--		next->vm_flags |= VM_LOCK_RMAP;
- 	} else if (insert) {
- 		/*
- 		 * split_vma has split insert from vma, and needs
-@@ -635,20 +628,12 @@ again:			remove_next = 1 + (end > next->vm_end);
- 	if (mapping)
- 		spin_unlock(&mapping->i_mmap_lock);
- 
--	/*
--	 * The current VMA has been set up. It is now safe for the
--	 * rmap code to get from the pages to the ptes.
--	 */
--	if (anon_vma && importer)
--		importer->vm_flags &= ~VM_LOCK_RMAP;
--
- 	if (remove_next) {
- 		if (file) {
- 			fput(file);
- 			if (next->vm_flags & VM_EXECUTABLE)
- 				removed_exe_file_vma(mm);
- 		}
--		/* Protected by mmap_sem and VM_LOCK_RMAP. */
- 		if (next->anon_vma)
- 			anon_vma_merge(vma, next);
- 		mm->map_count--;
-diff --git a/mm/rmap.c b/mm/rmap.c
-index aa11f3c..818615a 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -329,18 +329,6 @@ vma_address(struct page *page, struct vm_area_struct *vma)
- 		/* page should be within @vma mapping range */
- 		return -EFAULT;
- 	}
--	if (unlikely(vma->vm_flags & VM_LOCK_RMAP)) {
--		/*
--		 * This VMA is being unlinked or is not yet linked into the
--		 * VMA tree.  Do not try to follow this rmap.  This race
--		 * condition can result in page_referenced() ignoring a
--		 * reference or in try_to_unmap() failing to unmap a page.
--		 * The VMA cannot be freed under us because we hold the
--		 * anon_vma->lock, which the munmap code takes while
--		 * unlinking the anon_vmas from the VMA.
--		 */
--		return -EFAULT;
--	}
- 	return address;
- }
- 
+This patch does not work for me.  Before, the first time after each boot
+that I tried to connect to an Apple Magic Mouse, it failed with -14
+(EFAULT).  With this patch, it fails with -22 (EINVAL) instead.  The
+-EFAULT *was* due to hidp_parse()'s copy_from_user().  I have not looked
+yet to see where the -EINVAL is coming from -- would that help?  (Both
+with and without your patch, the second attempt to connect works.)
 
+Michael Poole
