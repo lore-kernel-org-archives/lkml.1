@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472Ab0A3JyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092Ab0A3KD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472Ab0A3JyW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 04:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315Ab0A3Jx3
+	id S1753092Ab0A3KD1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 05:03:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349Ab0A3KD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 04:53:29 -0500
-Received: from mga01.intel.com ([192.55.52.88]:46174 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753176Ab0A3Jx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 04:53:27 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,373,1262592000"; 
-   d="scan'208";a="768609414"
-Message-Id: <20100130094958.141191239@intel.com>
-User-Agent: quilt/0.48-1
-Date: Sat, 30 Jan 2010 17:45:20 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-cc: Al Viro <viro@ZenIV.linux.org.uk>
-cc: <linux-fsdevel@vger.kernel.org>
-Subject: [PATCH 5/5] devmem: dont allow seek to last page
-References: <20100130094515.475881280@intel.com>
-Content-Disposition: inline; filename=mem-seek-fix
+	Sat, 30 Jan 2010 05:03:26 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:46828 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752711Ab0A3KDX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 05:03:23 -0500
+Subject: Re: debug: nt_conntrack and KVM crash
+From: Jon Masters <jonathan@jonmasters.org>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       Patrick McHardy <kaber@trash.net>
+In-Reply-To: <1264840415.2919.19.camel@edumazet-laptop>
+References: <1264813832.2793.446.camel@tonnant>
+	 <1264816634.2793.505.camel@tonnant>  <1264816777.2793.510.camel@tonnant>
+	 <1264834704.2919.3.camel@edumazet-laptop> <1264836971.7499.4.camel@tonnant>
+	 <1264840415.2919.19.camel@edumazet-laptop>
+Content-Type: text/plain; charset="UTF-8"
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Sat, 30 Jan 2010 05:03:14 -0500
+Message-Id: <1264845794.7499.10.camel@tonnant>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8BIT
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So as to return a uniform error -EOVERFLOW instead of a random one:
+On Sat, 2010-01-30 at 09:33 +0100, Eric Dumazet wrote:
+> Le samedi 30 janvier 2010 à 02:36 -0500, Jon Masters a écrit :
+> 
+> > I'll play later. Right now, I'm looking over every iptables/ip call
+> > libvirt makes - it explicitly plays with the netns for the loopback,
+> > which looks interesting. Supposing it does cause the hashtables to get
+> > unintentionally zereod or the sizing to get wiped out, we should also
+> > nonetheless catch the case that the hash function generates a whacko
+> > number or that the hash size is set to zero when we want to use it.
 
-# kmem-seek 0xfffffffffffffff0
-seek /dev/kmem: Device or resource busy
-# kmem-seek 0xfffffffffffffff1
-seek /dev/kmem: Block device required
+> I asked you if you had multiple namespaces, because I was not sure
+> conntracking hash was global (shared by all namespaces), or local.
 
-Suggested by OGAWA Hirofumi.
+Well, I didn't think I had multiple namespaces, and in fact I don't see
+more than one in gdb when I poke at the net struct. What I see libvirt
+doing (very oddly indeed - looking at the source now) is calling ip and
+asking for the lo device to be moved into the netns for pid "-1", which
+isn't valid AFAIK (should be a valid pid, unless "-1" is supposed to be
+"this process" or something, haven't played with multiple namespaces).
 
-CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/char/mem.c |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
+I'll do some more digging (network stuff isn't my area) now and come
+back. It only reproduces if multiple VMs start at once (hence a race,
+perhaps as you describe) whereas if I disable autostart and let them
+come up one at a time, the box doesn't roll over.
 
---- linux-mm.orig/drivers/char/mem.c	2010-01-30 17:41:51.000000000 +0800
-+++ linux-mm/drivers/char/mem.c	2010-01-30 17:42:29.000000000 +0800
-@@ -721,16 +721,23 @@ static loff_t memory_lseek(struct file *
- 
- 	mutex_lock(&file->f_path.dentry->d_inode->i_mutex);
- 	switch (orig) {
--		case 0:
-+		case SEEK_CUR:
-+			offset += file->f_pos;
-+			if ((unsigned long long)offset <
-+			    (unsigned long long)file->f_pos) {
-+				ret = -EOVERFLOW;
-+				break;
-+			}
-+		case SEEK_SET:
-+			/* to avoid userland mistaking f_pos=-9 as -EBADF=-9 */
-+			if ((unsigned long long)offset >= ~0xFFFULL) {
-+				ret = -EOVERFLOW;
-+				break;
-+			}
- 			file->f_pos = offset;
- 			ret = file->f_pos;
- 			force_successful_syscall_return();
- 			break;
--		case 1:
--			file->f_pos += offset;
--			ret = file->f_pos;
--			force_successful_syscall_return();
--			break;
- 		default:
- 			ret = -EINVAL;
- 	}
+Jon.
 
 
