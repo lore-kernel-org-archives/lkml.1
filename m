@@ -1,145 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425Ab0A3Jxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401Ab0A3JyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425Ab0A3Jxf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 04:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932065Ab0A3Jxe
+	id S1753401Ab0A3JyD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 04:54:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337Ab0A3Jxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 04:53:34 -0500
+	Sat, 30 Jan 2010 04:53:30 -0500
 Received: from mga01.intel.com ([192.55.52.88]:46174 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333Ab0A3Jxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 04:53:30 -0500
+	id S1753214Ab0A3Jx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 04:53:28 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,373,1262592000"; 
-   d="scan'208";a="768609418"
-Message-Id: <20100130094957.972297091@intel.com>
+   d="scan'208";a="536027263"
+Message-Id: <20100130094957.692671259@intel.com>
 User-Agent: quilt/0.48-1
-Date: Sat, 30 Jan 2010 17:45:19 +0800
+Date: Sat, 30 Jan 2010 17:45:17 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+       Jamie Lokier <jamie@shareable.org>, Roland Dreier <rdreier@cisco.com>
+cc: Al Viro <viro@ZenIV.linux.org.uk>
 cc: <linux-fsdevel@vger.kernel.org>
-Subject: [PATCH 4/5] vfs: introduce FMODE_NEG_OFFSET for allowing negative f_pos
+Subject: [PATCH 2/5] bitops: compile time optimization for hweight_long(CONSTANT)
 References: <20100130094515.475881280@intel.com>
-Content-Disposition: inline; filename=f_pos-fix
+Content-Disposition: inline; filename=constant-hweight32.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+This allows use of hweight_long() in BUILD_BUG_ON().
+Suggested by Jamie.
 
-Now, rw_verify_area() checsk f_pos is negative or not. And if
-negative, returns -EINVAL.
-
-But, some special files as /dev/(k)mem and /proc/<pid>/mem etc..
-has negative offsets. And we can't do any access via read/write
-to the file(device).
-
-So introduce FMODE_NEG_OFFSET to allow negative file offsets.
-
-Changelog: v5->v6
- - use FMODE_NEG_OFFSET (suggested by Al)
- - rebased onto 2.6.33-rc1
-
-Changelog: v4->v5
- - clean up patches dor /dev/mem.
- - rebased onto 2.6.32-rc1
-
-Changelog: v3->v4
- - make changes in mem.c aligned.
- - change __negative_fpos_check() to return int. 
- - fixed bug in "pos" check.
- - added comments.
-
-Changelog: v2->v3
- - fixed bug in rw_verify_area (it cannot be compiled)
-
-CC: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: Jamie Lokier <jamie@shareable.org>
+CC: Roland Dreier <rdreier@cisco.com>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- drivers/char/mem.c |    4 ++++
- fs/proc/base.c     |    2 ++
- fs/read_write.c    |   21 +++++++++++++++++++--
- include/linux/fs.h |    3 +++
- 4 files changed, 28 insertions(+), 2 deletions(-)
+ include/linux/bitops.h |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
---- linux-mm.orig/fs/read_write.c	2010-01-22 11:20:29.000000000 +0800
-+++ linux-mm/fs/read_write.c	2010-01-30 17:41:51.000000000 +0800
-@@ -205,6 +205,20 @@ bad:
- }
- #endif
- 
-+static int
-+__negative_fpos_check(struct file *file, loff_t pos, size_t count)
-+{
-+	/*
-+	 * pos or pos+count is negative here, check overflow.
-+	 * too big "count" will be caught in rw_verify_area().
-+	 */
-+	if ((pos < 0) && (pos + count < pos))
-+		return -EOVERFLOW;
-+	if (file->f_mode & FMODE_NEG_OFFSET)
-+		return 0;
-+	return -EINVAL;
-+}
-+
- /*
-  * rw_verify_area doesn't like huge counts. We limit
-  * them to something that fits in "int" so that others
-@@ -222,8 +236,11 @@ int rw_verify_area(int read_write, struc
- 	if (unlikely((ssize_t) count < 0))
- 		return retval;
- 	pos = *ppos;
--	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
--		return retval;
-+	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
-+		retval = __negative_fpos_check(file, pos, count);
-+		if (retval)
-+			return retval;
-+	}
- 
- 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
- 		retval = locks_mandatory_area(
---- linux-mm.orig/include/linux/fs.h	2010-01-30 17:41:04.000000000 +0800
-+++ linux-mm/include/linux/fs.h	2010-01-30 17:41:51.000000000 +0800
-@@ -93,6 +93,9 @@ struct inodes_stat_t {
- /* File was opened by fanotify and shouldn't generate fanotify events */
- #define FMODE_NONOTIFY		((__force fmode_t)0x1000000)
- 
-+/* File is huge (eg. /dev/kmem): treat loff_t as unsigned */
-+#define FMODE_NEG_OFFSET	((__force fmode_t)0x2000)
-+
- /*
-  * The below are the various read and write types that we support. Some of
-  * them include behavioral modifiers that send information down to the
---- linux-mm.orig/drivers/char/mem.c	2010-01-30 17:23:31.000000000 +0800
-+++ linux-mm/drivers/char/mem.c	2010-01-30 17:41:51.000000000 +0800
-@@ -882,6 +882,10 @@ static int memory_open(struct inode *ino
- 	if (dev->dev_info)
- 		filp->f_mapping->backing_dev_info = dev->dev_info;
- 
-+	/* Is /dev/mem or /dev/kmem ? */
-+	if (dev->dev_info == &directly_mappable_cdev_bdi)
-+		filp->f_mode |= FMODE_NEG_OFFSET;
-+
- 	if (dev->fops->open)
- 		return dev->fops->open(inode, filp);
- 
---- linux-mm.orig/fs/proc/base.c	2010-01-30 17:14:14.000000000 +0800
-+++ linux-mm/fs/proc/base.c	2010-01-30 17:41:51.000000000 +0800
-@@ -880,6 +880,8 @@ static const struct file_operations proc
- static int mem_open(struct inode* inode, struct file* file)
- {
- 	file->private_data = (void*)((long)current->self_exec_id);
-+	/* OK to pass negative loff_t, we can catch out-of-range */
-+	file->f_mode |= FMODE_NEG_OFFSET;
- 	return 0;
+--- linux-mm.orig/include/linux/bitops.h	2009-07-20 20:10:19.000000000 +0800
++++ linux-mm/include/linux/bitops.h	2010-01-30 17:41:15.000000000 +0800
+@@ -40,10 +40,14 @@ static __inline__ int get_count_order(un
+ 	return order;
  }
  
+-static inline unsigned long hweight_long(unsigned long w)
+-{
+-	return sizeof(w) == 4 ? hweight32(w) : hweight64(w);
+-}
++#define hweight_long(x)				\
++(						\
++	__builtin_constant_p(x) ?		\
++		__builtin_popcountl(x) :	\
++		(sizeof(x) <= 4 ?		\
++			 hweight32(x) :		\
++			 hweight64(x))		\
++)
+ 
+ /**
+  * rol32 - rotate a 32-bit value left
 
 
