@@ -1,61 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175Ab0A3MAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769Ab0A3Mdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175Ab0A3MAR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 07:00:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517Ab0A3MAQ
+	id S1752769Ab0A3Mdz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 07:33:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244Ab0A3Mdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 07:00:16 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52452 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750951Ab0A3MAP (ORCPT
+	Sat, 30 Jan 2010 07:33:55 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:10700 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752103Ab0A3Mdy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 07:00:15 -0500
-Message-ID: <4B641F4D.6090704@dcl.info.waseda.ac.jp>
-Date: Sat, 30 Jan 2010 21:00:13 +0900
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; ja; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Sat, 30 Jan 2010 07:33:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:organization:user-agent:mime-version
+         :to:cc:subject:references:in-reply-to:x-enigmail-version
+         :content-type;
+        b=u1ud0OXtCUkR6Njrx3tkkLXNpt8wW0IipJ4SYAx8nfNvteI62LbM/omQjL1akugxB5
+         gYE3BWIEFPG74CNB/Qu3MZr40kwuN9Bq1kRmUselgjBa/w52Oo8ggUvXyTOlY78KLU77
+         I/lsJmyHjXn2d60TEZCGXXTw3HXQiRaldVFDE=
+Message-ID: <4B64272D.8020509@gmail.com>
+Date: Sat, 30 Jan 2010 13:33:49 +0100
+From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
+Reply-To: vedran.furac@gmail.com
+Organization: Home
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20091109 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 00/12] perf lock: New subcommand "perf lock", for	analyzing
- lock statistics
-References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp> <20100129143403.GJ13771@kernel.dk>
-In-Reply-To: <20100129143403.GJ13771@kernel.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
+       minchan.kim@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
+References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>	<20100126151202.75bd9347.akpm@linux-foundation.org>	<20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>	<20100126161952.ee267d1c.akpm@linux-foundation.org>	<20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com>	<20100128001636.2026a6bc@lxorguk.ukuu.org.uk>	<4B622AEE.3080906@gmail.com>	<20100129003547.521a1da9@lxorguk.ukuu.org.uk>	<4B62327F.3010208@gmail.com> <20100129110321.564cb866@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100129110321.564cb866@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------070504030300050103070008"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(2010年01月29日 23:34), Jens Axboe wrote:
-> On Fri, Jan 22 2010, Hitoshi Mitake wrote:
->    
->> Adding new subcommand "perf lock" to perf.
->>
->> I made this patch series on
->> latest perf/core of tip (ef12a141306c90336a3a10d40213ecd98624d274),
->> so please apply this series to perf/core.
->>      
-> [snip]
->
-> I wanted to give this a go today, since I think it's pretty nifty and a
-> lot better than using /proc/lock_stat. But it basically spirals the
-> system into death [1]. How big a system did you test this on?
->
-> [1] Got this: [  117.097918] hrtimer: interrupt took 35093901 ns
->
->    
+This is a multi-part message in MIME format.
+--------------070504030300050103070008
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-I tested this on Core i7 965 + 3GB DRAM machine.
-Test program is mainly "perf bench sched messaging".
+Alan Cox wrote:
 
-Could you tell me the detail of your test situation?
+>> off by default. Problem is that it breaks java and some other stuff that
+>> allocates much more memory than it needs. Very quickly Committed_AS hits
+>> CommitLimit and one cannot allocate any more while there is plenty of
+>> memory still unused.
+> 
+> So how about you go and have a complain at the people who are causing
+> your problem, rather than the kernel.
 
-Thanks,
-Hitoshi
+That would pass completely unnoticed and ignored as long as overcommit
+is enabled by default.
 
+>>> theoretical limit, but you generally need more swap (it's one of the
+>>> reasons why things like BSD historically have a '3 * memory' rule).
+>> Say I have 8GB of memory and there's always some free, why would I need
+>> swap?
+> 
+> So that all the applications that allocate tons of address space and
+> don't use it can swap when you hit that corner case, and as a result you
+> don't need to go OOM. You should only get an OOM when you run out of
+> memory + swap.
+
+Yes, but unfortunately using swap makes machine crawl with huge disk IO
+every time you access some application you haven't been using for a few
+hours. So recently more and more people are disabling it completely with
+positive experience.
+
+>>> So sounds to me like a problem between the keyboard and screen (coupled
+>> Unfortunately it is not. Give me ssh access to your computer (leave
+>> overcommit on) and I'll kill your X with anything running on it.
+> 
+> If you have overcommit on then you can cause stuff to get killed. Thats
+> what the option enables.
+
+s/stuff/wrong stuff/
+
+> It's really very simple: overcommit off you must have enough RAM and swap
+> to hold all allocations requested. Overcommit on - you don't need this
+> but if you do use more than is available on the system something has to
+> go.
+> 
+> It's kind of like banking  overcommit off is proper banking, overcommit
+> on is modern western banking.
+
+Hehe, yes and you know the consequences.
+
+If you look at malloc(3) you would see this:
+
+"This means that when malloc() returns non-NULL there is no guarantee
+that the memory really is available.  This is a really bad bug."
+
+So, if you don't want to change the OOM algorithm why not fixing this
+bug then? And after that change the proc(5) manpage entry for
+/proc/sys/vm/overcommit_memory into something like:
+
+0: heuristic overcommit (enable this if you have memory problems with
+                          some buggy software)
+1: always overcommit, never check
+2: always check, never overcommit (this is the default)
+
+Regards,
+Vedran
+
+
+-- 
+http://vedranf.net | a8e7a7783ca0d460fee090cc584adc12
+
+--------------070504030300050103070008
+Content-Type: text/x-vcard; charset=utf-8;
+ name="vedran_furac.vcf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="vedran_furac.vcf"
+
+YmVnaW46dmNhcmQNCmZuO3F1b3RlZC1wcmludGFibGU6VmVkcmFuIEZ1cmE9QzQ9OEQNCm47
+cXVvdGVkLXByaW50YWJsZTpGdXJhPUM0PThEO1ZlZHJhbg0KYWRyOjs7Ozs7O0Nyb2F0aWEN
+CmVtYWlsO2ludGVybmV0OnZlZHJhbi5mdXJhY0BnbWFpbC5jb20NCngtbW96aWxsYS1odG1s
+OkZBTFNFDQp1cmw6aHR0cDovL3ZlZHJhbmYubmV0DQp2ZXJzaW9uOjIuMQ0KZW5kOnZjYXJk
+DQoNCg==
+--------------070504030300050103070008--
