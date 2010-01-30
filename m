@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753734Ab0A3LqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699Ab0A3LqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753734Ab0A3LqG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 06:46:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543Ab0A3Lpm
+	id S1753699Ab0A3LqY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 06:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711Ab0A3LqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 06:45:42 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52275 "EHLO
+	Sat, 30 Jan 2010 06:46:22 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52233 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752620Ab0A3Lnn (ORCPT
+	with ESMTP id S1752522Ab0A3Lnm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 06:43:43 -0500
+	Sat, 30 Jan 2010 06:43:42 -0500
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org,
@@ -17,9 +17,9 @@ Cc: linux-kernel@vger.kernel.org,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH v2 06/11] lockdep:  Add file and line to initialize sequence of rwsem
-Date: Sat, 30 Jan 2010 20:43:28 +0900
-Message-Id: <1264851813-8413-7-git-send-email-mitake@dcl.info.waseda.ac.jp>
+Subject: [PATCH v2 03/11] lockdep: Add information of file and line where lock inited to struct lockdep_map
+Date: Sat, 30 Jan 2010 20:43:25 +0900
+Message-Id: <1264851813-8413-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
 X-Mailer: git-send-email 1.6.5.2
 In-Reply-To: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 References: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
@@ -27,98 +27,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Like other ones of this patch series, this patch adds
-__FILE__ and __LINE__ to lockdep_map of rw_semaphore.
-This patch only affects to architecture independent rwsem.
+__FILE__ and __LINE__ where lock instances initialized are useful information
+for profiling lock behaviour.
+This patch adds these to struct lockdep_map.
+
+The impact of this patch is making lockdep_init_map() macro.
+Former lockdep_init_map() was renamed to __lockdep_init_map().
+And lockdep_init_map() is a simple wrapper
+to pass __FILE__ and __LINE__ to __lockdep_init_map() now.
 
 Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- include/linux/rwsem-spinlock.h |   11 ++++++++---
- lib/rwsem-spinlock.c           |    5 +++--
- lib/rwsem.c                    |    5 +++--
- 3 files changed, 14 insertions(+), 7 deletions(-)
+ include/linux/lockdep.h |   20 ++++++++++++++++----
+ kernel/lockdep.c        |   10 +++++++---
+ 2 files changed, 23 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/rwsem-spinlock.h b/include/linux/rwsem-spinlock.h
-index bdfcc25..53f68e6 100644
---- a/include/linux/rwsem-spinlock.h
-+++ b/include/linux/rwsem-spinlock.h
-@@ -38,7 +38,11 @@ struct rw_semaphore {
- };
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
--# define __RWSEM_DEP_MAP_INIT(lockname) , .dep_map = { .name = #lockname }
-+# define __RWSEM_DEP_MAP_INIT(lockname) , .dep_map = {	\
-+		.file = __FILE__,			\
-+		.line = __LINE__,			\
-+		.name = #lockname,			\
-+	}
- #else
- # define __RWSEM_DEP_MAP_INIT(lockname)
- #endif
-@@ -51,13 +55,14 @@ struct rw_semaphore {
- 	struct rw_semaphore name = __RWSEM_INITIALIZER(name)
- 
- extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
--			 struct lock_class_key *key);
-+			 struct lock_class_key *key,
-+			 const char *file, unsigned int line);
- 
- #define init_rwsem(sem)						\
- do {								\
- 	static struct lock_class_key __key;			\
- 								\
--	__init_rwsem((sem), #sem, &__key);			\
-+	__init_rwsem((sem), #sem, &__key, __FILE__, __LINE__);	\
- } while (0)
- 
- extern void __down_read(struct rw_semaphore *sem);
-diff --git a/lib/rwsem-spinlock.c b/lib/rwsem-spinlock.c
-index ccf95bf..4aceeb4 100644
---- a/lib/rwsem-spinlock.c
-+++ b/lib/rwsem-spinlock.c
-@@ -34,14 +34,15 @@ EXPORT_SYMBOL(rwsem_is_locked);
-  * initialise the semaphore
+diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
+index 9ccf0e2..a631afa 100644
+--- a/include/linux/lockdep.h
++++ b/include/linux/lockdep.h
+@@ -134,6 +134,8 @@ struct lockdep_map {
+ 	struct lock_class_key		*key;
+ 	struct lock_class		*class_cache;
+ 	const char			*name;
++	const char			*file;
++	unsigned int			line;
+ #ifdef CONFIG_LOCK_STAT
+ 	int				cpu;
+ 	unsigned long			ip;
+@@ -241,15 +243,25 @@ extern void lockdep_on(void);
+  * to lockdep:
   */
- void __init_rwsem(struct rw_semaphore *sem, const char *name,
--		  struct lock_class_key *key)
-+		  struct lock_class_key *key,
-+		  const char *file, unsigned int line)
- {
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- 	/*
- 	 * Make sure we are not reinitializing a held semaphore:
- 	 */
- 	debug_check_no_locks_freed((void *)sem, sizeof(*sem));
--	lockdep_init_map(&sem->dep_map, name, key, 0);
-+	__lockdep_init_map(&sem->dep_map, name, key, 0, file, line);
- #endif
- 	sem->activity = 0;
- 	spin_lock_init(&sem->wait_lock);
-diff --git a/lib/rwsem.c b/lib/rwsem.c
-index 3e3365e..3f8d5cd 100644
---- a/lib/rwsem.c
-+++ b/lib/rwsem.c
-@@ -12,14 +12,15 @@
-  * Initialize an rwsem:
+ 
+-extern void lockdep_init_map(struct lockdep_map *lock, const char *name,
+-			     struct lock_class_key *key, int subclass);
++extern void __lockdep_init_map(struct lockdep_map *lock, const char *name,
++			     struct lock_class_key *key, int subclass,
++			     const char *file, unsigned int line);
++
++/*
++ * There's many direct call to __lockdep_init_map() (former lockdep_init_map()),
++ * and these lacks __FILE__ and __LINE__ .
++ * Current lockdep_init_map() is a wrapper for it.
++ */
++#define lockdep_init_map(lock, name, key, subclass)	\
++	__lockdep_init_map(lock, name, key, subclass, __FILE__, __LINE__)
+ 
+ /*
+  * To initialize a lockdep_map statically use this macro.
+  * Note that _name must not be NULL.
   */
- void __init_rwsem(struct rw_semaphore *sem, const char *name,
--		  struct lock_class_key *key)
-+		  struct lock_class_key *key,
-+		  const char *file, unsigned int line)
+ #define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
+-	{ .name = (_name), .key = (void *)(_key), }
++	{ .name = (_name), .key = (void *)(_key),	\
++			.file = __FILE__, .line = __LINE__}
+ 
+ /*
+  * Reinitialize a lock key - for cases where there is special locking or
+@@ -342,7 +354,7 @@ static inline void lockdep_on(void)
+ # define lockdep_trace_alloc(g)			do { } while (0)
+ # define lockdep_init()				do { } while (0)
+ # define lockdep_info()				do { } while (0)
+-# define lockdep_init_map(lock, name, key, sub) \
++# define lockdep_init_map(lock, name, key, sub)	\
+ 		do { (void)(name); (void)(key); } while (0)
+ # define lockdep_set_class(lock, key)		do { (void)(key); } while (0)
+ # define lockdep_set_class_and_name(lock, key, name) \
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 5feaddc..f0f6dfd 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -2681,8 +2681,9 @@ static int mark_lock(struct task_struct *curr, struct held_lock *this,
+ /*
+  * Initialize a lock instance's lock-class mapping info:
+  */
+-void lockdep_init_map(struct lockdep_map *lock, const char *name,
+-		      struct lock_class_key *key, int subclass)
++void __lockdep_init_map(struct lockdep_map *lock, const char *name,
++		      struct lock_class_key *key, int subclass,
++		      const char *file, unsigned int line)
  {
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- 	/*
- 	 * Make sure we are not reinitializing a held semaphore:
- 	 */
- 	debug_check_no_locks_freed((void *)sem, sizeof(*sem));
--	lockdep_init_map(&sem->dep_map, name, key, 0);
-+	__lockdep_init_map(&sem->dep_map, name, key, 0, file, line);
- #endif
- 	sem->count = RWSEM_UNLOCKED_VALUE;
- 	spin_lock_init(&sem->wait_lock);
+ 	lock->class_cache = NULL;
+ #ifdef CONFIG_LOCK_STAT
+@@ -2713,8 +2714,11 @@ void lockdep_init_map(struct lockdep_map *lock, const char *name,
+ 
+ 	if (subclass)
+ 		register_lock_class(lock, subclass, 1);
++
++	lock->file = file;
++	lock->line = line;
+ }
+-EXPORT_SYMBOL_GPL(lockdep_init_map);
++EXPORT_SYMBOL_GPL(__lockdep_init_map);
+ 
+ /*
+  * This gets called for every mutex_lock*()/spin_lock*() operation.
 -- 
 1.6.5.2
 
