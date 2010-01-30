@@ -1,87 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795Ab0A3A5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948Ab0A3BKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795Ab0A3A5h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 19:57:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081Ab0A3A5g
+	id S1755948Ab0A3BKo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 20:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004Ab0A3BKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 19:57:36 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:51145 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755521Ab0A3A5d convert rfc822-to-8bit (ORCPT
+	Fri, 29 Jan 2010 20:10:43 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:59839 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751094Ab0A3BKm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 19:57:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=kwI2eOhwCCghe39d/79vCH4XeLfbxl+HxCmiPxURO5DQQQnXL5nG6J+KG90al1/dxH
-         2AplCqg2ljTzZ6ep5VORXk/ArNSHjkzDAibMl/iGao43fDa6Vk/rlcBdlzkUKWGbn0MM
-         UODHAPTmPLSarAEEaTioYr9R3fpCkPH1coDzk=
-MIME-Version: 1.0
-Date: Fri, 29 Jan 2010 16:57:31 -0800
-Message-ID: <6cafb0f01001291657q4ccbee86rce3143a4be7a1433@mail.gmail.com>
-Subject: Bug in find_vma_prev - mmap.c
-From: Tony Perkins <da.perk@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 29 Jan 2010 20:10:42 -0500
+Subject: debug: nt_conntrack and KVM crash
+From: Jon Masters <jonathan@jonmasters.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Patrick McHardy <kaber@trash.net>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Fri, 29 Jan 2010 20:10:32 -0500
+Message-Id: <1264813832.2793.446.camel@tonnant>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This code returns vma (mm->mmap) if it sees that addr is lower than first VMA.
-However, I think it falsely returns vma (mm->mmap) on the case where
-addr is in the first VMA.
+Folks,
 
-If it is the first VMA region:
-- *pprev should be set to NULL
-- implying prev is NULL
-- and should therefore return vma (so in this case, I just added if
-it's the first VMA and it's within range)
+I've hooked up Jason's kgb/kgdb patches and been able to gather some
+more information about the most recent crashes on this test system.
 
-/* Same as find_vma, but also return a pointer to the previous VMA in *pprev. */
-struct vm_area_struct *
-find_vma_prev(struct mm_struct *mm, unsigned long addr,
-            struct vm_area_struct **pprev)
-{
-    struct vm_area_struct *vma = NULL, *prev = NULL;
-    struct rb_node *rb_node;
-    if (!mm)
-        goto out;
+The last few crashes have occurred after starting an F12 guest, at which
+point __nf_conntrack_find is called with the following tuple:
 
-    /* Guard against addr being lower than the first VMA */
-    vma = mm->mmap;
+--- begin ---
+(gdb) print tuple->src->u3
+$45 = {all = {16777343, 0, 0, 0}, ip = 16777343, ip6 = {16777343, 0, 0,
+0},
+  in = {s_addr = 16777343}, in6 = {in6_u = {
+      u6_addr8 = "\177\000\000\001", '\000' <repeats 11 times>,
+u6_addr16 = {
+        127, 256, 0, 0, 0, 0, 0, 0}, u6_addr32 = {16777343, 0, 0, 0}}}}
 
-    /* Go through the RB tree quickly. */
-    rb_node = mm->mm_rb.rb_node;
+(gdb) print tuple->src->u
+$46 = {all = 3607, tcp = {port = 3607}, udp = {port = 3607}, icmp = {
+    id = 3607}, dccp = {port = 3607}, sctp = {port = 3607}, gre = {key =
+3607}}
 
-    while (rb_node) {
-        struct vm_area_struct *vma_tmp;
-        vma_tmp = rb_entry(rb_node, struct vm_area_struct, vm_rb);
+(gdb) print tuple->dst
+$48 = {u3 = {all = {16777343, 0, 0, 0}, ip = 16777343, ip6 = {16777343,
+0, 0,
+      0}, in = {s_addr = 16777343}, in6 = {in6_u = {
+        u6_addr8 = "\177\000\000\001", '\000' <repeats 11 times>,
+u6_addr16 = {
+          127, 256, 0, 0, 0, 0, 0, 0}, u6_addr32 = {16777343, 0, 0,
+0}}}},
+  u = {all = 12761, tcp = {port = 12761}, udp = {port = 12761}, icmp = {
+      type = 217 '\331', code = 49 '1'}, dccp = {port = 12761}, sctp = {
+      port = 12761}, gre = {key = 12761}}, protonum = 6 '\006', dir = 0
+'\000'}
+---end ---
 
-        if (addr < vma_tmp->vm_end) {
-            // TONY: if (vma_tmp->vm_start <= addr) vma = vma_tmp; //
-this returns the correct 'vma' when vma is the first node (i.e., no
-prev)
-            rb_node = rb_node->rb_left;
-        } else {
-            prev = vma_tmp;
-            if (!prev->vm_next || (addr < prev->vm_next->vm_end))
-                break;
-            rb_node = rb_node->rb_right;
-        }
-    }
+Which (after converting from network to host addressing) is a VNC (port
+5902) TCP packet being broadcast (by the guest maybe? I didn't know
+Fedora started VNC by default these days, but I'll look).
 
-out:
-    *pprev = prev;
-    return prev ? prev->vm_next : vma;
-}
+After looking through the netfilter code, I understand now that it
+maintains a hashtable (which size is computed at boot time according to
+system memory size, and is usually kmalloced but might be vmalloced if
+there is a problem - not here though). Each time a packet of interest
+relating to a connection we might want to track comes in, we get a
+"tuple" passed in to the conntrack functions, and this is hashed using
+hash_conntrack into an entry in an array of hlists (buckets) stored in
+the "ct" (conntrack) entry in the current network namespace (there is
+only one on this system, I checked that). In this case, when we come to
+look at the hashtable, it contains a number of valid entries (I looked)
+but not for the hashed entry calculated for this VNC packet.
 
-Is this a known issue and/or has this problem been addressed?
-Also, please CC my email address with responses.
+I would love to have advice on the best way to debug conntrack hashtable
+missbehavior (there's a lot of RCU use in there), especially with
+freeing entries. Is there more debug code I can turn on? Is there
+anything you guys would suggest that I look at?
 
-Thanks,
---tony
+Jon.
 
---
-Aim for Perfection!
+
