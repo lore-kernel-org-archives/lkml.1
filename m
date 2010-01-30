@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235Ab0A3QhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700Ab0A3RSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235Ab0A3QhY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 11:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786Ab0A3QhX
+	id S1752700Ab0A3RSO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 12:18:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745Ab0A3RSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 11:37:23 -0500
-Received: from kolab.mylinuxtime.de ([80.190.48.10]:47056 "EHLO
-	kolab.mylinuxtime.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754169Ab0A3QhW (ORCPT
+	Sat, 30 Jan 2010 12:18:13 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:32771 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209Ab0A3RSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 11:37:22 -0500
-X-Greylist: delayed 1822 seconds by postgrey-1.27 at vger.kernel.org; Sat, 30 Jan 2010 11:37:22 EST
-X-Spam-ASN: 
-From: Christian Hesse <mail@earthworm.de>
-To: linux-kernel@vger.kernel.org
-Subject: Samsung N220 backlight support
-Date: Sat, 30 Jan 2010 17:06:18 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.32-ARCH; KDE/4.3.4; x86_64; ; )
-Cc: Greg KH <gregkh@suse.de>
+	Sat, 30 Jan 2010 12:18:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=uAD3LlIDVdG5aniuVubawWzwhZChnyY2HbGyJqgNMFgTbpcYAZxT2OxwVnt8l+FvT3
+         f4dymKBFxPWNjk2Jf8sRb5wD7oHfMT5KkZq3PeBK9L4I5XzuPfE1pSGPMGq0oR5C9unW
+         auK7AjR7McpoHhwo/2hDCQhTHVRTqUXWKH42g=
+Date: Sat, 30 Jan 2010 18:18:04 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: zhiyi <zhuang@cs.otago.ac.nz>
+Cc: linux-kernel@vger.kernel.org, Zhiyi Huang <hzy@cs.otago.ac.nz>
+Subject: Re: nr_cpu_ids incorrect on AMD Quad-Core Opteron 8380
+Message-ID: <20100130171804.GA2348@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	zhiyi <zhuang@cs.otago.ac.nz>, linux-kernel@vger.kernel.org,
+	Zhiyi Huang <hzy@cs.otago.ac.nz>
+References: <A1D71FDC-3176-4792-83ED-3ACAA3D61CFF@cs.otago.ac.nz>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_6jFZLVYbxeTddPF"
-Message-Id: <201001301706.18245.mail@earthworm.de>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <A1D71FDC-3176-4792-83ED-3ACAA3D61CFF@cs.otago.ac.nz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_6jFZLVYbxeTddPF
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+On Thu, Jan 28, 2010 at 12:16:44PM +1300, zhiyi wrote:
+> Hi,
+> I have just found the value of nr_cpu_ids is 32, instead of 16 on my
+> new Dell PowerEdge R905 which has 16 cpus (4 quad-core Opteron
+> 8380). However, /proc/cpuinfo displays the right number (16).
+> I have searched the archive but found no related subject.  Is there
+> any patch already available to fix the problem?
+> I am using 2.6.31-4 and verified this incorrect value (32) using a
+> module.
 
-Hello Greg,
+nr_cpu_ids is set to CONFIG_NR_CPUS on SMP kernels and denotes the max
+CPUs supported by your kernel. This is not a bug but a configurable
+option in the kernel for saving memory.
 
-this adds support for Samsung N220 to your samsung-backlight. Tested on my 
-device, works for me.
+You can still set CONFIG_NR_CPUS in "-> Processor type and features" to
+the max number of cores N you have on your machine if you want to save
+approx 8*N KB. But guessing from your quadsocket configuration, memory
+shouldn't be that scarce on that machine to go the trouble :).
 
-Regards,
-Chris
-
-Signed-off-by: Christian Hesse <mail@earthworm.de>
-
-
---Boundary-00=_6jFZLVYbxeTddPF
-Content-Type: text/x-patch;
-  charset="UTF-8";
-  name="samsung-backlight-n220.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="samsung-backlight-n220.diff"
-
---- samsung-backlight.c~	2010-01-28 19:10:40.000000000 +0100
-+++ samsung-backlight.c	2010-01-28 19:18:50.000000000 +0100
-@@ -105,6 +105,15 @@ static struct dmi_system_id __initdata s
- 		.callback = dmi_check_cb,
- 	},
- 	{
-+		.ident = "N220",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "N220"),
-+			DMI_MATCH(DMI_BOARD_NAME, "N220"),
-+		},
-+		.callback = dmi_check_cb,
-+	},
-+	{
- 		.ident = "NC10",
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-@@ -138,8 +147,11 @@ static int __init samsung_init(void)
- 	pci_device = pci_get_device(PCI_VENDOR_ID_INTEL, 0x27ae, NULL);
- 	if (!pci_device) {
- 		pci_device = pci_get_device(PCI_VENDOR_ID_INTEL, 0x2a02, NULL);
--		if (!pci_device)
-+		if (!pci_device) {
-+			pci_device = pci_get_device(PCI_VENDOR_ID_INTEL, 0xa011, NULL);
-+			if (!pci_device)
- 			return -ENODEV;
-+		}
- 	}
- 
- 	/* create a backlight device to talk to this one */
-@@ -175,5 +187,6 @@ MODULE_DESCRIPTION("Samsung Backlight dr
- MODULE_LICENSE("GPL");
- MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN120:*:rnN120:*");
- MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN130:*:rnN130:*");
-+MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN220:*:rnN220:*");
- MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnNC10:*:rnNC10:*");
- MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnSQ45S70S:*:rnSQ45S70S:*");
-
---Boundary-00=_6jFZLVYbxeTddPF--
+-- 
+Regards/Gruss,
+    Boris.
