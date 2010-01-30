@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181Ab0A3P00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192Ab0A3Pm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754181Ab0A3P00 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 10:26:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742Ab0A3P0Z
+	id S1754192Ab0A3Pm1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 10:42:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136Ab0A3Pm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 10:26:25 -0500
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:58538 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751070Ab0A3P0Y (ORCPT
+	Sat, 30 Jan 2010 10:42:26 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:55564 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752291Ab0A3PmZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 10:26:24 -0500
-X-Greylist: delayed 394 seconds by postgrey-1.27 at vger.kernel.org; Sat, 30 Jan 2010 10:26:24 EST
-Message-ID: <4B644E11.5060002@vmware.com>
-Date: Sat, 30 Jan 2010 16:19:45 +0100
-From: Thomas Hellstrom <thellstrom@vmware.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090822)
+	Sat, 30 Jan 2010 10:42:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=OKJKS83cwHr32/PHohrCGPMomwSVHDweqrXW7Vzdrko7A3oRmctXrnjhSbUZ41Lckc
+         NGI0IDNH0rJrw9mhhKrPZPnJP70eesHhnb7FrcVxvXllj7oZekLQ4i5uO4KdQuFTX3r0
+         LA13aKCmPxqxeUlVVPGsLMGdvhdfaLeR6laV0=
+Message-ID: <4B6454C3.1030606@gmail.com>
+Date: Sat, 30 Jan 2010 16:48:19 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Richard Kennedy <richard@rsk.demon.co.uk>
-CC: David Airlie <airlied@linux.ie>, lkml <linux-kernel@vger.kernel.org>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>
-Subject: Re: [PATCH] drm/ttm: remove padding from ttm_ref_object on 64bit
- builds
-References: <1264525848.2044.5.camel@localhost>
-In-Reply-To: <1264525848.2044.5.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Sergey Mironov <ierton@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] geode: Fix cip/blk confusion
+References: <4B62E388.1070707@gmail.com> <20100129145152.GA31953@Chamillionaire.breakpoint.cc> <25e057c01001290720k529a5ee3i6bef74c9217abbf8@mail.gmail.com> <20100129203008.GA5828@gondor.apana.org.au>
+In-Reply-To: <20100129203008.GA5828@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Kennedy wrote:
-> Re-order structure ttm_ref_object to remove 8 bytes of alignment padding
-> on 64 bit builds, so shrinking its size from 72 to 64 bytes allowing it
-> to fit into a smaller slab.
->
-> Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> ----
-> patch against 2.6.33-rc5
-> compiled & tested on x86_64 AMDX2 and nouveau 
-> regards
-> Richard
->
->
-> diff --git a/drivers/gpu/drm/ttm/ttm_object.c b/drivers/gpu/drm/ttm/ttm_object.c
-> index 1099aba..75e9d6f 100644
-> --- a/drivers/gpu/drm/ttm/ttm_object.c
-> +++ b/drivers/gpu/drm/ttm/ttm_object.c
-> @@ -109,8 +109,8 @@ struct ttm_ref_object {
->  	struct drm_hash_item hash;
->  	struct list_head head;
->  	struct kref kref;
-> -	struct ttm_base_object *obj;
->  	enum ttm_ref_type ref_type;
-> +	struct ttm_base_object *obj;
->  	struct ttm_object_file *tfile;
->  };
->  
->
->
->   
-Acked-by: Thomas Hellstrom <thellstrom@vmware.com>
+a crypto_cipher cip member was set where a crypto_cipher blk members
+should have been.
 
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+>> I think my previous patch missed one
+>> blk to cip conversion in geode_setkey_cip():
+> 
+> Please send an incremental patch.  Thanks!
 
+Ok, here's the missing part
+
+diff --git a/drivers/crypto/geode-aes.c b/drivers/crypto/geode-aes.c
+index 03e71b1..c7a5a43 100644
+--- a/drivers/crypto/geode-aes.c
++++ b/drivers/crypto/geode-aes.c
+@@ -141,7 +141,7 @@ static int geode_setkey_cip(struct crypto_tfm *tfm, const u8 *key,
+ 	ret = crypto_cipher_setkey(op->fallback.cip, key, len);
+ 	if (ret) {
+ 		tfm->crt_flags &= ~CRYPTO_TFM_RES_MASK;
+-		tfm->crt_flags |= (op->fallback.blk->base.crt_flags & CRYPTO_TFM_RES_MASK);
++		tfm->crt_flags |= (op->fallback.cip->base.crt_flags & CRYPTO_TFM_RES_MASK);
+ 	}
+ 	return ret;
+ }
