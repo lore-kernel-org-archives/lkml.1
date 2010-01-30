@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147Ab0A3QaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191Ab0A3Qbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754147Ab0A3QaO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 11:30:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415Ab0A3QaM
+	id S1754191Ab0A3Qbn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 11:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246Ab0A3Qbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 11:30:12 -0500
-Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:41749 "EHLO
-	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884Ab0A3QaK (ORCPT
+	Sat, 30 Jan 2010 11:31:42 -0500
+Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:41869 "EHLO
+	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904Ab0A3Qbl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 11:30:10 -0500
-Date: Sat, 30 Jan 2010 11:30:22 -0500
+	Sat, 30 Jan 2010 11:31:41 -0500
+Date: Sat, 30 Jan 2010 11:31:48 -0500
 From: Michael Breuer <mbreuer@majjas.com>
 Subject: Re: [PATCH] sky2:  receive dma mapping error handling
 In-reply-to: <20100128153643.0fca3c51@nehalam>
@@ -21,9 +21,9 @@ Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
        Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
        Francois Romieu <romieu@fr.zoreil.com>,
        Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B645E9E.10605@majjas.com>
+Message-id: <4B645EF4.4050701@majjas.com>
 MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-type: text/plain; charset=UTF-8; format=flowed
 Content-transfer-encoding: 7BIT
 References: <4B60707F.1000608@majjas.com> <20100127095614.14313677@nehalam>
  <4B608128.7090607@majjas.com> <4B6089C7.4010803@majjas.com>
@@ -38,7 +38,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/28/2010 6:36 PM, Stephen Hemminger wrote:
+On 01/28/2010 06:36 PM, Stephen Hemminger wrote:
 > Please try this patch (and only this patch), on 2.6.33-rc5[*];
 > none of the other patches that did not make it upstream because that
 > confuses things too much.
@@ -50,9 +50,12 @@ On 1/28/2010 6:36 PM, Stephen Hemminger wrote:
 > that way if new mapping fails, the old one can be reused.
 >
 > If it works for you, I will resubmit with signed-off.
->    
+>
+> -
+>
 Nope - tx crash again. This time the system stayed up (but hosed) for a 
-few hours. When I tried to recover eth0, the system crashed.
+few hours. When I tried to recover eth0 the system then crashed.
+
 Brief summary of events (log extract below):
 
 System start Jan 28 19:29
@@ -114,7 +117,7 @@ raid6_pq async_xor xor async_memcpy async_tx raid1 ata_generic pata_acpi
 pata_marvell nouveau ttm drm_kms_helper drm agpgart fb i2c_algo_bit 
 cfbcopyarea i2c_core cf
 Jan 30 05:45:01 mail kernel: bimgblt cfbfillrect [last unloaded: nf_nat]
-Jan 30 05:45:01 mail kernel: Pid: 0, comm: swapper Tainted: G        W  
+Jan 30 05:45:01 mail kernel: Pid: 0, comm: swapper Tainted: G        W 
 2.6.33-rc5WITHMMAPNODMARFORKTIPSKY2DMAMAP-00283-gd4d37bd-dirty #1
 Jan 30 05:45:01 mail kernel: Call Trace:
 Jan 30 05:45:01 mail kernel: <IRQ>  [<ffffffff8104a03d>] 
@@ -171,7 +174,6 @@ catch a crash.
 So, as I see things, there are two issues here: 1) the TX hang post DMAR 
 error and 2) the inability to recover the interface and subsequent 
 system instability.
-
 
 
 
