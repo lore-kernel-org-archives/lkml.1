@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145Ab0A3B7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102Ab0A3B71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756145Ab0A3B7s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 20:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125Ab0A3B7r
+	id S1756102Ab0A3B71 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 20:59:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521Ab0A3B71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 20:59:47 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:54345 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754614Ab0A3B7q (ORCPT
+	Fri, 29 Jan 2010 20:59:27 -0500
+Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:34347 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754868Ab0A3B70 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 20:59:46 -0500
-Subject: Re: debug: nt_conntrack and KVM crash
-From: Jon Masters <jonathan@jonmasters.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Patrick McHardy <kaber@trash.net>
-In-Reply-To: <1264816634.2793.505.camel@tonnant>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Fri, 29 Jan 2010 20:59:37 -0500
-Message-Id: <1264816777.2793.510.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Fri, 29 Jan 2010 20:59:26 -0500
+Date: Sat, 30 Jan 2010 12:59:02 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       akpm@linux-foundation.org, Miklos Szeredi <miklos@szeredi.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: buffer heads: Support slab defrag
+Message-ID: <20100130015902.GI15853@discord.disaster>
+References: <20100129204931.789743493@quilx.com> <20100129205003.813495196@quilx.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100129205003.813495196@quilx.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-29 at 20:57 -0500, Jon Masters wrote:
+On Fri, Jan 29, 2010 at 02:49:41PM -0600, Christoph Lameter wrote:
+> Defragmentation support for buffer heads. We convert the references to
+> buffers to struct page references and try to remove the buffers from
+> those pages. If the pages are dirty then trigger writeout so that the
+> buffer heads can be removed later.
 
-> Ah so I should have realized before but I wasn't looking at valid values
-> for the range of the hashtable yet, nf_conntrack_htable_size is getting
-> wildly out of whack. It goes from:
-> 
-> (gdb) print nf_conntrack_hash_rnd
-> $1 = 2688505299
-> (gdb) print nf_conntrack_htable_size
-> $2 = 16384
-> 
-> nf_conntrack_events: 1
-> nf_conntrack_max: 65536
-> 
-> Shortly after booting, before being NULLed shortly after starting some
-> virtual machines (the hash isn't reset, whereas it is recomputed if the
-> hashtable is re-initialized after an intentional resizing operation):
+NACK.
 
-I mean the *seed* isn't changed, so I don't think it was resized
-intentionally. I wonder where else htable_size is fiddled with.
+We don't want another random single page writeback trigger into
+the VM - it will only slow down cleaning of dirty pages by causing
+disk thrashing (i.e. turns writeback into small random write
+workload), and that will ultimately slow down the rate at which we can
+reclaim buffer heads.
 
-Jon.
+Hence I suggest that if the buffer head is dirty, then just ignore
+it - it'll be cleaned soon enough by one of the other mechanisms we
+have and then it can be reclaimed in a later pass.
 
+Cheers,
 
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
