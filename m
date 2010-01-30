@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114Ab0A3Ros@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388Ab0A3RpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753114Ab0A3Ros (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 12:44:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769Ab0A3Ror
+	id S1753388Ab0A3RpL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 12:45:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996Ab0A3RpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 12:44:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59803 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752446Ab0A3Ror (ORCPT
+	Sat, 30 Jan 2010 12:45:09 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51596 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751808Ab0A3RpI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 12:44:47 -0500
-Date: Sat, 30 Jan 2010 09:43:52 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Kevin Winchester <kjwinchester@gmail.com>
-cc: Dave Airlie <airlied@linux.ie>, dri-devel <dri-devel@lists.sf.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Deucher <alexdeucher@gmail.com>,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: Re: Radeon KMS regression still present in 2.6.33-rc6
-In-Reply-To: <1264871899.1533.6.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1001300929260.4206@localhost.localdomain>
-References: <1264871899.1533.6.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 30 Jan 2010 12:45:08 -0500
+Date: Sat, 30 Jan 2010 17:45:16 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: vedran.furac@gmail.com
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
+       minchan.kim@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
+Message-ID: <20100130174516.2257d7fa@lxorguk.ukuu.org.uk>
+In-Reply-To: <4B646CBE.6050404@gmail.com>
+References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100126151202.75bd9347.akpm@linux-foundation.org>
+	<20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100126161952.ee267d1c.akpm@linux-foundation.org>
+	<20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100128001636.2026a6bc@lxorguk.ukuu.org.uk>
+	<4B622AEE.3080906@gmail.com>
+	<20100129003547.521a1da9@lxorguk.ukuu.org.uk>
+	<4B62327F.3010208@gmail.com>
+	<20100129110321.564cb866@lxorguk.ukuu.org.uk>
+	<4B64272D.8020509@gmail.com>
+	<20100130125917.600beb51@lxorguk.ukuu.org.uk>
+	<4B646CBE.6050404@gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I can't say I'm able to correctly read kernel code, but I believe
+> default is set by:
 
+It['s set by the distribution - the kerne has a default value but given
+the same distributions are shipping the crap userspace that breaks with
+no-overcommit do you think they'll set it to break their user apps ?
 
-On Sat, 30 Jan 2010, Kevin Winchester wrote:
->
-> I took a picture of the crash details:
->
-> http://picasaweb.google.ca/kjwinchester/LinuxKernelPanic#5432580230065271634
+No.
+
+> http://vedranf.net/tmp/oom.ogv  (you can watch it using VLC for example)
 > 
-> In case it helps, here is the gdb listing for the problem address:
-> 
-> (gdb) l *(radeon_agp_init+0x1d)
-> 0xffffffff811c1592 is in radeon_agp_init (drivers/gpu/drm/radeon/radeon_agp.c:136).
-> 131		uint32_t agp_status;
-> 132		int default_mode;
-> 133		bool is_v3;
-> 134		int ret;
-> 135	
-> 136		if (rdev->ddev->agp->agp_info.aper_size < 32) {
-> 137			dev_warn(rdev->dev, "AGP aperture to small (%dM) "
-> 138				"need at least 32M, disabling AGP\n",
-> 139				rdev->ddev->agp->agp_info.aper_size);
-> 140			return -EINVAL;
-> 
-> Is there any other info I can provide?
+> Actually anyone receiving this mail should see it. What do you think,
+> what will customers rather choose if they see this?
 
-In your crash 'rdev->ddev->agp' is NULL. The instruction decode is:
+Address that to the distributions. Their customers. Systems I set up for
+people always have no overcommit enabled.
 
-   e:	55                   	push   %rbp
-   f:	48 89 e5             	mov    %rsp,%rbp
-  12:	41 56                	push   %r14
-  14:	41 55                	push   %r13
-  16:	41 54                	push   %r12
-  18:	53                   	push   %rbx
-  19:	48 89 fb             	mov    %rdi,%rbx
-  1c:	48 83 ec 40          	sub    $0x40,%rsp
-  20:	48 8b 7f 08          	mov    0x8(%rdi),%rdi
-  24:	48 8b 87 20 03 00 00 	mov    0x320(%rdi),%rax
-  2b:*	4c 8b 60 28          	mov    0x28(%rax),%r12     <-- trapping instruction
-  2f:	49 83 fc 1f          	cmp    $0x1f,%r12
-  33:	77 2e                	ja     0x63
-  35:	48 8b 3b             	mov    (%rbx),%rdi
-  38:	48 8b 5f 10          	mov    0x10(%rdi),%rbx
-
-so it's that lod of "agp_info.aper_size" that fails (you can see how it's 
-trying to compare with 31, it comes from that "agp_info.aper_size < 32" 
-thing.
-
-Did that DRM init happen before AGP init or something?
-
-		Linus
+Alan
