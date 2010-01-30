@@ -1,80 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748Ab0A3WHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682Ab0A3WMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748Ab0A3WHv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 17:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275Ab0A3WHu
+	id S1753682Ab0A3WMf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 17:12:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267Ab0A3WMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 17:07:50 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:33925 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751836Ab0A3WHu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 17:07:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OnpmRhWfaDxqTPX9DbjvB/sUbDexJqEt6YzR51X9B/rP/jb5YlmbjtvPZrzFUubzRp
-         AcAWa9j7KQ/FQZSUQ84iISR3aWvC3ZgyUquF69GBfUSDjG5V9qomRnTt1OfQP50eiiLQ
-         md6eF116tFQSIycaqmu328kOQCfLpvzjC9Qhc=
-Date: Sat, 30 Jan 2010 23:07:46 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] tracing: Change trace_seq to use separate buffer
-Message-ID: <20100130220745.GK5675@nowhere>
-References: <4B556078.7000004@cn.fujitsu.com> <20100120184046.GA6194@nowhere> <4B5E607F.2040204@cn.fujitsu.com>
+	Sat, 30 Jan 2010 17:12:34 -0500
+Received: from n23a.bullet.mail.mud.yahoo.com ([68.142.207.189]:29326 "HELO
+	n23a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753462Ab0A3WMb convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 17:12:31 -0500
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 802639.99326.bm@omp126.mail.gq1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=fLsg+eEBEK82/0SMURLOAOgoafKgSpDPTu3aVxgej5iES1XMAwDTe/fDPhcD/CJwisNs1baB8FQnKAL7lr6I3kyl9jtLSIh588uqF6cunDD4tYLEc4ZDRbd/Lvqlkr++ImAEOiIJquTCzAhN/aIyi0UF8Ivc/luoPPJ4YcOyurg=;
+Message-ID: <599398.26603.qm@web180313.mail.gq1.yahoo.com>
+X-YMail-OSG: od2yE9oVM1kdqoqwMjEGKbI5gmx4bWXILRFcoQrJCcMckYH1_3925vZgJkj9uJCb17FDxVQfFXsu4maUr5an9qVlPqFi43IoUEa5n5iVlBG9rkHFuynQKjh0EAq2JGkOegWymiUJpaDixcMuCoFKiR0oZZZvcdtJ8mViKRUtDenN0gynBc5YMK0K0bwOh2ZyXTO2_ETKu2fDmAkTwkEGyiQAs2Kdlsav5qN9iELXM3Xr2zuBhOX0GQ6RiV3rt6agmC6YiGRPF5O5lSbCemfXCX6SQ70NJO24j1V0j.HQUtlezyJtlcTlJXHssbQzNf609mWtzfZuSD0riHVx8zF6pCt3xNt272Ek48p57LsolS3nc8E7sWuVaUHxpneOULMRKbUgF4Ar9wxDNJKAFcm4xybmlduD1VQpU61ZuZiTApUFIYGWhqX3NrvVYFQE3TqsUuH1rGwiIqvR9NuYnmEWk78SlghtWjK7gmv6h4ls2j.dBFGaKstlHaNAdip3UnBeSSuQOLmEchP_HVUiDdLZjW.t4L0JXXHzc1K4iAaHa3fCOIq_L27Iko2CX6mAw6EQ.7RaQDoVj82y7g_65iF5g54u3Fw36iyqJLWe5H.NfaO3ihPU9Zd7Z5A9SYbsUIRRj44WvZdsiBGTbEl3sL7UBQJnpJIVNJAy_jNchJ3vnWtHYHY.AMu2BgRaz.ah6k8misPlTtcpXR3.ftpxU205CYW5.6MV1oG_bflcCx8zap_L6L_0JPP8GQ--
+X-Mailer: YahooMailClassic/9.1.10 YahooMailWebService/0.8.100.260964
+Date: Sat, 30 Jan 2010 14:12:29 -0800 (PST)
+From: Irish Promo <promo_officedesk@sbcglobal.net>
+Reply-To: inl.claims@w.cn
+Subject: Info
+To: undisclosed recipients:;
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B5E607F.2040204@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 11:24:47AM +0800, Lai Jiangshan wrote:
-> Frederic Weisbecker wrote:
-> > On Tue, Jan 19, 2010 at 03:34:16PM +0800, Lai Jiangshan wrote:
-> >> @@ -3124,6 +3126,8 @@ waitagain:
-> >>  	if (cnt >= PAGE_SIZE)
-> >>  		cnt = PAGE_SIZE - 1;
-> >>  
-> >> +	trace_seq_reset(&iter->seq);
-> >> +
-> > 
-> > 
-> > 
-> > So we actually add a trace_seq_reset here.
-> > This should have been in the first patch, which drops
-> > the memset, and eventually modified here, just to avoid
-> > breaking things in the middle of a patchset.
-> > 
-> > Things were already broken though before the memset dropping
-> > patch though in other ways, so it's not that important I guess...
-> > 
-> > 
-> 
-> There is no trace_seq_reset() before this patch applied.
-> trace_seq_init() in the first patch, has already reset it.
-
-
-
-We have trace_seq_init() in the beginning of tracing_read_pipe()
-but not in case we loop in waitagain.
-
-In the first patch you've removed this:
-
-	memset(&iter->seq, 0,
-	       sizeof(struct trace_iterator) -
-	       offsetof(struct trace_iterator, seq));
-
-Which was a reset in waitagain.
-
-And you re-add this reset in this patch, while it should have
-been in the first one?
-
-May be I miss something, that's not important really, things
-were broken with the memset.
+You have won £750,000, send: Age, Name, Full Adress, Country.
 
