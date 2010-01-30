@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588Ab0A3LpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610Ab0A3Lpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753588Ab0A3LpY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 06:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509Ab0A3Lou
+	id S1752610Ab0A3Lpn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 06:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669Ab0A3Lnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 06:44:50 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52309 "EHLO
+	Sat, 30 Jan 2010 06:43:43 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52219 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753435Ab0A3Lot (ORCPT
+	with ESMTP id S1751373Ab0A3Lni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 06:44:49 -0500
-Message-ID: <4B641BAD.7060102@dcl.info.waseda.ac.jp>
-Date: Sat, 30 Jan 2010 20:44:45 +0900
+	Sat, 30 Jan 2010 06:43:38 -0500
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; ja; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] perf: Add util/include/linux/config.h for including generated
- autoconf.h of kernel
-References: <4B6133DF.9080207@dcl.info.waseda.ac.jp>	 <1264688928-12861-1-git-send-email-mitake@dcl.info.waseda.ac.jp> <1264689878.4283.2101.camel@laptop>
-In-Reply-To: <1264689878.4283.2101.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH v2 01/11] perf tools: Add __data_loc support
+Date: Sat, 30 Jan 2010 20:43:23 +0900
+Message-Id: <1264851813-8413-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+References: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(2010年01月28日 23:44), Peter Zijlstra wrote:
-> On Thu, 2010-01-28 at 23:28 +0900, Hitoshi Mitake wrote:
->    
->> I'd like to add util/include/linux/config.h,
->> this header file includes autoconf.h which is generated
->> by build phase of kernel.
->>
->> This makes building of perf depend on building of kernel.
->> It's a little dirty. But perf has tight relation
->> of its kernel, so I don't think that it is a serious problem.
->>
->> My original purpose of making this patch is
->> knowing size of void *.
->> If config.h is available,
->> CONFIG_ARCH_PHYS_ADDR_T_64BIT will be provided for source of perf,
->> we can know size of void * by this config.
->>
->> How do you think?
->>      
-> I think sizeof(void *).
->
->
->    
+This patch is required to test the next patch for perf lock.
 
-I've told about preprocessor level method.
-But thanks for your advice,
-I found the way to use memcpy()!
+At 064739bc4b3d7f424b2f25547e6611bcf0132415 ,
+support for the modifier "__data_loc" of format is added.
 
-Thanks
-     Hitoshi
+But, when I wanted to parse format of lock_acquired (or some
+event else), raw_field_ptr() did not returned correct pointer.
+
+So I modified raw_field_ptr() like this patch. Then
+raw_field_ptr() works well.
+
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+Cc: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/util/trace-event-parse.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+index c5c32be..13aea80 100644
+--- a/tools/perf/util/trace-event-parse.c
++++ b/tools/perf/util/trace-event-parse.c
+@@ -1925,6 +1925,13 @@ void *raw_field_ptr(struct event *event, const char *name, void *data)
+ 	if (!field)
+ 		return NULL;
+ 
++	if (field->flags & FIELD_IS_STRING) {
++		int offset;
++		offset = *(int *)(data + field->offset);
++		offset &= 0xffff;
++		return data + offset;
++	}
++
+ 	return data + field->offset;
+ }
+ 
+-- 
+1.6.5.2
 
