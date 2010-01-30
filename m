@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397Ab0A3LoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480Ab0A3LoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753397Ab0A3LoU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 06:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776Ab0A3Lnn
+	id S1753480Ab0A3LoY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 06:44:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280Ab0A3LoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 06:43:43 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52229 "EHLO
+	Sat, 30 Jan 2010 06:44:17 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52278 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751786Ab0A3Lnm (ORCPT
+	with ESMTP id S1752769Ab0A3Lnn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 06:43:42 -0500
+	Sat, 30 Jan 2010 06:43:43 -0500
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org,
@@ -17,9 +17,9 @@ Cc: linux-kernel@vger.kernel.org,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH v2 02/11] perf: Add util/include/linuxhash.h to include hash.h of kernel
-Date: Sat, 30 Jan 2010 20:43:24 +0900
-Message-Id: <1264851813-8413-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
+Subject: [PATCH v2 08/11] lockdep: Add file and line to initialize sequence of mutex
+Date: Sat, 30 Jan 2010 20:43:30 +0900
+Message-Id: <1264851813-8413-9-git-send-email-mitake@dcl.info.waseda.ac.jp>
 X-Mailer: git-send-email 1.6.5.2
 In-Reply-To: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 References: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
@@ -27,44 +27,142 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux/hash.h, hash header of kernel, is also useful for perf.
-
-util/include/linuxhash.h includes linux/hash.h, so we can use
-hash facilities (e.g. hash_long()) in perf now.
+Like other ones of this patch series, this patch adds
+__FILE__ and __LINE__ to lockdep_map of mutex.
 
 Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- tools/perf/Makefile                  |    1 +
- tools/perf/util/include/linux/hash.h |    5 +++++
- 2 files changed, 6 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/util/include/linux/hash.h
+ include/linux/mutex-debug.h |    2 +-
+ include/linux/mutex.h       |   12 +++++++++---
+ kernel/mutex-debug.c        |    5 +++--
+ kernel/mutex-debug.h        |    3 ++-
+ kernel/mutex.c              |    5 +++--
+ kernel/mutex.h              |    2 +-
+ 6 files changed, 19 insertions(+), 10 deletions(-)
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 9b173e6..b2bce1f 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -333,6 +333,7 @@ LIB_FILE=libperf.a
- LIB_H += ../../include/linux/perf_event.h
- LIB_H += ../../include/linux/rbtree.h
- LIB_H += ../../include/linux/list.h
-+LIB_H += ../../include/linux/hash.h
- LIB_H += ../../include/linux/stringify.h
- LIB_H += util/include/linux/bitmap.h
- LIB_H += util/include/linux/bitops.h
-diff --git a/tools/perf/util/include/linux/hash.h b/tools/perf/util/include/linux/hash.h
-new file mode 100644
-index 0000000..201f573
---- /dev/null
-+++ b/tools/perf/util/include/linux/hash.h
-@@ -0,0 +1,5 @@
-+#include "../../../../include/linux/hash.h"
-+
-+#ifndef PERF_HASH_H
-+#define PERF_HASH_H
-+#endif
+diff --git a/include/linux/mutex-debug.h b/include/linux/mutex-debug.h
+index 731d77d..f86bf4e 100644
+--- a/include/linux/mutex-debug.h
++++ b/include/linux/mutex-debug.h
+@@ -15,7 +15,7 @@
+ do {									\
+ 	static struct lock_class_key __key;				\
+ 									\
+-	__mutex_init((mutex), #mutex, &__key);				\
++	__mutex_init((mutex), #mutex, &__key, __FILE__, __LINE__);	\
+ } while (0)
+ 
+ extern void mutex_destroy(struct mutex *lock);
+diff --git a/include/linux/mutex.h b/include/linux/mutex.h
+index 878cab4..ce9082a 100644
+--- a/include/linux/mutex.h
++++ b/include/linux/mutex.h
+@@ -82,14 +82,19 @@ struct mutex_waiter {
+ do {							\
+ 	static struct lock_class_key __key;		\
+ 							\
+-	__mutex_init((mutex), #mutex, &__key);		\
++	__mutex_init((mutex), #mutex, &__key,		\
++		     __FILE__, __LINE__);		\
+ } while (0)
+ # define mutex_destroy(mutex)				do { } while (0)
+ #endif
+ 
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ # define __DEP_MAP_MUTEX_INITIALIZER(lockname) \
+-		, .dep_map = { .name = #lockname }
++		, .dep_map = {		       \
++			.file = __FILE__,      \
++			.line = __LINE__,      \
++			.name = #lockname,     \
++		}
+ #else
+ # define __DEP_MAP_MUTEX_INITIALIZER(lockname)
+ #endif
+@@ -105,7 +110,8 @@ do {							\
+ 	struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
+ 
+ extern void __mutex_init(struct mutex *lock, const char *name,
+-			 struct lock_class_key *key);
++			 struct lock_class_key *key,
++			 const char *file, unsigned int line);
+ 
+ /**
+  * mutex_is_locked - is the mutex locked
+diff --git a/kernel/mutex-debug.c b/kernel/mutex-debug.c
+index ec815a9..4a1321b 100644
+--- a/kernel/mutex-debug.c
++++ b/kernel/mutex-debug.c
+@@ -81,14 +81,15 @@ void debug_mutex_unlock(struct mutex *lock)
+ }
+ 
+ void debug_mutex_init(struct mutex *lock, const char *name,
+-		      struct lock_class_key *key)
++		      struct lock_class_key *key,
++		      const char *file, unsigned int line)
+ {
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ 	/*
+ 	 * Make sure we are not reinitializing a held lock:
+ 	 */
+ 	debug_check_no_locks_freed((void *)lock, sizeof(*lock));
+-	lockdep_init_map(&lock->dep_map, name, key, 0);
++	__lockdep_init_map(&lock->dep_map, name, key, 0, file, line);
+ #endif
+ 	lock->magic = lock;
+ }
+diff --git a/kernel/mutex-debug.h b/kernel/mutex-debug.h
+index 57d527a..154a909 100644
+--- a/kernel/mutex-debug.h
++++ b/kernel/mutex-debug.h
+@@ -25,7 +25,8 @@ extern void mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter,
+ 				struct thread_info *ti);
+ extern void debug_mutex_unlock(struct mutex *lock);
+ extern void debug_mutex_init(struct mutex *lock, const char *name,
+-			     struct lock_class_key *key);
++			     struct lock_class_key *key,
++			     const char *file, unsigned int line);
+ 
+ static inline void mutex_set_owner(struct mutex *lock)
+ {
+diff --git a/kernel/mutex.c b/kernel/mutex.c
+index 632f04c..80e3876 100644
+--- a/kernel/mutex.c
++++ b/kernel/mutex.c
+@@ -46,14 +46,15 @@
+  * It is not allowed to initialize an already locked mutex.
+  */
+ void
+-__mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
++__mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key,
++	     const char *file, unsigned int line)
+ {
+ 	atomic_set(&lock->count, 1);
+ 	spin_lock_init(&lock->wait_lock);
+ 	INIT_LIST_HEAD(&lock->wait_list);
+ 	mutex_clear_owner(lock);
+ 
+-	debug_mutex_init(lock, name, key);
++	debug_mutex_init(lock, name, key, file, line);
+ }
+ 
+ EXPORT_SYMBOL(__mutex_init);
+diff --git a/kernel/mutex.h b/kernel/mutex.h
+index 67578ca..81914e6 100644
+--- a/kernel/mutex.h
++++ b/kernel/mutex.h
+@@ -40,7 +40,7 @@ static inline void mutex_clear_owner(struct mutex *lock)
+ #define debug_mutex_free_waiter(waiter)			do { } while (0)
+ #define debug_mutex_add_waiter(lock, waiter, ti)	do { } while (0)
+ #define debug_mutex_unlock(lock)			do { } while (0)
+-#define debug_mutex_init(lock, name, key)		do { } while (0)
++#define debug_mutex_init(lock, name, key, file, line)	do { } while (0)
+ 
+ static inline void
+ debug_mutex_lock_common(struct mutex *lock, struct mutex_waiter *waiter)
 -- 
 1.6.5.2
 
