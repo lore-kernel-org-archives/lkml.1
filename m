@@ -1,121 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769Ab0A3Mdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753014Ab0A3MrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752769Ab0A3Mdz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 07:33:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244Ab0A3Mdz
+	id S1753014Ab0A3MrF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 07:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517Ab0A3MrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 07:33:55 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:10700 "EHLO
+	Sat, 30 Jan 2010 07:47:04 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:49715 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752103Ab0A3Mdy (ORCPT
+	with ESMTP id S1751027Ab0A3MrB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 07:33:54 -0500
+	Sat, 30 Jan 2010 07:47:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:reply-to:organization:user-agent:mime-version
          :to:cc:subject:references:in-reply-to:x-enigmail-version
          :content-type;
-        b=u1ud0OXtCUkR6Njrx3tkkLXNpt8wW0IipJ4SYAx8nfNvteI62LbM/omQjL1akugxB5
-         gYE3BWIEFPG74CNB/Qu3MZr40kwuN9Bq1kRmUselgjBa/w52Oo8ggUvXyTOlY78KLU77
-         I/lsJmyHjXn2d60TEZCGXXTw3HXQiRaldVFDE=
-Message-ID: <4B64272D.8020509@gmail.com>
-Date: Sat, 30 Jan 2010 13:33:49 +0100
+        b=j60l8mIjjzv5aUB6yGUp+l3n5qpy+EdCjKifaEGB3XsSsElIzHGMovs0+jZ/odYyyL
+         dhsFxUjMtrAoQwy74mDZwRLrArMabFnBeyqUHq3B/EOEa9dvHVR+OPOU7fRXCaQ9qD92
+         f6nFkVm4GxD+L+CKyKonwuLzwMhRJSCI4R47Y=
+Message-ID: <4B642A40.1020709@gmail.com>
+Date: Sat, 30 Jan 2010 13:46:56 +0100
 From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
 Reply-To: vedran.furac@gmail.com
 Organization: Home
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20091109 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Rientjes <rientjes@google.com>
 CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
-       minchan.kim@gmail.com,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, minchan.kim@gmail.com,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
 Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
-References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>	<20100126151202.75bd9347.akpm@linux-foundation.org>	<20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>	<20100126161952.ee267d1c.akpm@linux-foundation.org>	<20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com>	<20100128001636.2026a6bc@lxorguk.ukuu.org.uk>	<4B622AEE.3080906@gmail.com>	<20100129003547.521a1da9@lxorguk.ukuu.org.uk>	<4B62327F.3010208@gmail.com> <20100129110321.564cb866@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100129110321.564cb866@lxorguk.ukuu.org.uk>
+References: <f8c9aca9c98db8ae7df3ac2d7ac8d922.squirrel@webmail-b.css.fujitsu.com> <20100129162137.79b2a6d4@lxorguk.ukuu.org.uk> <c6c48fdf7f746add49bb9cc058b513ae.squirrel@webmail-b.css.fujitsu.com> <20100129163030.1109ce78@lxorguk.ukuu.org.uk> <5a0e6098f900aa36993b2b7f2320f927.squirrel@webmail-b.css.fujitsu.com> <alpine.DEB.2.00.1001291258490.2938@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1001291258490.2938@chino.kir.corp.google.com>
 X-Enigmail-Version: 0.95.7
 Content-Type: multipart/mixed;
- boundary="------------070504030300050103070008"
+ boundary="------------020707070908060404060701"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------070504030300050103070008
+--------------020707070908060404060701
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-Alan Cox wrote:
+David Rientjes wrote:
 
->> off by default. Problem is that it breaks java and some other stuff that
->> allocates much more memory than it needs. Very quickly Committed_AS hits
->> CommitLimit and one cannot allocate any more while there is plenty of
->> memory still unused.
-> 
-> So how about you go and have a complain at the people who are causing
-> your problem, rather than the kernel.
+> The oom killer has been doing this for years and I haven't noticed a huge 
+> surge in complaints about it killing X specifically because of that code 
+> in oom_kill_process().
 
-That would pass completely unnoticed and ignored as long as overcommit
-is enabled by default.
+Well you said it yourself, you won't see a surge because "oom killer has
+been doing this *for years*". So you'll have a more/less constant number
+of complains over the years. Just google for: linux, random, kill, memory;
 
->>> theoretical limit, but you generally need more swap (it's one of the
->>> reasons why things like BSD historically have a '3 * memory' rule).
->> Say I have 8GB of memory and there's always some free, why would I need
->> swap?
-> 
-> So that all the applications that allocate tons of address space and
-> don't use it can swap when you hit that corner case, and as a result you
-> don't need to go OOM. You should only get an OOM when you run out of
-> memory + swap.
-
-Yes, but unfortunately using swap makes machine crawl with huge disk IO
-every time you access some application you haven't been using for a few
-hours. So recently more and more people are disabling it completely with
-positive experience.
-
->>> So sounds to me like a problem between the keyboard and screen (coupled
->> Unfortunately it is not. Give me ssh access to your computer (leave
->> overcommit on) and I'll kill your X with anything running on it.
-> 
-> If you have overcommit on then you can cause stuff to get killed. Thats
-> what the option enables.
-
-s/stuff/wrong stuff/
-
-> It's really very simple: overcommit off you must have enough RAM and swap
-> to hold all allocations requested. Overcommit on - you don't need this
-> but if you do use more than is available on the system something has to
-> go.
-> 
-> It's kind of like banking  overcommit off is proper banking, overcommit
-> on is modern western banking.
-
-Hehe, yes and you know the consequences.
-
-If you look at malloc(3) you would see this:
-
-"This means that when malloc() returns non-NULL there is no guarantee
-that the memory really is available.  This is a really bad bug."
-
-So, if you don't want to change the OOM algorithm why not fixing this
-bug then? And after that change the proc(5) manpage entry for
-/proc/sys/vm/overcommit_memory into something like:
-
-0: heuristic overcommit (enable this if you have memory problems with
-                          some buggy software)
-1: always overcommit, never check
-2: always check, never overcommit (this is the default)
+What provoked me to start this discussions is that every few months on
+our croatian linux newsgroup someone starts asking why is linux randomly
+killing his processes. And at the end of discussion a few, mostly
+aix/solaris sysadmins, conclude that linux is still a toy.
 
 Regards,
 Vedran
 
-
 -- 
 http://vedranf.net | a8e7a7783ca0d460fee090cc584adc12
 
---------------070504030300050103070008
+--------------020707070908060404060701
 Content-Type: text/x-vcard; charset=utf-8;
  name="vedran_furac.vcf"
 Content-Transfer-Encoding: base64
@@ -127,4 +80,4 @@ cXVvdGVkLXByaW50YWJsZTpGdXJhPUM0PThEO1ZlZHJhbg0KYWRyOjs7Ozs7O0Nyb2F0aWEN
 CmVtYWlsO2ludGVybmV0OnZlZHJhbi5mdXJhY0BnbWFpbC5jb20NCngtbW96aWxsYS1odG1s
 OkZBTFNFDQp1cmw6aHR0cDovL3ZlZHJhbmYubmV0DQp2ZXJzaW9uOjIuMQ0KZW5kOnZjYXJk
 DQoNCg==
---------------070504030300050103070008--
+--------------020707070908060404060701--
