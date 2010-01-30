@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700Ab0A3RSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996Ab0A3RSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700Ab0A3RSO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 12:18:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745Ab0A3RSN
+	id S1752996Ab0A3RSZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 12:18:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745Ab0A3RSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 12:18:13 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:32771 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209Ab0A3RSK (ORCPT
+	Sat, 30 Jan 2010 12:18:24 -0500
+Received: from mail-qy0-f182.google.com ([209.85.221.182]:51337 "EHLO
+	mail-qy0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752769Ab0A3RSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 12:18:10 -0500
+	Sat, 30 Jan 2010 12:18:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=uAD3LlIDVdG5aniuVubawWzwhZChnyY2HbGyJqgNMFgTbpcYAZxT2OxwVnt8l+FvT3
-         f4dymKBFxPWNjk2Jf8sRb5wD7oHfMT5KkZq3PeBK9L4I5XzuPfE1pSGPMGq0oR5C9unW
-         auK7AjR7McpoHhwo/2hDCQhTHVRTqUXWKH42g=
-Date: Sat, 30 Jan 2010 18:18:04 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: zhiyi <zhuang@cs.otago.ac.nz>
-Cc: linux-kernel@vger.kernel.org, Zhiyi Huang <hzy@cs.otago.ac.nz>
-Subject: Re: nr_cpu_ids incorrect on AMD Quad-Core Opteron 8380
-Message-ID: <20100130171804.GA2348@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	zhiyi <zhuang@cs.otago.ac.nz>, linux-kernel@vger.kernel.org,
-	Zhiyi Huang <hzy@cs.otago.ac.nz>
-References: <A1D71FDC-3176-4792-83ED-3ACAA3D61CFF@cs.otago.ac.nz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <A1D71FDC-3176-4792-83ED-3ACAA3D61CFF@cs.otago.ac.nz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=jd98l5mD7gC2PFvt8s9s9V40wLkQF+QOT+YcwfmPCtaBFG/4PJ+tkzN+1/v4TSWOa1
+         mOx7tJI4WvEfgW0//pVCbRcTV7/uA4S9K+Wjos1SlxW5HpvQ/a2m3eqHwJ2245ohdACx
+         QCntzqDbL8rdsHAXg3ce0fDGzTh+DOBgeqEJo=
+Subject: Radeon KMS regression still present in 2.6.33-rc6
+From: Kevin Winchester <kjwinchester@gmail.com>
+To: torvalds@linux-foundation.org
+Cc: Dave Airlie <airlied@linux.ie>, dri-devel <dri-devel@lists.sf.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 30 Jan 2010 13:18:19 -0400
+Message-ID: <1264871899.1533.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 12:16:44PM +1300, zhiyi wrote:
-> Hi,
-> I have just found the value of nr_cpu_ids is 32, instead of 16 on my
-> new Dell PowerEdge R905 which has 16 cpus (4 quad-core Opteron
-> 8380). However, /proc/cpuinfo displays the right number (16).
-> I have searched the archive but found no related subject.  Is there
-> any patch already available to fix the problem?
-> I am using 2.6.31-4 and verified this incorrect value (32) using a
-> module.
 
-nr_cpu_ids is set to CONFIG_NR_CPUS on SMP kernels and denotes the max
-CPUs supported by your kernel. This is not a bug but a configurable
-option in the kernel for saving memory.
+I'm not quite sure if this can be called a regression, since radeon KMS
+is still in staging as far as I know, but it was working quite well for
+me up until about -rc3, and now it causes a panic on every boot.  If I
+pass radeon.modeset=0 on the command line, everything works.
 
-You can still set CONFIG_NR_CPUS in "-> Processor type and features" to
-the max number of cores N you have on your machine if you want to save
-approx 8*N KB. But guessing from your quadsocket configuration, memory
-shouldn't be that scarce on that machine to go the trouble :).
+I took a picture of the crash details:
+
+http://picasaweb.google.ca/kjwinchester/LinuxKernelPanic#5432580230065271634
+
+I was hoping that the last pull of DRM fixes would correct the issue,
+but unfortunately they had no effect.
+
+In case it helps, here is the gdb listing for the problem address:
+
+(gdb) l *(radeon_agp_init+0x1d)
+0xffffffff811c1592 is in radeon_agp_init (drivers/gpu/drm/radeon/radeon_agp.c:136).
+131		uint32_t agp_status;
+132		int default_mode;
+133		bool is_v3;
+134		int ret;
+135	
+136		if (rdev->ddev->agp->agp_info.aper_size < 32) {
+137			dev_warn(rdev->dev, "AGP aperture to small (%dM) "
+138				"need at least 32M, disabling AGP\n",
+139				rdev->ddev->agp->agp_info.aper_size);
+140			return -EINVAL;
+
+Is there any other info I can provide?
+
+Thanks,
 
 -- 
-Regards/Gruss,
-    Boris.
+Kevin Winchester
+
+
