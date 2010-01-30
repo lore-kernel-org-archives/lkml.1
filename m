@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751759Ab0A3EcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869Ab0A3Eiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751759Ab0A3EcW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 23:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484Ab0A3EcV
+	id S1751869Ab0A3Eiq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 23:38:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288Ab0A3Eip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 23:32:21 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:58545 "EHLO
+	Fri, 29 Jan 2010 23:38:45 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:43853 "EHLO
 	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751085Ab0A3EcU (ORCPT
+	with ESMTP id S1750876Ab0A3Eip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 23:32:20 -0500
-Subject: why is nf_conntrack_htable_size exported?
+	Fri, 29 Jan 2010 23:38:45 -0500
+Subject: Re: why is nf_conntrack_htable_size exported?
 From: Jon Masters <jonathan@jonmasters.org>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: netfilter-devel <netfilter-devel@vger.kernel.org>
+In-Reply-To: <1264825931.7156.2.camel@tonnant>
+References: <1264825931.7156.2.camel@tonnant>
 Content-Type: text/plain
 Organization: World Organi[sz]ation of Broken Dreams
-Date: Fri, 29 Jan 2010 23:32:11 -0500
-Message-Id: <1264825931.7156.2.camel@tonnant>
+Date: Fri, 29 Jan 2010 23:38:36 -0500
+Message-Id: <1264826316.7499.1.camel@tonnant>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
@@ -29,19 +31,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folks,
+On Fri, 2010-01-29 at 23:32 -0500, Jon Masters wrote:
 
-Can someone tell me why nf_conntrack_htable_size is both an exported
-symbol, and available in sysfs to be changed? Doing so will surely cause
-the system to fall over immediately since this is value is used within
-the hashing code in conntrack. It is /supposed/ to only be changed under
-a lock, or at init time when there is not a need to lock it.
+> Can someone tell me why nf_conntrack_htable_size is both an exported
+> symbol, and available in sysfs to be changed?
 
-Perhaps we can get this unexported asap and the value replaced with a
-function that returns the current value instead? Same goes for the
-module parameter that can freely be messed around with.
-
-Thanks,
+Ah, ignore me, it does go through a function, it's just that if it's
+already zero we assume it's "init time", which isn't true if the value
+has otherwise been fiddled with - I think that assumption probably is
+worth looking at anyway, and it's worth the hashing functions looking to
+see if the value is NULL, to catch that aswell.
 
 Jon.
 
