@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304Ab0A3S4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319Ab0A3S5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754304Ab0A3S4O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 13:56:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864Ab0A3S4N
+	id S1754319Ab0A3S5m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 13:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956Ab0A3S5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 13:56:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47098 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753815Ab0A3S4M convert rfc822-to-8bit (ORCPT
+	Sat, 30 Jan 2010 13:57:42 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:52766 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753913Ab0A3S5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 13:56:12 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: [Update][PATCH] MM / PM: Force GFP_NOIO during suspend/hibernation and resume
-Date: Sat, 30 Jan 2010 19:56:41 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <201001212121.50272.rjw@sisk.pl> <201001252249.18690.rjw@sisk.pl> <4B5E1281.7090700@suse.de>
-In-Reply-To: <4B5E1281.7090700@suse.de>
+	Sat, 30 Jan 2010 13:57:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sa9CdURWgQvPtZjGMFSZhG51sTAO8+vJ/OSxtNjdbXM6Imi/Q3uKmgUMBWoUADqiBr
+         IcTPixyFqG0TvlUWTgqcjeocOXEXaoiGFIj7iCGT+vqOLOtX7hd5N1VRxK6vDNqJ+K81
+         Tq1Tk4fKygAuOZ7KICRTB345xKzYOXkw2ppTI=
+Date: Sat, 30 Jan 2010 19:57:37 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>, Ingo Molnar <mingo@elte.hu>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Lock dependency based tree report in perf lock
+Message-ID: <20100130185736.GC5675@nowhere>
+References: <20100129231723.GB5052@nowhere> <1264841188.24455.54.camel@laptop>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201001301956.41372.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264841188.24455.54.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 January 2010, Alexey Starikovskiy wrote:
-> Rafael J. Wysocki пишет:
-> > On Saturday 23 January 2010, Maxim Levitsky wrote:
-> >> On Fri, 2010-01-22 at 22:19 +0100, Rafael J. Wysocki wrote: 
-> >>> On Friday 22 January 2010, Maxim Levitsky wrote:
-> >>>> On Fri, 2010-01-22 at 10:42 +0900, KOSAKI Motohiro wrote: 
-> >>>>>>>> Probably we have multiple option. but I don't think GFP_NOIO is good
-> >>>>>>>> option. It assume the system have lots non-dirty cache memory and it isn't
-> >>>>>>>> guranteed.
-> >>>>>>> Basically nothing is guaranteed in this case.  However, does it actually make
-> >>>>>>> things _worse_?  
-> >>>>>> Hmm..
-> >>>>>> Do you mean we don't need to prevent accidental suspend failure?
-> >>>>>> Perhaps, I did misunderstand your intention. If you think your patch solve
-> >>>>>> this this issue, I still disagree. but If you think your patch mitigate
-> >>>>>> the pain of this issue, I agree it. I don't have any reason to oppose your
-> >>>>>> first patch.
-> >>>>> One question. Have anyone tested Rafael's $subject patch? 
-> >>>>> Please post test result. if the issue disapper by the patch, we can
-> >>>>> suppose the slowness is caused by i/o layer.
-> >>>> I did.
-> >>>>
-> >>>> As far as I could see, patch does solve the problem I described.
-> >>>>
-> >>>> Does it affect speed of suspend? I can't say for sure. It seems to be
-> >>>> the same.
-> >>> Thanks for testing.
-> >> I'll test that too, soon.
-> >> Just to note that I left my hibernate loop run overnight, and now I am
-> >> posting from my notebook after it did 590 hibernate cycles.
+On Sat, Jan 30, 2010 at 09:46:28AM +0100, Peter Zijlstra wrote:
+> On Sat, 2010-01-30 at 00:17 +0100, Frederic Weisbecker wrote:
 > > 
-> > Did you have a chance to test it?
 > > 
-> >> Offtopic, but Note that to achieve that I had to stop using global acpi
-> >> hardware lock. I tried all kinds of things, but for now it just hands
-> >> from time to time.
-> >> See http://bugzilla.kernel.org/show_bug.cgi?id=14668
-> > 
-> > I'm going to look at that later this week, although I'm not sure I can do more
-> > than Alex about that.
-> > 
-> > Rafael
-> Rafael,
-> If you can point to where one may insert callback to be called just before handing control to resume kernel,
-> it may help...
+> > Anyway, that's just an idea, not trivial I must admit.
+> 
+> lockdep actually collects all this information, so writing it out isn't
+> too hard.
 
-Generally speaking, I'd do that in a .suspend() callback of one of devices.
 
-If that's inconvenient, you can also place it in the .pre_restore() platform
-hibernate callback (drivers/acpi/sleep.c).  It only disables GPEs right now,
-it might release the global lock as well.
 
-The .pre_restore() callback is executed after all devices have been suspended,
-so there's no danger any driver would re-acquire the global lock after that.
+Lockdep collects the theorical dependencies but not the practical
+scenarios.
 
-Rafael
+Say B and C depend on A, you'll get:
+
+   A
+  / \
+ B   C
+
+But nothing can tell you that if A is taken, B and C will always
+be taken. You may have different scenarios based on this dependency,
+which is not something that lockdep logs, right?
+
