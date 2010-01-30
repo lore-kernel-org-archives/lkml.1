@@ -1,109 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930Ab0A3Vdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918Ab0A3Vzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930Ab0A3Vdc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 16:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586Ab0A3Vdb
+	id S1753918Ab0A3Vzv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 16:55:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267Ab0A3Vzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 16:33:31 -0500
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:53016 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753584Ab0A3Vda (ORCPT
+	Sat, 30 Jan 2010 16:55:50 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:52280 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752924Ab0A3Vzt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 16:33:30 -0500
-Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers
- through extended ptrace interface
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: prasad@linux.vnet.ibm.com, shaggy@linux.vnet.ibm.com,
-       linuxppc-dev@ozlabs.org, David Gibson <dwg@au1.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100130204409.GE5675@nowhere>
-References: <20100124191830.GB14075@in.ibm.com>
-	 <1264365121.3601.43.camel@pasglop>  <20100130204409.GE5675@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Organization: IBM Australia
-Date: Sun, 31 Jan 2010 08:33:25 +1100
-Message-ID: <1264887205.8287.5.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Sat, 30 Jan 2010 16:55:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=v78gClJY0isN1e9YExBxxPoS80d44MgXSndGQQyJu6vnlbsETxPgq/QO7TRw8otzT9
+         UFIumQYHkFvrL1298POOt5MjRBiVeoYVyZ0oUoz/b4OU6eEmAUfFLujFHTXsR3h1E3ms
+         qe+pz3sEUqk1bXaIpdEyKMmgp8UzfhgNJN+oo=
+Message-ID: <4B64AAE3.5040501@garzik.org>
+Date: Sat, 30 Jan 2010 16:55:47 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/9] cs5536: convert to ide2libata
+References: <20100130194918.30779.25485.sendpatchset@localhost> <20100130195004.30779.89524.sendpatchset@localhost>
+In-Reply-To: <20100130195004.30779.89524.sendpatchset@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/30/2010 02:50 PM, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> Subject: [PATCH] cs5536: convert to ide2libata
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> ---
+>   drivers/ata/pata_cs5536.h |   22 +++++
+>   drivers/ide/cs5536.c      |  189 +---------------------------------------------
+>   2 files changed, 26 insertions(+), 185 deletions(-)
+>
+> Index: b/drivers/ata/pata_cs5536.h
+> ===================================================================
+> --- a/drivers/ata/pata_cs5536.h
+> +++ b/drivers/ata/pata_cs5536.h
+> @@ -64,7 +64,11 @@ static int cs5536_write(struct pci_dev *
+>
+>   static void cs5536_program_dtc(struct ata_device *adev, u8 tim)
+>   {
+> +#ifndef __IDE2LIBATA
+>   	struct pci_dev *pdev = to_pci_dev(adev->link->ap->host->dev);
+> +#else
+> +	struct pci_dev *pdev = to_pci_dev(adev->hwif->dev);
+> +#endif
+>   	int dshift = adev->devno ? IDE_D1_SHIFT : IDE_D0_SHIFT;
+>   	u32 dtc;
+>
+> @@ -121,11 +125,19 @@ static void cs5536_set_piomode(struct at
+>   	int mode = adev->pio_mode - XFER_PIO_0;
+>   	int cmdmode = mode;
+>   	int cshift = adev->devno ? IDE_CAST_D1_SHIFT : IDE_CAST_D0_SHIFT;
+> +#ifdef __IDE2LIBATA
+> +	unsigned long timings = (unsigned long)ide_get_drivedata(adev);
+> +#endif
+>   	u32 cast;
+>
+>   	if (pair)
+>   		cmdmode = min(mode, pair->pio_mode - XFER_PIO_0);
+>
+> +#ifdef __IDE2LIBATA
+> +	timings&= (IDE_DRV_MASK<<  8);
+> +	timings |= drv_timings[mode];
+> +	ide_set_drivedata(adev, (void *)timings);
+> +#endif
+>   	cs5536_program_dtc(adev, drv_timings[mode]);
+>
+>   	cs5536_read(pdev, CAST,&cast);
+> @@ -160,7 +172,9 @@ static void cs5536_set_dmamode(struct at
+>   	u32 etc;
+>   	int mode = adev->dma_mode;
+>   	int dshift = adev->devno ? IDE_D1_SHIFT : IDE_D0_SHIFT;
+> -
+> +#ifdef __IDE2LIBATA
+> +	unsigned long timings = (unsigned long)ide_get_drivedata(adev);
+> +#endif
+>   	cs5536_read(pdev, ETC,&etc);
+>
+>   	if (mode>= XFER_UDMA_0) {
+> @@ -168,7 +182,13 @@ static void cs5536_set_dmamode(struct at
+>   		etc |= udma_timings[mode - XFER_UDMA_0]<<  dshift;
+>   	} else { /* MWDMA */
+>   		etc&= ~(IDE_ETC_UDMA_MASK<<  dshift);
+> +#ifndef __IDE2LIBATA
+>   		cs5536_program_dtc(adev, mwdma_timings[mode - XFER_MW_DMA_0]);
+> +#else
+> +		timings&= IDE_DRV_MASK;
+> +		timings |= mwdma_timings[mode - XFER_MW_DMA_0]<<  8;
+> +		ide_set_drivedata(adev, (void *)timings);
+> +#endif
+>   	}
+>
+>   	cs5536_write(pdev, ETC, etc);
 
-> We have one field for addr, one for len and one for the memory access
-> type.
-> 
-> I think that those three are enough to express breakpoint ranges.
-> Basically a breakpoint range is a breakpoint that can have a high
-> len.
-> 
-> I've looked at the G2 PowerPc core breakpoint implementation, just to
-> face one of such tricky examples.
+Wow, that's really turning into a rat's nest of ifdefs, isn't it?
 
-BookE has a richer semantic. We have watchpoints with data value compare
-for example, we also have instruction value compare for breakpoints, and
-a few other niceties. There's also subtle differences between what
-processor variants support.
+	Jeff
 
- .../...
-
-> > I'd rather have this more dedicated and more complete interface merged
-> > for gdb's sake, and in a second step look at unifying.
-> 
-> 
-> Perhaps. Supporting ptrace breakpoints should be an easy first
-> step as it's basically the responsibility of the user to fill
-> the registers, but it's a pretty limited scope work, especially you
-> won't have perf support.
-
-But we can add it later. 
-
-> > I believe that the generic breakpoint infrastructure should not be the
-> > mid-layer. IE. It cannot be made in any clean shape of form, to express
-> > all of the subtle features that a given architecture or platform can
-> > support and as such would always be inferior to a dedicated one.
-> 
-> 
-> Actually I think the current interface already does, as I explained
-> above.
-> 
-> What is broken for any other architectures than x86 is the set
-> of constraints, but I can easily move it to the arch, unless
-> I find a good generic solution (or a cool combination between
-> both).
-
-Again, this is all "can do" vs. "already done and working". May I point
-you to Linus recent rant against magic infrastructures that try to do
-everything and do nothing right ? :-) I much prefer starting with
-something dedicated that does exactly what is expected, have that
-upstream (and in that regard the patches are good for the next merge
-window) and -then- maybe look at how some of it could be re-used for
-perf.
-
-> Not at all. It's an attempt to make a generic interface that can
-> exploit at best _each_ arch specific features. 
-
-That reminds me of the justifications for utrace :-) It might well be
-but I very much doubt that is possible. In any case, it doesn't appear
-to be there yet. So let's just get that stuff in so we have our
-interface finally working, and we can look at doing fancy things with
-perf in a second pass.
-
-> Other than the set
-> of constraints that I'm going to rework, the generic interface is powerful
-> enough to host what I've seen in term of cpu breakpoints implementations
-> for now. But if it's actually not and I'm missing other cases, please
-> report it to me.
-> 
-> The reason that makes the current generic constraints x86
-> oriented only is that I've only x86 boxes at home and I needed
-> to make a first shot without knowing anything about other archs
-> constraints, but in the long term, our motivations (Prasad's and mines)
-> are definetely not archX-centric.
-
-Cheers,
-Ben.
 
 
