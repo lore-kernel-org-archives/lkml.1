@@ -1,93 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214Ab0A3Sju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199Ab0A3SpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214Ab0A3Sju (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 13:39:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181Ab0A3Sjr
+	id S1754199Ab0A3SpG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 13:45:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913Ab0A3SpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 13:39:47 -0500
-Received: from kolab.mylinuxtime.de ([80.190.48.10]:52844 "EHLO
-	kolab.mylinuxtime.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754045Ab0A3Sjn (ORCPT
+	Sat, 30 Jan 2010 13:45:05 -0500
+Received: from mbox1.netikka.net ([213.250.81.202]:43842 "EHLO
+	mbox1.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753734Ab0A3SpE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 13:39:43 -0500
-X-Spam-ASN: 
-From: Christian Hesse <mail@earthworm.de>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: Samsung N220 backlight support
-Date: Sat, 30 Jan 2010 19:37:34 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.32-ARCH; KDE/4.3.4; x86_64; ; )
-References: <201001301706.18245.mail@earthworm.de> <20100130162857.GA26029@suse.de>
-In-Reply-To: <20100130162857.GA26029@suse.de>
-Cc: linux-kernel@vger.kernel.org
+	Sat, 30 Jan 2010 13:45:04 -0500
+Message-ID: <4B647E29.7060606@mandriva.org>
+Date: Sat, 30 Jan 2010 20:44:57 +0200
+From: Thomas Backlund <tmb@mandriva.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100122 Mandriva/3.0.1-2mdv2010.1 (2010.1) Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_uxHZLzbE2NvlT/d"
-Message-Id: <201001301937.34834.mail@earthworm.de>
+To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+CC: Christoph Hellwig <hch@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tmb@mandriva.org" <tmb@mandriva.org>,
+       Fran?ois Figarola <francois.figarola@i-consult.fr>,
+       device-mapper development <dm-devel@redhat.com>,
+       Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       "stable@kernel.org" <stable@kernel.org>
+Subject: Re: [BUGFIX] [PATCH] freeze_bdev: don't deactivate successfully frozen
+ MS_RDONLY sb
+References: <d2deb3241001160158r4baed1e1t7e8f6642de018b4c@mail.gmail.com> <20100122160740.6c16c22d.akpm@linux-foundation.org> <20100128134205.352044bd@notabene> <4B612F89.7020503@ce.jp.nec.com> <20100128182528.GA29926@infradead.org> <4B623236.90003@ce.jp.nec.com>
+In-Reply-To: <4B623236.90003@ce.jp.nec.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_uxHZLzbE2NvlT/d
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+29.01.2010 02:56, Jun'ichi Nomura skrev:
+> Thanks Thomas and Christoph for testing and review.
+> I removed 'smp_wmb()' before up_write from the previous patch,
+> since up_write() should have necessary ordering constraints.
+> (I.e. the change of s_frozen is visible to others after up_write)
+> I'm quite sure the change is harmless but if you are uncomfortable
+> with Tested-by/Reviewed-by on the modified patch, please remove them.
+>
 
-On Saturday 30 January 2010 17:28:57 you wrote:
-> On Sat, Jan 30, 2010 at 05:06:18PM +0100, Christian Hesse wrote:
-> > Hello Greg,
-> >
-> > this adds support for Samsung N220 to your samsung-backlight. Tested on
-> > my device, works for me.
-> 
-> Hm, the driver that ended up in the kernel is very different from this
-> version.  Can you work with that version and add the needed changes
-> there and generate a patch?
+I've just verified that this patch works as intended on both 2.6.32 and 
+2.6.33-rc6, so for me it's still OK.
+>
+> If MS_RDONLY, freeze_bdev should just up_write(s_umount) instead of
+> deactivate_locked_super().
+> Also, keep sb->s_frozen consistent so that remount can check the frozen state.
+>
+> Otherwise a crash reported here can happen:
+> http://lkml.org/lkml/2010/1/16/37
+> http://lkml.org/lkml/2010/1/28/53
+>
+>
+> This patch should be applied for 2.6.32 stable series, too.
+>
+> Reviewed-by: Christoph Hellwig<hch@lst.de>
+> Tested-by: Thomas Backlund<tmb@mandriva.org>
+> Signed-off-by: Jun'ichi Nomura<j-nomura@ce.jp.nec.com>
+> Cc: stable@kernel.org
+>
+> diff --git a/fs/block_dev.c b/fs/block_dev.c
+> index 73d6a73..d11d028 100644
+> --- a/fs/block_dev.c
+> +++ b/fs/block_dev.c
+> @@ -246,7 +246,8 @@ struct super_block *freeze_bdev(struct block_device *bdev)
+>   	if (!sb)
+>   		goto out;
+>   	if (sb->s_flags&  MS_RDONLY) {
+> -		deactivate_locked_super(sb);
+> +		sb->s_frozen = SB_FREEZE_TRANS;
+> +		up_write(&sb->s_umount);
+>   		mutex_unlock(&bdev->bd_fsfreeze_mutex);
+>   		return sb;
+>   	}
+> @@ -307,7 +308,7 @@ int thaw_bdev(struct block_device *bdev, struct super_block *sb)
+>   	BUG_ON(sb->s_bdev != bdev);
+>   	down_write(&sb->s_umount);
+>   	if (sb->s_flags&  MS_RDONLY)
+> -		goto out_deactivate;
+> +		goto out_unfrozen;
+>
+>   	if (sb->s_op->unfreeze_fs) {
+>   		error = sb->s_op->unfreeze_fs(sb);
+> @@ -321,11 +322,11 @@ int thaw_bdev(struct block_device *bdev, struct super_block *sb)
+>   		}
+>   	}
+>
+> +out_unfrozen:
+>   	sb->s_frozen = SB_UNFROZEN;
+>   	smp_wmb();
+>   	wake_up(&sb->s_wait_unfrozen);
+>
+> -out_deactivate:
+>   	if (sb)
+>   		deactivate_locked_super(sb);
+>   out_unlock:
+> .
+>
 
-Oh, did not notice it was included in mainline already.
-I applied the attached patch. Insmod now gives:
-
-insmod: error inserting 'samsung-laptop.ko': -1 Invalid parameters
-
-and the logs contain the following:
-
-kernel: samsung_laptop: found laptop model 'N220'
-kernel: This computer does not support SABI
-
-What is this SABI and SECLINUX thing about? Do you have a link to any more 
-information? Is it possible that the N220 does not have this?
-The N220 uses a Pine Train platform (featuring N450 with 64bit support), so I 
-installed x86_64 to the device.
-
-I would be glad to test whatever you give me.
-
-Regards,
-Chris
-
---Boundary-00=_uxHZLzbE2NvlT/d
-Content-Type: text/x-patch;
-  charset="UTF-8";
-  name="samsung-laptop-n220.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="samsung-laptop-n220.diff"
-
---- linux-2.6.33-rc6/drivers/staging/samsung-laptop/samsung-laptop.c	2010-01-30 17:40:18.000000000 +0100
-+++ linux-2.6.33-rc6/drivers/staging/samsung-laptop/samsung-laptop.c	2010-01-30 18:27:06.000000000 +0100
-@@ -385,6 +385,15 @@ static struct dmi_system_id __initdata s
- 		},
- 		.callback = dmi_check_cb,
- 	},
-+	{
-+		.ident = "N220",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "N220"),
-+			DMI_MATCH(DMI_BOARD_NAME, "N220"),
-+		},
-+		.callback = dmi_check_cb,
-+	},
- 	{ },
- };
- MODULE_DEVICE_TABLE(dmi, samsung_dmi_table);
-
---Boundary-00=_uxHZLzbE2NvlT/d--
