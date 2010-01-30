@@ -1,94 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948Ab0A3BKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061Ab0A3B0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948Ab0A3BKo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Jan 2010 20:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004Ab0A3BKn
+	id S1756061Ab0A3B0f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Jan 2010 20:26:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904Ab0A3B0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Jan 2010 20:10:43 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:59839 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094Ab0A3BKm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Jan 2010 20:10:42 -0500
-Subject: debug: nt_conntrack and KVM crash
-From: Jon Masters <jonathan@jonmasters.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Patrick McHardy <kaber@trash.net>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Fri, 29 Jan 2010 20:10:32 -0500
-Message-Id: <1264813832.2793.446.camel@tonnant>
+	Fri, 29 Jan 2010 20:26:34 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:55200 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755905Ab0A3B0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Jan 2010 20:26:33 -0500
+Date: Sat, 30 Jan 2010 12:26:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: linux-next: manual merge of the davinci tree with the arm tree
+Message-Id: <20100130122627.b1402712.sfr@canb.auug.org.au>
+In-Reply-To: <87iqakpjue.fsf@deeprootsystems.com>
+References: <20100129111342.203358d9.sfr@canb.auug.org.au>
+	<87iqakpjue.fsf@deeprootsystems.com>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__30_Jan_2010_12_26_27_+1100_0ThBf5w0RDNxEq5t"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folks,
+--Signature=_Sat__30_Jan_2010_12_26_27_+1100_0ThBf5w0RDNxEq5t
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I've hooked up Jason's kgb/kgdb patches and been able to gather some
-more information about the most recent crashes on this test system.
+Hi Kevin,
 
-The last few crashes have occurred after starting an F12 guest, at which
-point __nf_conntrack_find is called with the following tuple:
+On Fri, 29 Jan 2010 15:33:29 -0800 Kevin Hilman <khilman@deeprootsystems.co=
+m> wrote:
+>
+> OK, I'll drop the one from the davinci tree.
 
---- begin ---
-(gdb) print tuple->src->u3
-$45 = {all = {16777343, 0, 0, 0}, ip = 16777343, ip6 = {16777343, 0, 0,
-0},
-  in = {s_addr = 16777343}, in6 = {in6_u = {
-      u6_addr8 = "\177\000\000\001", '\000' <repeats 11 times>,
-u6_addr16 = {
-        127, 256, 0, 0, 0, 0, 0, 0}, u6_addr32 = {16777343, 0, 0, 0}}}}
+OK, thanks.
 
-(gdb) print tuple->src->u
-$46 = {all = 3607, tcp = {port = 3607}, udp = {port = 3607}, icmp = {
-    id = 3607}, dccp = {port = 3607}, sctp = {port = 3607}, gre = {key =
-3607}}
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-(gdb) print tuple->dst
-$48 = {u3 = {all = {16777343, 0, 0, 0}, ip = 16777343, ip6 = {16777343,
-0, 0,
-      0}, in = {s_addr = 16777343}, in6 = {in6_u = {
-        u6_addr8 = "\177\000\000\001", '\000' <repeats 11 times>,
-u6_addr16 = {
-          127, 256, 0, 0, 0, 0, 0, 0}, u6_addr32 = {16777343, 0, 0,
-0}}}},
-  u = {all = 12761, tcp = {port = 12761}, udp = {port = 12761}, icmp = {
-      type = 217 '\331', code = 49 '1'}, dccp = {port = 12761}, sctp = {
-      port = 12761}, gre = {key = 12761}}, protonum = 6 '\006', dir = 0
-'\000'}
----end ---
+--Signature=_Sat__30_Jan_2010_12_26_27_+1100_0ThBf5w0RDNxEq5t
+Content-Type: application/pgp-signature
 
-Which (after converting from network to host addressing) is a VNC (port
-5902) TCP packet being broadcast (by the guest maybe? I didn't know
-Fedora started VNC by default these days, but I'll look).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-After looking through the netfilter code, I understand now that it
-maintains a hashtable (which size is computed at boot time according to
-system memory size, and is usually kmalloced but might be vmalloced if
-there is a problem - not here though). Each time a packet of interest
-relating to a connection we might want to track comes in, we get a
-"tuple" passed in to the conntrack functions, and this is hashed using
-hash_conntrack into an entry in an array of hlists (buckets) stored in
-the "ct" (conntrack) entry in the current network namespace (there is
-only one on this system, I checked that). In this case, when we come to
-look at the hashtable, it contains a number of valid entries (I looked)
-but not for the hashed entry calculated for this VNC packet.
+iEYEARECAAYFAktjisMACgkQjjKRsyhoI8xcUwCfQO+3xuSCUHSbdE0p00wdGfzP
+B6sAoLG7se/425CnoEXCWmPR2rwzxXd0
+=cuGW
+-----END PGP SIGNATURE-----
 
-I would love to have advice on the best way to debug conntrack hashtable
-missbehavior (there's a lot of RCU use in there), especially with
-freeing entries. Is there more debug code I can turn on? Is there
-anything you guys would suggest that I look at?
-
-Jon.
-
-
+--Signature=_Sat__30_Jan_2010_12_26_27_+1100_0ThBf5w0RDNxEq5t--
