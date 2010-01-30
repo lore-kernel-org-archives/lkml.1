@@ -1,89 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335Ab0A3Lzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175Ab0A3MAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335Ab0A3Lzw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 06:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497Ab0A3Lzw
+	id S1753175Ab0A3MAR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 07:00:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517Ab0A3MAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 06:55:52 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52419 "EHLO
+	Sat, 30 Jan 2010 07:00:16 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52452 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751902Ab0A3Lzv (ORCPT
+	with ESMTP id S1750951Ab0A3MAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 06:55:51 -0500
+	Sat, 30 Jan 2010 07:00:15 -0500
+Message-ID: <4B641F4D.6090704@dcl.info.waseda.ac.jp>
+Date: Sat, 30 Jan 2010 21:00:13 +0900
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Subject: Revert "perf record: Intercept all events"
-Date: Sat, 30 Jan 2010 20:55:41 +0900
-Message-Id: <1264852541-8471-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; ja; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 00/12] perf lock: New subcommand "perf lock", for	analyzing
+ lock statistics
+References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp> <20100129143403.GJ13771@kernel.dk>
+In-Reply-To: <20100129143403.GJ13771@kernel.dk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ONLY FOR TEST USE!!!
+(2010年01月29日 23:34), Jens Axboe wrote:
+> On Fri, Jan 22 2010, Hitoshi Mitake wrote:
+>    
+>> Adding new subcommand "perf lock" to perf.
+>>
+>> I made this patch series on
+>> latest perf/core of tip (ef12a141306c90336a3a10d40213ecd98624d274),
+>> so please apply this series to perf/core.
+>>      
+> [snip]
+>
+> I wanted to give this a go today, since I think it's pretty nifty and a
+> lot better than using /proc/lock_stat. But it basically spirals the
+> system into death [1]. How big a system did you test this on?
+>
+> [1] Got this: [  117.097918] hrtimer: interrupt took 35093901 ns
+>
+>    
 
-This reverts commit f5a2c3dce03621b55f84496f58adc2d1a87ca16f.
+I tested this on Core i7 965 + 3GB DRAM machine.
+Test program is mainly "perf bench sched messaging".
 
-This patch is required for making "perf lock rec" work.
-The commit f5a2c3dce0 changes write_event() of builtin-record.c .
-And changed write_event() sometimes doesn't stop with perf lock rec.
+Could you tell me the detail of your test situation?
 
-I'm researching what makes write_event() loop infinity,
-and noticed that there are some events with event_t->header.size == 0.
-But the detail of the problem,
-like kind of these events, isn't clear...
-
-*** I cannot sing this! ***
----
- tools/perf/builtin-record.c |   28 ++++++++++------------------
- 1 files changed, 10 insertions(+), 18 deletions(-)
-
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 7bb9ca1..614fa9a 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -113,24 +113,16 @@ static void write_output(void *buf, size_t size)
- 
- static void write_event(event_t *buf, size_t size)
- {
--	size_t processed_size = buf->header.size;
--	event_t *ev = buf;
--
--	do {
--		/*
--		* Add it to the list of DSOs, so that when we finish this
--		 * record session we can pick the available build-ids.
--		 */
--		if (ev->header.type == PERF_RECORD_MMAP) {
--			struct list_head *head = &dsos__user;
--			if (ev->header.misc == 1)
--				head = &dsos__kernel;
--			__dsos__findnew(head, ev->mmap.filename);
--		}
--
--		ev = ((void *)ev) + ev->header.size;
--		processed_size += ev->header.size;
--	} while (processed_size < size);
-+	/*
-+	* Add it to the list of DSOs, so that when we finish this
-+	 * record session we can pick the available build-ids.
-+	 */
-+	if (buf->header.type == PERF_RECORD_MMAP) {
-+		struct list_head *head = &dsos__user;
-+		if (buf->mmap.header.misc == 1)
-+			head = &dsos__kernel;
-+		__dsos__findnew(head, buf->mmap.filename);
-+	}
- 
- 	write_output(buf, size);
- }
--- 
-1.6.5.2
+Thanks,
+Hitoshi
 
