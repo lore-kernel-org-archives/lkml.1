@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178Ab0A3Sjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214Ab0A3Sju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754178Ab0A3Sjn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 13:39:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913Ab0A3Sjm
+	id S1754214Ab0A3Sju (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 13:39:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181Ab0A3Sjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 13:39:42 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47058 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753978Ab0A3Sjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 13:39:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Heinz Diehl <htd@fancy-poultry.org>
-Subject: Re: 2.6.33-rc6, swapper - not tainted
-Date: Sat, 30 Jan 2010 19:40:11 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
+	Sat, 30 Jan 2010 13:39:47 -0500
+Received: from kolab.mylinuxtime.de ([80.190.48.10]:52844 "EHLO
+	kolab.mylinuxtime.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754045Ab0A3Sjn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 13:39:43 -0500
+X-Spam-ASN: 
+From: Christian Hesse <mail@earthworm.de>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: Samsung N220 backlight support
+Date: Sat, 30 Jan 2010 19:37:34 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.32-ARCH; KDE/4.3.4; x86_64; ; )
+References: <201001301706.18245.mail@earthworm.de> <20100130162857.GA26029@suse.de>
+In-Reply-To: <20100130162857.GA26029@suse.de>
 Cc: linux-kernel@vger.kernel.org
-References: <20100130183311.GA6464@fancy-poultry.org>
-In-Reply-To: <20100130183311.GA6464@fancy-poultry.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001301940.11477.rjw@sisk.pl>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_uxHZLzbE2NvlT/d"
+Message-Id: <201001301937.34834.mail@earthworm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 30 January 2010, Heinz Diehl wrote:
-> Hi,
-> 
-> booting 2.6.33-rc6, i get this in my log. 2.6.33-rc5 and below were fine.
-> Please contact me if you need further information.
-> 
-> [....]
-> <6>cpuidle: using governor ladder
-> <6>cpuidle: using governor menu
-> <4>Netfilter messages via NETLINK v0.30.
-> <3>kmem_cache_create: duplicate cache ccid2_h
-> <4>Pid: 1, comm: swapper Not tainted 2.6.33-rc6 #1
-> <4>Call Trace:
-> <4> [<ffffffff810cf8d0>] ? kmem_cache_create+0x4a0/0x550
-> <4> [<ffffffff814007fe>] ? ccid_kmem_cache_create+0x5e/0x70
-> <4> [<ffffffff8176cdf9>] ? ccid_initialize_builtins+0x59/0xb0
-> <4> [<ffffffff8176d1c6>] ? dccp_init+0x376/0x3d7
-> <4> [<ffffffff8176ce50>] ? dccp_init+0x0/0x3d7
-> <4> [<ffffffff810001d5>] ? do_one_initcall+0x35/0x190
-> <4> [<ffffffff8173764d>] ? kernel_init+0x174/0x1ce
-> <4> [<ffffffff81003b54>] ? kernel_thread_helper+0x4/0x10
-> <4> [<ffffffff817374d9>] ? kernel_init+0x0/0x1ce
-> <4> [<ffffffff81003b50>] ? kernel_thread_helper+0x0/0x10
-> <6>input: AT Translated Set 2 keyboard as
-> /devices/platform/i8042/serio0/input/input0
-> <6>input: ImPS/2 Logitech Wheel Mouse as
-> /devices/platform/i8042/serio1/input/input1
-> <4>registered taskstats version 1
-> <6>Freeing unused kernel memory: 1344k freed
-> [....]
+--Boundary-00=_uxHZLzbE2NvlT/d
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-It looks like you cut too much from the log.  Can you please attach
-the entire log?
+On Saturday 30 January 2010 17:28:57 you wrote:
+> On Sat, Jan 30, 2010 at 05:06:18PM +0100, Christian Hesse wrote:
+> > Hello Greg,
+> >
+> > this adds support for Samsung N220 to your samsung-backlight. Tested on
+> > my device, works for me.
+> 
+> Hm, the driver that ended up in the kernel is very different from this
+> version.  Can you work with that version and add the needed changes
+> there and generate a patch?
 
-Rafael
+Oh, did not notice it was included in mainline already.
+I applied the attached patch. Insmod now gives:
+
+insmod: error inserting 'samsung-laptop.ko': -1 Invalid parameters
+
+and the logs contain the following:
+
+kernel: samsung_laptop: found laptop model 'N220'
+kernel: This computer does not support SABI
+
+What is this SABI and SECLINUX thing about? Do you have a link to any more 
+information? Is it possible that the N220 does not have this?
+The N220 uses a Pine Train platform (featuring N450 with 64bit support), so I 
+installed x86_64 to the device.
+
+I would be glad to test whatever you give me.
+
+Regards,
+Chris
+
+--Boundary-00=_uxHZLzbE2NvlT/d
+Content-Type: text/x-patch;
+  charset="UTF-8";
+  name="samsung-laptop-n220.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="samsung-laptop-n220.diff"
+
+--- linux-2.6.33-rc6/drivers/staging/samsung-laptop/samsung-laptop.c	2010-01-30 17:40:18.000000000 +0100
++++ linux-2.6.33-rc6/drivers/staging/samsung-laptop/samsung-laptop.c	2010-01-30 18:27:06.000000000 +0100
+@@ -385,6 +385,15 @@ static struct dmi_system_id __initdata s
+ 		},
+ 		.callback = dmi_check_cb,
+ 	},
++	{
++		.ident = "N220",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "N220"),
++			DMI_MATCH(DMI_BOARD_NAME, "N220"),
++		},
++		.callback = dmi_check_cb,
++	},
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(dmi, samsung_dmi_table);
+
+--Boundary-00=_uxHZLzbE2NvlT/d--
