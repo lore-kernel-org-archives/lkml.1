@@ -1,109 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166Ab0A3Raq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114Ab0A3Ros@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753166Ab0A3Raq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 12:30:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074Ab0A3Rap
+	id S1753114Ab0A3Ros (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 12:44:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769Ab0A3Ror
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 12:30:45 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:49096 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753057Ab0A3Rao (ORCPT
+	Sat, 30 Jan 2010 12:44:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59803 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752446Ab0A3Ror (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 12:30:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:organization:user-agent:mime-version
-         :to:cc:subject:references:in-reply-to:x-enigmail-version
-         :content-type;
-        b=EU5SeNWHV+pmlTBT6/Uznmy/3J2N21BJbZOgEH+OQKUH0QVPQhEQS5/9vfpbWN3ghl
-         9AaxdIulM6Ig5RuPZn09K3cqoRKi5zkl0m7EAiP1kz+CpxtH4CIpLT3FwwQShxo7RYF4
-         fy59f2qKxhXPIrBNSsfN1Wjm6aXUa5ExNa2X4=
-Message-ID: <4B646CBE.6050404@gmail.com>
-Date: Sat, 30 Jan 2010 18:30:38 +0100
-From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
-Reply-To: vedran.furac@gmail.com
-Organization: Home
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20091109 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
+	Sat, 30 Jan 2010 12:44:47 -0500
+Date: Sat, 30 Jan 2010 09:43:52 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Kevin Winchester <kjwinchester@gmail.com>
+cc: Dave Airlie <airlied@linux.ie>, dri-devel <dri-devel@lists.sf.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Deucher <alexdeucher@gmail.com>,
+       Jerome Glisse <jglisse@redhat.com>
+Subject: Re: Radeon KMS regression still present in 2.6.33-rc6
+In-Reply-To: <1264871899.1533.6.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.1001300929260.4206@localhost.localdomain>
+References: <1264871899.1533.6.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, rientjes@google.com,
-       minchan.kim@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
-References: <20100121145905.84a362bb.kamezawa.hiroyu@jp.fujitsu.com>	<20100122152332.750f50d9.kamezawa.hiroyu@jp.fujitsu.com>	<20100125151503.49060e74.kamezawa.hiroyu@jp.fujitsu.com>	<20100126151202.75bd9347.akpm@linux-foundation.org>	<20100127085355.f5306e78.kamezawa.hiroyu@jp.fujitsu.com>	<20100126161952.ee267d1c.akpm@linux-foundation.org>	<20100127095812.d7493a8f.kamezawa.hiroyu@jp.fujitsu.com>	<20100128001636.2026a6bc@lxorguk.ukuu.org.uk>	<4B622AEE.3080906@gmail.com>	<20100129003547.521a1da9@lxorguk.ukuu.org.uk>	<4B62327F.3010208@gmail.com>	<20100129110321.564cb866@lxorguk.ukuu.org.uk>	<4B64272D.8020509@gmail.com> <20100130125917.600beb51@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100130125917.600beb51@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------040608070602050307010304"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040608070602050307010304
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 
-Alan Cox wrote:
 
->>> So how about you go and have a complain at the people who are causing
->>> your problem, rather than the kernel.
->> That would pass completely unnoticed and ignored as long as overcommit
->> is enabled by default.
+On Sat, 30 Jan 2010, Kevin Winchester wrote:
+>
+> I took a picture of the crash details:
+>
+> http://picasaweb.google.ca/kjwinchester/LinuxKernelPanic#5432580230065271634
 > 
-> Defaults are set by the distributions. So you are still complaining to
-> the wrong people.
-
-I can't say I'm able to correctly read kernel code, but I believe
-default is set by:
-
-int sysctl_overcommit_memory = OVERCOMMIT_GUESS;  /* heuristic overcommit */
-int sysctl_overcommit_ratio = 50;       /* default is 50% */
-int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
-
-in mmap.c.
-
->> So, if you don't want to change the OOM algorithm why not fixing this
->> bug then? And after that change the proc(5) manpage entry for
->> /proc/sys/vm/overcommit_memory into something like:
->>
->> 0: heuristic overcommit (enable this if you have memory problems with
->>                           some buggy software)
->> 1: always overcommit, never check
->> 2: always check, never overcommit (this is the default)
+> In case it helps, here is the gdb listing for the problem address:
 > 
-> Because there are a lot of systems where heuristic overcommit makes
-> sense ?
+> (gdb) l *(radeon_agp_init+0x1d)
+> 0xffffffff811c1592 is in radeon_agp_init (drivers/gpu/drm/radeon/radeon_agp.c:136).
+> 131		uint32_t agp_status;
+> 132		int default_mode;
+> 133		bool is_v3;
+> 134		int ret;
+> 135	
+> 136		if (rdev->ddev->agp->agp_info.aper_size < 32) {
+> 137			dev_warn(rdev->dev, "AGP aperture to small (%dM) "
+> 138				"need at least 32M, disabling AGP\n",
+> 139				rdev->ddev->agp->agp_info.aper_size);
+> 140			return -EINVAL;
+> 
+> Is there any other info I can provide?
 
-Ok, I won't argue any more. Just please watch this short (~1min)
-screencast I made and tell me which behavior is good and which is bad
-and should be fixed:
+In your crash 'rdev->ddev->agp' is NULL. The instruction decode is:
 
-http://vedranf.net/tmp/oom.ogv  (you can watch it using VLC for example)
+   e:	55                   	push   %rbp
+   f:	48 89 e5             	mov    %rsp,%rbp
+  12:	41 56                	push   %r14
+  14:	41 55                	push   %r13
+  16:	41 54                	push   %r12
+  18:	53                   	push   %rbx
+  19:	48 89 fb             	mov    %rdi,%rbx
+  1c:	48 83 ec 40          	sub    $0x40,%rsp
+  20:	48 8b 7f 08          	mov    0x8(%rdi),%rdi
+  24:	48 8b 87 20 03 00 00 	mov    0x320(%rdi),%rax
+  2b:*	4c 8b 60 28          	mov    0x28(%rax),%r12     <-- trapping instruction
+  2f:	49 83 fc 1f          	cmp    $0x1f,%r12
+  33:	77 2e                	ja     0x63
+  35:	48 8b 3b             	mov    (%rbx),%rdi
+  38:	48 8b 5f 10          	mov    0x10(%rdi),%rbx
 
-Actually anyone receiving this mail should see it. What do you think,
-what will customers rather choose if they see this?
+so it's that lod of "agp_info.aper_size" that fails (you can see how it's 
+trying to compare with 31, it comes from that "agp_info.aper_size < 32" 
+thing.
 
-Regards,
-Vedran
+Did that DRM init happen before AGP init or something?
 
-
--- 
-http://vedranf.net | a8e7a7783ca0d460fee090cc584adc12
-
---------------040608070602050307010304
-Content-Type: text/x-vcard; charset=utf-8;
- name="vedran_furac.vcf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="vedran_furac.vcf"
-
-YmVnaW46dmNhcmQNCmZuO3F1b3RlZC1wcmludGFibGU6VmVkcmFuIEZ1cmE9QzQ9OEQNCm47
-cXVvdGVkLXByaW50YWJsZTpGdXJhPUM0PThEO1ZlZHJhbg0KYWRyOjs7Ozs7O0Nyb2F0aWEN
-CmVtYWlsO2ludGVybmV0OnZlZHJhbi5mdXJhY0BnbWFpbC5jb20NCngtbW96aWxsYS1odG1s
-OkZBTFNFDQp1cmw6aHR0cDovL3ZlZHJhbmYubmV0DQp2ZXJzaW9uOjIuMQ0KZW5kOnZjYXJk
-DQoNCg==
---------------040608070602050307010304--
+		Linus
