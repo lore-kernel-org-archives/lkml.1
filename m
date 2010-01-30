@@ -1,104 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199Ab0A3SpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279Ab0A3Sqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199Ab0A3SpG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 13:45:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913Ab0A3SpF
+	id S1754279Ab0A3Sqd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 13:46:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253Ab0A3Sqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 13:45:05 -0500
-Received: from mbox1.netikka.net ([213.250.81.202]:43842 "EHLO
-	mbox1.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753734Ab0A3SpE (ORCPT
+	Sat, 30 Jan 2010 13:46:31 -0500
+Received: from manchmal.in-ulm.de ([217.10.9.201]:47500 "EHLO
+	manchmal.in-ulm.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753166Ab0A3Sqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 13:45:04 -0500
-Message-ID: <4B647E29.7060606@mandriva.org>
-Date: Sat, 30 Jan 2010 20:44:57 +0200
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100122 Mandriva/3.0.1-2mdv2010.1 (2010.1) Thunderbird/3.0.1
+	Sat, 30 Jan 2010 13:46:30 -0500
+Date: Sat, 30 Jan 2010 19:46:24 +0100
+From: Christoph Biedl <linux-kernel.bfrz@manchmal.in-ulm.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.32 stalls as guest in virtualbox
+Message-ID: <1264877041@msgid.manchmal.in-ulm.de>
+References: <1264788823@msgid.manchmal.in-ulm.de>
 MIME-Version: 1.0
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-CC: Christoph Hellwig <hch@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tmb@mandriva.org" <tmb@mandriva.org>,
-       Fran?ois Figarola <francois.figarola@i-consult.fr>,
-       device-mapper development <dm-devel@redhat.com>,
-       Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       "stable@kernel.org" <stable@kernel.org>
-Subject: Re: [BUGFIX] [PATCH] freeze_bdev: don't deactivate successfully frozen
- MS_RDONLY sb
-References: <d2deb3241001160158r4baed1e1t7e8f6642de018b4c@mail.gmail.com> <20100122160740.6c16c22d.akpm@linux-foundation.org> <20100128134205.352044bd@notabene> <4B612F89.7020503@ce.jp.nec.com> <20100128182528.GA29926@infradead.org> <4B623236.90003@ce.jp.nec.com>
-In-Reply-To: <4B623236.90003@ce.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264788823@msgid.manchmal.in-ulm.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-29.01.2010 02:56, Jun'ichi Nomura skrev:
-> Thanks Thomas and Christoph for testing and review.
-> I removed 'smp_wmb()' before up_write from the previous patch,
-> since up_write() should have necessary ordering constraints.
-> (I.e. the change of s_frozen is visible to others after up_write)
-> I'm quite sure the change is harmless but if you are uncomfortable
-> with Tested-by/Reviewed-by on the modified patch, please remove them.
->
+Christoph Biedl wrote...
 
-I've just verified that this patch works as intended on both 2.6.32 and 
-2.6.33-rc6, so for me it's still OK.
->
-> If MS_RDONLY, freeze_bdev should just up_write(s_umount) instead of
-> deactivate_locked_super().
-> Also, keep sb->s_frozen consistent so that remount can check the frozen state.
->
-> Otherwise a crash reported here can happen:
-> http://lkml.org/lkml/2010/1/16/37
-> http://lkml.org/lkml/2010/1/28/53
->
->
-> This patch should be applied for 2.6.32 stable series, too.
->
-> Reviewed-by: Christoph Hellwig<hch@lst.de>
-> Tested-by: Thomas Backlund<tmb@mandriva.org>
-> Signed-off-by: Jun'ichi Nomura<j-nomura@ce.jp.nec.com>
-> Cc: stable@kernel.org
->
-> diff --git a/fs/block_dev.c b/fs/block_dev.c
-> index 73d6a73..d11d028 100644
-> --- a/fs/block_dev.c
-> +++ b/fs/block_dev.c
-> @@ -246,7 +246,8 @@ struct super_block *freeze_bdev(struct block_device *bdev)
->   	if (!sb)
->   		goto out;
->   	if (sb->s_flags&  MS_RDONLY) {
-> -		deactivate_locked_super(sb);
-> +		sb->s_frozen = SB_FREEZE_TRANS;
-> +		up_write(&sb->s_umount);
->   		mutex_unlock(&bdev->bd_fsfreeze_mutex);
->   		return sb;
->   	}
-> @@ -307,7 +308,7 @@ int thaw_bdev(struct block_device *bdev, struct super_block *sb)
->   	BUG_ON(sb->s_bdev != bdev);
->   	down_write(&sb->s_umount);
->   	if (sb->s_flags&  MS_RDONLY)
-> -		goto out_deactivate;
-> +		goto out_unfrozen;
->
->   	if (sb->s_op->unfreeze_fs) {
->   		error = sb->s_op->unfreeze_fs(sb);
-> @@ -321,11 +322,11 @@ int thaw_bdev(struct block_device *bdev, struct super_block *sb)
->   		}
->   	}
->
-> +out_unfrozen:
->   	sb->s_frozen = SB_UNFROZEN;
->   	smp_wmb();
->   	wake_up(&sb->s_wait_unfrozen);
->
-> -out_deactivate:
->   	if (sb)
->   		deactivate_locked_super(sb);
->   out_unlock:
-> .
->
+(...)
 
+Christian Ehrhard gave me a lot of help understanding the kernel sides
+of that issue, thanks for this.  Appearently virtualbox cannot
+properly deal with the result of alternative_io in
+arch/x86/include/asm/cmpxchg_32.h since this klugdy patch
+
+--- a/arch/x86/include/asm/cmpxchg_32.h
++++ b/arch/x86/include/asm/cmpxchg_32.h
+@@ -317,7 +317,7 @@ extern unsigned long long cmpxchg_486_u64(volatile void *, u64, u64);
+        __typeof__(*(ptr)) __ret;                               \
+        __typeof__(*(ptr)) __old = (o);                         \
+        __typeof__(*(ptr)) __new = (n);                         \
+-       alternative_io("call cmpxchg8b_emu",                    \
++       alternative_io("lock; cmpxchg8b (%%esi)",               \
+                        "lock; cmpxchg8b (%%esi)" ,             \
+                       X86_FEATURE_CX8,                         \
+                       "=A" (__ret),                            \
+
+fixes the problem, 
+
+Unlike his findings described in
+<http://marc.info/?l=linux-kernel&m=121545190107704&w=2>, the guest
+does not crash but seems to run into a busy loop instead.
+
+A acceptable workaround is selecting CONFIG_M686 (but not CONFIG_M586).
+
+Now I guess this is rather something to virtualbox guys should take
+care of, therefore I've opened a ticket there:
+http://www.virtualbox.org/ticket/6100
+
+    Christoph
