@@ -1,21 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923Ab0AaUC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196Ab0AaUCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753923Ab0AaUC0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 15:02:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113Ab0AaUCY
+	id S1754196Ab0AaUCl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 15:02:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157Ab0AaUCZ
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 15:02:24 -0500
+	Sun, 31 Jan 2010 15:02:25 -0500
 Received: from mail.perches.com ([173.55.12.10]:1645 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754008Ab0AaUCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 15:02:21 -0500
+	id S1753923Ab0AaUCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 15:02:23 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Sonic Zhang <sonic.zhang@analog.com>,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 04/10] drivers/serial/bfin_5xx.c: Fix continuation line formats
-Date: Sun, 31 Jan 2010 12:02:06 -0800
-Message-Id: <a69b564f8107a9cf56446e4bf190422fe90eada4.1264967499.git.joe@perches.com>
+Subject: [PATCH 08/10] fs/proc/array.c: Fix continuation line formats
+Date: Sun, 31 Jan 2010 12:02:10 -0800
+Message-Id: <291731774b0e86b9de0b0e39cea5ee6960fe36cf.1264967500.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
 In-Reply-To: <cover.1264967493.git.joe@perches.com>
 References: <cover.1264967493.git.joe@perches.com>
@@ -26,35 +24,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 String constants that are continued on subsequent lines with \
 are not good.
 
+The character at the end of the 3rd line is a tab not a space.
+That was probably not intentional, but I'm not changing it.
+
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/serial/bfin_5xx.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ fs/proc/array.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index 50abb7e..bea4587 100644
---- a/drivers/serial/bfin_5xx.c
-+++ b/drivers/serial/bfin_5xx.c
-@@ -729,8 +729,7 @@ static int bfin_serial_startup(struct uart_port *port)
- 			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING |
- 			IRQF_DISABLED, "BFIN_UART_CTS", uart)) {
- 			uart->cts_pin = -1;
--			pr_info("Unable to attach BlackFin UART CTS interrupt.\
--				 So, disable it.\n");
-+			pr_info("Unable to attach BlackFin UART CTS interrupt.  So, disable it.\n");
- 		}
- 	}
- 	if (uart->rts_pin >= 0) {
-@@ -742,8 +741,7 @@ static int bfin_serial_startup(struct uart_port *port)
- 	if (request_irq(uart->status_irq,
- 		bfin_serial_mctrl_cts_int,
- 		IRQF_DISABLED, "BFIN_UART_MODEM_STATUS", uart)) {
--		pr_info("Unable to attach BlackFin UART Modem \
--			Status interrupt.\n");
-+		pr_info("Unable to attach BlackFin UART Modem Status interrupt.\n");
- 	}
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 13b5d07..0b4c4ce 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -465,9 +465,10 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+ 	/* convert nsec -> ticks */
+ 	start_time = nsec_to_clock_t(start_time);
  
- 	if (uart->cts_pin >= 0) {
+-	seq_printf(m, "%d (%s) %c %d %d %d %d %d %u %lu \
+-%lu %lu %lu %lu %lu %ld %ld %ld %ld %d 0 %llu %lu %ld %lu %lu %lu %lu %lu \
+-%lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %lu %ld\n",
++	seq_printf(m, "%d (%s) %c %d %d %d %d %d %u %lu "
++		   "%lu %lu %lu %lu %lu %ld %ld %ld %ld "
++		   "%d 0 %llu %lu %ld %lu %lu %lu %lu %lu	"
++		   "%lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %lu %ld\n",
+ 		pid_nr_ns(pid, ns),
+ 		tcomm,
+ 		state,
 -- 
 1.6.6.rc0.57.gad7a
 
