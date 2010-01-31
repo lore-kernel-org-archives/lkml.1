@@ -1,171 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556Ab0AaAe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918Ab0AaAgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753556Ab0AaAe7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 19:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781Ab0AaAe6
+	id S1753918Ab0AaAgL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 19:36:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202Ab0AaAgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 19:34:58 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:57265 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751790Ab0AaAe6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 19:34:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=PAcKp1R9zI91UjgMcByN0mx0OGjhJYEf4J9UrOc0VoJnELYlIUJJnCJcUaMxbx/N6p
-         DNyuXLluFVAh0uVMIKbQemcO7EC7S2BBsHEhIXDRxM01/nPtN0efsrt0x6qYR1emIGAp
-         GE5rOwqJc9Wj9BkDZ0m+nFLPsu2/53mFrnf7g=
-Date: Sun, 31 Jan 2010 01:34:49 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: [PATCH] sky2:  receive dma mapping error handling
-Message-ID: <20100131003449.GA11935@del.dom.local>
-References: <4B61ADF1.7060705@majjas.com>
- <4B61BEA4.1030905@majjas.com>
- <20100128090835.0d93e53a@nehalam>
- <4B61DB79.4080703@majjas.com>
- <20100128223447.GC3109@del.dom.local>
- <4B621316.8070308@majjas.com>
- <20100128225621.GD3109@del.dom.local>
- <4B6216B9.1010802@majjas.com>
- <20100128153643.0fca3c51@nehalam>
- <4B645EF4.4050701@majjas.com>
+	Sat, 30 Jan 2010 19:36:10 -0500
+Received: from cantor.suse.de ([195.135.220.2]:47436 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751790Ab0AaAgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 30 Jan 2010 19:36:09 -0500
+Date: Sat, 30 Jan 2010 16:33:44 -0800
+From: Greg KH <gregkh@suse.de>
+To: Christian Hesse <mail@earthworm.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Samsung N220 backlight support
+Message-ID: <20100131003344.GA24083@suse.de>
+References: <201001301706.18245.mail@earthworm.de>
+ <20100130162857.GA26029@suse.de>
+ <201001301937.34834.mail@earthworm.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B645EF4.4050701@majjas.com>
+In-Reply-To: <201001301937.34834.mail@earthworm.de>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 30, 2010 at 11:31:48AM -0500, Michael Breuer wrote:
-> On 01/28/2010 06:36 PM, Stephen Hemminger wrote:
-> >Please try this patch (and only this patch), on 2.6.33-rc5[*];
-> >none of the other patches that did not make it upstream because that
-> >confuses things too much.
-> >
-> >The code that checks for DMA mapping errors on receive buffers would
-> >not handle errors correctly.  I doubt you have these errors, but if you
-> >did then it would explain the problems.  The code has to be a little
-> >tricky and build mapping for new rx buffer before releasing old one,
-> >that way if new mapping fails, the old one can be reused.
-> >
-> >If it works for you, I will resubmit with signed-off.
-> >
-> >-
-> >
-> Nope - tx crash again. This time the system stayed up (but hosed)
-> for a few hours. When I tried to recover eth0 the system then
-> crashed.
+On Sat, Jan 30, 2010 at 07:37:34PM +0100, Christian Hesse wrote:
+> Oh, did not notice it was included in mainline already.
+> I applied the attached patch. Insmod now gives:
 > 
-> Brief summary of events (log extract below):
+> insmod: error inserting 'samsung-laptop.ko': -1 Invalid parameters
 > 
-> System start Jan 28 19:29
-> Everything seemed good (load and all) until 17:13:11 the following
-> day when I got rx errors:
+> and the logs contain the following:
 > 
-> Jan 29 17:13:11 mail kernel: sky2 eth0: rx error, status 0x6230010
-> length 1518
-> Jan 29 17:13:11 mail kernel: sky2 eth0: rx error, status 0x7f40010
-> length 1518
+> kernel: samsung_laptop: found laptop model 'N220'
+> kernel: This computer does not support SABI
+> 
+> What is this SABI and SECLINUX thing about?
 
-These are length errors, but status shows more than 1518, e.g. 2036
-here, unless I miss something. Please, don't use jumbo frames in your
-network until we fully debug it for regular frames (Stephen admitted
-sky2 jumbo might be broken).
+It is the BIOS interface that the kernel talks to.
 
-...
-> As I started looking at logs, the system hung and rebooted. I'm up
-> now with dma debug enabled, however as with 2.6.32.4 num_entries is
-> dropping and I don't think that dma debug will remain enabled long
-> enough to catch a crash.
+> Do you have a link to any more information?
 
-Could you try the patch below to show maybe some other users of
-dma-debug entries?
+No, I don't know of any public information on this interface, sorry.
 
-Jarek P.
----
+> Is it possible that the N220 does not have this?
 
- lib/dma-debug.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 51 insertions(+), 1 deletions(-)
+Yes, it does not.
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 7d2f0b3..e2dcc9c 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -310,6 +310,53 @@ static void hash_bucket_del(struct dma_debug_entry *entry)
- 	list_del(&entry->list);
- }
- 
-+struct dma_debug_dev {
-+	struct device *dev;
-+	unsigned int cnt;
-+};
-+
-+#define DMA_DEBUG_DEVS 100
-+static struct dma_debug_dev dma_debug_devs[DMA_DEBUG_DEVS];
-+
-+static void debug_dma_dump_devs(void)
-+{
-+	int idx, i;
-+
-+	memset(dma_debug_devs, 0, sizeof(struct dma_debug_dev) * DMA_DEBUG_DEVS);
-+
-+	for (idx = 0; idx < HASH_SIZE; idx++) {
-+		struct hash_bucket *bucket = &dma_entry_hash[idx];
-+		struct dma_debug_entry *entry;
-+		unsigned long flags;
-+
-+		spin_lock_irqsave(&bucket->lock, flags);
-+
-+		list_for_each_entry(entry, &bucket->list, list) {
-+			for (i = 0; i < DMA_DEBUG_DEVS; i++) {
-+				struct device *dev = dma_debug_devs[i].dev;
-+
-+				if (!dev || dev == entry->dev) {
-+					dma_debug_devs[i].dev = entry->dev;
-+					dma_debug_devs[i].cnt++;
-+					break;
-+				}
-+			}
-+		}
-+
-+		spin_unlock_irqrestore(&bucket->lock, flags);
-+	}
-+
-+	for (i = 0; i < DMA_DEBUG_DEVS; i++) {
-+		struct device *dev = dma_debug_devs[i].dev;
-+
-+		if (!dev)
-+			break;
-+
-+		pr_info("DMA-API: %s: entries: %d\n", dev_name(dev),
-+			dma_debug_devs[i].cnt);
-+	}
-+}
-+
- /*
-  * Dump mapping entries for debugging purposes
-  */
-@@ -363,8 +410,11 @@ static struct dma_debug_entry *__dma_entry_alloc(void)
- 	memset(entry, 0, sizeof(*entry));
- 
- 	num_free_entries -= 1;
--	if (num_free_entries < min_free_entries)
-+	if (num_free_entries < min_free_entries) {
- 		min_free_entries = num_free_entries;
-+		if ((min_free_entries & 0xffff) == 0)
-+			debug_dma_dump_devs();
-+	}
- 
- 	return entry;
- }
+> The N220 uses a Pine Train platform (featuring N450 with 64bit support), so I 
+> installed x86_64 to the device.
+> 
+> I would be glad to test whatever you give me.
+
+I'm sorry, but I am not allowed to make any changes to the driver to
+support other laptops at this time, but I can accept patches written by
+others.
+
+Yeah, it sucks, sorry.
+
+greg k-h
