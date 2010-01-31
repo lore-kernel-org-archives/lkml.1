@@ -1,72 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196Ab0AaV6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703Ab0AaWQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196Ab0AaV6t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 16:58:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428Ab0AaV6s
+	id S1752703Ab0AaWQQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 17:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181Ab0AaWQP
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 16:58:48 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:64594 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752857Ab0AaV6s (ORCPT
+	Sun, 31 Jan 2010 17:16:15 -0500
+Received: from rekin23.go2.pl ([193.17.41.16]:50814 "EHLO rekin23.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751171Ab0AaWQP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 16:58:48 -0500
-Date: Sun, 31 Jan 2010 16:58:42 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] sky2:  receive dma mapping error handling
-In-reply-to: <4B65D0F9.2020602@majjas.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B65FD12.7090101@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B61ADF1.7060705@majjas.com> <4B61BEA4.1030905@majjas.com>
- <20100128090835.0d93e53a@nehalam> <4B61DB79.4080703@majjas.com>
- <20100128223447.GC3109@del.dom.local> <4B621316.8070308@majjas.com>
- <20100128225621.GD3109@del.dom.local> <4B6216B9.1010802@majjas.com>
- <20100128153643.0fca3c51@nehalam> <4B645EF4.4050701@majjas.com>
- <20100131003449.GA11935@del.dom.local> <4B650D53.2010607@majjas.com>
- <4B65D0F9.2020602@majjas.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	Sun, 31 Jan 2010 17:16:15 -0500
+Subject: =?UTF-8?Q?[regression_2.6.33_rc3-rc5]_sata=5Fnv_and_no_/dev_files?=
+From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Message-ID: <1f9bac08.1a5266d6.4b66012a.5a11a@o2.pl>
+Date: Sun, 31 Jan 2010 23:16:10 +0100
+X-Originator: 83.12.131.34
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/31/2010 1:50 PM, Michael Breuer wrote:
-> On 1/30/2010 11:55 PM, Michael Breuer wrote:
->> On 01/30/2010 07:34 PM, Jarek Poplawski wrote:
->>>
->>> Could you try the patch below to show maybe some other users of
->>> dma-debug entries?
->>>
->>> Jarek P.
->>> ---
->>>
->> With the default # entries & dma_debug_driver=sky2:
->>
->> 6:00 is eth0 & 4:00 is eth1.
->>
->> Jan 30 23:53:14 mail kernel: DMA-API: 0000:06:00.0: entries: 31961
->> ...
->>
-> I put a printk as a third else case in sky2_tx_unmap. Looks like the 
-> issue is that a large number (perhaps all) calls to sky2_tx_unmap have 
-> re->flags set to neither TX_MAP_SINGLE or TX_MAP_PAGE. Thus the 
-> elements are never being unmapped.
->
-> I suspect that the system collapses when using DMAR sooner than if not 
-> using DMAR. Probably some hardware limitation on the number of mapped 
-> elements that is less than the software limitation. I don't see at 
-> present how a ring element can ever get to this code without re->flags 
-> being set to one or the other.
->
->
-Put some more debugging code in... re->flags is always NULL upon entry 
-to sky2_tx_unmap.
+Hi all
 
+Found regression as in topic.
+cat /proc/partitions shows partitions but fstab cant mount because no /dev/sdxx files.
+Have chacked on rc4 and rc5 and dont rememmber if rc3 is affected, but it could.
+rc1 is abs ok.
+If any more info needed please ask.
+udev 151
+
+Best regards.
+Bartlomiej Zimon
