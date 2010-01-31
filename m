@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290Ab0AaUER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368Ab0AaUD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290Ab0AaUER (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 15:04:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042Ab0AaUCW
+	id S1754368Ab0AaUD1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 15:03:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344Ab0AaUDY
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 15:02:22 -0500
-Received: from mail.perches.com ([173.55.12.10]:1640 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753894Ab0AaUCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 15:02:19 -0500
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 01/10] arch/powerpc: Fix continuation line formats
-Date: Sun, 31 Jan 2010 12:02:03 -0800
-Message-Id: <d8e2cb6523906c5e77bb13ea9ffc077a9310dc9e.1264967498.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
-In-Reply-To: <cover.1264967493.git.joe@perches.com>
-References: <cover.1264967493.git.joe@perches.com>
+	Sun, 31 Jan 2010 15:03:24 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:49383 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754157Ab0AaUDU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 15:03:20 -0500
+X-Trace: 337118227/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.93.110/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.93.110
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlcBAIdwZUtPRV1u/2dsb2JhbAAI1h2ERQQ
+X-IronPort-AV: E=Sophos;i="4.49,378,1262563200"; 
+   d="scan'208";a="337118227"
+Date: Sun, 31 Jan 2010 20:03:16 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Tony Perkins <da.perk@gmail.com>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org
+Subject: Re: Bug in find_vma_prev - mmap.c
+In-Reply-To: <6cafb0f01001311056k3c6a882fla42b714256bb1e6d@mail.gmail.com>
+Message-ID: <alpine.LSU.2.00.1001311955510.6227@sister.anvils>
+References: <6cafb0f01001291657q4ccbee86rce3143a4be7a1433@mail.gmail.com>  <201001301929.47659.rjw@sisk.pl>  <alpine.LSU.2.00.1001311616590.5897@sister.anvils> <6cafb0f01001311056k3c6a882fla42b714256bb1e6d@mail.gmail.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-String constants that are continued on subsequent lines with \
-are not good.
+On Sun, 31 Jan 2010, Tony Perkins wrote:
+> 
+> Say for instance, that addr is not in the list (but is greater than
+> the last element).
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- arch/powerpc/kernel/nvram_64.c               |    6 +++---
- arch/powerpc/platforms/pseries/hotplug-cpu.c |    8 ++++----
- arch/powerpc/platforms/pseries/smp.c         |    4 ++--
- 3 files changed, 9 insertions(+), 9 deletions(-)
+Before, you appeared to be talking about a discrepancy with the first
+vma; now you're talking about a discrepancy with the last vma?
+Or a discrepancy when the first vma is the last vma?
 
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index ad461e7..9cf197f 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -338,8 +338,8 @@ static int __init nvram_create_os_partition(void)
- 
- 	rc = nvram_write_header(new_part);
- 	if (rc <= 0) {
--		printk(KERN_ERR "nvram_create_os_partition: nvram_write_header \
--				failed (%d)\n", rc);
-+		printk(KERN_ERR "nvram_create_os_partition: nvram_write_header "
-+				"failed (%d)\n", rc);
- 		return rc;
- 	}
- 
-@@ -349,7 +349,7 @@ static int __init nvram_create_os_partition(void)
- 	rc = ppc_md.nvram_write((char *)&seq_init, sizeof(seq_init), &tmp_index);
- 	if (rc <= 0) {
- 		printk(KERN_ERR "nvram_create_os_partition: nvram_write "
--				"failed (%d)\n", rc);
-+		       "failed (%d)\n", rc);
- 		return rc;
- 	}
- 	
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 6ea4698..a70de10 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -397,12 +397,12 @@ static int parse_cede_parameters(void)
- 				CEDE_LATENCY_PARAM_MAX_LENGTH);
- 
- 	if (call_status != 0)
--		printk(KERN_INFO "CEDE_LATENCY: \
--			%s %s Error calling get-system-parameter(0x%x)\n",
-+		printk(KERN_INFO "CEDE_LATENCY: "
-+			"%s %s Error calling get-system-parameter(0x%x)\n",
- 			__FILE__, __func__, call_status);
- 	else
--		printk(KERN_INFO "CEDE_LATENCY: \
--			get-system-parameter successful.\n");
-+		printk(KERN_INFO "CEDE_LATENCY: "
-+			"get-system-parameter successful.\n");
- 
- 	return call_status;
- }
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index b488663..4e7f89a 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -144,8 +144,8 @@ static void __devinit smp_pSeries_kick_cpu(int nr)
- 		hcpuid = get_hard_smp_processor_id(nr);
- 		rc = plpar_hcall_norets(H_PROD, hcpuid);
- 		if (rc != H_SUCCESS)
--			printk(KERN_ERR "Error: Prod to wake up processor %d\
--						Ret= %ld\n", nr, rc);
-+			printk(KERN_ERR "Error: Prod to wake up processor %d "
-+						"Ret= %ld\n", nr, rc);
- 	}
- }
- 
--- 
-1.6.6.rc0.57.gad7a
+> find_vma_prev will return the last node in the list, whereas find_vma
+> will return NULL.
 
+I'd expect find_vma_prev to return prev->vm_next, which would be NULL.
+
+> 
+> It seems that it is just inconsistent, in what it should return
+> regarding the two.
+> For instance, find_vma_prev will never return NULL, if there's at
+> least one node within the tree, whereas find_vma would.
+> find_extend_vma uses find_vma_prev and checks to see if it returns
+> NULL and is less than the return address (which would always be the
+> case).
+
+Are we disagreeing about our readings of the code, or have you seen a
+problem in practice?
+
+I admit I've not tried running this, injecting addresses into find_vma_prev
+and printk'ing the result; but I'm missing what leads you to say that
+find_vma_prev will never return NULL.
+
+Hugh
