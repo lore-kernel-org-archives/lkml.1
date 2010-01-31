@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100Ab0AaUCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218Ab0AaUDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100Ab0AaUCW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 15:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040Ab0AaUCV
+	id S1754218Ab0AaUDK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 15:03:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092Ab0AaUCW
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 15:02:21 -0500
-Received: from mail.perches.com ([173.55.12.10]:1631 "EHLO mail.perches.com"
+	Sun, 31 Jan 2010 15:02:22 -0500
+Received: from mail.perches.com ([173.55.12.10]:1643 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753810Ab0AaUCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 15:02:19 -0500
+	id S1753921Ab0AaUCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 15:02:20 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: Mike Frysinger <vapier@gentoo.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       Sonic Zhang <sonic.zhang@analog.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
-       uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@ozlabs.org,
-       linux-ide@vger.kernel.org, netdev@vger.kernel.org,
-       linux-scsi@vger.kernel.org, devel@driverdev.osuosl.org,
-       linux-mm@kvack.org, alsa-devel@alsa-project.org
-Subject: [PATCH 00/10] treewide: Fix format strings that misuse continuations
-Date: Sun, 31 Jan 2010 12:02:02 -0800
-Message-Id: <cover.1264967493.git.joe@perches.com>
+       uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH 02/10] arch/blackfin: Fix continuation line formats
+Date: Sun, 31 Jan 2010 12:02:04 -0800
+Message-Id: <518828987c6692c676b93c2fdb0059efa6c86b23.1264967498.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
+In-Reply-To: <cover.1264967493.git.joe@perches.com>
+References: <cover.1264967493.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Format strings that are continued with \ are frequently misused.
-Change them to use mostly single line formats, some longer than 80 chars.
-Fix a few miscellaneous typos at the same time.
+String constants that are continued on subsequent lines with \
+are not good.
 
-Joe Perches (10):
-  arch/powerpc: Fix continuation line formats
-  arch/blackfin: Fix continuation line formats
-  drivers/ide: Fix continuation line formats
-  drivers/serial/bfin_5xx.c: Fix continuation line formats
-  drivers/scsi/arcmsr: Fix continuation line formats
-  drivers/staging: Fix continuation line formats
-  drivers/net/amd8111e.c: Fix continuation line formats
-  fs/proc/array.c: Fix continuation line formats
-  mm/slab.c: Fix continuation line formats
-  sound/soc/blackfin: Fix continuation line formats
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ arch/blackfin/mach-common/smp.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- arch/blackfin/mach-common/smp.c                    |    4 +-
- arch/powerpc/kernel/nvram_64.c                     |    6 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c       |    8 ++--
- arch/powerpc/platforms/pseries/smp.c               |    4 +-
- drivers/ide/au1xxx-ide.c                           |    4 +-
- drivers/ide/pmac.c                                 |    4 +-
- drivers/net/amd8111e.c                             |    3 +-
- drivers/scsi/arcmsr/arcmsr_hba.c                   |   49 +++++++++----------
- drivers/serial/bfin_5xx.c                          |    6 +--
- drivers/staging/dream/qdsp5/audio_mp3.c            |    3 +-
- .../rtl8187se/ieee80211/ieee80211_softmac_wx.c     |    3 +-
- drivers/staging/rtl8187se/r8180_core.c             |    3 +-
- drivers/staging/sep/sep_driver.c                   |    3 +-
- fs/proc/array.c                                    |    7 ++-
- mm/slab.c                                          |    4 +-
- sound/soc/blackfin/bf5xx-ac97-pcm.c                |    8 +--
- sound/soc/blackfin/bf5xx-i2s-pcm.c                 |    3 +-
- sound/soc/blackfin/bf5xx-tdm-pcm.c                 |    3 +-
- 18 files changed, 55 insertions(+), 70 deletions(-)
+diff --git a/arch/blackfin/mach-common/smp.c b/arch/blackfin/mach-common/smp.c
+index 369e687..c7bcbe5 100644
+--- a/arch/blackfin/mach-common/smp.c
++++ b/arch/blackfin/mach-common/smp.c
+@@ -161,8 +161,8 @@ static irqreturn_t ipi_handler(int irq, void *dev_instance)
+ 			kfree(msg);
+ 			break;
+ 		default:
+-			printk(KERN_CRIT "CPU%u: Unknown IPI message \
+-			0x%lx\n", cpu, msg->type);
++			printk(KERN_CRIT "CPU%u: Unknown IPI message 0x%lx\n",
++			       cpu, msg->type);
+ 			kfree(msg);
+ 			break;
+ 		}
+-- 
+1.6.6.rc0.57.gad7a
 
