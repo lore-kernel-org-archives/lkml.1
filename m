@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949Ab0AaTo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184Ab0AaUC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949Ab0AaTo7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 14:44:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022Ab0AaTo6
+	id S1754184Ab0AaUC1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 15:02:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108Ab0AaUCX
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 14:44:58 -0500
-Received: from mail-pz0-f172.google.com ([209.85.222.172]:56979 "EHLO
-	mail-pz0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915Ab0AaTo6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 14:44:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=LY5NQJLqarawhtlJQ5o9f0KHw4dWprtw4bcYR84xH1f0DXdbk+Z3yvhWJ1CQHuvBnF
-         PFP0LMbxDoqB+g0LG6621J9Yi0NoTWnQndxwaxALSjN7yEGB+JBkKs2chqQKqEzaKtI2
-         1Ikk0TB9u5efvr6qaxJ/ry/Nxnjqq5FzaLOzo=
-MIME-Version: 1.0
-In-Reply-To: <4B65A76D.3080508@mandriva.org>
-References: <5d75f4611001310715o55674116n436e13e3a5437fc4@mail.gmail.com>
-	 <4B65A76D.3080508@mandriva.org>
-Date: Mon, 1 Feb 2010 02:44:57 +0700
-Message-ID: <5d75f4611001311144q7146ee4axb841bc73d6185c40@mail.gmail.com>
-Subject: Re: kernel BUG at fs/dcache.c:670!
-From: BuraphaLinux Server <buraphalinuxserver@gmail.com>
-To: Thomas Backlund <tmb@mandriva.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 31 Jan 2010 15:02:23 -0500
+Received: from mail.perches.com ([173.55.12.10]:1645 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753923Ab0AaUCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 15:02:20 -0500
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>, linux-ide@vger.kernel.org
+Subject: [PATCH 03/10] drivers/ide: Fix continuation line formats
+Date: Sun, 31 Jan 2010 12:02:05 -0800
+Message-Id: <ece016e6151fc8d34963de26205777a4e53b5e26.1264967499.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
+In-Reply-To: <cover.1264967493.git.joe@perches.com>
+References: <cover.1264967493.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you! The patch fixed the problem for me.  I hope it is included
-in 2.6.32.X soon.
+String constants that are continued on subsequent lines with \
+are not good.
 
-On 1/31/10, Thomas Backlund <tmb@mandriva.org> wrote:
-> 31.01.2010 17:15, BuraphaLinux Server skrev:
->> Hello list,
->>
->> Is this really a kernel problem, or did I do something stupid?  This
->> is an x86_64 kernel but a 32bit userland.
->>
->
-> you need the patch referenced here:
->
-> http://lkml.org/lkml/2010/1/28/292
->
-> --
-> Thomas
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/ide/au1xxx-ide.c |    4 ++--
+ drivers/ide/pmac.c       |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/ide/au1xxx-ide.c b/drivers/ide/au1xxx-ide.c
+index 87cef0c..4beb296 100644
+--- a/drivers/ide/au1xxx-ide.c
++++ b/drivers/ide/au1xxx-ide.c
+@@ -300,8 +300,8 @@ static int auide_dma_test_irq(ide_drive_t *drive)
+ 	 */
+ 	drive->waiting_for_dma++;
+ 	if (drive->waiting_for_dma >= DMA_WAIT_TIMEOUT) {
+-		printk(KERN_WARNING "%s: timeout waiting for ddma to \
+-                                     complete\n", drive->name);
++		printk(KERN_WARNING "%s: timeout waiting for ddma to complete\n",
++		       drive->name);
+ 		return 1;
+ 	}
+ 	udelay(10);
+diff --git a/drivers/ide/pmac.c b/drivers/ide/pmac.c
+index 7a4e788..081e3b9 100644
+--- a/drivers/ide/pmac.c
++++ b/drivers/ide/pmac.c
+@@ -1651,8 +1651,8 @@ pmac_ide_dma_test_irq (ide_drive_t *drive)
+ 		if ((status & FLUSH) == 0)
+ 			break;
+ 		if (++timeout > 100) {
+-			printk(KERN_WARNING "ide%d, ide_dma_test_irq \
+-			timeout flushing channel\n", hwif->index);
++			printk(KERN_WARNING "ide%d, ide_dma_test_irq timeout flushing channel\n",
++			       hwif->index);
+ 			break;
+ 		}
+ 	}	
+-- 
+1.6.6.rc0.57.gad7a
+
