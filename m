@@ -1,57 +1,34 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754147Ab0AaXaH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 18:30:07 -0500
-Received: from z2.cat.iki.fi ([212.16.98.133]:52265 "EHLO z2.cat.iki.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752547Ab0AaXaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 18:30:05 -0500
-Date: Mon, 1 Feb 2010 01:30:01 +0200
-From: Matti Aarnio <matti.aarnio@zmailer.org>
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: A spammer, wanting to poison our bayes seems to have found a
- hole at vger.kernel.org
-Message-ID: <20100131233001.GW3486@mea-ext.zmailer.org>
-References: <201001302313.19206.gene.heskett@verizon.net>
+	id S1754299Ab0AaXpT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 18:45:19 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:53894 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754182Ab0AaXpR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 18:45:17 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001302313.19206.gene.heskett@verizon.net>
+In-Reply-To: <1f9bac08.1a5266d6.4b66012a.5a11a@o2.pl>
+References: <1f9bac08.1a5266d6.4b66012a.5a11a@o2.pl>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 1 Feb 2010 00:45:01 +0100
+Message-ID: <ac3eb2511001311545j4abe0da3x58db0152caca845e@mail.gmail.com>
+Subject: Re: [regression 2.6.33 rc3-rc5] sata_nv and no /dev files
+To: =?UTF-8?B?QmFydMWCb21pZWogWmltb8WE?= <uzi18@o2.pl>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 30, 2010 at 11:13:19PM -0500, Gene Heskett wrote:
-> Received: from vger.kernel.org ...
-> Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand ...
-> Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309Ab0AaENg
-> 	(ORCPT <rfc822;linux-kernel-outgoing>);
-> 	Sat, 30 Jan 2010 23:13:36 -0500
-> Received: from vms173007pub.verizon.net ([206.46.173.7]:39289 "EHLO
-...
-> Greeting;
-> 
-> I just noticed that I have a poison bayes spam in my inbox cuz kmails filters 
-> haven't a clue what to do with a message addressed like this:
-> 
-> to:linux-kernel-outgoing@vger.kernel.org
-> 
-> Is this a leak in the mailing list server, or a total forgery?
+On Sun, Jan 31, 2010 at 23:16, Bartłomiej Zimoń <uzi18@o2.pl> wrote:
+> cat /proc/partitions shows partitions but fstab cant mount because no /dev/sdxx files.
+> Have chacked on rc4 and rc5 and dont rememmber if rc3 is affected, but it could.
+> rc1 is abs ok.
 
-Sharp eyes, thanks.
+What does:
+  grep . /sys/class/block/*/dev
+print?
 
-I quoted above Gene's emails Received headers as it travelled thru
-vger.kernel.org.  You can have a look at headers of this reply to see,
-how many hops it did inside VGER.
-
-There were explicit aliases mapping majordomo output to actual list
-expansion.  A smart spammer realized that by adding vger's domain on
-them was possible to post directly to list system backend.
-
-Now there is no separate backend, and such aliases no longer exist.
-
-> -- 
-> Cheers, Gene
-
-Best Regards,  Matti Aarnio,  one of  <postmaster at vger.kernel.org>
+Kay
