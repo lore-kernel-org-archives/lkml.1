@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815Ab0AaJg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067Ab0AaJor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815Ab0AaJg3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 04:36:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867Ab0AaJg2
+	id S1753067Ab0AaJor (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 04:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564Ab0AaJoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Jan 2010 04:36:28 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51756 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751745Ab0AaJg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 04:36:27 -0500
-Date: Sun, 31 Jan 2010 09:36:26 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.37.8
-Message-ID: <20100131093626.GA25774@hera.kernel.org>
-Reply-To: w@1wt.eu
+	Sun, 31 Jan 2010 04:44:46 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:53773 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751867Ab0AaJop (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 04:44:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-mailer:reply-to:x-priority:message-id:to:cc:subject
+         :in-reply-to:references:mime-version:content-type
+         :content-transfer-encoding;
+        b=TAoPXTY4Sm+sHAxJ7IFQerVR2eNiMGReEkVS0rPHMOG1SqZ4d2wQku7TELw192O4PT
+         xPMvhebK5DXISmEVQ0JEDLta8EZSlgt/DVOELv8zb3M8Lv/BeRNkjl6OGDQGccpmnPA2
+         VBVcIAL7zorpxmH6svacMXNXn0FC/hITYPQKA=
+Date: Sun, 31 Jan 2010 12:45:28 +0300
+From: =?utf-8?B?0JjQu9GM0Y8g0JHQsNGB0LjQvQ==?= <basinilya@gmail.com>
+X-Mailer: Voyager (v3.99.4) Professional
+Reply-To: =?utf-8?B?0JjQu9GM0Y8g0JHQsNGB0LjQvQ==?= <basinilya@gmail.com>
+X-Priority: 3 (Normal)
+Message-ID: <221196491.20100131124528@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re[2]: [PATCH] firewire: net: fix panic in fwnet_write_complete
+In-Reply-To: <4B5F4C10.9040300@s5r6.in-berlin.de>
+References: <574312453.20100114002526@gmail.com> <4B4E4D73.5060100@s5r6.in-berlin.de> <4B4E4FD7.9060403@s5r6.in-berlin.de> <4B53291A.5050901@s5r6.in-berlin.de> <1833218156.20100118151651@gmail.com> <4B547154.40700@s5r6.in-berlin.de> <tkrat.a8b022df2a5d588d@s5r6.in-berlin.de> <4B54FFF9.9000906@s5r6.in-berlin.de> <4B5F4C10.9040300@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 31 Jan 2010 09:36:26 +0000 (UTC)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+SR> Stefan Richter wrote:
+>> My own testing on a dual core box --- peered with another Linux box
+>> which ran the older eth1394 --- worked OK so far for transfers of
+>> massive files (> 4 GiB) back and forth via FTP and ssh running on a text
+>> console.
+>> 
+>> But in my first attempt to use FTP on X11 --- i.e. with more concurrent
+>> interrupt sources --- the firewire-net box crashed very soon.  In that
+>> test I used Dolphin of KDE as FTP client, and the crash already happened
+>> after Dolphin had loaded and displayed the remote home directory and was
+>> peeking into files for preview data.  I got the following trace:
+>> 
+>> ------------: cut here ]------------                  
+>> kernel: BUG at mm/slab.c:2885!                        
+SR> [...]
+>> EIP: is at cache_free_debugcheck+0x1e8/0x2e8          
+SR> [...]
+>> Call: Trace:
+>> ? __kfree_skb+0x6e/0x71
+>> ? kmem_cache_free+0x56/0xb0
+>> ? __kfree_skb+0x6e/0x71
+>> ? kfree_skb+0x2b/0x2d
+>> ? unix_stream_recvmsg+0x3c3/0x48d
+>> ? file_read_actor+0x74/0xcc
+>> ? sock_aio_read+0xf2/0x107
+>> ? do_sync_read+0x89/0xc7
 
-I've just released Linux 2.4.37.8.
+SR> Hi Илья,
 
-It mainly fixes a recently discovered vulnerability in the e1000 driver
-which could allow a carefully crafted frame to bypass packet filtering
-(CVE-2009-4536).
+SR> I am going to send a pull request for some other unrelated firewire
+SR> fixes to Linus about tomorrow.
 
-Users who don't run this driver probably don't need to upgrade.
+SR> firewire-net on the other hand needs still more work than my
+SR> fwnet_write_complete patch since you and I now get these kmem cache
+SR> corruption related bugs.
 
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/patch-2.4.37.8.bz2
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.37.8
+SR> What is your impression --- does this first incomplete fix decrease the
+SR> likelihood of crashes enough to make it worth to include it in a pull
+SR> request already?  I haven't done more extensive firewire-net tests since
+SR> last week yet, hence it is hard to tell for me how severe the new issue
+SR> is in practical use.
 
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
+SR> (Also, I have no idea yet whether I will be quick or slow to find this
+SR> other problem and whether it can be fixed in a manner that is suitable
+SR> for a mainline merge before 2.6.33 is going to be released.)
 
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.4.37.y.git
+Hi. Have just found 4 letters from you in gmail spam bin, including
+this one. Your fix does decrease the chance of crash. Without the fix
+crashes randomly occured within 3 minutes. With the fix - only after
+10 minutes of copying. These 2 bugs are probably unrelated.
 
-Regards,
-Willy
----
-
-Summary of changes from v2.4.37.7 to v2.4.37.8
-============================================
-
-Jesse Brandeburg (1):
-      e1000: enhance frame fragment detection (CVE-2009-4536)
-
-Max Dmitrichenko (1):
-      dmi: fix year parsing in dmi_check_blacklist()
-
-Thomas Bork (1):
-      scsi: fix error with 'scsi remove-single-device' in kernel 2.4.x
-
-Willy Tarreau (3):
-      tty: also mark the a2232 driver as broken
-      Makefile: add the 'cscope' target.
-      Change VERSION to 2.4.37.8
+-- 
 
