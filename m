@@ -1,76 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423Ab0AaVDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263Ab0AaVC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754423Ab0AaVDb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 16:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129Ab0AaVD3
+	id S1754263Ab0AaVC4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 16:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640Ab0AaVCz
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 16:03:29 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:45400 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754033Ab0AaVD2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 16:03:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=qn8Z7AXRwwT5CxTvFxJ02xVwO0ngKTyP42DmIUl4bJPaWLIhrwnGlcMjsxW/MkLo18
-         dW9BIquvGyRQe+Dy3krHbsTaAHfkjHdxZL0G/Ijes8riNp9Uy7Uh+KMpgIdVWx3jA7a+
-         BUYlClK1yhVaVAyfa4wG9zgH9mYtUpQoIFaVA=
-Message-ID: <4B65F024.3080505@gmail.com>
-Date: Sun, 31 Jan 2010 22:03:32 +0100
-From: Witold Sowa <witold.sowa@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 31 Jan 2010 16:02:55 -0500
+Received: from thunk.org ([69.25.196.29]:57657 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752593Ab0AaVCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 16:02:54 -0500
+Date: Sun, 31 Jan 2010 16:02:07 -0500
+From: tytso@mit.edu
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Dave Chinner <david@fromorbit.com>, Miklos Szeredi <miklos@szeredi.hu>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: inodes: Support generic defragmentation
+Message-ID: <20100131210207.GA27883@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Andi Kleen <andi@firstfloor.org>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	Dave Chinner <david@fromorbit.com>,
+	Miklos Szeredi <miklos@szeredi.hu>,
+	Alexander Viro <viro@ftp.linux.org.uk>,
+	Christoph Hellwig <hch@infradead.org>,
+	Christoph Lameter <clameter@sgi.com>,
+	Rik van Riel <riel@redhat.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org
+References: <20100129204931.789743493@quilx.com>
+ <20100129205004.405949705@quilx.com>
+ <20100130192623.GE788@thunk.org>
+ <20100131083409.GF29555@one.firstfloor.org>
 MIME-Version: 1.0
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-CC: linux-wireless <linux-wireless@vger.kernel.org>,
-       Till Kamppeter <till.kamppeter@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, lsb-discuss@lists.linux-foundation.org
-Subject: Re: Linux wireless GSoC 2010 project ideas
-References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
-In-Reply-To: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100131083409.GF29555@one.firstfloor.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luis R. Rodriguez pisze:
-> Google has confirmed it will have a Google Summer of Code for 2010
-> [1]. Last year we had a few projects suggested (4) and accepted (3)
-> under the Linux Foundation sponsoring organization umbrella [2].
-> Unfortunately out of the three projects that were approved only one
-> completed successfully, that of the adding AP support to Network
-> Manger. I haven't seen specific updates to the progress of that but I
-> do know some patches were indeed submitted to help with this effort.
-> Perhaps the student can elaborate more.
+On Sun, Jan 31, 2010 at 09:34:09AM +0100, Andi Kleen wrote:
 > 
-Hi Luis,
+> The standard case is the classic updatedb. Lots of dentries/inodes cached
+> with no or little corresponding data cache.
+> 
+> > a huge number of pages that are actively getting used, the thrashing
+> > that is going to result is going to enormous.
+> 
+> I think the consensus so far is to try to avoid any inodes/dentries
+> which are dirty or used in any way.
 
-I didn't know that I was _the_only_one_ student who completed his
-project. My project goal was to add support for AP mode to
-NetworkManages with use of wpa_supplicant's newly developed AP mode.
-When the GSoC started, it turned out that adding AP mode to NM doesn't
-need too much effort or at least a lot less that I could put during
-three months of work. As the result, I focused on development of new
-DBus API for wpa_supplicant. We have designed it together with Dan
-Williams (he designed it with my little help, actually) and I
-implemented it. The new API is present in wpa_supplicant since 0.7.0
-development version and we are still working on it.
-I've implemented the new API support for NetworkManager, but Dan didn't
-apply it (yet). Since the API has changed lately, we will need alter
-NetworkManager too. I'm going to do this when the API will reach more or
-less stable state. AP mode for NetworkManager is dependent on new
-wpa_supplicnt DBus API, so the NM AP mode patches won't be applied
-before the new API support implementation patches. The NM changes won't
-land earlier then in 0.8.1 version for sure.
+OK, but in that case, the kick_inodes should check to see if the inode
+is in use in any way (i.e., has dentries open that will tie it down,
+is open, has pages that are dirty or are mapped into some page table)
+before attempting to invalidating any of its pages.  The patch as
+currently constituted doesn't do that.  It will attempt to drop all
+pages owned by that inode before checking for any of these conditions.
+If I wanted that, I'd just do "echo 3 > /proc/sys/vm/drop_caches".  
 
-Some time ago johill asked me if I would be interested in hacking on
-adding WPS support to NetworkManager. Well, I would but I don't know
-when I'll find some time for that. I don't know how much of work would
-it require, but it possibly could be a topic of one of GSoC 2010
-projects. I have no idea know if anybody would be willing to be a mentor
-for such a project.
+Worse yet, *after* it does this, it tries to write out the pages the
+inode.  #1, this is pointless, since if the inode had any dirty pages,
+they wouldn't have been invalidated, since it calls write_inode_now()
+*after* calling invalidate_mapping_pages(), so the previously dirty
+pages will still be mapped, and prevent the the inode from being
+flushed.  #2, it interferes with delayed allocation and becomes
+another writeback path, which means some dirty pages might get flushed
+too early and it does this writeout without any of the congestion
+handling code in the bdi writeback paths.
 
-Regards,
-Witek.
+If the consensus is "avoid any inodes/dentries which are dirty or
+used in any way", THIS PATCH DOESN'T DO THAT.
+
+I'd go further, and say that it should avoid trying to flush any inode
+if any of its sibling inodes on the slab cache are dirty or in use in
+any way.  Otherwise, you end up dropping pages from the page cache and
+still not be able to do any defragmentation.
+
+> I personally would prefer it to be more aggressive for memory offlining
+> though for RAS purposes though, but just handling the unused cases is a 
+> good first step.
+
+If you want something more aggressive, why not just "echo 3 >
+/proc/sys/vm/drop_caches"?  We have that already.  If the answer is,
+because it will trash the performance of the system, I'm concerned
+this patch series will do this --- consistently.
+
+If the concern is that the inode cache is filled with crap after an
+updatedb run, then we should fix *that* problem; we need a way for
+programs like updatedb to indicate that they are scanning lots of
+inodes, and if the inode wasn't in cache before it was opened, it
+should be placed on the short list to be dropped after it's closed.
+Making that a new open(2) flag makes a lot of sense.  Let's solve the
+real problem here, if that's the concern.
+
+But most of the time, I *want* the page cache filled, since it means
+less time wasted accessing spinning rust platters.  The last thing I
+want is a some helpful defragmentation kernel thread constantly
+wandering through inode caches, and randomly calling
+"invalidate_mapping_pages" on inodes since it thinks this will help
+defrag huge pages.  If I'm not running an Oracle database on my
+laptop, but instead am concerned about battery lifetime, this is the
+last thing I would want.
+
+					- Ted
