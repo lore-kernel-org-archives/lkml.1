@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751759Ab0AaGxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324Ab0AaHUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751759Ab0AaGxm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 01:53:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484Ab0AaGxl
+	id S1752324Ab0AaHUB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 02:20:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038Ab0AaHUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Jan 2010 01:53:41 -0500
-Received: from mail-qy0-f182.google.com ([209.85.221.182]:51078 "EHLO
-	mail-qy0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750859Ab0AaGxk convert rfc822-to-8bit (ORCPT
+	Sun, 31 Jan 2010 02:20:01 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:39369 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751224Ab0AaHUA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 01:53:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=f+NdezY/qrRyeUcdgfPNjxSuMhcEhp+JPVzFimEdlAWxiYix658vUY1gqjfr3Yf2aa
-         cqryrriAgxgXLsakwkyK5HEXguauA+z4mY5920JmKsbXF6c/mTLXMRfcBcoVx95ioEFH
-         Nfous6+KJEPGALspDHpdAmnV7JV+sVMjMeR6M=
+	Sun, 31 Jan 2010 02:20:00 -0500
+Date: Sun, 31 Jan 2010 07:19:59 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Suresh Siddha <suresh.b.siddha@intel.com>, ebiederm@xmission.com,
+       yinghai@kernel.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] x86, irq: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR
+ instead of 0x1f
+In-Reply-To: <4B5C00EB.3000208@zytor.com>
+Message-ID: <alpine.LFD.2.00.1001310705280.31764@eddie.linux-mips.org>
+References: <20100114002118.436172066@sbs-t61.sc.intel.com> <20100114002118.521826763@sbs-t61.sc.intel.com> <alpine.LFD.2.00.1001240545180.13034@eddie.linux-mips.org> <4B5C00EB.3000208@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20100131061221.GK2996@kryten>
-References: <20100131061221.GK2996@kryten>
-Date: Sun, 31 Jan 2010 15:53:39 +0900
-Message-ID: <961aa3351001302253sfd629cfsd00cf9a338c0b78@mail.gmail.com>
-Subject: Re: [PATCH] fault injection: Correct function names in documentation
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-doc@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/31 Anton Blanchard <anton@samba.org>:
->
-> init_fault_attr_entries should be init_fault_attr_dentries
-> cleanup_fault_attr_entries should be cleanup_fault_attr_dentries
->
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
->
-> Index: linux-cpumask/Documentation/fault-injection/fault-injection.txt
-> ===================================================================
-> --- linux-cpumask.orig/Documentation/fault-injection/fault-injection.txt        2010-01-30 17:20:54.147210801 +1100
-> +++ linux-cpumask/Documentation/fault-injection/fault-injection.txt     2010-01-31 17:11:10.737211232 +1100
-> @@ -143,8 +143,8 @@ o provide a way to configure fault attri
->   failslab, fail_page_alloc, and fail_make_request use this way.
->   Helper functions:
->
-> -       init_fault_attr_entries(entries, attr, name);
-> -       void cleanup_fault_attr_entries(entries);
-> +       init_fault_attr_dentries(entries, attr, name);
-> +       void cleanup_fault_attr_dentries(entries);
->
->  - module parameters
->
->
+On Sun, 24 Jan 2010, H. Peter Anvin wrote:
 
-Looks good.
+> > > So change the IRQ_MOVE_CLEANUP_VECTOR to 0x20 and  allow 0x21-0x2f to be
+> > > used
+> > > for device interrupts. 0x30-0x3f will be used for ISA interrupts (these
+> > > also can be migrated in the context of IOAPIC and hence need to be at a
+> > > higher
+> > > priority level than IRQ_MOVE_CLEANUP_VECTOR).
+> > 
+> >   I have troubles understanding what exactly this change is needed for
+> > (i.e. what's the difference between using vectors 0x20-0x2f and 0x30-0x3f
+> > as ExtINT interrupts, what's the gain from relocating them? -- they are
+> > transparent to the APIC, so the exact priority level used does not matter
+> > at all), but since I've been cc-ed, I have one question -- have you
+> > verified that with the new arrangement the mixed interrupt mode (where
+> > some interrupts come via the APIC and some via the 8259A PICs) still
+> > works?
+> > 
+> 
+> The difference is relevant when they are *not* invoked as ExtInt interrupts,
+> but when used as IOAPIC interrupts it matters.
 
-Thanks.
+ Hmm, I/O APIC interrupts coming from ISA devices used not to differ from 
+ones from PCI devices and their vectors were evenly distributed across the 
+whole device range (one reason for this was the (in)famous Pentium APIC 
+limitation WRT multiple outstanding requests at the same priority level).  
+Now what you've written suggests this has changed and now ISA devices only 
+get vectors within a single priority level -- am I getting this right?
+
+ If so, then to push my original question further: how are these vectors 
+allocated -- are they identity mapped with the corresponding i8259A 
+vectors?  And how does it play with the Pentium APIC limitation (that may 
+actually apply to all the local APIC cores that use serial bus delivery; 
+I'm not sure) I mentioned above?
+
+  Maciej
