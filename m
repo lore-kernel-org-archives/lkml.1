@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857Ab0AaS16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821Ab0AaSoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857Ab0AaS16 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 13:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201Ab0AaS15
+	id S1752821Ab0AaSoY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 13:44:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039Ab0AaSoY
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 13:27:57 -0500
-Received: from casper.infradead.org ([85.118.1.10]:50456 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228Ab0AaS15 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 13:27:57 -0500
-Date: Sun, 31 Jan 2010 10:28:46 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Shawn Bohrer <shawn.bohrer@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: High scheduler wake up times
-Message-ID: <20100131102846.4d1e18aa@infradead.org>
-In-Reply-To: <20100131034718.GE27390@mediacenter.gateway.2wire.net>
-References: <20100130234551.GA27390@mediacenter.gateway.2wire.net>
-	<20100130161114.07278221@infradead.org>
-	<20100131003549.GC27390@mediacenter.gateway.2wire.net>
-	<20100130164716.230dfe31@infradead.org>
-	<20100131034718.GE27390@mediacenter.gateway.2wire.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 31 Jan 2010 13:44:24 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46076 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751009Ab0AaSoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 13:44:23 -0500
+Message-ID: <4B65CF5B.3000804@zytor.com>
+Date: Sun, 31 Jan 2010 10:43:39 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Jan Beulich <jbeulich@novell.com>
+CC: mingo@elte.hu, jeremy@goop.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] x86: enlightenment for ticket spinlocks
+References: <4B65C5BE02000078000584B5@vpn.id2.novell.com>
+In-Reply-To: <4B65C5BE02000078000584B5@vpn.id2.novell.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 Jan 2010 21:47:18 -0600
-Shawn Bohrer <shawn.bohrer@gmail.com> wrote:
+On 01/31/2010 10:02 AM, Jan Beulich wrote:
+>>>> "H. Peter Anvin"  01/31/10 2:42 AM >>>
+>> + * EBX-EDX: "XenVMMXenVMM" signature, allowing positive identification
+>> + *      of a Xen host.
+>> + */
+>> +#define XEN_CPUID_SIGNATURE_EBX 0x566e6558 /* "XenV" */
+>> +#define XEN_CPUID_SIGNATURE_ECX 0x65584d4d /* "MMXe" */
+>> +#define XEN_CPUID_SIGNATURE_EDX 0x4d4d566e /* "nVMM" */
+>>
+>> I hope you know this spells "MMXenVMMXenV".  The ordering is ecx-edx-ebx
+>> (register numbers 1, 2, 3).
 > 
-> Of course that patch makes my situation worse, which was my point.  We
-> are depending on the _current_ epoll_wait() implementation which calls
-> schedule_timeout(1).  
+> According to the documentation I have, the ordering is EBX-EDX-ECX,
+> so indeed the spelling would seem broken, but since this is an interface
+> header taken directly from Xen, it's got to be (and it works) that way.
+> Odd.
+> 
 
-> You do agree that the current epoll_wait()
-> implementation sleeps less than 1 msec with HZ == 1000 correct? 
+It's probably a bug that's now cast in stone.  That happends.  I just
+had to be picky.  (And yes, it's ebx-edx-ecx; see my second email.)
 
-I agree with your hypothesis, but I wouldn't call the behavior
-correct ;-)
-
-First of all, jiffies based timeouts are supposed to round *up*, not
-down, and second.. it should really be just 1 msec.
-
-
-> With the old kernel I can run 500 of these processes, and I'm hoping
-> that I'm simply missing the knob I need to tweak to achieve similar
-> performance on a recent kernel.
-
-can you run powertop during your workload? maybe you're getting hit by
-some C state exit latencies tilting the rounding over the top just too
-many times...
-
+	-hpa
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
