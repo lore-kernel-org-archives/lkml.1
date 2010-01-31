@@ -1,188 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403Ab0AaUEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140Ab0AaUIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754403Ab0AaUEf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 15:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079Ab0AaUEb
+	id S1754140Ab0AaUIs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 15:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560Ab0AaUIr
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 15:04:31 -0500
-Received: from mail.perches.com ([173.55.12.10]:1645 "EHLO mail.perches.com"
+	Sun, 31 Jan 2010 15:08:47 -0500
+Received: from waste.org ([173.11.57.241]:52673 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754043Ab0AaUCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 15:02:21 -0500
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       linux-scsi@vger.kernel.org
-Subject: [PATCH 05/10] drivers/scsi/arcmsr: Fix continuation line formats
-Date: Sun, 31 Jan 2010 12:02:07 -0800
-Message-Id: <1a318fa326c6ab2584b9d318bd1538e7f7debbdf.1264967499.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
-In-Reply-To: <cover.1264967493.git.joe@perches.com>
+	id S1753333Ab0AaUIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 15:08:47 -0500
+Subject: Re: [PATCH 09/10] mm/slab.c: Fix continuation line formats
+From: Matt Mackall <mpm@selenic.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org
+In-Reply-To: <9d64ab1e1d69c750d53a398e09fe5da2437668c5.1264967500.git.joe@perches.com>
 References: <cover.1264967493.git.joe@perches.com>
+	 <9d64ab1e1d69c750d53a398e09fe5da2437668c5.1264967500.git.joe@perches.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 31 Jan 2010 14:08:43 -0600
+Message-ID: <1264968523.3536.1801.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-String constants that are continued on subsequent lines with \
-are not good.
-Fix rebulid/rebuild typos
+On Sun, 2010-01-31 at 12:02 -0800, Joe Perches wrote:
+> String constants that are continued on subsequent lines with \
+> are not good.
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- drivers/scsi/arcmsr/arcmsr_hba.c |   49 +++++++++++++++++--------------------
- 1 files changed, 23 insertions(+), 26 deletions(-)
+> The characters between seq_printf elements are tabs.
+> That was probably not intentional, but isn't being changed.
+> It's behind an #ifdef, so it could probably become a single space.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  mm/slab.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 7451bda..9964619 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -4228,8 +4228,8 @@ static int s_show(struct seq_file *m, void *p)
+>  		unsigned long node_frees = cachep->node_frees;
+>  		unsigned long overflows = cachep->node_overflow;
+>  
+> -		seq_printf(m, " : globalstat %7lu %6lu %5lu %4lu \
+> -				%4lu %4lu %4lu %4lu %4lu", allocs, high, grown,
+> +		seq_printf(m, " : globalstat %7lu %6lu %5lu %4lu 				%4lu %4lu %4lu %4lu %4lu",
+> +				allocs, high, grown,
 
-diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c b/drivers/scsi/arcmsr/arcmsr_hba.c
-index 47d5d19..a0378d5 100644
---- a/drivers/scsi/arcmsr/arcmsr_hba.c
-+++ b/drivers/scsi/arcmsr/arcmsr_hba.c
-@@ -585,8 +585,8 @@ static void arcmsr_flush_hba_cache(struct AdapterControlBlock *acb)
- 			break;
- 		else {
- 			retry_count--;
--			printk(KERN_NOTICE "arcmsr%d: wait 'flush adapter cache' \
--			timeout, retry count down = %d \n", acb->host->host_no, retry_count);
-+			printk(KERN_NOTICE "arcmsr%d: wait 'flush adapter cache' timeout, retry count down = %d \n",
-+			       acb->host->host_no, retry_count);
- 		}
- 	} while (retry_count != 0);
- }
-@@ -602,8 +602,8 @@ static void arcmsr_flush_hbb_cache(struct AdapterControlBlock *acb)
- 			break;
- 		else {
- 			retry_count--;
--			printk(KERN_NOTICE "arcmsr%d: wait 'flush adapter cache' \
--			timeout,retry count down = %d \n", acb->host->host_no, retry_count);
-+			printk(KERN_NOTICE "arcmsr%d: wait 'flush adapter cache' timeout,retry count down = %d \n",
-+			       acb->host->host_no, retry_count);
- 		}
- 	} while (retry_count != 0);
- }
-@@ -732,12 +732,11 @@ static void arcmsr_drain_donequeue(struct AdapterControlBlock *acb, uint32_t fla
- 			if (abortcmd) {
- 				abortcmd->result |= DID_ABORT << 16;
- 				arcmsr_ccb_complete(ccb, 1);
--				printk(KERN_NOTICE "arcmsr%d: ccb ='0x%p' \
--				isr got aborted command \n", acb->host->host_no, ccb);
-+				printk(KERN_NOTICE "arcmsr%d: ccb ='0x%p' isr got aborted command \n",
-+				       acb->host->host_no, ccb);
- 			}
- 		}
--		printk(KERN_NOTICE "arcmsr%d: isr get an illegal ccb command \
--				done acb = '0x%p'"
-+		printk(KERN_NOTICE "arcmsr%d: isr get an illegal ccb command done acb = '0x%p'"
- 				"ccb = '0x%p' ccbacb = '0x%p' startdone = 0x%x"
- 				" ccboutstandingcount = %d \n"
- 				, acb->host->host_no
-@@ -1001,7 +1000,7 @@ static void arcmsr_stop_hba_bgrb(struct AdapterControlBlock *acb)
- 
- 	if (arcmsr_hba_wait_msgint_ready(acb)) {
- 		printk(KERN_NOTICE
--			"arcmsr%d: wait 'stop adapter background rebulid' timeout \n"
-+			"arcmsr%d: wait 'stop adapter background rebuild' timeout \n"
- 			, acb->host->host_no);
- 	}
- }
-@@ -1014,7 +1013,7 @@ static void arcmsr_stop_hbb_bgrb(struct AdapterControlBlock *acb)
- 
- 	if (arcmsr_hbb_wait_msgint_ready(acb)) {
- 		printk(KERN_NOTICE
--			"arcmsr%d: wait 'stop adapter background rebulid' timeout \n"
-+			"arcmsr%d: wait 'stop adapter background rebuild' timeout \n"
- 			, acb->host->host_no);
- 	}
- }
-@@ -1709,8 +1708,8 @@ static void arcmsr_get_hba_config(struct AdapterControlBlock *acb)
- 
- 	writel(ARCMSR_INBOUND_MESG0_GET_CONFIG, &reg->inbound_msgaddr0);
- 	if (arcmsr_hba_wait_msgint_ready(acb)) {
--		printk(KERN_NOTICE "arcmsr%d: wait 'get adapter firmware \
--			miscellaneous data' timeout \n", acb->host->host_no);
-+		printk(KERN_NOTICE "arcmsr%d: wait 'get adapter firmware miscellaneous data' timeout \n",
-+		       acb->host->host_no);
- 	}
- 
- 	count = 8;
-@@ -1753,8 +1752,8 @@ static void arcmsr_get_hbb_config(struct AdapterControlBlock *acb)
- 
- 	writel(ARCMSR_MESSAGE_GET_CONFIG, reg->drv2iop_doorbell_reg);
- 	if (arcmsr_hbb_wait_msgint_ready(acb)) {
--		printk(KERN_NOTICE "arcmsr%d: wait 'get adapter firmware \
--			miscellaneous data' timeout \n", acb->host->host_no);
-+		printk(KERN_NOTICE "arcmsr%d: wait 'get adapter firmware miscellaneous data' timeout \n",
-+		       acb->host->host_no);
- 	}
- 
- 	count = 8;
-@@ -1889,8 +1888,7 @@ static void arcmsr_polling_hbb_ccbdone(struct AdapterControlBlock *acb,
- 			poll_ccb_done = (ccb == poll_ccb) ? 1:0;
- 			if ((ccb->acb != acb) || (ccb->startdone != ARCMSR_CCB_START)) {
- 				if ((ccb->startdone == ARCMSR_CCB_ABORTED) || (ccb == poll_ccb)) {
--					printk(KERN_NOTICE "arcmsr%d: \
--		scsi id = %d lun = %d ccb = '0x%p' poll command abort successfully \n"
-+					printk(KERN_NOTICE "arcmsr%d: scsi id = %d lun = %d ccb = '0x%p' poll command abort successfully \n"
- 						,acb->host->host_no
- 						,ccb->pcmd->device->id
- 						,ccb->pcmd->device->lun
-@@ -1958,8 +1956,7 @@ static int arcmsr_iop_confirm(struct AdapterControlBlock *acb)
- 			writel(ARCMSR_INBOUND_MESG0_SET_CONFIG, \
- 							&reg->inbound_msgaddr0);
- 			if (arcmsr_hba_wait_msgint_ready(acb)) {
--				printk(KERN_NOTICE "arcmsr%d: ""set ccb high \
--				part physical address timeout\n",
-+				printk(KERN_NOTICE "arcmsr%d: ""set ccb high part physical address timeout\n",
- 				acb->host->host_no);
- 				return 1;
- 			}
-@@ -1979,7 +1976,7 @@ static int arcmsr_iop_confirm(struct AdapterControlBlock *acb)
- 		reg->doneq_index = 0;
- 		writel(ARCMSR_MESSAGE_SET_POST_WINDOW, reg->drv2iop_doorbell_reg);
- 		if (arcmsr_hbb_wait_msgint_ready(acb)) {
--			printk(KERN_NOTICE "arcmsr%d:can not set diver mode\n", \
-+			printk(KERN_NOTICE "arcmsr%d:can not set diver mode\n",
- 				acb->host->host_no);
- 			return 1;
- 		}
-@@ -1999,14 +1996,14 @@ static int arcmsr_iop_confirm(struct AdapterControlBlock *acb)
- 
- 		writel(ARCMSR_MESSAGE_SET_CONFIG, reg->drv2iop_doorbell_reg);
- 		if (arcmsr_hbb_wait_msgint_ready(acb)) {
--			printk(KERN_NOTICE "arcmsr%d: 'set command Q window' \
--			timeout \n",acb->host->host_no);
-+			printk(KERN_NOTICE "arcmsr%d: 'set command Q window' timeout \n",
-+			       acb->host->host_no);
- 			return 1;
- 		}
- 
- 		writel(ARCMSR_MESSAGE_START_DRIVER_MODE, reg->drv2iop_doorbell_reg);
- 		if (arcmsr_hbb_wait_msgint_ready(acb)) {
--			printk(KERN_NOTICE "arcmsr%d: 'can not set diver mode \n"\
-+			printk(KERN_NOTICE "arcmsr%d: 'can not set diver mode \n"
- 			,acb->host->host_no);
- 			return 1;
- 		}
-@@ -2048,8 +2045,8 @@ static void arcmsr_start_hba_bgrb(struct AdapterControlBlock *acb)
- 	acb->acb_flags |= ACB_F_MSG_START_BGRB;
- 	writel(ARCMSR_INBOUND_MESG0_START_BGRB, &reg->inbound_msgaddr0);
- 	if (arcmsr_hba_wait_msgint_ready(acb)) {
--		printk(KERN_NOTICE "arcmsr%d: wait 'start adapter background \
--				rebulid' timeout \n", acb->host->host_no);
-+		printk(KERN_NOTICE "arcmsr%d: wait 'start adapter background rebuild' timeout \n",
-+		       acb->host->host_no);
- 	}
- }
- 
-@@ -2059,8 +2056,8 @@ static void arcmsr_start_hbb_bgrb(struct AdapterControlBlock *acb)
- 	acb->acb_flags |= ACB_F_MSG_START_BGRB;
- 	writel(ARCMSR_MESSAGE_START_BGRB, reg->drv2iop_doorbell_reg);
- 	if (arcmsr_hbb_wait_msgint_ready(acb)) {
--		printk(KERN_NOTICE "arcmsr%d: wait 'start adapter background \
--				rebulid' timeout \n",acb->host->host_no);
-+		printk(KERN_NOTICE "arcmsr%d: wait 'start adapter background rebuild' timeout \n",
-+		       acb->host->host_no);
- 	}
- }
- 
+Yuck. The right way to do this is by mergeable adjacent strings, eg:
+
+printk("part 1..."
+       " part 2...", ...);
+
 -- 
-1.6.6.rc0.57.gad7a
+http://selenic.com : development and support for Mercurial and Linux
+
 
