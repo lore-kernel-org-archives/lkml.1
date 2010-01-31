@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140Ab0AaUIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139Ab0AaUNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140Ab0AaUIs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 15:08:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560Ab0AaUIr
+	id S1754139Ab0AaUNO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 15:13:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998Ab0AaUNN
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 15:08:47 -0500
-Received: from waste.org ([173.11.57.241]:52673 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333Ab0AaUIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 15:08:47 -0500
-Subject: Re: [PATCH 09/10] mm/slab.c: Fix continuation line formats
-From: Matt Mackall <mpm@selenic.com>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org
-In-Reply-To: <9d64ab1e1d69c750d53a398e09fe5da2437668c5.1264967500.git.joe@perches.com>
-References: <cover.1264967493.git.joe@perches.com>
-	 <9d64ab1e1d69c750d53a398e09fe5da2437668c5.1264967500.git.joe@perches.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 31 Jan 2010 14:08:43 -0600
-Message-ID: <1264968523.3536.1801.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 31 Jan 2010 15:13:13 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:43521 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753921Ab0AaUNM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 15:13:12 -0500
+Date: Sun, 31 Jan 2010 21:13:00 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Michal Marek <mmarek@suse.cz>, Greg KH <greg@kroah.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Sean MacLennan <smaclennan@pikatech.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] platform_driver_register: warn if probe is in
+	.init.text
+Message-ID: <20100131201300.GA20892@pengutronix.de>
+References: <20100122173846.GA11057@suse.de> <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de> <87y6jnw6qa.fsf@devron.myhome.or.jp> <20100126084741.GC20792@pengutronix.de> <20100128011403.GB24068@kroah.com> <20100130204425.GA16345@pengutronix.de> <20100131160213.GA14896@merkur.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100131160213.GA14896@merkur.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-31 at 12:02 -0800, Joe Perches wrote:
-> String constants that are continued on subsequent lines with \
-> are not good.
+Hello,
 
-> The characters between seq_printf elements are tabs.
-> That was probably not intentional, but isn't being changed.
-> It's behind an #ifdef, so it could probably become a single space.
+> Michael is handling kbuild stuff now and that may include modpost stuff.
+> So added Michael - then you guys can decide way forward.
+Then the F: patterns for kbuild in MAINTAINERS should be extended.
+ 
+> The modpost patches looks OK at a quick view.
+> You can consider adding:
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  mm/slab.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/mm/slab.c b/mm/slab.c
-> index 7451bda..9964619 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -4228,8 +4228,8 @@ static int s_show(struct seq_file *m, void *p)
->  		unsigned long node_frees = cachep->node_frees;
->  		unsigned long overflows = cachep->node_overflow;
->  
-> -		seq_printf(m, " : globalstat %7lu %6lu %5lu %4lu \
-> -				%4lu %4lu %4lu %4lu %4lu", allocs, high, grown,
-> +		seq_printf(m, " : globalstat %7lu %6lu %5lu %4lu 				%4lu %4lu %4lu %4lu %4lu",
-> +				allocs, high, grown,
-
-Yuck. The right way to do this is by mergeable adjacent strings, eg:
-
-printk("part 1..."
-       " part 2...", ...);
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Thanks,
+Uwe
 
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
