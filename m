@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324Ab0AaHUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169Ab0AaIUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752324Ab0AaHUB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 02:20:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038Ab0AaHUB
+	id S1752169Ab0AaIUM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 03:20:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328Ab0AaIUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Jan 2010 02:20:01 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:39369 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751224Ab0AaHUA (ORCPT
+	Sun, 31 Jan 2010 03:20:11 -0500
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:41897 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751115Ab0AaIUK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 02:20:00 -0500
-Date: Sun, 31 Jan 2010 07:19:59 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Suresh Siddha <suresh.b.siddha@intel.com>, ebiederm@xmission.com,
-       yinghai@kernel.org, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] x86, irq: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR
- instead of 0x1f
-In-Reply-To: <4B5C00EB.3000208@zytor.com>
-Message-ID: <alpine.LFD.2.00.1001310705280.31764@eddie.linux-mips.org>
-References: <20100114002118.436172066@sbs-t61.sc.intel.com> <20100114002118.521826763@sbs-t61.sc.intel.com> <alpine.LFD.2.00.1001240545180.13034@eddie.linux-mips.org> <4B5C00EB.3000208@zytor.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 31 Jan 2010 03:20:10 -0500
+Message-ID: <4B653D32.1040703@linux.vnet.ibm.com>
+Date: Sun, 31 Jan 2010 13:50:02 +0530
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Mahesh Salgaonkar <mahesh@linux.vnet.in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       "K. Prasad" <prasad@linux.vnet.ibm.com>,
+       Maneesh Soni <maneesh@in.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin <schwidefsky@de.ibm.com>
+Subject: Re: [patch] HWBKPT: Make bp_len type to u64 generic across the arch
+References: <20100130045424.625452081@mars.in.ibm.com> <20100130045518.GA20776@in.ibm.com> <20100130183835.GA5675@nowhere>
+In-Reply-To: <20100130183835.GA5675@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jan 2010, H. Peter Anvin wrote:
+On 01/31/2010 12:08 AM, Frederic Weisbecker wrote:
+> On Sat, Jan 30, 2010 at 10:25:18AM +0530, Mahesh Salgaonkar wrote:
+>>
+>> Change 'bp_len' type to __u64 to make it work across the arch.
+>> The s390 architecture watch point length can be upto 2^64.
+>>
+>> reference:
+>> 	http://lkml.org/lkml/2010/1/25/212
+>>
+>> Based on commit 6aa41f8b01301199af6c9febb24f3c1f5a0bc9d5
+>>
+>> Signed-off-by: Mahesh Salgaonkar<mahesh@linux.vnet.ibm.com>
+>> ---
+>>
+>>   include/linux/hw_breakpoint.h |    2 +-
+>>   include/linux/perf_event.h    |    6 ++----
+>>   kernel/hw_breakpoint.c        |    2 +-
+>>   kernel/perf_event.c           |    2 +-
+>>   4 files changed, 5 insertions(+), 7 deletions(-)
+>>
+>>
+>> diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+>> index 41235c9..76e7427 100644
+>> --- a/include/linux/hw_breakpoint.h
+>> +++ b/include/linux/hw_breakpoint.h
+>> @@ -44,7 +44,7 @@ static inline int hw_breakpoint_type(struct perf_event *bp)
+>>   	return bp->attr.bp_type;
+>>   }
+>>
+>> -static inline int hw_breakpoint_len(struct perf_event *bp)
+>> +static inline unsigned long hw_breakpoint_len(struct perf_event *bp)
+>>   {
+>>   	return bp->attr.bp_len;
+>>   }
+>
+>
+>
+> This should return a u64, or gcc will warn us about loosing
+> informations in 32 bits arch?
+>
+Yup, I even thought so, but then I figured out the function 
+'hw_breakpoint_addr()' also has same return type for returning 
+'attr.bp_addr' and kept the same type to be consistent. We may have to 
+fix that also. What do you think?
 
-> > > So change the IRQ_MOVE_CLEANUP_VECTOR to 0x20 and  allow 0x21-0x2f to be
-> > > used
-> > > for device interrupts. 0x30-0x3f will be used for ISA interrupts (these
-> > > also can be migrated in the context of IOAPIC and hence need to be at a
-> > > higher
-> > > priority level than IRQ_MOVE_CLEANUP_VECTOR).
-> > 
-> >   I have troubles understanding what exactly this change is needed for
-> > (i.e. what's the difference between using vectors 0x20-0x2f and 0x30-0x3f
-> > as ExtINT interrupts, what's the gain from relocating them? -- they are
-> > transparent to the APIC, so the exact priority level used does not matter
-> > at all), but since I've been cc-ed, I have one question -- have you
-> > verified that with the new arrangement the mixed interrupt mode (where
-> > some interrupts come via the APIC and some via the 8259A PICs) still
-> > works?
-> > 
-> 
-> The difference is relevant when they are *not* invoked as ExtInt interrupts,
-> but when used as IOAPIC interrupts it matters.
+>
+>
+>>
+>
+>
+> Acked-by: Frederic Weisbecker<fweisbec@gmail.com>
+>
 
- Hmm, I/O APIC interrupts coming from ISA devices used not to differ from 
-ones from PCI devices and their vectors were evenly distributed across the 
-whole device range (one reason for this was the (in)famous Pentium APIC 
-limitation WRT multiple outstanding requests at the same priority level).  
-Now what you've written suggests this has changed and now ISA devices only 
-get vectors within a single priority level -- am I getting this right?
-
- If so, then to push my original question further: how are these vectors 
-allocated -- are they identity mapped with the corresponding i8259A 
-vectors?  And how does it play with the Pentium APIC limitation (that may 
-actually apply to all the local APIC cores that use serial bus delivery; 
-I'm not sure) I mentioned above?
-
-  Maciej
+Thanks for reviewing.
