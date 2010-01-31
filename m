@@ -1,56 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346Ab0AaXR1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 18:17:27 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:39308 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751483Ab0AaXRZ (ORCPT
+	id S1753837Ab0AaXSO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 18:18:14 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:34227 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752430Ab0AaXSM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 18:17:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=K38Fxd8xAyPocJzojMrkbhYLuxsvcVYhpl36FKotGjrSGfGJ+C3AgpbpiEu4vvU8Bt
-         IpJZ4H/UzC7QIK6YhzgJjPfLn3RgDTT/4/FLV4Za2Vlqoq4bP1wn2MO3XmQM2O4csak9
-         iaN5jrfiRM3CCmI0mNzDFAeHIPQPbimXEaHsI=
+	Sun, 31 Jan 2010 18:18:12 -0500
+Date: Mon, 1 Feb 2010 10:18:09 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Wolfgang Walter <wolfgang.walter@stwm.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: 2.6.32: padlock_sha1 and hmac broken?
+Message-ID: <20100131231809.GA29600@gondor.apana.org.au>
+References: <201001300044.15769.wolfgang.walter@stwm.de> <201001310311.23116.wolfgang.walter@stwm.de> <20100131092222.GA22508@gondor.apana.org.au> <201001311437.55534.wolfgang.walter@stwm.de>
 MIME-Version: 1.0
-In-Reply-To: <20091016132730.GA5731@elte.hu>
-References: <817ecb6f0910151625o7eb645e8pff574a2c12bdb763@mail.gmail.com>
-	 <20091016064433.GC20388@elte.hu>
-	 <817ecb6f0910160622m68486be7ifeb56b43921fc7c1@mail.gmail.com>
-	 <20091016132730.GA5731@elte.hu>
-Date: Sun, 31 Jan 2010 18:17:24 -0500
-Message-ID: <817ecb6f1001311517v56485679s987430c41e3f20f3@mail.gmail.com>
-Subject: Re: [PATCH V6] x86: NX protection for kernel data
-From: Siarhei Liakh <sliakh.lkml@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Howells <dhowells@redhat.com>, Aristeu Rozanski <aris@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001311437.55534.wolfgang.walter@stwm.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 16, 2009 at 8:27 AM, Ingo Molnar <mingo@elte.hu> wrote:
+On Sun, Jan 31, 2010 at 02:37:55PM +0100, Wolfgang Walter wrote:
 >
-[...]
-> Well, if we are going to touch this area i'd like to see them addressed
-> together.
->
-> The 1MB thing would obviously be a default-off Kconfig option so in that
-> sense it should not break anything by default.
+> This patch works. /proc/crypto shows
+> 
+> name         : authenc(hmac(sha1),cbc(aes))
+> driver       : authenc(hmac(sha1-padlock),cbc-aes-padlock)
+> module       : kernel
+> priority     : 4300
+> refcnt       : 85
+> selftest     : passed
+> type         : aead
+> async        : yes
+> blocksize    : 16
+> ivsize       : 16
+> maxauthsize  : 20
+> geniv        : <built-in>
 
-Ingo,
+Thank you for checking!
 
-I've got this 1MB thing fixed. I have also adjusted my previous
-patches to be compatible with 2.6.33-rc5.
-I will be re-posting this patch set to LKML shortly.
-Let me know if there is anything else you would like me to adjust.
+I've added this patch into crypto-2.6 and will push to stable
+when it is merged upstream.
 
-Thanks.
+commit 137bb21e8f03758eeffb464a5033338f34446b4e
+Author: Herbert Xu <herbert@gondor.apana.org.au>
+Date:   Mon Feb 1 09:17:56 2010 +1100
+
+    crypto: padlock-sha - Add import/export support
+    
+    As the padlock driver for SHA uses a software fallback to perform
+    partial hashing, it must implement custom import/export functions.
+    Otherwise hmac which depends on import/export for prehashing will
+    not work with padlock-sha.
+    
+    Reported-by: Wolfgang Walter <wolfgang.walter@stwm.de>
+    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+diff --git a/drivers/crypto/padlock-sha.c b/drivers/crypto/padlock-sha.c
+index 0af8057..d3a27e0 100644
+--- a/drivers/crypto/padlock-sha.c
++++ b/drivers/crypto/padlock-sha.c
+@@ -57,6 +57,23 @@ static int padlock_sha_update(struct shash_desc *desc,
+ 	return crypto_shash_update(&dctx->fallback, data, length);
+ }
+ 
++static int padlock_sha_export(struct shash_desc *desc, void *out)
++{
++	struct padlock_sha_desc *dctx = shash_desc_ctx(desc);
++
++	return crypto_shash_export(&dctx->fallback, out);
++}
++
++static int padlock_sha_import(struct shash_desc *desc, const void *in)
++{
++	struct padlock_sha_desc *dctx = shash_desc_ctx(desc);
++	struct padlock_sha_ctx *ctx = crypto_shash_ctx(desc->tfm);
++
++	dctx->fallback.tfm = ctx->fallback;
++	dctx->fallback.flags = desc->flags & CRYPTO_TFM_REQ_MAY_SLEEP;
++	return crypto_shash_import(&dctx->fallback, in);
++}
++
+ static inline void padlock_output_block(uint32_t *src,
+ 		 	uint32_t *dst, size_t count)
+ {
+@@ -235,7 +252,10 @@ static struct shash_alg sha1_alg = {
+ 	.update 	=	padlock_sha_update,
+ 	.finup  	=	padlock_sha1_finup,
+ 	.final  	=	padlock_sha1_final,
++	.export		=	padlock_sha_export,
++	.import		=	padlock_sha_import,
+ 	.descsize	=	sizeof(struct padlock_sha_desc),
++	.statesize	=	sizeof(struct sha1_state),
+ 	.base		=	{
+ 		.cra_name		=	"sha1",
+ 		.cra_driver_name	=	"sha1-padlock",
+@@ -256,7 +276,10 @@ static struct shash_alg sha256_alg = {
+ 	.update 	=	padlock_sha_update,
+ 	.finup  	=	padlock_sha256_finup,
+ 	.final  	=	padlock_sha256_final,
++	.export		=	padlock_sha_export,
++	.import		=	padlock_sha_import,
+ 	.descsize	=	sizeof(struct padlock_sha_desc),
++	.statesize	=	sizeof(struct sha256_state),
+ 	.base		=	{
+ 		.cra_name		=	"sha256",
+ 		.cra_driver_name	=	"sha256-padlock",
+
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
