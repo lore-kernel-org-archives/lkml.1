@@ -1,123 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467Ab0AaVMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942Ab0AaVVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754467Ab0AaVMr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 16:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575Ab0AaVMp
+	id S1753942Ab0AaVVA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 16:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149Ab0AaVU7
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 16:12:45 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:60138 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753810Ab0AaVMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 16:12:17 -0500
-X-Greylist: delayed 565 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 Jan 2010 16:12:16 EST
-Message-Id: <20100131210013.446503342@polymtl.ca>
-References: <20100131205254.407214951@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Sun, 31 Jan 2010 15:52:56 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 2/3] scheduler: add full memory barriers upon task switch at runqueue lock/unlock
-Content-Disposition: inline; filename=scheduler-use-spinlock-mb.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sun, 31 Jan 2010 21:00:13 +0000
+	Sun, 31 Jan 2010 16:20:59 -0500
+Received: from he.sipsolutions.net ([78.46.109.217]:55114 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752857Ab0AaVU6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 16:20:58 -0500
+Subject: Re: Linux wireless GSoC 2010 project ideas
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Witold Sowa <witold.sowa@gmail.com>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Till Kamppeter <till.kamppeter@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, lsb-discuss@lists.linux-foundation.org
+In-Reply-To: <4B65F024.3080505@gmail.com>
+References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
+	 <4B65F024.3080505@gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-oD+xiGd3dZEqWzQC59TN"
+Date: Sun, 31 Jan 2010 22:20:54 +0100
+Message-ID: <1264972854.3597.17.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Depends on:
-"Create spin lock/spin unlock with distinct memory barrier"
 
-A full memory barrier is wanted before and after runqueue data structure
-modifications so these can be read safely by sys_membarrier without holding the
-rq lock.
+--=-oD+xiGd3dZEqWzQC59TN
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Adds no overhead on x86, because LOCK-prefixed atomic operations of the spin
-lock/unlock already imply a full memory barrier. Combines the spin lock
-acquire/release barriers with the full memory barrier to diminish the
-performance impact on other architectures. (per-architecture spinlock-mb.h
-should be gradually implemented to replace the generic version)
+On Sun, 2010-01-31 at 22:03 +0100, Witold Sowa wrote:
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: Nicholas Miell <nmiell@comcast.net>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: mingo@elte.hu
-CC: laijs@cn.fujitsu.com
-CC: dipankar@in.ibm.com
-CC: akpm@linux-foundation.org
-CC: josh@joshtriplett.org
-CC: dvhltc@us.ibm.com
-CC: niv@us.ibm.com
-CC: tglx@linutronix.de
-CC: peterz@infradead.org
-CC: Valdis.Kletnieks@vt.edu
-CC: dhowells@redhat.com
----
- kernel/sched.c |   24 ++++++++++++++++++++----
- 1 file changed, 20 insertions(+), 4 deletions(-)
+> Some time ago johill asked me if I would be interested in hacking on
+> adding WPS support to NetworkManager. Well, I would but I don't know
+> when I'll find some time for that. I don't know how much of work would
+> it require, but it possibly could be a topic of one of GSoC 2010
+> projects. I have no idea know if anybody would be willing to be a mentor
+> for such a project.
 
-Index: linux-2.6-lttng/kernel/sched.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/sched.c	2010-01-31 14:59:42.000000000 -0500
-+++ linux-2.6-lttng/kernel/sched.c	2010-01-31 15:09:51.000000000 -0500
-@@ -893,7 +893,12 @@ static inline void finish_lock_switch(st
- 	 */
- 	spin_acquire(&rq->lock.dep_map, 0, 0, _THIS_IP_);
- 
--	raw_spin_unlock_irq(&rq->lock);
-+	/*
-+	 * Order mm_cpumask and rq->curr updates before following memory
-+	 * accesses. Required by sys_membarrier().
-+	 */
-+	smp_mb__before_spin_unlock();
-+	raw_spin_unlock_irq__no_release(&rq->lock);
- }
- 
- #else /* __ARCH_WANT_UNLOCKED_CTXSW */
-@@ -916,10 +921,15 @@ static inline void prepare_lock_switch(s
- 	 */
- 	next->oncpu = 1;
- #endif
-+	/*
-+	 * Order mm_cpumask and rq->curr updates before following memory
-+	 * accesses. Required by sys_membarrier().
-+	 */
-+	smp_mb__before_spin_unlock();
- #ifdef __ARCH_WANT_INTERRUPTS_ON_CTXSW
--	raw_spin_unlock_irq(&rq->lock);
-+	raw_spin_unlock_irq__no_release(&rq->lock);
- #else
--	raw_spin_unlock(&rq->lock);
-+	raw_spin_unlock__no_release(&rq->lock);
- #endif
- }
- 
-@@ -5490,7 +5500,13 @@ need_resched_nonpreemptible:
- 	if (sched_feat(HRTICK))
- 		hrtick_clear(rq);
- 
--	raw_spin_lock_irq(&rq->lock);
-+	raw_spin_lock_irq__no_acquire(&rq->lock);
-+	/*
-+	 * Order memory accesses before mm_cpumask and rq->curr updates.
-+	 * Required by sys_membarrier() when prev != next. We only learn about
-+	 * next later, so we issue this mb() unconditionally.
-+	 */
-+	smp_mb__after_spin_lock();
- 	update_rq_clock(rq);
- 	clear_tsk_need_resched(prev);
- 
+Sounds like a good project to me, but I don't think I'd be a good mentor
+for since I'm not familiar with the NM codebase at all. As for how much
+work it would require, I think the basic client-side functionality could
+possibly be "too simple" for you, WPS has a lot of additional
+functionality (e.g. WPS support for the AP side).
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+johannes
+
+--=-oD+xiGd3dZEqWzQC59TN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLZfQyAAoJEODzc/N7+QmaHTsP/3W0ssLmXIpggt3H05N7Pcby
+P7hcXbhjVw58KytRS13XhB6x+VAP9noLtJ08tKnA1VdD3ngajO2yxF9wIDs52az7
+rtrQg7fU8BxOK6Dkl5wbxuz16RSKeiO0R/+hIi0t5A85EuS1UFNJdS/cADNyTgws
+7vjHLh3E5wNy49F+le01rBYpEUUa8PtFVvqOBKGOiz3mefSK8E29nGl0m8jDnfyY
+Sb0ITWXzzcJS4XANbyTJlMXQGufmYesDOZzilkHv+G8mn6wOfATB+j1l8FUaNMn0
+OVkYwnriwLy7/1kH0r/owDrlkrJeIYV6WxlJuEqnEDnDImFFtwT8+RB2GzLJ1j4r
+KD1yHU/ZQEf/NOvU8gS+lp/haWhBAZhIXYSJIRlHrEpK0VDAlxryCEHV6wCAe6bY
+gYFTHos2Zkt+MgxdMhkPzAIQHnhQ3q0ng7EQGCBQmf6+Nwd62F1Zgz4FfHidQdSE
+H8zag1l1ISVfBURhGM+G0l/g2xYn1UPVfxpRs7Fc1IVCoV/nUGQhFX5HnQMq7Abv
+Jcyw0ofHYYHHoLbEOgVfLEXHCe7cPA5nDQWlQfXWQ26OZs3nSkXsqp6xopR1raDB
+mMoGGl/65DYBAqoGVZIVgGzRje/uTG8dwA745tgxjuYT2iojxSm8OQ377gVlJri1
+7kT//sjPgpemhl+gS0Mu
+=QGpC
+-----END PGP SIGNATURE-----
+
+--=-oD+xiGd3dZEqWzQC59TN--
+
