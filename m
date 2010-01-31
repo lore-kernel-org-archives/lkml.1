@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238Ab0AaWqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753238Ab0AaWqW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 17:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500Ab0AaWqW
-	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 17:46:22 -0500
-Received: from smtp13.ono.com ([62.42.230.16]:32446 "EHLO resmaa13.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752225Ab0AaWqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 17:46:21 -0500
-Date: Sun, 31 Jan 2010 23:46:19 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: NFS problems in 2.6.33-rc6: Unknown error 526
-Message-ID: <20100131234619.0f8460b9@werewolf.home>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.19.4; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754075Ab0AaXT1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 18:19:27 -0500
+Received: from mail.artecdesign.ee ([195.50.213.123]:51041 "EHLO
+	postikukk.artecdesign.ee" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753612Ab0AaXTZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 18:19:25 -0500
+X-Greylist: delayed 2657 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 Jan 2010 18:19:25 EST
+Message-ID: <4B660584.7020302@artecdesign.ee>
+Date: Mon, 01 Feb 2010 00:34:44 +0200
+From: Anti Sullin <anti.sullin@artecdesign.ee>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Harro Haan <hrhaan@gmail.com>
+CC: Ryan Mallon <ryan@bluewatersys.com>, Remy Bohmer <linux@bohmer.net>,
+       Andrew Victor <avictor.za@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       H Hartley Sweeten <hartleys@visionengravers.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [patch v2 1/2] at91_udc.c read_fifo timing issue
+References: <20100129162029.998540038@gmail.com>> <20100129162155.709756286@gmail.com>>
+In-Reply-To: <20100129162155.709756286@gmail.com>>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+X-ADG-Spam-Score: -4.4 (----)
+X-ADG-Spam-ScoreInt: -43
+X-ADG-Spam-Report: Content analysis details:   (-4.4 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+X-ADG-ExiScan-Signature: 3acc284d04fbfb526f175a047efbdae7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi...
+Harro Haan wrote:
+ > This solves the read_fifo timing issue for example seen with CDC 
+Ethernet.
+[...]
 
-With latest kernel I get this between linux boxes with that kernel:
+Still this bug not fixed?
+I sent almost the same fix and a lot of debug info with description of 
+the issue and the critical path of the timing to linux-arm-kernel on 
+2009-03-25 ( 
+http://lists.arm.linux.org.uk/lurker/message/20090325.150843.f515c02f.en.html 
+) and we had an off-list discussion with David Brownell about another 
+udc patch on 2009-06-19 that later turned out to be the same issue.
 
-bran:/etc# showmount -e annwn.nfs
-Export list for annwn:
-/scratch/local 192.168.1.0/24,....
+This fix has solved the problems on our devices and we've been using it 
+for almost a year now.
 
-bran:~# mount -v -t nfs -o tcp annwn.nfs:/scratch/local /scratch/shared
-mount.nfs: timeout set for Sun Jan 31 23:38:04 2010
-mount.nfs: trying text-based options 'tcp,addr=192.168.1.10,vers=4,clientaddr=192.168.1.1'
-mount.nfs: mount(2): Unknown error 526
-mount.nfs: Unknown error 526
-
-NFS works fine between the client and a Solaris server, and with an older
-linux server.
-Unfortunately, all my boxes got updated, so I can not try between
-a box with latest kernel and other with previous one.
-
-With this scenario, I blame the new kernel server code, any ideas ?
-
-TIA
+About Harro's patch:
+* why are the marker1 and marker2 comments necessary to be included?
+* maybe you should just link to the mailing list and/or move the long 
+comment to patch description instead adding a page-long comment to code; 
+just leave a small comment to explain why the work-around is needed so 
+that nobody would optimize it away?
+* Is the error check and warning message necessary after we've got rid
+of the problem? Won't it add problems - as I found out, the first csr
+read (that comes too early) may return bogus data, you should not use 
+its result at all.
 
 -- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2010.1 (Cooker) for x86_64
-Linux 2.6.32.3-desktop-0.rc2.1mnb (gcc 4.4.2 ) SMP
+Anti Sullin
+Embedded Software Engineer
+Artec Design LLC
+Teaduspargi 6/2, 12618, Tallinn, Estonia
+http://www.artecdesign.ee
