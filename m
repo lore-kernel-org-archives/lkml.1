@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752485Ab0AaJKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752940Ab0AaJVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752485Ab0AaJKr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 04:10:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907Ab0AaJKq
+	id S1752940Ab0AaJVs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 04:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600Ab0AaJVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Jan 2010 04:10:46 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:50145 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879Ab0AaJKp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 04:10:45 -0500
-Subject: SUMMARY: KVM+nf_conntrack_htable_size
-From: Jon Masters <jonathan@jonmasters.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: netfilter-devel <netfilter-devel@vger.kernel.org>,
-       Patrick McHardy <kaber@trash.net>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Jason Wessel <jason.wessel@windriver.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Sun, 31 Jan 2010 04:10:33 -0500
-Message-Id: <1264929033.7499.22.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Sun, 31 Jan 2010 04:21:47 -0500
+Received: from borg.medozas.de ([188.40.89.202]:59254 "EHLO borg.medozas.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752417Ab0AaJVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 04:21:45 -0500
+Date: Sun, 31 Jan 2010 10:21:43 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: "Helight.Xu" <helight.xu@gmail.com>
+cc: netfilter@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       Patrick McHardy <kaber@trash.net>, coreteam@netfilter.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REPORT] may be wrong place #endif in
+ include/linux/netfilter_ipv4.h
+In-Reply-To: <4B64E732.3090507@gmail.com>
+Message-ID: <alpine.LSU.2.01.1001311019430.15188@obet.zrqbmnf.qr>
+References: <4B64E732.3090507@gmail.com>
+User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folks,
+On Sunday 2010-01-31 03:13, Helight.Xu wrote:
 
-Thanks to everyone who helped me poke a little at the netfilter code.
-Since I'm not usually a network guy and haven't really kept up with
-things like the namespace code, this was fun. I have some results.
+> hi all gys:
+>
+>   when I make LKM with netfilter on "NF_IP_PRE_ROUTING" point, but it was
+> reported that "NF_IP_PRE_ROUTING" is not defined.
+>
+>   but I am surely including <linux/netfilter_ipv4.h>, when I opened
+> include/linux/netfilter_ipv4.h I found that
+> "NF_IP_PRE_ROUTING" is in this lable :
+> #ifndef __KERNEL__
+> .....
+> /* IP Hooks */
+> /* After promisc drops, checksum checks. */
+> #define NF_IP_PRE_ROUTING       0
+> /* If the packet is destined for this box. */
+> #define NF_IP_LOCAL_IN          1
+> /* If the packet is destined for another interface. */
+> #define NF_IP_FORWARD           2
+> /* Packets coming from a local process. */
+> #define NF_IP_LOCAL_OUT         3
+> /* Packets about to hit the wire. */
+> #define NF_IP_POST_ROUTING      4
+> #define NF_IP_NUMHOOKS          5
+> #endif /* ! __KERNEL__ */
+>
+> So I think the "endif" is ended a little early!
 
-The problem (as Eric hinted) is that we have a global
-nf_conntrack_htable_size, which is manipulated every time we create a
-new hashtable. This used to happen only once, but now that we have
-multiple network namespaces, it will happen every time we create a new
-namespace due to the code registering with register_pernet_subsys. At
-this time, the value of the hashtable may be changed underneath code
-that is currently using it for another hashtable instance. Additionally,
-the "resize" code (via module parameter or via sysctl) only changes the
-root netns hashtable, then changes this value, also busticating stuff.
-Finally, the very fact that this variable is exported directly is
-*asking* for trouble and random corruption to happen later on.
-
-So, there are a great many issues with how the conntrack hashtables are
-managed (looks literally as it it used to be fine then namespace code
-came along and broke assumptions that had been there since the start),
-and they should not be considered safe for use with multiple namespaces
-in my opinion. The solution would seem to be to remove this as a global
-and make it per namespace, or even per hashtable (there is usually a 1:1
-mapping, but the expect code uses this variable too).
-
-Can someone give me some advice on which solution you prefer of these?
-Or if you have an alternative preference. I think for now I'll hack up
-something involving per-namespace hashtable sizes.
-
-Jon.
-
-
+Seems so. Are there any out-of-tree nf_ip_hook_priorities users? If not, 
+we could possibly move it further below.
