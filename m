@@ -1,473 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227Ab0AaAaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432Ab0AaAbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753227Ab0AaAaX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 19:30:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808Ab0AaAaW
+	id S1753432Ab0AaAbS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 19:31:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006Ab0AaAbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 19:30:22 -0500
-Received: from mail-iw0-f173.google.com ([209.85.223.173]:40980 "EHLO
-	mail-iw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752089Ab0AaAaV (ORCPT
+	Sat, 30 Jan 2010 19:31:17 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:37158 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752202Ab0AaAbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 19:30:21 -0500
+	Sat, 30 Jan 2010 19:31:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tHZ1fbOCD74Dq5leo8v7Nzitip9fRhaiYkavhPSsQJOpLFC6IlNWWRJndB7ikW9XkM
-         hruKt1rdXVanHfiG/n/wgPWN+zubQdtqON1b8Sgaz5TBzxmp+w0iemvoo3f+9X48LHCv
-         guWjZwD5rX6zYwR9UYRPUh+JVy76pr7f5gruE=
-Date: Sat, 30 Jan 2010 18:29:56 -0600
-From: Shawn Bohrer <shawn.bohrer@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: High scheduler wake up times
-Message-ID: <20100131002956.GB27390@mediacenter.gateway.2wire.net>
-References: <20100130234551.GA27390@mediacenter.gateway.2wire.net> <20100130155640.62ce3104@infradead.org>
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=R6udj/hm2ib3Kdmi7klgzSpBtb5VoRiMSxciGkbV4xHbEA2ljLJwlzC9vTuj5ZyiAk
+         +/gHo9EkWFYq6o+BBFvFZbuKNQ3m01H/1hxMAp9FvHmFJw/4Xdgoj4RIWFfc9fRp5+re
+         YP4YYvZHRRS1V4vJCDrPQoUu1CZtLk7h5UXuU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 7/9] cs5536: convert to ide2libata
+Date: Sun, 31 Jan 2010 01:30:23 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20100130194918.30779.25485.sendpatchset@localhost> <20100130195004.30779.89524.sendpatchset@localhost> <4B64AAE3.5040501@garzik.org>
+In-Reply-To: <4B64AAE3.5040501@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100130155640.62ce3104@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <201001310130.23898.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 30, 2010 at 03:56:40PM -0800, Arjan van de Ven wrote:
-> On Sat, 30 Jan 2010 17:45:51 -0600
-> Shawn Bohrer <shawn.bohrer@gmail.com> wrote:
+On Saturday 30 January 2010 10:55:47 pm Jeff Garzik wrote:
+> On 01/30/2010 02:50 PM, Bartlomiej Zolnierkiewicz wrote:
+> > From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> > Subject: [PATCH] cs5536: convert to ide2libata
+> >
+> > Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> > ---
+> >   drivers/ata/pata_cs5536.h |   22 +++++
+> >   drivers/ide/cs5536.c      |  189 +---------------------------------------------
+> >   2 files changed, 26 insertions(+), 185 deletions(-)
+> >
+> > Index: b/drivers/ata/pata_cs5536.h
+> > ===================================================================
+> > --- a/drivers/ata/pata_cs5536.h
+> > +++ b/drivers/ata/pata_cs5536.h
+> > @@ -64,7 +64,11 @@ static int cs5536_write(struct pci_dev *
+> >
+> >   static void cs5536_program_dtc(struct ata_device *adev, u8 tim)
+> >   {
+> > +#ifndef __IDE2LIBATA
+> >   	struct pci_dev *pdev = to_pci_dev(adev->link->ap->host->dev);
+> > +#else
+> > +	struct pci_dev *pdev = to_pci_dev(adev->hwif->dev);
+> > +#endif
+> >   	int dshift = adev->devno ? IDE_D1_SHIFT : IDE_D0_SHIFT;
+> >   	u32 dtc;
+> >
+> > @@ -121,11 +125,19 @@ static void cs5536_set_piomode(struct at
+> >   	int mode = adev->pio_mode - XFER_PIO_0;
+> >   	int cmdmode = mode;
+> >   	int cshift = adev->devno ? IDE_CAST_D1_SHIFT : IDE_CAST_D0_SHIFT;
+> > +#ifdef __IDE2LIBATA
+> > +	unsigned long timings = (unsigned long)ide_get_drivedata(adev);
+> > +#endif
+> >   	u32 cast;
+> >
+> >   	if (pair)
+> >   		cmdmode = min(mode, pair->pio_mode - XFER_PIO_0);
+> >
+> > +#ifdef __IDE2LIBATA
+> > +	timings&= (IDE_DRV_MASK<<  8);
+> > +	timings |= drv_timings[mode];
+> > +	ide_set_drivedata(adev, (void *)timings);
+> > +#endif
+> >   	cs5536_program_dtc(adev, drv_timings[mode]);
+> >
+> >   	cs5536_read(pdev, CAST,&cast);
+> > @@ -160,7 +172,9 @@ static void cs5536_set_dmamode(struct at
+> >   	u32 etc;
+> >   	int mode = adev->dma_mode;
+> >   	int dshift = adev->devno ? IDE_D1_SHIFT : IDE_D0_SHIFT;
+> > -
+> > +#ifdef __IDE2LIBATA
+> > +	unsigned long timings = (unsigned long)ide_get_drivedata(adev);
+> > +#endif
+> >   	cs5536_read(pdev, ETC,&etc);
+> >
+> >   	if (mode>= XFER_UDMA_0) {
+> > @@ -168,7 +182,13 @@ static void cs5536_set_dmamode(struct at
+> >   		etc |= udma_timings[mode - XFER_UDMA_0]<<  dshift;
+> >   	} else { /* MWDMA */
+> >   		etc&= ~(IDE_ETC_UDMA_MASK<<  dshift);
+> > +#ifndef __IDE2LIBATA
+> >   		cs5536_program_dtc(adev, mwdma_timings[mode - XFER_MW_DMA_0]);
+> > +#else
+> > +		timings&= IDE_DRV_MASK;
+> > +		timings |= mwdma_timings[mode - XFER_MW_DMA_0]<<  8;
+> > +		ide_set_drivedata(adev, (void *)timings);
+> > +#endif
+> >   	}
+> >
+> >   	cs5536_write(pdev, ETC, etc);
 > 
-> > Hello,
-> > 
-> > Currently we have a workload that depends on around 50 processes that
-> > wake up 1000 times a second do a small amount of work and go back to
-> > sleep.  This works great on RHEL 5 (2.6.18-164.6.1.el5), but on recent
-> > kernels we are unable to achieve 1000 iterations per second.  Using
-> > the simple test application below on RHEL 5 2.6.18-164.6.1.el5 I can
-> > run 500 of these processes on and still achieve 999.99 iterations per
-> > second.  Running just 10 of these processes on the same machine with
-> > 2.6.32.6 produces results like:
-> > 
-> > ...
-> > Iterations Per Sec: 905.659667
-> > Iterations Per Sec: 805.099068
-> > Iterations Per Sec: 925.195578
-> > Iterations Per Sec: 759.310773
-> > Iterations Per Sec: 702.849261
-> > Iterations Per Sec: 782.157292
-> > Iterations Per Sec: 917.138031
-> > Iterations Per Sec: 834.770391
-> > Iterations Per Sec: 850.543755
-> > ...
-> > 
-> > I've tried playing with some of the cfs tunables in /proc/sys/kernel/
-> > without success.  Are there any suggestions on how to achieve the
-> > results we are looking for using a recent kernel?
-> 
-> I'll play a bit, but I wonder idly what kind of machine this is on ?
-> (number and types of cpus)
+> Wow, that's really turning into a rat's nest of ifdefs, isn't it?
 
-$ cat /proc/cpuinfo
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 1
-siblings	: 8
-core id		: 0
-cpu cores	: 4
-apicid		: 16
-initial apicid	: 16
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5852.40
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+I'm sorry to say it but this is missing the point entirely.
 
-processor	: 1
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 0
-siblings	: 8
-core id		: 0
-cpu cores	: 4
-apicid		: 0
-initial apicid	: 0
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.05
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+With such ifdefs around I'm finally able to see some still remaining to
+be fixed libata PATA issues (BTW work on ide2libata is what allowed me to
+quickly do previous "PATA fixes" and "more PATA fixes" patchsets).
 
-processor	: 2
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 1
-siblings	: 8
-core id		: 1
-cpu cores	: 4
-apicid		: 18
-initial apicid	: 18
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.04
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+i.e. I can see that pata_cs5536 still needs to be fixed to handle non-matching
+PIO/MWDMA timings (pata_ali.h patch is even better example of the concept).
 
-processor	: 3
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 0
-siblings	: 8
-core id		: 1
-cpu cores	: 4
-apicid		: 2
-initial apicid	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.05
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+[ As added bonus I'm cutting LOC and enabling possibility of sharing testing
+  efforts for much of IDE/libata low-level code ('"leave it alone" stability
+  promise of an old-IDE' is a wishful thinking anyway given that whole kernel
+  evolves, not to even mention that it is completely unnecessary as we have
+  much better stability promise in distributions that need it -- they are
+  simply using much older kernel version (i.e. RHEL). ]
 
-processor	: 4
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 1
-siblings	: 8
-core id		: 2
-cpu cores	: 4
-apicid		: 20
-initial apicid	: 20
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.04
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+In reality I'm doing a long overdue work that should have been done four yours
+ago before commit 669a5db got merged without any review or integration work
+being done...
 
-processor	: 5
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 0
-siblings	: 8
-core id		: 2
-cpu cores	: 4
-apicid		: 4
-initial apicid	: 4
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.05
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 6
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 1
-siblings	: 8
-core id		: 3
-cpu cores	: 4
-apicid		: 22
-initial apicid	: 22
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.04
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 7
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 0
-siblings	: 8
-core id		: 3
-cpu cores	: 4
-apicid		: 6
-initial apicid	: 6
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.05
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 8
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 1
-siblings	: 8
-core id		: 0
-cpu cores	: 4
-apicid		: 17
-initial apicid	: 17
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.04
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 9
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 0
-siblings	: 8
-core id		: 0
-cpu cores	: 4
-apicid		: 1
-initial apicid	: 1
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.05
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 10
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 1
-siblings	: 8
-core id		: 1
-cpu cores	: 4
-apicid		: 19
-initial apicid	: 19
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.04
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 11
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 0
-siblings	: 8
-core id		: 1
-cpu cores	: 4
-apicid		: 3
-initial apicid	: 3
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.05
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 12
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 1
-siblings	: 8
-core id		: 2
-cpu cores	: 4
-apicid		: 21
-initial apicid	: 21
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.04
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 13
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 0
-siblings	: 8
-core id		: 2
-cpu cores	: 4
-apicid		: 5
-initial apicid	: 5
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.05
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 14
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 1
-siblings	: 8
-core id		: 3
-cpu cores	: 4
-apicid		: 23
-initial apicid	: 23
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.05
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 15
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 26
-model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
-stepping	: 5
-cpu MHz		: 2926.203
-cache size	: 8192 KB
-physical id	: 0
-siblings	: 8
-core id		: 3
-cpu cores	: 4
-apicid		: 7
-initial apicid	: 7
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips	: 5851.05
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-
-
+-- 
+Bartlomiej Zolnierkiewicz
