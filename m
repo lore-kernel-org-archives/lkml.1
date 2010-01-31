@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218Ab0AaUDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290Ab0AaUER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754218Ab0AaUDK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 15:03:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092Ab0AaUCW
+	id S1754290Ab0AaUER (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 15:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042Ab0AaUCW
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
 	Sun, 31 Jan 2010 15:02:22 -0500
-Received: from mail.perches.com ([173.55.12.10]:1643 "EHLO mail.perches.com"
+Received: from mail.perches.com ([173.55.12.10]:1640 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753921Ab0AaUCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 15:02:20 -0500
+	id S1753894Ab0AaUCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 15:02:19 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Mike Frysinger <vapier@gentoo.org>,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 02/10] arch/blackfin: Fix continuation line formats
-Date: Sun, 31 Jan 2010 12:02:04 -0800
-Message-Id: <518828987c6692c676b93c2fdb0059efa6c86b23.1264967498.git.joe@perches.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH 01/10] arch/powerpc: Fix continuation line formats
+Date: Sun, 31 Jan 2010 12:02:03 -0800
+Message-Id: <d8e2cb6523906c5e77bb13ea9ffc077a9310dc9e.1264967498.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
 In-Reply-To: <cover.1264967493.git.joe@perches.com>
 References: <cover.1264967493.git.joe@perches.com>
@@ -28,24 +28,71 @@ are not good.
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- arch/blackfin/mach-common/smp.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/nvram_64.c               |    6 +++---
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |    8 ++++----
+ arch/powerpc/platforms/pseries/smp.c         |    4 ++--
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/arch/blackfin/mach-common/smp.c b/arch/blackfin/mach-common/smp.c
-index 369e687..c7bcbe5 100644
---- a/arch/blackfin/mach-common/smp.c
-+++ b/arch/blackfin/mach-common/smp.c
-@@ -161,8 +161,8 @@ static irqreturn_t ipi_handler(int irq, void *dev_instance)
- 			kfree(msg);
- 			break;
- 		default:
--			printk(KERN_CRIT "CPU%u: Unknown IPI message \
--			0x%lx\n", cpu, msg->type);
-+			printk(KERN_CRIT "CPU%u: Unknown IPI message 0x%lx\n",
-+			       cpu, msg->type);
- 			kfree(msg);
- 			break;
- 		}
+diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+index ad461e7..9cf197f 100644
+--- a/arch/powerpc/kernel/nvram_64.c
++++ b/arch/powerpc/kernel/nvram_64.c
+@@ -338,8 +338,8 @@ static int __init nvram_create_os_partition(void)
+ 
+ 	rc = nvram_write_header(new_part);
+ 	if (rc <= 0) {
+-		printk(KERN_ERR "nvram_create_os_partition: nvram_write_header \
+-				failed (%d)\n", rc);
++		printk(KERN_ERR "nvram_create_os_partition: nvram_write_header "
++				"failed (%d)\n", rc);
+ 		return rc;
+ 	}
+ 
+@@ -349,7 +349,7 @@ static int __init nvram_create_os_partition(void)
+ 	rc = ppc_md.nvram_write((char *)&seq_init, sizeof(seq_init), &tmp_index);
+ 	if (rc <= 0) {
+ 		printk(KERN_ERR "nvram_create_os_partition: nvram_write "
+-				"failed (%d)\n", rc);
++		       "failed (%d)\n", rc);
+ 		return rc;
+ 	}
+ 	
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 6ea4698..a70de10 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -397,12 +397,12 @@ static int parse_cede_parameters(void)
+ 				CEDE_LATENCY_PARAM_MAX_LENGTH);
+ 
+ 	if (call_status != 0)
+-		printk(KERN_INFO "CEDE_LATENCY: \
+-			%s %s Error calling get-system-parameter(0x%x)\n",
++		printk(KERN_INFO "CEDE_LATENCY: "
++			"%s %s Error calling get-system-parameter(0x%x)\n",
+ 			__FILE__, __func__, call_status);
+ 	else
+-		printk(KERN_INFO "CEDE_LATENCY: \
+-			get-system-parameter successful.\n");
++		printk(KERN_INFO "CEDE_LATENCY: "
++			"get-system-parameter successful.\n");
+ 
+ 	return call_status;
+ }
+diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+index b488663..4e7f89a 100644
+--- a/arch/powerpc/platforms/pseries/smp.c
++++ b/arch/powerpc/platforms/pseries/smp.c
+@@ -144,8 +144,8 @@ static void __devinit smp_pSeries_kick_cpu(int nr)
+ 		hcpuid = get_hard_smp_processor_id(nr);
+ 		rc = plpar_hcall_norets(H_PROD, hcpuid);
+ 		if (rc != H_SUCCESS)
+-			printk(KERN_ERR "Error: Prod to wake up processor %d\
+-						Ret= %ld\n", nr, rc);
++			printk(KERN_ERR "Error: Prod to wake up processor %d "
++						"Ret= %ld\n", nr, rc);
+ 	}
+ }
+ 
 -- 
 1.6.6.rc0.57.gad7a
 
