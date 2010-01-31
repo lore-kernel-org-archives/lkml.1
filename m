@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752940Ab0AaJVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209Ab0AaJWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752940Ab0AaJVs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 04:21:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600Ab0AaJVr
+	id S1753209Ab0AaJWb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 04:22:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440Ab0AaJWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Jan 2010 04:21:47 -0500
-Received: from borg.medozas.de ([188.40.89.202]:59254 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752417Ab0AaJVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 04:21:45 -0500
-Date: Sun, 31 Jan 2010 10:21:43 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: "Helight.Xu" <helight.xu@gmail.com>
-cc: netfilter@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>, coreteam@netfilter.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [REPORT] may be wrong place #endif in
- include/linux/netfilter_ipv4.h
-In-Reply-To: <4B64E732.3090507@gmail.com>
-Message-ID: <alpine.LSU.2.01.1001311019430.15188@obet.zrqbmnf.qr>
-References: <4B64E732.3090507@gmail.com>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
+	Sun, 31 Jan 2010 04:22:30 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:38191 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751115Ab0AaJWZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 04:22:25 -0500
+Date: Sun, 31 Jan 2010 20:22:22 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Wolfgang Walter <wolfgang.walter@stwm.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: 2.6.32: padlock_sha1 and hmac broken?
+Message-ID: <20100131092222.GA22508@gondor.apana.org.au>
+References: <201001300044.15769.wolfgang.walter@stwm.de> <201001301734.46003.wolfgang.walter@stwm.de> <20100130221731.GA18982@gondor.apana.org.au> <201001310311.23116.wolfgang.walter@stwm.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001310311.23116.wolfgang.walter@stwm.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 2010-01-31 03:13, Helight.Xu wrote:
+On Sun, Jan 31, 2010 at 03:11:22AM +0100, Wolfgang Walter wrote:
+> 
+> Not sure.
+> 
+> When I do
+> 
+> modprobe tcrypt mode=101
+> 
+> I get a kernel oops:
 
-> hi all gys:
->
->   when I make LKM with netfilter on "NF_IP_PRE_ROUTING" point, but it was
-> reported that "NF_IP_PRE_ROUTING" is not defined.
->
->   but I am surely including <linux/netfilter_ipv4.h>, when I opened
-> include/linux/netfilter_ipv4.h I found that
-> "NF_IP_PRE_ROUTING" is in this lable :
-> #ifndef __KERNEL__
-> .....
-> /* IP Hooks */
-> /* After promisc drops, checksum checks. */
-> #define NF_IP_PRE_ROUTING       0
-> /* If the packet is destined for this box. */
-> #define NF_IP_LOCAL_IN          1
-> /* If the packet is destined for another interface. */
-> #define NF_IP_FORWARD           2
-> /* Packets coming from a local process. */
-> #define NF_IP_LOCAL_OUT         3
-> /* Packets about to hit the wire. */
-> #define NF_IP_POST_ROUTING      4
-> #define NF_IP_NUMHOOKS          5
-> #endif /* ! __KERNEL__ */
->
-> So I think the "endif" is ended a little early!
+Sorry, this one should have a better chance at working.
 
-Seems so. Are there any out-of-tree nf_ip_hook_priorities users? If not, 
-we could possibly move it further below.
+diff --git a/drivers/crypto/padlock-sha.c b/drivers/crypto/padlock-sha.c
+index 0af8057..d3a27e0 100644
+--- a/drivers/crypto/padlock-sha.c
++++ b/drivers/crypto/padlock-sha.c
+@@ -57,6 +57,23 @@ static int padlock_sha_update(struct shash_desc *desc,
+ 	return crypto_shash_update(&dctx->fallback, data, length);
+ }
+ 
++static int padlock_sha_export(struct shash_desc *desc, void *out)
++{
++	struct padlock_sha_desc *dctx = shash_desc_ctx(desc);
++
++	return crypto_shash_export(&dctx->fallback, out);
++}
++
++static int padlock_sha_import(struct shash_desc *desc, const void *in)
++{
++	struct padlock_sha_desc *dctx = shash_desc_ctx(desc);
++	struct padlock_sha_ctx *ctx = crypto_shash_ctx(desc->tfm);
++
++	dctx->fallback.tfm = ctx->fallback;
++	dctx->fallback.flags = desc->flags & CRYPTO_TFM_REQ_MAY_SLEEP;
++	return crypto_shash_import(&dctx->fallback, in);
++}
++
+ static inline void padlock_output_block(uint32_t *src,
+ 		 	uint32_t *dst, size_t count)
+ {
+@@ -235,7 +252,10 @@ static struct shash_alg sha1_alg = {
+ 	.update 	=	padlock_sha_update,
+ 	.finup  	=	padlock_sha1_finup,
+ 	.final  	=	padlock_sha1_final,
++	.export		=	padlock_sha_export,
++	.import		=	padlock_sha_import,
+ 	.descsize	=	sizeof(struct padlock_sha_desc),
++	.statesize	=	sizeof(struct sha1_state),
+ 	.base		=	{
+ 		.cra_name		=	"sha1",
+ 		.cra_driver_name	=	"sha1-padlock",
+@@ -256,7 +276,10 @@ static struct shash_alg sha256_alg = {
+ 	.update 	=	padlock_sha_update,
+ 	.finup  	=	padlock_sha256_finup,
+ 	.final  	=	padlock_sha256_final,
++	.export		=	padlock_sha_export,
++	.import		=	padlock_sha_import,
+ 	.descsize	=	sizeof(struct padlock_sha_desc),
++	.statesize	=	sizeof(struct sha256_state),
+ 	.base		=	{
+ 		.cra_name		=	"sha256",
+ 		.cra_driver_name	=	"sha256-padlock",
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
