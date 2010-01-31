@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279Ab0AaUvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423Ab0AaVDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754279Ab0AaUvM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 15:51:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115Ab0AaUvL
+	id S1754423Ab0AaVDb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 16:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129Ab0AaVD3
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 15:51:11 -0500
-Received: from mail-iw0-f173.google.com ([209.85.223.173]:38646 "EHLO
-	mail-iw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753146Ab0AaUvK (ORCPT
+	Sun, 31 Jan 2010 16:03:29 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:45400 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754033Ab0AaVD2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 15:51:10 -0500
+	Sun, 31 Jan 2010 16:03:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ys7D+iiHHj8LRMsdWJx0qkga7c+IG8/hZK2emu6T57Kk4iH5J3W+REvxIk/DPWJxMM
-         QCQC7fpqxz0bPzXki54/+SIll9tE+KRzYwMBTWzj2ohihboxctXyVkycrPaKEQE8QnJk
-         vkxfAk51aqbLnYblgEd3cx0BLWkLVaU1s1doc=
-Date: Sun, 31 Jan 2010 14:50:43 -0600
-From: Shawn Bohrer <shawn.bohrer@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: High scheduler wake up times
-Message-ID: <20100131205043.GF27390@mediacenter.gateway.2wire.net>
-References: <20100130234551.GA27390@mediacenter.gateway.2wire.net> <20100130161114.07278221@infradead.org> <20100131003549.GC27390@mediacenter.gateway.2wire.net> <20100130164716.230dfe31@infradead.org> <20100131034718.GE27390@mediacenter.gateway.2wire.net> <20100131102846.4d1e18aa@infradead.org>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=qn8Z7AXRwwT5CxTvFxJ02xVwO0ngKTyP42DmIUl4bJPaWLIhrwnGlcMjsxW/MkLo18
+         dW9BIquvGyRQe+Dy3krHbsTaAHfkjHdxZL0G/Ijes8riNp9Uy7Uh+KMpgIdVWx3jA7a+
+         BUYlClK1yhVaVAyfa4wG9zgH9mYtUpQoIFaVA=
+Message-ID: <4B65F024.3080505@gmail.com>
+Date: Sun, 31 Jan 2010 22:03:32 +0100
+From: Witold Sowa <witold.sowa@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100131102846.4d1e18aa@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: linux-wireless <linux-wireless@vger.kernel.org>,
+       Till Kamppeter <till.kamppeter@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, lsb-discuss@lists.linux-foundation.org
+Subject: Re: Linux wireless GSoC 2010 project ideas
+References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
+In-Reply-To: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 31, 2010 at 10:28:46AM -0800, Arjan van de Ven wrote:
-> can you run powertop during your workload? maybe you're getting hit by
-> some C state exit latencies tilting the rounding over the top just too
-> many times...
+Luis R. Rodriguez pisze:
+> Google has confirmed it will have a Google Summer of Code for 2010
+> [1]. Last year we had a few projects suggested (4) and accepted (3)
+> under the Linux Foundation sponsoring organization umbrella [2].
+> Unfortunately out of the three projects that were approved only one
+> completed successfully, that of the adding AP support to Network
+> Manger. I haven't seen specific updates to the progress of that but I
+> do know some patches were indeed submitted to help with this effort.
+> Perhaps the student can elaborate more.
+> 
+Hi Luis,
 
-Running 50 of the example processes and powertop on 2.6.32.7, with the
-performance cpu governor:
+I didn't know that I was _the_only_one_ student who completed his
+project. My project goal was to add support for AP mode to
+NetworkManages with use of wpa_supplicant's newly developed AP mode.
+When the GSoC started, it turned out that adding AP mode to NM doesn't
+need too much effort or at least a lot less that I could put during
+three months of work. As the result, I focused on development of new
+DBus API for wpa_supplicant. We have designed it together with Dan
+Williams (he designed it with my little help, actually) and I
+implemented it. The new API is present in wpa_supplicant since 0.7.0
+development version and we are still working on it.
+I've implemented the new API support for NetworkManager, but Dan didn't
+apply it (yet). Since the API has changed lately, we will need alter
+NetworkManager too. I'm going to do this when the API will reach more or
+less stable state. AP mode for NetworkManager is dependent on new
+wpa_supplicnt DBus API, so the NM AP mode patches won't be applied
+before the new API support implementation patches. The NM changes won't
+land earlier then in 0.8.1 version for sure.
 
-Cn                Avg residency       P-states (frequencies)
-C0 (cpu running)        (24.7%)
-polling           0.0ms ( 0.0%)
-C1 mwait          0.3ms ( 0.0%)
-C3 mwait          0.8ms (75.3%)
+Some time ago johill asked me if I would be interested in hacking on
+adding WPS support to NetworkManager. Well, I would but I don't know
+when I'll find some time for that. I don't know how much of work would
+it require, but it possibly could be a topic of one of GSoC 2010
+projects. I have no idea know if anybody would be willing to be a mentor
+for such a project.
 
-
-Wakeups-from-idle per second : 980.1    interval: 10.0s
-no ACPI power usage estimate available
-
-Top causes for wakeups:
-  76.2% (45066.9)    worker_process : sys_epoll_wait (process_timeout) 
-  22.0% (13039.2)     <kernel core> : hrtimer_start_range_ns (tick_sched_timer) 
-   1.5% (892.7)            kipmi0 : schedule_timeout_interruptible (process_timeout) 
-   0.2% (105.0)     <kernel core> : add_timer (smi_timeout) 
-   0.0% ( 10.5)       <interrupt> : ata_piix 
-   0.0% ( 10.1)     <kernel core> : ipmi_timeout (ipmi_timeout) 
-
-
-I also tried booting with processor.max_cstate=0 which causes powertop
-to no longer show any cstate information but I assumed that would keep
-me fixed at C0.  Booting with processor.max_cstate=0 didn't seem to make
-any difference.
-
-Thanks,
-Shawn
+Regards,
+Witek.
