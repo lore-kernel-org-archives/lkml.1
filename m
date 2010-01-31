@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904Ab0AaCpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828Ab0AaD1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904Ab0AaCpz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 21:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450Ab0AaCpy
+	id S1751828Ab0AaD1s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 22:27:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694Ab0AaD1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 21:45:54 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:40050 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181Ab0AaCpx (ORCPT
+	Sat, 30 Jan 2010 22:27:47 -0500
+Received: from na3sys009aog102.obsmtp.com ([74.125.149.69]:51592 "HELO
+	na3sys009aog102.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751632Ab0AaD1q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 21:45:53 -0500
-Date: Sun, 31 Jan 2010 02:45:08 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jeff Garrett <jeff@jgarrett.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Myron Stowe <myron.stowe@hp.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with
-	pci=use_crs)
-Message-ID: <20100131024508.GA9334@srcf.ucam.org>
-References: <md-TZL3UUvL.A.FiE.xJMXLB@chimera> <201001271345.54454.bjorn.helgaas@hp.com> <alpine.LFD.2.00.1001271247450.3570@localhost.localdomain> <201001271403.41955.bjorn.helgaas@hp.com> <4B60CD99.7020305@kernel.org> <1264652762.24020.5.camel@dc7800.home>
+	Sat, 30 Jan 2010 22:27:46 -0500
+From: Michael Poole <mdpoole@troilus.org>
+To: Bastien Nocera <hadess@hadess.net>
+Cc: Marcel Holtmann <marcel@holtmann.org>, Jiri Kosina <jkosina@suse.cz>,
+       "Gunn\, Brian" <bgunn@solekai.com>, Ping <pinglinux@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       BlueZ development <linux-bluetooth@vger.kernel.org>
+Subject: Re: [PATCH 0/3] HID: make raw output callback more flexible
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>
+	<1264783166.29532.5302.camel@localhost.localdomain>
+	<87iqakifm8.fsf@troilus.org>
+	<1264860663.29532.7887.camel@localhost.localdomain>
+Date: Sat, 30 Jan 2010 22:27:42 -0500
+In-Reply-To: <1264860663.29532.7887.camel@localhost.localdomain> (Bastien
+	Nocera's message of "Sat, 30 Jan 2010 14:11:03 +0000")
+Message-ID: <87636jhs29.fsf@troilus.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1264652762.24020.5.camel@dc7800.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 27, 2010 at 09:26:02PM -0700, Bjorn Helgaas wrote:
+Bastien Nocera writes:
 
-> When ACPI is disabled, I think we just have to accept that we lose some
-> functionality.  I don't see the need for alternate ways to accomplish
-> everything that ACPI does.  It's becoming less and less useful to
-> disable ACPI; I think it's only interesting as a debugging tool, and
-> even then it's a sledgehammer.
+> On Fri, 2010-01-29 at 19:46 -0500, Michael Poole wrote:
+>> > [1]: Comments on the patch at
+>> > http://thread.gmane.org/gmane.linux.bluez.kernel/4279 would be
+>> > appreciated
+>> 
+>> This patch does not work for me.  Before, the first time after each
+>> boot
+>> that I tried to connect to an Apple Magic Mouse, it failed with -14
+>> (EFAULT).  With this patch, it fails with -22 (EINVAL) instead.  The
+>> -EFAULT *was* due to hidp_parse()'s copy_from_user().  I have not
+>> looked
+>> yet to see where the -EINVAL is coming from -- would that help?  (Both
+>> with and without your patch, the second attempt to connect works.) 
+>
+> I don't get -EFAULT anymore (it was failing to copy the rd_data from
+> user-space), but I do get -EINVALs now. I haven't investigated it
+> though. My guess is that the hid parser fails.
+>
+> Could you compare the sizes of the data gathered in user-space?
 
-I'd agree with this. The days where it was plausibly practical to boot 
-non-ACPI operating systems on hardware are clearly gone, and people who 
-are actually disabling ACPI in the field seem to be doing so in order to 
-avoid other bugs - and we're failing to fix those bugs as a result.
+It looks like something else is overwriting parts of the hidp_session
+structure; I hope to find out what that is tomorrow.  Based on a
+printk() in hidp_sock_ioctl(), user space consistently passes a 99-byte
+HID report descriptor.  I added another printk() to hidp_parse() to
+characterize things:
+  printk("hidp_parse(%p): %u@%p\n", hid, req->rd_size, req->rd_data);
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+With your patch, the first time I connect to the mouse:
+[  244.109619] hidp_parse(ffff880138f90000): 0@0000002800000000
+[  244.109694] magicmouse 0005:05AC:030D.0001: magicmouse hid parse
+  failed
+[  244.109708] magicmouse: probe of 0005:05AC:030D.0001 failed with
+  error -22
+
+With your patch, the second time:
+[  258.840542] hidp_parse(ffff880134e14000): 99@ffff88008fd8f880
+[  258.841415] input: Apple Wireless Mouse as
+  /devices/pci0000:00/0000:00:1d.2/usb8/8-1/8-1:1.0/bluetooth/hci0/hci0:12/input11
+
+Without your patch, the first time:
+[  157.569000] hidp_parse(ffff8801313cc000): 11859@ffffffff811397c0
+[  157.569018] magicmouse 0005:05AC:030D.0001: magicmouse hid parse
+  failed
+[  157.569031] magicmouse: probe of 0005:05AC:030D.0001 failed with
+  error -14
+
+Without your patch, the second time:
+[  178.983956] hidp_parse(ffff88012e660000): 99@00007f40d7d44880
+[  178.984977] input: Apple Wireless Mouse as
+  /devices/pci0000:00/0000:00:1d.2/usb8/8-1/8-1:1.0/bluetooth/hci0/hci0:12/input11
+
+Michael Poole
