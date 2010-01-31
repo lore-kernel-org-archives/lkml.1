@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237Ab0AaUNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336Ab0AaUOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237Ab0AaUNe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 15:13:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998Ab0AaUNd
+	id S1754336Ab0AaUOF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 15:14:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040Ab0AaUOD
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 15:13:33 -0500
-Received: from mail.bluewatersys.com ([202.124.120.130]:15367 "EHLO
-	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754049Ab0AaUNc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 15:13:32 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 Jan 2010 15:13:31 EST
-Message-ID: <4B65E330.3040000@bluewatersys.com>
-Date: Mon, 01 Feb 2010 09:08:16 +1300
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Remy Bohmer <linux@bohmer.net>
-CC: Harro Haan <hrhaan@gmail.com>, Andrew Victor <avictor.za@gmail.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       H Hartley Sweeten <hartleys@visionengravers.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch v2 1/2] at91_udc.c read_fifo timing issue
-References: <20100129162029.998540038@gmail.com>	 <20100129162155.709756286@gmail.com> <3efb10971001290904p74b1919aif8ff013f050123a9@mail.gmail.com>
-In-Reply-To: <3efb10971001290904p74b1919aif8ff013f050123a9@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 31 Jan 2010 15:14:03 -0500
+Received: from mail.perches.com ([173.55.12.10]:1673 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750915Ab0AaUOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 15:14:01 -0500
+Subject: Re: [PATCH 09/10] mm/slab.c: Fix continuation line formats
+From: Joe Perches <joe@perches.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org
+In-Reply-To: <1264968523.3536.1801.camel@calx>
+References: <cover.1264967493.git.joe@perches.com>
+	 <9d64ab1e1d69c750d53a398e09fe5da2437668c5.1264967500.git.joe@perches.com>
+	 <1264968523.3536.1801.camel@calx>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 31 Jan 2010 12:13:59 -0800
+Message-ID: <1264968839.25140.169.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remy Bohmer wrote:
-> Hi Harro,
+On Sun, 2010-01-31 at 14:08 -0600, Matt Mackall wrote:
+> On Sun, 2010-01-31 at 12:02 -0800, Joe Perches wrote:
+> > diff --git a/mm/slab.c b/mm/slab.c
+> > index 7451bda..9964619 100644
+> > --- a/mm/slab.c
+> > +++ b/mm/slab.c
+> > @@ -4228,8 +4228,8 @@ static int s_show(struct seq_file *m, void *p)
+> >  		unsigned long node_frees = cachep->node_frees;
+> >  		unsigned long overflows = cachep->node_overflow;
+> >  
+> > -		seq_printf(m, " : globalstat %7lu %6lu %5lu %4lu \
+> > -				%4lu %4lu %4lu %4lu %4lu", allocs, high, grown,
+> > +		seq_printf(m, " : globalstat %7lu %6lu %5lu %4lu 				%4lu %4lu %4lu %4lu %4lu",
+> > +				allocs, high, grown,
 > 
-> 2010/1/29 Harro Haan <hrhaan@gmail.com>:
->> This solves the read_fifo timing issue for example seen with CDC Ethernet.
->> See the comments below for more info.
->>
->> Signed-off-by: Harro Haan <hrhaan@gmail.com>
->> ---
->>  drivers/usb/gadget/at91_udc.c |   46 ++++++++++++++++++++++++++++++++++++++----
->>  1 file changed, 42 insertions(+), 4 deletions(-)
->>
-> Acked-by: Remy Bohmer <linux@bohmer.net>
+> Yuck. The right way to do this is by mergeable adjacent strings, eg:
+> 
+> printk("part 1..."
+>        " part 2...", ...);
 
-Can I get your Acked-by for my patch also Remy?
+Yuck indeed.
 
-Harro, I can either submit my patch to the patch system separately, or
-you can put it through with your series with my From/Signed-off-by tag
-on it.
+I think format strings shouldn't be split across multiple lines and
+the right thing to do is to use a single space instead of the tabs.
 
-~Ryan
 
--- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
 
-Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
-ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
-http://www.bluewatersys.com	New Zealand
-Phone: +64 3 3779127		Freecall: Australia 1800 148 751
-Fax:   +64 3 3779135			  USA 1800 261 2934
