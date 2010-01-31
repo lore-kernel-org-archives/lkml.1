@@ -1,71 +1,162 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754257Ab0AaXnE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 18:43:04 -0500
-Received: from mailhub2.otago.ac.nz ([139.80.64.247]:49353 "EHLO
-	mailhub2.otago.ac.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753759Ab0AaXnB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 18:43:01 -0500
-Cc: linux-kernel@vger.kernel.org, Zhiyi Huang <hzy@cs.otago.ac.nz>,
-       jkmair@cs.otago.ac.nz
-Message-Id: <AD1C7BB3-C3E6-47EC-809F-4CE3C049D92C@cs.otago.ac.nz>
-From: zhiyi <zhuang@cs.otago.ac.nz>
-To: Borislav Petkov <petkovbb@googlemail.com>
-In-Reply-To: <20100130171804.GA2348@liondog.tnic>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: nr_cpu_ids incorrect on AMD Quad-Core Opteron 8380
-Date: Mon, 1 Feb 2010 11:59:44 +1300
-References: <A1D71FDC-3176-4792-83ED-3ACAA3D61CFF@cs.otago.ac.nz> <20100130171804.GA2348@liondog.tnic>
-X-Mailer: Apple Mail (2.926)
+	id S1754896Ab0BAAxs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 19:53:48 -0500
+Received: from mga01.intel.com ([192.55.52.88]:12854 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754671Ab0BAAxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 19:53:46 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,379,1262592000"; 
+   d="scan'208";a="768870592"
+Date: Sun, 31 Jan 2010 22:31:42 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Chris Frost <frost@cs.ucla.edu>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steve Dickson <steved@redhat.com>, David Howells <dhowells@redhat.com>,
+       Xu Chenfeng <xcf@ustc.edu.cn>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Steve VanDeBogart <vandebo-lkml@nerdbox.net>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] mm/readahead.c: update the LRU positions of in-core
+	pages, too
+Message-ID: <20100131143142.GA11186@localhost>
+References: <20100120215536.GN27212@frostnet.net> <20100121054734.GC24236@localhost> <20100123040348.GC30844@frostnet.net> <20100123102222.GA6943@localhost> <20100125094228.f7ca1430.kamezawa.hiroyu@jp.fujitsu.com> <20100125024544.GA16462@localhost> <20100125223635.GC2822@frostnet.net> <20100126133217.GB25407@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Content-Disposition: inline
+In-Reply-To: <20100126133217.GB25407@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boris,
-Thanks for your answer.
-However, your answer doesn't fully resolve my puzzle.
-My module worked for a kernel 2.6.29 with CONFIG_NR_CPUS=64 on my dual  
-quad-core AMD Opteron. The value of nr_cpu_ids I got from the same  
-module was correct (8). It seems nr_cpu_ids has nothing to do with  
-CONFIG_NR_CPUS.
-Cheers,
-Zhiyi
+On Tue, Jan 26, 2010 at 09:32:17PM +0800, Wu Fengguang wrote:
+> On Mon, Jan 25, 2010 at 03:36:35PM -0700, Chris Frost wrote:
+> > I changed Wu's patch to add a PageLRU() guard that I believe is required
+> > and optimized zone lock acquisition to only unlock and lock at zone changes.
+> > This optimization seems to provide a 10-20% system time improvement for
+> > some of my GIMP benchmarks and no improvement for other benchmarks.
+> 
+> > +			del_page_from_lru_list(zone, page, lru);
+> > +			add_page_to_lru_list(zone, page, lru);
+> > +		}
+> > +		put_page(page);
 
-On 31/01/2010, at 6:18 AM, Borislav Petkov wrote:
+I feel very uncomfortable about this put_page() inside zone->lru_lock. 
+(might deadlock: put_page() conditionally takes zone->lru_lock again)
 
-> On Thu, Jan 28, 2010 at 12:16:44PM +1300, zhiyi wrote:
->> Hi,
->> I have just found the value of nr_cpu_ids is 32, instead of 16 on my
->> new Dell PowerEdge R905 which has 16 cpus (4 quad-core Opteron
->> 8380). However, /proc/cpuinfo displays the right number (16).
->> I have searched the archive but found no related subject.  Is there
->> any patch already available to fix the problem?
->> I am using 2.6.31-4 and verified this incorrect value (32) using a
->> module.
->
-> nr_cpu_ids is set to CONFIG_NR_CPUS on SMP kernels and denotes the max
-> CPUs supported by your kernel. This is not a bug but a configurable
-> option in the kernel for saving memory.
->
-> You can still set CONFIG_NR_CPUS in "-> Processor type and features"  
-> to
-> the max number of cores N you have on your machine if you want to save
-> approx 8*N KB. But guessing from your quadsocket configuration, memory
-> shouldn't be that scarce on that machine to go the trouble :).
->
-> -- 
-> Regards/Gruss,
->    Boris.
->
+If you really want the optimization, can we do it like this?
 
-=======================
-Zhiyi Huang
-Dept of Computer Science
-University of Otago
-Email: hzy@cs.otago.ac.nz
-Phone: 0064-3-4795680
-Fax: 0064-3-4798529
+Thanks,
+Fengguang
+---
+readahead: retain inactive lru pages to be accessed soon
+From: Chris Frost <frost@cs.ucla.edu>
 
+Ensure that cached pages in the inactive list are not prematurely evicted;
+move such pages to lru head when they are covered by
+- in-kernel heuristic readahead
+- an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
+
+Before this patch, pages already in core may be evicted before the
+pages covered by the same prefetch scan but that were not yet in core.
+Many small read requests may be forced on the disk because of this behavior.
+
+In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
+has no effect on the page's location in the LRU list, even if it is the
+next victim on the inactive list.
+
+This change helps address the performance problems we encountered
+while modifying SQLite and the GIMP to use large file prefetching.
+Overall these prefetching techniques improved the runtime of large
+benchmarks by 10-17x for these applications. More in the publication
+_Reducing Seek Overhead with Application-Directed Prefetching_ in
+USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
+
+Signed-off-by: Chris Frost <frost@cs.ucla.edu>
+Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/readahead.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
+
+--- linux.orig/mm/readahead.c	2010-01-31 21:39:24.000000000 +0800
++++ linux/mm/readahead.c	2010-01-31 22:20:24.000000000 +0800
+@@ -9,7 +9,9 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
++#include <linux/memcontrol.h>
+ #include <linux/mm.h>
++#include <linux/mm_inline.h>
+ #include <linux/module.h>
+ #include <linux/blkdev.h>
+ #include <linux/backing-dev.h>
+@@ -133,6 +135,48 @@ out:
+ }
+ 
+ /*
++ * The file range is expected to be accessed in near future.  Move pages
++ * (possibly in inactive lru tail) to lru head, so that they are retained
++ * in memory for some reasonable time.
++ */
++static void retain_inactive_pages(struct address_space *mapping,
++				  pgoff_t index, int len)
++{
++	struct page *grabbed_page;
++	struct page *page;
++	struct zone *zone;
++	int i;
++
++	for (i = 0; i < len; i++) {
++		grabbed_page = page = find_get_page(mapping, index + i);
++		if (!page)
++			continue;
++
++		zone = page_zone(page);
++		spin_lock_irq(&zone->lru_lock);
++		if (PageLRU(page) &&
++		    !PageActive(page) &&
++		    !PageUnevictable(page)) {
++			int lru = page_lru_base_type(page);
++
++			for (; i < len; i++) {
++				struct page *p = page;
++
++				if (page->mapping != mapping ||
++				    page->index != index + i)
++					break;
++				page = list_to_page(&page->lru);
++				del_page_from_lru_list(zone, p, lru);
++				add_page_to_lru_list(zone, p, lru);
++			}
++		}
++		spin_unlock_irq(&zone->lru_lock);
++		page_cache_release(grabbed_page);
++		cond_resched();
++	}
++}
++
++/*
+  * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
+  * the pages first, then submits them all for I/O. This avoids the very bad
+  * behaviour which would occur if page allocations are causing VM writeback.
+@@ -184,6 +228,14 @@ __do_page_cache_readahead(struct address
+ 	}
+ 
+ 	/*
++	 * Normally readahead will auto stop on cached segments, so we won't
++	 * hit many cached pages. If it does happen, bring the inactive pages
++	 * adjecent to the newly prefetched ones(if any).
++	 */
++	if (ret < nr_to_read)
++		retain_inactive_pages(mapping, offset, page_idx);
++
++	/*
+ 	 * Now start the IO.  We ignore I/O errors - if the page is not
+ 	 * uptodate then the caller will launch readpage again, and
+ 	 * will then handle the error.
