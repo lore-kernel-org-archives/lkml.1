@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428Ab0AaTa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589Ab0AaTcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428Ab0AaTa7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 14:30:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216Ab0AaTa6
+	id S1753589Ab0AaTcu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 14:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216Ab0AaTcu
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 14:30:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38104 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752148Ab0AaTa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 14:30:58 -0500
-Date: Sun, 31 Jan 2010 20:29:21 +0100 (CET)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Dan Nicholson <dbn.lists@gmail.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jerome Glisse <jglisse@redhat.com>,
-       Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>,
-       dri-devel <dri-devel@lists.sf.net>,
-       Alex Deucher <alexdeucher@gmail.com>,
-       Kevin Winchester <kjwinchester@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: =?ISO-8859-7?Q?Re=3A_=5BPATCH=5D_radeon=5Fagp=3A_Fix_warning=2C_format_=A1%d=A2_expects_type_=A1int=A2=2C_but_argument_4_has_type_=A1size=5Ft=A2?=
-In-Reply-To: <91705d081001311102m63cb3edfib8df864ca580e736@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1001312028130.17637@localhost.localdomain>
-References: <1264884670-28211-1-git-send-email-jkacur@redhat.com>  <1264884670-28211-2-git-send-email-jkacur@redhat.com> <91705d081001311102m63cb3edfib8df864ca580e736@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 31 Jan 2010 14:32:50 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:13618 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932106Ab0AaTcr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 14:32:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=N2/dixeBhw2T/LiM3VWECRPpDAZCYeWYxpZPo4LEMj0dcORScvOoKVT69w1w59yT3r
+         KgPMpeSEJ9cBaxFivNjrIYXVTnmz0cIJ0LubzgDZ6dAQ+RlplOF8lZ7drlvx3tvzz6sz
+         R4H00VaDABxKpKjBnmCHxk2j0TqIhOlNPvr9k=
+Date: Sun, 31 Jan 2010 20:32:44 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       "K. Prasad" <prasad@linux.vnet.ibm.com>,
+       Maneesh Soni <maneesh@in.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin <schwidefsky@de.ibm.com>
+Subject: Re: [patch] HWBKPT: Make bp_len type to u64 generic across the arch
+Message-ID: <20100131193242.GC5224@nowhere>
+References: <20100130045424.625452081@mars.in.ibm.com> <20100130045518.GA20776@in.ibm.com> <20100130183835.GA5675@nowhere> <4B653D32.1040703@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-145763144-1264966167=:17637"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B653D32.1040703@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sun, Jan 31, 2010 at 01:50:02PM +0530, Mahesh Jagannath Salgaonkar wrote:
+> On 01/31/2010 12:08 AM, Frederic Weisbecker wrote:
+>> On Sat, Jan 30, 2010 at 10:25:18AM +0530, Mahesh Salgaonkar wrote:
+>>>
+>>> Change 'bp_len' type to __u64 to make it work across the arch.
+>>> The s390 architecture watch point length can be upto 2^64.
+>>>
+>>> reference:
+>>> 	http://lkml.org/lkml/2010/1/25/212
+>>>
+>>> Based on commit 6aa41f8b01301199af6c9febb24f3c1f5a0bc9d5
+>>>
+>>> Signed-off-by: Mahesh Salgaonkar<mahesh@linux.vnet.ibm.com>
+>>> ---
+>>>
+>>>   include/linux/hw_breakpoint.h |    2 +-
+>>>   include/linux/perf_event.h    |    6 ++----
+>>>   kernel/hw_breakpoint.c        |    2 +-
+>>>   kernel/perf_event.c           |    2 +-
+>>>   4 files changed, 5 insertions(+), 7 deletions(-)
+>>>
+>>>
+>>> diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+>>> index 41235c9..76e7427 100644
+>>> --- a/include/linux/hw_breakpoint.h
+>>> +++ b/include/linux/hw_breakpoint.h
+>>> @@ -44,7 +44,7 @@ static inline int hw_breakpoint_type(struct perf_event *bp)
+>>>   	return bp->attr.bp_type;
+>>>   }
+>>>
+>>> -static inline int hw_breakpoint_len(struct perf_event *bp)
+>>> +static inline unsigned long hw_breakpoint_len(struct perf_event *bp)
+>>>   {
+>>>   	return bp->attr.bp_len;
+>>>   }
+>>
+>>
+>>
+>> This should return a u64, or gcc will warn us about loosing
+>> informations in 32 bits arch?
+>>
+> Yup, I even thought so, but then I figured out the function  
+> 'hw_breakpoint_addr()' also has same return type for returning  
+> 'attr.bp_addr' and kept the same type to be consistent. We may have to  
+> fix that also. What do you think?
 
---8323328-145763144-1264966167=:17637
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 
+True. I'll fix both then, thanks!
 
-
-On Sun, 31 Jan 2010, Dan Nicholson wrote:
-
-> On Sat, Jan 30, 2010 at 12:51 PM, John Kacur <jkacur@redhat.com> wrote:
-> > Fix warning by using %zu instead of %d for size_t
-> >
-> > Signed-off-by: John Kacur <jkacur@redhat.com>
-> > ---
-> >  drivers/gpu/drm/radeon/radeon_agp.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/drivers/gpu/drm/radeon/radeon_agp.c b/drivers/gpu/drm/radeon/radeon_agp.c
-> > index c9ad7f5..1c4e523 100644
-> > --- a/drivers/gpu/drm/radeon/radeon_agp.c
-> > +++ b/drivers/gpu/drm/radeon/radeon_agp.c
-> > @@ -134,7 +134,7 @@ int radeon_agp_init(struct radeon_device *rdev)
-> >        int ret;
-> >
-> >        if (rdev->ddev->agp->agp_info.aper_size < 32) {
-> > -               dev_warn(rdev->dev, "AGP aperture to small (%dM) "
-> > +               dev_warn(rdev->dev, "AGP aperture to small (%zuM) "
-> 
-> As long as you're fixing this line, you might want to correct the
-> grammar s/to/too/.
-
-Thanks, I saw that too, after I sent. Unfortunately, I have to respin both 
-patches, because there is a merge conflict after fixing the 
-grammar/spelling mistake.
-
-Both patches coming up, in a separate mail.
-
-John
---8323328-145763144-1264966167=:17637--
