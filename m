@@ -1,95 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388Ab0AaPlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835Ab0AaPmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388Ab0AaPlx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 10:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136Ab0AaPlw
+	id S1753835Ab0AaPmZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 10:42:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699Ab0AaPmX
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 10:41:52 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:52410 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752744Ab0AaPlw (ORCPT
+	Sun, 31 Jan 2010 10:42:23 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:49062 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753673Ab0AaPmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 10:41:52 -0500
-Date: Sun, 31 Jan 2010 10:41:35 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       jmoskovc@redhat.com, mingo@redhat.com, drbd-dev@lists.linbit.com,
-       benh@kernel.crashing.org, t.sailer@alumni.ethz.ch, abelay@mit.edu,
-       gregkh@suse.de, spock@gentoo.org, viro@zeniv.linux.org.uk,
-       neilb@suse.de, mfasheh@suse.com, menage@google.com,
-       shemminger@linux-foundation.org, takedakn@nttdata.co.jp
-Subject: Re: [PATCH 1/2] exec: allow core_pipe recursion check to look for a
- value of 1 rather than 0 (v2)
-Message-ID: <20100131154135.GA1950@localhost.localdomain>
-References: <20100121200806.GA29801@shamino.rdu.redhat.com>
- <20100129151024.GA19249@hmsreliant.think-freely.org>
- <20100129151351.GB19249@hmsreliant.think-freely.org>
- <20100131144606.GA13402@redhat.com>
+	Sun, 31 Jan 2010 10:42:22 -0500
+Message-ID: <4B65A4D9.5010301@panasas.com>
+Date: Sun, 31 Jan 2010 17:42:17 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100131144606.GA13402@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-Spam-Score: -4.1 (----)
+To: Neil Brown <neilb@suse.de>
+CC: =?UTF-8?B?IkluZy4gRGFuaWVsIFJvenNuecOzIg==?= <daniel@rozsnyo.com>,
+       Milan Broz <mbroz@redhat.com>, Marti Raudsepp <marti@juffo.org>,
+       linux-kernel@vger.kernel.org,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: bio too big - in nested raid setup
+References: <4B5C963D.8040802@rozsnyo.com>	<5ec358371001250725l40b13060md880001c96be165f@mail.gmail.com>	<4B5DE2A9.4030500@redhat.com>	<20100128132812.2d01f211@notabene>	<4B6157DB.6080502@rozsnyo.com>	<20100128215015.0e0ed3a8@notabene>	<4B617E03.1050403@panasas.com> <20100129091457.0088c4af@notabene>
+In-Reply-To: <20100129091457.0088c4af@notabene>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Jan 2010 15:42:19.0865 (UTC) FILETIME=[F9353C90:01CAA28B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 31, 2010 at 03:46:06PM +0100, Oleg Nesterov wrote:
-> On 01/29, Neil Horman wrote:
-> >
-> > Add init function to usermodehelper
-> >
-> > Convert call_usermodehelper_cleanup to usermodehelper_fns and allow it to assign
-> > both an init function and a cleanup function.
+On 01/29/2010 12:14 AM, Neil Brown wrote:
+> On Thu, 28 Jan 2010 14:07:31 +0200
+> Boaz Harrosh <bharrosh@panasas.com> wrote:
 > 
-> Can't apply this patch, I guess -mm tree has other changes which
-> this patch depends on. However afaics this series is fine, just
-> a couple of nits.
-> 
-Yeah, this will only apply to latest -mm
+>> On 01/28/2010 12:50 PM, Neil Brown wrote:
+>>>
 
-> > @@ -154,7 +155,9 @@ struct subprocess_info {
-> >  	enum umh_wait wait;
-> >  	int retval;
-> >  	struct file *stdin;
-> > -	void (*cleanup)(char **argv, char **envp);
-> > +	int (*init)(void *data);
-> > +	void (*cleanup)(char **argv, char **envp, void *data);
-> > +	void *data;
-> 
-> OK, we add *data. But why this patch changes the prototype of ->cleanup() ?
-> OTOH, I completely agree, it should be changed, and it should lose the
-> ugly argv/envp arguments.
-> 
-> Since we add subprocess_info->data ptr, I think both ->init and ->cleanup
-> funcs should have the single arg, "subprocess_info *info". argv, envp, data
-> they all can be accessed via *info.
-> 
-Yeah, I can do that.
+I'm totally theoretical on this. So feel free to ignore me, if it gets
+boring.
 
-> Also. It is not clear why this patch changes call_usermodehelper_setup()
-> to set info->data. Unless the caller uses call_usermodehelper_setinit()
-> or call_usermodehelper_setcleanup() info->data is not used. Perhaps
-> it is better to have a single helper which takes (init, cleanup, data)
-> args.
+>>> Both raid0 and linear register a 'bvec_mergeable' function (or whatever it is
+>>> called today).
+>>> This allows for the fact that these devices have restrictions that cannot be
+>>> expressed simply with request sizes.  In particular they only handle requests
+>>> that don't cross a chunk boundary.
+>>>
+>>> As raid1 never calls the bvec_mergeable function of it's components (it would
+>>> be very hard to get that to work reliably, maybe impossible), it treats any
+>>> device with a bvec_mergeable function as though the max_sectors were one page.
+>>> This is because the interface guarantees that a one page request will always
+>>> be handled.
+>>>
+>>
+>> I'm also guilty of doing some mirror work, in exofs, over osd objects.
+>>
+>> I was thinking about that reliability problem with mirrors, also related
+>> to that infamous problem of coping the mirrored buffers so they do not
+>> change while writing at the page cache level.
 > 
-> What do you think?
+> So this is a totally new topic, right?
 > 
-Yeah, that seems reasonable, Honestly, I'm a bit confused as to why there are
-set* helpers in the first place, we could just eliminate them entirely, since
-callers can set all three independently with call_usermodehelper_fns.  Anywho,
-I'll clean that up some more.
- 
-> In any case, I believe you should fix the subjects ;)
-> 
-Not sure whats wrong with the subjects, although I guess I am doing a good bit
-more than just fixing that at this point :).  I'll expand them.
 
-Give me a few days, and I'll repost.
-Neil
+Not new, I'm talking about that (no) guaranty of page not changing while in
+flight, as you mention below. Which is why we need to copy the to-be-mirrored
+page.
 
-> Oleg.
+>>
+>> So what if we don't fight it? what if we just keep a journal of the mirror
+>> unbalanced state and do not page_uptodate until the mirror is finally balanced.
+>> Only then pages can be dropped from the cache, and journal cleared.
 > 
+> I cannot see what you are suggesting, but it seems like a layering violation.
+> The block device level cannot see anything about whether the page is up to
+> date or not.  The page it has may not even be in the page cache.
 > 
+
+It is certainly a layering violation today, but theoretically speaking ,it does
+not have to be. An abstract API can be made so block devices notify when page's
+IO is done, at this point VFS can decide if it must resubmit do to page changing
+while IO or the IO is actually valid at this point.
+
+> The only thing that the block device can do is make a copy of the page and
+> write that out twice.
+> 
+
+That is the copy I was referring to.
+
+> If we could have a flag which the filesystem can send to say "I promise not
+> to change this page until the IO completes", then that copy could be
+> optimised away in lots of common cases.
+> 
+
+What I meant is: What if we only have that knowledge at end of IO, So we can decide
+at that point if the page is up-to-date and is allowed to be evicted from cache.
+It's the same as if we have a crash/power-failure while IO, surely the mirrors are
+not balanced, and each device's file content cannot be determained some of the
+last written buffer is old, some new, and some undefined. That is the roll of the
+file-system to keep a journal and decide what data can be guaranteed and what
+data must be reverted to a last known good state. Now what I'm wondering is what
+if we prolong this window to until we know the mirrors match. The window for disaster
+is wider, but should never matter in normal use. Most setups could tolerate the
+bad statistics, and could use the extra bandwidth.
+
+> 
+>>
+>> (Balanced-mirror-page is when a page has participated in an IO to all devices
+>>  without being marked dirty from the get-go to the completion of IO)
+>>
+> 
+> Block device cannot see the 'dirty' flag.
+> 
+
+Right, but is there some additional information a block device should communicate
+to the FS so it can make a decision?
+
+> 
+>> I think Trond's last work with adding that un_updated-but-committed state to
+>> pages can facilitate in doing that, though I do understand that it is a major
+>> conceptual change to the the VFS-BLOCKS relationship in letting the block devices
+>> participate in the pages state machine (And md keeping a journal). Sigh
+>>
+>> ??
+>> Boaz
+> 
+> NeilBrown
+
+Thanks
+Boaz
