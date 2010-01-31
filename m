@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015Ab0AaTiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949Ab0AaTo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015Ab0AaTiW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 14:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324Ab0AaTiU
+	id S1753949Ab0AaTo7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 14:44:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022Ab0AaTo6
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 14:38:20 -0500
-Received: from mail-qy0-f188.google.com ([209.85.221.188]:52127 "EHLO
-	mail-qy0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753907Ab0AaTiT (ORCPT
+	Sun, 31 Jan 2010 14:44:58 -0500
+Received: from mail-pz0-f172.google.com ([209.85.222.172]:56979 "EHLO
+	mail-pz0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915Ab0AaTo6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 14:38:19 -0500
+	Sun, 31 Jan 2010 14:44:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=HEpVz8msxbtdSx3m0bj5/szPMhFNntoro7vBOZc70K82S8dfaA2dlhKf6rJxtd4fNO
-         nM5sL7MD59yxJDSIa1AWPw7wA+6VckpAhPH7UVLod7D20cBSJeavgQmlUb4yL1W1uU+y
-         5+EombKkfgbTDsZRd+sHtOvumuL4VpEdf9t+M=
-From: John Kacur <jkacur@redhat.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Dan Nicholson <dbn.lists@gmail.com>, Dave Airlie <airlied@linux.ie>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jerome Glisse <jglisse@redhat.com>,
-       Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>,
-       dri-devel <dri-devel@lists.sf.net>,
-       Alex Deucher <alexdeucher@gmail.com>,
-       Kevin Winchester <kjwinchester@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, John Kacur <jkacur@redhat.com>
-Subject: [PATCH 2/2] radeon_agp: Move the check of the aper_size after drm_acp_acquire and drm_agp_info
-Date: Sun, 31 Jan 2010 20:38:03 +0100
-Message-Id: <1264966683-17992-3-git-send-email-jkacur@redhat.com>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1264966683-17992-1-git-send-email-jkacur@redhat.com>
-References: <1264966683-17992-1-git-send-email-jkacur@redhat.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=LY5NQJLqarawhtlJQ5o9f0KHw4dWprtw4bcYR84xH1f0DXdbk+Z3yvhWJ1CQHuvBnF
+         PFP0LMbxDoqB+g0LG6621J9Yi0NoTWnQndxwaxALSjN7yEGB+JBkKs2chqQKqEzaKtI2
+         1Ikk0TB9u5efvr6qaxJ/ry/Nxnjqq5FzaLOzo=
+MIME-Version: 1.0
+In-Reply-To: <4B65A76D.3080508@mandriva.org>
+References: <5d75f4611001310715o55674116n436e13e3a5437fc4@mail.gmail.com>
+	 <4B65A76D.3080508@mandriva.org>
+Date: Mon, 1 Feb 2010 02:44:57 +0700
+Message-ID: <5d75f4611001311144q7146ee4axb841bc73d6185c40@mail.gmail.com>
+Subject: Re: kernel BUG at fs/dcache.c:670!
+From: BuraphaLinux Server <buraphalinuxserver@gmail.com>
+To: Thomas Backlund <tmb@mandriva.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First call drm_agp_acquire to check if agp has been acquired.
-Second call drm_agp_info to fill in the info data struct, including aper_size.
-Finally do the check to see if the aper_size makes sense.
+Thank you! The patch fixed the problem for me.  I hope it is included
+in 2.6.32.X soon.
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- drivers/gpu/drm/radeon/radeon_agp.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/gpu/drm/radeon/radeon_agp.c b/drivers/gpu/drm/radeon/radeon_agp.c
-index f58c5f4..b634d98 100644
---- a/drivers/gpu/drm/radeon/radeon_agp.c
-+++ b/drivers/gpu/drm/radeon/radeon_agp.c
-@@ -133,13 +133,6 @@ int radeon_agp_init(struct radeon_device *rdev)
- 	bool is_v3;
- 	int ret;
- 
--	if (rdev->ddev->agp->agp_info.aper_size < 32) {
--		dev_warn(rdev->dev, "AGP aperture too small (%zuM) "
--			"need at least 32M, disabling AGP\n",
--			rdev->ddev->agp->agp_info.aper_size);
--		return -EINVAL;
--	}
--
- 	/* Acquire AGP. */
- 	if (!rdev->ddev->agp->acquired) {
- 		ret = drm_agp_acquire(rdev->ddev);
-@@ -154,6 +147,14 @@ int radeon_agp_init(struct radeon_device *rdev)
- 		DRM_ERROR("Unable to get AGP info: %d\n", ret);
- 		return ret;
- 	}
-+
-+	if (rdev->ddev->agp->agp_info.aper_size < 32) {
-+		dev_warn(rdev->dev, "AGP aperture too small (%zuM) "
-+			"need at least 32M, disabling AGP\n",
-+			rdev->ddev->agp->agp_info.aper_size);
-+		return -EINVAL;
-+	}
-+
- 	mode.mode = info.mode;
- 	agp_status = (RREG32(RADEON_AGP_STATUS) | RADEON_AGPv3_MODE) & mode.mode;
- 	is_v3 = !!(agp_status & RADEON_AGPv3_MODE);
--- 
-1.6.0.6
-
+On 1/31/10, Thomas Backlund <tmb@mandriva.org> wrote:
+> 31.01.2010 17:15, BuraphaLinux Server skrev:
+>> Hello list,
+>>
+>> Is this really a kernel problem, or did I do something stupid?  This
+>> is an x86_64 kernel but a 32bit userland.
+>>
+>
+> you need the patch referenced here:
+>
+> http://lkml.org/lkml/2010/1/28/292
+>
+> --
+> Thomas
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
