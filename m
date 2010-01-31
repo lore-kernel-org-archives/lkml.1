@@ -1,110 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280Ab0AaQCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388Ab0AaQZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753280Ab0AaQCU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 11:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655Ab0AaQCT
+	id S1753388Ab0AaQZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 11:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067Ab0AaQZZ
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 11:02:19 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:42666 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214Ab0AaQCS (ORCPT
+	Sun, 31 Jan 2010 11:25:25 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:50072 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753026Ab0AaQZZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 11:02:18 -0500
-Date: Sun, 31 Jan 2010 17:02:13 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>,
-       Michal Marek <mmarek@suse.cz>
-Cc: Greg KH <greg@kroah.com>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Sean MacLennan <smaclennan@pikatech.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] platform_driver_register: warn if probe is in
-	.init.text
-Message-ID: <20100131160213.GA14896@merkur.ravnborg.org>
-References: <20100122173846.GA11057@suse.de> <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de> <87y6jnw6qa.fsf@devron.myhome.or.jp> <20100126084741.GC20792@pengutronix.de> <20100128011403.GB24068@kroah.com> <20100130204425.GA16345@pengutronix.de>
+	Sun, 31 Jan 2010 11:25:25 -0500
+X-Trace: 333872824/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.93.110/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.93.110
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlcBAD89ZUtPRV1u/2dsb2JhbAAI1j6ERQQ
+X-IronPort-AV: E=Sophos;i="4.49,378,1262563200"; 
+   d="scan'208";a="333872824"
+Date: Sun, 31 Jan 2010 16:25:22 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Tony Perkins <da.perk@gmail.com>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org
+Subject: Re: Bug in find_vma_prev - mmap.c
+In-Reply-To: <201001301929.47659.rjw@sisk.pl>
+Message-ID: <alpine.LSU.2.00.1001311616590.5897@sister.anvils>
+References: <6cafb0f01001291657q4ccbee86rce3143a4be7a1433@mail.gmail.com> <201001301929.47659.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100130204425.GA16345@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 30, 2010 at 09:44:25PM +0100, Uwe Kleine-K?nig wrote:
-> Hello,
+On Sat, 30 Jan 2010, Rafael J. Wysocki wrote:
+
+> [Adding CCs]
 > 
-> On Wed, Jan 27, 2010 at 05:14:03PM -0800, Greg KH wrote:
-> > On Tue, Jan 26, 2010 at 09:47:41AM +0100, Uwe Kleine-König wrote:
-> > > On Mon, Jan 25, 2010 at 06:09:01AM +0900, OGAWA Hirofumi wrote:
-> > > > Uwe Kleine-König <u.kleine-koenig@pengutronix.de> writes:
-> > > > > +int platform_driver_register(struct platform_driver *drv)
-> > > > > +{
-> > > > > +	int ret = __platform_driver_register(drv);
-> > > > > +
-> > > > > +#if defined(CONFIG_HOTPLUG)
-> > > > > +	/*
-> > > > > +	 * drivers that are registered by platform_driver_register
-> > > > > +	 * should not have their probe function in .init.text.  The
-> > > > > +	 * reason is that a probe can happen after .init.text is
-> > > > > +	 * discarded which then results in an oops.  The alternatives
-> > > > > +	 * are using .devinit.text for the probe function or "register"
-> > > > > +	 * with platform_driver_probe.
-> > > > > +	 */
-> > > > > +	if (drv->probe && kernel_init_text_address((unsigned long)drv->probe))
-> > > > > +		pr_warning("oops-warning: probe function of platform driver %s"
-> > > > > +			       " lives in .init.text\n", drv->driver.name);
-> > > > > +#else
-> > > > > +	/*
-> > > > > +	 * without HOTPLUG probe functions can be discarded after the driver is
-> > > > > +	 * loaded.
-> > > > > +	 * There is a little chance for false positives, namely if the driver is
-> > > > > +	 * registered after the .init sections are discarded.
-> > > > > +	 */
-> > > > > +	if (drv->probe && !kernel_init_text_address((unsigned long)drv->probe))
-> > > > > +		pr_info("probably the probe function of platform driver %s can"
-> > > > > +				" be moved to .init.text\n", drv->driver.name);
-> > > > > +#endif
-> > > > > +	return ret;
-> > > > > +}
-> > > > 
-> > > > Um..., can't we extend modpost or such one for this? I think the static
-> > > > analysis is better (assume the changing ->probe dynamically is really
-> > > > rare).
-> > > I like the idea and will look later into modpost if this can be done
-> > > there.
+> On Saturday 30 January 2010, Tony Perkins wrote:
+> > This code returns vma (mm->mmap) if it sees that addr is lower than first VMA.
+> > However, I think it falsely returns vma (mm->mmap) on the case where
+> > addr is in the first VMA.
 > > 
-> > That would be nice to do instead, as we already do checks like this
-> > today, and might make more sense.
+> > If it is the first VMA region:
+> > - *pprev should be set to NULL
+> > - implying prev is NULL
+> > - and should therefore return vma (so in this case, I just added if
+> > it's the first VMA and it's within range)
 > > 
-> > And could you do it for all probe functions, and not just the platform
-> > devices?  Don't all busses have this same problem?
-> I think so, yes.  And I made some changes to modpost to detect those.
-> Tested on two defconfigs (ARCH=arm) it yields three hits, all valid.
+> > /* Same as find_vma, but also return a pointer to the previous VMA in *pprev. */
+> > struct vm_area_struct *
+> > find_vma_prev(struct mm_struct *mm, unsigned long addr,
+> >             struct vm_area_struct **pprev)
+> > {
+> >     struct vm_area_struct *vma = NULL, *prev = NULL;
+> >     struct rb_node *rb_node;
+> >     if (!mm)
+> >         goto out;
+> > 
+> >     /* Guard against addr being lower than the first VMA */
+> >     vma = mm->mmap;
+> > 
+> >     /* Go through the RB tree quickly. */
+> >     rb_node = mm->mm_rb.rb_node;
+> > 
+> >     while (rb_node) {
+> >         struct vm_area_struct *vma_tmp;
+> >         vma_tmp = rb_entry(rb_node, struct vm_area_struct, vm_rb);
+> > 
+> >         if (addr < vma_tmp->vm_end) {
+> >             // TONY: if (vma_tmp->vm_start <= addr) vma = vma_tmp; //
+> > this returns the correct 'vma' when vma is the first node (i.e., no
+> > prev)
+> >             rb_node = rb_node->rb_left;
+> >         } else {
+> >             prev = vma_tmp;
+> >             if (!prev->vm_next || (addr < prev->vm_next->vm_end))
+> >                 break;
+> >             rb_node = rb_node->rb_right;
+> >         }
+> >     }
+> > 
+> > out:
+> >     *pprev = prev;
+> >     return prev ? prev->vm_next : vma;
+> > }
+> > 
+> > Is this a known issue and/or has this problem been addressed?
+> > Also, please CC my email address with responses.
 > 
-> I send the series as reply to this mail or you can get it via git, see
-> below.
-> 
-> The first six patches should not change behaviour, only do some cleanup
-> and preparation for the last patch.
-> 
-> The most interesting patch is "make symbol white list a per mismatch
-> type variable".  It allows a white list per section mismatch type and
-> so allows to say:
-> 
-> 	*driver (in .data) might reference to .devinit.text but not
-> 	.init.text
-> 
-> That's what the last patch does.
+> Well, I guess you should let the mm people know (CCs added).
 
-Michael is handling kbuild stuff now and that may include modpost stuff.
-So added Michael - then you guys can decide way forward.
+Sorry, I don't see what the problem is: I may be misunderstanding.
+Why do you think it is wrong to return the vma which addr is in
+(whether or not that's the first vma)?
 
-The modpost patches looks OK at a quick view.
-You can consider adding:
+find_vma_prev() is supposed to return the same vma as find_vma()
+does, but additionally fill in *pprev.  And find_vma() is supposed
+to return the vma containing or the next vma above the addr supplied.
 
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-
-	Sam
+Hugh
