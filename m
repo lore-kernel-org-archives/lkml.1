@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333Ab0AaAFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477Ab0AaAK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333Ab0AaAFY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 30 Jan 2010 19:05:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797Ab0AaAFX
+	id S1753477Ab0AaAK0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 30 Jan 2010 19:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006Ab0AaAKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 30 Jan 2010 19:05:23 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:43505 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752131Ab0AaAFX (ORCPT
+	Sat, 30 Jan 2010 19:10:25 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36311 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229Ab0AaAKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 30 Jan 2010 19:05:23 -0500
-Subject: Re: [PATCH] x86: add Dell OptiPlex 760 reboot quirk
-From: Leann Ogasawara <leann.ogasawara@canonical.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, x86@kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B60DA05.8020509@zytor.com>
-References: <1264634958.27335.1091.camel@emiko> <4B60DA05.8020509@zytor.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 30 Jan 2010 16:04:10 -0800
-Message-ID: <1264896250.20786.23.camel@emiko>
+	Sat, 30 Jan 2010 19:10:25 -0500
+Date: Sat, 30 Jan 2010 16:11:14 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Shawn Bohrer <shawn.bohrer@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: High scheduler wake up times
+Message-ID: <20100130161114.07278221@infradead.org>
+In-Reply-To: <20100130234551.GA27390@mediacenter.gateway.2wire.net>
+References: <20100130234551.GA27390@mediacenter.gateway.2wire.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-27 at 16:27 -0800, H. Peter Anvin wrote:
-> On 01/27/2010 03:29 PM, Leann Ogasawara wrote:
-> > Hi All,
-> > 
-> > A bug reporter noted their Dell OptiPlex 760 hangs on reboot unless
-> > reboot=bios is specified.  They have confirmed the following reboot
-> > quirk resolves the issue.  Please consider applying for 2.6.33.
-> > 
+On Sat, 30 Jan 2010 17:45:51 -0600
+Shawn Bohrer <shawn.bohrer@gmail.com> wrote:
+
+> Hello,
 > 
-> Could we find out if reboot=acpi works on this machine?
+> Currently we have a workload that depends on around 50 processes that
+> wake up 1000 times a second do a small amount of work and go back to
+> sleep.  This works great on RHEL 5 (2.6.18-164.6.1.el5), but on recent
+> kernels we are unable to achieve 1000 iterations per second.  Using
+> the simple test application below on RHEL 5 2.6.18-164.6.1.el5 I can
+> run 500 of these processes on and still achieve 999.99 iterations per
+> second.  Running just 10 of these processes on the same machine with
+> 2.6.32.6 produces results like:
+> ]
 
-https://bugs.edge.launchpad.net/ubuntu/+source/linux/+bug/488319/comments/13
+there's an issue with your expectation btw.
+what your application does, in practice is
 
->From the bug reporter:
+<wait 1 millisecond>
+<do a bunch of work>
+<wait 1 millisecond>
+<do a bunch of work>
+etc
 
-"It seems that reboot=acpi does not work.
+you would only be able to get close to 1000 per second if "bunch of
+work" is nothing.....but it isn't.
+so lets assume "bunch of work" is 100 microseconds.. the basic period
+of your program (ignoring any costs/overhead in the implementation) 
+is 1.1 milliseconds, which is approximately 909 per second, not 1000!
 
-I installed 2.6.33-rc6 (from today) and rebooted successfully 4 times
-after booting with reboot=bios, like before. I then changed the boot
-parameter to reboot=acpi. After booting with this the first time, the
-computer came back up successfully after a reboot. The next time,
-however, the computer didn't come back up.
+I suspect that the 1000 you get on RHEL5 is a bug in the RHEL5 kernel
+where it gives you a shorter delay than what you asked for; since it's
+clearly not a correct number to get.
 
-Since I have moved to Norway and the two affected computers are located
-in Canada I had to do this via ssh and playing with /etc/default/grub
-and update-grub. I can't hit the power button or verify that it wasn't
-something else that went wrong. I hope this testing is sufficient. If
-necessary, I can try without any reboot option with 2.6.33-rc6 once
-someone comes to work after the weekend and gives it a power cycle."
+(and yes, older kernels had such rounding bugs, current kernels go
+through great length to give applications *exactly* the delay they are
+asking for....)
 
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
