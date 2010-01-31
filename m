@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164Ab0AaJGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752485Ab0AaJKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752164Ab0AaJGm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 04:06:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739Ab0AaJGl
+	id S1752485Ab0AaJKr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 04:10:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907Ab0AaJKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Jan 2010 04:06:41 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:41511 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687Ab0AaJGi (ORCPT
+	Sun, 31 Jan 2010 04:10:46 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:50145 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879Ab0AaJKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 04:06:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=qwP6rLFQ2FPWtM1IU8ZaFRlLAyCysHeb4wVNl5gfzabyJb1RmK/k4zAdsEhUGFwmOi
-         rxLl16tKVBnIbLmFFueq+WCN1S8L95O1MApUZv5eFD1ZPeip6U65waBTxLhZGlYoRpDB
-         ZM6uf/C7fxaL3ffhYzAkET6qul8Re6qbzCR0Q=
-Date: Sun, 31 Jan 2010 11:03:25 +0200
-From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, neilb@suse.de,
-       linux-raid@vger.kernel.org, dm-devel@redhat.com, maan@systemlinux.org
-Subject: Re: compat_ioctl: ignore RAID_VERSION ioctl
-Message-ID: <20100131090324.GA3178@redhat.com>
-References: <20100130205353.GA3168@redhat.com> <201001302302.10574.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001302302.10574.arnd@arndb.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Sun, 31 Jan 2010 04:10:45 -0500
+Subject: SUMMARY: KVM+nf_conntrack_htable_size
+From: Jon Masters <jonathan@jonmasters.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: netfilter-devel <netfilter-devel@vger.kernel.org>,
+       Patrick McHardy <kaber@trash.net>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Jason Wessel <jason.wessel@windriver.com>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Sun, 31 Jan 2010 04:10:33 -0500
+Message-Id: <1264929033.7499.22.camel@tonnant>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 30, 2010 at 11:02:10PM +0100, Arnd Bergmann wrote:
-> md ioctls are now handled by the md driver itself, but mdadm
-> may call RAID_VERSION on other devices as well. Mark the command
-> as IGNORE_IOCTL so this fails silently rather than printing
-> an annoying message.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
-> 
-> On Saturday 30 January 2010, Michael S. Tsirkin wrote:
-> > Under 2.6.33-rcX (at least rc5 and rc6, didn't check earlier versions),
-> > I started seeing these messages in dmesg (I do not see these messages on 2.6.32):
-> > 
-> > [   16.528951] ioctl32(mdadm:2243): Unknown cmd fd(3) cmd(800c0910){t:09;sz:12} arg(ffb7f9c4) on /dev/sda9
-> 
-> Does this help?
+Folks,
 
-Yes, this fixes it.
+Thanks to everyone who helped me poke a little at the netfilter code.
+Since I'm not usually a network guy and haven't really kept up with
+things like the namespace code, this was fun. I have some results.
 
-> --- a/fs/compat_ioctl.c
-> +++ b/fs/compat_ioctl.c
-> @@ -1038,6 +1038,8 @@ COMPATIBLE_IOCTL(FIOQSIZE)
->  #ifdef CONFIG_BLOCK
->  /* loop */
->  IGNORE_IOCTL(LOOP_CLR_FD)
-> +/* md calls this on random blockdevs */
-> +IGNORE_IOCTL(RAID_VERSION)
->  /* SG stuff */
->  COMPATIBLE_IOCTL(SG_SET_TIMEOUT)
->  COMPATIBLE_IOCTL(SG_GET_TIMEOUT)
-> 
+The problem (as Eric hinted) is that we have a global
+nf_conntrack_htable_size, which is manipulated every time we create a
+new hashtable. This used to happen only once, but now that we have
+multiple network namespaces, it will happen every time we create a new
+namespace due to the code registering with register_pernet_subsys. At
+this time, the value of the hashtable may be changed underneath code
+that is currently using it for another hashtable instance. Additionally,
+the "resize" code (via module parameter or via sysctl) only changes the
+root netns hashtable, then changes this value, also busticating stuff.
+Finally, the very fact that this variable is exported directly is
+*asking* for trouble and random corruption to happen later on.
+
+So, there are a great many issues with how the conntrack hashtables are
+managed (looks literally as it it used to be fine then namespace code
+came along and broke assumptions that had been there since the start),
+and they should not be considered safe for use with multiple namespaces
+in my opinion. The solution would seem to be to remove this as a global
+and make it per namespace, or even per hashtable (there is usually a 1:1
+mapping, but the expect code uses this variable too).
+
+Can someone give me some advice on which solution you prefer of these?
+Or if you have an alternative preference. I think for now I'll hack up
+something involving per-namespace hashtable sizes.
+
+Jon.
+
+
