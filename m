@@ -1,189 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026Ab0AaP5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439Ab0AaP6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753026Ab0AaP5X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 10:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485Ab0AaP5X
+	id S1753439Ab0AaP6V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 10:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570Ab0AaP6U
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 10:57:23 -0500
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:42744 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752364Ab0AaP5W (ORCPT
+	Sun, 31 Jan 2010 10:58:20 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:30021 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752452Ab0AaP6U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 10:57:22 -0500
-X-Trace: 333857953/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.93.110/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.93.110
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlcBAJ03ZUtPRV1u/2dsb2JhbAAI1kGERQQ
-X-IronPort-AV: E=Sophos;i="4.49,378,1262563200"; 
-   d="scan'208";a="333857953"
-Date: Sun, 31 Jan 2010 15:57:19 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-cc: Andrew Morton <akpm@osdl.org>, Nitin Gupta <ngupta@vflare.org>,
-       Jakub Jelinek <jakub@redhat.com>, Karel Zak <kzak@redhat.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: Fix nr_good_pages calculation
-In-Reply-To: <20100120151912.GA27747@angel.research.nokia.com>
-Message-ID: <alpine.LSU.2.00.1001311538410.3817@sister.anvils>
-References: <20100120151912.GA27747@angel.research.nokia.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 31 Jan 2010 10:58:20 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5878"; a="33148334"
+Subject: Re: [PATCH] staging/dream: add missing include files/fix
+ compilation
+From: Daniel Walker <dwalker@codeaurora.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Greg KH <greg@kroah.com>, Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Iliyan Malchev <malchev@google.com>, linux-arm-msm@vger.kernel.org
+In-Reply-To: <20100131092829.GJ2238@elf.ucw.cz>
+References: <20091225205917.GA25761@elf.ucw.cz>
+	 <20100115002419.GA25643@kroah.com> <20100119054516.GB22153@elf.ucw.cz>
+	 <1263914079.1951.43.camel@m0nster> <20100131084421.GG2238@elf.ucw.cz>
+	 <20100131092829.GJ2238@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 31 Jan 2010 07:58:12 -0800
+Message-ID: <1264953492.2059.5.camel@m0nster>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jan 2010, Jarkko Lavinen wrote:
-
-> Swapon wastes one page of swap space to no effect.
+On Sun, 2010-01-31 at 10:28 +0100, Pavel Machek wrote:
+> Hi!
 > 
-> Mkswap stores the value 'pages - 1' into last_page field, where pages is the
-> partition size in pages.  When nr_good_pages is calculated, last_page + 1
-> should be used for the number of all the pages header included.
+> > > > > > This adds missing include files, so it should now compile. ifdef
+> > > > > > guards were added to Kconfig, so it should not cause problems on
+> > > > > > non-arch-msm machines.
+> > > > > > 
+> > > > > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > > > > 
+> > > > > Odd, this doesn't apply to the linux-next tree, some of the files are
+> > > > > already there.
+> > > > 
+> > > > Strange, it seems it is almost all already in. Well, good :-).
+> > > > 
+> > > > But there's small problem. linux-next now contains dwalker's tree, and
+> > > > I could not get it to compile, even with staging disabled. I'll need
+> > > > to look into that.
+> > > 
+> > > I worked on it a little, but I won't have time to really start cleaning
+> > > up that tree till next week, or this weekend.
+> > > 
+> > > I pushed a new tree for next that should compile for dream with the
+> > > attached config. I also included the patch that I added to get it to
+> > > compile (you'll need the machine types too which I didn't include).
+> > 
+> > Thanks! I checked out linux-next version, and it seems to include
+> > 
+> > > commit cdf6c137865357112aa31666b65b938ab29fa736
+> > >     msm: compile fixes for dream.
+> > 
+> > this patch. It still fails with:
+> > 
+> > arch/arm/mach-msm/rpc_hsusb.c: In function 'msm_chg_rpc_connect':
+> > arch/arm/mach-msm/rpc_hsusb.c:156: error: implicit declaration of
+> > function 'machine_is_msm7201a_surf'
+> > arch/arm/mach-msm/rpc_hsusb.c:156: error: implicit declaration of
+> > function 'machine_is_msm7x27_surf'
+> > arch/arm/mach-msm/rpc_hsusb.c:157: error: implicit declaration of
+> > function 'machine_is_qsd8x50_surf'
+> > make[1]: *** [arch/arm/mach-msm/rpc_hsusb.o] Error 1
+> > make: *** [arch/arm/mach-msm] Error 2
+> > 
+> > (and similar error further down). This fixes it, but you probably want
+> > to add machine_is_* to your git. (Aha, is that what you meant by
+> > "machine types"?
+> > 
+> > With this patch it compiles.
 > 
-> Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-> ---
->  mm/swapfile.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> Ok, it compiles, but I do not see it booting. You config has:
 > 
-> diff --git a/mm/swapfile.c b/mm/swapfile.c
-> index 6c0585b..50d90ca 100644
-> --- a/mm/swapfile.c
-> +++ b/mm/swapfile.c
-> @@ -1961,7 +1961,7 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
->  	if (error)
->  		goto bad_swap;
->  
-> -	nr_good_pages = swap_header->info.last_page -
-> +	nr_good_pages = swap_header->info.last_page + 1 -
->  			swap_header->info.nr_badpages -
->  			1 /* header page */;
->  
-> -- 
+> CONFIG_MSM_DEBUG_UART=3
+> # CONFIG_MSM_DEBUG_UART_NONE is not set
+> # CONFIG_MSM_DEBUG_UART1 is not set
+> # CONFIG_MSM_DEBUG_UART2 is not set
+> CONFIG_MSM_DEBUG_UART3=y
+> ...
+> CONFIG_DEBUG_LL=y
+> CONFIG_EARLY_PRINTK=y
+> 
+> set, so I'd expect it to say something on the serial line... (right?
+> Or do I still need to patch printk.c to get that?). And I see nothing
+> :-(.
+> 
+> I'm using
+> 
+> ./fastboot -c "console=ttyMSM2 root=/dev/mmcblk0p1 rootdelay=5 fbcon=rotate:1" boot /data/l/linux-dwalker/arch/arm/boot/zImage
+> 
+> ...with different kernel, it works (as in "I get most of the boot on
+> serial line; it will not actually mount root").
 
-Sorry to be so slow to respond: I needed to do a little research, and
-find time to cool myself down near absolute zero to consider offs-by-one.
+Have you seen this error?
 
-You're right that there's an off-by-one there: Nitin and I also noticed
-it last year; but I'm afraid I have to Nack your patch, just as I did
-Nitin's similar patch last August.
+  GEN     /local/mnt/workspace/c_dwalke/git-trees/dream-test/Makefile
+scripts/kconfig/conf -s arch/arm/Kconfig
+  GEN     /local/mnt/workspace/c_dwalke/git-trees/dream-test/Makefile
+  CHK     include/linux/version.h
+  CHK     include/generated/utsrelease.h
+  Using /local/mnt/workspace/c_dwalke/git-trees/linux-2.6 as source for kernel
+make[2]: `include/generated/mach-types.h' is up to date.
+  CALL    /local/mnt/workspace/c_dwalke/git-trees/linux-2.6/scripts/checksyscalls.sh
+  CHK     include/generated/compile.h
+  GZIP    kernel/config_data.gz
+  IKCFG   kernel/config_data.h
+  CC      kernel/configs.o
+  LD      kernel/built-in.o
+  CC      drivers/video/msm/msm_fb.o
+  CC      drivers/video/cfbcopyarea.o
+/home/dwalker/linux-2.6/drivers/video/msm/msm_fb.c:24: fatal error: linux/msm_mdp.h: No such file or directory
+compilation terminated.
+make[4]: *** [drivers/video/msm/msm_fb.o] Error 1
+make[3]: *** [drivers/video/msm] Error 2
+make[3]: *** Waiting for unfinished jobs....
+make[2]: *** [drivers/video] Error 2
+make[1]: *** [drivers] Error 2
+make: *** [sub-make] Error 2
 
-Fixing up nr_good_pages like that makes the numbers displayed look right;
-but you're then inconsistent with p->max, counting a page which can never
-get to be used.
+Even with the framebuffer off I still don't get any serial output on a
+plain 2.6.33-rc6 .. I'm using a config that you sent me when you first
+tested my -next tree .
 
-Here's what I believe is the right patch: is this something you and Nitin
-can give your Acks to, or do you see further issues with it?
+Daniel
 
-Thanks,
-Hugh
-
-
-[PATCH] mm: fix swapon size off-by-one
-
-There's an off-by-one disagreement between mkswap and swapon about the
-meaning of swap_header last_page: mkswap (in all versions I've looked
-at: util-linux-ng and BusyBox and old util-linux; probably as far back
-as 1999) consistently means the offset (in page units) of the last page
-of the swap area, whereas kernel sys_swapon (as far back as 2.2 and 2.3)
-strangely takes it to mean the size (in page units) of the swap area.
-
-This disagreement is the safe way round; but it's worrying people,
-and loses us one page of swap.
-
-The fix is not just to add one to nr_good_pages: we need to get maxpages
-(the size of the swap_map array) right before that; and though that is an
-unsigned long, be careful not to overflow the unsigned int p->max which
-later holds it (probably why header uses __u32 last_page instead of size).
-
-Why did we subtract one from the maximum swp_offset to calculate maxpages?
-Though it was probably me who made that change in 2.4.10, I don't get it:
-and now we should be adding one (without risk of overflow in this case).
-
-Fix the handling of swap_header badpages: it could have overrun the
-swap_map when very large swap area used on a more limited architecture.
-
-Remove pre-initializations of swap_header, nr_good_pages and maxpages:
-those date from when sys_swapon was supporting other versions of header.
-
-Reported-by: Nitin Gupta <ngupta@vflare.org>
-Reported-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
-
- mm/swapfile.c |   31 ++++++++++++++++++-------------
- 1 file changed, 18 insertions(+), 13 deletions(-)
-
---- 2.6.33-rc6/mm/swapfile.c	2009-12-18 11:42:55.000000000 +0000
-+++ linux/mm/swapfile.c	2010-01-31 13:15:58.000000000 +0000
-@@ -1759,11 +1759,11 @@ SYSCALL_DEFINE2(swapon, const char __use
- 	unsigned int type;
- 	int i, prev;
- 	int error;
--	union swap_header *swap_header = NULL;
--	unsigned int nr_good_pages = 0;
-+	union swap_header *swap_header;
-+	unsigned int nr_good_pages;
- 	int nr_extents = 0;
- 	sector_t span;
--	unsigned long maxpages = 1;
-+	unsigned long maxpages;
- 	unsigned long swapfilepages;
- 	unsigned char *swap_map = NULL;
- 	struct page *page = NULL;
-@@ -1922,9 +1922,13 @@ SYSCALL_DEFINE2(swapon, const char __use
- 	 * swap pte.
- 	 */
- 	maxpages = swp_offset(pte_to_swp_entry(
--			swp_entry_to_pte(swp_entry(0, ~0UL)))) - 1;
--	if (maxpages > swap_header->info.last_page)
--		maxpages = swap_header->info.last_page;
-+			swp_entry_to_pte(swp_entry(0, ~0UL)))) + 1;
-+	if (maxpages > swap_header->info.last_page) {
-+		maxpages = swap_header->info.last_page + 1;
-+		/* p->max is an unsigned int: don't overflow it */
-+		if ((unsigned int)maxpages == 0)
-+			maxpages = UINT_MAX;
-+	}
- 	p->highest_bit = maxpages - 1;
- 
- 	error = -EINVAL;
-@@ -1948,23 +1952,24 @@ SYSCALL_DEFINE2(swapon, const char __use
- 	}
- 
- 	memset(swap_map, 0, maxpages);
-+	nr_good_pages = maxpages - 1;	/* omit header page */
-+
- 	for (i = 0; i < swap_header->info.nr_badpages; i++) {
--		int page_nr = swap_header->info.badpages[i];
--		if (page_nr <= 0 || page_nr >= swap_header->info.last_page) {
-+		unsigned int page_nr = swap_header->info.badpages[i];
-+		if (page_nr == 0 || page_nr > swap_header->info.last_page) {
- 			error = -EINVAL;
- 			goto bad_swap;
- 		}
--		swap_map[page_nr] = SWAP_MAP_BAD;
-+		if (page_nr < maxpages) {
-+			swap_map[page_nr] = SWAP_MAP_BAD;
-+			nr_good_pages--;
-+		}
- 	}
- 
- 	error = swap_cgroup_swapon(type, maxpages);
- 	if (error)
- 		goto bad_swap;
- 
--	nr_good_pages = swap_header->info.last_page -
--			swap_header->info.nr_badpages -
--			1 /* header page */;
--
- 	if (nr_good_pages) {
- 		swap_map[0] = SWAP_MAP_BAD;
- 		p->max = maxpages;
