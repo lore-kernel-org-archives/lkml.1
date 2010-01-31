@@ -1,121 +1,433 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837Ab0AaXSO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 18:18:14 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:34227 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752430Ab0AaXSM (ORCPT
+	id S1754155Ab0AaXWj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 18:22:39 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:43619 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547Ab0AaXWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 18:18:12 -0500
-Date: Mon, 1 Feb 2010 10:18:09 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Wolfgang Walter <wolfgang.walter@stwm.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: 2.6.32: padlock_sha1 and hmac broken?
-Message-ID: <20100131231809.GA29600@gondor.apana.org.au>
-References: <201001300044.15769.wolfgang.walter@stwm.de> <201001310311.23116.wolfgang.walter@stwm.de> <20100131092222.GA22508@gondor.apana.org.au> <201001311437.55534.wolfgang.walter@stwm.de>
+	Sun, 31 Jan 2010 18:22:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=G7Axlcsv0tdrPVYw4xgwza4W1XAjSqodsXGMLzfG8M6XPEEZ3q2XVfv6nFD71p+BoB
+         iZiGcImBOlPAMAYzSSeyEvjWc0YzOZFbZ/uUImi/oQEuXQYsMdC5Z1GPUmjD9BC4g8K7
+         3WnArWyLk0GWWdHVszSoorP8IPbZ3b5B/w8/g=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001311437.55534.wolfgang.walter@stwm.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Sun, 31 Jan 2010 18:22:35 -0500
+Message-ID: <817ecb6f1001311522q52bf4eebmb748c486dcd5ad35@mail.gmail.com>
+Subject: [PATCH v8] RO/NX protection for loadable kernel modules
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-next@vger.kernel.org
+Cc: Arjan van de Ven <arjan@infradead.org>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Dave Jones <davej@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 31, 2010 at 02:37:55PM +0100, Wolfgang Walter wrote:
->
-> This patch works. /proc/crypto shows
-> 
-> name         : authenc(hmac(sha1),cbc(aes))
-> driver       : authenc(hmac(sha1-padlock),cbc-aes-padlock)
-> module       : kernel
-> priority     : 4300
-> refcnt       : 85
-> selftest     : passed
-> type         : aead
-> async        : yes
-> blocksize    : 16
-> ivsize       : 16
-> maxauthsize  : 20
-> geniv        : <built-in>
+This patch is a logical extension of the protection provided by
+CONFIG_DEBUG_RODATA to LKMs. The protection is provided by splitting
+module_core and module_init into three logical parts each and setting
+appropriate page access permissions for each individual section:
 
-Thank you for checking!
+ 1. Code: RO+X
+ 2. RO data: RO+NX
+ 3. RW data: RW+NX
 
-I've added this patch into crypto-2.6 and will push to stable
-when it is merged upstream.
+In order to achieve proper protection, layout_sections() have been
+modified to align each of the three parts mentioned above onto page
+boundary. Next, the corresponding page access permissions are set
+right before successful exit from load_module(). Further, free_module()
+and sys_init_module have been modified to set module_core and
+module_init as RW+NX right before calling module_free().
 
-commit 137bb21e8f03758eeffb464a5033338f34446b4e
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Mon Feb 1 09:17:56 2010 +1100
+By default, the original section layout and access flags are preserved.
+When compiled with CONFIG_DEBUG_SET_MODULE_RONX=y, the patch
+will page-align each group of sections to ensure that each page contains
+only one type of content and will enforce RO/NX for each group of pages.
 
-    crypto: padlock-sha - Add import/export support
-    
-    As the padlock driver for SHA uses a software fallback to perform
-    partial hashing, it must implement custom import/export functions.
-    Otherwise hmac which depends on import/export for prehashing will
-    not work with padlock-sha.
-    
-    Reported-by: Wolfgang Walter <wolfgang.walter@stwm.de>
-    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+v1: Initial proof-of-concept patch.
 
-diff --git a/drivers/crypto/padlock-sha.c b/drivers/crypto/padlock-sha.c
-index 0af8057..d3a27e0 100644
---- a/drivers/crypto/padlock-sha.c
-+++ b/drivers/crypto/padlock-sha.c
-@@ -57,6 +57,23 @@ static int padlock_sha_update(struct shash_desc *desc,
- 	return crypto_shash_update(&dctx->fallback, data, length);
- }
- 
-+static int padlock_sha_export(struct shash_desc *desc, void *out)
-+{
-+	struct padlock_sha_desc *dctx = shash_desc_ctx(desc);
+v2: The patch have been re-written to reduce the number of #ifdefs and
+to make it architecture-agnostic. Code formatting have been corrected also.
+
+v3: Opportunistic RO/NX protectiuon is now unconditional. Section
+page-alignment is enabled when CONFIG_DEBUG_RODATA=y.
+
+v4: Removed most macros and improved coding style.
+
+v5: Changed page-alignment and RO/NX section size calculation
+
+v6: Fixed comments. Restricted RO/NX enforcement to x86 only
+
+v7: Introduced CONFIG_DEBUG_SET_MODULE_RONX, added calls to
+set_all_modules_text_rw() and set_all_modules_text_ro() in ftrace
+
+v8: updated for compatibility with linux 2.6.33-rc5
+
+The patch have been developed for Linux 2.6.33-rc5 by Siarhei Liakh
+<sliakh.lkml@gmail.com> and Xuxian Jiang <jiang@cs.ncsu.edu>.
+
+---
+
+Signed-off-by: Siarhei Liakh <sliakh.lkml@gmail.com>
+Signed-off-by: Xuxian Jiang <jiang@cs.ncsu.edu>
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index bc01e3e..7c80e28 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -115,6 +115,17 @@ config DEBUG_RODATA_TEST
+ 	  feature as well as for the change_page_attr() infrastructure.
+ 	  If in doubt, say "N"
+
++config DEBUG_SET_MODULE_RONX
++	bool "Set loadable kernel module data as NX and text as RO"
++	default n
++	depends on X86 && MODULES
++	---help---
++	  This option helps to catch unintended modifications to loadable
++	  kernel module's text and read-only data. It also prevents execution
++	  of LKM's data. Such protection may interfere with run-time code
++	  patching and dynamic kernel tracing.
++	  If in doubt, say "N".
 +
-+	return crypto_shash_export(&dctx->fallback, out);
-+}
-+
-+static int padlock_sha_import(struct shash_desc *desc, const void *in)
-+{
-+	struct padlock_sha_desc *dctx = shash_desc_ctx(desc);
-+	struct padlock_sha_ctx *ctx = crypto_shash_ctx(desc->tfm);
-+
-+	dctx->fallback.tfm = ctx->fallback;
-+	dctx->fallback.flags = desc->flags & CRYPTO_TFM_REQ_MAY_SLEEP;
-+	return crypto_shash_import(&dctx->fallback, in);
-+}
-+
- static inline void padlock_output_block(uint32_t *src,
- 		 	uint32_t *dst, size_t count)
+ config DEBUG_NX_TEST
+ 	tristate "Testcase for the NX non-executable stack feature"
+ 	depends on DEBUG_KERNEL && m
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 3096892..b47a154 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -19,6 +19,7 @@
+ #include <linux/sched.h>
+ #include <linux/init.h>
+ #include <linux/list.h>
++#include <linux/module.h>
+
+ #include <trace/syscall.h>
+
+@@ -29,16 +30,17 @@
+
+
+ #ifdef CONFIG_DYNAMIC_FTRACE
+-
+ int ftrace_arch_code_modify_prepare(void)
  {
-@@ -235,7 +252,10 @@ static struct shash_alg sha1_alg = {
- 	.update 	=	padlock_sha_update,
- 	.finup  	=	padlock_sha1_finup,
- 	.final  	=	padlock_sha1_final,
-+	.export		=	padlock_sha_export,
-+	.import		=	padlock_sha_import,
- 	.descsize	=	sizeof(struct padlock_sha_desc),
-+	.statesize	=	sizeof(struct sha1_state),
- 	.base		=	{
- 		.cra_name		=	"sha1",
- 		.cra_driver_name	=	"sha1-padlock",
-@@ -256,7 +276,10 @@ static struct shash_alg sha256_alg = {
- 	.update 	=	padlock_sha_update,
- 	.finup  	=	padlock_sha256_finup,
- 	.final  	=	padlock_sha256_final,
-+	.export		=	padlock_sha_export,
-+	.import		=	padlock_sha_import,
- 	.descsize	=	sizeof(struct padlock_sha_desc),
-+	.statesize	=	sizeof(struct sha256_state),
- 	.base		=	{
- 		.cra_name		=	"sha256",
- 		.cra_driver_name	=	"sha256-padlock",
+ 	set_kernel_text_rw();
++	set_all_modules_text_rw();
+ 	return 0;
+ }
 
+ int ftrace_arch_code_modify_post_process(void)
+ {
+ 	set_kernel_text_ro();
++	set_all_modules_text_ro();
+ 	return 0;
+ }
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 6cb1a3c..c6040ce 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -300,6 +300,9 @@ struct module
+ 	/* The size of the executable code in each section.  */
+ 	unsigned int init_text_size, core_text_size;
+
++	/* Size of RO sections of the module (text+rodata) */
++	unsigned int init_ro_size, core_ro_size;
++
+ 	/* Arch-specific module values */
+ 	struct mod_arch_specific arch;
+
+@@ -542,6 +545,9 @@ extern void print_modules(void);
+ extern void module_update_tracepoints(void);
+ extern int module_get_iter_tracepoints(struct tracepoint_iter *iter);
+
++void set_all_modules_text_rw(void);
++void set_all_modules_text_ro(void);
++
+ #else /* !CONFIG_MODULES... */
+ #define EXPORT_SYMBOL(sym)
+ #define EXPORT_SYMBOL_GPL(sym)
+@@ -662,6 +668,13 @@ static inline int
+module_get_iter_tracepoints(struct tracepoint_iter *iter)
+ 	return 0;
+ }
+
++static inline void set_all_modules_text_rw()
++{
++}
++
++static inline void set_all_modules_text_ro()
++{
++}
+ #endif /* CONFIG_MODULES */
+
+ struct device_driver;
+diff --git a/kernel/module.c b/kernel/module.c
+index f82386b..d382b59 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -55,6 +55,7 @@
+ #include <linux/async.h>
+ #include <linux/percpu.h>
+ #include <linux/kmemleak.h>
++#include <linux/pfn.h>
+
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/module.h>
+@@ -71,6 +72,26 @@ EXPORT_TRACEPOINT_SYMBOL(module_get);
+ #define ARCH_SHF_SMALL 0
+ #endif
+
++/*
++ * Modules' sections will be aligned on page boundaries
++ * to ensure complete separation of code and data, but
++ * only when CONFIG_DEBUG_SET_MODULE_RONX=y
++ */
++#ifdef CONFIG_DEBUG_SET_MODULE_RONX
++#define debug_align(X) ALIGN(X, PAGE_SIZE)
++#else
++#define debug_align(X) (X)
++#endif
++
++/*
++ * Given BASE and SIZE this macro calculates the number of pages the
++ * memory regions occupies
++ */
++#define NUMBER_OF_PAGES(BASE, SIZE) ((SIZE > 0) ?		\
++		(PFN_DOWN((unsigned long)BASE + SIZE - 1) -	\
++			 PFN_DOWN((unsigned long)BASE) + 1)	\
++		: (0UL))
++
+ /* If this is set, the section belongs in the init part of the module */
+ #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
+
+@@ -1372,6 +1393,134 @@ static int __unlink_module(void *_mod)
+ 	return 0;
+ }
+
++#ifdef CONFIG_DEBUG_SET_MODULE_RONX
++/*
++ * LKM RO/NX protection: protect module's text/ro-data
++ * from modification and any data from execution.
++ */
++static void set_section_ro_nx(void *base,
++			unsigned long text_size,
++			unsigned long ro_size,
++			unsigned long total_size)
++{
++	/* begin and end PFNs of the current subsection */
++	unsigned long begin_pfn;
++	unsigned long end_pfn;
++
++	/*
++	 * Set RO for module text and RO-data:
++	 * - Always protect first page.
++	 * - Do not protect last partial page.
++	 */
++	if (ro_size > 0) {
++		begin_pfn = PFN_DOWN((unsigned long)base);
++		end_pfn = PFN_DOWN((unsigned long)base + ro_size);
++		if (end_pfn > begin_pfn)
++			set_memory_ro(begin_pfn << PAGE_SHIFT,
++						end_pfn - begin_pfn);
++	}
++
++	/*
++	 * Set NX permissions for module data:
++	 * - Do not protect first partial page.
++	 * - Always protect last page.
++	 */
++	if (total_size > text_size) {
++		begin_pfn = PFN_UP((unsigned long)base + text_size);
++		end_pfn = PFN_UP((unsigned long)base + total_size);
++		if (end_pfn > begin_pfn)
++			set_memory_nx(begin_pfn << PAGE_SHIFT,
++						end_pfn - begin_pfn);
++	}
++}
++
++/* Setting memory back to RW+NX before releasing it */
++void unset_section_ro_nx(struct module *mod, void *module_region)
++{
++	unsigned long total_pages;
++
++	if (mod->module_core == module_region) {
++		/* Set core as NX+RW */
++		total_pages = NUMBER_OF_PAGES(mod->module_core, mod->core_size);
++		set_memory_nx((unsigned long)mod->module_core, total_pages);
++		set_memory_rw((unsigned long)mod->module_core, total_pages);
++
++	} else if (mod->module_init == module_region) {
++		/* Set init as NX+RW */
++		total_pages = NUMBER_OF_PAGES(mod->module_init, mod->init_size);
++		set_memory_nx((unsigned long)mod->module_init, total_pages);
++		set_memory_rw((unsigned long)mod->module_init, total_pages);
++	}
++}
++
++/* Iterate through all modules and set each module's text as RW */
++void set_all_modules_text_rw()
++{
++	struct module *mod;
++	unsigned long begin_pfn;
++	unsigned long end_pfn;
++
++	mutex_lock(&module_mutex);
++	list_for_each_entry_rcu(mod, &modules, list) {
++		if ((mod->module_core) && (mod->core_text_size > 0)) {
++			begin_pfn = PFN_DOWN((unsigned long)mod->module_core);
++			end_pfn = PFN_DOWN((unsigned long)mod->module_core +
++						mod->core_text_size);
++			if (end_pfn > begin_pfn)
++				set_memory_rw(begin_pfn << PAGE_SHIFT,
++							end_pfn - begin_pfn);
++		}
++		if ((mod->module_init) && (mod->init_text_size > 0)) {
++			begin_pfn = PFN_DOWN((unsigned long)mod->module_init);
++			end_pfn = PFN_DOWN((unsigned long)mod->module_init +
++						mod->init_text_size);
++			if (end_pfn > begin_pfn)
++				set_memory_rw(begin_pfn << PAGE_SHIFT,
++							end_pfn - begin_pfn);
++		}
++	}
++	mutex_unlock(&module_mutex);
++}
++
++/* Iterate through all modules and set each module's text as RO */
++void set_all_modules_text_ro()
++{
++	struct module *mod;
++	unsigned long begin_pfn;
++	unsigned long end_pfn;
++
++	mutex_lock(&module_mutex);
++	list_for_each_entry_rcu(mod, &modules, list) {
++		if ((mod->module_core) && (mod->core_text_size > 0)) {
++			begin_pfn = PFN_DOWN((unsigned long)mod->module_core);
++			end_pfn = PFN_DOWN((unsigned long)mod->module_core +
++						mod->core_text_size);
++			if (end_pfn > begin_pfn)
++				set_memory_ro(begin_pfn << PAGE_SHIFT,
++							end_pfn - begin_pfn);
++		}
++		if ((mod->module_init) && (mod->init_text_size > 0)) {
++			begin_pfn = PFN_DOWN((unsigned long)mod->module_init);
++			end_pfn = PFN_DOWN((unsigned long)mod->module_init +
++						mod->init_text_size);
++			if (end_pfn > begin_pfn)
++				set_memory_ro(begin_pfn << PAGE_SHIFT,
++							end_pfn - begin_pfn);
++		}
++	}
++	mutex_unlock(&module_mutex);
++}
++#else
++static void set_section_ro_nx(void *base,
++			unsigned long text_size,
++			unsigned long ro_size,
++			unsigned long total_size) { }
++
++void unset_section_ro_nx(struct module *mod, void *module_region) { }
++void set_all_modules_text_rw() { }
++void set_all_modules_text_ro() { }
++#endif
++
+ /* Free a module, remove from lists, etc (must hold module_mutex). */
+ static void free_module(struct module *mod)
+ {
+@@ -1393,6 +1542,7 @@ static void free_module(struct module *mod)
+ 	destroy_params(mod->kp, mod->num_kp);
+
+ 	/* This may be NULL, but that's OK */
++	unset_section_ro_nx(mod, mod->module_init);
+ 	module_free(mod, mod->module_init);
+ 	kfree(mod->args);
+ 	if (mod->percpu)
+@@ -1405,6 +1555,7 @@ static void free_module(struct module *mod)
+ 	lockdep_free_key_range(mod->module_core, mod->core_size);
+
+ 	/* Finally, free the core (containing the module structure) */
++	unset_section_ro_nx(mod, mod->module_core);
+ 	module_free(mod, mod->module_core);
+
+ #ifdef CONFIG_MPU
+@@ -1582,8 +1733,19 @@ static void layout_sections(struct module *mod,
+ 			s->sh_entsize = get_offset(mod, &mod->core_size, s, i);
+ 			DEBUGP("\t%s\n", secstrings + s->sh_name);
+ 		}
+-		if (m == 0)
++		switch (m) {
++		case 0: /* executable */
++			mod->core_size = debug_align(mod->core_size);
+ 			mod->core_text_size = mod->core_size;
++			break;
++		case 1: /* RO: text and ro-data */
++			mod->core_size = debug_align(mod->core_size);
++			mod->core_ro_size = mod->core_size;
++			break;
++		case 3: /* whole core */
++			mod->core_size = debug_align(mod->core_size);
++			break;
++		}
+ 	}
+
+ 	DEBUGP("Init section allocation order:\n");
+@@ -1600,8 +1762,19 @@ static void layout_sections(struct module *mod,
+ 					 | INIT_OFFSET_MASK);
+ 			DEBUGP("\t%s\n", secstrings + s->sh_name);
+ 		}
+-		if (m == 0)
++		switch (m) {
++		case 0: /* executable */
++			mod->init_size = debug_align(mod->init_size);
+ 			mod->init_text_size = mod->init_size;
++			break;
++		case 1: /* RO: text and ro-data */
++			mod->init_size = debug_align(mod->init_size);
++			mod->init_ro_size = mod->init_size;
++			break;
++		case 3: /* whole init */
++			mod->init_size = debug_align(mod->init_size);
++			break;
++		}
+ 	}
+ }
+
+@@ -2382,6 +2555,18 @@ static noinline struct module *load_module(void
+__user *umod,
+
+ 	trace_module_load(mod);
+
++	/* Set RO and NX regions for core */
++	set_section_ro_nx(mod->module_core,
++				mod->core_text_size,
++				mod->core_ro_size,
++				mod->core_size);
++
++	/* Set RO and NX regions for init */
++	set_section_ro_nx(mod->module_init,
++				mod->init_text_size,
++				mod->init_ro_size,
++				mod->init_size);
++
+ 	/* Done! */
+ 	return mod;
+
+@@ -2504,6 +2689,7 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
+ 	mod->symtab = mod->core_symtab;
+ 	mod->strtab = mod->core_strtab;
+ #endif
++	unset_section_ro_nx(mod, mod->module_init);
+ 	module_free(mod, mod->module_init);
+ 	mod->module_init = NULL;
+ 	mod->init_size = 0;
