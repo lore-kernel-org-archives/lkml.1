@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368Ab0AaUD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105Ab0AaUDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754368Ab0AaUD1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 15:03:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344Ab0AaUDY
+	id S1754105Ab0AaUDQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 15:03:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128Ab0AaUDF
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 15:03:24 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:49383 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754157Ab0AaUDU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 15:03:20 -0500
-X-Trace: 337118227/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.93.110/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.93.110
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlcBAIdwZUtPRV1u/2dsb2JhbAAI1h2ERQQ
-X-IronPort-AV: E=Sophos;i="4.49,378,1262563200"; 
-   d="scan'208";a="337118227"
-Date: Sun, 31 Jan 2010 20:03:16 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Tony Perkins <da.perk@gmail.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org
-Subject: Re: Bug in find_vma_prev - mmap.c
-In-Reply-To: <6cafb0f01001311056k3c6a882fla42b714256bb1e6d@mail.gmail.com>
-Message-ID: <alpine.LSU.2.00.1001311955510.6227@sister.anvils>
-References: <6cafb0f01001291657q4ccbee86rce3143a4be7a1433@mail.gmail.com>  <201001301929.47659.rjw@sisk.pl>  <alpine.LSU.2.00.1001311616590.5897@sister.anvils> <6cafb0f01001311056k3c6a882fla42b714256bb1e6d@mail.gmail.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 31 Jan 2010 15:03:05 -0500
+Received: from mail.perches.com ([173.55.12.10]:1655 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754008Ab0AaUCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 15:02:24 -0500
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       linux-mm@kvack.org
+Subject: [PATCH 09/10] mm/slab.c: Fix continuation line formats
+Date: Sun, 31 Jan 2010 12:02:11 -0800
+Message-Id: <9d64ab1e1d69c750d53a398e09fe5da2437668c5.1264967500.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
+In-Reply-To: <cover.1264967493.git.joe@perches.com>
+References: <cover.1264967493.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 31 Jan 2010, Tony Perkins wrote:
-> 
-> Say for instance, that addr is not in the list (but is greater than
-> the last element).
+String constants that are continued on subsequent lines with \
+are not good.
 
-Before, you appeared to be talking about a discrepancy with the first
-vma; now you're talking about a discrepancy with the last vma?
-Or a discrepancy when the first vma is the last vma?
+The characters between seq_printf elements are tabs.
+That was probably not intentional, but isn't being changed.
+It's behind an #ifdef, so it could probably become a single space.
 
-> find_vma_prev will return the last node in the list, whereas find_vma
-> will return NULL.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ mm/slab.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-I'd expect find_vma_prev to return prev->vm_next, which would be NULL.
+diff --git a/mm/slab.c b/mm/slab.c
+index 7451bda..9964619 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -4228,8 +4228,8 @@ static int s_show(struct seq_file *m, void *p)
+ 		unsigned long node_frees = cachep->node_frees;
+ 		unsigned long overflows = cachep->node_overflow;
+ 
+-		seq_printf(m, " : globalstat %7lu %6lu %5lu %4lu \
+-				%4lu %4lu %4lu %4lu %4lu", allocs, high, grown,
++		seq_printf(m, " : globalstat %7lu %6lu %5lu %4lu 				%4lu %4lu %4lu %4lu %4lu",
++				allocs, high, grown,
+ 				reaped, errors, max_freeable, node_allocs,
+ 				node_frees, overflows);
+ 	}
+-- 
+1.6.6.rc0.57.gad7a
 
-> 
-> It seems that it is just inconsistent, in what it should return
-> regarding the two.
-> For instance, find_vma_prev will never return NULL, if there's at
-> least one node within the tree, whereas find_vma would.
-> find_extend_vma uses find_vma_prev and checks to see if it returns
-> NULL and is less than the return address (which would always be the
-> case).
-
-Are we disagreeing about our readings of the code, or have you seen a
-problem in practice?
-
-I admit I've not tried running this, injecting addresses into find_vma_prev
-and printk'ing the result; but I'm missing what leads you to say that
-find_vma_prev will never return NULL.
-
-Hugh
