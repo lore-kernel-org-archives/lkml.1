@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139Ab0AaUNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237Ab0AaUNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139Ab0AaUNO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 15:13:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998Ab0AaUNN
+	id S1754237Ab0AaUNe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 15:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998Ab0AaUNd
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 15:13:13 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:43521 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753921Ab0AaUNM (ORCPT
+	Sun, 31 Jan 2010 15:13:33 -0500
+Received: from mail.bluewatersys.com ([202.124.120.130]:15367 "EHLO
+	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754049Ab0AaUNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 15:13:12 -0500
-Date: Sun, 31 Jan 2010 21:13:00 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Michal Marek <mmarek@suse.cz>, Greg KH <greg@kroah.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Sean MacLennan <smaclennan@pikatech.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] platform_driver_register: warn if probe is in
-	.init.text
-Message-ID: <20100131201300.GA20892@pengutronix.de>
-References: <20100122173846.GA11057@suse.de> <1264189758-7197-1-git-send-email-u.kleine-koenig@pengutronix.de> <87y6jnw6qa.fsf@devron.myhome.or.jp> <20100126084741.GC20792@pengutronix.de> <20100128011403.GB24068@kroah.com> <20100130204425.GA16345@pengutronix.de> <20100131160213.GA14896@merkur.ravnborg.org>
+	Sun, 31 Jan 2010 15:13:32 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 Jan 2010 15:13:31 EST
+Message-ID: <4B65E330.3040000@bluewatersys.com>
+Date: Mon, 01 Feb 2010 09:08:16 +1300
+From: Ryan Mallon <ryan@bluewatersys.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100131160213.GA14896@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Remy Bohmer <linux@bohmer.net>
+CC: Harro Haan <hrhaan@gmail.com>, Andrew Victor <avictor.za@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       H Hartley Sweeten <hartleys@visionengravers.com>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch v2 1/2] at91_udc.c read_fifo timing issue
+References: <20100129162029.998540038@gmail.com>	 <20100129162155.709756286@gmail.com> <3efb10971001290904p74b1919aif8ff013f050123a9@mail.gmail.com>
+In-Reply-To: <3efb10971001290904p74b1919aif8ff013f050123a9@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-> Michael is handling kbuild stuff now and that may include modpost stuff.
-> So added Michael - then you guys can decide way forward.
-Then the F: patterns for kbuild in MAINTAINERS should be extended.
- 
-> The modpost patches looks OK at a quick view.
-> You can consider adding:
+Remy Bohmer wrote:
+> Hi Harro,
 > 
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Thanks,
-Uwe
+> 2010/1/29 Harro Haan <hrhaan@gmail.com>:
+>> This solves the read_fifo timing issue for example seen with CDC Ethernet.
+>> See the comments below for more info.
+>>
+>> Signed-off-by: Harro Haan <hrhaan@gmail.com>
+>> ---
+>>  drivers/usb/gadget/at91_udc.c |   46 ++++++++++++++++++++++++++++++++++++++----
+>>  1 file changed, 42 insertions(+), 4 deletions(-)
+>>
+> Acked-by: Remy Bohmer <linux@bohmer.net>
+
+Can I get your Acked-by for my patch also Remy?
+
+Harro, I can either submit my patch to the patch system separately, or
+you can put it through with your series with my From/Signed-off-by tag
+on it.
+
+~Ryan
 
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Bluewater Systems Ltd - ARM Technology Solution Centre
+
+Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
+ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
+http://www.bluewatersys.com	New Zealand
+Phone: +64 3 3779127		Freecall: Australia 1800 148 751
+Fax:   +64 3 3779135			  USA 1800 261 2934
