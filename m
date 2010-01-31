@@ -1,124 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980Ab0AaVXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180Ab0AaVfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980Ab0AaVXO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 16:23:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209Ab0AaVXO
+	id S1754180Ab0AaVfV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 16:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105Ab0AaVfU
 	(ORCPT <rfc822;linux-kernel-outgoing-6734>);
-	Sun, 31 Jan 2010 16:23:14 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:47658 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148Ab0AaVXN convert rfc822-to-8bit (ORCPT
+	Sun, 31 Jan 2010 16:35:20 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:63869 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753799Ab0AaVfU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 16:23:13 -0500
+	Sun, 31 Jan 2010 16:35:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=RxWMibgS4yAUDhGCxqxX/Rdt8bDox4a1YYsahdc9fJEK0TQLIoxgDglrk+vlOAVnlr
-         lpq8rnmRxZUhGvj2Mzv8UhhzvHiFU7TBQy/LAJL9xiZLSevXYpMA9r5fXaXnTKurHlSj
-         CzprKG2iwZmxOGX8DsUkIU/ZrcgNIdw4CNm48=
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:content-type;
+        b=XMyhRZWfmAPKVYfUvpc8lY1vefYp9KBc5nY3F85W3VCBwzg8wDzaBKXbcCpl6nKg3a
+         lbt0BrjAatzwLkWTl0Q77iAWXlqT0E8PsqYTFn567V/Uo4o91XPk8Xq7AW7cg+bqOvaw
+         eQaWOqdWzSuy21Pk7xlSAO+odyx1VZMOkf2q4=
 MIME-Version: 1.0
-In-Reply-To: <3ed42b473cd234c42a7c7a0f96f69b5cc4c9d752.1264967499.git.joe@perches.com>
-References: <cover.1264967493.git.joe@perches.com> <3ed42b473cd234c42a7c7a0f96f69b5cc4c9d752.1264967499.git.joe@perches.com>
-From: =?ISO-8859-1?Q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>
-Date: Sun, 31 Jan 2010 22:22:51 +0100
-Message-ID: <69e28c911001311322v7f3bdd9v4fd2fe85b2e50d1a@mail.gmail.com>
-Subject: Re: [PATCH 06/10] drivers/staging: Fix continuation line formats
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
+Date: Sun, 31 Jan 2010 22:35:18 +0100
+X-Google-Sender-Auth: 7aa1b81dc7cdf3ff
+Message-ID: <520f0cf11001311335qeeb6082k68ba63c024c47b8a@mail.gmail.com>
+Subject: K99cpuspeed: possible recursive locking detected
+From: John Kacur <jkacur@redhat.com>
+To: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 31, 2010 at 9:02 PM, Joe Perches <joe@perches.com> wrote:
-> String constants that are continued on subsequent lines with \
-> are not good.
-> Fixed a "is tryied" / tried typo
->
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/staging/dream/qdsp5/audio_mp3.c            |    3 +--
->  .../rtl8187se/ieee80211/ieee80211_softmac_wx.c     |    3 +--
->  drivers/staging/rtl8187se/r8180_core.c             |    3 +--
->  drivers/staging/sep/sep_driver.c                   |    3 +--
->  4 files changed, 4 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/staging/dream/qdsp5/audio_mp3.c b/drivers/staging/dream/qdsp5/audio_mp3.c
-> index b95574f..7ed6e26 100644
-> --- a/drivers/staging/dream/qdsp5/audio_mp3.c
-> +++ b/drivers/staging/dream/qdsp5/audio_mp3.c
-> @@ -650,8 +650,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
->                                                       &audio->read_phys,
->                                                       GFP_KERNEL);
->                                if (!audio->read_data) {
-> -                                       pr_err("audio_mp3: malloc pcm \
-> -                                       buf failed\n");
-> +                                       pr_err("audio_mp3: malloc pcm buf failed\n");
->                                        rc = -1;
->                                } else {
->                                        uint8_t index;
-> diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
-> index f1d6cb4..ad42bcd 100644
-> --- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
-> +++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
-> @@ -482,8 +482,7 @@ int ieee80211_wx_set_power(struct ieee80211_device *ieee,
->                (!ieee->enter_sleep_state) ||
->                (!ieee->ps_is_queue_empty)){
->
-> -               printk("ERROR. PS mode is tryied to be use but\
-> -driver missed a callback\n\n");
-> +               printk("ERROR. PS mode tried to be use but driver missed a callback\n\n");
+I see the following when I shut-down 2.6.33-rc6 on my Lenovo Laptop T500
 
-This have more typos... "to be use"?
+Disabling ondemand cpu frequency scaling:
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.33-rc6 #1
+---------------------------------------------
+K99cpuspeed/20601 is trying to acquire lock:
+ (s_active){++++.+}, at: [<ffffffff81156f5c>] sysfs_hash_and_remove+0x53/0x6a
 
->
->                return -1;
->        }
-> diff --git a/drivers/staging/rtl8187se/r8180_core.c b/drivers/staging/rtl8187se/r8180_core.c
-> index e0f13ef..278992a 100644
-> --- a/drivers/staging/rtl8187se/r8180_core.c
-> +++ b/drivers/staging/rtl8187se/r8180_core.c
-> @@ -3864,8 +3864,7 @@ static int __init rtl8180_pci_module_init(void)
->                return ret;
->        }
->
-> -       printk(KERN_INFO "\nLinux kernel driver for RTL8180 \
-> -/ RTL8185 based WLAN cards\n");
-> +       printk(KERN_INFO "\nLinux kernel driver for RTL8180 / RTL8185 based WLAN cards\n");
+but task is already holding lock:
+ (s_active){++++.+}, at: [<ffffffff81159084>] sysfs_get_active_two+0x24/0x48
 
-While you are at it, change this to read RTL8187SE, since RTL8180/85
-are not supported by this driver.
+other info that might help us debug this:
+4 locks held by K99cpuspeed/20601:
+ #0:  (&buffer->mutex){+.+.+.}, at: [<ffffffff81157911>] sysfs_write_file+0x3e/0
+x12b
+ #1:  (s_active){++++.+}, at: [<ffffffff81159084>] sysfs_get_active_two+0x24/0x4
+8
+ #2:  (s_active){++++.+}, at: [<ffffffff81159091>] sysfs_get_active_two+0x31/0x4
+8
+ #3:  (dbs_mutex){+.+.+.}, at: [<ffffffffa04c4db3>] cpufreq_governor_dbs+0x29b/0
+x348 [cpufreq_ondemand]
 
->        printk(KERN_INFO "Copyright (c) 2004-2005, Andrea Merello\n");
->        DMESG("Initializing module");
->        DMESG("Wireless extensions version %d", WIRELESS_EXT);
-> diff --git a/drivers/staging/sep/sep_driver.c b/drivers/staging/sep/sep_driver.c
-> index e7bc9ec..8793878 100644
-> --- a/drivers/staging/sep/sep_driver.c
-> +++ b/drivers/staging/sep/sep_driver.c
-> @@ -380,8 +380,7 @@ static int sep_mmap(struct file *filp, struct vm_area_struct *vma)
->           shared area */
->        if ((vma->vm_end - vma->vm_start) > SEP_DRIVER_MMMAP_AREA_SIZE) {
->                edbg("SEP Driver mmap requested size is more than allowed\n");
-> -               printk(KERN_WARNING "SEP Driver mmap requested size is more \
-> -                       than allowed\n");
-> +               printk(KERN_WARNING "SEP Driver mmap requested size is more than allowed\n");
->                printk(KERN_WARNING "SEP Driver vma->vm_end is %08lx\n", vma->vm_end);
->                printk(KERN_WARNING "SEP Driver vma->vm_end is %08lx\n", vma->vm_start);
->                return -EAGAIN;
-> --
-> 1.6.6.rc0.57.gad7a
->
-> _______________________________________________
-> devel mailing list
-> devel@linuxdriverproject.org
-> http://driverdev.linuxdriverproject.org/mailman/listinfo/devel
->
-
-
-
--- 
-Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
+stack backtrace:
+Pid: 20601, comm: K99cpuspeed Not tainted 2.6.33-rc6 #1
+Call Trace:
+ [<ffffffff81071f16>] __lock_acquire+0xcf6/0xd8b
+ [<ffffffff810708d4>] ? debug_check_no_locks_freed+0x120/0x12f
+ [<ffffffff810701ce>] ? trace_hardirqs_on_caller+0x11f/0x14a
+ [<ffffffff81072083>] lock_acquire+0xd8/0xf5
+ [<ffffffff81156f5c>] ? sysfs_hash_and_remove+0x53/0x6a
+ [<ffffffff81158d85>] sysfs_addrm_finish+0xe1/0x175
+ [<ffffffff81156f5c>] ? sysfs_hash_and_remove+0x53/0x6a
+ [<ffffffff8137af35>] ? sub_preempt_count+0xa3/0xb6
+ [<ffffffff81156f5c>] sysfs_hash_and_remove+0x53/0x6a
+ [<ffffffff8115a0f1>] sysfs_remove_group+0x91/0xc9
+ [<ffffffffa04c4dc6>] cpufreq_governor_dbs+0x2ae/0x348 [cpufreq_ondemand]
+ [<ffffffff8137af35>] ? sub_preempt_count+0xa3/0xb6
+ [<ffffffff812ab760>] __cpufreq_governor+0x89/0xc7
+ [<ffffffff812ac54d>] __cpufreq_set_policy+0x18e/0x22a
+ [<ffffffff812aca6a>] store_scaling_governor+0x199/0x1ed
+ [<ffffffff812ad2a1>] ? handle_update+0x0/0x39
+ [<ffffffff813765d5>] ? down_write+0x76/0x7e
+ [<ffffffff81370065>] ? do_boot_cpu+0x5ff/0x653
+ [<ffffffff812ac39b>] store+0x67/0x8b
+ [<ffffffff811579c9>] sysfs_write_file+0xf6/0x12b
+ [<ffffffff810fff45>] vfs_write+0xb0/0x10a
+ [<ffffffff8110006d>] sys_write+0x4c/0x75
+ [<ffffffff81002d9b>] system_call_fastpath+0x16/0x1b
