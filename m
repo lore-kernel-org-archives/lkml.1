@@ -1,611 +1,1861 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755666Ab0BAS6G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 13:58:06 -0500
-Received: from verein.lst.de ([213.95.11.210]:36264 "EHLO verein.lst.de"
+	id S1755733Ab0BAS6c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:58:32 -0500
+Received: from verein.lst.de ([213.95.11.210]:36271 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754371Ab0BAS6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 13:58:02 -0500
-Date: Mon, 1 Feb 2010 19:56:40 +0100
+	id S1755607Ab0BAS63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 13:58:29 -0500
+Date: Mon, 1 Feb 2010 19:55:44 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-arch@vger.kernel.org
-Cc: ralf@linux-mips.org, benh@kernel.crashing.org, lethal@linux-sh.org,
-       takata@linux-m32r.org, jdike@addtoit.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, viro@zeniv.linux.org.uk
-Subject: [PATCH 6/6] generic sys_olduname
-Message-ID: <20100201185640.GF11045@lst.de>
+Cc: linux@arm.linux.org.uk, starvik@axis.com, jesper.nilsson@axis.com,
+       dhowells@redhat.com, ysato@users.sourceforge.jp, takata@linux-m32r.org,
+       geert@linux-m68k.org, zippel@linux-m68k.org, gerg@uclinux.org,
+       ralf@linux-mips.org, benh@kernel.crashing.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, lethal@linux-sh.org, davem@davemloft.net,
+       jdike@addtoit.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       viro@zeniv.linux.org.uk
+Subject: [PATCH 3/6] generic sys_ipc wrapper
+Message-ID: <20100201185544.GC11045@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add generic implementations of the old and really old uname system calls.
-Note that sh only implements sys_olduname but not sys_oldolduname, but
-I'm not going to bother with another ifdef for that special case.
 
-m32r implemented an old uname but never wired it up, so kill it, too.
+Add a generic implementation of the ipc demultiplexer syscall.  Except for
+s390 and sparc64 all implementations of the sys_ipc are nearly identical.
+
+There are slight differences in the types of the parameters, where mips
+and powerpc as the only 64-bit architectures with sys_ipc use unsigned long
+for the "third" argument as it gets casted to a pointer later, while it
+traditionally is an "int" like most other paramters.  frv goes even further
+and uses unsigned long for all parameters execept for "ptr" which is a pointer
+type everywhere.  The change from int to unsigned long for "third" and back
+to "int" for the others on frv should be fine due to the in-register calling
+conventions for syscalls (we already had a similar issue with the generic
+sys_ptrace), but I'd prefer to have the arch maintainers looks over this
+in details.
+
+Except for that h8300, m68k and m68knommu lack an impplementation of the
+semtimedop sub call which this patch adds, and various architectures have
+different strategies for the SHMAT version 1 case which apparently never
+gets used - at least on i386 it seems superflous as the compat code on
+x86-64 and ia64 doesn't even bother to implement it.
 
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 
+Index: linux-2.6/ipc/syscall.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/ipc/syscall.c	2010-01-29 23:35:26.546004200 +0100
+@@ -0,0 +1,99 @@
++/*
++ * sys_ipc() is the old de-multiplexer for the SysV IPC calls.
++ *
++ * This is really horribly ugly, and new architectures should just wire up
++ * the individual syscalls instead.
++ */
++#include <linux/unistd.h>
++
++#ifdef __ARCH_WANT_SYS_IPC
++#include <linux/errno.h>
++#include <linux/ipc.h>
++#include <linux/shm.h>
++#include <linux/syscalls.h>
++#include <linux/uaccess.h>
++
++SYSCALL_DEFINE6(ipc, unsigned int, call, int, first, int, second,
++		unsigned long, third, void __user *, ptr, long, fifth)
++{
++	int version, ret;
++
++	version = call >> 16; /* hack for backward compatibility */
++	call &= 0xffff;
++
++	switch (call) {
++	case SEMOP:
++		return sys_semtimedop(first, (struct sembuf __user *)ptr,
++				      second, NULL);
++	case SEMTIMEDOP:
++		return sys_semtimedop(first, (struct sembuf __user *)ptr,
++				      second,
++				      (const struct timespec __user *)fifth);
++
++	case SEMGET:
++		return sys_semget(first, second, third);
++	case SEMCTL: {
++		union semun fourth;
++		if (!ptr)
++			return -EINVAL;
++		if (get_user(fourth.__pad, (void __user * __user *) ptr))
++			return -EFAULT;
++		return sys_semctl(first, second, third, fourth);
++	}
++
++	case MSGSND:
++		return sys_msgsnd(first, (struct msgbuf __user *) ptr,
++				  second, third);
++	case MSGRCV:
++		switch (version) {
++		case 0: {
++			struct ipc_kludge tmp;
++			if (!ptr)
++				return -EINVAL;
++
++			if (copy_from_user(&tmp,
++					   (struct ipc_kludge __user *) ptr,
++					   sizeof(tmp)))
++				return -EFAULT;
++			return sys_msgrcv(first, tmp.msgp, second,
++					   tmp.msgtyp, third);
++		}
++		default:
++			return sys_msgrcv(first,
++					   (struct msgbuf __user *) ptr,
++					   second, fifth, third);
++		}
++	case MSGGET:
++		return sys_msgget((key_t) first, second);
++	case MSGCTL:
++		return sys_msgctl(first, second, (struct msqid_ds __user *)ptr);
++
++	case SHMAT:
++		switch (version) {
++		default: {
++			unsigned long raddr;
++			ret = do_shmat(first, (char __user *)ptr,
++				       second, &raddr);
++			if (ret)
++				return ret;
++			return put_user(raddr, (unsigned long __user *) third);
++		}
++		case 1:
++			/*
++			 * This was the entry point for kernel-originating calls
++			 * from iBCS2 in 2.2 days.
++			 */
++			return -EINVAL;
++		}
++	case SHMDT:
++		return sys_shmdt((char __user *)ptr);
++	case SHMGET:
++		return sys_shmget(first, second, third);
++	case SHMCTL:
++		return sys_shmctl(first, second,
++				   (struct shmid_ds __user *) ptr);
++	default:
++		return -ENOSYS;
++	}
++}
++#endif
+Index: linux-2.6/arch/arm/kernel/sys_arm.c
+===================================================================
+--- linux-2.6.orig/arch/arm/kernel/sys_arm.c	2010-01-29 23:35:24.036024552 +0100
++++ linux-2.6/arch/arm/kernel/sys_arm.c	2010-01-29 23:35:26.547003978 +0100
+@@ -28,88 +28,6 @@
+ #include <linux/ipc.h>
+ #include <linux/uaccess.h>
+ 
+-#if !defined(CONFIG_AEABI) || defined(CONFIG_OABI_COMPAT)
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-asmlinkage int sys_ipc(uint call, int first, int second, int third,
+-		       void __user *ptr, long fifth)
+-{
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	switch (call) {
+-	case SEMOP:
+-		return sys_semtimedop (first, (struct sembuf __user *)ptr, second, NULL);
+-	case SEMTIMEDOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr, second,
+-					(const struct timespec __user *)fifth);
+-
+-	case SEMGET:
+-		return sys_semget (first, second, third);
+-	case SEMCTL: {
+-		union semun fourth;
+-		if (!ptr)
+-			return -EINVAL;
+-		if (get_user(fourth.__pad, (void __user * __user *) ptr))
+-			return -EFAULT;
+-		return sys_semctl (first, second, third, fourth);
+-	}
+-
+-	case MSGSND:
+-		return sys_msgsnd(first, (struct msgbuf __user *) ptr, 
+-				  second, third);
+-	case MSGRCV:
+-		switch (version) {
+-		case 0: {
+-			struct ipc_kludge tmp;
+-			if (!ptr)
+-				return -EINVAL;
+-			if (copy_from_user(&tmp,(struct ipc_kludge __user *)ptr,
+-					   sizeof (tmp)))
+-				return -EFAULT;
+-			return sys_msgrcv (first, tmp.msgp, second,
+-					   tmp.msgtyp, third);
+-		}
+-		default:
+-			return sys_msgrcv (first,
+-					   (struct msgbuf __user *) ptr,
+-					   second, fifth, third);
+-		}
+-	case MSGGET:
+-		return sys_msgget ((key_t) first, second);
+-	case MSGCTL:
+-		return sys_msgctl(first, second, (struct msqid_ds __user *)ptr);
+-
+-	case SHMAT:
+-		switch (version) {
+-		default: {
+-			ulong raddr;
+-			ret = do_shmat(first, (char __user *)ptr, second, &raddr);
+-			if (ret)
+-				return ret;
+-			return put_user(raddr, (ulong __user *)third);
+-		}
+-		case 1: /* Of course, we don't support iBCS2! */
+-			return -EINVAL;
+-		}
+-	case SHMDT: 
+-		return sys_shmdt ((char __user *)ptr);
+-	case SHMGET:
+-		return sys_shmget (first, second, third);
+-	case SHMCTL:
+-		return sys_shmctl (first, second,
+-				   (struct shmid_ds __user *) ptr);
+-	default:
+-		return -ENOSYS;
+-	}
+-}
+-#endif
+-
+ /* Fork a new task - this creates a new program thread.
+  * This is called indirectly via a small wrapper
+  */
+Index: linux-2.6/arch/arm/kernel/sys_oabi-compat.c
+===================================================================
+--- linux-2.6.orig/arch/arm/kernel/sys_oabi-compat.c	2010-01-12 14:08:14.744003573 +0100
++++ linux-2.6/arch/arm/kernel/sys_oabi-compat.c	2010-01-29 23:35:26.547003978 +0100
+@@ -346,9 +346,6 @@ asmlinkage long sys_oabi_semop(int semid
+ 	return sys_oabi_semtimedop(semid, tsops, nsops, NULL);
+ }
+ 
+-extern asmlinkage int sys_ipc(uint call, int first, int second, int third,
+-			      void __user *ptr, long fifth);
+-
+ asmlinkage int sys_oabi_ipc(uint call, int first, int second, int third,
+ 			    void __user *ptr, long fifth)
+ {
+Index: linux-2.6/arch/cris/kernel/sys_cris.c
+===================================================================
+--- linux-2.6.orig/arch/cris/kernel/sys_cris.c	2010-01-29 23:35:24.040025899 +0100
++++ linux-2.6/arch/cris/kernel/sys_cris.c	2010-01-29 23:35:26.548004734 +0100
+@@ -33,81 +33,3 @@ sys_mmap2(unsigned long addr, unsigned l
+ 	/* bug(?): 8Kb pages here */
+         return sys_mmap_pgoff(addr, len, prot, flags, fd, pgoff);
+ }
+-
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly. (same as arch/i386)
+- */
+-
+-asmlinkage int sys_ipc (uint call, int first, int second,
+-			int third, void __user *ptr, long fifth)
+-{
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	switch (call) {
+-	case SEMOP:
+-		return sys_semtimedop (first, (struct sembuf __user *)ptr, second, NULL);
+-	case SEMTIMEDOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr, second,
+-					(const struct timespec __user *)fifth);
+-
+-	case SEMGET:
+-		return sys_semget (first, second, third);
+-	case SEMCTL: {
+-		union semun fourth;
+-		if (!ptr)
+-			return -EINVAL;
+-		if (get_user(fourth.__pad, (void * __user *) ptr))
+-			return -EFAULT;
+-		return sys_semctl (first, second, third, fourth);
+-	}
+-
+-	case MSGSND:
+-		return sys_msgsnd (first, (struct msgbuf __user *) ptr, 
+-				   second, third);
+-	case MSGRCV:
+-		switch (version) {
+-		case 0: {
+-			struct ipc_kludge tmp;
+-			if (!ptr)
+-				return -EINVAL;
+-			
+-			if (copy_from_user(&tmp,
+-					   (struct ipc_kludge __user *) ptr, 
+-					   sizeof (tmp)))
+-				return -EFAULT;
+-			return sys_msgrcv (first, tmp.msgp, second,
+-					   tmp.msgtyp, third);
+-		}
+-		default:
+-			return sys_msgrcv (first,
+-					   (struct msgbuf __user *) ptr,
+-					   second, fifth, third);
+-		}
+-	case MSGGET:
+-		return sys_msgget ((key_t) first, second);
+-	case MSGCTL:
+-		return sys_msgctl (first, second, (struct msqid_ds __user *) ptr);
+-
+-	case SHMAT: {
+-                ulong raddr;
+-                ret = do_shmat (first, (char __user *) ptr, second, &raddr);
+-                if (ret)
+-                        return ret;
+-                return put_user (raddr, (ulong __user *) third);
+-        }
+-	case SHMDT: 
+-		return sys_shmdt ((char __user *)ptr);
+-	case SHMGET:
+-		return sys_shmget (first, second, third);
+-	case SHMCTL:
+-		return sys_shmctl (first, second,
+-				   (struct shmid_ds __user *) ptr);
+-	default:
+-		return -ENOSYS;
+-	}
+-}
+Index: linux-2.6/arch/frv/kernel/sys_frv.c
+===================================================================
+--- linux-2.6.orig/arch/frv/kernel/sys_frv.c	2010-01-12 14:08:14.773253177 +0100
++++ linux-2.6/arch/frv/kernel/sys_frv.c	2010-01-29 23:35:26.548004734 +0100
+@@ -42,92 +42,3 @@ asmlinkage long sys_mmap2(unsigned long 
+ 	return sys_mmap_pgoff(addr, len, prot, flags, fd,
+ 			      pgoff >> (PAGE_SHIFT - 12));
+ }
+-
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-asmlinkage long sys_ipc(unsigned long call,
+-			unsigned long first,
+-			unsigned long second,
+-			unsigned long third,
+-			void __user *ptr,
+-			unsigned long fifth)
+-{
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	switch (call) {
+-	case SEMOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr, second, NULL);
+-	case SEMTIMEDOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr, second,
+-				      (const struct timespec __user *)fifth);
+-
+-	case SEMGET:
+-		return sys_semget (first, second, third);
+-	case SEMCTL: {
+-		union semun fourth;
+-		if (!ptr)
+-			return -EINVAL;
+-		if (get_user(fourth.__pad, (void * __user *) ptr))
+-			return -EFAULT;
+-		return sys_semctl (first, second, third, fourth);
+-	}
+-
+-	case MSGSND:
+-		return sys_msgsnd (first, (struct msgbuf __user *) ptr,
+-				   second, third);
+-	case MSGRCV:
+-		switch (version) {
+-		case 0: {
+-			struct ipc_kludge tmp;
+-			if (!ptr)
+-				return -EINVAL;
+-
+-			if (copy_from_user(&tmp,
+-					   (struct ipc_kludge __user *) ptr,
+-					   sizeof (tmp)))
+-				return -EFAULT;
+-			return sys_msgrcv (first, tmp.msgp, second,
+-					   tmp.msgtyp, third);
+-		}
+-		default:
+-			return sys_msgrcv (first,
+-					   (struct msgbuf __user *) ptr,
+-					   second, fifth, third);
+-		}
+-	case MSGGET:
+-		return sys_msgget ((key_t) first, second);
+-	case MSGCTL:
+-		return sys_msgctl (first, second, (struct msqid_ds __user *) ptr);
+-
+-	case SHMAT:
+-		switch (version) {
+-		default: {
+-			ulong raddr;
+-			ret = do_shmat (first, (char __user *) ptr, second, &raddr);
+-			if (ret)
+-				return ret;
+-			return put_user (raddr, (ulong __user *) third);
+-		}
+-		case 1:	/* iBCS2 emulator entry point */
+-			if (!segment_eq(get_fs(), get_ds()))
+-				return -EINVAL;
+-			/* The "(ulong *) third" is valid _only_ because of the kernel segment thing */
+-			return do_shmat (first, (char __user *) ptr, second, (ulong *) third);
+-		}
+-	case SHMDT:
+-		return sys_shmdt ((char __user *)ptr);
+-	case SHMGET:
+-		return sys_shmget (first, second, third);
+-	case SHMCTL:
+-		return sys_shmctl (first, second,
+-				   (struct shmid_ds __user *) ptr);
+-	default:
+-		return -ENOSYS;
+-	}
+-}
+Index: linux-2.6/arch/m32r/kernel/sys_m32r.c
+===================================================================
+--- linux-2.6.orig/arch/m32r/kernel/sys_m32r.c	2010-01-12 14:08:14.788010155 +0100
++++ linux-2.6/arch/m32r/kernel/sys_m32r.c	2010-01-29 23:35:26.550023915 +0100
+@@ -76,87 +76,6 @@ asmlinkage int sys_tas(int __user *addr)
+ 	return oldval;
+ }
+ 
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-asmlinkage int sys_ipc(uint call, int first, int second,
+-		       int third, void __user *ptr, long fifth)
+-{
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	switch (call) {
+-	case SEMOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr,
+-				      second, NULL);
+-	case SEMTIMEDOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr,
+-				      second, (const struct timespec __user *)fifth);
+-	case SEMGET:
+-		return sys_semget (first, second, third);
+-	case SEMCTL: {
+-		union semun fourth;
+-		if (!ptr)
+-			return -EINVAL;
+-		if (get_user(fourth.__pad, (void __user * __user *) ptr))
+-			return -EFAULT;
+-		return sys_semctl (first, second, third, fourth);
+-		}
+-
+-	case MSGSND:
+-		return sys_msgsnd (first, (struct msgbuf __user *) ptr,
+-				   second, third);
+-	case MSGRCV:
+-		switch (version) {
+-		case 0: {
+-			struct ipc_kludge tmp;
+-			if (!ptr)
+-				return -EINVAL;
+-
+-			if (copy_from_user(&tmp,
+-					   (struct ipc_kludge __user *) ptr,
+-					   sizeof (tmp)))
+-				return -EFAULT;
+-			return sys_msgrcv (first, tmp.msgp, second,
+-					   tmp.msgtyp, third);
+-			}
+-		default:
+-			return sys_msgrcv (first,
+-					   (struct msgbuf __user *) ptr,
+-					   second, fifth, third);
+-		}
+-	case MSGGET:
+-		return sys_msgget ((key_t) first, second);
+-	case MSGCTL:
+-		return sys_msgctl (first, second,
+-				   (struct msqid_ds __user *) ptr);
+-	case SHMAT: {
+-		ulong raddr;
+-
+-		if (!access_ok(VERIFY_WRITE, (ulong __user *) third,
+-				      sizeof(ulong)))
+-			return -EFAULT;
+-		ret = do_shmat (first, (char __user *) ptr, second, &raddr);
+-		if (ret)
+-			return ret;
+-		return put_user (raddr, (ulong __user *) third);
+-		}
+-	case SHMDT:
+-		return sys_shmdt ((char __user *)ptr);
+-	case SHMGET:
+-		return sys_shmget (first, second, third);
+-	case SHMCTL:
+-		return sys_shmctl (first, second,
+-				   (struct shmid_ds __user *) ptr);
+-	default:
+-		return -ENOSYS;
+-	}
+-}
+-
+ asmlinkage int sys_uname(struct old_utsname __user * name)
+ {
+ 	int err;
+Index: linux-2.6/arch/m68k/kernel/sys_m68k.c
+===================================================================
+--- linux-2.6.orig/arch/m68k/kernel/sys_m68k.c	2010-01-29 23:35:24.045004257 +0100
++++ linux-2.6/arch/m68k/kernel/sys_m68k.c	2010-01-29 23:35:26.550023915 +0100
+@@ -41,87 +41,6 @@ asmlinkage long sys_mmap2(unsigned long 
+ 	return sys_mmap_pgoff(addr, len, prot, flags, fd, pgoff);
+ }
+ 
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-asmlinkage int sys_ipc (uint call, int first, int second,
+-			int third, void __user *ptr, long fifth)
+-{
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	if (call <= SEMCTL)
+-		switch (call) {
+-		case SEMOP:
+-			return sys_semop (first, ptr, second);
+-		case SEMGET:
+-			return sys_semget (first, second, third);
+-		case SEMCTL: {
+-			union semun fourth;
+-			if (!ptr)
+-				return -EINVAL;
+-			if (get_user(fourth.__pad, (void __user *__user *) ptr))
+-				return -EFAULT;
+-			return sys_semctl (first, second, third, fourth);
+-			}
+-		default:
+-			return -ENOSYS;
+-		}
+-	if (call <= MSGCTL)
+-		switch (call) {
+-		case MSGSND:
+-			return sys_msgsnd (first, ptr, second, third);
+-		case MSGRCV:
+-			switch (version) {
+-			case 0: {
+-				struct ipc_kludge tmp;
+-				if (!ptr)
+-					return -EINVAL;
+-				if (copy_from_user (&tmp, ptr, sizeof (tmp)))
+-					return -EFAULT;
+-				return sys_msgrcv (first, tmp.msgp, second,
+-						   tmp.msgtyp, third);
+-				}
+-			default:
+-				return sys_msgrcv (first, ptr,
+-						   second, fifth, third);
+-			}
+-		case MSGGET:
+-			return sys_msgget ((key_t) first, second);
+-		case MSGCTL:
+-			return sys_msgctl (first, second, ptr);
+-		default:
+-			return -ENOSYS;
+-		}
+-	if (call <= SHMCTL)
+-		switch (call) {
+-		case SHMAT:
+-			switch (version) {
+-			default: {
+-				ulong raddr;
+-				ret = do_shmat (first, ptr, second, &raddr);
+-				if (ret)
+-					return ret;
+-				return put_user (raddr, (ulong __user *) third);
+-			}
+-			}
+-		case SHMDT:
+-			return sys_shmdt (ptr);
+-		case SHMGET:
+-			return sys_shmget (first, second, third);
+-		case SHMCTL:
+-			return sys_shmctl (first, second, ptr);
+-		default:
+-			return -ENOSYS;
+-		}
+-
+-	return -EINVAL;
+-}
+-
+ /* Convert virtual (user) address VADDR to physical address PADDR */
+ #define virt_to_phys_040(vaddr)						\
+ ({									\
 Index: linux-2.6/arch/mips/kernel/syscall.c
 ===================================================================
---- linux-2.6.orig/arch/mips/kernel/syscall.c	2010-01-29 23:35:26.551003998 +0100
-+++ linux-2.6/arch/mips/kernel/syscall.c	2010-01-29 23:35:31.796277657 +0100
-@@ -215,48 +215,6 @@ out:
+--- linux-2.6.orig/arch/mips/kernel/syscall.c	2010-01-12 14:08:14.826022677 +0100
++++ linux-2.6/arch/mips/kernel/syscall.c	2010-01-29 23:35:26.551003998 +0100
+@@ -407,94 +407,6 @@ _sys_sysmips(nabi_no_regargs struct pt_r
+ }
+ 
+ /*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-SYSCALL_DEFINE6(ipc, unsigned int, call, int, first, int, second,
+-	unsigned long, third, void __user *, ptr, long, fifth)
+-{
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	switch (call) {
+-	case SEMOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr,
+-		                      second, NULL);
+-	case SEMTIMEDOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr,
+-				      second,
+-				      (const struct timespec __user *)fifth);
+-	case SEMGET:
+-		return sys_semget(first, second, third);
+-	case SEMCTL: {
+-		union semun fourth;
+-		if (!ptr)
+-			return -EINVAL;
+-		if (get_user(fourth.__pad, (void __user *__user *) ptr))
+-			return -EFAULT;
+-		return sys_semctl(first, second, third, fourth);
+-	}
+-
+-	case MSGSND:
+-		return sys_msgsnd(first, (struct msgbuf __user *) ptr,
+-				  second, third);
+-	case MSGRCV:
+-		switch (version) {
+-		case 0: {
+-			struct ipc_kludge tmp;
+-			if (!ptr)
+-				return -EINVAL;
+-
+-			if (copy_from_user(&tmp,
+-					   (struct ipc_kludge __user *) ptr,
+-					   sizeof(tmp)))
+-				return -EFAULT;
+-			return sys_msgrcv(first, tmp.msgp, second,
+-					  tmp.msgtyp, third);
+-		}
+-		default:
+-			return sys_msgrcv(first,
+-					  (struct msgbuf __user *) ptr,
+-					  second, fifth, third);
+-		}
+-	case MSGGET:
+-		return sys_msgget((key_t) first, second);
+-	case MSGCTL:
+-		return sys_msgctl(first, second,
+-				  (struct msqid_ds __user *) ptr);
+-
+-	case SHMAT:
+-		switch (version) {
+-		default: {
+-			unsigned long raddr;
+-			ret = do_shmat(first, (char __user *) ptr, second,
+-				       &raddr);
+-			if (ret)
+-				return ret;
+-			return put_user(raddr, (unsigned long __user *) third);
+-		}
+-		case 1:	/* iBCS2 emulator entry point */
+-			if (!segment_eq(get_fs(), get_ds()))
+-				return -EINVAL;
+-			return do_shmat(first, (char __user *) ptr, second,
+-				        (unsigned long *) third);
+-		}
+-	case SHMDT:
+-		return sys_shmdt((char __user *)ptr);
+-	case SHMGET:
+-		return sys_shmget(first, second, third);
+-	case SHMCTL:
+-		return sys_shmctl(first, second,
+-				  (struct shmid_ds __user *) ptr);
+-	default:
+-		return -ENOSYS;
+-	}
+-}
+-
+-/*
+  * No implemented yet ...
+  */
+ SYSCALL_DEFINE3(cachectl, char *, addr, int, nbytes, int, op)
+Index: linux-2.6/arch/mn10300/kernel/sys_mn10300.c
+===================================================================
+--- linux-2.6.orig/arch/mn10300/kernel/sys_mn10300.c	2010-01-29 23:35:20.184012102 +0100
++++ linux-2.6/arch/mn10300/kernel/sys_mn10300.c	2010-01-29 23:35:26.552004335 +0100
+@@ -31,91 +31,3 @@ asmlinkage long old_mmap(unsigned long a
+ 		return -EINVAL;
+ 	return sys_mmap_pgoff(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
+ }
+-
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-asmlinkage long sys_ipc(uint call, int first, int second,
+-			int third, void __user *ptr, long fifth)
+-{
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	switch (call) {
+-	case SEMOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr,
+-				      second, NULL);
+-	case SEMTIMEDOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr,
+-				      second,
+-				      (const struct timespec __user *)fifth);
+-	case SEMGET:
+-		return sys_semget(first, second, third);
+-	case SEMCTL: {
+-		union semun fourth;
+-		if (!ptr)
+-			return -EINVAL;
+-		if (get_user(fourth.__pad, (void __user * __user *) ptr))
+-			return -EFAULT;
+-		return sys_semctl(first, second, third, fourth);
+-	}
+-
+-	case MSGSND:
+-		return sys_msgsnd(first, (struct msgbuf __user *) ptr,
+-				  second, third);
+-	case MSGRCV:
+-		switch (version) {
+-		case 0: {
+-			struct ipc_kludge tmp;
+-			if (!ptr)
+-				return -EINVAL;
+-
+-			if (copy_from_user(&tmp,
+-					   (struct ipc_kludge __user *) ptr,
+-					   sizeof(tmp)))
+-				return -EFAULT;
+-			return sys_msgrcv(first, tmp.msgp, second,
+-					  tmp.msgtyp, third);
+-		}
+-		default:
+-			return sys_msgrcv(first,
+-					  (struct msgbuf __user *) ptr,
+-					   second, fifth, third);
+-		}
+-	case MSGGET:
+-		return sys_msgget((key_t) first, second);
+-	case MSGCTL:
+-		return sys_msgctl(first, second,
+-				   (struct msqid_ds __user *) ptr);
+-
+-	case SHMAT:
+-		switch (version) {
+-		default: {
+-			ulong raddr;
+-			ret = do_shmat(first, (char __user *) ptr, second,
+-				       &raddr);
+-			if (ret)
+-				return ret;
+-			return put_user(raddr, (ulong *) third);
+-		}
+-		case 1:	/* iBCS2 emulator entry point */
+-			if (!segment_eq(get_fs(), get_ds()))
+-				return -EINVAL;
+-			return do_shmat(first, (char __user *) ptr, second,
+-					(ulong *) third);
+-		}
+-	case SHMDT:
+-		return sys_shmdt((char __user *)ptr);
+-	case SHMGET:
+-		return sys_shmget(first, second, third);
+-	case SHMCTL:
+-		return sys_shmctl(first, second,
+-				  (struct shmid_ds __user *) ptr);
+-	default:
+-		return -EINVAL;
+-	}
+-}
+Index: linux-2.6/arch/powerpc/include/asm/syscalls.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/syscalls.h	2010-01-12 14:08:14.855003812 +0100
++++ linux-2.6/arch/powerpc/include/asm/syscalls.h	2010-01-29 23:35:26.553004253 +0100
+@@ -35,8 +35,6 @@ asmlinkage long sys_pipe2(int __user *fi
+ asmlinkage long sys_rt_sigaction(int sig,
+ 		const struct sigaction __user *act,
+ 		struct sigaction __user *oact, size_t sigsetsize);
+-asmlinkage int sys_ipc(uint call, int first, unsigned long second,
+-		long third, void __user *ptr, long fifth);
+ asmlinkage long ppc64_personality(unsigned long personality);
+ asmlinkage int ppc_rtas(struct rtas_args __user *uargs);
+ asmlinkage time_t sys64_time(time_t __user * tloc);
+Index: linux-2.6/arch/powerpc/kernel/syscalls.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/syscalls.c	2010-01-12 14:08:14.873027057 +0100
++++ linux-2.6/arch/powerpc/kernel/syscalls.c	2010-01-29 23:35:26.554009549 +0100
+@@ -42,100 +42,6 @@
+ #include <asm/time.h>
+ #include <asm/unistd.h>
+ 
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-int sys_ipc(uint call, int first, unsigned long second, long third,
+-	    void __user *ptr, long fifth)
+-{
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	ret = -ENOSYS;
+-	switch (call) {
+-	case SEMOP:
+-		ret = sys_semtimedop(first, (struct sembuf __user *)ptr,
+-				      (unsigned)second, NULL);
+-		break;
+-	case SEMTIMEDOP:
+-		ret = sys_semtimedop(first, (struct sembuf __user *)ptr,
+-				      (unsigned)second,
+-				      (const struct timespec __user *) fifth);
+-		break;
+-	case SEMGET:
+-		ret = sys_semget (first, (int)second, third);
+-		break;
+-	case SEMCTL: {
+-		union semun fourth;
+-
+-		ret = -EINVAL;
+-		if (!ptr)
+-			break;
+-		if ((ret = get_user(fourth.__pad, (void __user * __user *)ptr)))
+-			break;
+-		ret = sys_semctl(first, (int)second, third, fourth);
+-		break;
+-	}
+-	case MSGSND:
+-		ret = sys_msgsnd(first, (struct msgbuf __user *)ptr,
+-				 (size_t)second, third);
+-		break;
+-	case MSGRCV:
+-		switch (version) {
+-		case 0: {
+-			struct ipc_kludge tmp;
+-
+-			ret = -EINVAL;
+-			if (!ptr)
+-				break;
+-			if ((ret = copy_from_user(&tmp,
+-						(struct ipc_kludge __user *) ptr,
+-						sizeof (tmp)) ? -EFAULT : 0))
+-				break;
+-			ret = sys_msgrcv(first, tmp.msgp, (size_t) second,
+-					  tmp.msgtyp, third);
+-			break;
+-		}
+-		default:
+-			ret = sys_msgrcv (first, (struct msgbuf __user *) ptr,
+-					  (size_t)second, fifth, third);
+-			break;
+-		}
+-		break;
+-	case MSGGET:
+-		ret = sys_msgget((key_t)first, (int)second);
+-		break;
+-	case MSGCTL:
+-		ret = sys_msgctl(first, (int)second,
+-				  (struct msqid_ds __user *)ptr);
+-		break;
+-	case SHMAT: {
+-		ulong raddr;
+-		ret = do_shmat(first, (char __user *)ptr, (int)second, &raddr);
+-		if (ret)
+-			break;
+-		ret = put_user(raddr, (ulong __user *) third);
+-		break;
+-	}
+-	case SHMDT:
+-		ret = sys_shmdt((char __user *)ptr);
+-		break;
+-	case SHMGET:
+-		ret = sys_shmget(first, (size_t)second, third);
+-		break;
+-	case SHMCTL:
+-		ret = sys_shmctl(first, (int)second,
+-				 (struct shmid_ds __user *)ptr);
+-		break;
+-	}
+-
+-	return ret;
+-}
+-
+ static inline unsigned long do_mmap2(unsigned long addr, size_t len,
+ 			unsigned long prot, unsigned long flags,
+ 			unsigned long fd, unsigned long off, int shift)
+Index: linux-2.6/arch/s390/kernel/entry.h
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/entry.h	2010-01-29 23:35:24.050007059 +0100
++++ linux-2.6/arch/s390/kernel/entry.h	2010-01-29 23:35:26.554009549 +0100
+@@ -30,7 +30,7 @@ struct fadvise64_64_args;
+ struct old_sigaction;
+ 
+ long sys_mmap2(struct s390_mmap_arg_struct __user  *arg);
+-long sys_ipc(uint call, int first, unsigned long second,
++long sys_s390_ipc(uint call, int first, unsigned long second,
+ 	     unsigned long third, void __user *ptr);
+ long sys_s390_newuname(struct new_utsname __user *name);
+ long sys_s390_personality(unsigned long personality);
+Index: linux-2.6/arch/s390/kernel/sys_s390.c
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/sys_s390.c	2010-01-29 23:35:24.048004429 +0100
++++ linux-2.6/arch/s390/kernel/sys_s390.c	2010-01-29 23:35:26.555004019 +0100
+@@ -64,7 +64,7 @@ out:
+  *
+  * This is really horribly ugly.
+  */
+-SYSCALL_DEFINE5(ipc, uint, call, int, first, unsigned long, second,
++SYSCALL_DEFINE5(s390_ipc, uint, call, int, first, unsigned long, second,
+ 		unsigned long, third, void __user *, ptr)
+ {
+         struct ipc_kludge tmp;
+Index: linux-2.6/arch/s390/kernel/syscalls.S
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/syscalls.S	2010-01-29 23:35:24.049004277 +0100
++++ linux-2.6/arch/s390/kernel/syscalls.S	2010-01-29 23:35:26.555004019 +0100
+@@ -125,7 +125,7 @@ NI_SYSCALL							/* vm86old for i386 */
+ SYSCALL(sys_wait4,sys_wait4,compat_sys_wait4_wrapper)
+ SYSCALL(sys_swapoff,sys_swapoff,sys32_swapoff_wrapper)		/* 115 */
+ SYSCALL(sys_sysinfo,sys_sysinfo,compat_sys_sysinfo_wrapper)
+-SYSCALL(sys_ipc,sys_ipc,sys32_ipc_wrapper)
++SYSCALL(sys_s390_ipc,sys_s390_ipc,sys32_ipc_wrapper)
+ SYSCALL(sys_fsync,sys_fsync,sys32_fsync_wrapper)
+ SYSCALL(sys_sigreturn,sys_sigreturn,sys32_sigreturn)
+ SYSCALL(sys_clone,sys_clone,sys_clone_wrapper)			/* 120 */
+Index: linux-2.6/arch/sh/include/asm/syscalls.h
+===================================================================
+--- linux-2.6.orig/arch/sh/include/asm/syscalls.h	2010-01-12 14:08:14.901010160 +0100
++++ linux-2.6/arch/sh/include/asm/syscalls.h	2010-01-29 23:35:26.556004146 +0100
+@@ -11,8 +11,6 @@ asmlinkage int old_mmap(unsigned long ad
+ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+ 			  unsigned long prot, unsigned long flags,
+ 			  unsigned long fd, unsigned long pgoff);
+-asmlinkage int sys_ipc(uint call, int first, int second,
+-		       int third, void __user *ptr, long fifth);
+ asmlinkage int sys_uname(struct old_utsname __user *name);
+ 
+ #ifdef CONFIG_SUPERH32
+Index: linux-2.6/arch/sh/kernel/sys_sh.c
+===================================================================
+--- linux-2.6.orig/arch/sh/kernel/sys_sh.c	2010-01-12 14:08:14.931253606 +0100
++++ linux-2.6/arch/sh/kernel/sys_sh.c	2010-01-29 23:35:26.557003785 +0100
+@@ -53,110 +53,6 @@ asmlinkage long sys_mmap2(unsigned long 
+ 	return sys_mmap_pgoff(addr, len, prot, flags, fd, pgoff);
+ }
+ 
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-asmlinkage int sys_ipc(uint call, int first, int second,
+-		       int third, void __user *ptr, long fifth)
+-{
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	if (call <= SEMTIMEDOP)
+-		switch (call) {
+-		case SEMOP:
+-			return sys_semtimedop(first,
+-					      (struct sembuf __user *)ptr,
+-					      second, NULL);
+-		case SEMTIMEDOP:
+-			return sys_semtimedop(first,
+-				(struct sembuf __user *)ptr, second,
+-			        (const struct timespec __user *)fifth);
+-		case SEMGET:
+-			return sys_semget (first, second, third);
+-		case SEMCTL: {
+-			union semun fourth;
+-			if (!ptr)
+-				return -EINVAL;
+-			if (get_user(fourth.__pad, (void __user * __user *) ptr))
+-				return -EFAULT;
+-			return sys_semctl (first, second, third, fourth);
+-			}
+-		default:
+-			return -EINVAL;
+-		}
+-
+-	if (call <= MSGCTL)
+-		switch (call) {
+-		case MSGSND:
+-			return sys_msgsnd (first, (struct msgbuf __user *) ptr,
+-					  second, third);
+-		case MSGRCV:
+-			switch (version) {
+-			case 0:
+-			{
+-				struct ipc_kludge tmp;
+-
+-				if (!ptr)
+-					return -EINVAL;
+-
+-				if (copy_from_user(&tmp,
+-					(struct ipc_kludge __user *) ptr,
+-						   sizeof (tmp)))
+-					return -EFAULT;
+-
+-				return sys_msgrcv (first, tmp.msgp, second,
+-						   tmp.msgtyp, third);
+-			}
+-			default:
+-				return sys_msgrcv (first,
+-						   (struct msgbuf __user *) ptr,
+-						   second, fifth, third);
+-			}
+-		case MSGGET:
+-			return sys_msgget ((key_t) first, second);
+-		case MSGCTL:
+-			return sys_msgctl (first, second,
+-					   (struct msqid_ds __user *) ptr);
+-		default:
+-			return -EINVAL;
+-		}
+-	if (call <= SHMCTL)
+-		switch (call) {
+-		case SHMAT:
+-			switch (version) {
+-			default: {
+-				ulong raddr;
+-				ret = do_shmat (first, (char __user *) ptr,
+-						 second, &raddr);
+-				if (ret)
+-					return ret;
+-				return put_user (raddr, (ulong __user *) third);
+-			}
+-			case 1:	/* iBCS2 emulator entry point */
+-				if (!segment_eq(get_fs(), get_ds()))
+-					return -EINVAL;
+-				return do_shmat (first, (char __user *) ptr,
+-						  second, (ulong *) third);
+-			}
+-		case SHMDT:
+-			return sys_shmdt ((char __user *)ptr);
+-		case SHMGET:
+-			return sys_shmget (first, second, third);
+-		case SHMCTL:
+-			return sys_shmctl (first, second,
+-					   (struct shmid_ds __user *) ptr);
+-		default:
+-			return -EINVAL;
+-		}
+-
+-	return -EINVAL;
+-}
+-
+ /* sys_cacheflush -- flush (part of) the processor cache.  */
+ asmlinkage int sys_cacheflush(unsigned long addr, unsigned long len, int op)
+ {
+Index: linux-2.6/arch/sparc/kernel/sys_sparc_32.c
+===================================================================
+--- linux-2.6.orig/arch/sparc/kernel/sys_sparc_32.c	2010-01-12 14:08:14.938274124 +0100
++++ linux-2.6/arch/sparc/kernel/sys_sparc_32.c	2010-01-29 23:35:26.557003785 +0100
+@@ -98,119 +98,6 @@ out:
  	return error;
  }
  
 -/*
-- * Compacrapability ...
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
 - */
--SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)
+-
+-asmlinkage int sys_ipc (uint call, int first, int second, int third, void __user *ptr, long fifth)
 -{
--	if (name && !copy_to_user(name, utsname(), sizeof (*name)))
--		return 0;
--	return -EFAULT;
--}
+-	int version, err;
 -
--/*
-- * Compacrapability ...
-- */
--SYSCALL_DEFINE1(olduname, struct oldold_utsname __user *, name)
--{
--	int error;
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
 -
--	if (!name)
--		return -EFAULT;
--	if (!access_ok(VERIFY_WRITE, name, sizeof(struct oldold_utsname)))
--		return -EFAULT;
--
--	error = __copy_to_user(&name->sysname, &utsname()->sysname,
--			       __OLD_UTS_LEN);
--	error -= __put_user(0, name->sysname + __OLD_UTS_LEN);
--	error -= __copy_to_user(&name->nodename, &utsname()->nodename,
--				__OLD_UTS_LEN);
--	error -= __put_user(0, name->nodename + __OLD_UTS_LEN);
--	error -= __copy_to_user(&name->release, &utsname()->release,
--				__OLD_UTS_LEN);
--	error -= __put_user(0, name->release + __OLD_UTS_LEN);
--	error -= __copy_to_user(&name->version, &utsname()->version,
--				__OLD_UTS_LEN);
--	error -= __put_user(0, name->version + __OLD_UTS_LEN);
--	error -= __copy_to_user(&name->machine, &utsname()->machine,
--				__OLD_UTS_LEN);
--	error = __put_user(0, name->machine + __OLD_UTS_LEN);
--	error = error ? -EFAULT : 0;
--
--	return error;
--}
--
- SYSCALL_DEFINE1(set_thread_area, unsigned long, addr)
- {
- 	struct thread_info *ti = task_thread_info(current);
-Index: linux-2.6/arch/powerpc/kernel/syscalls.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/syscalls.c	2010-01-29 23:35:30.661004396 +0100
-+++ linux-2.6/arch/powerpc/kernel/syscalls.c	2010-01-29 23:35:31.796277657 +0100
-@@ -101,63 +101,6 @@ ppc_select(int n, fd_set __user *inp, fd
- }
- #endif
- 
--#ifdef CONFIG_PPC64
--#define OVERRIDE_MACHINE    (personality(current->personality) == PER_LINUX32)
--#else
--#define OVERRIDE_MACHINE    0
--#endif
--
--static inline int override_machine(char __user *mach)
--{
--	if (OVERRIDE_MACHINE) {
--		/* change ppc64 to ppc */
--		if (__put_user(0, mach+3) || __put_user(0, mach+4))
--			return -EFAULT;
--	}
--	return 0;
--}
--
--int sys_uname(struct old_utsname __user *name)
--{
--	int err = 0;
--	
--	down_read(&uts_sem);
--	if (copy_to_user(name, utsname(), sizeof(*name)))
--		err = -EFAULT;
--	up_read(&uts_sem);
--	if (!err)
--		err = override_machine(name->machine);
+-	if (call <= SEMCTL)
+-		switch (call) {
+-		case SEMOP:
+-			err = sys_semtimedop (first, (struct sembuf __user *)ptr, second, NULL);
+-			goto out;
+-		case SEMTIMEDOP:
+-			err = sys_semtimedop (first, (struct sembuf __user *)ptr, second, (const struct timespec __user *) fifth);
+-			goto out;
+-		case SEMGET:
+-			err = sys_semget (first, second, third);
+-			goto out;
+-		case SEMCTL: {
+-			union semun fourth;
+-			err = -EINVAL;
+-			if (!ptr)
+-				goto out;
+-			err = -EFAULT;
+-			if (get_user(fourth.__pad,
+-				     (void __user * __user *)ptr))
+-				goto out;
+-			err = sys_semctl (first, second, third, fourth);
+-			goto out;
+-			}
+-		default:
+-			err = -ENOSYS;
+-			goto out;
+-		}
+-	if (call <= MSGCTL) 
+-		switch (call) {
+-		case MSGSND:
+-			err = sys_msgsnd (first, (struct msgbuf __user *) ptr, 
+-					  second, third);
+-			goto out;
+-		case MSGRCV:
+-			switch (version) {
+-			case 0: {
+-				struct ipc_kludge tmp;
+-				err = -EINVAL;
+-				if (!ptr)
+-					goto out;
+-				err = -EFAULT;
+-				if (copy_from_user(&tmp, (struct ipc_kludge __user *) ptr, sizeof (tmp)))
+-					goto out;
+-				err = sys_msgrcv (first, tmp.msgp, second, tmp.msgtyp, third);
+-				goto out;
+-				}
+-			case 1: default:
+-				err = sys_msgrcv (first,
+-						  (struct msgbuf __user *) ptr,
+-						  second, fifth, third);
+-				goto out;
+-			}
+-		case MSGGET:
+-			err = sys_msgget ((key_t) first, second);
+-			goto out;
+-		case MSGCTL:
+-			err = sys_msgctl (first, second, (struct msqid_ds __user *) ptr);
+-			goto out;
+-		default:
+-			err = -ENOSYS;
+-			goto out;
+-		}
+-	if (call <= SHMCTL) 
+-		switch (call) {
+-		case SHMAT:
+-			switch (version) {
+-			case 0: default: {
+-				ulong raddr;
+-				err = do_shmat (first, (char __user *) ptr, second, &raddr);
+-				if (err)
+-					goto out;
+-				err = -EFAULT;
+-				if (put_user (raddr, (ulong __user *) third))
+-					goto out;
+-				err = 0;
+-				goto out;
+-				}
+-			case 1:	/* iBCS2 emulator entry point */
+-				err = -EINVAL;
+-				goto out;
+-			}
+-		case SHMDT: 
+-			err = sys_shmdt ((char __user *)ptr);
+-			goto out;
+-		case SHMGET:
+-			err = sys_shmget (first, second, third);
+-			goto out;
+-		case SHMCTL:
+-			err = sys_shmctl (first, second, (struct shmid_ds __user *) ptr);
+-			goto out;
+-		default:
+-			err = -ENOSYS;
+-			goto out;
+-		}
+-	else
+-		err = -ENOSYS;
+-out:
 -	return err;
 -}
 -
--int sys_olduname(struct oldold_utsname __user *name)
--{
--	int error;
--
--	if (!access_ok(VERIFY_WRITE, name, sizeof(struct oldold_utsname)))
--		return -EFAULT;
--  
--	down_read(&uts_sem);
--	error = __copy_to_user(&name->sysname, &utsname()->sysname,
--			       __OLD_UTS_LEN);
--	error |= __put_user(0, name->sysname + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->nodename, &utsname()->nodename,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->nodename + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->release, &utsname()->release,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->release + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->version, &utsname()->version,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->version + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->machine, &utsname()->machine,
--				__OLD_UTS_LEN);
--	error |= override_machine(name->machine);
--	up_read(&uts_sem);
--
--	return error? -EFAULT: 0;
--}
--
- long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
- 		      u32 len_high, u32 len_low)
+ int sparc_mmap_check(unsigned long addr, unsigned long len)
  {
-Index: linux-2.6/arch/x86/ia32/ia32entry.S
+ 	if (ARCH_SUN4C &&
+Index: linux-2.6/arch/um/sys-i386/syscalls.c
 ===================================================================
---- linux-2.6.orig/arch/x86/ia32/ia32entry.S	2010-01-29 23:35:20.184012102 +0100
-+++ linux-2.6/arch/x86/ia32/ia32entry.S	2010-01-29 23:35:31.797278203 +0100
-@@ -563,7 +563,7 @@ ia32_sys_call_table:
- 	.quad quiet_ni_syscall			/* old mpx syscall holder */
- 	.quad sys_setpgid
- 	.quad quiet_ni_syscall			/* old ulimit syscall holder */
--	.quad sys32_olduname
-+	.quad sys_olduname
- 	.quad sys_umask		/* 60 */
- 	.quad sys_chroot
- 	.quad compat_sys_ustat
-@@ -613,7 +613,7 @@ ia32_sys_call_table:
- 	.quad compat_sys_newstat
- 	.quad compat_sys_newlstat
- 	.quad compat_sys_newfstat
--	.quad sys32_uname
-+	.quad sys_uname
- 	.quad stub32_iopl		/* 110 */
- 	.quad sys_vhangup
- 	.quad quiet_ni_syscall	/* old "idle" system call */
-Index: linux-2.6/arch/x86/ia32/sys_ia32.c
-===================================================================
---- linux-2.6.orig/arch/x86/ia32/sys_ia32.c	2010-01-29 23:35:29.066012533 +0100
-+++ linux-2.6/arch/x86/ia32/sys_ia32.c	2010-01-29 23:35:31.799278947 +0100
-@@ -434,58 +434,6 @@ asmlinkage long sys32_sendfile(int out_f
+--- linux-2.6.orig/arch/um/sys-i386/syscalls.c	2010-01-29 23:35:24.058003957 +0100
++++ linux-2.6/arch/um/sys-i386/syscalls.c	2010-01-29 23:35:26.558003982 +0100
+@@ -34,92 +34,6 @@ long sys_clone(unsigned long clone_flags
  	return ret;
  }
  
--asmlinkage long sys32_olduname(struct oldold_utsname __user *name)
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-long sys_ipc (uint call, int first, int second,
+-	     int third, void __user *ptr, long fifth)
 -{
--	char *arch = "x86_64";
--	int err;
+-	int version, ret;
 -
--	if (!name)
--		return -EFAULT;
--	if (!access_ok(VERIFY_WRITE, name, sizeof(struct oldold_utsname)))
--		return -EFAULT;
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
 -
--	down_read(&uts_sem);
+-	switch (call) {
+-	case SEMOP:
+-		return sys_semtimedop(first, (struct sembuf __user *) ptr,
+-				      second, NULL);
+-	case SEMTIMEDOP:
+-		return sys_semtimedop(first, (struct sembuf __user *) ptr,
+-				      second,
+-				      (const struct timespec __user *) fifth);
+-	case SEMGET:
+-		return sys_semget (first, second, third);
+-	case SEMCTL: {
+-		union semun fourth;
+-		if (!ptr)
+-			return -EINVAL;
+-		if (get_user(fourth.__pad, (void __user * __user *) ptr))
+-			return -EFAULT;
+-		return sys_semctl (first, second, third, fourth);
+-	}
 -
--	err = __copy_to_user(&name->sysname, &utsname()->sysname,
--			     __OLD_UTS_LEN);
--	err |= __put_user(0, name->sysname+__OLD_UTS_LEN);
--	err |= __copy_to_user(&name->nodename, &utsname()->nodename,
--			      __OLD_UTS_LEN);
--	err |= __put_user(0, name->nodename+__OLD_UTS_LEN);
--	err |= __copy_to_user(&name->release, &utsname()->release,
--			      __OLD_UTS_LEN);
--	err |= __put_user(0, name->release+__OLD_UTS_LEN);
--	err |= __copy_to_user(&name->version, &utsname()->version,
--			      __OLD_UTS_LEN);
--	err |= __put_user(0, name->version+__OLD_UTS_LEN);
+-	case MSGSND:
+-		return sys_msgsnd (first, (struct msgbuf *) ptr,
+-				   second, third);
+-	case MSGRCV:
+-		switch (version) {
+-		case 0: {
+-			struct ipc_kludge tmp;
+-			if (!ptr)
+-				return -EINVAL;
 -
--	if (personality(current->personality) == PER_LINUX32)
--		arch = "i686";
+-			if (copy_from_user(&tmp,
+-					   (struct ipc_kludge *) ptr,
+-					   sizeof (tmp)))
+-				return -EFAULT;
+-			return sys_msgrcv (first, tmp.msgp, second,
+-					   tmp.msgtyp, third);
+-		}
+-		default:
+-		        panic("msgrcv with version != 0");
+-			return sys_msgrcv (first,
+-					   (struct msgbuf *) ptr,
+-					   second, fifth, third);
+-		}
+-	case MSGGET:
+-		return sys_msgget ((key_t) first, second);
+-	case MSGCTL:
+-		return sys_msgctl (first, second, (struct msqid_ds *) ptr);
 -
--	err |= __copy_to_user(&name->machine, arch, strlen(arch) + 1);
--
--	up_read(&uts_sem);
--
--	err = err ? -EFAULT : 0;
--
--	return err;
+-	case SHMAT:
+-		switch (version) {
+-		default: {
+-			ulong raddr;
+-			ret = do_shmat (first, (char *) ptr, second, &raddr);
+-			if (ret)
+-				return ret;
+-			return put_user (raddr, (ulong *) third);
+-		}
+-		case 1:	/* iBCS2 emulator entry point */
+-			if (!segment_eq(get_fs(), get_ds()))
+-				return -EINVAL;
+-			return do_shmat (first, (char *) ptr, second, (ulong *) third);
+-		}
+-	case SHMDT:
+-		return sys_shmdt ((char *)ptr);
+-	case SHMGET:
+-		return sys_shmget (first, second, third);
+-	case SHMCTL:
+-		return sys_shmctl (first, second,
+-				   (struct shmid_ds *) ptr);
+-	default:
+-		return -ENOSYS;
+-	}
 -}
 -
--long sys32_uname(struct old_utsname __user *name)
--{
--	int err;
--
--	if (!name)
--		return -EFAULT;
--	down_read(&uts_sem);
--	err = copy_to_user(name, utsname(), sizeof(*name));
--	up_read(&uts_sem);
--	if (personality(current->personality) == PER_LINUX32)
--		err |= copy_to_user(&name->machine, "i686", 5);
--
--	return err ? -EFAULT : 0;
--}
--
- asmlinkage long sys32_execve(char __user *name, compat_uptr_t __user *argv,
- 			     compat_uptr_t __user *envp, struct pt_regs *regs)
+ long sys_sigaction(int sig, const struct old_sigaction __user *act,
+ 			 struct old_sigaction __user *oact)
  {
-Index: linux-2.6/arch/x86/include/asm/sys_ia32.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/sys_ia32.h	2010-01-29 23:35:29.067004419 +0100
-+++ linux-2.6/arch/x86/include/asm/sys_ia32.h	2010-01-29 23:35:31.799278947 +0100
-@@ -53,11 +53,6 @@ asmlinkage long sys32_pwrite(unsigned in
- 
- asmlinkage long sys32_sendfile(int, int, compat_off_t __user *, s32);
- 
--struct oldold_utsname;
--struct old_utsname;
--asmlinkage long sys32_olduname(struct oldold_utsname __user *);
--long sys32_uname(struct old_utsname __user *);
--
- asmlinkage long sys32_execve(char __user *, compat_uptr_t __user *,
- 			     compat_uptr_t __user *, struct pt_regs *);
- asmlinkage long sys32_clone(unsigned int, unsigned int, struct pt_regs *);
 Index: linux-2.6/arch/x86/include/asm/syscalls.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/syscalls.h	2010-01-29 23:35:30.938006430 +0100
-+++ linux-2.6/arch/x86/include/asm/syscalls.h	2010-01-29 23:35:31.801003957 +0100
-@@ -50,13 +50,6 @@ asmlinkage int sys_sigaction(int, const 
- 			     struct old_sigaction __user *);
- unsigned long sys_sigreturn(struct pt_regs *);
+--- linux-2.6.orig/arch/x86/include/asm/syscalls.h	2010-01-29 23:35:24.052004310 +0100
++++ linux-2.6/arch/x86/include/asm/syscalls.h	2010-01-29 23:35:26.558003982 +0100
+@@ -54,7 +54,6 @@ unsigned long sys_sigreturn(struct pt_re
+ struct oldold_utsname;
+ struct old_utsname;
  
--/* kernel/sys_i386_32.c */
--struct oldold_utsname;
--struct old_utsname;
+-asmlinkage int sys_ipc(uint, int, int, int, void __user *, long);
+ asmlinkage int sys_uname(struct old_utsname __user *);
+ asmlinkage int sys_olduname(struct oldold_utsname __user *);
+ 
+Index: linux-2.6/ipc/Makefile
+===================================================================
+--- linux-2.6.orig/ipc/Makefile	2010-01-12 14:08:14.730004094 +0100
++++ linux-2.6/ipc/Makefile	2010-01-29 23:35:26.559004039 +0100
+@@ -3,7 +3,7 @@
+ #
+ 
+ obj-$(CONFIG_SYSVIPC_COMPAT) += compat.o
+-obj-$(CONFIG_SYSVIPC) += util.o msgutil.o msg.o sem.o shm.o ipcns_notifier.o
++obj-$(CONFIG_SYSVIPC) += util.o msgutil.o msg.o sem.o shm.o ipcns_notifier.o syscall.o
+ obj-$(CONFIG_SYSVIPC_SYSCTL) += ipc_sysctl.o
+ obj_mq-$(CONFIG_COMPAT) += compat_mq.o
+ obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
+Index: linux-2.6/arch/h8300/kernel/sys_h8300.c
+===================================================================
+--- linux-2.6.orig/arch/h8300/kernel/sys_h8300.c	2010-01-29 23:35:24.042004573 +0100
++++ linux-2.6/arch/h8300/kernel/sys_h8300.c	2010-01-29 23:35:26.559004039 +0100
+@@ -26,94 +26,6 @@
+ #include <asm/traps.h>
+ #include <asm/unistd.h>
+ 
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-asmlinkage int sys_ipc (uint call, int first, int second,
+-			int third, void *ptr, long fifth)
+-{
+-	int version, ret;
 -
--asmlinkage int sys_uname(struct old_utsname __user *);
--asmlinkage int sys_olduname(struct oldold_utsname __user *);
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
 -
- /* kernel/vm86_32.c */
- int sys_vm86old(struct vm86_struct __user *, struct pt_regs *);
- int sys_vm86(unsigned long, unsigned long, struct pt_regs *);
+-	if (call <= SEMCTL)
+-		switch (call) {
+-		case SEMOP:
+-			return sys_semop (first, (struct sembuf *)ptr, second);
+-		case SEMGET:
+-			return sys_semget (first, second, third);
+-		case SEMCTL: {
+-			union semun fourth;
+-			if (!ptr)
+-				return -EINVAL;
+-			if (get_user(fourth.__pad, (void **) ptr))
+-				return -EFAULT;
+-			return sys_semctl (first, second, third, fourth);
+-			}
+-		default:
+-			return -EINVAL;
+-		}
+-	if (call <= MSGCTL) 
+-		switch (call) {
+-		case MSGSND:
+-			return sys_msgsnd (first, (struct msgbuf *) ptr, 
+-					  second, third);
+-		case MSGRCV:
+-			switch (version) {
+-			case 0: {
+-				struct ipc_kludge tmp;
+-				if (!ptr)
+-					return -EINVAL;
+-				if (copy_from_user (&tmp,
+-						    (struct ipc_kludge *)ptr,
+-						    sizeof (tmp)))
+-					return -EFAULT;
+-				return sys_msgrcv (first, tmp.msgp, second,
+-						   tmp.msgtyp, third);
+-				}
+-			default:
+-				return sys_msgrcv (first,
+-						   (struct msgbuf *) ptr,
+-						   second, fifth, third);
+-			}
+-		case MSGGET:
+-			return sys_msgget ((key_t) first, second);
+-		case MSGCTL:
+-			return sys_msgctl (first, second,
+-					   (struct msqid_ds *) ptr);
+-		default:
+-			return -EINVAL;
+-		}
+-	if (call <= SHMCTL) 
+-		switch (call) {
+-		case SHMAT:
+-			switch (version) {
+-			default: {
+-				ulong raddr;
+-				ret = do_shmat (first, (char *) ptr,
+-						 second, &raddr);
+-				if (ret)
+-					return ret;
+-				return put_user (raddr, (ulong *) third);
+-			}
+-			}
+-		case SHMDT: 
+-			return sys_shmdt ((char *)ptr);
+-		case SHMGET:
+-			return sys_shmget (first, second, third);
+-		case SHMCTL:
+-			return sys_shmctl (first, second,
+-					   (struct shmid_ds *) ptr);
+-		default:
+-			return -EINVAL;
+-		}
+-
+-	return -EINVAL;
+-}
+-
+ /* sys_cacheflush -- no support.  */
+ asmlinkage int
+ sys_cacheflush (unsigned long addr, int scope, int cache, unsigned long len)
+Index: linux-2.6/arch/m68knommu/kernel/sys_m68k.c
+===================================================================
+--- linux-2.6.orig/arch/m68knommu/kernel/sys_m68k.c	2010-01-29 23:35:24.046011718 +0100
++++ linux-2.6/arch/m68knommu/kernel/sys_m68k.c	2010-01-29 23:35:26.560003888 +0100
+@@ -27,92 +27,6 @@
+ #include <asm/cacheflush.h>
+ #include <asm/unistd.h>
+ 
+-/*
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
+- */
+-asmlinkage int sys_ipc (uint call, int first, int second,
+-			int third, void *ptr, long fifth)
+-{
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	if (call <= SEMCTL)
+-		switch (call) {
+-		case SEMOP:
+-			return sys_semop (first, (struct sembuf *)ptr, second);
+-		case SEMGET:
+-			return sys_semget (first, second, third);
+-		case SEMCTL: {
+-			union semun fourth;
+-			if (!ptr)
+-				return -EINVAL;
+-			if (get_user(fourth.__pad, (void **) ptr))
+-				return -EFAULT;
+-			return sys_semctl (first, second, third, fourth);
+-			}
+-		default:
+-			return -EINVAL;
+-		}
+-	if (call <= MSGCTL) 
+-		switch (call) {
+-		case MSGSND:
+-			return sys_msgsnd (first, (struct msgbuf *) ptr, 
+-					  second, third);
+-		case MSGRCV:
+-			switch (version) {
+-			case 0: {
+-				struct ipc_kludge tmp;
+-				if (!ptr)
+-					return -EINVAL;
+-				if (copy_from_user (&tmp,
+-						    (struct ipc_kludge *)ptr,
+-						    sizeof (tmp)))
+-					return -EFAULT;
+-				return sys_msgrcv (first, tmp.msgp, second,
+-						   tmp.msgtyp, third);
+-				}
+-			default:
+-				return sys_msgrcv (first,
+-						   (struct msgbuf *) ptr,
+-						   second, fifth, third);
+-			}
+-		case MSGGET:
+-			return sys_msgget ((key_t) first, second);
+-		case MSGCTL:
+-			return sys_msgctl (first, second,
+-					   (struct msqid_ds *) ptr);
+-		default:
+-			return -EINVAL;
+-		}
+-	if (call <= SHMCTL)
+-		switch (call) {
+-		case SHMAT:
+-			switch (version) {
+-			default: {
+-				ulong raddr;
+-				ret = do_shmat (first, ptr, second, &raddr);
+-				if (ret)
+-					return ret;
+-				return put_user (raddr, (ulong __user *) third);
+-			}
+-			}
+-		case SHMDT:
+-			return sys_shmdt (ptr);
+-		case SHMGET:
+-			return sys_shmget (first, second, third);
+-		case SHMCTL:
+-			return sys_shmctl (first, second, ptr);
+-		default:
+-			return -ENOSYS;
+-		}
+-
+-	return -EINVAL;
+-}
+-
+ /* sys_cacheflush -- flush (part of) the processor cache.  */
+ asmlinkage int
+ sys_cacheflush (unsigned long addr, int scope, int cache, unsigned long len)
+Index: linux-2.6/arch/sparc/kernel/sys_sparc_64.c
+===================================================================
+--- linux-2.6.orig/arch/sparc/kernel/sys_sparc_64.c	2010-01-28 12:24:08.859254150 +0100
++++ linux-2.6/arch/sparc/kernel/sys_sparc_64.c	2010-01-29 23:35:26.561012396 +0100
+@@ -427,7 +427,7 @@ out:
+  * This is really horribly ugly.
+  */
+ 
+-SYSCALL_DEFINE6(ipc, unsigned int, call, int, first, unsigned long, second,
++SYSCALL_DEFINE6(sparc_ipc, unsigned int, call, int, first, unsigned long, second,
+ 		unsigned long, third, void __user *, ptr, long, fifth)
+ {
+ 	long err;
+Index: linux-2.6/arch/sparc/kernel/systbls.h
+===================================================================
+--- linux-2.6.orig/arch/sparc/kernel/systbls.h	2010-01-12 14:08:14.959003509 +0100
++++ linux-2.6/arch/sparc/kernel/systbls.h	2010-01-29 23:35:26.562003933 +0100
+@@ -10,7 +10,7 @@ struct new_utsname;
+ 
+ extern asmlinkage unsigned long sys_getpagesize(void);
+ extern asmlinkage long sparc_pipe(struct pt_regs *regs);
+-extern asmlinkage long sys_ipc(unsigned int call, int first,
++extern asmlinkage long sys_sparc_ipc(unsigned int call, int first,
+ 			       unsigned long second,
+ 			       unsigned long third,
+ 			       void __user *ptr, long fifth);
+Index: linux-2.6/arch/sparc/kernel/systbls_64.S
+===================================================================
+--- linux-2.6.orig/arch/sparc/kernel/systbls_64.S	2010-01-12 14:08:14.970003932 +0100
++++ linux-2.6/arch/sparc/kernel/systbls_64.S	2010-01-29 23:35:26.563011673 +0100
+@@ -136,7 +136,7 @@ sys_call_table:
+ /*200*/	.word sys_ssetmask, sys_nis_syscall, sys_newlstat, sys_uselib, sys_nis_syscall
+ 	.word sys_readahead, sys_socketcall, sys_syslog, sys_lookup_dcookie, sys_fadvise64
+ /*210*/	.word sys_fadvise64_64, sys_tgkill, sys_waitpid, sys_swapoff, sys_sysinfo
+-	.word sys_ipc, sys_nis_syscall, sys_clone, sys_ioprio_get, sys_adjtimex
++	.word sys_sparc_ipc, sys_nis_syscall, sys_clone, sys_ioprio_get, sys_adjtimex
+ /*220*/	.word sys_nis_syscall, sys_ni_syscall, sys_delete_module, sys_ni_syscall, sys_getpgid
+ 	.word sys_bdflush, sys_sysfs, sys_nis_syscall, sys_setfsuid, sys_setfsgid
+ /*230*/	.word sys_select, sys_nis_syscall, sys_splice, sys_stime, sys_statfs64
 Index: linux-2.6/arch/x86/kernel/sys_i386_32.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/sys_i386_32.c	2010-01-29 23:35:26.563011673 +0100
-+++ linux-2.6/arch/x86/kernel/sys_i386_32.c	2010-01-29 23:35:31.801003957 +0100
-@@ -25,55 +25,6 @@
+--- linux-2.6.orig/arch/x86/kernel/sys_i386_32.c	2010-01-29 23:35:24.053004368 +0100
++++ linux-2.6/arch/x86/kernel/sys_i386_32.c	2010-01-29 23:35:26.563011673 +0100
+@@ -25,91 +25,6 @@
  #include <asm/syscalls.h>
  
  /*
-- * Old cruft
+- * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+- *
+- * This is really horribly ugly.
 - */
--asmlinkage int sys_uname(struct old_utsname __user *name)
+-asmlinkage int sys_ipc(uint call, int first, int second,
+-			int third, void __user *ptr, long fifth)
 -{
--	int err;
--	if (!name)
--		return -EFAULT;
--	down_read(&uts_sem);
--	err = copy_to_user(name, utsname(), sizeof(*name));
--	up_read(&uts_sem);
--	return err? -EFAULT:0;
+-	int version, ret;
+-
+-	version = call >> 16; /* hack for backward compatibility */
+-	call &= 0xffff;
+-
+-	switch (call) {
+-	case SEMOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr, second, NULL);
+-	case SEMTIMEDOP:
+-		return sys_semtimedop(first, (struct sembuf __user *)ptr, second,
+-					(const struct timespec __user *)fifth);
+-
+-	case SEMGET:
+-		return sys_semget(first, second, third);
+-	case SEMCTL: {
+-		union semun fourth;
+-		if (!ptr)
+-			return -EINVAL;
+-		if (get_user(fourth.__pad, (void __user * __user *) ptr))
+-			return -EFAULT;
+-		return sys_semctl(first, second, third, fourth);
+-	}
+-
+-	case MSGSND:
+-		return sys_msgsnd(first, (struct msgbuf __user *) ptr,
+-				   second, third);
+-	case MSGRCV:
+-		switch (version) {
+-		case 0: {
+-			struct ipc_kludge tmp;
+-			if (!ptr)
+-				return -EINVAL;
+-
+-			if (copy_from_user(&tmp,
+-					   (struct ipc_kludge __user *) ptr,
+-					   sizeof(tmp)))
+-				return -EFAULT;
+-			return sys_msgrcv(first, tmp.msgp, second,
+-					   tmp.msgtyp, third);
+-		}
+-		default:
+-			return sys_msgrcv(first,
+-					   (struct msgbuf __user *) ptr,
+-					   second, fifth, third);
+-		}
+-	case MSGGET:
+-		return sys_msgget((key_t) first, second);
+-	case MSGCTL:
+-		return sys_msgctl(first, second, (struct msqid_ds __user *) ptr);
+-
+-	case SHMAT:
+-		switch (version) {
+-		default: {
+-			ulong raddr;
+-			ret = do_shmat(first, (char __user *) ptr, second, &raddr);
+-			if (ret)
+-				return ret;
+-			return put_user(raddr, (ulong __user *) third);
+-		}
+-		case 1:	/* iBCS2 emulator entry point */
+-			if (!segment_eq(get_fs(), get_ds()))
+-				return -EINVAL;
+-			/* The "(ulong *) third" is valid _only_ because of the kernel segment thing */
+-			return do_shmat(first, (char __user *) ptr, second, (ulong *) third);
+-		}
+-	case SHMDT:
+-		return sys_shmdt((char __user *)ptr);
+-	case SHMGET:
+-		return sys_shmget(first, second, third);
+-	case SHMCTL:
+-		return sys_shmctl(first, second,
+-				   (struct shmid_ds __user *) ptr);
+-	default:
+-		return -ENOSYS;
+-	}
 -}
--
--asmlinkage int sys_olduname(struct oldold_utsname __user *name)
--{
--	int error;
--
--	if (!name)
--		return -EFAULT;
--	if (!access_ok(VERIFY_WRITE, name, sizeof(struct oldold_utsname)))
--		return -EFAULT;
--
--	down_read(&uts_sem);
--
--	error = __copy_to_user(&name->sysname, &utsname()->sysname,
--			       __OLD_UTS_LEN);
--	error |= __put_user(0, name->sysname + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->nodename, &utsname()->nodename,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->nodename + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->release, &utsname()->release,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->release + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->version, &utsname()->version,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->version + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->machine, &utsname()->machine,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->machine + __OLD_UTS_LEN);
--
--	up_read(&uts_sem);
--
--	error = error ? -EFAULT : 0;
--
--	return error;
--}
--
 -
 -/*
-  * Do a system call from kernel instead of calling sys_execve so we
-  * end up with proper pt_regs.
+  * Old cruft
   */
-Index: linux-2.6/include/linux/syscalls.h
+ asmlinkage int sys_uname(struct old_utsname __user *name)
+Index: linux-2.6/arch/arm/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/include/linux/syscalls.h	2010-01-29 23:35:26.580004409 +0100
-+++ linux-2.6/include/linux/syscalls.h	2010-01-29 23:35:31.803024117 +0100
-@@ -31,6 +31,8 @@ struct msqid_ds;
- struct new_utsname;
- struct nfsctl_arg;
- struct __old_kernel_stat;
-+struct oldold_utsname;
-+struct old_utsname;
- struct pollfd;
- struct rlimit;
- struct rusage;
-@@ -655,6 +657,8 @@ asmlinkage long sys_gethostname(char __u
- asmlinkage long sys_sethostname(char __user *name, int len);
- asmlinkage long sys_setdomainname(char __user *name, int len);
- asmlinkage long sys_newuname(struct new_utsname __user *name);
-+asmlinkage long sys_uname(struct old_utsname __user *);
-+asmlinkage long sys_olduname(struct oldold_utsname __user *);
+--- linux-2.6.orig/arch/arm/include/asm/unistd.h	2010-01-29 23:35:24.034004113 +0100
++++ linux-2.6/arch/arm/include/asm/unistd.h	2010-01-29 23:35:26.566025185 +0100
+@@ -448,6 +448,7 @@
  
- asmlinkage long sys_getrlimit(unsigned int resource,
- 				struct rlimit __user *rlim);
-Index: linux-2.6/kernel/sys.c
+ #if !defined(CONFIG_AEABI) || defined(CONFIG_OABI_COMPAT)
+ #define __ARCH_WANT_SYS_TIME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_OLDUMOUNT
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_UTIME
+Index: linux-2.6/arch/cris/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/kernel/sys.c	2010-01-29 23:35:30.658004573 +0100
-+++ linux-2.6/kernel/sys.c	2010-01-29 23:35:31.804014745 +0100
-@@ -1141,6 +1141,60 @@ SYSCALL_DEFINE1(newuname, struct new_uts
- 	return errno;
- }
- 
-+#ifdef __ARCH_WANT_SYS_OLD_UNAME
-+/*
-+ * Old cruft
-+ */
-+SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)
-+{
-+	int error = 0;
-+
-+	if (!name)
-+		return -EFAULT;
-+
-+	down_read(&uts_sem);
-+	if (copy_to_user(name, utsname(), sizeof(*name)))
-+		error = -EFAULT;
-+	up_read(&uts_sem);
-+
-+	if (!error && override_architecture(name))
-+		error = -EFAULT;
-+	return error;
-+}
-+
-+SYSCALL_DEFINE1(olduname, struct oldold_utsname __user *, name)
-+{
-+	int error;
-+
-+	if (!name)
-+		return -EFAULT;
-+	if (!access_ok(VERIFY_WRITE, name, sizeof(struct oldold_utsname)))
-+		return -EFAULT;
-+
-+	down_read(&uts_sem);
-+	error = __copy_to_user(&name->sysname, &utsname()->sysname,
-+			       __OLD_UTS_LEN);
-+	error |= __put_user(0, name->sysname + __OLD_UTS_LEN);
-+	error |= __copy_to_user(&name->nodename, &utsname()->nodename,
-+				__OLD_UTS_LEN);
-+	error |= __put_user(0, name->nodename + __OLD_UTS_LEN);
-+	error |= __copy_to_user(&name->release, &utsname()->release,
-+				__OLD_UTS_LEN);
-+	error |= __put_user(0, name->release + __OLD_UTS_LEN);
-+	error |= __copy_to_user(&name->version, &utsname()->version,
-+				__OLD_UTS_LEN);
-+	error |= __put_user(0, name->version + __OLD_UTS_LEN);
-+	error |= __copy_to_user(&name->machine, &utsname()->machine,
-+				__OLD_UTS_LEN);
-+	error |= __put_user(0, name->machine + __OLD_UTS_LEN);
-+	up_read(&uts_sem);
-+
-+	if (!error && override_architecture(name))
-+		error = -EFAULT;
-+	return error ? -EFAULT : 0;
-+}
-+#endif
-+
- SYSCALL_DEFINE2(sethostname, char __user *, name, int, len)
- {
- 	int errno;
-Index: linux-2.6/arch/m32r/kernel/sys_m32r.c
+--- linux-2.6.orig/arch/cris/include/asm/unistd.h	2010-01-29 23:35:24.039012083 +0100
++++ linux-2.6/arch/cris/include/asm/unistd.h	2010-01-29 23:35:26.567003801 +0100
+@@ -352,6 +352,7 @@
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ #define __ARCH_WANT_SYS_SGETMASK
+ #define __ARCH_WANT_SYS_SIGNAL
+Index: linux-2.6/arch/frv/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/arch/m32r/kernel/sys_m32r.c	2010-01-29 23:35:26.550023915 +0100
-+++ linux-2.6/arch/m32r/kernel/sys_m32r.c	2010-01-29 23:35:31.805011311 +0100
-@@ -76,17 +76,6 @@ asmlinkage int sys_tas(int __user *addr)
- 	return oldval;
- }
- 
--asmlinkage int sys_uname(struct old_utsname __user * name)
--{
--	int err;
--	if (!name)
--		return -EFAULT;
--	down_read(&uts_sem);
--	err = copy_to_user(name, utsname(), sizeof (*name));
--	up_read(&uts_sem);
--	return err?-EFAULT:0;
--}
--
- asmlinkage int sys_cacheflush(void *addr, int bytes, int cache)
- {
- 	/* This should flush more selectively ...  */
-Index: linux-2.6/arch/sh/include/asm/syscalls.h
+--- linux-2.6.orig/arch/frv/include/asm/unistd.h	2010-01-12 14:08:14.780022266 +0100
++++ linux-2.6/arch/frv/include/asm/unistd.h	2010-01-29 23:35:26.567003801 +0100
+@@ -354,6 +354,7 @@
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_ALARM
+ /* #define __ARCH_WANT_SYS_GETHOSTNAME */
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ /* #define __ARCH_WANT_SYS_SGETMASK */
+ /* #define __ARCH_WANT_SYS_SIGNAL */
+Index: linux-2.6/arch/h8300/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/arch/sh/include/asm/syscalls.h	2010-01-29 23:35:26.556004146 +0100
-+++ linux-2.6/arch/sh/include/asm/syscalls.h	2010-01-29 23:35:31.805011311 +0100
-@@ -3,15 +3,12 @@
- 
- #ifdef __KERNEL__
- 
--struct old_utsname;
--
- asmlinkage int old_mmap(unsigned long addr, unsigned long len,
- 			unsigned long prot, unsigned long flags,
- 			int fd, unsigned long off);
- asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
- 			  unsigned long prot, unsigned long flags,
- 			  unsigned long fd, unsigned long pgoff);
--asmlinkage int sys_uname(struct old_utsname __user *name);
- 
- #ifdef CONFIG_SUPERH32
- # include "syscalls_32.h"
-Index: linux-2.6/arch/sh/kernel/sys_sh.c
+--- linux-2.6.orig/arch/h8300/include/asm/unistd.h	2010-01-29 23:35:24.041004515 +0100
++++ linux-2.6/arch/h8300/include/asm/unistd.h	2010-01-29 23:35:26.568004627 +0100
+@@ -336,6 +336,7 @@
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ #define __ARCH_WANT_SYS_SGETMASK
+ #define __ARCH_WANT_SYS_SIGNAL
+Index: linux-2.6/arch/m32r/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/arch/sh/kernel/sys_sh.c	2010-01-29 23:35:26.557003785 +0100
-+++ linux-2.6/arch/sh/kernel/sys_sh.c	2010-01-29 23:35:31.806003616 +0100
-@@ -93,14 +93,3 @@ asmlinkage int sys_cacheflush(unsigned l
- 	up_read(&current->mm->mmap_sem);
- 	return 0;
- }
--
--asmlinkage int sys_uname(struct old_utsname __user *name)
--{
--	int err;
--	if (!name)
--		return -EFAULT;
--	down_read(&uts_sem);
--	err = copy_to_user(name, utsname(), sizeof(*name));
--	up_read(&uts_sem);
--	return err?-EFAULT:0;
--}
-Index: linux-2.6/arch/um/kernel/syscall.c
+--- linux-2.6.orig/arch/m32r/include/asm/unistd.h	2010-01-12 14:08:14.802004884 +0100
++++ linux-2.6/arch/m32r/include/asm/unistd.h	2010-01-29 23:35:26.569004056 +0100
+@@ -339,6 +339,7 @@
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ #define __ARCH_WANT_SYS_TIME
+ #define __ARCH_WANT_SYS_UTIME
+Index: linux-2.6/arch/m68k/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/arch/um/kernel/syscall.c	2010-01-12 14:08:13.494003031 +0100
-+++ linux-2.6/arch/um/kernel/syscall.c	2010-01-29 23:35:31.807010728 +0100
-@@ -51,51 +51,6 @@ long old_mmap(unsigned long addr, unsign
- 	return err;
- }
- 
--long sys_uname(struct old_utsname __user * name)
--{
--	long err;
--	if (!name)
--		return -EFAULT;
--	down_read(&uts_sem);
--	err = copy_to_user(name, utsname(), sizeof (*name));
--	up_read(&uts_sem);
--	return err?-EFAULT:0;
--}
--
--long sys_olduname(struct oldold_utsname __user * name)
--{
--	long error;
--
--	if (!name)
--		return -EFAULT;
--	if (!access_ok(VERIFY_WRITE,name,sizeof(struct oldold_utsname)))
--		return -EFAULT;
--
--	down_read(&uts_sem);
--
--	error = __copy_to_user(&name->sysname, &utsname()->sysname,
--			       __OLD_UTS_LEN);
--	error |= __put_user(0, name->sysname + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->nodename, &utsname()->nodename,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->nodename + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->release, &utsname()->release,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->release + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->version, &utsname()->version,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->version + __OLD_UTS_LEN);
--	error |= __copy_to_user(&name->machine, &utsname()->machine,
--				__OLD_UTS_LEN);
--	error |= __put_user(0, name->machine + __OLD_UTS_LEN);
--
--	up_read(&uts_sem);
--
--	error = error ? -EFAULT : 0;
--
--	return error;
--}
--
- int kernel_execve(const char *filename, char *const argv[], char *const envp[])
- {
- 	mm_segment_t fs;
+--- linux-2.6.orig/arch/m68k/include/asm/unistd.h	2010-01-29 23:35:24.048004429 +0100
++++ linux-2.6/arch/m68k/include/asm/unistd.h	2010-01-29 23:35:26.570004044 +0100
+@@ -347,6 +347,7 @@
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ #define __ARCH_WANT_SYS_SGETMASK
+ #define __ARCH_WANT_SYS_SIGNAL
 Index: linux-2.6/arch/mips/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/arch/mips/include/asm/unistd.h	2010-01-29 23:35:26.572011841 +0100
-+++ linux-2.6/arch/mips/include/asm/unistd.h	2010-01-29 23:35:31.808004150 +0100
-@@ -1014,6 +1014,7 @@
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_UNAME
- #define __ARCH_WANT_SYS_OLDUMOUNT
- #define __ARCH_WANT_SYS_SIGPENDING
- #define __ARCH_WANT_SYS_SIGPROCMASK
+--- linux-2.6.orig/arch/mips/include/asm/unistd.h	2010-01-12 14:08:14.834261226 +0100
++++ linux-2.6/arch/mips/include/asm/unistd.h	2010-01-29 23:35:26.572011841 +0100
+@@ -1004,6 +1004,7 @@
+ #define __ARCH_WANT_OLD_READDIR
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ #define __ARCH_WANT_SYS_SGETMASK
+ #define __ARCH_WANT_SYS_UTIME
+Index: linux-2.6/arch/mn10300/include/asm/unistd.h
+===================================================================
+--- linux-2.6.orig/arch/mn10300/include/asm/unistd.h	2010-01-29 23:35:20.178004074 +0100
++++ linux-2.6/arch/mn10300/include/asm/unistd.h	2010-01-29 23:35:26.574004483 +0100
+@@ -363,6 +363,7 @@
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ #define __ARCH_WANT_SYS_SGETMASK
+ #define __ARCH_WANT_SYS_SIGNAL
 Index: linux-2.6/arch/powerpc/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/unistd.h	2010-01-29 23:35:26.574004483 +0100
-+++ linux-2.6/arch/powerpc/include/asm/unistd.h	2010-01-29 23:35:31.809004347 +0100
-@@ -377,6 +377,7 @@
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_UNAME
- #define __ARCH_WANT_SYS_OLDUMOUNT
- #define __ARCH_WANT_SYS_SIGPENDING
- #define __ARCH_WANT_SYS_SIGPROCMASK
+--- linux-2.6.orig/arch/powerpc/include/asm/unistd.h	2010-01-12 14:08:14.865004457 +0100
++++ linux-2.6/arch/powerpc/include/asm/unistd.h	2010-01-29 23:35:26.574004483 +0100
+@@ -364,6 +364,7 @@
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ #define __ARCH_WANT_SYS_SGETMASK
+ #define __ARCH_WANT_SYS_SIGNAL
 Index: linux-2.6/arch/sh/include/asm/unistd_32.h
 ===================================================================
---- linux-2.6.orig/arch/sh/include/asm/unistd_32.h	2010-01-29 23:35:26.575004401 +0100
-+++ linux-2.6/arch/sh/include/asm/unistd_32.h	2010-01-29 23:35:31.809004347 +0100
-@@ -371,6 +371,7 @@
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_UNAME
- #define __ARCH_WANT_SYS_OLDUMOUNT
- #define __ARCH_WANT_SYS_SIGPENDING
- #define __ARCH_WANT_SYS_SIGPROCMASK
+--- linux-2.6.orig/arch/sh/include/asm/unistd_32.h	2010-01-25 12:06:08.097278803 +0100
++++ linux-2.6/arch/sh/include/asm/unistd_32.h	2010-01-29 23:35:26.575004401 +0100
+@@ -358,6 +358,7 @@
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ #define __ARCH_WANT_SYS_SGETMASK
+ #define __ARCH_WANT_SYS_SIGNAL
 Index: linux-2.6/arch/sh/include/asm/unistd_64.h
 ===================================================================
---- linux-2.6.orig/arch/sh/include/asm/unistd_64.h	2010-01-29 23:35:26.576007602 +0100
-+++ linux-2.6/arch/sh/include/asm/unistd_64.h	2010-01-29 23:35:31.810004545 +0100
-@@ -411,6 +411,7 @@
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_UNAME
- #define __ARCH_WANT_SYS_OLDUMOUNT
+--- linux-2.6.orig/arch/sh/include/asm/unistd_64.h	2010-01-25 12:06:08.098004036 +0100
++++ linux-2.6/arch/sh/include/asm/unistd_64.h	2010-01-29 23:35:26.576007602 +0100
+@@ -398,6 +398,7 @@
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ #define __ARCH_WANT_SYS_SGETMASK
+ #define __ARCH_WANT_SYS_SIGNAL
+Index: linux-2.6/arch/sparc/include/asm/unistd.h
+===================================================================
+--- linux-2.6.orig/arch/sparc/include/asm/unistd.h	2010-01-12 14:08:14.986003735 +0100
++++ linux-2.6/arch/sparc/include/asm/unistd.h	2010-01-29 23:35:26.577004307 +0100
+@@ -432,7 +432,9 @@
  #define __ARCH_WANT_SYS_SIGPENDING
  #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGSUSPEND
+-#ifndef __32bit_syscall_numbers__
++#ifdef __32bit_syscall_numbers__
++#define __ARCH_WANT_SYS_IPC
++#else
+ #define __ARCH_WANT_COMPAT_SYS_TIME
+ #define __ARCH_WANT_COMPAT_SYS_RT_SIGSUSPEND
+ #endif
 Index: linux-2.6/arch/x86/include/asm/unistd_32.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/unistd_32.h	2010-01-29 23:35:26.579004142 +0100
-+++ linux-2.6/arch/x86/include/asm/unistd_32.h	2010-01-29 23:35:31.811004113 +0100
-@@ -367,6 +367,7 @@
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_UNAME
- #define __ARCH_WANT_SYS_OLD_MMAP
- #define __ARCH_WANT_SYS_OLD_SELECT
- #define __ARCH_WANT_SYS_OLDUMOUNT
-Index: linux-2.6/arch/x86/include/asm/unistd_64.h
+--- linux-2.6.orig/arch/x86/include/asm/unistd_32.h	2010-01-29 23:35:24.060009031 +0100
++++ linux-2.6/arch/x86/include/asm/unistd_32.h	2010-01-29 23:35:26.579004142 +0100
+@@ -354,6 +354,7 @@
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_ALARM
+ #define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_IPC
+ #define __ARCH_WANT_SYS_PAUSE
+ #define __ARCH_WANT_SYS_SGETMASK
+ #define __ARCH_WANT_SYS_SIGNAL
+Index: linux-2.6/include/linux/syscalls.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/unistd_64.h	2010-01-29 23:35:30.940005707 +0100
-+++ linux-2.6/arch/x86/include/asm/unistd_64.h	2010-01-29 23:35:31.811004113 +0100
-@@ -680,6 +680,7 @@ __SYSCALL(__NR_recvmmsg, sys_recvmmsg)
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_UNAME
- #define __ARCH_WANT_SYS_OLDUMOUNT
- #define __ARCH_WANT_SYS_SIGPENDING
- #define __ARCH_WANT_SYS_SIGPROCMASK
+--- linux-2.6.orig/include/linux/syscalls.h	2010-01-29 23:35:24.032012239 +0100
++++ linux-2.6/include/linux/syscalls.h	2010-01-29 23:35:26.580004409 +0100
+@@ -684,6 +684,8 @@ asmlinkage long sys_shmat(int shmid, cha
+ asmlinkage long sys_shmget(key_t key, size_t size, int flag);
+ asmlinkage long sys_shmdt(char __user *shmaddr);
+ asmlinkage long sys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
++asmlinkage long sys_ipc(unsigned int call, int first, int second,
++		unsigned long third, void __user *ptr, long fifth);
+ 
+ asmlinkage long sys_mq_open(const char __user *name, int oflag, mode_t mode, struct mq_attr __user *attr);
+ asmlinkage long sys_mq_unlink(const char __user *name);
