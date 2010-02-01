@@ -1,73 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755085Ab0BAP5t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 10:57:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42169 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752371Ab0BAP5s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 10:57:48 -0500
-Date: Mon, 1 Feb 2010 07:57:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before suspending devices
-Message-Id: <20100201075706.69b1d2c0.akpm@linux-foundation.org>
-In-Reply-To: <201002011630.04281.rjw@sisk.pl>
-References: <alpine.LFD.2.00.1001221841490.2266@localhost>
-	<201001252237.42545.rjw@sisk.pl>
-	<alpine.LFD.2.00.1002011527580.5334@localhost>
-	<201002011630.04281.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1755415Ab0BAP6d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 10:58:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11574 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754510Ab0BAP6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 10:58:31 -0500
+Message-ID: <4B66F977.5010708@redhat.com>
+Date: Mon, 01 Feb 2010 10:55:35 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, aarcange@redhat.com
+Subject: Re: [PATCH -mm] remove VM_LOCK_RMAP code
+References: <20100128002000.2bf5e365@annuminas.surriel.com> <20100129151423.8b71b88e.akpm@linux-foundation.org> <20100129193410.7ce915d0@annuminas.surriel.com> <20100201061532.GC9085@laptop>
+In-Reply-To: <20100201061532.GC9085@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Feb 2010 16:30:04 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On 02/01/2010 01:15 AM, Nick Piggin wrote:
+> On Fri, Jan 29, 2010 at 07:34:10PM -0500, Rik van Riel wrote:
+>> When a VMA is in an inconsistent state during setup or teardown, the
+>> worst that can happen is that the rmap code will not be able to find
+>> the page.
+>
+> OK, but you missed the interesting thing, which is to explain why
+> that worst case is not a problem.
+>
+> rmap of course is not just used for reclaim but also invalidations
+> from mappings, and those guys definitely need to know that all
+> page table entries have been handled by the time they return.
 
-> On Monday 01 February 2010, Sebastian Ott wrote:
-> > Hi Rafael,
-> > 
-> > since you didn't like the idea of calling the driver callbacks with just
-> > one cpu enabled, we gave your patch: "MM / PM: Force GFP_NOIO during
-> > suspend/hibernation and resume" a try and i can confirm that this
-> > fixes the issue on s390.
-> 
-> Great, thanks for testing!
-> 
-> > Will this go in 2.6.33/stable?
-> 
-> That depends on Andrew, actually.
-> 
-> Andrew, what do you think of the patch at:
-> http://patchwork.kernel.org/patch/74740/mbox/ ?
-> 
-> It helps people and I don't see any major drawbacks of it.
-> 
+This is not a problem, because the mapping is in the process
+of being torn down (PTEs just got invalidated by munmap), or
+set up (no PTEs have been instantiated yet).
 
-Seems sane.  A couple of minor things:
+The third case is split_vma, where we can have one VMA in an
+inconsistent state (rmap cannot find the PTEs), while the
+other VMA is still in its original state (rmap finds the PTEs
+through that VMA).
 
-- the names mm_force_noio_allocations() and mm_allow_io_allocations()
-  are a bit sucky.  Asymmetrical.
+That is what makes this safe.
 
-- the functions don't nest: if someone calls
-  mm_force_noio_allocations() twice in succession then the kernel is
-  all mucked up.  Why not:
-
-gfp_t mm_set_gfp_mask(gfp_t mask)
-{
-	gfp_t ret = gfp_allowed_mask;
-
-	gfp_allowed_mask = mask;
-	return ret;
-}
-
-which is of course racy :)  Could add a local spinlock if really worried.
-
-All your current callers can easily save the old value in a local.
+-- 
+All rights reversed.
