@@ -1,42 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754371Ab0BARrE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 12:47:04 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40409 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091Ab0BARrB (ORCPT
+	id S1754471Ab0BARr3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 12:47:29 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:61445 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752602Ab0BARr1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 12:47:01 -0500
-Subject: Re: [PATCH] perf_events: fix bug in hw_perf_enable()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@google.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       davem@davemloft.net, fweisbec@gmail.com, robert.richter@amd.com,
-       perfmon2-devel@lists.sf.net, eranian@gmail.com,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <bd4cb8901002010923q79fa82f5s90a8430b4c037a19@mail.gmail.com>
-References: <4b66dc67.0b38560a.1635.ffffae18@mx.google.com>
-	 <1265038508.24455.177.camel@laptop> <1265040260.24455.200.camel@laptop>
-	 <bd4cb8901002010814x12e5a26v195f13c63b0f7567@mail.gmail.com>
-	 <1265042731.24455.232.camel@laptop>
-	 <bd4cb8901002010923q79fa82f5s90a8430b4c037a19@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 18:46:51 +0100
-Message-ID: <1265046411.24455.235.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Feb 2010 12:47:27 -0500
+Date: Mon, 1 Feb 2010 12:45:57 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH] set dock_station->flags to zero during dock_add
+Message-ID: <20100201174557.GB3240@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Alex Chiang <achiang@hp.com>, lenb@kernel.org,
+	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	stable@kernel.org
+References: <20100201163043.GA3240@think>
+ <20100201173518.GA28002@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100201173518.GA28002@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B671360.0191:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-01 at 18:23 +0100, Stephane Eranian wrote:
-> >  244235699509090  raw 0x13c
-> >  244235695558036  raw 0x13c
-> >
-> Strange. I am running mine on a Q6600.
-> What's yours? 
+On Mon, Feb 01, 2010 at 10:35:18AM -0700, Alex Chiang wrote:
+> Hi Chris,
+> 
+> Thanks for catching this. Seems better to just memset the stack
+> variable before we kmemdup it in platform_deivce_register_data().
+> 
+> How about this instead?
 
-These numbers came from a T9400, but my Q9450 does something similar.
+[ memset instead of explicitly setting flags to zero ]
 
+I didn't do the memset because lower down we init every other field, but
+zeros are zeros really.
+
+Looking at platform_device_register_data, you could even make ds
+static...now that is sure to break in small and subtle ways later on ;)
+
+-chris
