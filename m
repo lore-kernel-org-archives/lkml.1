@@ -1,50 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754247Ab0BAG1i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 01:27:38 -0500
-Received: from 1wt.eu ([62.212.114.60]:56037 "EHLO 1wt.eu"
+	id S1754639Ab0BAGaF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 01:30:05 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41581 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278Ab0BAG1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 01:27:37 -0500
-Date: Mon, 1 Feb 2010 07:27:29 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Justin Madru <jdm64@gawab.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Forward porting 2.4 driver
-Message-ID: <20100201062729.GC27453@1wt.eu>
-References: <4B634540.9070306@gawab.com> <20100129203613.GF27907@1wt.eu> <4B665322.2060005@gawab.com>
+	id S1754502Ab0BAGaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 01:30:01 -0500
+Date: Mon, 1 Feb 2010 17:29:52 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: linux-next: manual merge of the tip tree with the kgdb tree
+Message-Id: <20100201172952.95fe2150.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B665322.2060005@gawab.com>
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__1_Feb_2010_17_29_52_+1100_cvaf=FuKjfr/a5Vc"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+--Signature=_Mon__1_Feb_2010_17_29_52_+1100_cvaf=FuKjfr/a5Vc
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, Jan 31, 2010 at 08:05:54PM -0800, Justin Madru wrote:
-> Well, it's good that the driver might easily be updated to the latest 2.4.
-> 
-> I did a diff of the source code that was provided against 2.6.30. 
-> Unfortunately, it looks like there's been more changes to the code than 
-> simply adding drivers. Updates all across the tree have been made, some 
-> minor that would be an easy merge. But some seem to be more involved 
-> changes. Any suggestions on merging the code?
- 
-Then I'd suggest that you progressively apply all 2.4 versions one by
-one on top of their code. You should have less changes that way and
-since you'll have changelogs, you'll be able to tell what the changes
-want to do and whether you have to merge them or you can ignore them.
-Once you reach 2.4.32, you can even choose to apply all patches one
-at a time because the kernel migrated to use GIT. There are "only"
-608 patches. Those are quickly reviewed to eliminate the arch-specific
-ones you don't care about and only keep generic fixes.
+Hi all,
 
-Well that's just an idea. Also, keep a copy of intermediate versions
-(or ideally put them into a git tree starting at plain 2.4.30).
+Today's linux-next merge of the tip tree got a conflict in
+arch/x86/kernel/kgdb.c between commit
+53a2aa296b5108e9bfdcda7f41221e721d9c7474 ("x86,hw_breakpoint,kgdb: kgdb
+to use hw_breakpoint API") from the kgdb tree and commit
+cc0967490c1c3824bc5b75718b6ca8a51d9f2617 ("x86, hw_breakpoints, kgdb: Fix
+kgdb to use hw_breakpoint API") from the tip tree.
 
-Hoping this helps,
-Willy
+These two commits are similar but sufficiently different to make a mess.
+I effectively reverted the kgdb tree version and used the tip tree
+version.  This also involved reverting the kgdb tree changes to
+arch/x86/kernel/hw_breakpoint.c.  I hope I got it right (since I had to
+reapply a few other kgdb changes by hand) (an x86_64 allmodconfig build
+produces no new warnings or errors, so I have some hope).
 
+Someone should give me some guidance as to a way forward here, please.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__1_Feb_2010_17_29_52_+1100_cvaf=FuKjfr/a5Vc
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktmdOAACgkQjjKRsyhoI8zLIQCeM7IsO5cPX+4mahlCTxeb6wyP
+GCIAn2BtZ7T77zCSKLqYLJaQbfdgYULb
+=MA3t
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__1_Feb_2010_17_29_52_+1100_cvaf=FuKjfr/a5Vc--
