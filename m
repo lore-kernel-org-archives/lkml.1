@@ -1,145 +1,182 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752977Ab0BAIaX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 03:30:23 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60769 "EHLO mx1.suse.de"
+	id S1754201Ab0BAIa3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 03:30:29 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58010 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750915Ab0BAIaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 03:30:22 -0500
-Date: Mon, 1 Feb 2010 17:15:32 +1100
+	id S1751329Ab0BAIaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 03:30:25 -0500
+Date: Mon, 1 Feb 2010 17:39:03 +1100
 From: Nick Piggin <npiggin@suse.de>
-To: Rik van Riel <riel@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, aarcange@redhat.com
-Subject: Re: [PATCH -mm] remove VM_LOCK_RMAP code
-Message-ID: <20100201061532.GC9085@laptop>
-References: <20100128002000.2bf5e365@annuminas.surriel.com>
- <20100129151423.8b71b88e.akpm@linux-foundation.org>
- <20100129193410.7ce915d0@annuminas.surriel.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Dave Chinner <david@fromorbit.com>,
+       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: buffer heads: Support slab defrag
+Message-ID: <20100201063903.GD9085@laptop>
+References: <20100129204931.789743493@quilx.com>
+ <20100129205003.813495196@quilx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100129193410.7ce915d0@annuminas.surriel.com>
+In-Reply-To: <20100129205003.813495196@quilx.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 29, 2010 at 07:34:10PM -0500, Rik van Riel wrote:
-> When a VMA is in an inconsistent state during setup or teardown, the
-> worst that can happen is that the rmap code will not be able to find
-> the page.
-
-OK, but you missed the interesting thing, which is to explain why
-that worst case is not a problem.
-
-rmap of course is not just used for reclaim but also invalidations
-from mappings, and those guys definitely need to know that all
-page table entries have been handled by the time they return.
-
+On Fri, Jan 29, 2010 at 02:49:41PM -0600, Christoph Lameter wrote:
+> Defragmentation support for buffer heads. We convert the references to
+> buffers to struct page references and try to remove the buffers from
+> those pages. If the pages are dirty then trigger writeout so that the
+> buffer heads can be removed later.
 > 
-> It is also impossible for the rmap code to follow a pointer to an
-> already freed VMA, because the rmap code holds the anon_vma->lock,
-> which the VMA teardown code needs to take before the VMA is removed
-> from the anon_vma chain.
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 > 
-> Hence, we should not need the VM_LOCK_RMAP locking at all.
-> 
-> Sent as a separate patch because I would appreciate it if others
-> could verify my logic :)
-> 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
 > ---
->  include/linux/mm.h |    4 ----
->  mm/mmap.c          |   15 ---------------
->  mm/rmap.c          |   12 ------------
->  3 files changed, 0 insertions(+), 31 deletions(-)
+>  fs/buffer.c |   99 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 99 insertions(+)
 > 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 93bbb70..5866e0c 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -96,11 +96,7 @@ extern unsigned int kobjsize(const void *objp);
->  #define VM_NORESERVE	0x00200000	/* should the VM suppress accounting */
->  #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
->  #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
-> -#ifdef CONFIG_MMU
-> -#define VM_LOCK_RMAP	0x01000000	/* Do not follow this rmap (mmu mmap) */
-> -#else
->  #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
-> -#endif
->  #define VM_INSERTPAGE	0x02000000	/* The vma has had "vm_insert_page()" done on it */
->  #define VM_ALWAYSDUMP	0x04000000	/* Always include in core dumps */
->  
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 58a3d72..de9e953 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -554,9 +554,7 @@ again:			remove_next = 1 + (end > next->vm_end);
->  		 */
->  		if (importer && !importer->anon_vma) {
->  			/* Block reverse map lookups until things are set up. */
-> -			importer->vm_flags |= VM_LOCK_RMAP;
->  			if (anon_vma_clone(importer, vma)) {
-> -				importer->vm_flags &= ~VM_LOCK_RMAP;
->  				return -ENOMEM;
->  			}
->  			importer->anon_vma = anon_vma;
-> @@ -618,11 +616,6 @@ again:			remove_next = 1 + (end > next->vm_end);
->  		__vma_unlink(mm, next, vma);
->  		if (file)
->  			__remove_shared_vm_struct(next, file, mapping);
-> -		/*
-> -		 * This VMA is now dead, no need for rmap to follow it.
-> -		 * Call anon_vma_merge below, outside of i_mmap_lock.
-> -		 */
-> -		next->vm_flags |= VM_LOCK_RMAP;
->  	} else if (insert) {
->  		/*
->  		 * split_vma has split insert from vma, and needs
-> @@ -635,20 +628,12 @@ again:			remove_next = 1 + (end > next->vm_end);
->  	if (mapping)
->  		spin_unlock(&mapping->i_mmap_lock);
->  
-> -	/*
-> -	 * The current VMA has been set up. It is now safe for the
-> -	 * rmap code to get from the pages to the ptes.
-> -	 */
-> -	if (anon_vma && importer)
-> -		importer->vm_flags &= ~VM_LOCK_RMAP;
-> -
->  	if (remove_next) {
->  		if (file) {
->  			fput(file);
->  			if (next->vm_flags & VM_EXECUTABLE)
->  				removed_exe_file_vma(mm);
->  		}
-> -		/* Protected by mmap_sem and VM_LOCK_RMAP. */
->  		if (next->anon_vma)
->  			anon_vma_merge(vma, next);
->  		mm->map_count--;
-> diff --git a/mm/rmap.c b/mm/rmap.c
-> index aa11f3c..818615a 100644
-> --- a/mm/rmap.c
-> +++ b/mm/rmap.c
-> @@ -329,18 +329,6 @@ vma_address(struct page *page, struct vm_area_struct *vma)
->  		/* page should be within @vma mapping range */
->  		return -EFAULT;
->  	}
-> -	if (unlikely(vma->vm_flags & VM_LOCK_RMAP)) {
-> -		/*
-> -		 * This VMA is being unlinked or is not yet linked into the
-> -		 * VMA tree.  Do not try to follow this rmap.  This race
-> -		 * condition can result in page_referenced() ignoring a
-> -		 * reference or in try_to_unmap() failing to unmap a page.
-> -		 * The VMA cannot be freed under us because we hold the
-> -		 * anon_vma->lock, which the munmap code takes while
-> -		 * unlinking the anon_vmas from the VMA.
-> -		 */
-> -		return -EFAULT;
-> -	}
->  	return address;
+> Index: slab-2.6/fs/buffer.c
+> ===================================================================
+> --- slab-2.6.orig/fs/buffer.c	2010-01-22 15:09:43.000000000 -0600
+> +++ slab-2.6/fs/buffer.c	2010-01-22 16:17:27.000000000 -0600
+> @@ -3352,6 +3352,104 @@ int bh_submit_read(struct buffer_head *b
 >  }
+>  EXPORT_SYMBOL(bh_submit_read);
 >  
+> +/*
+> + * Writeback a page to clean the dirty state
+> + */
+> +static void trigger_write(struct page *page)
+> +{
+> +	struct address_space *mapping = page_mapping(page);
+> +	int rc;
+> +	struct writeback_control wbc = {
+> +		.sync_mode = WB_SYNC_NONE,
+> +		.nr_to_write = 1,
+> +		.range_start = 0,
+> +		.range_end = LLONG_MAX,
+> +		.nonblocking = 1,
+> +		.for_reclaim = 0
+> +	};
+> +
+> +	if (!mapping->a_ops->writepage)
+> +		/* No write method for the address space */
+> +		return;
+> +
+> +	if (!clear_page_dirty_for_io(page))
+> +		/* Someone else already triggered a write */
+> +		return;
+> +
+> +	rc = mapping->a_ops->writepage(page, &wbc);
+> +	if (rc < 0)
+> +		/* I/O Error writing */
+> +		return;
+> +
+> +	if (rc == AOP_WRITEPAGE_ACTIVATE)
+> +		unlock_page(page);
+> +}
+> +
+> +/*
+> + * Get references on buffers.
+> + *
+> + * We obtain references on the page that uses the buffer. v[i] will point to
+> + * the corresponding page after get_buffers() is through.
+> + *
+> + * We are safe from the underlying page being removed simply by doing
+> + * a get_page_unless_zero. The buffer head removal may race at will.
+> + * try_to_free_buffes will later take appropriate locks to remove the
+> + * buffers if they are still there.
+> + */
+> +static void *get_buffers(struct kmem_cache *s, int nr, void **v)
+> +{
+> +	struct page *page;
+> +	struct buffer_head *bh;
+> +	int i, j;
+> +	int n = 0;
+> +
+> +	for (i = 0; i < nr; i++) {
+> +		bh = v[i];
+> +		v[i] = NULL;
+> +
+> +		page = bh->b_page;
+> +
+> +		if (page && PagePrivate(page)) {
+> +			for (j = 0; j < n; j++)
+> +				if (page == v[j])
+> +					continue;
+> +		}
+> +
+> +		if (get_page_unless_zero(page))
+> +			v[n++] = page;
+
+This seems wrong to me. The page can have been reused at this
+stage.
+
+You technically can't re-check using page->private because that
+can be anything and doesn't actually need to be a pointer. You
+could re-check bh->b_page, provided that you ensure it is always
+cleared before a page is detached, and the correct barriers are
+in place.
+
+
+> +	}
+> +	return NULL;
+> +}
+> +
+> +/*
+> + * Despite its name: kick_buffers operates on a list of pointers to
+> + * page structs that was set up by get_buffer().
+> + */
+> +static void kick_buffers(struct kmem_cache *s, int nr, void **v,
+> +							void *private)
+> +{
+> +	struct page *page;
+> +	int i;
+> +
+> +	for (i = 0; i < nr; i++) {
+> +		page = v[i];
+> +
+> +		if (!page || PageWriteback(page))
+> +			continue;
+> +
+> +		if (trylock_page(page)) {
+> +			if (PageDirty(page))
+> +				trigger_write(page);
+> +			else {
+> +				if (PagePrivate(page))
+> +					try_to_free_buffers(page);
+> +				unlock_page(page);
+
+PagePrivate doesn't necessarily mean it has buffers. try_to_release_page
+should be a better idea.
+
+> +			}
+> +		}
+> +		put_page(page);
+> +	}
+> +}
+> +
+>  static void
+>  init_buffer_head(void *data)
+>  {
+> @@ -3370,6 +3468,7 @@ void __init buffer_init(void)
+>  				(SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
+>  				SLAB_MEM_SPREAD),
+>  				init_buffer_head);
+> +	kmem_cache_setup_defrag(bh_cachep, get_buffers, kick_buffers);
+>  
+>  	/*
+>  	 * Limit the bh occupancy to 10% of ZONE_NORMAL
+
+
+Buffer heads and buffer head refcounting really stinks badly. Although
+I can see the need for a medium term solution until fsblock / some
+actual sane refcounting.
+
