@@ -1,56 +1,162 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290Ab0BAI4g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 03:56:36 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35544 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148Ab0BAI4f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 03:56:35 -0500
-Subject: Re: [PATCH] perf tools: fix write_event()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100131083234.GA12637@elte.hu>
-References: <4B570657.5090105@cn.fujitsu.com>
-	 <20100131083234.GA12637@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 09:56:13 +0100
-Message-ID: <1265014573.24455.99.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1754525Ab0BAI5t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 03:57:49 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:37118 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752138Ab0BAI5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 03:57:48 -0500
+Date: Mon, 1 Feb 2010 09:57:47 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Blk-cgroup: Fix potential deallock in blk-cgroup
+Message-ID: <20100201085746.GH13771@kernel.dk>
+References: <4B669569.9070205@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B669569.9070205@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-31 at 09:32 +0100, Ingo Molnar wrote:
-> * Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+On Mon, Feb 01 2010, Gui Jianfeng wrote:
+> Hi
 > 
-> > We parse the event while it's read from mmap buffer in
-> > write_event(), but sometimes the event will straddles the
-> > mmap boundary, we should handle this case
-> > 
-> > And if we record events(such as perf kmem/sched) for long
-> > times, Ctrl + C can't interrupt it just for this reason
-> > 
-> > Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> > ---
-> >  tools/perf/builtin-record.c |   62 +++++++++++++++++++++++++++++++++---------
+> I triggered a lockdep warnning as following.
 > 
-> Note, i've reverted the original instead, via:
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.33-rc2 #1
+> -------------------------------------------------------
+> test_io_control/7357 is trying to acquire lock:
+>  (blkio_list_lock){+.+...}, at: [<c053a990>] blkiocg_weight_write+0x82/0x9e
 > 
->   a8e6f73: Revert "perf record: Intercept all events"
+> but task is already holding lock:
+>  (&(&blkcg->lock)->rlock){......}, at: [<c053a949>] blkiocg_weight_write+0x3b/0x9e
 > 
-> As Peter said it, it is fundamentally wrong for perf record to touch the data 
-> stream in the common case. Arnaldo, cannot we use some other method for perf 
-> archive's needs? Worst-case we can do an optional parsing of the data stream 
-> although we should first try hard to find a generic method ...
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #2 (&(&blkcg->lock)->rlock){......}:
+>        [<c04583b7>] validate_chain+0x8bc/0xb9c
+>        [<c0458dba>] __lock_acquire+0x723/0x789
+>        [<c0458eb0>] lock_acquire+0x90/0xa7
+>        [<c0692b0a>] _raw_spin_lock_irqsave+0x27/0x5a
+>        [<c053a4e1>] blkiocg_add_blkio_group+0x1a/0x6d
+>        [<c053cac7>] cfq_get_queue+0x225/0x3de
+>        [<c053eec2>] cfq_set_request+0x217/0x42d
+>        [<c052c8a6>] elv_set_request+0x17/0x26
+>        [<c0532a0f>] get_request+0x203/0x2c5
+>        [<c0532ae9>] get_request_wait+0x18/0x10e
+>        [<c0533470>] __make_request+0x2ba/0x375
+>        [<c0531985>] generic_make_request+0x28d/0x30f
+>        [<c0532da7>] submit_bio+0x8a/0x8f
+>        [<c04d827a>] submit_bh+0xf0/0x10f
+>        [<c04d91d2>] ll_rw_block+0xc0/0xf9
+>        [<f86e9705>] ext3_find_entry+0x319/0x544 [ext3]
+>        [<f86eae58>] ext3_lookup+0x2c/0xb9 [ext3]
+>        [<c04c3e1b>] do_lookup+0xd3/0x172
+>        [<c04c56c8>] link_path_walk+0x5fb/0x95c
+>        [<c04c5a65>] path_walk+0x3c/0x81
+>        [<c04c5b63>] do_path_lookup+0x21/0x8a
+>        [<c04c66cc>] do_filp_open+0xf0/0x978
+>        [<c04c0c7e>] open_exec+0x1b/0xb7
+>        [<c04c1436>] do_execve+0xbb/0x266
+>        [<c04081a9>] sys_execve+0x24/0x4a
+>        [<c04028a2>] ptregs_execve+0x12/0x18
+> 
+> -> #1 (&(&q->__queue_lock)->rlock){..-.-.}:
+>        [<c04583b7>] validate_chain+0x8bc/0xb9c
+>        [<c0458dba>] __lock_acquire+0x723/0x789
+>        [<c0458eb0>] lock_acquire+0x90/0xa7
+>        [<c0692b0a>] _raw_spin_lock_irqsave+0x27/0x5a
+>        [<c053dd2a>] cfq_unlink_blkio_group+0x17/0x41
+>        [<c053a6eb>] blkiocg_destroy+0x72/0xc7
+>        [<c0467df0>] cgroup_diput+0x4a/0xb2
+>        [<c04ca473>] dentry_iput+0x93/0xb7
+>        [<c04ca4b3>] d_kill+0x1c/0x36
+>        [<c04cb5c5>] dput+0xf5/0xfe
+>        [<c04c6084>] do_rmdir+0x95/0xbe
+>        [<c04c60ec>] sys_rmdir+0x10/0x12
+>        [<c04027cc>] sysenter_do_call+0x12/0x32
+> 
+> -> #0 (blkio_list_lock){+.+...}:
+>        [<c0458117>] validate_chain+0x61c/0xb9c
+>        [<c0458dba>] __lock_acquire+0x723/0x789
+>        [<c0458eb0>] lock_acquire+0x90/0xa7
+>        [<c06929fd>] _raw_spin_lock+0x1e/0x4e
+>        [<c053a990>] blkiocg_weight_write+0x82/0x9e
+>        [<c0467f1e>] cgroup_file_write+0xc6/0x1c0
+>        [<c04bd2f3>] vfs_write+0x8c/0x116
+>        [<c04bd7c6>] sys_write+0x3b/0x60
+>        [<c04027cc>] sysenter_do_call+0x12/0x32
+> 
+> other info that might help us debug this:
+> 
+> 1 lock held by test_io_control/7357:
+>  #0:  (&(&blkcg->lock)->rlock){......}, at: [<c053a949>] blkiocg_weight_write+0x3b/0x9e
+> stack backtrace:
+> Pid: 7357, comm: test_io_control Not tainted 2.6.33-rc2 #1
+> Call Trace:
+>  [<c045754f>] print_circular_bug+0x91/0x9d
+>  [<c0458117>] validate_chain+0x61c/0xb9c
+>  [<c0458dba>] __lock_acquire+0x723/0x789
+>  [<c0458eb0>] lock_acquire+0x90/0xa7
+>  [<c053a990>] ? blkiocg_weight_write+0x82/0x9e
+>  [<c06929fd>] _raw_spin_lock+0x1e/0x4e
+>  [<c053a990>] ? blkiocg_weight_write+0x82/0x9e
+>  [<c053a990>] blkiocg_weight_write+0x82/0x9e
+>  [<c0467f1e>] cgroup_file_write+0xc6/0x1c0
+>  [<c0454df5>] ? trace_hardirqs_off+0xb/0xd
+>  [<c044d93a>] ? cpu_clock+0x2e/0x44
+>  [<c050e6ec>] ? security_file_permission+0xf/0x11
+>  [<c04bcdda>] ? rw_verify_area+0x8a/0xad
+>  [<c0467e58>] ? cgroup_file_write+0x0/0x1c0
+>  [<c04bd2f3>] vfs_write+0x8c/0x116
+>  [<c04bd7c6>] sys_write+0x3b/0x60
+>  [<c04027cc>] sysenter_do_call+0x12/0x32
+> 
+> To prevent deadlock, we should take locks as following sequence:
+> 
+> blkio_list_lock -> queue_lock ->  blkcg_lock.
+> 
+> The following patch should fix this bug.
+> 
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> ---
+>  block/blk-cgroup.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
+> index 1fa2654..e7dbbaf 100644
+> --- a/block/blk-cgroup.c
+> +++ b/block/blk-cgroup.c
+> @@ -147,16 +147,16 @@ blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
+>  		return -EINVAL;
+>  
+>  	blkcg = cgroup_to_blkio_cgroup(cgroup);
+> +	spin_lock(&blkio_list_lock);
+>  	spin_lock_irq(&blkcg->lock);
+>  	blkcg->weight = (unsigned int)val;
+>  	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node) {
+> -		spin_lock(&blkio_list_lock);
+>  		list_for_each_entry(blkiop, &blkio_list, list)
+>  			blkiop->ops.blkio_update_group_weight_fn(blkg,
+>  					blkcg->weight);
+> -		spin_unlock(&blkio_list_lock);
+>  	}
+>  	spin_unlock_irq(&blkcg->lock);
+> +	spin_unlock(&blkio_list_lock);
+>  	return 0;
+>  }
 
-Arnaldo posted patches for this last friday somewhere, it might turn out
-you already found them (reading mail by date order here).
+Thanks, that is definitely the correct ranking. Applied for 2.6.33.
+
+-- 
+Jens Axboe
 
