@@ -1,87 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755645Ab0BASoV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 13:44:21 -0500
-Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:55332 "EHLO
-	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500Ab0BASoU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 13:44:20 -0500
-Date: Mon, 01 Feb 2010 13:44:12 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] sky2:  receive dma mapping error handling
-In-reply-to: <20100201102018.7b597992@nehalam>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B6720FC.7070105@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100128223447.GC3109@del.dom.local> <4B621316.8070308@majjas.com>
- <20100128225621.GD3109@del.dom.local> <4B6216B9.1010802@majjas.com>
- <20100128153643.0fca3c51@nehalam> <4B645EF4.4050701@majjas.com>
- <20100131003449.GA11935@del.dom.local> <4B650D53.2010607@majjas.com>
- <4B65D0F9.2020602@majjas.com> <4B65FD12.7090101@majjas.com>
- <20100131221835.GA3317@del.dom.local> <20100201102018.7b597992@nehalam>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S1753652Ab0BASwf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:52:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24942 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751054Ab0BASwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 13:52:34 -0500
+Date: Mon, 1 Feb 2010 13:52:18 -0500
+From: Don Zickus <dzickus@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>, gorcunov@gmail.com, aris@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] [RFC] nmi_watchdog: config option to enable new
+ nmi_watchdog
+Message-ID: <20100201185218.GC3062@redhat.com>
+References: <1264622622-5778-1-git-send-email-dzickus@redhat.com>
+ <1264622622-5778-4-git-send-email-dzickus@redhat.com>
+ <1264690494.4283.2103.camel@laptop>
+ <20100128154448.GV4472@redhat.com>
+ <20100129081227.GK14636@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100129081227.GK14636@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/1/2010 1:20 PM, Stephen Hemminger wrote:
-> This fixes the fact that re->flags is always zero without causing
-> other confusion.
->
-> --- a/drivers/net/sky2.c	2010-02-01 10:07:42.676296236 -0800
-> +++ b/drivers/net/sky2.c	2010-02-01 10:18:12.575044064 -0800
-> @@ -1025,11 +1025,8 @@ static void sky2_prefetch_init(struct sk
->   static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2, u16 *slot)
->   {
->   	struct sky2_tx_le *le = sky2->tx_le + *slot;
-> -	struct tx_ring_info *re = sky2->tx_ring + *slot;
->
->   	*slot = RING_NEXT(*slot, sky2->tx_ring_size);
-> -	re->flags = 0;
-> -	re->skb = NULL;
->   	le->ctrl = 0;
->   	return le;
->   }
-> @@ -1622,8 +1619,7 @@ static unsigned tx_le_req(const struct s
->   	return count;
->   }
->
-> -static void sky2_tx_unmap(struct pci_dev *pdev,
-> -			  const struct tx_ring_info *re)
-> +static void sky2_tx_unmap(struct pci_dev *pdev, struct tx_ring_info *re)
->   {
->   	if (re->flags&  TX_MAP_SINGLE)
->   		pci_unmap_single(pdev, pci_unmap_addr(re, mapaddr),
-> @@ -1633,6 +1629,7 @@ static void sky2_tx_unmap(struct pci_dev
->   		pci_unmap_page(pdev, pci_unmap_addr(re, mapaddr),
->   			       pci_unmap_len(re, maplen),
->   			       PCI_DMA_TODEVICE);
-> +	re->flags = 0;
->   }
->
->   /*
-> @@ -1839,6 +1836,7 @@ static void sky2_tx_complete(struct sky2
->   			dev->stats.tx_packets++;
->   			dev->stats.tx_bytes += skb->len;
->
-> +			re->skb = NULL;
->   			dev_kfree_skb_any(skb);
->
->   			sky2->tx_next = RING_NEXT(idx, sky2->tx_ring_size);
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->    
-Running with this patch now - dma debug num_free_entries stable - so 
-far, so good.
+On Fri, Jan 29, 2010 at 09:12:27AM +0100, Ingo Molnar wrote:
+> 
+> * Don Zickus <dzickus@redhat.com> wrote:
+> 
+> > On Thu, Jan 28, 2010 at 03:54:54PM +0100, Peter Zijlstra wrote:
+> > > On Wed, 2010-01-27 at 15:03 -0500, Don Zickus wrote:
+> > > > These are the bits that enable the new nmi_watchdog and safely isolate the
+> > > > old nmi_watchdog.  Only one or the other can run, not both at the same
+> > > > time.
+> > > 
+> > > perf disables the lapic watchdog when it wants the pmu, so there
+> > > shouldn't be a problem having both built in.
+> > 
+> > Yes it does disable but does not prevent nmi_watchdog_tick from running nor 
+> > the /proc interface from being loaded.  So perhaps my description isn't very 
+> > good.  The idea with the new watchdog was to re-use some of the bits of the 
+> > old one, but having them both compiled in seemed to stomp on each other.  
+> > That is what I was trying to prevent.
+> > 
+> > I can certainly change the behaviour, just makes the code a little more 
+> > messy I think.
+> 
+> I think that's a good idea - and i think we want to be bold and just have the 
+> new code run seemlessly. (and fix bugs, if any.)
+
+Ok.  I guess I am confused what you are suggesting here, to do as Peter
+suggested and run both at the same time?
+
+> 
+> In fact we want to be even bolder: how about enabling the NMI watchdog by 
+> default again?
+
+I won't complain. :-)
+
+> 
+> The problem with the old one was its fragility - but now if we have a PMU 
+> driver active and perf events enabled we might as well use your brand new NMI 
+> watchdog code as a testing facility as well: if there's _any_ problem with 
+> NMIs then regular 'perf' use would trigger it too - except that not all people 
+> run perf while an always-enabled NMI watchdog would.
+
+Agreed.
+
+> 
+> And it would detect hard hangs too.
+> 
+> What do you think?
+
+I will need to give you an updated patch that properly sets the frequency
+of the NMI and I probably should still implement a code path that uses the
+software perf counters in the cases where the hardware perf counters are
+not available.
+
+It seems like you are ok with my approach.  If that is so, I can test on
+more machines to iron out some more bugs.  Or did you want to take my
+patches as is and have me throw fixes on top?
+
+Cheers,
+Don
+
+> 
+> 	Ingo
