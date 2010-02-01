@@ -1,14 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755612Ab0BABAp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 20:00:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50736 "EHLO ogre.sisk.pl"
+	id S1755643Ab0BABAt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 20:00:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50744 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755473Ab0BABAj convert rfc822-to-8bit (ORCPT
+	id S1755606Ab0BABAp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 20:00:39 -0500
+	Sun, 31 Jan 2010 20:00:45 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Werner Lemberg" <wl@gnu.org>
+       "Herbert Xu" <herbert@gondor.apana.org.au>,
+       "Wolfgang Walter" <wolfgang.walter@stwm.de>
 References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
 In-Reply-To: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -16,8 +17,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <de962C6zBxL.A.wzD.9EiZLB@chimera>
-Subject: [Bug #15158] oops related to i915_gem_object_save_bit_17_swizzle
+Message-ID: <de962C6zBxL.A.OsD.6EiZLB@chimera>
+Subject: [Bug #15197] padlock_sha1 and hmac broken?
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon,  1 Feb 2010 01:43:22 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,9 +33,12 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15158
-Subject		: oops related to i915_gem_object_save_bit_17_swizzle
-Submitter	: Werner Lemberg <wl@gnu.org>
-Date		: 2010-01-28 08:26 (4 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15197
+Subject		: padlock_sha1 and hmac broken?
+Submitter	: Wolfgang Walter <wolfgang.walter@stwm.de>
+Date		: 2010-01-29 23:44 (3 days old)
+References	: http://marc.info/?l=linux-kernel&m=126480912924283&w=4
+Handled-By	: Herbert Xu <herbert@gondor.apana.org.au>
+Patch		: http://patchwork.kernel.org/patch/75959/
 
 
