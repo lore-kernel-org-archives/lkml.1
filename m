@@ -1,64 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715Ab0BAMwC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 07:52:02 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:48662 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752300Ab0BAMwA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 07:52:00 -0500
-Date: Mon, 1 Feb 2010 13:51:55 +0100
-From: Daniel Mack <daniel@caiaq.de>
-To: andrej.gelenberg@udo.edu
-Cc: linux-acpi@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Acpi4asus-user] ACPI device for ASUS EEEPC 1101HA not added
-Message-ID: <20100201125155.GB28972@buzzloop.caiaq.de>
-References: <20100201032554.GZ28972@buzzloop.caiaq.de>
- <cone.1265022400.369355.2380.1000@eeekiste>
+	id S1754489Ab0BAMwH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 07:52:07 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:38784 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752300Ab0BAMwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 07:52:03 -0500
+Message-ID: <4B66CE72.1020003@suse.cz>
+Date: Mon, 01 Feb 2010 13:52:02 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cone.1265022400.369355.2380.1000@eeekiste>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: John Saalwaechter <saalwaechter@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] scripts: use %_tmppath in "make rpm-pkg"
+References: <506c8f0b1001311618i3b8f72c5w9321e3ef26413a20@mail.gmail.com>
+In-Reply-To: <506c8f0b1001311618i3b8f72c5w9321e3ef26413a20@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 12:06:40PM +0100, andrej.gelenberg@udo.edu wrote:
-> you need to whitelist your eee pc for OSI(Linux) in drivers/acpi/blacklist.c
-> like this:
+On 1.2.2010 01:18, John Saalwaechter wrote:
+> The mkspec script hardcodes "/var/tmp" into the generated rpm spec file's
+> BuildRoot. The user, however, may have a custom setting for %_tmppath,
+> which should be used in BuildRoot.  This patch changes mkspec's
+> BuildRoot output to appropriately use %_tmppath.
+
+Thanks, applied. Please CC linux-kbuild@ on changes like this.
+
+Michal
+
+
+> Signed-off-by: John Saalwaechter <saalwaechter@gmail.com>
+> ---
+> diff -uprN a/scripts/package/mkspec b/scripts/package/mkspec
+> --- a/scripts/package/mkspec    2010-01-28 15:06:20.000000000 -0800
+> +++ b/scripts/package/mkspec    2010-01-31 15:46:23.815300460 -0800
+> @@ -39,7 +39,7 @@ if ! $PREBUILT; then
+>  echo "Source: kernel-$__KERNELRELEASE.tar.gz"
+>  fi
 > 
-> +        /*
-> +        * On newer Eeepc, the interface used by eeepc-laptop (ASUS010)
-> +        * is disabled without _OSI(Linux)
-> +        */
-> +       {
-> +       .callback = dmi_enable_osi_linux,
-> +       .ident = "Asus Eeepc-1101HA",
-> +       .matches = {
-> +                    DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK Computer INC."),
-> +                    DMI_MATCH(DMI_PRODUCT_NAME, "1101HA"),
-> +               },
-> +       },
+> -echo "BuildRoot: /var/tmp/%{name}-%{PACKAGE_VERSION}-root"
+> +echo "BuildRoot: %{_tmppath}/%{name}-%{PACKAGE_VERSION}-root"
+>  echo "Provides: $PROVIDES"
+>  echo "%define __spec_install_post /usr/lib/rpm/brp-compress || :"
+>  echo "%define debug_package %{nil}"
 
-Great, thanks. That worked. Is that already queued anywhere or do you
-want me to send a proper patch?
-
-Daniel
-
-
-> Daniel Mack writes:
-> 
-> >On my new 1101HA Eeepc, the special function keys do not work. This is
-> >because the asus-laptop driver fails to match the ACPI device named
-> >"ASUS010". However, acpidump tells me a device with that name does
-> >actually exist - the (simplified) disassembly of the DSDT is below.
-> >
-> >It looks like the gigantic parser state machine fails to add that
-> >device for whatever reason. Any ideas how to fix that?
-> >
-> >
-> >Thanks,
-> >Daniel
-> >
