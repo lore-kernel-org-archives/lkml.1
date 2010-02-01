@@ -1,79 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571Ab0BAWmP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 17:42:15 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56219 "EHLO ogre.sisk.pl"
+	id S1753413Ab0BAWp3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 17:45:29 -0500
+Received: from mail.perches.com ([173.55.12.10]:1723 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753767Ab0BAWmM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 17:42:12 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: [RFC][RFT][PATCH] ACPI: Protection from suspending in the middle of EC transaction
-Date: Mon, 1 Feb 2010 23:42:49 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Thomas Renninger <trenn@suse.de>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <201001310029.48717.rjw@sisk.pl> <20100201094643.GB8740@khazad-dum.debian.net> <4B66AB7F.7050908@suse.de>
-In-Reply-To: <4B66AB7F.7050908@suse.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201002012342.50074.rjw@sisk.pl>
+	id S1751993Ab0BAWp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 17:45:28 -0500
+Subject: Re: [PATCH][RFC] %pd - for printing dentry name
+From: Joe Perches <joe@perches.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20100201222511.GA12882@ZenIV.linux.org.uk>
+References: <20100201222511.GA12882@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 14:45:26 -0800
+Message-ID: <1265064326.25140.398.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 February 2010, Alexey Starikovskiy wrote:
-> Henrique de Moraes Holschuh пишет:
-> > On Sun, 31 Jan 2010, Maxim Levitsky wrote:
-> >> Unfortunately, this patch even causes regressions on my notebook (it
-> >> survive 63 hibernate cycles), but now I battery driver reports 'battery
-> >> absent', backlight driver reports 0 brightness, but reload helped.
-> > 
-> > ...
-> > 
-> >> I think that not only _PTS ans _WAK are problematic. What about other
-> >> ACPI drivers that start accessing the EC before it is resumed?
-> >> I think that these cause the problems I observe.
-> > 
-> > ACPI drivers might access the EC (even indirectly, through the DSDT).  And
-> > platform drivers do often access the EC both at suspend and resume time.
-> Actually, only SBS and thinkpad-acpi access EC directly. All others go through
-> DSDT for access. Still, stopping EC in .suspend is too early, IMHO...
+On Mon, 2010-02-01 at 22:25 +0000, Al Viro wrote:
+> 	There's a lot of places doing printks with ->d_name of various
+> dentries.  Unfortunately, as often as not they are b0rken due to races
+> with rename().
+> 
+> 	I propose to add a new format - %pd.  It would print dentry name.
+> However, unlike everything else in vsnprintf, it would NOT be locking-agnostic.
+> It would grab and release dentry->d_lock.  And yes, I hate that as much as
+> anyone.  I don't see any sane alternative.
+[]
+> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+> index 3b8aeec..52a09dc 100644
+> --- a/lib/vsprintf.c
+> +++ b/lib/vsprintf.c
+> @@ -880,6 +880,18 @@ static char *uuid_string(char *buf, char *end, const u8 *addr,
+>  	return string(buf, end, uuid, spec);
+>  }
+>  
+> +static char *dname_string(char *buf, char *end, struct dentry *d,
+> +			 struct printf_spec spec)
 
-That's very likely the case, although that's kind of the latest we can do that
-without major modifications.
+Maybe there's value in passing fmt here to allow
+printing of the various dentry fields?
 
-Is there a possibility to have more than one EC in a system in practice?
+"%pd<foo>"
 
-> > This needs some sort of strong ordering, the EC must suspend last, and
-> > resume first (as seen by any ACPI and ACPI-aware drivers such as libata,
-> > some platform drivers, etc).  If EC interrupts are a problem, maybe it can
-> > be kicked to poll mode for the suspend/resume transition?
-> It's this way already for about a year now... The problem is that EC driver might be 
-> stopped in middle of the transaction, thus leaving EC in unknown state for BIOS or 
-> switch-over kernel.
+for things like:
 
-Exactly.
+pr_debug("ds_read(socket %d)\n", iminor(file->f_path.dentry->d_inode));
+dprintk("%s: dentry = %s/%s, cookie = %Lu\n", __func__,
+			dentry->d_parent->d_name.name,
+			dentry->d_name.name,
 
-In theory I can try to disable EC transactions from the ACPI platform
-suspend/resume callbacks, but then there still is a problem with the global
-lock, since we shouldn't try to acquire it after disabling device interrupts,
-because an SCI is waited for in case we don't acquire it immediately.
 
-So, perhaps instead we should disable the GPEs and call _PTS before the late
-suspend phase (and analogously, execute _WAK after the early resume phase)
-and disable the EC transacations right after that?
 
-This leaves the problem with PCI devices that may require ACPI support during
-late suspend/early resume, but well.
-
-Rafael
