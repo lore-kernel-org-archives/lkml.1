@@ -1,75 +1,145 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754642Ab0BAR6R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 12:58:17 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:11417 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753981Ab0BAR6Q (ORCPT
+	id S1754500Ab0BASAK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:00:10 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47045 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753877Ab0BASAH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 12:58:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oVbj5JsINwMgU4SE+fFNpTfBqdbjob0isqfoXiO1ZsaKB/kZz2V9WUdK95E9u4rh3K
-         9fsDhASo6ij33wrPpA7W11q0zH2QdNIQ8PnOPDabQuOX8r8CwF73HtE74UPZsxAZfWMr
-         2Hm01ywt8cwGpiRWFsqFB00UE5UAirvGW9QKQ=
-Date: Mon, 1 Feb 2010 18:58:14 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Tom Zanussi <tzanussi@gmail.com>, Steven Rostedt <srostedt@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 00/12] perf lock: New subcommand "perf lock", for
-	analyzing  lock statistics
-Message-ID: <20100201175812.GC5241@nowhere>
-References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp> <20100129143403.GJ13771@kernel.dk> <4B641F4D.6090704@dcl.info.waseda.ac.jp> <20100131204408.GC13771@kernel.dk> <20100131210707.GF5224@nowhere> <1265015720.24455.101.camel@laptop> <20100201092239.GA22578@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100201092239.GA22578@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 1 Feb 2010 13:00:07 -0500
+X-Authority-Analysis: v=1.0 c=1 a=db5xdBbprZYA:10 a=7U3hwN5JcxgA:10 a=Z4Rwk6OoAAAA:8 a=2CF2Mh1K7W2Eqr-AToIA:9 a=BNi0CBxHH5swKpBsjNYA:7 a=tjb4GmzwwiBMrvggugVSg4rVMaYA:4 a=jbrJJM5MRmoA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [patch 2/3] scheduler: add full memory barriers upon task
+ switch at runqueue lock/unlock
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+In-Reply-To: <20100201174500.GA13744@Krystal>
+References: <20100131205254.407214951@polymtl.ca>
+	 <20100131210013.446503342@polymtl.ca>
+	 <alpine.LFD.2.00.1002010722350.4206@localhost.localdomain>
+	 <20100201160929.GA3032@Krystal>
+	 <alpine.LFD.2.00.1002010816030.4206@localhost.localdomain>
+	 <20100201164856.GA3486@Krystal>
+	 <alpine.LFD.2.00.1002010854110.4206@localhost.localdomain>
+	 <20100201174500.GA13744@Krystal>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Mon, 01 Feb 2010 13:00:03 -0500
+Message-ID: <1265047203.29013.69.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 10:22:39AM +0100, Ingo Molnar wrote:
-> 
-> * Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Sun, 2010-01-31 at 22:07 +0100, Frederic Weisbecker wrote:
-> > > 
-> > > - We are using the -M option from perf tools which multiplexes every
-> > >   event buffers, which means every cpu commit their lock events in
-> > >   the same buffer. Couple that with the two above reasons, it's supposed
-> > >   to scale at worst.
-> > 
-> > Why are you doing that? That seems like asking for trouble.. 
-> 
-> But as i said i already tried with -M off and it didnt cure the slowdown.
+On Mon, 2010-02-01 at 12:45 -0500, Mathieu Desnoyers wrote:
+> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
 
+> It's probably worthwhile to summarize here the mb-related discussions we
+> had in the previous RFC rounds.
 
-Ah.. I've tested the lock events in an atom (two hardware threads) and there
-is quite a slowdown too.
-
-Anyway, the patches to remove the string copies from critical lock events
-are soon to be ready now. I just suspect there are other problems somewhere
-else that cause the slowdown.
-
+Actually it is probably worthwhile to include this explanation in the
+change log. Can't expect everyone to have read a kernel thread that
+contains hundreds of replies.
 
 > 
-> that -M was just copied over from perf sched (where it makes sense).
+> Here is the detailed execution scenario showing the race. The race with
+> unlock showing that we need to order user-space loads before mm_cpumask
+> store. This is showing an execution sequence involving the userspace RCU
+> library and the Linux kernel with sys_membarrier(). As we see below, the
+> lack of ordering between "cpumask_clear" and user-space execution
+> creates a race with the scheduler where sys_membarrier() incorrectly
+> considers CPU 1 as not needing a membarrier_ipi.
 > 
-> 	Ingo
+> 
+>         CPU 0                   CPU 1
+>         --------------          --------------
+>         <user space>            <user space> (already in read-side C.S.)
+>                                 obj = rcu_dereference(list->next);
+>                                   -> load list->next
+>                                 copy = obj->foo;
+>                                 rcu_read_unlock();
+>                                   -> store to urcu_reader.ctr
+>                                 <urcu_reader.ctr store is globally visible>
+>         list_del(obj);
+>                                 <preempt>
+>                                 <kernel space>
+> 
+>                                 schedule();
+>                                 cpumask_clear(mm_cpumask, cpu);
+> 
+>         sys_membarrier();
+>           <kernel space>
+>           smp_mb()
+>           iterates on mm_cpumask
+>           smp_mb()
+>         <user space>
+>         set global g.p. (urcu_gp_ctr) phase to 1
+>         wait for all urcu_reader.ctr in phase 0
+>         set global g.p. (urcu_gp_ctr) phase to 0
+>         wait for all urcu_reader.ctr in phase 1
+>         sys_membarrier();
+>           <kernel space>
+>           smp_mb()
+>           iterates on mm_cpumask
+>           smp_mb()
+>         <user space>
+>         free(obj);
+>                                 <list->next load hits memory>
+>                                 <obj->foo load hits memory> <- corruption
+> 
+> 
+> There is a similar race scenario (symmetric to the one above) between
+> cpumask_set and a following user-space rcu_read_lock(), which I could
+> provide upon request.
 
+If it would help others to understand, it would be worthwhile in
+explaining that too. So, I'm requesting it ;-)
 
+> 
+> This results in the following comments around smp_mb() in
+> sys_membarrier:
+> 
+> First sys_membarrier smp_mb():
+> 
+>         /*
+>          * Memory barrier on the caller thread before sending first
+>          * IPI. Orders all memory accesses prior to sys_membarrier() before
+>          * mm_cpumask read and membarrier_ipi executions.
+>          * Matches memory barriers before and after mm_cpumask updates.
+>          */
 
-For now it is necessary, because we need the events to be ordered by time,
-otherwise the state machine in perf lock would be broken.
-We can certainly reorder the events in post-processing, but lock events
-tend to grow the file _very_ quickly, so I fear this is going to require
-lot of memory. I'll try to find a smart way to fix that.
+The above comment does not really explain what it is protecting. It just
+states that it serializes memory access. Well, duh, that's what smp_mb()
+does ;-)  It's the equivalent to i++; /* increment i */
+
+Basically, the comment should explain "why" the memory barrier is
+needed.
+
+> 
+> Second sys_membarrier smp_mb():
+> 
+>         /*
+>          * Memory barrier on the caller thread after we finished
+>          * waiting for the last IPI. Orders mm_cpumask read and membarrier_ipi
+>          * executions before memory accesses following sys_membarrier()
+>          * execution.
+>          * Matches memory barriers before and after mm_cpumask updates.
+>          */
+
+Ditto.
+
+-- Steve
+
 
