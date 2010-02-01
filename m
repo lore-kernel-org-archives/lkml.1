@@ -1,196 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754260Ab0BAMW1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 07:22:27 -0500
-Received: from mga02.intel.com ([134.134.136.20]:50019 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753991Ab0BAMW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 07:22:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,383,1262592000"; 
-   d="scan'208";a="592094062"
-Date: Mon, 1 Feb 2010 20:22:02 +0800
-From: Shaohui Zheng <shaohui.zheng@intel.com>
-To: Wu Fengguang <fengguang.wu@intel.com>, akpm@linux-foundation.org,
-       linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, haveblue@us.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, ak@linux.intel.com,
-       fengguang.wu@intel.com, hpa@kernel.org, haicheng.li@intel.com,
-       shaohui.zheng@linux.intel.com
-Subject: Re: [Patch - Resend v4] Memory-Hotplug: Fix the bug on interface
- /dev/mem for 64-bit kernel
-Message-ID: <20100201122202.GA2021@shaohui>
-Mail-Followup-To: Wu Fengguang <fengguang.wu@intel.com>,
-	akpm@linux-foundation.org, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com,
-	haveblue@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
-	ak@linux.intel.com, hpa@kernel.org, haicheng.li@intel.com,
-	shaohui.zheng@linux.intel.com
-References: <20100201041253.GA1028@shaohui>
- <20100201044124.GA29097@localhost>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="/04w6evG8XlLl3ft"
-Content-Disposition: inline
-In-Reply-To: <20100201044124.GA29097@localhost>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1754378Ab0BAM1K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 07:27:10 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54281 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751259Ab0BAM1J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 07:27:09 -0500
+Subject: Re: [BUG] perf_events: ctx_flexible_sched_in()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stephane Eranian <eranian@google.com>
+Cc: eranian@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       paulus@samba.org, davem@davemloft.net, fweisbec@gmail.com,
+       perfmon2-devel@lists.sf.net
+In-Reply-To: <bd4cb8901002010420o2ea7dbafnba84f78b6a2f38f5@mail.gmail.com>
+References: <bd4cb8901002010420o2ea7dbafnba84f78b6a2f38f5@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 13:27:03 +0100
+Message-ID: <1265027223.24455.145.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2010-02-01 at 13:20 +0100, Stephane Eranian wrote:
+> The function does not allow maximizing PMU usage because of
+> the way can_add_hw is managed. Basically, as soon as a group
+> fail to be scheduled in, then no other group can. I believe this
+> is not optimum. You need to skip the group that fails and keep
+> scanning the list. There may be other groups which can be
+> scheduled.
 
---/04w6evG8XlLl3ft
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Yeah, I saw that too, we need a new hw_ callback for that, or more
+structured error values out of ->enable that distinguish between this
+event won't fit and pmu full.
 
-On Mon, Feb 01, 2010 at 12:41:24PM +0800, Wu Fengguang wrote:
-> Shaohui,
-> 
-> Some style nitpicks..
-> 
-> >  #ifdef CONFIG_MEMORY_HOTPLUG
-> > +/**
-> 
-> Should use /* here. 
-Agree.
-> 
-> > + * After memory hotplug, the variable max_pfn, max_low_pfn and high_memory will
-> > + * be affected, it will be updated in this function.
-> > + */
-> > +static inline void __meminit update_end_of_memory_vars(u64 start,
-> 
-> The "inline" and "__meminit" are both redundant here.
-will remove both.
-> 
-> > +		max_low_pfn = max_pfn = end_pfn;
-> 
-> One assignment per line is preferred.
-will change to 2 statements.
-> 
-> Thanks,
-> Fengguang
-
-Memory-Hotplug: Fix the bug on interface /dev/mem for 64-bit kernel
-
-The new added memory can not be access by interface /dev/mem, because we do not
- update the variables high_memory, max_pfn and max_low_pfn.
-
-Add a function update_end_of_memory_vars to update these variables for 64-bit 
-kernel.
-
-CC: Andi Kleen <ak@linux.intel.com>
-CC: Li Haicheng <haicheng.li@intel.com>
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 5198b9b..e1c9202 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -49,6 +49,7 @@
- #include <asm/numa.h>
- #include <asm/cacheflush.h>
- #include <asm/init.h>
-+#include <linux/bootmem.h>
- 
- static unsigned long dma_reserve __initdata;
- 
-@@ -616,6 +617,21 @@ void __init paging_init(void)
-  */
- #ifdef CONFIG_MEMORY_HOTPLUG
- /*
-+ * After memory hotplug, the variables max_pfn, max_low_pfn and high_memory will
-+ * be affected, they will be updated in this function.
-+ */
-+static void  update_end_of_memory_vars(u64 start, u64 size)
-+{
-+	unsigned long end_pfn = PFN_UP(start + size);
-+
-+	if (end_pfn > max_pfn) {
-+		max_pfn = end_pfn;
-+		max_low_pfn = end_pfn;
-+		high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
-+	}
-+}
-+
-+/*
-  * Memory is added always to NORMAL zone. This means you will never get
-  * additional DMA/DMA32 memory.
-  */
-@@ -634,6 +650,9 @@ int arch_add_memory(int nid, u64 start, u64 size)
- 	ret = __add_pages(nid, zone, start_pfn, nr_pages);
- 	WARN_ON_ONCE(ret);
- 
-+	/* update max_pfn, max_low_pfn and high_memory */
-+	update_end_of_memory_vars(start, size);
-+
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(arch_add_memory);
--- 
-Thanks & Regards,
-Shaohui
-
-
---/04w6evG8XlLl3ft
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="memory-hotplug-fix-the-bug-on-interface-dev-mem-v5.patch"
-
-Memory-Hotplug: Fix the bug on interface /dev/mem for 64-bit kernel
-
-The new added memory can not be access by interface /dev/mem, because we do not
- update the variables high_memory, max_pfn and max_low_pfn.
-
-Add a function update_end_of_memory_vars to update these variables for 64-bit 
-kernel.
-
-CC: Andi Kleen <ak@linux.intel.com>
-CC: Li Haicheng <haicheng.li@intel.com>
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 5198b9b..e1c9202 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -49,6 +49,7 @@
- #include <asm/numa.h>
- #include <asm/cacheflush.h>
- #include <asm/init.h>
-+#include <linux/bootmem.h>
- 
- static unsigned long dma_reserve __initdata;
- 
-@@ -616,6 +617,21 @@ void __init paging_init(void)
-  */
- #ifdef CONFIG_MEMORY_HOTPLUG
- /*
-+ * After memory hotplug, the variables max_pfn, max_low_pfn and high_memory will
-+ * be affected, they will be updated in this function.
-+ */
-+static void  update_end_of_memory_vars(u64 start, u64 size)
-+{
-+	unsigned long end_pfn = PFN_UP(start + size);
-+
-+	if (end_pfn > max_pfn) {
-+		max_pfn = end_pfn;
-+		max_low_pfn = end_pfn;
-+		high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
-+	}
-+}
-+
-+/*
-  * Memory is added always to NORMAL zone. This means you will never get
-  * additional DMA/DMA32 memory.
-  */
-@@ -634,6 +650,9 @@ int arch_add_memory(int nid, u64 start, u64 size)
- 	ret = __add_pages(nid, zone, start_pfn, nr_pages);
- 	WARN_ON_ONCE(ret);
- 
-+	/* update max_pfn, max_low_pfn and high_memory */
-+	update_end_of_memory_vars(start, size);
-+
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(arch_add_memory);
-
---/04w6evG8XlLl3ft--
