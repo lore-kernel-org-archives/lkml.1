@@ -1,54 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299Ab0BAH7h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 02:59:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:20046 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751171Ab0BAH7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 02:59:36 -0500
-Date: Mon, 1 Feb 2010 02:59:32 -0500
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, Amerigo Wang <amwang@redhat.com>,
-       David Miller <davem@davemloft.net>
-Message-Id: <20100201080256.4084.30962.sendpatchset@localhost.localdomain>
-Subject: [Patch] net: export TCP send buffer size via netlink
+	id S1754419Ab0BAIAI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 03:00:08 -0500
+Received: from krynn.se.axis.com ([193.13.178.10]:43383 "EHLO
+	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751845Ab0BAIAF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 03:00:05 -0500
+X-Greylist: delayed 786 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Feb 2010 03:00:05 EST
+Date: Mon, 1 Feb 2010 08:46:44 +0100 (CET)
+From: Ricard Wanderlof <ricard.wanderlof@axis.com>
+X-X-Sender: ricardw@lnxricardw.se.axis.com
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>
+Subject: Re: [PATCH 03/17] blktrans: track open and close calls.
+In-Reply-To: <1264863768-27606-4-git-send-email-maximlevitsky@gmail.com>
+Message-ID: <Pine.LNX.4.64.1002010845040.13031@lnxricardw.se.axis.com>
+References: <1264863768-27606-1-git-send-email-maximlevitsky@gmail.com>
+ <1264863768-27606-4-git-send-email-maximlevitsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Currently, we can only get TCP send buffer size by
-getsockopt (SO_SNDBUF or TCP_INFO), this is not enough
-for the tools like netstat or ss to read.
+On Sat, 30 Jan 2010, Maxim Levitsky wrote:
 
-Show TCP send buffer size via netlink NETLINK_INET_DIAG.
+> This patch adds tracking for open and close calls.
+> Now trans ->open and ->release are never called twise in a row
+> ->release is also called once before mtd device disappers
+> ...
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: David Miller <davem@davemloft.net>
+> --- a/drivers/mtd/mtd_blkdevs.c
+> +++ b/drivers/mtd/mtd_blkdevs.c
+> @@ -128,6 +128,9 @@ static int blktrans_open(struct block_device *bdev, fmode_t mode)
+> 	if (!get_mtd_device(NULL, dev->mtd->index))
+> 		goto out;
+>
+> +	if (dev->open++)
+> +		goto out;
+> +
+> 	if (!try_module_get(tr->owner))
+> 		goto out_tr;
+>
+> @@ -153,6 +156,10 @@ static int blktrans_release(struct gendisk *disk, fmode_t mode)
+> 	struct mtd_blktrans_ops *tr = dev->tr;
+> 	int ret = 0;
+>
+> +	dev->open--;
+> +	if (dev->open)
+> +		return 0;
+> +
 
----
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 7fee8a4..46768de 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -136,6 +136,7 @@ struct tcp_info {
- 	__u32	tcpi_ato;
- 	__u32	tcpi_snd_mss;
- 	__u32	tcpi_rcv_mss;
-+	__u32	tcpi_sndbuf;
- 
- 	__u32	tcpi_unacked;
- 	__u32	tcpi_sacked;
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index b0a26bb..b3d6a62 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -2385,6 +2385,7 @@ void tcp_get_info(struct sock *sk, struct tcp_info *info)
- 	info->tcpi_retransmits = icsk->icsk_retransmits;
- 	info->tcpi_probes = icsk->icsk_probes_out;
- 	info->tcpi_backoff = icsk->icsk_backoff;
-+	info->tcpi_sndbuf = sk->sk_sndbuf;
- 
- 	if (tp->rx_opt.tstamp_ok)
- 		info->tcpi_options |= TCPI_OPT_TIMESTAMPS;
+Just a very minor quibble: if you use if (dev->open++) in one function, 
+why not use if (--dev->open) in the other? Or separate the 
+increment/decrement from the test, depending on you style preferences.
+
+/Ricard
+-- 
+Ricard Wolf Wanderlöf                           ricardw(at)axis.com
+Axis Communications AB, Lund, Sweden            www.axis.com
+Phone +46 46 272 2016                           Fax +46 46 13 61 30
