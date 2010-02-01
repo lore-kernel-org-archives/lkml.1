@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754419Ab0BAIac (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 03:30:32 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60789 "EHLO mx1.suse.de"
+	id S1754620Ab0BAIak (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 03:30:40 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58028 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751329Ab0BAIa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 03:30:29 -0500
-Date: Mon, 1 Feb 2010 18:28:11 +1100
+	id S1754242Ab0BAIab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 03:30:31 -0500
+Date: Mon, 1 Feb 2010 18:25:06 +1100
 From: Nick Piggin <npiggin@suse.de>
 To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
@@ -20,7 +20,7 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com
 Subject: Re: [patch 1/3] Create spin lock/spin unlock with distinct memory
  barrier
-Message-ID: <20100201072811.GG9085@laptop>
+Message-ID: <20100201072506.GF9085@laptop>
 References: <20100131205254.407214951@polymtl.ca>
  <20100131210013.265317204@polymtl.ca>
 MIME-Version: 1.0
@@ -33,30 +33,37 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sun, Jan 31, 2010 at 03:52:55PM -0500, Mathieu Desnoyers wrote:
-> +/*
-> + * X86 spinlock-mb mappings. Use standard spinlocks with acquire/release
-> + * semantics. Associated memory barriers are defined as no-ops, because the
-> + * spinlock LOCK-prefixed atomic operations imply a full memory barrier.
-> + */
-> +
-> +#define spin_lock__no_acquire			spin_lock
-> +#define spin_unlock__no_release			spin_unlock
-> +
-> +#define spin_lock_irq__no_acquire		spin_lock_irq
-> +#define spin_unlock_irq__no_release		spin_unlock_irq
-> +
-> +#define raw_spin_lock__no_acquire		raw_spin_lock
-> +#define raw_spin_unlock__no_release		raw_spin_unlock
-> +
-> +#define raw_spin_lock_irq__no_acquire		raw_spin_lock_irq
-> +#define raw_spin_unlock_irq__no_release		raw_spin_unlock_irq
-> +
-> +#define smp_acquire__after_spin_lock()		do { } while (0)
-> +#define smp_release__before_spin_unlock()	do { } while (0)
-> +
-> +#define smp_mb__after_spin_lock()		do { } while (0)
-> +#define smp_mb__before_spin_unlock()		do { } while (0)
+> Create the primitive family:
+> 
+> spin_lock__no_acquire
+> spin_unlock__no_release
+> spin_lock_irq__no_acquire
+> spin_unlock_irq__no_release
+> 
+> raw_spin_lock__no_acquire
+> raw_spin_unlock__no_release
+> raw_spin_lock_irq__no_acquire
+> raw_spin_unlock_irq__no_release
+> 
+> smp_acquire__after_spin_lock()
+> smp_release__before_spin_unlock()
+> smp_mb__after_spin_lock()
+> smp_mb__before_spin_unlock()
 
-Oh, and that one's wrong. loads can pass spin_unlock on x86 so it
-needs to be smp_mb().
+Wow, someone who likes micro optimising things as much as I do.
+However, these have the wrong names.
+
+smp_mb__after_x() means that calling that function after calling x()
+will give a smp_mb(), right?
+
+With your functions, this is giving a smp_mb() after calling
+x__no_acquire().
+
+I would suggest maybe just don't bother with the __no_acquire
+__no_release variants of spin locks, and stick with the expected
+semantics for the new smb_mb__xxx functions. x86 still gets the
+full benefit.
+
+But, I don't know if this is even worthwhile, given where you are
+using it.
 
