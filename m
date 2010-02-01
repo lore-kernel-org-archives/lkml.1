@@ -1,47 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755933Ab0BATfd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 14:35:33 -0500
-Received: from mail.perches.com ([173.55.12.10]:1713 "EHLO mail.perches.com"
+	id S1755946Ab0BATgo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 14:36:44 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:55329 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754821Ab0BATfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 14:35:32 -0500
-Subject: [RFC] Fix unnecessary spaces before newlines in logging messages
-From: Joe Perches <joe@perches.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <201002012007.25498.elendil@planet.nl>
-References: <cover.1264967493.git.joe@perches.com>
-	 <cover.1264967493.git.joe@perches.com>
-	 <m2n.s.201002011906064544@fjphome.nl>
-	 <201002012007.25498.elendil@planet.nl>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 11:35:29 -0800
-Message-ID: <1265052929.25140.331.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1755775Ab0BATgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 14:36:43 -0500
+Date: Mon, 1 Feb 2010 20:36:41 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] block bug fixes for 2.6.33-rc6
+Message-ID: <20100201193641.GU13771@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-01 at 20:07 +0100, Frans Pop wrote:
-> Would it be an idea to also get rid of all the trailing spaces in printks?
-> 
-> If you'd prefer a separate patch, I can do it.
+Hi Linus,
 
-(cc:s trimmed)
+A few critical fixes that should go into 2.6.33 final. Please pull.
 
-I think it's useful, though like all of these cleanups,
-a low priority.  I suggest you submit a few through to
-various maintainers and see what happens.
+  git://git.kernel.dk/linux-2.6-block.git for-linus
 
-(with false positives for asm and such)
-$ grep -rP --include=*.[ch] "\s+\\\n" * | wc -l
-7339
+Chuck Ebbert (1):
+      block: fix bugs in bio-integrity mempool usage
 
-There are probably a couple of thousand wasted bytes in
-an allyesconfig image and rather more in various logs on
-any number of systems.
+Dan Carpenter (1):
+      drbd: null dereference bug
 
+Dmitry Monakhov (1):
+      block: fix bio_add_page for non trivial merge_bvec_fn case
+
+Gui Jianfeng (1):
+      blk-cgroup: Fix potential deadlock in blk-cgroup
+
+Jens Axboe (1):
+      Merge branch 'for-jens' of git://git.drbd.org/linux-2.6-drbd into for-linus
+
+Lars Ellenberg (1):
+      drbd: fix max_segment_size initialization
+
+ block/blk-cgroup.c                 |    4 ++--
+ drivers/block/drbd/drbd_main.c     |    2 +-
+ drivers/block/drbd/drbd_receiver.c |    2 +-
+ fs/bio-integrity.c                 |    3 ++-
+ fs/bio.c                           |    7 ++++++-
+ 5 files changed, 12 insertions(+), 6 deletions(-)
+
+-- 
+Jens Axboe
 
