@@ -1,53 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366Ab0BAPPY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 10:15:24 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:55475 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755173Ab0BAPPS (ORCPT
+	id S1755239Ab0BAPVY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 10:21:24 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:47930 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755097Ab0BAPVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 10:15:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=u6N78v8BkXowGn1H0qg0HKemElp+DsznEk4ySsyXmmRoFlKaf3HavmlokBat1azg1s
-         9L3FIgBcYZQ4/TQkhF2uZNK3VEQG1M5poCpCfFEN8YRAyQh94OsXxxFGnlUkWCXKo4rR
-         naFqhK6ifEetF4IuIdFBMR2t4EL82N+pnjves=
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: [PATCH 9/9] hpet: Use for_each_set_bit
-Date: Tue,  2 Feb 2010 00:10:40 +0900
-Message-Id: <1265037040-23413-9-git-send-email-akinobu.mita@gmail.com>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1265037040-23413-1-git-send-email-akinobu.mita@gmail.com>
-References: <1265037040-23413-1-git-send-email-akinobu.mita@gmail.com>
+	Mon, 1 Feb 2010 10:21:23 -0500
+Subject: [GIT PULL] regulator fix
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 15:21:18 +0000
+Message-ID: <1265037678.3126.40.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v2: rename for_each_bit to for_each_set_bit
+Linus,
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Please pull the following WM8350 regulator fix for v2.6.33-rc7.
+
+Thanks.
+
+Liam
+
 ---
- drivers/char/hpet.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-index e481c59..9c5eea3 100644
---- a/drivers/char/hpet.c
-+++ b/drivers/char/hpet.c
-@@ -215,9 +215,7 @@ static void hpet_timer_set_irq(struct hpet_dev *devp)
- 	else
- 		v &= ~0xffff;
- 
--	for (irq = find_first_bit(&v, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
--		irq = find_next_bit(&v, HPET_MAX_IRQ, 1 + irq)) {
--
-+	for_each_set_bit(irq, &v, HPET_MAX_IRQ) {
- 		if (irq >= nr_irqs) {
- 			irq = HPET_MAX_IRQ;
- 			break;
--- 
-1.6.0.6
+The following changes since commit abe94c756c08d50566c09a65b9c7fe72f83071c5:
+  Linus Torvalds (1):
+        Linux 2.6.33-rc6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git for-linus
+
+Mark Brown (1):
+      regulator: Specify REGULATOR_CHANGE_STATUS for WM835x LED constraints
+
+ drivers/regulator/wm8350-regulator.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
 
