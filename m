@@ -1,43 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755064Ab0BAAlA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 19:41:00 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50378 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754691Ab0BAAhN convert rfc822-to-8bit (ORCPT
+	id S1754997Ab0BAAmI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 19:42:08 -0500
+Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:56691 "EHLO
+	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754637Ab0BAAmF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 19:37:13 -0500
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       "Guillaume Chazarain" <guichaz@gmail.com>
+	Sun, 31 Jan 2010 19:42:05 -0500
+Date: Sun, 31 Jan 2010 19:42:00 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [Bug #15125] hung task - jbd2/dm-1-8 (during raid rebuild)
+In-reply-to: <d3IDKWHT5gE.A.vVC.q7hZLB@chimera>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Message-id: <4B662358.7020603@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7BIT
 References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera>
-In-Reply-To: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <d3IDKWHT5gE.A.cQC.f7hZLB@chimera>
-Subject: [Bug #15138] evdev regression on macbook
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon,  1 Feb 2010 01:22:10 +0100 (CET)
+ <d3IDKWHT5gE.A.vVC.q7hZLB@chimera>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
+ Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
-
-The following bug entry is on the current list of known regressions
-from 2.6.32.  Please verify if it still should be listed and let me know
-(either way).
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15138
-Subject		: evdev regression on macbook
-Submitter	: Guillaume Chazarain <guichaz@gmail.com>
-Date		: 2010-01-23 18:53 (9 days old)
-References	: http://marc.info/?l=linux-kernel&m=126427286219235&w=4
-Handled-By	: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-
+On 1/31/2010 7:22 PM, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15125
+> Subject		: hung task - jbd2/dm-1-8 (during raid rebuild)
+> Submitter	: Michael Breuer<mbreuer@majjas.com>
+> Date		: 2010-01-10 21:47 (22 days old)
+> References	: http://marc.info/?l=linux-kernel&m=126316012025978&w=4
+>
+>    
+Yup. Hit it again on 2.6.33-rc5.
