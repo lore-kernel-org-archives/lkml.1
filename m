@@ -1,63 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753961Ab0BAKov (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 05:44:51 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:42474 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778Ab0BAKot (ORCPT
+	id S1753598Ab0BAKpq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 05:45:46 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:55079 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750910Ab0BAKpp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 05:44:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=n7Crof6bJpum+9cP+011JHhJFXoWm+sZ6/FCTJJfPcCeUDKxBjNBYa878qg4lbtvyF
-         yEpSbvVjhPAtJvfNDiscctoByVuPoXAbvuQlwm53r77bQhG4AGEq1k5TWUNVesPphjnl
-         OLcA8TNSivB/lsSXBKCcg29/APJBvmQilmaEU=
-MIME-Version: 1.0
-In-Reply-To: <1265020552.7499.147.camel@tonnant>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant>
-	 <1264816777.2793.510.camel@tonnant>
-	 <1264834704.2919.3.camel@edumazet-laptop>
-	 <1265016745.7499.144.camel@tonnant>
-	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
-	 <1265020552.7499.147.camel@tonnant>
-Date: Mon, 1 Feb 2010 12:44:49 +0200
-Message-ID: <b6fcc0a1002010244j161f7f0bob46053efc0d65630@mail.gmail.com>
-Subject: Re: debug: nt_conntrack and KVM crash
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       Patrick McHardy <kaber@trash.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Feb 2010 05:45:45 -0500
+Date: Mon, 1 Feb 2010 11:45:44 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: dentries: dentry defragmentation
+Message-ID: <20100201104544.GJ29555@one.firstfloor.org>
+References: <20100129204931.789743493@quilx.com> <20100129205007.832823807@quilx.com> <20100129220044.GA31305@ZenIV.linux.org.uk> <20100201070835.GE9085@laptop> <20100201101013.GG29555@one.firstfloor.org> <20100201101645.GF12759@laptop> <20100201102253.GI29555@one.firstfloor.org> <20100201103526.GG12759@laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100201103526.GG12759@laptop>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 1, 2010 at 12:35 PM, Jon Masters <jonathan@jonmasters.org> wrote:
-> On Mon, 2010-02-01 at 11:36 +0200, Alexey Dobriyan wrote:
->> On Mon, Feb 1, 2010 at 11:32 AM, Jon Masters <jonathan@jonmasters.org> wrote:
->> > I hacked up a per-namespace version of hashtables (this needs doing
->> > anyway, since the global stuff is just waiting to break)
->>
->> Which ones? Conntrack hashtables are per-netns.
->
-> They are, but the metadata is not. Sorry for not being clear, but my
-> previous mail was. i.e. there is a per-netns hashtable that is indexed
-> using a global that might change at any time underneath. The htable size
-> and max should be per-netns too.
+On Mon, Feb 01, 2010 at 09:35:26PM +1100, Nick Piggin wrote:
+> > > > > I always preferred to do defrag in the opposite way. Ie. query the
+> > > > > slab allocator from existing shrinkers rather than opposite way
+> > > > > around. This lets you reuse more of the locking and refcounting etc.
+> > > > 
+> > > > I looked at this for hwpoison soft offline.
+> > > > 
+> > > > But it works really badly because the LRU list ordering 
+> > > > has nothing to do with the actual ordering inside the slab pages.
+> > > 
+> > > No, you don't *have* to follow LRU order. The most important thing
+> > 
+> > What list would you follow then?
+> 
+> You can follow the slab, as I said in the first mail.
 
-So, insert printk into nf_conntrack_set_hashsize().
+That's pretty much what Christoph's patchkit is about (with yes some details
+improved)
 
-> An existing sysctl/module parameter affects these and should also
-> ultimately either iterate through namespaces, or only affect the global
-> init_net (as it almost does now, except it changes the data used by the
-> others and doesn't resize them).
+> 
+> > There's LRU, there's hast (which is as random) and there's slab
+> > itself. The only one who is guaranteed to match the physical
+> > layout in memory is slab. That is what this patchkit is trying
+> > to attempt.
+> > 
+> > > is if you followed what I wrote is to get a pin on the objects and
+> > 
+> > Which objects? You first need to collect all that belong to a page.
+> > How else would you do that?
+> 
+> Objects that you're interested in reclaiming, I guess. I don't
+> understand the question.
 
-Those sysctls are readonly, nobody else changes hashtable size legitimately.
+Objects that are in the same page
 
-    Alexey, hoping sysfs code for modules is not too smart.
+There are really two different cases here:
+- Run out of memory: in this case i just want to find all the objects
+of any page, ideally of not that recently used pages.
+- I am very fragmented and want a specific page freed to get a 2MB
+region back or for hwpoison:  same, but do it for a specific page.
+
+
+> Right, but as you can see it is complex to do it this way. And I
+> think for reclaim driven targetted reclaim, then it needn't be so
+> inefficient because you aren't restricted to just one page, but
+> in any page which is heavily fragmented (and by definition there
+> should be a lot of them in the system).
+
+Assuming you can identify them quickly.
+
+> 
+> Hwpoison I don't think adds much weight, frankly. Just panic and
+> reboot if you get unrecoverable error. We have everything to handle
+
+This is for soft hwpoison :- offlining pages that might go bad
+in the future.
+
+But soft hwpoison isn't the only user. The other big one would
+be for large pages or other large page allocations.
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
