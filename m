@@ -1,93 +1,128 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065Ab0BAMxN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 07:53:13 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:42082 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752655Ab0BAMxM (ORCPT
+	id S1753993Ab0BAMyz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 07:54:55 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:64402 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752076Ab0BAMyx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 07:53:12 -0500
+	Mon, 1 Feb 2010 07:54:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=K2shclABUUNAn0jRjamFIwRktq4P3kzFXfPyW/0b1/FaEcOGEwpscNCyUqkgMro1hn
-         FHjs2RVTLXxA0EOKtNEjFITCr3xcEyApT6GZNV9YiyDu4EYeD/7yIKdsp1cV362lRFjV
-         9T0AU8g+87BlY7XoqJO1uObk/Xiksnonxw5WM=
-Message-ID: <4B66CEB0.2050806@gmail.com>
-Date: Mon, 01 Feb 2010 07:53:04 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=mEiZgq/BsJHq5/f/xMOnPU3/KKhwkZgfjb4eXe8uWCY48Iuab2NzeSGI72K0Ms2SvN
+         ulaePJiN7ks8SEylmllGumt9b/pLn4E9YKzUWgqQpgiwxZFIgtpaZ+2k+4/J0aEOVzOi
+         T/gTEDsdGf287+Bpf2qFIueaXTH7+iE5DQXKU=
+Date: Mon, 1 Feb 2010 15:54:41 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: "Justin P. Mattock" <justinmattock@gmail.com>,
+       linux1394-devel@lists.sourceforge.net
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [Bug #14487] PANIC: early exception 08 rip 246:10 error
+	ffffffff810251b5 cr2 0
+Message-ID: <20100201125441.GB2576@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	"Justin P. Mattock" <justinmattock@gmail.com>,
+	linux1394-devel@lists.sourceforge.net,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com>
 MIME-Version: 1.0
-To: Patrick Mullaney <pmullaney@novell.com>
-CC: alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kaber@trash.net, arnd@arndb.de, netdev@vger.kernel.org
-Subject: Re: [PATCH 0/3] vbus: venet macvlan rt netlink changes
-References: <20100114215058.4958.87746.stgit@mimic.site>
-In-Reply-To: <20100114215058.4958.87746.stgit@mimic.site>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig01EC002098C79086720765C9"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B6630CA.9010207@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig01EC002098C79086720765C9
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Sun, Jan 31, 2010 at 05:39:22PM -0800, Justin P. Mattock wrote:
+> On 01/31/10 16:43, Rafael J. Wysocki wrote:
+>> This message has been generated automatically as a part of a report
+>> of regressions introduced between 2.6.31 and 2.6.32.
+>>
+>> The following bug entry is on the current list of known regressions
+>> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+>> be listed and let me know (either way).
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14487
+>> Subject		: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
+>> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
+>> Date		: 2009-10-23 16:45 (101 days old)
+>> References	: http://lkml.org/lkml/2009/10/23/252
+>>
+>>
+>>
+>
+>
+> yeah still hitting this.
+> looking at the issue if I change:
+>
+> @@ 260
+>
+> if ((class == 0xffffffff))
+> 	continue;
+> to
+>
+> if ((class == 0xffffffff || 0xffffffffffffffff))
+> 	continue;
+>
 
-On 1/14/10 4:52 PM, Patrick Mullaney wrote:
-> (Applies to alacrityvm.git/master:a725f9950)
->=20
-> This series changes the venet macvlan device such that it can
-> be created via rt netlink and no longer requires any extensive
-> changes to the macvlan device itself. The first patch removes
-> prior changes to the macvlan device introduced in the alacrityvm
-> tree and also implements the changes needed for creation and
-> management via rt netlink. The subsequent patches(2 and 3) are
-> changes to the macvlan device for GRO support and for type
-> specific release. These 2 patches don't appear to be upstream.
-> If desired and approved, I'll regenerate these last 2 for
-> net-next.
+Uh... 0xffffffffffffffff is always true so basically that's the same as deleting the
+if condition.
 
-Applied to alacrityvm.git/master.  Thanks Pat!
+I've added the linux1394-devel people to the CC list.
 
->=20
-> ---
->=20
-> Patrick Mullaney (3):
->       macvlan: use rtnl_link_ops->dellink during unregister notications=
+Justin has found an issue that when he boots with:  ohci1394_dma=early his computer
+crashes.
 
->       macvlan: add GRO bit to features mask
->       venet-macvlan: allow rt netlink to create venet macvlan devices
->=20
->=20
->  drivers/net/macvlan.c                   |   72 ++----
->  include/linux/macvlan.h                 |    6 -
->  kernel/vbus/devices/venet/device.c      |    8 +
->  kernel/vbus/devices/venet/macvlan.c     |  360 ++++++++++++++++++++---=
---------
->  kernel/vbus/devices/venet/tap.c         |    3=20
->  kernel/vbus/devices/venet/venetdevice.h |    3=20
->  6 files changed, 265 insertions(+), 187 deletions(-)
->=20
+He can get it to boot by modifying drivers/ieee1394/init_ohci1394_dma.c:
+
+init_ohci1394_dma_on_all_controllers()
+   254          /* Poor man's PCI discovery, the only thing we can do at early boot */
+   255          for (num = 0; num < 32; num++) {
+   256                  for (slot = 0; slot < 32; slot++) {
+   257                          for (func = 0; func < 8; func++) {
+   258                                  u32 class = read_pci_config(num,slot,func,
+   259                                                          PCI_CLASS_REVISION);
+   260                                  if ((class == 0xffffffff))
+   261                                          continue; /* No device at this func */
+
+	If he continues here then his system boots.
+
+   262
+   263                                  if (class>>8 != PCI_CLASS_SERIAL_FIREWIRE_OHCI)
+   264                                          continue; /* Not an OHCI-1394 device */
+   265
+   266                                  init_ohci1394_controller(num, slot, func);
+   267                                  break; /* Assume one controller per device */
+
+	This comment is not terribly clear btw.  The code assumes one controller per slot.
+
+   268                          }
+   269                  }
+   270          }
+
+regards,
+dan carpenter
 
 
-
---------------enig01EC002098C79086720765C9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAktmzrAACgkQP5K2CMvXmqGP0gCfd8f04M8xSxKJdQ5dSKexNR8b
-kPIAn3E8C+rHpDEs15tNAhi5GHCx7Rwn
-=oF+7
------END PGP SIGNATURE-----
-
---------------enig01EC002098C79086720765C9--
+> I'm able to boot, but don't have enough knowledge to know
+> what is really happening(or how to execute this).
+> will continue looking at this
+> (hopefully I get somewhere on this);
+>
+> Justin P. Mattock
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
