@@ -1,197 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752214Ab0BAIWJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 03:22:09 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:33768 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751010Ab0BAIWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 03:22:05 -0500
-Date: Mon, 1 Feb 2010 13:51:50 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Paul Turner <pjt@google.com>
-Cc: Bharata B Rao <bharata.rao@gmail.com>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v5 PATCH 0/8] CFS Hard limits - v5
-Message-ID: <20100201082150.GB686@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20100105075703.GE27899@in.ibm.com> <loom.20100108T214459-933@post.gmane.org> <344eb09a1001281949p37cd6d1awbc561937fc8f04f5@mail.gmail.com> <ed628a921001282026p2f8d64c7u416e55e48a21ea79@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ed628a921001282026p2f8d64c7u416e55e48a21ea79@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1752593Ab0BAIXT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 03:23:19 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58115 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329Ab0BAIXS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 03:23:18 -0500
+Subject: Re: [patch] HWBKPT: Make bp_len type to u64 generic across the arch
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.in.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       "K. Prasad" <prasad@linux.vnet.ibm.com>,
+       Maneesh Soni <maneesh@in.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin <schwidefsky@de.ibm.com>,
+       Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+In-Reply-To: <20100130183835.GA5675@nowhere>
+References: <20100130045424.625452081@mars.in.ibm.com>
+	 <20100130045518.GA20776@in.ibm.com>  <20100130183835.GA5675@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 09:23:04 +0100
+Message-ID: <1265012584.24455.78.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 08:26:08PM -0800, Paul Turner wrote:
-> On Thu, Jan 28, 2010 at 7:49 PM, Bharata B Rao <bharata.rao@gmail.com> wrote:
-> > On Sat, Jan 9, 2010 at 2:15 AM, Paul Turner <pjt@google.com> wrote:
-> >>
-> >> What are your thoughts on using a separate mechanism for the general case.  A
-> >> draft proposal follows:
-> >>
-> >> - Maintain a global run-time pool for each tg.  The runtime specified by the
-> >>  user represents the value that this pool will be refilled to each period.
-> >> - We continue to maintain the local notion of runtime/period in each cfs_rq,
-> >>  continue to accumulate locally here.
-> >>
-> >> Upon locally exceeding the period acquire new credit from the global pool
-> >> (either under lock or more likely using atomic ops).  This can either be in
-> >> fixed steppings (e.g. 10ms, could be tunable) or following some quasi-curve
-> >> variant with historical demand.
-> >>
-> >> One caveat here is that there is some over-commit in the system, the local
-> >> differences of runtime vs period represent additional over the global pool.
-> >> However it should not be possible to consistently exceed limits since the rate
-> >> of refill is gated by the runtime being input into the system via the per-tg
-> >> pool.
-> >>
-> >
-> > We borrow from what is actually available as spare (spare = unused or
-> > remaining). With global pool, I see that would be difficult.
-> > Inability/difficulty in keeping the global pool in sync with the
-> > actual available spare time is the reason for over-commit ?
-> >
+On Sat, 2010-01-30 at 19:38 +0100, Frederic Weisbecker wrote:
+> > diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> > index 1438463..30c78bd 100644
+> > --- a/include/linux/perf_event.h
+> > +++ b/include/linux/perf_event.h
+> > @@ -211,11 +211,9 @@ struct perf_event_attr {
+> >               __u32           wakeup_watermark; /* bytes before wakeup   */
+> >       };
+> >  
+> > -     __u32                   __reserved_2;
+> > -
+> > -     __u64                   bp_addr;
+> >       __u32                   bp_type;
+> > -     __u32                   bp_len;
+> > +     __u64                   bp_addr;
+> > +     __u64                   bp_len;
+> >  };
 > 
-> We maintain two pools, a global pool (new) and a per-cfs_rq pool
-> (similar to existing rt_bw).
 > 
-> When consuming time you charge vs your local bandwidth until it is
-> expired, at this point you must either refill from the global pool, or
-> throttle.
 > 
-> The "slack" in the system is the sum of unconsumed time in local pools
-> from the *previous* global pool refill.  This is bounded above by the
-> size of time you refill a local pool at each expiry.  We call the size
-> of refill a 'slice'.
-> 
-> e.g.
-> 
-> Task limit of 50ms, slice=10ms, 4cpus, period of 500ms
-> 
-> Task A runs on cpus 0 and 1 for 5ms each, then blocks.
-> 
-> When A first executes on each cpu we take slice=10ms from the global
-> pool of 50ms and apply it to the local rq.  Execution then proceeds vs
-> local pool.
-> 
-> Current state is: 5 ms in local pools on {0,1}, 30ms remaining in global pool
-> 
-> Upon period expiration we issue a global pool refill.  At this point we have:
-> 5 ms in local pools on {0,1}, 50ms remaining in global pool.
-> 
-> That 10ms of slack time is over-commit in the system.  However it
-> should be clear that this can only be a local effect since over any
-> period of time the rate of input into the system is limited by global
-> pool refill rate.
+> Peter, what do you think about this new layout?
+> Putting the bp_type right after the wakeup_* fields
+> is going to remove the padding difference between
+> 64 and 32 archs. That looks better than the __reserved_2
+> we had.
 
-With the same setup as above consider 5 such tasks which block after
-consuming 5ms each. So now we have 25ms slack time. In the next bandwidth
-period if 5 cpu hogs start running and they would consume this 25ms and the
-50ms from this period. So we gave 50% extra to a group in a bandwidth period.
-Just wondering how common such scenarious could be.
+Right, I think this works nicely in that all elements will be naturally
+aligned and not result in different layouts between 32/64 bit builds.
 
-> 
-> There are also some strategies that we are exploring to improve
-> behavior further here.  One idea is that if we maintain a generation
-> counter then on voluntary dequeue (e.g. tasks block) we can return
-> local time to the global period pool or expire it (if generations
-> don't match), this greatly reduces the noise (via slack vs ideal
-> limit) that a busty application can induce.
+> If this patch can make it for .33, it would be nice.
 
-Why not clear the remaining runtime during bandwidth refresh ?
+It has to make .33, if it doesn't you're hosed because then the old
+layout is fixed in stone.
 
-> 
-> >> This would also naturally associate with an interface change that would mean the
-> >> runtime limit for a group would be the effective cpurate within the period.
-> >>
-> >> e.g. by setting a runtime of 200000us on a 100000us period it would effectively
-> >> allow you to use 2 cpus worth of wall-time on a multicore system.
-> >>
-> >> I feel this is slightly more natural than the current definition which due to
-> >> being local means that values set will not result in consistent behavior across
-> >> machines of different core counts.  It also has the benefit of being consistent
-> >> with observed exports of time consumed, e.g. rusage, (indirectly) time, etc.
-> >
-> > Though runtimes are enforced locally per-cpu, that's only the
-> > implementation. The definition of runtime and period is still
-> > system-wide/global. A runtime/period=0.25/0.5 will mean 0.25s of
-> > system wide runtime within a period of 0.5s. Talking about consistent
-> > definition, I would say this consistently defines half of system wide
-> > wall-time on all configurations :)
-> 
-> This feels non-intuitive suppose you have a non-homogeneous fleet of
-> systems.  It is also difficult to express limits in terms of cores,
-> suppose I'm an admin trying to jail my users (maybe I rent out virtual
-> time ala EC2 for example).  The fractions I have to use to represent
-> integer core amounts are going to become quite small on large systems.
->  For example, 1 core on a 64 core system would mean 3.905ms/250ms
-> period.  What's the dependency here between your time and the current
-> cpuset topology also, if I'm only allowed on half the system does this
-> fraction then refer to global resources or what I'm constrained to?
-> This seems a difficult data dependency to manage.
-> 
-> My (personal) ideology is that we are metering at the cpu level as
-> opposed to the system level -- which means N seconds of cpu-time makes
-> more sense to me.  I feel it has advantages in that it can be
-> specified more directly relative to the period and is independent of
-> system partitioning.
-> 
-> I'd be interested to hear other opinions on this.
-
-We need a consensus here, will wait to see what others think about this.
-
-> 
-> > If it means 2 CPUs worth wall-time
-> > in 4 core machine, it would mean 4 CPUs on a 8 CPU machine.  At this
-> > point, I am inclined to go with this and let the admins/tools work out
-> > the actual CPUs part of it. However I would like to hear what others
-> > think about this interface.
-> >
-> >>
-> >> For future scalability as machine size grows this could potentially be
-> >> partitioned below the tg level along the boundaries of sched_domains (or
-> >> something similar).  However for an initial draft given current machine sizes
-> >> the contention on the global pool should hopefully be fairly low.
-> >
-> > One of the alternatives I have in mind is to be more aggressive while
-> > borrowing. While keeping the current algorithm (of iterating thro' all
-> > CPUs when borrowing) intact, we could potentially borrow more from
-> > those CPUs which don't have any running task from the given group. I
-> > just experimented with borrowing half of the available runtime from
-> > such CPUs and found that number of iterations are greatly reduced and
-> > the source runtime quickly converges to its max possible value. Do you
-> > see any issues with this ?
-> >
-> 
-> I strongly believe that this is going to induce significant lock
-> contention and is not a scalable solution over time.  While using a
-> faster converging series for time may help I think there are
-> confounding factors that limit effect here.  Consider the 1 core on a
-> 64 core system example above.  With only 3.905ms per pool we are going
-> to quickly hit the case where we are borrowing not-useful periods of
-> time while thrashing locks.
-> 
-> We are in the midst of an implementation for proposal above which
-> we'll have ready post to here for consideration next week.  We have
-> maintained your existing approach with respect to handling throttled
-> entities and layered on top of that the proposed alternate
-> local/global bandwidth scheme.  Initial tests show very promising
-> results!
-
-Nice. Look forward to your patches.
-
-Regards,
-Bharata.
