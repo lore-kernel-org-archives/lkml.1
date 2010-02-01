@@ -1,60 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413Ab0BAWp3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 17:45:29 -0500
-Received: from mail.perches.com ([173.55.12.10]:1723 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751993Ab0BAWp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 17:45:28 -0500
-Subject: Re: [PATCH][RFC] %pd - for printing dentry name
-From: Joe Perches <joe@perches.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20100201222511.GA12882@ZenIV.linux.org.uk>
-References: <20100201222511.GA12882@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 14:45:26 -0800
-Message-ID: <1265064326.25140.398.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1753652Ab0BAWqs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 17:46:48 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:43418 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993Ab0BAWqq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 17:46:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=U7D9YMx10PMrPffss1MD/HnCi94FRAHk8peBtbevzitS6rzxdjXilq2rCudxSPpOWF
+         XR3QrLKiHDd7L6Ldpk9cLItGHfk+9lBMpHCDkP8N9bnsKqjdlciWNLaPmBWhmYSkReYO
+         +hpWCJNPRHUhJdCH0ZZGCfJmBwFCKJwZvsqYg=
+Date: Mon, 1 Feb 2010 23:46:39 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Michael Breuer <mbreuer@majjas.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: Re: [PATCH v3] sky2:  receive dma mapping error handling
+Message-ID: <20100201224639.GA4664@del.dom.local>
+References: <20100128153643.0fca3c51@nehalam>
+ <4B645EF4.4050701@majjas.com>
+ <20100131003449.GA11935@del.dom.local>
+ <4B650D53.2010607@majjas.com>
+ <4B65D0F9.2020602@majjas.com>
+ <4B65FD12.7090101@majjas.com>
+ <20100131221835.GA3317@del.dom.local>
+ <20100201102018.7b597992@nehalam>
+ <20100201212740.GA3289@del.dom.local>
+ <20100201142942.710273cf@nehalam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100201142942.710273cf@nehalam>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-01 at 22:25 +0000, Al Viro wrote:
-> 	There's a lot of places doing printks with ->d_name of various
-> dentries.  Unfortunately, as often as not they are b0rken due to races
-> with rename().
+On Mon, Feb 01, 2010 at 02:29:42PM -0800, Stephen Hemminger wrote:
+> On Mon, 1 Feb 2010 22:27:41 +0100
+> Jarek Poplawski <jarkao2@gmail.com> wrote:
 > 
-> 	I propose to add a new format - %pd.  It would print dentry name.
-> However, unlike everything else in vsnprintf, it would NOT be locking-agnostic.
-> It would grab and release dentry->d_lock.  And yes, I hate that as much as
-> anyone.  I don't see any sane alternative.
-[]
-> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-> index 3b8aeec..52a09dc 100644
-> --- a/lib/vsprintf.c
-> +++ b/lib/vsprintf.c
-> @@ -880,6 +880,18 @@ static char *uuid_string(char *buf, char *end, const u8 *addr,
->  	return string(buf, end, uuid, spec);
->  }
->  
-> +static char *dname_string(char *buf, char *end, struct dentry *d,
-> +			 struct printf_spec spec)
+> > @@ -1038,13 +1035,14 @@ static void tx_init(struct sky2_port *sky2)
+> >  {
+> >  	struct sky2_tx_le *le;
+> >  
+> > -	sky2->tx_prod = sky2->tx_cons = 0;
+> > +	sky2->tx_prod = 0;
+> >  	sky2->tx_tcpsum = 0;
+> >  	sky2->tx_last_mss = 0;
+> >  
+> >  	le = get_tx_le(sky2, &sky2->tx_prod);
+> >  	le->addr = 0;
+> >  	le->opcode = OP_ADDR64 | HW_OWNER;
+> > +	sky2->tx_cons = sky2->tx_prod;
+> >  	sky2->tx_last_upper = 0;
+> >  }
+> 
+> Your change causes the initial element to be skipped. I want
+> it to goto the hardware. It makes sure the upper bits of the
+> first request are set (0).
 
-Maybe there's value in passing fmt here to allow
-printing of the various dentry fields?
+I thought "Send high bits if needed" part in sky2_xmit_frame() was
+enough. If it's otherwise than my patch was wrong.
 
-"%pd<foo>"
+> 
+> I don't see what was wrong with my fix.
+> 
+It's OK. Please, submit it instead of mine.
 
-for things like:
-
-pr_debug("ds_read(socket %d)\n", iminor(file->f_path.dentry->d_inode));
-dprintk("%s: dentry = %s/%s, cookie = %Lu\n", __func__,
-			dentry->d_parent->d_name.name,
-			dentry->d_name.name,
-
-
-
+Thanks,
+Jarek P.
