@@ -1,61 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754369Ab0BAWsW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 17:48:22 -0500
-Received: from mail-bw0-f223.google.com ([209.85.218.223]:61421 "EHLO
-	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815Ab0BAWsT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 17:48:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=I3jCqdlbDyZ/p+Gg0WYebdCaujLhFH0dOJoHs95w/af/BVYwTC7yDHDOz63gEGrlwa
-         TO2bRnB2XonLUn1sl1e8Y+4cj2lVVPDyfSrJSUFm9O77rN/AWUHNZtcRGVTtX0J1JLm/
-         2BAVf/ESNzx4gAt664bT9cC3nLitagXnOGkR4=
-MIME-Version: 1.0
-In-Reply-To: <201002020819.55499.rusty@rustcorp.com.au>
-References: <817ecb6f1002010829m712ffff4hfb64ff3ea236e1f1@mail.gmail.com>
-	 <201002020819.55499.rusty@rustcorp.com.au>
-Date: Mon, 1 Feb 2010 17:48:16 -0500
-Message-ID: <817ecb6f1002011448l7a9d5de4m47bd37f5e8503877@mail.gmail.com>
-Subject: Re: [PATCH V9] RO/NX protection for loadable kernel modules
-From: Siarhei Liakh <sliakh.lkml@gmail.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-next@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Dave Jones <davej@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1754548Ab0BAWwI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 17:52:08 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:46371 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753063Ab0BAWwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 17:52:04 -0500
+Date: Mon, 1 Feb 2010 14:51:37 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Michael Breuer <mbreuer@majjas.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: Re: [PATCH v3] sky2:  receive dma mapping error handling
+Message-ID: <20100201145137.76d3da35@nehalam>
+In-Reply-To: <20100201224639.GA4664@del.dom.local>
+References: <20100128153643.0fca3c51@nehalam>
+	<4B645EF4.4050701@majjas.com>
+	<20100131003449.GA11935@del.dom.local>
+	<4B650D53.2010607@majjas.com>
+	<4B65D0F9.2020602@majjas.com>
+	<4B65FD12.7090101@majjas.com>
+	<20100131221835.GA3317@del.dom.local>
+	<20100201102018.7b597992@nehalam>
+	<20100201212740.GA3289@del.dom.local>
+	<20100201142942.710273cf@nehalam>
+	<20100201224639.GA4664@del.dom.local>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But not compile tested:
-[...]
-> The casts here should cause a warning.
+On Mon, 1 Feb 2010 23:46:39 +0100
+Jarek Poplawski <jarkao2@gmail.com> wrote:
 
-I did compile it prior to submission and the resulting kernel boots.
-However, you are right about the warnings as they scrolled off the
-screen when I did not pay attention.
-Will fix.
+> On Mon, Feb 01, 2010 at 02:29:42PM -0800, Stephen Hemminger wrote:
+> > On Mon, 1 Feb 2010 22:27:41 +0100
+> > Jarek Poplawski <jarkao2@gmail.com> wrote:
+> > 
+> > > @@ -1038,13 +1035,14 @@ static void tx_init(struct sky2_port *sky2)
+> > >  {
+> > >  	struct sky2_tx_le *le;
+> > >  
+> > > -	sky2->tx_prod = sky2->tx_cons = 0;
+> > > +	sky2->tx_prod = 0;
+> > >  	sky2->tx_tcpsum = 0;
+> > >  	sky2->tx_last_mss = 0;
+> > >  
+> > >  	le = get_tx_le(sky2, &sky2->tx_prod);
+> > >  	le->addr = 0;
+> > >  	le->opcode = OP_ADDR64 | HW_OWNER;
+> > > +	sky2->tx_cons = sky2->tx_prod;
+> > >  	sky2->tx_last_upper = 0;
+> > >  }
+> > 
+> > Your change causes the initial element to be skipped. I want
+> > it to goto the hardware. It makes sure the upper bits of the
+> > first request are set (0).
+> 
+> I thought "Send high bits if needed" part in sky2_xmit_frame() was
+> enough. If it's otherwise than my patch was wrong.
+> 
 
->> +     if (total_size > text_size) {
->> +             begin_pfn = PFN_UP((unsigned long)base + text_size);
->> +             end_pfn = PFN_UP((unsigned long)base + total_size);
->> +             if (end_pfn > begin_pfn)
->> +                     set_memory_nx(begin_pfn << PAGE_SHIFT,
->> +                                             end_pfn - begin_pfn);
->
-> Use the helper here too?
-
-No, not really. The helper uses PFN_DUWN, and we need PFN_UP here.
-This is the only place where I use PFN_UP, so another helper would not
-make much sense.
-
-Thanks.
+The definition is "high bits are different than the last value".
+The code init sets the last value to zero, and initializes the hardware
+engine as well.
