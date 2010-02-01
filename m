@@ -1,135 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187Ab0BAV1w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 16:27:52 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:33516 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754538Ab0BAV1u (ORCPT
+	id S1755256Ab0BAVcB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 16:32:01 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:53543 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755109Ab0BAVb7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 16:27:50 -0500
+	Mon, 1 Feb 2010 16:31:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=V93hJUADcrVLTKAycW7u9CdRFhYO/4/bOfpt2T7x4oBKVmiwQvJlI3fvxFe5e6p7qr
-         P92tfs6I3LtZED0xrJL08EVujL3W0dT2/U4CNX1VEWR6avi/oLLOsdPfWX1KEGRChnzU
-         K++tj+js+Prar+Eh8U7XofChbubRrH7eQXzzo=
-Date: Mon, 1 Feb 2010 22:27:41 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Michael Breuer <mbreuer@majjas.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: [PATCH v3] sky2:  receive dma mapping error handling
-Message-ID: <20100201212740.GA3289@del.dom.local>
-References: <20100128225621.GD3109@del.dom.local>
- <4B6216B9.1010802@majjas.com>
- <20100128153643.0fca3c51@nehalam>
- <4B645EF4.4050701@majjas.com>
- <20100131003449.GA11935@del.dom.local>
- <4B650D53.2010607@majjas.com>
- <4B65D0F9.2020602@majjas.com>
- <4B65FD12.7090101@majjas.com>
- <20100131221835.GA3317@del.dom.local>
- <20100201102018.7b597992@nehalam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100201102018.7b597992@nehalam>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=vFu8IxI7OG2fiFLKQjYjAAn9F1m6GNJsy34WbF00QEB68MTBe9UOQaA2z5btR4+s+o
+         TKdNwbEjAQUTPDZ5Pag2fUqWLP5ZyLk0zGQdgzCQiEiiCVdWIg/LkOOOcZ7JQ8eHnddJ
+         AyUVwZQKcTgjffIvWivJwWuj3qOjv5HQXgfck=
+Subject: Re: Linux wireless GSoC 2010 project ideas
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: david@lang.hm
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Witold Sowa <witold.sowa@gmail.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Till Kamppeter <till.kamppeter@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, lsb-discuss@lists.linux-foundation.org
+In-Reply-To: <alpine.DEB.2.00.1002011216040.7748@asgard.lang.hm>
+References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
+	 <4B65F024.3080505@gmail.com> <1264972854.3597.17.camel@johannes.local>
+	 <43e72e891002011001l4e914094v33e73209a9da93e8@mail.gmail.com>
+	 <1265055284.26421.16.camel@maxim-laptop>
+	 <alpine.DEB.2.00.1002011216040.7748@asgard.lang.hm>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 23:31:53 +0200
+Message-ID: <1265059913.26165.6.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 10:20:18AM -0800, Stephen Hemminger wrote:
-> This fixes the fact that re->flags is always zero without causing
-> other confusion.
+On Mon, 2010-02-01 at 12:17 -0800, david@lang.hm wrote: 
+> On Mon, 1 Feb 2010, Maxim Levitsky wrote:
+> 
+> > On Mon, 2010-02-01 at 10:01 -0800, Luis R. Rodriguez wrote:
+> >> On Sun, Jan 31, 2010 at 1:20 PM, Johannes Berg
+> >> <johannes@sipsolutions.net> wrote:
+> >>> On Sun, 2010-01-31 at 22:03 +0100, Witold Sowa wrote:
+> >>>
+> >>>> Some time ago johill asked me if I would be interested in hacking on
+> >>>> adding WPS support to NetworkManager. Well, I would but I don't know
+> >>>> when I'll find some time for that. I don't know how much of work would
+> >>>> it require, but it possibly could be a topic of one of GSoC 2010
+> >>>> projects. I have no idea know if anybody would be willing to be a mentor
+> >>>> for such a project.
+> >>>
+> >>> Sounds like a good project to me, but I don't think I'd be a good mentor
+> >>> for since I'm not familiar with the NM codebase at all. As for how much
+> >>> work it would require, I think the basic client-side functionality could
+> >>> possibly be "too simple" for you, WPS has a lot of additional
+> >>> functionality (e.g. WPS support for the AP side).
+> >>
+> >> In case it helps, I believe all that would be required is the dbus
+> >> stuff, there are sample GUI examples of this already provided through
+> >> the wpa_supplicant wpa_gui.
+> >
+> > Here are couple of ideas (I don't think I will enter the program
+> > though):
+> >
+> > 1 - Make Ad-Hoc WPA networks work (with NM). This would involve changes
+> > in kernel, but I don't think will involve changes in hardware drivers.
+> >
+> > 2 - Allow a wireless card to associate to several APs at once (if they
+> > share the frequency).
+> > Implement this at least for ath5/9k. Madwifi had that feature. Maybe
+> > ath9k has. If it has that feature, test it.
+> > Implement proper GUI support in NM for that.
+> 
+> why would you want to do this?
+To create a wireless router.
+However, yes, I probably meant an access point and wireless client at
+same time.
 
-Here it is, with only sky2->tx_cons update in tx_init().
 
-Thanks,
-Jarek P.
----------------> (take 3)
-Michael Breuer reported that dma-debug entries added by sky2 driver
-weren't unmapped, and found out "re->flags is always NULL upon entry
-to sky2_tx_unmap". It is overwritten by get_tx_le() after changes
-introduced by commit 6b84dacadbdc3dab6a5b313d20d5a93b0d998641.
 
-This patch moves re->flags and re->skb initializations from
-get_tx_le() to sky2_tx_unmap() and sky2_tx_complete() respectively.
-Additionally sky2->tx_cons is updated to sky2->tx_prod in tx_init()
-to remove one needless tx completion.
+> 
+> > 3 - Create wardriving^Wwireless analysis tool.
+> > No, not for wardriving. I mean an application that shows and analyzes
+> > nicely the signal strength of nearby APs, and other features of it
+> 
+> it seems to me that kismet provides exactly this capability, what is it 
+> missing?
+Didn't use this tool.
+Also, like I said, this should be a analysis, and not wardriving/hacking
+tool.
+And with GUI.
 
-With debugging by: Michael Breuer <mbreuer@majjas.com>
-Improved by: Stephen Hemminger <shemminger@vyatta.com>
 
-Reported-by: Michael Breuer <mbreuer@majjas.com>
-Tested-by: Michael Breuer <mbreuer@majjas.com>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>
----
 
- drivers/net/sky2.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+Best regards,
+Maxim Levitsky
 
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index d760650..08cd65b 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -1025,11 +1025,8 @@ static void sky2_prefetch_init(struct sky2_hw *hw, u32 qaddr,
- static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2, u16 *slot)
- {
- 	struct sky2_tx_le *le = sky2->tx_le + *slot;
--	struct tx_ring_info *re = sky2->tx_ring + *slot;
- 
- 	*slot = RING_NEXT(*slot, sky2->tx_ring_size);
--	re->flags = 0;
--	re->skb = NULL;
- 	le->ctrl = 0;
- 	return le;
- }
-@@ -1038,13 +1035,14 @@ static void tx_init(struct sky2_port *sky2)
- {
- 	struct sky2_tx_le *le;
- 
--	sky2->tx_prod = sky2->tx_cons = 0;
-+	sky2->tx_prod = 0;
- 	sky2->tx_tcpsum = 0;
- 	sky2->tx_last_mss = 0;
- 
- 	le = get_tx_le(sky2, &sky2->tx_prod);
- 	le->addr = 0;
- 	le->opcode = OP_ADDR64 | HW_OWNER;
-+	sky2->tx_cons = sky2->tx_prod;
- 	sky2->tx_last_upper = 0;
- }
- 
-@@ -1622,8 +1620,7 @@ static unsigned tx_le_req(const struct sk_buff *skb)
- 	return count;
- }
- 
--static void sky2_tx_unmap(struct pci_dev *pdev,
--			  const struct tx_ring_info *re)
-+static void sky2_tx_unmap(struct pci_dev *pdev, struct tx_ring_info *re)
- {
- 	if (re->flags & TX_MAP_SINGLE)
- 		pci_unmap_single(pdev, pci_unmap_addr(re, mapaddr),
-@@ -1633,6 +1630,7 @@ static void sky2_tx_unmap(struct pci_dev *pdev,
- 		pci_unmap_page(pdev, pci_unmap_addr(re, mapaddr),
- 			       pci_unmap_len(re, maplen),
- 			       PCI_DMA_TODEVICE);
-+	re->flags = 0;
- }
- 
- /*
-@@ -1839,6 +1837,7 @@ static void sky2_tx_complete(struct sky2_port *sky2, u16 done)
- 			dev->stats.tx_packets++;
- 			dev->stats.tx_bytes += skb->len;
- 
-+			re->skb = NULL;
- 			dev_kfree_skb_any(skb);
- 
- 			sky2->tx_next = RING_NEXT(idx, sky2->tx_ring_size);
