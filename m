@@ -1,78 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755332Ab0BAPXp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 10:23:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36783 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755085Ab0BAPXm (ORCPT
+	id S1755435Ab0BAPZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 10:25:28 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:39014 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755402Ab0BAPZZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 10:23:42 -0500
-Date: Mon, 1 Feb 2010 07:22:01 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [patch 1/3] Create spin lock/spin unlock with distinct memory
- barrier
-In-Reply-To: <20100131210013.265317204@polymtl.ca>
-Message-ID: <alpine.LFD.2.00.1002010701270.4206@localhost.localdomain>
-References: <20100131205254.407214951@polymtl.ca> <20100131210013.265317204@polymtl.ca>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 1 Feb 2010 10:25:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=HDZ47zXeM3MLdeMrbDg9Rf5JZVkjrGD/ZJ79kawbVdangjetg8Il+wfuu8FUfv/ivd
+         4BblDiRDC3RL6DqhwrH85VpX8d3308MyAEaH06BCiJsBtDgvRAVWDSxD39FCGjmP4bRV
+         hFZcoRg8Uf1xFUbt5kghiaedLmDcU/AYsGO80=
+Subject: Re: [PATCH -mm] rmap: move exclusively owned pages to own anon_vma
+ in do_wp_page
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
+       akpm@linux-foundation.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       aarcange@redhat.com
+In-Reply-To: <20100128014357.54428c8a@annuminas.surriel.com>
+References: <20100128002000.2bf5e365@annuminas.surriel.com>
+	 <20100128014357.54428c8a@annuminas.surriel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 02 Feb 2010 00:25:18 +0900
+Message-ID: <1265037918.20322.32.camel@barrios-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Rik. 
+It's time too late to review. :)
+But I remain my comments for record in future. 
+
+On Thu, 2010-01-28 at 01:43 -0500, Rik van Riel wrote:
+> When the parent process breaks the COW on a page, both the original
+> and the new page end up in that same anon_vma.  Generally this won't
+> be a problem, but for some workloads it could preserve the O(N) rmap
+> scanning complexity.
+> A simple fix is to ensure that, when a page gets reused in do_wp_page,
+> because we already are the exclusive owner, the page gets moved to our
+> own exclusive anon_vma.
+
+I want to modify this description following as for clarity
+
+When the parent process breaks the COW on a page, both the original which
+is mapped at child and the new page which is mapped parent end up in that
+same anon_vma. Generally this won't be a problem, but for some workloads it
+could preserve the O(N) rmap scanning complexity.
+
+A simple fix is to ensure that, when a page which is mapped child gets
+reused in do_wp_page, because we already are the exclusive owner, the
+page gets moved to our own exclusive child's anon_vma. 
 
 
-On Sun, 31 Jan 2010, Mathieu Desnoyers wrote:
->
-> Create the primitive family:
-> 
-> spin_lock__no_acquire
-> spin_unlock__no_release
-> spin_lock_irq__no_acquire
-> spin_unlock_irq__no_release
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-I really really hate this patch.
+Let me have a question for my understanding.
 
-Locking is really hard to get right anyway, you already had one bug in 
-this, and on the major architectures, none of this will matter _anyway_, 
-since you cannot split the acquire from the lock and the release from the 
-unlock.
+Still, don't we have a probability of O(N) in case of parent's page 
+at worst case?
 
-So the only operation that actually makes any sense at all would be 
-"smp_mb__after_spin_lock" (and no new spinlock primitives at all), since 
-it can be optimized away on x86 (and then add "smp_mb__before_spin_unlock" 
-just to make them symmetric). But even that one is very dubious:
+What I say is following as.
 
-  "The first user of these primitives is the scheduler code, where a full 
-   memory barrier is wanted before and after runqueue data structure 
-   modifications so these can be read safely by sys_membarrier without 
-   holding the rq lock."
+P : parent's VMA, C : child's VMA
+L : live ( target page is linked into parent's anon_vma)
+D : dead ( new page was linked into child's anon_vma with this patch
+           so this vma doesn't have our target page)
 
-what kind of crazy model is this? That sounds insane. Locking together 
-with some new random optimistic usage that we don't even know how 
-performance-critical it is? Mixing locking and non-locking is simply 
-wrong. Why would it be any safer to read whatever that the lock protects 
-by adding smp barriers at the lock?
+             P      C      C      C      C
+anon_vma -> vma -> vma -> vma -> vma -> vma 
+             L      D      D      D      L
 
-If you need other smp barriers at the lock, then what about the non-locked 
-accesses _while_ the lock is held? You get no ordering guarantees there. 
-The whole thing sounds highly dubious. 
+Such above case, for reclaiming the page, we have to traverse whole list. 
 
-And all of this for something that is a new system call that nobody 
-actually uses? To optimize the new and experimental path with some insane 
-lockfree model, while making the core kernel more complex?  A _very_ 
-strong NAK from me.
+If I miss something, pz correct me. :)
 
-			Linus
+-- 
+Kind regards,
+Minchan Kim
+
+
