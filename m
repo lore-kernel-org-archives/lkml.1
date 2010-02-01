@@ -1,54 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754186Ab0BAKkf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 05:40:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:46803 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751778Ab0BAKke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 05:40:34 -0500
-Date: Mon, 1 Feb 2010 11:39:33 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       jmoskovc@redhat.com, mingo@redhat.com, drbd-dev@lists.linbit.com,
-       benh@kernel.crashing.org, t.sailer@alumni.ethz.ch, abelay@mit.edu,
-       gregkh@suse.de, spock@gentoo.org, viro@zeniv.linux.org.uk,
-       neilb@suse.de, mfasheh@suse.com, menage@google.com,
-       shemminger@linux-foundation.org, takedakn@nttdata.co.jp
-Subject: Re: [PATCH 2/2] exec: allow core_pipe recursion check to look for
-	a value of 1 rather than 0 (v2)
-Message-ID: <20100201103933.GA32188@redhat.com>
-References: <20100121200806.GA29801@shamino.rdu.redhat.com> <20100129151024.GA19249@hmsreliant.think-freely.org> <20100129151458.GC19249@hmsreliant.think-freely.org> <20100131155000.GB13402@redhat.com> <20100131160030.GB1950@localhost.localdomain> <20100201102936.GA31611@redhat.com>
+	id S1753961Ab0BAKov (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 05:44:51 -0500
+Received: from mail-iw0-f186.google.com ([209.85.223.186]:42474 "EHLO
+	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778Ab0BAKot (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 05:44:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=n7Crof6bJpum+9cP+011JHhJFXoWm+sZ6/FCTJJfPcCeUDKxBjNBYa878qg4lbtvyF
+         yEpSbvVjhPAtJvfNDiscctoByVuPoXAbvuQlwm53r77bQhG4AGEq1k5TWUNVesPphjnl
+         OLcA8TNSivB/lsSXBKCcg29/APJBvmQilmaEU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100201102936.GA31611@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1265020552.7499.147.camel@tonnant>
+References: <1264813832.2793.446.camel@tonnant>
+	 <1264816634.2793.505.camel@tonnant>
+	 <1264816777.2793.510.camel@tonnant>
+	 <1264834704.2919.3.camel@edumazet-laptop>
+	 <1265016745.7499.144.camel@tonnant>
+	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
+	 <1265020552.7499.147.camel@tonnant>
+Date: Mon, 1 Feb 2010 12:44:49 +0200
+Message-ID: <b6fcc0a1002010244j161f7f0bob46053efc0d65630@mail.gmail.com>
+Subject: Re: debug: nt_conntrack and KVM crash
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       Patrick McHardy <kaber@trash.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/01, Oleg Nesterov wrote:
+On Mon, Feb 1, 2010 at 12:35 PM, Jon Masters <jonathan@jonmasters.org> wrote:
+> On Mon, 2010-02-01 at 11:36 +0200, Alexey Dobriyan wrote:
+>> On Mon, Feb 1, 2010 at 11:32 AM, Jon Masters <jonathan@jonmasters.org> wrote:
+>> > I hacked up a per-namespace version of hashtables (this needs doing
+>> > anyway, since the global stuff is just waiting to break)
+>>
+>> Which ones? Conntrack hashtables are per-netns.
 >
-> Oh. And in theory, it is better to change wait_for_helper(). It should
-> do allow_signal(SIGCHLD) after kernel_thread(). Otherwise, kernel_thread()
-> can fail if user-space sends SIGCHLD to the forking thread.
+> They are, but the metadata is not. Sorry for not being clear, but my
+> previous mail was. i.e. there is a per-netns hashtable that is indexed
+> using a global that might change at any time underneath. The htable size
+> and max should be per-netns too.
 
-Well ;) And since allow_signal(SIGCHLD) was called, in theory we should
-call sys_wait4() + clear_thread_flag(TIF_SIGPENDING) in a loop to protect
-against the false SIGCHLD.
+So, insert printk into nf_conntrack_set_hashsize().
 
-> > > Cough. And why call_usermodehelper_exec() has this strange ->path[0] == '\0'
-> > > check?
-> > >
-> > That I can't explain.  I figured I'd let that sleeping dog lie until this got
-> > striaghtened out and fix it separately if it needed it
-> > Neil
->
-> Yes, yes, agreed. As I said, this has nothing to do with this series,
-> even if I am right these (minor) bugs should be fixed separately.
+> An existing sysctl/module parameter affects these and should also
+> ultimately either iterate through namespaces, or only affect the global
+> init_net (as it almost does now, except it changes the data used by the
+> others and doesn't resize them).
 
-Yes.
+Those sysctls are readonly, nobody else changes hashtable size legitimately.
 
-Oleg.
-
+    Alexey, hoping sysfs code for modules is not too smart.
