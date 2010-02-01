@@ -1,62 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755520Ab0BAQWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 11:22:49 -0500
-Received: from mail-bw0-f223.google.com ([209.85.218.223]:34707 "EHLO
-	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157Ab0BAQWr convert rfc822-to-8bit (ORCPT
+	id S1755532Ab0BAQYm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 11:24:42 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:39881 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755337Ab0BAQYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 11:22:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=f+7iX1afqkyl8JE9dVLxLoKHSv1Mp7VcVtTvP8fGrWLevd4zFKMaQxtvE658tmkA+x
-         MGH/9pVa3wAN4KjWuJE4aPSHncBj0TU8Y5TC4bnqr/99qDQUK7/2ebAZj30FAxixCPHA
-         inGASM8cnd79hpq7fbeVWYJ1KWVWRutsVAyQY=
-MIME-Version: 1.0
-In-Reply-To: <201002011209.13540.rusty@rustcorp.com.au>
-References: <817ecb6f1001311522q52bf4eebmb748c486dcd5ad35@mail.gmail.com>
-	 <201002011209.13540.rusty@rustcorp.com.au>
-Date: Mon, 1 Feb 2010 11:22:45 -0500
-Message-ID: <817ecb6f1002010822j769ccda6wfc39c0dbd42420cd@mail.gmail.com>
-Subject: Re: [PATCH v8] RO/NX protection for loadable kernel modules
-From: Siarhei Liakh <sliakh.lkml@gmail.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-next@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Dave Jones <davej@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 1 Feb 2010 11:24:40 -0500
+X-Authority-Analysis: v=1.0 c=1 a=db5xdBbprZYA:10 a=7U3hwN5JcxgA:10 a=WKWFHe5zPDEcxP_-X7wA:9 a=Hz80dqORFa0MsHNzk7UA:7 a=Ft4kAaCSEuGr8dk7M-6zq1xB2fYA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [patch 2/3] scheduler: add full memory barriers upon task
+ switch at runqueue lock/unlock
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+In-Reply-To: <20100201160929.GA3032@Krystal>
+References: <20100131205254.407214951@polymtl.ca>
+	 <20100131210013.446503342@polymtl.ca>
+	 <alpine.LFD.2.00.1002010722350.4206@localhost.localdomain>
+	 <20100201160929.GA3032@Krystal>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Mon, 01 Feb 2010 11:24:37 -0500
+Message-ID: <1265041477.29013.54.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Needs more brackets around arguments, otherwise someone calling it with
-> a complex expression will get very upset.
-[...]
+On Mon, 2010-02-01 at 11:09 -0500, Mathieu Desnoyers wrote:
 
-Done.
+> We can deal with the rq->cur update by holding the rq lock in each
+> iteration of the for_each_cpu(cpu, mm_cpumask(current->mm)) loop. This
+> ensures that if rq->cur is updated, we have an associated memory barrier
+> issued (e.g. on x86, implied by writing to cr3 while the rq lock is held).
+> 
+> However, this does not deal with mm_cpumask update, and we cannot use
+> the per-cpu rq lock, as it's a process-wide data structure updated with
+> clear_bit/set_bit in switch_mm(). So at the very least, we would have to
+> add memory barriers in switch_mm() on some architectures to deal with
+> this.
+> 
 
-> The core_text_size test should be enough here.
 
-Done.
+Doesn't set_bit imply a wmb()? If so couldn't we do:
 
->> +                     begin_pfn = PFN_DOWN((unsigned long)mod->module_core);
->> +                     end_pfn = PFN_DOWN((unsigned long)mod->module_core +
->> +                                             mod->core_text_size);
->> +                     if (end_pfn > begin_pfn)
->> +                             set_memory_rw(begin_pfn << PAGE_SHIFT,
->> +                                                     end_pfn - begin_pfn);
->
-> Much of this code might be neater if you created a helper:
+What about:
 
-Done.
+again:
+  tmp_mask = mm_cpumask(current->mm);
+  smp_mb();
+   rcu_read_lock(); /* ensures validity of cpu_curr(cpu) tasks */
+   for_each_cpu(cpu, tmp_mask) {
+     spin_lock_irq(&cpu_rq(cpu)->lock);
+     ret = current->mm == cpu_curr(cpu)->mm;
+     spin_unlock_irq(&cpu_rq(cpu)->lock);
+     if (ret)
+       smp_call_function_single(cpu, membarrier_ipi, NULL, 1);
+   }
+   rcu_read_unlock();
+   smp_mb();
+   if (tmp_mask != mm_cpumask(current->mm)) {
+      /* do check for signals here */
+      goto again;
+   }
 
-> But these are minor: patch looks good!
+Would the above work?
 
-Thanks for your feedback!
+-- Steve
+
+
