@@ -1,59 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754396Ab0BAGGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 01:06:19 -0500
-Received: from mail.windriver.com ([147.11.1.11]:43765 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754212Ab0BAGGS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 01:06:18 -0500
-Message-ID: <4B666F41.9080302@windriver.com>
-Date: Mon, 01 Feb 2010 00:05:53 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Dongdong Deng <libfetion@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       "Deng, Dongdong" <Dongdong.Deng@windriver.com>, peterz@infradead.org
-Subject: Re: [PATCH 1/3] softlockup: add sched_clock_tick() to avoid kernel
- warning on kgdb resume
-References: <1264631124-4837-1-git-send-email-jason.wessel@windriver.com> <1264631124-4837-2-git-send-email-jason.wessel@windriver.com> <20100129080706.GJ14636@elte.hu> <4B62F5F6.3040401@windriver.com> <ce2c83091001312153u280c0035j9ef53fb3e8d9068d@mail.gmail.com>
-In-Reply-To: <ce2c83091001312153u280c0035j9ef53fb3e8d9068d@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Feb 2010 06:05:39.0916 (UTC) FILETIME=[9471C0C0:01CAA304]
+	id S1754247Ab0BAG1i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 01:27:38 -0500
+Received: from 1wt.eu ([62.212.114.60]:56037 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751278Ab0BAG1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 01:27:37 -0500
+Date: Mon, 1 Feb 2010 07:27:29 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Justin Madru <jdm64@gawab.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Forward porting 2.4 driver
+Message-ID: <20100201062729.GC27453@1wt.eu>
+References: <4B634540.9070306@gawab.com> <20100129203613.GF27907@1wt.eu> <4B665322.2060005@gawab.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B665322.2060005@gawab.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dongdong Deng wrote:
-> On Fri, Jan 29, 2010 at 10:51 PM, Jason Wessel
-> <jason.wessel@windriver.com> wrote:
->   
->> echo 3 > /proc/sys/kernel/softlockup_thresh
->>
->> And then some kernel code in a thread like:
->>        local_irq_disable();
->>        printk("Disable local irq for 11 seconds\n");
->>        mdelay(11000);
->>        local_irq_enable();
->>     
->
-> Hi Jason,
->
-> Maybe this problem was fixed by
-> commit baf48f6577e581a9adb8fe849dc80e24b21d171d - "softlock: fix false
-> panic which can occur if softlockup_thresh is reduced".
->   
+Hello,
 
+On Sun, Jan 31, 2010 at 08:05:54PM -0800, Justin Madru wrote:
+> Well, it's good that the driver might easily be updated to the latest 2.4.
+> 
+> I did a diff of the source code that was provided against 2.6.30. 
+> Unfortunately, it looks like there's been more changes to the code than 
+> simply adding drivers. Updates all across the tree have been made, some 
+> minor that would be an easy merge. But some seem to be more involved 
+> changes. Any suggestions on merging the code?
+ 
+Then I'd suggest that you progressively apply all 2.4 versions one by
+one on top of their code. You should have less changes that way and
+since you'll have changelogs, you'll be able to tell what the changes
+want to do and whether you have to merge them or you can ignore them.
+Once you reach 2.4.32, you can even choose to apply all patches one
+at a time because the kernel migrated to use GIT. There are "only"
+608 patches. Those are quickly reviewed to eliminate the arch-specific
+ones you don't care about and only keep generic fixes.
 
-That is not the same problem.   The fix you referenced is a corner case
-where you end up with the stack trace at the point in time you reduce
-the threshold.  The only reason I reduce the threshold in the first
-place is just to shorten the amount of time it takes to observe the problem.
+Well that's just an idea. Also, keep a copy of intermediate versions
+(or ideally put them into a git tree starting at plain 2.4.30).
 
-You can just change the numbers for the mdelay and use the default
-softlockup threshold values and still see the problem I reported.
+Hoping this helps,
+Willy
 
-Jason.
