@@ -1,60 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754922Ab0BADhO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 22:37:14 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57558 "EHLO mail.zytor.com"
+	id S1755163Ab0BAD7i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 22:59:38 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54651 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752640Ab0BADhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 22:37:12 -0500
-Message-ID: <4B664AE5.2020306@zytor.com>
-Date: Sun, 31 Jan 2010 19:30:45 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: linux-kernel@vger.kernel.org, axboe@kernel.dk, rusty@rustcorp.com.au,
-       akpm@linux-foundation.org, ebiederm@xmission.com, tytso@mit.edu,
-       Trond.Myklebust@netapp.com, aelder@sgi.com, hch@infradead.org,
-       viro@zeniv.linux.org.uk, davem@davemloft.net, netdev@vger.kernel.org,
-       x86@kernel.org, mingo@redhat.com, fweisbec@gmail.com,
-       dan.j.williams@intel.com, borislav.petkov@amd.com, ying.huang@intel.com,
-       lenb@kernel.org, neilb@suse.de, cl@linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 5/8] percpu: add __percpu sparse annotations to x86
-References: <1264432935-10453-1-git-send-email-tj@kernel.org> <1264432935-10453-6-git-send-email-tj@kernel.org> <4B5E401C.1050605@zytor.com> <4B5E50D0.8050705@kernel.org>
-In-Reply-To: <4B5E50D0.8050705@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1754329Ab0BAD7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 22:59:36 -0500
+Date: Mon, 1 Feb 2010 14:59:23 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Hamish Guthrie <hamish.guthrie@sonycom.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: linux-next: wireless tree build warning
+Message-Id: <20100201145923.0ab9787b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__1_Feb_2010_14_59_23_+1100_JYaLbXiJ7oGX8giO"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/25/2010 06:17 PM, Tejun Heo wrote:
-> On 01/26/2010 10:06 AM, H. Peter Anvin wrote:
->> On 01/25/2010 07:22 AM, Tejun Heo wrote:
->>>
->>> In arch/x86/kernel/cpu/common.c, per_cpu(exception_stacks, cpu) is
->>> replaced with &per_cpu(exception_stacks[0], cpu) which is equivalent
->>> except that it allows per_cpu() macro to correctly drop percpu
->>> designation during sparse pass.
->>>
->>
->> Same comment as Frederic's about this... this kind of uglification
->> really is unacceptable and needs to be addressed.
-> 
-> Hmm... I don't think it's too bad but if you don't like it that much,
-> probably the right thing to do is just leave it there and let sparse
-> whine about it.  There are only three in-kernel instances at this
-> point, so it's not that big a deal.
-> 
+--Signature=_Mon__1_Feb_2010_14_59_23_+1100_JYaLbXiJ7oGX8giO
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That would probably be my preference until it can be fixed in a better
-way.  If we paper it over now, it will be forgotten -- and then someone
-will come along and cargo cult it for no good reason.
+Hi John,
 
-	-hpa
+Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+drivers/net/ps3_gelic_wireless.c: In function 'gelic_wl_start_scan':
+drivers/net/ps3_gelic_wireless.c:1452: warning: format '%d' expects type 'i=
+nt', but argument 4 has type 'size_t'
 
+Introduced by commit f276586a8af410d2b79733daf52471605b6559e9
+("ps3_gelic_wireless: fix directed ssid scan").
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__1_Feb_2010_14_59_23_+1100_JYaLbXiJ7oGX8giO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktmUZsACgkQjjKRsyhoI8yRJgCfZZEWntRTcZKSX8BWefvzvtCc
+rggAn2v4kZfM0Fyi45iPz0TfQ767z14Q
+=+m4j
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__1_Feb_2010_14_59_23_+1100_JYaLbXiJ7oGX8giO--
