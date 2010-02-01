@@ -1,41 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193Ab0BAKS1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 05:18:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29304 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424Ab0BAKS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 05:18:26 -0500
-Message-ID: <4B66AB33.60202@redhat.com>
-Date: Mon, 01 Feb 2010 18:21:39 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S1752930Ab0BAKWx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 05:22:53 -0500
+Received: from nat.nue.novell.com ([195.135.221.3]:48416 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751011Ab0BAKWv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 05:22:51 -0500
+Message-ID: <4B66AB7F.7050908@suse.de>
+Date: Mon, 01 Feb 2010 13:22:55 +0300
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       eric.dumazet@gmail.com
-Subject: Re: [Patch v2] net: export TCP send buffer size via netlink
-References: <20100201092153.4194.91507.sendpatchset@localhost.localdomain>	<20100201.020055.57470143.davem@davemloft.net> <20100201.020622.91421099.davem@davemloft.net>
-In-Reply-To: <20100201.020622.91421099.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Thomas Renninger <trenn@suse.de>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][RFT][PATCH] ACPI: Protection from suspending in the middle
+  of EC transaction
+References: <201001310029.48717.rjw@sisk.pl> <9b2b86521001310611m339862afw73410dc7eb5692c8@mail.gmail.com> <1264957760.7264.3.camel@maxim-laptop> <20100201094643.GB8740@khazad-dum.debian.net>
+In-Reply-To: <20100201094643.GB8740@khazad-dum.debian.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> Before you spend the next couple hours trying to figure out what to
-> do...
+Henrique de Moraes Holschuh пишет:
+> On Sun, 31 Jan 2010, Maxim Levitsky wrote:
+>> Unfortunately, this patch even causes regressions on my notebook (it
+>> survive 63 hibernate cycles), but now I battery driver reports 'battery
+>> absent', backlight driver reports 0 brightness, but reload helped.
 > 
-> We already provide the information you're trying to export via
-> linux/inet_diag.h:inet_diag_meminfo
+> ...
 > 
-> I hope the light goes on now :-)
+>> I think that not only _PTS ans _WAK are problematic. What about other
+>> ACPI drivers that start accessing the EC before it is resumed?
+>> I think that these cause the problems I observe.
 > 
+> ACPI drivers might access the EC (even indirectly, through the DSDT).  And
+> platform drivers do often access the EC both at suspend and resume time.
+Actually, only SBS and thinkpad-acpi access EC directly. All others go through
+DSDT for access. Still, stopping EC in .suspend is too early, IMHO...
+> 
+> This needs some sort of strong ordering, the EC must suspend last, and
+> resume first (as seen by any ACPI and ACPI-aware drivers such as libata,
+> some platform drivers, etc).  If EC interrupts are a problem, maybe it can
+> be kicked to poll mode for the suspend/resume transition?
+It's this way already for about a year now... The problem is that EC driver might be 
+stopped in middle of the transaction, thus leaving EC in unknown state for BIOS or 
+switch-over kernel.
 
-Oh, I was just looking for a pointer.
-
-Ok, ->idiag_wmem is gotten from sk->sk_wmem_queued, so ->sk_wmem_queued
-is the TCP send buffer size that we want? I thought it is ->sk_sndbuf...
-
-Thanks for your help!
