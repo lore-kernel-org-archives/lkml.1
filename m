@@ -1,113 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891Ab0BAWzY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 17:55:24 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39568 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754538Ab0BAWzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 17:55:20 -0500
-Message-ID: <4B675BBB.20303@zytor.com>
-Date: Mon, 01 Feb 2010 14:54:51 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1754538Ab0BAXB6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 18:01:58 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:54030 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753063Ab0BAXB4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 18:01:56 -0500
+Date: Mon, 1 Feb 2010 23:01:53 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Bob Rodgers <Robert_Rodgers@dell.com>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>,
+       Michael E Brown <Michael_E_Brown@dell.com>,
+       Matt Domsch <Matt_Domsch@dell.com>,
+       Mario Limonciello <Mario_Limonciello@dell.com>,
+       Louis Davis <Louis_Davis@dell.com>, Jim Dailey <Jim_Dailey@dell.com>
+Subject: Re: [RFC] Dell activity led WMI driver
+Message-ID: <20100201230153.GD15766@srcf.ucam.org>
+References: <4B675954.6000406@dell.com>
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: mingo@elte.hu, tglx@linutronix.de, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86: enlightenment for ticket spinlocks - remove
-  NOPs from unlock path
-References: <4B62A40B020000780002CA99@vpn.id2.novell.com>
-In-Reply-To: <4B62A40B020000780002CA99@vpn.id2.novell.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B675954.6000406@dell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/29/2010 12:02 AM, Jan Beulich wrote:
-> Under the assumption that the nop-s added by the base ticket spinlock
-> enlightenment patch might be considered undesirable (or worse), here
-> is an optional patch to eliminate these nop-s again. This is done
-> through extending the memory operands of the inc instructions used for
-> unlocking ticket locks to the necessary size, using assembler and
-> linker features.
+On Mon, Feb 01, 2010 at 04:44:36PM -0600, Bob Rodgers wrote:
 
-> --- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/include/asm/alternative-asm.h
-> +++ 2.6.33-rc5-virt-spinlocks/arch/x86/include/asm/alternative-asm.h
-> @@ -1,3 +1,7 @@
-> +#if 0 /* Hide this from compiler. */
-> +	.if 0 # Hide assembly source stuff when assembling compiler output.
-> +#endif
-> +
->  #ifdef __ASSEMBLY__
->  
->  #include <asm/asm.h>
-> @@ -16,3 +20,58 @@
->  #endif
->  
->  #endif  /*  __ASSEMBLY__  */
-> +
-> +#if 0 /* Hide this from compiler. */
-> +	.else # Code to be used in compiler output:
-> +
-> +	.weak _$.zero
-> +
-> +	.macro unary opc arg1 arg2 arg3
-> +	 .Lempty=2
-> +	 .irpc c,"\arg2"
-> +	  .Lempty=3
-> +	 .endr
-> +	 .irpc c,"\arg3"
-> +	  .Lempty=0
-> +	 .endr
-> +	 .Lsym=1
-> +	 .Lnum=0
-> +	 .irpc c,"\arg1"
-> +	  .irpc m,"(123456789-0"
-> +	   .ifeqs "\c","\m"
-> +	    .Lsym=0
-> +	    .exitm
-> +	   .endif
-> +	   .Lnum=1
-> +	  .endr
-> +	  .exitm
-> +	 .endr
-> +	 .if .Lempty == 2
-> +	  .if .Lsym
-> +	   \opc \arg1
-> +	  .elseif .Lnum
-> +	   \opc _$.zero+\arg1
-> +	  .else
-> +	   \opc _$.zero\arg1
-> +	  .endif
-> +	 .elseif .Lempty == 3
-> +	  .if .Lsym
-> +	   \opc \arg1,\arg2
-> +	  .elseif .Lnum
-> +	   \opc _$.zero+\arg1,\arg2
-> +	  .else
-> +	   \opc _$.zero\arg1,\arg2
-> +	  .endif
-> +	 .else
-> +	  .if .Lsym
-> +	   \opc \arg1,\arg2,\arg3
-> +	  .elseif .Lnum
-> +	   \opc _$.zero+\arg1,\arg2,\arg3
-> +	  .else
-> +	   \opc _$.zero\arg1,\arg2,\arg3
-> +	  .endif
-> +	 .endif
-> +	.endm
-> +
-> +	.endif
-> +#endif
+> This has been internally reviewed, and we are ready for outside review  
+> and feedback. My colleagues have identified the dell-wmi module as a  
+> suitable container in lieu of a stand-alone module specifically for this  
+> driver, which makes sense, but we welcome advice. We are submitting it  
+> as a stand-alone module for now because that is how we developed and  
+> tested it. We would like this to be included upstream after it has been  
+> reviewed.
 
-Okay, I have absolutely no idea what this macro either *does* or what
-it's *supposed to do* nor if it matches... you kind of forgot to
-describe that.  The other bit is that this whole handling with .if and
-#if is just too ugly to live.  Create two include files at the very minimum.
+It uses a different GUID to the event interface used by dell-wmi, so 
+right now there's no inherent reason to integrate it into that rather 
+than keeping it as a separate driver. On the other hand, if the GUID is 
+useful for other kinds of system control rather than just the LED then 
+dell-wmi may want to make use of that functionality in the future. In 
+that case we'd need it to be incorporated into the dell-wmi driver.
 
-I'd like to figure out if there isn't a better idea to do what you're
-trying to do here, though...
-	
-	-hpa
+So, really, it depends on the interface. If this GUID is specific to 
+LEDs, then keep it separate. Otherwise it should be integrated.
+
+I've got a few comments on the code...
+
+> // Error Result Codes:
+
+C99 style comments are usually discouraged in the kernel. 
+
+> // Devide ID
+
+Typo?
+
+> // LED Commands
+> #define CMD_LED_ON		16
+> #define CMD_LED_OFF		17
+> #define CMD_LED_BLINK	18
+
+Use of whitespace isn't very consistent here.
+
+> struct bios_args {
+> 	unsigned char Length;
+> 	unsigned char ResultCode;
+> 	unsigned char DeviceId;
+> 	unsigned char Command;
+> 	unsigned char OnTime;
+> 	unsigned char OffTime;
+> 	unsigned char Reserved[122];
+> };
+
+Mm. We're also not usually big on CamelCasing in variable names - it'd 
+be preferable to use underscores. That's true for the rest of this, too.
+
+> 	// free the output ACPI object allocated by ACPI driver
+
+Probably don't need this comment.
+
+> static void led_on(void)
+> {
+> 	dell_led_perform_fn(3,		// Length of command
+> 		INTERFACE_ERROR,		// Init result code to 	INTERFACE_ERROR
+> 		DEVICE_ID_PANEL_BACK,	// Device ID
+> 		CMD_LED_ON,				// Command
+> 		0,						// not used
+> 		0);						// not used
+> }
+
+Whitespace is a bit odd here, again.
+
+Other than that, it looks good. You probably want to run it through 
+Scripts/checkpatch.pl in the kernel tree to perform further style 
+checks, but I can't see any functional issues.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
