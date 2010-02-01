@@ -1,92 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753652Ab0BASwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 13:52:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:24942 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751054Ab0BASwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 13:52:34 -0500
-Date: Mon, 1 Feb 2010 13:52:18 -0500
-From: Don Zickus <dzickus@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, gorcunov@gmail.com, aris@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] [RFC] nmi_watchdog: config option to enable new
- nmi_watchdog
-Message-ID: <20100201185218.GC3062@redhat.com>
-References: <1264622622-5778-1-git-send-email-dzickus@redhat.com>
- <1264622622-5778-4-git-send-email-dzickus@redhat.com>
- <1264690494.4283.2103.camel@laptop>
- <20100128154448.GV4472@redhat.com>
- <20100129081227.GK14636@elte.hu>
+	id S1754642Ab0BAS4M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:56:12 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63250 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754369Ab0BAS4J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 13:56:09 -0500
+Message-ID: <4B6723C1.8060100@windriver.com>
+Date: Mon, 01 Feb 2010 12:56:01 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100129081227.GK14636@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Michal Simek <michal.simek@petalogix.com>,
+       LKML <linux-kernel@vger.kernel.org>, hpa@zytor.com,
+       John Williams <john.williams@petalogix.com>
+Subject: Re: Split 'flush_old_exec' into two functions - 221af7f87b97431e3ee21ce4b0e77d5411cf1549
+References: <4B66DE64.8010101@petalogix.com> <alpine.LFD.2.00.1002010741560.4206@localhost.localdomain> <4B671865.5030705@windriver.com> <alpine.LFD.2.00.1002011036540.4206@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1002011036540.4206@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Feb 2010 18:56:00.0995 (UTC) FILETIME=[325AB330:01CAA370]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 29, 2010 at 09:12:27AM +0100, Ingo Molnar wrote:
-> 
-> * Don Zickus <dzickus@redhat.com> wrote:
-> 
-> > On Thu, Jan 28, 2010 at 03:54:54PM +0100, Peter Zijlstra wrote:
-> > > On Wed, 2010-01-27 at 15:03 -0500, Don Zickus wrote:
-> > > > These are the bits that enable the new nmi_watchdog and safely isolate the
-> > > > old nmi_watchdog.  Only one or the other can run, not both at the same
-> > > > time.
-> > > 
-> > > perf disables the lapic watchdog when it wants the pmu, so there
-> > > shouldn't be a problem having both built in.
-> > 
-> > Yes it does disable but does not prevent nmi_watchdog_tick from running nor 
-> > the /proc interface from being loaded.  So perhaps my description isn't very 
-> > good.  The idea with the new watchdog was to re-use some of the bits of the 
-> > old one, but having them both compiled in seemed to stomp on each other.  
-> > That is what I was trying to prevent.
-> > 
-> > I can certainly change the behaviour, just makes the code a little more 
-> > messy I think.
-> 
-> I think that's a good idea - and i think we want to be bold and just have the 
-> new code run seemlessly. (and fix bugs, if any.)
+Linus Torvalds wrote:
+> So x86, sparc and ppc were actually the main targets of the cleanup, the 
+> powerpc patch just wasn't ready in time. But it's merged now (got a pull 
+> request today), so powerpc should be ok now too (commit 94f28da84: 
+> "powerpc: TIF_ABI_PENDING bit removal").
+>   
 
-Ok.  I guess I am confused what you are suggesting here, to do as Peter
-suggested and run both at the same time?
-
-> 
-> In fact we want to be even bolder: how about enabling the NMI watchdog by 
-> default again?
-
-I won't complain. :-)
-
-> 
-> The problem with the old one was its fragility - but now if we have a PMU 
-> driver active and perf events enabled we might as well use your brand new NMI 
-> watchdog code as a testing facility as well: if there's _any_ problem with 
-> NMIs then regular 'perf' use would trigger it too - except that not all people 
-> run perf while an always-enabled NMI watchdog would.
-
-Agreed.
-
-> 
-> And it would detect hard hangs too.
-> 
-> What do you think?
-
-I will need to give you an updated patch that properly sets the frequency
-of the NMI and I probably should still implement a code path that uses the
-software perf counters in the cases where the hardware perf counters are
-not available.
-
-It seems like you are ok with my approach.  If that is so, I can test on
-more machines to iron out some more bugs.  Or did you want to take my
-patches as is and have me throw fixes on top?
+Confirmed.  It works again, and regression tests pass. :-)
 
 Cheers,
-Don
-
-> 
-> 	Ingo
+Jason.
