@@ -1,187 +1,237 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034Ab0BAOw6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 09:52:58 -0500
-Received: from mail-bw0-f223.google.com ([209.85.218.223]:44436 "EHLO
-	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754904Ab0BAOw4 (ORCPT
+	id S1755088Ab0BAOyY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 09:54:24 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:57087 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754975Ab0BAOyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 09:52:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=owTHkOHViuq4Pn3/6S5VSV6OoAYG8ttzb6glu0S23gigy5shyUNECxytIgJIejxJK2
-         io/h1OkJ9mcTGJZL6VN3BqE5eAykas3bABhrNQeww1sPSp5r3/Tb+GlNMFGg5Hl091sk
-         2l2sSULpkeGAyXIqJxTYT/KiP/wv4j6fbV0Ls=
-Subject: [PATCH] netfilter: per netns nf_conntrack_cachep
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>, Patrick McHardy <kaber@trash.net>
-Cc: Jon Masters <jonathan@jonmasters.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <1265023437.2848.30.camel@edumazet-laptop>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant> <1264816777.2793.510.camel@tonnant>
-	 <1264834704.2919.3.camel@edumazet-laptop>
-	 <1265016745.7499.144.camel@tonnant>
-	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
-	 <1265019160.2848.14.camel@edumazet-laptop>
-	 <b6fcc0a1002010225u4e74f9f0q633d73038234dc37@mail.gmail.com>
-	 <1265023437.2848.30.camel@edumazet-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 15:52:50 +0100
-Message-ID: <1265035970.2848.50.camel@edumazet-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 1 Feb 2010 09:54:23 -0500
+Date: Mon, 1 Feb 2010 14:54:13 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Feng Tang <feng.tang@intel.com>
+Cc: Dmitry Artamonow <mad_soft@inbox.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "flinco@libero.it" <flinco@libero.it>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Arkadiusz Miskiewicz <arekm@maven.pl>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Brown, Len" <len.brown@intel.com>
+Subject: [PATCH] ACPI: Remove old blacklist entries
+Message-ID: <20100201145413.GA6310@srcf.ucam.org>
+References: <5550914.425471263201351807.JavaMail.defaultUser@defaultHost> <201001112040.45514.rjw@sisk.pl> <20100126155330.GA4231@rainbow> <20100127113520.596bd07c@feng-i7>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100127113520.596bd07c@feng-i7>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le lundi 01 février 2010 à 12:23 +0100, Eric Dumazet a écrit :
-> Le lundi 01 février 2010 à 12:25 +0200, Alexey Dobriyan a écrit :
+On Wed, Jan 27, 2010 at 11:35:20AM +0800, Feng Tang wrote:
+
+> Which only enforces the "acpi_disabled" check and should have no
+> logical problem.
 > 
-> > > 2) nf_conntrack_cachep is shared, it should be not shared.
-> > 
-> > There is no need for it to be shared, unless you measured something.
-> > 
-> 
+> And I guess your platform is blacklisted and acpi_disabled is set to 1,
+> while it still need parse ACPI tables to get SMP info. So I would suggest
+> to add a "acpi=force" for your case.
 
-Patrick, here is the relevant patch for this specific problem.
+It's actually set to force_ht, so it sounds like some blacklisting is 
+now stricter than it used to be. However, given that acpi=force seems to 
+work, how about just doing the following?
 
-Thanks
+commit a8d9241dad684f7dda46889f00c9e627773e868e
+Author: Matthew Garrett <mjg@redhat.com>
+Date:   Mon Feb 1 09:51:44 2010 -0500
 
-[PATCH] netfilter: per netns nf_conntrack_cachep
+    ACPI: Remove old blacklist entries
+    
+    The kernel has a set of blacklist entries that disable ACPI functionality
+    on various machines. These all seem to date from pre-git days and most
+    have no indication of what they were meant to fix. Let's work on the
+    assumption that we've fixed whatever it was that was broken before and so
+    remove most of the entries.
+    
+    Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-nf_conntrack_cachep is currently shared by all netns instances, but
-because of SLAB_DESTROY_BY_RCU special semantics, this is wrong.
-
-If we use a shared slab cache, one object can instantly flight between
-one hash table (netns ONE) to another one (netns TWO), and concurrent
-reader (doing a lookup in netns ONE, 'finding' an object of netns TWO)
-can be fooled without notice, because no RCU grace period has to be
-observed between object freeing and its reuse.
-
-We dont have this problem with UDP/TCP slab caches because TCP/UDP
-hashtables are global to the machine (and each object has a pointer to
-its netns).
-
-If we use per netns conntrack hash tables, we also *must* use per netns
-conntrack slab caches, to guarantee an object can not escape from one
-namespace to another one.
-
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-
-diff --git a/include/net/netns/conntrack.h b/include/net/netns/conntrack.h
-index ba1ba0c..d969a50 100644
---- a/include/net/netns/conntrack.h
-+++ b/include/net/netns/conntrack.h
-@@ -11,6 +11,7 @@ struct nf_conntrack_ecache;
- struct netns_ct {
- 	atomic_t		count;
- 	unsigned int		expect_count;
-+	struct kmem_cache	*nf_conntrack_cachep;
- 	struct hlist_nulls_head	*hash;
- 	struct hlist_head	*expect_hash;
- 	struct hlist_nulls_head	unconfirmed;
-diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
-index 0e98c32..1667285 100644
---- a/net/netfilter/nf_conntrack_core.c
-+++ b/net/netfilter/nf_conntrack_core.c
-@@ -63,8 +63,6 @@ EXPORT_SYMBOL_GPL(nf_conntrack_max);
- struct nf_conn nf_conntrack_untracked __read_mostly;
- EXPORT_SYMBOL_GPL(nf_conntrack_untracked);
- 
--static struct kmem_cache *nf_conntrack_cachep __read_mostly;
--
- static int nf_conntrack_hash_rnd_initted;
- static unsigned int nf_conntrack_hash_rnd;
- 
-@@ -572,7 +570,7 @@ struct nf_conn *nf_conntrack_alloc(struct net *net,
- 	 * Do not use kmem_cache_zalloc(), as this cache uses
- 	 * SLAB_DESTROY_BY_RCU.
- 	 */
--	ct = kmem_cache_alloc(nf_conntrack_cachep, gfp);
-+	ct = kmem_cache_alloc(net->ct.nf_conntrack_cachep, gfp);
- 	if (ct == NULL) {
- 		pr_debug("nf_conntrack_alloc: Can't alloc conntrack.\n");
- 		atomic_dec(&net->ct.count);
-@@ -611,7 +609,7 @@ void nf_conntrack_free(struct nf_conn *ct)
- 	nf_ct_ext_destroy(ct);
- 	atomic_dec(&net->ct.count);
- 	nf_ct_ext_free(ct);
--	kmem_cache_free(nf_conntrack_cachep, ct);
-+	kmem_cache_free(net->ct.nf_conntrack_cachep, ct);
- }
- EXPORT_SYMBOL_GPL(nf_conntrack_free);
- 
-@@ -1115,7 +1113,6 @@ static void nf_conntrack_cleanup_init_net(void)
- {
- 	nf_conntrack_helper_fini();
- 	nf_conntrack_proto_fini();
--	kmem_cache_destroy(nf_conntrack_cachep);
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index fb1035c..086f0b6 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -1256,35 +1256,6 @@ static int __init disable_acpi_pci(const struct dmi_system_id *d)
+ 	return 0;
  }
  
- static void nf_conntrack_cleanup_net(struct net *net)
-@@ -1136,6 +1133,7 @@ static void nf_conntrack_cleanup_net(struct net *net)
- 	nf_conntrack_ecache_fini(net);
- 	nf_conntrack_acct_fini(net);
- 	nf_conntrack_expect_fini(net);
-+	kmem_cache_destroy(net->ct.nf_conntrack_cachep);
- 	free_percpu(net->ct.stat);
- }
- 
-@@ -1271,15 +1269,6 @@ static int nf_conntrack_init_init_net(void)
- 	       NF_CONNTRACK_VERSION, nf_conntrack_htable_size,
- 	       nf_conntrack_max);
- 
--	nf_conntrack_cachep = kmem_cache_create("nf_conntrack",
--						sizeof(struct nf_conn),
--						0, SLAB_DESTROY_BY_RCU, NULL);
--	if (!nf_conntrack_cachep) {
--		printk(KERN_ERR "Unable to create nf_conn slab cache\n");
--		ret = -ENOMEM;
--		goto err_cache;
+-static int __init dmi_disable_acpi(const struct dmi_system_id *d)
+-{
+-	if (!acpi_force) {
+-		printk(KERN_NOTICE "%s detected: acpi off\n", d->ident);
+-		disable_acpi();
+-	} else {
+-		printk(KERN_NOTICE
+-		       "Warning: DMI blacklist says broken, but acpi forced\n");
 -	}
+-	return 0;
+-}
 -
- 	ret = nf_conntrack_proto_init();
- 	if (ret < 0)
- 		goto err_proto;
-@@ -1293,8 +1282,6 @@ static int nf_conntrack_init_init_net(void)
- err_helper:
- 	nf_conntrack_proto_fini();
- err_proto:
--	kmem_cache_destroy(nf_conntrack_cachep);
--err_cache:
- 	return ret;
- }
+-/*
+- * Limit ACPI to CPU enumeration for HT
+- */
+-static int __init force_acpi_ht(const struct dmi_system_id *d)
+-{
+-	if (!acpi_force) {
+-		printk(KERN_NOTICE "%s detected: force use of acpi=ht\n",
+-		       d->ident);
+-		disable_acpi();
+-		acpi_ht = 1;
+-	} else {
+-		printk(KERN_NOTICE
+-		       "Warning: acpi=force overrules DMI blacklist: acpi=ht\n");
+-	}
+-	return 0;
+-}
+-
+ /*
+  * Force ignoring BIOS IRQ0 pin2 override
+  */
+@@ -1308,116 +1279,6 @@ static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
+  * works for you, please contact linux-acpi@vger.kernel.org
+  */
+ static struct dmi_system_id __initdata acpi_dmi_table[] = {
+-	/*
+-	 * Boxes that need ACPI disabled
+-	 */
+-	{
+-	 .callback = dmi_disable_acpi,
+-	 .ident = "IBM Thinkpad",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "IBM"),
+-		     DMI_MATCH(DMI_BOARD_NAME, "2629H1G"),
+-		     },
+-	 },
+-
+-	/*
+-	 * Boxes that need acpi=ht
+-	 */
+-	{
+-	 .callback = force_acpi_ht,
+-	 .ident = "FSC Primergy T850",
+-	 .matches = {
+-		     DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
+-		     DMI_MATCH(DMI_PRODUCT_NAME, "PRIMERGY T850"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+-	 .ident = "HP VISUALIZE NT Workstation",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "Hewlett-Packard"),
+-		     DMI_MATCH(DMI_PRODUCT_NAME, "HP VISUALIZE NT Workstation"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+-	 .ident = "Compaq Workstation W8000",
+-	 .matches = {
+-		     DMI_MATCH(DMI_SYS_VENDOR, "Compaq"),
+-		     DMI_MATCH(DMI_PRODUCT_NAME, "Workstation W8000"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+-	 .ident = "ASUS P2B-DS",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "ASUSTeK Computer INC."),
+-		     DMI_MATCH(DMI_BOARD_NAME, "P2B-DS"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+-	 .ident = "ASUS CUR-DLS",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "ASUSTeK Computer INC."),
+-		     DMI_MATCH(DMI_BOARD_NAME, "CUR-DLS"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+-	 .ident = "ABIT i440BX-W83977",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "ABIT <http://www.abit.com>"),
+-		     DMI_MATCH(DMI_BOARD_NAME, "i440BX-W83977 (BP6)"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+-	 .ident = "IBM Bladecenter",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "IBM"),
+-		     DMI_MATCH(DMI_BOARD_NAME, "IBM eServer BladeCenter HS20"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+-	 .ident = "IBM eServer xSeries 360",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "IBM"),
+-		     DMI_MATCH(DMI_BOARD_NAME, "eServer xSeries 360"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+-	 .ident = "IBM eserver xSeries 330",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "IBM"),
+-		     DMI_MATCH(DMI_BOARD_NAME, "eserver xSeries 330"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+-	 .ident = "IBM eserver xSeries 440",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "IBM"),
+-		     DMI_MATCH(DMI_PRODUCT_NAME, "eserver xSeries 440"),
+-		     },
+-	 },
+-
+-	/*
+-	 * Boxes that need ACPI PCI IRQ routing disabled
+-	 */
+-	{
+-	 .callback = disable_acpi_irq,
+-	 .ident = "ASUS A7V",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "ASUSTeK Computer INC"),
+-		     DMI_MATCH(DMI_BOARD_NAME, "<A7V>"),
+-		     /* newer BIOS, Revision 1011, does work */
+-		     DMI_MATCH(DMI_BIOS_VERSION,
+-			       "ASUS A7V ACPI BIOS Revision 1007"),
+-		     },
+-	 },
+ 	{
+ 		/*
+ 		 * Latest BIOS for IBM 600E (1.16) has bad pcinum
+@@ -1454,14 +1315,6 @@ static struct dmi_system_id __initdata acpi_dmi_table[] = {
+ 		     DMI_MATCH(DMI_BIOS_DATE, "03/21/2003")
+ 		     },
+ 	 },
+-	{
+-	 .callback = disable_acpi_pci,
+-	 .ident = "Acer TravelMate 36x Laptop",
+-	 .matches = {
+-		     DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
+-		     DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 360"),
+-		     },
+-	 },
+ 	{}
+ };
  
-@@ -1316,6 +1303,14 @@ static int nf_conntrack_init_net(struct net *net)
- 		ret = -ENOMEM;
- 		goto err_stat;
- 	}
-+	net->ct.nf_conntrack_cachep = kmem_cache_create("nf_conntrack",
-+							sizeof(struct nf_conn), 0,
-+							SLAB_DESTROY_BY_RCU, NULL);
-+	if (!net->ct.nf_conntrack_cachep) {
-+		printk(KERN_ERR "Unable to create nf_conn slab cache\n");
-+		ret = -ENOMEM;
-+		goto err_cache;
-+	}
- 	net->ct.hash = nf_ct_alloc_hashtable(&nf_conntrack_htable_size,
- 					     &net->ct.hash_vmalloc, 1);
- 	if (!net->ct.hash) {
-@@ -1352,6 +1347,8 @@ err_expect:
- 	nf_ct_free_hashtable(net->ct.hash, net->ct.hash_vmalloc,
- 			     nf_conntrack_htable_size);
- err_hash:
-+	kmem_cache_destroy(net->ct.nf_conntrack_cachep);
-+err_cache:
- 	free_percpu(net->ct.stat);
- err_stat:
- 	return ret;
 
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
