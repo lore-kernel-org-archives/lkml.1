@@ -1,69 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203Ab0BAVrG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 16:47:06 -0500
-Received: from gwu.lbox.cz ([62.245.111.132]:52240 "EHLO gwu.lbox.cz"
+	id S1754412Ab0BAVuG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 16:50:06 -0500
+Received: from ozlabs.org ([203.10.76.45]:52812 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751968Ab0BAVrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 16:47:04 -0500
-Date: Mon, 1 Feb 2010 22:46:38 +0100
-From: Nikola Ciprich <extmaillist@linuxbox.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       nikola.ciprich@linuxbox.cz
-Subject: Re: [Bug #14943] nfs regression?
-Message-ID: <20100201214638.GA5023@nik-comp.linuxbox.cz>
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
- <de962C6zBxL.A.F_E.oFiZLB@chimera>
+	id S1752728Ab0BAVuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 16:50:03 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Siarhei Liakh <sliakh.lkml@gmail.com>
+Subject: Re: [PATCH V9] RO/NX protection for loadable kernel modules
+Date: Tue, 2 Feb 2010 08:19:55 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-17-generic; KDE/4.3.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-next@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Dave Jones <davej@redhat.com>
+References: <817ecb6f1002010829m712ffff4hfb64ff3ea236e1f1@mail.gmail.com>
+In-Reply-To: <817ecb6f1002010829m712ffff4hfb64ff3ea236e1f1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <de962C6zBxL.A.F_E.oFiZLB@chimera>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-Milter-Copy-Status: O
-X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3171818 records(01-02-2010)
-X-Spam-Score: N/A (trusted relay)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002020819.55499.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael,
-Sorry, I haven't had time to test newer kernels lately :(, but according to 
-changelogs, no related problems were fixed till 2.6.32.7...
-I'll update problematic machine on wednesday though...
-regards
-nik
-On Mon, Feb 01, 2010 at 01:43:18AM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.31 and 2.6.32.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14943
-> Subject		: nfs regression?
-> Submitter	: Nikola Ciprich <extmaillist@linuxbox.cz>
-> Date		: 2009-12-28 12:10 (35 days old)
-> References	: http://marc.info/?l=linux-kernel&m=126200276223524&w=4
-> 
-> 
-> 
+On Tue, 2 Feb 2010 02:59:41 am Siarhei Liakh wrote:
+> V9: coding style fixes
 
--- 
--------------------------------------
-Nikola CIPRICH
-LinuxBox.cz, s.r.o.
-28. rijna 168, 709 01 Ostrava
+But not compile tested:
 
-tel.:   +420 596 603 142
-fax:    +420 596 621 273
-mobil:  +420 777 093 799
+> +void set_page_attributes(void *start, void *end,
+> +		void (*set)(unsigned long start, int num_pages))
+> +{
+> +	unsigned long begin_pfn = PFN_DOWN((unsigned long)start);
+> +	unsigned long end_pfn = PFN_DOWN((unsigned long)end);
+> +	if (end_pfn > begin_pfn)
+> +		set(begin_pfn << PAGE_SHIFT, end_pfn - begin_pfn);
+> +}
+...
+> +	if (ro_size > 0) {
+> +		set_page_attributes((unsigned long)base,
+> +					(unsigned long)base + ro_size,
+> +					set_memory_ro);
 
-www.linuxbox.cz
+The casts here should cause a warning. 
 
-mobil servis: +420 737 238 656
-email servis: servis@linuxbox.cz
--------------------------------------
+> +	if (total_size > text_size) {
+> +		begin_pfn = PFN_UP((unsigned long)base + text_size);
+> +		end_pfn = PFN_UP((unsigned long)base + total_size);
+> +		if (end_pfn > begin_pfn)
+> +			set_memory_nx(begin_pfn << PAGE_SHIFT,
+> +						end_pfn - begin_pfn);
+
+Use the helper here too?
+
+> +		if ((mod->module_core) && (mod->core_text_size)) {
+> +			set_page_attributes((unsigned long)mod->module_core,
+> +						(unsigned long)mod->module_core
+> +							+ mod->core_text_size,
+> +						set_memory_rw);
+> +		}
+> +		if ((mod->module_init) && (mod->init_text_size)) {
+> +			set_page_attributes((unsigned long)mod->module_init,
+> +						(unsigned long)mod->module_init
+> +							+ mod->init_text_size,
+> +						set_memory_rw);
+
+More unwanted casts...
+
+> +			set_page_attributes((unsigned long)mod->module_core,
+> +						(unsigned long)mod->module_core
+> +							+ mod->core_text_size,
+> +						set_memory_ro);
+> +		}
+> +		if ((mod->module_init) && (mod->init_text_size)) {
+> +			set_page_attributes((unsigned long)mod->module_init,
+> +						(unsigned long)mod->module_init
+> +							+ mod->init_text_size,
+> +						set_memory_ro);
+
+Here, too.
+
+Thanks,
+Rusty.
