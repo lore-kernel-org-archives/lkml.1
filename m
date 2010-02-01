@@ -1,46 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253Ab0BAKst (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 05:48:49 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53780 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753385Ab0BAKsr (ORCPT
+	id S1754498Ab0BAKsw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 05:48:52 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:44236 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753385Ab0BAKsu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 05:48:47 -0500
-Date: Mon, 1 Feb 2010 11:48:46 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #14942] gkrellm no longer shows all the temperatures on
-	thinkpad x60
-Message-ID: <20100201104846.GB5809@atrey.karlin.mff.cuni.cz>
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <omZ8aBZReyD.A.IpH.TNlSLB@chimera> <20100111094027.GB16080@khazad-dum.debian.net>
+	Mon, 1 Feb 2010 05:48:50 -0500
+Date: Mon, 1 Feb 2010 21:48:46 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: linux-next: crypto-current tree build warning
+Message-ID: <20100201104846.GA1170@gondor.apana.org.au>
+References: <20100201110709.9de06b42.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100111094027.GB16080@khazad-dum.debian.net>
+In-Reply-To: <20100201110709.9de06b42.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 10 Jan 2010, Rafael J. Wysocki wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14942
-> > Subject		: gkrellm no longer shows all the temperatures on thinkpad x60
-> > Submitter	: Pavel Machek <pavel@ucw.cz>
-> > Date		: 2009-12-27 21:57 (15 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=126195107005565&w=4
-> > Handled-By	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> > Patch		: http://patchwork.kernel.org/patch/69809/
+On Mon, Feb 01, 2010 at 11:07:09AM +1100, Stephen Rothwell wrote:
+> Hi Herbert,
 > 
-> Waiting for Pavel to confirm whether this can be closed or not.  There could
-> be more than one bug involved, and I only fixed one.
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
+> 
+> drivers/char/random.c: In function 'random_write':
+> drivers/char/random.c:1104: warning: unused variable 'inode'
+> 
+> Introduced by commit b9b06a1fda275559492f8b083927fde4cec641dc ("random:
+> drop weird m_time/a_time manipulation") which removed the last usage of
+> "inode".
 
-Can be closed; it seems that gkrellm removed the graphs after it
-failed once, or something like that.
+I've fixed it in my tree.
 
+Thanks!
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
