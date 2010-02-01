@@ -1,197 +1,160 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753703Ab0BAU6M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 15:58:12 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:60838 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752606Ab0BAU6K (ORCPT
+	id S1753267Ab0BAVEk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 16:04:40 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:63530 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409Ab0BAVEi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 15:58:10 -0500
+	Mon, 1 Feb 2010 16:04:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HAOR0jniZlQXbQcBOdH7ThTPN8UA9851OGS6V3Lwm0TaH5VXAtBcs16INNVCRUOhxH
-         kIFN11A4mDR5P0rIxUZUbkkj8eJwk0YhRgDBRDAWWQertrA3fvQoKYKYISZL0cS1I4cg
-         87U0cm8rwyGDtTgugBuN6fQ+1dgPdekcPjKss=
-Message-ID: <4B6740B5.5070601@gmail.com>
-Date: Mon, 01 Feb 2010 12:59:33 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=s6CM5sHhn++tcl0X4sSzt7I6uhX5KiSe/A51Z70Ho5Hepd4leAlkd7HrdyNWdU5Yle
+         v0+Ntotn+fJVUg78TRN9xrODbMXbvA7brCchMaPmlqOm0PbQ34vdkrinZZIgZcEdbET2
+         qxOqtKl3X/P49c7ESVA3xIt+A7eyDlycecY9M=
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Dan Carpenter <error27@gmail.com>, linux1394-devel@lists.sourceforge.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug #14487] PANIC:
- early exception 08 rip 246:10 error	ffffffff810251b5 cr2 0)
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de>
-In-Reply-To: <4B673233.8000300@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100201204632.GK1414@holoscopio.com>
+References: <1264800197-29523-1-git-send-email-cascardo@holoscopio.com>
+	 <201001302257.09354.arnd@arndb.de>
+	 <520f0cf11001301507k20e3cf8dqa73026e12f3a1767@mail.gmail.com>
+	 <201001310520.55813.arnd@arndb.de>
+	 <20100131052942.GA12320@core.coreip.homeip.net>
+	 <520f0cf11002011222h134dbf06rf1db612da9a9728@mail.gmail.com>
+	 <520f0cf11002011227s74e57673j3922941f7ee87989@mail.gmail.com>
+	 <20100201204632.GK1414@holoscopio.com>
+Date: Mon, 1 Feb 2010 22:04:37 +0100
+X-Google-Sender-Auth: c0e519be86a0e8e4
+Message-ID: <520f0cf11002011304w64fac454s8192f271bc27fad6@mail.gmail.com>
+Subject: Re: [PATCH] input: remove BKL from uinput open function
+From: John Kacur <jkacur@redhat.com>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/01/10 11:57, Stefan Richter wrote:
-> Justin P. Mattock wrote:
->> On 02/01/10 04:54, Dan Carpenter wrote:
->>> On Sun, Jan 31, 2010 at 05:39:22PM -0800, Justin P. Mattock wrote:
->>>> On 01/31/10 16:43, Rafael J. Wysocki wrote:
->>>>> This message has been generated automatically as a part of a report
->>>>> of regressions introduced between 2.6.31 and 2.6.32.
->>>>>
->>>>> The following bug entry is on the current list of known regressions
->>>>> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
->>>>> be listed and let me know (either way).
->>>>>
->>>>>
->>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14487
->>>>> Subject	: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
->>>>> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
->>>>> Date	: 2009-10-23 16:45 (101 days old)
->>>>> References	: http://lkml.org/lkml/2009/10/23/252
-> [...]
->>>> yeah still hitting this.
-> [...]
->>> I've added the linux1394-devel people to the CC list.
->
-> Thanks.  Alas the original author is MIA, and the bug seems to be tied
-> to the early platform setup code (rather than OHCI 1394 device specific
-> code) about which I for one am clueless.
->
-> The listed MAINTAINERS contact of init_ohci1394_dma.c is linux1394-devel
-> and me, but a good deal of this driver is very x86 platform specific.
-> (There was some interest in making useful for other architectures, but
-> this would merely mean that the respective architecture people need to
-> keep an eye on their parts of this driver.)
->
->>> Justin has found an issue that when he boots with:  ohci1394_dma=early
->>> his computer
->>> crashes.
->>>
->>> He can get it to boot by modifying drivers/ieee1394/init_ohci1394_dma.c:
-> [...]
->
-> This modification and some others in the LKML thread from October simply
-> cause init_ohci1394_controller() to be skipped for all devices.
->
-> init_ohci1394_controller() is simple enough:
->
-> static inline void __init init_ohci1394_controller(int num, int slot,
-> int func)
-> {
-> 	unsigned long ohci_base;
-> 	struct ti_ohci ohci;
->
-> 	printk(KERN_INFO "init_ohci1394_dma: initializing OHCI-1394"
-> 			 " at %02x:%02x.%x\n", num, slot, func);
->
-> 	ohci_base = read_pci_config(num, slot, func,
-> 		PCI_BASE_ADDRESS_0+(0<<2))&  PCI_BASE_ADDRESS_MEM_MASK;
->
-> 	set_fixmap_nocache(FIX_OHCI1394_BASE, ohci_base);
->
-> 	ohci.registers = (void *)fix_to_virt(FIX_OHCI1394_BASE);
->
-> 	init_ohci1394_reset_and_init_dma(&ohci);
-> }
->
-> Justin, you already established that read_pci_config is not the point
-> where it crashes, right?
->
-> set_fixmap_nocache() and fix_to_virt() frighten me because I don't know
-> what they do. :-)
->
-> The rest, init_ohci1394_reset_and_init_dma(), is something which I can
-> easily follow.  There is just a bunch of register reads and writes with
-> occasional mdelays.  This /could/ be a cause of the crash too if the
-> controller is inspired to do something dangerous in there --- meaning,
-> if the OHCI 1394 controller starts to write something per DMA into
-> memory.  However, we do not switch on any DMA context except for the
-> so-called physical DMA unit which only springs into action if a remote
-> FireWire-attached console instructs it to do so.
->
-> I am noticing one point where init_ohci1394_dma.c violates the OHCI 1394
-> specification:  OHCI1394_HCControl_linkEnable is witched on while the
-> OHCI1394_ConfigROMmap register is still invalid.  This register needs to
-> contain a physical address of a 1kB sized, 1kB aligned memory region
-> which allows DMA_TO_DEVICE.  So, since this is a read-only DMA, I am
-> tempted to say that this potential issue should not be a cause for a
-> kernel crash.
->
-> (Sinde note, the OHCI 1394 spec is freely available, see
-> http://ieee1394.wiki.kernel.org/index.php/Specifications#OHCI_Release_1.1.2C_January_6.2C_2000
-> )
->
->
-> Justin Mattock wrote on 2009-10-27 in http://lkml.org/lkml/2009/10/27/335:
->> o.k. you should be able to view
->> this:(let me know if you can't and I can
->> manually write out, and in time find a public
->> photo sharing suite to make things easier).
+On Mon, Feb 1, 2010 at 9:46 PM, Thadeu Lima de Souza Cascardo
+<cascardo@holoscopio.com> wrote:
+> On Mon, Feb 01, 2010 at 09:27:22PM +0100, John Kacur wrote:
+>> On Mon, Feb 1, 2010 at 9:22 PM, John Kacur <jkacur@redhat.com> wrote:
+>> > On Sun, Jan 31, 2010 at 6:29 AM, Dmitry Torokhov
+>> > <dmitry.torokhov@gmail.com> wrote:
+>> >> On Sun, Jan 31, 2010 at 05:20:55AM +0100, Arnd Bergmann wrote:
+>> >>> On Sunday 31 January 2010, John Kacur wrote:
+>> >>> > > Sorry, I should have been clearer, but not implementing llseek
+>> >>> > > is the problem I was referring to: When a driver has no explicit
+>> >>> > > .llseek operation in its file operations and does not call
+>> >>> > > nonseekable_open from its open operation, the VFS layer will
+>> >>> > > implicitly use default_llseek, which takes the BKL. We're
+>> >>> > > in the process of changing drivers not to do this, one by one
+>> >>> > > so we can kill the BKL in the end.
+>> >>> > >
+>> >>> >
+>> >>> > I know we've discussed this before, but why wouldn't the following
+>> >>> > make more sense?
+>> >>> >  .llseek         = no_llseek,
+>> >>>
+>> >>> That's one of the possible solutions. Assigning it to generic_file_llseek
+>> >>> also gets rid of the BKL but keeps the current behaviour (calling seek
+>> >>> returns success without having an effect, no_llseek returns -ESPIPE),
+>> >>> while calling nonseekable_open has the other side-effect of making
+>> >>> pread/pwrite fail with -ESPIPE, which is more consistent than
+>> >>> only failing seek.
+>> >>>
+>> >>
+>> >> OK, so how about the patch below (on top of Thadeu's patch)?
+>> >>
+>> >> --
+>> >> Dmitry
+>> >>
+>> >> Input: uinput - use nonseekable_open
+>> >>
+>> >> Seeking does not make sense for uinput so let's use nonseekable_open
+>> >> to mark the device non-seekable.
+>> >>
+>> >> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+>> >> ---
+>> >>
+>> >>  drivers/input/misc/uinput.c |    7 +++++++
+>> >>  1 files changed, 7 insertions(+), 0 deletions(-)
+>> >>
+>> >>
+>> >> diff --git a/drivers/input/misc/uinput.c b/drivers/input/misc/uinput.c
+>> >> index 18206e1..7089151 100644
+>> >> --- a/drivers/input/misc/uinput.c
+>> >> +++ b/drivers/input/misc/uinput.c
+>> >> @@ -278,6 +278,7 @@ static int uinput_create_device(struct uinput_device *udev)
+>> >>  static int uinput_open(struct inode *inode, struct file *file)
+>> >>  {
+>> >>        struct uinput_device *newdev;
+>> >> +       int error;
+>> >>
+>> >>        newdev = kzalloc(sizeof(struct uinput_device), GFP_KERNEL);
+>> >>        if (!newdev)
+>> >> @@ -291,6 +292,12 @@ static int uinput_open(struct inode *inode, struct file *file)
+>> >>
+>> >>        file->private_data = newdev;
+>> >>
+>> >> +       error = nonseekable_open(inode, file);
+>> >> +       if (error) {
+>> >> +               kfree(newdev);
+>> >> +               return error;
+>> >> +       }
+>> >> +
+>> >>        return 0;
+>> >>  }
+>> >>
+>> >>
+>> >
+>> > Hmnn, if you look at nonseekable_open() it will always return 0. I
+>> > think you can just do the following.
+>> >
+>> > diff --git a/drivers/input/misc/uinput.c b/drivers/input/misc/uinput.c
+>> > index 18206e1..697c0a6 100644
+>> > --- a/drivers/input/misc/uinput.c
+>> > +++ b/drivers/input/misc/uinput.c
+>> > @@ -291,7 +291,7 @@ static int uinput_open(struct inode *inode, struct file *fil
+>> >
+>> >        file->private_data = newdev;
+>> >
+>> > -       return 0;
+>> > +       return nonseekable_open(inode, file);
+>> >  }
+>> >
+>> > Signed-off-by: John Kacur <jkacur@redhat.com>
+>> >
 >>
->> http://www.flickr.com/photos/44066293@N08/4050317695
->>
->> When this happens I see lots of messages from the print
->> during boot, then this happens.
+>> Btw, Thadeu Lima de Souza Cascardo should just combine that all into
+>> one patch, no point really in making two patches out of that.
 >
-> (Now that a bugzilla.kernel.org ticket exists for this you can also use
-> bugzilla.kernel.org to publish screenshots if you have an account there.)
+> That's fine to me. But since Dmitry has already applied it, I see no
+> problem at all that this is two commits. Or would there be any problem
+> removing the lock in open and not doing nonseekable_open?
 >
-> This screenshot looks like ___alloc_bootmem_node is the issue here, or
-> am I mistaken of what the order of functions in the backtrace means?
+> As far as I get, nonseekable_open only resets the flags that will make
+> it do the right thing for lseek, pread and pwrite. This will get rid of
+> the BKL for these calls, but this is independent of getting rid of it
+> for the open call.
+>
+> I don't disagree that doing both at the same time is OK. But I don't
+> agree that doing them separately is not OK. This way, you may get the
+> credits for what you (and not I) have done.  :-)
+>
+> But either way is fine for me.
+>
+> Regards,
+> Cascardo.
+>
 
+Ok, I didn't know that he already applied it. No need to make a big
+deal about it, two commits are fine.
+If he hadn't already applied it then it could logically go together as
+one commit.
 
-cool, thanks for the assistance and info on this.
-(I'll have to read through the specification for ohci1394);
-
-as for __alloc_bootmem_node I have not looked into that yet.
-(I can read up on this today).
-
-what I was looking at was:
-set_fixmap_nocache(FIX_OHCI1394_BASE, ohci_base);
-
-which led me to arch/x86/include/asm/fixmap.h
-leading me to believe I was hitting something with
-FIXADDR_TOP because the system is a pure64.
-(reading through fixmap.h there is mention that
-vsyscall only covers 32bit making me think this might
-be it).
-
-and also:
-
-init_ohci1394_reset_and_init_dma(&ohci);
-(on the bugreport I have a temporary patch
-which gets me up and running to do early debugging,
-there you will see  both calls are commented out
-
-(as for yesterdays 0xffffffffffffffff(just experimenting)Google gives me 
-no info on the differences between 8f's to 16f's, I was under the 
-impression that it's x86_32 and x86_64 for the pci address).
-
-as for the bugzilla.kernel.org I'll have to setup an
-account there(flickr is nice, but having a bugreport
-photo and pics of my vacation isn't);
-
-In general I'm thinking this has todo with the arch(but could be wrong),
-because one lfs system I built was x86_32,which worked fine, and then
-the next is a pure64 which triggers this.
-
-Thanks for the info/help.
-
-Justin P. Mattock
-
-
-
-
-
-
-
-
-
-
-
-
-
+John
