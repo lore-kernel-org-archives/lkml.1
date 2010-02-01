@@ -1,206 +1,104 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830Ab0BAH20 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 02:28:26 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53289 "EHLO hera.kernel.org"
+	id S1754958Ab0BAH21 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 02:28:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44962 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252Ab0BAH2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 02:28:24 -0500
-Date: Mon, 1 Feb 2010 07:27:38 GMT
-From: tip-bot for Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jason.wessel@windriver.com, tglx@linutronix.de, mingo@elte.hu,
-       Dongdong.Deng@windriver.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jason.wessel@windriver.com, tglx@linutronix.de,
-       Dongdong.Deng@windriver.com, mingo@elte.hu
-In-Reply-To: <1264631124-4837-2-git-send-email-jason.wessel@windriver.com>
-References: <1264631124-4837-2-git-send-email-jason.wessel@windriver.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/urgent] softlockup: Add sched_clock_tick() to avoid kernel warning on kgdb resume
-Message-ID: <tip-d6ad3e286d2c075a60b9f11075a2c55aeeeca2ad@git.kernel.org>
-Git-Commit-ID: d6ad3e286d2c075a60b9f11075a2c55aeeeca2ad
-X-Mailer: tip-git-log-daemon
+	id S1754170Ab0BAH2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 02:28:25 -0500
+Date: Mon, 1 Feb 2010 08:27:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 00/12 v2] perf lock: New subcommand "perf lock", for
+ analyzing lock statistics
+Message-ID: <20100201072752.GB12039@elte.hu>
+References: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+ <20100131082953.GA12715@elte.hu>
+ <20100131203103.GD5224@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 01 Feb 2010 07:27:39 +0000 (UTC)
+In-Reply-To: <20100131203103.GD5224@nowhere>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d6ad3e286d2c075a60b9f11075a2c55aeeeca2ad
-Gitweb:     http://git.kernel.org/tip/d6ad3e286d2c075a60b9f11075a2c55aeeeca2ad
-Author:     Jason Wessel <jason.wessel@windriver.com>
-AuthorDate: Wed, 27 Jan 2010 16:25:22 -0600
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 1 Feb 2010 08:22:32 +0100
 
-softlockup: Add sched_clock_tick() to avoid kernel warning on kgdb resume
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-When CONFIG_HAVE_UNSTABLE_SCHED_CLOCK is set, sched_clock() gets
-the time from hardware such as the TSC on x86. In this
-configuration kgdb will report a softlock warning message on
-resuming or detaching from a debug session.
+> On Sun, Jan 31, 2010 at 09:29:53AM +0100, Ingo Molnar wrote:
+> > 
+> > FYI, i've applied a file/line-less version of 'perf lock' to perf/core today.
+> > 
+> > The basic workflow is the usual:
+> > 
+> >   perf lock record sleep 1     # or some other command
+> >   perf lock report             # or 'perf lock trace'
+> > 
+> > [ I think we can do all the things that file/line can do with a less intrusive 
+> >   (and more standard) call-site-IP based approach. For now we can key off the 
+> >   names of the locks, that's coarser but also informative and allows us to 
+> >   progress.
+> > 
+> >   I've renamed 'perf lock prof' to 'perf lock report' - which is more in line 
+> >   with other perf tools. ]
+> > 
+> > The tool clearly needs more work at the moment: i have tried perf lock on a 16 
+> > cpus box, and it was very slow, while it didnt really record all that many 
+> > events to justify the slowdown. A simple:
+> > 
+> >   perf lock record sleep 1
+> > 
+> > makes the system very slow and requires a Ctrl-C to stop:
+> > 
+> >  # time perf lock record sleep 1
+> >  ^C[ perf record: Woken up 0 times to write data ]
+> >  [ perf record: Captured and wrote 5.204 MB perf.data (~227374 samples) ]
+> > 
+> >   real	0m11.941s
+> >   user	0m0.020s
+> >   sys	0m11.661s
+> > 
+> > (The kernel config i used witht that is attached.)
+> > 
+> > My suspicion is that the overhead of CONFIG_LOCK_STAT based tracing is way too 
+> > high at the moment, and needs to be reduced. I have removed the '-R' option 
+> > from perf lock record (which it got from perf sched where it makes sense but 
+> > here it's not really needed and -R further increases overhead), but that has 
+> > not solved the slowdown.
+> 
+> 
+> 
+> Hmm, -R is mandatory if you want the raw sample events, otherwise the
+> event is just a counter.
+> 
+> May be you mean -M ? Sure -M is going to be a noticeable overhead
+> in 16 cores.
 
-Sequence of events in the problem case:
+Yeah, i meant and tested -M.
 
- 1) "cpu sched clock" and "hardware time" are at 100 sec prior
-    to a call to kgdb_handle_exception()
+> Anyway, I'm looking closely into improving the lock events to
+> reduce all this overhead. I'll create a lock_init event so
+> that we can gather the heavy informations there (especially
+> the name of the lock).
+> 
+> Also, using TRACE_EVENT_FN lets us register a callback when
+> a tracepoint gets registered, I'm going to try to synthetize
+> the missing lock_init() events here.
 
- 2) Debugger waits in kgdb_handle_exception() for 80 sec and on
-    exit the following is called ...  touch_softlockup_watchdog() -->
-    __raw_get_cpu_var(touch_timestamp) = 0;
+Ok, thanks for looking into this!
 
- 3) "cpu sched clock" = 100s (it was not updated, because the
-    interrupt was disabled in kgdb) but the "hardware time" = 180 sec
-
- 4) The first timer interrupt after resuming from
-    kgdb_handle_exception updates the watchdog from the "cpu sched clock"
-
-update_process_times() { ...  run_local_timers() -->
-softlockup_tick() --> check (touch_timestamp == 0) (it is "YES"
-here, we have set "touch_timestamp = 0" at kgdb) -->
-__touch_softlockup_watchdog() ***(A)--> reset "touch_timestamp"
-to "get_timestamp()" (Here, the "touch_timestamp" will still be
-set to 100s.)  ...
-
-    scheduler_tick() ***(B)--> sched_clock_tick() (update "cpu sched
-    clock" to "hardware time" = 180s) ...  }
-
- 5) The Second timer interrupt handler appears to have a large
-    jump and trips the softlockup warning.
-
-update_process_times() { ...  run_local_timers() -->
-softlockup_tick() --> "cpu sched clock" - "touch_timestamp" =
-180s-100s > 60s --> printk "soft lockup error messages" ...  }
-
-note: ***(A) reset "touch_timestamp" to
-"get_timestamp(this_cpu)"
-
-Why is "touch_timestamp" 100 sec, instead of 180 sec?
-
-When CONFIG_HAVE_UNSTABLE_SCHED_CLOCK is set, the call trace of
-get_timestamp() is:
-
-get_timestamp(this_cpu)
- -->cpu_clock(this_cpu)
- -->sched_clock_cpu(this_cpu)
- -->__update_sched_clock(sched_clock_data, now)
-
-The __update_sched_clock() function uses the GTOD tick value to
-create a window to normalize the "now" values.  So if "now"
-value is too big for sched_clock_data, it will be ignored.
-
-The fix is to invoke sched_clock_tick() to update "cpu sched
-clock" in order to recover from this state.  This is done by
-introducing the function touch_softlockup_watchdog_sync(). This
-allows kgdb to request that the sched clock is updated when the
-watchdog thread runs the first time after a resume from kgdb.
-
-[yong.zhang0@gmail.com: Use per cpu instead of an array]
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Signed-off-by: Dongdong Deng <Dongdong.Deng@windriver.com>
-Cc: kgdb-bugreport@lists.sourceforge.net
-Cc: peterz@infradead.org
-LKML-Reference: <1264631124-4837-2-git-send-email-jason.wessel@windriver.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/sched.h |    4 ++++
- kernel/kgdb.c         |    6 +++---
- kernel/softlockup.c   |   15 +++++++++++++++
- 3 files changed, 22 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 6f7bba9..8923215 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -310,6 +310,7 @@ extern void sched_show_task(struct task_struct *p);
- #ifdef CONFIG_DETECT_SOFTLOCKUP
- extern void softlockup_tick(void);
- extern void touch_softlockup_watchdog(void);
-+extern void touch_softlockup_watchdog_sync(void);
- extern void touch_all_softlockup_watchdogs(void);
- extern int proc_dosoftlockup_thresh(struct ctl_table *table, int write,
- 				    void __user *buffer,
-@@ -323,6 +324,9 @@ static inline void softlockup_tick(void)
- static inline void touch_softlockup_watchdog(void)
- {
- }
-+static inline void touch_softlockup_watchdog_sync(void)
-+{
-+}
- static inline void touch_all_softlockup_watchdogs(void)
- {
- }
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index 2eb517e..87f2cc5 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -596,7 +596,7 @@ static void kgdb_wait(struct pt_regs *regs)
- 
- 	/* Signal the primary CPU that we are done: */
- 	atomic_set(&cpu_in_kgdb[cpu], 0);
--	touch_softlockup_watchdog();
-+	touch_softlockup_watchdog_sync();
- 	clocksource_touch_watchdog();
- 	local_irq_restore(flags);
- }
-@@ -1450,7 +1450,7 @@ acquirelock:
- 	    (kgdb_info[cpu].task &&
- 	     kgdb_info[cpu].task->pid != kgdb_sstep_pid) && --sstep_tries) {
- 		atomic_set(&kgdb_active, -1);
--		touch_softlockup_watchdog();
-+		touch_softlockup_watchdog_sync();
- 		clocksource_touch_watchdog();
- 		local_irq_restore(flags);
- 
-@@ -1550,7 +1550,7 @@ kgdb_restore:
- 	}
- 	/* Free kgdb_active */
- 	atomic_set(&kgdb_active, -1);
--	touch_softlockup_watchdog();
-+	touch_softlockup_watchdog_sync();
- 	clocksource_touch_watchdog();
- 	local_irq_restore(flags);
- 
-diff --git a/kernel/softlockup.c b/kernel/softlockup.c
-index d225790..0d4c789 100644
---- a/kernel/softlockup.c
-+++ b/kernel/softlockup.c
-@@ -25,6 +25,7 @@ static DEFINE_SPINLOCK(print_lock);
- static DEFINE_PER_CPU(unsigned long, softlockup_touch_ts); /* touch timestamp */
- static DEFINE_PER_CPU(unsigned long, softlockup_print_ts); /* print timestamp */
- static DEFINE_PER_CPU(struct task_struct *, softlockup_watchdog);
-+static DEFINE_PER_CPU(bool, softlock_touch_sync);
- 
- static int __read_mostly did_panic;
- int __read_mostly softlockup_thresh = 60;
-@@ -79,6 +80,12 @@ void touch_softlockup_watchdog(void)
- }
- EXPORT_SYMBOL(touch_softlockup_watchdog);
- 
-+void touch_softlockup_watchdog_sync(void)
-+{
-+	__raw_get_cpu_var(softlock_touch_sync) = true;
-+	__raw_get_cpu_var(softlockup_touch_ts) = 0;
-+}
-+
- void touch_all_softlockup_watchdogs(void)
- {
- 	int cpu;
-@@ -118,6 +125,14 @@ void softlockup_tick(void)
- 	}
- 
- 	if (touch_ts == 0) {
-+		if (unlikely(per_cpu(softlock_touch_sync, this_cpu))) {
-+			/*
-+			 * If the time stamp was touched atomically
-+			 * make sure the scheduler tick is up to date.
-+			 */
-+			per_cpu(softlock_touch_sync, this_cpu) = false;
-+			sched_clock_tick();
-+		}
- 		__touch_softlockup_watchdog();
- 		return;
- 	}
+	Ingo
