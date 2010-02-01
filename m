@@ -1,62 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498Ab0AaX6n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 18:58:43 -0500
-Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:60157 "EHLO
-	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754095Ab0AaX6l (ORCPT
+	id S1754409Ab0BAAFM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 19:05:12 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58939 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753942Ab0BAAFK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 18:58:41 -0500
-Date: Sun, 31 Jan 2010 18:58:39 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] sky2:  receive dma mapping error handling
-In-reply-to: <20100131222504.GB3317@del.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B66192F.9040103@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100128090835.0d93e53a@nehalam> <4B61DB79.4080703@majjas.com>
- <20100128223447.GC3109@del.dom.local> <4B621316.8070308@majjas.com>
- <20100128225621.GD3109@del.dom.local> <4B6216B9.1010802@majjas.com>
- <20100128153643.0fca3c51@nehalam> <4B645EF4.4050701@majjas.com>
- <20100131003449.GA11935@del.dom.local> <4B650465.7010503@majjas.com>
- <20100131222504.GB3317@del.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	Sun, 31 Jan 2010 19:05:10 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 1 Feb 2010 09:01:40 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, vedran.furac@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, minchan.kim@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
+Message-Id: <20100201090140.116cc704.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.1001291258490.2938@chino.kir.corp.google.com>
+References: <f8c9aca9c98db8ae7df3ac2d7ac8d922.squirrel@webmail-b.css.fujitsu.com>
+	<20100129162137.79b2a6d4@lxorguk.ukuu.org.uk>
+	<c6c48fdf7f746add49bb9cc058b513ae.squirrel@webmail-b.css.fujitsu.com>
+	<20100129163030.1109ce78@lxorguk.ukuu.org.uk>
+	<5a0e6098f900aa36993b2b7f2320f927.squirrel@webmail-b.css.fujitsu.com>
+	<alpine.DEB.2.00.1001291258490.2938@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/31/2010 5:25 PM, Jarek Poplawski wrote:
-> On Sat, Jan 30, 2010 at 11:17:41PM -0500, Michael Breuer wrote:
->    
->> On 01/30/2010 07:34 PM, Jarek Poplawski wrote:
->>      
->>> On Sat, Jan 30, 2010 at 11:31:48AM -0500, Michael Breuer wrote:
->>>        
->>>> Jan 29 17:13:11 mail kernel: sky2 eth0: rx error, status 0x6230010
->>>> length 1518
->>>> Jan 29 17:13:11 mail kernel: sky2 eth0: rx error, status 0x7f40010
->>>> length 1518
->>>>          
->>> These are length errors, but status shows more than 1518, e.g. 2036
->>> here, unless I miss something. Please, don't use jumbo frames in your
->>> network until we fully debug it for regular frames (Stephen admitted
->>> sky2 jumbo might be broken).
->>>        
->> MTU was 1500 - not using jumbo frames as they don't work.
->>      
-> Do you mean no NIC in your network could have sent such frames?
->
-> Jarek P.
->    
-Well... There's only one possible source... and if there were it would 
-have been a Win7 bug :) Regardless, sky2 shouldn't be sensitive to rogue 
-external network stuff.
+On Fri, 29 Jan 2010 13:07:01 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
+
+> On Sat, 30 Jan 2010, KAMEZAWA Hiroyuki wrote:
+> 
+> > okay...I guess the cause of the problem Vedran met came from
+> > this calculation.
+> > ==
+> >  109         /*
+> >  110          * Processes which fork a lot of child processes are likely
+> >  111          * a good choice. We add half the vmsize of the children if they
+> >  112          * have an own mm. This prevents forking servers to flood the
+> >  113          * machine with an endless amount of children. In case a single
+> >  114          * child is eating the vast majority of memory, adding only half
+> >  115          * to the parents will make the child our kill candidate of
+> > choice.
+> >  116          */
+> >  117         list_for_each_entry(child, &p->children, sibling) {
+> >  118                 task_lock(child);
+> >  119                 if (child->mm != mm && child->mm)
+> >  120                         points += child->mm->total_vm/2 + 1;
+> >  121                 task_unlock(child);
+> >  122         }
+> >  123
+> > ==
+> > This makes task launcher(the fist child of some daemon.) first victim.
+> 
+> That "victim", p, is passed to oom_kill_process() which does this:
+> 
+> 	/* Try to kill a child first */
+> 	list_for_each_entry(c, &p->children, sibling) {
+> 		if (c->mm == p->mm)
+> 			continue;
+> 		if (!oom_kill_task(c))
+> 			return 0;
+> 	}
+> 	return oom_kill_task(p);
+> 
+
+Then, finally, per-process oom_adj(!=OOM_DISABLE) control is ignored ?
+Seems broken.
+
+I think all this children-parent logic is bad.
+
+Thanks,
+-Kame
+
+
+
