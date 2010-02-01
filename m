@@ -1,69 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870Ab0BAVUs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 16:20:48 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:53569 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754680Ab0BAVUq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 16:20:46 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: Re: [PATCH] irda: remove BKL from irnet open function
-Date: Mon, 1 Feb 2010 22:20:30 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc5; KDE/4.3.2; x86_64; ; )
-Cc: John Kacur <jkacur@gmail.com>, Samuel Ortiz <samuel@sortiz.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-References: <1265048321-8097-1-git-send-email-cascardo@holoscopio.com> <520f0cf11002011232u415146a9md3afe65af4d810a6@mail.gmail.com> <20100201203616.GJ1414@holoscopio.com>
-In-Reply-To: <20100201203616.GJ1414@holoscopio.com>
+	id S1754967Ab0BAVU6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 16:20:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47565 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753894Ab0BAVUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 16:20:54 -0500
+Date: Mon, 1 Feb 2010 21:20:53 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.4.37.9
+Message-ID: <20100201212053.GA20012@hera.kernel.org>
+Reply-To: w@1wt.eu
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002012220.30887.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/0ct06F2OUWJwaWhwhN6Ub7ucRnd+VJnroV8z
- oXFDw6jaFc1mg9hLiUkkrHiXSeO4Yj8RmWfUK+nnfbvSrPojJh
- YM8YPLfJeJmFoOC+O9yXw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 01 Feb 2010 21:20:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 February 2010, Thadeu Lima de Souza Cascardo wrote:
-> On Mon, Feb 01, 2010 at 09:32:30PM +0100, John Kacur wrote:
-> > On Mon, Feb 1, 2010 at 7:18 PM, Thadeu Lima de Souza Cascardo
-> > <cascardo@holoscopio.com> wrote:
-> And is it possible that ioctl will be called before open returns? If it
-> is, then, yes, this is not safe. But I don't really believe the case. Or
-> is it?
+Hello,
 
-ioctl may be called on an open file descriptor while open is called
-by another thread to open a second file descriptor for the same device.
+I've just released Linux 2.4.37.9.
 
-> Or is it only possible to happen with different struct file*? In that
-> case, open is only allocating and initializing the irnet_socket *ap.
-> Then, ioctl uses it. There is some race between the different ioctls,
-> but no race between open/ioctl for different opened devices. That is, a
-> process may open /dev/irnet while another process is issuing ioctls to
-> its own opened /dev/irnet.
+Jesse Brandeburg notified me that the e1000 backport in 2.4.37.8
+was broken (e1000_main.c was not committed). I don't know how I
+managed to do that because it once was OK and I could successfully
+build it. Well, whatever I did, the result is wrong and the issue
+it was supposed to fix is still present in 2.4.37.8. So here comes
+2.4.37.9 with the real fix this time. It was built, booted (runs
+on my file server at the moment) and re-checked after the final
+commit. Please use that one instaed of 2.4.37.8.
 
-right.
- 
-> Besides, dev_irnet_ioctl uses the file private_data to get to the
-> irnet_socket, which is the last thing the open call does. I assume doing
-> an attribution to a pointer is atomic in all architectures supported by
-> Linux currently, isn't it?
+Sorry for the confusion, and many thanks to Jesse for his careful
+review!
 
-The pointer assignment is atomic, but it may not be synchronized to data
-pointed to it. On Alpha (probably no others so far), this would result
-in irnet_socket seen as uninitialized after the pointer to is can be
-seen as valid if there was no locking. No architecture would read an
-invalid pointer though.
+Willy
+--
 
-I guess that what John was trying to point out actually is the fact that
-you shouldn't really do the BKL removal in one function only but rather
-do it for the whole driver at once. The irnet driver uses the BKL in
-open, ioctl and llseek, so if you want to clean up that driver, please
-introduce proper locking in the driver and do all of the three.
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/patch-2.4.37.9.bz2
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.37.9
 
-	Arnd
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
+
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.4.37.y.git
+
+
+
+Summary of changes from v2.4.37.8 to v2.4.37.9
+============================================
+
+Willy Tarreau (2):
+      e1000: enhance frame fragment detection (again)
+      Change VERSION to 2.4.37.9
+
