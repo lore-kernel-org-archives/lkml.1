@@ -1,94 +1,145 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753591Ab0BAI1N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 03:27:13 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60647 "EHLO mx1.suse.de"
+	id S1752977Ab0BAIaX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 03:30:23 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60769 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737Ab0BAI1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 03:27:12 -0500
-Date: Mon, 1 Feb 2010 18:08:35 +1100
+	id S1750915Ab0BAIaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 03:30:22 -0500
+Date: Mon, 1 Feb 2010 17:15:32 +1100
 From: Nick Piggin <npiggin@suse.de>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Dave Chinner <david@fromorbit.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: dentries: dentry defragmentation
-Message-ID: <20100201070835.GE9085@laptop>
-References: <20100129204931.789743493@quilx.com>
- <20100129205007.832823807@quilx.com>
- <20100129220044.GA31305@ZenIV.linux.org.uk>
+To: Rik van Riel <riel@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, aarcange@redhat.com
+Subject: Re: [PATCH -mm] remove VM_LOCK_RMAP code
+Message-ID: <20100201061532.GC9085@laptop>
+References: <20100128002000.2bf5e365@annuminas.surriel.com>
+ <20100129151423.8b71b88e.akpm@linux-foundation.org>
+ <20100129193410.7ce915d0@annuminas.surriel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100129220044.GA31305@ZenIV.linux.org.uk>
+In-Reply-To: <20100129193410.7ce915d0@annuminas.surriel.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 29, 2010 at 10:00:44PM +0000, Al Viro wrote:
-> On Fri, Jan 29, 2010 at 02:49:48PM -0600, Christoph Lameter wrote:
-> > +		if ((d_unhashed(dentry) && list_empty(&dentry->d_lru)) ||
-> > +		   (!d_unhashed(dentry) && hlist_unhashed(&dentry->d_hash)) ||
-> > +		   (dentry->d_inode &&
-> > +		   !mapping_cap_writeback_dirty(dentry->d_inode->i_mapping)))
-> > +			/* Ignore this dentry */
-> > +			v[i] = NULL;
-> > +		else
-> > +			/* dget_locked will remove the dentry from the LRU */
-> > +			dget_locked(dentry);
-> > +	}
-> > +	spin_unlock(&dcache_lock);
-> > +	return NULL;
-> > +}
+On Fri, Jan 29, 2010 at 07:34:10PM -0500, Rik van Riel wrote:
+> When a VMA is in an inconsistent state during setup or teardown, the
+> worst that can happen is that the rmap code will not be able to find
+> the page.
+
+OK, but you missed the interesting thing, which is to explain why
+that worst case is not a problem.
+
+rmap of course is not just used for reclaim but also invalidations
+from mappings, and those guys definitely need to know that all
+page table entries have been handled by the time they return.
+
 > 
-> No.  As the matter of fact - fuck, no.  For one thing, it's going to race
-> with umount.  For another, kicking busy dentry out of hash is worse than
-> useless - you are just asking to get more and more copies of that sucker
-> in dcache.  This is fundamentally bogus, especially since there is a 100%
-> safe time for killing dentry - when dput() drives the refcount to 0 and
-> you *are* doing dput() on the references you've acquired.  If anything, I'd
-> suggest setting a flag that would trigger immediate freeing on the final
-> dput().
+> It is also impossible for the rmap code to follow a pointer to an
+> already freed VMA, because the rmap code holds the anon_vma->lock,
+> which the VMA teardown code needs to take before the VMA is removed
+> from the anon_vma chain.
 > 
-> And that does not cover the umount races.  You *can't* go around grabbing
-> dentries without making sure that superblock won't be shut down under
-> you.  And no, I don't know how to deal with that cleanly - simply bumping
-> superblock ->s_count under sb_lock is enough to make sure it's not freed
-> under you, but what you want is more than that.  An active reference would
-> be enough, except that you'd get sudden "oh, sorry, now there's no way
-> to make sure that superblock is shut down at umount(2), no matter what kind
-> of setup you have".  So you really need to get ->s_umount held shared,
-> which is, not particulary locking-order-friendly, to put it mildly.
-
-I always preferred to do defrag in the opposite way. Ie. query the
-slab allocator from existing shrinkers rather than opposite way
-around. This lets you reuse more of the locking and refcounting etc.
-
-So you have a pin on the object somehow via the normal shrinker path,
-and therefore you get a pin on the underlying slab. I would just like
-to see even performance of a real simple approach that just asks
-whether we are in this slab defrag mode, and if so, whether the slab
-is very sparse. If yes, then reclaim aggressively.
-
-If that doesn't perform well enough and you have to go further and
-discover objects on the same slab, then it does get a bit more
-tricky because:
-- you need the pin on the first object in order to discover more
-- discovered objects may not be expected in the existing shrinker
-  code that just picks objects off LRUs
-
-However your code already has to handle the 2nd case anyway, and for
-the 1st case it is probably not too hard to do with dcache/icache. And
-in either case you seem to avoid the worst of the sleeping and lock
-ordering and slab inversion problems of your ->get approach.
-
-But I'm really interested to see numbers, and especially numbers of
-the simpler approaches before adding this complexity.
-
+> Hence, we should not need the VM_LOCK_RMAP locking at all.
+> 
+> Sent as a separate patch because I would appreciate it if others
+> could verify my logic :)
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> ---
+>  include/linux/mm.h |    4 ----
+>  mm/mmap.c          |   15 ---------------
+>  mm/rmap.c          |   12 ------------
+>  3 files changed, 0 insertions(+), 31 deletions(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 93bbb70..5866e0c 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -96,11 +96,7 @@ extern unsigned int kobjsize(const void *objp);
+>  #define VM_NORESERVE	0x00200000	/* should the VM suppress accounting */
+>  #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
+>  #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
+> -#ifdef CONFIG_MMU
+> -#define VM_LOCK_RMAP	0x01000000	/* Do not follow this rmap (mmu mmap) */
+> -#else
+>  #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
+> -#endif
+>  #define VM_INSERTPAGE	0x02000000	/* The vma has had "vm_insert_page()" done on it */
+>  #define VM_ALWAYSDUMP	0x04000000	/* Always include in core dumps */
+>  
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index 58a3d72..de9e953 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -554,9 +554,7 @@ again:			remove_next = 1 + (end > next->vm_end);
+>  		 */
+>  		if (importer && !importer->anon_vma) {
+>  			/* Block reverse map lookups until things are set up. */
+> -			importer->vm_flags |= VM_LOCK_RMAP;
+>  			if (anon_vma_clone(importer, vma)) {
+> -				importer->vm_flags &= ~VM_LOCK_RMAP;
+>  				return -ENOMEM;
+>  			}
+>  			importer->anon_vma = anon_vma;
+> @@ -618,11 +616,6 @@ again:			remove_next = 1 + (end > next->vm_end);
+>  		__vma_unlink(mm, next, vma);
+>  		if (file)
+>  			__remove_shared_vm_struct(next, file, mapping);
+> -		/*
+> -		 * This VMA is now dead, no need for rmap to follow it.
+> -		 * Call anon_vma_merge below, outside of i_mmap_lock.
+> -		 */
+> -		next->vm_flags |= VM_LOCK_RMAP;
+>  	} else if (insert) {
+>  		/*
+>  		 * split_vma has split insert from vma, and needs
+> @@ -635,20 +628,12 @@ again:			remove_next = 1 + (end > next->vm_end);
+>  	if (mapping)
+>  		spin_unlock(&mapping->i_mmap_lock);
+>  
+> -	/*
+> -	 * The current VMA has been set up. It is now safe for the
+> -	 * rmap code to get from the pages to the ptes.
+> -	 */
+> -	if (anon_vma && importer)
+> -		importer->vm_flags &= ~VM_LOCK_RMAP;
+> -
+>  	if (remove_next) {
+>  		if (file) {
+>  			fput(file);
+>  			if (next->vm_flags & VM_EXECUTABLE)
+>  				removed_exe_file_vma(mm);
+>  		}
+> -		/* Protected by mmap_sem and VM_LOCK_RMAP. */
+>  		if (next->anon_vma)
+>  			anon_vma_merge(vma, next);
+>  		mm->map_count--;
+> diff --git a/mm/rmap.c b/mm/rmap.c
+> index aa11f3c..818615a 100644
+> --- a/mm/rmap.c
+> +++ b/mm/rmap.c
+> @@ -329,18 +329,6 @@ vma_address(struct page *page, struct vm_area_struct *vma)
+>  		/* page should be within @vma mapping range */
+>  		return -EFAULT;
+>  	}
+> -	if (unlikely(vma->vm_flags & VM_LOCK_RMAP)) {
+> -		/*
+> -		 * This VMA is being unlinked or is not yet linked into the
+> -		 * VMA tree.  Do not try to follow this rmap.  This race
+> -		 * condition can result in page_referenced() ignoring a
+> -		 * reference or in try_to_unmap() failing to unmap a page.
+> -		 * The VMA cannot be freed under us because we hold the
+> -		 * anon_vma->lock, which the munmap code takes while
+> -		 * unlinking the anon_vmas from the VMA.
+> -		 */
+> -		return -EFAULT;
+> -	}
+>  	return address;
+>  }
+>  
