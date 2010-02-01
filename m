@@ -1,59 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553Ab0BAJSf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 04:18:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11305 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752570Ab0BAJSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 04:18:33 -0500
-Date: Mon, 1 Feb 2010 04:18:28 -0500
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Amerigo Wang <amwang@redhat.com>, David Miller <davem@davemloft.net>
-Message-Id: <20100201092153.4194.91507.sendpatchset@localhost.localdomain>
-Subject: [Patch v2] net: export TCP send buffer size via netlink
+	id S1751778Ab0BAJVh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 04:21:37 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57407 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724Ab0BAJVg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 04:21:36 -0500
+Subject: Re: Lock dependency based tree report in perf lock
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>, Ingo Molnar <mingo@elte.hu>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100201012331.GH5224@nowhere>
+References: <20100129231723.GB5052@nowhere>
+	 <1264841188.24455.54.camel@laptop>  <20100201012331.GH5224@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 10:21:09 +0100
+Message-ID: <1265016069.24455.107.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V1 -> V2:
-Keep ABI compatiblity of struct tcp_info.
+On Mon, 2010-02-01 at 02:23 +0100, Frederic Weisbecker wrote:
+> On Sat, Jan 30, 2010 at 09:46:28AM +0100, Peter Zijlstra wrote:
+> > On Sat, 2010-01-30 at 00:17 +0100, Frederic Weisbecker wrote:
+> > > 
+> > > 
+> > > Anyway, that's just an idea, not trivial I must admit.
+> > 
+> > lockdep actually collects all this information, so writing it out isn't
+> > too hard.
+> 
+> 
+> Hmm, I'm discovering the /proc/lock_stat file this evening, did not
+> know it exist :)
+> 
+> Still, a tree representation can bring another dimension.
 
-Currently, we can only get TCP send buffer size by
-getsockopt (SO_SNDBUF or TCP_INFO), this is not enough
-for the tools like netstat or ss to read.
+current->held_locks[i]->instance, i < current->lock_depth
 
-Show TCP send buffer size via netlink NETLINK_INET_DIAG.
-
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: David Miller <davem@davemloft.net>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-
----
-
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 7fee8a4..b63f541 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -163,6 +163,8 @@ struct tcp_info {
- 	__u32	tcpi_rcv_space;
- 
- 	__u32	tcpi_total_retrans;
-+
-+	__u32	tcpi_sndbuf;
- };
- 
- /* for TCP_MD5SIG socket option */
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index b0a26bb..b3d6a62 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -2385,6 +2385,7 @@ void tcp_get_info(struct sock *sk, struct tcp_info *info)
- 	info->tcpi_retransmits = icsk->icsk_retransmits;
- 	info->tcpi_probes = icsk->icsk_probes_out;
- 	info->tcpi_backoff = icsk->icsk_backoff;
-+	info->tcpi_sndbuf = sk->sk_sndbuf;
- 
- 	if (tp->rx_opt.tstamp_ok)
- 		info->tcpi_options |= TCPI_OPT_TIMESTAMPS;
