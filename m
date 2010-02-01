@@ -1,55 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755516Ab0BASf7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 13:35:59 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:50075 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754842Ab0BASf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 13:35:57 -0500
-In-Reply-To: <15772.1265047413@jrobl>
-References: <4B666164.3090504@cn.fujitsu.com> <15772.1265047413@jrobl>
-To: hooanon05@yahoo.co.jp
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Shi Weihua <shiwh@cn.fujitsu.com>, Al Viro <viro@ZenIV.linux.org.uk>
+	id S1755611Ab0BASiQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:38:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47391 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755397Ab0BASiP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 13:38:15 -0500
+Date: Mon, 1 Feb 2010 10:36:21 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [patch 2/3] scheduler: add full memory barriers upon task switch
+ at runqueue lock/unlock
+In-Reply-To: <20100201174500.GA13744@Krystal>
+Message-ID: <alpine.LFD.2.00.1002011028190.4206@localhost.localdomain>
+References: <20100131205254.407214951@polymtl.ca> <20100131210013.446503342@polymtl.ca> <alpine.LFD.2.00.1002010722350.4206@localhost.localdomain> <20100201160929.GA3032@Krystal> <alpine.LFD.2.00.1002010816030.4206@localhost.localdomain> <20100201164856.GA3486@Krystal>
+ <alpine.LFD.2.00.1002010854110.4206@localhost.localdomain> <20100201174500.GA13744@Krystal>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Subject: Re: security ima: Kernel BUG in ima_file_free -- bisected to commit
- 6c21a7fb492bf7e2c4985937082ce58ddeca84bd
-X-KeepSent: 6927C959:C86D4BC1-852576BD:00651E94;
- type=4; name=$KeepSent
-X-Mailer: Lotus Notes Release 8.5 December 05, 2008
-Message-ID: <OF6927C959.C86D4BC1-ON852576BD.00651E94-852576BD.0066295F@us.ibm.com>
-From: Mimi Zohar <zohar@us.ibm.com>
-Date: Mon, 1 Feb 2010 13:35:52 -0500
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.5.1HF41 | October 22, 2009) at
- 02/01/2010 13:35:52,
-	Serialize complete at 02/01/2010 13:35:52
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hooanon05@yahoo.co.jp wrote on 02/01/2010 01:03:33 PM:
 
-> Shi Weihua:
-> > Used the latest LTP to test 2.6.33-rc6, a Kernel BUG occured on my 
-x86_64 
-> (OS: Fedora 12).
-> > The message from dmesg is as following.
-> > The LTP case is testcases/kernel/syscalls/pipe/pipe06.c. For seeing 
-code easily, I
-> > recreated a simple code to reproduce this BUG. please check the code 
-in the attached.
-> > 
-> > I bisected a commit 6c21a7fb492bf7e2c4985937082ce58ddeca84bd,
+
+On Mon, 1 Feb 2010, Mathieu Desnoyers wrote:
 > 
-> The problem is already known and a patch is posted in last year.
-> http://marc.info/?l=linux-kernel&m=126206539702176&w=2
-> 
-> 
-> J. R. Okajima
+> Here is the detailed execution scenario showing the race.
 
-Thanks for the pointer.  Al, can you please push this patch forward?
+No. You've added random smp_mb() calls, but you don't actually show what 
+the f*ck they are protecting against.
 
-Thanks!
+For example
 
-Mimi
+> First sys_membarrier smp_mb():
+
+I'm not AT ALL interested in the sys_membarrier() parts. You can hav ea 
+million memory barriers there, and I won't care. I'm interested in what 
+you think the memory barriers elsewhere protect against. It's a barrier 
+between _which_ two operations? 
+
+You can't say it's a barrier "around" the
+
+	cpumask_clear(mm_cpumask, cpu);
+
+because a barrier is between two things. So if you want to add two 
+barriers around that mm_cpumask acces, you need to describe the _three_ 
+events you're barriers between in that call-path (with mm_cpumask being 
+just one of them)
+
+And then, once you've described _those_ three events, you describe what 
+the sys_membarrier interaction is, and how mm_cpumask is involved there.
+
+I'm not interested in the user-space code. Don't even quote it. It's 
+irrelevant apart from the actual semantics you want to guarantee for the 
+new membarrier() system call. So don't quote the code, just explain what 
+the actual barriers are.
+
+			Linus
