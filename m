@@ -1,54 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752518Ab0BAUqb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 15:46:31 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39635 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751484Ab0BAUqa convert rfc822-to-8bit (ORCPT
+	id S1753063Ab0BAUtQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 15:49:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37776 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752711Ab0BAUtO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 15:46:30 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/reZ5C4APrXcG8H2fiZltl7QSLlT23x2YjGWuvEV
-	Kd/IEtQEYPfjP6
-Date: Mon, 1 Feb 2010 21:46:19 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: =?UTF-8?B?QmFydMWCb21pZWogWmltb8WE?= <uzi18@o2.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [regression 2.6.33 rc3-rc5] sata_nv and no /dev files
-In-Reply-To: <ac3eb2511001311545j4abe0da3x58db0152caca845e@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.1002012143330.4617@axis700.grange>
-References: <1f9bac08.1a5266d6.4b66012a.5a11a@o2.pl>
- <ac3eb2511001311545j4abe0da3x58db0152caca845e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.56999999999999995
+	Mon, 1 Feb 2010 15:49:14 -0500
+Date: Mon, 1 Feb 2010 12:48:25 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       <linux-fsdevel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 2/5] bitops: compile time optimization for
+ hweight_long(CONSTANT)
+Message-Id: <20100201124825.cc024f2a.akpm@linux-foundation.org>
+In-Reply-To: <20100130094957.692671259@intel.com>
+References: <20100130094515.475881280@intel.com>
+	<20100130094957.692671259@intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Feb 2010, Kay Sievers wrote:
+On Sat, 30 Jan 2010 17:45:17 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-> On Sun, Jan 31, 2010 at 23:16, Bartłomiej Zimoń <uzi18@o2.pl> wrote:
-> > cat /proc/partitions shows partitions but fstab cant mount because no /dev/sdxx files.
-> > Have chacked on rc4 and rc5 and dont rememmber if rc3 is affected, but it could.
-> > rc1 is abs ok.
+> This allows use of hweight_long() in BUILD_BUG_ON().
+> Suggested by Jamie.
 > 
-> What does:
->   grep . /sys/class/block/*/dev
-> print?
+> CC: Jamie Lokier <jamie@shareable.org>
+> CC: Roland Dreier <rdreier@cisco.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  include/linux/bitops.h |   12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> --- linux-mm.orig/include/linux/bitops.h	2009-07-20 20:10:19.000000000 +0800
+> +++ linux-mm/include/linux/bitops.h	2010-01-30 17:41:15.000000000 +0800
+> @@ -40,10 +40,14 @@ static __inline__ int get_count_order(un
+>  	return order;
+>  }
+>  
+> -static inline unsigned long hweight_long(unsigned long w)
+> -{
+> -	return sizeof(w) == 4 ? hweight32(w) : hweight64(w);
+> -}
+> +#define hweight_long(x)				\
+> +(						\
+> +	__builtin_constant_p(x) ?		\
+> +		__builtin_popcountl(x) :	\
+> +		(sizeof(x) <= 4 ?		\
+> +			 hweight32(x) :		\
+> +			 hweight64(x))		\
+> +)
+>  
+>  /**
+>   * rol32 - rotate a 32-bit value left
 
-This problem - udev not creating sd* nodes - appears for me with arbitrary 
-SCSI / SATA drivers if CONFIG_SYSFS_DEPRECATED_V2 is set, but that's been 
-the case under 2.6.32 too, not sure since which kernel version exactly. 
-The OP is claiming, that rc1 was fine, is he sure his .config was the same 
-in both cases?
+Peter's been mucking with a compile-time HWEIGHT().  An outdated
+version of that is presently in linux-next.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+(I wonder if it could have used __builtin_popcount)
+
+(I wonder which gcc versions support __builtin_popcount)
+
+Anyway, I suspect you should be using that rather than tweaking
+hweight_long().
