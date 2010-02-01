@@ -1,107 +1,167 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755174Ab0BACQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 21:16:27 -0500
-Received: from gate.crashing.org ([63.228.1.57]:57765 "EHLO gate.crashing.org"
+	id S1755214Ab0BACRU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 21:17:20 -0500
+Received: from mga02.intel.com ([134.134.136.20]:4491 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751039Ab0BACQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 21:16:26 -0500
-Subject: Re: [PATCH 01/10] arch/powerpc: Fix continuation line formats
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <d8e2cb6523906c5e77bb13ea9ffc077a9310dc9e.1264967498.git.joe@perches.com>
-References: <cover.1264967493.git.joe@perches.com>
-	 <d8e2cb6523906c5e77bb13ea9ffc077a9310dc9e.1264967498.git.joe@perches.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 13:16:14 +1100
-Message-ID: <1264990574.8287.15.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1753122Ab0BACRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 21:17:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,380,1262592000"; 
+   d="scan'208";a="591994793"
+Date: Mon, 1 Feb 2010 10:17:03 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Chris Frost <frost@cs.ucla.edu>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steve Dickson <steved@redhat.com>, David Howells <dhowells@redhat.com>,
+       Xu Chenfeng <xcf@ustc.edu.cn>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Steve VanDeBogart <vandebo-lkml@nerdbox.net>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] mm/readahead.c: update the LRU positions of in-core
+	pages, too
+Message-ID: <20100201021703.GA11260@localhost>
+References: <20100120215536.GN27212@frostnet.net> <20100121054734.GC24236@localhost> <20100123040348.GC30844@frostnet.net> <20100123102222.GA6943@localhost> <20100125094228.f7ca1430.kamezawa.hiroyu@jp.fujitsu.com> <20100125024544.GA16462@localhost> <20100125223635.GC2822@frostnet.net> <20100126133217.GB25407@localhost> <20100131143142.GA11186@localhost> <20100201020639.GA27212@frostnet.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Content-Disposition: inline
+In-Reply-To: <20100201020639.GA27212@frostnet.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-31 at 12:02 -0800, Joe Perches wrote:
-> String constants that are continued on subsequent lines with \
-> are not good.
+On Sun, Jan 31, 2010 at 07:06:39PM -0700, Chris Frost wrote:
+> On Sun, Jan 31, 2010 at 10:31:42PM +0800, Wu Fengguang wrote:
+> > On Tue, Jan 26, 2010 at 09:32:17PM +0800, Wu Fengguang wrote:
+> > > On Mon, Jan 25, 2010 at 03:36:35PM -0700, Chris Frost wrote:
+> > > > I changed Wu's patch to add a PageLRU() guard that I believe is required
+> > > > and optimized zone lock acquisition to only unlock and lock at zone changes.
+> > > > This optimization seems to provide a 10-20% system time improvement for
+> > > > some of my GIMP benchmarks and no improvement for other benchmarks.
+> > 
+> > I feel very uncomfortable about this put_page() inside zone->lru_lock. 
+> > (might deadlock: put_page() conditionally takes zone->lru_lock again)
+> > 
+> > If you really want the optimization, can we do it like this?
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> Sorry that I was slow to respond. (I was out of town.)
+> 
+> Thanks for catching __page_cache_release() locking the zone.
+> I think staying simple for now sounds good. The below locks
+> and unlocks the zone for each page. Look good?
 
-You want me to take that in the powerpc tree ?
+OK :)
 
-A minor glitch below tho...
+Thanks,
+Fengguang
 
 > ---
->  arch/powerpc/kernel/nvram_64.c               |    6 +++---
->  arch/powerpc/platforms/pseries/hotplug-cpu.c |    8 ++++----
->  arch/powerpc/platforms/pseries/smp.c         |    4 ++--
->  3 files changed, 9 insertions(+), 9 deletions(-)
+> readahead: retain inactive lru pages to be accessed soon
+> From: Chris Frost <frost@cs.ucla.edu>
 > 
-> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-> index ad461e7..9cf197f 100644
-> --- a/arch/powerpc/kernel/nvram_64.c
-> +++ b/arch/powerpc/kernel/nvram_64.c
-> @@ -338,8 +338,8 @@ static int __init nvram_create_os_partition(void)
+> Ensure that cached pages in the inactive list are not prematurely evicted;
+> move such pages to lru head when they are covered by
+> - in-kernel heuristic readahead
+> - an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
+> 
+> Before this patch, pages already in core may be evicted before the
+> pages covered by the same prefetch scan but that were not yet in core.
+> Many small read requests may be forced on the disk because of this
+> behavior.
+> 
+> In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
+> has no effect on the page's location in the LRU list, even if it is the
+> next victim on the inactive list.
+> 
+> This change helps address the performance problems we encountered
+> while modifying SQLite and the GIMP to use large file prefetching.
+> Overall these prefetching techniques improved the runtime of large
+> benchmarks by 10-17x for these applications. More in the publication
+> _Reducing Seek Overhead with Application-Directed Prefetching_ in
+> USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
+> 
+> Signed-off-by: Chris Frost <frost@cs.ucla.edu>
+> Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  readahead.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 44 insertions(+)
+> 
+> diff --git a/mm/readahead.c b/mm/readahead.c
+> index aa1aa23..c615f96 100644
+> --- a/mm/readahead.c
+> +++ b/mm/readahead.c
+> @@ -9,7 +9,9 @@
 >  
->  	rc = nvram_write_header(new_part);
->  	if (rc <= 0) {
-> -		printk(KERN_ERR "nvram_create_os_partition: nvram_write_header \
-> -				failed (%d)\n", rc);
-> +		printk(KERN_ERR "nvram_create_os_partition: nvram_write_header "
-> +				"failed (%d)\n", rc);
->  		return rc;
->  	}
->  
-> @@ -349,7 +349,7 @@ static int __init nvram_create_os_partition(void)
->  	rc = ppc_md.nvram_write((char *)&seq_init, sizeof(seq_init), &tmp_index);
->  	if (rc <= 0) {
->  		printk(KERN_ERR "nvram_create_os_partition: nvram_write "
-> -				"failed (%d)\n", rc);
-> +		       "failed (%d)\n", rc);
->  		return rc;
->  	}
-
-The above is objectionable :-)
-
->  	
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 6ea4698..a70de10 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -397,12 +397,12 @@ static int parse_cede_parameters(void)
->  				CEDE_LATENCY_PARAM_MAX_LENGTH);
->  
->  	if (call_status != 0)
-> -		printk(KERN_INFO "CEDE_LATENCY: \
-> -			%s %s Error calling get-system-parameter(0x%x)\n",
-> +		printk(KERN_INFO "CEDE_LATENCY: "
-> +			"%s %s Error calling get-system-parameter(0x%x)\n",
->  			__FILE__, __func__, call_status);
->  	else
-> -		printk(KERN_INFO "CEDE_LATENCY: \
-> -			get-system-parameter successful.\n");
-> +		printk(KERN_INFO "CEDE_LATENCY: "
-> +			"get-system-parameter successful.\n");
->  
->  	return call_status;
->  }
-> diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-> index b488663..4e7f89a 100644
-> --- a/arch/powerpc/platforms/pseries/smp.c
-> +++ b/arch/powerpc/platforms/pseries/smp.c
-> @@ -144,8 +144,8 @@ static void __devinit smp_pSeries_kick_cpu(int nr)
->  		hcpuid = get_hard_smp_processor_id(nr);
->  		rc = plpar_hcall_norets(H_PROD, hcpuid);
->  		if (rc != H_SUCCESS)
-> -			printk(KERN_ERR "Error: Prod to wake up processor %d\
-> -						Ret= %ld\n", nr, rc);
-> +			printk(KERN_ERR "Error: Prod to wake up processor %d "
-> +						"Ret= %ld\n", nr, rc);
->  	}
+>  #include <linux/kernel.h>
+>  #include <linux/fs.h>
+> +#include <linux/memcontrol.h>
+>  #include <linux/mm.h>
+> +#include <linux/mm_inline.h>
+>  #include <linux/module.h>
+>  #include <linux/blkdev.h>
+>  #include <linux/backing-dev.h>
+> @@ -133,6 +135,40 @@ out:
 >  }
 >  
-
-
+>  /*
+> + * The file range is expected to be accessed in near future.  Move pages
+> + * (possibly in inactive lru tail) to lru head, so that they are retained
+> + * in memory for some reasonable time.
+> + */
+> +static void retain_inactive_pages(struct address_space *mapping,
+> +				  pgoff_t index, int len)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < len; i++) {
+> +		struct page *page;
+> +		struct zone *zone;
+> +
+> +		page = find_get_page(mapping, index + i);
+> +		if (!page)
+> +			continue;
+> +		zone = page_zone(page);
+> +		spin_lock_irq(&zone->lru_lock);
+> +
+> +		if (PageLRU(page) &&
+> +			!PageActive(page) &&
+> +			!PageUnevictable(page)) {
+> +			int lru = page_lru_base_type(page);
+> +
+> +			del_page_from_lru_list(zone, page, lru);
+> +			add_page_to_lru_list(zone, page, lru);
+> +		}
+> +
+> +		spin_unlock_irq(&zone->lru_lock);
+> +		put_page(page);
+> +	}
+> +}
+> +
+> +/*
+>   * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
+>   * the pages first, then submits them all for I/O. This avoids the very bad
+>   * behaviour which would occur if page allocations are causing VM writeback.
+> @@ -184,6 +220,14 @@ __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
+>  	}
+>  
+>  	/*
+> +	 * Normally readahead will auto stop on cached segments, so we won't
+> +	 * hit many cached pages. If it does happen, bring the inactive pages
+> +	 * adjecent to the newly prefetched ones(if any).
+> +	 */
+> +	if (ret < nr_to_read)
+> +		retain_inactive_pages(mapping, offset, page_idx);
+> +
+> +	/*
+>  	 * Now start the IO.  We ignore I/O errors - if the page is not
+>  	 * uptodate then the caller will launch readpage again, and
+>  	 * will then handle the error.
+> 
+> -- 
+> Chris Frost
+> http://www.frostnet.net/chris/
