@@ -1,134 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157Ab0BAFhx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 00:37:53 -0500
-Received: from mail.windriver.com ([147.11.1.11]:40410 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707Ab0BAFhv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 00:37:51 -0500
-Message-ID: <4B666982.1020007@windriver.com>
-Date: Mon, 01 Feb 2010 13:41:22 +0800
-From: Hui Zhu <hui.zhu@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1754201Ab0BAFmL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 00:42:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52919 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750940Ab0BAFmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 00:42:09 -0500
+Message-ID: <4B666960.8000304@kernel.org>
+Date: Sun, 31 Jan 2010 21:40:48 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Michal Marek <mmarek@suse.cz>
-CC: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
-       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org,
-       teawater@gmail.com
-Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation
-  environments
-References: <4B5E5D4F.50803@windriver.com>	 <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com>	 <4B5E9BE9.2030702@windriver.com> <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com> <4B5EB223.60307@windriver.com> <4B6344CA.10504@suse.cz>
-In-Reply-To: <4B6344CA.10504@suse.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Jeff Garrett <jeff@jgarrett.org>,
+       Linux PCI <linux-pci@vger.kernel.org>
+Subject: Re: [Bug #15124] PCI host bridge windows ignored (works with pci=use_crs)
+References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera> <d3IDKWHT5gE.A.ydC.r7hZLB@chimera>
+In-Reply-To: <d3IDKWHT5gE.A.ydC.r7hZLB@chimera>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Feb 2010 05:29:57.0800 (UTC) FILETIME=[97A4CA80:01CAA2FF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Marek:
-> On 26.1.2010 10:13, Hui Zhu wrote:
->> +# Get options
->> +Getopt::Long::GetOptions(
->> +    'cross-compile|c=s'    => \$cross_compile,
->> +    'module|m=s'    => \$modulefile,
->> +    'help|h'        => \&usage,
->> +);
+On 01/31/2010 04:22 PM, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> You should check the return code of GetOptions() and abort on invalid
-> options.
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let me know
+> (either way).
 > 
 > 
->> +my $vmlinux_name = $ARGV[$#ARGV];
-> 
-> GetOptions() deletes the recognized options from @ARGV, so you can say
-> $ARGV[0] as before (and maybe check if there aren't any superfluous
-> arguments).
-> 
-> 
->> # if it's a module, we need to find the .ko file and calculate a load
->> offset
->> if ($module ne "") {
->> -    my $modulefile = `modinfo $module | grep '^filename:' | awk '{
->> print \$2 }'`;
->> -    chomp($modulefile);
->> +    if ($modulefile eq "") {
->> +        my $modulefile = `modinfo $module | grep '^filename:' | awk '{
->> print \$2 }'`;
-> 
-> I know you didn't add this, but while at it, could you replace the
-> pipeline with just `modinfo -F filename $module`?
-> 
-> 
->> +sub usage {
->> +    print <<EOT;
->> +Usage:
->> +  dmesg | perl $0 [OPTION] [VMLINUX]
->> +
->> +OPTION:
->> +  -c, --cross-compile CROSS_COMPILE    Specify the prefix used for
->> toolchain.
->> +  -m, --module MODULE_DIRNAME        Specify the module directory name.
-> 
-> Here and in the changelog you talk about "module directory name", but in
-> fact this is the module filename.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15124
+> Subject		: PCI host bridge windows ignored (works with pci=use_crs)
+> Submitter	: Jeff Garrett <jeff@jgarrett.org>
+> Date		: 2010-01-13 5:37 (19 days old)
+> References	: http://marc.info/?l=linux-kernel&m=126336296600307&w=4
+> Handled-By	: Yinghai Lu <yinghai@kernel.org>
+> 		  Bjorn Helgaas <bjorn.helgaas@hp.com>
 > 
 
-Thanks Michael.
+should be closed.
 
-I make a patch according to your mail.
-
-Best regards,
-Hui
-
-1. Fix a little format issue.
-2. Check the return of "Getopt::Long::GetOptions".  Output usage and exit if it get error.
-3. Change $ARGV[$#ARGV] to $ARGV[0].
-4. Change the code which get $modulefile from modinfo.  Replace the pipeline with `modinfo -F filename $module`.
-4. Change usage from "Specify the module directory name" to "Specify the module filename".
-
-Signed-off-by: Hui Zhu <teawater@gmail.com>
----
- scripts/markup_oops.pl |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
---- a/scripts/markup_oops.pl
-+++ b/scripts/markup_oops.pl
-@@ -23,10 +23,10 @@ my $modulefile = "";
- # Get options
- Getopt::Long::GetOptions(
- 	'cross-compile|c=s'	=> \$cross_compile,
--	'module|m=s'	=> \$modulefile,
-+	'module|m=s'		=> \$modulefile,
- 	'help|h'		=> \&usage,
--);
--my $vmlinux_name = $ARGV[$#ARGV];
-+) || usage ();
-+my $vmlinux_name = $ARGV[0];
- if (!defined($vmlinux_name)) {
- 	my $kerver = `uname -r`;
- 	chomp($kerver);
-@@ -193,7 +193,7 @@ if ($target eq "0") {
- # if it's a module, we need to find the .ko file and calculate a load offset
- if ($module ne "") {
- 	if ($modulefile eq "") {
--		my $modulefile = `modinfo $module | grep '^filename:' | awk '{ print \$2 }'`;
-+		$modulefile = `modinfo -F filename $module`;
- 		chomp($modulefile);
- 	}
- 	$filename = $modulefile;
-@@ -361,7 +361,7 @@ Usage:
- 
- OPTION:
-   -c, --cross-compile CROSS_COMPILE	Specify the prefix used for toolchain.
--  -m, --module MODULE_DIRNAME		Specify the module directory name.
-+  -m, --module MODULE_DIRNAME		Specify the module filename.
-   -h, --help				Help.
- EOT
- 	exit;
-
-
+YH
