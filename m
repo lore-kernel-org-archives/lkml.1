@@ -1,66 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182Ab0BAXm7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 18:42:59 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37068 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790Ab0BAXm5 (ORCPT
+	id S1754486Ab0BAXu1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 18:50:27 -0500
+Received: from mail-gx0-f224.google.com ([209.85.217.224]:62547 "EHLO
+	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753480Ab0BAXuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 18:42:57 -0500
-Date: Mon, 1 Feb 2010 23:42:19 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Christoph Hellwig <hch@lst.de>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux@arm.linux.org.uk, starvik@axis.com,
-       jesper.nilsson@axis.com, dhowells@redhat.com,
-       ysato@users.sourceforge.jp, takata@linux-m32r.org, geert@linux-m68k.org,
-       zippel@linux-m68k.org, gerg@uclinux.org, ralf@linux-mips.org,
-       benh@kernel.crashing.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, lethal@linux-sh.org, davem@davemloft.net,
-       jdike@addtoit.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 3/6] generic sys_ipc wrapper
-Message-ID: <20100201234219.GG21693@flint.arm.linux.org.uk>
-Mail-Followup-To: Christoph Hellwig <hch@lst.de>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux@arm.linux.org.uk, starvik@axis.com, jesper.nilsson@axis.com,
-	dhowells@redhat.com, ysato@users.sourceforge.jp,
-	takata@linux-m32r.org, geert@linux-m68k.org, zippel@linux-m68k.org,
-	gerg@uclinux.org, ralf@linux-mips.org, benh@kernel.crashing.org,
-	schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-	lethal@linux-sh.org, davem@davemloft.net, jdike@addtoit.com,
-	tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-	viro@zeniv.linux.org.uk
-References: <20100201185544.GC11045@lst.de>
+	Mon, 1 Feb 2010 18:50:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=F+xhPqzSUbhZOTmaqW5zQ5w8/1paUBSN/XAx/I2DR0uFRdkdSL7Awcb6y0CDKUp1wt
+         Zs90ffXKFpm1rvBVxjrxAhXQC68Po9sEAkFkl/1IoD+AesCdED50U0T0YD7y7CnJqPw6
+         RhPDP9BlGU88WcnEre7K2pxhBofrpO1w9xrBA=
+Message-ID: <4B676917.2080506@gmail.com>
+Date: Mon, 01 Feb 2010 15:51:51 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100201185544.GC11045@lst.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Dan Carpenter <error27@gmail.com>, linux1394-devel@lists.sourceforge.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug #14487] PANIC:
+ early exception 08 rip 246:10 error	ffffffff810251b5 cr2 0)
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de>
+In-Reply-To: <4B675534.5070107@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 07:55:44PM +0100, Christoph Hellwig wrote:
-> Add a generic implementation of the ipc demultiplexer syscall.  Except for
-> s390 and sparc64 all implementations of the sys_ipc are nearly identical.
-> 
-> There are slight differences in the types of the parameters, where mips
-> and powerpc as the only 64-bit architectures with sys_ipc use unsigned long
-> for the "third" argument as it gets casted to a pointer later, while it
-> traditionally is an "int" like most other paramters.  frv goes even further
-> and uses unsigned long for all parameters execept for "ptr" which is a pointer
-> type everywhere.  The change from int to unsigned long for "third" and back
-> to "int" for the others on frv should be fine due to the in-register calling
-> conventions for syscalls (we already had a similar issue with the generic
-> sys_ptrace), but I'd prefer to have the arch maintainers looks over this
-> in details.
+On 02/01/10 14:27, Stefan Richter wrote:
+> Justin P. Mattock wrote:
+>> (as for yesterdays 0xffffffffffffffff(just experimenting)Google gives me
+>> no info on the differences between 8f's to 16f's, I was under the
+>> impression that it's x86_32 and x86_64 for the pci address).
+>
+> As Dan noted,
+> 	(class == 0xffffffff || 0xffffffffffffffff)
+> is always true because it is logically the same as
+> 	(class == whatever) || true
+>
+> If you really meant
+> 	class == 0xffffffff || class == 0xffffffffffffffff
 
->From an ARM perspective, it looks like nothing actually changes, so...
+yeah that's what I was going for(just to see).
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> then the latter half will never become true because class is declared as
+> u32 and got its value from read_pci_config() which also returns u32.
+>
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+That's what I was afraid of. I'm guessing there probably would be a lot 
+of things to change for(if this correct) u64.
+
+> BTW, whether a PCI device is capable of accessing 32 bit bus addresses
+> or also 64 bit bus addresses depends on the device, not on the CPU.
+> Originally, PCI only had a 32 bit addressing model.  OHCI 1394 1.0/1.1
+> implementations only deal with 32 bit local bus addresses.
+>
+I haven't even looked at what the device was capable of doing.
+
+
+> The 'class' however is not an address but merely a register value with
+> 24 bits width.  (Defined in the PCI Local Bus spec which is not freely
+> available, cited in OHCI 1394 annex A.3.)  This register is read as a 32
+> bits wide register from which the excess byte is later discarded.  If
+> all bits read are 1, the bus:slot:function is not actually populated.
+
+So(correct me if I'm wrong), I'm generating a 64 bit register
+and the kernel is looking for a 32 bit register causing the crash.
+
+
+Justin P. Mattock
+
+
