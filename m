@@ -1,98 +1,135 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115Ab0BAV0H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 16:26:07 -0500
-Received: from mga14.intel.com ([143.182.124.37]:46088 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754219Ab0BAV0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 16:26:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="239209657"
-Subject: Re: [patch 2/2] x86, irq: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR
- instead of 0x1f
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>,
-       "yinghai@kernel.org" <yinghai@kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.1001310705280.31764@eddie.linux-mips.org>
-References: <20100114002118.436172066@sbs-t61.sc.intel.com>
-	 <20100114002118.521826763@sbs-t61.sc.intel.com>
-	 <alpine.LFD.2.00.1001240545180.13034@eddie.linux-mips.org>
-	 <4B5C00EB.3000208@zytor.com>
-	 <alpine.LFD.2.00.1001310705280.31764@eddie.linux-mips.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Mon, 01 Feb 2010 13:24:57 -0800
-Message-Id: <1265059497.2802.178.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S1755187Ab0BAV1w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 16:27:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:33516 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754538Ab0BAV1u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 16:27:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=V93hJUADcrVLTKAycW7u9CdRFhYO/4/bOfpt2T7x4oBKVmiwQvJlI3fvxFe5e6p7qr
+         P92tfs6I3LtZED0xrJL08EVujL3W0dT2/U4CNX1VEWR6avi/oLLOsdPfWX1KEGRChnzU
+         K++tj+js+Prar+Eh8U7XofChbubRrH7eQXzzo=
+Date: Mon, 1 Feb 2010 22:27:41 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Michael Breuer <mbreuer@majjas.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: [PATCH v3] sky2:  receive dma mapping error handling
+Message-ID: <20100201212740.GA3289@del.dom.local>
+References: <20100128225621.GD3109@del.dom.local>
+ <4B6216B9.1010802@majjas.com>
+ <20100128153643.0fca3c51@nehalam>
+ <4B645EF4.4050701@majjas.com>
+ <20100131003449.GA11935@del.dom.local>
+ <4B650D53.2010607@majjas.com>
+ <4B65D0F9.2020602@majjas.com>
+ <4B65FD12.7090101@majjas.com>
+ <20100131221835.GA3317@del.dom.local>
+ <20100201102018.7b597992@nehalam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100201102018.7b597992@nehalam>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-01-30 at 23:19 -0800, Maciej W. Rozycki wrote:
-> On Sun, 24 Jan 2010, H. Peter Anvin wrote:
-> 
-> > > > So change the IRQ_MOVE_CLEANUP_VECTOR to 0x20 and  allow 0x21-0x2f to be
-> > > > used
-> > > > for device interrupts. 0x30-0x3f will be used for ISA interrupts (these
-> > > > also can be migrated in the context of IOAPIC and hence need to be at a
-> > > > higher
-> > > > priority level than IRQ_MOVE_CLEANUP_VECTOR).
-> > > 
-> > >   I have troubles understanding what exactly this change is needed for
-> > > (i.e. what's the difference between using vectors 0x20-0x2f and 0x30-0x3f
-> > > as ExtINT interrupts, what's the gain from relocating them? -- they are
-> > > transparent to the APIC, so the exact priority level used does not matter
-> > > at all), but since I've been cc-ed, I have one question -- have you
-> > > verified that with the new arrangement the mixed interrupt mode (where
-> > > some interrupts come via the APIC and some via the 8259A PICs) still
-> > > works?
-> > > 
-> > 
-> > The difference is relevant when they are *not* invoked as ExtInt interrupts,
-> > but when used as IOAPIC interrupts it matters.
-> 
->  Hmm, I/O APIC interrupts coming from ISA devices used not to differ from 
-> ones from PCI devices and their vectors were evenly distributed across the 
-> whole device range (one reason for this was the (in)famous Pentium APIC 
-> limitation WRT multiple outstanding requests at the same priority level).  
-> Now what you've written suggests this has changed and now ISA devices only 
-> get vectors within a single priority level -- am I getting this right?
+On Mon, Feb 01, 2010 at 10:20:18AM -0800, Stephen Hemminger wrote:
+> This fixes the fact that re->flags is always zero without causing
+> other confusion.
 
-Even before the current changes (2.6.32 for example), for irq0 to irq15,
-irrespective of whether those irq's were handled by PIC or an IO-APIC,
-we were using 16 vectors with in a single priority level for these
-irq's.
+Here it is, with only sky2->tx_cons update in tx_init().
 
-Looking at the changelog, it looks this issue happened when we merged
-io_apic.c for 32-bit and 64-bit. 2.6.28 and beyond uses the same
-priority level for irq0..irq15
+Thanks,
+Jarek P.
+---------------> (take 3)
+Michael Breuer reported that dma-debug entries added by sky2 driver
+weren't unmapped, and found out "re->flags is always NULL upon entry
+to sky2_tx_unmap". It is overwritten by get_tx_le() after changes
+introduced by commit 6b84dacadbdc3dab6a5b313d20d5a93b0d998641.
 
-32bit kernels 2.6.27 and before has the behavior of evenly distributed
-vectors for all the io-apic irq's (legacy or non-legacy) but starting
-from 2.6.28, only for non-legacy irq's (16 and above) we try to spread
-the vectors uniformly across priority levels.
+This patch moves re->flags and re->skb initializations from
+get_tx_le() to sky2_tx_unmap() and sky2_tx_complete() respectively.
+Additionally sky2->tx_cons is updated to sky2->tx_prod in tx_init()
+to remove one needless tx completion.
 
->  If so, then to push my original question further: how are these vectors 
-> allocated -- are they identity mapped with the corresponding i8259A 
-> vectors?  And how does it play with the Pentium APIC limitation (that may 
-> actually apply to all the local APIC cores that use serial bus delivery; 
-> I'm not sure) I mentioned above?
+With debugging by: Michael Breuer <mbreuer@majjas.com>
+Improved by: Stephen Hemminger <shemminger@vyatta.com>
 
-As we are using the code from 2.6.28 and no one noticed/complained about
-this issue for more than 1.5 years, probably the pentium APIC issue is
-not wide-spread.
+Reported-by: Michael Breuer <mbreuer@majjas.com>
+Tested-by: Michael Breuer <mbreuer@majjas.com>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>
+---
 
-If we care about this, I can post a fix (which is needed irrespective of
-the current changes). 
+ drivers/net/sky2.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
 
-thanks,
-suresh
-
+diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
+index d760650..08cd65b 100644
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -1025,11 +1025,8 @@ static void sky2_prefetch_init(struct sky2_hw *hw, u32 qaddr,
+ static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2, u16 *slot)
+ {
+ 	struct sky2_tx_le *le = sky2->tx_le + *slot;
+-	struct tx_ring_info *re = sky2->tx_ring + *slot;
+ 
+ 	*slot = RING_NEXT(*slot, sky2->tx_ring_size);
+-	re->flags = 0;
+-	re->skb = NULL;
+ 	le->ctrl = 0;
+ 	return le;
+ }
+@@ -1038,13 +1035,14 @@ static void tx_init(struct sky2_port *sky2)
+ {
+ 	struct sky2_tx_le *le;
+ 
+-	sky2->tx_prod = sky2->tx_cons = 0;
++	sky2->tx_prod = 0;
+ 	sky2->tx_tcpsum = 0;
+ 	sky2->tx_last_mss = 0;
+ 
+ 	le = get_tx_le(sky2, &sky2->tx_prod);
+ 	le->addr = 0;
+ 	le->opcode = OP_ADDR64 | HW_OWNER;
++	sky2->tx_cons = sky2->tx_prod;
+ 	sky2->tx_last_upper = 0;
+ }
+ 
+@@ -1622,8 +1620,7 @@ static unsigned tx_le_req(const struct sk_buff *skb)
+ 	return count;
+ }
+ 
+-static void sky2_tx_unmap(struct pci_dev *pdev,
+-			  const struct tx_ring_info *re)
++static void sky2_tx_unmap(struct pci_dev *pdev, struct tx_ring_info *re)
+ {
+ 	if (re->flags & TX_MAP_SINGLE)
+ 		pci_unmap_single(pdev, pci_unmap_addr(re, mapaddr),
+@@ -1633,6 +1630,7 @@ static void sky2_tx_unmap(struct pci_dev *pdev,
+ 		pci_unmap_page(pdev, pci_unmap_addr(re, mapaddr),
+ 			       pci_unmap_len(re, maplen),
+ 			       PCI_DMA_TODEVICE);
++	re->flags = 0;
+ }
+ 
+ /*
+@@ -1839,6 +1837,7 @@ static void sky2_tx_complete(struct sky2_port *sky2, u16 done)
+ 			dev->stats.tx_packets++;
+ 			dev->stats.tx_bytes += skb->len;
+ 
++			re->skb = NULL;
+ 			dev_kfree_skb_any(skb);
+ 
+ 			sky2->tx_next = RING_NEXT(idx, sky2->tx_ring_size);
