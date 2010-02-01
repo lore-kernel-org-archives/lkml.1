@@ -1,68 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754051Ab0BAMO7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 07:14:59 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50787 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753810Ab0BAMO6 (ORCPT
+	id S1754169Ab0BAMUi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 07:20:38 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:35444 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753991Ab0BAMUh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 07:14:58 -0500
-Date: Mon, 1 Feb 2010 13:14:56 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, arminlitzel@web.de,
-       Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz, zaurus-devel@www.linuxtogo.org
-Subject: About kernel decompressors (fwd)
-Message-ID: <20100201121454.GA20387@atrey.karlin.mff.cuni.cz>
+	Mon, 1 Feb 2010 07:20:37 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:cc:
+	content-type:x-system-of-record;
+	b=qpd+kcjUqMnSH6BX42Nc1KkFK4PUkgVLunaHw0tQ3bxevCu/xzRoUg5nbPa9xRTuC
+	PJlWnR03Huyv5cWkhCAPQ==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Mon, 1 Feb 2010 13:20:34 +0100
+Message-ID: <bd4cb8901002010420o2ea7dbafnba84f78b6a2f38f5@mail.gmail.com>
+Subject: [BUG] perf_events: ctx_flexible_sched_in()
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: eranian@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       paulus@samba.org, davem@davemloft.net, fweisbec@gmail.com,
+       perfmon2-devel@lists.sf.net
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi,
 
-I guess Andrea wanted me  to forward this....
+I believe there is something wrong with ctx_flexible_sched_in().
 
------ Forwarded message from Andrea Adami <andrea.adami@gmail.com> -----
-Date: Mon, 1 Feb 2010 13:08:44 +0100
-From: Andrea Adami <andrea.adami@gmail.com>
-To: pavel@ucw.cz
-Subject: About kernel decompressors
+The function does not allow maximizing PMU usage because of
+the way can_add_hw is managed. Basically, as soon as a group
+fail to be scheduled in, then no other group can. I believe this
+is not optimum. You need to skip the group that fails and keep
+scanning the list. There may be other groups which can be
+scheduled.
 
-Pavel,
+Here is an example to illustrate the issue:
+$ task -ebaclears,div,instructions_retired,fp_assist  noploop 5
+noploop for 5 seconds
+                908 baclears (scaled from 74.97% of time)
+                   0 div (scaled from 50.01% of time)
+  11328128990 instructions_retired (scaled from 74.99% of time)
+                   0 fp_assist (scaled from 50.00% of time)
 
-I'd like to add a couple of observations in the "Uncompressing broken
-with commit e7db7b4270" thread.
-Unfortunately I wasn't subscribed and I can't properly reply to the thread...
+Here div, fp_assist can only go on counter 1. There is no explicit
+grouping. On Intel Core, you have 2 generic, 3 fixed counters.
+Instruction_retired can go on a fixed counter. Thus, I was
+expecting baclears and instructions_retired to always be scheduled.
+The other two would alternate at 50% each. While you get the latter
+behavior, you are not getting full utilization for the other two.
 
-This is for kernels 2.6.33-rc5 and -rc6 on Sharp corgi (Zaurus
-SL-C860, pxa255, 64M RAM)
+Once I modify ctx_flexible_sched_in():
+$ ./task -ebaclears,div,instructions_retired,fp_assist  noploop 5
+noploop for 5 seconds
+               658 baclears
+                   0 div (scaled from 50.01% of time)
+ 11726844342 instructions_retired
+                   0 fp_assist (scaled from 50.00% of time)
 
-1) after that commit neither gzip, nor lzo can decompress from NAND
-2) I tested the LZMA patch and this also won't help the boot from nand
-3) kernel size is uninfluent: I tested 930KiB-lzma kernels and 1240KiB
-gzip-kernels.
-4) I tried to set stack size to 8192, still no boot
+I get the right result. Thus, I think, we need to drop can_add_hw
+from ctx_flexible_sched_in().
 
-5) all the 3 above kernels boot just fine from kexec (I launch them
-with linux-kexecboot-2.6.26)
+Am I missing something in the role of can_add_hw?
 
->From nand, the boot stops immediately after
-**** JUMP to LINUX! ****
-
-
-Cheers
-
-Andrea
-
------ End forwarded message -----
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If not, then I I will provide a patch to get the optimum behavior.
