@@ -1,45 +1,134 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490Ab0BAATA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 19:19:00 -0500
-Received: from mail-pz0-f172.google.com ([209.85.222.172]:60611 "EHLO
-	mail-pz0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754218Ab0BAAS7 (ORCPT
+	id S1754553Ab0BAAT5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 19:19:57 -0500
+Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:49695 "EHLO
+	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754264Ab0BAATz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 19:18:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=rZk7NswgGCsp+CqGAas3CLCLs4XQjynBOxcH7K07hF3fsnkRLlPUcd5HLfwQc5dYJO
-         TnzPlkZ1EFvB7xyw7kLghfFwkeYde580yjFrlVkAwOhYFdcX/+sh6oqIiWU38/oV4P+S
-         wHjfIyLrcOD7qQe1tunxxGOu9E7Pv6zLtOdbY=
-MIME-Version: 1.0
-Date: Sun, 31 Jan 2010 16:18:58 -0800
-Message-ID: <506c8f0b1001311618i3b8f72c5w9321e3ef26413a20@mail.gmail.com>
-Subject: [PATCH] scripts: use %_tmppath in "make rpm-pkg"
-From: John Saalwaechter <saalwaechter@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 31 Jan 2010 19:19:55 -0500
+Date: Sun, 31 Jan 2010 19:19:46 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] sky2:  receive dma mapping error handling
+In-reply-to: <20100131221835.GA3317@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Message-id: <4B661E22.8090907@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100128223447.GC3109@del.dom.local> <4B621316.8070308@majjas.com>
+ <20100128225621.GD3109@del.dom.local> <4B6216B9.1010802@majjas.com>
+ <20100128153643.0fca3c51@nehalam> <4B645EF4.4050701@majjas.com>
+ <20100131003449.GA11935@del.dom.local> <4B650D53.2010607@majjas.com>
+ <4B65D0F9.2020602@majjas.com> <4B65FD12.7090101@majjas.com>
+ <20100131221835.GA3317@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
+ Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mkspec script hardcodes "/var/tmp" into the generated rpm spec file's
-BuildRoot. The user, however, may have a custom setting for %_tmppath,
-which should be used in BuildRoot.  This patch changes mkspec's
-BuildRoot output to appropriately use %_tmppath.
+On 1/31/2010 5:18 PM, Jarek Poplawski wrote:
+> On Sun, Jan 31, 2010 at 04:58:42PM -0500, Michael Breuer wrote:
+>    
+>> On 1/31/2010 1:50 PM, Michael Breuer wrote:
+>>      
+>>> On 1/30/2010 11:55 PM, Michael Breuer wrote:
+>>>        
+>>>> On 01/30/2010 07:34 PM, Jarek Poplawski wrote:
+>>>>          
+>>>>> Could you try the patch below to show maybe some other users of
+>>>>> dma-debug entries?
+>>>>>
+>>>>> Jarek P.
+>>>>> ---
+>>>>>
+>>>>>            
+>>>> With the default # entries&  dma_debug_driver=sky2:
+>>>>
+>>>> 6:00 is eth0&  4:00 is eth1.
+>>>>
+>>>> Jan 30 23:53:14 mail kernel: DMA-API: 0000:06:00.0: entries: 31961
+>>>> ...
+>>>>
+>>>>          
+>>> I put a printk as a third else case in sky2_tx_unmap. Looks like
+>>> the issue is that a large number (perhaps all) calls to
+>>> sky2_tx_unmap have re->flags set to neither TX_MAP_SINGLE or
+>>> TX_MAP_PAGE. Thus the elements are never being unmapped.
+>>>
+>>> I suspect that the system collapses when using DMAR sooner than if
+>>> not using DMAR. Probably some hardware limitation on the number of
+>>> mapped elements that is less than the software limitation. I don't
+>>> see at present how a ring element can ever get to this code
+>>> without re->flags being set to one or the other.
+>>>
+>>>
+>>>        
+>> Put some more debugging code in... re->flags is always NULL upon
+>> entry to sky2_tx_unmap.
+>>
+>>      
+> Yes, good point! Could you try if this patch can fix it. (not compiled)
+>
+> Thanks,
+> Jarek P.
+> ---
+>
+>   drivers/net/sky2.c |   10 +++++++---
+>   1 files changed, 7 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
+> index d760650..3437917 100644
+> --- a/drivers/net/sky2.c
+> +++ b/drivers/net/sky2.c
+> @@ -1025,9 +1025,10 @@ static void sky2_prefetch_init(struct sky2_hw *hw, u32 qaddr,
+>   static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2, u16 *slot)
+>   {
+>   	struct sky2_tx_le *le = sky2->tx_le + *slot;
+> -	struct tx_ring_info *re = sky2->tx_ring + *slot;
+> +	struct tx_ring_info *re;
+>
+>   	*slot = RING_NEXT(*slot, sky2->tx_ring_size);
+> +	re = sky2->tx_ring + *slot;
+>   	re->flags = 0;
+>   	re->skb = NULL;
+>   	le->ctrl = 0;
+> @@ -1036,13 +1037,16 @@ static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2, u16 *slot)
+>
+>   static void tx_init(struct sky2_port *sky2)
+>   {
+> -	struct sky2_tx_le *le;
+> +	struct sky2_tx_le *le = sky2->tx_le;
+> +	struct tx_ring_info *re = sky2->tx_ring;
+>
+>   	sky2->tx_prod = sky2->tx_cons = 0;
+>   	sky2->tx_tcpsum = 0;
+>   	sky2->tx_last_mss = 0;
+>
+> -	le = get_tx_le(sky2,&sky2->tx_prod);
+> +	re->flags = 0;
+> +	re->skb = NULL;
+> +	le->ctrl = 0;
+>   	le->addr = 0;
+>   	le->opcode = OP_ADDR64 | HW_OWNER;
+>   	sky2->tx_last_upper = 0;
+>    
+Ok- solves the dma-debug issue - i.e., elements are now being unmapped.
 
-Signed-off-by: John Saalwaechter <saalwaechter@gmail.com>
----
-diff -uprN a/scripts/package/mkspec b/scripts/package/mkspec
---- a/scripts/package/mkspec    2010-01-28 15:06:20.000000000 -0800
-+++ b/scripts/package/mkspec    2010-01-31 15:46:23.815300460 -0800
-@@ -39,7 +39,7 @@ if ! $PREBUILT; then
- echo "Source: kernel-$__KERNELRELEASE.tar.gz"
- fi
+Will leave up and hit with traffic unless a crash occurs. If I hit 
+something unrelated I'll backport to 2.6.32.7 and try that for a while. 
+I do think it's plausible that the dma errors after (during) load were 
+due to hardware limitations on the number of mapped entries (haven't 
+researched what that limit was). I would also assume that the sw map 
+would also have failed eventually.
 
--echo "BuildRoot: /var/tmp/%{name}-%{PACKAGE_VERSION}-root"
-+echo "BuildRoot: %{_tmppath}/%{name}-%{PACKAGE_VERSION}-root"
- echo "Provides: $PROVIDES"
- echo "%define __spec_install_post /usr/lib/rpm/brp-compress || :"
- echo "%define debug_package %{nil}"
+I'd suggest that regardless of whether this patch solves my crash that 
+it ought to be backported as it seems unlikely that any machine would be 
+able to survive for long without the tx entries being unmapped.
