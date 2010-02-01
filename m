@@ -1,73 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437Ab0BASVw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 13:21:52 -0500
-Received: from www17.your-server.de ([213.133.104.17]:54441 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755265Ab0BASVv (ORCPT
+	id S1755445Ab0BASXI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:23:08 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:37183 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755304Ab0BASXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 13:21:51 -0500
-Subject: [PATCH] i915: slow acpi_lid_open() causes flickering
-From: Thomas Meyer <thomas@m3y3r.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 19:20:53 +0100
-Message-ID: <1265048453.2619.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+	Mon, 1 Feb 2010 13:23:06 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Samuel Ortiz <samuel@sortiz.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [PATCH] irda: remove BKL from irnet open function
+Date: Mon,  1 Feb 2010 16:18:40 -0200
+Message-Id: <1265048321-8097-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-acpi_lid_open() could take up to 10ms on my computer.
-Some component is calling the drm GETCONNECTOR ioctl many times in a row.
-This results in flickering (for example, when starting a video).
-Fix it by assuming an always connected lid status.
+Commit cddf63d99d0d145f18b293c3d0de4af7dab2a922 has push down the BKL
+into irnet open function. However, there's nothing that needs locking in
+there.
 
-This fixes bug http://bugzilla.kernel.org/show_bug.cgi?id=14670
-
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 ---
- drivers/gpu/drm/i915/intel_lvds.c |   15 ++++++++++++++-
- 1 files changed, 14 insertions(+), 1 deletions(-)
+ net/irda/irnet/irnet_ppp.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
-index aa74e59..0f0779c 100644
---- a/drivers/gpu/drm/i915/intel_lvds.c
-+++ b/drivers/gpu/drm/i915/intel_lvds.c
-@@ -632,6 +632,18 @@ static const struct dmi_system_id bad_lid_status[] = {
- 	{ }
- };
+diff --git a/net/irda/irnet/irnet_ppp.c b/net/irda/irnet/irnet_ppp.c
+index 156020d..d6b502c 100644
+--- a/net/irda/irnet/irnet_ppp.c
++++ b/net/irda/irnet/irnet_ppp.c
+@@ -479,7 +479,6 @@ dev_irnet_open(struct inode *	inode,
+   ap = kzalloc(sizeof(*ap), GFP_KERNEL);
+   DABORT(ap == NULL, -ENOMEM, FS_ERROR, "Can't allocate struct irnet...\n");
  
-+/* Some lid devices take a long time to report the lid status, assume they're connected*/
-+static const struct dmi_system_id slow_lid_status[] = {
-+	{
-+		.ident = "Aspire 1810T",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 1810T"),
-+		},
-+	},
-+	{ }
-+};
-+
- /**
-  * Detect the LVDS connection.
-  *
-@@ -643,7 +655,8 @@ static enum drm_connector_status intel_lvds_detect(struct drm_connector *connect
- {
- 	enum drm_connector_status status = connector_status_connected;
+-  lock_kernel();
+   /* initialize the irnet structure */
+   ap->file = file;
  
--	if (!acpi_lid_open() && !dmi_check_system(bad_lid_status))
-+	if (!dmi_check_system(slow_lid_status) && !dmi_check_system(bad_lid_status))
-+	    if (!acpi_lid_open())
- 		status = connector_status_disconnected;
+@@ -501,7 +500,6 @@ dev_irnet_open(struct inode *	inode,
+     {
+       DERROR(FS_ERROR, "Can't setup IrDA link...\n");
+       kfree(ap);
+-      unlock_kernel();
+       return err;
+     }
  
- 	return status;
+@@ -512,7 +510,6 @@ dev_irnet_open(struct inode *	inode,
+   file->private_data = ap;
+ 
+   DEXIT(FS_TRACE, " - ap=0x%p\n", ap);
+-  unlock_kernel();
+   return 0;
+ }
+ 
 -- 
-1.6.6
-
+1.6.6.1
 
