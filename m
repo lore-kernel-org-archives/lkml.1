@@ -1,53 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340Ab0BARaZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 12:30:25 -0500
-Received: from mail.perches.com ([173.55.12.10]:1699 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753852Ab0BARaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 12:30:23 -0500
-Subject: Re: [PATCH 05/10] drivers/scsi/arcmsr: Fix continuation line
- formats
-From: Joe Perches <joe@perches.com>
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <1265044616.6910.15.camel@mulgrave.site>
-References: <cover.1264967493.git.joe@perches.com>
-	 <1a318fa326c6ab2584b9d318bd1538e7f7debbdf.1264967499.git.joe@perches.com>
-	 <1265044616.6910.15.camel@mulgrave.site>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 09:30:22 -0800
-Message-ID: <1265045422.25140.289.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1753209Ab0BARfX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 12:35:23 -0500
+Received: from g6t0186.atlanta.hp.com ([15.193.32.63]:8842 "EHLO
+	g6t0186.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751054Ab0BARfU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 12:35:20 -0500
+Date: Mon, 1 Feb 2010 10:35:18 -0700
+From: Alex Chiang <achiang@hp.com>
+To: lenb@kernel.org, Chris Mason <chris.mason@oracle.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: stable@kernel.org
+Subject: Re: [PATCH] set dock_station->flags to zero during dock_add
+Message-ID: <20100201173518.GA28002@ldl.fc.hp.com>
+References: <20100201163043.GA3240@think>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100201163043.GA3240@think>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-01 at 11:16 -0600, James Bottomley wrote:
-> On Sun, 2010-01-31 at 12:02 -0800, Joe Perches wrote: 
-> > String constants that are continued on subsequent lines with \
-> > are not good.
-> 
-> Why?  It's perfectly valid ansi C.
+Hi Chris,
 
-Because they generally add unwanted spaces or tabs between
-words in logging messages.  Just like these do.
+Thanks for catching this. Seems better to just memset the stack
+variable before we kmemdup it in platform_deivce_register_data().
 
-> but I also dislike your solution; I'd have split the string into two
-> separate ones and relied on compiler concatenation.
+How about this instead?
 
-Which Linus dislikes because it makes grepping difficult.
+---
+From: Alex Chiang <achiang@hp.com>
 
-> However, the point is that all three are perfectly legal C.  Choosing
-> one form over another is something best left to the maintainers rather
-> than imposing one style by fiat.
+ACPI: dock: properly initialize local struct dock_station in dock_add()
 
-Which a patch does not do.
+Commit fe06fba2 (ACPI: dock: add struct dock_station * directly
+to platform device data) changed dock_add() to use the
+platform_device_register_data() API.
 
-> Consider this change veto'd unless you can get an explicit ack from the
-> current maintainer for changing their style.
+We passed that interface a stack variable, which is kmemdup'ed
+and assigned to the device's platform_data pointer.
 
-The current messages are defective.
+Unfortunately, whatever random garbage is in the stack variable
+gets coped during the kmemdup, and that leads to broken behavior.
 
+Explicitly zero out the structure before passing it to the API.
+
+Cc: stable@kernel.org
+Reported-by: Chris Mason <chris.mason@oracle.com>
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+Commit fe06fba2 was introduced in 2.6.32-rc5, so we need this fix
+for the .32 stable series only.
+
+---
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index bbc2c13..b2586f5 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -935,6 +935,7 @@ static int dock_add(acpi_handle handle)
+ 	struct platform_device *dd;
+ 
+ 	id = dock_station_count;
++	memset(&ds, 0, sizeof(ds));
+ 	dd = platform_device_register_data(NULL, "dock", id, &ds, sizeof(ds));
+ 	if (IS_ERR(dd))
+ 		return PTR_ERR(dd);
