@@ -1,40 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290Ab0BAMtA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 07:49:00 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47535
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751259Ab0BAMs7 (ORCPT
+	id S1753715Ab0BAMwC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 07:52:02 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:48662 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752300Ab0BAMwA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 07:48:59 -0500
-Date: Mon, 01 Feb 2010 04:49:11 -0800 (PST)
-Message-Id: <20100201.044911.15611947.davem@davemloft.net>
-To: nhorman@tuxdriver.com
-Cc: xtfeng@gmail.com, rjw@sisk.pl, htd@fancy-poultry.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [Bug #15196] kmem_cache_create: duplicate cache ccid2_h
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100201115518.GA25094@hmsreliant.think-freely.org>
-References: <7b6bb4a51001311930i7d72f60dj3b15ca3e1a715607@mail.gmail.com>
-	<20100131.232050.266652459.davem@davemloft.net>
-	<20100201115518.GA25094@hmsreliant.think-freely.org>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Feb 2010 07:52:00 -0500
+Date: Mon, 1 Feb 2010 13:51:55 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: andrej.gelenberg@udo.edu
+Cc: linux-acpi@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Acpi4asus-user] ACPI device for ASUS EEEPC 1101HA not added
+Message-ID: <20100201125155.GB28972@buzzloop.caiaq.de>
+References: <20100201032554.GZ28972@buzzloop.caiaq.de>
+ <cone.1265022400.369355.2380.1000@eeekiste>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cone.1265022400.369355.2380.1000@eeekiste>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Neil Horman <nhorman@tuxdriver.com>
-Date: Mon, 1 Feb 2010 06:55:18 -0500
+On Mon, Feb 01, 2010 at 12:06:40PM +0100, andrej.gelenberg@udo.edu wrote:
+> you need to whitelist your eee pc for OSI(Linux) in drivers/acpi/blacklist.c
+> like this:
+> 
+> +        /*
+> +        * On newer Eeepc, the interface used by eeepc-laptop (ASUS010)
+> +        * is disabled without _OSI(Linux)
+> +        */
+> +       {
+> +       .callback = dmi_enable_osi_linux,
+> +       .ident = "Asus Eeepc-1101HA",
+> +       .matches = {
+> +                    DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK Computer INC."),
+> +                    DMI_MATCH(DMI_PRODUCT_NAME, "1101HA"),
+> +               },
+> +       },
 
-> He claims this dependency is deliberate and requires, to which I agree, but he
-> would seem to fix that by making the dccp_probe module error out in the event
-> that dccp wasn't loaded.  Why bother with that?
+Great, thanks. That worked. Is that already queued anywhere or do you
+want me to send a proper patch?
 
-Neil, please get into the thread Gerrit started so he can see your
-questions and responses too.
+Daniel
 
-I already chided him for not CC:'ing you in the first place, guys
-stop hiding from eachother :-)
+
+> Daniel Mack writes:
+> 
+> >On my new 1101HA Eeepc, the special function keys do not work. This is
+> >because the asus-laptop driver fails to match the ACPI device named
+> >"ASUS010". However, acpidump tells me a device with that name does
+> >actually exist - the (simplified) disassembly of the DSDT is below.
+> >
+> >It looks like the gigantic parser state machine fails to add that
+> >device for whatever reason. Any ideas how to fix that?
+> >
+> >
+> >Thanks,
+> >Daniel
+> >
