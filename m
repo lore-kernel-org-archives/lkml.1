@@ -1,31 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751171Ab0BAENQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 23:13:16 -0500
-Received: from mga01.intel.com ([192.55.52.88]:64529 "EHLO mga01.intel.com"
+	id S1752430Ab0BAEPs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 23:15:48 -0500
+Received: from ozlabs.org ([203.10.76.45]:36586 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750832Ab0BAENO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 23:13:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,380,1262592000"; 
-   d="scan'208";a="536353989"
-Date: Mon, 1 Feb 2010 12:12:53 +0800
-From: Shaohui Zheng <shaohui.zheng@intel.com>
-To: akpm@linux-foundation.org, linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, haveblue@us.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, ak@linux.intel.com,
-       fengguang.wu@intel.com, hpa@kernel.org, haicheng.li@intel.com,
-       shaohui.zheng@linux.intel.com
-Subject: [Patch - Resend v4] Memory-Hotplug: Fix the bug on interface
- /dev/mem for 64-bit kernel
-Message-ID: <20100201041253.GA1028@shaohui>
-Mail-Followup-To: akpm@linux-foundation.org, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com,
-	haveblue@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
-	ak@linux.intel.com, fengguang.wu@intel.com, hpa@kernel.org,
-	haicheng.li@intel.com, shaohui.zheng@linux.intel.com
+	id S1751689Ab0BAEPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 23:15:47 -0500
+Date: Mon, 1 Feb 2010 15:14:30 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] panic: Fix panic_timeout accuracy when running on a
+ hypervisor
+Message-ID: <20100201041430.GQ2996@kryten>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="BOKacYhQ+x31HxR3"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,147 +22,101 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---BOKacYhQ+x31HxR3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I've had some complaints about panic_timeout being wildly innacurate on
+shared processor PowerPC partitions (a 3 minute panic_timeout taking 30
+minutes).
 
-Send the v4 patch to mailing list.
+The problem is we loop on mdelay(1) and with a 1ms in 10ms hypervisor
+timeslice each of these will take 10ms (ie 10x) longer. I expect other
+platforms with shared processor hypervisors will see the same issue.
 
-changelog:
-v1: add memory range to e820 table, and update the varibles max_pfn/max_low_pfn/high_memory
-	Peter[hpa]: memory hotplug make sense on 32-bit kernel for virtual environment.
-	Andi[ak]: No VM supports it currently, and 64bit is the important part for hotplug 
-	Fengguang[wfg]: some review comments on function naming
-v2: rename function update_pfn to update_end_of_memory_vars
-	KAMEZAWA[kame]: e820map is considerted to be stable, read-only after boot.
-	Fengguang[wfg]: rewrite function page_is_ram, make it friendly for hotplug.
-v3: keep the old e820map, update the varible max_pfn, high_memory only
-	KAMEZAWA[kame]: suggest to use memory hotplug notifier. If it's allowed, it will
-					be cleaner.
-	Fengguang[wfg]: notifier is for _outsider_ subsystems. It smells a bit overkill to do 
-					notifier _inside_ the hotplug code.
-	Fengguang[wfg]: suggest to update max_pfn/max_low_pfn/high_memory in arch/x86/mm/init_64.c:
-					arch_add_memory() now, for X86_64.  
-					Later on we can add code to arch/x86/mm/init_32.c:arch_add_memory() for X86_32.
-v4: update max_pfn/max_low_pfn/high_memory in arch/x86/mm/init_64.c:arch_add_memory() for x86_64,
-	 and resent it to mailing list, since fengguang's page_is_ram patch was accepted,
+This patch keeps the old behaviour if we have a panic_blink (only keyboard
+LEDs right now) and does 1 second mdelays if we don't.
 
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Memory-Hotplug: Fix the bug on interface /dev/mem for 64-bit kernel
-
-The new added memory can not be access by interface /dev/mem, because we do not
- update the variables high_memory, max_pfn and max_low_pfn.
-
-Add a function update_end_of_memory_vars to update these variables for 64-bit 
-kernel.
-
-CC: Andi Kleen <ak@linux.intel.com>
-CC: Li Haicheng <haicheng.li@intel.com>
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 5a4398a..acfc01a 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -49,6 +49,7 @@
- #include <asm/numa.h>
- #include <asm/cacheflush.h>
- #include <asm/init.h>
-+#include <linux/bootmem.h>
+Index: linux-cpumask/kernel/panic.c
+===================================================================
+--- linux-cpumask.orig/kernel/panic.c	2010-02-01 14:17:40.140961595 +1100
++++ linux-cpumask/kernel/panic.c	2010-02-01 14:30:45.549711407 +1100
+@@ -36,15 +36,36 @@ ATOMIC_NOTIFIER_HEAD(panic_notifier_list
  
- static unsigned long dma_reserve __initdata;
+ EXPORT_SYMBOL(panic_notifier_list);
  
-@@ -614,6 +615,21 @@ void __init paging_init(void)
-  * Memory hotplug specific functions
-  */
- #ifdef CONFIG_MEMORY_HOTPLUG
-+/**
-+ * After memory hotplug, the variable max_pfn, max_low_pfn and high_memory will
-+ * be affected, it will be updated in this function.
-+ */
-+static inline void __meminit update_end_of_memory_vars(u64 start,
-+		u64 size)
+-static long no_blink(long time)
+-{
+-	return 0;
+-}
+-
+ /* Returns how long it waited in ms */
+ long (*panic_blink)(long time);
+ EXPORT_SYMBOL(panic_blink);
+ 
++static void panic_blink_one_second(void)
 +{
-+	unsigned long end_pfn = PFN_UP(start + size);
++	static long i = 0, end;
 +
-+	if (end_pfn > max_pfn) {
-+		max_low_pfn = max_pfn = end_pfn;
-+		high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
++	if (panic_blink) {
++		end = i + MSEC_PER_SEC;
++
++		while (i < end) {
++			i += panic_blink(i);
++			mdelay(1);
++			i++;
++		}
++	} else {
++		/*
++		 * When running under a hypervisor a small mdelay may get
++		 * rounded up to the hypervisor timeslice. For example, with
++		 * a 1ms in 10ms hypervisor timeslice we might inflate a
++		 * mdelay(1) loop by 10x.
++		 *
++		 * If we have nothing to blink, spin on 1 second calls to
++		 * mdelay to avoid this.
++		 */
++		mdelay(MSEC_PER_SEC);
 +	}
 +}
 +
- /*
-  * Memory is added always to NORMAL zone. This means you will never get
-  * additional DMA/DMA32 memory.
-@@ -633,6 +649,9 @@ int arch_add_memory(int nid, u64 start, u64 size)
- 	ret = __add_pages(nid, zone, start_pfn, nr_pages);
- 	WARN_ON_ONCE(ret);
--- 
-Thanks & Regards,
-Shaohuki
-
-
---BOKacYhQ+x31HxR3
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="memory-hotplug-fix-the-bug-on-interface-dev-mem-v4.patch"
-
-Memory-Hotplug: Fix the bug on interface /dev/mem for 64-bit kernel
-
-The new added memory can not be access by interface /dev/mem, because we do not
- update the variables high_memory, max_pfn and max_low_pfn.
-
-Add a function update_end_of_memory_vars to update these variables for 64-bit 
-kernel.
-
-CC: Andi Kleen <ak@linux.intel.com>
-CC: Li Haicheng <haicheng.li@intel.com>
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 5a4398a..acfc01a 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -49,6 +49,7 @@
- #include <asm/numa.h>
- #include <asm/cacheflush.h>
- #include <asm/init.h>
-+#include <linux/bootmem.h>
+ /**
+  *	panic - halt the system
+  *	@fmt: The text string to print
+@@ -95,9 +116,6 @@ NORET_TYPE void panic(const char * fmt, 
  
- static unsigned long dma_reserve __initdata;
+ 	bust_spinlocks(0);
  
-@@ -614,6 +615,21 @@ void __init paging_init(void)
-  * Memory hotplug specific functions
-  */
- #ifdef CONFIG_MEMORY_HOTPLUG
-+/**
-+ * After memory hotplug, the variable max_pfn, max_low_pfn and high_memory will
-+ * be affected, it will be updated in this function.
-+ */
-+static inline void __meminit update_end_of_memory_vars(u64 start,
-+		u64 size)
-+{
-+	unsigned long end_pfn = PFN_UP(start + size);
-+
-+	if (end_pfn > max_pfn) {
-+		max_low_pfn = max_pfn = end_pfn;
-+		high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
-+	}
-+}
-+
- /*
-  * Memory is added always to NORMAL zone. This means you will never get
-  * additional DMA/DMA32 memory.
-@@ -633,6 +649,9 @@ int arch_add_memory(int nid, u64 start, u64 size)
- 	ret = __add_pages(nid, zone, start_pfn, nr_pages);
- 	WARN_ON_ONCE(ret);
+-	if (!panic_blink)
+-		panic_blink = no_blink;
+-
+ 	if (panic_timeout > 0) {
+ 		/*
+ 		 * Delay timeout seconds before rebooting the machine.
+@@ -105,11 +123,9 @@ NORET_TYPE void panic(const char * fmt, 
+ 		 */
+ 		printk(KERN_EMERG "Rebooting in %d seconds..", panic_timeout);
  
-+	/* update max_pfn, max_low_pfn and high_memory */
-+	update_end_of_memory_vars(start, size);
-+
- 	return ret;
+-		for (i = 0; i < panic_timeout*1000; ) {
++		for (i = 0; i < panic_timeout; i++) {
+ 			touch_nmi_watchdog();
+-			i += panic_blink(i);
+-			mdelay(1);
+-			i++;
++			panic_blink_one_second();
+ 		}
+ 		/*
+ 		 * This will not be a clean reboot, with everything
+@@ -135,11 +151,9 @@ NORET_TYPE void panic(const char * fmt, 
+ 	}
+ #endif
+ 	local_irq_enable();
+-	for (i = 0; ; ) {
++	while (1) {
+ 		touch_softlockup_watchdog();
+-		i += panic_blink(i);
+-		mdelay(1);
+-		i++;
++		panic_blink_one_second();
+ 	}
  }
- EXPORT_SYMBOL_GPL(arch_add_memory);
-
---BOKacYhQ+x31HxR3--
+ 
