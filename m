@@ -1,772 +1,401 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755869Ab0BAS7g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 13:59:36 -0500
-Received: from verein.lst.de ([213.95.11.210]:58744 "EHLO verein.lst.de"
+	id S1755780Ab0BAS7N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:59:13 -0500
+Received: from verein.lst.de ([213.95.11.210]:58739 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755726Ab0BAS7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 13:59:32 -0500
-Date: Mon, 1 Feb 2010 19:55:24 +0100
+	id S1755746Ab0BAS7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 13:59:09 -0500
+Date: Mon, 1 Feb 2010 19:56:07 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-arch@vger.kernel.org
-Cc: linux@arm.linux.org.uk, starvik@axis.com, jesper.nilsson@axis.com,
-       ysato@users.sourceforge.jp, tony.luck@intel.com, geert@linux-m68k.org,
-       zippel@linux-m68k.org, gerg@uclinux.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, jdike@addtoit.com, tglx@linutronix.de,
+Cc: tony.luck@intel.com, ralf@linux-mips.org, kyle@mcmartin.ca,
+       benh@kernel.crashing.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, tglx@linutronix.de,
        mingo@redhat.com, hpa@zytor.com, viro@zeniv.linux.org.uk
-Subject: [PATCH 2/6] generic sys_old_mmap
-Message-ID: <20100201185524.GB11045@lst.de>
+Subject: [PATCH 4/6] improve sys_personality for compat architectures
+Message-ID: <20100201185607.GD11045@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+X-Spam-Score: 0.499 () BAYES_44,REMOVE_REMOVAL_2WORD
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a generic implementation of the old mmap syscall, which expects it's
-argument in a memory block and switch all architectures over to use it.
-
+On an architecture that supports 32-bit compat we need to claim to be
+PER_LINUX even if we're actually PER_LINUX32.  Instead of duplicating
+the code for that in all architectures and having various bugs in the
+handling of personality flags do it once and right in the common code.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Index: linux-2.6/include/linux/syscalls.h
+
+Index: linux-2.6/arch/ia64/ia32/ia32_entry.S
 ===================================================================
---- linux-2.6.orig/include/linux/syscalls.h	2010-01-30 11:26:47.622005911 +0100
-+++ linux-2.6/include/linux/syscalls.h	2010-01-30 22:40:36.125003257 +0100
-@@ -23,6 +23,7 @@ struct kexec_segment;
- struct linux_dirent;
- struct linux_dirent64;
- struct list_head;
-+struct mmap_arg_struct;
- struct msgbuf;
- struct msghdr;
- struct mmsghdr;
-@@ -838,4 +839,6 @@ asmlinkage long sys_perf_event_open(
- asmlinkage long sys_mmap_pgoff(unsigned long addr, unsigned long len,
- 			unsigned long prot, unsigned long flags,
- 			unsigned long fd, unsigned long pgoff);
-+asmlinkage long sys_old_mmap(struct mmap_arg_struct __user *arg);
-+
- #endif
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c	2010-01-30 11:25:52.664004514 +0100
-+++ linux-2.6/mm/mmap.c	2010-01-30 11:26:48.281004165 +0100
-@@ -1083,6 +1083,30 @@ out:
- 	return retval;
- }
- 
-+#ifdef __ARCH_WANT_SYS_OLD_MMAP
-+struct mmap_arg_struct {
-+	unsigned long addr;
-+	unsigned long len;
-+	unsigned long prot;
-+	unsigned long flags;
-+	unsigned long fd;
-+	unsigned long offset;
-+};
-+
-+SYSCALL_DEFINE1(old_mmap, struct mmap_arg_struct __user *, arg)
-+{
-+	struct mmap_arg_struct a;
-+
-+	if (copy_from_user(&a, arg, sizeof(a)))
-+		return -EFAULT;
-+	if (a.offset & ~PAGE_MASK)
-+		return -EINVAL;
-+
-+	return sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
-+			      a.offset >> PAGE_SHIFT);
-+}
-+#endif /* __ARCH_WANT_SYS_OLD_MMAP */
-+
- /*
-  * Some shared mappigns will want the pages marked read-only
-  * to track write events. If so, we'll downgrade vm_page_prot
-Index: linux-2.6/arch/arm/include/asm/unistd.h
-===================================================================
---- linux-2.6.orig/arch/arm/include/asm/unistd.h	2010-01-30 11:26:47.558043975 +0100
-+++ linux-2.6/arch/arm/include/asm/unistd.h	2010-01-30 22:40:35.710253641 +0100
-@@ -443,6 +443,7 @@
- #define __ARCH_WANT_SYS_SIGPROCMASK
- #define __ARCH_WANT_SYS_RT_SIGACTION
- #define __ARCH_WANT_SYS_RT_SIGSUSPEND
-+#define __ARCH_WANT_SYS_OLD_MMAP
- #define __ARCH_WANT_SYS_OLD_SELECT
- 
- #if !defined(CONFIG_AEABI) || defined(CONFIG_OABI_COMPAT)
-Index: linux-2.6/arch/arm/kernel/calls.S
-===================================================================
---- linux-2.6.orig/arch/arm/kernel/calls.S	2010-01-30 11:26:47.550273407 +0100
-+++ linux-2.6/arch/arm/kernel/calls.S	2010-01-30 11:26:48.304006959 +0100
-@@ -99,7 +99,7 @@
- 		CALL(sys_swapon)
- 		CALL(sys_reboot)
- 		CALL(OBSOLETE(sys_old_readdir))	/* used by libc4 */
--/* 90 */	CALL(OBSOLETE(old_mmap))	/* used by libc4 */
-+/* 90 */	CALL(OBSOLETE(sys_old_mmap))	/* used by libc4 */
- 		CALL(sys_munmap)
- 		CALL(sys_truncate)
- 		CALL(sys_ftruncate)
-Index: linux-2.6/arch/arm/kernel/sys_arm.c
-===================================================================
---- linux-2.6.orig/arch/arm/kernel/sys_arm.c	2010-01-30 11:26:47.626283114 +0100
-+++ linux-2.6/arch/arm/kernel/sys_arm.c	2010-01-30 22:40:35.687254688 +0100
-@@ -28,32 +28,6 @@
- #include <linux/ipc.h>
- #include <linux/uaccess.h>
- 
--struct mmap_arg_struct {
--	unsigned long addr;
--	unsigned long len;
--	unsigned long prot;
--	unsigned long flags;
--	unsigned long fd;
--	unsigned long offset;
--};
--
--asmlinkage int old_mmap(struct mmap_arg_struct __user *arg)
--{
--	int error = -EFAULT;
--	struct mmap_arg_struct a;
--
--	if (copy_from_user(&a, arg, sizeof(a)))
--		goto out;
--
--	error = -EINVAL;
--	if (a.offset & ~PAGE_MASK)
--		goto out;
--
--	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
--out:
--	return error;
--}
--
- #if !defined(CONFIG_AEABI) || defined(CONFIG_OABI_COMPAT)
- /*
-  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
-Index: linux-2.6/arch/cris/arch-v10/kernel/entry.S
-===================================================================
---- linux-2.6.orig/arch/cris/arch-v10/kernel/entry.S	2010-01-30 11:25:52.613023720 +0100
-+++ linux-2.6/arch/cris/arch-v10/kernel/entry.S	2010-01-30 11:26:48.312256156 +0100
-@@ -692,7 +692,7 @@ sys_call_table:	
- 	.long sys_swapon
- 	.long sys_reboot
- 	.long sys_old_readdir
--	.long old_mmap		/* 90 */
-+	.long sys_old_mmap	/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
- 	.long sys_ftruncate
-Index: linux-2.6/arch/cris/arch-v32/kernel/entry.S
-===================================================================
---- linux-2.6.orig/arch/cris/arch-v32/kernel/entry.S	2010-01-30 11:25:52.600004374 +0100
-+++ linux-2.6/arch/cris/arch-v32/kernel/entry.S	2010-01-30 11:26:48.319255527 +0100
-@@ -615,7 +615,7 @@ sys_call_table:
- 	.long sys_swapon
- 	.long sys_reboot
- 	.long sys_old_readdir
--	.long old_mmap		/* 90 */
-+	.long sys_old_mmap	/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
- 	.long sys_ftruncate
-Index: linux-2.6/arch/cris/include/asm/unistd.h
-===================================================================
---- linux-2.6.orig/arch/cris/include/asm/unistd.h	2010-01-30 11:25:52.589004863 +0100
-+++ linux-2.6/arch/cris/include/asm/unistd.h	2010-01-30 22:40:35.732262022 +0100
-@@ -364,6 +364,7 @@
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_MMAP
- #define __ARCH_WANT_SYS_OLDUMOUNT
- #define __ARCH_WANT_SYS_SIGPENDING
- #define __ARCH_WANT_SYS_SIGPROCMASK
-Index: linux-2.6/arch/cris/kernel/sys_cris.c
-===================================================================
---- linux-2.6.orig/arch/cris/kernel/sys_cris.c	2010-01-30 11:25:52.578013244 +0100
-+++ linux-2.6/arch/cris/kernel/sys_cris.c	2010-01-30 22:40:35.721253920 +0100
-@@ -26,24 +26,6 @@
- #include <asm/uaccess.h>
- #include <asm/segment.h>
- 
--asmlinkage unsigned long old_mmap(unsigned long __user *args)
--{        
--	unsigned long buffer[6];
--	int err = -EFAULT;
--
--	if (copy_from_user(&buffer, args, sizeof(buffer)))
--		goto out;
--
--	err = -EINVAL;
--	if (buffer[5] & ~PAGE_MASK) /* verify that offset is on page boundary */
--		goto out;
--
--	err = sys_mmap_pgoff(buffer[0], buffer[1], buffer[2], buffer[3],
--                       buffer[4], buffer[5] >> PAGE_SHIFT);
--out:
--	return err;
--}
--
- asmlinkage long
- sys_mmap2(unsigned long addr, unsigned long len, unsigned long prot,
-           unsigned long flags, unsigned long fd, unsigned long pgoff)
-Index: linux-2.6/arch/h8300/include/asm/unistd.h
-===================================================================
---- linux-2.6.orig/arch/h8300/include/asm/unistd.h	2010-01-30 11:26:47.560025328 +0100
-+++ linux-2.6/arch/h8300/include/asm/unistd.h	2010-01-30 22:40:36.097253082 +0100
-@@ -348,6 +348,7 @@
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_MMAP
- #define __ARCH_WANT_SYS_OLD_SELECT
- #define __ARCH_WANT_SYS_OLDUMOUNT
- #define __ARCH_WANT_SYS_SIGPENDING
-Index: linux-2.6/arch/h8300/kernel/sys_h8300.c
-===================================================================
---- linux-2.6.orig/arch/h8300/kernel/sys_h8300.c	2010-01-30 11:26:47.628255457 +0100
-+++ linux-2.6/arch/h8300/kernel/sys_h8300.c	2010-01-30 22:40:36.087274104 +0100
-@@ -27,40 +27,6 @@
- #include <asm/unistd.h>
- 
- /*
-- * Perform the select(nd, in, out, ex, tv) and mmap() system
-- * calls. Linux/m68k cloned Linux/i386, which didn't use to be able to
-- * handle more than 4 system call parameters, so these system calls
-- * used a memory block for parameter passing..
-- */
--
--struct mmap_arg_struct {
--	unsigned long addr;
--	unsigned long len;
--	unsigned long prot;
--	unsigned long flags;
--	unsigned long fd;
--	unsigned long offset;
--};
--
--asmlinkage int old_mmap(struct mmap_arg_struct *arg)
--{
--	struct mmap_arg_struct a;
--	int error = -EFAULT;
--
--	if (copy_from_user(&a, arg, sizeof(a)))
--		goto out;
--
--	error = -EINVAL;
--	if (a.offset & ~PAGE_MASK)
--		goto out;
--
--	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
--			       a.offset >> PAGE_SHIFT);
--out:
--	return error;
--}
--
--/*
-  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
-  *
-  * This is really horribly ugly.
-Index: linux-2.6/arch/h8300/kernel/syscalls.S
-===================================================================
---- linux-2.6.orig/arch/h8300/kernel/syscalls.S	2010-01-30 11:26:47.606032381 +0100
-+++ linux-2.6/arch/h8300/kernel/syscalls.S	2010-01-30 11:26:48.332256086 +0100
-@@ -104,7 +104,7 @@ SYMBOL_NAME_LABEL(sys_call_table)	
- 	.long SYMBOL_NAME(sys_swapon)
- 	.long SYMBOL_NAME(sys_reboot)
- 	.long SYMBOL_NAME(sys_old_readdir)
--	.long SYMBOL_NAME(old_mmap)		/* 90 */
-+	.long SYMBOL_NAME(sys_old_mmap)		/* 90 */
- 	.long SYMBOL_NAME(sys_munmap)
- 	.long SYMBOL_NAME(sys_truncate)
- 	.long SYMBOL_NAME(sys_ftruncate)
-Index: linux-2.6/arch/m68k/kernel/entry.S
-===================================================================
---- linux-2.6.orig/arch/m68k/kernel/entry.S	2010-01-30 11:26:47.551273616 +0100
-+++ linux-2.6/arch/m68k/kernel/entry.S	2010-01-30 11:26:48.335256016 +0100
-@@ -518,7 +518,7 @@ sys_call_table:
- 	.long sys_swapon
- 	.long sys_reboot
- 	.long sys_old_readdir
--	.long old_mmap		/* 90 */
-+	.long sys_old_mmap	/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
- 	.long sys_ftruncate
-Index: linux-2.6/arch/m68k/kernel/sys_m68k.c
-===================================================================
---- linux-2.6.orig/arch/m68k/kernel/sys_m68k.c	2010-01-30 11:26:47.629267190 +0100
-+++ linux-2.6/arch/m68k/kernel/sys_m68k.c	2010-01-30 22:40:35.789004793 +0100
-@@ -42,40 +42,6 @@ asmlinkage long sys_mmap2(unsigned long 
- }
- 
- /*
-- * Perform the select(nd, in, out, ex, tv) and mmap() system
-- * calls. Linux/m68k cloned Linux/i386, which didn't use to be able to
-- * handle more than 4 system call parameters, so these system calls
-- * used a memory block for parameter passing..
-- */
--
--struct mmap_arg_struct {
--	unsigned long addr;
--	unsigned long len;
--	unsigned long prot;
--	unsigned long flags;
--	unsigned long fd;
--	unsigned long offset;
--};
--
--asmlinkage int old_mmap(struct mmap_arg_struct __user *arg)
--{
--	struct mmap_arg_struct a;
--	int error = -EFAULT;
--
--	if (copy_from_user(&a, arg, sizeof(a)))
--		goto out;
--
--	error = -EINVAL;
--	if (a.offset & ~PAGE_MASK)
--		goto out;
--
--	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
--			       a.offset >> PAGE_SHIFT);
--out:
--	return error;
--}
--
--/*
-  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
-  *
-  * This is really horribly ugly.
-Index: linux-2.6/arch/m68knommu/kernel/sys_m68k.c
-===================================================================
---- linux-2.6.orig/arch/m68knommu/kernel/sys_m68k.c	2010-01-30 11:26:47.634256434 +0100
-+++ linux-2.6/arch/m68knommu/kernel/sys_m68k.c	2010-01-30 22:40:36.115253222 +0100
-@@ -28,40 +28,6 @@
- #include <asm/unistd.h>
- 
- /*
-- * Perform the select(nd, in, out, ex, tv) and mmap() system
-- * calls. Linux/m68k cloned Linux/i386, which didn't use to be able to
-- * handle more than 4 system call parameters, so these system calls
-- * used a memory block for parameter passing..
-- */
--
--struct mmap_arg_struct {
--	unsigned long addr;
--	unsigned long len;
--	unsigned long prot;
--	unsigned long flags;
--	unsigned long fd;
--	unsigned long offset;
--};
--
--asmlinkage int old_mmap(struct mmap_arg_struct *arg)
--{
--	struct mmap_arg_struct a;
--	int error = -EFAULT;
--
--	if (copy_from_user(&a, arg, sizeof(a)))
--		goto out;
--
--	error = -EINVAL;
--	if (a.offset & ~PAGE_MASK)
--		goto out;
--
--	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
--				a.offset >> PAGE_SHIFT);
--out:
--	return error;
--}
--
--/*
-  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
-  *
-  * This is really horribly ugly.
-Index: linux-2.6/arch/m68knommu/kernel/syscalltable.S
-===================================================================
---- linux-2.6.orig/arch/m68knommu/kernel/syscalltable.S	2010-01-30 11:26:47.553274454 +0100
-+++ linux-2.6/arch/m68knommu/kernel/syscalltable.S	2010-01-30 11:26:48.341285210 +0100
-@@ -108,7 +108,7 @@ ENTRY(sys_call_table)
- 	.long sys_ni_syscall	/* sys_swapon */
- 	.long sys_reboot
- 	.long sys_old_readdir
--	.long old_mmap		/* 90 */
-+	.long sys_old_mmap	/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
- 	.long sys_ftruncate
-Index: linux-2.6/arch/m68k/include/asm/unistd.h
-===================================================================
---- linux-2.6.orig/arch/m68k/include/asm/unistd.h	2010-01-30 11:26:47.565005702 +0100
-+++ linux-2.6/arch/m68k/include/asm/unistd.h	2010-01-30 22:40:35.806003606 +0100
-@@ -359,6 +359,7 @@
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_MMAP
- #define __ARCH_WANT_SYS_OLD_SELECT
- #define __ARCH_WANT_SYS_OLDUMOUNT
- #define __ARCH_WANT_SYS_SIGPENDING
-Index: linux-2.6/arch/s390/kernel/sys_s390.c
-===================================================================
---- linux-2.6.orig/arch/s390/kernel/sys_s390.c	2010-01-30 11:25:52.457275362 +0100
-+++ linux-2.6/arch/s390/kernel/sys_s390.c	2010-01-30 22:40:35.921004723 +0100
-@@ -33,13 +33,12 @@
- #include "entry.h"
- 
- /*
-- * Perform the select(nd, in, out, ex, tv) and mmap() system
-- * calls. Linux for S/390 isn't able to handle more than 5
-- * system call parameters, so these system calls used a memory
-- * block for parameter passing..
-+ * Perform the mmap() system call. Linux for S/390 isn't able to handle more
-+ * than 5 system call parameters, so this system call uses a memory block
-+ * for parameter passing.
-  */
- 
--struct mmap_arg_struct {
-+struct s390_mmap_arg_struct {
- 	unsigned long addr;
- 	unsigned long len;
- 	unsigned long prot;
-@@ -48,9 +47,9 @@ struct mmap_arg_struct {
- 	unsigned long offset;
- };
- 
--SYSCALL_DEFINE1(mmap2, struct mmap_arg_struct __user *, arg)
-+SYSCALL_DEFINE1(mmap2, struct s390_mmap_arg_struct __user *, arg)
- {
--	struct mmap_arg_struct a;
-+	struct s390_mmap_arg_struct a;
- 	int error = -EFAULT;
- 
- 	if (copy_from_user(&a, arg, sizeof(a)))
-@@ -60,23 +59,6 @@ out:
- 	return error;
- }
- 
--SYSCALL_DEFINE1(s390_old_mmap, struct mmap_arg_struct __user *, arg)
--{
--	struct mmap_arg_struct a;
--	long error = -EFAULT;
--
--	if (copy_from_user(&a, arg, sizeof(a)))
--		goto out;
--
--	error = -EINVAL;
--	if (a.offset & ~PAGE_MASK)
--		goto out;
--
--	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
--out:
--	return error;
--}
--
- /*
-  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
-  *
-Index: linux-2.6/arch/s390/kernel/syscalls.S
-===================================================================
---- linux-2.6.orig/arch/s390/kernel/syscalls.S	2010-01-30 11:25:52.466254409 +0100
-+++ linux-2.6/arch/s390/kernel/syscalls.S	2010-01-30 22:40:35.932003815 +0100
-@@ -98,7 +98,7 @@ SYSCALL(sys_uselib,sys_uselib,sys32_usel
- SYSCALL(sys_swapon,sys_swapon,sys32_swapon_wrapper)
- SYSCALL(sys_reboot,sys_reboot,sys32_reboot_wrapper)
- SYSCALL(sys_ni_syscall,sys_ni_syscall,old32_readdir_wrapper)	/* old readdir syscall */
--SYSCALL(sys_s390_old_mmap,sys_s390_old_mmap,old32_mmap_wrapper)	/* 90 */
-+SYSCALL(sys_old_mmap,sys_old_mmap,old32_mmap_wrapper)		/* 90 */
- SYSCALL(sys_munmap,sys_munmap,sys32_munmap_wrapper)
- SYSCALL(sys_truncate,sys_truncate,sys32_truncate_wrapper)
- SYSCALL(sys_ftruncate,sys_ftruncate,sys32_ftruncate_wrapper)
-Index: linux-2.6/arch/s390/kernel/entry.h
-===================================================================
---- linux-2.6.orig/arch/s390/kernel/entry.h	2010-01-30 11:26:47.648282625 +0100
-+++ linux-2.6/arch/s390/kernel/entry.h	2010-01-30 22:40:35.911007307 +0100
-@@ -25,12 +25,11 @@ void __init startup_init(void);
- void die(const char * str, struct pt_regs * regs, long err);
- 
- struct new_utsname;
--struct mmap_arg_struct;
-+struct s390_mmap_arg_struct;
- struct fadvise64_64_args;
- struct old_sigaction;
- 
--long sys_mmap2(struct mmap_arg_struct __user  *arg);
--long sys_s390_old_mmap(struct mmap_arg_struct __user *arg);
-+long sys_mmap2(struct s390_mmap_arg_struct __user  *arg);
- long sys_ipc(uint call, int first, unsigned long second,
- 	     unsigned long third, void __user *ptr);
- long sys_s390_newuname(struct new_utsname __user *name);
-Index: linux-2.6/arch/s390/include/asm/unistd.h
-===================================================================
---- linux-2.6.orig/arch/s390/include/asm/unistd.h	2010-01-30 11:25:52.446004304 +0100
-+++ linux-2.6/arch/s390/include/asm/unistd.h	2010-01-30 11:26:48.351264327 +0100
-@@ -392,6 +392,7 @@
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_MMAP
- #define __ARCH_WANT_SYS_OLDUMOUNT
- #define __ARCH_WANT_SYS_SIGPENDING
- #define __ARCH_WANT_SYS_SIGPROCMASK
-Index: linux-2.6/arch/x86/include/asm/syscalls.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/syscalls.h	2010-01-30 11:26:47.639283952 +0100
-+++ linux-2.6/arch/x86/include/asm/syscalls.h	2010-01-30 22:40:36.048253431 +0100
-@@ -51,11 +51,9 @@ asmlinkage int sys_sigaction(int, const 
- unsigned long sys_sigreturn(struct pt_regs *);
- 
- /* kernel/sys_i386_32.c */
--struct mmap_arg_struct;
- struct oldold_utsname;
- struct old_utsname;
- 
--asmlinkage int old_mmap(struct mmap_arg_struct __user *);
- asmlinkage int sys_ipc(uint, int, int, int, void __user *, long);
- asmlinkage int sys_uname(struct old_utsname __user *);
- asmlinkage int sys_olduname(struct oldold_utsname __user *);
-Index: linux-2.6/arch/x86/kernel/sys_i386_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/sys_i386_32.c	2010-01-30 11:26:47.641268727 +0100
-+++ linux-2.6/arch/x86/kernel/sys_i386_32.c	2010-01-30 22:40:36.072254479 +0100
-@@ -25,40 +25,6 @@
- #include <asm/syscalls.h>
- 
- /*
-- * Perform the select(nd, in, out, ex, tv) and mmap() system
-- * calls. Linux/i386 didn't use to be able to handle more than
-- * 4 system call parameters, so these system calls used a memory
-- * block for parameter passing..
-- */
--
--struct mmap_arg_struct {
--	unsigned long addr;
--	unsigned long len;
--	unsigned long prot;
--	unsigned long flags;
--	unsigned long fd;
--	unsigned long offset;
--};
--
--asmlinkage int old_mmap(struct mmap_arg_struct __user *arg)
--{
--	struct mmap_arg_struct a;
--	int err = -EFAULT;
--
--	if (copy_from_user(&a, arg, sizeof(a)))
--		goto out;
--
--	err = -EINVAL;
--	if (a.offset & ~PAGE_MASK)
--		goto out;
--
--	err = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags,
--			a.fd, a.offset >> PAGE_SHIFT);
--out:
--	return err;
--}
--
--/*
-  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
-  *
-  * This is really horribly ugly.
-Index: linux-2.6/arch/x86/kernel/syscall_table_32.S
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/syscall_table_32.S	2010-01-30 11:26:47.555004026 +0100
-+++ linux-2.6/arch/x86/kernel/syscall_table_32.S	2010-01-30 11:26:48.363282766 +0100
-@@ -89,7 +89,7 @@ ENTRY(sys_call_table)
- 	.long sys_swapon
- 	.long sys_reboot
- 	.long sys_old_readdir
--	.long old_mmap		/* 90 */
-+	.long sys_old_mmap	/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
- 	.long sys_ftruncate
+--- linux-2.6.orig/arch/ia64/ia32/ia32_entry.S	2010-01-09 15:59:17.798254100 +0100
++++ linux-2.6/arch/ia64/ia32/ia32_entry.S	2010-01-09 15:59:53.246257041 +0100
+@@ -314,7 +314,7 @@ ia32_syscall_table:
+ 	data8 sys_fchdir
+ 	data8 sys_ni_syscall	/* sys_bdflush */
+ 	data8 sys_sysfs		/* 135 */
+-	data8 sys32_personality
++	data8 sys_personality
+ 	data8 sys_ni_syscall	  /* for afs_syscall */
+ 	data8 sys_setfsuid	/* 16-bit version */
+ 	data8 sys_setfsgid	/* 16-bit version */
 Index: linux-2.6/arch/ia64/ia32/sys_ia32.c
 ===================================================================
---- linux-2.6.orig/arch/ia64/ia32/sys_ia32.c	2010-01-30 11:26:47.578006051 +0100
-+++ linux-2.6/arch/ia64/ia32/sys_ia32.c	2010-01-30 22:40:34.128273477 +0100
-@@ -883,7 +883,7 @@ ia32_do_mmap (struct file *file, unsigne
-  * system calls used a memory block for parameter passing..
-  */
+--- linux-2.6.orig/arch/ia64/ia32/sys_ia32.c	2010-01-09 15:54:26.822004121 +0100
++++ linux-2.6/arch/ia64/ia32/sys_ia32.c	2010-01-09 15:59:34.255256737 +0100
+@@ -1867,19 +1867,6 @@ sys32_sendfile (int out_fd, int in_fd, i
+ 	return ret;
+ }
  
--struct mmap_arg_struct {
-+struct mmap_arg_struct32 {
- 	unsigned int addr;
- 	unsigned int len;
- 	unsigned int prot;
-@@ -893,9 +893,9 @@ struct mmap_arg_struct {
- };
- 
- asmlinkage long
--sys32_mmap (struct mmap_arg_struct __user *arg)
-+sys32_mmap (struct mmap_arg_struct32 __user *arg)
- {
--	struct mmap_arg_struct a;
-+	struct mmap_arg_struct32 a;
- 	struct file *file = NULL;
- 	unsigned long addr;
- 	int flags;
-Index: linux-2.6/arch/um/sys-i386/shared/sysdep/syscalls.h
-===================================================================
---- linux-2.6.orig/arch/um/sys-i386/shared/sysdep/syscalls.h	2010-01-30 11:25:52.336256364 +0100
-+++ linux-2.6/arch/um/sys-i386/shared/sysdep/syscalls.h	2010-01-30 11:26:48.387255876 +0100
-@@ -13,8 +13,6 @@ typedef long syscall_handler_t(struct pt
-  */
- extern syscall_handler_t sys_rt_sigaction;
- 
--extern syscall_handler_t old_mmap_i386;
--
- extern syscall_handler_t *sys_call_table[];
- 
- #define EXECUTE_SYSCALL(syscall, regs) \
-Index: linux-2.6/arch/um/sys-i386/sys_call_table.S
-===================================================================
---- linux-2.6.orig/arch/um/sys-i386/sys_call_table.S	2010-01-30 11:25:52.360004444 +0100
-+++ linux-2.6/arch/um/sys-i386/sys_call_table.S	2010-01-30 11:26:48.390256714 +0100
-@@ -7,7 +7,7 @@
- #define sys_vm86old sys_ni_syscall
- #define sys_vm86 sys_ni_syscall
- 
--#define old_mmap old_mmap_i386
-+#define old_mmap sys_old_mmap
- 
- #define ptregs_fork sys_fork
- #define ptregs_execve sys_execve
-Index: linux-2.6/arch/um/sys-i386/syscalls.c
-===================================================================
---- linux-2.6.orig/arch/um/sys-i386/syscalls.c	2010-01-30 11:26:47.650256295 +0100
-+++ linux-2.6/arch/um/sys-i386/syscalls.c	2010-01-30 22:40:36.029003955 +0100
-@@ -12,39 +12,6 @@
- #include "asm/unistd.h"
- 
- /*
-- * Perform the select(nd, in, out, ex, tv) and mmap() system
-- * calls. Linux/i386 didn't use to be able to handle more than
-- * 4 system call parameters, so these system calls used a memory
-- * block for parameter passing..
-- */
--
--struct mmap_arg_struct {
--	unsigned long addr;
--	unsigned long len;
--	unsigned long prot;
--	unsigned long flags;
--	unsigned long fd;
--	unsigned long offset;
--};
--
--extern int old_mmap(unsigned long addr, unsigned long len,
--		    unsigned long prot, unsigned long flags,
--		    unsigned long fd, unsigned long offset);
--
--long old_mmap_i386(struct mmap_arg_struct __user *arg)
+-asmlinkage long
+-sys32_personality (unsigned int personality)
 -{
--	struct mmap_arg_struct a;
--	int err = -EFAULT;
+-	long ret;
 -
--	if (copy_from_user(&a, arg, sizeof(a)))
--		goto out;
+-	if (current->personality == PER_LINUX32 && personality == PER_LINUX)
+-		personality = PER_LINUX32;
+-	ret = sys_personality(personality);
+-	if (ret == PER_LINUX32)
+-		ret = PER_LINUX;
+-	return ret;
+-}
 -
--	err = old_mmap(a.addr, a.len, a.prot, a.flags, a.fd, a.offset);
-- out:
+ asmlinkage unsigned long
+ sys32_brk (unsigned int brk)
+ {
+Index: linux-2.6/arch/mips/kernel/linux32.c
+===================================================================
+--- linux-2.6.orig/arch/mips/kernel/linux32.c	2010-01-09 15:54:26.833004126 +0100
++++ linux-2.6/arch/mips/kernel/linux32.c	2010-01-09 16:02:21.474255762 +0100
+@@ -266,19 +266,6 @@ SYSCALL_DEFINE1(32_newuname, struct new_
+ 	return ret;
+ }
+ 
+-SYSCALL_DEFINE1(32_personality, unsigned long, personality)
+-{
+-	int ret;
+-	personality &= 0xffffffff;
+-	if (personality(current->personality) == PER_LINUX32 &&
+-	    personality == PER_LINUX)
+-		personality = PER_LINUX32;
+-	ret = sys_personality(personality);
+-	if (ret == PER_LINUX32)
+-		ret = PER_LINUX;
+-	return ret;
+-}
+-
+ SYSCALL_DEFINE4(32_sendfile, long, out_fd, long, in_fd,
+ 	compat_off_t __user *, offset, s32, count)
+ {
+Index: linux-2.6/arch/mips/kernel/scall64-n32.S
+===================================================================
+--- linux-2.6.orig/arch/mips/kernel/scall64-n32.S	2010-01-09 16:02:16.619010490 +0100
++++ linux-2.6/arch/mips/kernel/scall64-n32.S	2010-01-09 16:02:25.979009804 +0100
+@@ -252,7 +252,7 @@ EXPORT(sysn32_call_table)
+ 	PTR	sys32_sigaltstack
+ 	PTR	compat_sys_utime		/* 6130 */
+ 	PTR	sys_mknod
+-	PTR	sys_32_personality
++	PTR	sys_personality
+ 	PTR	compat_sys_ustat
+ 	PTR	compat_sys_statfs
+ 	PTR	compat_sys_fstatfs		/* 6135 */
+Index: linux-2.6/arch/mips/kernel/scall64-o32.S
+===================================================================
+--- linux-2.6.orig/arch/mips/kernel/scall64-o32.S	2010-01-09 16:02:16.629003942 +0100
++++ linux-2.6/arch/mips/kernel/scall64-o32.S	2010-01-09 16:02:30.447006413 +0100
+@@ -339,7 +339,7 @@ sys_call_table:
+ 	PTR	sys_fchdir
+ 	PTR	sys_bdflush
+ 	PTR	sys_sysfs			/* 4135 */
+-	PTR	sys_32_personality
++	PTR	sys_personality
+ 	PTR	sys_ni_syscall	 		/* for afs_syscall */
+ 	PTR	sys_setfsuid
+ 	PTR	sys_setfsgid
+Index: linux-2.6/arch/parisc/kernel/sys_parisc.c
+===================================================================
+--- linux-2.6.orig/arch/parisc/kernel/sys_parisc.c	2010-01-09 15:54:26.845004188 +0100
++++ linux-2.6/arch/parisc/kernel/sys_parisc.c	2010-01-09 16:02:59.107284814 +0100
+@@ -220,21 +220,6 @@ asmlinkage int sys_free_hugepages(unsign
+ 	return -EINVAL;
+ }
+ 
+-long parisc_personality(unsigned long personality)
+-{
+-	long err;
+-
+-	if (personality(current->personality) == PER_LINUX32
+-	    && personality == PER_LINUX)
+-		personality = PER_LINUX32;
+-
+-	err = sys_personality(personality);
+-	if (err == PER_LINUX32)
+-		err = PER_LINUX;
+-
 -	return err;
 -}
 -
--/*
-  * The prototype on i386 is:
-  *
-  *     int clone(int flags, void * child_stack, int * parent_tidptr, struct user_desc * newtls, int * child_tidptr)
-Index: linux-2.6/arch/x86/ia32/sys_ia32.c
-===================================================================
---- linux-2.6.orig/arch/x86/ia32/sys_ia32.c	2010-01-30 11:26:47.594032311 +0100
-+++ linux-2.6/arch/x86/ia32/sys_ia32.c	2010-01-30 22:40:34.317005004 +0100
-@@ -143,7 +143,7 @@ asmlinkage long sys32_fstatat(unsigned i
-  * block for parameter passing..
-  */
- 
--struct mmap_arg_struct {
-+struct mmap_arg_struct32 {
- 	unsigned int addr;
- 	unsigned int len;
- 	unsigned int prot;
-@@ -152,9 +152,9 @@ struct mmap_arg_struct {
- 	unsigned int offset;
- };
- 
--asmlinkage long sys32_mmap(struct mmap_arg_struct __user *arg)
-+asmlinkage long sys32_mmap(struct mmap_arg_struct32 __user *arg)
+ long parisc_newuname(struct new_utsname __user *name)
  {
--	struct mmap_arg_struct a;
-+	struct mmap_arg_struct32 a;
+ 	int err = sys_newuname(name);
+Index: linux-2.6/arch/parisc/kernel/syscall_table.S
+===================================================================
+--- linux-2.6.orig/arch/parisc/kernel/syscall_table.S	2010-01-09 16:03:09.201254147 +0100
++++ linux-2.6/arch/parisc/kernel/syscall_table.S	2010-01-09 16:03:19.524006340 +0100
+@@ -216,7 +216,7 @@
+ 	ENTRY_SAME(fchdir)
+ 	ENTRY_SAME(bdflush)
+ 	ENTRY_SAME(sysfs)		/* 135 */
+-	ENTRY_OURS(personality)
++	ENTRY_SAME(personality)
+ 	ENTRY_SAME(ni_syscall)	/* for afs_syscall */
+ 	ENTRY_SAME(setfsuid)
+ 	ENTRY_SAME(setfsgid)
+Index: linux-2.6/arch/powerpc/include/asm/syscalls.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/syscalls.h	2010-01-09 16:03:50.533254207 +0100
++++ linux-2.6/arch/powerpc/include/asm/syscalls.h	2010-01-09 16:04:09.905006020 +0100
+@@ -35,7 +35,6 @@ asmlinkage long sys_pipe2(int __user *fi
+ asmlinkage long sys_rt_sigaction(int sig,
+ 		const struct sigaction __user *act,
+ 		struct sigaction __user *oact, size_t sigsetsize);
+-asmlinkage long ppc64_personality(unsigned long personality);
+ asmlinkage int ppc_rtas(struct rtas_args __user *uargs);
+ asmlinkage time_t sys64_time(time_t __user * tloc);
+ asmlinkage long ppc_newuname(struct new_utsname __user * name);
+Index: linux-2.6/arch/powerpc/include/asm/systbl.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/systbl.h	2010-01-09 16:03:50.545011431 +0100
++++ linux-2.6/arch/powerpc/include/asm/systbl.h	2010-01-09 16:04:35.106016944 +0100
+@@ -139,7 +139,7 @@ COMPAT_SYS_SPU(getpgid)
+ SYSCALL_SPU(fchdir)
+ SYSCALL_SPU(bdflush)
+ COMPAT_SYS(sysfs)
+-SYSX_SPU(ppc64_personality,ppc64_personality,sys_personality)
++SYSCALL_SPU(personality)
+ SYSCALL(ni_syscall)
+ SYSCALL_SPU(setfsuid)
+ SYSCALL_SPU(setfsgid)
+Index: linux-2.6/arch/powerpc/kernel/syscalls.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/syscalls.c	2010-01-09 15:54:26.864028329 +0100
++++ linux-2.6/arch/powerpc/kernel/syscalls.c	2010-01-09 16:04:05.443006187 +0100
+@@ -102,21 +102,6 @@ ppc_select(int n, fd_set __user *inp, fd
+ #endif
  
- 	if (copy_from_user(&a, arg, sizeof(a)))
- 		return -EFAULT;
-Index: linux-2.6/arch/x86/include/asm/sys_ia32.h
+ #ifdef CONFIG_PPC64
+-long ppc64_personality(unsigned long personality)
+-{
+-	long ret;
+-
+-	if (personality(current->personality) == PER_LINUX32
+-	    && personality == PER_LINUX)
+-		personality = PER_LINUX32;
+-	ret = sys_personality(personality);
+-	if (ret == PER_LINUX32)
+-		ret = PER_LINUX;
+-	return ret;
+-}
+-#endif
+-
+-#ifdef CONFIG_PPC64
+ #define OVERRIDE_MACHINE    (personality(current->personality) == PER_LINUX32)
+ #else
+ #define OVERRIDE_MACHINE    0
+Index: linux-2.6/arch/s390/kernel/compat_wrapper.S
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/sys_ia32.h	2010-01-30 11:26:47.557010172 +0100
-+++ linux-2.6/arch/x86/include/asm/sys_ia32.h	2010-01-30 22:40:34.329004165 +0100
-@@ -26,8 +26,8 @@ asmlinkage long sys32_lstat64(char __use
- asmlinkage long sys32_fstat64(unsigned int, struct stat64 __user *);
- asmlinkage long sys32_fstatat(unsigned int, char __user *,
- 			      struct stat64 __user *, int);
--struct mmap_arg_struct;
--asmlinkage long sys32_mmap(struct mmap_arg_struct __user *);
-+struct mmap_arg_struct32;
-+asmlinkage long sys32_mmap(struct mmap_arg_struct32 __user *);
- asmlinkage long sys32_mprotect(unsigned long, size_t, unsigned long);
+--- linux-2.6.orig/arch/s390/kernel/compat_wrapper.S	2010-01-09 16:01:01.331004004 +0100
++++ linux-2.6/arch/s390/kernel/compat_wrapper.S	2010-01-09 16:01:34.845278668 +0100
+@@ -615,7 +615,7 @@ sys32_sysfs_wrapper:
+ 	.globl	sys32_personality_wrapper
+ sys32_personality_wrapper:
+ 	llgfr	%r2,%r2			# unsigned long
+-	jg	sys_s390_personality	# branch to system call
++	jg	sys_personality		# branch to system call
  
- struct sigaction32;
-Index: linux-2.6/arch/x86/include/asm/unistd_32.h
+ 	.globl	sys32_setfsuid16_wrapper
+ sys32_setfsuid16_wrapper:
+Index: linux-2.6/arch/s390/kernel/entry.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/unistd_32.h	2010-01-30 11:26:47.570005073 +0100
-+++ linux-2.6/arch/x86/include/asm/unistd_32.h	2010-01-30 22:40:36.059274174 +0100
-@@ -366,6 +366,7 @@
- #define __ARCH_WANT_SYS_LLSEEK
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_OLD_GETRLIMIT
-+#define __ARCH_WANT_SYS_OLD_MMAP
- #define __ARCH_WANT_SYS_OLD_SELECT
- #define __ARCH_WANT_SYS_OLDUMOUNT
- #define __ARCH_WANT_SYS_SIGPENDING
-Index: linux-2.6/mm/nommu.c
+--- linux-2.6.orig/arch/s390/kernel/entry.h	2010-01-09 16:01:01.303003789 +0100
++++ linux-2.6/arch/s390/kernel/entry.h	2010-01-09 16:01:17.120005686 +0100
+@@ -33,7 +33,6 @@ long sys_mmap2(struct s390_mmap_arg_stru
+ long sys_s390_ipc(uint call, int first, unsigned long second,
+ 	     unsigned long third, void __user *ptr);
+ long sys_s390_newuname(struct new_utsname __user *name);
+-long sys_s390_personality(unsigned long personality);
+ long sys_s390_fadvise64(int fd, u32 offset_high, u32 offset_low,
+ 		    size_t len, int advice);
+ long sys_s390_fadvise64_64(struct fadvise64_64_args __user *args);
+Index: linux-2.6/arch/s390/kernel/sys_s390.c
 ===================================================================
---- linux-2.6.orig/mm/nommu.c	2010-01-30 22:41:08.020023511 +0100
-+++ linux-2.6/mm/nommu.c	2010-01-30 22:42:03.685255736 +0100
-@@ -1428,6 +1428,30 @@ out:
- 	return retval;
+--- linux-2.6.orig/arch/s390/kernel/sys_s390.c	2010-01-09 15:54:26.875004240 +0100
++++ linux-2.6/arch/s390/kernel/sys_s390.c	2010-01-09 16:01:35.909033444 +0100
+@@ -141,19 +141,6 @@ SYSCALL_DEFINE1(s390_newuname, struct ne
+ 	}
+ 	return ret;
+ }
+-
+-SYSCALL_DEFINE1(s390_personality, unsigned long, personality)
+-{
+-	int ret;
+-
+-	if (current->personality == PER_LINUX32 && personality == PER_LINUX)
+-		personality = PER_LINUX32;
+-	ret = sys_personality(personality);
+-	if (ret == PER_LINUX32)
+-		ret = PER_LINUX;
+-
+-	return ret;
+-}
+ #endif /* CONFIG_64BIT */
+ 
+ /*
+Index: linux-2.6/arch/s390/kernel/syscalls.S
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/syscalls.S	2010-01-09 16:01:01.321004266 +0100
++++ linux-2.6/arch/s390/kernel/syscalls.S	2010-01-09 16:01:25.248256321 +0100
+@@ -144,7 +144,7 @@ SYSCALL(sys_getpgid,sys_getpgid,sys32_ge
+ SYSCALL(sys_fchdir,sys_fchdir,sys32_fchdir_wrapper)
+ SYSCALL(sys_bdflush,sys_bdflush,sys32_bdflush_wrapper)
+ SYSCALL(sys_sysfs,sys_sysfs,sys32_sysfs_wrapper)		/* 135 */
+-SYSCALL(sys_personality,sys_s390_personality,sys32_personality_wrapper)
++SYSCALL(sys_personality,sys_personality,sys32_personality_wrapper)
+ NI_SYSCALL							/* for afs_syscall */
+ SYSCALL(sys_setfsuid16,sys_ni_syscall,sys32_setfsuid16_wrapper)	/* old setfsuid16 syscall */
+ SYSCALL(sys_setfsgid16,sys_ni_syscall,sys32_setfsgid16_wrapper)	/* old setfsgid16 syscall */
+Index: linux-2.6/arch/sparc/kernel/sys_sparc_64.c
+===================================================================
+--- linux-2.6.orig/arch/sparc/kernel/sys_sparc_64.c	2010-01-09 15:54:26.892253994 +0100
++++ linux-2.6/arch/sparc/kernel/sys_sparc_64.c	2010-01-09 16:05:19.386006452 +0100
+@@ -522,20 +522,6 @@ SYSCALL_DEFINE1(sparc64_newuname, struct
+ 	return ret;
  }
  
-+#ifdef __ARCH_WANT_SYS_OLD_MMAP
-+struct mmap_arg_struct {
-+	unsigned long addr;
-+	unsigned long len;
-+	unsigned long prot;
-+	unsigned long flags;
-+	unsigned long fd;
-+	unsigned long offset;
-+};
-+
-+SYSCALL_DEFINE1(old_mmap, struct mmap_arg_struct __user *, arg)
-+{
-+	struct mmap_arg_struct a;
-+
-+	if (copy_from_user(&a, arg, sizeof(a)))
-+		return -EFAULT;
-+	if (a.offset & ~PAGE_MASK)
-+		return -EINVAL;
-+
-+	return sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
-+			      a.offset >> PAGE_SHIFT);
-+}
-+#endif /* __ARCH_WANT_SYS_OLD_MMAP */
-+
- /*
-  * split a vma into two pieces at address 'addr', a new vma is allocated either
-  * for the first part or the tail.
+-SYSCALL_DEFINE1(sparc64_personality, unsigned long, personality)
+-{
+-	int ret;
+-
+-	if (current->personality == PER_LINUX32 &&
+-	    personality == PER_LINUX)
+-		personality = PER_LINUX32;
+-	ret = sys_personality(personality);
+-	if (ret == PER_LINUX32)
+-		ret = PER_LINUX;
+-
+-	return ret;
+-}
+-
+ int sparc_mmap_check(unsigned long addr, unsigned long len)
+ {
+ 	if (test_thread_flag(TIF_32BIT)) {
+Index: linux-2.6/arch/sparc/kernel/systbls.h
+===================================================================
+--- linux-2.6.orig/arch/sparc/kernel/systbls.h	2010-01-09 16:05:09.055003976 +0100
++++ linux-2.6/arch/sparc/kernel/systbls.h	2010-01-09 16:05:22.368014946 +0100
+@@ -15,7 +15,6 @@ extern asmlinkage long sys_sparc_ipc(uns
+ 			       unsigned long third,
+ 			       void __user *ptr, long fifth);
+ extern asmlinkage long sparc64_newuname(struct new_utsname __user *name);
+-extern asmlinkage long sparc64_personality(unsigned long personality);
+ extern asmlinkage long sys64_munmap(unsigned long addr, size_t len);
+ extern asmlinkage unsigned long sys64_mremap(unsigned long addr,
+ 					     unsigned long old_len,
+Index: linux-2.6/arch/sparc/kernel/systbls_64.S
+===================================================================
+--- linux-2.6.orig/arch/sparc/kernel/systbls_64.S	2010-01-09 16:05:09.066003772 +0100
++++ linux-2.6/arch/sparc/kernel/systbls_64.S	2010-01-09 16:05:34.090007134 +0100
+@@ -56,7 +56,7 @@ sys_call_table32:
+ 	.word sys_setsid, sys_fchdir, sys32_fgetxattr, sys_listxattr, sys_llistxattr
+ /*180*/	.word sys32_flistxattr, sys_removexattr, sys_lremovexattr, compat_sys_sigpending, sys_ni_syscall
+ 	.word sys32_setpgid, sys32_fremovexattr, sys32_tkill, sys32_exit_group, sys_sparc64_newuname
+-/*190*/	.word sys32_init_module, sys_sparc64_personality, sys_remap_file_pages, sys32_epoll_create, sys32_epoll_ctl
++/*190*/	.word sys32_init_module, sys_personality, sys_remap_file_pages, sys32_epoll_create, sys32_epoll_ctl
+ 	.word sys32_epoll_wait, sys32_ioprio_set, sys_getppid, sys32_sigaction, sys_sgetmask
+ /*200*/	.word sys32_ssetmask, sys_sigsuspend, compat_sys_newlstat, sys_uselib, compat_sys_old_readdir
+ 	.word sys32_readahead, sys32_socketcall, sys32_syslog, sys32_lookup_dcookie, sys32_fadvise64
+@@ -131,7 +131,7 @@ sys_call_table:
+ 	.word sys_setsid, sys_fchdir, sys_fgetxattr, sys_listxattr, sys_llistxattr
+ /*180*/	.word sys_flistxattr, sys_removexattr, sys_lremovexattr, sys_nis_syscall, sys_ni_syscall
+ 	.word sys_setpgid, sys_fremovexattr, sys_tkill, sys_exit_group, sys_sparc64_newuname
+-/*190*/	.word sys_init_module, sys_sparc64_personality, sys_remap_file_pages, sys_epoll_create, sys_epoll_ctl
++/*190*/	.word sys_init_module, sys_personality, sys_remap_file_pages, sys_epoll_create, sys_epoll_ctl
+ 	.word sys_epoll_wait, sys_ioprio_set, sys_getppid, sys_nis_syscall, sys_sgetmask
+ /*200*/	.word sys_ssetmask, sys_nis_syscall, sys_newlstat, sys_uselib, sys_nis_syscall
+ 	.word sys_readahead, sys_socketcall, sys_syslog, sys_lookup_dcookie, sys_fadvise64
+Index: linux-2.6/arch/x86/ia32/sys_ia32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/ia32/sys_ia32.c	2010-01-09 15:54:26.902011033 +0100
++++ linux-2.6/arch/x86/ia32/sys_ia32.c	2010-01-09 16:00:03.493006184 +0100
+@@ -414,20 +414,6 @@ asmlinkage long sys32_pwrite(unsigned in
+ 			  ((loff_t)AA(poshi) << 32) | AA(poslo));
+ }
+ 
+-
+-asmlinkage long sys32_personality(unsigned long personality)
+-{
+-	int ret;
+-
+-	if (personality(current->personality) == PER_LINUX32 &&
+-		personality == PER_LINUX)
+-		personality = PER_LINUX32;
+-	ret = sys_personality(personality);
+-	if (ret == PER_LINUX32)
+-		ret = PER_LINUX;
+-	return ret;
+-}
+-
+ asmlinkage long sys32_sendfile(int out_fd, int in_fd,
+ 			       compat_off_t __user *offset, s32 count)
+ {
+Index: linux-2.6/arch/x86/include/asm/sys_ia32.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/sys_ia32.h	2010-01-09 15:59:17.810253534 +0100
++++ linux-2.6/arch/x86/include/asm/sys_ia32.h	2010-01-09 15:59:50.459006232 +0100
+@@ -51,7 +51,6 @@ asmlinkage long sys32_rt_sigqueueinfo(in
+ asmlinkage long sys32_pread(unsigned int, char __user *, u32, u32, u32);
+ asmlinkage long sys32_pwrite(unsigned int, char __user *, u32, u32, u32);
+ 
+-asmlinkage long sys32_personality(unsigned long);
+ asmlinkage long sys32_sendfile(int, int, compat_off_t __user *, s32);
+ 
+ struct oldold_utsname;
+Index: linux-2.6/kernel/exec_domain.c
+===================================================================
+--- linux-2.6.orig/kernel/exec_domain.c	2010-01-09 15:54:26.811263995 +0100
++++ linux-2.6/kernel/exec_domain.c	2010-01-09 15:58:46.675006021 +0100
+@@ -188,17 +188,26 @@ static int __init proc_execdomains_init(
+ module_init(proc_execdomains_init);
+ #endif
+ 
++/*
++ * Get/set the personality.
++ *
++ * Note that we simply return PER_LINUX even if we actually have a 32-bit
++ * task (PER_LINUX32) as this is expected by 32-bit userland.
++ */
+ SYSCALL_DEFINE1(personality, u_long, personality)
+ {
+ 	u_long old = current->personality;
+ 
+ 	if (personality != 0xffffffff) {
++		if (personality(old) == PER_LINUX32 &&
++		    personality == PER_LINUX)
++			personality = PER_LINUX32;
+ 		set_personality(personality);
+ 		if (current->personality != personality)
+ 			return -EINVAL;
+ 	}
+ 
+-	return (long)old;
++	return (long)(old == PER_LINUX32 ? PER_LINUX : old);
+ }
+ 
+ 
