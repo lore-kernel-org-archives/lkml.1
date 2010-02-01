@@ -1,74 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346Ab0BAKZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 05:25:26 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:53009 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424Ab0BAKZZ convert rfc822-to-8bit (ORCPT
+	id S1753598Ab0BAK2M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 05:28:12 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:56999 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752191Ab0BAK2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 05:25:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Iq+u1ZAhq/4tvLXNFRPU1MS1p42jQ758PeK+4968BZev74d+0GCV8zw1tYihs7OgRu
-         qHlciTWHppUFjNpJjz8sFpHzornwZaHw6ht/xDwcTPnDiRkRzqufV5l7z7KKHR3kTqlW
-         iobF04DrQY3GLTd5/AGLzGpSgg9KMP/MOhChQ=
+	Mon, 1 Feb 2010 05:28:11 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=yDW6t5/RZNj7WAoe4D2Qswi5dy+XJo99QOxsUIm4HrlZWS9FeTzU5KJZb4aZ413tz
+	3jTUyzHleBTUOun/hOZTg==
+Date: Mon, 1 Feb 2010 02:28:00 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, vedran.furac@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>, minchan.kim@gmail.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH v3] oom-kill: add lowmem usage aware oom kill handling
+In-Reply-To: <20100201090140.116cc704.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1002010223510.12764@chino.kir.corp.google.com>
+References: <f8c9aca9c98db8ae7df3ac2d7ac8d922.squirrel@webmail-b.css.fujitsu.com> <20100129162137.79b2a6d4@lxorguk.ukuu.org.uk> <c6c48fdf7f746add49bb9cc058b513ae.squirrel@webmail-b.css.fujitsu.com> <20100129163030.1109ce78@lxorguk.ukuu.org.uk>
+ <5a0e6098f900aa36993b2b7f2320f927.squirrel@webmail-b.css.fujitsu.com> <alpine.DEB.2.00.1001291258490.2938@chino.kir.corp.google.com> <20100201090140.116cc704.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1265019160.2848.14.camel@edumazet-laptop>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant>
-	 <1264816777.2793.510.camel@tonnant>
-	 <1264834704.2919.3.camel@edumazet-laptop>
-	 <1265016745.7499.144.camel@tonnant>
-	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
-	 <1265019160.2848.14.camel@edumazet-laptop>
-Date: Mon, 1 Feb 2010 12:25:24 +0200
-Message-ID: <b6fcc0a1002010225u4e74f9f0q633d73038234dc37@mail.gmail.com>
-Subject: Re: debug: nt_conntrack and KVM crash
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Jon Masters <jonathan@jonmasters.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       Patrick McHardy <kaber@trash.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 1, 2010 at 12:12 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> Le lundi 01 février 2010 à 11:36 +0200, Alexey Dobriyan a écrit :
->> On Mon, Feb 1, 2010 at 11:32 AM, Jon Masters <jonathan@jonmasters.org> wrote:
->> > I hacked up a per-namespace version of hashtables (this needs doing
->> > anyway, since the global stuff is just waiting to break)
->>
->> Which ones? Conntrack hashtables are per-netns.
->
-> It seems they are, but this is not a complete work :
+On Mon, 1 Feb 2010, KAMEZAWA Hiroyuki wrote:
 
-They are per-netns.
+> > >  109         /*
+> > >  110          * Processes which fork a lot of child processes are likely
+> > >  111          * a good choice. We add half the vmsize of the children if they
+> > >  112          * have an own mm. This prevents forking servers to flood the
+> > >  113          * machine with an endless amount of children. In case a single
+> > >  114          * child is eating the vast majority of memory, adding only half
+> > >  115          * to the parents will make the child our kill candidate of
+> > > choice.
+> > >  116          */
+> > >  117         list_for_each_entry(child, &p->children, sibling) {
+> > >  118                 task_lock(child);
+> > >  119                 if (child->mm != mm && child->mm)
+> > >  120                         points += child->mm->total_vm/2 + 1;
+> > >  121                 task_unlock(child);
+> > >  122         }
+> > >  123
+> > > ==
+> > > This makes task launcher(the fist child of some daemon.) first victim.
+> > 
+> > That "victim", p, is passed to oom_kill_process() which does this:
+> > 
+> > 	/* Try to kill a child first */
+> > 	list_for_each_entry(c, &p->children, sibling) {
+> > 		if (c->mm == p->mm)
+> > 			continue;
+> > 		if (!oom_kill_task(c))
+> > 			return 0;
+> > 	}
+> > 	return oom_kill_task(p);
+> > 
+> 
+> Then, finally, per-process oom_adj(!=OOM_DISABLE) control is ignored ?
+> Seems broken.
+> 
 
-It's not "complete", because right now there is no point in doing more.
-nf_conntrack_max was rejected given the absense of per-netns kernel
-memory consumption limiting.
+No, oom_kill_task() returns 1 if the child has OOM_DISABLE set, meaning it 
+never gets killed and we continue iterating through the child list.  If 
+there are no children with seperate memory to kill, the selected task gets 
+killed.  This prevents things from like sshd or bash from getting killed 
+unless they are actually the memory leaker themselves.
 
-> 1) Global settings (shared by all netns)
-
-Only hashtable size which is module parameter and
-there is no generic way to limit kernel memory (like beancounters).
-
-> 2) nf_conntrack_cachep is shared, it should be not shared.
-
-There is no need for it to be shared, unless you measured something.
-
-> 3) nf_conntrack_untracked shared by all netns, it should be local.
->
-> nf_conntrack_cleanup_net() can block forever because of this.
->
-> while (atomic_read(&nf_conntrack_untracked.ct_general.use) > 1)
->        schedule();
-
-This is known, yes, thinking on it, as naive way was agreed to suck.
+It would naturally be better to select the child with the highest 
+badness() score, but it only depends on the ordering of p->children at the 
+moment.  That's because we only want to iterate through this potentially 
+long list once, but improvements in this area (as well as sane tweaks to 
+the heuristic) would certainly be welcome.
