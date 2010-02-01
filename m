@@ -1,576 +1,772 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755748Ab0BAS7J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 13:59:09 -0500
-Received: from verein.lst.de ([213.95.11.210]:36288 "EHLO verein.lst.de"
+	id S1755869Ab0BAS7g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:59:36 -0500
+Received: from verein.lst.de ([213.95.11.210]:58744 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754697Ab0BAS7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 13:59:04 -0500
-Date: Mon, 1 Feb 2010 19:56:24 +0100
+	id S1755726Ab0BAS7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 13:59:32 -0500
+Date: Mon, 1 Feb 2010 19:55:24 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-arch@vger.kernel.org
-Cc: tony.luck@intel.com, ralf@linux-mips.org, kyle@mcmartin.ca,
-       benh@kernel.crashing.org, schwidefsky@de.ibm.com, jdike@addtoit.com,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, tglx@linutronix.de,
+Cc: linux@arm.linux.org.uk, starvik@axis.com, jesper.nilsson@axis.com,
+       ysato@users.sourceforge.jp, tony.luck@intel.com, geert@linux-m68k.org,
+       zippel@linux-m68k.org, gerg@uclinux.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, jdike@addtoit.com, tglx@linutronix.de,
        mingo@redhat.com, hpa@zytor.com, viro@zeniv.linux.org.uk
-Subject: [PATCH 5/6] improve sys_newuname for compat architectures
-Message-ID: <20100201185624.GE11045@lst.de>
+Subject: [PATCH 2/6] generic sys_old_mmap
+Message-ID: <20100201185524.GB11045@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0.499 () BAYES_44,REMOVE_REMOVAL_2WORD
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On an architecture that supports 32-bit compat we need to override
-the reported machine in uname with the 32-bit value.  Instead of
-doing this separately in every architecture introduce a COMPAT_UTS_MACHINE
-define in <asm/compat.h> and apply it directly in sys_newuname.
+Add a generic implementation of the old mmap syscall, which expects it's
+argument in a memory block and switch all architectures over to use it.
+
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-
-Index: linux-2.6/arch/ia64/ia32/ia32_entry.S
+Index: linux-2.6/include/linux/syscalls.h
 ===================================================================
---- linux-2.6.orig/arch/ia64/ia32/ia32_entry.S	2010-01-30 22:45:23.753022114 +0100
-+++ linux-2.6/arch/ia64/ia32/ia32_entry.S	2010-01-30 22:45:24.239003746 +0100
-@@ -300,7 +300,7 @@ ia32_syscall_table:
- 	data8 sys32_sigreturn
- 	data8 ia32_clone	  /* 120 */
- 	data8 sys_setdomainname
--	data8 sys32_newuname
-+	data8 sys_newuname
- 	data8 sys32_modify_ldt
- 	data8 compat_sys_adjtimex
- 	data8 sys32_mprotect	  /* 125 */
-Index: linux-2.6/arch/ia64/ia32/sys_ia32.c
-===================================================================
---- linux-2.6.orig/arch/ia64/ia32/sys_ia32.c	2010-01-30 22:45:23.755004095 +0100
-+++ linux-2.6/arch/ia64/ia32/sys_ia32.c	2010-01-30 22:45:24.240032591 +0100
-@@ -1613,17 +1613,6 @@ sys32_msync (unsigned int start, unsigne
- }
- 
- asmlinkage long
--sys32_newuname (struct new_utsname __user *name)
--{
--	int ret = sys_newuname(name);
--
--	if (!ret)
--		if (copy_to_user(name->machine, "i686\0\0\0", 8))
--			ret = -EFAULT;
--	return ret;
--}
--
--asmlinkage long
- sys32_getresuid16 (u16 __user *ruid, u16 __user *euid, u16 __user *suid)
- {
- 	uid_t a, b, c;
-Index: linux-2.6/arch/ia64/include/asm/compat.h
-===================================================================
---- linux-2.6.orig/arch/ia64/include/asm/compat.h	2010-01-30 22:40:32.975254480 +0100
-+++ linux-2.6/arch/ia64/include/asm/compat.h	2010-01-30 22:45:24.245003816 +0100
-@@ -5,7 +5,8 @@
-  */
- #include <linux/types.h>
- 
--#define COMPAT_USER_HZ	100
-+#define COMPAT_USER_HZ		100
-+#define COMPAT_UTS_MACHINE	"i686\0\0\0"
- 
- typedef u32		compat_size_t;
- typedef s32		compat_ssize_t;
-Index: linux-2.6/arch/mips/include/asm/compat.h
-===================================================================
---- linux-2.6.orig/arch/mips/include/asm/compat.h	2010-01-30 22:40:32.984272080 +0100
-+++ linux-2.6/arch/mips/include/asm/compat.h	2010-01-30 22:45:24.246044674 +0100
-@@ -8,7 +8,8 @@
- #include <asm/page.h>
- #include <asm/ptrace.h>
- 
--#define COMPAT_USER_HZ	100
-+#define COMPAT_USER_HZ		100
-+#define COMPAT_UTS_MACHINE	"mips\0\0\0"
- 
- typedef u32		compat_size_t;
- typedef s32		compat_ssize_t;
-Index: linux-2.6/arch/mips/kernel/linux32.c
-===================================================================
---- linux-2.6.orig/arch/mips/kernel/linux32.c	2010-01-30 22:45:23.759025955 +0100
-+++ linux-2.6/arch/mips/kernel/linux32.c	2010-01-30 22:45:24.248003537 +0100
-@@ -250,22 +250,6 @@ SYSCALL_DEFINE5(n32_msgrcv, int, msqid, 
- }
+--- linux-2.6.orig/include/linux/syscalls.h	2010-01-30 11:26:47.622005911 +0100
++++ linux-2.6/include/linux/syscalls.h	2010-01-30 22:40:36.125003257 +0100
+@@ -23,6 +23,7 @@ struct kexec_segment;
+ struct linux_dirent;
+ struct linux_dirent64;
+ struct list_head;
++struct mmap_arg_struct;
+ struct msgbuf;
+ struct msghdr;
+ struct mmsghdr;
+@@ -838,4 +839,6 @@ asmlinkage long sys_perf_event_open(
+ asmlinkage long sys_mmap_pgoff(unsigned long addr, unsigned long len,
+ 			unsigned long prot, unsigned long flags,
+ 			unsigned long fd, unsigned long pgoff);
++asmlinkage long sys_old_mmap(struct mmap_arg_struct __user *arg);
++
  #endif
+Index: linux-2.6/mm/mmap.c
+===================================================================
+--- linux-2.6.orig/mm/mmap.c	2010-01-30 11:25:52.664004514 +0100
++++ linux-2.6/mm/mmap.c	2010-01-30 11:26:48.281004165 +0100
+@@ -1083,6 +1083,30 @@ out:
+ 	return retval;
+ }
  
--SYSCALL_DEFINE1(32_newuname, struct new_utsname __user *, name)
++#ifdef __ARCH_WANT_SYS_OLD_MMAP
++struct mmap_arg_struct {
++	unsigned long addr;
++	unsigned long len;
++	unsigned long prot;
++	unsigned long flags;
++	unsigned long fd;
++	unsigned long offset;
++};
++
++SYSCALL_DEFINE1(old_mmap, struct mmap_arg_struct __user *, arg)
++{
++	struct mmap_arg_struct a;
++
++	if (copy_from_user(&a, arg, sizeof(a)))
++		return -EFAULT;
++	if (a.offset & ~PAGE_MASK)
++		return -EINVAL;
++
++	return sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
++			      a.offset >> PAGE_SHIFT);
++}
++#endif /* __ARCH_WANT_SYS_OLD_MMAP */
++
+ /*
+  * Some shared mappigns will want the pages marked read-only
+  * to track write events. If so, we'll downgrade vm_page_prot
+Index: linux-2.6/arch/arm/include/asm/unistd.h
+===================================================================
+--- linux-2.6.orig/arch/arm/include/asm/unistd.h	2010-01-30 11:26:47.558043975 +0100
++++ linux-2.6/arch/arm/include/asm/unistd.h	2010-01-30 22:40:35.710253641 +0100
+@@ -443,6 +443,7 @@
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
+ #define __ARCH_WANT_SYS_RT_SIGSUSPEND
++#define __ARCH_WANT_SYS_OLD_MMAP
+ #define __ARCH_WANT_SYS_OLD_SELECT
+ 
+ #if !defined(CONFIG_AEABI) || defined(CONFIG_OABI_COMPAT)
+Index: linux-2.6/arch/arm/kernel/calls.S
+===================================================================
+--- linux-2.6.orig/arch/arm/kernel/calls.S	2010-01-30 11:26:47.550273407 +0100
++++ linux-2.6/arch/arm/kernel/calls.S	2010-01-30 11:26:48.304006959 +0100
+@@ -99,7 +99,7 @@
+ 		CALL(sys_swapon)
+ 		CALL(sys_reboot)
+ 		CALL(OBSOLETE(sys_old_readdir))	/* used by libc4 */
+-/* 90 */	CALL(OBSOLETE(old_mmap))	/* used by libc4 */
++/* 90 */	CALL(OBSOLETE(sys_old_mmap))	/* used by libc4 */
+ 		CALL(sys_munmap)
+ 		CALL(sys_truncate)
+ 		CALL(sys_ftruncate)
+Index: linux-2.6/arch/arm/kernel/sys_arm.c
+===================================================================
+--- linux-2.6.orig/arch/arm/kernel/sys_arm.c	2010-01-30 11:26:47.626283114 +0100
++++ linux-2.6/arch/arm/kernel/sys_arm.c	2010-01-30 22:40:35.687254688 +0100
+@@ -28,32 +28,6 @@
+ #include <linux/ipc.h>
+ #include <linux/uaccess.h>
+ 
+-struct mmap_arg_struct {
+-	unsigned long addr;
+-	unsigned long len;
+-	unsigned long prot;
+-	unsigned long flags;
+-	unsigned long fd;
+-	unsigned long offset;
+-};
+-
+-asmlinkage int old_mmap(struct mmap_arg_struct __user *arg)
 -{
--	int ret = 0;
+-	int error = -EFAULT;
+-	struct mmap_arg_struct a;
 -
--	down_read(&uts_sem);
--	if (copy_to_user(name, utsname(), sizeof *name))
--		ret = -EFAULT;
--	up_read(&uts_sem);
+-	if (copy_from_user(&a, arg, sizeof(a)))
+-		goto out;
 -
--	if (current->personality == PER_LINUX32 && !ret)
--		if (copy_to_user(name->machine, "mips\0\0\0", 8))
--			ret = -EFAULT;
+-	error = -EINVAL;
+-	if (a.offset & ~PAGE_MASK)
+-		goto out;
 -
--	return ret;
+-	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
+-out:
+-	return error;
 -}
 -
- SYSCALL_DEFINE4(32_sendfile, long, out_fd, long, in_fd,
- 	compat_off_t __user *, offset, s32, count)
- {
-Index: linux-2.6/arch/mips/kernel/scall64-n32.S
+ #if !defined(CONFIG_AEABI) || defined(CONFIG_OABI_COMPAT)
+ /*
+  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+Index: linux-2.6/arch/cris/arch-v10/kernel/entry.S
 ===================================================================
---- linux-2.6.orig/arch/mips/kernel/scall64-n32.S	2010-01-30 22:45:23.766003745 +0100
-+++ linux-2.6/arch/mips/kernel/scall64-n32.S	2010-01-30 22:45:24.253032801 +0100
-@@ -181,7 +181,7 @@ EXPORT(sysn32_call_table)
- 	PTR	sys_exit
- 	PTR	compat_sys_wait4
- 	PTR	sys_kill			/* 6060 */
--	PTR	sys_32_newuname
-+	PTR	sys_newuname
- 	PTR	sys_semget
- 	PTR	sys_semop
- 	PTR	sys_n32_semctl
-Index: linux-2.6/arch/mips/kernel/scall64-o32.S
+--- linux-2.6.orig/arch/cris/arch-v10/kernel/entry.S	2010-01-30 11:25:52.613023720 +0100
++++ linux-2.6/arch/cris/arch-v10/kernel/entry.S	2010-01-30 11:26:48.312256156 +0100
+@@ -692,7 +692,7 @@ sys_call_table:	
+ 	.long sys_swapon
+ 	.long sys_reboot
+ 	.long sys_old_readdir
+-	.long old_mmap		/* 90 */
++	.long sys_old_mmap	/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+ 	.long sys_ftruncate
+Index: linux-2.6/arch/cris/arch-v32/kernel/entry.S
 ===================================================================
---- linux-2.6.orig/arch/mips/kernel/scall64-o32.S	2010-01-30 22:45:23.771026374 +0100
-+++ linux-2.6/arch/mips/kernel/scall64-o32.S	2010-01-30 22:45:24.260033709 +0100
-@@ -325,7 +325,7 @@ sys_call_table:
- 	PTR	sys32_sigreturn
- 	PTR	sys32_clone			/* 4120 */
- 	PTR	sys_setdomainname
--	PTR	sys_32_newuname
-+	PTR	sys_newuname
- 	PTR	sys_ni_syscall			/* sys_modify_ldt */
- 	PTR	compat_sys_adjtimex
- 	PTR	sys_mprotect			/* 4125 */
-Index: linux-2.6/arch/powerpc/include/asm/syscalls.h
+--- linux-2.6.orig/arch/cris/arch-v32/kernel/entry.S	2010-01-30 11:25:52.600004374 +0100
++++ linux-2.6/arch/cris/arch-v32/kernel/entry.S	2010-01-30 11:26:48.319255527 +0100
+@@ -615,7 +615,7 @@ sys_call_table:
+ 	.long sys_swapon
+ 	.long sys_reboot
+ 	.long sys_old_readdir
+-	.long old_mmap		/* 90 */
++	.long sys_old_mmap	/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+ 	.long sys_ftruncate
+Index: linux-2.6/arch/cris/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/syscalls.h	2010-01-30 22:45:23.787005771 +0100
-+++ linux-2.6/arch/powerpc/include/asm/syscalls.h	2010-01-30 22:45:24.266255876 +0100
-@@ -7,7 +7,6 @@
- #include <linux/types.h>
- #include <asm/signal.h>
- 
--struct new_utsname;
- struct pt_regs;
- struct rtas_args;
- struct sigaction;
-@@ -37,7 +36,6 @@ asmlinkage long sys_rt_sigaction(int sig
- 		struct sigaction __user *oact, size_t sigsetsize);
- asmlinkage int ppc_rtas(struct rtas_args __user *uargs);
- asmlinkage time_t sys64_time(time_t __user * tloc);
--asmlinkage long ppc_newuname(struct new_utsname __user * name);
- 
- asmlinkage long sys_rt_sigsuspend(sigset_t __user *unewset,
- 		size_t sigsetsize);
-Index: linux-2.6/arch/powerpc/include/asm/systbl.h
+--- linux-2.6.orig/arch/cris/include/asm/unistd.h	2010-01-30 11:25:52.589004863 +0100
++++ linux-2.6/arch/cris/include/asm/unistd.h	2010-01-30 22:40:35.732262022 +0100
+@@ -364,6 +364,7 @@
+ #define __ARCH_WANT_SYS_LLSEEK
+ #define __ARCH_WANT_SYS_NICE
+ #define __ARCH_WANT_SYS_OLD_GETRLIMIT
++#define __ARCH_WANT_SYS_OLD_MMAP
+ #define __ARCH_WANT_SYS_OLDUMOUNT
+ #define __ARCH_WANT_SYS_SIGPENDING
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+Index: linux-2.6/arch/cris/kernel/sys_cris.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/systbl.h	2010-01-30 22:45:23.790282206 +0100
-+++ linux-2.6/arch/powerpc/include/asm/systbl.h	2010-01-30 22:45:24.269283674 +0100
-@@ -125,7 +125,7 @@ SYSCALL_SPU(fsync)
- SYS32ONLY(sigreturn)
- PPC_SYS(clone)
- COMPAT_SYS_SPU(setdomainname)
--PPC_SYS_SPU(newuname)
-+SYSCALL_SPU(newuname)
- SYSCALL(ni_syscall)
- COMPAT_SYS_SPU(adjtimex)
- SYSCALL_SPU(mprotect)
-Index: linux-2.6/kernel/sys.c
-===================================================================
---- linux-2.6.orig/kernel/sys.c	2010-01-30 22:40:33.289254130 +0100
-+++ linux-2.6/kernel/sys.c	2010-01-30 22:53:52.564256226 +0100
-@@ -33,6 +33,7 @@
- #include <linux/task_io_accounting_ops.h>
- #include <linux/seccomp.h>
- #include <linux/cpu.h>
-+#include <linux/personality.h>
- #include <linux/ptrace.h>
- #include <linux/fs_struct.h>
+--- linux-2.6.orig/arch/cris/kernel/sys_cris.c	2010-01-30 11:25:52.578013244 +0100
++++ linux-2.6/arch/cris/kernel/sys_cris.c	2010-01-30 22:40:35.721253920 +0100
+@@ -26,24 +26,6 @@
+ #include <asm/uaccess.h>
+ #include <asm/segment.h>
  
-@@ -1118,6 +1119,15 @@ out:
- 
- DECLARE_RWSEM(uts_sem);
- 
-+#ifdef COMPAT_UTS_MACHINE
-+#define override_architecture(name) \
-+	(current->personality == PER_LINUX32 && \
-+	 copy_to_user(name->machine, COMPAT_UTS_MACHINE, \
-+		      sizeof(COMPAT_UTS_MACHINE)))
-+#else
-+#define override_architecture(name)	0
-+#endif
-+
- SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
- {
- 	int errno = 0;
-@@ -1126,6 +1136,9 @@ SYSCALL_DEFINE1(newuname, struct new_uts
- 	if (copy_to_user(name, utsname(), sizeof *name))
- 		errno = -EFAULT;
- 	up_read(&uts_sem);
-+
-+	if (!errno && override_architecture(name))
-+		errno = -EFAULT;
- 	return errno;
- }
- 
-Index: linux-2.6/arch/parisc/include/asm/compat.h
-===================================================================
---- linux-2.6.orig/arch/parisc/include/asm/compat.h	2010-01-30 22:40:33.089004864 +0100
-+++ linux-2.6/arch/parisc/include/asm/compat.h	2010-01-30 22:45:24.284256365 +0100
-@@ -7,7 +7,8 @@
- #include <linux/sched.h>
- #include <linux/thread_info.h>
- 
--#define COMPAT_USER_HZ 100
-+#define COMPAT_USER_HZ 		100
-+#define COMPAT_UTS_MACHINE	"parisc\0\0"
- 
- typedef u32	compat_size_t;
- typedef s32	compat_ssize_t;
-Index: linux-2.6/arch/parisc/kernel/sys_parisc.c
-===================================================================
---- linux-2.6.orig/arch/parisc/kernel/sys_parisc.c	2010-01-30 22:45:23.777005980 +0100
-+++ linux-2.6/arch/parisc/kernel/sys_parisc.c	2010-01-30 22:45:24.288256715 +0100
-@@ -219,18 +219,3 @@ asmlinkage int sys_free_hugepages(unsign
- {
- 	return -EINVAL;
- }
+-asmlinkage unsigned long old_mmap(unsigned long __user *args)
+-{        
+-	unsigned long buffer[6];
+-	int err = -EFAULT;
 -
--long parisc_newuname(struct new_utsname __user *name)
--{
--	int err = sys_newuname(name);
+-	if (copy_from_user(&buffer, args, sizeof(buffer)))
+-		goto out;
 -
--#ifdef CONFIG_COMPAT
--	if (!err && personality(current->personality) == PER_LINUX32) {
--		if (__put_user(0, name->machine + 6) ||
--		    __put_user(0, name->machine + 7))
--			err = -EFAULT;
--	}
--#endif
+-	err = -EINVAL;
+-	if (buffer[5] & ~PAGE_MASK) /* verify that offset is on page boundary */
+-		goto out;
 -
--	return err;
--}
-Index: linux-2.6/arch/parisc/kernel/syscall_table.S
-===================================================================
---- linux-2.6.orig/arch/parisc/kernel/syscall_table.S	2010-01-30 22:45:23.781068559 +0100
-+++ linux-2.6/arch/parisc/kernel/syscall_table.S	2010-01-30 22:45:24.292034058 +0100
-@@ -127,7 +127,7 @@
- 	ENTRY_SAME(socketpair)
- 	ENTRY_SAME(setpgid)
- 	ENTRY_SAME(send)
--	ENTRY_OURS(newuname)
-+	ENTRY_SAME(newuname)
- 	ENTRY_SAME(umask)		/* 60 */
- 	ENTRY_SAME(chroot)
- 	ENTRY_COMP(ustat)
-Index: linux-2.6/arch/powerpc/include/asm/compat.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/compat.h	2010-01-30 22:40:33.059254829 +0100
-+++ linux-2.6/arch/powerpc/include/asm/compat.h	2010-01-30 22:45:24.296024909 +0100
-@@ -7,7 +7,8 @@
- #include <linux/types.h>
- #include <linux/sched.h>
- 
--#define COMPAT_USER_HZ	100
-+#define COMPAT_USER_HZ		100
-+#define COMPAT_UTS_MACHINE	"ppc\0\0"
- 
- typedef u32		compat_size_t;
- typedef s32		compat_ssize_t;
-Index: linux-2.6/arch/powerpc/kernel/syscalls.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/syscalls.c	2010-01-30 22:45:23.795267190 +0100
-+++ linux-2.6/arch/powerpc/kernel/syscalls.c	2010-01-30 22:53:35.371004026 +0100
-@@ -117,19 +117,6 @@ static inline int override_machine(char 
- 	return 0;
- }
- 
--long ppc_newuname(struct new_utsname __user * name)
--{
--	int err = 0;
--
--	down_read(&uts_sem);
--	if (copy_to_user(name, utsname(), sizeof(*name)))
--		err = -EFAULT;
--	up_read(&uts_sem);
--	if (!err)
--		err = override_machine(name->machine);
+-	err = sys_mmap_pgoff(buffer[0], buffer[1], buffer[2], buffer[3],
+-                       buffer[4], buffer[5] >> PAGE_SHIFT);
+-out:
 -	return err;
 -}
 -
- int sys_uname(struct old_utsname __user *name)
- {
- 	int err = 0;
-Index: linux-2.6/arch/s390/include/asm/compat.h
+ asmlinkage long
+ sys_mmap2(unsigned long addr, unsigned long len, unsigned long prot,
+           unsigned long flags, unsigned long fd, unsigned long pgoff)
+Index: linux-2.6/arch/h8300/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/arch/s390/include/asm/compat.h	2010-01-30 22:40:33.128003886 +0100
-+++ linux-2.6/arch/s390/include/asm/compat.h	2010-01-30 22:45:24.302033569 +0100
-@@ -35,7 +35,8 @@
- 
- extern long psw32_user_bits;
- 
--#define COMPAT_USER_HZ	100
-+#define COMPAT_USER_HZ		100
-+#define COMPAT_UTS_MACHINE	"s390\0\0\0\0"
- 
- typedef u32		compat_size_t;
- typedef s32		compat_ssize_t;
-Index: linux-2.6/arch/s390/kernel/compat_wrapper.S
+--- linux-2.6.orig/arch/h8300/include/asm/unistd.h	2010-01-30 11:26:47.560025328 +0100
++++ linux-2.6/arch/h8300/include/asm/unistd.h	2010-01-30 22:40:36.097253082 +0100
+@@ -348,6 +348,7 @@
+ #define __ARCH_WANT_SYS_LLSEEK
+ #define __ARCH_WANT_SYS_NICE
+ #define __ARCH_WANT_SYS_OLD_GETRLIMIT
++#define __ARCH_WANT_SYS_OLD_MMAP
+ #define __ARCH_WANT_SYS_OLD_SELECT
+ #define __ARCH_WANT_SYS_OLDUMOUNT
+ #define __ARCH_WANT_SYS_SIGPENDING
+Index: linux-2.6/arch/h8300/kernel/sys_h8300.c
 ===================================================================
---- linux-2.6.orig/arch/s390/kernel/compat_wrapper.S	2010-01-30 22:45:23.800256364 +0100
-+++ linux-2.6/arch/s390/kernel/compat_wrapper.S	2010-01-30 22:45:24.306033290 +0100
-@@ -547,7 +547,7 @@ sys32_setdomainname_wrapper:
- 	.globl	sys32_newuname_wrapper
- sys32_newuname_wrapper:
- 	llgtr	%r2,%r2			# struct new_utsname *
--	jg	sys_s390_newuname	# branch to system call
-+	jg	sys_newuname		# branch to system call
+--- linux-2.6.orig/arch/h8300/kernel/sys_h8300.c	2010-01-30 11:26:47.628255457 +0100
++++ linux-2.6/arch/h8300/kernel/sys_h8300.c	2010-01-30 22:40:36.087274104 +0100
+@@ -27,40 +27,6 @@
+ #include <asm/unistd.h>
  
- 	.globl	compat_sys_adjtimex_wrapper
- compat_sys_adjtimex_wrapper:
-Index: linux-2.6/arch/s390/kernel/entry.h
+ /*
+- * Perform the select(nd, in, out, ex, tv) and mmap() system
+- * calls. Linux/m68k cloned Linux/i386, which didn't use to be able to
+- * handle more than 4 system call parameters, so these system calls
+- * used a memory block for parameter passing..
+- */
+-
+-struct mmap_arg_struct {
+-	unsigned long addr;
+-	unsigned long len;
+-	unsigned long prot;
+-	unsigned long flags;
+-	unsigned long fd;
+-	unsigned long offset;
+-};
+-
+-asmlinkage int old_mmap(struct mmap_arg_struct *arg)
+-{
+-	struct mmap_arg_struct a;
+-	int error = -EFAULT;
+-
+-	if (copy_from_user(&a, arg, sizeof(a)))
+-		goto out;
+-
+-	error = -EINVAL;
+-	if (a.offset & ~PAGE_MASK)
+-		goto out;
+-
+-	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
+-			       a.offset >> PAGE_SHIFT);
+-out:
+-	return error;
+-}
+-
+-/*
+  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+  *
+  * This is really horribly ugly.
+Index: linux-2.6/arch/h8300/kernel/syscalls.S
 ===================================================================
---- linux-2.6.orig/arch/s390/kernel/entry.h	2010-01-30 22:45:23.808255247 +0100
-+++ linux-2.6/arch/s390/kernel/entry.h	2010-01-30 22:45:24.312035804 +0100
-@@ -24,7 +24,6 @@ int __cpuinit start_secondary(void *cpuv
- void __init startup_init(void);
- void die(const char * str, struct pt_regs * regs, long err);
+--- linux-2.6.orig/arch/h8300/kernel/syscalls.S	2010-01-30 11:26:47.606032381 +0100
++++ linux-2.6/arch/h8300/kernel/syscalls.S	2010-01-30 11:26:48.332256086 +0100
+@@ -104,7 +104,7 @@ SYMBOL_NAME_LABEL(sys_call_table)	
+ 	.long SYMBOL_NAME(sys_swapon)
+ 	.long SYMBOL_NAME(sys_reboot)
+ 	.long SYMBOL_NAME(sys_old_readdir)
+-	.long SYMBOL_NAME(old_mmap)		/* 90 */
++	.long SYMBOL_NAME(sys_old_mmap)		/* 90 */
+ 	.long SYMBOL_NAME(sys_munmap)
+ 	.long SYMBOL_NAME(sys_truncate)
+ 	.long SYMBOL_NAME(sys_ftruncate)
+Index: linux-2.6/arch/m68k/kernel/entry.S
+===================================================================
+--- linux-2.6.orig/arch/m68k/kernel/entry.S	2010-01-30 11:26:47.551273616 +0100
++++ linux-2.6/arch/m68k/kernel/entry.S	2010-01-30 11:26:48.335256016 +0100
+@@ -518,7 +518,7 @@ sys_call_table:
+ 	.long sys_swapon
+ 	.long sys_reboot
+ 	.long sys_old_readdir
+-	.long old_mmap		/* 90 */
++	.long sys_old_mmap	/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+ 	.long sys_ftruncate
+Index: linux-2.6/arch/m68k/kernel/sys_m68k.c
+===================================================================
+--- linux-2.6.orig/arch/m68k/kernel/sys_m68k.c	2010-01-30 11:26:47.629267190 +0100
++++ linux-2.6/arch/m68k/kernel/sys_m68k.c	2010-01-30 22:40:35.789004793 +0100
+@@ -42,40 +42,6 @@ asmlinkage long sys_mmap2(unsigned long 
+ }
  
--struct new_utsname;
- struct s390_mmap_arg_struct;
- struct fadvise64_64_args;
- struct old_sigaction;
-@@ -32,7 +31,6 @@ struct old_sigaction;
- long sys_mmap2(struct s390_mmap_arg_struct __user  *arg);
- long sys_s390_ipc(uint call, int first, unsigned long second,
- 	     unsigned long third, void __user *ptr);
--long sys_s390_newuname(struct new_utsname __user *name);
- long sys_s390_fadvise64(int fd, u32 offset_high, u32 offset_low,
- 		    size_t len, int advice);
- long sys_s390_fadvise64_64(struct fadvise64_64_args __user *args);
+ /*
+- * Perform the select(nd, in, out, ex, tv) and mmap() system
+- * calls. Linux/m68k cloned Linux/i386, which didn't use to be able to
+- * handle more than 4 system call parameters, so these system calls
+- * used a memory block for parameter passing..
+- */
+-
+-struct mmap_arg_struct {
+-	unsigned long addr;
+-	unsigned long len;
+-	unsigned long prot;
+-	unsigned long flags;
+-	unsigned long fd;
+-	unsigned long offset;
+-};
+-
+-asmlinkage int old_mmap(struct mmap_arg_struct __user *arg)
+-{
+-	struct mmap_arg_struct a;
+-	int error = -EFAULT;
+-
+-	if (copy_from_user(&a, arg, sizeof(a)))
+-		goto out;
+-
+-	error = -EINVAL;
+-	if (a.offset & ~PAGE_MASK)
+-		goto out;
+-
+-	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
+-			       a.offset >> PAGE_SHIFT);
+-out:
+-	return error;
+-}
+-
+-/*
+  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+  *
+  * This is really horribly ugly.
+Index: linux-2.6/arch/m68knommu/kernel/sys_m68k.c
+===================================================================
+--- linux-2.6.orig/arch/m68knommu/kernel/sys_m68k.c	2010-01-30 11:26:47.634256434 +0100
++++ linux-2.6/arch/m68knommu/kernel/sys_m68k.c	2010-01-30 22:40:36.115253222 +0100
+@@ -28,40 +28,6 @@
+ #include <asm/unistd.h>
+ 
+ /*
+- * Perform the select(nd, in, out, ex, tv) and mmap() system
+- * calls. Linux/m68k cloned Linux/i386, which didn't use to be able to
+- * handle more than 4 system call parameters, so these system calls
+- * used a memory block for parameter passing..
+- */
+-
+-struct mmap_arg_struct {
+-	unsigned long addr;
+-	unsigned long len;
+-	unsigned long prot;
+-	unsigned long flags;
+-	unsigned long fd;
+-	unsigned long offset;
+-};
+-
+-asmlinkage int old_mmap(struct mmap_arg_struct *arg)
+-{
+-	struct mmap_arg_struct a;
+-	int error = -EFAULT;
+-
+-	if (copy_from_user(&a, arg, sizeof(a)))
+-		goto out;
+-
+-	error = -EINVAL;
+-	if (a.offset & ~PAGE_MASK)
+-		goto out;
+-
+-	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
+-				a.offset >> PAGE_SHIFT);
+-out:
+-	return error;
+-}
+-
+-/*
+  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+  *
+  * This is really horribly ugly.
+Index: linux-2.6/arch/m68knommu/kernel/syscalltable.S
+===================================================================
+--- linux-2.6.orig/arch/m68knommu/kernel/syscalltable.S	2010-01-30 11:26:47.553274454 +0100
++++ linux-2.6/arch/m68knommu/kernel/syscalltable.S	2010-01-30 11:26:48.341285210 +0100
+@@ -108,7 +108,7 @@ ENTRY(sys_call_table)
+ 	.long sys_ni_syscall	/* sys_swapon */
+ 	.long sys_reboot
+ 	.long sys_old_readdir
+-	.long old_mmap		/* 90 */
++	.long sys_old_mmap	/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+ 	.long sys_ftruncate
+Index: linux-2.6/arch/m68k/include/asm/unistd.h
+===================================================================
+--- linux-2.6.orig/arch/m68k/include/asm/unistd.h	2010-01-30 11:26:47.565005702 +0100
++++ linux-2.6/arch/m68k/include/asm/unistd.h	2010-01-30 22:40:35.806003606 +0100
+@@ -359,6 +359,7 @@
+ #define __ARCH_WANT_SYS_LLSEEK
+ #define __ARCH_WANT_SYS_NICE
+ #define __ARCH_WANT_SYS_OLD_GETRLIMIT
++#define __ARCH_WANT_SYS_OLD_MMAP
+ #define __ARCH_WANT_SYS_OLD_SELECT
+ #define __ARCH_WANT_SYS_OLDUMOUNT
+ #define __ARCH_WANT_SYS_SIGPENDING
 Index: linux-2.6/arch/s390/kernel/sys_s390.c
 ===================================================================
---- linux-2.6.orig/arch/s390/kernel/sys_s390.c	2010-01-30 22:45:23.811254758 +0100
-+++ linux-2.6/arch/s390/kernel/sys_s390.c	2010-01-30 22:45:24.314067722 +0100
-@@ -130,19 +130,6 @@ SYSCALL_DEFINE5(s390_ipc, uint, call, in
- 	return -EINVAL;
+--- linux-2.6.orig/arch/s390/kernel/sys_s390.c	2010-01-30 11:25:52.457275362 +0100
++++ linux-2.6/arch/s390/kernel/sys_s390.c	2010-01-30 22:40:35.921004723 +0100
+@@ -33,13 +33,12 @@
+ #include "entry.h"
+ 
+ /*
+- * Perform the select(nd, in, out, ex, tv) and mmap() system
+- * calls. Linux for S/390 isn't able to handle more than 5
+- * system call parameters, so these system calls used a memory
+- * block for parameter passing..
++ * Perform the mmap() system call. Linux for S/390 isn't able to handle more
++ * than 5 system call parameters, so this system call uses a memory block
++ * for parameter passing.
+  */
+ 
+-struct mmap_arg_struct {
++struct s390_mmap_arg_struct {
+ 	unsigned long addr;
+ 	unsigned long len;
+ 	unsigned long prot;
+@@ -48,9 +47,9 @@ struct mmap_arg_struct {
+ 	unsigned long offset;
+ };
+ 
+-SYSCALL_DEFINE1(mmap2, struct mmap_arg_struct __user *, arg)
++SYSCALL_DEFINE1(mmap2, struct s390_mmap_arg_struct __user *, arg)
+ {
+-	struct mmap_arg_struct a;
++	struct s390_mmap_arg_struct a;
+ 	int error = -EFAULT;
+ 
+ 	if (copy_from_user(&a, arg, sizeof(a)))
+@@ -60,23 +59,6 @@ out:
+ 	return error;
  }
  
--#ifdef CONFIG_64BIT
--SYSCALL_DEFINE1(s390_newuname, struct new_utsname __user *, name)
+-SYSCALL_DEFINE1(s390_old_mmap, struct mmap_arg_struct __user *, arg)
 -{
--	int ret = sys_newuname(name);
+-	struct mmap_arg_struct a;
+-	long error = -EFAULT;
 -
--	if (personality(current->personality) == PER_LINUX32 && !ret) {
--		ret = copy_to_user(name->machine, "s390\0\0\0\0", 8);
--		if (ret) ret = -EFAULT;
--	}
--	return ret;
+-	if (copy_from_user(&a, arg, sizeof(a)))
+-		goto out;
+-
+-	error = -EINVAL;
+-	if (a.offset & ~PAGE_MASK)
+-		goto out;
+-
+-	error = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd, a.offset >> PAGE_SHIFT);
+-out:
+-	return error;
 -}
--#endif /* CONFIG_64BIT */
 -
  /*
-  * Wrapper function for sys_fadvise64/fadvise64_64
-  */
+  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+  *
 Index: linux-2.6/arch/s390/kernel/syscalls.S
 ===================================================================
---- linux-2.6.orig/arch/s390/kernel/syscalls.S	2010-01-30 22:45:23.814275501 +0100
-+++ linux-2.6/arch/s390/kernel/syscalls.S	2010-01-30 22:45:24.316005632 +0100
-@@ -130,7 +130,7 @@ SYSCALL(sys_fsync,sys_fsync,sys32_fsync_
- SYSCALL(sys_sigreturn,sys_sigreturn,sys32_sigreturn)
- SYSCALL(sys_clone,sys_clone,sys_clone_wrapper)			/* 120 */
- SYSCALL(sys_setdomainname,sys_setdomainname,sys32_setdomainname_wrapper)
--SYSCALL(sys_newuname,sys_s390_newuname,sys32_newuname_wrapper)
-+SYSCALL(sys_newuname,sys_newuname,sys32_newuname_wrapper)
- NI_SYSCALL							/* modify_ldt for i386 */
- SYSCALL(sys_adjtimex,sys_adjtimex,compat_sys_adjtimex_wrapper)
- SYSCALL(sys_mprotect,sys_mprotect,sys32_mprotect_wrapper)	/* 125 */
-Index: linux-2.6/arch/sparc/include/asm/compat.h
+--- linux-2.6.orig/arch/s390/kernel/syscalls.S	2010-01-30 11:25:52.466254409 +0100
++++ linux-2.6/arch/s390/kernel/syscalls.S	2010-01-30 22:40:35.932003815 +0100
+@@ -98,7 +98,7 @@ SYSCALL(sys_uselib,sys_uselib,sys32_usel
+ SYSCALL(sys_swapon,sys_swapon,sys32_swapon_wrapper)
+ SYSCALL(sys_reboot,sys_reboot,sys32_reboot_wrapper)
+ SYSCALL(sys_ni_syscall,sys_ni_syscall,old32_readdir_wrapper)	/* old readdir syscall */
+-SYSCALL(sys_s390_old_mmap,sys_s390_old_mmap,old32_mmap_wrapper)	/* 90 */
++SYSCALL(sys_old_mmap,sys_old_mmap,old32_mmap_wrapper)		/* 90 */
+ SYSCALL(sys_munmap,sys_munmap,sys32_munmap_wrapper)
+ SYSCALL(sys_truncate,sys_truncate,sys32_truncate_wrapper)
+ SYSCALL(sys_ftruncate,sys_ftruncate,sys32_ftruncate_wrapper)
+Index: linux-2.6/arch/s390/kernel/entry.h
 ===================================================================
---- linux-2.6.orig/arch/sparc/include/asm/compat.h	2010-01-30 22:40:33.182257064 +0100
-+++ linux-2.6/arch/sparc/include/asm/compat.h	2010-01-30 22:45:24.319006261 +0100
-@@ -5,7 +5,8 @@
-  */
- #include <linux/types.h>
+--- linux-2.6.orig/arch/s390/kernel/entry.h	2010-01-30 11:26:47.648282625 +0100
++++ linux-2.6/arch/s390/kernel/entry.h	2010-01-30 22:40:35.911007307 +0100
+@@ -25,12 +25,11 @@ void __init startup_init(void);
+ void die(const char * str, struct pt_regs * regs, long err);
  
--#define COMPAT_USER_HZ	100
-+#define COMPAT_USER_HZ		100
-+#define COMPAT_UTS_MACHINE	"sparc\0\0"
+ struct new_utsname;
+-struct mmap_arg_struct;
++struct s390_mmap_arg_struct;
+ struct fadvise64_64_args;
+ struct old_sigaction;
  
- typedef u32		compat_size_t;
- typedef s32		compat_ssize_t;
-Index: linux-2.6/arch/sparc/kernel/sys_sparc_64.c
+-long sys_mmap2(struct mmap_arg_struct __user  *arg);
+-long sys_s390_old_mmap(struct mmap_arg_struct __user *arg);
++long sys_mmap2(struct s390_mmap_arg_struct __user  *arg);
+ long sys_ipc(uint call, int first, unsigned long second,
+ 	     unsigned long third, void __user *ptr);
+ long sys_s390_newuname(struct new_utsname __user *name);
+Index: linux-2.6/arch/s390/include/asm/unistd.h
 ===================================================================
---- linux-2.6.orig/arch/sparc/kernel/sys_sparc_64.c	2010-01-30 22:45:23.819028330 +0100
-+++ linux-2.6/arch/sparc/kernel/sys_sparc_64.c	2010-01-30 22:45:24.323006331 +0100
-@@ -511,17 +511,6 @@ out:
- 	return err;
- }
- 
--SYSCALL_DEFINE1(sparc64_newuname, struct new_utsname __user *, name)
--{
--	int ret = sys_newuname(name);
--	
--	if (current->personality == PER_LINUX32 && !ret) {
--		ret = (copy_to_user(name->machine, "sparc\0\0", 8)
--		       ? -EFAULT : 0);
--	}
--	return ret;
--}
--
- int sparc_mmap_check(unsigned long addr, unsigned long len)
- {
- 	if (test_thread_flag(TIF_32BIT)) {
-Index: linux-2.6/arch/sparc/kernel/systbls.h
-===================================================================
---- linux-2.6.orig/arch/sparc/kernel/systbls.h	2010-01-30 22:45:23.821271031 +0100
-+++ linux-2.6/arch/sparc/kernel/systbls.h	2010-01-30 22:45:24.324006540 +0100
-@@ -6,15 +6,12 @@
- #include <asm/utrap.h>
- #include <asm/signal.h>
- 
--struct new_utsname;
--
- extern asmlinkage unsigned long sys_getpagesize(void);
- extern asmlinkage long sparc_pipe(struct pt_regs *regs);
- extern asmlinkage long sys_sparc_ipc(unsigned int call, int first,
- 			       unsigned long second,
- 			       unsigned long third,
- 			       void __user *ptr, long fifth);
--extern asmlinkage long sparc64_newuname(struct new_utsname __user *name);
- extern asmlinkage long sys64_munmap(unsigned long addr, size_t len);
- extern asmlinkage unsigned long sys64_mremap(unsigned long addr,
- 					     unsigned long old_len,
-Index: linux-2.6/arch/sparc/kernel/systbls_64.S
-===================================================================
---- linux-2.6.orig/arch/sparc/kernel/systbls_64.S	2010-01-30 22:45:23.822272987 +0100
-+++ linux-2.6/arch/sparc/kernel/systbls_64.S	2010-01-30 22:45:24.326005283 +0100
-@@ -55,7 +55,7 @@ sys_call_table32:
- /*170*/	.word sys32_lsetxattr, sys32_fsetxattr, sys_getxattr, sys_lgetxattr, compat_sys_getdents
- 	.word sys_setsid, sys_fchdir, sys32_fgetxattr, sys_listxattr, sys_llistxattr
- /*180*/	.word sys32_flistxattr, sys_removexattr, sys_lremovexattr, compat_sys_sigpending, sys_ni_syscall
--	.word sys32_setpgid, sys32_fremovexattr, sys32_tkill, sys32_exit_group, sys_sparc64_newuname
-+	.word sys32_setpgid, sys32_fremovexattr, sys32_tkill, sys32_exit_group, sys_newuname
- /*190*/	.word sys32_init_module, sys_personality, sys_remap_file_pages, sys32_epoll_create, sys32_epoll_ctl
- 	.word sys32_epoll_wait, sys32_ioprio_set, sys_getppid, sys32_sigaction, sys_sgetmask
- /*200*/	.word sys32_ssetmask, sys_sigsuspend, compat_sys_newlstat, sys_uselib, compat_sys_old_readdir
-@@ -130,7 +130,7 @@ sys_call_table:
- /*170*/	.word sys_lsetxattr, sys_fsetxattr, sys_getxattr, sys_lgetxattr, sys_getdents
- 	.word sys_setsid, sys_fchdir, sys_fgetxattr, sys_listxattr, sys_llistxattr
- /*180*/	.word sys_flistxattr, sys_removexattr, sys_lremovexattr, sys_nis_syscall, sys_ni_syscall
--	.word sys_setpgid, sys_fremovexattr, sys_tkill, sys_exit_group, sys_sparc64_newuname
-+	.word sys_setpgid, sys_fremovexattr, sys_tkill, sys_exit_group, sys_newuname
- /*190*/	.word sys_init_module, sys_personality, sys_remap_file_pages, sys_epoll_create, sys_epoll_ctl
- 	.word sys_epoll_wait, sys_ioprio_set, sys_getppid, sys_nis_syscall, sys_sgetmask
- /*200*/	.word sys_ssetmask, sys_nis_syscall, sys_newlstat, sys_uselib, sys_nis_syscall
-Index: linux-2.6/arch/x86/include/asm/compat.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/compat.h	2010-01-30 22:40:33.222274175 +0100
-+++ linux-2.6/arch/x86/include/asm/compat.h	2010-01-30 22:45:24.330006470 +0100
-@@ -8,7 +8,8 @@
- #include <linux/sched.h>
- #include <asm/user32.h>
- 
--#define COMPAT_USER_HZ	100
-+#define COMPAT_USER_HZ		100
-+#define COMPAT_UTS_MACHINE	"i686\0\0"
- 
- typedef u32		compat_size_t;
- typedef s32		compat_ssize_t;
+--- linux-2.6.orig/arch/s390/include/asm/unistd.h	2010-01-30 11:25:52.446004304 +0100
++++ linux-2.6/arch/s390/include/asm/unistd.h	2010-01-30 11:26:48.351264327 +0100
+@@ -392,6 +392,7 @@
+ #define __ARCH_WANT_SYS_LLSEEK
+ #define __ARCH_WANT_SYS_NICE
+ #define __ARCH_WANT_SYS_OLD_GETRLIMIT
++#define __ARCH_WANT_SYS_OLD_MMAP
+ #define __ARCH_WANT_SYS_OLDUMOUNT
+ #define __ARCH_WANT_SYS_SIGPENDING
+ #define __ARCH_WANT_SYS_SIGPROCMASK
 Index: linux-2.6/arch/x86/include/asm/syscalls.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/syscalls.h	2010-01-30 22:45:23.148006888 +0100
-+++ linux-2.6/arch/x86/include/asm/syscalls.h	2010-01-30 22:53:35.428260346 +0100
-@@ -68,11 +68,8 @@ int sys_vm86(unsigned long, unsigned lon
- long sys_arch_prctl(int, unsigned long);
+--- linux-2.6.orig/arch/x86/include/asm/syscalls.h	2010-01-30 11:26:47.639283952 +0100
++++ linux-2.6/arch/x86/include/asm/syscalls.h	2010-01-30 22:40:36.048253431 +0100
+@@ -51,11 +51,9 @@ asmlinkage int sys_sigaction(int, const 
+ unsigned long sys_sigreturn(struct pt_regs *);
  
- /* kernel/sys_x86_64.c */
--struct new_utsname;
--
- asmlinkage long sys_mmap(unsigned long, unsigned long, unsigned long,
- 			 unsigned long, unsigned long, unsigned long);
--asmlinkage long sys_uname(struct new_utsname __user *);
+ /* kernel/sys_i386_32.c */
+-struct mmap_arg_struct;
+ struct oldold_utsname;
+ struct old_utsname;
  
- #endif /* CONFIG_X86_32 */
- #endif /* _ASM_X86_SYSCALLS_H */
-Index: linux-2.6/arch/x86/include/asm/unistd_64.h
+-asmlinkage int old_mmap(struct mmap_arg_struct __user *);
+ asmlinkage int sys_ipc(uint, int, int, int, void __user *, long);
+ asmlinkage int sys_uname(struct old_utsname __user *);
+ asmlinkage int sys_olduname(struct oldold_utsname __user *);
+Index: linux-2.6/arch/x86/kernel/sys_i386_32.c
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/unistd_64.h	2010-01-30 22:40:33.248253641 +0100
-+++ linux-2.6/arch/x86/include/asm/unistd_64.h	2010-01-30 22:53:35.445254619 +0100
-@@ -146,7 +146,7 @@ __SYSCALL(__NR_wait4, sys_wait4)
- #define __NR_kill				62
- __SYSCALL(__NR_kill, sys_kill)
- #define __NR_uname				63
--__SYSCALL(__NR_uname, sys_uname)
-+__SYSCALL(__NR_uname, sys_newuname)
+--- linux-2.6.orig/arch/x86/kernel/sys_i386_32.c	2010-01-30 11:26:47.641268727 +0100
++++ linux-2.6/arch/x86/kernel/sys_i386_32.c	2010-01-30 22:40:36.072254479 +0100
+@@ -25,40 +25,6 @@
+ #include <asm/syscalls.h>
  
- #define __NR_semget				64
- __SYSCALL(__NR_semget, sys_semget)
-Index: linux-2.6/arch/x86/kernel/sys_x86_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/sys_x86_64.c	2010-01-30 22:40:33.260275432 +0100
-+++ linux-2.6/arch/x86/kernel/sys_x86_64.c	2010-01-30 22:45:24.334281509 +0100
-@@ -209,15 +209,3 @@ bottomup:
- 
- 	return addr;
- }
--
--
--SYSCALL_DEFINE1(uname, struct new_utsname __user *, name)
--{
--	int err;
--	down_read(&uts_sem);
--	err = copy_to_user(name, utsname(), sizeof(*name));
--	up_read(&uts_sem);
--	if (personality(current->personality) == PER_LINUX32)
--		err |= copy_to_user(&name->machine, "i686", 5);
--	return err ? -EFAULT : 0;
--}
-Index: linux-2.6/arch/um/sys-x86_64/syscall_table.c
-===================================================================
---- linux-2.6.orig/arch/um/sys-x86_64/syscall_table.c	2010-01-30 22:40:33.270254200 +0100
-+++ linux-2.6/arch/um/sys-x86_64/syscall_table.c	2010-01-30 22:45:24.335264397 +0100
-@@ -26,11 +26,6 @@
- 
- /* On UML we call it this way ("old" means it's not mmap2) */
- #define sys_mmap old_mmap
--/*
-- * On x86-64 sys_uname is actually sys_newuname plus a compatibility trick.
-- * See arch/x86_64/kernel/sys_x86_64.c
+ /*
+- * Perform the select(nd, in, out, ex, tv) and mmap() system
+- * calls. Linux/i386 didn't use to be able to handle more than
+- * 4 system call parameters, so these system calls used a memory
+- * block for parameter passing..
 - */
--#define sys_uname sys_uname64
- 
- #define stub_clone sys_clone
- #define stub_fork sys_fork
-Index: linux-2.6/arch/um/sys-x86_64/syscalls.c
-===================================================================
---- linux-2.6.orig/arch/um/sys-x86_64/syscalls.c	2010-01-30 22:40:33.280254480 +0100
-+++ linux-2.6/arch/um/sys-x86_64/syscalls.c	2010-01-30 22:45:24.340274594 +0100
-@@ -12,20 +12,6 @@
- #include "asm/uaccess.h"
- #include "os.h"
- 
--asmlinkage long sys_uname64(struct new_utsname __user * name)
+-
+-struct mmap_arg_struct {
+-	unsigned long addr;
+-	unsigned long len;
+-	unsigned long prot;
+-	unsigned long flags;
+-	unsigned long fd;
+-	unsigned long offset;
+-};
+-
+-asmlinkage int old_mmap(struct mmap_arg_struct __user *arg)
 -{
--	int err;
+-	struct mmap_arg_struct a;
+-	int err = -EFAULT;
 -
--	down_read(&uts_sem);
--	err = copy_to_user(name, utsname(), sizeof (*name));
--	up_read(&uts_sem);
+-	if (copy_from_user(&a, arg, sizeof(a)))
+-		goto out;
 -
--	if (personality(current->personality) == PER_LINUX32)
--		err |= copy_to_user(&name->machine, "i686", 5);
+-	err = -EINVAL;
+-	if (a.offset & ~PAGE_MASK)
+-		goto out;
 -
--	return err ? -EFAULT : 0;
+-	err = sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags,
+-			a.fd, a.offset >> PAGE_SHIFT);
+-out:
+-	return err;
 -}
 -
- long arch_prctl(struct task_struct *task, int code, unsigned long __user *addr)
+-/*
+  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+  *
+  * This is really horribly ugly.
+Index: linux-2.6/arch/x86/kernel/syscall_table_32.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/syscall_table_32.S	2010-01-30 11:26:47.555004026 +0100
++++ linux-2.6/arch/x86/kernel/syscall_table_32.S	2010-01-30 11:26:48.363282766 +0100
+@@ -89,7 +89,7 @@ ENTRY(sys_call_table)
+ 	.long sys_swapon
+ 	.long sys_reboot
+ 	.long sys_old_readdir
+-	.long old_mmap		/* 90 */
++	.long sys_old_mmap	/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+ 	.long sys_ftruncate
+Index: linux-2.6/arch/ia64/ia32/sys_ia32.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/ia32/sys_ia32.c	2010-01-30 11:26:47.578006051 +0100
++++ linux-2.6/arch/ia64/ia32/sys_ia32.c	2010-01-30 22:40:34.128273477 +0100
+@@ -883,7 +883,7 @@ ia32_do_mmap (struct file *file, unsigne
+  * system calls used a memory block for parameter passing..
+  */
+ 
+-struct mmap_arg_struct {
++struct mmap_arg_struct32 {
+ 	unsigned int addr;
+ 	unsigned int len;
+ 	unsigned int prot;
+@@ -893,9 +893,9 @@ struct mmap_arg_struct {
+ };
+ 
+ asmlinkage long
+-sys32_mmap (struct mmap_arg_struct __user *arg)
++sys32_mmap (struct mmap_arg_struct32 __user *arg)
  {
- 	unsigned long *ptr = addr, tmp;
+-	struct mmap_arg_struct a;
++	struct mmap_arg_struct32 a;
+ 	struct file *file = NULL;
+ 	unsigned long addr;
+ 	int flags;
+Index: linux-2.6/arch/um/sys-i386/shared/sysdep/syscalls.h
+===================================================================
+--- linux-2.6.orig/arch/um/sys-i386/shared/sysdep/syscalls.h	2010-01-30 11:25:52.336256364 +0100
++++ linux-2.6/arch/um/sys-i386/shared/sysdep/syscalls.h	2010-01-30 11:26:48.387255876 +0100
+@@ -13,8 +13,6 @@ typedef long syscall_handler_t(struct pt
+  */
+ extern syscall_handler_t sys_rt_sigaction;
+ 
+-extern syscall_handler_t old_mmap_i386;
+-
+ extern syscall_handler_t *sys_call_table[];
+ 
+ #define EXECUTE_SYSCALL(syscall, regs) \
+Index: linux-2.6/arch/um/sys-i386/sys_call_table.S
+===================================================================
+--- linux-2.6.orig/arch/um/sys-i386/sys_call_table.S	2010-01-30 11:25:52.360004444 +0100
++++ linux-2.6/arch/um/sys-i386/sys_call_table.S	2010-01-30 11:26:48.390256714 +0100
+@@ -7,7 +7,7 @@
+ #define sys_vm86old sys_ni_syscall
+ #define sys_vm86 sys_ni_syscall
+ 
+-#define old_mmap old_mmap_i386
++#define old_mmap sys_old_mmap
+ 
+ #define ptregs_fork sys_fork
+ #define ptregs_execve sys_execve
+Index: linux-2.6/arch/um/sys-i386/syscalls.c
+===================================================================
+--- linux-2.6.orig/arch/um/sys-i386/syscalls.c	2010-01-30 11:26:47.650256295 +0100
++++ linux-2.6/arch/um/sys-i386/syscalls.c	2010-01-30 22:40:36.029003955 +0100
+@@ -12,39 +12,6 @@
+ #include "asm/unistd.h"
+ 
+ /*
+- * Perform the select(nd, in, out, ex, tv) and mmap() system
+- * calls. Linux/i386 didn't use to be able to handle more than
+- * 4 system call parameters, so these system calls used a memory
+- * block for parameter passing..
+- */
+-
+-struct mmap_arg_struct {
+-	unsigned long addr;
+-	unsigned long len;
+-	unsigned long prot;
+-	unsigned long flags;
+-	unsigned long fd;
+-	unsigned long offset;
+-};
+-
+-extern int old_mmap(unsigned long addr, unsigned long len,
+-		    unsigned long prot, unsigned long flags,
+-		    unsigned long fd, unsigned long offset);
+-
+-long old_mmap_i386(struct mmap_arg_struct __user *arg)
+-{
+-	struct mmap_arg_struct a;
+-	int err = -EFAULT;
+-
+-	if (copy_from_user(&a, arg, sizeof(a)))
+-		goto out;
+-
+-	err = old_mmap(a.addr, a.len, a.prot, a.flags, a.fd, a.offset);
+- out:
+-	return err;
+-}
+-
+-/*
+  * The prototype on i386 is:
+  *
+  *     int clone(int flags, void * child_stack, int * parent_tidptr, struct user_desc * newtls, int * child_tidptr)
+Index: linux-2.6/arch/x86/ia32/sys_ia32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/ia32/sys_ia32.c	2010-01-30 11:26:47.594032311 +0100
++++ linux-2.6/arch/x86/ia32/sys_ia32.c	2010-01-30 22:40:34.317005004 +0100
+@@ -143,7 +143,7 @@ asmlinkage long sys32_fstatat(unsigned i
+  * block for parameter passing..
+  */
+ 
+-struct mmap_arg_struct {
++struct mmap_arg_struct32 {
+ 	unsigned int addr;
+ 	unsigned int len;
+ 	unsigned int prot;
+@@ -152,9 +152,9 @@ struct mmap_arg_struct {
+ 	unsigned int offset;
+ };
+ 
+-asmlinkage long sys32_mmap(struct mmap_arg_struct __user *arg)
++asmlinkage long sys32_mmap(struct mmap_arg_struct32 __user *arg)
+ {
+-	struct mmap_arg_struct a;
++	struct mmap_arg_struct32 a;
+ 
+ 	if (copy_from_user(&a, arg, sizeof(a)))
+ 		return -EFAULT;
+Index: linux-2.6/arch/x86/include/asm/sys_ia32.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/sys_ia32.h	2010-01-30 11:26:47.557010172 +0100
++++ linux-2.6/arch/x86/include/asm/sys_ia32.h	2010-01-30 22:40:34.329004165 +0100
+@@ -26,8 +26,8 @@ asmlinkage long sys32_lstat64(char __use
+ asmlinkage long sys32_fstat64(unsigned int, struct stat64 __user *);
+ asmlinkage long sys32_fstatat(unsigned int, char __user *,
+ 			      struct stat64 __user *, int);
+-struct mmap_arg_struct;
+-asmlinkage long sys32_mmap(struct mmap_arg_struct __user *);
++struct mmap_arg_struct32;
++asmlinkage long sys32_mmap(struct mmap_arg_struct32 __user *);
+ asmlinkage long sys32_mprotect(unsigned long, size_t, unsigned long);
+ 
+ struct sigaction32;
+Index: linux-2.6/arch/x86/include/asm/unistd_32.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/unistd_32.h	2010-01-30 11:26:47.570005073 +0100
++++ linux-2.6/arch/x86/include/asm/unistd_32.h	2010-01-30 22:40:36.059274174 +0100
+@@ -366,6 +366,7 @@
+ #define __ARCH_WANT_SYS_LLSEEK
+ #define __ARCH_WANT_SYS_NICE
+ #define __ARCH_WANT_SYS_OLD_GETRLIMIT
++#define __ARCH_WANT_SYS_OLD_MMAP
+ #define __ARCH_WANT_SYS_OLD_SELECT
+ #define __ARCH_WANT_SYS_OLDUMOUNT
+ #define __ARCH_WANT_SYS_SIGPENDING
+Index: linux-2.6/mm/nommu.c
+===================================================================
+--- linux-2.6.orig/mm/nommu.c	2010-01-30 22:41:08.020023511 +0100
++++ linux-2.6/mm/nommu.c	2010-01-30 22:42:03.685255736 +0100
+@@ -1428,6 +1428,30 @@ out:
+ 	return retval;
+ }
+ 
++#ifdef __ARCH_WANT_SYS_OLD_MMAP
++struct mmap_arg_struct {
++	unsigned long addr;
++	unsigned long len;
++	unsigned long prot;
++	unsigned long flags;
++	unsigned long fd;
++	unsigned long offset;
++};
++
++SYSCALL_DEFINE1(old_mmap, struct mmap_arg_struct __user *, arg)
++{
++	struct mmap_arg_struct a;
++
++	if (copy_from_user(&a, arg, sizeof(a)))
++		return -EFAULT;
++	if (a.offset & ~PAGE_MASK)
++		return -EINVAL;
++
++	return sys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
++			      a.offset >> PAGE_SHIFT);
++}
++#endif /* __ARCH_WANT_SYS_OLD_MMAP */
++
+ /*
+  * split a vma into two pieces at address 'addr', a new vma is allocated either
+  * for the first part or the tail.
