@@ -1,36 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755125Ab0BASD6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 13:03:58 -0500
-Received: from mtoichi14.ns.itscom.net ([219.110.2.184]:60429 "EHLO
-	mtoichi14.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754901Ab0BASD5 (ORCPT
+	id S1755081Ab0BASGV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:06:21 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:33116 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754500Ab0BASGU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 13:03:57 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: security ima: Kernel BUG in ima_file_free -- bisected to commit 6c21a7fb492bf7e2c4985937082ce58ddeca84bd
-To: Shi Weihua <shiwh@cn.fujitsu.com>
-Cc: zohar@us.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B666164.3090504@cn.fujitsu.com>
-References: <4B666164.3090504@cn.fujitsu.com>
-Date: Tue, 02 Feb 2010 03:03:33 +0900
-Message-ID: <15772.1265047413@jrobl>
+	Mon, 1 Feb 2010 13:06:20 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: trivial@kernel.org
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Urs Thuermann <urs.thuermann@volkswagen.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] can: ems_usb: removed duplicated code setting local echo support
+Date: Mon,  1 Feb 2010 16:02:06 -0200
+Message-Id: <1265047326-7493-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ drivers/net/can/usb/ems_usb.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-Shi Weihua:
-> Used the latest LTP to test 2.6.33-rc6, a Kernel BUG occured on my x86_64 (OS: Fedora 12).
-> The message from dmesg is as following.
-> The LTP case is testcases/kernel/syscalls/pipe/pipe06.c. For seeing code easily, I
-> recreated a simple code to reproduce this BUG. please check the code in the attached.
-> 
-> I bisected a commit 6c21a7fb492bf7e2c4985937082ce58ddeca84bd,
+diff --git a/drivers/net/can/usb/ems_usb.c b/drivers/net/can/usb/ems_usb.c
+index efbb05c..ee849cf 100644
+--- a/drivers/net/can/usb/ems_usb.c
++++ b/drivers/net/can/usb/ems_usb.c
+@@ -1020,8 +1020,6 @@ static int ems_usb_probe(struct usb_interface *intf,
+ 	dev->can.do_set_bittiming = ems_usb_set_bittiming;
+ 	dev->can.do_set_mode = ems_usb_set_mode;
+ 
+-	netdev->flags |= IFF_ECHO; /* we support local echo */
+-
+ 	netdev->netdev_ops = &ems_usb_netdev_ops;
+ 
+ 	netdev->flags |= IFF_ECHO; /* we support local echo */
+-- 
+1.6.6.1
 
-The problem is already known and a patch is posted in last year.
-http://marc.info/?l=linux-kernel&m=126206539702176&w=2
-
-
-J. R. Okajima
