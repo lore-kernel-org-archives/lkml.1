@@ -1,96 +1,123 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754640Ab0BAWDA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 17:03:00 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34739 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752642Ab0BAWC7 (ORCPT
+	id S1754548Ab0BAWF0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 17:05:26 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:54255 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753747Ab0BAWFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 17:02:59 -0500
-Date: Mon, 1 Feb 2010 14:02:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Anton Blanchard <anton@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] panic: Fix panic_timeout accuracy when running on a
- hypervisor
-Message-Id: <20100201140245.faeec398.akpm@linux-foundation.org>
-In-Reply-To: <20100201041430.GQ2996@kryten>
-References: <20100201041430.GQ2996@kryten>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Feb 2010 17:05:24 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX18msnlCJxZSTdB5RuHEALgn
+Date: Mon, 1 Feb 2010 14:05:48 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Joe Perches <joe@perches.com>
+Cc: d binderman <dcb314@hotmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: arch/arm/mach-omap2/mux.c: Off by one error
+Message-ID: <20100201220548.GE22747@atomide.com>
+References: <BLU108-W14539E61D58BF455B82CA59C590@phx.gbl>
+ <20100201210633.GC22747@atomide.com>
+ <1265059030.25140.349.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265059030.25140.349.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Feb 2010 15:14:30 +1100
-Anton Blanchard <anton@samba.org> wrote:
-
+* Joe Perches <joe@perches.com> [100201 13:14]:
+> On Mon, 2010-02-01 at 13:06 -0800, Tony Lindgren wrote:
+> > * d binderman <dcb314@hotmail.com> [100131 04:14]:
+> > > I just ran the sourceforge tool cppcheck over the source code of the
+> > > new Linux kernel 2.6.33-rc6
+> > > 
+> > > It said
+> > > 
+> > > [./arm/mach-omap2/mux.c:492]: (error) Buffer access out-of-bounds
+> > > 
+> > > The source code is
+> > > 
+> > >         char mode[14];
+> > >         int i = -1;
+> > > 
+> > >         sprintf(mode, "OMAP_MUX_MODE%d", val & 0x7);
+> > > 13 characters + 1 digit + 1 zero byte is more than 14 characters.
+> > > Suggest new code
+> > >         char mode[15];
+> > diff --git a/arch/arm/mach-omap2/mux.c b/arch/arm/mach-omap2/mux.c
+> > index 32764be..047aa57 100644
+> > --- a/arch/arm/mach-omap2/mux.c
+> > +++ b/arch/arm/mach-omap2/mux.c
+> > @@ -486,7 +486,7 @@ int __init omap_mux_init_signal(char *muxname, int val)
+> >  static inline void omap_mux_decode(struct seq_file *s, u16 val)
+> >  {
+> >  	char *flags[OMAP_MUX_MAX_NR_FLAGS];
+> > -	char mode[14];
+> > +	char mode[15];
 > 
-> I've had some complaints about panic_timeout being wildly innacurate on
-> shared processor PowerPC partitions (a 3 minute panic_timeout taking 30
-> minutes).
+> Maybe:
 > 
-> The problem is we loop on mdelay(1) and with a 1ms in 10ms hypervisor
-> timeslice each of these will take 10ms (ie 10x) longer. I expect other
-> platforms with shared processor hypervisors will see the same issue.
+> 	char mode[sizeof("OMAP_MUX_MODE") + 1];
+
+Thanks, that makes it nicer. Updated patch below.
+
+> or
+> 	char mode[OMAP_MUX_DEFNAME_LEN];
 > 
-> This patch keeps the old behaviour if we have a panic_blink (only keyboard
-> LEDs right now) and does 1 second mdelays if we don't.
+> with the #define moved up a bit?
 > 
-> ...
->
-> +static void panic_blink_one_second(void)
-> +{
-> +	static long i = 0, end;
 
-I assumed the `static' was a brainfart and removed it?
+That's for the mux signal name, which is different from the mux mode.
 
-> +	if (panic_blink) {
-> +		end = i + MSEC_PER_SEC;
-> +
-> +		while (i < end) {
-> +			i += panic_blink(i);
-> +			mdelay(1);
-> +			i++;
-> +		}
-> +	} else {
-> +		/*
-> +		 * When running under a hypervisor a small mdelay may get
-> +		 * rounded up to the hypervisor timeslice. For example, with
-> +		 * a 1ms in 10ms hypervisor timeslice we might inflate a
-> +		 * mdelay(1) loop by 10x.
-> +		 *
-> +		 * If we have nothing to blink, spin on 1 second calls to
-> +		 * mdelay to avoid this.
-> +		 */
-> +		mdelay(MSEC_PER_SEC);
-> +	}
-> +}
+But looking over that, it should eventually be done with strlen + kmalloc
+if the signal names for mode0 start increasing for new omaps. So added a
+comment there for now.
 
-In fact we can simplify it a bit:
+Regards,
 
---- a/kernel/panic.c~panic-fix-panic_timeout-accuracy-when-running-on-a-hypervisor-fix
-+++ a/kernel/panic.c
-@@ -42,12 +42,10 @@ EXPORT_SYMBOL(panic_blink);
- 
- static void panic_blink_one_second(void)
+Tony
+
+
+>From ec5041da8d158ed601f18d6efbd779bb6733eb37 Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Mon, 1 Feb 2010 13:03:42 -0800
+Subject: [PATCH] omap: Fix arch/arm/mach-omap2/mux.c: Off by one error
+
+David Binderman ran the sourceforge tool cppcheck over the source code of the
+new Linux kernel 2.6.33-rc6:
+
+[./arm/mach-omap2/mux.c:492]: (error) Buffer access out-of-bounds
+
+13 characters + 1 digit + 1 zero byte is more than 14 characters.
+
+Also add a comment on mode0 name length in case new omaps
+start using longer names.
+
+Reported-by: David Binderman <dcb314@hotmail.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+
+diff --git a/arch/arm/mach-omap2/mux.c b/arch/arm/mach-omap2/mux.c
+index 32764be..6bfcbec 100644
+--- a/arch/arm/mach-omap2/mux.c
++++ b/arch/arm/mach-omap2/mux.c
+@@ -486,7 +486,7 @@ int __init omap_mux_init_signal(char *muxname, int val)
+ static inline void omap_mux_decode(struct seq_file *s, u16 val)
  {
--	static long i = 0, end;
--
- 	if (panic_blink) {
--		end = i + MSEC_PER_SEC;
-+		long i = 0;
+ 	char *flags[OMAP_MUX_MAX_NR_FLAGS];
+-	char mode[14];
++	char mode[sizeof("OMAP_MUX_MODE") + 1];
+ 	int i = -1;
  
--		while (i < end) {
-+		while (i < MSEC_PER_SEC) {
- 			i += panic_blink(i);
- 			mdelay(1);
- 			i++;
-_
-
-Why does it do the mdelay() as well as calling panic_blink()?  hm,
-because the old code did.  I guess it doesn't trust panic_blink().
-
-
+ 	sprintf(mode, "OMAP_MUX_MODE%d", val & 0x7);
+@@ -553,6 +553,7 @@ static int omap_mux_dbg_board_show(struct seq_file *s, void *unused)
+ 		if (!m0_name)
+ 			continue;
+ 
++		/* REVISIT: Needs to be updated if mode0 names get longer */
+ 		for (i = 0; i < OMAP_MUX_DEFNAME_LEN; i++) {
+ 			if (m0_name[i] == '\0') {
+ 				m0_def[i] = m0_name[i];
