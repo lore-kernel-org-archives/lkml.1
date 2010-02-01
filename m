@@ -1,59 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754981Ab0BAXSw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 18:18:52 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35645 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754870Ab0BAXSs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 18:18:48 -0500
-Date: Mon, 1 Feb 2010 23:18:47 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH][RFC] %pd - for printing dentry name
-Message-ID: <20100201231847.GC12882@ZenIV.linux.org.uk>
-References: <20100201222511.GA12882@ZenIV.linux.org.uk>
- <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	id S1755033Ab0BAXVy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 18:21:54 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:48603 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753556Ab0BAXVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 18:21:53 -0500
+Date: Tue, 2 Feb 2010 10:21:42 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: linux-next: crypto-current tree build warning
+Message-Id: <20100202102142.7820b67a.sfr@canb.auug.org.au>
+In-Reply-To: <20100201104846.GA1170@gondor.apana.org.au>
+References: <20100201110709.9de06b42.sfr@canb.auug.org.au>
+	<20100201104846.GA1170@gondor.apana.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__2_Feb_2010_10_21_42_+1100_m+z9R+Fu_Jmzg98L"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 02:37:32PM -0800, Linus Torvalds wrote:
+--Signature=_Tue__2_Feb_2010_10_21_42_+1100_m+z9R+Fu_Jmzg98L
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > * don't use %pd under dentry->d_lock, use dentry->d_name.name instead; in
-> > that case it *is* safe.  Incidentally, ->d_lock isn't held a lot.
-> 
-> I realize we can just call it a rule, and yes, d_lock is held much less 
-> than something like console_lock etc that we've had ABBA issues with, but 
-> still..
+Hi Herbert,
 
-> Quite frankly, I'd _much_ rather see something like just always freeing 
-> the dentry names (when they aren't inlined) using RCU. The VFS layer quite 
-> possibly would want to do that anyway at some point (eg Nick's VFS 
-> scalability patches), and then we could make it just a RCU read-lock or 
-> whatever (interrupt disable, what-not) instead.
-> 
-> And I'm much happier with printk doing that kind of thing, and wouldn't 
-> have issues with that kind of much weaker locking.
+On Mon, 1 Feb 2010 21:48:46 +1100 Herbert Xu <herbert@gondor.apana.org.au> =
+wrote:
+>
+> I've fixed it in my tree.
 
-Ehh...  RCU will save you from stepping on freed memory, but it still will
-leave the joy of half-updated string with length out of sync with it, etc.
-We probably can get away with that, but we'll have to be a lot more careful
-with the order of updating these suckers in d_move_locked et.al.
+Great, thanks.
 
-I don't know...  Note that if we end up adding something extra to struct
-dentry, we might as well just add *another* spinlock, taken only under
-->d_lock and only in two places in dcache.c that change d_name.  That kind
-of thing is trivial to enforce (just grep over the tree once in a while)
-and if it shares the cacheline with d_lock, we shouldn't get any real overhead
-in d_move()/d_materialise_unique().  I'm not particulary fond of that variant,
-but it's at least guaranteed to be devoid of subtleties.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-If RCU folks can come up with a sane suggestions that would be robust and
-wouldn't bloat dentry - sure, I'm all for it.  If not...
+--Signature=_Tue__2_Feb_2010_10_21_42_+1100_m+z9R+Fu_Jmzg98L
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktnYgYACgkQjjKRsyhoI8y6pgCgmNp+tbKafUxVOv0JzmMjDm8c
+Rk4AoItrabdTw4TVCxKp7SQUVAwbJ5qz
+=aKWT
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__2_Feb_2010_10_21_42_+1100_m+z9R+Fu_Jmzg98L--
