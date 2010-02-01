@@ -1,76 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752336Ab0BARNQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 12:13:16 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53483 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909Ab0BARNO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 12:13:14 -0500
-X-Authority-Analysis: v=1.0 c=1 a=db5xdBbprZYA:10 a=7U3hwN5JcxgA:10 a=2udKsfR5-ZkyO9_TTlcA:9 a=WzlONiqCAfxIVp4I5J4z4vw9gXgA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [patch 2/3] scheduler: add full memory barriers upon task
- switch at runqueue lock/unlock
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-In-Reply-To: <20100201164856.GA3486@Krystal>
-References: <20100131205254.407214951@polymtl.ca>
-	 <20100131210013.446503342@polymtl.ca>
-	 <alpine.LFD.2.00.1002010722350.4206@localhost.localdomain>
-	 <20100201160929.GA3032@Krystal>
-	 <alpine.LFD.2.00.1002010816030.4206@localhost.localdomain>
-	 <20100201164856.GA3486@Krystal>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Mon, 01 Feb 2010 12:13:12 -0500
-Message-ID: <1265044392.29013.61.camel@gandalf.stny.rr.com>
+	id S1752870Ab0BARRK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 12:17:10 -0500
+Received: from cantor.suse.de ([195.135.220.2]:50782 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751228Ab0BARRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 12:17:08 -0500
+Subject: Re: [PATCH 05/10] drivers/scsi/arcmsr: Fix continuation line
+ formats
+From: James Bottomley <James.Bottomley@suse.de>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <1a318fa326c6ab2584b9d318bd1538e7f7debbdf.1264967499.git.joe@perches.com>
+References: <cover.1264967493.git.joe@perches.com>
+	 <1a318fa326c6ab2584b9d318bd1538e7f7debbdf.1264967499.git.joe@perches.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 11:16:56 -0600
+Message-Id: <1265044616.6910.15.camel@mulgrave.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-01 at 11:48 -0500, Mathieu Desnoyers wrote:
+On Sun, 2010-01-31 at 12:02 -0800, Joe Perches wrote: 
+> String constants that are continued on subsequent lines with \
+> are not good.
 
-> What we have to be careful about here is that it's not enough to just
-> rely on switch_mm() containing a memory barrier. What we really need to
-> enforce is that switch_mm() issues memory barriers both _before_ and
-> _after_ mm_cpumask modification. The "after" part is usually dealt with
-> by the TLB context switch, but the "before" part usually isn't.
+Why?  It's perfectly valid ansi C.
 
-Then we add a smp_mb__before_clear_bit() in the switch_mm() on all archs
-that do not have clear_bit imply a smp_mb().
-
+> Fix rebulid/rebuild typos
 > 
-> > 
-> > Btw, one reason to strongly prefer "switch_mm()" over any random context 
-> > switch is that at least it won't affect inter-thread (kernel or user-land) 
-> > switching, including switching to/from the idle thread.
-> > 
-> > So I'd be _much_ more open to a "let's guarantee that 'switch_mm()' always 
-> > implies a memory barrier" model than to playing clever games with 
-> > spinlocks.
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/scsi/arcmsr/arcmsr_hba.c |   49 +++++++++++++++++--------------------
+>  1 files changed, 23 insertions(+), 26 deletions(-)
 > 
-> If we really want to make this patch less intrusive, we can consider
-> iterating on each online cpu in sys_membarrier() rather than on the
-> mm_cpumask. But it comes at the cost of useless cache-line bouncing on
-> large machines with few threads running in the process, as we would grab
-> the rq locks one by one for all cpus.
+> diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c b/drivers/scsi/arcmsr/arcmsr_hba.c
+> index 47d5d19..a0378d5 100644
+> --- a/drivers/scsi/arcmsr/arcmsr_hba.c
+> +++ b/drivers/scsi/arcmsr/arcmsr_hba.c
+> @@ -585,8 +585,8 @@ static void arcmsr_flush_hba_cache(struct AdapterControlBlock *acb)
+>  			break;
+>  		else {
+>  			retry_count--;
+> -			printk(KERN_NOTICE "arcmsr%d: wait 'flush adapter cache' \
+> -			timeout, retry count down = %d \n", acb->host->host_no, retry_count);
 
-I still think modifying the switch_mm() is better than the full
-iteration.
+So I might personally dislike this style
 
--- Steve
+> +			printk(KERN_NOTICE "arcmsr%d: wait 'flush adapter cache' timeout, retry count down = %d \n",
+> +			       acb->host->host_no, retry_count);
+
+but I also dislike your solution; I'd have split the string into two
+separate ones and relied on compiler concatenation.
+
+However, the point is that all three are perfectly legal C.  Choosing
+one form over another is something best left to the maintainers rather
+than imposing one style by fiat.
+
+Consider this change veto'd unless you can get an explicit ack from the
+current maintainer for changing their style.
+
+James
 
 
