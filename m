@@ -1,86 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882Ab0BALz3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 06:55:29 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:36412 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753715Ab0BALz1 (ORCPT
+	id S1754051Ab0BAMO7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 07:14:59 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50787 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753810Ab0BAMO6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 06:55:27 -0500
-Date: Mon, 1 Feb 2010 06:55:18 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: David Miller <davem@davemloft.net>
-Cc: xtfeng@gmail.com, rjw@sisk.pl, htd@fancy-poultry.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [Bug #15196] kmem_cache_create: duplicate cache ccid2_h
-Message-ID: <20100201115518.GA25094@hmsreliant.think-freely.org>
-References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera>
- <d3IDKWHT5gE.A.8sB.Q7hZLB@chimera>
- <7b6bb4a51001311930i7d72f60dj3b15ca3e1a715607@mail.gmail.com>
- <20100131.232050.266652459.davem@davemloft.net>
+	Mon, 1 Feb 2010 07:14:58 -0500
+Date: Mon, 1 Feb 2010 13:14:56 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, arminlitzel@web.de,
+       Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz, zaurus-devel@www.linuxtogo.org
+Subject: About kernel decompressors (fwd)
+Message-ID: <20100201121454.GA20387@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100131.232050.266652459.davem@davemloft.net>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-Spam-Score: -4.1 (----)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 31, 2010 at 11:20:50PM -0800, David Miller wrote:
-> From: Xiaotian Feng <xtfeng@gmail.com>
-> Date: Mon, 1 Feb 2010 11:30:02 +0800
-> 
-> > On Mon, Feb 1, 2010 at 8:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> This message has been generated automatically as a part of a report
-> >> of recent regressions.
-> >>
-> >> The following bug entry is on the current list of known regressions
-> >> from 2.6.32.  Please verify if it still should be listed and let me know
-> >> (either way).
-> >>
-> >>
-> >> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15196
-> >> Subject         : kmem_cache_create: duplicate cache ccid2_h
-> >> Submitter       : Heinz Diehl <htd@fancy-poultry.org>
-> >> Date            : 2010-01-30 18:33 (2 days old)
-> >> References      : http://marc.info/?l=linux-kernel&m=126487640324942&w=4
-> > 
-> > Cced Neil,
-> > 
-> > I think this one is introduced by commit
-> > de4ef86cfce60d2250111f34f8a084e769f23b16,
-> > passing char *slab_name_fmt as function parameter, but vsnprintf is
-> > using sizeof(slab_name_fmt),
-> > which is 8 (or 4 in 32bit kernel) instead of 32 as old version.
-> > 
-> > Does following patch resolve this bug, Heinz?
-> 
-> There seems to be even more to this than that.  Neils
-> patch seems to need completely reverting.
-> 
-> See the patch set posted by Gerrit Renker:
-> 
-> http://marc.info/?l=linux-netdev&m=126500585823775&w=2
-> http://marc.info/?l=linux-netdev&m=126500591923880&w=2
-> 
+Hi!
+
+I guess Andrea wanted me  to forward this....
+
+----- Forwarded message from Andrea Adami <andrea.adami@gmail.com> -----
+Date: Mon, 1 Feb 2010 13:08:44 +0100
+From: Andrea Adami <andrea.adami@gmail.com>
+To: pavel@ucw.cz
+Subject: About kernel decompressors
+
+Pavel,
+
+I'd like to add a couple of observations in the "Uncompressing broken
+with commit e7db7b4270" thread.
+Unfortunately I wasn't subscribed and I can't properly reply to the thread...
+
+This is for kernels 2.6.33-rc5 and -rc6 on Sharp corgi (Zaurus
+SL-C860, pxa255, 64M RAM)
+
+1) after that commit neither gzip, nor lzo can decompress from NAND
+2) I tested the LZMA patch and this also won't help the boot from nand
+3) kernel size is uninfluent: I tested 930KiB-lzma kernels and 1240KiB
+gzip-kernels.
+4) I tried to set stack size to 8192, still no boot
+
+5) all the 3 above kernels boot just fine from kexec (I launch them
+with linux-kexecboot-2.6.26)
+
+>From nand, the boot stops immediately after
+**** JUMP to LINUX! ****
 
 
-Dave, some of this doesn't make the least bit of sense to me.  I get the sizeof
-error, thats clear (and I apologize, I should have seen that), but Gerrits
-revert of the dccp_probe changes is non-sensical.  I'm not sure I even follow
-the comments:
+Cheers
 
->Previously (during about 4 years of this module's history) there had never
->been a problem with the 'silent dependency' that the commit tried to fix:
->this dependency is deliberate and required, since dccp_probe performs probing
->of dccp connections and hence needs to know about dccp internals.
+Andrea
 
-He claims this dependency is deliberate and requires, to which I agree, but he
-would seem to fix that by making the dccp_probe module error out in the event
-that dccp wasn't loaded.  Why bother with that?
-Neil
+----- End forwarded message -----
 
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
