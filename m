@@ -1,91 +1,294 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715Ab0BATPJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 14:15:09 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:59252 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754818Ab0BATPH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 14:15:07 -0500
-Subject: Re: [Bug #15127] Bluetooth: sleeping function called from invalid
- context
-From: Marcel Holtmann <marcel@holtmann.org>
-To: davidjon@xenontk.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Luiz Augusto von Dentz <luiz.dentz@gmail.com>
-In-Reply-To: <4B6711E2.6010409@xenontk.org>
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
-	 <de962C6zBxL.A.lME.FFiZLB@chimera>
-	 <1264986406.31341.5.camel@localhost.localdomain>
-	 <4B6711E2.6010409@xenontk.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 11:14:17 -0800
-Message-ID: <1265051657.31341.56.camel@localhost.localdomain>
+	id S1755884Ab0BATT3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 14:19:29 -0500
+Received: from verein.lst.de ([213.95.11.210]:39475 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755790Ab0BATT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 14:19:27 -0500
+Date: Mon, 1 Feb 2010 20:19:06 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: roland@redhat.com, oleg@redhat.com
+Cc: akpm@linux-foundation.com, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] use ptrace_request to handle {PEEK,POKE}{TEXT,DATA}
+Message-ID: <20100201191906.GB11874@lst.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+No need to call generic_ptrace_peekdata/generic_ptrace_pokedata or even
+opencoding it when we can leave that to ptrace_request.  Excepted are
+those architecures not calling ptrace_request at all (m68knommu, h8300
+and microblaze), and those having weird ABIs (alpha for the peek variants)
+or needing additional cache flushing.
 
-> >> This message has been generated automatically as a part of a report
-> >> of regressions introduced between 2.6.31 and 2.6.32.
-> >>
-> >> The following bug entry is on the current list of known regressions
-> >> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> >> be listed and let me know (either way).
-> >>
-> >>
-> >> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15127
-> >> Subject		: Bluetooth: sleeping function called from invalid context
-> >> Submitter	: David John <davidjon@xenontk.org>
-> >> Date		: 2010-01-12 9:19 (20 days old)
-> >> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9e726b17422bade75fba94e625cd35fd1353e682
-> >> References	: http://marc.info/?l=linux-kernel&m=126328727021949&w=4
-> > 
-> > you have an outdated email from Luiz and I change it to the right one
-> > now.
-> > 
-> > I looked with him at the patch and I think this will fix it:
-> > 
-> > diff --git a/net/bluetooth/rfcomm/core.c b/net/bluetooth/rfcomm/core.c
-> > index fc5ee32..2b50637 100644
-> > --- a/net/bluetooth/rfcomm/core.c
-> > +++ b/net/bluetooth/rfcomm/core.c
-> > @@ -252,7 +252,6 @@ static void rfcomm_session_timeout(unsigned long
-> > arg)
-> >  	BT_DBG("session %p state %ld", s, s->state);
-> >  
-> >  	set_bit(RFCOMM_TIMED_OUT, &s->flags);
-> > -	rfcomm_session_put(s);
-> >  	rfcomm_schedule(RFCOMM_SCHED_TIMEO);
-> >  }
-> >  
-> > @@ -1920,6 +1919,7 @@ static inline void rfcomm_process_sessions(void)
-> >  		if (test_and_clear_bit(RFCOMM_TIMED_OUT, &s->flags)) {
-> >  			s->state = BT_DISCONN;
-> >  			rfcomm_send_disc(s, 0);
-> > +			rfcomm_session_put(s);
-> >  			continue;
-> >  		}
-> >  
-> > We need some extra testing on this with the actual hardware we did the
-> > patch for. So this will take at least a few days before we get our hands
-> > on it.
->
-> FWIW, your patch fixes the issue.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-nice. So I can add a tested-by line to the final patch?
-
-Just our of curiosity, which hardware did you test this with. We only
-know about one headset that should cause this issue.
-
-Regards
-
-Marcel
-
-
+Index: linux-2.6/arch/arm/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/arm/kernel/ptrace.c	2010-01-15 23:53:14.699003982 +0100
++++ linux-2.6/arch/arm/kernel/ptrace.c	2010-01-26 17:43:49.134004189 +0100
+@@ -715,23 +715,10 @@ long arch_ptrace(struct task_struct *chi
+ 		/*
+ 		 * read word at location "addr" in the child process.
+ 		 */
+-		case PTRACE_PEEKTEXT:
+-		case PTRACE_PEEKDATA:
+-			ret = generic_ptrace_peekdata(child, addr, data);
+-			break;
+-
+ 		case PTRACE_PEEKUSR:
+ 			ret = ptrace_read_user(child, addr, (unsigned long __user *)data);
+ 			break;
+ 
+-		/*
+-		 * write the word at location addr.
+-		 */
+-		case PTRACE_POKETEXT:
+-		case PTRACE_POKEDATA:
+-			ret = generic_ptrace_pokedata(child, addr, data);
+-			break;
+-
+ 		case PTRACE_POKEUSR:
+ 			ret = ptrace_write_user(child, addr, data);
+ 			break;
+Index: linux-2.6/arch/avr32/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/avr32/kernel/ptrace.c	2010-01-15 23:53:14.708003943 +0100
++++ linux-2.6/arch/avr32/kernel/ptrace.c	2010-01-26 17:43:49.142004787 +0100
+@@ -147,22 +147,11 @@ long arch_ptrace(struct task_struct *chi
+ 
+ 	switch (request) {
+ 	/* Read the word at location addr in the child process */
+-	case PTRACE_PEEKTEXT:
+-	case PTRACE_PEEKDATA:
+-		ret = generic_ptrace_peekdata(child, addr, data);
+-		break;
+-
+ 	case PTRACE_PEEKUSR:
+ 		ret = ptrace_read_user(child, addr,
+ 				       (unsigned long __user *)data);
+ 		break;
+ 
+-	/* Write the word in data at location addr */
+-	case PTRACE_POKETEXT:
+-	case PTRACE_POKEDATA:
+-		ret = generic_ptrace_pokedata(child, addr, data);
+-		break;
+-
+ 	case PTRACE_POKEUSR:
+ 		ret = ptrace_write_user(child, addr, data);
+ 		break;
+Index: linux-2.6/arch/cris/arch-v10/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/cris/arch-v10/kernel/ptrace.c	2010-01-15 23:53:14.725004085 +0100
++++ linux-2.6/arch/cris/arch-v10/kernel/ptrace.c	2010-01-26 17:43:49.154004008 +0100
+@@ -82,12 +82,6 @@ long arch_ptrace(struct task_struct *chi
+ 	unsigned long __user *datap = (unsigned long __user *)data;
+ 
+ 	switch (request) {
+-		/* Read word at location address. */ 
+-		case PTRACE_PEEKTEXT:
+-		case PTRACE_PEEKDATA:
+-			ret = generic_ptrace_peekdata(child, addr, data);
+-			break;
+-
+ 		/* Read the word at location address in the USER area. */
+ 		case PTRACE_PEEKUSR: {
+ 			unsigned long tmp;
+@@ -101,12 +95,6 @@ long arch_ptrace(struct task_struct *chi
+ 			break;
+ 		}
+ 		
+-		/* Write the word at location address. */
+-		case PTRACE_POKETEXT:
+-		case PTRACE_POKEDATA:
+-			ret = generic_ptrace_pokedata(child, addr, data);
+-			break;
+- 
+  		/* Write the word at location address in the USER area. */
+ 		case PTRACE_POKEUSR:
+ 			ret = -EIO;
+Index: linux-2.6/arch/cris/arch-v32/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/cris/arch-v32/kernel/ptrace.c	2010-01-15 23:53:14.734023252 +0100
++++ linux-2.6/arch/cris/arch-v32/kernel/ptrace.c	2010-01-26 17:43:49.171004353 +0100
+@@ -143,12 +143,6 @@ long arch_ptrace(struct task_struct *chi
+ 			break;
+ 		}
+ 
+-		/* Write the word at location address. */
+-		case PTRACE_POKETEXT:
+-		case PTRACE_POKEDATA:
+-			ret = generic_ptrace_pokedata(child, addr, data);
+-			break;
+-
+ 		/* Write the word at location address in the USER area. */
+ 		case PTRACE_POKEUSR:
+ 			ret = -EIO;
+Index: linux-2.6/arch/m32r/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/m32r/kernel/ptrace.c	2010-01-15 23:53:14.757254286 +0100
++++ linux-2.6/arch/m32r/kernel/ptrace.c	2010-01-26 17:43:49.196003900 +0100
+@@ -598,14 +598,6 @@ arch_ptrace(struct task_struct *child, l
+ 
+ 	switch (request) {
+ 	/*
+-	 * read word at location "addr" in the child process.
+-	 */
+-	case PTRACE_PEEKTEXT:
+-	case PTRACE_PEEKDATA:
+-		ret = generic_ptrace_peekdata(child, addr, data);
+-		break;
+-
+-	/*
+ 	 * read the word at location addr in the USER area.
+ 	 */
+ 	case PTRACE_PEEKUSR:
+@@ -617,9 +609,8 @@ arch_ptrace(struct task_struct *child, l
+ 	 * write the word at location addr.
+ 	 */
+ 	case PTRACE_POKETEXT:
+-	case PTRACE_POKEDATA:
+ 		ret = generic_ptrace_pokedata(child, addr, data);
+-		if (ret == 0 && request == PTRACE_POKETEXT)
++		if (ret == 0)
+ 			invalidate_cache();
+ 		break;
+ 
+Index: linux-2.6/arch/microblaze/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/microblaze/kernel/ptrace.c	2010-01-15 23:53:14.776253915 +0100
++++ linux-2.6/arch/microblaze/kernel/ptrace.c	2010-01-26 17:49:02.239254508 +0100
+@@ -78,26 +78,6 @@ long arch_ptrace(struct task_struct *chi
+ 	unsigned long copied;
+ 
+ 	switch (request) {
+-	case PTRACE_PEEKTEXT: /* read word at location addr. */
+-	case PTRACE_PEEKDATA:
+-		pr_debug("PEEKTEXT/PEEKDATA at %08lX\n", addr);
+-		copied = access_process_vm(child, addr, &val, sizeof(val), 0);
+-		rval = -EIO;
+-		if (copied != sizeof(val))
+-			break;
+-		rval = put_user(val, (unsigned long *)data);
+-		break;
+-
+-	case PTRACE_POKETEXT: /* write the word at location addr. */
+-	case PTRACE_POKEDATA:
+-		pr_debug("POKETEXT/POKEDATA to %08lX\n", addr);
+-		rval = 0;
+-		if (access_process_vm(child, addr, &data, sizeof(data), 1)
+-		    == sizeof(data))
+-			break;
+-		rval = -EIO;
+-		break;
+-
+ 	/* Read/write the word at location ADDR in the registers. */
+ 	case PTRACE_PEEKUSR:
+ 	case PTRACE_POKEUSR:
+Index: linux-2.6/arch/mips/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/mips/kernel/ptrace.c	2010-01-15 23:53:14.792004038 +0100
++++ linux-2.6/arch/mips/kernel/ptrace.c	2010-01-26 17:43:49.253004303 +0100
+@@ -260,12 +260,6 @@ long arch_ptrace(struct task_struct *chi
+ 	int ret;
+ 
+ 	switch (request) {
+-	/* when I and D space are separate, these will need to be fixed. */
+-	case PTRACE_PEEKTEXT: /* read word at location addr. */
+-	case PTRACE_PEEKDATA:
+-		ret = generic_ptrace_peekdata(child, addr, data);
+-		break;
+-
+ 	/* Read the word at location addr in the USER area. */
+ 	case PTRACE_PEEKUSR: {
+ 		struct pt_regs *regs;
+@@ -390,12 +384,6 @@ long arch_ptrace(struct task_struct *chi
+ 		break;
+ 	}
+ 
+-	/* when I and D space are separate, this will have to be fixed. */
+-	case PTRACE_POKETEXT: /* write the word at location addr. */
+-	case PTRACE_POKEDATA:
+-		ret = generic_ptrace_pokedata(child, addr, data);
+-		break;
+-
+ 	case PTRACE_POKEUSR: {
+ 		struct pt_regs *regs;
+ 		ret = 0;
+Index: linux-2.6/arch/um/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/um/kernel/ptrace.c	2010-01-15 23:53:14.844003754 +0100
++++ linux-2.6/arch/um/kernel/ptrace.c	2010-01-26 17:43:49.276003735 +0100
+@@ -42,23 +42,11 @@ long arch_ptrace(struct task_struct *chi
+ 	unsigned long __user *p = (void __user *)(unsigned long)data;
+ 
+ 	switch (request) {
+-	/* read word at location addr. */
+-	case PTRACE_PEEKTEXT:
+-	case PTRACE_PEEKDATA:
+-		ret = generic_ptrace_peekdata(child, addr, data);
+-		break;
+-
+ 	/* read the word at location addr in the USER area. */
+ 	case PTRACE_PEEKUSR:
+ 		ret = peek_user(child, addr, data);
+ 		break;
+ 
+-	/* write the word at location addr. */
+-	case PTRACE_POKETEXT:
+-	case PTRACE_POKEDATA:
+-		ret = generic_ptrace_pokedata(child, addr, data);
+-		break;
+-
+ 	/* write the word at location addr in the USER area */
+ 	case PTRACE_POKEUSR:
+ 		ret = poke_user(child, addr, data);
+Index: linux-2.6/arch/xtensa/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/xtensa/kernel/ptrace.c	2010-01-15 23:53:14.852004145 +0100
++++ linux-2.6/arch/xtensa/kernel/ptrace.c	2010-01-26 17:43:49.315254186 +0100
+@@ -250,20 +250,10 @@ long arch_ptrace(struct task_struct *chi
+ 	int ret = -EPERM;
+ 
+ 	switch (request) {
+-	case PTRACE_PEEKTEXT:	/* read word at location addr. */
+-	case PTRACE_PEEKDATA:
+-		ret = generic_ptrace_peekdata(child, addr, data);
+-		break;
+-
+ 	case PTRACE_PEEKUSR:	/* read register specified by addr. */
+ 		ret = ptrace_peekusr(child, addr, (void __user *) data);
+ 		break;
+ 
+-	case PTRACE_POKETEXT:	/* write the word at location addr. */
+-	case PTRACE_POKEDATA:
+-		ret = generic_ptrace_pokedata(child, addr, data);
+-		break;
+-
+ 	case PTRACE_POKEUSR:	/* write register specified by addr. */
+ 		ret = ptrace_pokeusr(child, addr, data);
+ 		break;
+Index: linux-2.6/arch/alpha/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/alpha/kernel/ptrace.c	2010-01-15 23:53:14.691006315 +0100
++++ linux-2.6/arch/alpha/kernel/ptrace.c	2010-01-26 17:43:49.334254716 +0100
+@@ -285,12 +285,6 @@ long arch_ptrace(struct task_struct *chi
+ 		DBG(DBG_MEM, ("peek $%ld->%#lx\n", addr, ret));
+ 		break;
+ 
+-	/* When I and D space are separate, this will have to be fixed.  */
+-	case PTRACE_POKETEXT: /* write the word at location addr. */
+-	case PTRACE_POKEDATA:
+-		ret = generic_ptrace_pokedata(child, addr, data);
+-		break;
+-
+ 	case PTRACE_POKEUSR: /* write the specified register */
+ 		DBG(DBG_MEM, ("poke $%ld<-%#lx\n", addr, data));
+ 		ret = put_reg(child, addr, data);
