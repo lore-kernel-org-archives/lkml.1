@@ -1,121 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753570Ab0BAKfc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 05:35:32 -0500
-Received: from cantor.suse.de ([195.135.220.2]:36666 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751476Ab0BAKfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 05:35:31 -0500
-Date: Mon, 1 Feb 2010 21:35:26 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: dentries: dentry defragmentation
-Message-ID: <20100201103526.GG12759@laptop>
-References: <20100129204931.789743493@quilx.com>
- <20100129205007.832823807@quilx.com>
- <20100129220044.GA31305@ZenIV.linux.org.uk>
- <20100201070835.GE9085@laptop>
- <20100201101013.GG29555@one.firstfloor.org>
- <20100201101645.GF12759@laptop>
- <20100201102253.GI29555@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100201102253.GI29555@one.firstfloor.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1754030Ab0BAKgG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 05:36:06 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:53360 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157Ab0BAKgE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 05:36:04 -0500
+Subject: Re: debug: nt_conntrack and KVM crash
+From: Jon Masters <jonathan@jonmasters.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       Patrick McHardy <kaber@trash.net>
+In-Reply-To: <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
+References: <1264813832.2793.446.camel@tonnant>
+	 <1264816634.2793.505.camel@tonnant> <1264816777.2793.510.camel@tonnant>
+	 <1264834704.2919.3.camel@edumazet-laptop>
+	 <1265016745.7499.144.camel@tonnant>
+	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Mon, 01 Feb 2010 05:35:52 -0500
+Message-Id: <1265020552.7499.147.camel@tonnant>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 11:22:53AM +0100, Andi Kleen wrote:
-> On Mon, Feb 01, 2010 at 09:16:45PM +1100, Nick Piggin wrote:
-> > On Mon, Feb 01, 2010 at 11:10:13AM +0100, Andi Kleen wrote:
-> > > On Mon, Feb 01, 2010 at 06:08:35PM +1100, Nick Piggin wrote:
-> > > > I always preferred to do defrag in the opposite way. Ie. query the
-> > > > slab allocator from existing shrinkers rather than opposite way
-> > > > around. This lets you reuse more of the locking and refcounting etc.
-> > > 
-> > > I looked at this for hwpoison soft offline.
-> > > 
-> > > But it works really badly because the LRU list ordering 
-> > > has nothing to do with the actual ordering inside the slab pages.
-> > 
-> > No, you don't *have* to follow LRU order. The most important thing
+On Mon, 2010-02-01 at 11:36 +0200, Alexey Dobriyan wrote:
+> On Mon, Feb 1, 2010 at 11:32 AM, Jon Masters <jonathan@jonmasters.org> wrote:
+> > I hacked up a per-namespace version of hashtables (this needs doing
+> > anyway, since the global stuff is just waiting to break)
 > 
-> What list would you follow then?
+> Which ones? Conntrack hashtables are per-netns.
 
-You can follow the slab, as I said in the first mail.
+They are, but the metadata is not. Sorry for not being clear, but my
+previous mail was. i.e. there is a per-netns hashtable that is indexed
+using a global that might change at any time underneath. The htable size
+and max should be per-netns too.
 
-> There's LRU, there's hast (which is as random) and there's slab
-> itself. The only one who is guaranteed to match the physical
-> layout in memory is slab. That is what this patchkit is trying
-> to attempt.
-> 
-> > is if you followed what I wrote is to get a pin on the objects and
-> 
-> Which objects? You first need to collect all that belong to a page.
-> How else would you do that?
+An existing sysctl/module parameter affects these and should also
+ultimately either iterate through namespaces, or only affect the global
+init_net (as it almost does now, except it changes the data used by the
+others and doesn't resize them).
 
-Objects that you're interested in reclaiming, I guess. I don't
-understand the question.
+Jon.
 
- 
-> > > > whether we are in this slab defrag mode, and if so, whether the slab
-> > > > is very sparse. If yes, then reclaim aggressively.
-> > > 
-> > > The typical result is that you need to get through most of the LRU
-> > > list (and prune them all) just to free the page.
-> > 
-> > Really? If you have a large proportion of slabs which are quite
-> > internally fragmented, then I would have thought it would give a
-> > significant improvement (aggressive reclaim, that is)
-> 
-> 
-> You wrote the same as me?
-
-Aggressive reclaim: as-in, ignoring referenced bit on the LRU,
-*possibly* even trying to actively invalidate the dentry.
-
-
-> > > > If that doesn't perform well enough and you have to go further and
-> > > 
-> > > It doesn't.
-> > 
-> > Can we see your numbers? And the patches you tried?
-> 
-> What I tried (in some dirty patches you probably don't want to see)
-> was to just implement slab shrinking for a single page for soft hwpoison.
-> But it didn't work too well because it couldn't free the objects
-> still actually in the dcache.
-> 
-> Then I called the shrinker and tried to pass in the page as a hint
-> and drop only objects on that page, but I realized that it's terrible
-> inefficient to do it this way.
-> 
-> Now soft hwpoison doesn't care about a little inefficiency, but I still
-> didn't like to be terrible inefficient.
-> 
-> That is why I asked Christoph to repost his old patchkit that can 
-> do the shrink from the slab side (which is the right order here)
-
-Right, but as you can see it is complex to do it this way. And I
-think for reclaim driven targetted reclaim, then it needn't be so
-inefficient because you aren't restricted to just one page, but
-in any page which is heavily fragmented (and by definition there
-should be a lot of them in the system).
-
-Hwpoison I don't think adds much weight, frankly. Just panic and
-reboot if you get unrecoverable error. We have everything to handle
-that so I can't see how it's worth adding much complexity to the
-kernel for.
 
