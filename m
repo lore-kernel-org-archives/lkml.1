@@ -1,88 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932352Ab0BCCLR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 21:11:17 -0500
-Received: from bld-mail15.adl6.internode.on.net ([150.101.137.100]:57534 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932244Ab0BCCLP (ORCPT
+	id S1750990Ab0BAFFm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 00:05:42 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41039 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704Ab0BAFFk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 21:11:15 -0500
-Date: Mon, 1 Feb 2010 00:59:33 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: tytso@mit.edu, Christoph Lameter <cl@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: inodes: Support generic defragmentation
-Message-ID: <20100131135933.GM15853@discord.disaster>
-References: <20100129204931.789743493@quilx.com> <20100129205004.405949705@quilx.com> <20100130192623.GE788@thunk.org> <20100131083409.GF29555@one.firstfloor.org>
+	Mon, 1 Feb 2010 00:05:40 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.4.0
+Message-ID: <4B6660FD.2020408@jp.fujitsu.com>
+Date: Mon, 01 Feb 2010 14:05:01 +0900
+From: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100131083409.GF29555@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-scsi@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>,
+       Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Martin Peterson <martin.petersen@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>, Joe Perches <joe@perches.com>
+CC: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>,
+       lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: [PATCH 1/2 v2] scsi: add __print_hex() to ftrace
+References: <4B665EC9.6000608@jp.fujitsu.com>
+In-Reply-To: <4B665EC9.6000608@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 31, 2010 at 09:34:09AM +0100, Andi Kleen wrote:
-> On Sat, Jan 30, 2010 at 02:26:23PM -0500, tytso@mit.edu wrote:
-> > On Fri, Jan 29, 2010 at 02:49:42PM -0600, Christoph Lameter wrote:
-> > > This implements the ability to remove inodes in a particular slab
-> > > from inode caches. In order to remove an inode we may have to write out
-> > > the pages of an inode, the inode itself and remove the dentries referring
-> > > to the node.
-> > 
-> > How often is this going to happen?  Removing an inode is an incredibly
-> 
-> The standard case is the classic updatedb. Lots of dentries/inodes cached
-> with no or little corresponding data cache.
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-I don't believe that updatedb has anything to do with causing
-internal inode/dentry slab fragmentation. In all my testing I rarely
-see use-once filesystem traversals cause internal slab
-fragmentation. This appears to be a result of use-once filesystem
-traversal resulting in slab pages full of objects that have the same
-locality of access.  Hence each new slab page that traversal
-allocates will contain objects that will be adjacent in the LRU.
-Hence LRU-based reclaim is very likely to free all the objects on
-each page in the same pass and as such no fragmentation will occur.
+This is the same patch from v1.
 
-All the cases of inode/dentry slab fragmentation I have seen are a
-result of access patterns that result in slab pages containing
-objects with different temporal localities. It's when the access
-pattern is sufficiently distributed throughout the working set we
-get the "need to free 95% of the objects in the entire cache to free
-a single page" type of reclaim behaviour.
+__print_hex() prints values in an array in hex (w/o '0x') (space separated)
+EX) 92 33 32 f3 ee 4d
 
-AFAICT, the defrag patches as they stand don't really address the
-fundamental problem of differing temporal locality inside a slab
-page.  It makes the assumption that "partial page == defrag
-candidate" but there isn't any further consideration of when any of
-the remaing objects were last accessed. I think that this really
-does need to be taken into account, especially considering that the
-allocator tries to fill partial pages with new objects before
-allocating new pages and so the page under reclaim might contain
-very recently allocated objects.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+Signed-off-by: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
 
-Someone in a previous discussion on this patch set (Nick? Hugh,
-maybe? I can't find the reference right now) mentioned something
-like this about the design of the force-reclaim operations. IIRC the
-suggestion was that it may be better to track LRU-ness by per-slab
-page rather than per-object so that reclaim can target the slab
-pages that - on aggregate - had the oldest objects in it. I think
-this has merit - prevention of internal fragmentation seems like a
-better approach to me than to try to cure it after it is already
-present....
 
-Cheers,
+---
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+ linux-2.6.33-rc6-trace-kei/include/linux/ftrace_event.h |    3 +++
+ linux-2.6.33-rc6-trace-kei/include/trace/ftrace.h       |    3 +++
+ linux-2.6.33-rc6-trace-kei/kernel/trace/trace_output.c  |   15 +++++++++++++++
+ 3 files changed, 21 insertions(+)
+
+diff -puN include/linux/ftrace_event.h~ftrace_print_hex include/linux/ftrace_event.h
+--- linux-2.6.33-rc6-trace/include/linux/ftrace_event.h~ftrace_print_hex	2010-02-01 11:56:32.000000000 +0900
++++ linux-2.6.33-rc6-trace-kei/include/linux/ftrace_event.h	2010-02-01 11:56:32.000000000 +0900
+@@ -24,6 +24,9 @@ const char *ftrace_print_flags_seq(struc
+ const char *ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
+ 				     const struct trace_print_flags *symbol_array);
+ 
++const char *ftrace_print_hex_seq(struct trace_seq *p,
++				 const unsigned char *buf, int len);
++
+ /*
+  * The trace entry - the most basic unit of tracing. This is what
+  * is printed in the end as a single line in the trace output, such as:
+diff -puN include/trace/ftrace.h~ftrace_print_hex include/trace/ftrace.h
+--- linux-2.6.33-rc6-trace/include/trace/ftrace.h~ftrace_print_hex	2010-02-01 11:56:32.000000000 +0900
++++ linux-2.6.33-rc6-trace-kei/include/trace/ftrace.h	2010-02-01 11:56:32.000000000 +0900
+@@ -321,6 +321,9 @@ ftrace_format_##name(struct ftrace_event
+ 		ftrace_print_symbols_seq(p, value, symbols);		\
+ 	})
+ 
++#undef __print_hex
++#define __print_hex(buf, buf_len) ftrace_print_hex_seq(p, buf, buf_len)
++
+ #undef DECLARE_EVENT_CLASS
+ #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
+ static enum print_line_t						\
+diff -puN kernel/trace/trace_output.c~ftrace_print_hex kernel/trace/trace_output.c
+--- linux-2.6.33-rc6-trace/kernel/trace/trace_output.c~ftrace_print_hex	2010-02-01 11:56:32.000000000 +0900
++++ linux-2.6.33-rc6-trace-kei/kernel/trace/trace_output.c	2010-02-01 11:56:32.000000000 +0900
+@@ -355,6 +355,21 @@ ftrace_print_symbols_seq(struct trace_se
+ }
+ EXPORT_SYMBOL(ftrace_print_symbols_seq);
+ 
++const char *
++ftrace_print_hex_seq(struct trace_seq *p, const unsigned char *buf, int buf_len)
++{
++	int i;
++	const char *ret = p->buffer + p->len;
++
++	for (i = 0; i < buf_len; i++)
++		trace_seq_printf(p, "%s%2.2x", i == 0 ? "" : " ", buf[i]);
++
++	trace_seq_putc(p, 0);
++
++	return ret;
++}
++EXPORT_SYMBOL(ftrace_print_hex_seq);
++
+ #ifdef CONFIG_KRETPROBES
+ static inline const char *kretprobed(const char *name)
+ {
+
+_
+
+
+
