@@ -1,63 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018Ab0BAKxa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 05:53:30 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:49736 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752187Ab0BAKx3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 05:53:29 -0500
-Subject: Re: debug: nt_conntrack and KVM crash
-From: Jon Masters <jonathan@jonmasters.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       Patrick McHardy <kaber@trash.net>
-In-Reply-To: <b6fcc0a1002010249y19e2edc3g7974f44633859bd3@mail.gmail.com>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant> <1264816777.2793.510.camel@tonnant>
-	 <1264834704.2919.3.camel@edumazet-laptop>
-	 <1265016745.7499.144.camel@tonnant>
-	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
-	 <1265020552.7499.147.camel@tonnant>
-	 <b6fcc0a1002010244j161f7f0bob46053efc0d65630@mail.gmail.com>
-	 <b6fcc0a1002010247s70b855b6kea66c99c9326b6a@mail.gmail.com>
-	 <b6fcc0a1002010249y19e2edc3g7974f44633859bd3@mail.gmail.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Mon, 01 Feb 2010 05:53:19 -0500
-Message-Id: <1265021599.7499.176.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	id S1753666Ab0BAK4n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 05:56:43 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34912 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751011Ab0BAK4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 05:56:41 -0500
+Date: Mon, 1 Feb 2010 21:56:35 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: dentries: dentry defragmentation
+Message-ID: <20100201105635.GI12759@laptop>
+References: <20100129204931.789743493@quilx.com>
+ <20100129205007.832823807@quilx.com>
+ <20100129220044.GA31305@ZenIV.linux.org.uk>
+ <20100201070835.GE9085@laptop>
+ <20100201101013.GG29555@one.firstfloor.org>
+ <20100201101645.GF12759@laptop>
+ <20100201102253.GI29555@one.firstfloor.org>
+ <20100201103526.GG12759@laptop>
+ <20100201104544.GJ29555@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100201104544.GJ29555@one.firstfloor.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-01 at 12:49 +0200, Alexey Dobriyan wrote:
-> On Mon, Feb 1, 2010 at 12:47 PM, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > Or even printk nf_conntrack_htable_size during bootup and panic/oops.
+On Mon, Feb 01, 2010 at 11:45:44AM +0100, Andi Kleen wrote:
+> On Mon, Feb 01, 2010 at 09:35:26PM +1100, Nick Piggin wrote:
+> > > > > > I always preferred to do defrag in the opposite way. Ie. query the
+> > > > > > slab allocator from existing shrinkers rather than opposite way
+> > > > > > around. This lets you reuse more of the locking and refcounting etc.
+> > > > > 
+> > > > > I looked at this for hwpoison soft offline.
+> > > > > 
+> > > > > But it works really badly because the LRU list ordering 
+> > > > > has nothing to do with the actual ordering inside the slab pages.
+> > > > 
+> > > > No, you don't *have* to follow LRU order. The most important thing
+> > > 
+> > > What list would you follow then?
+> > 
+> > You can follow the slab, as I said in the first mail.
 > 
-> Oh, sorry, I see it was indeed corrupted.
+> That's pretty much what Christoph's patchkit is about (with yes some details
+> improved)
 
-Right. And it's not just the set size function that changes the value
-(it wasn't in this case) so it's not sufficient to say that there is a
-generic function to set the size. That only applies to the hashtable in
-the global init_net anyway, changing the hashtable sizes and then
-leaving the existing hashes as they were.
-
-Additionally, the size is writeable in the module sysfs entry. So it's
-not read only, even though I agree that the procfs visable entry is. I
-really think this does need fixing, and I'm not just being a pain in the
-ass - I have another issue here clearly with memory corruption, but the
-need for this to be cleaned up is real.
-
-Jon.
+I know what the patch is about. Can you re-read my first mail?
 
 
+> > > There's LRU, there's hast (which is as random) and there's slab
+> > > itself. The only one who is guaranteed to match the physical
+> > > layout in memory is slab. That is what this patchkit is trying
+> > > to attempt.
+> > > 
+> > > > is if you followed what I wrote is to get a pin on the objects and
+> > > 
+> > > Which objects? You first need to collect all that belong to a page.
+> > > How else would you do that?
+> > 
+> > Objects that you're interested in reclaiming, I guess. I don't
+> > understand the question.
+> 
+> Objects that are in the same page
+
+OK, well you can pin an object, and from there you can find other
+objects in the same page.
+
+This is totally different to how Christoph's patch has to pin the
+slab, then (in a restrictive context) pin the objects, then go to
+a more relaxed context to reclaim the objects. This is where much
+of the complexity comes from.
+
+
+> There are really two different cases here:
+> - Run out of memory: in this case i just want to find all the objects
+> of any page, ideally of not that recently used pages.
+> - I am very fragmented and want a specific page freed to get a 2MB
+> region back or for hwpoison:  same, but do it for a specific page.
+> 
+> 
+> > Right, but as you can see it is complex to do it this way. And I
+> > think for reclaim driven targetted reclaim, then it needn't be so
+> > inefficient because you aren't restricted to just one page, but
+> > in any page which is heavily fragmented (and by definition there
+> > should be a lot of them in the system).
+> 
+> Assuming you can identify them quickly.
+
+Well because there are a large number of them, then you are likely
+to encounter one very quickly just off the LRU list.
+
+
+> > Hwpoison I don't think adds much weight, frankly. Just panic and
+> > reboot if you get unrecoverable error. We have everything to handle
+> 
+> This is for soft hwpoison :- offlining pages that might go bad
+> in the future.
+
+I still don't think it adds much weight. Especially if you can just
+try an inefficient scan.
+ 
+
+> But soft hwpoison isn't the only user. The other big one would
+> be for large pages or other large page allocations.
