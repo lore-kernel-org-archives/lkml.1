@@ -1,64 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856Ab0BAO0N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 09:26:13 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:47312 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754697Ab0BAO0M (ORCPT
+	id S1754884Ab0BAO1t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 09:27:49 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:18018 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754738Ab0BAO1r convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 09:26:12 -0500
-Date: Mon, 1 Feb 2010 23:26:05 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux@arm.linux.org.uk,
-       eric.y.miao@gmail.com, tony@atomide.com, linux-kernel@vger.kernel.org,
-       khilman@deeprootsystems.com, ben-linux@fluff.org,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 01/06] ARM: SuperH Mobile ARM, sh7367 and G3EVM support
-Message-ID: <20100201142605.GB13428@linux-sh.org>
-References: <20100128124028.8982.16123.sendpatchset@rxone.opensource.se> <20100128124038.8982.82995.sendpatchset@rxone.opensource.se> <20100201141057.GB1340@ucw.cz>
+	Mon, 1 Feb 2010 09:27:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ta1lVzoIzPfbt10Y5vk71dDuv2ZxNr/FIQDHzQwuDuS/oej15rqkImoOhsJZOEt6p9
+         tu74JiO78A57fjZUnTxVmXgzzeaVqTAYp13AjpHFU7chwwyKmdi6gSSaEUzpmL3Lb+6t
+         Hc7lQhKWZgTILoKczcy3Jj9QoPOr3vCHhwes8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100201141057.GB1340@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20100201121454.GA20387@atrey.karlin.mff.cuni.cz>
+References: <20100201121454.GA20387@atrey.karlin.mff.cuni.cz>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Mon, 1 Feb 2010 22:27:27 +0800
+Message-ID: <f17812d71002010627u795ff155l62c96bf64240b584@mail.gmail.com>
+Subject: Re: About kernel decompressors (fwd)
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, arminlitzel@web.de,
+       Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
+       zaurus-devel@www.linuxtogo.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 03:10:57PM +0100, Pavel Machek wrote:
-> > This patch contains the SuperH Mobile ARM base support together
-> > with sh7367 CPU and G3EVM board support. Only timer, serial
-> > console and NOR flash are supported at this point. Patches for
-> > the interrupt controller, pinmux support, clock framework and
-> > runtime pm will be submitted as feature patches on top of this.
-> ...
-> >  arch/arm/mach-shmobile/Makefile.boot              |    9 
-> >  arch/arm/mach-shmobile/board-g3evm.c              |  127 +++++++++++
-> 
-> I guess I'm confused. I thought superh was architecture, like arm
-> is.....?
-> 
-SH-Mobile (G series, in this case) is a line of SH/ARM multi-cores. They
-contain both SH and ARM MPUs and are built up almost entirely on SH IP
-blocks. There are some SH-Mobiles that are SH-only, and those are taken
-care of in arch/sh/ as normal. Most of the shared code sits in drivers/sh
-and so forth, requiring fairly little glue on the ARM architecture side.
-As support for these CPUs is extended, we'll likely see more of arch/sh/
-being generalized. There's likely not going to be enough that is directly
-reusable between the two to warrant a split out architecture directory of
-its own, but we'll see how it goes.
+It sounds to me like this is because of the 1.4M (cannot
+remember the exact size) constraint of the kernel size
+on NAND that the bootloader is able to load?
 
-It's forseeable that we will also see support for the same CPU in
-arch/sh/ aimed at the SH MPU, and that we can have linux running on both
-the SH and the ARM at the same time sharing the same peripheral domain.
-However, all of these things are out of scope for this patch set, which
-is just getting the groundwork established for the ARM MPU.
-
-> I superh actually manufacturer? And can we get shorter name than
-> mach-shmobile? mach-shm?
-
-shmobile is what the line is called, and matches the naming scheme we
-already have in-tree today. Changing that around would only lead to more
-confusion. It's also not really any longer than many of the other mach
-types, so I don't really see the point.
+On Mon, Feb 1, 2010 at 8:14 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+> I guess Andrea wanted me  to forward this....
+>
+> ----- Forwarded message from Andrea Adami <andrea.adami@gmail.com> -----
+> Date: Mon, 1 Feb 2010 13:08:44 +0100
+> From: Andrea Adami <andrea.adami@gmail.com>
+> To: pavel@ucw.cz
+> Subject: About kernel decompressors
+>
+> Pavel,
+>
+> I'd like to add a couple of observations in the "Uncompressing broken
+> with commit e7db7b4270" thread.
+> Unfortunately I wasn't subscribed and I can't properly reply to the thread...
+>
+> This is for kernels 2.6.33-rc5 and -rc6 on Sharp corgi (Zaurus
+> SL-C860, pxa255, 64M RAM)
+>
+> 1) after that commit neither gzip, nor lzo can decompress from NAND
+> 2) I tested the LZMA patch and this also won't help the boot from nand
+> 3) kernel size is uninfluent: I tested 930KiB-lzma kernels and 1240KiB
+> gzip-kernels.
+> 4) I tried to set stack size to 8192, still no boot
+>
+> 5) all the 3 above kernels boot just fine from kexec (I launch them
+> with linux-kexecboot-2.6.26)
+>
+> >From nand, the boot stops immediately after
+> **** JUMP to LINUX! ****
+>
+>
+> Cheers
+>
+> Andrea
+>
+> ----- End forwarded message -----
+>
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
