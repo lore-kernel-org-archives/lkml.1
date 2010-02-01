@@ -1,86 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752412Ab0BAKQw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 05:16:52 -0500
-Received: from cantor.suse.de ([195.135.220.2]:36062 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750910Ab0BAKQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 05:16:51 -0500
-Date: Mon, 1 Feb 2010 21:16:45 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+	id S1753050Ab0BAKRI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 05:17:08 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34309 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863Ab0BAKRD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 05:17:03 -0500
+Date: Mon, 1 Feb 2010 11:17:02 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: tytso@mit.edu, Andi Kleen <andi@firstfloor.org>,
        Christoph Lameter <cl@linux-foundation.org>,
-       Dave Chinner <david@fromorbit.com>,
+       Dave Chinner <david@fromorbit.com>, Miklos Szeredi <miklos@szeredi.hu>,
        Alexander Viro <viro@ftp.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
        Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       Miklos Szeredi <miklos@szeredi.hu>,
        Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: dentries: dentry defragmentation
-Message-ID: <20100201101645.GF12759@laptop>
-References: <20100129204931.789743493@quilx.com>
- <20100129205007.832823807@quilx.com>
- <20100129220044.GA31305@ZenIV.linux.org.uk>
- <20100201070835.GE9085@laptop>
- <20100201101013.GG29555@one.firstfloor.org>
-MIME-Version: 1.0
+Subject: Re: inodes: Support generic defragmentation
+Message-ID: <20100201101702.GH29555@one.firstfloor.org>
+References: <20100129204931.789743493@quilx.com> <20100129205004.405949705@quilx.com> <20100130192623.GE788@thunk.org> <20100131083409.GF29555@one.firstfloor.org> <20100131210207.GA27883@thunk.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100201101013.GG29555@one.firstfloor.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100131210207.GA27883@thunk.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 11:10:13AM +0100, Andi Kleen wrote:
-> On Mon, Feb 01, 2010 at 06:08:35PM +1100, Nick Piggin wrote:
-> > I always preferred to do defrag in the opposite way. Ie. query the
-> > slab allocator from existing shrinkers rather than opposite way
-> > around. This lets you reuse more of the locking and refcounting etc.
+On Sun, Jan 31, 2010 at 04:02:07PM -0500, tytso@mit.edu wrote:
+> OK, but in that case, the kick_inodes should check to see if the inode
+> is in use in any way (i.e., has dentries open that will tie it down,
+> is open, has pages that are dirty or are mapped into some page table)
+> before attempting to invalidating any of its pages.  The patch as
+> currently constituted doesn't do that.  It will attempt to drop all
+> pages owned by that inode before checking for any of these conditions.
+> If I wanted that, I'd just do "echo 3 > /proc/sys/vm/drop_caches".  
+
+Yes the patch is more aggressive and probably needs to be fixed.
+
+On the other hand I would like to keep the option to be more aggressive
+for soft page offlining where it's useful and nobody cares about 
+the cost.
+
+> Worse yet, *after* it does this, it tries to write out the pages the
+> inode.  #1, this is pointless, since if the inode had any dirty pages,
+> they wouldn't have been invalidated, since it calls write_inode_now()
+
+Yes .... fought with all that for hwpoison too.
+
+> I'd go further, and say that it should avoid trying to flush any inode
+> if any of its sibling inodes on the slab cache are dirty or in use in
+> any way.  Otherwise, you end up dropping pages from the page cache and
+> still not be able to do any defragmentation.
+
+It depends -- for normal operation when running low on memory I agree
+with you. 
+But for hwpoison soft offline purposes it's better to be more aggressive
+-- even if that is inefficient -- but number one priority is to still
+be correct of course. 
 > 
-> I looked at this for hwpoison soft offline.
-> 
-> But it works really badly because the LRU list ordering 
-> has nothing to do with the actual ordering inside the slab pages.
+> If the concern is that the inode cache is filled with crap after an
+> updatedb run, then we should fix *that* problem; we need a way for
+> programs like updatedb to indicate that they are scanning lots of
+> inodes, and if the inode wasn't in cache before it was opened, it
+> this patch series will do this --- consistently.
 
-No, you don't *have* to follow LRU order. The most important thing
-is if you followed what I wrote is to get a pin on the objects and
-the slabs via the regular shrinker path first, then querying slab
-rather than calling into all these subsystems from an atomic, and
-non-slab-reentrant path.
+This has been tried many times and nobody came up with a good approach
+to detect it automatically that doesn't have bad regressions in corner 
+cases.
 
-Following LRU order would just be the first and simplest cut at
-this.
+Or the "let's add a updatedb" hint approach has the problem that
+it won't cover a lot of other programs (as Linus always points out
+these new interfaces rarely actually get used)
 
- 
-> Christoph's basic approach is more efficient.
+Also as Linus always points out -- thi
 
-I want to see numbers because it is also the far more complex
-approach.
+> But most of the time, I *want* the page cache filled, since it means
+> less time wasted accessing spinning rust platters.  The last thing I
+> want is a some helpful defragmentation kernel thread constantly
+> wandering through inode caches, and randomly calling
 
- 
-> > So you have a pin on the object somehow via the normal shrinker path,
-> > and therefore you get a pin on the underlying slab. I would just like
-> > to see even performance of a real simple approach that just asks
-> > whether we are in this slab defrag mode, and if so, whether the slab
-> > is very sparse. If yes, then reclaim aggressively.
-> 
-> The typical result is that you need to get through most of the LRU
-> list (and prune them all) just to free the page.
+The problem right now this patch series tries to access is that
+when you run out of memory it tends to blow away your dcaches caches
+because the dcache reclaim is just too stupid to actually free
+memory without going through most of the LRU list.
 
-Really? If you have a large proportion of slabs which are quite
-internally fragmented, then I would have thought it would give a
-significant improvement (aggressive reclaim, that is).
+So yes it's all about improving caching.  But yes also 
+some details need to be improved
 
-
-> > If that doesn't perform well enough and you have to go further and
-> 
-> It doesn't.
-
-Can we see your numbers? And the patches you tried?
-
-Thanks,
-Nick
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
