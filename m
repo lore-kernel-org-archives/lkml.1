@@ -1,84 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755380Ab0BASVJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 13:21:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48094 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755257Ab0BASVF (ORCPT
+	id S1755409Ab0BASVS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:21:18 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:37150 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755265Ab0BASVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 13:21:05 -0500
-Date: Mon, 1 Feb 2010 10:20:18 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Michael Breuer <mbreuer@majjas.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: [PATCH] sky2:  receive dma mapping error handling
-Message-ID: <20100201102018.7b597992@nehalam>
-In-Reply-To: <20100131221835.GA3317@del.dom.local>
-References: <20100128223447.GC3109@del.dom.local>
-	<4B621316.8070308@majjas.com>
-	<20100128225621.GD3109@del.dom.local>
-	<4B6216B9.1010802@majjas.com>
-	<20100128153643.0fca3c51@nehalam>
-	<4B645EF4.4050701@majjas.com>
-	<20100131003449.GA11935@del.dom.local>
-	<4B650D53.2010607@majjas.com>
-	<4B65D0F9.2020602@majjas.com>
-	<4B65FD12.7090101@majjas.com>
-	<20100131221835.GA3317@del.dom.local>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Feb 2010 13:21:16 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: trivial@kernel.org
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] trivial: sound seq ioctl dbg: print hexadecimal value padded with 0s
+Date: Mon,  1 Feb 2010 16:17:01 -0200
+Message-Id: <1265048222-8050-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes the fact that re->flags is always zero without causing
-other confusion.
+Instead of padding with blanks and printing "number=0x a", print
+"number=0x0a".
 
---- a/drivers/net/sky2.c	2010-02-01 10:07:42.676296236 -0800
-+++ b/drivers/net/sky2.c	2010-02-01 10:18:12.575044064 -0800
-@@ -1025,11 +1025,8 @@ static void sky2_prefetch_init(struct sk
- static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2, u16 *slot)
- {
- 	struct sky2_tx_le *le = sky2->tx_le + *slot;
--	struct tx_ring_info *re = sky2->tx_ring + *slot;
- 
- 	*slot = RING_NEXT(*slot, sky2->tx_ring_size);
--	re->flags = 0;
--	re->skb = NULL;
- 	le->ctrl = 0;
- 	return le;
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ sound/core/seq/seq_clientmgr.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/sound/core/seq/seq_clientmgr.c b/sound/core/seq/seq_clientmgr.c
+index 8ca2be3..48eca9f 100644
+--- a/sound/core/seq/seq_clientmgr.c
++++ b/sound/core/seq/seq_clientmgr.c
+@@ -2190,7 +2190,7 @@ static int snd_seq_do_ioctl(struct snd_seq_client *client, unsigned int cmd,
+ 		if (p->cmd == cmd)
+ 			return p->func(client, arg);
+ 	}
+-	snd_printd("seq unknown ioctl() 0x%x (type='%c', number=0x%2x)\n",
++	snd_printd("seq unknown ioctl() 0x%x (type='%c', number=0x%02x)\n",
+ 		   cmd, _IOC_TYPE(cmd), _IOC_NR(cmd));
+ 	return -ENOTTY;
  }
-@@ -1622,8 +1619,7 @@ static unsigned tx_le_req(const struct s
- 	return count;
- }
- 
--static void sky2_tx_unmap(struct pci_dev *pdev,
--			  const struct tx_ring_info *re)
-+static void sky2_tx_unmap(struct pci_dev *pdev, struct tx_ring_info *re)
- {
- 	if (re->flags & TX_MAP_SINGLE)
- 		pci_unmap_single(pdev, pci_unmap_addr(re, mapaddr),
-@@ -1633,6 +1629,7 @@ static void sky2_tx_unmap(struct pci_dev
- 		pci_unmap_page(pdev, pci_unmap_addr(re, mapaddr),
- 			       pci_unmap_len(re, maplen),
- 			       PCI_DMA_TODEVICE);
-+	re->flags = 0;
- }
- 
- /*
-@@ -1839,6 +1836,7 @@ static void sky2_tx_complete(struct sky2
- 			dev->stats.tx_packets++;
- 			dev->stats.tx_bytes += skb->len;
- 
-+			re->skb = NULL;
- 			dev_kfree_skb_any(skb);
- 
- 			sky2->tx_next = RING_NEXT(idx, sky2->tx_ring_size);
+-- 
+1.6.6.1
+
