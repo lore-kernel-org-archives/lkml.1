@@ -1,56 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747Ab0BAHMi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 02:12:38 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:56671 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754666Ab0BAHMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 02:12:37 -0500
-Date: Mon, 1 Feb 2010 18:12:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: tip tree build warning
-Message-Id: <20100201181230.9766bbab.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__1_Feb_2010_18_12_30_+1100_SQDFYJMsH5Bk7+66"
+	id S1754821Ab0BAHP5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 02:15:57 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:61018 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754680Ab0BAHP4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 02:15:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=QAuDbjgIYp1Btg+kFA3Frx+Izo0aNFTidnHjuPPGNWe/ZavlDCfD2ppPnscXgdYuJS
+         hrSuR4vaSN7eUXE/RsxiLww0WcrxrX61nAt19IcaNCkWZ6+i7FS3n5PhaEh0a6SWDi4z
+         Y536MrsQHXkjyD2iWrLJBItOm6nwyV36tDvcI=
+MIME-Version: 1.0
+In-Reply-To: <d3IDKWHT5gE.A.CjC.57hZLB@chimera>
+References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera>
+	 <d3IDKWHT5gE.A.CjC.57hZLB@chimera>
+Date: Mon, 1 Feb 2010 08:15:54 +0100
+Message-ID: <c2673ca61001312315s3e50611fm81171ddca6d19477@mail.gmail.com>
+Subject: Re: [Bug #15076] System panic under load with clockevents_program_event
+From: okias <d.okias@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__1_Feb_2010_18_12_30_+1100_SQDFYJMsH5Bk7+66
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Still valid. But reproduction without HIGHMEM is minimal, but still annoying.
 
-Hi all,
+2010/2/1, Rafael J. Wysocki <rjw@sisk.pl>:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15076
+> Subject		: System panic under load with clockevents_program_event
+> Submitter	: okias <d.okias@gmail.com>
+> Date		: 2010-01-17 13:03 (15 days old)
+>
+>
+>
 
-Today's linux-next build (powerpc allnoconfig) produced this warning:
 
-kernel/sched.c: In function 'wake_up_new_task':
-kernel/sched.c:2631: warning: unused variable 'cpu'
-
-Introduced by commit fabf318e5e4bda0aca2b0d617b191884fda62703 ("sched:
-Fix fork vs hotplug vs cpuset namespaces").
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__1_Feb_2010_18_12_30_+1100_SQDFYJMsH5Bk7+66
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktmft4ACgkQjjKRsyhoI8zllACeLjPw7zXf/ecSi3ye5txwdQU3
-9YMAn1KYzSeaM0VS/no2jYF2+CTG95Zy
-=3eiK
------END PGP SIGNATURE-----
-
---Signature=_Mon__1_Feb_2010_18_12_30_+1100_SQDFYJMsH5Bk7+66--
+-- 
+Jabber/XMPP: okias@isgeek.info
+SIP VoIP: sip:17474537254@proxy01.sipphone.com
