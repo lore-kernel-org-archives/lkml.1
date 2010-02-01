@@ -1,203 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752977Ab0BAIko (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 03:40:44 -0500
-Received: from mail-yw0-f179.google.com ([209.85.211.179]:56077 "EHLO
-	mail-yw0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750737Ab0BAIkn (ORCPT
+	id S1753557Ab0BAIvi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 03:51:38 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46126 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751689Ab0BAIvh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 03:40:43 -0500
-X-Greylist: delayed 1384 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Feb 2010 03:40:43 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=AhVTSN4LxdeY5URjpdFIJ9e5DHkPyBM3HH37sT2wuOnxoYVz5w5sjN9D44kW9+ArWh
-         TS2uzoz86Yj/Si9GTx39tyBzdXqnlh4iYtAewwOblGj6jNjgDHcdhs6CqiQgi1appwaX
-         mWkIFQ2xOA/HfM1V7qjkTnMdLpXacL6sFZAYE=
-Subject: Re: [RFC PATCH -tip 2/2 v2] add a scripts for pagecache usage per
- process
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Keiichi KII <k-keiichi@bx.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, lwoodman@redhat.com, linux-mm@kvack.org,
-       mingo@elte.hu, riel@redhat.com, rostedt@goodmis.org,
-       akpm@linux-foundation.org, fweisbec@gmail.com,
-       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
-       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-In-Reply-To: <4B5E1855.4090809@bx.jp.nec.com>
-References: <4B5A3D00.8080901@bx.jp.nec.com>
-	 <4B5A3E19.6060502@bx.jp.nec.com> <1264234865.6595.75.camel@tropicana>
-	 <4B5E1855.4090809@bx.jp.nec.com>
+	Mon, 1 Feb 2010 03:51:37 -0500
+Subject: Re: High scheduler wake up times
+From: Peter Zijlstra <peterz@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Shawn Bohrer <shawn.bohrer@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20100130164716.230dfe31@infradead.org>
+References: <20100130234551.GA27390@mediacenter.gateway.2wire.net>
+	 <20100130161114.07278221@infradead.org>
+	 <20100131003549.GC27390@mediacenter.gateway.2wire.net>
+	 <20100130164716.230dfe31@infradead.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 02:17:35 -0600
-Message-Id: <1265012255.6526.18.camel@tropicana>
+Date: Mon, 01 Feb 2010 09:51:30 +0100
+Message-ID: <1265014290.24455.98.camel@laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Mon, 2010-01-25 at 17:16 -0500, Keiichi KII wrote:
-> (2010年01月23日 03:21), Tom Zanussi wrote:
-> > Hi,
+On Sat, 2010-01-30 at 16:47 -0800, Arjan van de Ven wrote:
+> On Sat, 30 Jan 2010 18:35:49 -0600
+> Shawn Bohrer <shawn.bohrer@gmail.com> wrote:
+> \
 > > 
-> > On Fri, 2010-01-22 at 19:08 -0500, Keiichi KII wrote:
-> >> The scripts are implemented based on the trace stream scripting support.
-> >> And the scripts implement the following.
-> >>  - how many pagecaches each process has per each file
-> >>  - how many pages are cached per each file
-> >>  - how many pagecaches each process shares
-> >>
-> > 
-> > Nice, it looks like a very useful script - I gave it a quick try and it
-> > seems to work well...
-> > 
-> > The only problem I see, nothing to do with your script and nothing you
-> > can do anything about at the moment, is that the record step generates a
-> > huge amount of data, which of course makes the event processing take
-> > awhile.  A lot of it appears to be due to perf itself - being able to
-> > filter out the perf-generated events in the kernel would make a big
-> > difference, I think; you normally don't want to see those anyway...
+> > I agree that we are currently depending on a bug in epoll.  The epoll
+> > implementation currently rounds up to the next jiffie, so specifying a
+> > timeout of 1 ms really just wakes the process up at the next timer
+> > tick. I have a patch to fix epoll by converting it to use
+> > schedule_hrtimeout_range() that I'll gladly send, but I still need a
+> > way to achieve the same thing.
 > 
-> Yes, right. I don't want to process the data of perf itself.
-> I will try to find any way to solve this problem. 
+> it's not going to help you; your expectation is incorrect.
+> you CANNOT get 1000 iterations per second if you do
 > 
+> <wait 1 msec>
+> <do a bunch of work>
+> <wait 1 msec>
+> etc in a loop
+> 
+> the more accurate (read: not rounding down) the implementation, the
+> more not-1000 you will get, because to hit 1000 the two actions
+> 
+> <wait 1 msec>
+> <do a bunch of work>
+> 
+> combined are not allowed to take more than 1000 microseconds wallcock
+> time. Assuming "do a bunch of work" takes 100 microseconds, for you to
+> hit 1000 there would need to be 900 microseconds in a milliseconds...
+> and sadly physics don't work that way.
+> 
+> (and that's even ignoring various OS, CPU wakeup and scheduler
+> contention overheads)
 
-Here's one way, using the tracepoint filters - it does make a big
-difference in this case.
+Right, aside from that, CFS will only (potentially) delay your wakeup if
+there's someone else on the cpu at the moment of wakeup, and that's
+fully by design, you don't want to fix that, its bad for throughput.
 
-Before (using the new -P option, which includes perf in the trace
-data):  
+If you want deterministic wakeup latencies use a RT scheduling class
+(and kernel).
 
-root@tropicana:~# perf record -c 1 -f -a -M -R -e filemap:add_to_page_cache -e filemap:find_get_page -e filemap:remove_from_page_cache -P sleep 5
-[ perf record: Woken up 0 times to write data ]
-[ perf record: Captured and wrote 71.201 MB perf.data (~3110815 samples) ]
+Fwiw, your test proglet gives me:
 
-After (filters out events generated by perf):
+peter@laptop:~/tmp$ ./epoll
+Iterations Per Sec: 996.767947
+Iterations Per Sec: 995.424135
+Iterations Per Sec: 993.624936
 
-root@tropicana:~# perf record -c 1 -f -a -M -R -e filemap:add_to_page_cache -e filemap:find_get_page -e filemap:remove_from_page_cache sleep 5
-[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 0.309 MB perf.data (~13479 samples) ]
+and that's with full contemporary desktop bloat around.
 
-Tom
+As it stand it appears you have at least two bugs in your application,
+you rely on broken epoll behaviour and you have incorrect assumptions on
+what the regular scheduler class will guarantee you (which is in fact
+nothing other than that your application will at one point in the future
+receive some service, per posix).
 
-[PATCH] perf record: filter out perf process tracepoint events
-
-The perf process itself can generate a lot of trace data, which most
-of the time isn't of any interest.  This patch adds a predicate to the
-kernel tracepoint filter of each recorded event type which effectively
-screens out any event generated by perf.
-
-Assuming the common case would be to ignore perf, this makes it the
-default; the old behavior can be selected by using 'perf record -P'.
-
-Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
----
- tools/perf/builtin-record.c    |   44 ++++++++++++++++++++++++++++++++++++++++
- tools/perf/util/parse-events.h |    3 +-
- 2 files changed, 46 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index eea5691..5fa113a 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -49,6 +49,8 @@ static int			no_samples			=      0;
- static int			sample_address			=      0;
- static int			multiplex			=      0;
- static int			multiplex_fd			=     -1;
-+static int			include_perf			=      0;
-+static char			exclude_perf_pred[MAX_FILTER_STR_VAL];
- 
- static long			samples				=      0;
- static struct timeval		last_read;
-@@ -236,6 +238,37 @@ static struct perf_header_attr *get_header_attr(struct perf_event_attr *a, int n
- 	return h_attr;
- }
- 
-+static char *add_exclude_perf_pred(char *old_filter)
-+{
-+	int len = strlen(exclude_perf_pred);
-+	char *filter;
-+
-+	if (old_filter != NULL)
-+		len = len + strlen(" && ()") + strlen(old_filter);
-+
-+	if (len >= MAX_FILTER_STR_VAL) {
-+		fprintf(stderr, "excluding perf exceeds max filter length,"
-+			" use -P instead\n");
-+		exit(-1);
-+	}
-+
-+	filter = malloc(len + 1);
-+	if (!filter) {
-+		fprintf(stderr, "not enough memory to hold filter string\n");
-+		exit(-1);
-+	}
-+
-+	strcpy(filter, exclude_perf_pred);
-+
-+	if (old_filter) {
-+		strcat(filter, " && (");
-+		strcat(filter, old_filter);
-+		strcat(filter, ")");
-+	}
-+
-+	return filter;
-+}
-+
- static void create_counter(int counter, int cpu, pid_t pid)
- {
- 	char *filter = filters[counter];
-@@ -375,6 +408,12 @@ try_again:
- 		}
- 	}
- 
-+	if (include_perf == 0 && cpu == 0) {
-+		filters[counter] = add_exclude_perf_pred(filter);
-+		free(filter);
-+		filter = filters[counter];
-+	}
-+
- 	if (filter != NULL) {
- 		ret = ioctl(fd[nr_cpu][counter],
- 			    PERF_EVENT_IOC_SET_FILTER, filter);
-@@ -677,6 +716,8 @@ static const struct option options[] = {
- 		    "don't sample"),
- 	OPT_BOOLEAN('M', "multiplex", &multiplex,
- 		    "multiplex counter output in a single channel"),
-+	OPT_BOOLEAN('P', "include-perf", &include_perf,
-+		    "include perf in trace data (normally excluded)"),
- 	OPT_END()
- };
- 
-@@ -716,5 +757,8 @@ int cmd_record(int argc, const char **argv, const char *prefix __used)
- 		attrs[counter].sample_period = default_interval;
- 	}
- 
-+	if (include_perf == 0)
-+		sprintf(exclude_perf_pred, "common_pid != %d", getpid());
-+
- 	return __cmd_record(argc, argv);
- }
-diff --git a/tools/perf/util/parse-events.h b/tools/perf/util/parse-events.h
-index b8c1f64..d43d9b0 100644
---- a/tools/perf/util/parse-events.h
-+++ b/tools/perf/util/parse-events.h
-@@ -25,7 +25,8 @@ extern const char *__event_name(int type, u64 config);
- extern int parse_events(const struct option *opt, const char *str, int unset);
- extern int parse_filter(const struct option *opt, const char *str, int unset);
- 
--#define EVENTS_HELP_MAX (128*1024)
-+#define EVENTS_HELP_MAX		(128*1024)
-+#define MAX_FILTER_STR_VAL	256
- 
- extern void print_events(void);
- 
--- 
-1.6.4.GIT
-
-
+Now CFS stives to gives you more guarantees than that, but they're soft.
+We try to schedule such that your application will receive a
+proportional amount of service to every other runnable task of the same
+nice level (and there's a weighted proportion between nice levels as
+well), furthermore we try to service each task at least once per
+nr_running*sysctl.kernel.sched_min_granularity_ns. If you see wakeup
+latencies an order of magnitude over that, we clearly messed up, but
+until that point we're doing ok-ish.
 
