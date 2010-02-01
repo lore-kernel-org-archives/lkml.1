@@ -1,38 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755037Ab0BABKN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 20:10:13 -0500
-Received: from ozlabs.org ([203.10.76.45]:44298 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754513Ab0BABKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 20:10:11 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] virtio_blk: add block topology support
-Date: Mon, 1 Feb 2010 11:40:05 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-17-generic; KDE/4.3.2; i686; ; )
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-References: <20100129190158.GA25122@lst.de> <201001301529.49848.rusty@rustcorp.com.au> <20100130201910.GA19811@lst.de>
-In-Reply-To: <20100130201910.GA19811@lst.de>
+	id S1755268Ab0BABNE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 20:13:04 -0500
+Received: from mail-iw0-f173.google.com ([209.85.223.173]:64477 "EHLO
+	mail-iw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754751Ab0BABNB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 20:13:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kTytrMkLBFLJ/2eGiAy6vzTWOCMiXmTo5XZOFgddbhYeIxZBIuGH9c7bVNTE0n0OT8
+         O4LGtfRk9Wa+g8v+LRT2hidyrTQG5Vd5GFUg5I6/T7jiTcTP5sHWKWYT4Yt/eVbaGk5Z
+         88RiV8beXSWO+fa7kmPh39z2iZm+587qtcPyQ=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002011140.05761.rusty@rustcorp.com.au>
+In-Reply-To: <de962C6zBxL.A.AMF.tFiZLB@chimera>
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
+	 <de962C6zBxL.A.AMF.tFiZLB@chimera>
+Date: Sun, 31 Jan 2010 19:13:00 -0600
+Message-ID: <51f3faa71001311713sf4dbd45w240003a77de24f68@mail.gmail.com>
+Subject: Re: [Bug #14922] 2.6.32 seemed to have broken nVidia MCP7A sata 
+	controller
+From: Robert Hancock <hancockrwd@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Mike Cui <cuicui@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 31 Jan 2010 06:49:10 am Christoph Hellwig wrote:
-> On Sat, Jan 30, 2010 at 03:29:49PM +1030, Rusty Russell wrote:
-> > I bow to your expertise on that.  My only query is the __u16 for min_io_size; is that likely to restrict us?
-> 
-> Looks like you caught me there - I wrote the above odd format about the
-> physical_block exponent, but scsi actually does the min_io and opt_io
-> size in logical blocks, too.  With that in account the u16 as in scsi
-> is perfectly fine.
+On Sun, Jan 31, 2010 at 6:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let me know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14922
+> Subject         : 2.6.32 seemed to have broken nVidia MCP7A sata controller
+> Submitter       : Mike Cui <cuicui@gmail.com>
+> Date            : 2009-12-19 6:13 (44 days old)
+> References      : http://marc.info/?l=linux-ide&m=126120323407742&w=4
+> Handled-By      : Jeff Garzik <jeff@garzik.org>
+>                  Robert Hancock <hancockrwd@gmail.com>
 
-Thanks, applied.
-
-Rusty.
+Still outstanding. I posted a patch that should fix the problem,
+waiting for feedback from the reporter.
