@@ -1,143 +1,203 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657Ab0BAIam (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 03:30:42 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60802 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754227Ab0BAIaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 03:30:30 -0500
-Date: Mon, 1 Feb 2010 18:33:42 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [patch 2/3] scheduler: add full memory barriers upon task
- switch at runqueue lock/unlock
-Message-ID: <20100201073341.GH9085@laptop>
-References: <20100131205254.407214951@polymtl.ca>
- <20100131210013.446503342@polymtl.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100131210013.446503342@polymtl.ca>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1752977Ab0BAIko (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 03:40:44 -0500
+Received: from mail-yw0-f179.google.com ([209.85.211.179]:56077 "EHLO
+	mail-yw0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737Ab0BAIkn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 03:40:43 -0500
+X-Greylist: delayed 1384 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Feb 2010 03:40:43 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=AhVTSN4LxdeY5URjpdFIJ9e5DHkPyBM3HH37sT2wuOnxoYVz5w5sjN9D44kW9+ArWh
+         TS2uzoz86Yj/Si9GTx39tyBzdXqnlh4iYtAewwOblGj6jNjgDHcdhs6CqiQgi1appwaX
+         mWkIFQ2xOA/HfM1V7qjkTnMdLpXacL6sFZAYE=
+Subject: Re: [RFC PATCH -tip 2/2 v2] add a scripts for pagecache usage per
+ process
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, lwoodman@redhat.com, linux-mm@kvack.org,
+       mingo@elte.hu, riel@redhat.com, rostedt@goodmis.org,
+       akpm@linux-foundation.org, fweisbec@gmail.com,
+       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+In-Reply-To: <4B5E1855.4090809@bx.jp.nec.com>
+References: <4B5A3D00.8080901@bx.jp.nec.com>
+	 <4B5A3E19.6060502@bx.jp.nec.com> <1264234865.6595.75.camel@tropicana>
+	 <4B5E1855.4090809@bx.jp.nec.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 02:17:35 -0600
+Message-Id: <1265012255.6526.18.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 31, 2010 at 03:52:56PM -0500, Mathieu Desnoyers wrote:
-> Depends on:
-> "Create spin lock/spin unlock with distinct memory barrier"
-> 
-> A full memory barrier is wanted before and after runqueue data structure
-> modifications so these can be read safely by sys_membarrier without holding the
-> rq lock.
-> 
-> Adds no overhead on x86, because LOCK-prefixed atomic operations of the spin
-> lock/unlock already imply a full memory barrier. Combines the spin lock
-> acquire/release barriers with the full memory barrier to diminish the
-> performance impact on other architectures. (per-architecture spinlock-mb.h
-> should be gradually implemented to replace the generic version)
+Hi,
 
-It does add overhead on x86, as well as most other architectures.
-
-This really seems like the wrong optimisation to make, especially
-given that there's not likely to be much using librcu yet, right?
-
-I'd go with the simpler and safer version of sys_membarrier that does
-not do tricky synchronisation or add overhead to the ctxsw fastpath.
-Then if you see some actual improvement in a real program using librcu
-one day we can discuss making it faster.
-
-As it is right now, the change will definitely slow down everybody
-not using librcu (ie. nearly everything).
-
+On Mon, 2010-01-25 at 17:16 -0500, Keiichi KII wrote:
+> (2010年01月23日 03:21), Tom Zanussi wrote:
+> > Hi,
+> > 
+> > On Fri, 2010-01-22 at 19:08 -0500, Keiichi KII wrote:
+> >> The scripts are implemented based on the trace stream scripting support.
+> >> And the scripts implement the following.
+> >>  - how many pagecaches each process has per each file
+> >>  - how many pages are cached per each file
+> >>  - how many pagecaches each process shares
+> >>
+> > 
+> > Nice, it looks like a very useful script - I gave it a quick try and it
+> > seems to work well...
+> > 
+> > The only problem I see, nothing to do with your script and nothing you
+> > can do anything about at the moment, is that the record step generates a
+> > huge amount of data, which of course makes the event processing take
+> > awhile.  A lot of it appears to be due to perf itself - being able to
+> > filter out the perf-generated events in the kernel would make a big
+> > difference, I think; you normally don't want to see those anyway...
 > 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Steven Rostedt <rostedt@goodmis.org>
-> CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> CC: Nicholas Miell <nmiell@comcast.net>
-> CC: Linus Torvalds <torvalds@linux-foundation.org>
-> CC: mingo@elte.hu
-> CC: laijs@cn.fujitsu.com
-> CC: dipankar@in.ibm.com
-> CC: akpm@linux-foundation.org
-> CC: josh@joshtriplett.org
-> CC: dvhltc@us.ibm.com
-> CC: niv@us.ibm.com
-> CC: tglx@linutronix.de
-> CC: peterz@infradead.org
-> CC: Valdis.Kletnieks@vt.edu
-> CC: dhowells@redhat.com
-> ---
->  kernel/sched.c |   24 ++++++++++++++++++++----
->  1 file changed, 20 insertions(+), 4 deletions(-)
+> Yes, right. I don't want to process the data of perf itself.
+> I will try to find any way to solve this problem. 
 > 
-> Index: linux-2.6-lttng/kernel/sched.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/kernel/sched.c	2010-01-31 14:59:42.000000000 -0500
-> +++ linux-2.6-lttng/kernel/sched.c	2010-01-31 15:09:51.000000000 -0500
-> @@ -893,7 +893,12 @@ static inline void finish_lock_switch(st
->  	 */
->  	spin_acquire(&rq->lock.dep_map, 0, 0, _THIS_IP_);
->  
-> -	raw_spin_unlock_irq(&rq->lock);
-> +	/*
-> +	 * Order mm_cpumask and rq->curr updates before following memory
-> +	 * accesses. Required by sys_membarrier().
-> +	 */
-> +	smp_mb__before_spin_unlock();
-> +	raw_spin_unlock_irq__no_release(&rq->lock);
->  }
->  
->  #else /* __ARCH_WANT_UNLOCKED_CTXSW */
-> @@ -916,10 +921,15 @@ static inline void prepare_lock_switch(s
->  	 */
->  	next->oncpu = 1;
->  #endif
-> +	/*
-> +	 * Order mm_cpumask and rq->curr updates before following memory
-> +	 * accesses. Required by sys_membarrier().
-> +	 */
-> +	smp_mb__before_spin_unlock();
->  #ifdef __ARCH_WANT_INTERRUPTS_ON_CTXSW
-> -	raw_spin_unlock_irq(&rq->lock);
-> +	raw_spin_unlock_irq__no_release(&rq->lock);
->  #else
-> -	raw_spin_unlock(&rq->lock);
-> +	raw_spin_unlock__no_release(&rq->lock);
->  #endif
->  }
->  
-> @@ -5490,7 +5500,13 @@ need_resched_nonpreemptible:
->  	if (sched_feat(HRTICK))
->  		hrtick_clear(rq);
->  
-> -	raw_spin_lock_irq(&rq->lock);
-> +	raw_spin_lock_irq__no_acquire(&rq->lock);
-> +	/*
-> +	 * Order memory accesses before mm_cpumask and rq->curr updates.
-> +	 * Required by sys_membarrier() when prev != next. We only learn about
-> +	 * next later, so we issue this mb() unconditionally.
-> +	 */
-> +	smp_mb__after_spin_lock();
->  	update_rq_clock(rq);
->  	clear_tsk_need_resched(prev);
->  
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+Here's one way, using the tracepoint filters - it does make a big
+difference in this case.
+
+Before (using the new -P option, which includes perf in the trace
+data):  
+
+root@tropicana:~# perf record -c 1 -f -a -M -R -e filemap:add_to_page_cache -e filemap:find_get_page -e filemap:remove_from_page_cache -P sleep 5
+[ perf record: Woken up 0 times to write data ]
+[ perf record: Captured and wrote 71.201 MB perf.data (~3110815 samples) ]
+
+After (filters out events generated by perf):
+
+root@tropicana:~# perf record -c 1 -f -a -M -R -e filemap:add_to_page_cache -e filemap:find_get_page -e filemap:remove_from_page_cache sleep 5
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.309 MB perf.data (~13479 samples) ]
+
+Tom
+
+[PATCH] perf record: filter out perf process tracepoint events
+
+The perf process itself can generate a lot of trace data, which most
+of the time isn't of any interest.  This patch adds a predicate to the
+kernel tracepoint filter of each recorded event type which effectively
+screens out any event generated by perf.
+
+Assuming the common case would be to ignore perf, this makes it the
+default; the old behavior can be selected by using 'perf record -P'.
+
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+---
+ tools/perf/builtin-record.c    |   44 ++++++++++++++++++++++++++++++++++++++++
+ tools/perf/util/parse-events.h |    3 +-
+ 2 files changed, 46 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index eea5691..5fa113a 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -49,6 +49,8 @@ static int			no_samples			=      0;
+ static int			sample_address			=      0;
+ static int			multiplex			=      0;
+ static int			multiplex_fd			=     -1;
++static int			include_perf			=      0;
++static char			exclude_perf_pred[MAX_FILTER_STR_VAL];
+ 
+ static long			samples				=      0;
+ static struct timeval		last_read;
+@@ -236,6 +238,37 @@ static struct perf_header_attr *get_header_attr(struct perf_event_attr *a, int n
+ 	return h_attr;
+ }
+ 
++static char *add_exclude_perf_pred(char *old_filter)
++{
++	int len = strlen(exclude_perf_pred);
++	char *filter;
++
++	if (old_filter != NULL)
++		len = len + strlen(" && ()") + strlen(old_filter);
++
++	if (len >= MAX_FILTER_STR_VAL) {
++		fprintf(stderr, "excluding perf exceeds max filter length,"
++			" use -P instead\n");
++		exit(-1);
++	}
++
++	filter = malloc(len + 1);
++	if (!filter) {
++		fprintf(stderr, "not enough memory to hold filter string\n");
++		exit(-1);
++	}
++
++	strcpy(filter, exclude_perf_pred);
++
++	if (old_filter) {
++		strcat(filter, " && (");
++		strcat(filter, old_filter);
++		strcat(filter, ")");
++	}
++
++	return filter;
++}
++
+ static void create_counter(int counter, int cpu, pid_t pid)
+ {
+ 	char *filter = filters[counter];
+@@ -375,6 +408,12 @@ try_again:
+ 		}
+ 	}
+ 
++	if (include_perf == 0 && cpu == 0) {
++		filters[counter] = add_exclude_perf_pred(filter);
++		free(filter);
++		filter = filters[counter];
++	}
++
+ 	if (filter != NULL) {
+ 		ret = ioctl(fd[nr_cpu][counter],
+ 			    PERF_EVENT_IOC_SET_FILTER, filter);
+@@ -677,6 +716,8 @@ static const struct option options[] = {
+ 		    "don't sample"),
+ 	OPT_BOOLEAN('M', "multiplex", &multiplex,
+ 		    "multiplex counter output in a single channel"),
++	OPT_BOOLEAN('P', "include-perf", &include_perf,
++		    "include perf in trace data (normally excluded)"),
+ 	OPT_END()
+ };
+ 
+@@ -716,5 +757,8 @@ int cmd_record(int argc, const char **argv, const char *prefix __used)
+ 		attrs[counter].sample_period = default_interval;
+ 	}
+ 
++	if (include_perf == 0)
++		sprintf(exclude_perf_pred, "common_pid != %d", getpid());
++
+ 	return __cmd_record(argc, argv);
+ }
+diff --git a/tools/perf/util/parse-events.h b/tools/perf/util/parse-events.h
+index b8c1f64..d43d9b0 100644
+--- a/tools/perf/util/parse-events.h
++++ b/tools/perf/util/parse-events.h
+@@ -25,7 +25,8 @@ extern const char *__event_name(int type, u64 config);
+ extern int parse_events(const struct option *opt, const char *str, int unset);
+ extern int parse_filter(const struct option *opt, const char *str, int unset);
+ 
+-#define EVENTS_HELP_MAX (128*1024)
++#define EVENTS_HELP_MAX		(128*1024)
++#define MAX_FILTER_STR_VAL	256
+ 
+ extern void print_events(void);
+ 
+-- 
+1.6.4.GIT
+
+
+
