@@ -1,50 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755700Ab0BASls (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 13:41:48 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42280 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755687Ab0BASlr (ORCPT
+	id S1755645Ab0BASoV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 13:44:21 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:55332 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752500Ab0BASoU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 13:41:47 -0500
-Date: Mon, 1 Feb 2010 10:41:43 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jason Wessel <jason.wessel@windriver.com>
-cc: Michal Simek <michal.simek@petalogix.com>,
-       LKML <linux-kernel@vger.kernel.org>, hpa@zytor.com,
-       John Williams <john.williams@petalogix.com>
-Subject: Re: Split 'flush_old_exec' into two functions -
- 221af7f87b97431e3ee21ce4b0e77d5411cf1549
-In-Reply-To: <4B671865.5030705@windriver.com>
-Message-ID: <alpine.LFD.2.00.1002011036540.4206@localhost.localdomain>
-References: <4B66DE64.8010101@petalogix.com> <alpine.LFD.2.00.1002010741560.4206@localhost.localdomain> <4B671865.5030705@windriver.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 1 Feb 2010 13:44:20 -0500
+Date: Mon, 01 Feb 2010 13:44:12 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] sky2:  receive dma mapping error handling
+In-reply-to: <20100201102018.7b597992@nehalam>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Message-id: <4B6720FC.7070105@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100128223447.GC3109@del.dom.local> <4B621316.8070308@majjas.com>
+ <20100128225621.GD3109@del.dom.local> <4B6216B9.1010802@majjas.com>
+ <20100128153643.0fca3c51@nehalam> <4B645EF4.4050701@majjas.com>
+ <20100131003449.GA11935@del.dom.local> <4B650D53.2010607@majjas.com>
+ <4B65D0F9.2020602@majjas.com> <4B65FD12.7090101@majjas.com>
+ <20100131221835.GA3317@del.dom.local> <20100201102018.7b597992@nehalam>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
+ Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 1 Feb 2010, Jason Wessel wrote:
-> 
-> Add to the afflicted architecture list a ppc64 kernel running 32 bit
-> user space apps such as a dynamically linked busybox:
-
-The ppc issue was known - I informed the ppc people before committing, as 
-they were actually using the same insane trick (along with sparc) that x86 
-had to work around the bad calling conventions.
-
-So x86, sparc and ppc were actually the main targets of the cleanup, the 
-powerpc patch just wasn't ready in time. But it's merged now (got a pull 
-request today), so powerpc should be ok now too (commit 94f28da84: 
-"powerpc: TIF_ABI_PENDING bit removal").
-
-The microblaze thing is different, exactly because microblaze does _not_ 
-have any of that insane 32-vs-64-bit executable fiddling that this cleanup 
-was all about. So microblaze I'd have expected to be totally unaffected, 
-and must be about something else.
-
-				Linus
+On 2/1/2010 1:20 PM, Stephen Hemminger wrote:
+> This fixes the fact that re->flags is always zero without causing
+> other confusion.
+>
+> --- a/drivers/net/sky2.c	2010-02-01 10:07:42.676296236 -0800
+> +++ b/drivers/net/sky2.c	2010-02-01 10:18:12.575044064 -0800
+> @@ -1025,11 +1025,8 @@ static void sky2_prefetch_init(struct sk
+>   static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2, u16 *slot)
+>   {
+>   	struct sky2_tx_le *le = sky2->tx_le + *slot;
+> -	struct tx_ring_info *re = sky2->tx_ring + *slot;
+>
+>   	*slot = RING_NEXT(*slot, sky2->tx_ring_size);
+> -	re->flags = 0;
+> -	re->skb = NULL;
+>   	le->ctrl = 0;
+>   	return le;
+>   }
+> @@ -1622,8 +1619,7 @@ static unsigned tx_le_req(const struct s
+>   	return count;
+>   }
+>
+> -static void sky2_tx_unmap(struct pci_dev *pdev,
+> -			  const struct tx_ring_info *re)
+> +static void sky2_tx_unmap(struct pci_dev *pdev, struct tx_ring_info *re)
+>   {
+>   	if (re->flags&  TX_MAP_SINGLE)
+>   		pci_unmap_single(pdev, pci_unmap_addr(re, mapaddr),
+> @@ -1633,6 +1629,7 @@ static void sky2_tx_unmap(struct pci_dev
+>   		pci_unmap_page(pdev, pci_unmap_addr(re, mapaddr),
+>   			       pci_unmap_len(re, maplen),
+>   			       PCI_DMA_TODEVICE);
+> +	re->flags = 0;
+>   }
+>
+>   /*
+> @@ -1839,6 +1836,7 @@ static void sky2_tx_complete(struct sky2
+>   			dev->stats.tx_packets++;
+>   			dev->stats.tx_bytes += skb->len;
+>
+> +			re->skb = NULL;
+>   			dev_kfree_skb_any(skb);
+>
+>   			sky2->tx_next = RING_NEXT(idx, sky2->tx_ring_size);
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>    
+Running with this patch now - dma debug num_free_entries stable - so 
+far, so good.
