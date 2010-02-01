@@ -1,128 +1,142 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031Ab0BAT4c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 14:56:32 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:51832 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754876Ab0BAT4b (ORCPT
+	id S1756045Ab0BAT6d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 14:58:33 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41444 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754876Ab0BAT6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 14:56:31 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEADC8ZktGHnlj/2dsb2JhbACBM9lYhEUE
-Date: Mon, 1 Feb 2010 14:56:29 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [patch 2/3] scheduler: add full memory barriers upon task
-	switch at runqueue lock/unlock
-Message-ID: <20100201195629.GA27665@Krystal>
-References: <20100131205254.407214951@polymtl.ca> <20100131210013.446503342@polymtl.ca> <alpine.LFD.2.00.1002010722350.4206@localhost.localdomain> <20100201160929.GA3032@Krystal> <alpine.LFD.2.00.1002010816030.4206@localhost.localdomain> <20100201164856.GA3486@Krystal> <alpine.LFD.2.00.1002010854110.4206@localhost.localdomain> <20100201174500.GA13744@Krystal> <alpine.LFD.2.00.1002011028190.4206@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 1 Feb 2010 14:58:31 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B673233.8000300@s5r6.in-berlin.de>
+Date: Mon, 01 Feb 2010 20:57:39 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+CC: Dan Carpenter <error27@gmail.com>, linux1394-devel@lists.sourceforge.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug #14487] PANIC:
+ early exception 08 rip 246:10 error	ffffffff810251b5 cr2 0)
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com>
+In-Reply-To: <4B671606.3080405@gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002011028190.4206@localhost.localdomain>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 14:35:26 up 47 days,  3:53,  5 users,  load average: 0.20, 0.17,
-	0.17
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds (torvalds@linux-foundation.org) wrote:
+Justin P. Mattock wrote:
+> On 02/01/10 04:54, Dan Carpenter wrote:
+>> On Sun, Jan 31, 2010 at 05:39:22PM -0800, Justin P. Mattock wrote:
+>>> On 01/31/10 16:43, Rafael J. Wysocki wrote:
+>>>> This message has been generated automatically as a part of a report
+>>>> of regressions introduced between 2.6.31 and 2.6.32.
+>>>>
+>>>> The following bug entry is on the current list of known regressions
+>>>> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+>>>> be listed and let me know (either way).
+>>>>
+>>>>
+>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14487
+>>>> Subject	: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
+>>>> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
+>>>> Date	: 2009-10-23 16:45 (101 days old)
+>>>> References	: http://lkml.org/lkml/2009/10/23/252
+[...]
+>>> yeah still hitting this.
+[...]
+>> I've added the linux1394-devel people to the CC list.
+
+Thanks.  Alas the original author is MIA, and the bug seems to be tied
+to the early platform setup code (rather than OHCI 1394 device specific
+code) about which I for one am clueless.
+
+The listed MAINTAINERS contact of init_ohci1394_dma.c is linux1394-devel
+and me, but a good deal of this driver is very x86 platform specific.
+(There was some interest in making useful for other architectures, but
+this would merely mean that the respective architecture people need to
+keep an eye on their parts of this driver.)
+
+>> Justin has found an issue that when he boots with:  ohci1394_dma=early
+>> his computer
+>> crashes.
+>>
+>> He can get it to boot by modifying drivers/ieee1394/init_ohci1394_dma.c:
+[...]
+
+This modification and some others in the LKML thread from October simply
+cause init_ohci1394_controller() to be skipped for all devices.
+
+init_ohci1394_controller() is simple enough:
+
+static inline void __init init_ohci1394_controller(int num, int slot,
+int func)
+{
+	unsigned long ohci_base;
+	struct ti_ohci ohci;
+
+	printk(KERN_INFO "init_ohci1394_dma: initializing OHCI-1394"
+			 " at %02x:%02x.%x\n", num, slot, func);
+
+	ohci_base = read_pci_config(num, slot, func,
+		PCI_BASE_ADDRESS_0+(0<<2)) & PCI_BASE_ADDRESS_MEM_MASK;
+
+	set_fixmap_nocache(FIX_OHCI1394_BASE, ohci_base);
+
+	ohci.registers = (void *)fix_to_virt(FIX_OHCI1394_BASE);
+
+	init_ohci1394_reset_and_init_dma(&ohci);
+}
+
+Justin, you already established that read_pci_config is not the point
+where it crashes, right?
+
+set_fixmap_nocache() and fix_to_virt() frighten me because I don't know
+what they do. :-)
+
+The rest, init_ohci1394_reset_and_init_dma(), is something which I can
+easily follow.  There is just a bunch of register reads and writes with
+occasional mdelays.  This /could/ be a cause of the crash too if the
+controller is inspired to do something dangerous in there --- meaning,
+if the OHCI 1394 controller starts to write something per DMA into
+memory.  However, we do not switch on any DMA context except for the
+so-called physical DMA unit which only springs into action if a remote
+FireWire-attached console instructs it to do so.
+
+I am noticing one point where init_ohci1394_dma.c violates the OHCI 1394
+specification:  OHCI1394_HCControl_linkEnable is witched on while the
+OHCI1394_ConfigROMmap register is still invalid.  This register needs to
+contain a physical address of a 1kB sized, 1kB aligned memory region
+which allows DMA_TO_DEVICE.  So, since this is a read-only DMA, I am
+tempted to say that this potential issue should not be a cause for a
+kernel crash.
+
+(Sinde note, the OHCI 1394 spec is freely available, see
+http://ieee1394.wiki.kernel.org/index.php/Specifications#OHCI_Release_1.1.2C_January_6.2C_2000
+)
+
+
+Justin Mattock wrote on 2009-10-27 in http://lkml.org/lkml/2009/10/27/335:
+> o.k. you should be able to view
+> this:(let me know if you can't and I can
+> manually write out, and in time find a public
+> photo sharing suite to make things easier).
 > 
+> http://www.flickr.com/photos/44066293@N08/4050317695
 > 
-> On Mon, 1 Feb 2010, Mathieu Desnoyers wrote:
-> > 
-> > Here is the detailed execution scenario showing the race.
-> 
-> No. You've added random smp_mb() calls, but you don't actually show what 
-> the f*ck they are protecting against.
-> 
-> For example
-> 
-> > First sys_membarrier smp_mb():
-> 
-> I'm not AT ALL interested in the sys_membarrier() parts. You can hav ea 
-> million memory barriers there, and I won't care. I'm interested in what 
-> you think the memory barriers elsewhere protect against. It's a barrier 
-> between _which_ two operations? 
-> 
-> You can't say it's a barrier "around" the
-> 
-> 	cpumask_clear(mm_cpumask, cpu);
-> 
-> because a barrier is between two things. So if you want to add two 
-> barriers around that mm_cpumask acces, you need to describe the _three_ 
-> events you're barriers between in that call-path (with mm_cpumask being 
-> just one of them)
-> 
-> And then, once you've described _those_ three events, you describe what 
-> the sys_membarrier interaction is, and how mm_cpumask is involved there.
-> 
-> I'm not interested in the user-space code. Don't even quote it. It's 
-> irrelevant apart from the actual semantics you want to guarantee for the 
-> new membarrier() system call. So don't quote the code, just explain what 
-> the actual barriers are.
-> 
+> When this happens I see lots of messages from the print
+> during boot, then this happens.
 
-The two event pairs we are looking at are:
+(Now that a bugzilla.kernel.org ticket exists for this you can also use
+bugzilla.kernel.org to publish screenshots if you have an account there.)
 
-Pair 1)
-
-* memory accesses (load/stores) performed by user-space thread before
-  context switch.
-* cpumask_clear_cpu(cpu, mm_cpumask(prev));
-
-Pair 2)
-
-* cpumask_set_cpu(cpu, mm_cpumask(next));
-* memory accessses (load/stores) performed by user-space thread after
-  context switch.
-
-I can see two ways to add memory barriers in switch_mm that would
-provide ordering for these two memory access pairs:
-
-Either A)
-
-switch_mm()
-  smp_mb__before_clear_bit();
-  cpumask_clear_cpu(cpu, mm_cpumask(prev));
-  cpumask_set_cpu(cpu, mm_cpumask(next));
-  smp_mb__after_set_bit();
-
-or B)
-
-switch_mm()
-  cpumask_set_cpu(cpu, mm_cpumask(next));
-  smp_mb__before_clear_bit();
-  cpumask_clear_cpu(cpu, mm_cpumask(prev));
-
-(B) seems like a clear win, as we get the ordering right for both pairs
-with a single memory barrier, but I don't know if changing the set/clear
-bit order could have nasty side-effects on other mm_cpumask users.
-
-sys_membarrier uses the mm_cpumask to iterate on all CPUs on which the
-current process's mm is in use, so it can issue a smp_mb() through an
-IPI on all CPUs that need it. Without appropriate ordering of pairs 1-2
-detailed above, we could miss a CPU that actually needs a memory
-barrier.
-
-Thanks,
-
-Mathieu
-
+This screenshot looks like ___alloc_bootmem_node is the issue here, or
+am I mistaken of what the order of functions in the backtrace means?
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Stefan Richter
+-=====-==-=- --=- ----=
+http://arcgraph.de/sr/
