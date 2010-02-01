@@ -1,59 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612Ab0BAJBP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 04:01:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32777 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737Ab0BAJBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 04:01:14 -0500
-Message-ID: <4B669921.6090808@redhat.com>
-Date: Mon, 01 Feb 2010 17:04:33 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
-MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [Patch] net: export TCP send buffer size via netlink
-References: <20100201080256.4084.30962.sendpatchset@localhost.localdomain> <1265014309.2848.7.camel@edumazet-laptop>
-In-Reply-To: <1265014309.2848.7.camel@edumazet-laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S1754227Ab0BAJP4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 04:15:56 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:39126 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752039Ab0BAJPz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 04:15:55 -0500
+Subject: Re: [PATCH 00/12] perf lock: New subcommand "perf lock", for
+ analyzing  lock statistics
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <20100131210707.GF5224@nowhere>
+References: <1264167553-6510-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	 <20100129143403.GJ13771@kernel.dk> <4B641F4D.6090704@dcl.info.waseda.ac.jp>
+	 <20100131204408.GC13771@kernel.dk>  <20100131210707.GF5224@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 10:15:20 +0100
+Message-ID: <1265015720.24455.101.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Le lundi 01 février 2010 à 02:59 -0500, Amerigo Wang a écrit :
->> Currently, we can only get TCP send buffer size by
->> getsockopt (SO_SNDBUF or TCP_INFO), this is not enough
->> for the tools like netstat or ss to read.
->>
->> Show TCP send buffer size via netlink NETLINK_INET_DIAG.
->>
->> Signed-off-by: WANG Cong <amwang@redhat.com>
->> Cc: David Miller <davem@davemloft.net>
->>
->> ---
->> diff --git a/include/linux/tcp.h b/include/linux/tcp.h
->> index 7fee8a4..46768de 100644
->> --- a/include/linux/tcp.h
->> +++ b/include/linux/tcp.h
->> @@ -136,6 +136,7 @@ struct tcp_info {
->>  	__u32	tcpi_ato;
->>  	__u32	tcpi_snd_mss;
->>  	__u32	tcpi_rcv_mss;
->> +	__u32	tcpi_sndbuf;
->>  
->>  	__u32	tcpi_unacked;
->>  	__u32	tcpi_sacked;
+On Sun, 2010-01-31 at 22:07 +0100, Frederic Weisbecker wrote:
 > 
-> You cannot change tcp_info like this, this structure is used by some
-> programs, and they are going to break badly.
-> 
+> - We are using the -M option from perf tools which multiplexes every
+>   event buffers, which means every cpu commit their lock events in
+>   the same buffer. Couple that with the two above reasons, it's supposed
+>   to scale at worst.
 
-Oh, right, I forgot the ABI compatibility...
-I will append it to this structure.
-
-Thanks!
+Why are you doing that? That seems like asking for trouble.. 
 
