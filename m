@@ -1,75 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756125Ab0BAUS2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 15:18:28 -0500
-Received: from mail.lang.hm ([64.81.33.126]:56326 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756048Ab0BAUS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 15:18:26 -0500
-Date: Mon, 1 Feb 2010 12:17:41 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Witold Sowa <witold.sowa@gmail.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Till Kamppeter <till.kamppeter@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, lsb-discuss@lists.linux-foundation.org
-Subject: Re: Linux wireless GSoC 2010 project ideas
-In-Reply-To: <1265055284.26421.16.camel@maxim-laptop>
-Message-ID: <alpine.DEB.2.00.1002011216040.7748@asgard.lang.hm>
-References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>  <4B65F024.3080505@gmail.com> <1264972854.3597.17.camel@johannes.local>  <43e72e891002011001l4e914094v33e73209a9da93e8@mail.gmail.com> <1265055284.26421.16.camel@maxim-laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1755987Ab0BAUWH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 15:22:07 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:46850 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754821Ab0BAUWD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 15:22:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=wcGmgyANgbGfzjYdbss3Os9zWfu1g16XoYPqRSVg2nue9NzWZCImOqC+JTJ6ubnt5w
+         GP7L7B2d9sCXe3jHGD0VZB2crVrKznBxKCzYv9YzToPhdQhEB5bQ+9S9tCoUoseGBey9
+         MFrYrOMMIpV9AXSbkRDAzn4JlKR/YFM4DQaJI=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <20100131052942.GA12320@core.coreip.homeip.net>
+References: <1264800197-29523-1-git-send-email-cascardo@holoscopio.com>
+	 <201001302257.09354.arnd@arndb.de>
+	 <520f0cf11001301507k20e3cf8dqa73026e12f3a1767@mail.gmail.com>
+	 <201001310520.55813.arnd@arndb.de>
+	 <20100131052942.GA12320@core.coreip.homeip.net>
+Date: Mon, 1 Feb 2010 21:22:01 +0100
+X-Google-Sender-Auth: 296efc3ca74e7686
+Message-ID: <520f0cf11002011222h134dbf06rf1db612da9a9728@mail.gmail.com>
+Subject: Re: [PATCH] input: remove BKL from uinput open function
+From: John Kacur <jkacur@redhat.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Feb 2010, Maxim Levitsky wrote:
-
-> On Mon, 2010-02-01 at 10:01 -0800, Luis R. Rodriguez wrote:
->> On Sun, Jan 31, 2010 at 1:20 PM, Johannes Berg
->> <johannes@sipsolutions.net> wrote:
->>> On Sun, 2010-01-31 at 22:03 +0100, Witold Sowa wrote:
->>>
->>>> Some time ago johill asked me if I would be interested in hacking on
->>>> adding WPS support to NetworkManager. Well, I would but I don't know
->>>> when I'll find some time for that. I don't know how much of work would
->>>> it require, but it possibly could be a topic of one of GSoC 2010
->>>> projects. I have no idea know if anybody would be willing to be a mentor
->>>> for such a project.
->>>
->>> Sounds like a good project to me, but I don't think I'd be a good mentor
->>> for since I'm not familiar with the NM codebase at all. As for how much
->>> work it would require, I think the basic client-side functionality could
->>> possibly be "too simple" for you, WPS has a lot of additional
->>> functionality (e.g. WPS support for the AP side).
+On Sun, Jan 31, 2010 at 6:29 AM, Dmitry Torokhov
+<dmitry.torokhov@gmail.com> wrote:
+> On Sun, Jan 31, 2010 at 05:20:55AM +0100, Arnd Bergmann wrote:
+>> On Sunday 31 January 2010, John Kacur wrote:
+>> > > Sorry, I should have been clearer, but not implementing llseek
+>> > > is the problem I was referring to: When a driver has no explicit
+>> > > .llseek operation in its file operations and does not call
+>> > > nonseekable_open from its open operation, the VFS layer will
+>> > > implicitly use default_llseek, which takes the BKL. We're
+>> > > in the process of changing drivers not to do this, one by one
+>> > > so we can kill the BKL in the end.
+>> > >
+>> >
+>> > I know we've discussed this before, but why wouldn't the following
+>> > make more sense?
+>> >  .llseek         = no_llseek,
 >>
->> In case it helps, I believe all that would be required is the dbus
->> stuff, there are sample GUI examples of this already provided through
->> the wpa_supplicant wpa_gui.
+>> That's one of the possible solutions. Assigning it to generic_file_llseek
+>> also gets rid of the BKL but keeps the current behaviour (calling seek
+>> returns success without having an effect, no_llseek returns -ESPIPE),
+>> while calling nonseekable_open has the other side-effect of making
+>> pread/pwrite fail with -ESPIPE, which is more consistent than
+>> only failing seek.
+>>
 >
-> Here are couple of ideas (I don't think I will enter the program
-> though):
+> OK, so how about the patch below (on top of Thadeu's patch)?
 >
-> 1 - Make Ad-Hoc WPA networks work (with NM). This would involve changes
-> in kernel, but I don't think will involve changes in hardware drivers.
+> --
+> Dmitry
 >
-> 2 - Allow a wireless card to associate to several APs at once (if they
-> share the frequency).
-> Implement this at least for ath5/9k. Madwifi had that feature. Maybe
-> ath9k has. If it has that feature, test it.
-> Implement proper GUI support in NM for that.
+> Input: uinput - use nonseekable_open
+>
+> Seeking does not make sense for uinput so let's use nonseekable_open
+> to mark the device non-seekable.
+>
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> ---
+>
+>  drivers/input/misc/uinput.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+>
+>
+> diff --git a/drivers/input/misc/uinput.c b/drivers/input/misc/uinput.c
+> index 18206e1..7089151 100644
+> --- a/drivers/input/misc/uinput.c
+> +++ b/drivers/input/misc/uinput.c
+> @@ -278,6 +278,7 @@ static int uinput_create_device(struct uinput_device *udev)
+>  static int uinput_open(struct inode *inode, struct file *file)
+>  {
+>        struct uinput_device *newdev;
+> +       int error;
+>
+>        newdev = kzalloc(sizeof(struct uinput_device), GFP_KERNEL);
+>        if (!newdev)
+> @@ -291,6 +292,12 @@ static int uinput_open(struct inode *inode, struct file *file)
+>
+>        file->private_data = newdev;
+>
+> +       error = nonseekable_open(inode, file);
+> +       if (error) {
+> +               kfree(newdev);
+> +               return error;
+> +       }
+> +
+>        return 0;
+>  }
+>
+>
 
-why would you want to do this?
+Hmnn, if you look at nonseekable_open() it will always return 0. I
+think you can just do the following.
 
-> 3 - Create wardriving^Wwireless analysis tool.
-> No, not for wardriving. I mean an application that shows and analyzes
-> nicely the signal strength of nearby APs, and other features of it
+diff --git a/drivers/input/misc/uinput.c b/drivers/input/misc/uinput.c
+index 18206e1..697c0a6 100644
+--- a/drivers/input/misc/uinput.c
++++ b/drivers/input/misc/uinput.c
+@@ -291,7 +291,7 @@ static int uinput_open(struct inode *inode, struct file *fil
 
-it seems to me that kismet provides exactly this capability, what is it 
-missing?
+        file->private_data = newdev;
 
-David Lang
+-       return 0;
++       return nonseekable_open(inode, file);
+ }
+
+Signed-off-by: John Kacur <jkacur@redhat.com>
