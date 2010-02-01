@@ -1,87 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153Ab0BAU3h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 15:29:37 -0500
-Received: from stargate.chelsio.com ([67.207.112.58]:32240 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754747Ab0BAU3f (ORCPT
+	id S1756180Ab0BAUce (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 15:32:34 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:44461 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756158Ab0BAUcb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 15:29:35 -0500
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH net-next-2.6] cxgb3: add memory barriers
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com, wenxiong@us.ibm.com
-Date: Mon, 01 Feb 2010 12:29:29 -0800
-Message-ID: <20100201202929.23037.68116.stgit@speedy5.asicdesigners.com>
-User-Agent: StGIT/0.14.2
+	Mon, 1 Feb 2010 15:32:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=J5Ldq72YQMFpXM8Zt63pP89+vatxdlWTf8B6ThKtYJncpRBfFJR6Q7yrdoMLAUab/g
+         UHY54KNdIBcITTpTUVmSzK3BbjoW459pZ0j1MuR4nlgJIDyGF3SX97nSu8QhxewZ5mbJ
+         4ZzIW+MWh/bk6dGczX9x84O1AwiMqMQeVOKqw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1265048321-8097-1-git-send-email-cascardo@holoscopio.com>
+References: <1265048321-8097-1-git-send-email-cascardo@holoscopio.com>
+Date: Mon, 1 Feb 2010 21:32:30 +0100
+Message-ID: <520f0cf11002011232u415146a9md3afe65af4d810a6@mail.gmail.com>
+Subject: Re: [PATCH] irda: remove BKL from irnet open function
+From: John Kacur <jkacur@gmail.com>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Samuel Ortiz <samuel@sortiz.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+On Mon, Feb 1, 2010 at 7:18 PM, Thadeu Lima de Souza Cascardo
+<cascardo@holoscopio.com> wrote:
+> Commit cddf63d99d0d145f18b293c3d0de4af7dab2a922 has push down the BKL
+> into irnet open function. However, there's nothing that needs locking in
+> there.
+>
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> ---
+>  net/irda/irnet/irnet_ppp.c |    3 ---
+>  1 files changed, 0 insertions(+), 3 deletions(-)
+>
+> diff --git a/net/irda/irnet/irnet_ppp.c b/net/irda/irnet/irnet_ppp.c
+> index 156020d..d6b502c 100644
+> --- a/net/irda/irnet/irnet_ppp.c
+> +++ b/net/irda/irnet/irnet_ppp.c
+> @@ -479,7 +479,6 @@ dev_irnet_open(struct inode *       inode,
+>   ap = kzalloc(sizeof(*ap), GFP_KERNEL);
+>   DABORT(ap == NULL, -ENOMEM, FS_ERROR, "Can't allocate struct irnet...\n");
+>
+> -  lock_kernel();
+>   /* initialize the irnet structure */
+>   ap->file = file;
+>
+> @@ -501,7 +500,6 @@ dev_irnet_open(struct inode *       inode,
+>     {
+>       DERROR(FS_ERROR, "Can't setup IrDA link...\n");
+>       kfree(ap);
+> -      unlock_kernel();
+>       return err;
+>     }
+>
+> @@ -512,7 +510,6 @@ dev_irnet_open(struct inode *       inode,
+>   file->private_data = ap;
+>
+>   DEXIT(FS_TRACE, " - ap=0x%p\n", ap);
+> -  unlock_kernel();
+>   return 0;
+>  }
+>
+> --
+> 1.6.6.1
 
-Add memory barriers to fix crashes observed on newest PowerPC platforms.
-The HW and driver state of the receive rings were getting out of sync.
+This is probably NOT safe to do, because the BKL is synchronizing the
+ioctl code.
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
-
- drivers/net/cxgb3/sge.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
-
-
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index bdbd147..4cf9b79 100644
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -480,6 +480,7 @@ static inline void ring_fl_db(struct adapter *adap, struct sge_fl *q)
- {
- 	if (q->pend_cred >= q->credits / 4) {
- 		q->pend_cred = 0;
-+		wmb();
- 		t3_write_reg(adap, A_SG_KDOORBELL, V_EGRCNTX(q->cntxt_id));
- 	}
- }
-@@ -2282,11 +2283,14 @@ static int process_responses(struct adapter *adap, struct sge_qset *qs,
- 	while (likely(budget_left && is_new_response(r, q))) {
- 		int packet_complete, eth, ethpad = 2, lro = qs->lro_enabled;
- 		struct sk_buff *skb = NULL;
--		u32 len, flags = ntohl(r->flags);
--		__be32 rss_hi = *(const __be32 *)r,
--		       rss_lo = r->rss_hdr.rss_hash_val;
-+		u32 len, flags;
-+		__be32 rss_hi, rss_lo;
- 
-+		rmb();
- 		eth = r->rss_hdr.opcode == CPL_RX_PKT;
-+		rss_hi = *(const __be32 *)r;
-+		rss_lo = r->rss_hdr.rss_hash_val;
-+		flags = ntohl(r->flags);
- 
- 		if (unlikely(flags & F_RSPD_ASYNC_NOTIF)) {
- 			skb = alloc_skb(AN_PKT_SIZE, GFP_ATOMIC);
-@@ -2497,7 +2501,10 @@ static int process_pure_responses(struct adapter *adap, struct sge_qset *qs,
- 			refill_rspq(adap, q, q->credits);
- 			q->credits = 0;
- 		}
--	} while (is_new_response(r, q) && is_pure_response(r));
-+		if (!is_new_response(r, q))
-+			break;
-+		rmb();
-+	} while (is_pure_response(r));
- 
- 	if (sleeping)
- 		check_ring_db(adap, qs, sleeping);
-@@ -2531,6 +2538,7 @@ static inline int handle_responses(struct adapter *adap, struct sge_rspq *q)
- 
- 	if (!is_new_response(r, q))
- 		return -1;
-+	rmb();
- 	if (is_pure_response(r) && process_pure_responses(adap, qs, r) == 0) {
- 		t3_write_reg(adap, A_SG_GTS, V_RSPQ(q->cntxt_id) |
- 			     V_NEWTIMER(q->holdoff_tmr) | V_NEWINDEX(q->cidx));
-
+Thanks
