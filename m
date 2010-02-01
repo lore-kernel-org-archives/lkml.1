@@ -1,62 +1,158 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754368Ab0BAIvy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 03:51:54 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:51256 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754155Ab0BAIvw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 03:51:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=SuPLU8+eUqfQZCSz/wDdkh16r1MHIrBslUoI4a56t9h2bqgPL6flL17SEo2wtCj4EZ
-         scQSb3zGxzGK6UqTtg/8NTgx6fiBiDgdjfJDU3jFqOLaj6ykLYi7YAuYutkb20wG0JT1
-         QxjueOX/iZxz3c+Rf/uDNCjT2SXtLQBG5mWnA=
-Subject: Re: [Patch] net: export TCP send buffer size via netlink
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <20100201080256.4084.30962.sendpatchset@localhost.localdomain>
-References: <20100201080256.4084.30962.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 09:51:49 +0100
-Message-ID: <1265014309.2848.7.camel@edumazet-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	id S1754186Ab0BAIyQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 03:54:16 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:58961 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750871Ab0BAIyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 03:54:14 -0500
+Message-ID: <4B669569.9070205@cn.fujitsu.com>
+Date: Mon, 01 Feb 2010 16:48:41 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>, Jens Axboe <jens.axboe@oracle.com>
+CC: linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Blk-cgroup: Fix potential deallock in blk-cgroup
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le lundi 01 février 2010 à 02:59 -0500, Amerigo Wang a écrit :
-> Currently, we can only get TCP send buffer size by
-> getsockopt (SO_SNDBUF or TCP_INFO), this is not enough
-> for the tools like netstat or ss to read.
-> 
-> Show TCP send buffer size via netlink NETLINK_INET_DIAG.
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: David Miller <davem@davemloft.net>
-> 
-> ---
-> diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-> index 7fee8a4..46768de 100644
-> --- a/include/linux/tcp.h
-> +++ b/include/linux/tcp.h
-> @@ -136,6 +136,7 @@ struct tcp_info {
->  	__u32	tcpi_ato;
->  	__u32	tcpi_snd_mss;
->  	__u32	tcpi_rcv_mss;
-> +	__u32	tcpi_sndbuf;
->  
->  	__u32	tcpi_unacked;
->  	__u32	tcpi_sacked;
+Hi
 
-You cannot change tcp_info like this, this structure is used by some
-programs, and they are going to break badly.
+I triggered a lockdep warnning as following.
 
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.33-rc2 #1
+-------------------------------------------------------
+test_io_control/7357 is trying to acquire lock:
+ (blkio_list_lock){+.+...}, at: [<c053a990>] blkiocg_weight_write+0x82/0x9e
+
+but task is already holding lock:
+ (&(&blkcg->lock)->rlock){......}, at: [<c053a949>] blkiocg_weight_write+0x3b/0x9e
+
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #2 (&(&blkcg->lock)->rlock){......}:
+       [<c04583b7>] validate_chain+0x8bc/0xb9c
+       [<c0458dba>] __lock_acquire+0x723/0x789
+       [<c0458eb0>] lock_acquire+0x90/0xa7
+       [<c0692b0a>] _raw_spin_lock_irqsave+0x27/0x5a
+       [<c053a4e1>] blkiocg_add_blkio_group+0x1a/0x6d
+       [<c053cac7>] cfq_get_queue+0x225/0x3de
+       [<c053eec2>] cfq_set_request+0x217/0x42d
+       [<c052c8a6>] elv_set_request+0x17/0x26
+       [<c0532a0f>] get_request+0x203/0x2c5
+       [<c0532ae9>] get_request_wait+0x18/0x10e
+       [<c0533470>] __make_request+0x2ba/0x375
+       [<c0531985>] generic_make_request+0x28d/0x30f
+       [<c0532da7>] submit_bio+0x8a/0x8f
+       [<c04d827a>] submit_bh+0xf0/0x10f
+       [<c04d91d2>] ll_rw_block+0xc0/0xf9
+       [<f86e9705>] ext3_find_entry+0x319/0x544 [ext3]
+       [<f86eae58>] ext3_lookup+0x2c/0xb9 [ext3]
+       [<c04c3e1b>] do_lookup+0xd3/0x172
+       [<c04c56c8>] link_path_walk+0x5fb/0x95c
+       [<c04c5a65>] path_walk+0x3c/0x81
+       [<c04c5b63>] do_path_lookup+0x21/0x8a
+       [<c04c66cc>] do_filp_open+0xf0/0x978
+       [<c04c0c7e>] open_exec+0x1b/0xb7
+       [<c04c1436>] do_execve+0xbb/0x266
+       [<c04081a9>] sys_execve+0x24/0x4a
+       [<c04028a2>] ptregs_execve+0x12/0x18
+
+-> #1 (&(&q->__queue_lock)->rlock){..-.-.}:
+       [<c04583b7>] validate_chain+0x8bc/0xb9c
+       [<c0458dba>] __lock_acquire+0x723/0x789
+       [<c0458eb0>] lock_acquire+0x90/0xa7
+       [<c0692b0a>] _raw_spin_lock_irqsave+0x27/0x5a
+       [<c053dd2a>] cfq_unlink_blkio_group+0x17/0x41
+       [<c053a6eb>] blkiocg_destroy+0x72/0xc7
+       [<c0467df0>] cgroup_diput+0x4a/0xb2
+       [<c04ca473>] dentry_iput+0x93/0xb7
+       [<c04ca4b3>] d_kill+0x1c/0x36
+       [<c04cb5c5>] dput+0xf5/0xfe
+       [<c04c6084>] do_rmdir+0x95/0xbe
+       [<c04c60ec>] sys_rmdir+0x10/0x12
+       [<c04027cc>] sysenter_do_call+0x12/0x32
+
+-> #0 (blkio_list_lock){+.+...}:
+       [<c0458117>] validate_chain+0x61c/0xb9c
+       [<c0458dba>] __lock_acquire+0x723/0x789
+       [<c0458eb0>] lock_acquire+0x90/0xa7
+       [<c06929fd>] _raw_spin_lock+0x1e/0x4e
+       [<c053a990>] blkiocg_weight_write+0x82/0x9e
+       [<c0467f1e>] cgroup_file_write+0xc6/0x1c0
+       [<c04bd2f3>] vfs_write+0x8c/0x116
+       [<c04bd7c6>] sys_write+0x3b/0x60
+       [<c04027cc>] sysenter_do_call+0x12/0x32
+
+other info that might help us debug this:
+
+1 lock held by test_io_control/7357:
+ #0:  (&(&blkcg->lock)->rlock){......}, at: [<c053a949>] blkiocg_weight_write+0x3b/0x9e
+stack backtrace:
+Pid: 7357, comm: test_io_control Not tainted 2.6.33-rc2 #1
+Call Trace:
+ [<c045754f>] print_circular_bug+0x91/0x9d
+ [<c0458117>] validate_chain+0x61c/0xb9c
+ [<c0458dba>] __lock_acquire+0x723/0x789
+ [<c0458eb0>] lock_acquire+0x90/0xa7
+ [<c053a990>] ? blkiocg_weight_write+0x82/0x9e
+ [<c06929fd>] _raw_spin_lock+0x1e/0x4e
+ [<c053a990>] ? blkiocg_weight_write+0x82/0x9e
+ [<c053a990>] blkiocg_weight_write+0x82/0x9e
+ [<c0467f1e>] cgroup_file_write+0xc6/0x1c0
+ [<c0454df5>] ? trace_hardirqs_off+0xb/0xd
+ [<c044d93a>] ? cpu_clock+0x2e/0x44
+ [<c050e6ec>] ? security_file_permission+0xf/0x11
+ [<c04bcdda>] ? rw_verify_area+0x8a/0xad
+ [<c0467e58>] ? cgroup_file_write+0x0/0x1c0
+ [<c04bd2f3>] vfs_write+0x8c/0x116
+ [<c04bd7c6>] sys_write+0x3b/0x60
+ [<c04027cc>] sysenter_do_call+0x12/0x32
+
+To prevent deadlock, we should take locks as following sequence:
+
+blkio_list_lock -> queue_lock ->  blkcg_lock.
+
+The following patch should fix this bug.
+
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ block/blk-cgroup.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
+index 1fa2654..e7dbbaf 100644
+--- a/block/blk-cgroup.c
++++ b/block/blk-cgroup.c
+@@ -147,16 +147,16 @@ blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
+ 		return -EINVAL;
+ 
+ 	blkcg = cgroup_to_blkio_cgroup(cgroup);
++	spin_lock(&blkio_list_lock);
+ 	spin_lock_irq(&blkcg->lock);
+ 	blkcg->weight = (unsigned int)val;
+ 	hlist_for_each_entry(blkg, n, &blkcg->blkg_list, blkcg_node) {
+-		spin_lock(&blkio_list_lock);
+ 		list_for_each_entry(blkiop, &blkio_list, list)
+ 			blkiop->ops.blkio_update_group_weight_fn(blkg,
+ 					blkcg->weight);
+-		spin_unlock(&blkio_list_lock);
+ 	}
+ 	spin_unlock_irq(&blkcg->lock);
++	spin_unlock(&blkio_list_lock);
+ 	return 0;
+ }
+ 
+-- 
+1.5.4.rc3
 
 
