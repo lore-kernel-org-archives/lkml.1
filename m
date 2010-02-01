@@ -1,167 +1,270 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214Ab0BACRU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 21:17:20 -0500
-Received: from mga02.intel.com ([134.134.136.20]:4491 "EHLO mga02.intel.com"
+	id S1754980Ab0BACUj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 21:20:39 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:49626 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753122Ab0BACRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 21:17:18 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,380,1262592000"; 
-   d="scan'208";a="591994793"
-Date: Mon, 1 Feb 2010 10:17:03 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Chris Frost <frost@cs.ucla.edu>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steve Dickson <steved@redhat.com>, David Howells <dhowells@redhat.com>,
-       Xu Chenfeng <xcf@ustc.edu.cn>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Steve VanDeBogart <vandebo-lkml@nerdbox.net>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH] mm/readahead.c: update the LRU positions of in-core
-	pages, too
-Message-ID: <20100201021703.GA11260@localhost>
-References: <20100120215536.GN27212@frostnet.net> <20100121054734.GC24236@localhost> <20100123040348.GC30844@frostnet.net> <20100123102222.GA6943@localhost> <20100125094228.f7ca1430.kamezawa.hiroyu@jp.fujitsu.com> <20100125024544.GA16462@localhost> <20100125223635.GC2822@frostnet.net> <20100126133217.GB25407@localhost> <20100131143142.GA11186@localhost> <20100201020639.GA27212@frostnet.net>
+	id S1752602Ab0BACUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Jan 2010 21:20:37 -0500
+Date: Mon, 1 Feb 2010 02:20:24 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org
+cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+Subject: [git pull] drm fixes
+Message-ID: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Content-Disposition: inline
-In-Reply-To: <20100201020639.GA27212@frostnet.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-1233581419-1264990824=:15366"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 31, 2010 at 07:06:39PM -0700, Chris Frost wrote:
-> On Sun, Jan 31, 2010 at 10:31:42PM +0800, Wu Fengguang wrote:
-> > On Tue, Jan 26, 2010 at 09:32:17PM +0800, Wu Fengguang wrote:
-> > > On Mon, Jan 25, 2010 at 03:36:35PM -0700, Chris Frost wrote:
-> > > > I changed Wu's patch to add a PageLRU() guard that I believe is required
-> > > > and optimized zone lock acquisition to only unlock and lock at zone changes.
-> > > > This optimization seems to provide a 10-20% system time improvement for
-> > > > some of my GIMP benchmarks and no improvement for other benchmarks.
-> > 
-> > I feel very uncomfortable about this put_page() inside zone->lru_lock. 
-> > (might deadlock: put_page() conditionally takes zone->lru_lock again)
-> > 
-> > If you really want the optimization, can we do it like this?
-> 
-> Sorry that I was slow to respond. (I was out of town.)
-> 
-> Thanks for catching __page_cache_release() locking the zone.
-> I think staying simple for now sounds good. The below locks
-> and unlocks the zone for each page. Look good?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-OK :)
+--29444707-1233581419-1264990824=:15366
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Thanks,
-Fengguang
 
-> ---
-> readahead: retain inactive lru pages to be accessed soon
-> From: Chris Frost <frost@cs.ucla.edu>
-> 
-> Ensure that cached pages in the inactive list are not prematurely evicted;
-> move such pages to lru head when they are covered by
-> - in-kernel heuristic readahead
-> - an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
-> 
-> Before this patch, pages already in core may be evicted before the
-> pages covered by the same prefetch scan but that were not yet in core.
-> Many small read requests may be forced on the disk because of this
-> behavior.
-> 
-> In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
-> has no effect on the page's location in the LRU list, even if it is the
-> next victim on the inactive list.
-> 
-> This change helps address the performance problems we encountered
-> while modifying SQLite and the GIMP to use large file prefetching.
-> Overall these prefetching techniques improved the runtime of large
-> benchmarks by 10-17x for these applications. More in the publication
-> _Reducing Seek Overhead with Application-Directed Prefetching_ in
-> USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
-> 
-> Signed-off-by: Chris Frost <frost@cs.ucla.edu>
-> Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  readahead.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 44 insertions(+)
-> 
-> diff --git a/mm/readahead.c b/mm/readahead.c
-> index aa1aa23..c615f96 100644
-> --- a/mm/readahead.c
-> +++ b/mm/readahead.c
-> @@ -9,7 +9,9 @@
->  
->  #include <linux/kernel.h>
->  #include <linux/fs.h>
-> +#include <linux/memcontrol.h>
->  #include <linux/mm.h>
-> +#include <linux/mm_inline.h>
->  #include <linux/module.h>
->  #include <linux/blkdev.h>
->  #include <linux/backing-dev.h>
-> @@ -133,6 +135,40 @@ out:
->  }
->  
->  /*
-> + * The file range is expected to be accessed in near future.  Move pages
-> + * (possibly in inactive lru tail) to lru head, so that they are retained
-> + * in memory for some reasonable time.
-> + */
-> +static void retain_inactive_pages(struct address_space *mapping,
-> +				  pgoff_t index, int len)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < len; i++) {
-> +		struct page *page;
-> +		struct zone *zone;
-> +
-> +		page = find_get_page(mapping, index + i);
-> +		if (!page)
-> +			continue;
-> +		zone = page_zone(page);
-> +		spin_lock_irq(&zone->lru_lock);
-> +
-> +		if (PageLRU(page) &&
-> +			!PageActive(page) &&
-> +			!PageUnevictable(page)) {
-> +			int lru = page_lru_base_type(page);
-> +
-> +			del_page_from_lru_list(zone, page, lru);
-> +			add_page_to_lru_list(zone, page, lru);
-> +		}
-> +
-> +		spin_unlock_irq(&zone->lru_lock);
-> +		put_page(page);
-> +	}
-> +}
-> +
-> +/*
->   * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
->   * the pages first, then submits them all for I/O. This avoids the very bad
->   * behaviour which would occur if page allocations are causing VM writeback.
-> @@ -184,6 +220,14 @@ __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
->  	}
->  
->  	/*
-> +	 * Normally readahead will auto stop on cached segments, so we won't
-> +	 * hit many cached pages. If it does happen, bring the inactive pages
-> +	 * adjecent to the newly prefetched ones(if any).
-> +	 */
-> +	if (ret < nr_to_read)
-> +		retain_inactive_pages(mapping, offset, page_idx);
-> +
-> +	/*
->  	 * Now start the IO.  We ignore I/O errors - if the page is not
->  	 * uptodate then the caller will launch readpage again, and
->  	 * will then handle the error.
-> 
-> -- 
-> Chris Frost
-> http://www.frostnet.net/chris/
+Hi Linus,
+
+Please pull the 'drm-linus' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
+
+Major change is to move the radeon KMS enable out of staging and into 
+normal Kconfig land, its not perfect but its as good as userspace was for 
+most people.
+
+others:
+drm core: just a bogus comment removal
+ttm: a few changes one fixes an error printf in reserve_ram_pages_type, 
+radeon: Displayport fixes, tested on all the displayport machines I own 
+(i.e. 2) but they both now work, r600 blit mutex, AGP warning fix.
+
+vmwgfx: 3 patches for older version of vmware workstation, I think vmware 
+have one more patch but since this driver is staging it can wait until 
+merge window anyways.
+
+Dave.
+
+ drivers/gpu/drm/Kconfig                  |    2 +
+ drivers/gpu/drm/radeon/atombios_dp.c     |   27 ++---
+ drivers/gpu/drm/radeon/r600.c            |   54 +++++-----
+ drivers/gpu/drm/radeon/r600_blit_kms.c   |    7 +-
+ drivers/gpu/drm/radeon/radeon.h          |    1 +
+ drivers/gpu/drm/radeon/radeon_agp.c      |   18 ++--
+ drivers/gpu/drm/radeon/radeon_encoders.c |  165 ++++++++++++++++-------------
+ drivers/gpu/drm/radeon/radeon_mode.h     |    2 +-
+ drivers/gpu/drm/radeon/rv770.c           |   31 +++---
+ drivers/gpu/drm/ttm/ttm_bo_util.c        |    9 +--
+ drivers/gpu/drm/ttm/ttm_object.c         |    2 +-
+ drivers/gpu/drm/ttm/ttm_tt.c             |   23 +++--
+ drivers/gpu/drm/vmwgfx/vmwgfx_drv.c      |   13 +++
+ drivers/gpu/drm/vmwgfx/vmwgfx_drv.h      |    3 +
+ drivers/gpu/drm/vmwgfx/vmwgfx_fifo.c     |   19 ++++
+ drivers/gpu/drm/vmwgfx/vmwgfx_ioctl.c    |    2 +-
+ drivers/gpu/drm/vmwgfx/vmwgfx_kms.c      |   10 ++
+ drivers/gpu/drm/vmwgfx/vmwgfx_resource.c |   16 +++-
+ drivers/staging/Kconfig                  |    2 -
+ include/drm/drm_mode.h                   |    2 +-
+ 20 files changed, 244 insertions(+), 164 deletions(-)
+
+commit f71d0187987e691516cd10c2702f002c0e2f0edc
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Mon Feb 1 11:35:47 2010 +1000
+
+    drm/radeon/kms: move radeon KMS on/off switch out of staging.
+    
+    We are happy enough that the KMS driver is stable enough for enough people
+    for the kms enable/disable to leave staging. Distros can now contemplate
+    turning this on.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit ff82f052d2a187dd0fa0e431ba70eb457c71a40e
+Author: Jerome Glisse <jglisse@redhat.com>
+Date:   Fri Jan 22 15:19:00 2010 +0100
+
+    drm/radeon/kms: Bailout of blit if error happen & protect with mutex V3
+    
+    If an error happen in r600_blit_prepare_copy report it rather
+    than WARNING and keeping execution. For instance if ib allocation
+    failed we did just warn about but then latter tried to access
+    NULL ib ptr causing oops. This patch also protect r600_copy_blit
+    with a mutex as otherwise one process might overwrite blit temporary
+    data with new one possibly leading to GPU lockup.
+    
+    Should partialy or totaly fix:
+    https://bugzilla.redhat.com/show_bug.cgi?id=553279
+    
+    V2 failing blit initialization is not fatal, fallback to memcpy when
+    this happen
+    V3 init blit before startup as we pin in startup, remove duplicate
+    code (this one was actualy tested unlike V2)
+    
+    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 5ffdb658f605cbc420944e7c7eeec9fbb8a73772
+Author: Jakob Bornecrantz <jakob@vmware.com>
+Date:   Sat Jan 30 03:38:08 2010 +0000
+
+    drm/vmwgfx: Don't send bad flags to the host
+    
+    Signed-off-by: Jakob Bornecrantz <jakob@vmware.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit c188660f6dbb0df9febe1b841a16c66c28353c15
+Author: Peter Hanzel <hanzelpeter@gmail.com>
+Date:   Sat Jan 30 03:38:07 2010 +0000
+
+    drm/vmwgfx: Request SVGA version 2 and bail if not found
+    
+    This fixes the driver not loading on older versions of VMware.
+    
+    Signed-off-by: Peter Hanzel <hanzelpeter@gmail.com>
+    Signed-off-by: Jakob Bornecrantz <jakob@vmware.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 8e19a951774a16cf2626292ae06fd2b62630e67e
+Author: Jakob Bornecrantz <jakob@vmware.com>
+Date:   Sat Jan 30 03:38:06 2010 +0000
+
+    drm/vmwgfx: Correctly detect 3D
+    
+    Signed-off-by: Jakob Bornecrantz <jakob@vmware.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 110b20c3ddcfa98cc932aef3af2d59b4e0841f08
+Author: Austin Yuan <shengquan.yuan@gmail.com>
+Date:   Thu Jan 21 13:45:40 2010 +0800
+
+    drm/ttm: remove unnecessary save_flags and ttm_flag_masked in ttm_bo_util.c
+    
+    Signed-off-by: Austin Yuan <shengquan.yuan@gmail.com>
+    Acked-by: Thomas Hellstrom <thellstrom@vmware.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit fa5829b36539067f3c675f5d437531dedcfc4ad8
+Author: Marcin Kościelnicki <koriakin@0x04.net>
+Date:   Sat Jan 23 10:25:28 2010 +1000
+
+    drm/kms: Remove incorrect comment in struct drm_mode_modeinfo
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit dd5fde6041d7ea30fcfedcc159a4cec8b01f73b2
+Author: Richard Kennedy <richard@rsk.demon.co.uk>
+Date:   Tue Jan 26 17:10:48 2010 +0000
+
+    drm/ttm: remove padding from ttm_ref_object on 64bit builds
+    
+    Re-order structure ttm_ref_object to remove 8 bytes of alignment padding
+    on 64 bit builds, so shrinking its size from 72 to 64 bytes allowing it
+    to fit into a smaller slab.
+    
+    Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+    Acked-by: Thomas Hellstrom <thellstrom@vmware.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 4b866288be6ffaefaad9cec212cb09e3258a68ee
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Mon Feb 1 11:22:10 2010 +1000
+
+    drm/radeon/kms: release agp on error.
+    
+    if we get an error, release the AGP if we've acquired it already.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 2dea2e29b9fad48c759aa406b5ea426bff4339af
+Author: John Kacur <jkacur@redhat.com>
+Date:   Sun Jan 31 20:38:03 2010 +0100
+
+    drm/kms/radeon/agp: Move the check of the aper_size after drm_acp_acquire and drm_agp_info
+    
+    First call drm_agp_acquire to check if agp has been acquired.
+    Second call drm_agp_info to fill in the info data struct, including aper_size.
+    Finally do the check to see if the aper_size makes sense.
+    
+    Signed-off-by: John Kacur <jkacur@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit cdb6e375c3c84558ed2c13c5461b22e8f7b7980e
+Author: John Kacur <jkacur@redhat.com>
+Date:   Sun Jan 31 20:38:02 2010 +0100
+
+    drm/kms/radeon/agp: Fix warning, format ‘%d’ expects type ‘int’, but argument 4 has type ‘size_t’
+    
+    - Fix warning by using %zu instead of %d for size_t
+    - Fix spelling mistake, "to" should be "too".
+    
+    Signed-off-by: John Kacur <jkacur@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit db78e27de7e29a6db6be7caf607cf803d84094aa
+Author: Francisco Jerez <currojerez@riseup.net>
+Date:   Tue Jan 12 18:49:43 2010 +0100
+
+    drm/ttm: Avoid conflicting reserve_memtype during ttm_tt_set_page_caching.
+    
+    Fixes errors like:
+    > reserve_ram_pages_type failed 0x15b7a000-0x15b7b000, track 0x8, req 0x10
+    when a BO is moved between WC and UC areas.
+    
+    Reported-by: Xavier Chantry <shiningxc@gmail.com>
+    Signed-off-by: Francisco Jerez <currojerez@riseup.net>
+    Acked-by: Thomas Hellstrom <thellstrom@vmware.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit f28cf33945cc112f8ee835512b7440905dc29ad2
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Thu Jan 28 17:15:25 2010 +1000
+
+    drm/kms/radeon: pick digitial encoders smarter. (v3)
+    
+    booting a Lenovo W500 with LVDS + DP outputs showed up a TODO we had
+    on our list, to pick a correct digital encoder block. The LVTMA
+    encoder requires the second digital encoder, all others can use any
+    encoder at all.
+    
+    This fixes the digital encoder selection logic to enable LVDS/DP combos
+    to work okay.
+    
+    V2: fix silly addition of connector dig_block and cleanup the other
+    places in the code that pick the encoder.
+    
+    V3: rename to dig_encoder and clean up further - also fix
+    the picking algorithm.
+    
+    tested on Lenovo W500 + desktop 3650 cards.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 43c33ed87d0f1b900a6a3014db556ecc7f4a989b
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Fri Jan 29 15:55:30 2010 +1000
+
+    drm/radeon/kms: use active device to pick connector for encoder
+    
+    On the W500 we have UNIPHY routed to both DVI and DP, this seems
+    to always pick the DVI connector which means link training fails.
+    
+    Switch to using active device to pick the connector, this seems
+    like it should be safe from a code review, and it fixes things
+    a bit more here.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 97b94ccb9aa1b82ed7a9a045d0ae5b32c99b84a0
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Fri Jan 29 15:31:47 2010 +1000
+
+    drm/radeon/kms: fix incorrect logic in DP vs eDP connector checking.
+    
+    This makes displayport work again here.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+--29444707-1233581419-1264990824=:15366--
