@@ -1,56 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752336Ab0BAQ6Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 11:58:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38676 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750958Ab0BAQ6P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 11:58:15 -0500
-Date: Mon, 1 Feb 2010 08:56:22 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [patch 2/3] scheduler: add full memory barriers upon task switch
- at runqueue lock/unlock
-In-Reply-To: <20100201164856.GA3486@Krystal>
-Message-ID: <alpine.LFD.2.00.1002010854110.4206@localhost.localdomain>
-References: <20100131205254.407214951@polymtl.ca> <20100131210013.446503342@polymtl.ca> <alpine.LFD.2.00.1002010722350.4206@localhost.localdomain> <20100201160929.GA3032@Krystal> <alpine.LFD.2.00.1002010816030.4206@localhost.localdomain>
- <20100201164856.GA3486@Krystal>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752557Ab0BAQ7a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 11:59:30 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:39675 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750715Ab0BAQ73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 11:59:29 -0500
+Message-ID: <4B67086D.6040202@us.ibm.com>
+Date: Mon, 01 Feb 2010 08:59:25 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+CC: rostedt@goodmis.org
+Subject: Re: [PATCH 0/3 V2] trace-cmd: compiler warning fixes
+References: <1265043026-24987-1-git-send-email-dvhltc@us.ibm.com>
+In-Reply-To: <1265043026-24987-1-git-send-email-dvhltc@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Steven,
+
+You can pull these from the latest for-rostedt/master git tree:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/dvhart/trace-cmd.git for-rostedt/master
 
 
-On Mon, 1 Feb 2010, Mathieu Desnoyers wrote:
+Darren Hart wrote:
+> The following series fixes a few minor compiler warnings. These are
+> mostly printf format type issues. Also includes an uninitialized
+> variable fix.
 > 
-> What we have to be careful about here is that it's not enough to just
-> rely on switch_mm() containing a memory barrier. What we really need to
-> enforce is that switch_mm() issues memory barriers both _before_ and
-> _after_ mm_cpumask modification. The "after" part is usually dealt with
-> by the TLB context switch, but the "before" part usually isn't.
+> V2: actually send my patches and not 2 of rostedts...
+> --
+> Darren Hart
+> IBM Linux Technology Center
+> Real-Time Linux Team
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Ok, whatever. I vote for not doing anything at all, because this just all 
-sounds like some totally crazy crap. You haven't explained the actual 
-races, you haven't explained anything at all, you're apparently just 
-randomly sprinkling smp_mb's around until you think it's all fine.
 
-Show the actual memory ordering constraints as it is related to the kernel 
-data structures. I'm totally uninterested in general handwaving and "we 
-must have smp_mb's here and here" without very explicit explanations of 
-exactly WHAT the memory orderings are.
-
-		Linus
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
