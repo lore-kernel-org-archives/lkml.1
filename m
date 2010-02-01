@@ -1,26 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340Ab0BAPPN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 10:15:13 -0500
+	id S1755366Ab0BAPPY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 10:15:24 -0500
 Received: from mail-fx0-f220.google.com ([209.85.220.220]:55475 "EHLO
 	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754951Ab0BAPPJ (ORCPT
+	with ESMTP id S1755173Ab0BAPPS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 10:15:09 -0500
+	Mon, 1 Feb 2010 10:15:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=bPmTVZiJRTKfMN7X18utb2yfrGjGQRgQk15vkNdNYjhEjWm8pWBR8MHndkSKCRBDYW
-         Rnv8Sv17jbX7EwMWJp24sojDTmfhWkSpJBjlCNFT9hKTLdf382lvh1ScrIyKh2c6mHhK
-         5ZosqJeTHQL0Yg669dXcOoYxSj2o8grkvQOqg=
+        b=u6N78v8BkXowGn1H0qg0HKemElp+DsznEk4ySsyXmmRoFlKaf3HavmlokBat1azg1s
+         9L3FIgBcYZQ4/TQkhF2uZNK3VEQG1M5poCpCfFEN8YRAyQh94OsXxxFGnlUkWCXKo4rR
+         naFqhK6ifEetF4IuIdFBMR2t4EL82N+pnjves=
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Akinobu Mita <akinobu.mita@gmail.com>,
-       Chas Williams <chas@cmf.nrl.navy.mil>,
-       linux-atm-general@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: [PATCH 8/9] atm: Use for_each_set_bit
-Date: Tue,  2 Feb 2010 00:10:39 +0900
-Message-Id: <1265037040-23413-8-git-send-email-akinobu.mita@gmail.com>
+Cc: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [PATCH 9/9] hpet: Use for_each_set_bit
+Date: Tue,  2 Feb 2010 00:10:40 +0900
+Message-Id: <1265037040-23413-9-git-send-email-akinobu.mita@gmail.com>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1265037040-23413-1-git-send-email-akinobu.mita@gmail.com>
 References: <1265037040-23413-1-git-send-email-akinobu.mita@gmail.com>
@@ -31,32 +29,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 v2: rename for_each_bit to for_each_set_bit
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Chas Williams <chas@cmf.nrl.navy.mil>
-Cc: linux-atm-general@lists.sourceforge.net
-Cc: netdev@vger.kernel.org
 ---
- drivers/atm/lanai.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/char/hpet.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/atm/lanai.c b/drivers/atm/lanai.c
-index cf97c34..dbffe8f 100644
---- a/drivers/atm/lanai.c
-+++ b/drivers/atm/lanai.c
-@@ -306,11 +306,10 @@ static void vci_bitfield_iterate(struct lanai_dev *lanai,
- 	const unsigned long *lp,
- 	void (*func)(struct lanai_dev *,vci_t vci))
- {
--	vci_t vci = find_first_bit(lp, NUM_VCI);
--	while (vci < NUM_VCI) {
-+	vci_t vci;
-+
-+	for_each_set_bit(vci, lp, NUM_VCI)
- 		func(lanai, vci);
--		vci = find_next_bit(lp, NUM_VCI, vci + 1);
--	}
- }
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index e481c59..9c5eea3 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -215,9 +215,7 @@ static void hpet_timer_set_irq(struct hpet_dev *devp)
+ 	else
+ 		v &= ~0xffff;
  
- /* -------------------- BUFFER  UTILITIES: */
+-	for (irq = find_first_bit(&v, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
+-		irq = find_next_bit(&v, HPET_MAX_IRQ, 1 + irq)) {
+-
++	for_each_set_bit(irq, &v, HPET_MAX_IRQ) {
+ 		if (irq >= nr_irqs) {
+ 			irq = HPET_MAX_IRQ;
+ 			break;
 -- 
 1.6.0.6
 
