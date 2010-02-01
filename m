@@ -1,52 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733Ab0BAPrr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 10:47:47 -0500
-Received: from mbox1.netikka.net ([213.250.81.202]:34258 "EHLO
-	mbox1.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753756Ab0BAPrp (ORCPT
+	id S1754991Ab0BAPzg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 10:55:36 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:48060 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157Ab0BAPze (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 10:47:45 -0500
-Message-ID: <4B66F79E.1040606@mandriva.org>
-Date: Mon, 01 Feb 2010 17:47:42 +0200
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100122 Mandriva/3.0.1-2mdv2010.1 (2010.1) Thunderbird/3.0.1
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexander Clouter <alex@digriz.org.uk>
-Subject: Re: [Bug #14482] kernel BUG at fs/dcache.c:670 +lvm +md +ext3
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.85G.9HiZLB@chimera>
-In-Reply-To: <de962C6zBxL.A.85G.9HiZLB@chimera>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 1 Feb 2010 10:55:34 -0500
+Date: Mon, 1 Feb 2010 07:54:53 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, David Airlie <airlied@linux.ie>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>
+Subject: [PATCH -next resend] ati_pcigart: fix printk format warning
+Message-Id: <20100201075453.ee715fad.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4B66F964.016E:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-01.02.2010 02:43, Rafael J. Wysocki skrev:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.31 and 2.6.32.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> be listed and let me know (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14482
-> Subject		: kernel BUG at fs/dcache.c:670 +lvm +md +ext3
-> Submitter	: Alexander Clouter<alex@digriz.org.uk>
-> Date		: 2009-10-23 10:30 (101 days old)
-> References	: http://lkml.org/lkml/2009/10/23/50
->
->
+This patch is still needed in linux-next 20100201.
 
-Afaik this is the same issue as the one referenced here:
+Begin forwarded message:
+Date: Sun, 17 Jan 2010 15:15:40 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, David Airlie <airlied@linux.ie>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH -next] ati_pcigart: fix printk format warning
 
-http://lkml.org/lkml/2010/1/28/292
 
-The patch in the above thread should fix the issue.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
---
-Thomas
+Fix ati_pcigart printk format warning:
+
+drivers/gpu/drm/ati_pcigart.c:115: warning: format '%Lx' expects type 'long long unsigned int', but argument 3 has type 'dma_addr_t'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/gpu/drm/ati_pcigart.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-next-20100111.orig/drivers/gpu/drm/ati_pcigart.c
++++ linux-next-20100111/drivers/gpu/drm/ati_pcigart.c
+@@ -113,7 +113,7 @@ int drm_ati_pcigart_init(struct drm_devi
+ 
+ 		if (pci_set_dma_mask(dev->pdev, gart_info->table_mask)) {
+ 			DRM_ERROR("fail to set dma mask to 0x%Lx\n",
+-				  gart_info->table_mask);
++				  (unsigned long long)gart_info->table_mask);
+ 			ret = 1;
+ 			goto done;
+ 		}
+
+
+---
+~Randy
