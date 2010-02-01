@@ -1,58 +1,164 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331Ab0BACB0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 21:01:26 -0500
-Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:41764 "EHLO
-	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750940Ab0BACBY (ORCPT
+	id S1754026Ab0BACIN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Jan 2010 21:08:13 -0500
+Received: from out-16.smtp.ucla.edu ([169.232.48.160]:37666 "EHLO
+	out-16.smtp.ucla.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940Ab0BACIM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 21:01:24 -0500
-Message-ID: <4B6635F1.8060909@blueyonder.co.uk>
-Date: Mon, 01 Feb 2010 02:01:21 +0000
-From: Sid Boyce <sboyce@blueyonder.co.uk>
-Reply-To: sboyce@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.14 Thunderbird/3.0 ThunderBrowse/3.2.7
+	Sun, 31 Jan 2010 21:08:12 -0500
+Date: Sun, 31 Jan 2010 18:06:39 -0800
+From: Chris Frost <frost@cs.ucla.edu>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steve Dickson <steved@redhat.com>, David Howells <dhowells@redhat.com>,
+       Xu Chenfeng <xcf@ustc.edu.cn>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Steve VanDeBogart <vandebo-lkml@nerdbox.net>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] mm/readahead.c: update the LRU positions of in-core
+	pages, too
+Message-ID: <20100201020639.GA27212@frostnet.net>
+References: <20100120215536.GN27212@frostnet.net> <20100121054734.GC24236@localhost> <20100123040348.GC30844@frostnet.net> <20100123102222.GA6943@localhost> <20100125094228.f7ca1430.kamezawa.hiroyu@jp.fujitsu.com> <20100125024544.GA16462@localhost> <20100125223635.GC2822@frostnet.net> <20100126133217.GB25407@localhost> <20100131143142.GA11186@localhost>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: Re: [Bug #15144] HDA Intel Audio hang on boot
-References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera> <d3IDKWHT5gE.A.MEC.a7hZLB@chimera>
-In-Reply-To: <d3IDKWHT5gE.A.MEC.a7hZLB@chimera>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100131143142.GA11186@localhost>
+X-PGP-Key: <http://www.frostnet.net/chris/pgpkey.txt>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Probable-Spam: no
+X-Spam-Hits: 0.654
+X-Spam-Score: *
+X-Spam-Report: SPF_SOFTFAIL
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/02/10 00:22, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Sun, Jan 31, 2010 at 10:31:42PM +0800, Wu Fengguang wrote:
+> On Tue, Jan 26, 2010 at 09:32:17PM +0800, Wu Fengguang wrote:
+> > On Mon, Jan 25, 2010 at 03:36:35PM -0700, Chris Frost wrote:
+> > > I changed Wu's patch to add a PageLRU() guard that I believe is required
+> > > and optimized zone lock acquisition to only unlock and lock at zone changes.
+> > > This optimization seems to provide a 10-20% system time improvement for
+> > > some of my GIMP benchmarks and no improvement for other benchmarks.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.32.  Please verify if it still should be listed and let me know
-> (either way).
+> I feel very uncomfortable about this put_page() inside zone->lru_lock. 
+> (might deadlock: put_page() conditionally takes zone->lru_lock again)
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15144
-> Subject		: HDA Intel Audio hang on boot
-> Submitter	: Sid Boyce <sboyce@blueyonder.co.uk>
-> Date		: 2010-01-15 1:24 (17 days old)
-> References	: http://marc.info/?l=linux-kernel&m=126351866722507&w=4
-> 
-> 
-> 
+> If you really want the optimization, can we do it like this?
 
-Still not fixed in 2.6.33-rc6. Takashi wrote that the fix was scheduled
-for 2.6.33-rc6, but it did not appear. I have gone back to using the
-workaround with 2.6.33-rc6.
-Regards
-Sid.
+Sorry that I was slow to respond. (I was out of town.)
+
+Thanks for catching __page_cache_release() locking the zone.
+I think staying simple for now sounds good. The below locks
+and unlocks the zone for each page. Look good?
+
+---
+readahead: retain inactive lru pages to be accessed soon
+From: Chris Frost <frost@cs.ucla.edu>
+
+Ensure that cached pages in the inactive list are not prematurely evicted;
+move such pages to lru head when they are covered by
+- in-kernel heuristic readahead
+- an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
+
+Before this patch, pages already in core may be evicted before the
+pages covered by the same prefetch scan but that were not yet in core.
+Many small read requests may be forced on the disk because of this
+behavior.
+
+In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
+has no effect on the page's location in the LRU list, even if it is the
+next victim on the inactive list.
+
+This change helps address the performance problems we encountered
+while modifying SQLite and the GIMP to use large file prefetching.
+Overall these prefetching techniques improved the runtime of large
+benchmarks by 10-17x for these applications. More in the publication
+_Reducing Seek Overhead with Application-Directed Prefetching_ in
+USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
+
+Signed-off-by: Chris Frost <frost@cs.ucla.edu>
+Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ readahead.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+
+diff --git a/mm/readahead.c b/mm/readahead.c
+index aa1aa23..c615f96 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -9,7 +9,9 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
++#include <linux/memcontrol.h>
+ #include <linux/mm.h>
++#include <linux/mm_inline.h>
+ #include <linux/module.h>
+ #include <linux/blkdev.h>
+ #include <linux/backing-dev.h>
+@@ -133,6 +135,40 @@ out:
+ }
+ 
+ /*
++ * The file range is expected to be accessed in near future.  Move pages
++ * (possibly in inactive lru tail) to lru head, so that they are retained
++ * in memory for some reasonable time.
++ */
++static void retain_inactive_pages(struct address_space *mapping,
++				  pgoff_t index, int len)
++{
++	int i;
++
++	for (i = 0; i < len; i++) {
++		struct page *page;
++		struct zone *zone;
++
++		page = find_get_page(mapping, index + i);
++		if (!page)
++			continue;
++		zone = page_zone(page);
++		spin_lock_irq(&zone->lru_lock);
++
++		if (PageLRU(page) &&
++			!PageActive(page) &&
++			!PageUnevictable(page)) {
++			int lru = page_lru_base_type(page);
++
++			del_page_from_lru_list(zone, page, lru);
++			add_page_to_lru_list(zone, page, lru);
++		}
++
++		spin_unlock_irq(&zone->lru_lock);
++		put_page(page);
++	}
++}
++
++/*
+  * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
+  * the pages first, then submits them all for I/O. This avoids the very bad
+  * behaviour which would occur if page allocations are causing VM writeback.
+@@ -184,6 +220,14 @@ __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
+ 	}
+ 
+ 	/*
++	 * Normally readahead will auto stop on cached segments, so we won't
++	 * hit many cached pages. If it does happen, bring the inactive pages
++	 * adjecent to the newly prefetched ones(if any).
++	 */
++	if (ret < nr_to_read)
++		retain_inactive_pages(mapping, offset, page_idx);
++
++	/*
+ 	 * Now start the IO.  We ignore I/O errors - if the page is not
+ 	 * uptodate then the caller will launch readpage again, and
+ 	 * will then handle the error.
+
 -- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
-
+Chris Frost
+http://www.frostnet.net/chris/
