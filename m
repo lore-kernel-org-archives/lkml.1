@@ -1,46 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755504Ab0BAQTY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 11:19:24 -0500
-Received: from mail-bw0-f223.google.com ([209.85.218.223]:34897 "EHLO
-	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754623Ab0BAQTX (ORCPT
+	id S1755473Ab0BAQVX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 11:21:23 -0500
+Received: from filtteri5.pp.htv.fi ([213.243.153.188]:43312 "EHLO
+	filtteri5.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754623Ab0BAQVW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 11:19:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=T6WGiKtg+NRg/FGiBHYLvQvVF+PbSAkyCGIqghbAwrM53IciWnyujol1D10o7oUiqR
-         /rK3hz3SWmx2DqmqwCXQfJTSMOk4H0OVxiPxKcRn2oG9XiLbT+vyEOtlnsEvKLhAaT/z
-         CUEo+Jm6Uga8StMYh/lZC+m8NIdQdiITDXVtY=
-MIME-Version: 1.0
-In-Reply-To: <20100201142605.GB13428@linux-sh.org>
-References: <20100128124028.8982.16123.sendpatchset@rxone.opensource.se>
-	 <20100128124038.8982.82995.sendpatchset@rxone.opensource.se>
-	 <20100201141057.GB1340@ucw.cz> <20100201142605.GB13428@linux-sh.org>
-Date: Mon, 1 Feb 2010 17:19:21 +0100
-Message-ID: <63386a3d1002010819r63aae9edn2f5bc7e7f08a5fdf@mail.gmail.com>
-Subject: Re: [PATCH 01/06] ARM: SuperH Mobile ARM, sh7367 and G3EVM support
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Magnus Damm <magnus.damm@gmail.com>,
-       linux@arm.linux.org.uk, eric.y.miao@gmail.com, tony@atomide.com,
-       linux-kernel@vger.kernel.org, khilman@deeprootsystems.com,
-       ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Feb 2010 11:21:22 -0500
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: stable@kernel.org, gregkh@suse.de, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v2 -stable 2.6.32.7] clocksource: fix compilation if no GENERIC_TIME
+Date: Mon,  1 Feb 2010 18:24:58 +0200
+Message-Id: <1265041498-2434-1-git-send-email-aaro.koskinen@iki.fi>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/2/1 Paul Mundt <lethal@linux-sh.org>:
+Commit a9238ce3bb0fda6e760780b702c6cbd3793087d3 broke compilation on
+platforms that do not implement GENERIC_TIME (e.g. iop32x):
 
-> SH-Mobile (G series, in this case) is a line of SH/ARM multi-cores. They
-> contain both SH and ARM MPUs and are built up almost entirely on SH IP
-> blocks.
+  kernel/time/clocksource.c: In function 'clocksource_register':
+  kernel/time/clocksource.c:556: error: implicit declaration of function 'clocksource_max_deferment'
 
-Jaysis, that's one odd bird. There must be some upside to designing
-things like this, is there some paper or conference presentation on the idea
-behind this thing somewhere out there? I just get very curious!
+Provide the implementation of clocksource_max_deferment() also for
+such platforms.
 
-Linus Walleij
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: stable <stable@kernel.org>
+---
+
+v2: Instead of adding a dummy function, just move the #ifdef. This
+is actually the same change that was included in the upstream commit
+a362c638bdf052bf424bce7645d39b101090f6ba.
+
+ kernel/time/clocksource.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index 5155dc3..ecc7adb 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -413,8 +413,6 @@ void clocksource_touch_watchdog(void)
+ 	clocksource_resume_watchdog();
+ }
+ 
+-#ifdef CONFIG_GENERIC_TIME
+-
+ /**
+  * clocksource_max_deferment - Returns max time the clocksource can be deferred
+  * @cs:         Pointer to clocksource
+@@ -456,6 +454,8 @@ static u64 clocksource_max_deferment(struct clocksource *cs)
+ 	return max_nsecs - (max_nsecs >> 5);
+ }
+ 
++#ifdef CONFIG_GENERIC_TIME
++
+ /**
+  * clocksource_select - Select the best clocksource available
+  *
+-- 
+1.5.6.5
+
