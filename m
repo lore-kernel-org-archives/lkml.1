@@ -1,127 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439Ab0BBHeJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 02:34:09 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54449 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750736Ab0BBHeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 02:34:05 -0500
-Message-ID: <4B67D4F9.9080905@cn.fujitsu.com>
-Date: Tue, 02 Feb 2010 15:32:09 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S1755826Ab0BBHli (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 02:41:38 -0500
+Received: from mail-gx0-f224.google.com ([209.85.217.224]:39289 "EHLO
+	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755758Ab0BBHlc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 02:41:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=kjQuoI/4Q76r3pRj65JC//4D0SBiLU+sDHJWaZjcYxPtBtlbu5WNbToBqPtx1JmEVu
+         SS2E+M96rkevGnuYpJFCNKRBfIiS5Q9iRB/ITHUIUq4lAp80OLSjxfSl4GP2NcKB82KI
+         2vf1kKyvfYN9jS9cAyRouu6V65ryFfwk7fYiY=
+Message-ID: <4B67D76A.3050906@gmail.com>
+Date: Mon, 01 Feb 2010 23:42:34 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing: fix circular dead lock
-Content-Type: text/plain; charset=UTF-8
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Dan Carpenter <error27@gmail.com>, linux1394-devel@lists.sourceforge.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug #14487] PANIC:
+ early exception 08 rip 246:10 error	ffffffff810251b5 cr2 0)
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com> <4B67BC12.4080709@s5r6.in-berlin.de> <4B67C4D2.5050205@gmail.com> <4B67CC55.40301@s5r6.in-berlin.de> <4B67CCEC.2030103@s5r6.in-berlin.de>
+In-Reply-To: <4B67CCEC.2030103@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/01/10 22:57, Stefan Richter wrote:
+> Stefan Richter wrote:
+>> Do I understand correctly that at this moment it is only known that the
+>> bug could be
+>>    - *either* a 2.6.31 ->  2.6.32 regression
+>>    - *or* an x86-64 specific bug that does not occur on x86-32,
+>> right?
+>
+> (OK, according to your other post it /is/ a regression, at least on
+> x86-64 and definitely between 2.6.27 (good) and 2.6.32 (bad).)
 
-When we cat <debugfs>/tracing/stack_trace, we may cause circular lock:
-sys_read()
-  t_start()
-     arch_spin_lock(&max_stack_lock);
+I'll go with the bisect in the morning(late over here),
+and then go from there.(just pissed at myself
+for not thinking to do this at the beginning).
 
-  t_show()
-     seq_printf(), vsnprintf() .... /* they are all trace-able,
-       when they are traced, max_stack_lock may be required again. */
-
-
-The following script can trigger this circular dead lock very easy:
-#!/bin/bash
-
-echo 1 > /proc/sys/kernel/stack_tracer_enabled
-
-mount -t debugfs xxx /mnt > /dev/null 2>&1
-
-(
-# make check_stack() zealous to require max_stack_lock
-for ((; ;))
-{
-	echo 1 > /mnt/tracing/stack_max_size
-}
-) &
-
-for ((; ;))
-{
-	cat /mnt/tracing/stack_trace > /dev/null
-}
-
-
-To fix this bug, we increase the percpu trace_active before
-require the lock.
-
-Reported-by: Li Zefan <lizf@cn.fujitsu.com>
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
-index 678a512..f4bc9b2 100644
---- a/kernel/trace/trace_stack.c
-+++ b/kernel/trace/trace_stack.c
-@@ -157,6 +157,7 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
- 	unsigned long val, flags;
- 	char buf[64];
- 	int ret;
-+	int cpu;
- 
- 	if (count >= sizeof(buf))
- 		return -EINVAL;
-@@ -171,9 +172,20 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
- 		return ret;
- 
- 	local_irq_save(flags);
-+
-+	/*
-+	 * In case we trace inside arch_spin_lock() or after (NMI),
-+	 * we will cause circular lock, so we also need to increase
-+	 * the percpu trace_active here.
-+	 */
-+	cpu = smp_processor_id();
-+	per_cpu(trace_active, cpu)++;
-+
- 	arch_spin_lock(&max_stack_lock);
- 	*ptr = val;
- 	arch_spin_unlock(&max_stack_lock);
-+
-+	per_cpu(trace_active, cpu)--;
- 	local_irq_restore(flags);
- 
- 	return count;
-@@ -206,7 +218,13 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
- 
- static void *t_start(struct seq_file *m, loff_t *pos)
- {
-+	int cpu;
-+
- 	local_irq_disable();
-+
-+	cpu = smp_processor_id();
-+	per_cpu(trace_active, cpu)++;
-+
- 	arch_spin_lock(&max_stack_lock);
- 
- 	if (*pos == 0)
-@@ -217,7 +235,13 @@ static void *t_start(struct seq_file *m, loff_t *pos)
- 
- static void t_stop(struct seq_file *m, void *p)
- {
-+	int cpu;
-+
- 	arch_spin_unlock(&max_stack_lock);
-+
-+	cpu = smp_processor_id();
-+	per_cpu(trace_active, cpu)--;
-+
- 	local_irq_enable();
- }
- 
-
-
-
-
-
+Justin P. Mattock
