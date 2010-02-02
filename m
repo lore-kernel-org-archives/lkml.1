@@ -1,63 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351Ab0BBLFM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 06:05:12 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:60677 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753827Ab0BBLFK convert rfc822-to-8bit (ORCPT
+	id S1755666Ab0BBLI2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 06:08:28 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:53709 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754865Ab0BBLI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 06:05:10 -0500
-Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
-From: Jon Masters <jonathan@jonmasters.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Patrick McHardy <kaber@trash.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <1265036548.2848.55.camel@edumazet-laptop>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant> <1264816777.2793.510.camel@tonnant>
-	 <1264834704.2919.3.camel@edumazet-laptop>
-	 <1265016745.7499.144.camel@tonnant>
-	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
-	 <1265019160.2848.14.camel@edumazet-laptop>
-	 <b6fcc0a1002010225u4e74f9f0q633d73038234dc37@mail.gmail.com>
-	 <1265023437.2848.30.camel@edumazet-laptop>
-	 <1265035970.2848.50.camel@edumazet-laptop>
-	 <b6fcc0a1002010658j4f52a9b8kf10e4bb07a2f1075@mail.gmail.com>
-	 <1265036548.2848.55.camel@edumazet-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Tue, 02 Feb 2010 06:04:50 -0500
-Message-Id: <1265108690.2861.118.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8BIT
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Tue, 2 Feb 2010 06:08:26 -0500
+Date: Tue, 2 Feb 2010 11:08:24 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
+       Liam Girdwood <lrg@slimlogic.co.uk>, Jaroslav Kysela <perex@perex.cz>,
+       Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org
+Subject: Re: [PATCH 10/10] sound/soc/blackfin: Fix continuation line formats
+Message-ID: <20100202110824.GF6566@rakim.wolfsonmicro.main>
+References: <cover.1264967493.git.joe@perches.com>
+ <aee58f4fc07709fe8a34021899e701824a0a6b53.1264967500.git.joe@perches.com>
+ <20100201144745.GC26011@rakim.wolfsonmicro.main>
+ <1265044080.25140.266.camel@Joe-Laptop.home>
+ <8bd0f97a1002012013t5c4a3951ra559a8965d67a672@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a1002012013t5c4a3951ra559a8965d67a672@mail.gmail.com>
+X-Cookie: Nothing is but what is not.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-01 at 16:02 +0100, Eric Dumazet wrote:
-> Le lundi 01 fÃ©vrier 2010 Ã  16:58 +0200, Alexey Dobriyan a Ã©crit :
-> > On Mon, Feb 1, 2010 at 4:52 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> > > +       net->ct.nf_conntrack_cachep = kmem_cache_create("nf_conntrack",
-> > > +                                                       sizeof(struct nf_conn), 0,
-> > > +                                                       SLAB_DESTROY_BY_RCU, NULL);
-> > 
-> > Duplicate slab name detected.
-> > 
-> 
-> OK, need to build an unique name I guess... "nf_conntrack-%d", net->id
+On Mon, Feb 01, 2010 at 11:13:04PM -0500, Mike Frysinger wrote:
+> On Mon, Feb 1, 2010 at 12:08, Joe Perches wrote:
 
-I shoved in an kasprintf but of course there isn't a per-namespace "id".
-We probably should have one (or, a nice "name"), but meanwhile I am
-using the address of the net struct like "nf_ct-%p".
+> > There are a few false positives and probably a few missing using
 
-Jon.
+> >        grep -rP --include=*.[ch] '".*\\$' * | \
+> >        awk '{ if ((gsub("\"", "\"") % 2) == 1) print $0; }'
 
+> > Most of the uses are __asm__ __volatile__ which could be
+> > considered unsightly but don't impact logging messages.
 
+> > The rest could/should be fixed.
+
+My point was that it'd be good to also check for just regular use of
+continuations in code other than macro definitions.  These are just a
+style nit but if there's a script that filters out false positives from
+the macros that'd be handy...
+
+> the Blackfin alsa fixes all look good to me, thanks
+
+Running "grep ' \\$' sound/soc/blackfin/*.[ch]" suggests that there's
+still some of the continuations I mentioned above in there (plus a lot
+of false positives from macros).
