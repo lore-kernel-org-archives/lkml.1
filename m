@@ -1,44 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148Ab0BBOeZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 09:34:25 -0500
-Received: from stinky.trash.net ([213.144.137.162]:63716 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752477Ab0BBOeW (ORCPT
+	id S1756176Ab0BBOee (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 09:34:34 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:49910 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754548Ab0BBOe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 09:34:22 -0500
-Message-ID: <4B6837EB.3030902@trash.net>
-Date: Tue, 02 Feb 2010 15:34:19 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
-MIME-Version: 1.0
-To: Simon Arlott <simon@fire.lp0.eu>
-CC: Jan Engelhardt <jengelh@medozas.de>,
-       William Allen Simpson <william.allen.simpson@gmail.com>,
-       netdev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH] xt_TCPMSS: SYN packets are allowed to contain data
-References: <4B54CDE5.3070100@simon.arlott.org.uk> <4B5578A5.50705@gmail.com>    <dad314e12c5750b1b5d70c3ea3c6f6134b8fa0f3@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>    <4B55D372.4020807@gmail.com>    <710ab0ca79305c82013982d43250b0a1fd45824d@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>    <4B5773C2.2010000@simon.arlott.org.uk>    <alpine.LSU.2.01.1001202238400.18680@obet.zrqbmnf.qr>    <alpine.LSU.2.01.1001202240350.18680@obet.zrqbmnf.qr>    <4B578E59.8090203@trash.net> <0b01c450344abffd72a5b1b037ee6584e6db6b82@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid> <4B585079.1070904@trash.net> <4B58B578.9080505@simon.arlott.org.uk>
-In-Reply-To: <4B58B578.9080505@simon.arlott.org.uk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Tue, 2 Feb 2010 09:34:28 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>
+In-Reply-To: <201002021408.51851.oliver@neukum.org>
+References: <20100129185434.GH19501@one-eyed-alien.net>
+	 <201002021307.56991.oliver@neukum.org>
+	 <1265114375.12634.61.camel@pc1117.cambridge.arm.com>
+	 <201002021408.51851.oliver@neukum.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 02 Feb 2010 14:34:14 +0000
+Message-Id: <1265121254.12634.74.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Feb 2010 14:34:15.0653 (UTC) FILETIME=[CBA77150:01CAA414]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Arlott wrote:
-> The TCPMSS target is dropping SYN packets where:
->   1) There is data, or
->   2) The data offset makes the TCP header larger than the packet.
+On Tue, 2010-02-02 at 13:08 +0000, Oliver Neukum wrote:
+> Am Dienstag, 2. Februar 2010 13:39:35 schrieb Catalin Marinas:
+> > > For storage that is correct. But what about other sources of pages,
+> > > for example iSCSI?
+> >
+> > In the iSCSI case, does the HCD driver write directly to a page cache
+> > page? Or it just fills in network packets that are copied to page cache
+> > pages by the iSCSI code (sorry, I'm not familiar with this part of the
+> > kernel). If the latter, the cache flushing in the HCD driver would not
+> > help and it needs to be done in the iSCSI code.
 > 
-> Both of these result in an error level printk. This printk has been
-> removed.
-> 
-> This change avoids dropping SYN packets containing data. If there
-> is also no MSS option (as well as data), one will not be added
-> because of possible complications due to the increased packet size.
+> As far as I can tell iSCSI does a private copy. But I don't know how
+> many methods to transfer code pages over USB exist. I'd say the
+> conservative solution is to flush for everything but control transfers.
 
-Applied, thanks Simon.
+flush_dcache_page() is on many architectures implemented lazily so that
+if the page isn't mapped in user space no flushing takes place. It's
+mainly the cost of virt_to_page() which I suspect is slightly higher
+with sparsemem enabled.
+
+-- 
+Catalin
 
