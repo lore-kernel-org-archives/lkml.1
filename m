@@ -1,48 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060Ab0BBNuV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 08:50:21 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:49660 "EHLO mx2.suse.de"
+	id S1756068Ab0BBNxR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 08:53:17 -0500
+Received: from kroah.org ([198.145.64.141]:45848 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755343Ab0BBNuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 08:50:15 -0500
-Date: Tue, 2 Feb 2010 14:50:14 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Dave Airlie <airlied@redhat.com>, Pavel Roskin <proski@gnu.org>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drm/kms: fix spelling of "CLOCK"
-In-Reply-To: <4B55A4CE.4060000@ladisch.de>
-Message-ID: <alpine.LNX.2.00.1002021449570.15395@pobox.suse.cz>
-References: <4B55A4CE.4060000@ladisch.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1755943Ab0BBNxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 08:53:15 -0500
+Date: Tue, 2 Feb 2010 05:53:39 -0800
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: linux-next: usb tree build failure
+Message-ID: <20100202135339.GA13117@kroah.com>
+References: <20100202171054.aaf86072.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100202171054.aaf86072.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jan 2010, Clemens Ladisch wrote:
-
-> From: Pavel Roskin <proski@gnu.org>
+On Tue, Feb 02, 2010 at 05:10:54PM +1100, Stephen Rothwell wrote:
+> Hi Greg,
 > 
-> Signed-off-by: Pavel Roskin <proski@gnu.org>
-> [clemens@ladisch.de: merged into drm_fb_helper]
-> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
 > 
-> --- a/drivers/gpu/drm/drm_fb_helper.c
-> +++ b/drivers/gpu/drm/drm_fb_helper.c
-> @@ -694,7 +694,7 @@ int drm_fb_helper_set_par(struct fb_info
->  	int i;
->  
->  	if (var->pixclock != 0) {
-> -		DRM_ERROR("PIXEL CLCOK SET\n");
-> +		DRM_ERROR("PIXEL CLOCK SET\n");
->  		return -EINVAL;
->  	}
+> drivers/usb/host/isp1760-hcd.c:22:24: error: asm/memory.h: No such file or directory
+> 
+> Caused by commit 571da0df39107568bb137d928862121ddae6aad1 ("isp1760:
+> Flush the D-cache for the pipe-in transfer buffers").
+> 
+> Only arm has an asm/memory.h ... so I guess it was only tested there?
+> 
+> I reverted that patch for today ...
 
-Doesn't seem to be present in linux-next as of today. I have picked it up.
+I have already removed this patch, you are correct, it looks like this
+was only tested on ARM :(
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+sorry for the problem, my tree is now updated.
+
+greg k-h
