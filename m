@@ -1,46 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755079Ab0BBMJB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 07:09:01 -0500
-Received: from www.tglx.de ([62.245.132.106]:42987 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753239Ab0BBMI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 07:08:57 -0500
-Date: Tue, 2 Feb 2010 13:08:45 +0100
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-Subject: Re: [PATCH] isp1760: Flush the D-cache for the pipe-in transfer buffers
-Message-ID: <20100202120845.GA7210@www.tglx.de>
-References: <20100202111135.18636.62688.stgit@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	id S1754449Ab0BBMLT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 07:11:19 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:58918 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751907Ab0BBMLS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 07:11:18 -0500
+Date: Tue, 2 Feb 2010 13:11:16 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>
+Subject: Re: USB mass storage and ARM cache coherency
+Message-ID: <20100202121116.GA24926@rhlx01.hs-esslingen.de>
+References: <20100129185434.GH19501@one-eyed-alien.net> <201002021248.10994.oliver@neukum.org> <1265112072.12634.53.camel@pc1117.cambridge.arm.com> <201002021307.56991.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100202111135.18636.62688.stgit@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.4.2.2i
-X-Key-Id: 97C4700B
-X-Key-Fingerprint: 09E2 D1F3 9A3A FF13 C3D3  961C 0688 1C1E 97C4 700B
+In-Reply-To: <201002021307.56991.oliver@neukum.org>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Catalin Marinas | 2010-02-02 11:11:35 [+0000]:
+Hi,
 
->When the HDC driver writes the data to the transfer buffers it pollutes
->the D-cache (unlike DMA drivers where the device writes the data). If
->the corresponding pages get mapped into user space, there are no
->additional cache flushing operations performed and this causes random
->user space faults on architectures with separate I and D caches
->(Harvard) or those with aliasing D-cache.
+On Tue, Feb 02, 2010 at 01:07:56PM +0100, Oliver Neukum wrote:
+> Am Dienstag, 2. Februar 2010 13:01:12 schrieb Catalin Marinas:
+> > On Tue, 2010-02-02 at 11:48 +0000, Oliver Neukum wrote:
+> > > Am Montag, 1. Februar 2010 18:29:14 schrieb Catalin Marinas:
+> > > Is it correct to limit this to BULK pipes?
+> > 
+> > I'm not entirely sure. The flush_dcache_page() should only be called for
+> > pages that may be mapped into user space (page cache pages). We don't
+> > need this for control buffers. It was my impression that what's coming
+> > from the mass storage layer intended for page cache pages has the
+> > PIPE_BULK type (I may be wrong though).
+> 
+> For storage that is correct. But what about other sources of pages,
+> for example iSCSI?
 
-After looking through lib/scatterlist.c it uses 
-#include <linux/highmem.h>
+Or... usb-audio? I should have verified that it is using bulk endpoints
+(and thus the patch applies to my case).
+usb-audio probably uses isochronous transfers, thus that would be
+an obvious reason why the patch didn't work for me.
+(with some other reason possibly being BCM4710 issues, of course)
 
-and 
-
-flush_kernel_dcache_page().
-Wouldn't this do the job here as well?
-
-Sebastain
+Andreas Mohr
