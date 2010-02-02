@@ -1,77 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904Ab0BBHrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 02:47:17 -0500
-Received: from iksaif.net ([88.191.73.63]:48719 "EHLO iksaif.net"
+	id S1755820Ab0BBHrL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 02:47:11 -0500
+Received: from iksaif.net ([88.191.73.63]:48716 "EHLO iksaif.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755550Ab0BBHrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 02:47:08 -0500
+	id S1755452Ab0BBHrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 02:47:07 -0500
 From: Corentin Chary <corentincj@iksaif.net>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Corentin Chary <corentincj@iksaif.net>
-Subject: [PATCH 00/28] acpi4asus: asus-laptop rewrite for 2.6.33
-Date: Tue,  2 Feb 2010 08:38:43 +0100
-Message-Id: <1265096351-15239-1-git-send-email-corentincj@iksaif.net>
+Subject: [PATCH 02/28] asus-laptop: set the right paths in the documentation
+Date: Tue,  2 Feb 2010 08:38:45 +0100
+Message-Id: <1265096351-15239-3-git-send-email-corentincj@iksaif.net>
 X-Mailer: git-send-email 1.6.6.1
+In-Reply-To: <1265096351-15239-2-git-send-email-corentincj@iksaif.net>
+References: <1265096351-15239-1-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-2-git-send-email-corentincj@iksaif.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Len,
-Here is a big series of patchs, only for asus-laptop.
+Signed-off-by: Corentin Chary <corentincj@iksaif.net>
+---
+ .../ABI/testing/sysfs-platform-asus-laptop         |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-It cleans asus-laptop like Alan Jenkins did for eeepc-laptop: no
-more global context, and the driver *could* support multiple
-acpi device (that will never happen, but it's not a reason to do
-ugly code).
-
-This has some side effects: bugs where the device path was \SB.HOTK
-instead of \SB.ATKD are fixed, because a static path is no more used :).
-
-It also adds some features like an rfkill handler for the gps, rewrite
-the input code to use sparse_keymap library and add new backlight notifications.
-
-The last patch is a checkpatch-cleanup.
-
-Thanks,
-
-Corentin Chary (28):
-  asus-laptop: add wireless and bluetooth status parameter
-  asus-laptop: set the right paths in the documentation
-  asus-laptop: no need to check argument of set_brightness()
-  asus-laptop: simplify write_acpi_int
-  asus-laptop: use tabs to indent macros and remove unused ones
-  asus-laptop: remove unecessary hotk != NULL check
-  asus-laptop: change initialization order
-  asus-laptop: revise names
-  asus-laptop: move backlight and dsdt info inside asus_laptop struct
-  asus-laptop: callbacks should use "driver data" parameter or field
-  asus-laptop: code movement
-  asus-laptop: stop using read_status for bluetooth and wlan
-  asus-laptop: stop using read_status and store_status for GPS
-  asus-laptop: stop using read_status for lcd
-  asus-laptop: removing read_status/store_status/write_status and
-    asus->status
-  asus-laptop: rename function talking directly to acpi with asus_xxx
-    scheme
-  asus-laptop: stop using ASUS_HANDLE and use relative methods instead
-  asus-laptop: add error check for write_acpi_int calls
-  asus-laptop: rename wireless_status to wlan_status to avoid confusion
-  asus-laptop: switch to sparse keymap library
-  asus-laptop: add bluetooth keys found on M9V
-  asus-laptop: add backlight changes notifications
-  asus-laptop: leds, remove dead code and fix
-    asus_led_exit()/asus_led_init()
-  asus-laptop: set initial lcd state
-  asus-laptop: add gps rfkill
-  asus-laptop: clean led code
-  asus-laptop: use device_create_file() instead of platform_group
-  asus-laptop: fix style problems reported by checkpath.pl
-
- .../ABI/testing/sysfs-platform-asus-laptop         |   12 +-
- drivers/platform/x86/Kconfig                       |    2 +
- drivers/platform/x86/asus-laptop.c                 | 1741 ++++++++++----------
- 3 files changed, 914 insertions(+), 841 deletions(-)
+diff --git a/Documentation/ABI/testing/sysfs-platform-asus-laptop b/Documentation/ABI/testing/sysfs-platform-asus-laptop
+index a1cb660..1d77539 100644
+--- a/Documentation/ABI/testing/sysfs-platform-asus-laptop
++++ b/Documentation/ABI/testing/sysfs-platform-asus-laptop
+@@ -1,4 +1,4 @@
+-What:		/sys/devices/platform/asus-laptop/display
++What:		/sys/devices/platform/asus_laptop/display
+ Date:		January 2007
+ KernelVersion:	2.6.20
+ Contact:	"Corentin Chary" <corentincj@iksaif.net>
+@@ -13,7 +13,7 @@ Description:
+ 		Ex: - 0 (0000b) means no display
+ 		    - 3 (0011b) CRT+LCD.
+ 
+-What:		/sys/devices/platform/asus-laptop/gps
++What:		/sys/devices/platform/asus_laptop/gps
+ Date:		January 2007
+ KernelVersion:	2.6.20
+ Contact:	"Corentin Chary" <corentincj@iksaif.net>
+@@ -21,7 +21,7 @@ Description:
+ 		Control the gps device. 1 means on, 0 means off.
+ Users:		Lapsus
+ 
+-What:		/sys/devices/platform/asus-laptop/ledd
++What:		/sys/devices/platform/asus_laptop/ledd
+ Date:		January 2007
+ KernelVersion:	2.6.20
+ Contact:	"Corentin Chary" <corentincj@iksaif.net>
+@@ -29,11 +29,11 @@ Description:
+ 		Some models like the W1N have a LED display that can be
+ 		used to display several informations.
+ 		To control the LED display, use the following :
+-		    echo 0x0T000DDD > /sys/devices/platform/asus-laptop/
++		    echo 0x0T000DDD > /sys/devices/platform/asus_laptop/
+ 		where T control the 3 letters display, and DDD the 3 digits display.
+ 		The DDD table can be found in Documentation/laptops/asus-laptop.txt
+ 
+-What:		/sys/devices/platform/asus-laptop/bluetooth
++What:		/sys/devices/platform/asus_laptop/bluetooth
+ Date:		January 2007
+ KernelVersion:	2.6.20
+ Contact:	"Corentin Chary" <corentincj@iksaif.net>
+@@ -42,7 +42,7 @@ Description:
+ 		This may control the led, the device or both.
+ Users:		Lapsus
+ 
+-What:		/sys/devices/platform/asus-laptop/wlan
++What:		/sys/devices/platform/asus_laptop/wlan
+ Date:		January 2007
+ KernelVersion:	2.6.20
+ Contact:	"Corentin Chary" <corentincj@iksaif.net>
+-- 
+1.6.6.1
 
