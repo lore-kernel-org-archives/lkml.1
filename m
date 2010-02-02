@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932327Ab0BBTKd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:10:33 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:16855 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932226Ab0BBTJH (ORCPT
+	id S932331Ab0BBTLW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:11:22 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:22534 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756948Ab0BBTIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:09:07 -0500
-Subject: [PATCH v2 16/18] IB/ucm: increase maximum devices supported
+	Tue, 2 Feb 2010 14:08:31 -0500
+Subject: [PATCH v2 09/18] IB/umad: remove port_table[]
 To: rdreier@cisco.com
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
        linux-kernel@vger.kernel.org
-Date: Tue, 02 Feb 2010 12:09:06 -0700
-Message-ID: <20100202190905.28217.97347.stgit@bob.kio>
+Date: Tue, 02 Feb 2010 12:08:30 -0700
+Message-ID: <20100202190830.28217.54315.stgit@bob.kio>
 In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
 References: <20100202185235.28217.64521.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -24,112 +24,130 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some large systems may support more than IB_UCM_MAX_DEVICES
-(currently 32).
+We no longer need this data structure, as it was used to associate
+an inode back to a struct ib_umad_port during ->open().
 
-This change allows us to support more devices in a backwards-compatible
-manner. the first IB_UCM_MAX_DEVICES keep the same major/minor device
-numbers they've always had.
-
-If there are more than IB_UCM_MAX_DEVICES, then we dynamically request
-a new major device number (new minors start at 0).
+But now that we're embedding a struct cdev in struct ib_umad_port,
+we can use the container_of() macro to go from the inode back to
+the device instead.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/infiniband/core/ucm.c |   53 +++++++++++++++++++++++++++++++++++------
- 1 files changed, 45 insertions(+), 8 deletions(-)
+ drivers/infiniband/core/user_mad.c |   45 +++++++-----------------------------
+ 1 files changed, 9 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/infiniband/core/ucm.c b/drivers/infiniband/core/ucm.c
-index 06c50d8..1203ca4 100644
---- a/drivers/infiniband/core/ucm.c
-+++ b/drivers/infiniband/core/ucm.c
-@@ -1215,7 +1215,10 @@ static void ib_ucm_release_dev(struct device *dev)
+diff --git a/drivers/infiniband/core/user_mad.c b/drivers/infiniband/core/user_mad.c
+index 40440ef..46c8879 100644
+--- a/drivers/infiniband/core/user_mad.c
++++ b/drivers/infiniband/core/user_mad.c
+@@ -65,12 +65,9 @@ enum {
+ };
  
- 	ucm_dev = container_of(dev, struct ib_ucm_device, dev);
- 	cdev_del(&ucm_dev->cdev);
--	clear_bit(ucm_dev->devnum, dev_map);
-+	if (ucm_dev->devnum < IB_UCM_MAX_DEVICES)
-+		clear_bit(ucm_dev->devnum, dev_map);
-+	else
-+		clear_bit(ucm_dev->devnum - IB_UCM_MAX_DEVICES, dev_map);
- 	kfree(ucm_dev);
- }
+ /*
+- * Our lifetime rules for these structs are the following: each time a
+- * device special file is opened, we look up the corresponding struct
+- * ib_umad_port by minor in the umad_port[] table while holding the
+- * port_lock.  If this lookup succeeds, we take a reference on the
+- * ib_umad_port's struct ib_umad_device while still holding the
+- * port_lock; if the lookup fails, we fail the open().  We drop these
++ * Our lifetime rules for these structs are the following:
++ * device special file is opened, we take a reference on the
++ * ib_umad_port's struct ib_umad_device. We drop these
+  * references in the corresponding close().
+  *
+  * In addition to references coming from open character devices, there
+@@ -78,12 +75,7 @@ enum {
+  * module's reference taken when allocating the ib_umad_device in
+  * ib_umad_add_one().
+  *
+- * When destroying an ib_umad_device, we clear all of its
+- * ib_umad_ports from umad_port[] while holding port_lock before
+- * dropping the module's reference to the ib_umad_device.  This is
+- * always safe because any open() calls will either succeed and obtain
+- * a reference before we clear the umad_port[] entries, or fail after
+- * we clear the umad_port[] entries.
++ * When destroying an ib_umad_device, we drop the module's reference.
+  */
  
-@@ -1237,6 +1240,28 @@ static ssize_t show_ibdev(struct device *dev, struct device_attribute *attr,
- }
- static DEVICE_ATTR(ibdev, S_IRUGO, show_ibdev, NULL);
+ struct ib_umad_port {
+@@ -136,7 +128,6 @@ static struct class *umad_class;
+ static const dev_t base_dev = MKDEV(IB_UMAD_MAJOR, IB_UMAD_MINOR_BASE);
  
-+static dev_t oflo_maj;
-+static DECLARE_BITMAP(oflo_map, IB_UCM_MAX_DEVICES);
-+static int find_oflo_devnum(void)
-+{
-+	int ret;
-+
-+	if (!oflo_maj) {
-+		ret = alloc_chrdev_region(&oflo_maj, 0, IB_UCM_MAX_DEVICES,
-+					  "infiniband_cm");
-+		if (ret) {
-+			printk(KERN_ERR "ucm: couldn't register dynamic device number\n");
-+			return ret;
-+		}
-+	}
-+
-+	ret = find_first_zero_bit(oflo_map, IB_UCM_MAX_DEVICES);
-+	if (ret >= IB_UCM_MAX_DEVICES)
-+		return -1;
-+
-+	return ret;
-+}
-+
- static void ib_ucm_add_one(struct ib_device *device)
+ static DEFINE_SPINLOCK(port_lock);
+-static struct ib_umad_port *umad_port[IB_UMAD_MAX_PORTS];
+ static DECLARE_BITMAP(dev_map, IB_UMAD_MAX_PORTS);
+ 
+ static void ib_umad_add_one(struct ib_device *device);
+@@ -779,15 +770,11 @@ static long ib_umad_compat_ioctl(struct file *filp, unsigned int cmd,
+ /*
+  * ib_umad_open() does not need the BKL:
+  *
+- *  - umad_port[] accesses are protected by port_lock, the
+- *    ib_umad_port structures are properly reference counted, and
++ *  - the ib_umad_port structures are properly reference counted, and
+  *    everything else is purely local to the file being created, so
+  *    races against other open calls are not a problem;
+  *  - the ioctl method does not affect any global state outside of the
+  *    file structure being operated on;
+- *  - the port is added to umad_port[] as the last part of module
+- *    initialization so the open method will either immediately run
+- *    -ENXIO, or all required initialization will be done.
+  */
+ static int ib_umad_open(struct inode *inode, struct file *filp)
  {
- 	int devnum;
-@@ -1254,12 +1279,19 @@ static void ib_ucm_add_one(struct ib_device *device)
- 	ucm_dev->ib_dev = device;
+@@ -795,13 +782,10 @@ static int ib_umad_open(struct inode *inode, struct file *filp)
+ 	struct ib_umad_file *file;
+ 	int ret = 0;
  
- 	devnum = find_first_zero_bit(dev_map, IB_UCM_MAX_DEVICES);
--	if (devnum >= IB_UCM_MAX_DEVICES)
--		goto err;
+-	spin_lock(&port_lock);
+-	port = umad_port[iminor(inode) - IB_UMAD_MINOR_BASE];
++	port = container_of(inode->i_cdev, struct ib_umad_port, cdev);
+ 	if (port)
+ 		kref_get(&port->umad_dev->ref);
+-	spin_unlock(&port_lock);
 -
--	ucm_dev->devnum = devnum;
--	base = devnum + IB_UCM_BASE_DEV;
--	set_bit(devnum, dev_map);
-+	if (devnum >= IB_UCM_MAX_DEVICES) {
-+		devnum = find_oflo_devnum();
-+		if (devnum < 0)
-+			goto err;
-+
-+		ucm_dev->devnum = devnum + IB_UCM_MAX_DEVICES;
-+		base = devnum + oflo_maj;
-+		set_bit(devnum, oflo_map);
-+	} else {
-+		ucm_dev->devnum = devnum;
-+		base = devnum + IB_UCM_BASE_DEV;
-+		set_bit(devnum, dev_map);
-+	}
- 
- 	cdev_init(&ucm_dev->cdev, &ucm_fops);
- 	ucm_dev->cdev.owner = THIS_MODULE;
-@@ -1285,7 +1317,10 @@ err_dev:
- 	device_unregister(&ucm_dev->dev);
- err_cdev:
- 	cdev_del(&ucm_dev->cdev);
--	clear_bit(devnum, dev_map);
-+	if (ucm_dev->devnum < IB_UCM_MAX_DEVICES)
-+		clear_bit(devnum, dev_map);
+-	if (!port)
 +	else
-+		clear_bit(devnum, oflo_map);
- err:
- 	kfree(ucm_dev);
- 	return;
-@@ -1344,6 +1379,8 @@ static void __exit ib_ucm_cleanup(void)
- 	ib_unregister_client(&ucm_client);
- 	class_remove_file(&cm_class, &class_attr_abi_version);
- 	unregister_chrdev_region(IB_UCM_BASE_DEV, IB_UCM_MAX_DEVICES);
-+	if (oflo_maj)
-+		unregister_chrdev_region(oflo_maj, IB_UCM_MAX_DEVICES);
- 	idr_destroy(&ctx_id_table);
- }
+ 		return -ENXIO;
  
+ 	mutex_lock(&port->file_mutex);
+@@ -892,13 +876,10 @@ static int ib_umad_sm_open(struct inode *inode, struct file *filp)
+ 	};
+ 	int ret;
+ 
+-	spin_lock(&port_lock);
+-	port = umad_port[iminor(inode) - IB_UMAD_MINOR_BASE - IB_UMAD_MAX_PORTS];
++	port = container_of(inode->i_cdev, struct ib_umad_port, sm_cdev);
+ 	if (port)
+ 		kref_get(&port->umad_dev->ref);
+-	spin_unlock(&port_lock);
+-
+-	if (!port)
++	else
+ 		return -ENXIO;
+ 
+ 	if (filp->f_flags & O_NONBLOCK) {
+@@ -1042,10 +1023,6 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
+ 	if (device_create_file(port->sm_dev, &dev_attr_port))
+ 		goto err_sm_dev;
+ 
+-	spin_lock(&port_lock);
+-	umad_port[port->dev_num] = port;
+-	spin_unlock(&port_lock);
+-
+ 	return 0;
+ 
+ err_sm_dev:
+@@ -1079,10 +1056,6 @@ static void ib_umad_kill_port(struct ib_umad_port *port)
+ 	cdev_del(&port->cdev);
+ 	cdev_del(&port->sm_cdev);
+ 
+-	spin_lock(&port_lock);
+-	umad_port[port->dev_num] = NULL;
+-	spin_unlock(&port_lock);
+-
+ 	mutex_lock(&port->file_mutex);
+ 
+ 	port->ib_dev = NULL;
 
