@@ -1,27 +1,27 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512Ab0BBB4X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 20:56:23 -0500
+	id S1754650Ab0BBB4j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 20:56:39 -0500
 Received: from mail-ew0-f228.google.com ([209.85.219.228]:44960 "EHLO
 	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753834Ab0BBB4T (ORCPT
+	with ESMTP id S1754030Ab0BBB4N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 20:56:19 -0500
+	Mon, 1 Feb 2010 20:56:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:mime-version:message-id:cc
          :content-type:content-transfer-encoding;
-        b=mSNopl94VL/shJkT79l6HGUudldBRccHdL/NePvff+PQa92HVKDpmLwX6Mj0cQ5juf
-         QOiZJcEqjNEWECLU2FvWTqmlhC9FFRw4P/IqfwILyehSOI3xzi2oBdhWW2H4mWzy3+mm
-         nfPywJNwd25o6U1IxYHiPA3/fOkBVcFwzIX9U=
+        b=ekVFOExD3nmZqCU3AnfwVcYlGAWNn/rNEiqTi045JgWk79f/mWLKBIAyFCMouUXafl
+         IIkwg7WfzNNpN8+fNSHFj6rYbqmc4rUO6tGy2WASVRH63GchnT4N/L3H/wXS3QQPBbtb
+         g6o9YXbDap82fc43/JWQUUI+lD+r7h+C/WGBU=
 From: Edward Shishkin <edward.shishkin@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
        ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [patch 6/7] reiser4: writeback_inodes implementation
-Date: Tue, 2 Feb 2010 02:56:27 +0100
+Subject: [patch 5/7] VFS: add super operation writeback_inodes
+Date: Tue, 2 Feb 2010 02:56:21 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.27.41-170.2.117.fc10.i686; KDE/4.3.3; i686; ; )
 MIME-Version: 1.0
-Message-Id: <201002020256.27208.edward.shishkin@gmail.com>
+Message-Id: <201002020256.21266.edward.shishkin@gmail.com>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        xfs@oss.sgi.com, jens.axboe@oracle.com
 Content-Type: Text/Plain;
@@ -31,200 +31,166 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-. add reiser4 implementation of ->writeback_inodes()
-  super operation;
-. cleanup comments.
+. add ->writeback_inodes() super operation.
+
+    This patch adds new operation to struct super_operations -
+    writeback_inodes, generic implementaion and changes
+    fs-writeback.c:writeback_inodes_wb() to call filesystem's
+    writeback_inodes if it is defined or generic implementaion
+    otherwise. This new operation allows filesystem to decide
+    itself what to flush.
+
+    Reiser4 flushes dirty pages on basic of atoms, not of inodes.
+    writeback_inodes_wb used to call address space flushing
+    method (writepages) for every dirty inode. For reiser4 it
+    caused having to commit atoms unnecessarily often.  This
+    turned into substantial slowdown.  Having this method helped
+    to fix that problem.
+
+. add vfs library function writeback_skip_sb_inodes()
+
+   This function is for file systems which have their own means
+   of periodical writeout of old data.
 
 Signed-off-by: Edward Shishkin <edward.shishkin@gmail.com>
 ---
- fs/reiser4/context.c    |    3 +-
- fs/reiser4/context.h    |    2 -
- fs/reiser4/entd.c       |    7 ++++--
- fs/reiser4/page_cache.c |   12 +++++------
- fs/reiser4/super_ops.c  |   49 +++++++++++++++++++++++++++++-------------------
- fs/reiser4/txnmgr.c     |    2 -
- 6 files changed, 45 insertions(+), 30 deletions(-)
+ fs/fs-writeback.c         |   47 ++++++++++++++++++++++++++++++++++++++++++----
+ include/linux/fs.h        |   10 +++++++++
+ include/linux/writeback.h |    6 +++++
+ 3 files changed, 59 insertions(+), 4 deletions(-)
 
-Index: linux-2.6.33-rc5-mm1/fs/reiser4/context.c
+Index: linux-2.6.33-rc5-mm1/include/linux/fs.h
 ===================================================================
---- linux-2.6.33-rc5-mm1.orig/fs/reiser4/context.c
-+++ linux-2.6.33-rc5-mm1/fs/reiser4/context.c
-@@ -151,7 +151,8 @@ static void reiser4_throttle_write_at(re
- 	 */
- 	if (sbinfo != NULL && sbinfo->fake != NULL &&
- 	    context->nr_marked_dirty != 0 &&
--	    !(current->flags & PF_MEMALLOC))
-+	    !(current->flags & PF_MEMALLOC) &&
-+	    !current_is_flush_bd_task())
- 		/* FIXME-EDWARD: throttle with nr_marked_dirty? */
- 		reiser4_throttle_write(sbinfo->fake, 1);
- }
-Index: linux-2.6.33-rc5-mm1/fs/reiser4/context.h
-===================================================================
---- linux-2.6.33-rc5-mm1.orig/fs/reiser4/context.h
-+++ linux-2.6.33-rc5-mm1/fs/reiser4/context.h
-@@ -66,7 +66,7 @@ struct reiser4_context {
- 	/* count non-trivial jnode_set_dirty() calls */
- 	unsigned long nr_marked_dirty;
+--- linux-2.6.33-rc5-mm1.orig/include/linux/fs.h
++++ linux-2.6.33-rc5-mm1/include/linux/fs.h
+@@ -514,6 +514,7 @@ enum positive_aop_returns {
+ struct page;
+ struct address_space;
+ struct writeback_control;
++struct bdi_writeback;
  
--	/* reiser4_sync_inodes calls (via generic_sync_sb_inodes)
-+	/* reiser4_writeback_inodes calls (via generic_writeback_sb_inodes)
- 	 * reiser4_writepages for each of dirty inodes. Reiser4_writepages
- 	 * captures pages. When number of pages captured in one
- 	 * reiser4_sync_inodes reaches some threshold - some atoms get
-Index: linux-2.6.33-rc5-mm1/fs/reiser4/entd.c
+ struct iov_iter {
+ 	const struct iovec *iov;
+@@ -1565,6 +1566,9 @@ struct super_operations {
+ 	int (*remount_fs) (struct super_block *, int *, char *);
+ 	void (*clear_inode) (struct inode *);
+ 	void (*umount_begin) (struct super_block *);
++	int (*writeback_inodes)(struct super_block *sb,
++				struct bdi_writeback *wb,
++				struct writeback_control *wbc);
+ 
+ 	int (*show_options)(struct seq_file *, struct vfsmount *);
+ 	int (*show_stats)(struct seq_file *, struct vfsmount *);
+@@ -2073,6 +2077,12 @@ extern int invalidate_inode_pages2(struc
+ extern int invalidate_inode_pages2_range(struct address_space *mapping,
+ 					 pgoff_t start, pgoff_t end);
+ extern int write_inode_now(struct inode *, int);
++extern void writeback_skip_sb_inodes(struct super_block *sb,
++				     struct bdi_writeback *wb);
++extern void writeback_inodes_wbc(struct writeback_control *wbc);
++extern int generic_writeback_sb_inodes(struct super_block *sb,
++				       struct bdi_writeback *wb,
++				       struct writeback_control *wbc);
+ extern int filemap_fdatawrite(struct address_space *);
+ extern int filemap_flush(struct address_space *);
+ extern int filemap_fdatawait(struct address_space *);
+Index: linux-2.6.33-rc5-mm1/include/linux/writeback.h
 ===================================================================
---- linux-2.6.33-rc5-mm1.orig/fs/reiser4/entd.c
-+++ linux-2.6.33-rc5-mm1/fs/reiser4/entd.c
-@@ -236,16 +236,19 @@ static void entd_flush(struct super_bloc
- 	rq->wbc->range_end = rq->wbc->range_start +
- 		(ENTD_CAPTURE_APAGE_BURST << PAGE_CACHE_SHIFT);
- 	tmp = rq->wbc->nr_to_write;
+--- linux-2.6.33-rc5-mm1.orig/include/linux/writeback.h
++++ linux-2.6.33-rc5-mm1/include/linux/writeback.h
+@@ -13,6 +13,12 @@ extern spinlock_t inode_lock;
+ extern struct list_head inode_in_use;
+ extern struct list_head inode_unused;
+ 
++static inline int is_flush_bd_task(struct task_struct *task)
++{
++       return task->flags & PF_FLUSHER;
++}
++#define current_is_flush_bd_task()  is_flush_bd_task(current)
 +
-+	assert("edward-1561", super == rq->wbc->sb);
-+
- 	rq->mapping->a_ops->writepages(rq->mapping, rq->wbc);
- 
- 	if (rq->wbc->nr_to_write > 0) {
- 		rq->wbc->range_start = 0;
- 		rq->wbc->range_end = LLONG_MAX;
--		generic_sync_sb_inodes(rq->wbc);
-+		writeback_inodes_wbc(rq->wbc);
- 	}
- 	rq->wbc->nr_to_write = ENTD_CAPTURE_APAGE_BURST;
--	reiser4_writeout(super, rq->wbc);
- 
-+	reiser4_writeout(super, rq->wbc);
- 	context_set_commit_async(&ctx);
- 	reiser4_exit_context(&ctx);
- }
-Index: linux-2.6.33-rc5-mm1/fs/reiser4/page_cache.c
-===================================================================
---- linux-2.6.33-rc5-mm1.orig/fs/reiser4/page_cache.c
-+++ linux-2.6.33-rc5-mm1/fs/reiser4/page_cache.c
-@@ -486,15 +486,15 @@ static int can_hit_entd(reiser4_context 
- int reiser4_writepage(struct page *page,
- 		      struct writeback_control *wbc)
- {
--	struct super_block *s;
--	reiser4_context *ctx;
--
-+	/*
-+	 * assert("edward-1562",
-+	 * can_hit_entd(get_current_context_check(), sb));
-+	 */
- 	assert("vs-828", PageLocked(page));
- 
--	s = page->mapping->host->i_sb;
--	ctx = get_current_context_check();
-+	wbc->sb = page->mapping->host->i_sb;
-+	wbc->bdi = page->mapping->backing_dev_info;
- 
--	/* assert("", can_hit_entd(ctx, s)); */
- 	return write_page_by_ent(page, wbc);
- }
- 
-Index: linux-2.6.33-rc5-mm1/fs/reiser4/super_ops.c
-===================================================================
---- linux-2.6.33-rc5-mm1.orig/fs/reiser4/super_ops.c
-+++ linux-2.6.33-rc5-mm1/fs/reiser4/super_ops.c
-@@ -379,48 +379,59 @@ static void reiser4_clear_inode(struct i
- }
- 
- /**
-- * reiser4_sync_inodes - sync_inodes of super operations
-+ * reiser4_writeback_inodes - writeback_inodes of super operations
-  * @super:
-+ * @wb:
-  * @wbc:
-  *
-  * This method is called by background and non-backgound writeback. Reiser4's
-- * implementation uses generic_sync_sb_inodes to call reiser4_writepages for
-- * each of dirty inodes. Reiser4_writepages handles pages dirtied via shared
-- * mapping - dirty pages get into atoms. Writeout is called to flush some
-- * atoms.
-+ * implementation uses generic_writeback_sb_inodes to call reiser4_writepages
-+ * for each of dirty inodes. reiser4_writepages handles pages dirtied via shared
-+ * mapping - dirty pages get into atoms. Writeout is called to flush some atoms.
+ /*
+  * fs/fs-writeback.c
   */
--static void reiser4_sync_inodes(struct super_block *super,
--			       struct writeback_control *wbc)
-+static int reiser4_writeback_inodes(struct super_block *super,
-+				    struct bdi_writeback *wb,
-+				    struct writeback_control *wbc)
- {
--	reiser4_context *ctx;
-+	int ret;
- 	long to_write;
-+	reiser4_context *ctx;
- 
- 	if (wbc->for_kupdate)
- 		/* reiser4 has its own means of periodical write-out */
--		return;
--
--	to_write = wbc->nr_to_write;
-+		goto skip;
- 	assert("vs-49", wbc->older_than_this == NULL);
- 
-+	spin_unlock(&inode_lock);
- 	ctx = reiser4_init_context(super);
- 	if (IS_ERR(ctx)) {
- 		warning("vs-13", "failed to init context");
--		return;
-+		spin_lock(&inode_lock);
-+		goto skip;
- 	}
--
-+	to_write = wbc->nr_to_write;
- 	/*
--	 * call reiser4_writepages for each of dirty inodes to turn dirty pages
--	 * into transactions if they were not yet.
-+	 * call reiser4_writepages for each of dirty inodes to turn
-+	 * dirty pages into transactions if they were not yet.
- 	 */
--	generic_sync_sb_inodes(wbc);
-+	spin_lock(&inode_lock);
-+	ret = generic_writeback_sb_inodes(super, wb, wbc);
-+	spin_unlock(&inode_lock);
- 
--	/* flush goes here */
- 	wbc->nr_to_write = to_write;
-+
-+	/* flush goes here */
- 	reiser4_writeout(super, wbc);
- 
--	/* avoid recursive calls to ->sync_inodes */
-+	/* avoid recursive calls to ->writeback_inodes */
- 	context_set_commit_async(ctx);
- 	reiser4_exit_context(ctx);
-+	spin_lock(&inode_lock);
-+
-+	return wbc->nr_to_write <= 0 ? 1 : ret;
-+ skip:
-+	writeback_skip_sb_inodes(super, wb);
-+	return 0;
- }
- 
- /**
-@@ -458,7 +469,7 @@ struct super_operations reiser4_super_op
- 	.write_super = reiser4_write_super,
- 	.statfs = reiser4_statfs,
- 	.clear_inode = reiser4_clear_inode,
--	.sync_inodes = reiser4_sync_inodes,
-+	.writeback_inodes = reiser4_writeback_inodes,
- 	.show_options = reiser4_show_options
- };
- 
-Index: linux-2.6.33-rc5-mm1/fs/reiser4/txnmgr.c
+Index: linux-2.6.33-rc5-mm1/fs/fs-writeback.c
 ===================================================================
---- linux-2.6.33-rc5-mm1.orig/fs/reiser4/txnmgr.c
-+++ linux-2.6.33-rc5-mm1/fs/reiser4/txnmgr.c
-@@ -1410,7 +1410,7 @@ flush_some_atom(jnode * start, long *nr_
- 		 * Write throttling is case of no one atom can be
- 		 * flushed/committed.
- 		 */
--		if (!wbc->nonblocking) {
-+		if (!wbc->nonblocking && !current_is_flush_bd_task()) {
- 			list_for_each_entry(atom, &tmgr->atoms_list, atom_link) {
- 				spin_lock_atom(atom);
- 				/* Repeat the check from the above. */
+--- linux-2.6.33-rc5-mm1.orig/fs/fs-writeback.c
++++ linux-2.6.33-rc5-mm1/fs/fs-writeback.c
+@@ -605,9 +605,9 @@ static enum sb_pin_state pin_sb_for_writ
+  * Return 1, if the caller writeback routine should be
+  * interrupted. Otherwise return 0.
+  */
+-static int writeback_sb_inodes(struct super_block *sb,
+-			       struct bdi_writeback *wb,
+-			       struct writeback_control *wbc)
++int generic_writeback_sb_inodes(struct super_block *sb,
++				struct bdi_writeback *wb,
++				struct writeback_control *wbc)
+ {
+ 	while (!list_empty(&wb->b_io)) {
+ 		long pages_skipped;
+@@ -658,6 +658,32 @@ static int writeback_sb_inodes(struct su
+ 	/* b_io is empty */
+ 	return 1;
+ }
++EXPORT_SYMBOL(generic_writeback_sb_inodes);
++
++/*
++ * This function is for file systems which have their
++ * own means of periodical write-out of old data.
++ * NOTE: inode_lock should be hold.
++ *
++ * Skip a portion of b_io inodes which belong to @sb
++ * and go sequentially in reverse order.
++ */
++void writeback_skip_sb_inodes(struct super_block *sb,
++			      struct bdi_writeback *wb)
++{
++	while (1) {
++		struct inode *inode;
++
++		if (list_empty(&wb->b_io))
++			break;
++		inode = list_entry(wb->b_io.prev, struct inode, i_list);
++		if (sb != inode->i_sb)
++			break;
++		redirty_tail(inode);
++	}
++}
++EXPORT_SYMBOL(writeback_skip_sb_inodes);
++
+ 
+ static void writeback_inodes_wb(struct bdi_writeback *wb,
+ 				struct writeback_control *wbc)
+@@ -687,7 +713,10 @@ static void writeback_inodes_wb(struct b
+ 			requeue_io(inode);
+ 			continue;
+ 		}
+-		ret = writeback_sb_inodes(sb, wb, wbc);
++		if (sb->s_op->writeback_inodes)
++			ret = sb->s_op->writeback_inodes(sb, wb, wbc);
++		else
++			ret = generic_writeback_sb_inodes(sb, wb, wbc);
+ 
+ 		if (state == SB_PINNED)
+ 			unpin_sb_for_writeback(sb);
+@@ -704,6 +733,7 @@ void writeback_inodes_wbc(struct writeba
+ 
+ 	writeback_inodes_wb(&bdi->wb, wbc);
+ }
++EXPORT_SYMBOL(writeback_inodes_wbc);
+ 
+ /*
+  * The maximum number of pages to writeout in a single bdi flush/kupdate
+@@ -1289,3 +1319,12 @@ int sync_inode(struct inode *inode, stru
+ 	return ret;
+ }
+ EXPORT_SYMBOL(sync_inode);
++/*
++ * Local variables:
++ * c-indentation-style: "K&R"
++ * mode-name: "LC"
++ * c-basic-offset: 8
++ * tab-width: 8
++ * fill-column: 79
++ * End:
++ */
