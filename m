@@ -1,69 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382Ab0BBPcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 10:32:19 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:8077 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756319Ab0BBPcK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 10:32:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:mime-version:message-id:cc
-         :content-type:content-transfer-encoding;
-        b=rPKJTi0WpEfQ8Fx9rDHsMq0p+8Bfrd+Fk1uCJAbgCD+I6DFya/ZssXLTF7+LjKpWS6
-         5T9XCspA+Os8WLINiVKNh6b1xJ+PukYj7gxCvZoa4yLHznNA5KlQ6GUcJ33sPPYlZpQS
-         JNFLdMtfrNGkddcIST8wX2rm59OuwDODsvKbo=
-From: Edward Shishkin <edward.shishkin@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: [patch 3/7] roll back vfs-add-super_operationssync_inodes-2.patch
-Date: Tue, 2 Feb 2010 16:24:59 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.27.41-170.2.117.fc10.i686; KDE/4.3.3; i686; ; )
-MIME-Version: 1.0
-Message-Id: <201002021624.59119.edward.shishkin@gmail.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1756416Ab0BBPeU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 10:34:20 -0500
+Received: from mga03.intel.com ([143.182.124.21]:5718 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756255Ab0BBPeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 10:34:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="239540021"
+Message-Id: <20100202153316.655608338@intel.com>
+User-Agent: quilt/0.48-1
+Date: Tue, 02 Feb 2010 23:28:38 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Jens Axboe <jens.axboe@oracle.com>, Wu Fengguang <fengguang.wu@intel.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Linux Memory Management List <linux-mm@kvack.org>
+cc: <linux-fsdevel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 03/11] readahead: introduce {MAX|MIN}_READAHEAD_PAGES macros for ease of use
+References: <20100202152835.683907822@intel.com>
+Content-Disposition: inline; filename=readahead-min-max-pages.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roll back reiser4-vfs-add-super_operationssync_inodes-2.patch
-(wrong stuff)
-
-Signed-off-by: Edward Shishkin <edward.shishkin@gmail.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- fs/fs-writeback.c  |    5 +----
- include/linux/fs.h |    2 --
- 2 files changed, 1 insertion(+), 6 deletions(-)
+ block/blk-core.c   |    3 +--
+ fs/fuse/inode.c    |    2 +-
+ include/linux/mm.h |    3 +++
+ mm/backing-dev.c   |    2 +-
+ 4 files changed, 6 insertions(+), 4 deletions(-)
 
-Index: linux-2.6.33-rc5-mm1/fs/fs-writeback.c
-===================================================================
---- linux-2.6.33-rc5-mm1.orig/fs/fs-writeback.c
-+++ linux-2.6.33-rc5-mm1/fs/fs-writeback.c
-@@ -1217,10 +1217,7 @@ EXPORT_SYMBOL(writeback_inodes_sb_if_idl
-  */
- void sync_inodes_sb(struct super_block *sb)
- {
--	if (sb->s_op->sync_inodes)
--		sb->s_op->sync_inodes(sb, NULL);
--	else
--		bdi_sync_writeback(sb->s_bdi, sb);
-+	bdi_sync_writeback(sb->s_bdi, sb);
- 	wait_sb_inodes(sb);
- }
- EXPORT_SYMBOL(sync_inodes_sb);
-Index: linux-2.6.33-rc5-mm1/include/linux/fs.h
-===================================================================
---- linux-2.6.33-rc5-mm1.orig/include/linux/fs.h
-+++ linux-2.6.33-rc5-mm1/include/linux/fs.h
-@@ -1566,8 +1566,6 @@ struct super_operations {
- 	void (*clear_inode) (struct inode *);
- 	void (*umount_begin) (struct super_block *);
+--- linux.orig/block/blk-core.c	2010-01-30 17:38:48.000000000 +0800
++++ linux/block/blk-core.c	2010-01-30 18:10:01.000000000 +0800
+@@ -498,8 +498,7 @@ struct request_queue *blk_alloc_queue_no
  
--	void (*sync_inodes)(struct super_block *sb,
--				struct writeback_control *wbc);
- 	int (*show_options)(struct seq_file *, struct vfsmount *);
- 	int (*show_stats)(struct seq_file *, struct vfsmount *);
- #ifdef CONFIG_QUOTA
+ 	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
+ 	q->backing_dev_info.unplug_io_data = q;
+-	q->backing_dev_info.ra_pages =
+-			(VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
++	q->backing_dev_info.ra_pages = MAX_READAHEAD_PAGES;
+ 	q->backing_dev_info.state = 0;
+ 	q->backing_dev_info.capabilities = BDI_CAP_MAP_COPY;
+ 	q->backing_dev_info.name = "block";
+--- linux.orig/fs/fuse/inode.c	2010-01-30 17:38:48.000000000 +0800
++++ linux/fs/fuse/inode.c	2010-01-30 18:10:01.000000000 +0800
+@@ -870,7 +870,7 @@ static int fuse_bdi_init(struct fuse_con
+ 	int err;
+ 
+ 	fc->bdi.name = "fuse";
+-	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
++	fc->bdi.ra_pages = MAX_READAHEAD_PAGES;
+ 	fc->bdi.unplug_io_fn = default_unplug_io_fn;
+ 	/* fuse does it's own writeback accounting */
+ 	fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB;
+--- linux.orig/include/linux/mm.h	2010-01-30 18:09:58.000000000 +0800
++++ linux/include/linux/mm.h	2010-01-30 18:10:01.000000000 +0800
+@@ -1187,6 +1187,9 @@ void task_dirty_inc(struct task_struct *
+ #define VM_MAX_READAHEAD	512	/* kbytes */
+ #define VM_MIN_READAHEAD	32	/* kbytes (includes current page) */
+ 
++#define MAX_READAHEAD_PAGES (VM_MAX_READAHEAD*1024 / PAGE_CACHE_SIZE)
++#define MIN_READAHEAD_PAGES DIV_ROUND_UP(VM_MIN_READAHEAD*1024, PAGE_CACHE_SIZE)
++
+ int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
+ 			pgoff_t offset, unsigned long nr_to_read);
+ 
+--- linux.orig/mm/backing-dev.c	2010-01-30 17:38:48.000000000 +0800
++++ linux/mm/backing-dev.c	2010-01-30 18:10:01.000000000 +0800
+@@ -18,7 +18,7 @@ EXPORT_SYMBOL(default_unplug_io_fn);
+ 
+ struct backing_dev_info default_backing_dev_info = {
+ 	.name		= "default",
+-	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
++	.ra_pages	= MAX_READAHEAD_PAGES,
+ 	.state		= 0,
+ 	.capabilities	= BDI_CAP_MAP_COPY,
+ 	.unplug_io_fn	= default_unplug_io_fn,
+
+
