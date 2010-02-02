@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756938Ab0BBTAt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:00:49 -0500
-Received: from verein.lst.de ([213.95.11.210]:38051 "EHLO verein.lst.de"
+	id S932175Ab0BBTA7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:00:59 -0500
+Received: from verein.lst.de ([213.95.11.210]:38056 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756879Ab0BBTAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:00:43 -0500
-Date: Tue, 2 Feb 2010 20:00:20 +0100
+	id S1756905Ab0BBTAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 14:00:53 -0500
+Date: Tue, 2 Feb 2010 20:00:31 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: roland@redhat.com, oleg@redhat.com, akpm@linux-foundation.org,
-       chris@zankel.net
+       starvik@axis.com, jesper.nilsson@axis.com
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [PATCH 11/14] xtensa: use generic ptrace_resume code
-Message-ID: <20100202190020.GK3630@lst.de>
+Subject: [PATCH 12/14] cris arch-v10: use generic ptrace_resume code
+Message-ID: <20100202190031.GL3630@lst.de>
 References: <20100202185755.GA3630@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,12 +24,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the generic ptrace_resume code for PTRACE_SYSCALL, PTRACE_CONT,
-PTRACE_KILL and PTRACE_SINGLESTEP.  This implies defining
-arch_has_single_step in <asm/ptrace.h> and implementing the
-user_enable_single_step and user_disable_single_step functions, which
-also causes the breakpoint information to be cleared on fork, which
-could be considered a bug fix.
+Use the generic ptrace_resume code for PTRACE_SYSCALL, PTRACE_CONT and
+PTRACE_KILL.  This also makes PTRACE_SINGLESTEP return -EIO while it
+previously succeeded despite not actually causing any kind of single
+stepping.
 
 Also the TIF_SYSCALL_TRACE thread flag is now cleared on PTRACE_KILL
 which it previously wasn't which is consistent with all architectures
@@ -37,89 +35,65 @@ using the modern ptrace code.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Index: linux-2.6/arch/xtensa/kernel/ptrace.c
+Index: linux-2.6/arch/cris/arch-v10/kernel/ptrace.c
 ===================================================================
---- linux-2.6.orig/arch/xtensa/kernel/ptrace.c	2010-02-02 19:18:16.218004699 +0100
-+++ linux-2.6/arch/xtensa/kernel/ptrace.c	2010-02-02 19:21:56.730004589 +0100
-@@ -30,6 +30,17 @@
- #include <asm/elf.h>
- #include <asm/coprocessor.h>
+--- linux-2.6.orig/arch/cris/arch-v10/kernel/ptrace.c	2010-02-02 19:23:58.567254756 +0100
++++ linux-2.6/arch/cris/arch-v10/kernel/ptrace.c	2010-02-02 19:24:33.483004794 +0100
+@@ -115,57 +115,6 @@ long arch_ptrace(struct task_struct *chi
+ 			ret = 0;
+ 			break;
  
-+
-+void user_enable_single_step(struct task_struct *child)
-+{
-+	child->ptrace |= PT_SINGLESTEP;
-+}
-+
-+void user_disable_single_step(struct task_struct *child)
-+{
-+	child->ptrace &= ~PT_SINGLESTEP;
-+}
-+
- /*
-  * Called by kernel/ptrace.c when detaching to disable single stepping.
-  */
-@@ -258,51 +269,6 @@ long arch_ptrace(struct task_struct *chi
- 		ret = ptrace_pokeusr(child, addr, data);
- 		break;
- 
--	/* continue and stop at next (return from) syscall */
--
--	case PTRACE_SYSCALL:
--	case PTRACE_CONT: /* restart after signal. */
--	{
--		ret = -EIO;
--		if (!valid_signal(data))
+-		case PTRACE_SYSCALL:
+-		case PTRACE_CONT:
+-			ret = -EIO;
+-			
+-			if (!valid_signal(data))
+-				break;
+-                        
+-			if (request == PTRACE_SYSCALL) {
+-				set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+-			}
+-			else {
+-				clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+-			}
+-			
+-			child->exit_code = data;
+-			
+-			/* TODO: make sure any pending breakpoint is killed */
+-			wake_up_process(child);
+-			ret = 0;
+-			
 -			break;
--		if (request == PTRACE_SYSCALL)
--			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
--		else
+-		
+- 		/* Make the child exit by sending it a sigkill. */
+-		case PTRACE_KILL:
+-			ret = 0;
+-			
+-			if (child->exit_state == EXIT_ZOMBIE)
+-				break;
+-			
+-			child->exit_code = SIGKILL;
+-			
+-			/* TODO: make sure any pending breakpoint is killed */
+-			wake_up_process(child);
+-			break;
+-
+-		/* Set the trap flag. */
+-		case PTRACE_SINGLESTEP:
+-			ret = -EIO;
+-			
+-			if (!valid_signal(data))
+-				break;
+-			
 -			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
--		child->exit_code = data;
--		/* Make sure the single step bit is not set. */
--		child->ptrace &= ~PT_SINGLESTEP;
--		wake_up_process(child);
--		ret = 0;
--		break;
--	}
 -
--	/*
--	 * make the child exit.  Best I can do is send it a sigkill.
--	 * perhaps it should be put in the status that it wants to
--	 * exit.
--	 */
--	case PTRACE_KILL:
--		ret = 0;
--		if (child->exit_state == EXIT_ZOMBIE)	/* already dead */
+-			/* TODO: set some clever breakpoint mechanism... */
+-
+-			child->exit_code = data;
+-			wake_up_process(child);
+-			ret = 0;
 -			break;
--		child->exit_code = SIGKILL;
--		child->ptrace &= ~PT_SINGLESTEP;
--		wake_up_process(child);
--		break;
 -
--	case PTRACE_SINGLESTEP:
--		ret = -EIO;
--		if (!valid_signal(data))
--			break;
--		clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
--		child->ptrace |= PT_SINGLESTEP;
--		child->exit_code = data;
--		wake_up_process(child);
--		ret = 0;
--		break;
--
- 	case PTRACE_GETREGS:
- 		ret = ptrace_getregs(child, (void __user *) data);
- 		break;
-Index: linux-2.6/arch/xtensa/include/asm/ptrace.h
-===================================================================
---- linux-2.6.orig/arch/xtensa/include/asm/ptrace.h	2010-02-02 19:18:16.234010089 +0100
-+++ linux-2.6/arch/xtensa/include/asm/ptrace.h	2010-02-02 19:21:56.730004589 +0100
-@@ -113,6 +113,7 @@ struct pt_regs {
- 
- #include <variant/core.h>
- 
-+# define arch_has_single_step()	(1)
- # define task_pt_regs(tsk) ((struct pt_regs*) \
-   (task_stack_page(tsk) + KERNEL_STACK_SIZE - (XCHAL_NUM_AREGS-16)*4) - 1)
- # define user_mode(regs) (((regs)->ps & 0x00000020)!=0)
+ 		/* Get all GP registers from the child. */
+ 		case PTRACE_GETREGS: {
+ 		  	int i;
